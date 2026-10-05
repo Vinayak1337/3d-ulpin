@@ -1,7 +1,8 @@
 import {Controller,Get,Header,HttpCode,Inject,Param,Post,Req,UseGuards} from '@nestjs/common';
-import {ApiOperation,ApiParam,ApiTags} from '@nestjs/swagger';
+import {ApiOperation,ApiParam,ApiQuery,ApiTags} from '@nestjs/swagger';
 import type {Request} from 'express';
-import {DOCUMENT_PROPOSAL_LIMITS,DocumentProposalsSaveSchema,DocumentProposalSnapshotViewSchema}
+import {DOCUMENT_PROPOSAL_LIMITS,DocumentProposalsSaveSchema,DocumentProposalSnapshotViewSchema,
+  DocumentProposalsHistoryQuerySchema,DocumentProposalsHistorySchema}
   from '../../../../../packages/contracts/src/usp/document-proposals';
 import {DocumentProposalsService} from '@ulpin/server/modules/usp/ingestion/document-proposals';
 import {AppError} from '@ulpin/server/infrastructure/errors';
@@ -11,11 +12,30 @@ import {PrivateSpatialGuard} from '../spatial/private-spatial.guard';
 const param=(name:string)=>ApiParam({name,schema:{type:'string',format:'uuid'}});
 function noQuery(request:Request){if(new URL(request.originalUrl??request.url,'http://localhost').search)
   throw new AppError(422,'DOCUMENT_PROPOSALS_QUERY','The exact proposal route accepts no query fields.');}
+function historyQuery(request:Request){
+  const fields:Record<string,string>=Object.create(null);
+  for(const [key,value] of new URL(request.originalUrl??request.url,'http://localhost').searchParams){
+    if(!['after','limit'].includes(key)||Object.hasOwn(fields,key))
+      throw new AppError(422,'DOCUMENT_PROPOSALS_QUERY','Use only one after cursor and one limit on the history route.');
+    fields[key]=value;
+  }
+  DocumentProposalsHistoryQuerySchema.parse(fields);return fields;
+}
 @ApiTags('document proposals')
 @UseGuards(PrivateSpatialGuard)
 @Controller('api/v1/ingestion/cases/:caseId/sources/:sourceId/document-proposals')
 export class DocumentProposalsController{
   constructor(@Inject(DocumentProposalsService) private readonly service:DocumentProposalsService){}
+  @Get() @Header('Cache-Control','private, no-store') @param('caseId') @param('sourceId')
+  @ApiQuery({name:'after',required:false,schema:{type:'string',format:'uuid'}})
+  @ApiQuery({name:'limit',required:false,schema:{type:'integer',minimum:1,maximum:10,default:5}})
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals',
+    summary:'Discover a bounded UUID-ordered page of private saved proposal references',
+    description:'Follow readUrl for exact content. A stale/corrupt snapshot refuses the page; refresh without after to discover new saves.'})
+  @wireResponse(200,DocumentProposalsHistorySchema,[504])
+  history(@Param('caseId') caseId:string,@Param('sourceId') sourceId:string,@Req() request:Request){
+    return this.service.history(caseId,sourceId,historyQuery(request));
+  }
   @Post() @HttpCode(201) @Header('Cache-Control','private, no-store') @param('caseId') @param('sourceId')
   @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals',
     summary:'Save a source-scoped caller-supplied provisional document proposal packet',

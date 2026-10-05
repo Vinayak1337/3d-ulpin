@@ -2,7 +2,8 @@ import {randomUUID} from 'node:crypto';
 import type {PoolClient} from 'pg';
 import {z} from 'zod';
 import {DOCUMENT_PROPOSAL_LIMITS as limits,DocumentProposalsSaveSchema,DocumentProposalSnapshotSchema,
-  DocumentProposalSnapshotViewSchema,type DocumentProposalSourcePin,type DocumentProposalPacket}
+  DocumentProposalSnapshotViewSchema,DocumentProposalsHistoryQuerySchema,DocumentProposalsHistorySchema,
+  type DocumentProposalSourcePin,type DocumentProposalPacket}
   from '../../../../../contracts/src/usp/document-proposals';
 import {DOCUMENT_PAGE_LIMITS,DocumentPagesSchema} from '../../../../../contracts/src/document-pages';
 import {transaction} from '../../../infrastructure/db';
@@ -57,6 +58,8 @@ function view(stored:Stored,current:Authority){
   if(stored.subject!==current.subject||stored.accessSha256!==current.accessSha256)
     throw new AppError(403,'DOCUMENT_PROPOSALS_ACCESS_CHANGED','This private proposal snapshot is unavailable under current access.');
   if(stored.snapshot.caseId!==current.caseId||stored.snapshot.source.sourceId!==current.source.sourceId||
+    stored.snapshot.source.sourceRevision!==current.source.sourceRevision||stored.snapshot.source.sourceSha256!==current.source.sourceSha256||
+    stored.snapshot.source.sourceBytes!==current.source.sourceBytes||stored.snapshot.caseRevision>current.caseRevision||
     stored.sourceAuthoritySha256!==stable(current))conflict('The original or source context changed since this exact proposal snapshot.');
   const response=DocumentProposalSnapshotViewSchema.parse({...stored.snapshot,currentCaseRevision:current.caseRevision,
     snapshotSha256:fingerprint(stored.snapshot)});bounded(response,limits.responseBytes);return response;
@@ -114,6 +117,42 @@ export class DocumentProposalsService{
       const snapshot=await load(client,current,stored.snapshot.snapshotId);
       if(fingerprint(snapshot)!==fingerprint(stored))fail('DOCUMENT_PROPOSALS_SNAPSHOT_INTEGRITY','The saved proposal snapshot changed.');
       const response=view(snapshot,current);same(current,await captureTx(client,a.caseId,a.source.sourceId));live(deadline);return response;
+    },{deadlineAt:deadline});
+  }
+  async history(caseValue:string,sourceValue:string,raw:unknown={}){
+    const caseId=id.parse(caseValue),sourceId=id.parse(sourceValue),query=DocumentProposalsHistoryQuerySchema.parse(raw),
+      deadline=Date.now()+limits.seconds*1000;
+    const before=await this.readTx(deadline,async client=>{const a=await captureTx(client,caseId,sourceId);
+      if(query.after)await load(client,a,query.after);return a;});
+    await this.verify(before,deadline);
+    return this.dependencies.transaction(async client=>{
+      live(deadline);const current=await captureTx(client,caseId,sourceId,undefined,true);same(before,current);
+      if(query.after)await load(client,current,query.after);
+      const prefix='document-proposal-snapshot:',lower=query.after?snapshotKey(query.after):prefix;
+      // Keyset range uses the existing (case_id,operation_key,kind) primary key.
+      // Only scoped immutable snapshot keys are fetched, including one lookahead.
+      const rows=(await client.query(`SELECT operation_key FROM operations WHERE case_id=$1 AND kind=$2
+        AND operation_key>$3 AND operation_key<$4 AND result#>>'{snapshot,source,sourceId}'=$5
+        ORDER BY operation_key ASC LIMIT $6`,[caseId,snapshotKind,lower,prefix+'g',sourceId,query.limit+1])).rows;
+      if(rows.length>query.limit+1)fail('DOCUMENT_PROPOSALS_SNAPSHOT_INTEGRITY','The history reader exceeded its bounded page.');
+      const references=[];let previous=lower;
+      for(const row of rows){live(deadline);const parsed=id.safeParse(typeof row.operation_key==='string'?row.operation_key.slice(prefix.length):null);
+        if(!parsed.success||row.operation_key!==snapshotKey(parsed.data)||row.operation_key<=previous)
+          fail('DOCUMENT_PROPOSALS_SNAPSHOT_INTEGRITY','The history contains an invalid or unordered snapshot key.');
+        previous=row.operation_key;const stored=await load(client,current,parsed.data),s=stored.snapshot;
+        references.push({snapshotId:s.snapshotId,snapshotRevision:s.snapshotRevision,snapshotSha256:fingerprint(s),
+          caseRevision:s.caseRevision,review:s.review,method:s.method,provenanceAuthority:s.provenanceAuthority,population:s.population,
+          status:s.status,quotationVerification:s.quotationVerification,qualification:s.qualification,learningLabel:s.learningLabel,
+          proposalCount:s.packet.proposals.length,rejectedCount:s.packet.rejected.length,conflictCount:s.packet.conflicts.length,
+          locatorWarningCount:s.locatorWarnings.length,
+          readUrl:`/api/v1/ingestion/cases/${caseId}/sources/${sourceId}/document-proposals/${s.snapshotId}`});
+      }
+      const page=references.slice(0,query.limit),hasMore=references.length>query.limit;
+      const response=DocumentProposalsHistorySchema.parse({version:'source-document-proposals-history/1',caseId,
+        currentCaseRevision:current.caseRevision,source:{sourceId,sourceRevision:current.source.sourceRevision,
+          sourceSha256:current.source.sourceSha256,sourceBytes:current.source.sourceBytes},order:'snapshot_id_ascending',
+        after:query.after??null,limit:query.limit,references:page,hasMore,nextAfter:hasMore?page.at(-1)!.snapshotId:null});
+      bounded(response,limits.historyBytes);same(current,await captureTx(client,caseId,sourceId));live(deadline);return response;
     },{deadlineAt:deadline});
   }
   async read(caseValue:string,sourceValue:string,snapshotValue:string){

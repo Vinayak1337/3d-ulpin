@@ -2,7 +2,7 @@ import {z} from 'zod';
 import {DocumentPageFrameSchema} from './document-pages';
 
 export const SPATIAL_SOURCE_REVIEW_LIMITS=Object.freeze({requestBytes:256*1024,responseBytes:256*1024,
-  resultBytes:4*1024*1024,artifactBytes:8*1024*1024,seconds:90});
+  resultBytes:4*1024*1024,artifactBytes:8*1024*1024,seconds:90,historyBytes:64*1024});
 const id=z.uuid().transform(v=>v.toLowerCase()).pipe(z.uuid()),hash=z.string().regex(/^[a-f0-9]{64}$/);
 const count=z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const text=(max:number)=>z.string().min(1).max(max).refine(v=>/\S/u.test(v),'Use nonblank text.')
@@ -43,3 +43,18 @@ export const SpatialSourceReviewSchema=z.strictObject({version:z.literal('source
     v.candidateCount===v.decisions.length+v.unselectedCount,'The decision population must remain intact.');
 export type SpatialSourceReviewPin=z.output<typeof SpatialSourceReviewPinSchema>;
 export type SpatialSourceReview=z.output<typeof SpatialSourceReviewSchema>;
+export const SpatialSourceReviewsHistoryQuerySchema=z.strictObject({after:id.optional(),
+  limit:z.string().regex(/^(?:[1-9]|10)$/).default('5').transform(Number)});
+export const SpatialSourceReviewReferenceSchema=z.strictObject({reviewId:id,reviewRevision:z.literal(1),reviewSha256:hash,
+  caseRevision:count,jobId:id,resultSha256:hash,candidateCount:count.max(100),decisionCount:count.min(1).max(100),
+  unselectedCount:count.max(100),limits,review:SpatialSourceReviewSchema.shape.review,readUrl:z.string().max(256)})
+  .refine(v=>v.candidateCount===v.decisionCount+v.unselectedCount,'Retain the saved decision population.');
+export const SpatialSourceReviewsHistorySchema=z.strictObject({version:z.literal('source-candidate-reviews-history/1'),
+  itemId:id,caseId:id,sourceId:id,sourceRevision:count.min(1),sourceSha256:hash,currentJobId:id,resultSha256:hash,
+  order:z.literal('review_id_ascending'),after:id.nullable(),limit:count.min(1).max(10),
+  references:z.array(SpatialSourceReviewReferenceSchema).max(10),hasMore:z.boolean(),nextAfter:id.nullable()})
+  .refine(v=>v.references.length<=v.limit&&v.references.every((r,i)=>r.reviewId>(i?v.references[i-1].reviewId:v.after??''))&&
+    (v.hasMore?v.references.length===v.limit&&v.nextAfter===v.references.at(-1)?.reviewId:v.nextAfter===null),
+  'Retain the complete ordered page and its continuation cursor.');
+export type SpatialSourceReviewReference=z.output<typeof SpatialSourceReviewReferenceSchema>;
+export type SpatialSourceReviewsHistory=z.output<typeof SpatialSourceReviewsHistorySchema>;
