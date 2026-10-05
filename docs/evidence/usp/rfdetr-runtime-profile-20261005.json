@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 1,
+  "task": "D07-RFDETR-RUNTIME-PROFILE",
+  "status": "metadata_profile_ready_actual_runtime_unrun",
+  "baseCommit": "f2ac9074f27cc3c32fa789228b680f44a764ba69",
+  "branch": "task/d07-rfdetr-runtime-profile-20261005",
+  "privateRoot": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005",
+  "code": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\learning\\rfdetr_runtime_profile.py",
+    "bytes": 22171,
+    "sha256": "5069cdfa2cb9aeccef000a073067d53b4807c84d08cb94f7d524c736569a6cce"
+  },
+  "usableProfile": {
+    "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\control-profile-final.json",
+    "bytes": 23045,
+    "sha256": "1157a3b34a66585a273a08a33f2e09ecc2557cf539fbc27dec3d8a7b06bf7369"
+  },
+  "nativeControlCodeSha256": "0dc6747a8d710df6d907e4e99bb6d07f3ae082acafe5bf46743fac3aec100ab4",
+  "sourceOwners": {
+    "mountedPlanCommit": "20d2905ed6f9faa269b59e394315ac702ab99155",
+    "environmentCommit": "c92b28776635f98405c860953e6f581e6488f188",
+    "rootAmendment": "Exact18RO/67 files plus config accepted; plan/refusal review only; separate actual-runtime dispatch required"
+  },
+  "inputs": {
+    "interfacePin": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-mounted-plan-20261005\\launch-interface-runtime-v1.json",
+      "bytes": 51011,
+      "sha256": "eaeb7e13580fb3a43f7079e11626e815e8dde60b537bcd6b6cd6225aa0f3194c"
+    },
+    "mountedConfigPin": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-mounted-plan-20261005\\mounted-config-runtime-v1.json",
+      "bytes": 52751,
+      "sha256": "14d3936c88b983a5838f027bc411c9a656804de6b301f8e5be6d1aa6a87cf367"
+    },
+    "mountedPlanPin": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-mounted-plan-20261005\\mounted-plan-runtime-v1.json",
+      "bytes": 26107,
+      "sha256": "14343270b4511007b6d0bdbcfb6b4f473f4f60b20d5ee49f95b971af7fcdb9ac"
+    },
+    "runtimeBindingPin": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-gpu-base-20261005\\runtime-binding.json",
+      "bytes": 6417,
+      "sha256": "6f801e596890067be2bf61b673958645c378480db6203dba277243f4427ef615"
+    }
+  },
+  "runtime": {
+    "dockerContext": "desktop-linux",
+    "imageDigest": "sha256:47ee371d032ff6f5b18a92f0e531956eac7bad654d74b83d6065018688ba9316",
+    "imageConfigDigest": "sha256:35a594b1962dcced21366ade1ef5ab02949dfe0dc059c16145d6ffd2d699b57b",
+    "pythonVersion": "3.11.13",
+    "pythonEntrypoint": "/opt/conda/bin/python",
+    "packageVersionCount": 134,
+    "completeLockSha256": "0a049c8f7e893df7a8a6a579a81dcca2f2554c700883dbe1a4be661a5d2fa7d8",
+    "bindingQualification": "Installation/metadata only; no actual runtime qualification"
+  },
+  "scope": {
+    "readOnlyMounts": 18,
+    "readOnlyUnderlyingFiles": 67,
+    "configAdditionalFiles": 1,
+    "writableMounts": 1,
+    "writableDestination": "/outputs/rfdetr",
+    "gpuAssigned": false,
+    "inheritedNvidiaDevicesOverride": "void",
+    "rootAuthorization": null,
+    "trainingAuthorized": false
+  },
+  "policy": {
+    "network": "none",
+    "readOnlyRootfs": true,
+    "capDrop": [
+      "ALL"
+    ],
+    "securityOpt": [
+      "no-new-privileges"
+    ],
+    "user": "10001:10001",
+    "init": true,
+    "ipc": "private",
+    "memoryBytes": 5368709120,
+    "memorySwapBytes": 5368709120,
+    "hostJobMemoryBytes": 536870912,
+    "cpus": 2,
+    "cpuset": "0,1",
+    "pids": 32,
+    "tmpfs": {
+      "/tmp": "rw,noexec,nosuid,size=16m"
+    },
+    "shmBytes": 16777216,
+    "deviceRequests": [],
+    "attachDeadlineSeconds": 120,
+    "supervisorDeadlineSeconds": 300
+  },
+  "behavior": "Exact sealed input and runtime sidecars; canonical paths/link/junction/overlap and finite directory inventories; streaming raw-byte pin validation; all134 versions bound. Inline stdlib native-control argv adds no code/home/runtime mount. Saved Docker inspection validator requires exact mounts/env/entrypoint/device/resource bindings. Metadata CLI never invokes Docker or the inline worker; --execute always refuses.",
+  "checks": {
+    "finalPlanOnlyCommand": [
+      "C:\\Python313\\python.exe",
+      "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\learning\\rfdetr_runtime_profile.py",
+      "--plan-only",
+      "--output",
+      "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\control-profile-final.json"
+    ],
+    "finalPlanOnlyExit": 0,
+    "elapsedSeconds": 0.34,
+    "peakJobPrivateBytes": 14897152,
+    "supervisorPeakWorkingSetBytes": 22827008,
+    "prepCpuAffinity": "0-1",
+    "workerJobCapBytes": 1610612736,
+    "observedCombinedPeakBelow2GiB": true,
+    "syntaxAndInlineCodeCompileExit": 0,
+    "targetedRefusals": [
+      {
+        "name": "wrong-mount",
+        "exitCode": 2,
+        "reason": "Finite mount allowlist mismatch; unknown/writable/escaping/overlapping mount refused"
+      },
+      {
+        "name": "missing-authorization",
+        "exitCode": 2,
+        "reason": "Root authorization/runtime binding absent; execution refused"
+      },
+      {
+        "name": "wrong-binding",
+        "exitCode": 2,
+        "reason": "Execution runtime binding mismatch"
+      }
+    ],
+    "refusalAndInputFunctionsUnchangedSinceChecks": true,
+    "reviewCorrection": "Unrun root-write denial probe uses exclusive create to exercise EROFS, with no append/truncate to originals. Explicit desktop-linux context.",
+    "guardSetupFailure": "First verification supervisor failed before worker start because extracted annotations lacked future flag; retained and corrected. No experiment/control executed.",
+    "receipts": {
+      "final": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\final-checks.json",
+        "bytes": 3410,
+        "sha256": "9c12741e56ded3652fa9f37312584c7d1db9a077cb4d05d9589a852408b0c285"
+      },
+      "targeted": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\checks.json",
+        "bytes": 7482,
+        "sha256": "67bdb34d5ced9501cfb7d522026520fca9cc89784c26737fe325c5e776e49850"
+      },
+      "guardSetupFailure": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\checks-attempt1.json",
+        "bytes": 409,
+        "sha256": "648e7f7c2681373c4b87ec33c50da1f81f00916f0d182cfd57119af867645952"
+      },
+      "fixedCheckScript": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\final-checks.py",
+        "bytes": 6346,
+        "sha256": "c7ec151b79a46be9a70a53b87f3d340b2e8d059eb4f0c529b5a0f75f0eae78ec"
+      }
+    }
+  },
+  "historicalControl": {
+    "codeSha256": "a0fc7045192c76f138c05c9b16fddfc8dd0b8afe2ab3b02637a0ebb026f2ec06",
+    "resultSha256": "9f92bf38333ee4284e8d74d3156b4363e8cdc0d6aca8daf33625969f93a17dcf",
+    "image": "sha256:e71d87961be773c18685622eb570c034cf664bfa206e21f6fa3691d629b440c9",
+    "qualification": "Only historical three-mount e71d primitive; not this actual-base profile"
+  },
+  "remaining": [
+    "Separate root actual-runtime assignment and fresh exact-ID/label/Job/output controls",
+    "Actual18-mount/image/environment/resource/device readback, nativeTCP/UDP/access/input-pins and cleanup",
+    "Representative CPU loader/import and separately assigned tinyGPU smoke",
+    "Unchanged-checkpoint baseline, Torch/ONNX preprocessing parity, eligible grouped labels and separate fit admission"
+  ],
+  "resources": {
+    "ownedResourcesRemaining": 0,
+    "containersStarted": 0,
+    "libraryModelImports": 0,
+    "modelsLoaded": 0,
+    "gpuCalls": 0,
+    "fits": 0,
+    "environmentChanges": 0,
+    "retainedServicesProfilesVolumes": "Untouched; no Docker call in this task"
+  },
+  "settings": {
+    "requested": "gpt-6.1-sol/xhigh/default-standard1x",
+    "observed": "model/effort/tier unexposed",
+    "permissions": "never/danger-full-access"
+  },
+  "ownership": "Only new narrow RFDETRprofile script and this compact evidence leaf; historical launcher/profiles, original inputs and other owners unchanged. No staging/index service/data/frontend/provider/push/main changes."
+}
