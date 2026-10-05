@@ -126,7 +126,7 @@ def audit_historical() -> tuple[dict, int]:
         source_path = source["path"]
         authored = source["kind"] == "authored-sql"
         if authored:
-            if source_path != "database/" + step["file"] or source.get("task") not in ("DEPLOY-01", "INGEST-02A", "INGEST-06", "INGEST-03B", "INGEST-07", "TILE-01", "STREAM-02", "INGEST-04A", "AI-01A", "AI-02", "AI-03", "AI-03B", "RIGHTS-DECL-01", "PACK-PLAN-01", "CARD-01", "PACK1-PDF-05") or not re.fullmatch(r"[a-f0-9]{40}", source.get("acceptedBase", "")):
+            if source_path != "database/" + step["file"] or source.get("task") not in ("DEPLOY-01", "INGEST-02A", "INGEST-06", "INGEST-03B", "INGEST-07", "TILE-01", "STREAM-02", "INGEST-04A", "AI-01A", "AI-02", "AI-03", "AI-03B", "RIGHTS-DECL-01", "PACK-PLAN-01", "CARD-01", "PACK1-PDF-05", "D07-SOURCE-BATCH") or not re.fullmatch(r"[a-f0-9]{40}", source.get("acceptedBase", "")):
                 raise ValueError(f"Authored SQL provenance is invalid: {step['id']}")
             original = (ROOT / source_path).read_bytes()
         elif source_path not in source_cache:
@@ -204,7 +204,7 @@ def audit_runtime(manifest: dict) -> None:
             mount = f"./database/{step['file']}:/docker-entrypoint-initdb.d/001-extensions.sql:ro"
             if mount not in (ROOT / "compose.yaml").read_text():
                 raise ValueError("Compose does not mount canonical PostGIS bootstrap SQL")
-            if (ROOT / source["path"]).exists():
+            if (ROOT / source["path"]).is_file():
                 raise ValueError("Redundant bootstrap SQL copy remains in infra/postgres")
             continue
         moved = runtime["path"] if source["kind"] == "authored-sql" else moved_paths.get(source["path"])

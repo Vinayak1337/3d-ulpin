@@ -2598,6 +2598,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/spatial-ml/source-batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Queue source-only PDF floor-plan pixel candidates
+         * @description Pins the current private source/case, actual page/frame and explicit normalized region. No preparation, native part, metric placement or property target is implied.
+         */
+        post: operations["POST_api_v1_spatial_ml_source_batches"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/spatial-ml/batches/{batchId}": {
         parameters: {
             query?: never;
@@ -54115,7 +54135,46 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
-            packageId: string;
+            packageId: string | null;
+            scope?: {
+                /** @constant */
+                kind: "package";
+                /** Format: uuid */
+                packageId: string;
+            } | {
+                /** @constant */
+                kind: "source";
+                /** Format: uuid */
+                caseId: string;
+                caseRevision: number;
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+                sourceBytes: number;
+                page: number;
+                frame: {
+                    /** @constant */
+                    kind: "pdf_display_page_top_left_points";
+                    width: number;
+                    height: number;
+                    rotation: number;
+                };
+                region: {
+                    x: number;
+                    y: number;
+                    width: number;
+                    height: number;
+                };
+                locator: {
+                    /** @constant */
+                    kind: "pdf_page";
+                    page: number;
+                };
+                calibration: null;
+                /** @constant */
+                applicability: "not_assessed";
+            };
             /** Format: uuid */
             requestKey: string;
             /** Format: date-time */
@@ -54126,12 +54185,51 @@ export interface components {
                 /** Format: uuid */
                 batchId: string;
                 /** Format: uuid */
-                packageId: string;
+                packageId: string | null;
+                scope?: {
+                    /** @constant */
+                    kind: "package";
+                    /** Format: uuid */
+                    packageId: string;
+                } | {
+                    /** @constant */
+                    kind: "source";
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    sourceBytes: number;
+                    page: number;
+                    frame: {
+                        /** @constant */
+                        kind: "pdf_display_page_top_left_points";
+                        width: number;
+                        height: number;
+                        rotation: number;
+                    };
+                    region: {
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                    };
+                    locator: {
+                        /** @constant */
+                        kind: "pdf_page";
+                        page: number;
+                    };
+                    calibration: null;
+                    /** @constant */
+                    applicability: "not_assessed";
+                };
                 /** Format: uuid */
                 sourceRevisionId: string;
                 sourceSha256: string;
                 /** Format: uuid */
-                partId: string;
+                partId: string | null;
                 page: number;
                 /** @enum {string} */
                 task: "floor-plan" | "building";
@@ -54257,7 +54355,46 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
-            packageId: string;
+            packageId: string | null;
+            scope?: {
+                /** @constant */
+                kind: "package";
+                /** Format: uuid */
+                packageId: string;
+            } | {
+                /** @constant */
+                kind: "source";
+                /** Format: uuid */
+                caseId: string;
+                caseRevision: number;
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+                sourceBytes: number;
+                page: number;
+                frame: {
+                    /** @constant */
+                    kind: "pdf_display_page_top_left_points";
+                    width: number;
+                    height: number;
+                    rotation: number;
+                };
+                region: {
+                    x: number;
+                    y: number;
+                    width: number;
+                    height: number;
+                };
+                locator: {
+                    /** @constant */
+                    kind: "pdf_page";
+                    page: number;
+                };
+                calibration: null;
+                /** @constant */
+                applicability: "not_assessed";
+            };
             /** Format: uuid */
             requestKey: string;
             /** Format: date-time */
@@ -54268,12 +54405,51 @@ export interface components {
                 /** Format: uuid */
                 batchId: string;
                 /** Format: uuid */
-                packageId: string;
+                packageId: string | null;
+                scope?: {
+                    /** @constant */
+                    kind: "package";
+                    /** Format: uuid */
+                    packageId: string;
+                } | {
+                    /** @constant */
+                    kind: "source";
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    sourceBytes: number;
+                    page: number;
+                    frame: {
+                        /** @constant */
+                        kind: "pdf_display_page_top_left_points";
+                        width: number;
+                        height: number;
+                        rotation: number;
+                    };
+                    region: {
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                    };
+                    locator: {
+                        /** @constant */
+                        kind: "pdf_page";
+                        page: number;
+                    };
+                    calibration: null;
+                    /** @constant */
+                    applicability: "not_assessed";
+                };
                 /** Format: uuid */
                 sourceRevisionId: string;
                 sourceSha256: string;
                 /** Format: uuid */
-                partId: string;
+                partId: string | null;
                 page: number;
                 /** @enum {string} */
                 task: "floor-plan" | "building";
@@ -54372,18 +54548,88 @@ export interface components {
                 updatedAt: string;
             }[];
         };
+        POST_spatial_ml_source_batches_Request_application_json: {
+            /** @enum {string} */
+            scope: "source";
+            /** Format: uuid */
+            caseId: string;
+            caseRevision: number;
+            /** Format: uuid */
+            sourceId: string;
+            sourceRevision: number;
+            sourceSha256: string;
+            sourceBytes: number;
+            page: number;
+            frame: {
+                /** @enum {string} */
+                kind: "pdf_display_page_top_left_points";
+                rotation: number;
+                width: number;
+                height: number;
+            };
+            region: {
+                x: number;
+                y: number;
+                width: number;
+                height: number;
+            };
+            /** @enum {string} */
+            task: "floor-plan";
+            modelId: string;
+            /** Format: uuid */
+            requestKey: string;
+        };
         GET_spatial_ml_items_itemId_Response_200_application_json: {
             /** Format: uuid */
             id: string;
             /** Format: uuid */
             batchId: string;
             /** Format: uuid */
-            packageId: string;
+            packageId: string | null;
+            scope?: {
+                /** @constant */
+                kind: "package";
+                /** Format: uuid */
+                packageId: string;
+            } | {
+                /** @constant */
+                kind: "source";
+                /** Format: uuid */
+                caseId: string;
+                caseRevision: number;
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+                sourceBytes: number;
+                page: number;
+                frame: {
+                    /** @constant */
+                    kind: "pdf_display_page_top_left_points";
+                    width: number;
+                    height: number;
+                    rotation: number;
+                };
+                region: {
+                    x: number;
+                    y: number;
+                    width: number;
+                    height: number;
+                };
+                locator: {
+                    /** @constant */
+                    kind: "pdf_page";
+                    page: number;
+                };
+                calibration: null;
+                /** @constant */
+                applicability: "not_assessed";
+            };
             /** Format: uuid */
             sourceRevisionId: string;
             sourceSha256: string;
             /** Format: uuid */
-            partId: string;
+            partId: string | null;
             page: number;
             /** @enum {string} */
             task: "floor-plan" | "building";
@@ -54986,12 +55232,51 @@ export interface components {
                 /** Format: uuid */
                 batchId: string;
                 /** Format: uuid */
-                packageId: string;
+                packageId: string | null;
+                scope?: {
+                    /** @constant */
+                    kind: "package";
+                    /** Format: uuid */
+                    packageId: string;
+                } | {
+                    /** @constant */
+                    kind: "source";
+                    /** Format: uuid */
+                    caseId: string;
+                    caseRevision: number;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    sourceBytes: number;
+                    page: number;
+                    frame: {
+                        /** @constant */
+                        kind: "pdf_display_page_top_left_points";
+                        width: number;
+                        height: number;
+                        rotation: number;
+                    };
+                    region: {
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                    };
+                    locator: {
+                        /** @constant */
+                        kind: "pdf_page";
+                        page: number;
+                    };
+                    calibration: null;
+                    /** @constant */
+                    applicability: "not_assessed";
+                };
                 /** Format: uuid */
                 sourceRevisionId: string;
                 sourceSha256: string;
                 /** Format: uuid */
-                partId: string;
+                partId: string | null;
                 page: number;
                 /** @enum {string} */
                 task: "floor-plan" | "building";
@@ -78093,6 +78378,131 @@ export interface operations {
             };
         };
     };
+    POST_api_v1_spatial_ml_source_batches: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_spatial_ml_source_batches_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            201: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_spatial_ml_batches_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_spatial_datasets_search_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_spatial_datasets_search_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_spatial_datasets_search_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_spatial_datasets_search_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_spatial_datasets_search_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_spatial_datasets_search_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            429: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_spatial_datasets_search_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_spatial_datasets_search_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            504: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_spatial_datasets_search_Response_400_application_json"];
+                };
+            };
+        };
+    };
     GET_api_v1_spatial_ml_batches_batchId: {
         parameters: {
             query?: never;
@@ -78293,7 +78703,7 @@ export interface operations {
                 headers: {
                     /** @description Verified retained artifact hash */
                     "X-Content-SHA256"?: string;
-                    "Cache-Control"?: "private, max-age=31536000, immutable";
+                    "Cache-Control"?: "private, max-age=31536000, immutable" | "no-store";
                     /** @description Server request identifier. */
                     "X-Request-Id"?: string;
                     [name: string]: unknown;
