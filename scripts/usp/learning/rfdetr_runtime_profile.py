@@ -1,6 +1,8 @@
-"""Prepare one sealed RF-DETR CPU-control profile; never launch a process/container.
+"""Prepare a sealed RF-DETR profile; separately authorized bounded checks only.
 
 Metadata readiness is separate from actual runtime, model, GPU and fit admission.
+The exact delegated authorization admits CPU processor and tiny GPU controls,
+with no model load, inference, loss, Trainer, optimizer or fit entry point.
 The e71d historical control and its single-use launcher remain unchanged.
 """
 from __future__ import annotations
@@ -9,6 +11,9 @@ import argparse
 import copy
 import hashlib
 import json
+import subprocess
+import time
+import uuid
 from pathlib import Path, PurePosixPath
 
 TASK = "d07-rfdetr-runtime-profile-20261005"
@@ -24,6 +29,8 @@ PLAN = (MOUNTED / "mounted-plan-runtime-v1.json", 26107,
         "14343270b4511007b6d0bdbcfb6b4f473f4f60b20d5ee49f95b971af7fcdb9ac")
 BINDING = (BASE / "runtime-binding.json", 6417,
            "6f801e596890067be2bf61b673958645c378480db6203dba277243f4427ef615")
+AUTH_SHA = "f5b7f021b993025911b0f581114c3334f144dd49c76a7deadba60c402a773816"
+GPU_UUID = "GPU-3989f368-bd26-bd52-9daf-037a9862f82f"
 
 
 def require(condition, reason):
@@ -92,7 +99,7 @@ need(sorted(p.name for p in Path('/sys/class/net').iterdir())==['lo'],'External 
 status=dict(line.split(':',1) for line in Path('/proc/self/status').read_text().splitlines() if ':' in line)
 need(int(status['CapEff'].strip(),16)==0 and status['NoNewPrivs'].strip()=='1','Privilege boundary missing')
 need(os.statvfs('/').f_flag & os.ST_RDONLY,'Writable rootfs')
-need(not list(Path('/dev').glob('nvidia*')),'Unexpected GPU devices in CPU profile')
+need(not list(Path('/dev').glob('nvidia*')) and not Path('/dev/dxg').exists(),'Unexpected GPU devices in CPU profile')
 for mount in cfg['mounts']:
     need(os.statvfs(mount['containerPath']).f_flag & os.ST_RDONLY,'Writable input mount')
 need(os.statvfs(config).f_flag & os.ST_RDONLY,'Writable config mount')
@@ -291,7 +298,7 @@ def validate_inspection(actual, expected):
             and config["Image"] == expected["imageDigest"], "Actual selected image mismatch")
     require(config["User"] == "10001:10001" and config["WorkingDir"] == "/inputs/plan"
             and config["Entrypoint"] == [expected["python"]]
-            and config["Cmd"] == ["-I", "-B", "-c", CONTROL]
+            and config["Cmd"] == expected["createArgv"][-4:]
             and config["Labels"].get("codex.task") == TASK, "Actual task/entrypoint binding mismatch")
     env = dict(x.split("=", 1) for x in config["Env"])
     require(len(env) == len(config["Env"]) and env == expected["environment"], "Actual environment differs from finite binding")
@@ -305,11 +312,172 @@ def validate_inspection(actual, expected):
               "CpusetCpus": "0,1", "PidsLimit": 32, "IpcMode": "private", "Init": True,
               "ShmSize": 16777216}
     require(all(host.get(k) == v for k, v in values.items()), "Actual resource/isolation binding mismatch")
+    devices = host.get("DeviceRequests") or []
+    if expected["gpuAssigned"]:
+        require(len(devices) == 1 and devices[0]["DeviceIDs"] == [GPU_UUID]
+                and devices[0]["Count"] == 0 and devices[0]["Capabilities"] == [["gpu"]]
+                and devices[0]["Driver"] in ("", "nvidia") and not devices[0].get("Options"),
+                "Actual GPU must be scoped to the single authorized UUID")
+    else:
+        require(not devices, "Unexpected CPU GPU request")
     require(host.get("CapDrop") == ["ALL"] and not host.get("CapAdd")
             and host.get("SecurityOpt") == ["no-new-privileges"]
-            and not host.get("Devices") and not host.get("DeviceRequests")
+            and not host.get("Devices")
             and not host.get("PidMode") and not host.get("UTSMode")
             and host.get("Tmpfs") == expected["policy"]["tmpfs"], "Actual privilege/device/scratch binding mismatch")
+
+
+CPU_EXTRA = r'''
+import ast, time
+started=time.perf_counter()
+import torch, torchvision, transformers, numpy as np
+from PIL import Image
+from pycocotools import mask as coco_mask
+from transformers import RfDetrImageProcessor
+torch.set_num_threads(2); torch.set_num_interop_threads(1)
+processor=RfDetrImageProcessor.from_pretrained('/inputs/model',local_files_only=True)
+adapter=Path('/inputs/plan/train_building_ramp.py').read_text()
+tree=ast.parse(adapter)
+execution=next(n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=='execute')
+loader=next(n for n in execution.body if isinstance(n,ast.ClassDef) and n.name=='CocoPool')
+namespace={'Path':Path,'torch':torch,'np':np,'Image':Image,'coco_mask':coco_mask,'processor':processor,'read_json':lambda p:json.loads(Path(p).read_bytes()),'require':need}
+exec(compile(ast.Module(body=[loader],type_ignores=[]),'/inputs/plan/train_building_ramp.py','exec'),namespace)
+path=Path('/inputs/coco/train/_annotations.coco.json')
+pool=namespace['CocoPool']({'annotationPin':{'path':str(path)}})
+positive=sorted((i for i in range(len(pool)) if pool.annotations[pool.images[i]['id']]),key=lambda i:pool.images[i]['file_name'])[0]
+empty=sorted((i for i in range(len(pool)) if not pool.annotations[pool.images[i]['id']]),key=lambda i:pool.images[i]['file_name'])[0]
+cases=[]
+for kind,index in [('positive',positive),('publisher_empty',empty)]:
+    source=pool.images[index]; anns=pool.annotations[source['id']]
+    need(all(a['category_id']==1 for a in anns),'Unexpected source category')
+    item=pool[index]; pixels=item['pixel_values']; target=item['labels']; count=len(anns)
+    need(list(pixels.shape)==[3,432,432] and not pixels.is_cuda and bool(torch.isfinite(pixels).all()),'Pixel shape/finiteness/device mismatch')
+    need(list(target['class_labels'].shape)==[count] and bool((target['class_labels']==0).all()),'Category1-to-model0 mapping mismatch')
+    need(list(target['boxes'].shape)==[count,4] and bool(torch.isfinite(target['boxes']).all()),'Target box shape/finiteness mismatch')
+    need(list(target['masks'].shape)==[count,432,432] and target['masks'].dtype==torch.uint8,'Target mask shape mismatch')
+    need((kind=='positive' and count>0) or (kind=='publisher_empty' and count==0),'Empty/positive source changed')
+    cases.append({'kind':kind,'imageId':source['id'],'fileName':source['file_name'],'sourceInstances':count,'sourceCategory':1 if count else None,'modelCategory':0 if count else None,'pixelShape':list(pixels.shape),'boxShape':list(target['boxes'].shape),'classShape':list(target['class_labels'].shape),'maskShape':list(target['masks'].shape),'maskForegroundPixels':int(target['masks'].sum()),'emptyTargetsPreserved':count==0,'inputTargetTensorsOnly':True})
+result={'status':'cpu_processor_controls_passed','packages':{'torch':torch.__version__,'torchvision':torchvision.__version__,'transformers':transformers.__version__,'pycocotools':importlib.metadata.version('pycocotools')},'processorClass':type(processor).__name__,'processorLocalOnly':True,'loaderSourceSha256':hashlib.sha256(ast.get_source_segment(adapter,loader).encode()).hexdigest(),'cases':cases,'elapsedSeconds':time.perf_counter()-started,'memoryPeakBytes':int((Path('/sys/fs/cgroup')/'memory.peak').read_text()),'pidsPeak':int((Path('/sys/fs/cgroup')/'pids.peak').read_text()),'modelWeightsLoaded':False,'modelParametersCreated':0,'inferenceCalls':0,'lossOrTrainerOrOptimizerCalls':0,'gpuTensorCalls':0,'trainingAuthorized':False}
+with (output/'processor-control.json').open('x',encoding='utf-8') as f: json.dump(result,f,indent=2); f.write('\n')
+print(json.dumps(result),flush=True)
+'''.lstrip()
+
+GPU_EXTRA = r'''
+import time
+started=time.perf_counter()
+import torch
+torch.set_num_threads(2);torch.set_num_interop_threads(1)
+need(torch.cuda.is_available() and torch.cuda.device_count()==1,'Expected exactly one available CUDA device')
+props=torch.cuda.get_device_properties(0)
+need('RTX 3070' in props.name,'Wrong GPU model')
+torch.cuda.reset_peak_memory_stats()
+with torch.no_grad():
+    tiny=torch.ones((256,256),device='cuda',dtype=torch.float32)
+    value=(tiny*2).sum().item()
+torch.cuda.synchronize()
+need(value==131072.0,'Tiny finite tensor result mismatch')
+peak=torch.cuda.max_memory_allocated();reserved=torch.cuda.max_memory_reserved()
+need(0<peak<=64*1024**2 and reserved<=64*1024**2,'GPU allocation cap exceeded')
+del tiny
+torch.cuda.empty_cache()
+result={'status':'tiny_gpu_control_passed','torch':torch.__version__,'compiledCuda':torch.version.cuda,'visibleDeviceCount':torch.cuda.device_count(),'gpuName':props.name,'deviceUuid':str(getattr(props,'uuid','unavailable')),'totalMemoryBytes':props.total_memory,'capability':[props.major,props.minor],'operation':'ones256x256_float32_times2_sum','result':value,'peakAllocatedBytes':peak,'peakReservedBytes':reserved,'finalAllocatedBytes':torch.cuda.memory_allocated(),'elapsedSeconds':time.perf_counter()-started,'cgroupMemoryPeakBytes':int((Path('/sys/fs/cgroup')/'memory.peak').read_text()),'modelsLoaded':0,'inferenceCalls':0,'trainingAuthorized':False}
+with (output/'gpu-smoke.json').open('x',encoding='utf-8') as f: json.dump(result,f,indent=2);f.write('\n')
+print(json.dumps(result),flush=True)
+'''.lstrip()
+
+
+def actual_checks(authorization, runtime_binding):
+    require(authorization == OUT / "actual-authorization.json"
+            and pin(authorization)["sha256"] == AUTH_SHA, "Exact delegated authorization binding required")
+    require(pin(runtime_binding) == pin(BINDING[0]), "Execution runtime binding mismatch")
+    require(json.loads(authorization.read_bytes())["trainingAuthorized"] is False, "Fit authorization refused")
+    save(OUT / "actual-attempt.json", {"cpuAttempts": 1, "gpuAttemptsIfCpuPasses": 1, "authorizationSha256": AUTH_SHA})
+    expected = profile()
+    calls, phases = [], []
+    def command(args, timeout=20):
+        started = time.perf_counter()
+        proc = subprocess.run(args, capture_output=True, text=True, timeout=timeout)
+        calls.append({"argv": args, "exitCode": proc.returncode, "elapsedSeconds": time.perf_counter()-started,
+                      "stdout": proc.stdout[:65536], "stderr": proc.stderr[:16384]})
+        require(proc.returncode == 0, "Docker command failed: " + proc.stderr[:4000])
+        require(len(proc.stdout) <= 65536 and len(proc.stderr) <= 16384, "Command log cap exceeded")
+        return proc.stdout
+    docker = ["docker", "--context", "desktop-linux"]
+    def inventory():
+        return {"containers": sorted(command([*docker, "ps", "-aq", "--no-trunc"]).splitlines()),
+                "volumes": sorted(command([*docker, "volume", "ls", "-q"]).splitlines())}
+    before = inventory()
+    saved = json.loads((OUT / "actual-preflight.json").read_bytes())
+    require(before == {k:saved[k] for k in ("containers", "volumes")}, "Preflight inventory changed")
+    image = json.loads(command([*docker, "image", "inspect", expected["imageDigest"]]))[0]
+    retained = json.loads((BASE / "layer-image-inspect.json").read_bytes())
+    require(all(image[k] == retained[k] for k in ("Id", "Config", "RootFS", "Os", "Architecture", "Descriptor")), "Actual image metadata changed")
+    save(OUT / "actual-image-readback.json", image)
+    output = Path(expected["output"]["hostPath"])
+    output.mkdir(exist_ok=True)
+    failure = None
+    try:
+        for phase, deadline in (("cpu", 300), ("gpu", 120)):
+            selected = copy.deepcopy(expected)
+            selected["rootAuthorization"] = pin(authorization)
+            selected["state"] = "separately_authorized_actual_control_only"
+            if phase == "cpu":
+                source = CONTROL + CPU_EXTRA
+            else:
+                source = CONTROL.replace("need(not list(Path('/dev').glob('nvidia*')) and not Path('/dev/dxg').exists(),'Unexpected GPU devices in CPU profile')", "# Device exposure is checked by exact UUID readback and Torch below.")
+                source = source.replace("native-control.json", "gpu-native-control.json").replace("'gpuAssigned':False", "'gpuAssigned':True") + GPU_EXTRA
+                source = source.replace("actual_cpu_native_control_passed", "actual_gpu_native_control_passed")
+                selected["gpuAssigned"] = True
+                selected["policy"]["deviceRequests"] = [{"DeviceIDs": [GPU_UUID], "Count": 0, "Capabilities": [["gpu"]]}]
+                selected["environmentOverrides"].update(NVIDIA_VISIBLE_DEVICES=GPU_UUID, CUDA_VISIBLE_DEVICES="0")
+                selected["environment"].update(NVIDIA_VISIBLE_DEVICES=GPU_UUID, CUDA_VISIBLE_DEVICES="0")
+            compile(source, "<actual-rfdetr-" + phase + ">", "exec")
+            args = selected["createArgv"]
+            args[args.index("--name") + 1] = TASK + "-" + phase + "-" + uuid.uuid4().hex[:12]
+            if phase == "gpu":
+                args[args.index(expected["imageDigest"]):args.index(expected["imageDigest"])] = ["--gpus", "device=" + GPU_UUID]
+                for index, value in enumerate(args):
+                    if value.startswith("NVIDIA_VISIBLE_DEVICES="): args[index] = "NVIDIA_VISIBLE_DEVICES=" + GPU_UUID
+                    if value.startswith("CUDA_VISIBLE_DEVICES="): args[index] = "CUDA_VISIBLE_DEVICES=0"
+            args[-1] = source
+            selected["controlCodeSha256"] = hashlib.sha256(source.encode()).hexdigest()
+            save(OUT / (phase + "-actual-profile.json"), selected)
+            started, cid, inspection = time.perf_counter(), None, None
+            phase_error = None
+            try:
+                print(json.dumps({"phase":phase,"state":"starting_one_owned_container"}),flush=True)
+                cid = command(args, timeout=30).strip()
+                inspection = json.loads(command([*docker, "inspect", cid]))[0]
+                validate_inspection(inspection, selected)
+                save(OUT / (phase + "-container-readback.json"), inspection)
+                remaining = deadline - (time.perf_counter()-started) - 20
+                require(remaining > 0, "Stage deadline exhausted before start")
+                command([*docker, "start", "--attach", cid], timeout=remaining)
+                state = json.loads(command([*docker, "inspect", "--format", "{{json .State}}", cid],timeout=10))
+                require(not state["Running"] and state["ExitCode"] == 0 and not state["OOMKilled"], "Actual worker exit/resource failure")
+                result_path = output / ("processor-control.json" if phase == "cpu" else "gpu-smoke.json")
+                result = json.loads(result_path.read_bytes())
+                require(result["status"] == ("cpu_processor_controls_passed" if phase == "cpu" else "tiny_gpu_control_passed"), "Missing phase qualification")
+            except Exception as error:
+                phase_error = {"type":type(error).__name__,"message":str(error)}
+            finally:
+                if cid:
+                    current = json.loads(command([*docker,"inspect",cid],timeout=10))[0]
+                    require(current["Id"] == cid and current["Config"]["Labels"].get("codex.task") == TASK, "Cleanup exact identity mismatch")
+                    command([*docker,"rm","--force",cid],timeout=10)
+            phases.append({"phase":phase,"containerId":cid,"removed":bool(cid),"elapsedSeconds":time.perf_counter()-started,"deadlineSeconds":deadline,"failure":phase_error})
+            print(json.dumps(phases[-1]),flush=True)
+            if phase_error:
+                failure = phase_error
+                break
+    finally:
+        after = inventory()
+        require(before == after, "Retained resource inventory changed")
+        save(OUT / "actual-host-receipt.json", {"status":"blocked" if failure else "cpu_and_tiny_gpu_controls_passed",
+            "failure":failure,"phases":phases,"calls":calls,"before":before,"after":after,
+            "originalContainersPreserved":24,"originalVolumesPreserved":14,"modelsLoaded":0,"fits":0})
+    if failure:
+        raise ValueError("Actual runtime blocked: " + failure["message"])
 
 
 def main():
@@ -326,8 +494,9 @@ def main():
         if args.execute:
             require(args.root_authorization is not None and args.runtime_binding is not None,
                     "Root authorization/runtime binding absent; execution refused")
-            require(pin(args.runtime_binding) == pin(BINDING[0]), "Execution runtime binding mismatch")
-            raise ValueError("Execution disabled in metadata task; a separate actual-runtime assignment is required")
+            actual_checks(args.root_authorization, args.runtime_binding)
+            print(json.dumps({"status":"cpu_and_tiny_gpu_controls_passed","modelsLoaded":0,"fits":0}))
+            return
         require(args.plan_only, "Explicit --plan-only is required")
         expected = profile()
         if args.profile:
