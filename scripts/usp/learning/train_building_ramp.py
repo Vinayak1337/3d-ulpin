@@ -210,6 +210,8 @@ def check_pilot_gate(path, expected_sha, plan):
             isinstance(gate["modelOwnerThreadId"], str) and len(gate["modelOwnerThreadId"]) == 36 and
             assignment["modelOwnerThreadId"] == gate["modelOwnerThreadId"],
             "Preparation or baseline assignment grants no fit permission")
+    require(gate.get("lossDiagnostics") is not True or assignment.get("lossDiagnostics") is True,
+            "Loss telemetry must be explicitly included in the exact new root assignment")
     check_pin(gate["preflightReceipt"])
     proof = read_json(gate["preflightReceipt"]["path"], 1024**2)
     require(proof["pid"] == os.getpid() and proof["imageDigest"] == plan["runtimeBinding"]["imageDigest"] and
@@ -658,8 +660,116 @@ def check_gate(path, expected_sha, plan):
     return gate
 
 
-def execute(plan, gate):
+def diagnostic_tensor(value, tensor_api):
+    """Detached, JSON-safe metadata; an empty finite tensor is not a scalar loss."""
+    if value is None:
+        return {"present": False}
+    value = value.detach()
+    finite = tensor_api.isfinite(value)
+    count = value.numel()
+    all_finite = bool(finite.all().item())
+    return {"present": True, "shape": list(value.shape), "numel": count,
+        "dtype": str(value.dtype), "allFinite": all_finite,
+        "nonfiniteValues": count - int(finite.sum().item()),
+        "minimum": value.min().item() if count and all_finite else None,
+        "maximum": value.max().item() if count and all_finite else None}
+
+
+class LossDiagnostics:
+    """Opt-in observer, reusable by a separately authorized forward-only launcher.
+
+    Holds only detached summaries, never changes targets/loss/gradients or retries.
+    It grants no model, fitting, data or resource authority.
+    """
+    def __init__(self, tensor_api, output, global_step=lambda: 0):
+        self.tensor_api, self.output, self.global_step = tensor_api, Path(output), global_step
+        self.sources, self.current, self.last_finite = {}, None, None
+        self.parameter_state = self.gradient_state = None
+        self.last_finite_parameters = self.last_finite_gradients = None
+        self.forward_calls = 0
+
+    def register_sources(self, images, annotations):
+        self.sources = {im["id"]: {"fileName": im["file_name"],
+            "annotationIds": [a["id"] for a in annotations[im["id"]]]} for im in images}
+
+    def before_forward(self, module, args, kwargs):
+        targets = kwargs.get("labels")
+        require(isinstance(targets, list) and len(targets) <= 4, "Diagnostic target batch bound exceeded")
+        self.forward_calls += 1
+        rows = []
+        for target in targets:
+            ids = target["image_id"].detach().reshape(-1).tolist()
+            require(len(ids) == 1, "Diagnostic requires one literal source image ID per target")
+            source = self.sources.get(ids[0])
+            require(source is not None and len(source["annotationIds"]) <= 512 and
+                    len(source["fileName"]) <= 1024, "Diagnostic source metadata missing or oversized")
+            rows.append({"imageId": ids[0], **source,
+                "targets": {key: diagnostic_tensor(target.get(key), self.tensor_api)
+                    for key in ["class_labels", "boxes", "masks"]}})
+        self.current = {"forwardOrdinal": self.forward_calls, "optimizerUpdates": self.global_step(), "inputs": rows}
+
+    def after_forward(self, outputs, valid):
+        require(self.current is not None, "Diagnostic input hook did not capture this forward")
+        components = outputs.loss_dict
+        require(isinstance(components, dict) and len(components) <= 128 and
+                all(isinstance(k, str) and len(k) <= 128 for k in components), "Diagnostic named-loss bound exceeded")
+        self.current.update(total=diagnostic_tensor(outputs.loss, self.tensor_api),
+            components={k: diagnostic_tensor(v, self.tensor_api) for k, v in sorted(components.items())})
+        if valid:
+            self.last_finite = self.current
+            return
+        total = self.current["total"]
+        self.current["guardReasons"] = (["missing_total"] if not total["present"] else
+            (["non_scalar_total"] if total["numel"] != 1 else []) +
+            (["nonfinite_total"] if not total["allFinite"] else []))
+        self.current["nonfiniteComponents"] = [k for k, v in self.current["components"].items()
+            if v["present"] and not v["allFinite"]]
+        if self.current["nonfiniteComponents"]:
+            self.current["guardReasons"].append("nonfinite_components")
+        self.current["nonScalarComponents"] = [k for k, v in self.current["components"].items()
+            if v["present"] and v["numel"] != 1]
+        self.current["predictions"] = {key: diagnostic_tensor(getattr(outputs, key, None), self.tensor_api)
+            for key in ["logits", "pred_boxes", "pred_masks"]}
+        self.write_failure()
+
+    def capture_state(self, model, gradients=False):
+        present, absent, bad_count, bad_names = 0, 0, 0, []
+        for name, parameter in model.named_parameters():
+            value = parameter.grad if gradients else parameter
+            if value is None:
+                absent += 1
+                continue
+            present += 1
+            if not self.tensor_api.isfinite(value.detach()).all().item():
+                bad_count += 1
+                if len(bad_names) < 8: bad_names.append(name)
+        state = {"optimizerUpdates": self.global_step(), "presentTensors": present, "absentTensors": absent,
+            "allFinite": bad_count == 0, "nonfiniteTensors": bad_count, "firstNonfiniteNames": bad_names,
+            "phase": "before_optimizer_after_standard_clipping" if gradients else "initial_or_after_optimizer"}
+        if gradients:
+            state["upcomingOptimizerUpdate"] = self.global_step() + 1
+            self.gradient_state = state
+            if present and not bad_count: self.last_finite_gradients = state
+        else:
+            self.parameter_state = state
+            if present and not bad_count: self.last_finite_parameters = state
+
+    def write_failure(self):
+        receipt = {"schemaVersion": "ramp-loss-diagnostics/1", "state": "stopped_before_backward",
+            "failingForward": self.current, "lastFiniteForward": self.last_finite,
+            "latestParameters": self.parameter_state, "latestGradients": self.gradient_state,
+            "lastFiniteParameters": self.last_finite_parameters, "lastFiniteGradients": self.last_finite_gradients,
+            "optimizerOrBackwardRunByObserver": False, "retryAuthorized": False}
+        encoded = (json.dumps(receipt, indent=2, allow_nan=False) + "\n").encode()
+        require(len(encoded) <= 256 * 1024, "Diagnostic receipt byte bound exceeded")
+        with (self.output / "loss-diagnostics.json").open("xb") as handle:
+            handle.write(encoded)
+
+
+def execute(plan, gate, loss_diagnostics=False):
     pilot = plan["schemaVersion"] == PILOT_VERSION
+    require(not loss_diagnostics or (pilot and gate.get("lossDiagnostics") is True),
+            "Loss telemetry requires explicit opt-in in a new exact pilot authorization")
     if pilot:
         validate_pilot(plan)
         require(gate.get("authorizedPid") == os.getpid() and gate.get("planSha256") == plan["planSha256"] and
@@ -669,7 +779,7 @@ def execute(plan, gate):
         output.mkdir(parents=True, exist_ok=False)
         (output / "plan.json").write_text(json.dumps(plan, indent=2)+"\n")
     try:
-        return execute_trainer(plan, gate, time.monotonic())
+        return execute_trainer(plan, gate, time.monotonic(), loss_diagnostics=loss_diagnostics)
     except BaseException as error:
         if pilot:
             # Preserve the failed attempt, including any partial checkpoint. No
@@ -681,7 +791,9 @@ def execute(plan, gate):
         raise
 
 
-def execute_trainer(plan, gate, started=None):
+def execute_trainer(plan, gate, started=None, *, loss_diagnostics=False):
+    require(not loss_diagnostics or (plan["schemaVersion"] == PILOT_VERSION and gate.get("lossDiagnostics") is True),
+            "Loss telemetry requires checked opt-in pilot authority")
     if plan["schemaVersion"] == PILOT_VERSION:
         require(gate.get("authorizedPid") == os.getpid() and gate.get("planSha256") == plan["planSha256"] and
                 gate.get("authorizationSha256"), "Pilot Trainer blocked before heavy imports: checked process authority required")
@@ -697,7 +809,7 @@ def execute_trainer(plan, gate, started=None):
     import numpy as np
     from PIL import Image
     from pycocotools import mask as coco_mask
-    from transformers import RfDetrForInstanceSegmentation, RfDetrImageProcessor, Trainer, TrainingArguments, set_seed
+    from transformers import RfDetrForInstanceSegmentation, RfDetrImageProcessor, Trainer, TrainerCallback, TrainingArguments, set_seed
     torch.set_num_threads(2)
     torch.set_num_interop_threads(1)
     require(torch.cuda.is_available() and torch.cuda.device_count() == 1, "Preflight must expose exactly one authorized GPU")
@@ -714,6 +826,7 @@ def execute_trainer(plan, gate, started=None):
     processor = RfDetrImageProcessor.from_pretrained(original, local_files_only=True)
     started = started if started is not None else time.monotonic()
     observed = {"forwardCalls": 0, "trainExamples": 0}
+    diagnostics = LossDiagnostics(torch, output, lambda: trainer.state.global_step) if loss_diagnostics else None
     parameter_signature = None
     if pilot:
         require(model.config.num_queries == 200 and model.config.disable_custom_kernels is True, "Original query/kernel contract changed")
@@ -728,8 +841,14 @@ def execute_trainer(plan, gate, started=None):
             require(torch.cuda.memory_allocated() <= PILOT_BOUNDS["gpuAllocationBytes"] and
                     torch.cuda.memory_reserved() <= PILOT_BOUNDS["gpuAllocationBytes"], "Pilot GPU allocation exceeded")
             loss = outputs.loss
-            require(loss is not None and loss.numel() == 1 and torch.isfinite(loss).all().item() and
-                    all(torch.isfinite(v).all().item() for v in outputs.loss_dict.values()),
+            valid = (loss is not None and loss.numel() == 1 and torch.isfinite(loss).all().item() and
+                    all(torch.isfinite(v).all().item() for v in outputs.loss_dict.values()))
+            if diagnostics:
+                try:
+                    diagnostics.after_forward(outputs, valid)
+                except Exception as error:
+                    print(f"Loss telemetry unavailable: {type(error).__name__}: {str(error)[:500]}", file=sys.stderr)
+            require(valid,
                     "Nonfinite built-in loss; stop before backward and retain the attempt")
             observed["forwardCalls"] += 1
         model.register_forward_hook(finite_loss)
@@ -742,6 +861,7 @@ def execute_trainer(plan, gate, started=None):
             self.images = data["images"]
             self.annotations = {image["id"]: [] for image in self.images}
             for ann in data["annotations"]: self.annotations[ann["image_id"]].append(ann)
+            if diagnostics: diagnostics.register_sources(self.images, self.annotations)
 
         def __len__(self): return len(self.images)
 
@@ -781,6 +901,21 @@ def execute_trainer(plan, gate, started=None):
         # RF-DETR's built-in object/mask loss does not consume num_items_in_batch.
         # Use the documented standard Trainer accumulation normalization.
         trainer.model_accepts_loss_kwargs = False
+    if diagnostics:
+        diagnostics.capture_state(model)
+        model.register_forward_pre_hook(diagnostics.before_forward, with_kwargs=True)
+
+        class DiagnosticCallback(TrainerCallback):
+            def on_pre_optimizer_step(self, args, state, control, **kwargs):
+                diagnostics.capture_state(kwargs["model"], gradients=True)
+
+            def on_optimizer_step(self, args, state, control, **kwargs):
+                # Trainer increments global_step after this callback. Identify the
+                # completed update explicitly, retaining the ordinary callback order.
+                diagnostics.capture_state(kwargs["model"])
+                diagnostics.parameter_state["optimizerUpdates"] = state.global_step + 1
+
+        trainer.add_callback(DiagnosticCallback())
     fitted = trainer.train()
     require(math.isfinite(fitted.metrics["train_loss"]), "Non-finite training loss; keep the failed run for diagnosis")
     if pilot:
@@ -824,7 +959,10 @@ def main():
     mode.add_argument("--execute", action="store_true")
     parser.add_argument("--authorization", type=Path)
     parser.add_argument("--authorization-sha256")
+    parser.add_argument("--loss-diagnostics", action="store_true", help="Opt-in loss metadata for an independently authorized pilot; grants no execution permission")
     args = parser.parse_args()
+    require(not args.loss_diagnostics or (args.execute and not args.prepare_pilot and not args.prepare_mounted),
+            "Loss diagnostics requires separately authorized execution")
     if args.prepare_pilot:
         require(not args.prepare_mounted and not args.config and not args.execute and not args.authorization and
                 not args.authorization_sha256, "Pilot preparation accepts no execution/config override")
@@ -844,12 +982,13 @@ def main():
         validate_pilot(candidate)
         if args.execute:
             gate = check_gate(args.authorization, args.authorization_sha256, candidate)
-            print(json.dumps(execute(candidate, gate), indent=2, allow_nan=False))
+            print(json.dumps(execute(candidate, gate, loss_diagnostics=args.loss_diagnostics), indent=2, allow_nan=False))
         else:
             print(json.dumps(candidate, indent=2, allow_nan=False))
         return
     if candidate.get("schemaVersion") in {MOUNT_VERSION, BOUND_MOUNT_VERSION} and args.execute:
         require(False, "Mounted execution blocked: actual-mounted-process qualification and root authorization remain unassigned")
+    require(not args.loss_diagnostics, "Loss diagnostics supports only a separately authorized fixed pilot")
     plan, _ = build_plan(args.config)
     if args.execute:
         gate = check_gate(args.authorization, args.authorization_sha256, plan)
