@@ -7,6 +7,7 @@ Fitting requires a separate root authorization and effective resource handoff.
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 import copy
 import hashlib
 import importlib.metadata
@@ -17,6 +18,7 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 import struct
 import sys
 import time
+from types import FunctionType
 
 VERSION = "ramp-transformers-training-plan/1"
 BASE_SHA = "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7"
@@ -68,6 +70,70 @@ PILOT_DECISION = {"maskIoUMin": 0.4683830, "maskRecallMin": 0.5380144,
     "report": ["polygon_matches", "polygon_false_positives", "polygon_misses", "geometry_omissions"],
     "candidateEvaluation": "later_separately_assigned_teacher_saved_final_ALL24_once_FP32_432_confidence0.5_logit0_cached_production_scorer",
     "finalAccess": False, "checkpointOrThresholdSelection": False}
+EMPTY_MASK_LOSS = {
+    "revision": "ulpin-rfdetr-empty-mask-scalar/1",
+    "library": "transformers", "version": "5.17.0",
+    "sourcesCanonicalLfSha256": {
+        "loss_rf_detr": "db5a352ca7c9c0e0cfc2af7af29e6d348ec72391b5b82b38fedf23f0b4d32ece",
+        "loss_lw_detr": "c7b271e3011dca508736fd8fec310a137e57da96b3dcdad2c60bc3d22ef5ce98"},
+    "change": "Only empty matched mask CE/dice return source_masks.sum() scalar zeros",
+    "scope": "RF-DETR segmentation model instance during explicitly bound operation"}
+
+
+def scalar_empty_rfdetr_loss(implementation):
+    """Keep upstream entry bytecode; isolate one criterion subclass in its globals.
+
+    No installed file, loss mapping or upstream class is mutated. The shallow
+    globals copy substitutes only the empty-mask subclass used by this callable;
+    original matcher, CE/boxes, normalization, aux/encoder and weighted sum run.
+    Call only after the caller's model/process authority has been checked.
+    """
+    require(implementation == EMPTY_MASK_LOSS, "Named empty-mask loss revision/source binding required")
+    import transformers
+    from transformers.loss import loss_rf_detr, loss_lw_detr
+    require(transformers.__version__ == EMPTY_MASK_LOSS["version"], "Empty-mask repair library version drift")
+    for name, module in [("loss_rf_detr", loss_rf_detr), ("loss_lw_detr", loss_lw_detr)]:
+        data = Path(module.__file__).read_bytes()
+        require(len(data) <= 64 * 1024 and hashlib.sha256(data.replace(b"\r\n", b"\n")).hexdigest() ==
+                EMPTY_MASK_LOSS["sourcesCanonicalLfSha256"][name], "Empty-mask repair upstream source drift")
+    original = loss_rf_detr.RfDetrForSegmentationLoss
+
+    class ScalarEmptyMaskLoss(loss_rf_detr.RfDetrImageLoss):
+        def loss_masks(self, outputs, targets, indices, num_boxes):
+            if "pred_masks" not in outputs:
+                return super().loss_masks(outputs, targets, indices, num_boxes)
+            source_masks = outputs["pred_masks"][self._get_source_permutation_idx(indices)]
+            if source_masks.numel() == 0:
+                # The sum remains connected to the prediction graph. Do not sum
+                # the already-broadcast empty total: that would erase CE/boxes.
+                zero = source_masks.sum()
+                return {"loss_mask_ce": zero, "loss_mask_dice": zero}
+            return super().loss_masks(outputs, targets, indices, num_boxes)
+
+    repaired = FunctionType(original.__code__,
+        {**original.__globals__, "RfDetrImageLoss": ScalarEmptyMaskLoss},
+        name=original.__name__, argdefs=original.__defaults__, closure=original.__closure__)
+    repaired.__kwdefaults__ = original.__kwdefaults__
+    repaired.loss_implementation = copy.deepcopy(EMPTY_MASK_LOSS)
+    return repaired
+
+
+@contextmanager
+def repaired_rfdetr_model_loss(model, implementation):
+    """Install only on this model, then restore its prior explicit/default loss."""
+    repaired = scalar_empty_rfdetr_loss(implementation)
+    from transformers.loss.loss_rf_detr import RfDetrForSegmentationLoss
+    require(model.loss_function is RfDetrForSegmentationLoss, "Repair requires original RF-DETR segmentation loss")
+    had_override = hasattr(model, "_loss_function")
+    previous = getattr(model, "_loss_function", None)
+    model.loss_function = repaired
+    try:
+        yield repaired
+    finally:
+        if had_override:
+            model.loss_function = previous
+        else:
+            del model._loss_function
 
 
 def pilot_arguments():
@@ -120,6 +186,9 @@ def validate_pilot(plan):
     require(plan["schemaVersion"] == PILOT_VERSION and plan["task"] == "D07-RFDETR-PILOT-FIT" and
             plan["trainingAuthorized"] is False and plan["state"] == "prepared_only",
             "Preparation grants no fit permission")
+    require(plan.get("lossImplementation") == EMPTY_MASK_LOSS and
+            plan.get("coupledChanges", {}).get("emptyMaskLoss") == EMPTY_MASK_LOSS["revision"],
+            "Historical pilot cannot execute changed loss: new named repair plan required")
     require(plan["planSha256"] == digest({k: v for k, v in plan.items() if k != "planSha256"}), "Pilot plan drift")
     require(plan["trainingArguments"] == pilot_arguments() and plan["bounds"] == PILOT_BOUNDS and
             plan["decision"] == PILOT_DECISION, "Fixed pilot recipe/bounds/decision changed")
@@ -160,6 +229,7 @@ def prepare_pilot(spec_path):
     score = baseline["scoring"]
     plan = {"schemaVersion": PILOT_VERSION, "task": "D07-RFDETR-PILOT-FIT", "state": "prepared_only",
         "trainingAuthorized": False, "scriptPin": script, "evidence": evidence,
+        "lossImplementation": copy.deepcopy(EMPTY_MASK_LOSS),
         "runtimeBinding": wrapper["runtimeBinding"], "mounts": mounts, "inventory": inventory,
         "outputHost": spec["outputHost"], "trainingArguments": pilot_arguments(), "bounds": PILOT_BOUNDS,
         "budget": {"trainExamples": 144, "optimizerUpdates": 36, "epochs": 6, "developmentExamplesDuringFit": 0, "finalExamples": 0},
@@ -174,7 +244,8 @@ def prepare_pilot(spec_path):
             "onnxParity": "FAILED; not an own-route completion/adaptation gate; no equivalence claim"},
         "coupledChanges": {"num_train_epochs": [1, 6], "fp16": [True, False], "gradient_checkpointing": [True, False],
             "eval_strategy": ["epoch", "no"], "load_best_model_at_end": "explicitFalse",
-            "lossAccumulation": "documented Trainer.model_accepts_loss_kwargs=False; RF-DETR built-in loss ignores num_items_in_batch"},
+            "lossAccumulation": "documented Trainer.model_accepts_loss_kwargs=False; RF-DETR built-in loss ignores num_items_in_batch",
+            "emptyMaskLoss": EMPTY_MASK_LOSS["revision"]},
         "supervision": "Publisher-human CC-BY-NC research rooftops only; pretraining overlap/independent local audit/ignore ambiguity unknown; clipping and roof-vs-ground limits retained; no operational labels",
         "authorizationContract": {"schemaVersion": "ramp-pilot-training-authorization/1", "rootThreadId": ROOT_THREAD,
             "scope": "one_fixed_pilot_fit_no_evaluation", "currentPidRequired": True,
@@ -199,7 +270,8 @@ def check_pilot_gate(path, expected_sha, plan):
     require(gate["schemaVersion"] == "ramp-pilot-training-authorization/1" and gate["rootThreadId"] == ROOT_THREAD and
             gate["rootAuthorized"] is True and gate["scope"] == "one_fixed_pilot_fit_no_evaluation" and
             gate["planSha256"] == plan["planSha256"] and gate["scriptSha256"] == file_pin(__file__)["sha256"] == plan["scriptPin"]["sha256"] and
-            gate["recipe"] == pilot_arguments() and gate["bounds"] == PILOT_BOUNDS and gate["evidence"] == plan["evidence"],
+            gate["recipe"] == pilot_arguments() and gate["bounds"] == PILOT_BOUNDS and gate["evidence"] == plan["evidence"] and
+            gate.get("lossImplementation") == plan["lossImplementation"],
             "Exact pilot code/plan/recipe/source authority required")
     check_pin(gate["rootAssignment"])
     assignment = read_json(gate["rootAssignment"]["path"], 1024**2)
@@ -208,7 +280,8 @@ def check_pilot_gate(path, expected_sha, plan):
             assignment["fitAuthorized"] is True and assignment["evaluationAuthorized"] is False and
             assignment["planSha256"] == plan["planSha256"] and assignment["scriptSha256"] == plan["scriptPin"]["sha256"] and
             isinstance(gate["modelOwnerThreadId"], str) and len(gate["modelOwnerThreadId"]) == 36 and
-            assignment["modelOwnerThreadId"] == gate["modelOwnerThreadId"],
+            assignment["modelOwnerThreadId"] == gate["modelOwnerThreadId"] and
+            assignment.get("lossImplementation") == plan["lossImplementation"],
             "Preparation or baseline assignment grants no fit permission")
     require(gate.get("lossDiagnostics") is not True or assignment.get("lossDiagnostics") is True,
             "Loss telemetry must be explicitly included in the exact new root assignment")
@@ -616,6 +689,8 @@ def build_plan(config_path):
               "fp16": True, "gradient_checkpointing": True, "optim": "adamw_torch", "logging_steps": 1,
               "label_names": ["labels"], "use_cpu": False, "torch_compile": False}
     plan = {"schemaVersion": VERSION, "scriptPin": file_pin(__file__), "configPin": file_pin(config_path), "datasetManifest": config["datasetManifest"],
+            "lossImplementation": copy.deepcopy(EMPTY_MASK_LOSS),
+            "coupledChanges": {"emptyMaskLoss": EMPTY_MASK_LOSS["revision"]},
             "weights": config["weights"], "modelConfig": config["modelConfig"], "processorConfig": config["processorConfig"],
             "modelScope": config["modelScope"], "libraryVersion": "5.17.0",
             "pools": pools, "trainSource": config["trainSource"], "developmentSource": config["developmentSource"],
@@ -650,6 +725,8 @@ def check_gate(path, expected_sha, plan):
     gate = read_json(path, 1024**2)
     require(gate["schemaVersion"] == "ramp-training-authorization/1" and gate["planSha256"] == plan["planSha256"], "Authorization belongs to another plan")
     require(gate["rootThreadId"] == "01a0ed8a-4383-79c3-a0ae-35c1e969ef66" and gate["rootAuthorized"] is True, "Root has not authorized fitting")
+    require(plan.get("lossImplementation") == EMPTY_MASK_LOSS and gate.get("lossImplementation") == EMPTY_MASK_LOSS,
+            "New exact authorization must bind named empty-mask loss repair")
     for name in ["measuredResidual", "frozenEligibleGroupedSupervision", "sameCheckpointDevelopmentBaseline", "torchOnnxPreprocessingParity", "environmentLock"]:
         check_pin(gate[name])
     preflight = gate["preflight"]
@@ -658,6 +735,11 @@ def check_gate(path, expected_sha, plan):
     check_pin(preflight["receipt"])
     require(all(plan["installedPackageMetadata"][p] and plan["installedPackageMetadata"][p].split("+")[0] == v for p, v in PACKAGES.items()), "Install the isolated pinned recipe and freeze dependencies before execution")
     return gate
+
+
+def finite_rfdetr_loss(loss, components, tensor_api):
+    return (loss is not None and loss.numel() == 1 and tensor_api.isfinite(loss).all().item() and
+            all(tensor_api.isfinite(v).all().item() for v in components.values()))
 
 
 def diagnostic_tensor(value, tensor_api):
@@ -792,6 +874,8 @@ def execute(plan, gate, loss_diagnostics=False):
 
 
 def execute_trainer(plan, gate, started=None, *, loss_diagnostics=False):
+    require(plan.get("lossImplementation") == EMPTY_MASK_LOSS and gate.get("lossImplementation") == EMPTY_MASK_LOSS,
+            "Trainer blocked before imports: explicit loss implementation binding required")
     require(not loss_diagnostics or (plan["schemaVersion"] == PILOT_VERSION and gate.get("lossDiagnostics") is True),
             "Loss telemetry requires checked opt-in pilot authority")
     if plan["schemaVersion"] == PILOT_VERSION:
@@ -841,15 +925,13 @@ def execute_trainer(plan, gate, started=None, *, loss_diagnostics=False):
             require(torch.cuda.memory_allocated() <= PILOT_BOUNDS["gpuAllocationBytes"] and
                     torch.cuda.memory_reserved() <= PILOT_BOUNDS["gpuAllocationBytes"], "Pilot GPU allocation exceeded")
             loss = outputs.loss
-            valid = (loss is not None and loss.numel() == 1 and torch.isfinite(loss).all().item() and
-                    all(torch.isfinite(v).all().item() for v in outputs.loss_dict.values()))
+            valid = finite_rfdetr_loss(loss, outputs.loss_dict, torch)
             if diagnostics:
                 try:
                     diagnostics.after_forward(outputs, valid)
                 except Exception as error:
                     print(f"Loss telemetry unavailable: {type(error).__name__}: {str(error)[:500]}", file=sys.stderr)
-            require(valid,
-                    "Nonfinite built-in loss; stop before backward and retain the attempt")
+            require(valid, "Nonfinite built-in loss; stop before backward and retain the attempt")
             observed["forwardCalls"] += 1
         model.register_forward_hook(finite_loss)
 
@@ -916,7 +998,8 @@ def execute_trainer(plan, gate, started=None, *, loss_diagnostics=False):
                 diagnostics.parameter_state["optimizerUpdates"] = state.global_step + 1
 
         trainer.add_callback(DiagnosticCallback())
-    fitted = trainer.train()
+    with repaired_rfdetr_model_loss(model, plan["lossImplementation"]):
+        fitted = trainer.train()
     require(math.isfinite(fitted.metrics["train_loss"]), "Non-finite training loss; keep the failed run for diagnosis")
     if pilot:
         require(time.monotonic() - started <= PILOT_BOUNDS["innerFitSeconds"], "Pilot fit deadline exceeded before final save")
@@ -935,6 +1018,7 @@ def execute_trainer(plan, gate, started=None, *, loss_diagnostics=False):
         trainer.save_model(str(output / "checkpoint"))
     selected = output / "checkpoint" / "model.safetensors"
     result = {"schemaVersion": "ramp-training-result/1", "planSha256": plan["planSha256"],
+              "lossImplementation": plan["lossImplementation"],
               "state": "fit_completed_unqualified", "selectedCheckpoint": file_pin(selected),
               "metrics": fitted.metrics, "developmentLossHistory": trainer.state.log_history,
               "trainingConfig": plan["trainingArguments"], "heldOutTestOpened": False,
