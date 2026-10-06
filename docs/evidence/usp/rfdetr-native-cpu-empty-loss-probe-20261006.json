@@ -536,7 +536,14 @@
       "expectedStop": "non_scalar_total on image13 after positive scalar; secondary JSON writer set error preserved"
     },
     "noAdditionalModelInvocations": true,
-    "commandPlanPinDiscrepancy": "commandReceipt top-level planSha256 hashes original plan.json (3da31539...), while releaseFields.sent.planSha256 correctly authenticates correction plan f8638f7d...; retain both unchanged."
+    "commandPlanPinDiscrepancy": "commandReceipt top-level planSha256 hashes original plan.json (3da31539...), while releaseFields.sent.planSha256 correctly authenticates correction plan f8638f7d...; retain both unchanged.",
+    "receiptSerializationCorrection": {
+      "command": "stdlib-only AST extraction of deterministic_metadata plus retained summary JSON and tiny fixed set/frozenset metadata",
+      "exitCode": 0,
+      "modelCalls": 0,
+      "importsBeyondStdlib": 0,
+      "result": "passed; writer-correction.json retained"
+    }
   },
   "decision": {
     "emptyShapeHypothesis": "Confirmed for Transformers5.17 pinned loss/source and original checkpoint, positive1 then empty13 in this Windows CPU route.",
@@ -706,6 +713,21 @@
       "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\finalization.json",
       "bytes": 2573,
       "sha256": "f3a13d4898bbf59e6ab0560509cda82e103fa88439753cabaad790b0243e2150"
+    },
+    "writerCorrection": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\writer-correction.json",
+      "bytes": 1437,
+      "sha256": "21c9bfbe9afee017ccc985bd1be4da2ec57f26858fb5bb42233570337328b6ab"
+    },
+    "writerEntry": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\native_entry.py",
+      "bytes": 12211,
+      "sha256": "f3eb2798b05c81fcaf8afa72d8b211cf661402d236865c57908880efe823245c"
+    },
+    "writerSupervisor": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\supervise.py",
+      "bytes": 8316,
+      "sha256": "c771615f9a9108128925d4b46b6fc0e59b386c00fd8da712631c21cfedadfdd9"
     }
   },
   "privateFinalizationReceipt": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\correction-finalization.json",
@@ -786,5 +808,46 @@
       "cause": "QueryInformationJobObject(NULL) failed exact child limit proof before heavy imports; owned supervisor handle readback replaced it.",
       "modelCalls": 0
     }
-  ]
+  ],
+  "receiptSerializationCorrection": {
+    "schemaVersion": "rfdetr-native-cpu-writer-correction/1",
+    "scope": "Post-run result metadata only; no model import, forward, loss, optimizer, training or retry.",
+    "change": "deterministic_metadata explicitly handles bounded JSON scalars, dicts with string keys, lists/tuples, and sets/frozensets sorted by type and repr; unsupported types raise TypeError.",
+    "oldReceiptsRewritten": false,
+    "executedPlanSha256": "f8638f7da693ec9aa4cdb60ade4418292c75a6fc6038e4ba0e25a5e06285baf9",
+    "originalPlanSha256": "3da315390e7bc93c9d04737a6728e87f11e46e3c83b9475bffb0ba8d9f68a6df",
+    "correctionPlanSha256": "f8638f7da693ec9aa4cdb60ade4418292c75a6fc6038e4ba0e25a5e06285baf9",
+    "patchedEntry": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\native_entry.py",
+      "bytes": 12211,
+      "sha256": "f3eb2798b05c81fcaf8afa72d8b211cf661402d236865c57908880efe823245c"
+    },
+    "patchedSupervisor": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\supervise.py",
+      "bytes": 8316,
+      "sha256": "c771615f9a9108128925d4b46b6fc0e59b386c00fd8da712631c21cfedadfdd9"
+    },
+    "writerCheck": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\writer-correction.json",
+      "bytes": 1437,
+      "sha256": "21c9bfbe9afee017ccc985bd1be4da2ec57f26858fb5bb42233570337328b6ab"
+    },
+    "writerCheckResult": {
+      "retainedSummaryRoundTrip": true,
+      "setAndFrozensetSorted": true,
+      "jsonAllowNanFalse": true,
+      "modelCalls": 0,
+      "importsBeyondStdlib": 0
+    },
+    "futureReleaseFields": [
+      "originalPlanSha256",
+      "correctionPlanSha256",
+      "entrySha256",
+      "supervisorSha256",
+      "workerPid",
+      "workerImagePath",
+      "workerCreationFiletime"
+    ],
+    "repairedConfirmationPrerequisite": "Accepted staging repair callback still required; no repaired confirmation launched."
+  }
 }
