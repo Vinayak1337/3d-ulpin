@@ -83,3 +83,61 @@ export type DocumentProposalSnapshot=z.output<typeof DocumentProposalSnapshotSch
 export type DocumentProposalPacket=z.output<typeof DocumentProposalPacketSchema>;
 export type DocumentProposalReference=z.output<typeof DocumentProposalReferenceSchema>;
 export type DocumentProposalsHistory=z.output<typeof DocumentProposalsHistorySchema>;
+
+// A decision is a separate workflow record. It never edits/adopts the proposal.
+export const DocumentProposalDecisionPinSchema=z.strictObject({decisionId:id,decisionRevision:count.min(1),snapshotSha256:hash});
+export const DocumentProposalSelectionSchema=z.strictObject({snapshotId:id,snapshotRevision:z.literal(1),snapshotSha256:hash,proposalId:text(120)});
+export const DocumentProposalDecisionCitationSchema=z.strictObject({quote:text(4096).nullable(),lineQuote:text(4096).nullable(),
+  quoteCharacterSpan:z.tuple([count.max(4096),count.max(4096)]).nullable(),locator:DocumentProposalLocatorSchema})
+  .superRefine((v,ctx)=>{if(v.quoteCharacterSpan){const [start,end]=v.quoteCharacterSpan;
+    if(v.quote===null||v.lineQuote===null||end<=start||end>Array.from(v.lineQuote??'').length||
+      Array.from(v.lineQuote??'').slice(start,end).join('')!==v.quote)
+      ctx.addIssue({code:'custom',message:'Retain the literal Unicode code-point quote span; no transcription replacement.'});}});
+export const DocumentProposalDecisionSaveSchema=z.strictObject({requestKey:id,expectedCaseRevision:count,
+  source:DocumentProposalSourcePinSchema,proposal:DocumentProposalSelectionSchema,
+  decision:z.enum(['reviewed','rejected','needs_input']),reviewReason:text(2000),citation:DocumentProposalDecisionCitationSchema,
+  missingPrerequisites:z.array(text(2000)).max(16),correctionOf:DocumentProposalDecisionPinSchema.optional()})
+  .superRefine((v,ctx)=>{if((v.decision==='reviewed'&&v.citation.quote===null)||
+      (v.decision==='needs_input'&&v.missingPrerequisites.length===0)||
+      (v.citation.quote===null&&v.missingPrerequisites.length===0))
+    ctx.addIssue({code:'custom',message:'Reviewed requires a cited quote; incomplete decisions must name missing input.'});});
+const decisionSnapshotBase=z.strictObject({version:z.literal('source-document-proposal-decision/1'),
+  decisionId:id,decisionRevision:count.min(1),caseId:id,caseRevision:count,
+  source:DocumentProposalSourcePinSchema.extend({sourceId:id}),proposal:DocumentProposalSelectionSchema,
+  originalProposal:DocumentProposalInputSchema,decision:z.enum(['reviewed','rejected','needs_input']),
+  citation:DocumentProposalDecisionCitationSchema,missingPrerequisites:z.array(text(2000)).max(16),
+  correctionOf:DocumentProposalDecisionPinSchema.nullable(),
+  sourceConflicts:DocumentProposalPacketSchema.shape.conflicts,sourceUnknowns:DocumentProposalPacketSchema.shape.unknowns,
+  buildingFloorLink:z.strictObject({state:z.literal('needs_input'),canonicalTarget:z.null(),
+    missingPrerequisites:z.tuple([z.literal('canonical_building'),z.literal('canonical_floor'),z.literal('reviewed_source_target_crosswalk')])}),
+  method:z.literal('caller_supplied_decision'),quotationVerification:z.literal('not_machine_verified'),
+  canonicalMatchState:z.literal('not_assessed'),qualification:z.literal('not_assessed'),learningLabel:z.literal(false),
+  review:z.strictObject({actor:text(256),time:z.iso.datetime(),reason:text(2000),attribution:z.literal('local_process'),
+    humanAuthenticated:z.literal(false),independentGroundTruth:z.literal(false)})});
+export const DocumentProposalDecisionSnapshotSchema=decisionSnapshotBase.superRefine((v,ctx)=>{
+  if(v.originalProposal.proposalId!==v.proposal.proposalId||(v.decision==='reviewed'&&v.citation.quote===null)||
+    (v.decision==='needs_input'&&v.missingPrerequisites.length===0)||(v.citation.quote===null&&v.missingPrerequisites.length===0)||
+    (v.decisionRevision===1?v.correctionOf!==null:v.correctionOf===null||v.correctionOf.decisionId!==v.decisionId||
+      v.correctionOf.decisionRevision!==v.decisionRevision-1))
+    ctx.addIssue({code:'custom',message:'Retain the selected proposal, incomplete-input reasons and consecutive correction lineage.'});
+});
+export const DocumentProposalDecisionViewSchema=DocumentProposalDecisionSnapshotSchema.safeExtend({currentCaseRevision:count,snapshotSha256:hash});
+export const DocumentProposalDecisionReadQuerySchema=z.strictObject({revision:z.string().regex(/^[1-9]\d*$/).transform(Number).pipe(count.min(1))});
+export const DocumentProposalDecisionHistoryQuerySchema=z.strictObject({after:z.string().regex(/^[a-f0-9-]{36}:[1-9]\d*$/)
+  .refine(v=>id.safeParse(v.split(':')[0]).success&&Number.isSafeInteger(Number(v.split(':')[1]))).optional(),
+  limit:z.string().regex(/^(?:[1-9]|10)$/).default('5').transform(Number)});
+export const DocumentProposalDecisionHistorySchema=z.strictObject({version:z.literal('source-document-proposal-decision-history/1'),
+  caseId:id,sourceId:id,proposalSnapshotId:id,currentCaseRevision:count,order:z.literal('decision_id_then_revision_ascending'),
+  after:z.string().nullable(),limit:count.min(1).max(10),
+  references:z.array(decisionSnapshotBase.pick({decisionId:true,decisionRevision:true,proposal:true,decision:true,
+    correctionOf:true,review:true,method:true,quotationVerification:true,qualification:true,learningLabel:true})
+    .extend({snapshotSha256:hash,readUrl:z.string().max(300)})).max(10),hasMore:z.boolean(),nextAfter:z.string().nullable()})
+  .refine(v=>{
+    const key=(decisionId:string,revision:number)=>`${decisionId}:${String(revision).padStart(16,'0')}`;
+    const cursor=v.after?.split(':');
+    const after=cursor?key(cursor[0],Number(cursor[1])):'';
+    return v.references.length<=v.limit&&v.references.every((r,i)=>r.proposal.snapshotId===v.proposalSnapshotId&&
+      key(r.decisionId,r.decisionRevision)>(i?key(v.references[i-1].decisionId,v.references[i-1].decisionRevision):after))&&
+      (v.hasMore?v.references.length===v.limit&&v.nextAfter===`${v.references.at(-1)?.decisionId}:${v.references.at(-1)?.decisionRevision}`:v.nextAfter===null);
+  },'Retain the exact ordered decision page, proposal scope and continuation cursor.');
+export type DocumentProposalDecisionSave=z.output<typeof DocumentProposalDecisionSaveSchema>;
