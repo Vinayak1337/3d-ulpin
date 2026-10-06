@@ -43122,6 +43122,790 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/document-proposals/{snapshotId}/decisions": {
+      "post": {
+        "description": "Current source-cited transcription remains unverified. Corrections append immutable history; original proposals/conflicts remain unchanged. No canonical adoption or learning label.",
+        "operationId": "POST_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions",
+        "parameters": [
+          {
+            "name": "snapshotId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "sourceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions_Response_201_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "408": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "415": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "504": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Record an explicit decision on an exact saved provisional proposal",
+        "tags": [
+          "document proposals"
+        ],
+        "x-source-file": "apps/api/src/modules/ingestion/document-proposals.controller.ts",
+        "x-batch": "D08-PROPOSAL-DECISIONS",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
+        "x-max-body-bytes": 524288,
+        "x-transport-profile": "json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      },
+      "get": {
+        "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 5
+            }
+          },
+          {
+            "name": "after",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "description": "Exact decisionId:decisionRevision cursor"
+            }
+          },
+          {
+            "name": "snapshotId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "sourceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "415": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "504": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Discover bounded exact decision revisions for one unchanged proposal snapshot",
+        "tags": [
+          "document proposals"
+        ],
+        "x-source-file": "apps/api/src/modules/ingestion/document-proposals.controller.ts",
+        "x-batch": "D08-PROPOSAL-DECISIONS",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
+        "x-transport-profile": "private-bounded-read",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/document-proposals/{snapshotId}/decisions/{decisionId}": {
+      "get": {
+        "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions_decisionId",
+        "parameters": [
+          {
+            "name": "revision",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "decisionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "snapshotId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "sourceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions_Response_201_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "415": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "504": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Read an exact immutable proposal decision through current original and private access authority",
+        "tags": [
+          "document proposals"
+        ],
+        "x-source-file": "apps/api/src/modules/ingestion/document-proposals.controller.ts",
+        "x-batch": "D08-PROPOSAL-DECISIONS",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
+        "x-transport-profile": "private-bounded-read",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/document-proposals/{snapshotId}": {
       "get": {
         "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId",
@@ -339604,6 +340388,1253 @@
           "review",
           "currentCaseRevision",
           "snapshotSha256"
+        ],
+        "additionalProperties": false
+      },
+      "POST_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "requestKey": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "expectedCaseRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "sourceRevision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "sourceSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "sourceBytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 16777216
+              }
+            },
+            "required": [
+              "sourceRevision",
+              "sourceSha256",
+              "sourceBytes"
+            ],
+            "additionalProperties": false
+          },
+          "proposal": {
+            "type": "object",
+            "properties": {
+              "snapshotId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "snapshotRevision": {
+                "type": "number",
+                "enum": [
+                  1
+                ]
+              },
+              "snapshotSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "proposalId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              }
+            },
+            "required": [
+              "snapshotId",
+              "snapshotRevision",
+              "snapshotSha256",
+              "proposalId"
+            ],
+            "additionalProperties": false
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "reviewed",
+              "rejected",
+              "needs_input"
+            ]
+          },
+          "reviewReason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "citation": {
+            "type": "object",
+            "properties": {
+              "quote": {
+                "nullable": true,
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "lineQuote": {
+                "nullable": true,
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "quoteCharacterSpan": {
+                "nullable": true,
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 4096
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 4096
+                    }
+                  ]
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "locator": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 400
+                  },
+                  "frame": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "pdf_display_page_top_left_points"
+                        ]
+                      },
+                      "rotation": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 359
+                      },
+                      "width": {
+                        "type": "number",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 10000000
+                      },
+                      "height": {
+                        "type": "number",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 10000000
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "rotation",
+                      "width",
+                      "height"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "box": {
+                    "nullable": true,
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      ]
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  },
+                  "selectedRegion": {
+                    "nullable": true,
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      ]
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  },
+                  "declaredPrecision": {
+                    "nullable": true,
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  }
+                },
+                "required": [
+                  "page",
+                  "frame",
+                  "box",
+                  "selectedRegion",
+                  "declaredPrecision"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "quote",
+              "lineQuote",
+              "quoteCharacterSpan",
+              "locator"
+            ],
+            "additionalProperties": false
+          },
+          "missingPrerequisites": {
+            "maxItems": 16,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            }
+          },
+          "correctionOf": {
+            "type": "object",
+            "properties": {
+              "decisionId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "decisionRevision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "snapshotSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "decisionId",
+              "decisionRevision",
+              "snapshotSha256"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "requestKey",
+          "expectedCaseRevision",
+          "source",
+          "proposal",
+          "decision",
+          "reviewReason",
+          "citation",
+          "missingPrerequisites"
+        ],
+        "additionalProperties": false
+      },
+      "POST_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions_Response_201_application_json": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "enum": [
+              "source-document-proposal-decision/1"
+            ]
+          },
+          "decisionId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "decisionRevision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "caseId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "caseRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "sourceRevision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "sourceSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "sourceBytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 16777216
+              },
+              "sourceId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "required": [
+              "sourceRevision",
+              "sourceSha256",
+              "sourceBytes",
+              "sourceId"
+            ],
+            "additionalProperties": false
+          },
+          "proposal": {
+            "type": "object",
+            "properties": {
+              "snapshotId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "snapshotRevision": {
+                "type": "number",
+                "enum": [
+                  1
+                ]
+              },
+              "snapshotSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "proposalId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              }
+            },
+            "required": [
+              "snapshotId",
+              "snapshotRevision",
+              "snapshotSha256",
+              "proposalId"
+            ],
+            "additionalProperties": false
+          },
+          "originalProposal": {
+            "type": "object",
+            "properties": {
+              "proposalId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "fieldRole": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "quote": {
+                "nullable": true,
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "lineQuote": {
+                "nullable": true,
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "quoteCharacterSpan": {
+                "nullable": true,
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 4096
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 4096
+                    }
+                  ]
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "needs_review",
+                  "needs_input",
+                  "rejected",
+                  "unsupported"
+                ]
+              },
+              "reasons": {
+                "minItems": 1,
+                "maxItems": 16,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                }
+              },
+              "locator": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 400
+                  },
+                  "frame": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "pdf_display_page_top_left_points"
+                        ]
+                      },
+                      "rotation": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 359
+                      },
+                      "width": {
+                        "type": "number",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 10000000
+                      },
+                      "height": {
+                        "type": "number",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 10000000
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "rotation",
+                      "width",
+                      "height"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "box": {
+                    "nullable": true,
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      ]
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  },
+                  "selectedRegion": {
+                    "nullable": true,
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      ]
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  },
+                  "declaredPrecision": {
+                    "nullable": true,
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  }
+                },
+                "required": [
+                  "page",
+                  "frame",
+                  "box",
+                  "selectedRegion",
+                  "declaredPrecision"
+                ],
+                "additionalProperties": false
+              },
+              "declaredMethod": {
+                "nullable": true,
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "declaredObservation": {
+                "nullable": true,
+                "type": "object",
+                "properties": {
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "bytes": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 16777216
+                  }
+                },
+                "required": [
+                  "sha256",
+                  "bytes"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "proposalId",
+              "fieldRole",
+              "quote",
+              "lineQuote",
+              "quoteCharacterSpan",
+              "status",
+              "reasons",
+              "locator",
+              "declaredMethod",
+              "declaredObservation"
+            ],
+            "additionalProperties": false
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "reviewed",
+              "rejected",
+              "needs_input"
+            ]
+          },
+          "citation": {
+            "type": "object",
+            "properties": {
+              "quote": {
+                "nullable": true,
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "lineQuote": {
+                "nullable": true,
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              },
+              "quoteCharacterSpan": {
+                "nullable": true,
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 4096
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 4096
+                    }
+                  ]
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "locator": {
+                "type": "object",
+                "properties": {
+                  "page": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 400
+                  },
+                  "frame": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "pdf_display_page_top_left_points"
+                        ]
+                      },
+                      "rotation": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 359
+                      },
+                      "width": {
+                        "type": "number",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 10000000
+                      },
+                      "height": {
+                        "type": "number",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 10000000
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "rotation",
+                      "width",
+                      "height"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "box": {
+                    "nullable": true,
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      ]
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  },
+                  "selectedRegion": {
+                    "nullable": true,
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      ]
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  },
+                  "declaredPrecision": {
+                    "nullable": true,
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  }
+                },
+                "required": [
+                  "page",
+                  "frame",
+                  "box",
+                  "selectedRegion",
+                  "declaredPrecision"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "quote",
+              "lineQuote",
+              "quoteCharacterSpan",
+              "locator"
+            ],
+            "additionalProperties": false
+          },
+          "missingPrerequisites": {
+            "maxItems": 16,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            }
+          },
+          "correctionOf": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "decisionId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "decisionRevision": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "snapshotSha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "decisionId",
+              "decisionRevision",
+              "snapshotSha256"
+            ],
+            "additionalProperties": false
+          },
+          "sourceConflicts": {
+            "maxItems": 32,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "proposalIds": {
+                  "minItems": 2,
+                  "maxItems": 32,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  }
+                },
+                "reason": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "unresolved"
+                  ]
+                }
+              },
+              "required": [
+                "proposalIds",
+                "reason",
+                "state"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "sourceUnknowns": {
+            "maxItems": 32,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            }
+          },
+          "buildingFloorLink": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "needs_input"
+                ]
+              },
+              "canonicalTarget": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "missingPrerequisites": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "canonical_building"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "enum": [
+                        "canonical_floor"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "enum": [
+                        "reviewed_source_target_crosswalk"
+                      ]
+                    }
+                  ]
+                },
+                "minItems": 3,
+                "maxItems": 3
+              }
+            },
+            "required": [
+              "state",
+              "canonicalTarget",
+              "missingPrerequisites"
+            ],
+            "additionalProperties": false
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "caller_supplied_decision"
+            ]
+          },
+          "quotationVerification": {
+            "type": "string",
+            "enum": [
+              "not_machine_verified"
+            ]
+          },
+          "canonicalMatchState": {
+            "type": "string",
+            "enum": [
+              "not_assessed"
+            ]
+          },
+          "qualification": {
+            "type": "string",
+            "enum": [
+              "not_assessed"
+            ]
+          },
+          "learningLabel": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "review": {
+            "type": "object",
+            "properties": {
+              "actor": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "time": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "attribution": {
+                "type": "string",
+                "enum": [
+                  "local_process"
+                ]
+              },
+              "humanAuthenticated": {
+                "type": "boolean",
+                "enum": [
+                  false
+                ]
+              },
+              "independentGroundTruth": {
+                "type": "boolean",
+                "enum": [
+                  false
+                ]
+              }
+            },
+            "required": [
+              "actor",
+              "time",
+              "reason",
+              "attribution",
+              "humanAuthenticated",
+              "independentGroundTruth"
+            ],
+            "additionalProperties": false
+          },
+          "currentCaseRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "snapshotSha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "version",
+          "decisionId",
+          "decisionRevision",
+          "caseId",
+          "caseRevision",
+          "source",
+          "proposal",
+          "originalProposal",
+          "decision",
+          "citation",
+          "missingPrerequisites",
+          "correctionOf",
+          "sourceConflicts",
+          "sourceUnknowns",
+          "buildingFloorLink",
+          "method",
+          "quotationVerification",
+          "canonicalMatchState",
+          "qualification",
+          "learningLabel",
+          "review",
+          "currentCaseRevision",
+          "snapshotSha256"
+        ],
+        "additionalProperties": false
+      },
+      "GET_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions_Response_200_application_json": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "enum": [
+              "source-document-proposal-decision-history/1"
+            ]
+          },
+          "caseId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "sourceId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "proposalSnapshotId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "currentCaseRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "order": {
+            "type": "string",
+            "enum": [
+              "decision_id_then_revision_ascending"
+            ]
+          },
+          "after": {
+            "nullable": true,
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "references": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "decisionId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "decisionRevision": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "proposal": {
+                  "type": "object",
+                  "properties": {
+                    "snapshotId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "snapshotRevision": {
+                      "type": "number",
+                      "enum": [
+                        1
+                      ]
+                    },
+                    "snapshotSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "proposalId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 120
+                    }
+                  },
+                  "required": [
+                    "snapshotId",
+                    "snapshotRevision",
+                    "snapshotSha256",
+                    "proposalId"
+                  ],
+                  "additionalProperties": false
+                },
+                "decision": {
+                  "type": "string",
+                  "enum": [
+                    "reviewed",
+                    "rejected",
+                    "needs_input"
+                  ]
+                },
+                "correctionOf": {
+                  "nullable": true,
+                  "type": "object",
+                  "properties": {
+                    "decisionId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "decisionRevision": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "snapshotSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "decisionId",
+                    "decisionRevision",
+                    "snapshotSha256"
+                  ],
+                  "additionalProperties": false
+                },
+                "review": {
+                  "type": "object",
+                  "properties": {
+                    "actor": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "time": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "reason": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 2000
+                    },
+                    "attribution": {
+                      "type": "string",
+                      "enum": [
+                        "local_process"
+                      ]
+                    },
+                    "humanAuthenticated": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "independentGroundTruth": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    }
+                  },
+                  "required": [
+                    "actor",
+                    "time",
+                    "reason",
+                    "attribution",
+                    "humanAuthenticated",
+                    "independentGroundTruth"
+                  ],
+                  "additionalProperties": false
+                },
+                "method": {
+                  "type": "string",
+                  "enum": [
+                    "caller_supplied_decision"
+                  ]
+                },
+                "quotationVerification": {
+                  "type": "string",
+                  "enum": [
+                    "not_machine_verified"
+                  ]
+                },
+                "qualification": {
+                  "type": "string",
+                  "enum": [
+                    "not_assessed"
+                  ]
+                },
+                "learningLabel": {
+                  "type": "boolean",
+                  "enum": [
+                    false
+                  ]
+                },
+                "snapshotSha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "readUrl": {
+                  "type": "string",
+                  "maxLength": 300
+                }
+              },
+              "required": [
+                "decisionId",
+                "decisionRevision",
+                "proposal",
+                "decision",
+                "correctionOf",
+                "review",
+                "method",
+                "quotationVerification",
+                "qualification",
+                "learningLabel",
+                "snapshotSha256",
+                "readUrl"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "nextAfter": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "caseId",
+          "sourceId",
+          "proposalSnapshotId",
+          "currentCaseRevision",
+          "order",
+          "after",
+          "limit",
+          "references",
+          "hasMore",
+          "nextAfter"
         ],
         "additionalProperties": false
       },

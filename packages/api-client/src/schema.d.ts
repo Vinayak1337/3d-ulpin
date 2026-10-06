@@ -3471,6 +3471,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/document-proposals/{snapshotId}/decisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Discover bounded exact decision revisions for one unchanged proposal snapshot */
+        get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions"];
+        put?: never;
+        /**
+         * Record an explicit decision on an exact saved provisional proposal
+         * @description Current source-cited transcription remains unverified. Corrections append immutable history; original proposals/conflicts remain unchanged. No canonical adoption or learning label.
+         */
+        post: operations["POST_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/document-proposals/{snapshotId}/decisions/{decisionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read an exact immutable proposal decision through current original and private access authority */
+        get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions_decisionId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/document-proposals/{snapshotId}": {
         parameters: {
             query?: never;
@@ -60641,6 +60679,230 @@ export interface components {
             currentCaseRevision: number;
             snapshotSha256: string;
         };
+        POST_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            expectedCaseRevision: number;
+            source: {
+                sourceRevision: number;
+                sourceSha256: string;
+                sourceBytes: number;
+            };
+            proposal: {
+                /** Format: uuid */
+                snapshotId: string;
+                /** @enum {number} */
+                snapshotRevision: 1;
+                snapshotSha256: string;
+                proposalId: string;
+            };
+            /** @enum {string} */
+            decision: "reviewed" | "rejected" | "needs_input";
+            reviewReason: string;
+            citation: {
+                quote: string | null;
+                lineQuote: string | null;
+                quoteCharacterSpan: (number)[] | null;
+                locator: {
+                    page: number;
+                    frame: {
+                        /** @enum {string} */
+                        kind: "pdf_display_page_top_left_points";
+                        rotation: number;
+                        width: number;
+                        height: number;
+                    };
+                    box: (number)[] | null;
+                    selectedRegion: (number)[] | null;
+                    declaredPrecision: string | null;
+                };
+            };
+            missingPrerequisites: string[];
+            correctionOf?: {
+                /** Format: uuid */
+                decisionId: string;
+                decisionRevision: number;
+                snapshotSha256: string;
+            };
+        };
+        POST_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions_Response_201_application_json: {
+            /** @enum {string} */
+            version: "source-document-proposal-decision/1";
+            /** Format: uuid */
+            decisionId: string;
+            decisionRevision: number;
+            /** Format: uuid */
+            caseId: string;
+            caseRevision: number;
+            source: {
+                sourceRevision: number;
+                sourceSha256: string;
+                sourceBytes: number;
+                /** Format: uuid */
+                sourceId: string;
+            };
+            proposal: {
+                /** Format: uuid */
+                snapshotId: string;
+                /** @enum {number} */
+                snapshotRevision: 1;
+                snapshotSha256: string;
+                proposalId: string;
+            };
+            originalProposal: {
+                proposalId: string;
+                fieldRole: string;
+                quote: string | null;
+                lineQuote: string | null;
+                quoteCharacterSpan: (number)[] | null;
+                /** @enum {string} */
+                status: "needs_review" | "needs_input" | "rejected" | "unsupported";
+                reasons: string[];
+                locator: {
+                    page: number;
+                    frame: {
+                        /** @enum {string} */
+                        kind: "pdf_display_page_top_left_points";
+                        rotation: number;
+                        width: number;
+                        height: number;
+                    };
+                    box: (number)[] | null;
+                    selectedRegion: (number)[] | null;
+                    declaredPrecision: string | null;
+                };
+                declaredMethod: string | null;
+                declaredObservation: {
+                    sha256: string;
+                    bytes: number;
+                } | null;
+            };
+            /** @enum {string} */
+            decision: "reviewed" | "rejected" | "needs_input";
+            citation: {
+                quote: string | null;
+                lineQuote: string | null;
+                quoteCharacterSpan: (number)[] | null;
+                locator: {
+                    page: number;
+                    frame: {
+                        /** @enum {string} */
+                        kind: "pdf_display_page_top_left_points";
+                        rotation: number;
+                        width: number;
+                        height: number;
+                    };
+                    box: (number)[] | null;
+                    selectedRegion: (number)[] | null;
+                    declaredPrecision: string | null;
+                };
+            };
+            missingPrerequisites: string[];
+            correctionOf: {
+                /** Format: uuid */
+                decisionId: string;
+                decisionRevision: number;
+                snapshotSha256: string;
+            } | null;
+            sourceConflicts: {
+                proposalIds: string[];
+                reason: string;
+                /** @enum {string} */
+                state: "unresolved";
+            }[];
+            sourceUnknowns: string[];
+            buildingFloorLink: {
+                /** @enum {string} */
+                state: "needs_input";
+                /** @enum {string|null} */
+                canonicalTarget: null;
+                missingPrerequisites: ("canonical_building" | "canonical_floor" | "reviewed_source_target_crosswalk")[];
+            };
+            /** @enum {string} */
+            method: "caller_supplied_decision";
+            /** @enum {string} */
+            quotationVerification: "not_machine_verified";
+            /** @enum {string} */
+            canonicalMatchState: "not_assessed";
+            /** @enum {string} */
+            qualification: "not_assessed";
+            /** @enum {boolean} */
+            learningLabel: false;
+            review: {
+                actor: string;
+                /** Format: date-time */
+                time: string;
+                reason: string;
+                /** @enum {string} */
+                attribution: "local_process";
+                /** @enum {boolean} */
+                humanAuthenticated: false;
+                /** @enum {boolean} */
+                independentGroundTruth: false;
+            };
+            currentCaseRevision: number;
+            snapshotSha256: string;
+        };
+        GET_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions_Response_200_application_json: {
+            /** @enum {string} */
+            version: "source-document-proposal-decision-history/1";
+            /** Format: uuid */
+            caseId: string;
+            /** Format: uuid */
+            sourceId: string;
+            /** Format: uuid */
+            proposalSnapshotId: string;
+            currentCaseRevision: number;
+            /** @enum {string} */
+            order: "decision_id_then_revision_ascending";
+            after: string | null;
+            limit: number;
+            references: {
+                /** Format: uuid */
+                decisionId: string;
+                decisionRevision: number;
+                proposal: {
+                    /** Format: uuid */
+                    snapshotId: string;
+                    /** @enum {number} */
+                    snapshotRevision: 1;
+                    snapshotSha256: string;
+                    proposalId: string;
+                };
+                /** @enum {string} */
+                decision: "reviewed" | "rejected" | "needs_input";
+                correctionOf: {
+                    /** Format: uuid */
+                    decisionId: string;
+                    decisionRevision: number;
+                    snapshotSha256: string;
+                } | null;
+                review: {
+                    actor: string;
+                    /** Format: date-time */
+                    time: string;
+                    reason: string;
+                    /** @enum {string} */
+                    attribution: "local_process";
+                    /** @enum {boolean} */
+                    humanAuthenticated: false;
+                    /** @enum {boolean} */
+                    independentGroundTruth: false;
+                };
+                /** @enum {string} */
+                method: "caller_supplied_decision";
+                /** @enum {string} */
+                quotationVerification: "not_machine_verified";
+                /** @enum {string} */
+                qualification: "not_assessed";
+                /** @enum {boolean} */
+                learningLabel: false;
+                snapshotSha256: string;
+                readUrl: string;
+            }[];
+            hasMore: boolean;
+            nextAfter: string | null;
+        };
         POST_ingestion_cases_caseId_sources_sourceId_sufficiency_Request_application_json: {
             /** Format: uuid */
             requestKey: string;
@@ -85111,6 +85373,402 @@ export interface operations {
             };
             /** @description Rejected or unavailable operation */
             408: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            504: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions: {
+        parameters: {
+            query?: {
+                limit?: number;
+                after?: string;
+            };
+            header?: never;
+            path: {
+                snapshotId: string;
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            504: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                snapshotId: string;
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            201: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            408: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            504: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions_decisionId: {
+        parameters: {
+            query: {
+                revision: number;
+            };
+            header?: never;
+            path: {
+                decisionId: string;
+                snapshotId: string;
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
                 headers: {
                     /** @description Server request identifier. */
                     "X-Request-Id"?: string;
