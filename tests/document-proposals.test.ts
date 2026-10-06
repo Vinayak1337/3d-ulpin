@@ -10,7 +10,8 @@ import {sha256} from '../packages/server/src/infrastructure/storage';
 import {fingerprint} from '../packages/server/src/modules/cases/domain';
 import {DocumentProposalsService} from '../packages/server/src/modules/usp/ingestion/document-proposals';
 import {DocumentProposalsSaveSchema,DocumentProposalSnapshotViewSchema,DocumentProposalsHistorySchema,
-  DocumentProposalsHistoryQuerySchema} from '../packages/contracts/src/usp/document-proposals';
+  DocumentProposalsHistoryQuerySchema,DocumentProposalDecisionSaveSchema,DocumentProposalDecisionViewSchema,
+  DocumentProposalDecisionHistorySchema} from '../packages/contracts/src/usp/document-proposals';
 import {DocumentProposalsController} from '../apps/api/src/modules/ingestion/document-proposals.controller';
 import {PrivateSpatialGuard} from '../apps/api/src/modules/spatial/private-spatial.guard';
 
@@ -67,11 +68,16 @@ function harness(useSecond=false){
     if(sql.startsWith('SELECT * FROM sources'))return rows(records.filter((r:any)=>r.case_id===v[0]&&r.id===v[1]).map((r:any)=>({...r,
       inspection:{...r.inspection,documentOriginal:{...r.inspection.documentOriginal,subject:state.owner}}})));
     if(sql.startsWith('SELECT max(revision)'))return rows([{revision:state.latest}]);
+    if(sql.startsWith("SELECT max((result#>>'{snapshot,decisionRevision}')")){
+      const revisions=[...operations].filter(([key])=>{const [c,k,kind]=key.split('|');return c===v[0]&&kind===v[1]&&k.startsWith(v[2].slice(0,-1));})
+        .map(([,r])=>r.result.snapshot.decisionRevision);return rows([{revision:Math.max(...revisions)}]);
+    }
     if(sql.startsWith('SELECT operation_key FROM operations')){
       assert(caseLocked&&sourceLocked);assert(v[5]>=2&&v[5]<=11);
       assert(sql.includes('operation_key>$3 AND operation_key<$4')&&sql.includes('ORDER BY operation_key ASC LIMIT $6'));
       const keys=[...operations].filter(([k,r])=>{const [c,key,kind]=k.split('|');
-        return c===v[0]&&kind===v[1]&&key>v[2]&&key<v[3]&&r.result.snapshot?.source.sourceId===v[4];})
+        return c===v[0]&&kind===v[1]&&key>v[2]&&key<v[3]&&
+          (sql.includes("'{snapshot,proposal,snapshotId}'")?r.result.snapshot?.proposal.snapshotId:r.result.snapshot?.source.sourceId)===v[4];})
         .map(([k])=>k.split('|')[1]).sort().slice(0,v[5]);state.onHistoryRead?.();return rows(keys.map(operation_key=>({operation_key})));
     }
     if(sql.startsWith('SELECT payload_hash,result FROM operations')){const stored=operations.get(`${v[0]}|${v[1]}|${v[2]}`);return rows(stored?[stored]:[]);}
@@ -148,6 +154,82 @@ test('incomplete quote remains needs_input; actual S-001 rejected lines remain i
   assert.equal(siteSaved.locatorWarnings.length,6);assert(siteSaved.locatorWarnings.every(w=>w.entryKind==='rejected'&&
     w.code==='citation_extends_declared_region'&&w.basis==='caller_supplied_coordinates'));
   assert.equal(siteSaved.packet.proposals.length,6);assert.equal(siteSaved.population,'explicit_selection_only');
+}));
+test('exact saved proposal decision records reviewed citation and keeps canonical building/floor linkage needs_input',options,()=>withSubject(async()=>{
+  const f=harness(),input=f.request(),saved=await f.service.save(f.caseId,f.sourceId,input),proposal=saved.packet.proposals[0];
+  const request={requestKey:randomUUID(),expectedCaseRevision:2,source:input.source,
+    proposal:{snapshotId:saved.snapshotId,snapshotRevision:saved.snapshotRevision,snapshotSha256:saved.snapshotSha256,proposalId:proposal.proposalId},
+    decision:'reviewed' as const,reviewReason:'Officer retained the cited caption for source review.',
+    citation:{quote:proposal.quote,lineQuote:proposal.lineQuote,quoteCharacterSpan:proposal.quoteCharacterSpan,locator:proposal.locator},
+    missingPrerequisites:[]};
+  const decision=await f.service.reviewDecision(f.caseId,f.sourceId,saved.snapshotId,request);
+  assert(DocumentProposalDecisionViewSchema.safeParse(decision).success);assert.equal(decision.decision,'reviewed');
+  assert.equal(decision.originalProposal.proposalId,proposal.proposalId);assert.equal(decision.citation.quote,proposal.quote);
+  assert.deepEqual(decision.buildingFloorLink,{state:'needs_input',canonicalTarget:null,
+    missingPrerequisites:['canonical_building','canonical_floor','reviewed_source_target_crosswalk']});
+  assert.equal(decision.quotationVerification,'not_machine_verified');assert.equal(decision.learningLabel,false);
+  assert.equal(f.operations.size,4);assert.deepEqual(await f.service.reviewDecision(f.caseId,f.sourceId,saved.snapshotId,request),decision);
+  assert.equal(f.operations.size,4);
+  const correction={...request,requestKey:randomUUID(),decision:'needs_input' as const,
+    reviewReason:'Correction records the unresolved current revision.',citation:{...request.citation,quote:null,lineQuote:null,quoteCharacterSpan:null},
+    missingPrerequisites:['current_drawing_revision'],correctionOf:{decisionId:decision.decisionId,decisionRevision:decision.decisionRevision,
+      snapshotSha256:decision.snapshotSha256}};
+  const revised=await f.service.reviewDecision(f.caseId,f.sourceId,saved.snapshotId,correction);
+  assert.equal(revised.decisionId,decision.decisionId);assert.equal(revised.decisionRevision,2);assert.equal(revised.correctionOf?.decisionRevision,1);
+  assert.equal(f.operations.size,6);assert.equal((await f.service.decisionHistory(f.caseId,f.sourceId,saved.snapshotId)).references.length,2);
+  const history=await f.service.decisionHistory(f.caseId,f.sourceId,saved.snapshotId);assert(DocumentProposalDecisionHistorySchema.safeParse(history).success);
+  assert.equal(history.references.length,2);assert.equal(history.references[0].decisionRevision,1);assert.equal(history.references[1].decisionRevision,2);
+  assert.deepEqual(await f.service.readDecision(f.caseId,f.sourceId,saved.snapshotId,decision.decisionId,{revision:'1'}),decision);
+  assert.deepEqual(await f.service.readDecision(f.caseId,f.sourceId,saved.snapshotId,decision.decisionId,{revision:'2'}),revised);
+  const page=await f.service.decisionHistory(f.caseId,f.sourceId,saved.snapshotId,{limit:'1'});
+  assert.equal(page.nextAfter,`${decision.decisionId}:1`);
+  const tail=await f.service.decisionHistory(f.caseId,f.sourceId,saved.snapshotId,{limit:'1',after:page.nextAfter});
+  assert.equal(tail.references[0].decisionRevision,2);assert.equal(tail.hasMore,false);
+  await assert.rejects(f.service.reviewDecision(f.caseId,f.sourceId,saved.snapshotId,{...correction,requestKey:randomUUID()}),error(409));
+  assert.equal(f.operations.size,6);assert.deepEqual(await f.service.read(f.caseId,f.sourceId,saved.snapshotId),saved);
+  f.state.revision=3;const pageCount=f.state.pages;
+  const replay=await f.service.reviewDecision(f.caseId,f.sourceId,saved.snapshotId,request);
+  assert.equal(replay.currentCaseRevision,3);assert.equal(replay.decisionRevision,1);assert.equal(f.state.pages,pageCount);assert.equal(f.operations.size,6);
+}));
+test('conflicting or incomplete proposal decision remains needs_input and changed replay is refused',options,()=>withSubject(async()=>{
+  const f=harness(),input=f.request(),saved=await f.service.save(f.caseId,f.sourceId,input),proposal=saved.packet.proposals[0];
+  const request={requestKey:randomUUID(),expectedCaseRevision:2,source:input.source,
+    proposal:{snapshotId:saved.snapshotId,snapshotRevision:1,snapshotSha256:saved.snapshotSha256,proposalId:proposal.proposalId},
+    decision:'needs_input' as const,reviewReason:'The caption conflicts with the separate retained source statement.',
+    citation:{quote:null,lineQuote:null,quoteCharacterSpan:null,locator:proposal.locator},
+    missingPrerequisites:['current_drawing_revision','canonical_building','canonical_floor']};
+  assert.equal(DocumentProposalDecisionSaveSchema.safeParse({...request,decision:'reviewed'}).success,false);
+  assert.equal(DocumentProposalDecisionSaveSchema.safeParse({...request,canonicalTarget:randomUUID()}).success,false);
+  const decision=await f.service.reviewDecision(f.caseId,f.sourceId,saved.snapshotId,request);assert.equal(decision.decision,'needs_input');
+  assert.equal(decision.citation.quote,null);assert.deepEqual(decision.sourceConflicts,input.packet.conflicts);assert.deepEqual(decision.sourceUnknowns,input.packet.unknowns);
+  await assert.rejects(f.service.reviewDecision(f.caseId,f.sourceId,saved.snapshotId,{...request,reviewReason:'changed'}),error(409));
+  assert.equal(f.operations.size,4);
+}));
+test('decision wrong snapshot/source and access or source drift refuse before writes; exact decision corruption denies disclosure',options,()=>withSubject(async()=>{
+  const f=harness(),input=f.request(),saved=await f.service.save(f.caseId,f.sourceId,input),p=saved.packet.proposals[0];
+  const request={requestKey:randomUUID(),expectedCaseRevision:2,source:input.source,
+    proposal:{snapshotId:saved.snapshotId,snapshotRevision:1,snapshotSha256:saved.snapshotSha256,proposalId:p.proposalId},
+    decision:'rejected' as const,reviewReason:'This provisional caption is not adopted.',
+    citation:{quote:p.quote,lineQuote:p.lineQuote,quoteCharacterSpan:p.quoteCharacterSpan,locator:p.locator},missingPrerequisites:[]};
+  const unchanged=structuredClone(f.operations),pages=f.state.pages;
+  await assert.rejects(f.service.reviewDecision(f.caseId,f.sourceId,saved.snapshotId,
+    {...request,proposal:{...request.proposal,snapshotSha256:'0'.repeat(64)}}),error(409));
+  await assert.rejects(f.service.reviewDecision(f.caseId,f.sourceId,saved.snapshotId,
+    {...request,source:{...request.source,sourceSha256:'f'.repeat(64)}}),error(409));
+  assert.equal(f.state.pages,pages);assert.deepEqual(f.operations,unchanged);
+  f.state.onPage=()=>{f.state.latest=2;};
+  await assert.rejects(f.service.reviewDecision(f.caseId,f.sourceId,saved.snapshotId,request),error(409));
+  f.state.latest=1;f.state.onPage=undefined;f.state.onVerify=()=>{f.state.owner='revoked';};
+  await assert.rejects(f.service.reviewDecision(f.caseId,f.sourceId,saved.snapshotId,request),error(403));
+  f.state.owner=subject;f.state.onVerify=undefined;assert.deepEqual(f.operations,unchanged);
+  const decision=await f.service.reviewDecision(f.caseId,f.sourceId,saved.snapshotId,request);
+  f.state.onVerify=()=>{f.state.owner='revoked';};
+  await assert.rejects(f.service.readDecision(f.caseId,f.sourceId,saved.snapshotId,decision.decisionId,{revision:'1'}),error(403));
+  f.state.owner=subject;f.state.onVerify=undefined;
+  const key=[...f.operations.keys()].find(k=>k.includes('document-proposal-decision:'))!,stored=f.operations.get(key)!;
+  stored.result.snapshot.originalProposal.quote='tampered';
+  await assert.rejects(f.service.readDecision(f.caseId,f.sourceId,saved.snapshotId,decision.decisionId,{revision:'1'}),error(422,'DOCUMENT_PROPOSALS_DECISION_INTEGRITY'));
+  assert.equal(f.operations.size,4);
 }));
 test('wrong source hash, page frame, access and final source drift refuse with zero denied inserts',options,()=>withSubject(async()=>{
   const f=harness(),input=f.request();
@@ -258,4 +340,13 @@ test('history controller keeps private no-store collection and exact-query seman
   assert.equal(Reflect.getMetadata('path',handler),'/');assert.equal(Reflect.getMetadata('method',handler),0);
   assert.equal(Reflect.getMetadata('swagger/apiOperation',handler).operationId,'GET_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals');
   assert(Reflect.getMetadata('__headers__',handler).some((h:any)=>h.name==='Cache-Control'&&h.value==='private, no-store'));
+  const decisionController=new DocumentProposalsController({decisionHistory:(...args:any[])=>args,readDecision:(...args:any[])=>args} as any);
+  for(const q of ['?limit=0','?limit=1&limit=2','?offset=1'])
+    assert.throws(()=>decisionController.decisionHistory('case','source','snapshot',request(q)));
+  for(const q of ['','?revision=0','?revision=1&revision=2','?revision=1&latest=true'])
+    assert.throws(()=>decisionController.readDecision('case','source','snapshot','decision',request(q)));
+  for(const name of ['reviewDecision','readDecision','decisionHistory'] as const){const handler=DocumentProposalsController.prototype[name];
+    assert(Reflect.getMetadata('swagger/apiOperation',handler)?.operationId);
+    assert(Reflect.getMetadata('__headers__',handler).some((h:any)=>h.name==='Cache-Control'&&h.value==='private, no-store'));
+  }
 });
