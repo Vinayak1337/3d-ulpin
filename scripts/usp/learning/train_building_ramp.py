@@ -48,7 +48,15 @@ RUNTIME_DESTINATIONS = {"runtimeReceipt": "/inputs/plan/runtime-binding.json",
     "packageLock": "/inputs/plan/environment-lock.json", "installedMetadata": "/inputs/plan/installed-metadata.json",
     "imageMetadata": "/inputs/plan/layer-image-inspect.json"}
 PILOT_VERSION = "ramp-pilot-training-plan/1"
-PILOT_ROOT = Path("E:/BhuAayam-data/task-data/d07-rfdetr-pilot-fit-20261005")
+PILOT_ROOT = Path("E:/BhuAayam-data/task-data/d07-rfdetr-repaired-pilot-20261006")
+PILOT_TASK = "D07-RFDETR-REPAIRED-PILOT-FIT"
+PILOT_EXECUTE_TASK = "D07-RFDETR-REPAIRED-PILOT-FIT-EXECUTE"
+PILOT_SCOPE = "one_fixed_repaired_pilot_fit_no_evaluation"
+PILOT_OUTPUT = "/outputs/rfdetr/repaired-pilot-fit-v1"
+PILOT_UNMOUNTED_ROLES = {"valid", "developmentOriginal", "developmentObserved"}
+PILOT_UNMOUNTED_PATHS = ("/inputs/coco/valid/",
+    "/inputs/coco/provenance/portable-v1/input-metadata/input-developmentOriginal.json",
+    "/inputs/coco/provenance/portable-v1/input-metadata/input-developmentObserved.json")
 ROOT_THREAD = "01a0ed8a-4383-79c3-a0ae-35c1e969ef66"
 GPU_UUID = "GPU-3989f368-bd26-bd52-9daf-037a9862f82f"
 # These are retained metadata identities, not new data/model validation receipts.
@@ -59,6 +67,8 @@ PILOT_EVIDENCE = {
     "baseline": (17457, "0997be82e44c33943c828f76ecd42cc6e556944180d904f2c1416eda88521483"),
     "baselineScore": (129769, "9239661b104c58dc8d00252170d5c7fcfb41cb2e9b6f4cb6106638c096163355"),
     "controls": (15034, "133f7c27494d7b78056097b0f621c06e963cb757597e728e6efbf4a4ddcdee7c"),
+    "repairConfirmation": (6141, "6c14117b7cdf0860b1890e69afe4cf0c3d0941ec2f0d7496eaeb53f11249e9c2"),
+    "repairResult": (31213, "dfe7edb80e765719ab85c413ca6adbc269d63a378ddacc64cbdc0aecb8597f65"),
 }
 PILOT_BOUNDS = {"cpu": 2, "computeThreads": 2, "containerMemoryBytes": 5 * 1024**3,
     "swapBytes": 0, "pids": 32, "hostJobMemoryBytes": 512 * 1024**2,
@@ -138,7 +148,7 @@ def repaired_rfdetr_model_loss(model, implementation):
 
 def pilot_arguments():
     """One fixed recipe; no user-selected sweep, precision or evaluation override."""
-    return {"output_dir": "/outputs/rfdetr/pilot-fit-v1", "num_train_epochs": 6,
+    return {"output_dir": PILOT_OUTPUT, "num_train_epochs": 6,
         "per_device_train_batch_size": 1, "per_device_eval_batch_size": 1,
         "gradient_accumulation_steps": 4, "learning_rate": 1e-4, "weight_decay": 1e-4,
         "seed": 42, "data_seed": 42, "dataloader_num_workers": 0,
@@ -179,19 +189,41 @@ def pilot_evidence(entries):
             "Own-route measured baseline required; failed ONNX parity remains separate")
     require(values["controls"]["status"] == "actual_native_cpu_processor_and_tiny_gpu_controls_passed_model_unrun",
             "Retain accepted controls; they do not authorize this new process")
+    confirmation, result = values["repairConfirmation"], values["repairResult"]
+    require(confirmation["commit"] == "ba81c4e798c555a7bbc1ee209619887bf68a45b0" and
+            confirmation["state"] == "repaired_cpu_contract_confirmed_no_training" and
+            confirmation["lossRevision"] == EMPTY_MASK_LOSS["revision"] and
+            confirmation["positive"]["exactUnpatchedTelemetryEquality"] is True and
+            confirmation["empty"]["mask12ScalarZeros"] is True and
+            confirmation["empty"]["other24ExactlyUnchanged"] is True and
+            confirmation["artifacts"]["result"]["sha256"] == entries["repairResult"]["sha256"] and
+            result["state"] == "both_controls_finite" and result["forwardCalls"] == 2,
+            "Exact repaired two-input CPU confirmation required; no historical CUDA attribution")
     return values
 
 
+def pilot_inventory(wrapper, script, adapter_host):
+    """Retain exact training inputs; development payload/annotation snapshots stay unmounted."""
+    return [{**row, "hostPin": {**script, "path": adapter_host}, "containerPin": script}
+        if row["containerPin"]["path"] == script["path"] else copy.deepcopy(row)
+        for row in wrapper["inventory"]
+        if not any(row["containerPin"]["path"].startswith(p) for p in PILOT_UNMOUNTED_PATHS)]
+
+
 def validate_pilot(plan):
-    require(plan["schemaVersion"] == PILOT_VERSION and plan["task"] == "D07-RFDETR-PILOT-FIT" and
+    require(plan["schemaVersion"] == PILOT_VERSION and plan["task"] == PILOT_TASK and
             plan["trainingAuthorized"] is False and plan["state"] == "prepared_only",
-            "Preparation grants no fit permission")
+            "Historical pilot is not the named repaired plan; preparation grants no fit permission")
     require(plan.get("lossImplementation") == EMPTY_MASK_LOSS and
             plan.get("coupledChanges", {}).get("emptyMaskLoss") == EMPTY_MASK_LOSS["revision"],
             "Historical pilot cannot execute changed loss: new named repair plan required")
     require(plan["planSha256"] == digest({k: v for k, v in plan.items() if k != "planSha256"}), "Pilot plan drift")
     require(plan["trainingArguments"] == pilot_arguments() and plan["bounds"] == PILOT_BOUNDS and
             plan["decision"] == PILOT_DECISION, "Fixed pilot recipe/bounds/decision changed")
+    require(not any(m["role"] in PILOT_UNMOUNTED_ROLES or
+                    m["containerPath"].rstrip("/") == "/inputs/coco" for m in plan["mounts"]) and
+            not any(any(r["containerPin"]["path"].startswith(p) for p in PILOT_UNMOUNTED_PATHS)
+                    for r in plan["inventory"]), "Development must be unmounted during repaired fit")
     require(plan["budget"] == {"trainExamples": 144, "optimizerUpdates": 36, "epochs": 6,
         "developmentExamplesDuringFit": 0, "finalExamples": 0}, "Fixed pilot budget changed")
     require(set(plan["evidence"]) == set(PILOT_EVIDENCE) and
@@ -216,7 +248,7 @@ def prepare_pilot(spec_path):
         for m in wrapper["mounts"] if m["role"] == "runtimeReceipt"))
     require(runtime["imageDigest"] == wrapper["runtimeBinding"]["imageDigest"] and
             runtime["packageVersions"] == wrapper["runtimeBinding"]["packageVersions"], "Sealed pilot environment drift")
-    mounts = copy.deepcopy(wrapper["mounts"])
+    mounts = [copy.deepcopy(m) for m in wrapper["mounts"] if m["role"] not in PILOT_UNMOUNTED_ROLES]
     next(m for m in mounts if m["role"] == "adapter")["hostPath"] = str(PILOT_ROOT / "train_building_ramp.py")
     evidence = {}
     for key, entry in spec["evidence"].items():
@@ -224,10 +256,9 @@ def prepare_pilot(spec_path):
         mounts.append({"role": key, "hostPath": entry["path"], "containerPath": destination, "readOnly": True, "kind": "file"})
         evidence[key] = {**entry, "path": destination}
     script = {**file_pin(__file__), "path": "/inputs/plan/train_building_ramp.py"}
-    inventory = [{**r, "hostPin": {**script, "path": str(PILOT_ROOT / "train_building_ramp.py")},
-        "containerPin": script} if r["containerPin"]["path"] == script["path"] else r for r in wrapper["inventory"]]
+    inventory = pilot_inventory(wrapper, script, str(PILOT_ROOT / "train_building_ramp.py"))
     score = baseline["scoring"]
-    plan = {"schemaVersion": PILOT_VERSION, "task": "D07-RFDETR-PILOT-FIT", "state": "prepared_only",
+    plan = {"schemaVersion": PILOT_VERSION, "task": PILOT_TASK, "state": "prepared_only",
         "trainingAuthorized": False, "scriptPin": script, "evidence": evidence,
         "lossImplementation": copy.deepcopy(EMPTY_MASK_LOSS),
         "runtimeBinding": wrapper["runtimeBinding"], "mounts": mounts, "inventory": inventory,
@@ -242,18 +273,18 @@ def prepare_pilot(spec_path):
             "emptyScenes": score["emptyScenes"], "omissions": score["omissions"],
             "observedResidual": "roof_pixel_recall0.4880144; polygon67matched43FP111missed; emptyFP1of5",
             "onnxParity": "FAILED; not an own-route completion/adaptation gate; no equivalence claim"},
-        "coupledChanges": {"num_train_epochs": [1, 6], "fp16": [True, False], "gradient_checkpointing": [True, False],
-            "eval_strategy": ["epoch", "no"], "load_best_model_at_end": "explicitFalse",
-            "lossAccumulation": "documented Trainer.model_accepts_loss_kwargs=False; RF-DETR built-in loss ignores num_items_in_batch",
-            "emptyMaskLoss": EMPTY_MASK_LOSS["revision"]},
+        "coupledChanges": {"emptyMaskLoss": EMPTY_MASK_LOSS["revision"],
+            "principalChange": "Only empty-mask scalar repair; original six-epoch Trainer recipe unchanged",
+            "executionReceiptChanges": "New code/plan/output/root scope and confirmation pins; development data unmounted"},
         "supervision": "Publisher-human CC-BY-NC research rooftops only; pretraining overlap/independent local audit/ignore ambiguity unknown; clipping and roof-vs-ground limits retained; no operational labels",
         "authorizationContract": {"schemaVersion": "ramp-pilot-training-authorization/1", "rootThreadId": ROOT_THREAD,
-            "scope": "one_fixed_pilot_fit_no_evaluation", "currentPidRequired": True,
-            "rootAssignmentTask": "D07-RFDETR-PILOT-FIT-EXECUTE", "gpuUuid": GPU_UUID,
+            "scope": PILOT_SCOPE, "currentPidRequired": True,
+            "rootAssignmentTask": PILOT_EXECUTE_TASK, "gpuUuid": GPU_UUID,
+            "lossImplementation": copy.deepcopy(EMPTY_MASK_LOSS),
             "required": ["exact_plan_code_recipe_split_baseline", "later_root_fit_assignment", "current_pid_native_mount_environment_resource_proof", "sole_gpu_handoff"]},
-        "checkpointInterface": {"directory": "/outputs/rfdetr/pilot-fit-v1/checkpoint",
+        "checkpointInterface": {"directory": PILOT_OUTPUT + "/checkpoint",
             "files": ["model.safetensors", "config.json", "preprocessor_config.json"],
-            "result": "/outputs/rfdetr/pilot-fit-v1/result.json", "selection": "fixed_final_only",
+            "result": PILOT_OUTPUT + "/result.json", "selection": "fixed_final_only",
             "teacherPermission": "information_only; separate root assignment required"},
         "blockers": ["Later explicit root fit assignment and fresh current-PID native/resource/sole-GPU proof",
             "Actual fit capacity/finite losses/parameter integrity unrun", "Later separately assigned saved-checkpoint ALL24 comparison unrun"]}
@@ -268,7 +299,7 @@ def check_pilot_gate(path, expected_sha, plan):
     require(file_pin(unlinked(path))["sha256"] == expected_sha, "Pilot authorization hash drift")
     gate = read_json(path, 1024**2)
     require(gate["schemaVersion"] == "ramp-pilot-training-authorization/1" and gate["rootThreadId"] == ROOT_THREAD and
-            gate["rootAuthorized"] is True and gate["scope"] == "one_fixed_pilot_fit_no_evaluation" and
+            gate["rootAuthorized"] is True and gate["scope"] == PILOT_SCOPE and
             gate["planSha256"] == plan["planSha256"] and gate["scriptSha256"] == file_pin(__file__)["sha256"] == plan["scriptPin"]["sha256"] and
             gate["recipe"] == pilot_arguments() and gate["bounds"] == PILOT_BOUNDS and gate["evidence"] == plan["evidence"] and
             gate.get("lossImplementation") == plan["lossImplementation"],
@@ -276,7 +307,7 @@ def check_pilot_gate(path, expected_sha, plan):
     check_pin(gate["rootAssignment"])
     assignment = read_json(gate["rootAssignment"]["path"], 1024**2)
     require(assignment["schemaVersion"] == "ramp-pilot-root-assignment/1" and
-            assignment["task"] == "D07-RFDETR-PILOT-FIT-EXECUTE" and assignment["rootThreadId"] == ROOT_THREAD and
+            assignment["task"] == PILOT_EXECUTE_TASK and assignment["rootThreadId"] == ROOT_THREAD and
             assignment["fitAuthorized"] is True and assignment["evaluationAuthorized"] is False and
             assignment["planSha256"] == plan["planSha256"] and assignment["scriptSha256"] == plan["scriptPin"]["sha256"] and
             isinstance(gate["modelOwnerThreadId"], str) and len(gate["modelOwnerThreadId"]) == 36 and
@@ -304,9 +335,13 @@ def check_pilot_gate(path, expected_sha, plan):
     require(all(plan[k] == prior[k] for k in ["weights", "modelConfig", "processorConfig", "datasetManifest", "pools",
         "trainSource", "developmentSource", "classMapping", "initialHead", "preprocessing"]), "Original input contract drift")
     adapter_host = next(m["hostPath"] for m in plan["mounts"] if m["role"] == "adapter")
-    expected_inventory = [{**r, "hostPin": {**plan["scriptPin"], "path": adapter_host},
-        "containerPin": plan["scriptPin"]} if r["containerPin"]["path"] == plan["scriptPin"]["path"] else r
-        for r in values["mountedConfig"]["inventory"]]
+    expected_source_mounts = [copy.deepcopy(m) for m in values["mountedConfig"]["mounts"]
+        if m["role"] not in PILOT_UNMOUNTED_ROLES]
+    next(m for m in expected_source_mounts if m["role"] == "adapter")["hostPath"] = adapter_host
+    require(plan["mounts"][:len(expected_source_mounts)] == expected_source_mounts and
+            [m["role"] for m in plan["mounts"][len(expected_source_mounts):]] == list(PILOT_EVIDENCE),
+            "Exact training-only source mounts required")
+    expected_inventory = pilot_inventory(values["mountedConfig"], plan["scriptPin"], adapter_host)
     require(plan["inventory"] == expected_inventory, "Complete retained input inventory required")
     for row in plan["inventory"]: check_pin(row["containerPin"])
     gate.update(authorizedPid=os.getpid(), authorizationSha256=expected_sha)
@@ -857,7 +892,7 @@ def execute(plan, gate, loss_diagnostics=False):
         require(gate.get("authorizedPid") == os.getpid() and gate.get("planSha256") == plan["planSha256"] and
                 gate.get("authorizationSha256"), "Pilot fitting blocked: check the exact current-process authorization first")
         output = unlinked(plan["trainingArguments"]["output_dir"])
-        require(output == Path("/outputs/rfdetr/pilot-fit-v1") and not output.exists(), "New isolated pilot output required")
+        require(output == Path(PILOT_OUTPUT) and not output.exists(), "New isolated repaired pilot output required")
         output.mkdir(parents=True, exist_ok=False)
         (output / "plan.json").write_text(json.dumps(plan, indent=2)+"\n")
     try:
@@ -868,6 +903,7 @@ def execute(plan, gate, loss_diagnostics=False):
             # OOM/nonfinite/compatibility retry, precision fallback or overwrite.
             (output / "failure.json").write_text(json.dumps({"schemaVersion": "ramp-pilot-training-failure/1",
                 "state": "stopped_unqualified", "planSha256": plan["planSha256"],
+                "task": PILOT_TASK, "lossImplementation": plan["lossImplementation"],
                 "errorType": type(error).__name__, "error": str(error)[:4000],
                 "retryAuthorized": False, "evaluationRun": False, "promotion": False}, indent=2)+"\n")
         raise
@@ -1029,6 +1065,9 @@ def execute_trainer(plan, gate, started=None, *, loss_diagnostics=False):
             trainingLossHistory=trainer.state.log_history, developmentLossHistory=[], evaluationRun=False,
             authorizationSha256=gate["authorizationSha256"], decision=plan["decision"],
             checkpointFiles={name: file_pin(output / "checkpoint" / name) for name in plan["checkpointInterface"]["files"]})
+        result.update(task=PILOT_TASK, bounds=plan["bounds"], allForwardLossesFinite=True,
+            finalParametersFinite=True, fitEpochs=trainer.state.epoch,
+            rootAssignment=gate["rootAssignment"], preflightReceipt=gate["preflightReceipt"])
     (output / "result.json").write_text(json.dumps(result, indent=2, allow_nan=False)+"\n")
     return result
 
