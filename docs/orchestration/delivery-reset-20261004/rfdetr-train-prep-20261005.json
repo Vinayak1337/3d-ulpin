@@ -363,7 +363,7 @@
     "suppliedApprovalPolicy": "never",
     "suppliedSandbox": "danger-full-access"
   },
-  "latestAmendment": "emptyMaskScalarRepair",
+  "latestAmendment": "repairedPilotPreparation",
   "pilotFitPreparation": {
     "task": "D07-RFDETR-PILOT-FIT-PREP",
     "date": "2026-10-05",
@@ -758,6 +758,297 @@
       "installedLibraryChanged": false,
       "sourceDataOrLabelsChanged": false,
       "primaryStagingEdited": false
+    },
+    "settings": {
+      "requested": "gpt-6.1-sol/xhigh/default-standard1x",
+      "actualPerTurnModelEffortTier": null,
+      "permissions": "never/danger-full-access"
+    }
+  },
+  "repairedPilotPreparation": {
+    "task": "D07-RFDETR-REPAIRED-PILOT-PREP",
+    "date": "2026-10-06",
+    "state": "fixed_repaired_plan_prepared_fit_not_authorized",
+    "baseCommit": "549dcebd73549d74b750cef4c3a51d5663dfc92c",
+    "branch": "task/d07-rfdetr-repaired-pilot-prep-20261006",
+    "owned": [
+      "scripts/usp/learning/train_building_ramp.py",
+      "docs/orchestration/delivery-reset-20261004/rfdetr-train-prep-20261005.json"
+    ],
+    "route": "Existing standard Trainer/built-in loss/AdamW, with accepted model-instance empty-mask scalar repair. No execution now.",
+    "artifacts": {
+      "plan": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\plan.json",
+        "bytes": 82606,
+        "sha256": "03d7ebad4b4b75643c2bca894a5472ad37a4e4277168a0730a4c4c6c123c4293"
+      },
+      "interface": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\interface.json",
+        "bytes": 42094,
+        "sha256": "e4da828972aac67aeffd0583077ad9609079d31b9273ec4c7c9c1e3f1ee64836"
+      },
+      "runner": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\train_building_ramp.py",
+        "bytes": 78902,
+        "sha256": "718740ff8b0fe5bbf403873c854c07d9811e1551a148aef1f5581d16e8a8eccd"
+      },
+      "checks": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\checks.json",
+        "bytes": 3057,
+        "sha256": "7e52930b24bf40b645ee3e04d4c4b926ca632ec2f688030365119b5903c19f3e"
+      },
+      "preparation": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\preparation.json",
+        "bytes": 2092,
+        "sha256": "28696bc1bba6bca84367c7fb53d3e3c7de38474766abe935e6c04c5117e40794"
+      }
+    },
+    "canonicalPlanSha256": "c5fc1577fde353a92652d12913b54a4c0a9a838dd563c2a49965660c8246134d",
+    "lossImplementation": {
+      "revision": "ulpin-rfdetr-empty-mask-scalar/1",
+      "library": "transformers",
+      "version": "5.17.0",
+      "sourcesCanonicalLfSha256": {
+        "loss_rf_detr": "db5a352ca7c9c0e0cfc2af7af29e6d348ec72391b5b82b38fedf23f0b4d32ece",
+        "loss_lw_detr": "c7b271e3011dca508736fd8fec310a137e57da96b3dcdad2c60bc3d22ef5ce98"
+      },
+      "change": "Only empty matched mask CE/dice return source_masks.sum() scalar zeros",
+      "scope": "RF-DETR segmentation model instance during explicitly bound operation"
+    },
+    "actualPrerequisite": {
+      "ownerCommit": "ba81c4e798c555a7bbc1ee209619887bf68a45b0",
+      "confirmation": {
+        "path": "/inputs/pilot/repairConfirmation.json",
+        "bytes": 6141,
+        "sha256": "6c14117b7cdf0860b1890e69afe4cf0c3d0941ec2f0d7496eaeb53f11249e9c2"
+      },
+      "result": {
+        "path": "/inputs/pilot/repairResult.json",
+        "bytes": 31213,
+        "sha256": "dfe7edb80e765719ab85c413ca6adbc269d63a378ddacc64cbdc0aecb8597f65"
+      },
+      "scope": "One original-checkpoint CPU positive1→empty13 repaired experiment,2forwards/no backward: positive30.342233657836914/all36scalarfinite/exactpriorpositive; empty44.639766693115234/12maskscalarzeros/other24termsunchanged. HistoricalCUDA failingidentity remains unknown. Existing tinycriterion graph/autograd tests reused."
+    },
+    "recipe": {
+      "output_dir": "/outputs/rfdetr/repaired-pilot-fit-v1",
+      "num_train_epochs": 6,
+      "per_device_train_batch_size": 1,
+      "per_device_eval_batch_size": 1,
+      "gradient_accumulation_steps": 4,
+      "learning_rate": 0.0001,
+      "weight_decay": 0.0001,
+      "seed": 42,
+      "data_seed": 42,
+      "dataloader_num_workers": 0,
+      "remove_unused_columns": false,
+      "eval_strategy": "no",
+      "save_strategy": "no",
+      "load_best_model_at_end": false,
+      "do_eval": false,
+      "prediction_loss_only": true,
+      "report_to": "none",
+      "push_to_hub": false,
+      "fp16": false,
+      "bf16": false,
+      "gradient_checkpointing": false,
+      "optim": "adamw_torch",
+      "logging_steps": 1,
+      "logging_nan_inf_filter": false,
+      "label_names": [
+        "labels"
+      ],
+      "use_cpu": false,
+      "torch_compile": false,
+      "max_steps": -1,
+      "lr_scheduler_type": "linear",
+      "warmup_steps": 0,
+      "max_grad_norm": 1.0,
+      "auto_find_batch_size": false,
+      "tf32": false
+    },
+    "budget": {
+      "trainExamples": 144,
+      "optimizerUpdates": 36,
+      "epochs": 6,
+      "developmentExamplesDuringFit": 0,
+      "finalExamples": 0
+    },
+    "bounds": {
+      "cpu": 2,
+      "computeThreads": 2,
+      "containerMemoryBytes": 5368709120,
+      "swapBytes": 0,
+      "pids": 32,
+      "hostJobMemoryBytes": 536870912,
+      "gpuAllocationBytes": 5368709120,
+      "fitAndCleanupSeconds": 900,
+      "cleanupReserveSeconds": 45,
+      "innerFitSeconds": 855
+    },
+    "coupledChanges": {
+      "emptyMaskLoss": "ulpin-rfdetr-empty-mask-scalar/1",
+      "principalChange": "Only empty-mask scalar repair; original six-epoch Trainer recipe unchanged",
+      "executionReceiptChanges": "New code/plan/output/root scope and confirmation pins; development data unmounted"
+    },
+    "inputs": {
+      "modelConfigProcessor": {
+        "weights": {
+          "path": "/inputs/model/model.safetensors",
+          "bytes": 141551436,
+          "sha256": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7"
+        },
+        "modelConfig": {
+          "path": "/inputs/model/config.json",
+          "bytes": 2490,
+          "sha256": "41aeed5933ae681d700978ded204c67ec756c775bbaa466ae3b0b11122b5f5c7"
+        },
+        "processorConfig": {
+          "path": "/inputs/model/preprocessor_config.json",
+          "bytes": 442,
+          "sha256": "54287bdd487c98a439f9c8c8039b69544dce6fc1735dca50ca4de4d5bbf27382"
+        }
+      },
+      "allocationSha256": "3f31d467c9ca8f6c92e02d7a09ffbb0fee7d51cd0d4dc3642629a32b02c074da",
+      "role": "ALL24Barishal/263publisherroofs/1validempty train; ALL24Karnataka/178/5empty later development; zero final",
+      "developmentDuringFit": "Payload RGB/COCO and source annotation snapshots unmounted; reference metadata/baseline retained, no eval",
+      "originalSavedPlan": "8139eedd077a78513daadfa4b5a6173fcb75b13e637f76ce4ea2bf3954c41716 and original failed run remain unchanged"
+    },
+    "baseline": {
+      "scoreSha256": "9239661b104c58dc8d00252170d5c7fcfb41cb2e9b6f4cb6106638c096163355",
+      "mask": {
+        "id": 1,
+        "name": "building",
+        "truthPixels": 181259,
+        "predictedPixels": 104478,
+        "tp": 88457,
+        "fp": 16021,
+        "fn": 92802,
+        "iou": 0.4483830089213301,
+        "precision": 0.8466567124179253,
+        "recall": 0.48801438825106613
+      },
+      "sourceEmptyFP": "1of5",
+      "onnxRawParity": "FAILED unchanged"
+    },
+    "decision": {
+      "maskIoUMin": 0.468383,
+      "maskRecallMin": 0.5380144,
+      "maskPrecisionMin": 0.8266567,
+      "emptyFalsePositiveScenesMax": 1,
+      "emptyScenes": 5,
+      "role": "open_cohort_decision_not_model_readiness",
+      "report": [
+        "polygon_matches",
+        "polygon_false_positives",
+        "polygon_misses",
+        "geometry_omissions"
+      ],
+      "candidateEvaluation": "later_separately_assigned_teacher_saved_final_ALL24_once_FP32_432_confidence0.5_logit0_cached_production_scorer",
+      "finalAccess": false,
+      "checkpointOrThresholdSelection": false
+    },
+    "checkpoint": {
+      "directory": "/outputs/rfdetr/repaired-pilot-fit-v1/checkpoint",
+      "files": [
+        "model.safetensors",
+        "config.json",
+        "preprocessor_config.json"
+      ],
+      "result": "/outputs/rfdetr/repaired-pilot-fit-v1/result.json",
+      "selection": "fixed_final_only",
+      "teacherPermission": "information_only; separate root assignment required"
+    },
+    "runtime": {
+      "binding": {
+        "path": "/inputs/plan/runtime-binding.json",
+        "bytes": 6417,
+        "sha256": "6f801e596890067be2bf61b673958645c378480db6203dba277243f4427ef615"
+      },
+      "image": "sha256:47ee371d032ff6f5b18a92f0e531956eac7bad654d74b83d6065018688ba9316",
+      "python": "3.11.13",
+      "packages": 134,
+      "gpuUuid": "GPU-3989f368-bd26-bd52-9daf-037a9862f82f",
+      "healthyAvailabilityReceipt": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-docker-availability-20261006\\ipc-reversible-recovery.json",
+        "bytes": 5898,
+        "sha256": "7878b39123025463dddffc6cb0212b77697bea28a288d29d3d160750f3e93b20"
+      },
+      "observation": "Existing owner receipt only; no engine/GPU/current-process observation repeated in preparation"
+    },
+    "interface": {
+      "readOnlyMounts": 23,
+      "trainOnlyInputPins": 40,
+      "futureAuthorityMounts": 3,
+      "writableMounts": 1,
+      "output": {
+        "hostPath": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\output",
+        "containerPath": "/outputs/rfdetr",
+        "readOnly": false,
+        "kind": "directory",
+        "mustBeNewFitDirectory": "/outputs/rfdetr/repaired-pilot-fit-v1"
+      },
+      "authorization": {
+        "schemaVersion": "ramp-pilot-training-authorization/1",
+        "rootThreadId": "01a0ed8a-4383-79c3-a0ae-35c1e969ef66",
+        "scope": "one_fixed_repaired_pilot_fit_no_evaluation",
+        "currentPidRequired": true,
+        "rootAssignmentTask": "D07-RFDETR-REPAIRED-PILOT-FIT-EXECUTE",
+        "gpuUuid": "GPU-3989f368-bd26-bd52-9daf-037a9862f82f",
+        "lossImplementation": {
+          "revision": "ulpin-rfdetr-empty-mask-scalar/1",
+          "library": "transformers",
+          "version": "5.17.0",
+          "sourcesCanonicalLfSha256": {
+            "loss_rf_detr": "db5a352ca7c9c0e0cfc2af7af29e6d348ec72391b5b82b38fedf23f0b4d32ece",
+            "loss_lw_detr": "c7b271e3011dca508736fd8fec310a137e57da96b3dcdad2c60bc3d22ef5ce98"
+          },
+          "change": "Only empty matched mask CE/dice return source_masks.sum() scalar zeros",
+          "scope": "RF-DETR segmentation model instance during explicitly bound operation"
+        },
+        "required": [
+          "exact_plan_code_recipe_split_baseline",
+          "later_root_fit_assignment",
+          "current_pid_native_mount_environment_resource_proof",
+          "sole_gpu_handoff"
+        ]
+      },
+      "rootTask": "D07-RFDETR-REPAIRED-PILOT-FIT-EXECUTE",
+      "required": "Fresh exact root/auth/current-PID native/mount/environment/resource proof + soleGPU handoff; old fit/probe/confirmation authority cannot fit changed code"
+    },
+    "verification": {
+      "command": "C:/Python313/python.exe -I -B E:/BhuAayam-data/task-data/d07-rfdetr-repaired-pilot-20261006/prepare_metadata.py",
+      "exitCode": 0,
+      "checks": [
+        "New named plan/output/loss-source revision/script digest/canonical plan verified",
+        "Original model/source/pools/groups/recipe except output/decision/baseline/bounds exactly retained",
+        "Development payload and source-annotation snapshots removed from mounts/inventory;40 retained train-only input pins",
+        "Metadata/source/hash/import traps forbid heavy modules and model/image/development payload reads",
+        "Actual CLI: new plan-only0, missing authorization2, historical original plan2; no fit output created",
+        "Old fit authorization scope rejected new plan; source binds exact runner/plan/new root assignment task/loss revision"
+      ],
+      "actualCliExits": [
+        0,
+        2,
+        2
+      ],
+      "handoffWriterRecovery": "Initial metadata write truncated the owned JSON on Windows cp1252 UnicodeEncodeError for U+2192. Rebuilt from exact Git HEAD and wrote UTF-8; all historical fields except latestAmendment preserved. No runtime or training occurred.",
+      "scope": "Stdlib metadata/source/schema/role/recipe/authority checks; heavy-import/model/image/development-read traps; no criterion test repeat or model/tensor/GPU/fit/eval",
+      "changedCodeReview": "Reviewed only new output/root scope, confirmation pins, training-only mounts/inventory and final receipt counts/finite/bounds/loss fields. Preserved adapter/recipe/loss implementation and historical data/attempts; same guard/counters and no fallback."
+    },
+    "gaps": [
+      "Later exact teacher fit assignment/current-PID/native/resource/soleGPU authority and launcher adaptation; no fit permitted by preparation",
+      "Actual GPU repaired full-model gradients/fit completion/final-trio capacity/integrity unrun",
+      "Candidate remains UNBOUND. Later reference binder must accept repaired successful plan/root/current-process/result chain; no new binder or comparison here",
+      "Original rawONNX parityFAILED/source roof-vs-ground/clipping/ignore/pretraining/independent-site/noncommercial research limits retained; no quality/release promotion"
+    ],
+    "cleanup": {
+      "fitOutputCreated": false,
+      "gpuOwnershipTaken": false,
+      "modelOrOptimizerRun": false,
+      "servicesOrContainersStarted": false,
+      "ownedProcessesRemaining": false,
+      "sourceModelDataLabelsHistoryChanged": false,
+      "primaryEdited": false
     },
     "settings": {
       "requested": "gpt-6.1-sol/xhigh/default-standard1x",
