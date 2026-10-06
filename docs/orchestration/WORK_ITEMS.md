@@ -18,6 +18,8 @@ Use with [ORCHESTRATOR.md](ORCHESTRATOR.md). Each task below becomes one short a
 
 The prior lead-authored prompt/cleanup and stopped, clean ORCH-PLAN-01 return remain history. No old worker task, evaluation or cleanup operation resumes through this update.
 
+**D00 publication, 6 October:** teacher `ba81c4e7` is accepted and integrated as `a9f202f9`; `repaired_cpu_contract_confirmed_no_training` supersedes the earlier pending-confirmation state. Saved positive1 is unchanged `30.342233657836914`; empty13 is scalar finite `44.639766693115234`, twelve mask zeros and twenty-four other terms unchanged. Twelve small receipt pins/history/telemetry pass without model or criterion replay; the owner's forty-three input-pin check is consumed. No full-model gradient/quality/CUDA claim, fit or candidate promotion. AI-04B repaired fit-plan preparation is separately active. D08 decision save/exact-read/history registration and generated OpenAPI/client are now published: 288 operations/321 schemas, preserving all prior 285 operations/318 schemas. Module/service/USP export wiring was already present; missing operation-manifest entries and current producer pins are supplied. The twelve service tests/build remain consumed; this publication adds only catalogue/client/type/consistency checks. Live decision runtime, source truth, canonical identity and frontend remain unqualified.
+
 ## Queue
 
 | Task | State | Dependencies | Worker / effort | Next usable result |
