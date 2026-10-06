@@ -14,8 +14,10 @@ from __future__ import annotations
 
 import argparse
 import copy
+import datetime
 import hashlib
 import json
+import os
 import queue
 import runpy
 import subprocess
@@ -59,6 +61,14 @@ FIT_ROOT_SHA = "71f0091f70ede5c5b8db1729ac368e626c79e7cb8f97d8594e74bbc7e7a9b3ef
 FIT_RUNNER_SHA = "30dfc02ab1f7d4122e306cdd7ca4ac3262b8e30791f2c77b8098527fb8880c93"
 FIT_PLAN_SHA = "22b0a1bd318490bb3a5b484dd248eebdba9d94c87879897f1c3d2de60f7abe37"
 FIT_INTERFACE_SHA = "5f26294968f4af554dd6419dde4bdd020321b0bd3eade07c55a9086d9355b29e"
+REPAIRED_PREP = DATA / "d07-rfdetr-repaired-pilot-20261006"
+REPAIRED_RUN = REPAIRED_PREP / "launcher"
+REPAIRED_RUNNER_SHA = "718740ff8b0fe5bbf403873c854c07d9811e1551a148aef1f5581d16e8a8eccd"
+REPAIRED_PLAN_SHA = "03d7ebad4b4b75643c2bca894a5472ad37a4e4277168a0730a4c4c6c123c4293"
+REPAIRED_CANONICAL_SHA = "c5fc1577fde353a92652d12913b54a4c0a9a838dd563c2a49965660c8246134d"
+REPAIRED_INTERFACE_SHA = "e4da828972aac67aeffd0583077ad9609079d31b9273ec4c7c9c1e3f1ee64836"
+REPAIRED_TASK = "D07-RFDETR-REPAIRED-PILOT-FIT-EXECUTE"
+REPAIRED_SCOPE = "one_fixed_repaired_pilot_fit_no_evaluation"
 PROBE = DATA / "d07-rfdetr-empty-loss-probe-20261006"
 DIAGNOSIS = DATA / "d07-rfdetr-nonfinite-diagnosis-20261006"
 PROBE_ROOT_SHA = "2e42045ae78021a92a5bc7ee47456933f597396eea75581bb60cc9c1b1e9aa41"
@@ -278,8 +288,17 @@ def sealed_inputs(validate_old_output=True):
     return interface, cfg, binding
 
 
-def profile(validate_old_output=True):
-    interface, cfg, binding = sealed_inputs(validate_old_output)
+def profile(validate_old_output=True, repaired_metadata=None):
+    if repaired_metadata is None:
+        interface, cfg, binding = sealed_inputs(validate_old_output)
+    else:
+        # The repaired route must not hash/read the old development data pool.
+        repaired_interface, cfg = repaired_metadata
+        interface = checked_json(INTERFACE)
+        interface.update(mounts=repaired_interface["allReadOnlyMounts"], output=repaired_interface["writableOutput"])
+        binding = checked_json(BINDING)
+        require(cfg["runtimeBinding"]["imageDigest"] == binding["imageDigest"]
+                and cfg["runtimeBinding"]["packageVersions"] == binding["packageVersions"], "Repaired runtime binding drift")
     compile(CONTROL, "<rfdetr-native-control>", "exec")
     environment = dict(x.split("=", 1) for x in binding["imageEnvironment"])
     overrides = {**interface["environmentOverrides"], "HOME": "/tmp", "CUDA_VISIBLE_DEVICES": ""}
@@ -307,11 +326,12 @@ def profile(validate_old_output=True):
     return {"schemaVersion": "rfdetr-native-control-profile/1", "task": TASK,
         "state": "prepared_metadata_only_execution_disabled", "rootAuthorization": None,
         "dockerContext": "desktop-linux",
-        "runtimeBindingPin": pin(BINDING[0]), "interfacePin": pin(INTERFACE[0]),
-        "mountedConfigPin": pin(CONFIG[0]), "mountedPlanPin": pin(PLAN[0]),
+        "runtimeBindingPin": pin(BINDING[0]), "interfacePin": pin(REPAIRED_PREP / "interface.json") if repaired_metadata is not None else pin(INTERFACE[0]),
+        "mountedConfigPin": pin(REPAIRED_PREP / "plan.json") if repaired_metadata is not None else pin(CONFIG[0]),
+        "mountedPlanPin": pin(REPAIRED_PREP / "plan.json") if repaired_metadata is not None else pin(PLAN[0]),
         "imageDigest": binding["imageDigest"], "imageConfigDigest": binding["imageConfigDigest"],
         "python": binding["pythonExecutable"], "packageVersions": binding["packageVersions"],
-        "mounts": interface["mounts"], "output": interface["output"], "inventoryFiles": 68,
+        "mounts": interface["mounts"], "output": interface["output"], "inventoryFiles": len(cfg["inventory"]) + 1 if repaired_metadata is not None else 68,
         "policy": policy, "environment": environment, "environmentOverrides": overrides,
         "controlCodeSha256": hashlib.sha256(CONTROL.encode()).hexdigest(), "createArgv": args,
         "adapterPlanOnlyArgv": [binding["pythonExecutable"], *interface["argv"]],
@@ -880,9 +900,102 @@ def empty_probe_checks(root_instruction, execution_state):
     if failure:raise ValueError(failure["message"])
 
 
-def pilot_bridge():
+def repaired_evidence_matches(interface, plan):
+    # This interface lists host pins; the plan maps them to container paths.
+    mounts = {m["role"]: m for m in plan["mounts"]}
+    return interface["evidenceInventory"] == [
+        {**item, "path": mounts[role]["hostPath"]} for role, item in plan["evidence"].items()]
+
+
+def repaired_metadata():
+    """Read only the three frozen preparation files; no source/model campaign."""
+    plan = checked_json((REPAIRED_PREP / "plan.json", 82606, REPAIRED_PLAN_SHA))
+    interface = checked_json((REPAIRED_PREP / "interface.json", 42094, REPAIRED_INTERFACE_SHA))
+    require(pin(REPAIRED_PREP / "train_building_ramp.py")["sha256"] == REPAIRED_RUNNER_SHA,
+            "Repaired runner drift")
+    canonical = copy.deepcopy(plan); canonical.pop("planSha256")
+    require(hashlib.sha256(json.dumps(canonical, sort_keys=True, separators=(",", ":"),
+            allow_nan=False).encode()).hexdigest() == plan["planSha256"] == REPAIRED_CANONICAL_SHA,
+            "Repaired canonical plan drift")
+    require(plan["trainingAuthorized"] is False and interface["trainingAuthorized"] is False
+            and interface["task"] == "D07-RFDETR-REPAIRED-PILOT-FIT"
+            and interface["authorizationContract"]["scope"] == REPAIRED_SCOPE
+            and interface["lossImplementation"] == plan["lossImplementation"]
+            and len(interface["allReadOnlyMounts"]) == 23
+            and interface["allReadOnlyMounts"][:-1] == plan["mounts"]
+            and interface["inputInventory"] == plan["inventory"]
+            and repaired_evidence_matches(interface, plan), "Repaired preparation interface drift")
+    require(not ({"development", "developmentOriginal"} & {m["role"] for m in plan["mounts"]})
+            and all("/valid/" not in r["containerPin"]["path"] for r in plan["inventory"]),
+            "Development inputs refused during fit")
+    return interface, plan
+
+
+def repaired_release(path, expected_sha, interface, plan):
+    """A later root callback supplies this JSON's hash; prep templates are inert."""
+    require(path == REPAIRED_RUN / "root-release.json" and isinstance(expected_sha, str)
+            and pin(path)["sha256"] == expected_sha, "Exact new root release/hash required")
+    release = json.loads(path.read_bytes())
+    require(release["schemaVersion"] == "rfdetr-repaired-fit-release/1"
+            and release["task"] == REPAIRED_TASK and release["scope"] == REPAIRED_SCOPE
+            and release["rootThreadId"] == "01a0ed8a-4383-79c3-a0ae-35c1e969ef66"
+            and release["modelOwnerThreadId"] == "01a0fbd5-4561-7692-b366-ebd123380593"
+            and release["fitAuthorized"] is True and release["evaluationAuthorized"] is False
+            and release["gpuOwnerTransferred"] is True and release["gpuUuid"] == GPU_UUID
+            and release["planSha256"] == plan["planSha256"]
+            and release["scriptSha256"] == REPAIRED_RUNNER_SHA
+            and release["interfaceSha256"] == REPAIRED_INTERFACE_SHA
+            and release["lossImplementation"] == plan["lossImplementation"]
+            and release["bounds"] == plan["bounds"] and release["lossDiagnostics"] is False,
+            "Preparation, CPU confirmation or historical authority grants no repaired fit")
+    window = release["exclusiveWindow"]
+    require(all(isinstance(window[k], str) for k in ("notBeforeUtc", "expiresUtc")),
+            "Exclusive window remains unbound")
+    now = datetime.datetime.now(datetime.timezone.utc)
+    start, end = (datetime.datetime.fromisoformat(window[k]) for k in ("notBeforeUtc", "expiresUtc"))
+    require(start.utcoffset() == end.utcoffset() == datetime.timedelta(0)
+            and start <= now and (end - now).total_seconds() >= 900
+            and window["task"] == REPAIRED_TASK and window["d08LiveApiWindowExcluded"] is True,
+            "Fresh exclusive GPU/runtime window with 900s remaining required")
+    guard = Path("C:/Users/kvina/.codex/worktrees/ml-teacher-20261002/3d-ulpin/scripts/usp/document-models/run_trial.py")
+    for key, target in [("launcherSource", REPAIRED_RUN / "execution-code.py"),
+                        ("nativeEntry", REPAIRED_RUN / "native-entry.py"),
+                        ("supervisor", REPAIRED_RUN / "supervise.py"), ("hostJobGuard", guard)]:
+        actual = pin(target); expected = release[key]
+        require(Path(expected["path"]) == target and actual == expected, "Frozen repaired launcher/entry/supervisor/Job drift")
+    require(Path(__file__).resolve() == REPAIRED_RUN / "execution-code.py"
+            and os.environ.get("RFDETR_GATED_PARENT") == str(os.getpid()),
+            "Frozen launcher must run under the pinned gated host Job")
+    require((REPAIRED_RUN / "native-entry.py").read_bytes() == repaired_native_source().encode(),
+            "Frozen native entry differs from launcher")
+    require(Path(interface["writableOutput"]["hostPath"]) == REPAIRED_PREP / "output",
+            "Exact repaired task output required")
+    return release
+
+
+def repaired_native_source():
+    source = CONTROL.replace("need(not list(Path('/dev').glob('nvidia*')) and not Path('/dev/dxg').exists(),'Unexpected GPU devices in CPU profile')",
+                             "# Exact physical GPU checked after current-process authorization.")
+    source = source.replace("native-control.json", "repaired-pilot-fit-native.json").replace("'gpuAssigned':False", "'gpuAssigned':True")
+    source = source.replace("actual_cpu_native_control_passed", "actual_pilot_native_control_passed") + pilot_bridge(repaired=True)
+    return source.replace("/inputs/plan/mounted-config.json", "/inputs/pilot/plan.json").replace(
+        "config.stat().st_size==52751", "config.stat().st_size==82606").replace(CONFIG[2], REPAIRED_PLAN_SHA)
+
+
+def pilot_bridge(repaired=False):
     """Reuse the same-PID pause/seal/resume primitive for the separate fit gate."""
     bridge = REFERENCE_BRIDGE.replace(REF_ROOT_SHA, FIT_ROOT_SHA)
+    if repaired:
+        bridge = bridge.replace("need(initial['rootAssignmentSha256']=='" + FIT_ROOT_SHA + "','Root instruction mismatch')",
+            "need(initial['rootAssignmentSha256']==hashlib.sha256(initial['rootAssignment'].encode('utf-8')).hexdigest(),'Root release text mismatch')\n"
+            "root=json.loads(initial['rootAssignment'])\n"
+            "need(root['schemaVersion']=='rfdetr-repaired-fit-release/1' and root['task']=='" + REPAIRED_TASK + "' "
+            "and root['fitAuthorized'] is True and root['evaluationAuthorized'] is False "
+            "and root['scope']=='" + REPAIRED_SCOPE + "' and root['planSha256']==cfg['planSha256'] "
+            "and root['scriptSha256']==cfg['scriptPin']['sha256'] and root['lossImplementation']==cfg['lossImplementation'] "
+            "and root['gpuUuid']=='" + GPU_UUID + "' and root['gpuOwnerTransferred'] is True "
+            "and root['launcherSource']['sha256']==initial['launcherSourceSha256'] "
+            "and root['nativeEntry']['sha256']==initial['nativeEntrySha256'],'Exact repaired root release required')")
     bridge = bridge.replace("/inputs/reference/authorization.json", "/inputs/pilot/authorization.json")
     bridge = bridge.replace("/inputs/reference/preflight.json", "/inputs/pilot/current-process-preflight.json")
     bridge = bridge.replace("/inputs/reference/compare_ramp_torch.py", "/inputs/plan/train_building_ramp.py")
@@ -903,12 +1016,13 @@ def pilot_bridge():
     return bridge
 
 
-def pilot_inputs(interface, plan):
+def pilot_inputs(interface, plan, repaired=False):
     """Verify only the frozen interface's explicit pins and finite mappings."""
-    require(len(interface["allReadOnlyMounts"]) == 24
+    require(len(interface["allReadOnlyMounts"]) == (23 if repaired else 24)
             and interface["allReadOnlyMounts"][:-1] == plan["mounts"]
             and interface["inputInventory"] == plan["inventory"]
-            and interface["evidenceInventory"] == plan["evidence"], "Frozen pilot interface drift")
+            and (repaired_evidence_matches(interface, plan) if repaired else
+                 interface["evidenceInventory"] == plan["evidence"]), "Frozen pilot interface drift")
     require(interface["runtimeRequirements"]["bounds"] == plan["bounds"]
             and interface["runtimeRequirements"]["gpuUuid"] == GPU_UUID
             and interface["canonicalPlanSha256"] == plan["planSha256"], "Pilot bounds/plan drift")
@@ -934,32 +1048,42 @@ def pilot_inputs(interface, plan):
         require(Path(actual["path"]) == Path(row["hostPin"]["path"])
                 and actual["bytes"] == row["hostPin"]["bytes"]
                 and actual["sha256"] == row["hostPin"]["sha256"], "Pilot host/container pin mismatch")
-    for evidence in interface["evidenceInventory"].values():
+    for evidence in (plan["evidence"].values() if repaired else interface["evidenceInventory"].values()):
         mapped(evidence)
-    mapped(interface["allReadOnlyMounts"][-1]["pin"])
+    mapped({**interface["plan"], "path": interface["allReadOnlyMounts"][-1]["containerPath"]}
+           if repaired else interface["allReadOnlyMounts"][-1]["pin"])
 
 
-def reference_checks(root_instruction, execution_state, baseline=False, pilot=False):
+def reference_checks(root_instruction, execution_state, baseline=False, pilot=False, repaired=False, release_sha=None):
     started = time.perf_counter()  # Pilot's 900s includes pin checks and cleanup.
+    require(not repaired or pilot, "Repaired authority is fit-only")
     require(not (baseline and pilot), "Reference and fit authorities are distinct")
-    prepared = FIT_PREP if pilot else (BL_PREP if baseline else REF)
-    run_root = FIT_RUN if pilot else (BL_RUN if baseline else REF_RUN)
-    root_sha = FIT_ROOT_SHA if pilot else (BL_ROOT_SHA if baseline else REF_ROOT_SHA)
-    runner_sha = FIT_RUNNER_SHA if pilot else (BL_RUNNER_SHA if baseline else REF_RUNNER_SHA)
-    interface_sha = FIT_INTERFACE_SHA if pilot else (BL_INTERFACE_SHA if baseline else REF_INTERFACE_SHA)
+    prepared = REPAIRED_PREP if repaired else (FIT_PREP if pilot else (BL_PREP if baseline else REF))
+    run_root = REPAIRED_RUN if repaired else (FIT_RUN if pilot else (BL_RUN if baseline else REF_RUN))
+    root_sha = release_sha if repaired else (FIT_ROOT_SHA if pilot else (BL_ROOT_SHA if baseline else REF_ROOT_SHA))
+    runner_sha = REPAIRED_RUNNER_SHA if repaired else (FIT_RUNNER_SHA if pilot else (BL_RUNNER_SHA if baseline else REF_RUNNER_SHA))
+    interface_sha = REPAIRED_INTERFACE_SHA if repaired else (FIT_INTERFACE_SHA if pilot else (BL_INTERFACE_SHA if baseline else REF_INTERFACE_SHA))
     runner_name = "train_building_ramp.py" if pilot else "compare_ramp_torch.py"
-    plan_pins = {"pilot-fit": FIT_PLAN_SHA} if pilot else ({"experimental-baseline": BL_PLAN_SHA} if baseline else REF_PLANS)
-    task_id = "D07-RFDETR-PILOT-FIT-ACTUAL" if pilot else ("D07-RFDETR-TORCH-BASELINE-V2-ACTUAL" if baseline else "D07-RFDETR-TORCH-REFERENCE")
-    require(root_instruction == run_root / "root-assignment.txt"
-            and pin(root_instruction)["sha256"] == root_sha, "Exact reference root instruction required")
+    plan_pins = {"repaired-pilot-fit": REPAIRED_PLAN_SHA} if repaired else ({"pilot-fit": FIT_PLAN_SHA} if pilot else ({"experimental-baseline": BL_PLAN_SHA} if baseline else REF_PLANS))
+    task_id = REPAIRED_TASK if repaired else ("D07-RFDETR-PILOT-FIT-ACTUAL" if pilot else ("D07-RFDETR-TORCH-BASELINE-V2-ACTUAL" if baseline else "D07-RFDETR-TORCH-REFERENCE"))
+    interface_name = "interface.json" if repaired else "mount-interface.json"
+    if repaired:
+        interface, repaired_plan = repaired_metadata()
+        root_release = repaired_release(root_instruction, release_sha, interface, repaired_plan)
+    else:
+        require(root_instruction == run_root / "root-assignment.txt"
+                and pin(root_instruction)["sha256"] == root_sha, "Exact reference root instruction required")
     require(pin(prepared / runner_name)["sha256"] == runner_sha
-            and pin(prepared / "mount-interface.json")["sha256"] == interface_sha, "Reference runner/interface drift")
+            and pin(prepared / interface_name)["sha256"] == interface_sha, "Reference runner/interface drift")
     save(run_root / "attempt.json", {"fitAttempts":1,"evaluationAttempts":0,"rootInstruction":pin(root_instruction)} if pilot else ({"baselineAttempts":1,"rootInstruction":pin(root_instruction)} if baseline else {"smokeAttempts":1,"conditionalAll24Attempts":1,"rootInstruction":pin(root_instruction)}))
-    base = profile(validate_old_output=False)
-    interface = json.loads((prepared / "mount-interface.json").read_bytes())
+    base = profile(validate_old_output=False, repaired_metadata=(interface, repaired_plan) if repaired else None)
+    if repaired:
+        base.pop("adapterPlanOnlyArgv")
+        base["adapterFitArgv"] = interface["argv"]
+    interface = json.loads((prepared / interface_name).read_bytes())
     output = host_path(interface["writableOutput" if pilot else "replaceWritableOutput"]["hostPath"], exists=False)
     if pilot:
-        require(output == FIT_PREP / "output", "Exact new pilot output required")
+        require(output == prepared / "output", "Exact new pilot output required")
     require(not output.exists() or not any(output.iterdir()), "Reference output must be new/empty")
     output.mkdir(exist_ok=True)
     docker = ["docker","--context","desktop-linux"]
@@ -984,27 +1108,32 @@ def reference_checks(root_instruction, execution_state, baseline=False, pilot=Fa
     require(all(actual_image[k]==retained[k] for k in ["Id","Config","RootFS","Descriptor"]),"Immutable reference image drift")
     smoke=None; failure=None
     try:
-        for mode in (["pilot-fit"] if pilot else (["experimental-baseline"] if baseline else ["smoke","development"])):
-            plan_path=prepared/("pilot-plan.json" if pilot else ("baseline-plan.json" if baseline else mode+"-plan.json"))
+        for mode in (["repaired-pilot-fit"] if repaired else (["pilot-fit"] if pilot else (["experimental-baseline"] if baseline else ["smoke","development"]))):
+            plan_path=prepared/("plan.json" if repaired else ("pilot-plan.json" if pilot else ("baseline-plan.json" if baseline else mode+"-plan.json")))
             require(pin(plan_path)["sha256"]==plan_pins[mode],"Frozen reference plan drift")
             plan=json.loads(plan_path.read_bytes())
-            if pilot: pilot_inputs(interface, plan)
+            if pilot: pilot_inputs(interface, plan, repaired=repaired)
             gates=run_root/mode;gates.mkdir()
             auth_path=gates/"authorization.json"; control_path=gates/("current-process-preflight.json" if pilot else "preflight.json")
             auth={"schemaVersion":"ramp-pilot-training-authorization/1" if pilot else ("ramp-torch-baseline-authorization/2" if baseline else "ramp-torch-reference-authorization/1"),"rootThreadId":"01a0ed8a-4383-79c3-a0ae-35c1e969ef66",
                 "rootAuthorized":True,"mode":mode,"planSha256":plan["planSha256"],"scriptSha256":runner_sha,
-                "rootAssignmentSha256":root_sha,"rootAssignment":root_instruction.read_text(encoding="utf-8")}
+                "rootAssignmentSha256":root_sha,"rootAssignment":root_instruction.read_bytes().decode("utf-8") if repaired else root_instruction.read_text(encoding="utf-8")}
             if baseline:
                 auth.update(baselinePolicy=plan["baselinePolicy"],prerequisites=plan["prerequisites"])
             if pilot:
                 assignment_path = gates / "root-fit-assignment.json"
-                assignment = {"schemaVersion":"ramp-pilot-root-assignment/1", "task":"D07-RFDETR-PILOT-FIT-EXECUTE",
+                assignment = {"schemaVersion":"ramp-pilot-root-assignment/1", "task":REPAIRED_TASK if repaired else "D07-RFDETR-PILOT-FIT-EXECUTE",
                     "rootTask":task_id, "rootThreadId":auth["rootThreadId"], "fitAuthorized":True,
                     "evaluationAuthorized":False, "planSha256":plan["planSha256"], "scriptSha256":runner_sha,
                     "modelOwnerThreadId":"01a0fbd5-4561-7692-b366-ebd123380593",
                     "rootInstruction":pin(root_instruction), "verbatimRootInstruction":auth["rootAssignment"]}
+                if repaired:
+                    assignment.update(lossImplementation=plan["lossImplementation"], lossDiagnostics=False)
+                    auth.update(lossImplementation=plan["lossImplementation"], lossDiagnostics=False,
+                        launcherSourceSha256=root_release["launcherSource"]["sha256"],
+                        nativeEntrySha256=root_release["nativeEntry"]["sha256"])
                 save(assignment_path, assignment)
-                auth.update(scope="one_fixed_pilot_fit_no_evaluation", recipe=plan["trainingArguments"],
+                auth.update(scope=REPAIRED_SCOPE if repaired else "one_fixed_pilot_fit_no_evaluation", recipe=plan["trainingArguments"],
                     bounds=plan["bounds"], evidence=plan["evidence"], modelOwnerThreadId=assignment["modelOwnerThreadId"],
                     rootAssignment={**pin(assignment_path),"path":"/inputs/pilot/root-fit-assignment.json"})
             save(auth_path,auth);save(control_path,{"state":"awaiting_actual_process"})
@@ -1054,6 +1183,10 @@ def reference_checks(root_instruction, execution_state, baseline=False, pilot=Fa
                 source=source.replace("/inputs/plan/mounted-config.json", "/inputs/pilot/plan.json")
                 source=source.replace("config.stat().st_size==52751", "config.stat().st_size==96561")
                 source=source.replace(CONFIG[2], FIT_PLAN_SHA).replace("actual_reference_native_control_passed", "actual_pilot_native_control_passed")
+            if repaired:
+                source = repaired_native_source()
+                require(hashlib.sha256(source.encode()).hexdigest() == root_release["nativeEntry"]["sha256"],
+                        "Released native entry drift")
             compile(source,"<reference-current-process>","exec")
             args=base["createArgv"][:base["createArgv"].index("--mount")]
             args[args.index("--name")+1]=run_root.name+"-"+mode+"-"+uuid.uuid4().hex[:12]
@@ -1107,7 +1240,8 @@ def reference_checks(root_instruction, execution_state, baseline=False, pilot=Fa
                 require(exit_code==0,"Reference worker failed; see "+str(log))
                 state=json.loads(command([*docker,"inspect","--format","{{json .State}}",cid]))
                 require(state["ExitCode"]==0 and not state["Running"] and not state["OOMKilled"],"Reference resource/exit failure")
-                result=json.loads((output/("pilot-fit-v1" if pilot else Path(plan["outputDir"]).name)/"result.json").read_bytes())
+                fit_folder = "repaired-pilot-fit-v1" if repaired else "pilot-fit-v1"
+                result=json.loads((output/(fit_folder if pilot else Path(plan["outputDir"]).name)/"result.json").read_bytes())
                 if pilot:
                     require(result["schemaVersion"]=="ramp-pilot-training-result/1" and result["state"]=="fit_completed_unqualified"
                             and result["fixedFinalCheckpoint"] is True and result["optimizerUpdates"]==36
@@ -1115,8 +1249,11 @@ def reference_checks(root_instruction, execution_state, baseline=False, pilot=Fa
                             and result["evaluationRun"] is False and result["developmentLossHistory"]==[]
                             and result["heldOutTestOpened"] is False and result["promotion"] is False
                             and result["authorizationSha256"]==pin(auth_path)["sha256"], "Incomplete/drifted pilot result")
+                    if repaired:
+                        require(result["planSha256"] == plan["planSha256"] and result["task"] == interface["task"]
+                                and result["lossImplementation"] == plan["lossImplementation"], "Repaired result identity drift")
                     for name, expected in result["checkpointFiles"].items():
-                        actual=pin(output/"pilot-fit-v1/checkpoint"/name)
+                        actual=pin(output/fit_folder/"checkpoint"/name)
                         require((actual["bytes"],actual["sha256"])==(expected["bytes"],expected["sha256"]), "Saved pilot checkpoint pin drift")
                     require(set(result["checkpointFiles"])=={"model.safetensors","config.json","preprocessor_config.json"}, "Fixed final trio missing")
                 if baseline:
@@ -1263,17 +1400,26 @@ def main():
     parser.add_argument("--torch-baseline", action="store_true")
     parser.add_argument("--score-torch-baseline", action="store_true")
     parser.add_argument("--pilot-fit", action="store_true")
+    parser.add_argument("--repaired-pilot-fit", action="store_true")
     parser.add_argument("--prepare-empty-loss-probe", action="store_true")
     parser.add_argument("--empty-loss-probe", action="store_true")
     parser.add_argument("--root-authorization", type=Path)
+    parser.add_argument("--root-authorization-sha256", help="Exact later repaired-fit root release hash")
     parser.add_argument("--runtime-binding", type=Path)
     parser.add_argument("--readback", type=Path, help="Validate saved exact Docker inspect JSON; no Docker call")
     args = parser.parse_args()
     execution_state = {"attempted": False, "confirmed": False}
     try:
         require(sum([args.execute,args.torch_reference,args.torch_baseline,args.score_torch_baseline,args.pilot_fit,
-                     args.prepare_empty_loss_probe,args.empty_loss_probe])<=1,
+                     args.prepare_empty_loss_probe,args.empty_loss_probe,args.repaired_pilot_fit])<=1,
                 "Only one explicitly authorized execution route allowed")
+        if args.repaired_pilot_fit:
+            require(args.root_authorization is not None and args.root_authorization_sha256 is not None,
+                    "New repaired-fit root release/hash absent; refused before execution")
+            reference_checks(args.root_authorization, execution_state, pilot=True, repaired=True,
+                             release_sha=args.root_authorization_sha256)
+            print(json.dumps({"status":"fit_completed_unqualified","experimentExecution":True,"trainingAuthorized":True,"evaluationRun":False}))
+            return
         if args.prepare_empty_loss_probe:
             prepared=prepare_empty_probe(args.root_authorization)
             save(PROBE/"prepared.json",prepared)
