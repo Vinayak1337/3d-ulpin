@@ -1218,5 +1218,162 @@
       "permissions": "never/danger-full-access"
     },
     "privateFinalizationReceipt": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\repaired-finalization.json"
+  },
+  "repairedPilotLauncherPreparation": {
+    "task": "D07-RFDETR-REPAIRED-PILOT-LAUNCHER-PREP",
+    "state": "prepared_only_execution_disabled",
+    "ownerThreadId": "01a0fbd5-4561-7692-b366-ebd123380593",
+    "returnThreadId": "01a0ed8a-4383-79c3-a0ae-35c1e969ef66",
+    "ownerBase": "ba81c4e798c555a7bbc1ee209619887bf68a45b0",
+    "observedReadOnlyStagingHead": "549dcebd73549d74b750cef4c3a51d5663dfc92c",
+    "backendPreparationCommit": "af23f24be0c06bed24a0e67c2416bf39c033453e",
+    "futureExecutionTask": "D07-RFDETR-REPAIRED-PILOT-FIT-EXECUTE",
+    "futureScope": "one_fixed_repaired_pilot_fit_no_evaluation",
+    "authority": {
+      "fitAuthorized": false,
+      "evaluationAuthorized": false,
+      "gpuAssigned": false,
+      "actualRootReleaseCreated": false,
+      "currentPidPreflightCreated": false,
+      "requires": "Later root acceptance/release JSON with externally supplied exact SHA and exclusive GPU/container window serialized against D08 live API; prepared templates and prior fit/CPU authorities are inert."
+    },
+    "pins": {
+      "plan": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\plan.json",
+        "bytes": 82606,
+        "sha256": "03d7ebad4b4b75643c2bca894a5472ad37a4e4277168a0730a4c4c6c123c4293"
+      },
+      "interface": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\interface.json",
+        "bytes": 42094,
+        "sha256": "e4da828972aac67aeffd0583077ad9609079d31b9273ec4c7c9c1e3f1ee64836"
+      },
+      "runner": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\train_building_ramp.py",
+        "bytes": 78902,
+        "sha256": "718740ff8b0fe5bbf403873c854c07d9811e1551a148aef1f5581d16e8a8eccd"
+      },
+      "source": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\execution-code.py",
+        "bytes": 112143,
+        "sha256": "5b64052de06140d7f230801b60758bff036178a5ac4e50cf77f0d808b3ff3e5a"
+      },
+      "nativeEntry": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\native-entry.py",
+        "bytes": 10155,
+        "sha256": "748a49353d99ac4b76780efcfd021e78965de665b81e86db93bf5913e304a7b1"
+      },
+      "supervisor": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\supervise.py",
+        "bytes": 5156,
+        "sha256": "3daddf9109216b40736b19959243cd393e1feb18ca8dcf03f7265813bf71f669"
+      },
+      "hostJobGuard": {
+        "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\document-models\\run_trial.py",
+        "bytes": 23948,
+        "sha256": "7b222f53865f49289fd67c81c0a2514bf5493c4469c9f45eabcfff0efa684c2f"
+      },
+      "inertReleaseTemplate": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\root-release.template.json",
+        "bytes": 3084,
+        "sha256": "2caf9c53c5a87fb295fcb455342c1d17f8e1ce30315620d45dab84d9de05f00c"
+      },
+      "procedure": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\PROCEDURE.md",
+        "bytes": 3565,
+        "sha256": "f17f2b987278279304bc5d58a88599259b8e2b6dcdc250aaa1fe0014601d405c"
+      },
+      "checks": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\preparation-checks.json",
+        "bytes": 2212,
+        "sha256": "6cfa4e57a426488b44922dc071b1f9282aa2cdacb971eb5606a1683c2380bad1"
+      },
+      "preparationScript": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\prepare_launcher.py",
+        "bytes": 10118,
+        "sha256": "34c4e860d4c43617befde45281ee90afa51ae3381016e9b4e2f6d6818850c912"
+      }
+    },
+    "canonicalPlanSha256": "c5fc1577fde353a92652d12913b54a4c0a9a838dd563c2a49965660c8246134d",
+    "lossImplementation": {
+      "revision": "ulpin-rfdetr-empty-mask-scalar/1",
+      "library": "transformers",
+      "version": "5.17.0",
+      "sourcesCanonicalLfSha256": {
+        "loss_rf_detr": "db5a352ca7c9c0e0cfc2af7af29e6d348ec72391b5b82b38fedf23f0b4d32ece",
+        "loss_lw_detr": "c7b271e3011dca508736fd8fec310a137e57da96b3dcdad2c60bc3d22ef5ce98"
+      },
+      "change": "Only empty matched mask CE/dice return source_masks.sum() scalar zeros",
+      "scope": "RF-DETR segmentation model instance during explicitly bound operation"
+    },
+    "implementation": "Explicit --repaired-pilot-fit retains existing host Job/Docker/readback/native/pause/release/runner/cleanup flow. New root JSON binds source/entry/supervisor/guard/plan/loss/GPU/window; lossImplementation enters both fit authorization and root-fit-assignment. Host avoids old development source hashing; container has no development RGB/annotations/metadata snapshot. Final output uses repaired-pilot-fit-v1.",
+    "recipe": {
+      "epochs": 6,
+      "optimizerUpdates": 36,
+      "trainExamples": 144,
+      "fp32": true,
+      "evaluationRun": false,
+      "checkpointSelection": "fixed_final_only",
+      "finalFiles": [
+        "model.safetensors",
+        "config.json",
+        "preprocessor_config.json"
+      ]
+    },
+    "bounds": {
+      "cpu": 2,
+      "computeThreads": 2,
+      "containerMemoryBytes": 5368709120,
+      "swapBytes": 0,
+      "pids": 32,
+      "hostJobMemoryBytes": 536870912,
+      "gpuAllocationBytes": 5368709120,
+      "fitAndCleanupSeconds": 900,
+      "cleanupReserveSeconds": 45,
+      "innerFitSeconds": 855
+    },
+    "verification": {
+      "preparationExit": 0,
+      "syntaxCompiled": [
+        "launcher",
+        "native entry",
+        "supervisor",
+        "PID gate"
+      ],
+      "readOnlyMounts": 23,
+      "futureGateMounts": 3,
+      "writableOutputMounts": 1,
+      "inventoryPinsDeclared": 40,
+      "metadataMappingChecks": {
+        "mapped": 49,
+        "realSourceReadsOrHashes": 0
+      },
+      "historicalCode": {
+        "unchangedDefinitions": 14,
+        "nativeControlLiteralUnchanged": true,
+        "referenceBridgeLiteralUnchanged": true,
+        "historicalPilotBridgeAssemblyUnchanged": true,
+        "historicalModesExecuted": false
+      },
+      "changedCodeReview": "Reviewed root refusal before attempt/output, pinned supervisory PID release, exact mounts/environment/image/resource/UUID before heavy imports, current-PID handoff, repaired runner/result schema and final trio, exact-ID cleanup and retained inventory. Historical evidence remains unchanged.",
+      "preparationCorrection": "Initial metadata checker exit1 exposed host evidence-pin list versus container evidence dict. Mapped retained identities explicitly; also adapted top-level plan pin and actual result identity fields before freezing. Corrected checks exit0; no runtime attempt.",
+      "dockerCalls": 0,
+      "modelsOrForwards": 0,
+      "backwardOrOptimizer": 0,
+      "fits": 0,
+      "hostJobsOrContainersCreated": 0,
+      "originalDatasetHashesOrModelWeightsRead": 0,
+      "supervisorExecuted": false,
+      "runtimeInventory": "UNOBSERVED",
+      "outputCreated": false
+    },
+    "resourcesAtReturn": "No task-owned persistent processes, Jobs, containers, services or GPU reservation created. Tool Python preparation exited. Existing runtime inventory and sources were not inspected/rehashed.",
+    "limitations": "Metadata/code preparation only. Fresh Docker availability/inventory, sole GPU/runtime ownership, native same-PID proof and actual fit finite losses/capacity/trio remain future execution prerequisites; fit completion will not qualify quality. Raw ONNX parity remains FAILED; saved-candidate comparison needs separate later authorization. No promotion or gate claim.",
+    "settings": {
+      "requested": "gpt-6.1-sol/xhigh/default-standard1x",
+      "observedModelEffortTier": null,
+      "suppliedPermissions": "never/danger-full-access"
+    },
+    "privateFinalizationReceipt": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\finalization.json"
   }
 }
