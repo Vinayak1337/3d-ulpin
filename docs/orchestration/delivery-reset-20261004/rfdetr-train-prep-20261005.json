@@ -363,7 +363,7 @@
     "suppliedApprovalPolicy": "never",
     "suppliedSandbox": "danger-full-access"
   },
-  "latestAmendment": "nonfiniteDiagnosis",
+  "latestAmendment": "emptyMaskScalarRepair",
   "pilotFitPreparation": {
     "task": "D07-RFDETR-PILOT-FIT-PREP",
     "date": "2026-10-05",
@@ -673,6 +673,96 @@
       "requested": "gpt-6.1-sol/xhigh/default-standard1x",
       "actualPerTurnModelEffortTier": null,
       "suppliedPermissions": "never/danger-full-access"
+    }
+  },
+  "emptyMaskScalarRepair": {
+    "task": "D07-RFDETR-EMPTY-MASK-LOSS-FIX",
+    "date": "2026-10-06",
+    "state": "implemented_tiny_criterion_verified_real_patched_probe_pending",
+    "baseCommit": "8f5081e053a755d0ada861fa29d1b9d78d226cbb",
+    "branch": "task/d07-rfdetr-empty-mask-loss-fix-20261006",
+    "owned": [
+      "scripts/usp/learning/train_building_ramp.py",
+      "scripts/usp/learning/test_rfdetr_empty_mask_loss.py",
+      "docs/orchestration/delivery-reset-20261004/rfdetr-train-prep-20261005.json"
+    ],
+    "actualFailureEvidence": {
+      "ownerCommit": "7b6c93376526b56504f3efa698429e1a6c1e3d4d",
+      "finalization": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\correction-finalization.json",
+        "bytes": 5359,
+        "sha256": "f12f7f64398a7f33f29af47dbbbbdd9b44a011340fef4ccb78bece78f201d5fb"
+      },
+      "finding": "One retained native WindowsCPU experiment2forwards: positive1 scalar30.342233657836914/all36terms scalar finite; legitimate empty13 total and12 main/aux0-3/encoder maskCE/dice empty[0,108,108], all36finite/zeroNaNInf. Confirms this route empty-mask scalar-contract defect.",
+      "historicalCudaFailure": "Failing identity/component UNKNOWN; no retroactive attribution. Earlier failure/diagnosis/CPU attempts stay unchanged."
+    },
+    "lossImplementation": {
+      "revision": "ulpin-rfdetr-empty-mask-scalar/1",
+      "library": "transformers",
+      "version": "5.17.0",
+      "sourcesCanonicalLfSha256": {
+        "loss_rf_detr": "db5a352ca7c9c0e0cfc2af7af29e6d348ec72391b5b82b38fedf23f0b4d32ece",
+        "loss_lw_detr": "c7b271e3011dca508736fd8fec310a137e57da96b3dcdad2c60bc3d22ef5ce98"
+      },
+      "change": "Only empty matched mask CE/dice return source_masks.sum() scalar zeros",
+      "scope": "RF-DETR segmentation model instance during explicitly bound operation"
+    },
+    "implementation": "Version/source-bound project callable keeps pinned upstream segmentation entry bytecode and shallow isolated globals with one RfDetrImageLoss subclass. Only source_masks.numel()==0 returns source_masks.sum() scalar zeros for CE/dice. Nonempty super path, matcher/CE/boxes/normalization/main/aux/encoder/weighting unchanged. No global mutation or installed environment changes; model instance context restores previous explicit/default loss even on exception.",
+    "coupledChange": "ulpin-rfdetr-empty-mask-scalar/1 only; labels/model/head/seed/recipe/LR/precision/optimizer and scalar/finite guards unchanged",
+    "authority": "New generated metadata records lossImplementation and coupledChanges.emptyMaskLoss. Plan/gate/root assignment explicitly bind same revision/source pins + current script/plan. Historical frozen pilot lacking field refuses; baseline/probe original artifacts untouched. This change grants no fit/probe permission.",
+    "teacherNextUse": "After separate accepted root scope/current-PID/native/resources, teacher binds fresh plan/code/source pins and uses with runner.repaired_rfdetr_model_loss(model, plan[\"lossImplementation\"]): for the patched2input confirmation. Do not invoke --execute (six-epoch fit). Confirm unchanged positive loss and empty scalar finite total/12mask terms through model; no optimizer/backward in that confirmation unless separately assigned.",
+    "artifacts": {
+      "runner": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-empty-mask-loss-fix-20261006\\train_building_ramp.py",
+        "bytes": 76048,
+        "sha256": "25d469eee1d06fe7bb97b63b857082b77df17eb8cc45ab04bfd62af5f62fbbd6"
+      },
+      "test": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-empty-mask-loss-fix-20261006\\test_rfdetr_empty_mask_loss.py",
+        "bytes": 7883,
+        "sha256": "1cd065125a822fbbfe5c2567a5f463cac51d2c8c5cda17ab0e3257823e86e409"
+      },
+      "checks": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-empty-mask-loss-fix-20261006\\checks.json",
+        "bytes": 2020,
+        "sha256": "47204892be125263d03ed59a3cbdec524355f3571ed8a839fea72eac0ca964c1"
+      }
+    },
+    "verification": {
+      "tests": 4,
+      "exitCode": 0,
+      "historicalPlanOnlyExit": 2,
+      "syntaxExit": 0,
+      "diffCheckExit": 0,
+      "details": [
+        "Actual upstream segmentation function/matcher/criterion with synthetic4x4 tensors,13 groups,main/one aux/encoder; 6mask terms all0D finite zeros; total positive classification retained; gradients zero but connected for all3 mask tensors, CE logits nonzero gradients",
+        "Nonempty original vs repaired full loss total/all named terms/mask gradients exactly equal with seed42; source targets untouched",
+        "NaN total/Inf component/empty total still fail original scalar/finite predicate",
+        "Model-instance default/explicit loss restored even after operation exception; globals and original entry bytecode untouched",
+        "Wrong binding/actual source-hash drift refused; historical plan and unbound execute blocked before model imports"
+      ],
+      "scope": "Tiny tensor loss/autograd only, no model/checkpoint/image/dataset/optimizer/GPU/train/forward/evaluation execution",
+      "changedCodeReview": "Reviewed isolated function globals/instance restoration, source/version drift stop, source sum preserves graph and CE total, gate bindings/default refusal, nonempty delegation and original scalar/finite predicate. No unrelated saturation repair."
+    },
+    "gaps": [
+      "Actual patched original-checkpoint positive1/empty13 confirmation pending teacher/root assignment",
+      "No full-model gradient/fit/CUDA/quality/candidate/release qualification; historical CUDA failing identity unknown",
+      "Future fit needs new named code/plan/root authority, applicable native/resource/sole-GPU proof and retained decision gates; no automatic six-epoch retry"
+    ],
+    "cleanup": {
+      "ownedProcessRemaining": false,
+      "gpuTaken": false,
+      "modelInstantiated": false,
+      "optimizerRun": false,
+      "servicesStarted": false,
+      "installedLibraryChanged": false,
+      "sourceDataOrLabelsChanged": false,
+      "primaryStagingEdited": false
+    },
+    "settings": {
+      "requested": "gpt-6.1-sol/xhigh/default-standard1x",
+      "actualPerTurnModelEffortTier": null,
+      "permissions": "never/danger-full-access"
     }
   }
 }
