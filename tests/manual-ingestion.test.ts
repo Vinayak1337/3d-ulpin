@@ -40,7 +40,8 @@ test('native metadata retains all baseline operations and admits only declared i
     }
     const operations=Object.values(document.paths).flatMap(item=>Object.values(item||{})).filter((item:any)=>item?.operationId);
     // Other registered modules also have declared additions; the old ingestion-only total (235) was stale.
-    const publishedOperations=Object.values(accepted.paths).flatMap(item=>Object.values(item||{})).filter((item:any)=>item?.operationId);
+    const publishedOperations=Object.values(accepted.paths).flatMap(item=>Object.values(item||{}))
+      .filter((item:any)=>item?.operationId);
     assert.equal(operations.length,publishedOperations.length);
   }finally{await app.close();}
 });
