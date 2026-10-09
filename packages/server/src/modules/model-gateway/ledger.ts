@@ -83,13 +83,14 @@ export class PgModelCallLedger {
       const reserve = reservation(this.config), cap = BigInt(this.config.projectCapMicroInr);
       if (checkedAmount(BigInt(amounts.total) + reserve) > cap)
         deny('MODEL_PROJECT_CAP','The reservation would exceed the hard project cap.');
-      if(this.config.projectDailyCapMicroInr){
-        const row=(await client.query(`SELECT COALESCE(sum(CASE WHEN state='settled' THEN actual_micro_inr
+      if (this.config.projectDailyCapMicroInr) {
+        const dailyQuery = await client.query(`SELECT COALESCE(sum(CASE WHEN state='settled' THEN actual_micro_inr
           WHEN state='released' THEN 0 ELSE reserve_micro_inr END),0)::text total FROM usp_model_calls
-          WHERE created_at >= date_trunc('day',$1::timestamptz AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`,[budget.now])).rows[0];
-        const dailyAmount=z.object({total:z.string().regex(/^\d+$/)}).parse(row);
-        if(checkedAmount(BigInt(dailyAmount.total)+reserve)>BigInt(this.config.projectDailyCapMicroInr))
-          deny('MODEL_DAILY_CAP','The reservation would exceed the daily project cap.');
+          WHERE created_at >= date_trunc('day',$1::timestamptz AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`, [budget.now]);
+        const dailyAmount = z.object({ total: z.string().regex(/^\d+$/) }).parse(dailyQuery.rows[0]);
+        if (checkedAmount(BigInt(dailyAmount.total) + reserve) > BigInt(this.config.projectDailyCapMicroInr)) {
+          deny('MODEL_DAILY_CAP', 'The reservation would exceed the daily project cap.');
+        }
       }
       const nonIngestCap = cap * BigInt(10000 - this.config.ingestProtectedBps) / 10000n;
       if (input.consumer !== 'INGEST' && BigInt(amounts.other) + reserve > nonIngestCap)
