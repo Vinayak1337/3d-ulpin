@@ -76,7 +76,54 @@ export function manualTeacherPlan(profile:ColumnProfileDocument,code:string):Map
     issues:profile.columns.map(column=>({sourceField:column.name,state:'needs_input',code})),state:'needs_input',
     profileHash:columnProfileHash(profile),attempts:0,replayed:false,validationCodes:[]};
 }
-/** No import throws for provider/configuration/budget failures. Issues, not invented targets, drive manual mapping. */
+type TeacherOutputField = z.infer<typeof TeacherOutputSchema>['fields'][number];
+
+function hasFieldsOnly(raw: unknown): raw is { fields: unknown[] } {
+  return !!raw && typeof raw === 'object' && Object.keys(raw).length === 1
+    && 'fields' in raw && Array.isArray(raw.fields);
+}
+
+function sourceAliasOf(raw: unknown): unknown {
+  if (raw && typeof raw === 'object' && 'sourceField' in raw) return raw.sourceField;
+  return undefined;
+}
+
+function retainValidFields(lastRaw: unknown, profile: ColumnProfileDocument) {
+  const unknowns: TeacherOutputField[] = profile.columns.map((_, index) => ({
+    sourceField: alias(index), target: 'unknown', operation: { kind: 'copy' },
+    confidence: 'none', rationale: 'Manual mapping required.',
+  }));
+  const retained = [...unknowns];
+  const supplied = hasFieldsOnly(lastRaw) ? lastRaw.fields : [];
+  const seenTargets = new Set<string>();
+  const duplicateFields = new Set<string>();
+  for (let index = 0; index < unknowns.length; index++) {
+    const matches = supplied.filter(field => sourceAliasOf(field) === alias(index));
+    if (matches.length !== 1) continue;
+    const parsed = TeacherOutputSchema.shape.fields.element.safeParse(matches[0]);
+    if (!parsed.success) continue;
+    const field = parsed.data;
+    const isolated = unknowns.map((unknown, position) => position === index ? field : unknown);
+    if (!validateTeacherOutput({ fields: isolated }, profile).success) continue;
+    if (field.target !== 'unknown' && seenTargets.has(field.target)) {
+      duplicateFields.add(profile.columns[index].name);
+      continue;
+    }
+    retained[index] = field;
+    if (field.target !== 'unknown') seenTargets.add(field.target);
+  }
+  const checked = validateTeacherOutput({ fields: retained }, profile);
+  const plan = checked.success ? checked.plan : manualTeacherPlan(profile, 'TEACHER_INVALID_PLAN').plan;
+  const issues: TeacherIssue[] = plan.fields
+    .filter(field => field.target === 'unknown' || field.confidence < 0.5)
+    .map(field => ({
+      sourceField: field.sourceField, state: 'needs_input',
+      code: duplicateFields.has(field.sourceField) ? 'TEACHER_DUPLICATE_TARGET' : 'TEACHER_INVALID_PLAN',
+    }));
+  return { plan, issues };
+}
+
+/** No import throws for provider/configuration/budget failures. Issues drive manual mapping. */
 export async function proposeMappingWithTeacher(profile:ColumnProfileDocument,options:{context:RequestContext;
   dataPolicy:TeacherDataPolicy;gateway?:ModelGateway;runtime?:()=>Promise<ModelGateway|undefined>;
   authorize:()=>Promise<void>;invocationKey?:string;maxAttempts?:1|2;recordings?:TeacherRecordings}):Promise<MappingTeacherResult>{
@@ -126,22 +173,9 @@ export async function proposeMappingWithTeacher(profile:ColumnProfileDocument,op
     }
     errors=checked.errors.map(error=>error.code);
   }
-  // Preserve individually valid fields; invalid/missing/conflicting fields remain manual, never last-value-wins.
-  const unknowns=profile.columns.map((_,index)=>({sourceField:alias(index),target:'unknown',operation:{kind:'copy'},
-    confidence:'none',rationale:'Manual mapping required.'}));
-  const retained=[...unknowns];
-  const supplied=lastRaw&&typeof lastRaw==='object'&&Object.keys(lastRaw).length===1
-    &&Array.isArray((lastRaw as any).fields)?(lastRaw as any).fields:[];
-  for(let index=0;index<unknowns.length;index++){
-    const matches=supplied.filter((field:any)=>field?.sourceField===alias(index));if(matches.length!==1)continue;
-    const proposal=retained.map((field,i)=>i===index?matches[0]:field);
-    if(validateTeacherOutput({fields:proposal},profile).success)retained[index]=matches[0];
-  }
-  const partial=validateTeacherOutput({fields:retained},profile);
-  const plan=partial.success?partial.plan:fallback.plan;
-  return {...fallback,plan,attempts,replayed,validationCodes:errors,
-    issues:plan.fields.filter(field=>field.target==='unknown'||field.confidence<0.5)
-      .map(field=>({sourceField:field.sourceField,state:'needs_input',code:'TEACHER_INVALID_PLAN'}))};
+  return {
+    ...fallback, ...retainValidFields(lastRaw, profile), attempts, replayed, validationCodes: errors,
+  };
 }
 /** No writes. Keep issue dispositions on cells as well as proposals when A3 dry-runs the teacher. */
 export function executeTeacherMappingDryRun(result:MappingTeacherResult,rows:readonly MappingRow[],executionContext:MappingExecutionContext){
