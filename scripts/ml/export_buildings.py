@@ -128,6 +128,9 @@ def export_graphs(args: argparse.Namespace, wrapper: Export, example: np.ndarray
         export_debug_graph(wrapper, example, debug, opset=args.opset)
     graph = onnx.load(str(debug))
     onnx.checker.check_model(graph)
+    actual_opset = next(version.version for version in graph.opset_import if version.domain == "")
+    if actual_opset != args.opset:
+        raise ValueError("Reused graph opset differs; request its actual opset explicitly")
     primary = copy.deepcopy(graph)
     del primary.graph.output[2:]
     production = output / "building.onnx"

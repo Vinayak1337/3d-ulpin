@@ -120,6 +120,9 @@ def transfer_reserve(args: argparse.Namespace, model_sha: str, split_sha: str) -
     selection = json.loads(selection_path.read_bytes())
     if selection.get("run_id") != "b4-ka-continue-20261010":
         raise ValueError("TRANSFER denied: selection must compare the finished B4 continuation")
+    fallback = EVIDENCE / "b3-final-dev-selection-20261010/result.json"
+    if selection.get("comparison_sha256") != sha(fallback):
+        raise ValueError("TRANSFER denied: epoch-4 DEV fallback was not compared")
     if not selection.get("final_candidate_fixed") or selection["model_sha256"] != model_sha:
         raise ValueError("TRANSFER denied: fixed DEV-selected model differs")
     finished = Path("E:/BhuAayam-data/ml/runs") / selection["run_id"] / "result.json"

@@ -149,7 +149,6 @@ def main() -> None:
     output = EVIDENCE / args.selection_id
     output.mkdir(exist_ok=False)
     plan = selection_plan(args, entries)
-    write_json(output / "plan.json", plan)
     rows = []
     if args.compare_selection:
         comparison = read_json(args.compare_selection)
@@ -158,6 +157,7 @@ def main() -> None:
         rows.extend(comparison["threshold_results"])
         plan["comparison_selection"] = str(args.compare_selection)
         plan["comparison_sha256"] = sha(args.compare_selection)
+    write_json(output / "plan.json", plan)
     for epoch in entries:
         for threshold in THRESHOLDS:
             path = evaluate_epoch(args, epoch, threshold)

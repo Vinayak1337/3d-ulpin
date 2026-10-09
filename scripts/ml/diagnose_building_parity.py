@@ -7,6 +7,7 @@ from functools import partial
 import json
 from pathlib import Path
 import re
+import subprocess
 import time
 from typing import Any
 
@@ -15,7 +16,7 @@ import onnxruntime as ort
 import torch
 from transformers import RfDetrForInstanceSegmentation
 
-from building_io import EVIDENCE, RUNS, configure_offline, sha, write_json
+from building_io import EVIDENCE, REPO, RUNS, configure_offline, sha, write_json
 from export_buildings import Export, dev_inputs, export_debug_graph, tensor
 
 POINTS = (
@@ -103,6 +104,9 @@ def intermediate_result(
         "schema": "building-intermediate-parity/1",
         "chip_id": chip["source_id"],
         "checkpoint_sha256": sha(args.checkpoint / "model.safetensors"),
+        "dev_annotations_sha256": sha(Path("E:/BhuAayam-data/datasets/ramp/coco/dev/_annotations.coco.json")),
+        "input_rgb_pixel_sha256": chip["rgb_pixel_sha256"],
+        "git_sha": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip(),
         "graph_sha256": sha(graph),
         "dtype": sorted({str(parameter.dtype) for parameter in model.parameters()}),
         "training_modules": sum(module.training for module in model.modules()),
@@ -142,13 +146,39 @@ def run(args: argparse.Namespace, output: Path) -> dict[str, Any]:
     return intermediate_result(args, output, graph, chip, model, reference, actual)
 
 
+def fallback_result(
+    args: argparse.Namespace, load_seconds: float, rows: list[dict[str, Any]], resource: dict[str, int | None]
+) -> dict[str, Any]:
+    return {
+        "schema": "building-pytorch-fallback/1",
+        "status": "measured_not_served",
+        "checkpoint_sha256": sha(args.checkpoint / "model.safetensors"),
+        "config_sha256": sha(args.checkpoint / "config.json"),
+        "providers": ["PyTorch-cpu"],
+        "load_seconds": load_seconds,
+        "cpu_threads": 2,
+        "inference": "FP32/eval/inference_mode",
+        "production_tiling_and_polygonization_reused": True,
+        "inputs": rows,
+        "process_memory_bytes": resource,
+        "api_route_built": False,
+        "holdout_calls": 0,
+        "git_sha": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip(),
+        "limitations": ["Windows CPU, concurrent GPU training; not live API or Linux-container latency"],
+    }
+
+
 def measure_fallback(args: argparse.Namespace) -> dict[str, Any]:
     from PIL import Image
+    import psutil
     from eval_buildings import infer, model_path, production, session
 
     root, selected, counts = dev_inputs()
+    process = psutil.Process()
+    resource: dict[str, int | None] = {"before_model_rss": process.memory_info().rss}
     started = time.perf_counter()
-    native, providers = session(model_path(str(args.checkpoint)), "cpu")
+    native, _ = session(model_path(str(args.checkpoint)), "cpu")
+    resource["model_loaded_rss"] = process.memory_info().rss
     load_seconds = time.perf_counter() - started
     prod = production()
     rows = []
@@ -168,19 +198,9 @@ def measure_fallback(args: argparse.Namespace) -> dict[str, Any]:
                 "seconds": time.perf_counter() - started,
             }
         )
-    return {
-        "schema": "building-pytorch-fallback/1",
-        "status": "measured_not_served",
-        "checkpoint_sha256": sha(args.checkpoint / "model.safetensors"),
-        "providers": providers,
-        "load_seconds": load_seconds,
-        "cpu_threads": 2,
-        "inference": "FP32/eval/inference_mode",
-        "production_tiling_and_polygonization_reused": True,
-        "inputs": rows,
-        "api_route_built": False,
-        "holdout_calls": 0,
-    }
+    memory = process.memory_info()
+    resource.update(final_rss=memory.rss, peak_working_set=getattr(memory, "peak_wset", None))
+    return fallback_result(args, load_seconds, rows, resource)
 
 
 def main() -> None:
