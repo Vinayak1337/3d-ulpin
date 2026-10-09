@@ -126,10 +126,10 @@ function areaFrom(row: any): MapArea {
     featureCount: Number(row.feature_count || 0),
   };
 }
-export async function listAreas(includeArchived = false, client?: PoolClient): Promise<MapArea[]> {
+export async function listAreas(includeArchived = false, client?: PoolClient, readOnly = false): Promise<MapArea[]> {
   const run = client ? client.query.bind(client) : query;
   // Include legacy sites added after the additive migration, without georeferencing them.
-  await run(
+  if (!readOnly) await run(
     "INSERT INTO map_areas(id,site_id,name) SELECT id,id,name FROM registry_sites ON CONFLICT(site_id) DO NOTHING",
   );
   return (
@@ -142,7 +142,7 @@ export async function listAreas(includeArchived = false, client?: PoolClient): P
   ).rows.map(areaFrom);
 }
 export async function getArea(id: string, client?: PoolClient): Promise<MapArea> {
-  const area = (await listAreas(true, client)).find((a) => a.id === id);
+  const area = (await listAreas(true, client, true)).find((a) => a.id === id);
   return area || notFound("Map area not found.");
 }
 async function projectedFeatures(
@@ -270,6 +270,12 @@ export async function areaContext(id: string): Promise<AreaContext> {
     packages: packages.rows.map((r) => r.body),
     latestCheck: latestCheck || null,
   };
+}
+/** Locate a feature's own existing context; display proposals remain separate from recorded features. */
+export async function areaFeatureContext(featureId: string): Promise<AreaContext> {
+  const row = (await query('SELECT area_id FROM physical_features WHERE id=$1', [featureId])).rows[0];
+  if (!row) notFound('Physical feature not found.');
+  return areaContext(row.area_id);
 }
 export async function getPackage(id: string, client?: PoolClient): Promise<ImportPackage> {
   const read=async(current:PoolClient)=>{
