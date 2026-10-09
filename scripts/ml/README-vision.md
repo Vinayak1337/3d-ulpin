@@ -76,3 +76,72 @@ always use exact bytes. The B1 DEV sheet's initial ranking erroneously treated
 undefined F1 on correctly empty chips as worst; the result now points to a
 corrected source/truth/count sheet generated from saved DEV outputs, with zero
 new model calls. Both artifacts and the regression receipt are retained. `plan_rooms` and `storeys` remain pending for their owners.
+
+## B2/B3 checkpoint (G1 owns GPU)
+
+HOLDOUT attempt 1 is committed in `building/b2-installed-holdout-20261010`; **do not
+run attempt 2** without the lead fixing the candidate. No holdout chip inspection
+or tuning was performed. All B3 selection/export inputs are TRAIN or DEV only.
+
+Run 1: PID **35896**, detached Windows process; directory
+`E:/BhuAayam-data/ml/runs/b3-ka-run1-20261010/`. Tail from PowerShell:
+
+```powershell
+Get-Content 'E:/BhuAayam-data/ml/runs/b3-ka-run1-20261010/training.log' -Tail 30 -Wait
+```
+
+Training uses standard Transformers Trainer with the installed Apache-2.0
+satellite safetensors, not the sealed harness. Native RF-DETR 1.11.2's criterion
+already handles empty masks, but the publisher-compatible Transformers 5.17
+criterion still needs `rfdetr_loss.py` (regression `test_rfdetr_empty_mask_loss.py`).
+A direct native-weight compatibility test failed strict parity, including one
+bounded background-slot comparison, so it is **not** a qualified native adapter.
+The deviation from native rfdetr.train is explicit in the model card.
+
+Karnataka TRAIN has 3,581 chips, including 880 empties; all publisher features
+remain present. Training inputs are 256-pixel source chips (each is one production
+tile), Pillow bilinear to 432, ImageNet normalisation, flips only. Batch 1,
+accumulation 4, head LR 1e-4/backbone LR 1e-5, fixed seed 26011, **BF16 AMP**.
+FP16 had finite scalar losses but overflowed unscaled gradients before update 1;
+the single BF16 comparison passed 50 updates with falling loss under 6 GiB.
+`requirements-vision-training.lock` adds train extras/ONNX without changing B1's
+core pins. Model loading stays offline, safetensors only. Local trusted Trainer
+optimizer/scheduler/RNG state is outside Git; never load a remote pickle.
+
+Each epoch writes new `epoch-NNN/` safetensors + resumable Trainer state, briefly
+offloads the parent model/optimizer to CPU, and runs `eval_buildings.py --split dev`
+on CUDA. Only one process uses CUDA at a time. Selection/early stopping uses
+production polygon F1 at .5 (patience 3, min_delta .001); stop after the first fully
+scored epoch boundary beyond 85 minutes, or 12 epochs. `dev-selection.jsonl`
+contains every epoch result. No partial accumulation-window resume is claimed.
+
+After a completed epoch, compare three DEV thresholds (CPU while Run 1 owns GPU):
+
+```bash
+$PY -B scripts/ml/select_buildings.py --run-id b3-ka-run1-20261010 --selection-id NEW_ID
+$PY -B scripts/ml/export_buildings.py --checkpoint E:/BhuAayam-data/ml/runs/b3-ka-run1-20261010/epoch-NNN --run-id NEW_EXPORT_ID
+```
+
+Threshold selection is provisional while training continues; require both gate
+thresholds if any qualify, otherwise choose highest polygon F1. Non-.5 thresholds
+are DEV-only and require the lead binding an updated final profile, never an
+implicit holdout override. The serving registry/profile is untouched (B4).
+
+Exporter is CPU-only, fixed 1x3x432x432; production outputs are logits/masks and a
+retained debug graph exposes boxes for 20-DEV-chip parity. A static-grid PE wrapper
+fixes unsupported traced antialiased bicubic without altering eager inference.
+**Smoke-checkpoint export exists but strict raw-output parity failed**, and one
+ORT-disable-optimisations comparison also failed; do not repeat smoke-export
+attempts or relax tolerances. Export the selected candidate once; if it fails,
+report max differences and resolve encoder-TopK/instance-order sensitivity with
+the lead before serving. Smoke weights/export are not the chosen candidate.
+
+Resume only after confirming PID is dead, using a NEW run-id and the latest fully
+scored checkpoint; retain all old output bytes:
+
+```bash
+$PY -B scripts/ml/launch_building_train.py --run-id NEW_SEGMENT_ID --resume E:/BhuAayam-data/ml/runs/b3-ka-run1-20261010/epoch-NNN --smoke-result E:/BhuAayam-data/ml/runs/b3-ka-smoke-bf16-20261010/result.json
+```
+
+Do not start Run 2 or another GPU task concurrently. Bangladesh downloader is
+separate CPU/network work; let it finish. Run 2 mixing regions is not started here.
