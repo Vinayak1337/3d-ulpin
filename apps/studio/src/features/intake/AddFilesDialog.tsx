@@ -3,10 +3,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { CaretDown, CheckCircle, FileArrowUp, Trash, Warning } from '@phosphor-icons/react';
 import type { FileDetection, ImportBatch } from '@ulpin/api-client/draft';
-import { ApiError, api, type Schemas } from '@ulpin/api-client';
+import { api, type Schemas } from '@ulpin/api-client';
 import { Badge, Banner, Button, DataTable, Dialog, Icon, Skeleton, StatusBadge, formatCount, formatDateTime } from '@ulpin/ui';
 import { demoImportEnabled, inspectDemoFile, startDemoImport } from '../../api/demo-import';
-import { detectBuildingFiles, startBuildingImport, useBuildingRegister, useImportBatch } from '../../api/queries';
+import { apiError, detectBuildingFiles, startBuildingImport, useBuildingRegister, useImportBatch } from '../../api/queries';
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import styles from './AddFilesDialog.module.css';
 
@@ -30,6 +30,9 @@ interface Mapping {
   heightUnit: '' | 'm' | 'ft';
   heightMeaning: string;
 }
+
+/** The unit the officer has confirmed; an unconfirmed unit stays unknown and blocks the import. */
+const heightUnitText = (unit: Mapping['heightUnit']) => ({ m: ' in metres', ft: ' in feet', '': ', unit not chosen' })[unit];
 
 const GIS = /\.(geojson|json|gpkg|zip)$/i;
 const STEPS = ['Drop files', 'Check what we found', 'Confirm'] as const;
@@ -141,7 +144,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
         ? await api.POST('/api/v1/import-packages/inspect', { body: body as never, bodySerializer: (b) => b as unknown as FormData })
         : demo!;
       setFiles((current) => current.map((f) => (f.file !== item.file ? f
-        : result.data ? { ...f, state: 'ready', inspection: result.data, via } : { ...f, state: 'failed', error: new ApiError(result.response.status, '', result.error).message })));
+        : result.data ? { ...f, state: 'ready', inspection: result.data, via } : { ...f, state: 'failed', error: apiError(result.response.status, '', result.error).message })));
       if (result.data) {
         const height = result.data.fields.find((f) => /height|hgt/i.test(f.name) && !/ground/i.test(f.name));
         setMapping((m) => m ?? {
@@ -172,7 +175,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
         ...(mapping.heightField ? { heightField: mapping.heightField, heightUnit: mapping.heightUnit, heightMeaning: mapping.heightMeaning } : {}),
       }));
       const result = await api.POST('/api/v1/import-packages', { body: body as never, bodySerializer: (b) => b as unknown as FormData });
-      if (!result.data) throw new ApiError(result.response.status, '', result.error);
+      if (!result.data) throw apiError(result.response.status, '', result.error);
       return result.data as { id: string; areaId: string };
     },
     onSuccess: async (pkg) => { await client.invalidateQueries(); navigate(`/studio/areas/${pkg.areaId}?package=${pkg.id}`); },
@@ -244,7 +247,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
                 <div><dt>Each feature is</dt><dd>{kindField ? <>read from <span className="ul-id">{kindField}</span>{summary ? <span className="ul-muted"> · {summary}</span> : null}</> : KIND_LABEL[mapping.kind]}</dd></div>
                 <div><dt>Identified by</dt><dd>{mapping.idField ? <span className="ul-id">{mapping.idField}</span> : <span className="ul-error">choose a field</span>}</dd></div>
                 <div><dt>Named by</dt><dd>{mapping.nameField ? <span className="ul-id">{mapping.nameField}</span> : <span className="ul-muted">no name</span>}</dd></div>
-                <div><dt>Height</dt><dd>{mapping.heightField ? <><span className="ul-id">{mapping.heightField}</span> in {mapping.heightUnit === 'ft' ? 'feet' : 'metres'} · {mapping.heightMeaning.toLowerCase()}</> : <span className="ul-muted">unknown (no height field)</span>}</dd></div>
+                <div><dt>Height</dt><dd>{mapping.heightField ? <><span className="ul-id">{mapping.heightField}</span>{heightUnitText(mapping.heightUnit)} · {mapping.heightMeaning.toLowerCase()}</> : <span className="ul-muted">unknown (no height field)</span>}</dd></div>
               </dl>
             ) : (
               <div className={styles.mapping}>
