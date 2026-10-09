@@ -52,7 +52,9 @@ The decisions live in [GOAL.md](GOAL.md); this file tracks what is built, in the
 
 ## Local / live route table
 
-Kept in `apps/studio/src/local/routes.ts`. Every endpoint the Studio calls is listed there with `live` or `local` and the reason. Eight routes the published API serves are `live` (work-queue, areas, area context, building register, source file, import inspect, import start, import progress); the audit against `docs/api/openapi.json` is in [ROUTES-LIVE.md](ROUTES-LIVE.md). Draft routes stay `local` and only answer when `VITE_LOCAL_DATA=on`.
+Kept in `apps/studio/src/local/routes.ts`. Every endpoint the Studio calls is listed there with `live` or `local` and the reason. Eleven routes the published API serves are `live` (work-queue, areas, area context, building register, building ledger, area canonical, building canonical, source file, import inspect, import start, import progress); the audit against `docs/api/openapi.json` is in [ROUTES-LIVE.md](ROUTES-LIVE.md). Draft routes stay `local` and only answer when `VITE_LOCAL_DATA=on`. The local resolvers of the routes that went live were removed (they were dead code), so `pnpm studio:demo` no longer serves the Lake View area, the NYC area or the Swiss floor offline for those routes: the selection demo runs on the live API. The data files and the two tests that read them are kept.
+
+The map draws buildings from `GET /areas/{id}/canonical` (and the explored building's `GET /buildings/{id}/canonical`) through `toSceneInputs()` from `@ulpin/contracts`, resolved in the browser from `packages/contracts/src/canonical/building-scene.ts` (alias in `vite.config.ts`; types in `src/types/contracts-canonical.d.ts`). A candidate record is drawn as a ghosted outline, never with the solid facade of a reviewed one; the inspector states `Candidate` or `Reviewed` and lists the record's gaps. The base map, search, inspector and register keep the context route.
 
 ## Verification
 
@@ -71,6 +73,7 @@ Kept in `apps/studio/src/local/routes.ts`. Every endpoint the Studio calls is li
 | 26 Sep 2026 | Headless Chromium 1440 × 900 journeys: register (5 tabs, floor, deviation); evidence (plan p.3, deed cl.2); review (accept ×4, adjust, reject → continue) → check (open void in 3D); saved batch; record → assign → card → verify → register card enabled; portal home, results, record, map (area, building, record), verify | No page errors |
 | 10 Oct 2026 | `pnpm --filter @ulpin/studio typecheck`, `pnpm --filter @ulpin/studio test` | Pass; 33 tests (the two contract tests were failing on OpenAPI 3.0 exclusive bounds and now run) |
 | 10 Oct 2026 | Vite dev server with `ULPIN_API_TARGET=http://127.0.0.1:3194`, `VITE_LOCAL_DATA` unset, headless Chromium 1440 × 900 | Batches lists the 3 live work items; Bronx map draws 62 proposals and selecting one opens the inspector (this crashed on the published ledger shape before); Gurugram map says its 2 road lines are not drawn; Register of a proposal says no register is recorded; Evidence opens the retained `original.geojson`; Add files inspect (`POST /import-packages/inspect`) profiles a 62-feature and a 1-feature GeoJSON; no import started |
+| 10 Oct 2026 | Vite dev server with `ULPIN_API_TARGET=http://127.0.0.1:3194`, headless Chromium 1440 × 900 | Bronx map draws the 62 candidates as ghosted outlines; selecting one opens the inspector with `Candidate`, Readiness `Not assessed` and the 4 gaps of its canonical record; Gurugram map still says its 2 road features are not drawn (the canonical record gives them no polygon and no line) |
 
 ## Backend requests raised
 
