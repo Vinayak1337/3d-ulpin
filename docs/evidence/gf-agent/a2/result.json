@@ -1,0 +1,242 @@
+{
+  "schemaVersion": "mapping-teacher-a2-evidence/1",
+  "task": "A2",
+  "gate": "GF-AGENT",
+  "qualification": "Offline foundation qualified; no live-provider, publisher-dictionary accuracy or whole-gate claim.",
+  "codeCommit": "7b6cb19bbea397573e90a09c89ec7f418de81a32",
+  "runAt": "2026-10-09T20:12:54.941Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32"
+  },
+  "inputs": [
+    {
+      "input": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+      "sha256": "9214ba1e83683e2735379dd8b17df3269218efde6f6491299b49a1d14a036bce",
+      "permission": "unconfirmed",
+      "purpose": "test_only",
+      "rows": 1,
+      "columns": 8,
+      "profileHash": "285b82eb0517eece88e0827afb19f0c524e2206ef018ae37fc90e7cb81a27a73",
+      "layoutFingerprint": "31348b6fd41e85485472938e2b518c59c565b25f4dc061bdf87ab1a13b1ce24c",
+      "sampleShortfall": true,
+      "sampledCellsPerColumn": 1,
+      "planValidation": "passed",
+      "teacherCalls": 1,
+      "controlReservations": 1,
+      "controlSettlements": 1,
+      "controlActualMicroInr": "131760",
+      "dryRun": {
+        "cells": 8,
+        "candidate": 0,
+        "needsInput": 8,
+        "unknown": 0,
+        "absent": 0,
+        "null": 0,
+        "conflicting": 0
+      },
+      "replayed": true,
+      "replayPaidAdmissions": 0,
+      "sourceHashUnchanged": true
+    },
+    {
+      "input": "E:/BhuAayam-data/task-data/ulpin-data-09/gmda-sectors-59-63a.json",
+      "sha256": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8",
+      "permission": "unconfirmed",
+      "purpose": "test_only",
+      "rows": 2,
+      "columns": 3,
+      "profileHash": "09e83ac718ea855db8963d3717fbf25a3f22f7c0c4693346f6a376be243df63f",
+      "layoutFingerprint": "d1ed55818fe7f509506c4e6d470595be3ffca807c962f8d4e27d3a1a65fecf6f",
+      "sampleShortfall": true,
+      "sampledCellsPerColumn": 2,
+      "planValidation": "passed",
+      "teacherCalls": 1,
+      "controlReservations": 1,
+      "controlSettlements": 1,
+      "controlActualMicroInr": "131760",
+      "dryRun": {
+        "cells": 6,
+        "candidate": 0,
+        "needsInput": 6,
+        "unknown": 0,
+        "absent": 0,
+        "null": 0,
+        "conflicting": 0
+      },
+      "replayed": true,
+      "replayPaidAdmissions": 0,
+      "sourceHashUnchanged": true
+    }
+  ],
+  "checks": [
+    {
+      "command": "pnpm exec tsx --test scripts/agent/mapping-teacher.test.ts",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm exec tsx --test tests/model-gateway/control.test.ts packages/contracts/src/canonical/*.test.ts packages/server/src/modules/usp/ingestion/mapping-plan-v2.test.ts packages/server/src/modules/usp/ingestion/mapping-executor.test.ts packages/server/src/modules/usp/ingestion/unit-table.test.ts tests/adaptive-mapping.test.ts",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm test:ai",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm exec tsc -p scripts/agent/tsconfig.json",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm exec tsc --noEmit --strict --skipLibCheck --target ES2022 --module ESNext --moduleResolution Bundler packages/contracts/src/index.ts packages/contracts/src/usp/index.ts",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "tests": {
+    "newChecks": 10,
+    "existingGatewayAndMappingChecks": 21,
+    "existingGroundingChecks": 22,
+    "failures": 0
+  },
+  "failureModes": [
+    "missing_key",
+    "http_401",
+    "http_402",
+    "http_429_rate_limit",
+    "http_429_insufficient_quota",
+    "timeout",
+    "network_error",
+    "total_cap",
+    "daily_money_cap",
+    "daily_call_cap",
+    "recording_unavailable"
+  ],
+  "invariants": {
+    "publicDevelopmentOnly": true,
+    "heldOutTeacherDenied": true,
+    "privateRestrictedTeacherDenied": true,
+    "noCredentialRotation": true,
+    "repairLimit": 1,
+    "networkRetries": 0,
+    "maxAttemptsIncludingRepair": 2,
+    "registryWrites": 0,
+    "literalsRejected": true,
+    "manualMappingAvailable": true,
+    "rawSourcesUnchanged": true
+  },
+  "replay": {
+    "kind": "recorded_software_control",
+    "recordingDirectory": "C:\\Users\\kvina\\AppData\\Local\\Temp\\a2-evidence-replay-06A1nH",
+    "paidReservations": 0,
+    "keyComponents": [
+      "prompt-template version",
+      "profile hash",
+      "model"
+    ],
+    "liveResponseReplay": "pending_owner_key"
+  },
+  "developmentLabels": {
+    "loader": "implemented",
+    "labelKind": "pseudo_label",
+    "verifiedMeaning": "schema plus local executor dry-run; not truth or review",
+    "withoutRows": "accepted with verified:false; A4 must not learn unverified entries",
+    "actualClaudeLabelsSupplied": 0
+  },
+  "defaultReplayCliCheck": {
+    "command": "pnpm exec tsx scripts/agent/mapping-teacher.ts fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv --public-development",
+    "exitCode": 0,
+    "result": "TEACHER_REPLAY_UNAVAILABLE with valid manual plan and dry-run counts; no key read or network call."
+  },
+  "live": {
+    "calls": 0,
+    "keyEnvironmentVariable": "ULPIN_PROVIDER_KEY_SARVAM",
+    "status": "pending_owner",
+    "command": "pnpm exec tsx scripts/agent/mapping-teacher.ts fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv --public-development --live",
+    "prerequisites": [
+      "ULPIN_MODEL_GATEWAY_ENABLED=1",
+      "ULPIN_MODEL_GATEWAY_CONFIG with approved funding, tariff, policy, daily and total money caps, daily call cap and secretReference ULPIN_PROVIDER_KEY_SARVAM",
+      "Existing PostgreSQL model-gateway ledger available and configuration reconciled; no migrations or runtime changes made by A2"
+    ],
+    "maxCalls": 1,
+    "recordingsEnvironmentVariable": "ULPIN_TEACHER_RECORDINGS_DIR",
+    "defaultRecordingDirectory": "E:/BhuAayam-data/runtime/teacher-recordings/",
+    "protocolReference": "https://docs.sarvam.ai/api-reference/chat/chat-completions-v1",
+    "protocolCheckedAt": "2026-10-10",
+    "structuredOutput": "response_format.json_schema strict:true; tools omitted, tool calls rejected",
+    "rawResponsePolicy": "bounded redacted response envelope; original response hash retained; reasoning excluded"
+  },
+  "supplementalReaderCheck": {
+    "command": "ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe pnpm exec tsx scripts/agent/check-workbooks.ts",
+    "exitCode": 0,
+    "inputs": [
+      {
+        "path": "E:/BhuAayam-data/task-data/desktop-ai04e-native-xlsx/Senior_Staff_Hospitality_Received__Cabinet_Office_.xlsx",
+        "sha256": "aa301b90933f3b779a69a855f271fa7ab6217b5e0a93b279fca7636d675f32f4",
+        "rows": 70,
+        "columns": 3,
+        "headerRow": 5
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/native-ods-20261004-run01/originals/home-office-hospitality-2021-q3.ods",
+        "sha256": "1c6a364fd20ff769835451a075de4654fc21e1499dfaf159081d3db089e591f6",
+        "rows": 75,
+        "columns": 5,
+        "headerRow": 1
+      }
+    ],
+    "qualification": "Manifest-pinned unchanged foreign reader mechanics only; no teacher saw these files and no labels were enrolled."
+  },
+  "recovery": [
+    {
+      "command": "pnpm exec tsx --test scripts/agent/mapping-teacher.test.ts",
+      "initialExitCode": 1,
+      "signature": "ERR_MODULE_NOT_FOUND at root script import",
+      "decision": "Use the workspace contracts relative import in the owned script."
+    },
+    {
+      "command": "pnpm exec tsx --test scripts/agent/mapping-teacher.test.ts",
+      "initialExitCode": 1,
+      "signature": "MAPPING_LAYOUT_INVALID: extended profile passed to strict A1 inventory schema",
+      "decision": "Project only name, inferredType and declaredUnit using mappingContextFromColumnProfile; bounded rerun passed."
+    },
+    {
+      "command": "python -c \"import shapely\"",
+      "initialExitCode": 1,
+      "signature": "System Python lacks geo dependencies",
+      "decision": "Use the already-installed, read-only venv-plans interpreter; no installs/runtime changes."
+    },
+    {
+      "command": "profile-columns.ts <retained XLSX/ODS>",
+      "initialExitCode": 1,
+      "signature": "Workbook preamble / repeated blank padding lacks a literal rectangular header",
+      "hypothesis": "Explicit header row and ignoring ONLY empty padding preserve the real named table.",
+      "criterion": "Three XLSX / five ODS manifest-pinned columns, observed samples, unchanged originals.",
+      "result": "Passed once with explicit XLSX header-row 5; meaningful unnamed columns and repeated literal ODS data still fail closed."
+    },
+    {
+      "command": "pnpm exec tsc -p scripts/agent/tsconfig.json",
+      "initialExitCode": 2,
+      "signature": "Test comparisons used nullable shape rates without narrowing",
+      "decision": "Narrow null explicitly; production and test typechecks passed."
+    }
+  ],
+  "decisions": [
+    "One or two observed samples on the A1 inputs are explicitly short, never padded to five with invented/repeated values.",
+    "Administrative LGD and GMDA columns are unknown/manual, not invented building/parcel facts. Undeclared Area:0 stays unresolved.",
+    "Headers travel as header (not name) because the existing personal-field minimizer masks a JSON name key.",
+    "XLSX/ODS reuse native bounded Python readers; ULPIN_PROFILE_PYTHON selects an existing interpreter with geo dependencies. Preambles need an explicit --header-row; repeated literal ODS ranges need manual input."
+  ],
+  "limitations": [
+    "A3 must supply server-derived data classification, split and scope authorization, surface issues and use executeTeacherMappingDryRun; no routes were changed.",
+    "Only software controls exercise reservations/settlements here; no live PostgreSQL concurrency/restart or charged call was attempted.",
+    "No real Claude teacher labels or publisher-dictionary mapping accuracy evaluated; A4 must filter verified pseudo-labels and prioritize officer corrections.",
+    "Large layouts beyond existing gateway input/output bounds fail closed to manual mapping."
+  ]
+}
