@@ -16,15 +16,20 @@ export type TrustedCall = {
   taskKind: string; outputSchemaId: string; outputSchema: Record<string, unknown>;
   authorize: () => Promise<void>; minimizeOutput: (output: unknown) => unknown;
   replayKey?: string;
-  observeResponse?: (event: {inputHash:string;latencyMs:number;result?:ProviderResult;failure?:ProviderFailure}) => Promise<void>;
+  observeResponse?: (event: {
+    inputHash: string; latencyMs: number; result?: ProviderResult; failure?: ProviderFailure;
+  }) => Promise<void>;
 };
 
 /** Uses the canonical USP gateway envelope. All routing/budget/profile controls are server-owned. */
-export type ModelCallLedger=Pick<PgModelCallLedger,'admissionDelay'|'reserve'|'dispatch'|'releaseBeforeDispatch'|'retainExposure'|'settle'>;
+export type ModelCallLedger = Pick<PgModelCallLedger,
+  'admissionDelay' | 'reserve' | 'dispatch' | 'releaseBeforeDispatch' | 'retainExposure' | 'settle'>;
 export class ModelGateway {
   constructor(readonly config: GatewayConfig, private readonly ledger: ModelCallLedger,
     private readonly adapter: ProviderAdapter) {}
-  get adapterKind(){return this.adapter.kind;}
+  get adapterKind() {
+    return this.adapter.kind;
+  }
   /** Bind a server-authorized profile to the existing canonical port, never caller routing controls. */
   port(trusted: TrustedCall): Pick<UspPorts, 'modelGateway'> {
     return {modelGateway:async (ctx,request) => ({state:'available',data:await this.propose(ctx,request,trusted)})};
@@ -53,7 +58,9 @@ export class ModelGateway {
         trusted.deadlineAt.getTime()-Date.now())));
       const replay=await Promise.race([
         this.adapter.propose({model:this.config.model,messages,outputSchema:trusted.outputSchema,
-          maxOutputTokens:this.config.maxOutputTokens,inputHash,sourceHashes,signal,authorize:trusted.authorize,replayKey:trusted.replayKey}),
+          maxOutputTokens: this.config.maxOutputTokens, inputHash, sourceHashes, signal,
+          authorize: trusted.authorize, replayKey: trusted.replayKey,
+        }),
         new Promise<never>((_,reject)=>signal.addEventListener('abort',()=>reject(new AppError(503,'MODEL_REPLAY_UNAVAILABLE',
           'Retained replay could not finish within its deadline.')),{once:true})),
       ]);
@@ -106,18 +113,22 @@ export class ModelGateway {
       return this.ledger.settle(admission.call.id,actual,output,receipt);
     };
     let result;
-    const startedAt=Date.now();
-    let observationFailed=false;
+    const startedAt = Date.now();
+    let observationFailed = false;
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;
     let timedOut = false;
     try {
       result = await Promise.race([
         this.adapter.propose({model:this.config.model,messages,outputSchema:trusted.outputSchema,
-          maxOutputTokens:this.config.maxOutputTokens,inputHash,sourceHashes,signal:controller.signal,authorize:trusted.authorize,replayKey:trusted.replayKey})
-          .then(async completion => {
-            try {await trusted.observeResponse?.({inputHash,latencyMs:Date.now()-startedAt,result:completion});}
-            catch {observationFailed=true;}
+          maxOutputTokens: this.config.maxOutputTokens, inputHash, sourceHashes, signal: controller.signal,
+          authorize: trusted.authorize, replayKey: trusted.replayKey,
+        }).then(async completion => {
+            try {
+              await trusted.observeResponse?.({ inputHash, latencyMs: Date.now() - startedAt, result: completion });
+            } catch {
+              observationFailed = true;
+            }
             if (timedOut) {
               // A late known charge settles, but is never returned/published by the expired request.
               // Crash/DB failure still leaves the durable dispatched/unknown reservation intact.
@@ -132,14 +143,21 @@ export class ModelGateway {
     } catch (error) {
       // Never surface upstream bodies/credentials or retry an uncertain completion.
       const failure = error instanceof ProviderFailure ? error : new ProviderFailure('outcome_unknown');
-      try {await trusted.observeResponse?.({inputHash,latencyMs:Date.now()-startedAt,failure});} catch { /* no output will be accepted */ }
+      try {
+        await trusted.observeResponse?.({ inputHash, latencyMs: Date.now() - startedAt, failure });
+      } catch {
+        // No output will be accepted after a transport failure.
+      }
       await this.ledger.retainExposure(admission.call.id,failure);
       throw new AppError(failure.kind === 'rate_limited' ? 429 : 503,`MODEL_${failure.kind.toUpperCase()}`,
         'The provider call is unavailable. Its exposure remains reserved; manual preparation remains available.');
     } finally { if (timer) clearTimeout(timer); }
     // Settlement is independent of job/revision/access acceptance, including malformed results.
     const settled = await persistCompletion(result);
-    if(observationFailed)throw new AppError(503,'MODEL_RECORDING_UNAVAILABLE','The response was charged but could not be recorded. Continue manually.');
+    if (observationFailed) {
+      throw new AppError(503, 'MODEL_RECORDING_UNAVAILABLE',
+        'The response was charged but could not be recorded. Continue manually.');
+    }
     await trusted.authorize();
     return asResult(settled.output,settled.receipt!);
   }
