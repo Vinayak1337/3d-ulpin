@@ -28,10 +28,7 @@ export const ROUTES: RouteEntry[] = [
     method: 'GET', path: '/api/v1/work-board', mode: 'local', draft: true,
     reason: 'READY-01: stage, next action and readiness per work item.',
   },
-  {
-    method: 'GET', path: '/api/v1/buildings/:buildingId/ledger', mode: 'local', draft: true,
-    reason: 'READY-01, RIGHTS-01, HISTORY-02: rights, areas, shares, readiness, checks and revisions per building. The published path has another shape (ROUTES-LIVE.md).',
-  },
+  { method: 'GET', path: '/api/v1/buildings/:buildingId/ledger', mode: 'live' },
   {
     method: 'GET', path: '/api/v1/buildings/:buildingId/residents', mode: 'local', draft: true,
     reason: 'REGISTER-02: registered holders and occupants of each unit.',
@@ -122,6 +119,8 @@ export const ROUTES: RouteEntry[] = [
   { method: 'GET', path: '/api/v1/areas', mode: 'live' },
   { method: 'GET', path: '/api/v1/areas/:areaId/context', mode: 'live' },
   { method: 'GET', path: '/api/v1/buildings/:buildingId/register', mode: 'live' },
+  { method: 'GET', path: '/api/v1/areas/:areaId/canonical', mode: 'live' },
+  { method: 'GET', path: '/api/v1/buildings/:buildingId/canonical', mode: 'live' },
   { method: 'GET', path: '/api/v1/sources/:sourceId/file', mode: 'live' },
 ];
 
