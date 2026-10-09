@@ -11,6 +11,7 @@ import { localOperatorSubject } from '../principal';
 import { DocumentIngestionService } from './documents';
 import { assertSourceBuildingPinsTx } from './source-building-review';
 import { reserveSourceBuildingTx } from './source-building-records';
+import { sourceAdministrativeContext } from './source-administrative-context';
 import {
   SOURCE_BUILDING_GAP, sourceBuildingClaims, sourceRequestKey, type DocumentPins,
 } from './source-building-values';
@@ -28,9 +29,14 @@ function validateFiles(input: SourceBuildingImport, files: SourceBuildingFile[])
     const file = matches[0];
     if (matches.length !== 1 || !file.bytes.length || file.name !== document.filename
       || sha256(file.bytes) !== document.sourceSha256
-      || Buffer.from(file.bytes.subarray(0, 5)).toString() !== '%PDF-') {
-      throw new AppError(422, 'SOURCE_BUILDING_ORIGINAL', 'An attached PDF differs from its declared original pin.');
+      || (input.format === 'document_buildings' && Buffer.from(file.bytes.subarray(0, 5)).toString() !== '%PDF-')) {
+      throw new AppError(422, 'SOURCE_BUILDING_ORIGINAL',
+        'An attached original differs from its declared original pin.');
     }
+  }
+  if (input.administrativeContext) {
+    const pin = { sourceId: input.requestKey, sourceRevision: 1, sourceSha256: input.documents[0].sourceSha256 };
+    sourceAdministrativeContext(input, files[0].bytes, new Map([[input.documents[0].key, pin]]));
   }
 }
 
@@ -70,7 +76,7 @@ async function createContextTx(client: PoolClient, input: SourceBuildingImport):
   if (prior) {
     if (prior.body.sourceImportSha256 !== digest) conflict('This import key names different source declarations.');
     return {
-      packageId: prior.id, areaId: prior.area_id, caseId: prior.case_id, complete: prior.body.features.length > 0,
+      packageId: prior.id, areaId: prior.area_id, caseId: prior.case_id, complete: prior.body.state !== 'RECEIVED',
     };
   }
   const areaId = await destinationTx(client, input);
@@ -113,12 +119,13 @@ async function retainDocuments(
 
 async function completePackageTx(
   client: PoolClient, context: ImportContext, input: SourceBuildingImport, pins: DocumentPins,
+  originalBytes: Uint8Array,
 ): Promise<SourceBuildingPackage> {
   const row = (await client.query(
     'SELECT body FROM import_packages WHERE id=$1 FOR UPDATE', [context.packageId],
   )).rows[0];
   const pkg: SourceBuildingPackage = row.body;
-  if (pkg.features.length) return pkg;
+  if (pkg.state !== 'RECEIVED') return pkg;
   const area = await getArea(context.areaId, client);
   if (input.areaId && area.revision !== input.expectedAreaRevision) {
     conflict('Destination area changed during receipt.');
@@ -130,6 +137,9 @@ async function completePackageTx(
   }
   pkg.documentPins = [...pins.values()];
   pkg.sourceRevisionIds = pkg.documentPins.map(pin => pin.sourceId);
+  if (input.administrativeContext) {
+    pkg.administrativeContext = sourceAdministrativeContext(input, originalBytes, pins);
+  }
   await assertSourceBuildingPinsTx(client, pkg, area.siteId);
   pkg.state = 'READY_FOR_REVIEW';
   pkg.revision++;
@@ -159,5 +169,5 @@ export async function importSourceBuildings(raw: unknown, files: SourceBuildingF
     });
   }
   const pins = await retainDocuments(context, input, files);
-  return transaction(client => completePackageTx(client, context, input, pins));
+  return transaction(client => completePackageTx(client, context, input, pins, files[0].bytes));
 }

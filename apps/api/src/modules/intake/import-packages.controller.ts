@@ -30,6 +30,12 @@ function structured(value: FormDataEntryValue | null, fallback?: unknown): unkno
 }
 async function sourceBuildingInput(form: FormData) {
   const input = SourceBuildingImportSchema.parse(structured(form.get('metadata')));
+  const allowed = new Set(['format', 'metadata', ...input.documents.map(document => document.key)]);
+  for (const key of form.keys()) {
+    if (!allowed.has(key) || form.getAll(key).length !== 1) {
+      throw new AppError(422, 'SOURCE_IMPORT_FIELDS', 'Use one value for each declared source import field.');
+    }
+  }
   const files = [];
   for (const document of input.documents) {
     const file = form.get(document.key);
@@ -83,7 +89,9 @@ export class ImportPackagesController {
   async create(@Req() request: Request) {
     if (request.headers['content-type']?.includes('multipart/form-data')) {
       const form = await readMultipartBody(request, MULTIPART_BODY_LIMIT);
-      if (form.get('format') === 'document_buildings') return this.output(sourceBuildingInput(form));
+      if (['document_buildings', 'administrative_context'].includes(String(form.get('format')))) {
+        return this.output(sourceBuildingInput(form));
+      }
       const file = fileFrom(form);
       const input = formMetadata(form);
       return this.output(this.areas.importGis({

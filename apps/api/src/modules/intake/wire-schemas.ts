@@ -175,6 +175,9 @@ const factCandidate = z.object({
 });
 export const importPackage = z.object({
   geometryFree: z.literal(true).optional(),
+  administrativeContext: z.object({sourceId: uuid, sourceCrs: z.string(), units: z.array(z.object({
+    id: uuid, sourceKey: z.string(), kind: z.literal('sector'), name: z.string(), rings: z.array(z.array(point)),
+  }))}).optional(),
   documentPins: z.array(z.object({sourceId: uuid, sourceRevision: z.number().int(), sourceSha256: z.string()})).optional(),
   sourceMetadata: z.array(z.object({
     key: z.string(), filename: z.string(), sourceSha256: z.string(), originalUrl: z.string(),
@@ -322,9 +325,9 @@ export function gisImportBody(
   if (sourceBuildings) variants.push({
     type: 'object', required: ['format', 'metadata'], additionalProperties: binary,
     properties: {
-      format: {type: 'string', enum: ['document_buildings']},
+      format: {type: 'string', enum: ['document_buildings', 'administrative_context']},
       metadata: {
-        type: 'string', description: 'JSON declarations; attach each unchanged PDF under its document key.',
+        type: 'string', description: 'JSON declarations; attach each unchanged original under its document key.',
         'x-sourceBuildingSchema': requestSchema(sourceBuildings),
       },
     },

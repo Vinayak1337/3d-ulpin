@@ -20,7 +20,9 @@ import {
 import { buildingDossier } from '../officer/officer';
 import { registryDocumentSourceAccessTx } from './registry-metadata';
 import { areaFeatureContext, listAreas } from '../areas/areas';
-import { transaction } from '../../infrastructure/db';
+import { query, transaction } from '../../infrastructure/db';
+import { sourceBuildingOriginalAccessTx } from '../usp/ingestion/source-building-review';
+import { SOURCE_BUILDING_GAP } from '../usp/ingestion/source-building-values';
 import { AppError, notFound } from '../../infrastructure/errors';
 import { localOperatorSubject } from '../usp/principal';
 
@@ -165,7 +167,14 @@ function citationLocator(entry: SourceLocator): BuildingCitation['locator'] {
 }
 
 async function readSourceSha256(sourceId: string, siteId: string): Promise<string> {
-  const access = await transaction(client => registryDocumentSourceAccessTx(client, siteId, sourceId));
+  const access = await transaction(async client => {
+    const sourceOnly = (await client.query(
+      "SELECT 1 FROM import_packages WHERE body->>'geometryFree'='true' AND body->'sourceRevisionIds' ? $1 LIMIT 1",
+      [sourceId],
+    )).rows.length > 0;
+    if (sourceOnly) return sourceBuildingOriginalAccessTx(client, siteId, sourceId);
+    return registryDocumentSourceAccessTx(client, siteId, sourceId);
+  });
   return access.sha256;
 }
 
@@ -352,35 +361,39 @@ function claimState(claim: FactCandidate): BuildingValueState {
   return claim.evidenceState;
 }
 
-function claimMethod(claim: FactCandidate): string {
-  return claim.method === 'native_parse' ? 'source_literal' : 'deterministic:retained-claim-projection@1';
+function claimMethod(claim: FactCandidate, sourceLiteral: boolean): string {
+  if (sourceLiteral || claim.method === 'native_parse') return 'source_literal';
+  return 'deterministic:retained-claim-projection@1';
 }
 
 async function claimAlternatives(
   claims: FactCandidate[],
   siteId: string,
+  sourceLiteral: boolean,
 ): Promise<NormalizedBuilding['conflicts'][number]['alternatives']> {
   const alternatives: NormalizedBuilding['conflicts'][number]['alternatives'] = [];
   for (const claim of claims) {
     const { value } = claim;
     if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') continue;
     const citations = await canonicalCitations(claim.evidence, siteId);
-    alternatives.push(canonicalValue(value, claimState(claim), citations, claimMethod(claim), claim.unit));
+    alternatives.push(canonicalValue(value, claimState(claim), citations, claimMethod(claim, sourceLiteral), claim.unit));
   }
   return alternatives;
 }
 
 /** A disagreement is shown as a conflict and the headline value is withheld, never picked. */
-function markConflicting(building: NormalizedBuilding, property: string): void {
+function markConflicting(
+  building: NormalizedBuilding, property: string, citations: BuildingCitation[],
+): void {
   if (property.endsWith('floorCount') || property.endsWith('storeyCount')) {
-    building.storeyCount = canonicalValue(null, 'conflicting');
+    building.storeyCount = canonicalValue(null, 'conflicting', citations, 'source_literal', 'count');
   }
   if (property.endsWith('storeyLabel')) {
-    building.storeyLabel = canonicalValue(null, 'conflicting');
-    building.storeyCount = canonicalValue(null, 'conflicting');
+    building.storeyLabel = canonicalValue(null, 'conflicting', citations);
+    building.storeyCount = canonicalValue(null, 'conflicting', citations, 'source_literal', 'count');
   }
   if (property.endsWith('exteriorHeight')) {
-    building.heightM = canonicalValue(null, 'conflicting', [], 'source_literal', 'm');
+    building.heightM = canonicalValue(null, 'conflicting', citations, 'source_literal', 'm');
     building.heightState = 'conflicting';
   }
 }
@@ -399,11 +412,11 @@ async function applyClaimProperty(
     return;
   }
   if (unique.length < 2) return;
-  const alternatives = await claimAlternatives(unique, siteId);
+  const alternatives = await claimAlternatives(unique, siteId, dossier.building.geometry === null);
   if (alternatives.length < 2) return;
   const reason = 'Retained source claims disagree; no automatic selection.';
   building.conflicts.push({ property, alternatives, reason });
-  markConflicting(building, property);
+  markConflicting(building, property, alternatives.flatMap(alternative => alternative.citations));
 }
 
 // Retain unresolved source statements, never pick the newest package or turn G+42 into 43 levels.
@@ -543,6 +556,23 @@ function proposalDossier(feature: PhysicalFeature, context: AreaContext, buildin
   };
 }
 
+async function sourceBuildingDossier(
+  feature: PhysicalFeature, context: AreaContext, buildingId: string,
+): Promise<CanonicalBuildingSource> {
+  const dossier = proposalDossier(feature, context, buildingId);
+  dossier.missing = [
+    SOURCE_BUILDING_GAP, 'No detailed level schedule, spaces, rights or parcel association reviewed.',
+    'Current sanction/as-built status and source-to-unit association remain unqualified.',
+  ];
+  if (feature.revision > 0) {
+    dossier.records = (await query(
+      'SELECT body FROM registry_records WHERE id=$1 AND site_id=$2 AND revision>0',
+      [buildingId, context.area.siteId],
+    )).rows.map(row => row.body);
+  }
+  return dossier;
+}
+
 export async function canonicalBuilding(
   buildingId: string,
   revision = 'current',
@@ -555,7 +585,10 @@ export async function canonicalBuilding(
   if (!feature || feature.kind !== 'building') notFound('Building not found.');
   const proposal = feature.revision === 0
     || ('displayState' in feature && feature.displayState === 'unrecorded_proposal');
-  const dossier = proposal ? proposalDossier(feature, context, buildingId) : await buildingDossier(buildingId);
+  let dossier: CanonicalBuildingSource;
+  if (feature.geometry === null) dossier = await sourceBuildingDossier(feature, context, buildingId);
+  else if (proposal) dossier = proposalDossier(feature, context, buildingId);
+  else dossier = await buildingDossier(buildingId);
   if (dossier.area.revision !== context.area.revision || dossier.building.revision !== feature.revision) {
     throw new AppError(409, 'CANONICAL_INPUT_CHANGED', 'Area or building changed during projection; read again.');
   }
