@@ -1,0 +1,87 @@
+{
+  "task": "S0.3",
+  "gate": "GF-BACKEND",
+  "status": "blocked_existing_project_absent",
+  "observedAt": "2026-10-10T00:40:23+05:30",
+  "engine": {
+    "context": "desktop-linux",
+    "version": "29.8.0",
+    "os": "linux",
+    "containers": 24,
+    "running": 0,
+    "stopped": 24,
+    "volumes": 14
+  },
+  "requestedProjectInventory": {
+    "volumes": [
+      "743d1eb1a29f4d17bafa5910c08fbb7dcc1b3e878c0edfe5630a1cb80eb4c557",
+      "docsetu-benchmark-20261002-db",
+      "ulpin-raster-worker-20260929_minio-data",
+      "ulpin-raster-worker-20260929_postgres-data",
+      "ulpin-raster-worker-20260929_redis-data",
+      "ulpin-repo_minio-data",
+      "ulpin-repo_postgres-data",
+      "ulpin-repo_redis-data",
+      "ulpin-usptest-8cd5555d8faac51d_minio-data",
+      "ulpin-usptest-8cd5555d8faac51d_postgres-data",
+      "ulpin-usptest-8cd5555d8faac51d_redis-data",
+      "ulpin-usptest-b050544f3d2cb99e_minio-data",
+      "ulpin-usptest-b050544f3d2cb99e_postgres-data",
+      "ulpin-usptest-b050544f3d2cb99e_redis-data"
+    ],
+    "volumeOwners": {
+      "ulpin_postgres-data": null,
+      "ulpin_minio-data": null,
+      "ulpin_redis-data": null
+    },
+    "containers": []
+  },
+  "retainedContainerIds": [
+    "6364b6953d28", "7853e43f4983", "bd0355de03e8", "48c6d484c93f",
+    "76baf446c695", "9beb3a3c42e9", "91ecb45a0133", "cba41efe0158",
+    "90a95be27e15", "964250818f0f", "28d608487694", "525f9ed699b3",
+    "00c1027a6af2", "84f2c808f2b5", "13727f2681c3", "06d88638fa53",
+    "d1fa3830725f", "0c396431d8d4", "d2742b369b0b", "fd0a1840048f",
+    "682b7506665c", "c8e7be990ee2", "7fc635b0e018", "b62191ad1f46"
+  ],
+  "recovery": {
+    "baseline": "Linux engine pipe absent; ordinary Desktop start cancelled by inaccessible stale AF_UNIX socket",
+    "backendLog": "%LOCALAPPDATA%/Docker/log/host/com.docker.backend.exe.log",
+    "failureTimestampUtc": "2026-10-09T19:01:31.955573100Z",
+    "failureSignature": "initializing Ingest server: rename sailor-ingest.sock to sailor-ingest.sock.stale: The file cannot be accessed by the system",
+    "fsutilError": 1920,
+    "firstDesktopStart": "tool timeout at 95 seconds; backend log confirms startup cancellation and engine shutdown",
+    "desktopStop": "reported Failed to stop Docker Desktop; tool timeout at 45 seconds",
+    "hypothesis": "Preserving the verified inaccessible runtime socket directory and recreating it empty will allow normal startup, without touching VM/data storage",
+    "comparison": "one materially different documented socket-directory preservation, then one bounded official startup",
+    "preconditions": "Failed-start Docker clients/backend/Desktop terminated; docker-desktop WSL stopped; exact run directory contains only four known zero-byte reparse sockets; secret socket directory absent",
+    "backup": "%LOCALAPPDATA%/Docker/run.saved-s03-20261010-003445",
+    "preservedEntries": ["dockerEthernetVfkit", "dockerInference", "sailor-ingest.sock", "userAnalyticsOtlpHttp.sock"],
+    "successCriterion": "Normal Desktop startup and Linux Engine response, with retained container/volume inventory",
+    "stopCondition": "Any unexpected runtime entry, surviving original directory, security-product evidence, or second startup failure",
+    "result": "Docker Desktop start --timeout 45 succeeded; Linux Engine 29.8.0 responded",
+    "publicAnalogue": "https://github.com/docker/desktop-feedback/issues/554",
+    "permanentRecurrenceFixQualified": false,
+    "defenderEvidence": "Only October 6 unrelated inline-command detections observed; no Docker startup/socket event observed",
+    "securitySettingsChanged": false
+  },
+  "verification": {
+    "coldDoctor": { "command": "pnpm platform:doctor", "exitCode": 1, "failures": 10 },
+    "guardedStart": { "command": "pnpm platform:start", "exitCode": 1, "composeStartReached": false },
+    "warmRestart": { "status": "not_attempted", "reason": "Required existing ulpin project absent; same blocked start not retried" },
+    "api": { "command": "curl --silent --max-time 5 --output /dev/null http://127.0.0.1:3188/api/v1/health", "exitCode": 7, "httpStatus": "000" },
+    "nodeSyntax": { "commands": ["node --check scripts/platform/runtime.mjs", "node --check scripts/platform/doctor"], "exitCode": 0 },
+    "shellSyntax": { "command": "bash -n scripts/platform-start.sh scripts/platform-stop.sh scripts/platform-health.sh scripts/platform-lib.sh", "exitCode": 0 },
+    "composeSyntax": { "command": "docker compose --env-file NUL config --no-interpolate --quiet", "exitCode": 0, "note": "NUL avoids loading any .env; no configuration values printed" },
+    "regression": { "command": "node --test scripts/platform/runtime.test.mjs", "exitCode": 0, "tests": 1 },
+    "inventoryPreserved": { "same24ContainerIds": true, "same14VolumeNames": true, "allContainersStillStopped": true, "programmaticComparisonExitCode": 0 },
+    "stackStarted": false,
+    "engineLeftRunning": true
+  },
+  "next": [
+    "Owner/lead must reconcile intended populated profile and approve exact existing volume/container bindings; no implicit alias, fresh project or restoration",
+    "Qualify native API and dispatcher start/stop with approved configuration/operator and dependencies; current task checkout has no node_modules",
+    "Apply the worker healthcheck only after reviewed recreation scope; storage containers must not be recreated or initialized",
+    "Run full doctor after approved cold start and stop/start warm restart, then leave that confirmed stack running"
+  ]
+}
