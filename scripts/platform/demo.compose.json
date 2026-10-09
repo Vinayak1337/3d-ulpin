@@ -1,0 +1,12 @@
+{
+  "services": {
+    "geo": {
+      "image": "ulpin-geo:demo-s03",
+      "volumes": [{ "type": "bind", "source": "${ULPIN_DEMO_MODEL_DIR:?Demo model directory missing}", "target": "/models", "read_only": true }]
+    },
+    "worker": {
+      "image": "ulpin-geo:demo-s03",
+      "volumes": [{ "type": "bind", "source": "${ULPIN_DEMO_MODEL_DIR:?Demo model directory missing}", "target": "/models", "read_only": true }]
+    }
+  }
+}
