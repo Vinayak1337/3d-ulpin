@@ -80,4 +80,6 @@ and `method:deterministic:vector-plan@1`. No confidence is calibrated and no
 registry write exists. `output` contains source-point and optional local-metre
 polygons, literal text/dimensions, computed area, consistency and page+bbox
 citation. `consistency.json`, per-page overlays and `result.json` complete the
-run. Reported room counts are **closed-face candidates**, not reviewed rooms.
+run. Non-plan overlays are capped at 640 px diagnostic thumbnails, not
+high-resolution copies of the scans. Reported room counts are **closed-face
+candidates**, not reviewed rooms.
