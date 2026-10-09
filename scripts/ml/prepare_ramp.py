@@ -140,8 +140,19 @@ def freeze(items, root):
 def export(items, output, role):
     target = output / role
     target.mkdir(parents=True, exist_ok=True)
-    if (target / "_annotations.coco.json").exists():
-        raise FileExistsError(f"Frozen export already exists: {target}")
+    annotation_path = target / "_annotations.coco.json"
+    if annotation_path.exists():
+        # Resume a multi-split export after one split completed. Never replace
+        # frozen JSON; validate its source pins/order before reusing it.
+        existing = json.loads(annotation_path.read_bytes())
+        sources = sorted(items, key=lambda x: (x["region"], x["id"]))
+        if len(existing["images"]) != len(sources) or len(existing["annotations"]) != sum(x["publisher_features"] for x in sources):
+            raise ValueError("Completed export source counts differ")
+        for image, source in zip(existing["images"], sources):
+            if image["source_id"] != source["id"] or image["source_image_sha256"] != source["source_image"]["sha256"] or image["source_label_sha256"] != source["source_label"]["sha256"]:
+                raise ValueError("Completed export source identity differs")
+        print(json.dumps({"export": role, "reuse_frozen": True}), flush=True)
+        return {"split": role, "images": len(existing["images"]), "instances": len(existing["annotations"]), "empty_chips": sum(x["empty"] for x in existing["images"]), "zero_pixel_features": len(existing["info"]["zero_pixel_features"]), "annotations_sha256": sha(annotation_path)}
     images, annotations, zero = [], [], []
     # Durable per-image export records survive a worker time box. Never replace
     # originals/PNGs or discard an interrupted export; resume checked records.
@@ -233,7 +244,12 @@ def main():
             raise ValueError("Bangladesh shard must be Bangladesh")
         items = region_items(root, args.bangladesh_region, manifest)
         result = export(items, root / "coco/bangladesh-train", args.bangladesh_region)
-        save_new(root / "coco/bangladesh-train" / (args.bangladesh_region + "-result.json"), result)
+        receipt_path = root / "coco/bangladesh-train" / (args.bangladesh_region + "-result.json")
+        if receipt_path.exists():
+            if json.loads(receipt_path.read_bytes()) != result:
+                raise ValueError("Completed Bangladesh export receipt differs")
+        else:
+            save_new(receipt_path, result)
     else:
         path = EVIDENCE / "split/split.json"
         if path.exists():
@@ -249,7 +265,13 @@ def main():
             raise ValueError("Frozen source index changed")
         items = json.loads(index_path.read_bytes())["items"]
         results = [export([x for x in items if x["split"] == role], root / "coco", role) for role in ("train", "dev", "holdout")]
-        save_new(EVIDENCE / "data/coco-export.json", {"splits": results, "source_hashes_verified": True, "rgb_pixels_preserved": True, "rle_roundtrip_verified": True, "source_features_preserved": True})
+        receipt = {"splits": results, "source_hashes_verified": True, "rgb_pixels_preserved": True, "rle_roundtrip_verified": True, "source_features_preserved": True}
+        receipt_path = EVIDENCE / "data/coco-export.json"
+        if receipt_path.exists():
+            if json.loads(receipt_path.read_bytes()) != receipt:
+                raise ValueError("Frozen Karnataka export receipt differs")
+        else:
+            save_new(receipt_path, receipt)
         print(json.dumps(results), flush=True)
 
 

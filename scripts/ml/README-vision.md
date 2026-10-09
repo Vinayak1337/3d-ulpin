@@ -36,10 +36,10 @@ only the generated `download.lock` (never any original or journal).
 ```bash
 # Resume explicitly after stopping/confirming the old process is dead:
 E:/BhuAayam-data/ml/venv-vision/Scripts/python.exe -u scripts/ml/ramp_download.py
-# Freeze once, then export Karnataka (refuses to overwrite frozen COCO;
-# interrupted exports resume source-bound per-image progress journals):
+# Freeze once, then export Karnataka (reuses checked complete exports without
+# overwriting them; interrupted exports resume source-bound progress journals):
 E:/BhuAayam-data/ml/venv-vision/Scripts/python.exe -B scripts/ml/prepare_ramp.py
-# After a Bangladesh region is COMPLETE, export a TRAIN-only shard:
+# Dhaka is already exported; after each other region is COMPLETE, export a TRAIN-only shard:
 E:/BhuAayam-data/ml/venv-vision/Scripts/python.exe -B scripts/ml/prepare_ramp.py --bangladesh-region dhaka_bangladesh
 ```
 
