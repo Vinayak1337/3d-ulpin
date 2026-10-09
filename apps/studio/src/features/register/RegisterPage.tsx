@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { DownloadSimple, FilePlus, Intersect, MapTrifold, QrCode, WarningCircle } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { DeviationInput, MultiPolygon, Pick, SceneEngine, SceneState } from '@ulpin/scene';
+import { ApiError } from '@ulpin/api-client';
 import type { BuildingLedger, BuildingResidents } from '@ulpin/api-client/draft';
 import {
   Badge, Banner, Button, DataTable, DescriptionList, EmptyState, EvidenceChip, Icon, LevelRail, Menu, Panel, RevisionTimeline, Skeleton,
@@ -38,9 +39,10 @@ export function RegisterPage() {
     return <div className={styles.loading}><div className="ul-panel ul-pad ul-stack">{Array.from({ length: 7 }, (_, i) => <Skeleton key={i} width={i ? '100%' : '40%'} />)}</div></div>;
   }
   if (register.error || !register.data) {
+    const notRecorded = register.error instanceof ApiError && register.error.status === 404;
     return (
       <div className={styles.loading}>
-        <EmptyState icon={WarningCircle} title="This register could not be opened" action={<Link to="/studio/registry">Back to Register</Link>}>
+        <EmptyState icon={WarningCircle} title={notRecorded ? 'No register is recorded for this building' : 'This register could not be opened'} action={<Link to="/studio/registry">Back to Register</Link>}>
           {register.error?.message ?? 'The building was not found.'}
         </EmptyState>
       </div>

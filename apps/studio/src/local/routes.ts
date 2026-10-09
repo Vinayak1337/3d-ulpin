@@ -126,3 +126,10 @@ export const ROUTES: RouteEntry[] = [
 ];
 
 export const localRoutes = () => ROUTES.filter((route) => route.mode === 'local');
+
+/** True when the local data layer is started in this build (see `startLocalData`). */
+export const localLayerOn = (import.meta.env.DEV || import.meta.env.VITE_HOSTED_DEMO === '1') && import.meta.env.VITE_LOCAL_DATA === 'on';
+
+/** Whether this build can answer the route: live routes always, local routes only with the local layer on. */
+export const isServed = (method: RouteEntry['method'], path: string): boolean =>
+  ROUTES.some((route) => route.method === method && route.path === path && (route.mode === 'live' || localLayerOn));
