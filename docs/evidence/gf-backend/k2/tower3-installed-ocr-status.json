@@ -1,0 +1,65 @@
+{
+  "version": "source-document/1",
+  "caseId": "fef196d1-351e-41d7-a31e-aba54424f93f",
+  "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+  "jobId": "c779eae2-3c73-46ee-9b6e-354be480ffb5",
+  "status": "completed",
+  "currentCaseRevision": 4,
+  "sourceRevision": 1,
+  "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+  "resultSha256": "51924c0ab2905585d3c3aa17e309995940dc6bd6d796d6633da8a65e0d699ebe",
+  "native": {
+    "status": "needs_ocr",
+    "format": "pdf",
+    "readerSha256": "44aa35d71606febc6eca0efe029c1512a374c1d3b090e783d574fbc0f7d08186",
+    "code": "NATIVE_TEXT_UNAVAILABLE",
+    "warnings": [
+      "PDF page 1 has no native text; image interpretation/OCR remains unresolved.",
+      "Native text is a source reference only. Facts, entity associations, coordinates and legal claims require explicit review; document instructions were not executed."
+    ]
+  },
+  "model": {
+    "status": "not_requested",
+    "code": null,
+    "candidates": [],
+    "validationErrors": [],
+    "calls": []
+  },
+  "parts": [],
+  "page": 0,
+  "hasMore": false,
+  "ocr": {
+    "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+    "sourceRevision": 1,
+    "sourcePage": 1,
+    "requestedRegion": null,
+    "sourcePageFrame": null,
+    "method": "ocr:tesseract-cli-5.5.1:sparse-tsv-v1",
+    "toolStatus": "unavailable",
+    "outputStatus": "failed",
+    "textCompleteness": "unverified",
+    "issues": [
+      "OCR_UNSUPPORTED_PDF_PAGE_FRAME"
+    ],
+    "execution": {
+      "maxSeconds": 90,
+      "exitCode": 1,
+      "receiptSha256": "f16e1ac1adfdaf1f73406f3f630028464d7781ba38bd4947c76c23b02a73cdb1",
+      "candidateSha256": "5c97e02ad29a9402985f12e219cd9e4e7f857d6505fff4e0f845ba4b135490c8",
+      "worker": {
+        "exitCode": 0,
+        "stopReason": null,
+        "elapsedSeconds": 0.515,
+        "peakObservedRssBytes": 60776448,
+        "peakJobPrivateBytes": 64000000,
+        "gatedStart": true,
+        "logSha256": "6a770b460e61b82e9df911816d616e27008d30e4decf4dca4a12a379ca2e0a35"
+      }
+    }
+  },
+  "ocrItems": [],
+  "ocrPage": 0,
+  "ocrHasMore": false,
+  "archiveInspection": null,
+  "code": null
+}
