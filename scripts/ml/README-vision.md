@@ -76,3 +76,44 @@ always use exact bytes. The B1 DEV sheet's initial ranking erroneously treated
 undefined F1 on correctly empty chips as worst; the result now points to a
 corrected source/truth/count sheet generated from saved DEV outputs, with zero
 new model calls. Both artifacts and the regression receipt are retained. `plan_rooms` and `storeys` remain pending for their owners.
+
+## B2/B3 final checkpoint (GPU released)
+
+Run 1 (former PID 35896) stopped normally after four epochs at a fully scored
+93-minute timebox boundary. No crash or OOM. Checkpoints and resumable Trainer
+state remain at `E:/BhuAayam-data/ml/runs/b3-ka-run1-20261010/epoch-{001..004}/`.
+The Bangladesh downloader also finished without failures. Run 2 was not started.
+
+`b3/result.json` is the compact summary. `b3-final-dev-selection-20261010` compares
+all four epochs at the same recorded thresholds (.3/.5/.7), preferring both gate
+thresholds, otherwise production polygon F1. It selected epoch 4 at .5: DEV
+precision .854, recall .662, 20 false buildings on 305 empty chips. Selection was
+committed before the final HOLDOUT call. HOLDOUT precision .836, recall .649,
+15 false buildings on 355 empty chips. **Both HOLDOUT slots are consumed; never
+run another call.** No chip inspection or held-out tuning was performed.
+
+Training uses standard Transformers Trainer and installed Apache-2.0 satellite
+safetensors. The native rfdetr conversion did not qualify. Its pinned 1.11.2 mask
+criterion is fixed, but publisher-compatible Transformers 5.17 still needs the
+instance-local `rfdetr_loss.py` repair. Empty and zero-pixel labels are retained.
+Karnataka TRAIN: 3,581 chips, 880 empties; RGB/Pillow bilinear 432, ImageNet, flips;
+batch 1, accumulation 4, head/backbone LR 1e-4/1e-5, seed 26011, BF16 AMP. The
+50-update smoke loss fell 27.92 -> 11.54 after one FP16 -> BF16 comparison.
+
+`export_buildings.py` exports static 1x3x432x432 on CPU and compares all raw
+logits/masks/boxes on 20 DEV chips. The graph checker passes, but **selected-model
+strict parity failed** (mask max difference 70.30, box .221). The graph and weights
+remain outside Git and are unqualified. No unchanged retries or tolerance changes.
+The candidate model card and `registration-request.json` explicitly block serving;
+`services/geo/ml-models.json` remains untouched and B4-owned.
+
+`building_io.py` shares offline configuration, file hashes and append-only JSON;
+training, selection and export helpers are typed and small. The code-quality
+refactor matches the previous eight TRAIN tensors exactly; real empty and dense
+chips still produce finite loss/gradients with no optimizer updates.
+
+A four-extra-epoch schedule is proposed in `b3/result.json`, not started. The lead
+must authorize any continuation. The GPU is free, and the exhausted HOLDOUT stays
+closed even if a future candidate improves DEV. Per-chip journals and original
+executed result bytes live under `E:/BhuAayam-data/ml/runs/`; evidence links and
+hashes preserve their lineage. Git contains compact JSON and <=200 KB WebP sheets.
