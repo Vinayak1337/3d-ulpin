@@ -78,6 +78,8 @@ Every number on screen comes from a result JSON. Unknowns are shown as unknown.
   - the time box;
   - the stop rule (the same failure twice → stop and diagnose);
   - the 5-line report from 00-STANDARDS §9, plus commits, commands with exit codes and the next step.
+- **Task files say exactly what and how:** the files to create or change, the existing code and pattern to follow, the interfaces that matter, the acceptance checks, and the code-quality rules in 00-STANDARDS §11.
+- **Review** follows 00-STANDARDS §11: the full diff file by file, re-running the key check, and requested changes going back to the same worker with an exact list.
 - **Verification** stays lean (00-STANDARDS §8): contract check, the invariants touched, one good real input and one difficult real input. Add a regression test only for a bug actually found.
 
 ---

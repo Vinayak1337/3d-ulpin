@@ -1,0 +1,53 @@
+﻿Description,Land use
+1,Residential
+2,Industrial
+3,Mixed builtup Area
+4,Recreational Area
+5,Public and semipublic area
+6,Communications 
+7,Public utilities and facilities
+8,Commercial
+9,Bus Terminus
+10,Railway Station
+11,Airport/Air strip
+12,Harbour/Sea Port
+13,Road
+14,Truck terminus
+15,Transport (Others)
+16,Reclaimed Land
+17,Vacant Land
+18,Layouts
+19,Vegetated Area
+20,
+21,Crop Land
+22,Fallow Land
+23,Agri Plantations/Orchards
+24,Dense Forest
+25,Open Forest
+26,Forest Plantations
+27,Mangroves
+28,Grazing Land
+29,Salt affected
+30,Gullied/Ravinous
+31,Land with/without scrub
+32,Barren/rocky
+33,Sand 
+34,Marshy/swampy
+35,Mudflats
+36,Waterlogged
+37,Salt pans
+38,River/Streams
+39,River/Island
+40,
+41,Canal
+42,Lakes/Ponds
+43,
+44,Reservoir
+45,Tanks
+46,
+47,Cooling Pond/Cooling Reservoir
+48,Abandoned quarries with water
+49,Quarries/Brick Kilns
+50,Coral Reef/atoll
+51,Railway
+52,Others

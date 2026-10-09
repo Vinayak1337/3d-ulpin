@@ -118,3 +118,27 @@ Numbers go in `docs/evidence/<gate>/<task>/result.json`. Don't put hashes in pro
   - they never change or delete originals, `.env` or Docker volumes, and never push;
   - they stop at their time box with a resumable checkpoint and report in the §9 format, with commits and exit codes;
   - the lead reviews every return before integrating it.
+
+## 11. Code quality (owner direction, 10 October)
+
+The repository has no formatter or linter configured, and older files differ in style. These rules keep new code readable without mass-reformatting old files.
+
+- **New files** follow the readable style of `packages/server/src/modules/model-gateway/gateway.ts` and `apps/api/src`: spaces around operators and after commas, one statement per line, lines of 120 characters or fewer.
+- **Edits in an existing file** match that file's style. Don't reformat lines you aren't changing.
+- **Small units.** Functions do one thing and stay under about 40 lines. Split a long function by responsibility into named helpers (for example one helper per value kind) rather than one large closure. Avoid chained ternaries and several statements on one line.
+- **Names say what things are.** No single-letter names outside short lambdas. Types and exported functions get a one-line comment only where the *why* isn't obvious.
+- **Reuse before writing.** Search for an existing helper, reader, schema or script first. No duplicate helpers, no parallel modules, no copy-pasted blocks.
+- **Nothing left behind:** no dead code, commented-out code, debug prints, unused exports or stray files. Evidence files are compact JSON (no pretty-printing of large arrays; round coordinates sensibly); large outputs stay under `E:/BhuAayam-data/`.
+- **Python:** PEP 8, type hints on functions, `pathlib`, a `main()` behind `if __name__ == "__main__":`, no module-level side effects, lines of 120 characters or fewer.
+- **Tests** sit next to the code, following the existing pattern. Test names describe behaviour. Test the contract and the invariants, not implementation details.
+- **Self-review before reporting.** Read your own `git diff staging...HEAD` as a reviewer would and fix what you would flag. The report's `DESIGN` line names the main files and functions and how they fit together.
+
+**The lead's review** of every return reads the full diff file by file, not just the report. It checks:
+1. correctness of the key logic;
+2. owned paths only;
+3. these style rules (including `awk 'length>120'` on new files);
+4. duplication of existing code;
+5. evidence size;
+6. that the worker's key check passes when re-run.
+
+Requested changes go back to the same worker session, with the exact changes listed.
