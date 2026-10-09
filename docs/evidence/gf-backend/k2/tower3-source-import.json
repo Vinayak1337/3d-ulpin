@@ -1,0 +1,189 @@
+{
+  "id": "085434ff-9fb0-4224-9db2-9fd0f54c0dde",
+  "name": "Haryana RERA 2831 — TOWER 3 source records (test_only)",
+  "parts": [],
+  "state": "READY_FOR_REVIEW",
+  "areaId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b",
+  "features": [
+    {
+      "id": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+      "identifier": "3DU-7D9F1TW6R284QABK02NK7PJEGV:B001",
+      "areaId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b",
+      "revision": 0,
+      "sourceRevisionId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+      "datasetNamespace": "haryana-rera-2831-document-buildings",
+      "sourceKey": "TOWER 3",
+      "name": "TOWER 3",
+      "kind": "building",
+      "geometry": null,
+      "geographicGeometry": null,
+      "sourceGeometry": null,
+      "placement": "unknown",
+      "worldStatus": "planned",
+      "representation": "physical_exterior",
+      "geometryRole": "unknown",
+      "height": {
+        "state": "unknown",
+        "value": null,
+        "unit": "m",
+        "meaning": "unknown",
+        "reference": "unknown"
+      },
+      "properties": {
+        "classification": "test_only",
+        "permission": "unconfirmed",
+        "sourceLiteralClaims": [
+          {
+            "property": "building.storeyLabel",
+            "value": "G+41",
+            "method": "source_literal",
+            "citations": [
+              {
+                "documentKey": "document0",
+                "page": 1,
+                "locator": "central T-3 tower graphic",
+                "quote": "T-3 G+41"
+              }
+            ]
+          },
+          {
+            "property": "building.storeyLabel",
+            "value": "G+42",
+            "method": "source_literal",
+            "citations": [
+              {
+                "documentKey": "document0",
+                "page": 1,
+                "locator": "lower-right UNIT DETAIL, TOWER 3 row",
+                "quote": "G + 42"
+              }
+            ]
+          }
+        ]
+      },
+      "areaM2": null,
+      "evidence": [
+        {
+          "sourceRevisionId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+          "page": 1,
+          "jsonPointer": "central T-3 tower graphic"
+        }
+      ]
+    }
+  ],
+  "revision": 2,
+  "warnings": [
+    "Geometry-free building: footprint, placement, elevation and spatial analysis are not assessed.",
+    "Local development test_only; no rights or operational acceptance."
+  ],
+  "createdAt": "2026-10-09T22:50:29.728Z",
+  "questions": [],
+  "documentPins": [
+    {
+      "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+      "sourceRevision": 1,
+      "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9"
+    },
+    {
+      "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429",
+      "sourceRevision": 1,
+      "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865"
+    },
+    {
+      "sourceId": "357b6258-4f19-4a81-83b6-6da93874dd31",
+      "sourceRevision": 1,
+      "sourceSha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b"
+    },
+    {
+      "sourceId": "25a8fbcb-2607-4a88-81e2-f2a247deb56f",
+      "sourceRevision": 1,
+      "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1"
+    }
+  ],
+  "geometryFree": true,
+  "schemaVersion": "ulpin-canonical/2",
+  "factCandidates": [
+    {
+      "id": "5407b713-e5dd-422f-b9b8-35f274fdb624",
+      "entityId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+      "property": "building.storeyLabel",
+      "value": "G+41",
+      "evidence": [
+        {
+          "sourceRevisionId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+          "page": 1,
+          "jsonPointer": "central T-3 tower graphic"
+        }
+      ],
+      "method": "human_entry",
+      "evidenceState": "source_supported",
+      "worldStatus": "planned"
+    },
+    {
+      "id": "b79806f7-caa9-4492-a276-66eb8ddaed82",
+      "entityId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+      "property": "building.storeyLabel",
+      "value": "G+42",
+      "evidence": [
+        {
+          "sourceRevisionId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+          "page": 1,
+          "jsonPointer": "lower-right UNIT DETAIL, TOWER 3 row"
+        }
+      ],
+      "method": "human_entry",
+      "evidenceState": "source_supported",
+      "worldStatus": "planned"
+    }
+  ],
+  "sourceMetadata": [
+    {
+      "key": "document0",
+      "issuer": "Haryana RERA",
+      "filename": "haryana-2831-site-plan.pdf",
+      "acquiredAt": "2026-09-30T12:56:26.540725+00:00",
+      "permission": "unconfirmed",
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/0cb8f93289NDg2NTA=",
+      "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+      "classification": "test_only"
+    },
+    {
+      "key": "document1",
+      "issuer": "Haryana RERA",
+      "filename": "haryana-2831-tower3-plan1.pdf",
+      "acquiredAt": "2026-09-25T00:41:16.696207Z",
+      "permission": "unconfirmed",
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/781dca7f03NDg2NTc=",
+      "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "classification": "test_only"
+    },
+    {
+      "key": "document2",
+      "issuer": "Haryana RERA",
+      "filename": "haryana-2831-tower3-section.pdf",
+      "acquiredAt": "2026-09-25T00:43:08.042067Z",
+      "permission": "unconfirmed",
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/c313c18c7bNDg2NjA=",
+      "sourceSha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+      "classification": "test_only"
+    },
+    {
+      "key": "document3",
+      "issuer": "Haryana RERA",
+      "filename": "haryana-2831-tower3-plan2.pdf",
+      "acquiredAt": "2026-09-30T12:56:26.681798+00:00",
+      "permission": "unconfirmed",
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/b76ed9cb4dNDg2NTg=",
+      "sourceSha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+      "classification": "test_only"
+    }
+  ],
+  "datasetNamespace": "haryana-rera-2831-document-buildings",
+  "sourceRevisionIds": [
+    "c59d2027-f176-4773-a799-5f0eb682fa2a",
+    "5293cd72-2377-4deb-a51c-c76d11ccb429",
+    "357b6258-4f19-4a81-83b6-6da93874dd31",
+    "25a8fbcb-2607-4a88-81e2-f2a247deb56f"
+  ],
+  "sourceImportSha256": "e4bcf24d39758a19cdd8407e8a26b55ff7adcd83dbdf6e998557840d578b3721"
+}
