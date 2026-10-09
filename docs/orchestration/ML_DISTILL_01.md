@@ -1,5 +1,7 @@
 # ML-DISTILL-01 — dedicated evidence normalization and association lane
 
+> **Retired 10 October 2026.** The owner made Claude (Opus 5.5) the lead for all lanes and retired the Codex desktop chats and this queue. The live plan is [SPRINT-SELECTION.md](../next-steps/SPRINT-SELECTION.md) and the board is [STATUS.md](../STATUS.md). The RF-DETR harness repair chain and the fragment-support lane are closed; their uncommitted work is preserved on `wip/rfdetr-bridge-fix-20261006`, `wip/fragment-rank-56f9-20261010` and `task/d07-native-cpu-empty-loss-20261006`. Entries below are history.
+
 2 October 2026. The user explicitly authorizes a separate ML orchestrator, teacher and model workers to build the discussed distillation strategy now, with progress/results reported to the project lead. This supersedes the lead-only worker-dispatch restriction **inside this ML lane only**. Use ordinary local `3d-ulpin` project chats and separate worktrees, never collaboration subagents. Orchestrator: GPT-6.1 Sol/max; teacher: GPT-6.1 Sol/high. Sol model implementation may use max when useful. Default/standard speed only; tools expose model/effort but no tier, so never claim observed per-turn speed from a prompt. Verify actual supplied `never` / `danger-full-access` before edits.
 
 ## Product and implementation sequence
