@@ -508,7 +508,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Import a bounded GIS original or a retained acquisition */
+        /** Import a bounded GIS original, document-backed unknown-geometry buildings, or a retained acquisition */
         post: operations["POST_api_v1_import_packages"];
         delete?: never;
         options?: never;
@@ -5476,6 +5476,40 @@ export interface components {
             jobId?: string;
         };
         GET_source_workspaces_Response_200_application_json: {
+            /** @enum {boolean} */
+            geometryFree?: true;
+            administrativeContext?: {
+                /** Format: uuid */
+                sourceId: string;
+                sourceCrs: string;
+                units: {
+                    /** Format: uuid */
+                    id: string;
+                    sourceKey: string;
+                    /** @enum {string} */
+                    kind: "sector";
+                    name: string;
+                    rings: (number)[][][];
+                }[];
+            };
+            documentPins?: {
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+            }[];
+            sourceMetadata?: {
+                key: string;
+                filename: string;
+                sourceSha256: string;
+                originalUrl: string;
+                issuer: string;
+                acquiredAt: string;
+                /** @enum {string} */
+                permission: "unconfirmed";
+                /** @enum {string} */
+                classification: "test_only";
+            }[];
             quarantine?: {
                 total: number;
                 accepted: number;
@@ -5529,15 +5563,17 @@ export interface components {
                     type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                     coordinates?: number[] | number[][] | number[][][] | number[][][][];
                     geometries?: unknown[];
-                };
+                } | null;
                 geographicGeometry: {
                     /** @enum {string} */
                     type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                     coordinates?: number[] | number[][] | number[][][] | number[][][][];
                     geometries?: unknown[];
-                };
+                } | null;
                 /** @description Retained source-specific or processor-specific value. */
                 sourceGeometry: unknown;
+                /** @enum {string} */
+                placement?: "unknown";
                 sourceReference?: {
                     sourceCrs: string;
                     analysisCrs: string;
@@ -5788,15 +5824,17 @@ export interface components {
                             type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                             coordinates?: number[] | number[][] | number[][][] | number[][][][];
                             geometries?: unknown[];
-                        };
+                        } | null;
                         geographicGeometry: {
                             /** @enum {string} */
                             type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                             coordinates?: number[] | number[][] | number[][][] | number[][][][];
                             geometries?: unknown[];
-                        };
+                        } | null;
                         /** @description Retained source-specific or processor-specific value. */
                         sourceGeometry: unknown;
+                        /** @enum {string} */
+                        placement?: "unknown";
                         sourceReference?: {
                             sourceCrs: string;
                             analysisCrs: string;
@@ -5967,6 +6005,40 @@ export interface components {
             caseId?: string;
         };
         POST_source_workspaces_Response_201_application_json: {
+            /** @enum {boolean} */
+            geometryFree?: true;
+            administrativeContext?: {
+                /** Format: uuid */
+                sourceId: string;
+                sourceCrs: string;
+                units: {
+                    /** Format: uuid */
+                    id: string;
+                    sourceKey: string;
+                    /** @enum {string} */
+                    kind: "sector";
+                    name: string;
+                    rings: (number)[][][];
+                }[];
+            };
+            documentPins?: {
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+            }[];
+            sourceMetadata?: {
+                key: string;
+                filename: string;
+                sourceSha256: string;
+                originalUrl: string;
+                issuer: string;
+                acquiredAt: string;
+                /** @enum {string} */
+                permission: "unconfirmed";
+                /** @enum {string} */
+                classification: "test_only";
+            }[];
             quarantine?: {
                 total: number;
                 accepted: number;
@@ -6020,15 +6092,17 @@ export interface components {
                     type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                     coordinates?: number[] | number[][] | number[][][] | number[][][][];
                     geometries?: unknown[];
-                };
+                } | null;
                 geographicGeometry: {
                     /** @enum {string} */
                     type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                     coordinates?: number[] | number[][] | number[][][] | number[][][][];
                     geometries?: unknown[];
-                };
+                } | null;
                 /** @description Retained source-specific or processor-specific value. */
                 sourceGeometry: unknown;
+                /** @enum {string} */
+                placement?: "unknown";
                 sourceReference?: {
                     sourceCrs: string;
                     analysisCrs: string;
@@ -6279,15 +6353,17 @@ export interface components {
                             type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                             coordinates?: number[] | number[][] | number[][][] | number[][][][];
                             geometries?: unknown[];
-                        };
+                        } | null;
                         geographicGeometry: {
                             /** @enum {string} */
                             type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                             coordinates?: number[] | number[][] | number[][][] | number[][][][];
                             geometries?: unknown[];
-                        };
+                        } | null;
                         /** @description Retained source-specific or processor-specific value. */
                         sourceGeometry: unknown;
+                        /** @enum {string} */
+                        placement?: "unknown";
                         sourceReference?: {
                             sourceCrs: string;
                             analysisCrs: string;
@@ -6544,15 +6620,17 @@ export interface components {
                     type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                     coordinates?: number[] | number[][] | number[][][] | number[][][][];
                     geometries?: unknown[];
-                };
+                } | null;
                 geographicGeometry: {
                     /** @enum {string} */
                     type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                     coordinates?: number[] | number[][] | number[][][] | number[][][][];
                     geometries?: unknown[];
-                };
+                } | null;
                 /** @description Retained source-specific or processor-specific value. */
                 sourceGeometry: unknown;
+                /** @enum {string} */
+                placement?: "unknown";
                 sourceReference?: {
                     sourceCrs: string;
                     analysisCrs: string;
@@ -6717,15 +6795,17 @@ export interface components {
                     type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                     coordinates?: number[] | number[][] | number[][][] | number[][][][];
                     geometries?: unknown[];
-                };
+                } | null;
                 geographicGeometry: {
                     /** @enum {string} */
                     type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                     coordinates?: number[] | number[][] | number[][][] | number[][][][];
                     geometries?: unknown[];
-                };
+                } | null;
                 /** @description Retained source-specific or processor-specific value. */
                 sourceGeometry: unknown;
+                /** @enum {string} */
+                placement?: "unknown";
                 sourceReference?: {
                     sourceCrs: string;
                     analysisCrs: string;
@@ -6837,6 +6917,40 @@ export interface components {
                 };
             }[];
             packages: {
+                /** @enum {boolean} */
+                geometryFree?: true;
+                administrativeContext?: {
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceCrs: string;
+                    units: {
+                        /** Format: uuid */
+                        id: string;
+                        sourceKey: string;
+                        /** @enum {string} */
+                        kind: "sector";
+                        name: string;
+                        rings: (number)[][][];
+                    }[];
+                };
+                documentPins?: {
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                }[];
+                sourceMetadata?: {
+                    key: string;
+                    filename: string;
+                    sourceSha256: string;
+                    originalUrl: string;
+                    issuer: string;
+                    acquiredAt: string;
+                    /** @enum {string} */
+                    permission: "unconfirmed";
+                    /** @enum {string} */
+                    classification: "test_only";
+                }[];
                 quarantine?: {
                     total: number;
                     accepted: number;
@@ -6890,15 +7004,17 @@ export interface components {
                         type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                         coordinates?: number[] | number[][] | number[][][] | number[][][][];
                         geometries?: unknown[];
-                    };
+                    } | null;
                     geographicGeometry: {
                         /** @enum {string} */
                         type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                         coordinates?: number[] | number[][] | number[][][] | number[][][][];
                         geometries?: unknown[];
-                    };
+                    } | null;
                     /** @description Retained source-specific or processor-specific value. */
                     sourceGeometry: unknown;
+                    /** @enum {string} */
+                    placement?: "unknown";
                     sourceReference?: {
                         sourceCrs: string;
                         analysisCrs: string;
@@ -7149,15 +7265,17 @@ export interface components {
                                 type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                                 coordinates?: number[] | number[][] | number[][][] | number[][][][];
                                 geometries?: unknown[];
-                            };
+                            } | null;
                             geographicGeometry: {
                                 /** @enum {string} */
                                 type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                                 coordinates?: number[] | number[][] | number[][][] | number[][][][];
                                 geometries?: unknown[];
-                            };
+                            } | null;
                             /** @description Retained source-specific or processor-specific value. */
                             sourceGeometry: unknown;
+                            /** @enum {string} */
+                            placement?: "unknown";
                             sourceReference?: {
                                 sourceCrs: string;
                                 analysisCrs: string;
@@ -7365,15 +7483,17 @@ export interface components {
                             type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                             coordinates?: number[] | number[][] | number[][][] | number[][][][];
                             geometries?: unknown[];
-                        };
+                        } | null;
                         geographicGeometry: {
                             /** @enum {string} */
                             type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                             coordinates?: number[] | number[][] | number[][][] | number[][][][];
                             geometries?: unknown[];
-                        };
+                        } | null;
                         /** @description Retained source-specific or processor-specific value. */
                         sourceGeometry: unknown;
+                        /** @enum {string} */
+                        placement?: "unknown";
                         sourceReference?: {
                             sourceCrs: string;
                             analysisCrs: string;
@@ -7662,15 +7782,17 @@ export interface components {
                         type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                         coordinates?: number[] | number[][] | number[][][] | number[][][][];
                         geometries?: unknown[];
-                    };
+                    } | null;
                     geographicGeometry: {
                         /** @enum {string} */
                         type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                         coordinates?: number[] | number[][] | number[][][] | number[][][][];
                         geometries?: unknown[];
-                    };
+                    } | null;
                     /** @description Retained source-specific or processor-specific value. */
                     sourceGeometry: unknown;
+                    /** @enum {string} */
+                    placement?: "unknown";
                     sourceReference?: {
                         sourceCrs: string;
                         analysisCrs: string;
@@ -7821,15 +7943,17 @@ export interface components {
                             type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                             coordinates?: number[] | number[][] | number[][][] | number[][][][];
                             geometries?: unknown[];
-                        };
+                        } | null;
                         geographicGeometry: {
                             /** @enum {string} */
                             type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                             coordinates?: number[] | number[][] | number[][][] | number[][][][];
                             geometries?: unknown[];
-                        };
+                        } | null;
                         /** @description Retained source-specific or processor-specific value. */
                         sourceGeometry: unknown;
+                        /** @enum {string} */
+                        placement?: "unknown";
                         sourceReference?: {
                             sourceCrs: string;
                             analysisCrs: string;
@@ -7965,15 +8089,17 @@ export interface components {
                         type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                         coordinates?: number[] | number[][] | number[][][] | number[][][][];
                         geometries?: unknown[];
-                    };
+                    } | null;
                     geographicGeometry: {
                         /** @enum {string} */
                         type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                         coordinates?: number[] | number[][] | number[][][] | number[][][][];
                         geometries?: unknown[];
-                    };
+                    } | null;
                     /** @description Retained source-specific or processor-specific value. */
                     sourceGeometry: unknown;
+                    /** @enum {string} */
+                    placement?: "unknown";
                     sourceReference?: {
                         sourceCrs: string;
                         analysisCrs: string;
@@ -8397,15 +8523,17 @@ export interface components {
                         type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                         coordinates?: number[] | number[][] | number[][][] | number[][][][];
                         geometries?: unknown[];
-                    };
+                    } | null;
                     geographicGeometry: {
                         /** @enum {string} */
                         type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                         coordinates?: number[] | number[][] | number[][][] | number[][][][];
                         geometries?: unknown[];
-                    };
+                    } | null;
                     /** @description Retained source-specific or processor-specific value. */
                     sourceGeometry: unknown;
+                    /** @enum {string} */
+                    placement?: "unknown";
                     sourceReference?: {
                         sourceCrs: string;
                         analysisCrs: string;
@@ -8960,6 +9088,121 @@ export interface components {
                     /** @enum {string} */
                     state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
                     unit?: string;
+                    citations: {
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "region";
+                            page: number;
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized" | "pt" | "pixel";
+                        } | {
+                            /** @enum {string} */
+                            kind: "row";
+                            row: number;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "cell";
+                            row: number;
+                            column: string;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "entity";
+                            entityId: string;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "point";
+                            pointId: string;
+                        };
+                    }[];
+                    method: string;
+                    revisionId: string;
+                };
+            }[];
+            administrativeContext?: {
+                id: string;
+                /** @enum {string} */
+                kind: "sector";
+                /** @enum {string} */
+                role: "administrative_context";
+                /** @enum {string} */
+                analyticalEligibility: "not_assessed";
+                sourceCrs: string;
+                name: {
+                    value: string | null;
+                    /** @enum {string} */
+                    state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                    unit?: string;
+                    citations: {
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "region";
+                            page: number;
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized" | "pt" | "pixel";
+                        } | {
+                            /** @enum {string} */
+                            kind: "row";
+                            row: number;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "cell";
+                            row: number;
+                            column: string;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "entity";
+                            entityId: string;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "point";
+                            pointId: string;
+                        };
+                    }[];
+                    method: string;
+                    revisionId: string;
+                };
+                polygons: {
+                    value: (number)[][][][] | null;
+                    /** @enum {string} */
+                    state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                    /** @enum {string} */
+                    unit?: "m";
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
@@ -47584,7 +47827,7 @@ export interface components {
                 reasonCodes: string[];
                 source: {
                     /** @enum {string} */
-                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
+                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "html" | "png" | "jpeg" | "archive" | "unsupported";
                     /** @enum {string} */
                     nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                     readerSha256: string;
@@ -48198,7 +48441,7 @@ export interface components {
                     /** @enum {string} */
                     kind: "document";
                     /** @enum {string} */
-                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
+                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "html" | "png" | "jpeg" | "archive" | "unsupported";
                     /** @enum {string} */
                     nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                     code: string | null;
@@ -48402,7 +48645,7 @@ export interface components {
                     /** @enum {string} */
                     kind: "document_ocr";
                     /** @enum {string} */
-                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
+                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "html" | "png" | "jpeg" | "archive" | "unsupported";
                     /** @enum {string} */
                     nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                     nativeCode: string | null;
@@ -50442,7 +50685,7 @@ export interface components {
                         /** @enum {string} */
                         kind: "document";
                         /** @enum {string} */
-                        format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
+                        format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "html" | "png" | "jpeg" | "archive" | "unsupported";
                         /** @enum {string} */
                         nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                         code: string | null;
@@ -50646,7 +50889,7 @@ export interface components {
                         /** @enum {string} */
                         kind: "document_ocr";
                         /** @enum {string} */
-                        format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
+                        format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "html" | "png" | "jpeg" | "archive" | "unsupported";
                         /** @enum {string} */
                         nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                         nativeCode: string | null;
@@ -61983,7 +62226,7 @@ export interface components {
                 /** @enum {string} */
                 status: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                 /** @enum {string} */
-                format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
+                format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "html" | "png" | "jpeg" | "archive" | "unsupported";
                 readerSha256: string;
                 code: string | null;
                 warnings: string[];
@@ -68717,7 +68960,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        /** @description application/json retains an acquisition; multipart/form-data retains an uploaded GIS original. */
+        /** @description JSON retains an acquisition; multipart retains GIS or document-backed geometry-free buildings. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["POST_import_packages_Request_application_json"];

@@ -1,0 +1,70 @@
+{
+  "version": "source-document/1",
+  "caseId": "fef196d1-351e-41d7-a31e-aba54424f93f",
+  "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+  "jobId": "6266b1a6-71c3-4298-8749-eb510132d26e",
+  "status": "completed",
+  "currentCaseRevision": 4,
+  "sourceRevision": 1,
+  "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+  "resultSha256": "ab41dcb6432e0648e1f9a64b547fd440bbd1aefa528a26e0f70a8f8a638a36e4",
+  "native": {
+    "status": "needs_ocr",
+    "format": "pdf",
+    "readerSha256": "44aa35d71606febc6eca0efe029c1512a374c1d3b090e783d574fbc0f7d08186",
+    "code": "NATIVE_TEXT_UNAVAILABLE",
+    "warnings": [
+      "PDF page 1 has no native text; image interpretation/OCR remains unresolved.",
+      "Native text is a source reference only. Facts, entity associations, coordinates and legal claims require explicit review; document instructions were not executed."
+    ]
+  },
+  "model": {
+    "status": "not_requested",
+    "code": null,
+    "candidates": [],
+    "validationErrors": [],
+    "calls": []
+  },
+  "parts": [],
+  "page": 0,
+  "hasMore": false,
+  "ocr": {
+    "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+    "sourceRevision": 1,
+    "sourcePage": 1,
+    "requestedRegion": [
+      280,
+      860,
+      960,
+      2580
+    ],
+    "sourcePageFrame": null,
+    "method": "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned",
+    "toolStatus": "failed",
+    "outputStatus": "failed",
+    "textCompleteness": "unverified",
+    "issues": [
+      "OCR_UNEXPECTED_WORKER_ERROR"
+    ],
+    "execution": {
+      "maxSeconds": 90,
+      "exitCode": 1,
+      "receiptSha256": "b46a6711f82ff004fdb4e85460f8d6d1098b94d6a0244d3bffc909a18d539db7",
+      "candidateSha256": "7c06ee9ecb97e4fe21aec247c57c6c2738843dc753c97bbffeac5be1998d2f63",
+      "worker": {
+        "exitCode": 1,
+        "stopReason": null,
+        "elapsedSeconds": 18.407,
+        "peakObservedRssBytes": 378208256,
+        "peakJobPrivateBytes": 461058048,
+        "gatedStart": true,
+        "logSha256": "8d66b14c6aee2e9470e9bb4a6b3c31e67c5f3edfc90aaf84e988fda12be57b41"
+      }
+    }
+  },
+  "ocrItems": [],
+  "ocrPage": 0,
+  "ocrHasMore": false,
+  "archiveInspection": null,
+  "code": null
+}

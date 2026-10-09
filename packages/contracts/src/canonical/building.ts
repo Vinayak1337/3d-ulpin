@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { CanonicalMappedValueSchema } from './mapping-plan';
+import type { ImportPackage, PhysicalFeature } from '../area';
 
 export const NORMALIZED_BUILDING_VERSION = 'normalized-building/1' as const;
 /** The mapping vocabulary also has needs_input (a workflow state, not a record value state). */
@@ -258,6 +259,15 @@ export const NormalizedAreaSchema = z.strictObject({
   frame: AreaFrameSchema,
   buildings: z.array(NormalizedBuildingSummarySchema),
   baseFeatures: z.array(BuildingBaseFeatureSchema),
+  administrativeContext: z.array(z.strictObject({
+    id,
+    kind: z.literal('sector'),
+    role: z.literal('administrative_context'),
+    analyticalEligibility: z.literal('not_assessed'),
+    sourceCrs: z.string(),
+    name: buildingValueSchema(z.string()),
+    polygons: buildingValueSchema(BuildingMultiPolygonSchema, 'm'),
+  })).optional(),
   overlays: z.array(BuildingOverlaySchema),
   tilesets: z.array(z.strictObject({ id, url: z.string(), revisionId: id })),
   gaps: z.array(z.string()),
@@ -265,3 +275,95 @@ export const NormalizedAreaSchema = z.strictObject({
 export type AreaFrame = z.infer<typeof AreaFrameSchema>;
 export type NormalizedBuilding = z.infer<typeof NormalizedBuildingSchema>;
 export type NormalizedArea = z.infer<typeof NormalizedAreaSchema>;
+
+const sourceImportId = z.string().uuid();
+const sourceImportText = z.string().trim().min(1).max(500);
+const sourceImportCitation = z.strictObject({
+  documentKey: sourceImportText,
+  page: z.number().int().positive().max(10000),
+  locator: sourceImportText,
+  quote: sourceImportText.optional(),
+});
+
+/** Original-backed human transcriptions, not extracted facts or analytical geometry. */
+export const SourceBuildingImportSchema = z.strictObject({
+  format: z.enum(['document_buildings', 'administrative_context']),
+  requestKey: sourceImportId,
+  namespace: z.string().trim().min(1).max(150),
+  name: z.string().trim().min(1).max(150),
+  areaId: sourceImportId.optional(),
+  expectedAreaRevision: z.number().int().nonnegative().optional(),
+  documents: z.array(z.strictObject({
+    key: sourceImportText,
+    filename: sourceImportText,
+    sourceSha256: z.string().regex(/^[a-f0-9]{64}$/),
+    originalUrl: z.string().url().max(2000),
+    issuer: sourceImportText,
+    acquiredAt: z.string().min(1).max(100),
+    permission: z.literal('unconfirmed'),
+    classification: z.literal('test_only'),
+  })).min(1).max(8),
+  buildings: z.array(z.strictObject({
+    sourceKey: z.string().trim().min(1).max(64),
+    name: z.string().trim().min(1).max(120),
+    geometry: z.null(),
+    footprint: z.null(),
+    placement: z.literal('unknown'),
+    worldStatus: z.enum(['observed', 'planned']),
+    citations: z.array(sourceImportCitation).min(1).max(20),
+    claims: z.array(z.strictObject({
+      property: z.enum(['building.storeyLabel', 'building.storeyCount', 'building.floorCount']),
+      value: z.union([sourceImportText, z.number().int().nonnegative()]),
+      method: z.literal('source_literal'),
+      citations: z.array(sourceImportCitation).min(1).max(20),
+    })).max(30),
+  })).max(100),
+  administrativeContext: z.strictObject({
+    kind: z.literal('sector'),
+    idField: z.string().trim().min(1).max(80),
+    nameField: z.string().trim().min(1).max(80),
+  }).optional(),
+}).superRefine((input, ctx) => {
+  if (input.format === 'document_buildings' && (!input.buildings.length || input.administrativeContext)) {
+    ctx.addIssue({ code: 'custom', message: 'Building imports need declarations, not an administrative mapping.' });
+  }
+  if (input.format === 'administrative_context' && (input.buildings.length || !input.administrativeContext
+    || !input.areaId || input.documents.length !== 1)) {
+    ctx.addIssue({ code: 'custom', message: 'Administrative context needs one original, a pinned area and no buildings.' });
+  }
+  const keys = new Set(input.documents.map(document => document.key));
+  if (keys.size !== input.documents.length) {
+    ctx.addIssue({ code: 'custom', message: 'Document keys must be distinct.' });
+  }
+  if (new Set(input.buildings.map(building => building.sourceKey)).size !== input.buildings.length) {
+    ctx.addIssue({ code: 'custom', message: 'Building source keys must be distinct.' });
+  }
+  for (const building of input.buildings) {
+    const citations = [...building.citations, ...building.claims.flatMap(claim => claim.citations)];
+    if (citations.some(entry => !keys.has(entry.documentKey))) {
+      ctx.addIssue({ code: 'custom', message: 'Every citation must name an attached original.' });
+    }
+  }
+  if (input.areaId && input.expectedAreaRevision === undefined) {
+    ctx.addIssue({ code: 'custom', message: 'Pin the destination area revision.' });
+  }
+});
+export const SourceAdministrativeContextSchema = z.strictObject({
+  sourceId: sourceImportId,
+  sourceCrs: z.string().regex(/^EPSG:\d+$/),
+  units: z.array(z.strictObject({
+    id: sourceImportId, sourceKey: sourceImportText, kind: z.literal('sector'), name: sourceImportText,
+    rings: z.array(z.array(z.tuple([z.number().finite(), z.number().finite()])).min(4).max(10000)).min(1).max(100),
+  })).min(1).max(100),
+});
+export type SourceBuildingImport = z.infer<typeof SourceBuildingImportSchema>;
+export type SourceBuildingFeature = Omit<
+  PhysicalFeature, 'geometry' | 'geographicGeometry' | 'sourceGeometry'
+> & { geometry: null; geographicGeometry: null; sourceGeometry: null; placement: 'unknown' };
+export type SourceBuildingPackage = Omit<ImportPackage, 'features'> & {
+  geometryFree: true;
+  features: SourceBuildingFeature[];
+  documentPins: { sourceId: string; sourceRevision: number; sourceSha256: string }[];
+  sourceMetadata: SourceBuildingImport['documents'];
+  administrativeContext?: z.infer<typeof SourceAdministrativeContextSchema>;
+};

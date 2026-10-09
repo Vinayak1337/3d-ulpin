@@ -6028,7 +6028,7 @@
         "parameters": [],
         "requestBody": {
           "required": true,
-          "description": "application/json retains an acquisition; multipart/form-data retains an uploaded GIS original.",
+          "description": "JSON retains an acquisition; multipart retains GIS or document-backed geometry-free buildings.",
           "content": {
             "application/json": {
               "schema": {
@@ -6215,7 +6215,7 @@
             }
           }
         },
-        "summary": "Import a bounded GIS original or a retained acquisition",
+        "summary": "Import a bounded GIS original, document-backed unknown-geometry buildings, or a retained acquisition",
         "tags": [
           "intake-import-packages"
         ],
@@ -63121,6 +63121,161 @@
         "nullable": true,
         "type": "object",
         "properties": {
+          "geometryFree": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "administrativeContext": {
+            "type": "object",
+            "properties": {
+              "sourceId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "sourceCrs": {
+                "type": "string"
+              },
+              "units": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "sourceKey": {
+                      "type": "string"
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "sector"
+                      ]
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "rings": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          },
+                          "minItems": 2,
+                          "maxItems": 2
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "sourceKey",
+                    "kind",
+                    "name",
+                    "rings"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "sourceId",
+              "sourceCrs",
+              "units"
+            ],
+            "additionalProperties": false
+          },
+          "documentPins": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sourceId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "sourceRevision": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "sourceSha256": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "sourceId",
+                "sourceRevision",
+                "sourceSha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "sourceMetadata": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "filename": {
+                  "type": "string"
+                },
+                "sourceSha256": {
+                  "type": "string"
+                },
+                "originalUrl": {
+                  "type": "string"
+                },
+                "issuer": {
+                  "type": "string"
+                },
+                "acquiredAt": {
+                  "type": "string"
+                },
+                "permission": {
+                  "type": "string",
+                  "enum": [
+                    "unconfirmed"
+                  ]
+                },
+                "classification": {
+                  "type": "string",
+                  "enum": [
+                    "test_only"
+                  ]
+                }
+              },
+              "required": [
+                "key",
+                "filename",
+                "sourceSha256",
+                "originalUrl",
+                "issuer",
+                "acquiredAt",
+                "permission",
+                "classification"
+              ],
+              "additionalProperties": false
+            }
+          },
           "quarantine": {
             "type": "object",
             "properties": {
@@ -63320,6 +63475,7 @@
                   ]
                 },
                 "geometry": {
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "type": {
@@ -63393,6 +63549,7 @@
                   "additionalProperties": false
                 },
                 "geographicGeometry": {
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "type": {
@@ -63467,6 +63624,12 @@
                 },
                 "sourceGeometry": {
                   "description": "Retained source-specific or processor-specific value."
+                },
+                "placement": {
+                  "type": "string",
+                  "enum": [
+                    "unknown"
+                  ]
                 },
                 "sourceReference": {
                   "type": "object",
@@ -64534,6 +64697,7 @@
                             ]
                           },
                           "geometry": {
+                            "nullable": true,
                             "type": "object",
                             "properties": {
                               "type": {
@@ -64607,6 +64771,7 @@
                             "additionalProperties": false
                           },
                           "geographicGeometry": {
+                            "nullable": true,
                             "type": "object",
                             "properties": {
                               "type": {
@@ -64681,6 +64846,12 @@
                           },
                           "sourceGeometry": {
                             "description": "Retained source-specific or processor-specific value."
+                          },
+                          "placement": {
+                            "type": "string",
+                            "enum": [
+                              "unknown"
+                            ]
                           },
                           "sourceReference": {
                             "type": "object",
@@ -65422,6 +65593,161 @@
       "POST_source_workspaces_Response_201_application_json": {
         "type": "object",
         "properties": {
+          "geometryFree": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "administrativeContext": {
+            "type": "object",
+            "properties": {
+              "sourceId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "sourceCrs": {
+                "type": "string"
+              },
+              "units": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "sourceKey": {
+                      "type": "string"
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "sector"
+                      ]
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "rings": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          },
+                          "minItems": 2,
+                          "maxItems": 2
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "sourceKey",
+                    "kind",
+                    "name",
+                    "rings"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "sourceId",
+              "sourceCrs",
+              "units"
+            ],
+            "additionalProperties": false
+          },
+          "documentPins": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sourceId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "sourceRevision": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "sourceSha256": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "sourceId",
+                "sourceRevision",
+                "sourceSha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "sourceMetadata": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "filename": {
+                  "type": "string"
+                },
+                "sourceSha256": {
+                  "type": "string"
+                },
+                "originalUrl": {
+                  "type": "string"
+                },
+                "issuer": {
+                  "type": "string"
+                },
+                "acquiredAt": {
+                  "type": "string"
+                },
+                "permission": {
+                  "type": "string",
+                  "enum": [
+                    "unconfirmed"
+                  ]
+                },
+                "classification": {
+                  "type": "string",
+                  "enum": [
+                    "test_only"
+                  ]
+                }
+              },
+              "required": [
+                "key",
+                "filename",
+                "sourceSha256",
+                "originalUrl",
+                "issuer",
+                "acquiredAt",
+                "permission",
+                "classification"
+              ],
+              "additionalProperties": false
+            }
+          },
           "quarantine": {
             "type": "object",
             "properties": {
@@ -65621,6 +65947,7 @@
                   ]
                 },
                 "geometry": {
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "type": {
@@ -65694,6 +66021,7 @@
                   "additionalProperties": false
                 },
                 "geographicGeometry": {
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "type": {
@@ -65768,6 +66096,12 @@
                 },
                 "sourceGeometry": {
                   "description": "Retained source-specific or processor-specific value."
+                },
+                "placement": {
+                  "type": "string",
+                  "enum": [
+                    "unknown"
+                  ]
                 },
                 "sourceReference": {
                   "type": "object",
@@ -66835,6 +67169,7 @@
                             ]
                           },
                           "geometry": {
+                            "nullable": true,
                             "type": "object",
                             "properties": {
                               "type": {
@@ -66908,6 +67243,7 @@
                             "additionalProperties": false
                           },
                           "geographicGeometry": {
+                            "nullable": true,
                             "type": "object",
                             "properties": {
                               "type": {
@@ -66982,6 +67318,12 @@
                           },
                           "sourceGeometry": {
                             "description": "Retained source-specific or processor-specific value."
+                          },
+                          "placement": {
+                            "type": "string",
+                            "enum": [
+                              "unknown"
+                            ]
                           },
                           "sourceReference": {
                             "type": "object",
@@ -68140,6 +68482,7 @@
                   ]
                 },
                 "geometry": {
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "type": {
@@ -68213,6 +68556,7 @@
                   "additionalProperties": false
                 },
                 "geographicGeometry": {
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "type": {
@@ -68287,6 +68631,12 @@
                 },
                 "sourceGeometry": {
                   "description": "Retained source-specific or processor-specific value."
+                },
+                "placement": {
+                  "type": "string",
+                  "enum": [
+                    "unknown"
+                  ]
                 },
                 "sourceReference": {
                   "type": "object",
@@ -68976,6 +69326,7 @@
                   ]
                 },
                 "geometry": {
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "type": {
@@ -69049,6 +69400,7 @@
                   "additionalProperties": false
                 },
                 "geographicGeometry": {
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "type": {
@@ -69123,6 +69475,12 @@
                 },
                 "sourceGeometry": {
                   "description": "Retained source-specific or processor-specific value."
+                },
+                "placement": {
+                  "type": "string",
+                  "enum": [
+                    "unknown"
+                  ]
                 },
                 "sourceReference": {
                   "type": "object",
@@ -69572,6 +69930,161 @@
             "items": {
               "type": "object",
               "properties": {
+                "geometryFree": {
+                  "type": "boolean",
+                  "enum": [
+                    true
+                  ]
+                },
+                "administrativeContext": {
+                  "type": "object",
+                  "properties": {
+                    "sourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "sourceCrs": {
+                      "type": "string"
+                    },
+                    "units": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "sourceKey": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "sector"
+                            ]
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "rings": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "number"
+                                    }
+                                  ]
+                                },
+                                "minItems": 2,
+                                "maxItems": 2
+                              }
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "sourceKey",
+                          "kind",
+                          "name",
+                          "rings"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "sourceId",
+                    "sourceCrs",
+                    "units"
+                  ],
+                  "additionalProperties": false
+                },
+                "documentPins": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "sourceId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "sourceRevision": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "sourceSha256": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "sourceId",
+                      "sourceRevision",
+                      "sourceSha256"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "sourceMetadata": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "filename": {
+                        "type": "string"
+                      },
+                      "sourceSha256": {
+                        "type": "string"
+                      },
+                      "originalUrl": {
+                        "type": "string"
+                      },
+                      "issuer": {
+                        "type": "string"
+                      },
+                      "acquiredAt": {
+                        "type": "string"
+                      },
+                      "permission": {
+                        "type": "string",
+                        "enum": [
+                          "unconfirmed"
+                        ]
+                      },
+                      "classification": {
+                        "type": "string",
+                        "enum": [
+                          "test_only"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "key",
+                      "filename",
+                      "sourceSha256",
+                      "originalUrl",
+                      "issuer",
+                      "acquiredAt",
+                      "permission",
+                      "classification"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
                 "quarantine": {
                   "type": "object",
                   "properties": {
@@ -69771,6 +70284,7 @@
                         ]
                       },
                       "geometry": {
+                        "nullable": true,
                         "type": "object",
                         "properties": {
                           "type": {
@@ -69844,6 +70358,7 @@
                         "additionalProperties": false
                       },
                       "geographicGeometry": {
+                        "nullable": true,
                         "type": "object",
                         "properties": {
                           "type": {
@@ -69918,6 +70433,12 @@
                       },
                       "sourceGeometry": {
                         "description": "Retained source-specific or processor-specific value."
+                      },
+                      "placement": {
+                        "type": "string",
+                        "enum": [
+                          "unknown"
+                        ]
                       },
                       "sourceReference": {
                         "type": "object",
@@ -70985,6 +71506,7 @@
                                   ]
                                 },
                                 "geometry": {
+                                  "nullable": true,
                                   "type": "object",
                                   "properties": {
                                     "type": {
@@ -71058,6 +71580,7 @@
                                   "additionalProperties": false
                                 },
                                 "geographicGeometry": {
+                                  "nullable": true,
                                   "type": "object",
                                   "properties": {
                                     "type": {
@@ -71132,6 +71655,12 @@
                                 },
                                 "sourceGeometry": {
                                   "description": "Retained source-specific or processor-specific value."
+                                },
+                                "placement": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unknown"
+                                  ]
                                 },
                                 "sourceReference": {
                                   "type": "object",
@@ -72089,6 +72618,7 @@
                             ]
                           },
                           "geometry": {
+                            "nullable": true,
                             "type": "object",
                             "properties": {
                               "type": {
@@ -72162,6 +72692,7 @@
                             "additionalProperties": false
                           },
                           "geographicGeometry": {
+                            "nullable": true,
                             "type": "object",
                             "properties": {
                               "type": {
@@ -72236,6 +72767,12 @@
                           },
                           "sourceGeometry": {
                             "description": "Retained source-specific or processor-specific value."
+                          },
+                          "placement": {
+                            "type": "string",
+                            "enum": [
+                              "unknown"
+                            ]
                           },
                           "sourceReference": {
                             "type": "object",
@@ -73436,6 +73973,7 @@
                       ]
                     },
                     "geometry": {
+                      "nullable": true,
                       "type": "object",
                       "properties": {
                         "type": {
@@ -73509,6 +74047,7 @@
                       "additionalProperties": false
                     },
                     "geographicGeometry": {
+                      "nullable": true,
                       "type": "object",
                       "properties": {
                         "type": {
@@ -73583,6 +74122,12 @@
                     },
                     "sourceGeometry": {
                       "description": "Retained source-specific or processor-specific value."
+                    },
+                    "placement": {
+                      "type": "string",
+                      "enum": [
+                        "unknown"
+                      ]
                     },
                     "sourceReference": {
                       "type": "object",
@@ -74141,6 +74686,7 @@
                             ]
                           },
                           "geometry": {
+                            "nullable": true,
                             "type": "object",
                             "properties": {
                               "type": {
@@ -74214,6 +74760,7 @@
                             "additionalProperties": false
                           },
                           "geographicGeometry": {
+                            "nullable": true,
                             "type": "object",
                             "properties": {
                               "type": {
@@ -74288,6 +74835,12 @@
                           },
                           "sourceGeometry": {
                             "description": "Retained source-specific or processor-specific value."
+                          },
+                          "placement": {
+                            "type": "string",
+                            "enum": [
+                              "unknown"
+                            ]
                           },
                           "sourceReference": {
                             "type": "object",
@@ -74794,6 +75347,7 @@
                         ]
                       },
                       "geometry": {
+                        "nullable": true,
                         "type": "object",
                         "properties": {
                           "type": {
@@ -74867,6 +75421,7 @@
                         "additionalProperties": false
                       },
                       "geographicGeometry": {
+                        "nullable": true,
                         "type": "object",
                         "properties": {
                           "type": {
@@ -74941,6 +75496,12 @@
                       },
                       "sourceGeometry": {
                         "description": "Retained source-specific or processor-specific value."
+                      },
+                      "placement": {
+                        "type": "string",
+                        "enum": [
+                          "unknown"
+                        ]
                       },
                       "sourceReference": {
                         "type": "object",
@@ -77125,6 +77686,7 @@
                         ]
                       },
                       "geometry": {
+                        "nullable": true,
                         "type": "object",
                         "properties": {
                           "type": {
@@ -77198,6 +77760,7 @@
                         "additionalProperties": false
                       },
                       "geographicGeometry": {
+                        "nullable": true,
                         "type": "object",
                         "properties": {
                           "type": {
@@ -77272,6 +77835,12 @@
                       },
                       "sourceGeometry": {
                         "description": "Retained source-specific or processor-specific value."
+                      },
+                      "placement": {
+                        "type": "string",
+                        "enum": [
+                          "unknown"
+                        ]
                       },
                       "sourceReference": {
                         "type": "object",
@@ -80261,6 +80830,613 @@
                 "lowerM",
                 "upperM",
                 "network"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "administrativeContext": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "sector"
+                  ]
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "administrative_context"
+                  ]
+                },
+                "analyticalEligibility": {
+                  "type": "string",
+                  "enum": [
+                    "not_assessed"
+                  ]
+                },
+                "sourceCrs": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "unknown",
+                        "absent",
+                        "null",
+                        "withheld",
+                        "conflicting",
+                        "estimated",
+                        "candidate",
+                        "source_supported",
+                        "reviewed"
+                      ]
+                    },
+                    "unit": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128
+                    },
+                    "citations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "sourceId": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 256
+                          },
+                          "sourceSha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "locator": {
+                            "oneOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "page"
+                                    ]
+                                  },
+                                  "page": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "text": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "page"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "region"
+                                    ]
+                                  },
+                                  "page": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "x": {
+                                    "type": "number"
+                                  },
+                                  "y": {
+                                    "type": "number"
+                                  },
+                                  "width": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true
+                                  },
+                                  "height": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "enum": [
+                                      "normalized",
+                                      "pt",
+                                      "pixel"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "page",
+                                  "x",
+                                  "y",
+                                  "width",
+                                  "height",
+                                  "unit"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "row"
+                                    ]
+                                  },
+                                  "row": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "sheet": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "row"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "cell"
+                                    ]
+                                  },
+                                  "row": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "column": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256
+                                  },
+                                  "sheet": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "row",
+                                  "column"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "entity"
+                                    ]
+                                  },
+                                  "entityId": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256
+                                  },
+                                  "text": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "entityId"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "feature"
+                                    ]
+                                  },
+                                  "featureId": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "featureId"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "point"
+                                    ]
+                                  },
+                                  "pointId": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "pointId"
+                                ],
+                                "additionalProperties": false
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "sourceId",
+                          "sourceSha256",
+                          "locator"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "method": {
+                      "type": "string",
+                      "maxLength": 512,
+                      "pattern": "^(source_literal|deterministic:[^\\s@]+@[^\\s@]+|model:[^\\s@]+@[^\\s@]+|reviewer:[^\\s]+)$"
+                    },
+                    "revisionId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    }
+                  },
+                  "required": [
+                    "value",
+                    "state",
+                    "citations",
+                    "method",
+                    "revisionId"
+                  ],
+                  "additionalProperties": false
+                },
+                "polygons": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "nullable": true,
+                      "minItems": 1,
+                      "type": "array",
+                      "items": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "minItems": 4,
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            },
+                            "minItems": 2,
+                            "maxItems": 2
+                          }
+                        }
+                      }
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "unknown",
+                        "absent",
+                        "null",
+                        "withheld",
+                        "conflicting",
+                        "estimated",
+                        "candidate",
+                        "source_supported",
+                        "reviewed"
+                      ]
+                    },
+                    "unit": {
+                      "type": "string",
+                      "enum": [
+                        "m"
+                      ]
+                    },
+                    "citations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "sourceId": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 256
+                          },
+                          "sourceSha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "locator": {
+                            "oneOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "page"
+                                    ]
+                                  },
+                                  "page": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "text": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "page"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "region"
+                                    ]
+                                  },
+                                  "page": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "x": {
+                                    "type": "number"
+                                  },
+                                  "y": {
+                                    "type": "number"
+                                  },
+                                  "width": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true
+                                  },
+                                  "height": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "enum": [
+                                      "normalized",
+                                      "pt",
+                                      "pixel"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "page",
+                                  "x",
+                                  "y",
+                                  "width",
+                                  "height",
+                                  "unit"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "row"
+                                    ]
+                                  },
+                                  "row": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "sheet": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "row"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "cell"
+                                    ]
+                                  },
+                                  "row": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "column": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256
+                                  },
+                                  "sheet": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "row",
+                                  "column"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "entity"
+                                    ]
+                                  },
+                                  "entityId": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256
+                                  },
+                                  "text": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "entityId"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "feature"
+                                    ]
+                                  },
+                                  "featureId": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "featureId"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "point"
+                                    ]
+                                  },
+                                  "pointId": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "pointId"
+                                ],
+                                "additionalProperties": false
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "sourceId",
+                          "sourceSha256",
+                          "locator"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "method": {
+                      "type": "string",
+                      "maxLength": 512,
+                      "pattern": "^(source_literal|deterministic:[^\\s@]+@[^\\s@]+|model:[^\\s@]+@[^\\s@]+|reviewer:[^\\s]+)$"
+                    },
+                    "revisionId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    }
+                  },
+                  "required": [
+                    "value",
+                    "state",
+                    "citations",
+                    "method",
+                    "revisionId"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "id",
+                "kind",
+                "role",
+                "analyticalEligibility",
+                "sourceCrs",
+                "name",
+                "polygons"
               ],
               "additionalProperties": false
             }
@@ -280125,6 +281301,7 @@
                       "docx",
                       "xlsx",
                       "ods",
+                      "html",
                       "png",
                       "jpeg",
                       "archive",
@@ -283282,6 +284459,7 @@
                             "docx",
                             "xlsx",
                             "ods",
+                            "html",
                             "png",
                             "jpeg",
                             "archive",
@@ -284352,6 +285530,7 @@
                             "docx",
                             "xlsx",
                             "ods",
+                            "html",
                             "png",
                             "jpeg",
                             "archive",
@@ -293688,6 +294867,7 @@
                                 "docx",
                                 "xlsx",
                                 "ods",
+                                "html",
                                 "png",
                                 "jpeg",
                                 "archive",
@@ -294758,6 +295938,7 @@
                                 "docx",
                                 "xlsx",
                                 "ods",
+                                "html",
                                 "png",
                                 "jpeg",
                                 "archive",
@@ -347116,6 +348297,7 @@
                   "docx",
                   "xlsx",
                   "ods",
+                  "html",
                   "png",
                   "jpeg",
                   "archive",

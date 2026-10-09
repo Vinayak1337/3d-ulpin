@@ -1,5 +1,6 @@
 import {
   NormalizedAreaSchema,
+  SourceAdministrativeContextSchema,
   type AreaContext,
   type AreaFrame,
   type BuildingValueState,
@@ -8,6 +9,7 @@ import {
   type PhysicalFeature,
 } from '@ulpin/contracts';
 import { areaContext } from './areas';
+import { query } from '../../infrastructure/db';
 import { AppError } from '../../infrastructure/errors';
 import {
   assertCanonicalAreaScope,
@@ -101,6 +103,34 @@ async function addBaseFeatures(result: NormalizedArea, context: AreaContext, fra
   }
 }
 
+async function administrativeContext(
+  context: AreaContext, frame: AreaFrame,
+): Promise<NonNullable<NormalizedArea['administrativeContext']>> {
+  const result: NonNullable<NormalizedArea['administrativeContext']> = [];
+  for (const pkg of context.packages) {
+    if (pkg.state !== 'COMMITTED' || !('administrativeContext' in pkg)) continue;
+    const source = SourceAdministrativeContextSchema.parse(pkg.administrativeContext);
+    for (const unit of source.units) {
+      const citations = await canonicalCitations([
+        { sourceRevisionId: source.sourceId, featureId: unit.sourceKey },
+      ], context.area.siteId);
+      const geometry = { type: 'Polygon', coordinates: unit.rings };
+      const row = (await query<{ geometry: PhysicalFeature['geographicGeometry'] }>(
+        'SELECT ST_AsGeoJSON(ST_Transform(ST_SetSRID(ST_GeomFromGeoJSON($1),$2),4326))::jsonb geometry',
+        [JSON.stringify(geometry), Number(source.sourceCrs.split(':')[1])],
+      )).rows[0];
+      const polygons = geographicToEnu(row.geometry, frame);
+      result.push({
+        id: unit.id, kind: unit.kind, role: 'administrative_context', analyticalEligibility: 'not_assessed',
+        sourceCrs: source.sourceCrs, name: canonicalValue(unit.name, 'source_supported', citations),
+        polygons: canonicalValue(polygons, polygons ? 'candidate' : 'unknown', citations,
+          'deterministic:administrative-boundary-source-to-enu@1', 'm'),
+      });
+    }
+  }
+  return result;
+}
+
 export async function canonicalArea(areaId: string): Promise<NormalizedArea> {
   localOperatorSubject();
   const context = await areaContext(areaId);
@@ -119,12 +149,21 @@ export async function canonicalArea(areaId: string): Promise<NormalizedArea> {
   };
   if (!context.area.reference) result.gaps.push('Geographic placement unknown; no invented ENU origin.');
   await addBaseFeatures(result, context, frame);
+  const administration = await administrativeContext(context, frame);
+  if (administration.length) {
+    result.administrativeContext = administration;
+    result.gaps.push('Sector boundaries are administrative context, not parcel/public-land or analytical geometry.');
+  }
   result.revisionId = projectionDigest(result);
   // Building values retain their building dependency revision. Context values pin the complete area projection.
   for (const feature of result.baseFeatures) {
     for (const value of [feature.polygons, feature.name, feature.lowerM, feature.upperM, feature.network]) {
       value.revisionId = result.revisionId;
     }
+  }
+  for (const unit of result.administrativeContext ?? []) {
+    unit.name.revisionId = result.revisionId;
+    unit.polygons.revisionId = result.revisionId;
   }
   await revalidateCanonicalSources(result, context.area.siteId);
   if ((await assertCanonicalAreaScope(context.area)).revision !== context.area.revision) {

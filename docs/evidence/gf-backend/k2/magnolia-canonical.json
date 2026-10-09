@@ -1,0 +1,156 @@
+{
+  "schemaVersion": "normalized-building/1",
+  "buildingId": "e8777ffc-9409-4129-bacf-f680160d8795",
+  "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72",
+  "recordState": "reviewed",
+  "areaId": "e5742536-cedd-455b-b59d-c8172875c6f2",
+  "frame": {
+    "areaId": "e5742536-cedd-455b-b59d-c8172875c6f2",
+    "origin": {
+      "lon": null,
+      "lat": null,
+      "hEllipsoidal": null
+    },
+    "axes": "ENU",
+    "unit": "m",
+    "placement": "unknown",
+    "sourceCrs": [],
+    "verticalRefs": [],
+    "horizontalOperation": null
+  },
+  "name": {
+    "value": "Magnolia Residency",
+    "state": "source_supported",
+    "citations": [
+      {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "Sanctioned layout original; placement unknown"
+        }
+      }
+    ],
+    "method": "source_literal",
+    "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
+  },
+  "inputRevisions": [
+    {
+      "namespace": "area",
+      "id": "e5742536-cedd-455b-b59d-c8172875c6f2",
+      "revision": 1
+    },
+    {
+      "namespace": "area_feature",
+      "id": "e8777ffc-9409-4129-bacf-f680160d8795",
+      "revision": 1
+    },
+    {
+      "namespace": "registry_record",
+      "id": "e8777ffc-9409-4129-bacf-f680160d8795",
+      "revision": 1
+    },
+    {
+      "namespace": "import_package",
+      "id": "abf88703-4f29-4076-a723-9d69e29d7854",
+      "revision": 4
+    }
+  ],
+  "parcelRefs": [],
+  "footprint": {
+    "value": null,
+    "state": "unknown",
+    "unit": "m",
+    "citations": [
+      {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "Sanctioned layout original; placement unknown"
+        }
+      }
+    ],
+    "method": "deterministic:wgs84-surface-to-enu@1",
+    "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
+  },
+  "footprintKind": {
+    "value": null,
+    "state": "unknown",
+    "citations": [
+      {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "Sanctioned layout original; placement unknown"
+        }
+      }
+    ],
+    "method": "source_literal",
+    "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
+  },
+  "baseM": {
+    "value": null,
+    "state": "unknown",
+    "unit": "m",
+    "citations": [],
+    "method": "source_literal",
+    "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
+  },
+  "heightM": {
+    "value": null,
+    "state": "unknown",
+    "unit": "m",
+    "citations": [],
+    "method": "source_literal",
+    "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
+  },
+  "heightState": "unknown",
+  "storeyCount": {
+    "value": null,
+    "state": "unknown",
+    "unit": "count",
+    "citations": [
+      {
+        "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+        "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "Sanctioned layout original; placement unknown"
+        }
+      }
+    ],
+    "method": "source_literal",
+    "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
+  },
+  "storeyLabel": {
+    "value": null,
+    "state": "unknown",
+    "citations": [],
+    "method": "source_literal",
+    "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
+  },
+  "storeys": {
+    "value": null,
+    "state": "unknown",
+    "citations": [],
+    "method": "source_literal",
+    "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
+  },
+  "levels": [],
+  "conflicts": [],
+  "gaps": [
+    "Geometry-free building: footprint, placement, elevation and spatial analysis are not assessed.",
+    "No detailed level schedule, spaces, rights or parcel association reviewed.",
+    "Current sanction/as-built status and source-to-unit association remain unqualified.",
+    "Footprint or geographic placement unavailable; no replacement geometry.",
+    "Source outline role is unknown; it is not asserted as a ground footprint or roofprint.",
+    "Measured base elevation unknown; scene uses building-relative bases, not surveyed terrain."
+  ],
+  "candidates": []
+}
