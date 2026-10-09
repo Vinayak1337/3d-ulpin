@@ -1,56 +1,62 @@
-# Local runtime (S0.3 checkpoint)
+# Selection-demo runtime
 
-**10 October 2026: engine recovered; GF-BACKEND BLOCKED.** Desktop is running on
-`desktop-linux`. Its inventory has 24 stopped containers and 14 volumes, but **no
-`ulpin` containers or `ulpin_postgres-data`, `ulpin_minio-data`, `ulpin_redis-data`**.
-The existing projects are `ulpin-repo`, `ulpin-raster-worker-20260929` and two
-`ulpin-usptest-*` profiles. Their contents were not inspected. Starting a new
-`ulpin` project would create replacement storage, so no stack was started.
+**10 October: `ulpin-demo` is running; cold/warm doctor passed.** Existing
+`ulpin-repo`, worker, `ulpin-usptest-*` and `docsetu-*` projects remain untouched
+and stopped. Demo is explicitly new, not a replacement or a restored snapshot.
 
-## Commands (from the checkout, Node + pnpm + Docker Desktop/Compose)
+## Commands (from any checkout with locked pnpm dependencies)
 
-- Engine: `docker desktop start --timeout 45` (existing local Linux context).
-- Start: `pnpm platform:start` — confirms existing `ulpin` volume labels and
-  container mounts, then **resumes only existing** Docker services. Repeated
-  starts cannot create/recreate containers, generate configuration, initialize
-  buckets, migrate or reseed. `--infra-only` resumes just PostgreSQL/MinIO/Redis.
-- Doctor: `pnpm platform:doctor` (also `pnpm platform:health`). Read-only checks
-  cover engine/context/socket, volume attachments, container health/restart
-  policies, DB/PostGIS, object-store readiness, Redis, processor, targeted Celery
-  ping, dispatcher process, API `/api/v1/health`, migration structural admission
-  against this checkout's manifest, and API/database binding. Exit 0 means all
-  checked observations passed; dispatcher liveness is **not** a dispatch proof.
-  `--infra-only` is not a full runtime pass. No secrets/configuration are printed.
-- Stop: `pnpm platform:stop` — only existing `ulpin`-labelled containers; no removal.
-  API and dispatcher are native processes, not services in this Compose file;
-  their existing routes are `pnpm api:dev` and `pnpm dispatcher`, requiring approved
-  configuration and `ULPIN_LOCAL_OPERATOR_SUBJECT`. For doctor to attest this
-  checkout's dispatcher, launch the same entry with `node --import tsx` and its
-  absolute `scripts/dispatcher.ts` path. Manage/stop native processes separately.
-  Default API: `http://127.0.0.1:3188/api/v1/health`; an approved alternate loopback
-  endpoint can be selected with `ULPIN_DOCTOR_API_URL`.
+- Engine: `docker desktop start --timeout 45` on `desktop-linux`.
+- **First creation only:** `pnpm platform:start --profile demo --create`.
+  Generates random configuration once, starts infrastructure, private bucket
+  initialization, `pnpm db:migrate`, existing lazy schema producers, then builds
+  the demo-specific processor image and starts geo/Celery/API/dispatcher.
+  If demo volumes exist but configuration is missing, it refuses to generate
+  replacement passwords. Interrupted bootstrap requires explicit `--create`.
+- **Resume / repeat safely:** `pnpm platform:start --profile demo`.
+  Only starts existing containers and identity-checked native processes; no
+  container recreation, migration, bucket initialization or seed on resume.
+- **Doctor:** `pnpm platform:doctor --profile demo` (or `platform:health`).
+  Read-only engine/context/socket, volume bindings, health/restart policies,
+  DB/PostGIS, object readiness, Redis, targeted Celery heartbeat, native process
+  ownership, API health and manifest/schema/database-binding checks. Exit 0 is
+  green. Dispatcher liveness is not a job-execution proof.
+- **Stop all demo services:** `pnpm platform:stop --profile demo`.
+  Stops only owned API/dispatcher and demo containers; all volumes preserved.
+  `ULPIN_PROFILE=demo` is an alternative process-only selector.
 
-## Data and recovery
+| Loopback service | Port |
+| --- | --- |
+| API (`/api/v1/health`, `/api/v1/areas`) | 3194 |
+| PostgreSQL / Redis | 15434 / 16381 |
+| MinIO S3 / console | 19020 / 19021 |
+| Geo processor | 18002 |
 
-Persistent DB, objects and queues live in the **existing Docker named volumes**
-inside Desktop's managed VM storage. Originals, models and archived runtime
-material live under `E:/BhuAayam-data/`; credentials stay private and unchanged.
-Never delete/reset volumes, virtual disks, uploads, originals, review history,
-configuration or preserved socket backups. Never prune, reseed or use `down -v`.
+## Configuration, data and limits
 
-The backend log at `%LOCALAPPDATA%/Docker/log/host/com.docker.backend.exe.log`
-records startup cancellation at `2026-10-09T19:01:31Z`: rename of
-`Docker/run/sailor-ingest.sock` fails, then the engine shuts down. `fsutil` also
-returns Windows error 1920. With Docker stopped and WSL stopped, four verified
-zero-byte reparse sockets were preserved in
-`%LOCALAPPDATA%/Docker/run.saved-s03-20261010-003445`; empty directory recreation
-allowed one successful startup. This matches [Docker issue 554](https://github.com/docker/desktop-feedback/issues/554),
-not proof of its unclean-shutdown trigger or a permanent fix. No Docker-related
-Defender event was observed; **no security setting/exclusion was changed or is
-justified by this evidence**. On recurrence, inspect logs before another repair.
+Shared private configuration: `E:/BhuAayam-data/runtime/ulpin-demo/demo.env`;
+random secrets, restricted operator/SYSTEM/Administrators ACL, never printed or
+committed. Native logs/process records and the empty model mount live beside it.
+The demo launcher supplies configuration and blocks the legacy server's checkout
+`.env` probes before importing it. Model gateway is disabled; no provider key or
+call. Operator subject is process attribution, not human authentication.
 
-**Owner/lead next:** identify which retained profile contains the intended data
-and approve its exact bindings/configuration; do not silently alias or restore
-it as `ulpin`. Then qualify native API/dispatcher startup and cold/warm doctor.
-The worker healthcheck addition needs reviewed application without recreating
-storage. Evidence/checkpoint: `scripts/platform/evidence/s03/result.json`.
+Data lives in `ulpin-demo_{postgres,minio,redis}-data` inside Desktop's managed
+VM. Schema setup inserted **no domain records**: only seven migration markers
+and PostGIS's CRS catalog. Existing-unit/site backfills inserted zero rows.
+K2 must populate through real import routes. Legacy linked/`REPO_DATA=true`
+commands retain their setup route, but require their original configuration and
+existing volume bindings; missing credentials never authorize regeneration.
+
+**Never delete/reset/prune volumes, VM disks, uploads, originals, review history,
+configuration or socket backups; never reseed or use `down -v`.** Originals and
+models remain under `E:/BhuAayam-data/` outside Git.
+
+**Desktop recurrence remains unresolved:** even a graceful engine stop/start
+reproduced the inaccessible `sailor-ingest.sock` rename in the backend log.
+Inspected socket-only directories were preserved as `*.saved-s03-cold-20261010-010439`
+and recreated empty, allowing the measured cold start. See [issue 554](https://github.com/docker/desktop-feedback/issues/554)
+and `%LOCALAPPDATA%/Docker/log/host/com.docker.backend.exe.log`; no Defender
+block evidence or justified exclusion. No security-product setting changed.
+Do not repeat repairs blindly; the owner should pursue the Desktop defect.
+Evidence: `scripts/platform/evidence/s03/result.json`.
