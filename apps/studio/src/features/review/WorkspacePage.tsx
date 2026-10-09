@@ -11,6 +11,7 @@ import { buildingModel, type BuildingModel, type LevelModel } from '../../model/
 import { EvidenceProvider, useOpenEvidence } from '../evidence/EvidenceContext';
 import { parseLocator } from '../evidence/refs';
 import { levelSummary } from '../map/inspector/BuildingInspector';
+import { useCanonicalFootprints } from '../map/canonicalScene';
 import { findingVolume, useBuildingScene } from '../map/useBuildingScene';
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import { CheckGroups } from './CheckGroups';
@@ -263,7 +264,8 @@ function CheckStage({ register, model, ledger, actions }: { register: BuildingRe
   const context = useAreaContext(register.area.id).data;
   const features = context?.displayFeatures ?? context?.features ?? NONE;
   const feature = features.find((f) => f.id === register.property.id) ?? null;
-  const { base, footprints, detail, groundM } = useBuildingScene(features, feature, model, ledger, 'none');
+  const drawn = useCanonicalFootprints(register.area.id, register.property.id, features).footprints;
+  const { base, footprints, detail, groundM } = useBuildingScene(features, feature, model, ledger, 'none', drawn);
   const findings = register.findings;
   const [findingId, setFindingId] = useState<string | null>(findings.find((f) => f.category === 'blocking')?.id ?? findings[0]?.id ?? null);
   const finding = findings.find((f) => f.id === findingId) ?? null;
