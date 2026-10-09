@@ -10,12 +10,12 @@ pins = json.loads(PIN_FILE.read_text())
 reviewed = [
     'apps/api/src/modules/intake/import-packages.controller.ts',
     'apps/api/src/modules/intake/wire-schemas.ts',
-    'packages/contracts/src/canonical/building-import.ts',
     'packages/server/src/modules/usp/ingestion/source-building-admission.test.ts',
     'packages/server/src/modules/usp/ingestion/source-building-import.ts',
     'packages/server/src/modules/usp/ingestion/source-building-records.ts',
     'packages/server/src/modules/usp/ingestion/source-building-review.ts',
     'packages/server/src/modules/usp/ingestion/source-building-values.ts',
+    'packages/server/src/modules/usp/ingestion/source-administrative-context.ts',
     'apps/api/src/modules/register/operation-manifest.json',
     'apps/api/src/modules/register/register.module.ts',
     'apps/api/src/modules/register/canonical.controller.test.ts',
@@ -43,6 +43,8 @@ reviewed = [
     'packages/server/src/modules/usp/ingestion/unit-table.test.ts',
     'packages/server/src/modules/usp/ingestion/unit-table.ts',
 ]
+# The initial request-schema helper was folded into the assigned K1 building contract.
+pins['sourceSha256'].pop('packages/contracts/src/canonical/building-import.ts', None)
 for path in reviewed:
     text = Path(path).read_bytes().replace(b'\r\n', b'\n')
     pins['sourceSha256'][path] = hashlib.sha256(text).hexdigest()

@@ -8,6 +8,7 @@ import { documentAuthorityTx } from './document-authority';
 import { documentSourceTx } from './document-context';
 import { SOURCE_BUILDING_GAP, assertGeometryFreeFeatures } from './source-building-values';
 import { recordSourceBuildingTx } from './source-building-records';
+import { recordAdministrativeContextTx } from './source-administrative-context';
 
 export function isGeometryFreePackage(value: unknown): boolean {
   return Boolean(value && typeof value === 'object' && 'geometryFree' in value && value.geometryFree === true);
@@ -24,12 +25,31 @@ export async function sourceBuildingOriginalAccessTx(client: PoolClient, siteId:
   return context.source;
 }
 
+/** Match existing document gate order: source cases before recording/package/area locks. */
+export async function lockSourceBuildingCasesTx(client: PoolClient, packageId: string): Promise<void> {
+  const pkg = (await client.query('SELECT body FROM import_packages WHERE id=$1', [packageId])).rows[0]?.body;
+  if (!isGeometryFreePackage(pkg)) return;
+  const sourceIds = pkg.documentPins.map((pin: SourceBuildingPackage['documentPins'][number]) => pin.sourceId);
+  await client.query(
+    'SELECT id FROM cases WHERE id IN (SELECT case_id FROM sources WHERE id=ANY($1::uuid[])) ORDER BY id FOR SHARE',
+    [sourceIds],
+  );
+}
+
 export async function assertSourceBuildingPinsTx(client: PoolClient, pkg: SourceBuildingPackage, siteId: string) {
-  assertGeometryFreeFeatures(pkg.features);
+  if (pkg.administrativeContext) {
+    if (pkg.features.length || pkg.factCandidates.length || !pkg.administrativeContext.units.length
+      || pkg.administrativeContext.units.some(unit => unit.kind !== 'sector')) {
+      throw new AppError(422, 'ADMINISTRATIVE_CONTEXT_MODE', 'Administrative context is not a physical property.');
+    }
+  } else assertGeometryFreeFeatures(pkg.features);
   if (!pkg.documentPins.length || pkg.parts.length) {
     throw new AppError(422, 'SOURCE_BUILDING_PINS', 'Source review needs original pins, not staged extraction parts.');
   }
   const pins = new Map(pkg.documentPins.map(pin => [pin.sourceId, pin]));
+  if (pkg.administrativeContext && !pins.has(pkg.administrativeContext.sourceId)) {
+    throw new AppError(422, 'ADMINISTRATIVE_CONTEXT_PIN', 'The boundary original must be pinned.');
+  }
   const evidence = [
     ...pkg.features.flatMap(feature => feature.evidence), ...pkg.factCandidates.flatMap(claim => claim.evidence),
   ];
@@ -44,18 +64,35 @@ export async function assertSourceBuildingPinsTx(client: PoolClient, pkg: Source
   }
 }
 
+/** Read authority for original-backed declarations, never accepted extracted text. */
+export async function assertSourceBuildingPackageAuthorityTx(client: PoolClient, packageId: string) {
+  const row = (await client.query(
+    'SELECT p.body,a.site_id FROM import_packages p JOIN map_areas a ON a.id=p.area_id WHERE p.id=$1',
+    [packageId],
+  )).rows[0] ?? notFound();
+  const pkg: SourceBuildingPackage = row.body;
+  if (!isGeometryFreePackage(pkg)) {
+    throw new AppError(422, 'SOURCE_BUILDING_MODE', 'Choose the source-only package admission path.');
+  }
+  await assertSourceBuildingPinsTx(client, pkg, row.site_id);
+}
+
 export function sourceReviewFingerprint(pkg: SourceBuildingPackage, areaRevision: number): string {
   return sha256(Buffer.from(JSON.stringify({
     validator: 'document-buildings-source-review/1', features: pkg.features, claims: pkg.factCandidates,
     documentPins: pkg.documentPins, sourceMetadata: pkg.sourceMetadata,
+    administrativeContext: pkg.administrativeContext,
     areaRevision, packageRevision: pkg.revision,
   })));
 }
 
 function sourceFindings(pkg: SourceBuildingPackage): AreaFinding[] {
   const findings: AreaFinding[] = [{
-    id: randomUUID(), category: 'coverage', code: 'GEOMETRY_FREE_BUILDINGS_NOT_ASSESSED',
-    message: SOURCE_BUILDING_GAP, featureIds: pkg.features.map(feature => feature.id),
+    id: randomUUID(), category: 'coverage', code: 'SOURCE_GEOMETRY_NOT_ANALYTICALLY_ASSESSED',
+    message: pkg.administrativeContext
+      ? 'Administrative boundary context only; not a parcel, public-land, rights or analytically qualified polygon.'
+      : SOURCE_BUILDING_GAP,
+    featureIds: pkg.features.map(feature => feature.id),
   }];
   const groups = new Map<string, Set<string>>();
   for (const claim of pkg.factCandidates) {
@@ -83,6 +120,7 @@ async function saveSourcePackageTx(client: PoolClient, pkg: SourceBuildingPackag
 
 export async function reviewSourceBuildings(id: string, expectedRevision: number): Promise<SourceBuildingPackage> {
   return transaction(async client => {
+    await lockSourceBuildingCasesTx(client, id);
     const pkg: SourceBuildingPackage = (await client.query(
       'SELECT body FROM import_packages WHERE id=$1 FOR UPDATE', [id],
     )).rows[0]?.body ?? notFound();
@@ -107,7 +145,11 @@ export async function reviewSourceBuildings(id: string, expectedRevision: number
 export async function commitSourceBuildingsTx(
   client: PoolClient, pkg: SourceBuildingPackage, expectedRevision: number, acknowledgement: string,
 ): Promise<SourceBuildingPackage> {
-  if (pkg.state === 'COMMITTED') return pkg;
+  if (pkg.state === 'COMMITTED') {
+    const recordedArea = (await client.query('SELECT site_id FROM map_areas WHERE id=$1', [pkg.areaId])).rows[0];
+    await assertSourceBuildingPinsTx(client, pkg, recordedArea.site_id);
+    return pkg;
+  }
   if (!isGeometryFreePackage(pkg) || pkg.state !== 'REVIEWED' || pkg.revision !== expectedRevision
     || pkg.review?.packageRevision !== pkg.revision) conflict('Review the current source package before recording.');
   if (!acknowledgement.trim()) {
@@ -125,6 +167,7 @@ export async function commitSourceBuildingsTx(
   for (const feature of pkg.features) {
     await recordSourceBuildingTx(client, pkg, feature, area.revision + 1, site.revision + 1);
   }
+  await recordAdministrativeContextTx(client, pkg);
   await client.query('UPDATE registry_sites SET revision=revision+1 WHERE id=$1', [area.site_id]);
   await client.query('UPDATE map_areas SET revision=revision+1 WHERE id=$1', [pkg.areaId]);
   pkg.revision++;
