@@ -1,6 +1,16 @@
 # Official source index and retained dataset catalogue
 
-## D1 + D2 acquisition checkpoint — 10 October 2026 IST
+## D1b widening — 10 October 2026 IST
+
+[Current D8 development manifest](../../fixtures/usp/D8-messy-india/manifest.json): **29 additional unchanged CSV/XLSX files in 21 publisher/schema families** (26 dev files / 18 families; 3 new tabular heldout files / 3 families). Whole pack: **37 originals / 26 families, 32 dev files / 21 families and 5 heldout files / 5 families**. These are schemas, not distinct-publisher counts. The new wave has 23 OpenCity/Oorvani publisher-native CSVs and 6 issuing-authority XLSX originals; OpenCity files may be transcribed derivatives and are **test_only, not official operational records**. All 26 new dev originals have unchanged small copies in `fixtures/usp/D8-messy-india/dev/d1b/`.
+
+New development cases include genuine lakh-grouped numeric cells, publisher hectare captions, merged/multi-row/numbered headers, duplicate/empty labels, missing/dash values, coded land-use lookup and mixed geographic granularity. Publisher label/units observations never become invented canonical facts. Development dictionaries are optional; the three new tabular holdouts retain publisher column descriptions/context with URLs **only in `heldout.json`**. Teachers must not read any holdout originals, fields/meanings, supporting publications or the external discovery directory.
+
+[Source receipts and privacy exclusions](../evidence/usp/finale/GF-DATA/D1b/acquisitions.json), [counts](../evidence/usp/finale/GF-DATA/D1b/counts.json), [verification](../evidence/usp/finale/GF-DATA/D1b/result.json) and [handoff](../evidence/usp/finale/GF-DATA/D1b/HANDOFF.md) distinguish admitted data from discovery, support documents and five excluded staff/contact, pseudocode or survey exports. Dev URLs/pins are per-original in the public manifest; blind metadata exposes only IDs, publishers, file counts and case names. Permissions remain unconfirmed, missing script/date/floor/CRS/injection cases stay explicit, and **no runtime import or GF-AGENT/model gate passed**. D2 storey/demo truth and project splits are unchanged.
+
+Catalogue regeneration still reads `docs/api/retained-local-datasets.json`, outside this worker's ownership: the lead must synchronize both updated D8 entries and the additive D1b ledger entry there before regeneration. No application code, data volumes, credentials or originals were modified.
+
+## D1 + D2 acquisition checkpoint — 10 October 2026 IST (historical v1)
 
 [Development pack](../../fixtures/usp/D8-messy-india/manifest.json): **8 unchanged tabular/GIS originals, 5 families, 3 dev / 2 heldout**. Five dev files are original HTML tables, not qualified CSV/XLSX imports. The independent Bihar filing manual documents seven building fields and square-foot entry units; expanded LGD/GIS dictionaries and unobserved messy cases remain gaps. **Teachers must not open `heldout.json`, its originals/schema, or storey holdout documents/truth.** [Storey evidence](../evidence/usp/finale/GF-DATA/storey-truth/README.md) retains 11 building/group records from two demos plus six extra projects (3 dev / 3 holdout). Tower 3 remains G+41/G+42 `conflicting`; keyed independent registry storey truth is unknown. [Site decision](../evidence/usp/finale/GF-DATA/site-decision.md) keeps Bihar placement unknown and Karnataka selection pending B1.
 
