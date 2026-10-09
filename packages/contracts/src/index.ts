@@ -1,6 +1,7 @@
 export * from './canonical/targets';
 export * from './canonical/mapping-plan';
 export * from './canonical/building';
+export * from './canonical/building-import';
 export * from './canonical/building-scene';
 export type Point2 = [number, number];
 export * from "./officer";

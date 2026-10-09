@@ -6028,7 +6028,7 @@
         "parameters": [],
         "requestBody": {
           "required": true,
-          "description": "application/json retains an acquisition; multipart/form-data retains an uploaded GIS original.",
+          "description": "JSON retains an acquisition; multipart retains GIS or document-backed geometry-free buildings.",
           "content": {
             "application/json": {
               "schema": {
@@ -6215,7 +6215,7 @@
             }
           }
         },
-        "summary": "Import a bounded GIS original or a retained acquisition",
+        "summary": "Import a bounded GIS original, document-backed unknown-geometry buildings, or a retained acquisition",
         "tags": [
           "intake-import-packages"
         ],
@@ -63121,6 +63121,88 @@
         "nullable": true,
         "type": "object",
         "properties": {
+          "geometryFree": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "documentPins": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sourceId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "sourceRevision": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "sourceSha256": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "sourceId",
+                "sourceRevision",
+                "sourceSha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "sourceMetadata": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "filename": {
+                  "type": "string"
+                },
+                "sourceSha256": {
+                  "type": "string"
+                },
+                "originalUrl": {
+                  "type": "string"
+                },
+                "issuer": {
+                  "type": "string"
+                },
+                "acquiredAt": {
+                  "type": "string"
+                },
+                "permission": {
+                  "type": "string",
+                  "enum": [
+                    "unconfirmed"
+                  ]
+                },
+                "classification": {
+                  "type": "string",
+                  "enum": [
+                    "test_only"
+                  ]
+                }
+              },
+              "required": [
+                "key",
+                "filename",
+                "sourceSha256",
+                "originalUrl",
+                "issuer",
+                "acquiredAt",
+                "permission",
+                "classification"
+              ],
+              "additionalProperties": false
+            }
+          },
           "quarantine": {
             "type": "object",
             "properties": {
@@ -63320,6 +63402,7 @@
                   ]
                 },
                 "geometry": {
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "type": {
@@ -63393,6 +63476,7 @@
                   "additionalProperties": false
                 },
                 "geographicGeometry": {
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "type": {
@@ -63467,6 +63551,12 @@
                 },
                 "sourceGeometry": {
                   "description": "Retained source-specific or processor-specific value."
+                },
+                "placement": {
+                  "type": "string",
+                  "enum": [
+                    "unknown"
+                  ]
                 },
                 "sourceReference": {
                   "type": "object",
@@ -64534,6 +64624,7 @@
                             ]
                           },
                           "geometry": {
+                            "nullable": true,
                             "type": "object",
                             "properties": {
                               "type": {
@@ -64607,6 +64698,7 @@
                             "additionalProperties": false
                           },
                           "geographicGeometry": {
+                            "nullable": true,
                             "type": "object",
                             "properties": {
                               "type": {
@@ -64681,6 +64773,12 @@
                           },
                           "sourceGeometry": {
                             "description": "Retained source-specific or processor-specific value."
+                          },
+                          "placement": {
+                            "type": "string",
+                            "enum": [
+                              "unknown"
+                            ]
                           },
                           "sourceReference": {
                             "type": "object",
@@ -65422,6 +65520,88 @@
       "POST_source_workspaces_Response_201_application_json": {
         "type": "object",
         "properties": {
+          "geometryFree": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "documentPins": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sourceId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "sourceRevision": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "sourceSha256": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "sourceId",
+                "sourceRevision",
+                "sourceSha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "sourceMetadata": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "filename": {
+                  "type": "string"
+                },
+                "sourceSha256": {
+                  "type": "string"
+                },
+                "originalUrl": {
+                  "type": "string"
+                },
+                "issuer": {
+                  "type": "string"
+                },
+                "acquiredAt": {
+                  "type": "string"
+                },
+                "permission": {
+                  "type": "string",
+                  "enum": [
+                    "unconfirmed"
+                  ]
+                },
+                "classification": {
+                  "type": "string",
+                  "enum": [
+                    "test_only"
+                  ]
+                }
+              },
+              "required": [
+                "key",
+                "filename",
+                "sourceSha256",
+                "originalUrl",
+                "issuer",
+                "acquiredAt",
+                "permission",
+                "classification"
+              ],
+              "additionalProperties": false
+            }
+          },
           "quarantine": {
             "type": "object",
             "properties": {
@@ -65621,6 +65801,7 @@
                   ]
                 },
                 "geometry": {
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "type": {
@@ -65694,6 +65875,7 @@
                   "additionalProperties": false
                 },
                 "geographicGeometry": {
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "type": {
@@ -65768,6 +65950,12 @@
                 },
                 "sourceGeometry": {
                   "description": "Retained source-specific or processor-specific value."
+                },
+                "placement": {
+                  "type": "string",
+                  "enum": [
+                    "unknown"
+                  ]
                 },
                 "sourceReference": {
                   "type": "object",
@@ -66835,6 +67023,7 @@
                             ]
                           },
                           "geometry": {
+                            "nullable": true,
                             "type": "object",
                             "properties": {
                               "type": {
@@ -66908,6 +67097,7 @@
                             "additionalProperties": false
                           },
                           "geographicGeometry": {
+                            "nullable": true,
                             "type": "object",
                             "properties": {
                               "type": {
@@ -66982,6 +67172,12 @@
                           },
                           "sourceGeometry": {
                             "description": "Retained source-specific or processor-specific value."
+                          },
+                          "placement": {
+                            "type": "string",
+                            "enum": [
+                              "unknown"
+                            ]
                           },
                           "sourceReference": {
                             "type": "object",
@@ -68140,6 +68336,7 @@
                   ]
                 },
                 "geometry": {
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "type": {
@@ -68213,6 +68410,7 @@
                   "additionalProperties": false
                 },
                 "geographicGeometry": {
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "type": {
@@ -68287,6 +68485,12 @@
                 },
                 "sourceGeometry": {
                   "description": "Retained source-specific or processor-specific value."
+                },
+                "placement": {
+                  "type": "string",
+                  "enum": [
+                    "unknown"
+                  ]
                 },
                 "sourceReference": {
                   "type": "object",
@@ -68976,6 +69180,7 @@
                   ]
                 },
                 "geometry": {
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "type": {
@@ -69049,6 +69254,7 @@
                   "additionalProperties": false
                 },
                 "geographicGeometry": {
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "type": {
@@ -69123,6 +69329,12 @@
                 },
                 "sourceGeometry": {
                   "description": "Retained source-specific or processor-specific value."
+                },
+                "placement": {
+                  "type": "string",
+                  "enum": [
+                    "unknown"
+                  ]
                 },
                 "sourceReference": {
                   "type": "object",
@@ -69572,6 +69784,88 @@
             "items": {
               "type": "object",
               "properties": {
+                "geometryFree": {
+                  "type": "boolean",
+                  "enum": [
+                    true
+                  ]
+                },
+                "documentPins": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "sourceId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "sourceRevision": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "sourceSha256": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "sourceId",
+                      "sourceRevision",
+                      "sourceSha256"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "sourceMetadata": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "filename": {
+                        "type": "string"
+                      },
+                      "sourceSha256": {
+                        "type": "string"
+                      },
+                      "originalUrl": {
+                        "type": "string"
+                      },
+                      "issuer": {
+                        "type": "string"
+                      },
+                      "acquiredAt": {
+                        "type": "string"
+                      },
+                      "permission": {
+                        "type": "string",
+                        "enum": [
+                          "unconfirmed"
+                        ]
+                      },
+                      "classification": {
+                        "type": "string",
+                        "enum": [
+                          "test_only"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "key",
+                      "filename",
+                      "sourceSha256",
+                      "originalUrl",
+                      "issuer",
+                      "acquiredAt",
+                      "permission",
+                      "classification"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
                 "quarantine": {
                   "type": "object",
                   "properties": {
@@ -69771,6 +70065,7 @@
                         ]
                       },
                       "geometry": {
+                        "nullable": true,
                         "type": "object",
                         "properties": {
                           "type": {
@@ -69844,6 +70139,7 @@
                         "additionalProperties": false
                       },
                       "geographicGeometry": {
+                        "nullable": true,
                         "type": "object",
                         "properties": {
                           "type": {
@@ -69918,6 +70214,12 @@
                       },
                       "sourceGeometry": {
                         "description": "Retained source-specific or processor-specific value."
+                      },
+                      "placement": {
+                        "type": "string",
+                        "enum": [
+                          "unknown"
+                        ]
                       },
                       "sourceReference": {
                         "type": "object",
@@ -70985,6 +71287,7 @@
                                   ]
                                 },
                                 "geometry": {
+                                  "nullable": true,
                                   "type": "object",
                                   "properties": {
                                     "type": {
@@ -71058,6 +71361,7 @@
                                   "additionalProperties": false
                                 },
                                 "geographicGeometry": {
+                                  "nullable": true,
                                   "type": "object",
                                   "properties": {
                                     "type": {
@@ -71132,6 +71436,12 @@
                                 },
                                 "sourceGeometry": {
                                   "description": "Retained source-specific or processor-specific value."
+                                },
+                                "placement": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unknown"
+                                  ]
                                 },
                                 "sourceReference": {
                                   "type": "object",
@@ -72089,6 +72399,7 @@
                             ]
                           },
                           "geometry": {
+                            "nullable": true,
                             "type": "object",
                             "properties": {
                               "type": {
@@ -72162,6 +72473,7 @@
                             "additionalProperties": false
                           },
                           "geographicGeometry": {
+                            "nullable": true,
                             "type": "object",
                             "properties": {
                               "type": {
@@ -72236,6 +72548,12 @@
                           },
                           "sourceGeometry": {
                             "description": "Retained source-specific or processor-specific value."
+                          },
+                          "placement": {
+                            "type": "string",
+                            "enum": [
+                              "unknown"
+                            ]
                           },
                           "sourceReference": {
                             "type": "object",
@@ -73436,6 +73754,7 @@
                       ]
                     },
                     "geometry": {
+                      "nullable": true,
                       "type": "object",
                       "properties": {
                         "type": {
@@ -73509,6 +73828,7 @@
                       "additionalProperties": false
                     },
                     "geographicGeometry": {
+                      "nullable": true,
                       "type": "object",
                       "properties": {
                         "type": {
@@ -73583,6 +73903,12 @@
                     },
                     "sourceGeometry": {
                       "description": "Retained source-specific or processor-specific value."
+                    },
+                    "placement": {
+                      "type": "string",
+                      "enum": [
+                        "unknown"
+                      ]
                     },
                     "sourceReference": {
                       "type": "object",
@@ -74141,6 +74467,7 @@
                             ]
                           },
                           "geometry": {
+                            "nullable": true,
                             "type": "object",
                             "properties": {
                               "type": {
@@ -74214,6 +74541,7 @@
                             "additionalProperties": false
                           },
                           "geographicGeometry": {
+                            "nullable": true,
                             "type": "object",
                             "properties": {
                               "type": {
@@ -74288,6 +74616,12 @@
                           },
                           "sourceGeometry": {
                             "description": "Retained source-specific or processor-specific value."
+                          },
+                          "placement": {
+                            "type": "string",
+                            "enum": [
+                              "unknown"
+                            ]
                           },
                           "sourceReference": {
                             "type": "object",
@@ -74794,6 +75128,7 @@
                         ]
                       },
                       "geometry": {
+                        "nullable": true,
                         "type": "object",
                         "properties": {
                           "type": {
@@ -74867,6 +75202,7 @@
                         "additionalProperties": false
                       },
                       "geographicGeometry": {
+                        "nullable": true,
                         "type": "object",
                         "properties": {
                           "type": {
@@ -74941,6 +75277,12 @@
                       },
                       "sourceGeometry": {
                         "description": "Retained source-specific or processor-specific value."
+                      },
+                      "placement": {
+                        "type": "string",
+                        "enum": [
+                          "unknown"
+                        ]
                       },
                       "sourceReference": {
                         "type": "object",
@@ -77125,6 +77467,7 @@
                         ]
                       },
                       "geometry": {
+                        "nullable": true,
                         "type": "object",
                         "properties": {
                           "type": {
@@ -77198,6 +77541,7 @@
                         "additionalProperties": false
                       },
                       "geographicGeometry": {
+                        "nullable": true,
                         "type": "object",
                         "properties": {
                           "type": {
@@ -77272,6 +77616,12 @@
                       },
                       "sourceGeometry": {
                         "description": "Retained source-specific or processor-specific value."
+                      },
+                      "placement": {
+                        "type": "string",
+                        "enum": [
+                          "unknown"
+                        ]
                       },
                       "sourceReference": {
                         "type": "object",
