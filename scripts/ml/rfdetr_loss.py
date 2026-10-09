@@ -51,6 +51,6 @@ def require_finite(total: torch.Tensor, terms: dict[str, torch.Tensor]) -> None:
     if (
         total.ndim != 0
         or not torch.isfinite(total)
-        or any(v.ndim != 0 or not torch.isfinite(v) for v in terms.values())
+        or any(value.ndim != 0 or not torch.isfinite(value) for value in terms.values())
     ):
         raise FloatingPointError("Non-scalar/non-finite RF-DETR loss: stop before backward")

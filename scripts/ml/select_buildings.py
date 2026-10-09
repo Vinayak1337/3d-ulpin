@@ -138,8 +138,10 @@ def main() -> None:
     configure_offline()
     args = parse_arguments()
     run = RUNS / args.run_id
-    if args.final and not (run / "result.json").is_file():
-        raise ValueError("Final selection requires a successfully finished training segment")
+    if args.final:
+        result_path = run / "result.json"
+        if not result_path.is_file() or read_json(result_path).get("status") != "passed":
+            raise ValueError("Final selection requires a successfully finished training segment")
     entries = [json.loads(line) for line in (run / "dev-selection.jsonl").read_text().splitlines()]
     if not entries:
         raise ValueError("No completed epoch DEV receipt")

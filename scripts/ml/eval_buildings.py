@@ -20,20 +20,14 @@ import sys
 import time
 from typing import Any
 
+from building_io import sha
+
 sys.dont_write_bytecode = True
 REPO = Path(__file__).resolve().parents[2]
 EVIDENCE = REPO / "docs/evidence/gf-ai/building"
 PREREG = REPO / "docs/evidence/gf-ai/preregistration.json"
 PROFILE = "rfdetr-rgb432-tile512-stride384-threshold050-mask000-v2"
 BASELINE = "rfdetr-satellite-buildings-onnx-v1"
-
-
-def sha(path):
-    h = hashlib.sha256()
-    with Path(path).open("rb") as f:
-        for b in iter(lambda: f.read(1024 * 1024), b""):
-            h.update(b)
-    return h.hexdigest()
 
 
 def repo_sha(path):
