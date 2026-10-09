@@ -211,6 +211,8 @@ def room_regions(lines, regions, params):
     tolerance = params["snapTolerancePdf"]
     # Quantise a derivative only, then node/snap within tolerance and polygonize.
     network = unary_union([set_precision(line, tolerance) for line in lines])
+    if network.is_empty:
+        return [], {"closedFaces": 0, "retainedFaces": 0, "gap": "all_segments_collapsed_by_snap"}
     vertices = MultiPoint([xy for line in network.geoms for xy in line.coords]) if network.geom_type == "MultiLineString" else MultiPoint(list(network.coords))
     network = unary_union(snap(network, vertices, tolerance))
     faces, cuts, dangles, invalid = polygonize_full(network)
@@ -417,6 +419,10 @@ def read_page(page, source_manifest, parameter_hash, params, regions=None):
 
 
 def render_overlay(page, result, output_path, max_side=1600):
+    # Non-plan pages have no polygons to inspect: retain a small diagnostic
+    # thumbnail rather than a near-full-size copy of a scanned original.
+    if result["classification"]["kind"] != "vector_plan":
+        max_side = min(max_side, 640)
     scope = result["scopePdfBboxes"]
     clip = fitz.Rect(scope[0]) if scope else page.rect
     for r in scope[1:]:
@@ -445,4 +451,5 @@ def render_overlay(page, result, output_path, max_side=1600):
     draw.rectangle((0, 0, min(image.width, 650), 20), fill="white")
     draw.text((4, 3), title, fill="black", font=font)
     image.save(output_path, optimize=True)
-    return {"file": Path(output_path).name, "size": [pix.width, pix.height], "clipPdf": list(clip), "bytes": Path(output_path).stat().st_size}
+    return {"file": Path(output_path).name, "size": [pix.width, pix.height], "clipPdf": list(clip),
+            "nonplanThumbnail": result["classification"]["kind"] != "vector_plan", "bytes": Path(output_path).stat().st_size}
