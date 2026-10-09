@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { profileColumns } from '../../packages/server/src/modules/usp/ingestion/column-profile';
+import { profileColumnFile, profileColumns } from '../../packages/server/src/modules/usp/ingestion/column-profile';
 import { hash } from '../../packages/server/src/modules/model-gateway/config';
 import { TeacherRecordings, type TeacherRecording } from '../../packages/server/src/modules/model-gateway/recordings';
 import { columnProfileHash } from '../../packages/server/src/modules/usp/ingestion/mapping-teacher';
@@ -74,4 +74,20 @@ test('replay selects the newest valid timestamp, not UUID order, and ignores inv
   save('teacher-abcd.jsonl', entry('invalid-date', 'invalid-timestamp'));
   const replay = await new TeacherRecordings(directory).replay(replayKey);
   assert.deepEqual(replay?.response.output, { marker: 'newest-valid' });
+});
+
+test('the external workbook script preserves bounded native ODS profiling through the configured interpreter', () => {
+  const previous = process.env.ULPIN_PROFILE_PYTHON;
+  process.env.ULPIN_PROFILE_PYTHON = previous ?? 'E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe';
+  try {
+    const input = profileColumnFile(
+      'E:/BhuAayam-data/task-data/native-ods-20261004-run01/originals/home-office-hospitality-2021-q3.ods',
+    );
+    assert.equal(input.profile.columns.length, 5);
+    assert.equal(input.rows.length, 75);
+    assert.equal(input.profile.sampleShortfall, false);
+  } finally {
+    if (previous === undefined) delete process.env.ULPIN_PROFILE_PYTHON;
+    else process.env.ULPIN_PROFILE_PYTHON = previous;
+  }
 });
