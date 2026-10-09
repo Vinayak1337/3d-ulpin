@@ -1,0 +1,81 @@
+{
+  "id": "abf88703-4f29-4076-a723-9d69e29d7854",
+  "name": "Magnolia Residency — drawing-local, placement unknown (test_only)",
+  "parts": [],
+  "state": "READY_FOR_REVIEW",
+  "areaId": "e5742536-cedd-455b-b59d-c8172875c6f2",
+  "features": [
+    {
+      "id": "e8777ffc-9409-4129-bacf-f680160d8795",
+      "identifier": "3DU-75EGJKDKPX8NDVB7E82WM7BHQJ:B001",
+      "areaId": "e5742536-cedd-455b-b59d-c8172875c6f2",
+      "revision": 0,
+      "sourceRevisionId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+      "datasetNamespace": "bihar-magnolia-document-buildings",
+      "sourceKey": "RERAP2311201700019-3",
+      "name": "Magnolia Residency",
+      "kind": "building",
+      "geometry": null,
+      "geographicGeometry": null,
+      "sourceGeometry": null,
+      "placement": "unknown",
+      "worldStatus": "planned",
+      "representation": "physical_exterior",
+      "geometryRole": "unknown",
+      "height": {
+        "state": "unknown",
+        "value": null,
+        "unit": "m",
+        "meaning": "unknown",
+        "reference": "unknown"
+      },
+      "properties": {
+        "classification": "test_only",
+        "permission": "unconfirmed",
+        "sourceLiteralClaims": []
+      },
+      "areaM2": null,
+      "evidence": [
+        {
+          "sourceRevisionId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+          "page": 1,
+          "jsonPointer": "Sanctioned layout original; placement unknown"
+        }
+      ]
+    }
+  ],
+  "revision": 2,
+  "warnings": [
+    "Geometry-free building: footprint, placement, elevation and spatial analysis are not assessed.",
+    "Local development test_only; no rights or operational acceptance."
+  ],
+  "createdAt": "2026-10-09T22:53:08.029Z",
+  "questions": [],
+  "documentPins": [
+    {
+      "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+      "sourceRevision": 1,
+      "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3"
+    }
+  ],
+  "geometryFree": true,
+  "schemaVersion": "ulpin-canonical/2",
+  "factCandidates": [],
+  "sourceMetadata": [
+    {
+      "key": "document0",
+      "issuer": "Bihar RERA",
+      "filename": "bihar-magnolia-sanctioned-layout-original.pdf",
+      "acquiredAt": "2026-09-25T00:38:59.574536Z",
+      "permission": "unconfirmed",
+      "originalUrl": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3SanctionedLayoutPlan.pdf",
+      "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+      "classification": "test_only"
+    }
+  ],
+  "datasetNamespace": "bihar-magnolia-document-buildings",
+  "sourceRevisionIds": [
+    "10946c4c-0cae-41f7-8303-41f2512e630d"
+  ],
+  "sourceImportSha256": "be959780cf9748ddf23d530e95dfe3fa3bb6eb129e9eb9b54e26933a281077bf"
+}

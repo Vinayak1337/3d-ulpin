@@ -1,0 +1,238 @@
+{
+  "schemaVersion": "normalized-building/1",
+  "revisionId": "78cf420c5561e40597087a94b00ed8cf0b6d281e5014756cd0d592d0cf3f2e01",
+  "frame": {
+    "areaId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b",
+    "origin": {
+      "lon": 77.1007494298676,
+      "lat": 28.395913481052787,
+      "hEllipsoidal": null
+    },
+    "axes": "ENU",
+    "unit": "m",
+    "placement": "source_supported",
+    "sourceCrs": [
+      "EPSG:32643"
+    ],
+    "verticalRefs": [
+      "building-relative; not aligned between features"
+    ],
+    "horizontalOperation": "deterministic:wgs84-surface-to-enu@1"
+  },
+  "buildings": [
+    {
+      "buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+      "revisionId": "a433af43676419c512296aba4dd6ad162746d2ff6f6973562e9d082de4d5766a",
+      "recordState": "reviewed",
+      "name": {
+        "value": "TOWER 3",
+        "state": "source_supported",
+        "citations": [
+          {
+            "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+            "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+            "locator": {
+              "kind": "page",
+              "page": 1,
+              "text": "central T-3 tower graphic"
+            }
+          }
+        ],
+        "method": "source_literal",
+        "revisionId": "a433af43676419c512296aba4dd6ad162746d2ff6f6973562e9d082de4d5766a"
+      },
+      "footprint": {
+        "value": null,
+        "state": "unknown",
+        "unit": "m",
+        "citations": [
+          {
+            "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+            "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+            "locator": {
+              "kind": "page",
+              "page": 1,
+              "text": "central T-3 tower graphic"
+            }
+          }
+        ],
+        "method": "deterministic:wgs84-surface-to-enu@1",
+        "revisionId": "a433af43676419c512296aba4dd6ad162746d2ff6f6973562e9d082de4d5766a"
+      },
+      "heightM": {
+        "value": null,
+        "state": "unknown",
+        "unit": "m",
+        "citations": [],
+        "method": "source_literal",
+        "revisionId": "a433af43676419c512296aba4dd6ad162746d2ff6f6973562e9d082de4d5766a"
+      },
+      "heightState": "unknown"
+    }
+  ],
+  "baseFeatures": [
+    {
+      "id": "6fb53506-73d7-488a-b8e8-f9d3e6c8d17a",
+      "kind": "road",
+      "polygons": {
+        "value": null,
+        "state": "unknown",
+        "unit": "m",
+        "citations": [
+          {
+            "sourceId": "1811f56c-a5bd-413d-a787-ce41d611ede3",
+            "sourceSha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+            "locator": {
+              "kind": "feature",
+              "featureId": "175"
+            }
+          }
+        ],
+        "method": "deterministic:wgs84-surface-to-enu@1",
+        "revisionId": "78cf420c5561e40597087a94b00ed8cf0b6d281e5014756cd0d592d0cf3f2e01"
+      },
+      "name": {
+        "value": "Dividing Road Sec 58/61",
+        "state": "source_supported",
+        "citations": [
+          {
+            "sourceId": "1811f56c-a5bd-413d-a787-ce41d611ede3",
+            "sourceSha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+            "locator": {
+              "kind": "feature",
+              "featureId": "175"
+            }
+          }
+        ],
+        "method": "source_literal",
+        "revisionId": "78cf420c5561e40597087a94b00ed8cf0b6d281e5014756cd0d592d0cf3f2e01"
+      },
+      "lowerM": {
+        "value": null,
+        "state": "unknown",
+        "unit": "m",
+        "citations": [
+          {
+            "sourceId": "1811f56c-a5bd-413d-a787-ce41d611ede3",
+            "sourceSha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+            "locator": {
+              "kind": "feature",
+              "featureId": "175"
+            }
+          }
+        ],
+        "method": "source_literal",
+        "revisionId": "78cf420c5561e40597087a94b00ed8cf0b6d281e5014756cd0d592d0cf3f2e01"
+      },
+      "upperM": {
+        "value": null,
+        "state": "unknown",
+        "unit": "m",
+        "citations": [
+          {
+            "sourceId": "1811f56c-a5bd-413d-a787-ce41d611ede3",
+            "sourceSha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+            "locator": {
+              "kind": "feature",
+              "featureId": "175"
+            }
+          }
+        ],
+        "method": "source_literal",
+        "revisionId": "78cf420c5561e40597087a94b00ed8cf0b6d281e5014756cd0d592d0cf3f2e01"
+      },
+      "network": {
+        "value": null,
+        "state": "unknown",
+        "citations": [],
+        "method": "source_literal",
+        "revisionId": "78cf420c5561e40597087a94b00ed8cf0b6d281e5014756cd0d592d0cf3f2e01"
+      }
+    },
+    {
+      "id": "da8dbe21-13a2-4f39-954a-d50e019239a8",
+      "kind": "road",
+      "polygons": {
+        "value": null,
+        "state": "unknown",
+        "unit": "m",
+        "citations": [
+          {
+            "sourceId": "1811f56c-a5bd-413d-a787-ce41d611ede3",
+            "sourceSha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+            "locator": {
+              "kind": "feature",
+              "featureId": "176"
+            }
+          }
+        ],
+        "method": "deterministic:wgs84-surface-to-enu@1",
+        "revisionId": "78cf420c5561e40597087a94b00ed8cf0b6d281e5014756cd0d592d0cf3f2e01"
+      },
+      "name": {
+        "value": "Dividing Road between Sec 59/60",
+        "state": "source_supported",
+        "citations": [
+          {
+            "sourceId": "1811f56c-a5bd-413d-a787-ce41d611ede3",
+            "sourceSha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+            "locator": {
+              "kind": "feature",
+              "featureId": "176"
+            }
+          }
+        ],
+        "method": "source_literal",
+        "revisionId": "78cf420c5561e40597087a94b00ed8cf0b6d281e5014756cd0d592d0cf3f2e01"
+      },
+      "lowerM": {
+        "value": null,
+        "state": "unknown",
+        "unit": "m",
+        "citations": [
+          {
+            "sourceId": "1811f56c-a5bd-413d-a787-ce41d611ede3",
+            "sourceSha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+            "locator": {
+              "kind": "feature",
+              "featureId": "176"
+            }
+          }
+        ],
+        "method": "source_literal",
+        "revisionId": "78cf420c5561e40597087a94b00ed8cf0b6d281e5014756cd0d592d0cf3f2e01"
+      },
+      "upperM": {
+        "value": null,
+        "state": "unknown",
+        "unit": "m",
+        "citations": [
+          {
+            "sourceId": "1811f56c-a5bd-413d-a787-ce41d611ede3",
+            "sourceSha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0",
+            "locator": {
+              "kind": "feature",
+              "featureId": "176"
+            }
+          }
+        ],
+        "method": "source_literal",
+        "revisionId": "78cf420c5561e40597087a94b00ed8cf0b6d281e5014756cd0d592d0cf3f2e01"
+      },
+      "network": {
+        "value": null,
+        "state": "unknown",
+        "citations": [],
+        "method": "source_literal",
+        "revisionId": "78cf420c5561e40597087a94b00ed8cf0b6d281e5014756cd0d592d0cf3f2e01"
+      }
+    }
+  ],
+  "overlays": [],
+  "tilesets": [],
+  "gaps": [
+    "No qualified overlay/tileset supplied by the area context; presentation scene assets are not analytical tilesets.",
+    "6fb53506-73d7-488a-b8e8-f9d3e6c8d17a: non-polygon context retained in source; no guessed ribbon width or area.",
+    "da8dbe21-13a2-4f39-954a-d50e019239a8: non-polygon context retained in source; no guessed ribbon width or area."
+  ]
+}
