@@ -263,6 +263,7 @@ def main():
     parser.add_argument("--root", type=Path, default=Path("E:/BhuAayam-data/datasets/ramp"))
     parser.add_argument("--run-id", default=datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"))
     parser.add_argument("--provider", choices=("cpu", "cuda"), default="cpu")
+    parser.add_argument("--artifacts-dir", type=Path, help="New external directory for large execution artifacts")
     parser.add_argument("--holdout-role", choices=("baseline", "final_candidate"))
     parser.add_argument("--score-threshold", type=float, default=.5, help="DEV only; HOLDOUT stays preregistered .5")
     args = parser.parse_args()
@@ -285,6 +286,9 @@ def main():
         raise ValueError("Frozen split id hash differs")
     log = holdout_reserve(args, split, model_sha, split_sha) if args.split == "holdout" else None
     output.mkdir(parents=True)
+    artifacts = args.artifacts_dir or output
+    if artifacts != output:
+        artifacts.mkdir(parents=True, exist_ok=False)
     started = time.perf_counter()
     try:
         import numpy as np
@@ -314,7 +318,7 @@ def main():
         boundary = defaultdict(int)
         totals = defaultdict(int)
         matched_iou_sum = 0.
-        with (output / "chip-results.jsonl").open("x", encoding="utf-8", buffering=1) as journal:
+        with (artifacts / "chip-results.jsonl").open("x", encoding="utf-8", buffering=1) as journal:
             for image in coco["images"]:
                 tick = time.perf_counter()
                 raster = Image.open(coco_dir / image["file_name"]).convert("RGB")
@@ -343,11 +347,11 @@ def main():
                 matched_iou_sum += sum(ious)
                 if len(rows) % 100 == 0:
                     print(json.dumps({"split": args.split, "completed": len(rows), "seconds": time.perf_counter() - started}), flush=True)
-        contact_sheet(selected, coco_dir, output / "best-worst.png")
+        contact_sheet(selected, coco_dir, artifacts / "best-worst.png")
         metrics = {"per_building": {"precision": ratio(totals["tp"], totals["predicted_buildings"]), "recall": ratio(totals["tp"], totals["truth_buildings"]), "tp": totals["tp"], "fp": totals["fp"], "fn": totals["fn"], "precision_denominator_predicted_buildings": totals["predicted_buildings"], "recall_denominator_publisher_buildings": totals["truth_buildings"], "match_iou_threshold": .5, "matching": "Maximum cardinality one-to-one, total IoU tie-break; actual production polygon-candidate masks; zero-pixel source features retained as unmatched"}, "mean_iou_of_matches": {"value": ratio(matched_iou_sum, totals["tp"]), "sum": matched_iou_sum, "denominator_matches": totals["tp"]}, "false_buildings_on_empty": {"buildings": totals["false_buildings_on_empty"], "denominator_empty_chips": totals["empty_chips"], "per_empty_chip": ratio(totals["false_buildings_on_empty"], totals["empty_chips"]), "empty_chips_with_false_buildings": totals["empty_chips_with_false_buildings"]}, "boundary_f1_2px": boundary_summary(boundary), "raw_foreground_iou": {"value": ratio(totals["raw_mask_intersection_pixels"], totals["raw_mask_union_pixels"]), "intersection_pixels": totals["raw_mask_intersection_pixels"], "union_pixels": totals["raw_mask_union_pixels"]}, "abstention": {"failed_chips": 0, "denominator_chips": len(rows), "rate": 0, "note": "Empty predictions are scored, not treated as abstention"}}
-        result = {"schema": "building-evaluation/1", "status": "completed", "run_id": args.run_id, "at": utc(), "git_sha": git("rev-parse", "HEAD").decode().strip(), "evaluator_sha256": sha(Path(__file__)), "production_source_sha256": sha(Path(prod.__file__)), "split": args.split, "split_sha256": split_sha, "repository_hash_encoding": "UTF-8 bytes with CRLF normalized to LF, matching Git text blobs", "split_chip_ids_sha256": expected["chip_ids_sha256"], "coco_sha256": sha(coco_path), "model": {"path": path.as_posix(), "sha256": model_sha, "bytes": path.stat().st_size, "id": BASELINE if model_sha == installed["sha256"] else "candidate", "config_sha256": sha(path.parent / "config.json") if path.suffix == ".safetensors" else None}, "profile": {"version": PROFILE, "tiling": installed["preprocessing"]["tiling"], "object_threshold": args.score_threshold, "threshold_calibration": "DEV monotone logit shift; shifted scores are not serving confidences" if args.score_threshold != .5 else None, "mask_logit_threshold": 0, "production_polygons": {"min_pixels": 16, "simplification_pixels": .5, "max_components": 100, "max_vertices": 500}}, "coverage": {"requested_chips": expected["chips"], "completed_chips": len(rows), "zero_pixel_truth_features": totals["zero_pixel_truth_features"], "inference_tiles": totals["inference_tiles"]}, "metrics": metrics, "runtime": {"total_seconds": time.perf_counter() - started, "providers": providers, "python": sys.version, "versions": {k: importlib.metadata.version(k) for k in ("onnxruntime-gpu", "numpy", "pillow", "rasterio", "scipy", "pycocotools")}}, "artifacts": {"contact_sheet": "best-worst.png", "per_chip": "chip-results.jsonl"}, "limitations": split["limitations"] + ["Publisher label completeness/occlusion uncertainty is not independently audited; no relabelling or ignore-mask invention.", "Results are roofprint candidates, not legal/registry or surveyed footprint truth."]}
+        result = {"schema": "building-evaluation/1", "status": "completed", "run_id": args.run_id, "at": utc(), "git_sha": git("rev-parse", "HEAD").decode().strip(), "evaluator_sha256": sha(Path(__file__)), "production_source_sha256": sha(Path(prod.__file__)), "split": args.split, "split_sha256": split_sha, "repository_hash_encoding": "UTF-8 bytes with CRLF normalized to LF, matching Git text blobs", "split_chip_ids_sha256": expected["chip_ids_sha256"], "coco_sha256": sha(coco_path), "model": {"path": path.as_posix(), "sha256": model_sha, "bytes": path.stat().st_size, "id": BASELINE if model_sha == installed["sha256"] else "candidate", "config_sha256": sha(path.parent / "config.json") if path.suffix == ".safetensors" else None}, "profile": {"version": PROFILE, "tiling": installed["preprocessing"]["tiling"], "object_threshold": args.score_threshold, "threshold_calibration": "DEV monotone logit shift; shifted scores are not serving confidences" if args.score_threshold != .5 else None, "mask_logit_threshold": 0, "production_polygons": {"min_pixels": 16, "simplification_pixels": .5, "max_components": 100, "max_vertices": 500}}, "coverage": {"requested_chips": expected["chips"], "completed_chips": len(rows), "zero_pixel_truth_features": totals["zero_pixel_truth_features"], "inference_tiles": totals["inference_tiles"]}, "metrics": metrics, "runtime": {"total_seconds": time.perf_counter() - started, "providers": providers, "python": sys.version, "versions": {k: importlib.metadata.version(k) for k in ("onnxruntime-gpu", "numpy", "pillow", "rasterio", "scipy", "pycocotools")}}, "artifacts": {"contact_sheet": str(artifacts / "best-worst.png"), "per_chip": str(artifacts / "chip-results.jsonl")}, "limitations": split["limitations"] + ["Publisher label completeness/occlusion uncertainty is not independently audited; no relabelling or ignore-mask invention.", "Results are roofprint candidates, not legal/registry or surveyed footprint truth."]}
         with (output / "result.json").open("x", encoding="utf-8") as f:
-            json.dump(result, f, indent=2, allow_nan=False)
+            json.dump(result, f, separators=(",", ":"), allow_nan=False)
             f.write("\n")
         if log:
             append_log(log, "completed", args.run_id, result_sha256=sha(output / "result.json"))

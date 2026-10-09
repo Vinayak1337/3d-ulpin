@@ -182,7 +182,18 @@ def restore_dev_patience(recipe: dict[str, Any]) -> tuple[float, int]:
     records = [json.loads(line) for line in previous.read_text().splitlines()]
     if not records:
         return -1.0, 0
-    return max(record["dev_f1"] for record in records), records[-1]["bad_epochs"]
+    resume_epoch = int(read_json(Path(recipe["resume"]) / "trainer_state.json")["epoch"])
+    metric = "recall" if recipe.get("early_stopping_metric") == "recall" else "dev_f1"
+    minimum_delta = 0.0 if metric == "recall" else 0.001
+    best, bad_epochs = -1.0, 0
+    for record in records:
+        if record["epoch"] > resume_epoch:
+            continue
+        improved = record[metric] > best + minimum_delta
+        bad_epochs = 0 if improved else bad_epochs + 1
+        if improved:
+            best = record[metric]
+    return best, bad_epochs
 
 
 def offload_optimizer(optimizer: Any) -> list[tuple[dict, str, torch.device]]:
@@ -195,8 +206,10 @@ def offload_optimizer(optimizer: Any) -> list[tuple[dict, str, torch.device]]:
     return original_devices
 
 
-def evaluate_checkpoint(output: Path, checkpoint: Path, epoch: int) -> tuple[str, dict[str, Any]]:
-    run_id = f"{output.name}-epoch{epoch:03d}-dev-t050"
+def evaluate_checkpoint(
+    output: Path, checkpoint: Path, epoch: int, threshold: float = 0.5
+) -> tuple[str, dict[str, Any]]:
+    run_id = f"{output.name}-epoch{epoch:03d}-dev-t{round(threshold * 100):03d}"
     command = [
         sys.executable,
         "-B",
@@ -210,8 +223,12 @@ def evaluate_checkpoint(output: Path, checkpoint: Path, epoch: int) -> tuple[str
         "cuda",
         "--run-id",
         run_id,
+        "--score-threshold",
+        str(threshold),
+        "--artifacts-dir",
+        str(output / f"epoch-{epoch:03d}-dev-t{round(threshold * 100):03d}"),
     ]
-    with (output / f"epoch-{epoch:03d}-dev.log").open("x") as log:
+    with (output / f"epoch-{epoch:03d}-dev-t{round(threshold * 100):03d}.log").open("x") as log:
         subprocess.run(command, cwd=REPO, stdout=log, stderr=subprocess.STDOUT, check=True)
     return run_id, read_json(EVIDENCE / run_id / "result.json")
 
@@ -223,7 +240,9 @@ class DevEpochs(TrainerCallback):
         self.smoke = smoke
         self.start = time.monotonic()
         self.duration = duration_minutes * 60
-        self.best_f1, self.bad_epochs = restore_dev_patience(recipe)
+        self.best_score, self.bad_epochs = restore_dev_patience(recipe)
+        self.metric = recipe.get("early_stopping_metric", "f1")
+        self.minimum_delta = 0.0 if self.metric == "recall" else 0.001
         self.results: list[dict[str, Any]] = []
         self.trainer: FiniteTrainer | None = None
 
@@ -251,10 +270,11 @@ class DevEpochs(TrainerCallback):
     def record_dev(self, checkpoint: Path, epoch: int, run_id: str, result: dict[str, Any]) -> None:
         metrics = result["metrics"]["per_building"]
         score = 2 * metrics["tp"] / (2 * metrics["tp"] + metrics["fp"] + metrics["fn"])
-        improved = score > self.best_f1 + 0.001
+        stopping_score = metrics["recall"] if self.metric == "recall" else score
+        improved = stopping_score > self.best_score + self.minimum_delta
         self.bad_epochs = 0 if improved else self.bad_epochs + 1
         if improved:
-            self.best_f1 = score
+            self.best_score = stopping_score
         entry = {
             "epoch": epoch,
             "checkpoint": str(checkpoint),
@@ -266,6 +286,7 @@ class DevEpochs(TrainerCallback):
             "improved": improved,
             "bad_epochs": self.bad_epochs,
             "peak_reserved_bytes": torch.cuda.max_memory_reserved(),
+            "early_stopping_metric": self.metric,
         }
         self.results.append(entry)
         with (self.output / "dev-selection.jsonl").open("a") as journal:
@@ -289,8 +310,13 @@ class DevEpochs(TrainerCallback):
         devices = offload_optimizer(optimizer)
         torch.cuda.empty_cache()
         try:
-            run_id, result = evaluate_checkpoint(self.output, checkpoint, epoch)
-            self.record_dev(checkpoint, epoch, run_id, result)
+            evaluations = []
+            for threshold in self.recipe.get("dev_thresholds", [0.5]):
+                run_id, result = evaluate_checkpoint(self.output, checkpoint, epoch, threshold)
+                evaluations.append({"threshold": threshold, "run_id": run_id, "metrics": result["metrics"]})
+                if threshold == 0.5:
+                    self.record_dev(checkpoint, epoch, run_id, result)
+            write_json(self.output / f"epoch-{epoch:03d}-dev.json", {"epoch": epoch, "evaluations": evaluations})
         finally:
             model.to("cuda")
             for values, key, device in devices:
@@ -307,7 +333,11 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--duration-minutes", type=float, default=85)
     parser.add_argument("--resume", type=Path)
+    parser.add_argument("--early-stopping-metric", choices=("f1", "recall"), default="f1")
+    parser.add_argument("--dev-thresholds", type=float, nargs="+", default=[0.5])
     args = parser.parse_args()
+    if 0.5 not in args.dev_thresholds or any(not 0 < value < 1 for value in args.dev_thresholds):
+        parser.error("DEV thresholds must include .5 and lie strictly between zero and one")
     if not re.fullmatch(r"[A-Za-z0-9_-]+", args.run_id):
         parser.error("Simple unique run-id required")
     return args
@@ -325,7 +355,9 @@ def training_recipe(args: argparse.Namespace, dataset: RampTrain) -> dict[str, A
         "learning_rate_backbone": 1e-5,
         "amp": "bf16",
         "max_epochs": 12,
-        "early_stopping": "DEV polygon F1, min_delta .001, patience 3",
+        "early_stopping": f"DEV {args.early_stopping_metric} at .5, patience 3",
+        "early_stopping_metric": args.early_stopping_metric,
+        "dev_thresholds": args.dev_thresholds,
         "preprocessing": "production RGB Pillow bilinear 432; ImageNet; source tiles <=512; stride384",
         "augmentation": "TRAIN horizontal/vertical flips only; smoke none",
         "zero_pixel_masks": "Retained; box/class and zero mask supervised; no relabel/drop",
