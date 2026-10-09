@@ -4,9 +4,17 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { command, dockerRuntime, engine, inventory, storageProblems, migrationReady, root, services } from './runtime.mjs';
+import { readDemo, demoProject } from './demo-config.mjs';
+import { ownedProcess } from './processes.mjs';
 
 let failures = 0;
 const infraOnly = process.argv.includes('--infra-only');
+const processingOnly = process.argv.includes('--processing-only');
+const profileIndex = process.argv.indexOf('--profile');
+const demo = process.env.ULPIN_PROFILE === 'demo' || (profileIndex >= 0 && process.argv[profileIndex + 1] === 'demo');
+const projectIndex = process.argv.indexOf('--project');
+const selectedProject = demo ? demoProject : projectIndex >= 0 ? process.argv[projectIndex + 1] : process.env.REPO_DATA === 'true' ? 'ulpin-repo' : 'ulpin';
+let demoEnv;
 function result(name, passed, hint) {
   console.log(`${passed ? 'PASS' : 'FAIL'} ${name}`);
   if (!passed) { failures++; console.log(`  Fix: ${hint}`); }
@@ -29,7 +37,7 @@ function portUrl(c, port, path) {
   return `http://${host}:${binding.HostPort}${path}`;
 }
 function apiUrl() {
-  const url = new URL(process.env.ULPIN_DOCTOR_API_URL || 'http://127.0.0.1:3188/api/v1/health');
+  const url = new URL(demo ? `http://127.0.0.1:${demoEnv.API_PORT}/api/v1/health` : process.env.ULPIN_DOCTOR_API_URL || 'http://127.0.0.1:3188/api/v1/health');
   if (url.protocol !== 'http:' || !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
     || url.username || url.password || url.search || url.hash) throw new Error('Expected a credential-free loopback health URL.');
   return url;
@@ -39,6 +47,7 @@ async function get(url) {
 }
 function exec(runtime, c, args) { return runtime.docker('exec', c.id, ...args); }
 function dispatcherRunning() {
+  if (demo) return !!ownedProcess('dispatcher');
   const entry = join(root, 'scripts/dispatcher.ts');
   if (process.platform === 'win32') return command('powershell.exe', [
     '-NoProfile', '-File', join(root, 'scripts/platform/dispatcher-probe.ps1'), '-DispatcherEntry', entry,
@@ -52,6 +61,9 @@ function dispatcherRunning() {
 }
 
 async function doctor() {
+  if (!['ulpin', 'ulpin-repo', demoProject].includes(selectedProject)) throw new Error('Unsupported project.');
+  if (demo && !await attempt('Demo external configuration', () => { demoEnv = readDemo(); return true; },
+    'recover the original demo.env if demo volumes exist; otherwise use platform:start --profile demo --create.')) return;
   let runtime;
   if (!await attempt('Docker local Linux engine and context/socket', () => {
     runtime = dockerRuntime();
@@ -62,12 +74,12 @@ async function doctor() {
 
   let snapshot;
   if (!await attempt('Docker inventory readable', () => {
-    snapshot = inventory(runtime);
-    console.log(`  ${snapshot.volumes.length} existing volumes; ${snapshot.containers.length} ulpin containers`);
+    snapshot = inventory(runtime, selectedProject);
+    console.log(`  ${snapshot.volumes.length} existing volumes; ${snapshot.containers.length} ${selectedProject} containers`);
     return true;
   }, 'restore access to the existing Docker engine; do not reset its data.')) return;
-  const problems = storageProblems(snapshot);
-  await attempt('Existing ulpin volume ownership and attachments', () => {
+  const problems = storageProblems(snapshot, selectedProject);
+  await attempt(`Existing ${selectedProject} volume ownership and attachments`, () => {
     problems.forEach(problem => console.log(`  ${problem}`));
     return problems.length === 0;
   }, 'ask the owner to reconcile the intended populated project; never create empty replacement volumes.');
@@ -77,7 +89,7 @@ async function doctor() {
     // Worker ping below supplies health for older worker containers without a healthcheck.
     await attempt(`${service} container healthy`, () => c?.state === 'running'
       && (c.health === 'healthy' || (service === 'worker' && c.health === null)),
-    `resume the existing ulpin/${service} container after confirming storage bindings; inspect its healthcheck.`);
+    `resume the existing ${selectedProject}/${service} container after confirming storage bindings; inspect its healthcheck.`);
     if (c) await attempt(`${service} restart policy`, () => c.restart === 'unless-stopped',
       'have the runtime owner apply the reviewed unless-stopped policy without changing volume bindings.');
   }
@@ -120,7 +132,9 @@ async function doctor() {
     return Object.values(reply).some(value => value?.ok === 'pong');
   }, 'resume the existing worker and verify its Redis broker connection.');
   else skip('Celery worker heartbeat');
-  await attempt('Dispatcher process in this checkout (liveness only)', dispatcherRunning,
+  if (processingOnly) { console.log('SKIP native API/dispatcher and migration admission (processing-only compatibility check)'); return; }
+  if (demo) await attempt('API native process ownership', () => !!ownedProcess('api'), 'resume the demo launcher; do not adopt unrelated listener processes.');
+  await attempt('Dispatcher process ownership (liveness only)', dispatcherRunning,
     'start node --import tsx with this checkout\'s absolute scripts/dispatcher.ts path and approved operator/configuration.');
 
   let health = null;
@@ -132,9 +146,9 @@ async function doctor() {
   }, 'start the existing NestJS API with the approved local operator/configuration and restore its failed dependencies.');
   await attempt('DB migrations applied (API structural admission)', () => {
     const sha = createHash('sha256').update(readFileSync(join(root, 'database/manifest.json'))).digest('hex');
-    return migrationReady(health, sha);
+    return migrationReady(health, sha, selectedProject === 'ulpin-repo' ? 'repository' : 'linked');
   }, 'have the runtime/DB owner review missing schema against this checkout and apply only approved additive migrations.');
-  await attempt('API bound to the inspected ulpin database', () => {
+  await attempt(`API bound to the inspected ${selectedProject} database`, () => {
     if (!dbIdentity || !health) return false;
     const port = new URL(portUrl(postgres, 5432, '')).port;
     return ['127.0.0.1', 'localhost'].some(host => {
@@ -148,5 +162,5 @@ async function doctor() {
 try { await doctor(); }
 catch { result('Doctor completed', false, 'restore access to local runtime metadata and rerun doctor.'); }
 console.log(failures ? `Doctor: ${failures} failure(s); runtime NOT qualified.`
-  : infraOnly ? 'Doctor: infrastructure checks passed only.' : 'Doctor: all checks passed (dispatcher liveness, not a job execution proof).');
+  : (infraOnly || processingOnly) ? 'Doctor: infrastructure/processing checks passed only.' : 'Doctor: all checks passed (dispatcher liveness, not a job execution proof).');
 process.exitCode = failures ? 1 : 0;
