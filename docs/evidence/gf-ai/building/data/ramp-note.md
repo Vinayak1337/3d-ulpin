@@ -1,5 +1,5 @@
 1. Source: Radiant Earth MLHub RAMP; Karnataka v1.0, DevGlobal (2022), DOI 10.34911/rdnt.5y2w17; public research, `test_only`.
-2. The Karnataka README and Documentation.pdf state 6,288 chips and 51,335 publisher building features.
+2. The Karnataka README/PDF state 6,288 chips and 51,335 features; downloaded original labels actually contain 50,666 features, which govern denominators.
 3. Each original is a 256 × 256 RGB GeoTIFF paired with a WGS84 GeoJSON FeatureCollection; originals remain byte-identical.
 4. Both regional documents state nominal 30 cm imagery, Maxar ODP scene 104001002CA32300; the actual GeoTIFF affine governs spatial conversion.
 5. Root README: one person annotated each chip and another person reviewed it; TaQadam and B.O.T supplied trained annotators.

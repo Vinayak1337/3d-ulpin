@@ -12,6 +12,13 @@ import eval_buildings as evaluate
 
 
 class CommittedGuardRegression(unittest.TestCase):
+    def test_correct_empty_chips_do_not_rank_as_worst(self):
+        rows = [({"chip_id": "empty", "object_f1": None}, None, None),
+                ({"chip_id": "missed", "object_f1": 0.0}, None, None),
+                ({"chip_id": "matched", "object_f1": 1.0}, None, None)]
+        selected = evaluate.select_contact_rows(rows)
+        self.assertEqual([x[0]["chip_id"] for x in selected], ["missed", "matched"])
+
     def test_crlf_checkout_is_same_git_blob_but_json_mutation_is_rejected(self):
         with tempfile.TemporaryDirectory(dir="E:/BhuAayam-data/ml") as root:
             repo = Path(root)
