@@ -11,5 +11,10 @@ const app = await NestFactory.create(AppModule, { logger: false, bodyParser: fal
 try {
   const document = createApiDocument(app);
   writeFileSync('docs/api/openapi.json', JSON.stringify(document, null, 2) + '\n');
-  console.log(`Native OpenAPI generated: ${Object.values(document.paths).reduce((n, item) => n + Object.keys(item!).filter(m => ['get','post','put','patch','delete'].includes(m)).length, 0)} operations`);
+  const methods = ['get', 'post', 'put', 'patch', 'delete'];
+  const operations = Object.values(document.paths).reduce(
+    (count, item) => count + Object.keys(item!).filter(method => methods.includes(method)).length,
+    0,
+  );
+  console.log(`Native OpenAPI generated: ${operations} operations`);
 } finally { await app.close(); }
