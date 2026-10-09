@@ -1342,35 +1342,37 @@
       "viewModels": "authorized_canonical_API_projections_only"
     },
     "execution": {
-      "scope": "backend_only",
-      "currentAssignment": "user_resumed_D00_integration_board_and_D01_D02_D03_prerequisites; D04_next_after_accepted_slice; old_ML_fit_parked",
-      "acceptedAssignmentBase": "1eb836b58fceecbfcaa8b331405838d07bca8a02",
+      "scope": "all_lanes",
+      "currentAssignment": "selection_sprint_20261010; see docs/next-steps/SPRINT-SELECTION.md",
+      "acceptedAssignmentBase": "e95273e5",
       "featureImplementationAuthorized": true,
-      "frontendOwner": "Claude; React_Vite_TypeScript_Threejs_3d_tiles_renderer",
-      "delegation": "ordinary_codex_tasks_not_subagents",
+      "frontendOwner": "Claude_lead; React_Vite_TypeScript_Threejs_3d_tiles_renderer",
+      "delegation": "pi_codex_pool_subagents",
       "leadMayExecuteAssignedWork": false,
       "currentLeadException": null,
-      "orchestratorPrompt": "docs/orchestration/ORCHESTRATOR.md",
-      "taskQueue": "docs/orchestration/WORK_ITEMS.md",
-      "speedPreference": "standard_default_1x",
+      "orchestratorPrompt": "docs/next-steps/SPRINT-SELECTION.md",
+      "taskQueue": "docs/next-steps/SPRINT-SELECTION.md#6-tasks",
+      "speedPreference": "standard",
       "configuredServiceTier": null,
-      "requiredServiceTier": "default",
+      "requiredServiceTier": null,
       "observedTurnServiceTier": null,
-      "newProductFeaturesScheduled": false,
-      "workerCheckoutPolicy": "separate_worktree_and_branch_per_model_task_from_pinned_accepted_staging",
-      "planHardeningOwner": "assigned_planner_worker_after_current_lead_authored_reset",
-      "integrationOwner": "assigned_worker_exclusive_staging_window",
+      "newProductFeaturesScheduled": true,
+      "workerCheckoutPolicy": "separate_worktree_and_branch_per_task_from_staging",
+      "planHardeningOwner": "Claude_lead",
+      "integrationOwner": "Claude_lead",
       "workerModel": "gpt-6.1-sol",
       "workerReasoning": [
         "high",
-        "xhigh",
-        "max"
+        "xhigh"
       ],
-      "maxReasoningPolicy": "specific_hard_problem_with_stated_benefit",
+      "maxReasoningPolicy": "not_offered",
       "firstTasks": [
-        "D01",
-        "D02",
-        "D03"
+        "S0.3",
+        "B1",
+        "A1",
+        "D1",
+        "D2",
+        "P1"
       ]
     },
     "architecture": {

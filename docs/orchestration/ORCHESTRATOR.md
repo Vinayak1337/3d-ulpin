@@ -1,5 +1,7 @@
 # Delegation-only delivery orchestrator
 
+> **Retired 10 October 2026.** The owner made Claude (Opus 5.5) the lead for all lanes and retired the Codex desktop chats and this queue. The live plan is [SPRINT-SELECTION.md](../next-steps/SPRINT-SELECTION.md) and the board is [STATUS.md](../STATUS.md). The RF-DETR harness repair chain and the fragment-support lane are closed; their uncommitted work is preserved on `wip/rfdetr-bridge-fix-20261006`, `wip/fragment-rank-56f9-20261010` and `task/d07-native-cpu-empty-loss-20261006`. Entries below are history.
+
 Use this file as the operating prompt for the project orchestrator. Read [the small worker tasks](WORK_ITEMS.md) next. The project is 3D ULPIN / BhuAayam: turn fragmented source inputs into cited, reviewed building/floor/space records and useful 3D outputs. The product goal is Identify → Prove → Govern; document-to-building/floor linking remains an explicit requirement.
 
 **Activation:** planning and cleanup do not resume delivery. Product and ML workers are paused until the user resumes them. On resume, use this procedure; do not continue old assignments simply because an old ledger calls them active.
