@@ -18,6 +18,9 @@ from pathlib import Path
 import subprocess
 import sys
 import time
+from typing import Any
+
+from building_io import sha
 
 sys.dont_write_bytecode = True
 REPO = Path(__file__).resolve().parents[2]
@@ -25,14 +28,6 @@ EVIDENCE = REPO / "docs/evidence/gf-ai/building"
 PREREG = REPO / "docs/evidence/gf-ai/preregistration.json"
 PROFILE = "rfdetr-rgb432-tile512-stride384-threshold050-mask000-v2"
 BASELINE = "rfdetr-satellite-buildings-onnx-v1"
-
-
-def sha(path):
-    h = hashlib.sha256()
-    with Path(path).open("rb") as f:
-        for b in iter(lambda: f.read(1024 * 1024), b""):
-            h.update(b)
-    return h.hexdigest()
 
 
 def repo_sha(path):
@@ -157,6 +152,24 @@ def session(path, provider):
     return Adapter(), ["PyTorch-" + provider]
 
 
+def threshold_session(native: Any, threshold: float) -> Any:
+    """DEV-only threshold calibration while reusing unchanged production painting.
+
+    A monotone logit offset makes production's fixed sigmoid > .5 select exactly
+    raw sigmoid > threshold. Geometry/ranking is unchanged; returned scores are
+    shifted and must not be presented as calibrated candidate confidences.
+    """
+    import math
+    if threshold == .5:
+        return native
+    offset = math.log(threshold / (1 - threshold))
+    class Adapter:
+        def run(self, outputs: Any, inputs: dict[str, Any]) -> tuple[Any, Any]:
+            logits, masks = native.run(outputs, inputs)
+            return logits - offset, masks
+    return Adapter()
+
+
 def infer(prod, native, image, fingerprint):
     import numpy as np
     layout = prod._building_layout(image)
@@ -251,7 +264,12 @@ def main():
     parser.add_argument("--run-id", default=datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"))
     parser.add_argument("--provider", choices=("cpu", "cuda"), default="cpu")
     parser.add_argument("--holdout-role", choices=("baseline", "final_candidate"))
+    parser.add_argument("--score-threshold", type=float, default=.5, help="DEV only; HOLDOUT stays preregistered .5")
     args = parser.parse_args()
+    if not 0 < args.score_threshold < 1:
+        parser.error("score threshold must be between 0 and 1")
+    if args.split == "holdout" and args.score_threshold != .5:
+        parser.error("Nondefault HOLDOUT threshold denied before slot reservation")
     if not __import__("re").fullmatch(r"[A-Za-z0-9_-]+", args.run_id):
         parser.error("run-id must be a simple new directory name")
     output = EVIDENCE / args.run_id
@@ -288,6 +306,7 @@ def main():
         if sorted(x["source_id"] for x in coco["images"]) != expected["chip_ids"]:
             raise ValueError("COCO identities differ from frozen split")
         native, providers = session(path, args.provider)
+        native = threshold_session(native, args.score_threshold)
         by_image = defaultdict(list)
         for annotation in coco["annotations"]:
             by_image[annotation["image_id"]].append(annotation)
@@ -326,7 +345,7 @@ def main():
                     print(json.dumps({"split": args.split, "completed": len(rows), "seconds": time.perf_counter() - started}), flush=True)
         contact_sheet(selected, coco_dir, output / "best-worst.png")
         metrics = {"per_building": {"precision": ratio(totals["tp"], totals["predicted_buildings"]), "recall": ratio(totals["tp"], totals["truth_buildings"]), "tp": totals["tp"], "fp": totals["fp"], "fn": totals["fn"], "precision_denominator_predicted_buildings": totals["predicted_buildings"], "recall_denominator_publisher_buildings": totals["truth_buildings"], "match_iou_threshold": .5, "matching": "Maximum cardinality one-to-one, total IoU tie-break; actual production polygon-candidate masks; zero-pixel source features retained as unmatched"}, "mean_iou_of_matches": {"value": ratio(matched_iou_sum, totals["tp"]), "sum": matched_iou_sum, "denominator_matches": totals["tp"]}, "false_buildings_on_empty": {"buildings": totals["false_buildings_on_empty"], "denominator_empty_chips": totals["empty_chips"], "per_empty_chip": ratio(totals["false_buildings_on_empty"], totals["empty_chips"]), "empty_chips_with_false_buildings": totals["empty_chips_with_false_buildings"]}, "boundary_f1_2px": boundary_summary(boundary), "raw_foreground_iou": {"value": ratio(totals["raw_mask_intersection_pixels"], totals["raw_mask_union_pixels"]), "intersection_pixels": totals["raw_mask_intersection_pixels"], "union_pixels": totals["raw_mask_union_pixels"]}, "abstention": {"failed_chips": 0, "denominator_chips": len(rows), "rate": 0, "note": "Empty predictions are scored, not treated as abstention"}}
-        result = {"schema": "building-evaluation/1", "status": "completed", "run_id": args.run_id, "at": utc(), "git_sha": git("rev-parse", "HEAD").decode().strip(), "evaluator_sha256": sha(Path(__file__)), "production_source_sha256": sha(Path(prod.__file__)), "split": args.split, "split_sha256": split_sha, "repository_hash_encoding": "UTF-8 bytes with CRLF normalized to LF, matching Git text blobs", "split_chip_ids_sha256": expected["chip_ids_sha256"], "coco_sha256": sha(coco_path), "model": {"path": path.as_posix(), "sha256": model_sha, "bytes": path.stat().st_size, "id": BASELINE if model_sha == installed["sha256"] else "candidate", "config_sha256": sha(path.parent / "config.json") if path.suffix == ".safetensors" else None}, "profile": {"version": PROFILE, "tiling": installed["preprocessing"]["tiling"], "object_threshold": .5, "mask_logit_threshold": 0, "production_polygons": {"min_pixels": 16, "simplification_pixels": .5, "max_components": 100, "max_vertices": 500}}, "coverage": {"requested_chips": expected["chips"], "completed_chips": len(rows), "zero_pixel_truth_features": totals["zero_pixel_truth_features"], "inference_tiles": totals["inference_tiles"]}, "metrics": metrics, "runtime": {"total_seconds": time.perf_counter() - started, "providers": providers, "python": sys.version, "versions": {k: importlib.metadata.version(k) for k in ("onnxruntime-gpu", "numpy", "pillow", "rasterio", "scipy", "pycocotools")}}, "artifacts": {"contact_sheet": "best-worst.png", "per_chip": "chip-results.jsonl"}, "limitations": split["limitations"] + ["Publisher label completeness/occlusion uncertainty is not independently audited; no relabelling or ignore-mask invention.", "Results are roofprint candidates, not legal/registry or surveyed footprint truth."]}
+        result = {"schema": "building-evaluation/1", "status": "completed", "run_id": args.run_id, "at": utc(), "git_sha": git("rev-parse", "HEAD").decode().strip(), "evaluator_sha256": sha(Path(__file__)), "production_source_sha256": sha(Path(prod.__file__)), "split": args.split, "split_sha256": split_sha, "repository_hash_encoding": "UTF-8 bytes with CRLF normalized to LF, matching Git text blobs", "split_chip_ids_sha256": expected["chip_ids_sha256"], "coco_sha256": sha(coco_path), "model": {"path": path.as_posix(), "sha256": model_sha, "bytes": path.stat().st_size, "id": BASELINE if model_sha == installed["sha256"] else "candidate", "config_sha256": sha(path.parent / "config.json") if path.suffix == ".safetensors" else None}, "profile": {"version": PROFILE, "tiling": installed["preprocessing"]["tiling"], "object_threshold": args.score_threshold, "threshold_calibration": "DEV monotone logit shift; shifted scores are not serving confidences" if args.score_threshold != .5 else None, "mask_logit_threshold": 0, "production_polygons": {"min_pixels": 16, "simplification_pixels": .5, "max_components": 100, "max_vertices": 500}}, "coverage": {"requested_chips": expected["chips"], "completed_chips": len(rows), "zero_pixel_truth_features": totals["zero_pixel_truth_features"], "inference_tiles": totals["inference_tiles"]}, "metrics": metrics, "runtime": {"total_seconds": time.perf_counter() - started, "providers": providers, "python": sys.version, "versions": {k: importlib.metadata.version(k) for k in ("onnxruntime-gpu", "numpy", "pillow", "rasterio", "scipy", "pycocotools")}}, "artifacts": {"contact_sheet": "best-worst.png", "per_chip": "chip-results.jsonl"}, "limitations": split["limitations"] + ["Publisher label completeness/occlusion uncertainty is not independently audited; no relabelling or ignore-mask invention.", "Results are roofprint candidates, not legal/registry or surveyed footprint truth."]}
         with (output / "result.json").open("x", encoding="utf-8") as f:
             json.dump(result, f, indent=2, allow_nan=False)
             f.write("\n")
