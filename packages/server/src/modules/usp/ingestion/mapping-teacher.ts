@@ -108,7 +108,7 @@ export async function proposeMappingWithTeacher(profile:ColumnProfileDocument,op
         outputSchema:request.schema,replayKey,authorize:options.authorize,minimizeOutput:output=>output,
         observeResponse:async event=>{
           const validation=validateTeacherOutput(event.result?.semanticError?{}:event.result?.output,profile);
-          await recordings?.record({templateVersion:MAPPING_TEACHER_TEMPLATE,
+          await recordings?.record({adapterKind:gateway!.adapterKind,templateVersion:MAPPING_TEACHER_TEMPLATE,
             model:MAPPING_TEACHER_MODEL,profileHash,replayKey,attempt,...event,parsedPlan:validation.plan,validation,
             price:gateway!.config.price});
         }});
