@@ -34,6 +34,21 @@ export const CanonicalMappedValueSchema=z.strictObject({value:z.union([z.string(
   unit:z.enum(['m2','m','count']).optional(),citations:z.array(MappingCellCitationSchema).min(1),
   method:z.string().min(1),literal:z.unknown().optional(),issueCode:z.string().regex(/^[A-Z][A-Z0-9_]*$/).optional(),
   conversionSource:z.string().url().optional(),sourceCrs:z.string().min(1).optional()});
+const profileRate=z.number().min(0).max(1);
+/** A derivative-only profile. No source paths, coordinates, raw rows or provenance secrets. */
+export const ColumnProfileSchema=z.strictObject({
+  name:MappingSourceFieldSchema,inferredType:MappingInferredTypeSchema,declaredUnit:MappingSourceUnitSchema.optional(),
+  valueShapes:z.strictObject({dateDmyRate:profileRate,dateIsoRate:profileRate,lakhGroupingRate:profileRate,
+    devanagariDigitRate:profileRate,khasraLikeRate:profileRate,floorLabelRate:profileRate,
+    nullRate:profileRate,blankRate:profileRate,distinctRatio:profileRate}),
+  // Do not pad small inputs with fabricated examples: fewer than five observed cells is explicit.
+  maskedSamples:z.array(z.string().max(256)).max(20),
+});
+export const ColumnProfileDocumentSchema=z.strictObject({version:z.literal('column-profile/1'),
+  sourceKind:MappingSourceKindSchema,layoutFingerprint:z.string().regex(/^[a-f0-9]{64}$/),
+  columns:z.array(ColumnProfileSchema).min(1).max(256),sampleShortfall:z.boolean()});
+export type ColumnProfile=z.infer<typeof ColumnProfileSchema>;
+export type ColumnProfileDocument=z.infer<typeof ColumnProfileDocumentSchema>;
 export type MappingPlanV2=z.infer<typeof MappingPlanV2Schema>;
 export type MappingV2Operation=z.infer<typeof MappingV2OperationSchema>;
 export type MappingLayoutField=z.infer<typeof MappingLayoutFieldSchema>;
