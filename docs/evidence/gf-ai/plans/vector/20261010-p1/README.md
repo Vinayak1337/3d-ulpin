@@ -37,9 +37,14 @@ The real ground-bedroom polygon is the single regression next to the reader.
 The baseline's small receipt is retained; redundant intermediate JSON/PNG
 was removed. No more room-shape tuning or door completion was attempted.
 
-**Next:** lead review the overlay and mismatch/unattached text first. Obtain
-additional vector floor-plan sheets if the three-page gate stays mandatory;
-otherwise explicitly narrow the qualification to this source sheet/panels.
+**Historical checkpoint:** the lead subsequently accepted all three floor
+panels on page 2 instead of three PDF pages, and requested wall-mask extraction.
+The continuation is recorded in `../20261010-p1-panels/`. These baseline JSON
+files are now compact derivatives; their exact full precision was retained
+outside Git and SHA-pinned by `fullPrecisionRef`.
+
+**Next (superseded):** lead review the continuation's overlay, literal audit and
+mismatch report instead of treating this baseline as the final room reader.
 Backend ingestion should retain these proposals separately from reviewed
 values, choose the level through review, and honour the literal source's
 `NOT SCALE THE DRAWING` restriction. No API route, GPU, DB or provider was used.
