@@ -118,6 +118,6 @@ export function undrawnNote(features: AreaFeature[]): string | null {
     counts.set(feature.kind, (counts.get(feature.kind) ?? 0) + 1);
   }
   if (!counts.size) return null;
-  const parts = [...counts].map(([kind, count]) => `${count} ${kind.replace('_', ' ')}`);
+  const parts = [...counts].map(([kind, count]) => `${count} ${kind.replace('_', ' ')} ${count === 1 ? 'feature' : 'features'}`);
   return `Not drawn: ${parts.join(', ')} recorded as lines or points. The map draws areas only.`;
 }
