@@ -12,7 +12,7 @@ sys.path.insert(0, str(ROOT / 'services/geo'))
 import fitz
 from shapely import affinity
 from shapely.geometry import Point, box, shape
-from geo.vector_plan import METHOD, digest, group_room_labels, in_scope, sha256_file, text_lines
+from geo.vector_plan import METHOD, consistency, digest, group_room_labels, in_scope, sha256_file, stated_scale, summarize, text_lines
 from compact_evidence import compact
 
 REQUIRED = {'task', 'taskVersion', 'sourceParts', 'inputManifest', 'methodNameAndVersion',
@@ -37,7 +37,7 @@ def load(directory, name):
     raw = Path(ref['path'])
     assert raw.stat().st_size == ref['bytes'] and sha256_file(raw) == ref['sha256'], 'full precision lineage'
     full = json.loads(raw.read_text(encoding='utf-8'))
-    assert {k: v for k, v in derivative.items() if k not in {'fullPrecisionRef', 'precision'}} == compact(full), 'rounded derivative differs from full precision'
+    assert {k: v for k, v in derivative.items() if k not in {'fullPrecisionRef', 'precision', 'derivativeWriterSha256'}} == compact(full), 'rounded derivative differs from full precision'
     return full, derivative
 
 
@@ -67,7 +67,20 @@ def verify(directory):
             if panels:
                 assert Counter(locator(g['name']) for g in expected_groups) == Counter(locator(g['name']) for g in audit), 'room name dropped or duplicated'
                 assert all(n == 1 for n in Counter(locator(g['name']) for g in audit).values())
+                assert all(c['panelId'] in panels and c['floorLabel'] == panels[c['panelId']]['floorLabel'] for c in page['candidates'])
                 for panel in panels.values():
+                    for citation in [panel['titleCitation'], panel['scaleCitation']]:
+                        if citation:
+                            assert citation == by_locator[locator(citation)], 'non-source panel title/scale'
+                    fit = panel['scale']
+                    crosscheck = fit['statedScaleCrossCheck']
+                    theoretical = stated_scale(panel['scaleCitation']['literal']) if panel['scaleCitation'] else None
+                    assert theoretical == crosscheck['theoreticalMetresPerPdfPoint']
+                    if crosscheck['relativeDifference'] is not None:
+                        assert math.isclose(crosscheck['relativeDifference'], crosscheck['fittedMetresPerPdfPoint'] / theoretical - 1, abs_tol=1e-12)
+                        assert (crosscheck['status'] == 'ok') == (abs(crosscheck['relativeDifference']) <= payload['parameters']['panelScaleAgreementTolerance'])
+                        if crosscheck['status'] == 'mismatch':
+                            assert fit['metresPerPdfPoint'] is None and fit['gap'] == 'no_scale'
                     origin = panel['originPdf']
                     if origin:
                         outline = check_geometry(panel['topology']['buildingOutlinePdf'])
@@ -125,6 +138,7 @@ def verify(directory):
                         assert metric.hausdorff_distance(transformed) < 1e-8
                 assert math.isclose(value['computedArea']['value'], poly.area * (factor ** 2 if factor else 1), rel_tol=1e-9)
                 assert value['computedArea']['state'] == 'candidate'
+                assert consistency(poly, value['statedDimensions'], factor, payload['parameters']['consistencyRelativeTolerance']) == value['consistency'], 'area comparison differs'
                 assert report['pages'][number]['rooms'][index]['status'] == value['consistency']['status']
                 compact_value = derivative['pages'][number]['candidates'][index]['output']
                 check_geometry(compact_value['polygonPdf'])
@@ -138,6 +152,8 @@ def verify(directory):
                     assert sum(shape(c['output']['polygonPdf']).covers(Point(*group['anchorPdf'])) for c in page['candidates'] if c['panelId'] == group['panelId']) == 1
                 else:
                     assert group['reason'] and group['candidateRef'] is None
+            if panels:
+                assert page['summary'] == {**summarize(page['candidates'], audit), 'unattachedTextLines': len(page['unattachedText'])}
             assert receipt['pageResults'][number]['roomsFound'] == len(page['candidates']) == page['summary']['roomsFound']
             assert (directory / page['overlay']['file']).stat().st_size == page['overlay']['bytes']
     return {'run': str(directory), 'pages': len(payload['pages']), 'roomCandidates': rooms,
