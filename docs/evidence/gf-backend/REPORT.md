@@ -1,3 +1,7 @@
+> Historical K1 checkpoint below. Latest K2 runtime return: [K2-REPORT.md](k2/K2-REPORT.md) and
+> [result.json](k2/result.json). Two source-only buildings and administrative sector context are now installed;
+> OCR and geometry-bearing analytical qualification remain incomplete.
+
 TASK   K1 → K2 — Canonical projections and real-import checkpoint            GATE GF-CONTRACT / GF-SCENE; GF-BACKEND / GF-DATA blocked
 WORKS  Read private ENU canonical area/building projections with cited states; demo remains running from E:/Projects/ulpin-wt/k1.
 SEE IT curl http://127.0.0.1:3194/api/v1/buildings/7ea8da1a-1700-4de6-9b82-d5866e4450d8/canonical

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // Read-only health checks. Child stderr, HTTP bodies and configuration are never printed.
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { command, dockerRuntime, engine, inventory, storageProblems, migrationReady, root, services } from './runtime.mjs';
-import { readDemo, demoProject } from './demo-config.mjs';
+import { readDemo, readDemoOcrPaths, demoProject } from './demo-config.mjs';
 import { ownedProcess } from './processes.mjs';
 
 let failures = 0;
@@ -64,6 +64,16 @@ async function doctor() {
   if (!['ulpin', 'ulpin-repo', demoProject].includes(selectedProject)) throw new Error('Unsupported project.');
   if (demo && !await attempt('Demo external configuration', () => { demoEnv = readDemo(); return true; },
     'recover the original demo.env if demo volumes exist; otherwise use platform:start --profile demo --create.')) return;
+  if (demo) {
+    try {
+      const paths = readDemoOcrPaths();
+      if (!paths.ULPIN_DOCUMENT_OCR_PYTHON) console.log('INFO Local document OCR unavailable (paths not configured).');
+      else {
+        const hindi = existsSync(join(paths.ULPIN_DOCUMENT_OCR_TESSDATA, 'hin.traineddata'));
+        console.log(`PASS Local document OCR paths available; English only; Hindi ${hindi ? 'present' : 'unavailable'}.`);
+      }
+    } catch { console.log('INFO Local document OCR unavailable (invalid or missing local assets).'); }
+  }
   let runtime;
   if (!await attempt('Docker local Linux engine and context/socket', () => {
     runtime = dockerRuntime();
