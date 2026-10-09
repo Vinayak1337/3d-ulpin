@@ -76,6 +76,30 @@ test('replay selects the newest valid timestamp, not UUID order, and ignores inv
   assert.deepEqual(replay?.response.output, { marker: 'newest-valid' });
 });
 
+test('UTF-16 LE and BE BOM exports decode identically to UTF-8; unsupported encodings fail explicitly', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'a2-encoding-'));
+  const text = 'नाम\tArea (sq ft)\nअज्ञात\t12 sq ft\n';
+  const utf8 = join(directory, 'utf8.csv');
+  writeFileSync(utf8, Buffer.from(text, 'utf8'));
+  const baseline = profileColumnFile(utf8);
+  const littleEndian = Buffer.from(text, 'utf16le');
+  const variants = [
+    { name: 'le.csv', bytes: Buffer.concat([Buffer.from([0xff, 0xfe]), littleEndian]) },
+    { name: 'be.csv', bytes: Buffer.concat([Buffer.from([0xfe, 0xff]), Buffer.from(littleEndian).swap16()]) },
+  ];
+  for (const variant of variants) {
+    const path = join(directory, variant.name);
+    writeFileSync(path, variant.bytes);
+    assert.deepEqual(profileColumnFile(path), baseline);
+  }
+  const invalid = join(directory, 'invalid.csv');
+  writeFileSync(invalid, Buffer.from([0x41, 0x2c, 0xff, 0x0a]));
+  assert.throws(() => profileColumnFile(invalid), { message: 'COLUMN_ENCODING_UNSUPPORTED' });
+  const truncated = join(directory, 'truncated.csv');
+  writeFileSync(truncated, Buffer.from([0xff, 0xfe, 0x41]));
+  assert.throws(() => profileColumnFile(truncated), { message: 'COLUMN_ENCODING_UNSUPPORTED' });
+});
+
 test('the external workbook script preserves bounded native ODS profiling through the configured interpreter', () => {
   const previous = process.env.ULPIN_PROFILE_PYTHON;
   process.env.ULPIN_PROFILE_PYTHON = previous ?? 'E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe';
