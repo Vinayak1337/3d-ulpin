@@ -13,7 +13,7 @@ PRECISION = {"pdfCoordinatesDecimalPlaces": 2, "metricCoordinatesDecimalPlaces":
 def compact(value, key="", coordinate_decimals=None):
     """Only coordinate trees use 0.01 pt/1 mm; ratios/residuals keep precision."""
     lowered = key.lower()
-    if key == "polygonMetres":
+    if key in {"polygonMetres", "drawnBboxLengthsM"}:
         coordinate_decimals = 3
     elif key in {"polygonPdf", "buildingOutlinePdf", "wallMaskPdf"}:
         coordinate_decimals = 2
@@ -34,6 +34,8 @@ def encode(value):
 
 
 def store_full_precision(value, private_path):
+    if private_path.resolve().is_relative_to(Path(__file__).resolve().parents[2]):
+        raise ValueError("full precision must stay outside Git")
     raw = encode(value)
     private_path.parent.mkdir(parents=True, exist_ok=True)
     with private_path.open("xb") as stream:
@@ -43,7 +45,8 @@ def store_full_precision(value, private_path):
 
 def publish(value, public_path, private_path):
     ref = store_full_precision(value, private_path)
-    derivative = {**compact(value), "precision": PRECISION, "fullPrecisionRef": ref}
+    derivative = {**compact(value), "precision": PRECISION, "fullPrecisionRef": ref,
+                  "derivativeWriterSha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
     public_path.write_bytes(encode(derivative))
     return ref
 
@@ -51,14 +54,25 @@ def publish(value, public_path, private_path):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run", type=Path, help="existing task evidence to compact in this branch")
-    parser.add_argument("--full-out", required=True, type=Path, help="new private directory; never overwrite")
+    parser.add_argument("--full-out", type=Path, help="new private directory; never overwrite")
+    parser.add_argument("--refresh", action="store_true", help="rebuild compact derivative from its immutable fullPrecisionRef, without changing private bytes")
     args = parser.parse_args()
-    if args.full_out.exists() and any(args.full_out.iterdir()):
+    if not args.refresh and not args.full_out:
+        parser.error("--full-out required for first compaction")
+    if args.full_out and args.full_out.exists() and any(args.full_out.iterdir()):
         parser.error("private directory must be new or empty")
     for name in ["candidates.json", "consistency.json", "result.json"]:
         path = args.run / name
         value = json.loads(path.read_text(encoding="utf-8"))
-        if "fullPrecisionRef" in value:
-            parser.error("already compacted; refuse to replace lineage")
-        ref = publish(value, path, args.full_out / name)
+        if args.refresh:
+            ref = value["fullPrecisionRef"]
+            raw = Path(ref["path"]).read_bytes()
+            if hashlib.sha256(raw).hexdigest() != ref["sha256"] or len(raw) != ref["bytes"]:
+                parser.error("full precision integrity differs")
+            path.write_bytes(encode({**compact(json.loads(raw)), "precision": PRECISION, "fullPrecisionRef": ref,
+                                    "derivativeWriterSha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}))
+        else:
+            if "fullPrecisionRef" in value:
+                parser.error("already compacted; refuse to replace lineage")
+            ref = publish(value, path, args.full_out / name)
         print(json.dumps({"file": str(path), "compactBytes": path.stat().st_size, "fullPrecisionRef": ref}))
