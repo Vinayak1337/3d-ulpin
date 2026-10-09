@@ -1,4 +1,6 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync, chmodSync, realpathSync, statSync } from 'node:fs';
+import {
+  existsSync, mkdirSync, readFileSync, writeFileSync, chmodSync, realpathSync, statSync,
+} from 'node:fs';
 import { randomBytes } from 'node:crypto';
 import { createServer } from 'node:net';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
@@ -25,7 +27,10 @@ export function readDemoOcrPaths() {
       throw new Error(`OCR path unavailable: ${key}.`);
     }
     const isFile = key.endsWith('_PYTHON') || key.endsWith('_TESSERACT');
-    if (statSync(path).isFile() !== isFile) throw new Error(`OCR path has the wrong kind: ${key}.`);
+    const entry = statSync(path);
+    if (isFile ? !entry.isFile() : !entry.isDirectory()) {
+      throw new Error(`OCR path has the wrong kind: ${key}.`);
+    }
   }
   const scratch = realpathSync(paths.ULPIN_DOCUMENT_OCR_SCRATCH);
   const runtime = realpathSync(demoDir);

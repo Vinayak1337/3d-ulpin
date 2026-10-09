@@ -1,7 +1,7 @@
 {
   "schemaVersion": "normalized-building/1",
   "buildingId": "e8777ffc-9409-4129-bacf-f680160d8795",
-  "revisionId": "3499e1eeb653636e37c8e9e83396f474a9beba1f923f2d86de3baa4ed790b4e1",
+  "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72",
   "recordState": "reviewed",
   "areaId": "e5742536-cedd-455b-b59d-c8172875c6f2",
   "frame": {
@@ -33,7 +33,7 @@
       }
     ],
     "method": "source_literal",
-    "revisionId": "3499e1eeb653636e37c8e9e83396f474a9beba1f923f2d86de3baa4ed790b4e1"
+    "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
   },
   "inputRevisions": [
     {
@@ -74,7 +74,7 @@
       }
     ],
     "method": "deterministic:wgs84-surface-to-enu@1",
-    "revisionId": "3499e1eeb653636e37c8e9e83396f474a9beba1f923f2d86de3baa4ed790b4e1"
+    "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
   },
   "footprintKind": {
     "value": null,
@@ -91,7 +91,7 @@
       }
     ],
     "method": "source_literal",
-    "revisionId": "3499e1eeb653636e37c8e9e83396f474a9beba1f923f2d86de3baa4ed790b4e1"
+    "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
   },
   "baseM": {
     "value": null,
@@ -99,7 +99,7 @@
     "unit": "m",
     "citations": [],
     "method": "source_literal",
-    "revisionId": "3499e1eeb653636e37c8e9e83396f474a9beba1f923f2d86de3baa4ed790b4e1"
+    "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
   },
   "heightM": {
     "value": null,
@@ -107,7 +107,7 @@
     "unit": "m",
     "citations": [],
     "method": "source_literal",
-    "revisionId": "3499e1eeb653636e37c8e9e83396f474a9beba1f923f2d86de3baa4ed790b4e1"
+    "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
   },
   "heightState": "unknown",
   "storeyCount": {
@@ -126,27 +126,28 @@
       }
     ],
     "method": "source_literal",
-    "revisionId": "3499e1eeb653636e37c8e9e83396f474a9beba1f923f2d86de3baa4ed790b4e1"
+    "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
   },
   "storeyLabel": {
     "value": null,
     "state": "unknown",
     "citations": [],
     "method": "source_literal",
-    "revisionId": "3499e1eeb653636e37c8e9e83396f474a9beba1f923f2d86de3baa4ed790b4e1"
+    "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
   },
   "storeys": {
     "value": null,
     "state": "unknown",
     "citations": [],
     "method": "source_literal",
-    "revisionId": "3499e1eeb653636e37c8e9e83396f474a9beba1f923f2d86de3baa4ed790b4e1"
+    "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
   },
   "levels": [],
   "conflicts": [],
   "gaps": [
     "Geometry-free building: footprint, placement, elevation and spatial analysis are not assessed.",
     "No detailed level schedule, spaces, rights or parcel association reviewed.",
+    "Current sanction/as-built status and source-to-unit association remain unqualified.",
     "Footprint or geographic placement unavailable; no replacement geometry.",
     "Source outline role is unknown; it is not asserted as a ground footprint or roofprint.",
     "Measured base elevation unknown; scene uses building-relative bases, not surveyed terrain."

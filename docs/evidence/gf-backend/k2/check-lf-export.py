@@ -12,7 +12,7 @@ export.mkdir(parents=True, exist_ok=True)
 subprocess.run(['git', 'archive', '--format=tar', f'--output={archive}', 'HEAD'], check=True)
 with tarfile.open(archive) as bundle:
     bundle.extractall(export, filter='data')
-runtime = json.loads((export / 'docs/api/runtime-qualification.json').read_text())
+runtime = json.loads((export / 'docs/api/runtime-qualification.json').read_text(encoding='utf-8'))
 receipts = {run['receipt']: run['receiptSha256'] for run in [runtime, *runtime.get('additionalRuns', [])]}
 normalized = 0
 for path in export.rglob('*'):

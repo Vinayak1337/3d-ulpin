@@ -1,7 +1,7 @@
 {
   "schemaVersion": "normalized-building/1",
   "buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
-  "revisionId": "a433af43676419c512296aba4dd6ad162746d2ff6f6973562e9d082de4d5766a",
+  "revisionId": "8d0b78a54c1c1d0d0896ee9cde33030ab8bc5e71a303a2e97a76d88f6fb61190",
   "recordState": "reviewed",
   "areaId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b",
   "frame": {
@@ -37,13 +37,13 @@
       }
     ],
     "method": "source_literal",
-    "revisionId": "a433af43676419c512296aba4dd6ad162746d2ff6f6973562e9d082de4d5766a"
+    "revisionId": "8d0b78a54c1c1d0d0896ee9cde33030ab8bc5e71a303a2e97a76d88f6fb61190"
   },
   "inputRevisions": [
     {
       "namespace": "area",
       "id": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b",
-      "revision": 1
+      "revision": 2
     },
     {
       "namespace": "area_feature",
@@ -78,7 +78,7 @@
       }
     ],
     "method": "deterministic:wgs84-surface-to-enu@1",
-    "revisionId": "a433af43676419c512296aba4dd6ad162746d2ff6f6973562e9d082de4d5766a"
+    "revisionId": "8d0b78a54c1c1d0d0896ee9cde33030ab8bc5e71a303a2e97a76d88f6fb61190"
   },
   "footprintKind": {
     "value": null,
@@ -95,7 +95,7 @@
       }
     ],
     "method": "source_literal",
-    "revisionId": "a433af43676419c512296aba4dd6ad162746d2ff6f6973562e9d082de4d5766a"
+    "revisionId": "8d0b78a54c1c1d0d0896ee9cde33030ab8bc5e71a303a2e97a76d88f6fb61190"
   },
   "baseM": {
     "value": null,
@@ -103,7 +103,7 @@
     "unit": "m",
     "citations": [],
     "method": "source_literal",
-    "revisionId": "a433af43676419c512296aba4dd6ad162746d2ff6f6973562e9d082de4d5766a"
+    "revisionId": "8d0b78a54c1c1d0d0896ee9cde33030ab8bc5e71a303a2e97a76d88f6fb61190"
   },
   "heightM": {
     "value": null,
@@ -111,29 +111,68 @@
     "unit": "m",
     "citations": [],
     "method": "source_literal",
-    "revisionId": "a433af43676419c512296aba4dd6ad162746d2ff6f6973562e9d082de4d5766a"
+    "revisionId": "8d0b78a54c1c1d0d0896ee9cde33030ab8bc5e71a303a2e97a76d88f6fb61190"
   },
   "heightState": "unknown",
   "storeyCount": {
     "value": null,
     "state": "conflicting",
-    "citations": [],
+    "unit": "count",
+    "citations": [
+      {
+        "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "central T-3 tower graphic"
+        }
+      },
+      {
+        "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "lower-right UNIT DETAIL, TOWER 3 row"
+        }
+      }
+    ],
     "method": "source_literal",
-    "revisionId": "a433af43676419c512296aba4dd6ad162746d2ff6f6973562e9d082de4d5766a"
+    "revisionId": "8d0b78a54c1c1d0d0896ee9cde33030ab8bc5e71a303a2e97a76d88f6fb61190"
   },
   "storeyLabel": {
     "value": null,
     "state": "conflicting",
-    "citations": [],
+    "citations": [
+      {
+        "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "central T-3 tower graphic"
+        }
+      },
+      {
+        "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": {
+          "kind": "page",
+          "page": 1,
+          "text": "lower-right UNIT DETAIL, TOWER 3 row"
+        }
+      }
+    ],
     "method": "source_literal",
-    "revisionId": "a433af43676419c512296aba4dd6ad162746d2ff6f6973562e9d082de4d5766a"
+    "revisionId": "8d0b78a54c1c1d0d0896ee9cde33030ab8bc5e71a303a2e97a76d88f6fb61190"
   },
   "storeys": {
     "value": null,
     "state": "unknown",
     "citations": [],
     "method": "source_literal",
-    "revisionId": "a433af43676419c512296aba4dd6ad162746d2ff6f6973562e9d082de4d5766a"
+    "revisionId": "8d0b78a54c1c1d0d0896ee9cde33030ab8bc5e71a303a2e97a76d88f6fb61190"
   },
   "levels": [],
   "conflicts": [
@@ -154,8 +193,8 @@
               }
             }
           ],
-          "method": "deterministic:retained-claim-projection@1",
-          "revisionId": "a433af43676419c512296aba4dd6ad162746d2ff6f6973562e9d082de4d5766a"
+          "method": "source_literal",
+          "revisionId": "8d0b78a54c1c1d0d0896ee9cde33030ab8bc5e71a303a2e97a76d88f6fb61190"
         },
         {
           "value": "G+42",
@@ -171,8 +210,8 @@
               }
             }
           ],
-          "method": "deterministic:retained-claim-projection@1",
-          "revisionId": "a433af43676419c512296aba4dd6ad162746d2ff6f6973562e9d082de4d5766a"
+          "method": "source_literal",
+          "revisionId": "8d0b78a54c1c1d0d0896ee9cde33030ab8bc5e71a303a2e97a76d88f6fb61190"
         }
       ],
       "reason": "Retained source claims disagree; no automatic selection."
@@ -181,6 +220,7 @@
   "gaps": [
     "Geometry-free building: footprint, placement, elevation and spatial analysis are not assessed.",
     "No detailed level schedule, spaces, rights or parcel association reviewed.",
+    "Current sanction/as-built status and source-to-unit association remain unqualified.",
     "Footprint or geographic placement unavailable; no replacement geometry.",
     "Source outline role is unknown; it is not asserted as a ground footprint or roofprint.",
     "Measured base elevation unknown; scene uses building-relative bases, not surveyed terrain."
