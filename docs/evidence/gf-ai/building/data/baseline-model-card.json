@@ -1,0 +1,66 @@
+{
+  "schema": "vision-model-card/1",
+  "id": "rfdetr-satellite-buildings-onnx-v1",
+  "source": "https://huggingface.co/merve/rf-detr-seg-satellite-buildings/tree/05b80dce9a57701724ad6a0fc052827c8b724257",
+  "revision": "05b80dce9a57701724ad6a0fc052827c8b724257",
+  "licence": "Apache-2.0 model card; retain RF-DETR and checkpoint attribution",
+  "onnx_sha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf",
+  "safetensors_sha256": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7",
+  "preprocessing_profile": "rfdetr-rgb432-tile512-stride384-threshold050-mask000-v2",
+  "training_data": {
+    "documented_finetune_dataset": "merve/satellite-building-segmentation",
+    "documented_base_model": "Roboflow/rf-detr-seg-medium",
+    "base_training": "COCO 2017 instance segmentation, according to the base model card",
+    "dataset_card": {
+      "source": "https://huggingface.co/datasets/merve/satellite-building-segmentation",
+      "origin": "keremberke/satellite-building-segmentation / Roboflow Universe buildings-instance-segmentation v1",
+      "train_images": 6764,
+      "validation_images": 1934,
+      "test_images": 967,
+      "licence_claim": "CC BY 4.0",
+      "geographic_source_families": "undocumented"
+    },
+    "ramp_overlap_ruled_out": false,
+    "reason": "The model names its finetune dataset, but neither card publishes a complete original imagery/chip/source-family inventory. No independent byte/geographic comparison was performed; COCO base provenance does not establish finetune independence from RAMP.",
+    "source_card_pins": [
+      {
+        "path": "E:/BhuAayam-data/ml/source-cards/satellite-buildings-README.md",
+        "sha256": "2921728e98ea96e7576f7bad1006b613460239f84e5903854e70a28ca60ebe2d"
+      },
+      {
+        "path": "E:/BhuAayam-data/ml/source-cards/dataset-README.md",
+        "sha256": "044853274f930c26e331f52a04561caecf402da501afde9dface9475fcbbaa94"
+      },
+      {
+        "path": "E:/BhuAayam-data/ml/source-cards/base-README.md",
+        "sha256": "0b7bc30df4eaca3330caac80c9d4dc4f435a99a0300e53845611edd056c256f0"
+      }
+    ]
+  },
+  "evaluation": {
+    "dev": {
+      "result": "docs/evidence/gf-ai/building/b1-installed-dev-20261010/result.json",
+      "chips": 1434,
+      "publisher_buildings": 13156,
+      "predicted_buildings": 7778,
+      "precision": 0.7284649010028285,
+      "recall": 0.4306780176345394,
+      "mean_iou_of_matches": 0.7990241720238749,
+      "boundary_f1_2px": 0.5612302496991644,
+      "false_buildings_on_empty": 89,
+      "empty_chip_denominator": 305,
+      "seconds": 86.69266790000256,
+      "provider": "CUDAExecutionProvider",
+      "qualification": "Publisher-label DEV diagnostic only; does not meet preregistered precision/recall thresholds. No holdout or independent source-family claim."
+    },
+    "holdout": "not_run_B1"
+  },
+  "known_failure_modes": [
+    "Small or obscured roofs missed",
+    "Touching roofs merged by overlap union",
+    "False positives on empty/vegetation chips",
+    "Chip-edge cuts and partial labels",
+    "Source-family pretraining overlap unknown"
+  ],
+  "operational_launch_clearance": "RAMP CC BY-NC / upstream imagery terms need owner clearance; roofprint outputs remain review candidates"
+}
