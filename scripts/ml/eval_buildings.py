@@ -18,6 +18,7 @@ from pathlib import Path
 import subprocess
 import sys
 import time
+from typing import Any
 
 sys.dont_write_bytecode = True
 REPO = Path(__file__).resolve().parents[2]
@@ -157,7 +158,7 @@ def session(path, provider):
     return Adapter(), ["PyTorch-" + provider]
 
 
-def threshold_session(native, threshold):
+def threshold_session(native: Any, threshold: float) -> Any:
     """DEV-only threshold calibration while reusing unchanged production painting.
 
     A monotone logit offset makes production's fixed sigmoid > .5 select exactly
@@ -169,7 +170,7 @@ def threshold_session(native, threshold):
         return native
     offset = math.log(threshold / (1 - threshold))
     class Adapter:
-        def run(self, outputs, inputs):
+        def run(self, outputs: Any, inputs: dict[str, Any]) -> tuple[Any, Any]:
             logits, masks = native.run(outputs, inputs)
             return logits - offset, masks
     return Adapter()

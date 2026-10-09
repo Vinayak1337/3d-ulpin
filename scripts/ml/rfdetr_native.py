@@ -1,94 +1,130 @@
-"""Pinned native RF-DETR adapter for the installed, safe satellite checkpoint.
+"""Diagnostic only: native RF-DETR 1.11.2 did not qualify for publisher-weight parity.
 
-Diagnostic only: NOT a qualified training/inference adapter. The native package
-and publisher implementation share weight keys, but failed strict inference
-parity on empty TRAIN chips. Retain the failure and one background-slot comparison;
-do not silently train this conversion. No learned parameter is reinitialised.
+Retains the failed comparison, not an alternate training or serving route.
+No backbone or building-channel weight is randomly reinitialised.
 """
-from pathlib import Path
+
+from __future__ import annotations
+
+import argparse
 import importlib.metadata
 import json
-import torch
+from pathlib import Path
+from typing import Any
+
 from safetensors.torch import load_file
+import torch
 
-BASE = Path('E:/BhuAayam-data/task-data/d07-rfdetr-train-prep-20261005/original')
+from building_io import configure_offline, read_json, write_json
+from export_buildings import tensor
+from train_buildings import BASE, ROOT
 
 
-def model_config(device='cuda'):
+def model_config(device: str = "cpu") -> Any:
     from rfdetr.config import RFDETRSegMediumConfig
-    if importlib.metadata.version('rfdetr') != '1.11.2':
-        raise RuntimeError('Native adapter requires pinned rfdetr 1.11.2')
-    return RFDETRSegMediumConfig(pretrain_weights=None, num_classes=1,
-        resolution=432, device=device, gradient_checkpointing=True)
+
+    if importlib.metadata.version("rfdetr") != "1.11.2":
+        raise RuntimeError("Native diagnostic requires pinned rfdetr 1.11.2")
+    return RFDETRSegMediumConfig(
+        pretrain_weights=None,
+        num_classes=1,
+        resolution=432,
+        device=device,
+        gradient_checkpointing=True,
+    )
 
 
-def load_satellite(model, path=BASE / 'model.safetensors'):
+def load_satellite(model: Any, path: Path = BASE / "model.safetensors") -> list[str]:
     state = load_file(str(path))
     expected = model.state_dict()
-    if set(expected) - set(state) != {'_kp_active_mask'} or set(state) - set(expected):
-        raise ValueError('Satellite/native state keys drifted')
-    state['_kp_active_mask'] = expected['_kp_active_mask']
+    if set(expected) - set(state) != {"_kp_active_mask"} or set(state) - set(expected):
+        raise ValueError("Satellite/native state keys drifted")
+    state["_kp_active_mask"] = expected["_kp_active_mask"]
     expanded = []
     for key, value in list(state.items()):
         if value.shape == expected[key].shape:
             continue
-        if 'class_embed' not in key or value.shape[0] != 1 or expected[key].shape[0] != 2:
-            raise ValueError('Unexpected weight shape: ' + key)
-        # Extra native background slot must NEVER outrank building proposals.
-        # -10 was too high on empty chips and changed encoder TopK. Use -10000;
-        # the satellite building row is copied exactly and remains class zero.
-        extra = torch.zeros_like(value) if key.endswith('weight') else torch.full_like(value, -10000.)
+        if "class_embed" not in key or value.shape[0] != 1 or expected[key].shape[0] != 2:
+            raise ValueError("Unexpected weight shape: " + key)
+        # Lowering only native background bias still failed strict parity.
+        extra = torch.zeros_like(value)
+        if key.endswith("bias"):
+            extra.fill_(-10000.0)
         state[key] = torch.cat([value, extra], dim=0)
         expanded.append(key)
     model.load_state_dict(state, strict=True)
     return expanded
 
 
-def outputs(model, tensor):
-    result = model(tensor)
-    return result['pred_logits'][..., :1], result['pred_boxes'], result['pred_masks']
+def diagnostic_inputs() -> list[dict[str, Any]]:
+    coco = read_json(ROOT / "_annotations.coco.json")
+    positive_ids = {annotation["image_id"] for annotation in coco["annotations"]}
+    return [
+        next(image for image in coco["images"] if image["id"] not in positive_ids),
+        next(image for image in coco["images"] if image["id"] in positive_ids),
+    ]
 
 
-def check_base(output, device):
-    """Bounded native-vs-installed-PyTorch comparison on TRAIN, never HOLDOUT."""
-    import numpy as np
-    from PIL import Image
-    from transformers import RfDetrForInstanceSegmentation
+def compare_models(native: Any, publisher: Any, image: dict[str, Any], device: str) -> dict[str, Any]:
+    pixels = torch.from_numpy(tensor(ROOT / image["file_name"])).to(device)
+    with torch.inference_mode():
+        actual = native(pixels)
+        reference = publisher(pixel_values=pixels)
+    differences = {
+        "logits": float((actual["pred_logits"][..., :1] - reference.logits).abs().max()),
+        "boxes": float((actual["pred_boxes"] - reference.pred_boxes).abs().max()),
+        "masks": float((actual["pred_masks"] - reference.pred_masks).abs().max()),
+    }
+    return {"chip_id": image["source_id"], "max_abs_difference": differences}
+
+
+def check_base(output: Path, device: str) -> None:
     from rfdetr.models.lwdetr import build_model_from_config
+    from transformers import RfDetrForInstanceSegmentation
+
     torch.set_num_threads(2)
     torch.manual_seed(26011)
-    if device=='cuda': torch.cuda.set_per_process_memory_fraction(.75)
-    root = Path('E:/BhuAayam-data/datasets/ramp/coco/train')
-    coco = json.loads((root / '_annotations.coco.json').read_bytes())
-    positive_ids = {a['image_id'] for a in coco['annotations']}
-    selected = [next(x for x in coco['images'] if x['id'] not in positive_ids),
-                next(x for x in coco['images'] if x['id'] in positive_ids)]
+    if device == "cuda":
+        torch.cuda.set_per_process_memory_fraction(0.75)
     native = build_model_from_config(model_config(device)).to(device).eval()
     expanded = load_satellite(native)
-    hf = RfDetrForInstanceSegmentation.from_pretrained(BASE, local_files_only=True, use_safetensors=True, attn_implementation='eager').to(device).eval()
-    rows=[]
-    for image in selected:
-        rgb = np.asarray(Image.open(root / image['file_name']).convert('RGB').resize((432,432), Image.Resampling.BILINEAR)).astype('float32') / 255
-        rgb = (rgb - np.array([.485,.456,.406],dtype='float32')) / np.array([.229,.224,.225],dtype='float32')
-        x = torch.from_numpy(rgb.transpose(2,0,1).copy())[None].to(device)
-        with torch.inference_mode():
-            a, b, c = outputs(native, x)
-            ref = hf(pixel_values=x)
-        differences = {'logits':float((a-ref.logits).abs().max()), 'boxes':float((b-ref.pred_boxes).abs().max()), 'masks':float((c-ref.pred_masks).abs().max())}
-        rows.append({'chip_id':image['source_id'],'empty':image['id'] not in positive_ids,'max_abs_difference':differences})
-    passed = all(v <= .002 for row in rows for v in row['max_abs_difference'].values())
-    result = {'status':'passed' if passed else 'failed', 'device':device,'per_chip':rows, 'split':'train', 'expanded_class_heads':expanded, 'background_slot_bias':-10000.,'tolerance':.002, 'holdout_calls':0}
-    Path(output).parent.mkdir(parents=True, exist_ok=True)
-    Path(output).open('x').write(json.dumps(result, indent=2)+'\n')
-    print(json.dumps(result))
+    publisher = (
+        RfDetrForInstanceSegmentation.from_pretrained(
+            BASE,
+            local_files_only=True,
+            use_safetensors=True,
+            attn_implementation="eager",
+        )
+        .to(device)
+        .eval()
+    )
+    rows = [compare_models(native, publisher, image, device) for image in diagnostic_inputs()]
+    passed = all(value <= 0.002 for row in rows for value in row["max_abs_difference"].values())
+    result = {
+        "status": "passed" if passed else "failed",
+        "device": device,
+        "per_chip": rows,
+        "split": "train",
+        "expanded_class_heads": expanded,
+        "background_slot_bias": -10000.0,
+        "tolerance": 0.002,
+        "holdout_calls": 0,
+    }
+    output.parent.mkdir(parents=True, exist_ok=True)
+    write_json(output, result)
+    print(json.dumps(result), flush=True)
     if not passed:
         raise SystemExit(1)
 
 
-if __name__ == '__main__':
-    import argparse
-    p = argparse.ArgumentParser()
-    p.add_argument('--check-base', type=Path, required=True)
-    p.add_argument('--device',choices=['cpu','cuda'],default='cpu')
-    args=p.parse_args()
-    check_base(args.check_base,args.device)
+def main() -> None:
+    configure_offline()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--check-base", type=Path, required=True)
+    parser.add_argument("--device", choices=("cpu", "cuda"), default="cpu")
+    args = parser.parse_args()
+    check_base(args.check_base, args.device)
+
+
+if __name__ == "__main__":
+    main()
