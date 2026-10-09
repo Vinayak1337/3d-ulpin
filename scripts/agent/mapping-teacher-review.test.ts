@@ -6,7 +6,12 @@ import { join } from 'node:path';
 import { profileColumnFile, profileColumns } from '../../packages/server/src/modules/usp/ingestion/column-profile';
 import { hash } from '../../packages/server/src/modules/model-gateway/config';
 import { TeacherRecordings, type TeacherRecording } from '../../packages/server/src/modules/model-gateway/recordings';
-import { columnProfileHash } from '../../packages/server/src/modules/usp/ingestion/mapping-teacher';
+import { ControlAdapter } from '../../packages/server/src/modules/model-gateway/adapter';
+import { ModelGateway } from '../../packages/server/src/modules/model-gateway/gateway';
+import { ControlLedger, controlConfig, options, unknownResponse } from './control-runtime';
+import {
+  columnProfileHash, mappingContextFromColumnProfile, proposeMappingWithTeacher,
+} from '../../packages/server/src/modules/usp/ingestion/mapping-teacher';
 import {
   DEVELOPMENT_TEACHER_METHOD,
   ingestTeacherLabels,
@@ -98,6 +103,36 @@ test('UTF-16 LE and BE BOM exports decode identically to UTF-8; unsupported enco
   const truncated = join(directory, 'truncated.csv');
   writeFileSync(truncated, Buffer.from([0xff, 0xfe, 0x41]));
   assert.throws(() => profileColumnFile(truncated), { message: 'COLUMN_ENCODING_UNSUPPORTED' });
+});
+
+test('exhausted repair retains the first valid target in column order and marks duplicates for manual input', async () => {
+  const profile = profileColumns([{ First: 'Residential', Second: 'Commercial', Floor: 'G' }], [
+    { name: 'First' }, { name: 'Second' }, { name: 'Floor' },
+  ], 'tabular');
+  const adapter = new ControlAdapter(async request => {
+    const response = unknownResponse(request);
+    const columns = JSON.parse(request.messages[1].content).columnProfile.columns;
+    const fields = [
+      { sourceField: columns[1].sourceField, target: 'building.name' },
+      { sourceField: columns[0].sourceField, target: 'building.name' },
+      { sourceField: columns[2].sourceField, target: 'level.label' },
+    ].map(field => ({
+      ...field, operation: { kind: 'copy' }, confidence: 'high', rationale: 'Software-control literal.',
+    }));
+    return { ...response, output: { fields } };
+  });
+  const result = await proposeMappingWithTeacher(profile, options(
+    new ModelGateway(controlConfig(), new ControlLedger(), adapter),
+  ));
+  assert.equal(result.attempts, 2);
+  assert.deepEqual(result.plan.fields.map(field => field.target), ['building.name', 'unknown', 'level.label']);
+  assert.deepEqual(result.issues, [{
+    sourceField: 'Second', state: 'needs_input', code: 'TEACHER_DUPLICATE_TARGET',
+  }]);
+  const { validateMappingPlanV2 } = await import(
+    '../../packages/server/src/modules/usp/ingestion/mapping-plan-v2'
+  );
+  assert(validateMappingPlanV2(result.plan, mappingContextFromColumnProfile(profile)).success);
 });
 
 test('the external workbook script preserves bounded native ODS profiling through the configured interpreter', () => {
