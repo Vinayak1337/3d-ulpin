@@ -4250,6 +4250,122 @@
   ],
   "retainedExternalSources": [
     {
+      "id": "d1-messy-india-development-20261010",
+      "classification": "test_only",
+      "originKind": "official_source_native_tables",
+      "issuer": "Ministry of Panchayati Raj / LGD via data.gov.in; Bihar RERA",
+      "geography": "India; Bihar building/project registries and national administrative codes",
+      "manifest": "fixtures/usp/D8-messy-india/manifest.json",
+      "manifestSha256": "24f126773b03f4b6f2130c2310949e1b8ca4d7a1b7972a0a8e528e6ed63f95f3",
+      "manifestHashScope": "Exact UTF-8 metadata bytes; original files use exact-byte hashes",
+      "guide": "fixtures/usp/D8-messy-india/README.md",
+      "sourceCount": 6,
+      "sourceFamilies": 3,
+      "totalOriginalBytes": 648963,
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/datasets/messy-india",
+        "itemsPointer": "/assets",
+        "formats": ["CSV", "HTML source-native table"],
+        "repositoryBytesVerified": false,
+        "smallDevelopmentCopy": "fixtures/usp/D8-messy-india/dev/lgd-districts.csv"
+      },
+      "terms": {
+        "state": "unconfirmed",
+        "reference": "Per-source resource URLs and independent Bihar filing manual, p11 section17, in manifest",
+        "limitations": "Public local development approved; no resource-specific redistribution, ML or launch grant asserted"
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "Five originals are HTML tables, not qualified CSV/XLSX import inputs; no reformatted CSV counted.",
+        "Publisher manual documents seven building fields including square-foot entry units; project list has literal headers only; LGD expanded meanings remain undocumented.",
+        "Originals unchanged; missing messy/CRS/injection cases explicitly remain gaps.",
+        "D8 is acquisition metadata in usp-data-pack/1 style, not the existing strict D0-D7 application DTO.",
+        "No teacher output, officer review, normalized property fact or runtime GF-DATA/GF-AGENT pass."
+      ]
+    },
+    {
+      "id": "d1-messy-india-heldout-20261010",
+      "classification": "test_only",
+      "originKind": "official_issuing_portal_blind_layout_holdout",
+      "issuer": "Gurugram Metropolitan Development Authority",
+      "geography": "Gurugram, Haryana, India",
+      "manifest": "fixtures/usp/D8-messy-india/heldout.json",
+      "manifestSha256": "5781dbd1c5da49338e59b15825817aa64b3ac9252535f52cfb30e5f6ab65add9",
+      "sourceCount": 2,
+      "families": [
+        { "id": "mi-h01", "fileCount": 1, "caseNames": ["GIS_attributes", "declared_projected_crs"] },
+        { "id": "mi-h02", "fileCount": 1, "caseNames": ["GIS_attributes", "declared_projected_crs"] }
+      ],
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/datasets/messy-india",
+        "repositoryBytesVerified": false,
+        "metadataAccess": "evaluator_only; original URLs, schemas, meanings and exact pins deliberately only in heldout.json"
+      },
+      "terms": { "state": "unconfirmed", "limitations": "Local development only; public endpoint is not a redistribution/training grant" },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": ["Never expose heldout files/schema/meanings to teachers or use them for calibration; distinct layouts, not an accuracy claim."]
+    },
+    {
+      "id": "d2-rera-storey-source-truth-20261010",
+      "classification": "test_only",
+      "originKind": "official_registry_literals_and_public_sanction_documents",
+      "issuer": "Bihar RERA, Haryana RERA and document issuing municipal/area authorities; public registry submitters",
+      "geography": "Bihar and Haryana, India; no geographic placement inferred",
+      "manifest": "docs/evidence/usp/finale/GF-DATA/storey-truth/project-split.json",
+      "manifestSha256": "cf7037929e74c431adc92789fcc0f928fd5d33cd58c130017de5ea343320c9e9",
+      "guide": "docs/evidence/usp/finale/GF-DATA/storey-truth/README.md",
+      "sourceCount": 19,
+      "totalOriginalBytes": 54291037,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/datasets/rera-storeys",
+        "truthRoot": "docs/evidence/usp/finale/GF-DATA/storey-truth",
+        "buildingOrGroupRecords": 11,
+        "projectCount": 8,
+        "newExtraProjectPdfs": 6,
+        "repositoryBytesVerified": false,
+        "pins": "Per-record sources contain original URL, authority retrieval date, exact hash/size/path and page or HTML-cell locator"
+      },
+      "partition": { "demoProjects": 2, "extraDevelopmentProjects": 3, "extraHoldoutProjects": 3, "allocationUnit": "whole project, including all tower/page/revision relatives" },
+      "horizontalCrs": null,
+      "verticalReference": "building_relative drawing labels only; global datum unknown",
+      "terms": { "state": "unconfirmed", "limitations": "Owner-approved public local development; no source-specific launch/redistribution/training grant" },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "Registry literals are independent of extraction PDFs; PDF visual quote observations remain candidates needing quote verification.",
+        "Tower 3 keeps its same-sheet G+41/G+42 conflict; independently keyed registry storey/unit/basement truth is unknown.",
+        "Unkeyed villas/blocks and repeated inventory categories are not forced into a canonical building/unit association or guessed total.",
+        "No teacher sees holdout documents/truth; no OCR/model evaluation, current sanction/as-built/rights or registry admission claim."
+      ]
+    },
+    {
+      "id": "d1-d2-public-acquisition-ledger-20261010",
+      "classification": "test_only",
+      "originKind": "public_source_acquisition_and_bounded_discovery_receipts",
+      "issuer": "Bihar RERA; Haryana RERA; MoPR / OGD; NWIC / GSI; GMDA",
+      "manifest": "docs/evidence/usp/finale/GF-DATA/acquisitions.json",
+      "manifestSha256": "32f1b0934d50b6fb20a5fa54d9e3b3e54cf44fbcbcbae2924fa7bfb38f4ae0c4",
+      "sourceCount": 39,
+      "content": {
+        "itemsPointer": "/acquisitions",
+        "blindItemsPointer": "/teacherBlindAcquisitions",
+        "repositoryBytesVerified": false,
+        "scope": "HTTP response originals including discovery/transport attempts; not 39 admitted dataset files; reused copies separately carry lineage"
+      },
+      "terms": { "state": "unconfirmed", "limitations": "Public access and acquisition are not reuse, ML or publication grants" },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": ["OGD API connection failures, unsupported GMDA pagination and initial Bihar urllib TLS failures retained; Windows system-trusted admitted registry/PDF/pagination inputs selected without source edits."]
+    },
+    {
       "manifest": "/Users/vinayak/.codex/task-data/ai03b-nyc-streamed/receipt.json",
       "manifestSha256": "ce1c4cb35d642682cb3e49bbcbb84137910fd6673716e954e8f577df2b0a9f3d",
       "guide": "docs/api/README.md#streamed-source-profiles-and-recipes-ai-03b",

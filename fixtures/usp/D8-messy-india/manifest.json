@@ -1,0 +1,437 @@
+{
+  "schemaVersion": "usp-data-pack/1",
+  "packId": "D8",
+  "version": 1,
+  "createdAt": "2026-10-09T19:15:23.794944+00:00",
+  "profile": "messy-india-development-20261010",
+  "purpose": "test_only",
+  "styleQualification": "usp-data-pack/1-style acquisition extension, NOT strict application DTO: D8 and column/family fields need downstream contract support outside task.",
+  "families": [
+    {
+      "id": "mi-d01",
+      "split": "dev",
+      "publisher": "Ministry of Panchayati Raj / LGD via data.gov.in",
+      "schemaIdentity": "8-column retained LGD district CSV",
+      "fileCount": 1,
+      "dictionaryState": "expanded column meanings not located; undocumented"
+    },
+    {
+      "id": "mi-d02",
+      "split": "dev",
+      "publisher": "Bihar Real Estate Regulatory Authority",
+      "schemaIdentity": "Filanprint GV_Building 7-column inventory",
+      "fileCount": 3,
+      "dictionaryState": "publisher manual p11 §17; explicit square-foot entry units"
+    },
+    {
+      "id": "mi-d03",
+      "split": "dev",
+      "publisher": "Bihar Real Estate Regulatory Authority",
+      "schemaIdentity": "RegisteredPP 5-column project list, distinct from building inventory",
+      "fileCount": 2,
+      "dictionaryState": "literal publisher column labels only"
+    }
+  ],
+  "assets": [
+    {
+      "id": "lgd-districts.csv",
+      "family": "mi-d01",
+      "split": "dev",
+      "mediaType": "text/csv",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://www.data.gov.in/resource/local-government-directory-lgd-districts"
+      },
+      "issuer": "Ministry of Panchayati Raj / LGD via data.gov.in",
+      "attribution": "Ministry of Panchayati Raj / LGD via data.gov.in",
+      "acquiredAt": "2026-09-25T00:17:42.756870Z",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/ogd-lgd/lgd-districts.csv",
+        "sha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59",
+        "bytes": 89622
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "reason": "Public access is not a reuse/training grant; owner approved local development."
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "horizontalUnit": null,
+        "verticalReference": null,
+        "sourceDate": null
+      },
+      "purpose": "test_only",
+      "stage": "acquired",
+      "columns": [
+        {"name": "state_code", "publisherMeaning": "undocumented", "documentationUrl": "https://www.data.gov.in/resource/local-government-directory-lgd-districts", "documentationLocator": "field_meta_field empty; resource note describes district LGD codes only", "evaluationEligible": false},
+        {"name": "state_name_english", "publisherMeaning": "undocumented", "documentationUrl": "https://www.data.gov.in/resource/local-government-directory-lgd-districts", "documentationLocator": "field_meta_field empty; resource note describes district LGD codes only", "evaluationEligible": false},
+        {"name": "state_name_local", "publisherMeaning": "undocumented", "documentationUrl": "https://www.data.gov.in/resource/local-government-directory-lgd-districts", "documentationLocator": "field_meta_field empty; resource note describes district LGD codes only", "evaluationEligible": false},
+        {"name": "state_census2011_code", "publisherMeaning": "undocumented", "documentationUrl": "https://www.data.gov.in/resource/local-government-directory-lgd-districts", "documentationLocator": "field_meta_field empty; resource note describes district LGD codes only", "evaluationEligible": false},
+        {"name": "district_code", "publisherMeaning": "undocumented", "documentationUrl": "https://www.data.gov.in/resource/local-government-directory-lgd-districts", "documentationLocator": "field_meta_field empty; resource note describes district LGD codes only", "evaluationEligible": false},
+        {"name": "district_name_english", "publisherMeaning": "undocumented", "documentationUrl": "https://www.data.gov.in/resource/local-government-directory-lgd-districts", "documentationLocator": "field_meta_field empty; resource note describes district LGD codes only", "evaluationEligible": false},
+        {"name": "district_name_local", "publisherMeaning": "undocumented", "documentationUrl": "https://www.data.gov.in/resource/local-government-directory-lgd-districts", "documentationLocator": "field_meta_field empty; resource note describes district LGD codes only", "evaluationEligible": false},
+        {"name": "district_census2011_code", "publisherMeaning": "undocumented", "documentationUrl": "https://www.data.gov.in/resource/local-government-directory-lgd-districts", "documentationLocator": "field_meta_field empty; resource note describes district LGD codes only", "evaluationEligible": false}
+      ],
+      "cases": [
+        {"name": "leading_zero_codes", "locator": "CSV source census code columns; literals 049 and 000", "evidence": "Do not cast identifier strings to numbers."},
+        {"name": "missing_local_names", "locator": "CSV source local-name columns; empty cells", "evidence": "No translations supplied."}
+      ],
+      "reuseLineage": {
+        "retainedOriginal": "fixtures/usp/D4/gf0-structured-codes-v1/lgd-districts.csv",
+        "sha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59",
+        "operation": "unchanged byte copy; no download"
+      }
+    },
+    {
+      "id": "RERAP2311201700019-3.html",
+      "family": "mi-d02",
+      "split": "dev",
+      "mediaType": "text/html",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP2311201700019-3"
+      },
+      "issuer": "Bihar Real Estate Regulatory Authority / registry submitter",
+      "attribution": "Bihar Real Estate Regulatory Authority / registry submitter",
+      "acquiredAt": "2026-09-30T12:55:36.8072729Z",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/br-building/RERAP2311201700019-3.html",
+        "sha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e",
+        "bytes": 132607
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "reason": "Public access is not a reuse/training grant; owner approved local development."
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "horizontalUnit": null,
+        "verticalReference": null,
+        "sourceDate": null
+      },
+      "purpose": "test_only",
+      "stage": "acquired",
+      "columns": [
+        {"name": "Name of Building", "publisherMeaning": "Name of Building", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[1]", "unit": null, "evaluationEligible": true},
+        {"name": "Sanctioned No of Floor", "publisherMeaning": "Sanctioned No. of Floors", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[2]", "unit": null, "evaluationEligible": true},
+        {"name": "Type of Apartment", "publisherMeaning": "Type of Apartment/Flat/Inventory (1 BHK, 2 BHK, etc.)", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[3]", "unit": null, "evaluationEligible": true},
+        {"name": "No of Apartment", "publisherMeaning": "No. of Apartment/Flat/Inventory", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[4]", "unit": null, "evaluationEligible": true},
+        {"name": "Carpet Area", "publisherMeaning": "Carpet Area (Sqft)", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[5]", "unit": "sq ft", "evaluationEligible": true},
+        {"name": "Area of exclusive balcony", "publisherMeaning": "Area of Exclusive Balcony/Verandah (Sq ft)", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[6]", "unit": "sq ft", "evaluationEligible": true},
+        {"name": "Area of exclusive open terrace", "publisherMeaning": "Area of Exclusive Open Terrace if any (Sq. ft.)", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[7]", "unit": "sq ft", "evaluationEligible": true}
+      ],
+      "cases": [
+        {"name": "floor_labels", "locator": "#GV_Building td[2]", "evidence": "Floor expressions stay literal; no B/S/G expansion to integer levels."},
+        {"name": "unit_inventory", "locator": "#GV_Building td[3..4]", "evidence": "Apartment types/counts, not keyed flat polygons or rights."},
+        {"name": "mixed_area_units", "locator": "#Label108 Total Area of Land (Sq mt); #GV_Building td[5..7]; manual p11 §17", "evidence": "Land in source-labelled square metres; apartment areas in publisher-documented square feet. No conversion."},
+        {"name": "khesra_plot_numbers", "locator": "#Label126 labelled Khesra No./Plot No.", "evidence": "Literal identifier; no cadastral geometry inferred."}
+      ],
+      "reuseLineage": {
+        "retainedOriginal": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/bihar-project.html",
+        "sha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e",
+        "operation": "unchanged byte copy"
+      },
+      "dictionary": {
+        "url": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf",
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/br-building/docs/publisher-manual.pdf",
+        "sha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691",
+        "bytes": 1821562,
+        "acquiredAt": "2026-10-09T19:06:38.512282+00:00",
+        "permissionState": "unconfirmed"
+      },
+      "sourceTable": {
+        "htmlId": "GV_Building",
+        "dataRows": 1
+      },
+      "privacy": "Whole public HTML includes contact/bank sections. Outside Git; teacher sees selected non-personal column profiles only."
+    },
+    {
+      "id": "RERAP01282025205138-1.html",
+      "family": "mi-d02",
+      "split": "dev",
+      "mediaType": "text/html",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP01282025205138-1"
+      },
+      "issuer": "Bihar Real Estate Regulatory Authority / registry submitter",
+      "attribution": "Bihar Real Estate Regulatory Authority / registry submitter",
+      "acquiredAt": "2026-10-09T19:09:45.878779+00:00",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/br-building/RERAP01282025205138-1.html",
+        "sha256": "7a1e3f74e142c0d02cb49a0cc2f6c9bdb4de7b434f30e3d8c809dbb57338b773",
+        "bytes": 152112
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "reason": "Public access is not a reuse/training grant; owner approved local development."
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "horizontalUnit": null,
+        "verticalReference": null,
+        "sourceDate": null
+      },
+      "purpose": "test_only",
+      "stage": "acquired",
+      "columns": [
+        {"name": "Name of Building", "publisherMeaning": "Name of Building", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[1]", "unit": null, "evaluationEligible": true},
+        {"name": "Sanctioned No of Floor", "publisherMeaning": "Sanctioned No. of Floors", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[2]", "unit": null, "evaluationEligible": true},
+        {"name": "Type of Apartment", "publisherMeaning": "Type of Apartment/Flat/Inventory (1 BHK, 2 BHK, etc.)", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[3]", "unit": null, "evaluationEligible": true},
+        {"name": "No of Apartment", "publisherMeaning": "No. of Apartment/Flat/Inventory", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[4]", "unit": null, "evaluationEligible": true},
+        {"name": "Carpet Area", "publisherMeaning": "Carpet Area (Sqft)", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[5]", "unit": "sq ft", "evaluationEligible": true},
+        {"name": "Area of exclusive balcony", "publisherMeaning": "Area of Exclusive Balcony/Verandah (Sq ft)", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[6]", "unit": "sq ft", "evaluationEligible": true},
+        {"name": "Area of exclusive open terrace", "publisherMeaning": "Area of Exclusive Open Terrace if any (Sq. ft.)", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[7]", "unit": "sq ft", "evaluationEligible": true}
+      ],
+      "cases": [
+        {"name": "floor_labels", "locator": "#GV_Building td[2]", "evidence": "Floor expressions stay literal; no B/S/G expansion to integer levels."},
+        {"name": "unit_inventory", "locator": "#GV_Building td[3..4]", "evidence": "Apartment types/counts, not keyed flat polygons or rights."},
+        {"name": "mixed_area_units", "locator": "#Label108 Total Area of Land (Sq mt); #GV_Building td[5..7]; manual p11 §17", "evidence": "Land in source-labelled square metres; apartment areas in publisher-documented square feet. No conversion."},
+        {"name": "khesra_plot_numbers", "locator": "#Label126 labelled Khesra No./Plot No.", "evidence": "Literal identifier; no cadastral geometry inferred."}
+      ],
+      "reuseLineage": {
+        "retainedOriginal": "E:/BhuAayam-data/datasets/rera-storeys/RERAP01282025205138-1/registry-system-trust.html",
+        "sha256": "7a1e3f74e142c0d02cb49a0cc2f6c9bdb4de7b434f30e3d8c809dbb57338b773",
+        "operation": "unchanged byte copy"
+      },
+      "dictionary": {
+        "url": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf",
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/br-building/docs/publisher-manual.pdf",
+        "sha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691",
+        "bytes": 1821562,
+        "acquiredAt": "2026-10-09T19:06:38.512282+00:00",
+        "permissionState": "unconfirmed"
+      },
+      "sourceTable": {
+        "htmlId": "GV_Building",
+        "dataRows": 1
+      },
+      "privacy": "Whole public HTML includes contact/bank sections. Outside Git; teacher sees selected non-personal column profiles only."
+    },
+    {
+      "id": "RERAP285201800427-9.html",
+      "family": "mi-d02",
+      "split": "dev",
+      "mediaType": "text/html",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP285201800427-9"
+      },
+      "issuer": "Bihar Real Estate Regulatory Authority / registry submitter",
+      "attribution": "Bihar Real Estate Regulatory Authority / registry submitter",
+      "acquiredAt": "2026-10-09T19:09:47.130447+00:00",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/br-building/RERAP285201800427-9.html",
+        "sha256": "3f6801665a180f8febf69cea4d2cd4f413972493a695d40c6ea84994950ed24a",
+        "bytes": 143812
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "reason": "Public access is not a reuse/training grant; owner approved local development."
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "horizontalUnit": null,
+        "verticalReference": null,
+        "sourceDate": null
+      },
+      "purpose": "test_only",
+      "stage": "acquired",
+      "columns": [
+        {"name": "Name of Building", "publisherMeaning": "Name of Building", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[1]", "unit": null, "evaluationEligible": true},
+        {"name": "Sanctioned No of Floor", "publisherMeaning": "Sanctioned No. of Floors", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[2]", "unit": null, "evaluationEligible": true},
+        {"name": "Type of Apartment", "publisherMeaning": "Type of Apartment/Flat/Inventory (1 BHK, 2 BHK, etc.)", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[3]", "unit": null, "evaluationEligible": true},
+        {"name": "No of Apartment", "publisherMeaning": "No. of Apartment/Flat/Inventory", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[4]", "unit": null, "evaluationEligible": true},
+        {"name": "Carpet Area", "publisherMeaning": "Carpet Area (Sqft)", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[5]", "unit": "sq ft", "evaluationEligible": true},
+        {"name": "Area of exclusive balcony", "publisherMeaning": "Area of Exclusive Balcony/Verandah (Sq ft)", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[6]", "unit": "sq ft", "evaluationEligible": true},
+        {"name": "Area of exclusive open terrace", "publisherMeaning": "Area of Exclusive Open Terrace if any (Sq. ft.)", "documentationUrl": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf", "documentationLocator": "PDF page 11, §17 Building Details", "documentationSha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691", "sourceLocator": "#GV_Building th[7]", "unit": "sq ft", "evaluationEligible": true}
+      ],
+      "cases": [
+        {"name": "floor_labels", "locator": "#GV_Building td[2]", "evidence": "Floor expressions stay literal; no B/S/G expansion to integer levels."},
+        {"name": "unit_inventory", "locator": "#GV_Building td[3..4]", "evidence": "Apartment types/counts, not keyed flat polygons or rights."},
+        {"name": "mixed_area_units", "locator": "#Label108 Total Area of Land (Sq mt); #GV_Building td[5..7]; manual p11 §17", "evidence": "Land in source-labelled square metres; apartment areas in publisher-documented square feet. No conversion."},
+        {"name": "khesra_plot_numbers", "locator": "#Label126 labelled Khesra No./Plot No.", "evidence": "Literal identifier; no cadastral geometry inferred."}
+      ],
+      "reuseLineage": {
+        "retainedOriginal": "E:/BhuAayam-data/datasets/rera-storeys/RERAP285201800427-9/registry-system-trust.html",
+        "sha256": "3f6801665a180f8febf69cea4d2cd4f413972493a695d40c6ea84994950ed24a",
+        "operation": "unchanged byte copy"
+      },
+      "dictionary": {
+        "url": "https://rera.bihar.gov.in/images/RERAProjectUMfinal.pdf",
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/br-building/docs/publisher-manual.pdf",
+        "sha256": "bf0b2686c54cdfeed588fc7d3d906a408f90be2795520e646e0d1e180114b691",
+        "bytes": 1821562,
+        "acquiredAt": "2026-10-09T19:06:38.512282+00:00",
+        "permissionState": "unconfirmed"
+      },
+      "sourceTable": {
+        "htmlId": "GV_Building",
+        "dataRows": 5
+      },
+      "privacy": "Whole public HTML includes contact/bank sections. Outside Git; teacher sees selected non-personal column profiles only."
+    },
+    {
+      "id": "registered-page-3.html",
+      "family": "mi-d03",
+      "split": "dev",
+      "mediaType": "text/html",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://rera.bihar.gov.in/RegisteredPP.aspx"
+      },
+      "issuer": "Bihar Real Estate Regulatory Authority",
+      "acquiredAt": "2026-10-09T19:29:46.009019+00:00",
+      "acquisitionTimeBasis": "verified transport; filesystem save timestamp",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/br-project-list/registered-page-3.html",
+        "sha256": "26d3db17a4c42233e19448b81ba273393340883c55a9d7811fd21ae6847444e8",
+        "bytes": 65333
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "reason": "Local development approved; reuse/ML rights not independently established."
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null
+      },
+      "purpose": "test_only",
+      "stage": "acquired",
+      "sourceTable": {
+        "htmlId": "ContentPlaceHolder1_GV_Building",
+        "publisherPage": 3,
+        "dataRows": 10
+      },
+      "navigation": {
+        "method": "POST read-only pagination",
+        "eventArgument": "Page$3"
+      },
+      "columns": [
+        {"name": "Project Name", "publisherMeaning": "Project Name", "documentationUrl": "https://rera.bihar.gov.in/RegisteredPP.aspx", "documentationLocator": "#ContentPlaceHolder1_GV_Building th[1]", "documentationStrength": "publisher_table_header_only", "evaluationEligible": true, "qualification": "Literal publisher label; no expanded dictionary/geocoding."},
+        {"name": "Registration No.", "publisherMeaning": "Registration No.", "documentationUrl": "https://rera.bihar.gov.in/RegisteredPP.aspx", "documentationLocator": "#ContentPlaceHolder1_GV_Building th[2]", "documentationStrength": "publisher_table_header_only", "evaluationEligible": true, "qualification": "Literal publisher label; no expanded dictionary/geocoding."},
+        {"name": "Promoter Name", "publisherMeaning": "Promoter Name", "documentationUrl": "https://rera.bihar.gov.in/RegisteredPP.aspx", "documentationLocator": "#ContentPlaceHolder1_GV_Building th[3]", "documentationStrength": "publisher_table_header_only", "evaluationEligible": true, "qualification": "Literal publisher label; no expanded dictionary/geocoding."},
+        {"name": "Project Address", "publisherMeaning": "Project Address", "documentationUrl": "https://rera.bihar.gov.in/RegisteredPP.aspx", "documentationLocator": "#ContentPlaceHolder1_GV_Building th[4]", "documentationStrength": "publisher_table_header_only", "evaluationEligible": true, "qualification": "Literal publisher label; no expanded dictionary/geocoding."},
+        {"name": "Date of Registration", "publisherMeaning": "Date of Registration", "documentationUrl": "https://rera.bihar.gov.in/RegisteredPP.aspx", "documentationLocator": "#ContentPlaceHolder1_GV_Building th[5]", "documentationStrength": "publisher_table_header_only", "evaluationEligible": true, "qualification": "Literal publisher label; no expanded dictionary/geocoding."}
+      ],
+      "cases": [
+        {"name": "rera_project_list", "locator": "#ContentPlaceHolder1_GV_Building, publisher page 3, rows 1..10", "evidence": "Original tabular registry listing; not converted CSV."},
+        {"name": "mixed_script_values", "locator": "#ContentPlaceHolder1_GV_Building tr[3] td[4]", "evidence": "Devanagari locality values beside Latin address text. Headers are English, NOT a Devanagari-header case."},
+        {"name": "khesra_plot_numbers", "locator": "#ContentPlaceHolder1_GV_Building tr[3] td[4]", "evidence": "Identifier text in address cells; no numeric measure inferred."},
+        {"name": "missing_values", "locator": "#ContentPlaceHolder1_GV_Building tr[2] td[4]", "evidence": "No missing address inferred."}
+      ],
+      "transport": "PowerShell Invoke-WebRequest with Windows system TLS trust; no override",
+      "projectBlindness": "Pages 3/4 chosen instead of pages 1/2 to exclude the heldout storey projects from development teacher data."
+    },
+    {
+      "id": "registered-page-4.html",
+      "family": "mi-d03",
+      "split": "dev",
+      "mediaType": "text/html",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://rera.bihar.gov.in/RegisteredPP.aspx"
+      },
+      "issuer": "Bihar Real Estate Regulatory Authority",
+      "acquiredAt": "2026-10-09T19:29:46.455175+00:00",
+      "acquisitionTimeBasis": "verified transport; filesystem save timestamp",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/br-project-list/registered-page-4.html",
+        "sha256": "9c73e08b9e379487e953e8d8752ff5fa9524b77f40c75414daf4ca6a1b9732bf",
+        "bytes": 65477
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "reason": "Local development approved; reuse/ML rights not independently established."
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null
+      },
+      "purpose": "test_only",
+      "stage": "acquired",
+      "sourceTable": {
+        "htmlId": "ContentPlaceHolder1_GV_Building",
+        "publisherPage": 4,
+        "dataRows": 10
+      },
+      "navigation": {
+        "method": "POST read-only pagination",
+        "eventArgument": "Page$4"
+      },
+      "columns": [
+        {"name": "Project Name", "publisherMeaning": "Project Name", "documentationUrl": "https://rera.bihar.gov.in/RegisteredPP.aspx", "documentationLocator": "#ContentPlaceHolder1_GV_Building th[1]", "documentationStrength": "publisher_table_header_only", "evaluationEligible": true, "qualification": "Literal publisher label; no expanded dictionary/geocoding."},
+        {"name": "Registration No.", "publisherMeaning": "Registration No.", "documentationUrl": "https://rera.bihar.gov.in/RegisteredPP.aspx", "documentationLocator": "#ContentPlaceHolder1_GV_Building th[2]", "documentationStrength": "publisher_table_header_only", "evaluationEligible": true, "qualification": "Literal publisher label; no expanded dictionary/geocoding."},
+        {"name": "Promoter Name", "publisherMeaning": "Promoter Name", "documentationUrl": "https://rera.bihar.gov.in/RegisteredPP.aspx", "documentationLocator": "#ContentPlaceHolder1_GV_Building th[3]", "documentationStrength": "publisher_table_header_only", "evaluationEligible": true, "qualification": "Literal publisher label; no expanded dictionary/geocoding."},
+        {"name": "Project Address", "publisherMeaning": "Project Address", "documentationUrl": "https://rera.bihar.gov.in/RegisteredPP.aspx", "documentationLocator": "#ContentPlaceHolder1_GV_Building th[4]", "documentationStrength": "publisher_table_header_only", "evaluationEligible": true, "qualification": "Literal publisher label; no expanded dictionary/geocoding."},
+        {"name": "Date of Registration", "publisherMeaning": "Date of Registration", "documentationUrl": "https://rera.bihar.gov.in/RegisteredPP.aspx", "documentationLocator": "#ContentPlaceHolder1_GV_Building th[5]", "documentationStrength": "publisher_table_header_only", "evaluationEligible": true, "qualification": "Literal publisher label; no expanded dictionary/geocoding."}
+      ],
+      "cases": [
+        {"name": "rera_project_list", "locator": "#ContentPlaceHolder1_GV_Building, publisher page 4, rows 1..10", "evidence": "Original tabular registry listing; not converted CSV."},
+        {"name": "mixed_script_values", "locator": "#ContentPlaceHolder1_GV_Building tr[2] td[4]", "evidence": "Devanagari locality values beside Latin address text. Headers are English, NOT a Devanagari-header case."},
+        {"name": "khesra_plot_numbers", "locator": "#ContentPlaceHolder1_GV_Building tr[2] td[4]", "evidence": "Identifier text in address cells; no numeric measure inferred."},
+        {"name": "missing_values", "locator": "#ContentPlaceHolder1_GV_Building tr[3] td[4]", "evidence": "No missing address inferred."}
+      ],
+      "transport": "PowerShell Invoke-WebRequest with Windows system TLS trust; no override",
+      "projectBlindness": "Pages 3/4 chosen instead of pages 1/2 to exclude the heldout storey projects from development teacher data."
+    }
+  ],
+  "teacherPolicy": "Development teacher may read dev profiles only. Never open heldout.json, holdout originals or schema documents; evaluators must not send them to teachers.",
+  "description": "8 unchanged original tabular/GIS files in 5 families: 6 dev (5 HTML tables, 1 CSV), 2 heldout GIS query originals; no synthetic/reformatted source counted.",
+  "heldout": [
+    {
+      "id": "mi-h01",
+      "fileCount": 1,
+      "caseNames": [
+        "GIS_attributes",
+        "declared_projected_crs"
+      ]
+    },
+    {
+      "id": "mi-h02",
+      "fileCount": 1,
+      "caseNames": [
+        "GIS_attributes",
+        "declared_projected_crs"
+      ]
+    }
+  ],
+  "freeze": {
+    "heldoutManifest": "heldout.json",
+    "sha256": "5781dbd1c5da49338e59b15825817aa64b3ac9252535f52cfb30e5f6ab65add9",
+    "frozenAt": "2026-10-09T19:16:05.872924+00:00",
+    "allocationUnit": "publisher + schema family",
+    "heldoutBytesOutsideGit": true,
+    "use": "evaluation only; no tuning/teacher labels"
+  },
+  "fileCounts": {
+    "development": 6,
+    "heldout": 2,
+    "total": 8,
+    "families": 5
+  },
+  "missingCapabilities": [
+    "Devanagari_or_mixed_script_headers",
+    "Kruti_Dev_headers",
+    "Devanagari_digits",
+    "lakh_grouped_numeric_cells",
+    "DD/MM/YYYY_record_dates",
+    "sq_yd_or_gaj_areas",
+    "acre_or_hectare_areas",
+    "UGF_LGF_Stilt_Podium_Mezz_B1_floor_literals",
+    "property_tax_register",
+    "building_permission_register_tabular",
+    "missing_prj_shapefile",
+    "naturally_wrong_or_doubtful_CRS",
+    "real_prompt_injection",
+    "expanded_dictionaries_for_LGD_and_GIS",
+    "native_HTML_table_import_route_unqualified"
+  ],
+  "documentationScope": "Only explicit publisher manual units, headers and schema aliases/types are truth. Expanded undocumented meanings/inferred canonical targets/teacher outputs are not truth."
+}
