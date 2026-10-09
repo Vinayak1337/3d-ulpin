@@ -38,7 +38,21 @@
     ]
   },
   "evaluation": {
-    "dev": "pending_one_full_frozen_DEV_run",
+    "dev": {
+      "result": "docs/evidence/gf-ai/building/b1-installed-dev-20261010/result.json",
+      "chips": 1434,
+      "publisher_buildings": 13156,
+      "predicted_buildings": 7778,
+      "precision": 0.7284649010028285,
+      "recall": 0.4306780176345394,
+      "mean_iou_of_matches": 0.7990241720238749,
+      "boundary_f1_2px": 0.5612302496991644,
+      "false_buildings_on_empty": 89,
+      "empty_chip_denominator": 305,
+      "seconds": 86.69266790000256,
+      "provider": "CUDAExecutionProvider",
+      "qualification": "Publisher-label DEV diagnostic only; does not meet preregistered precision/recall thresholds. No holdout or independent source-family claim."
+    },
     "holdout": "not_run_B1"
   },
   "known_failure_modes": [

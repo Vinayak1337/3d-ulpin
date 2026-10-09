@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "reason": "Initial contact-sheet ranking treated undefined F1 on correct empty chips as -1, incorrectly selecting them as worst. Exclude undefined scores; do not change metrics or rerun inference.",
+  "evaluation_result_sha256": "c5c13f555d1641ffc2dc6ab6e9778bd1b9b0127c62d5fcc93b0ebb22c1a40835",
+  "contact_sheet": "best-worst-corrected.png",
+  "contact_sheet_sha256": "a6089525bc177fe2db9b2fc44bbf7eb65da2a2746ab6ced434060702e310bc85",
+  "prediction_geometry": "Not retained for these six chips; show truth contours and saved prediction counts only",
+  "original_contact_sheet_preserved": true,
+  "selected_chip_ids": [
+    "0872f605-d786-46ec-b8f1-ca8fed38e730",
+    "0965e9ff-fa8e-423a-af0b-c2277be03bb6",
+    "0bee6c5d-a95f-470d-81f5-722110d863e0",
+    "f6dea8d7-09ac-4dc4-8f26-8c7abc927c33",
+    "f88e8c20-16b7-49b3-a483-50517dda2718",
+    "ff70fe56-ac5a-4518-97aa-3039f8f6876e"
+  ],
+  "native_model_calls": 0,
+  "holdout_calls": 0
+}

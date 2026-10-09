@@ -66,6 +66,9 @@ def main():
     finite = all(bool(torch.isfinite(x).all()) for x in gradients)
     peak = torch.cuda.max_memory_reserved()
     result = {"status": "passed" if finite and seconds < 60 and peak <= 6 * 1024**3 else "failed_bounds", "framework": "Transformers RF-DETR instance-segmentation (same installed checkpoint); rfdetr package imported", "gpu": torch.cuda.get_device_name(0), "cuda": torch.version.cuda, "versions": {k: importlib.metadata.version(k) for k in ("torch", "torchvision", "rfdetr", "transformers", "onnxruntime-gpu", "numpy", "pillow", "pycocotools")}, "input": {"path": (root / source["file_name"]).as_posix(), "sha256": hashlib.sha256((root / source["file_name"]).read_bytes()).hexdigest(), "instances": len(annotations), "allocation": "retained_Barishal_train_only"}, "model_sha256": hashlib.sha256((args.checkpoint / "model.safetensors").read_bytes()).hexdigest(), "forward_calls": 1, "backward_calls": 1, "optimizer_steps": 0, "holdout_calls": 0, "loss": float(loss.detach()), "finite_gradients": finite, "parameters_with_gradients": len(gradients), "forward_backward_seconds": seconds, "peak_allocated_bytes": torch.cuda.max_memory_allocated(), "peak_reserved_bytes": peak, "budget_bytes": 6 * 1024**3, "precision": "autocast_fp16; FP32 parameters/gradients", "python": __import__("sys").version}
+    import subprocess
+    repo = Path(__file__).resolve().parents[2]
+    result.update({"git_sha": subprocess.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"], text=True).strip(), "smoke_code_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(), "network_model_fetches": 0})
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("x", encoding="utf-8") as f:
         json.dump(result, f, indent=2)

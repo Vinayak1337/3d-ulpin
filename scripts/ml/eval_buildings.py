@@ -215,22 +215,31 @@ def boundary_summary(counts):
     return {**counts, "precision": p, "recall": r, "f1": 2 * p * r / (p + r) if p is not None and r is not None and p + r else (0.0 if p is not None and r is not None else None), "tolerance_source_pixels": 2, "scope": "Micro pooled full-chip foreground union boundaries; includes false boundaries on empty chips"}
 
 
+def select_contact_rows(rows):
+    """Undefined all-empty/no-prediction F1 is not an error or a best score."""
+    eligible = [x for x in rows if x[0]["object_f1"] is not None]
+    eligible.sort(key=lambda x: (x[0]["object_f1"], x[0]["chip_id"]))
+    return eligible if len(eligible) <= 6 else eligible[:3] + eligible[-3:]
+
+
 def contact_sheet(rows, coco_dir, output):
     import numpy as np
     from PIL import Image, ImageDraw
     from scipy.ndimage import binary_erosion
-    ranked = sorted(rows, key=lambda x: (x[0]["object_f1"] if x[0]["object_f1"] is not None else -1, x[0]["chip_id"]))
+    ranked = select_contact_rows(rows)
     chosen = [("worst", x) for x in ranked[:3]] + [("best", x) for x in ranked[-3:][::-1]]
     sheet = Image.new("RGB", (3 * 320, 2 * 300), "white")
     draw = ImageDraw.Draw(sheet)
     for n, (kind, (row, truth, pred)) in enumerate(chosen):
         image = np.asarray(Image.open(coco_dir / row["file_name"]).convert("RGB")).copy()
         image[truth & ~binary_erosion(truth, border_value=0)] = [0, 210, 80]
-        image[pred & ~binary_erosion(pred, border_value=0)] = [240, 0, 70]
+        if pred is not None:
+            image[pred & ~binary_erosion(pred, border_value=0)] = [240, 0, 70]
         x, y = n % 3 * 320, n // 3 * 300
         sheet.paste(Image.fromarray(image).resize((256, 256)), (x, y + 35))
         draw.text((x + 2, y + 2), f"{kind} {row['chip_id'][:18]}", fill="black")
-        draw.text((x + 2, y + 16), f"TP={row['tp']} FP={row['fp']} FN={row['fn']} green=truth red=pred", fill="black")
+        draw.text((x + 2, y + 16), f"TP={row['tp']} FP={row['fp']} FN={row['fn']}", fill="black")
+        draw.text((x + 125, y + 16), "green=truth red=pred" if pred is not None else "truth; pred counts only", fill="black")
     sheet.save(output)
 
 
@@ -309,10 +318,7 @@ def main():
                 journal.write(json.dumps(row) + "\n")
                 rows.append(row)
                 # Bound contact-sheet memory: only best/worst six, never all chips.
-                selected.append((row, truth_union, pred_union))
-                selected.sort(key=lambda x: (x[0]["object_f1"] if x[0]["object_f1"] is not None else -1, x[0]["chip_id"]))
-                if len(selected) > 6:
-                    selected = selected[:3] + selected[-3:]
+                selected = select_contact_rows(selected + [(row, truth_union, pred_union)])
                 for key, value in {"tp": tp, "fp": fp, "fn": fn, "truth_buildings": len(truth), "predicted_buildings": len(predictions), "empty_chips": int(empty), "empty_chips_with_false_buildings": int(empty and fp > 0), "false_buildings_on_empty": fp if empty else 0, "zero_pixel_truth_features": row["zero_pixel_truth_features"], "raw_mask_intersection_pixels": int((truth_union & raw_union).sum()), "raw_mask_union_pixels": int((truth_union | raw_union).sum()), "inference_tiles": tiles}.items():
                     totals[key] += value
                 matched_iou_sum += sum(ious)

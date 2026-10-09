@@ -26,7 +26,9 @@ model loading is offline (`HF_HUB_OFFLINE=1`) and accepts no pickle checkpoints.
 `ramp_download.py` acquires Karnataka first, then all six Bangladesh collections.
 It stores originals, paged publisher XML inventories, a per-file SHA journal,
 and an atomic live manifest in `E:/BhuAayam-data/datasets/ramp`. Completed files
-are hash-checked on resume; transfer `.part` state uses HTTP Range. No original
+are hash-checked on resume; transfer `.part` state uses tested Azure `x-ms-range`
+with service version `2023-11-03` (legacy anonymous requests ignored standard
+Range without a version). No original
 is overwritten. One process owns the root; do not start another while its PID
 is alive. After an interrupted process, confirm its PID is dead before clearing
 only the generated `download.lock` (never any original or journal).
@@ -34,7 +36,8 @@ only the generated `download.lock` (never any original or journal).
 ```bash
 # Resume explicitly after stopping/confirming the old process is dead:
 E:/BhuAayam-data/ml/venv-vision/Scripts/python.exe -u scripts/ml/ramp_download.py
-# Freeze once, then export Karnataka (refuses to overwrite frozen COCO):
+# Freeze once, then export Karnataka (refuses to overwrite frozen COCO;
+# interrupted exports resume source-bound per-image progress journals):
 E:/BhuAayam-data/ml/venv-vision/Scripts/python.exe -B scripts/ml/prepare_ramp.py
 # After a Bangladesh region is COMPLETE, export a TRAIN-only shard:
 E:/BhuAayam-data/ml/venv-vision/Scripts/python.exe -B scripts/ml/prepare_ramp.py --bangladesh-region dhaka_bangladesh
@@ -69,4 +72,7 @@ installed baseline, slot 2 final candidate. Every reservation is logged before
 model load; failures/interruption consume a slot. B1 does **not** run HOLDOUT.
 The preregistration's repository-file hash normalizes CRLF to LF, so integration
 on Windows cannot accidentally break its Git identity. Original-file hashes
-always use exact bytes. `plan_rooms` and `storeys` remain pending for their owners.
+always use exact bytes. The B1 DEV sheet's initial ranking erroneously treated
+undefined F1 on correctly empty chips as worst; the result now points to a
+corrected source/truth/count sheet generated from saved DEV outputs, with zero
+new model calls. Both artifacts and the regression receipt are retained. `plan_rooms` and `storeys` remain pending for their owners.

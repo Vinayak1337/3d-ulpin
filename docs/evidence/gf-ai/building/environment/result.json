@@ -32,5 +32,9 @@
   "peak_reserved_bytes": 3514826752,
   "budget_bytes": 6442450944,
   "precision": "autocast_fp16; FP32 parameters/gradients",
-  "python": "3.11.15 (main, Aug  7 2026, 02:24:19) [MSC v.1944 64 bit (AMD64)]"
+  "python": "3.11.15 (main, Aug  7 2026, 02:24:19) [MSC v.1944 64 bit (AMD64)]",
+  "git_sha": "28d5f6aeb90a747a2c9aa08336cc8205f224620d",
+  "smoke_code_sha256": "1929b3b53ac1887e743c8c4324348e959392dfefc81dbd474d600e8bd521fb24",
+  "uncommitted_worker_code_at_execution": true,
+  "network_model_fetches": 0
 }
