@@ -1,4 +1,5 @@
 """Shared safe file identities and run records for the building experiment CLIs."""
+
 from __future__ import annotations
 
 import hashlib
@@ -13,9 +14,7 @@ RUNS = Path("E:/BhuAayam-data/ml/runs")
 
 
 def configure_offline() -> None:
-    os.environ.update(
-        HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1", OMP_NUM_THREADS="2", MKL_NUM_THREADS="2"
-    )
+    os.environ.update(HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1", OMP_NUM_THREADS="2", MKL_NUM_THREADS="2")
 
 
 def sha(path: Path) -> str:
