@@ -136,13 +136,26 @@ function workbookRows(path:string,sheet?:string,headerRow?:number):{rows:Mapping
   if(names.some(n=>typeof n!=='string'||!n.trim()))throw new Error('COLUMN_HEADER_NEEDS_INPUT');
   return {names:names as string[],rows:ordered.slice(1).map(([,row])=>Object.fromEntries((names as string[]).map((name,i)=>[name,row.get(i)])))};
 }
+function decodeColumnText(bytes: Uint8Array): string {
+  let encoding = 'utf-8';
+  if (bytes[0] === 0xff && bytes[1] === 0xfe) encoding = 'utf-16le';
+  if (bytes[0] === 0xfe && bytes[1] === 0xff) encoding = 'utf-16be';
+  try {
+    const text = new TextDecoder(encoding, { fatal: true }).decode(bytes).replace(/^\uFEFF/, '');
+    if (text.includes('\0')) throw new Error('COLUMN_ENCODING_UNSUPPORTED');
+    return text;
+  } catch {
+    throw new Error('COLUMN_ENCODING_UNSUPPORTED');
+  }
+}
+
 export function profileColumnFile(path:string,sheet?:string,headerRow?:number):ProfiledInput{
   if(/(?:^|[\\/])\.env(?:\.|$)|(?:key|credential|secret)[^\\/]*$/i.test(path))throw new Error('COLUMN_PATH_FORBIDDEN');
   if(statSync(path).size>20*1024*1024)throw new Error('COLUMN_FILE_LIMIT');
   const bytes=readFileSync(path);
   if(bytes[0]===80&&bytes[1]===75){const table=workbookRows(path,sheet,headerRow);return {rows:table.rows,
     profile:profileColumns(table.rows,table.names.map(name=>({name})),'tabular')};}
-  const text=new TextDecoder('utf-8',{fatal:true}).decode(bytes).replace(/^\uFEFF/,'');
+  const text = decodeColumnText(bytes);
   if(/^\s*\{/.test(text)){
     const layer=JSON.parse(text);
     if(!Array.isArray(layer.features))throw new Error('COLUMN_GIS_ATTRIBUTES_UNAVAILABLE');
