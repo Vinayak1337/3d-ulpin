@@ -55,6 +55,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--ort-no-optimizations", action="store_true", help="Bounded ORT_DISABLE_ALL diagnosis")
     parser.add_argument("--reuse-parity-graph", type=Path, help="Diagnose retained exact graph bytes")
+    parser.add_argument("--opset", type=int, choices=(16, 17, 18, 19), default=17)
     args = parser.parse_args()
     if not re.fullmatch(r"[A-Za-z0-9_-]+", args.run_id):
         parser.error("Simple new run-id required")
@@ -85,7 +86,13 @@ def fixed_grid(embedding: Any, values: torch.Tensor, height: int, width: int) ->
     return embedding.position_embeddings
 
 
-def export_debug_graph(wrapper: Export, example: np.ndarray, output: Path) -> None:
+def export_debug_graph(
+    wrapper: Export,
+    example: np.ndarray,
+    output: Path,
+    output_names: tuple[str, ...] = OUTPUT_NAMES,
+    opset: int = 17,
+) -> None:
     from transformers.models.rf_detr.modeling_rf_detr import RfDetrDinov2Embeddings
 
     embeddings = [module for module in wrapper.model.modules() if isinstance(module, RfDetrDinov2Embeddings)]
@@ -101,8 +108,8 @@ def export_debug_graph(wrapper: Export, example: np.ndarray, output: Path) -> No
                 torch.from_numpy(example),
                 str(output),
                 input_names=["image"],
-                output_names=list(OUTPUT_NAMES),
-                opset_version=17,
+                output_names=list(output_names),
+                opset_version=opset,
                 dynamo=False,
                 external_data=False,
             )
@@ -118,7 +125,7 @@ def export_graphs(args: argparse.Namespace, wrapper: Export, example: np.ndarray
     if args.reuse_parity_graph:
         shutil.copyfile(args.reuse_parity_graph, debug)
     else:
-        export_debug_graph(wrapper, example, debug)
+        export_debug_graph(wrapper, example, debug, opset=args.opset)
     graph = onnx.load(str(debug))
     onnx.checker.check_model(graph)
     primary = copy.deepcopy(graph)
@@ -202,7 +209,7 @@ def parity_result(
         "per_chip": rows,
         "seconds": seconds,
         "providers": ["CPUExecutionProvider"],
-        "opset": 17,
+        "opset": args.opset,
         "static_input_shape": [1, 3, 432, 432],
         "ort_optimization": "ORT_DISABLE_ALL" if args.ort_no_optimizations else "ORT_ENABLE_ALL",
         "export_repair": "Instance-local fixed-grid PE; original restored before all PyTorch references",
