@@ -92,6 +92,63 @@ def holdout_reserve(args, split, model_sha, split_sha):
     return log_path
 
 
+def transfer_inputs(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
+    prereg = json.loads(PREREG.read_bytes())["building_mask_transfer"]
+    root = Path(prereg["data_root"])
+    coco_path = root / "coco/transfer/_annotations.coco.json"
+    if prereg["status"] != "frozen" or sha(coco_path) != prereg["holdout"]["coco_sha256"]:
+        raise ValueError("TRANSFER denied: frozen COCO binding differs")
+    if sha(root / "source-index.json") != prereg["holdout"]["source_index_sha256"]:
+        raise ValueError("TRANSFER denied: original source inventory changed")
+    coco = json.loads(coco_path.read_bytes())
+    ids = sorted(image["source_id"] for image in coco["images"])
+    if id_hash(ids) != prereg["holdout"]["chip_ids_sha256"]:
+        raise ValueError("TRANSFER denied: identities differ")
+    if {image["region"] for image in coco["images"]} != {prereg["region"]}:
+        raise ValueError("TRANSFER denied: mixed or wrong geography")
+    args.root = root
+    expected = {**prereg["holdout"], "chip_ids": ids}
+    return {"splits": {"transfer": expected}, "limitations": prereg["limitations"]}, prereg
+
+
+def transfer_reserve(args: argparse.Namespace, model_sha: str, split_sha: str) -> Path:
+    prereg_commit = committed(PREREG)
+    if not args.selection_result:
+        raise ValueError("TRANSFER requires a committed final DEV selection")
+    selection_path = args.selection_result.resolve()
+    selection_commit = committed(selection_path)
+    selection = json.loads(selection_path.read_bytes())
+    if selection.get("run_id") != "b4-ka-continue-20261010":
+        raise ValueError("TRANSFER denied: selection must compare the finished B4 continuation")
+    if not selection.get("final_candidate_fixed") or selection["model_sha256"] != model_sha:
+        raise ValueError("TRANSFER denied: fixed DEV-selected model differs")
+    finished = Path("E:/BhuAayam-data/ml/runs") / selection["run_id"] / "result.json"
+    if not finished.is_file() or json.loads(finished.read_bytes()).get("status") != "passed":
+        raise ValueError("TRANSFER denied: continuation has not finished successfully")
+    log_path = EVIDENCE / "transfer-runs.jsonl"
+    lock = EVIDENCE / "transfer-runs.lock"
+    with lock.open("x") as handle:
+        handle.write(str(os.getpid()))
+    try:
+        records = [json.loads(line) for line in log_path.read_text().splitlines()] if log_path.exists() else []
+        if any(record["event"] == "started" for record in records):
+            raise ValueError("TRANSFER denied: its sole attempt is already consumed")
+        append_log(
+            log_path,
+            "started",
+            args.run_id,
+            attempt=1,
+            model_sha256=model_sha,
+            split_sha256=split_sha,
+            preregistration_commit=prereg_commit,
+            selection_commit=selection_commit,
+            git_sha=git("rev-parse", "HEAD").decode().strip(),
+        )
+    finally:
+        lock.unlink()
+    return log_path
+
+
 def append_log(path, event, run_id, **extra):
     with path.open("a", encoding="utf-8") as f:
         f.write(json.dumps({"event": event, "run_id": run_id, "at": utc(), **extra}) + "\n")
@@ -259,7 +316,8 @@ def contact_sheet(rows, coco_dir, output):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model", required=True, help="onnx|checkpoint|path to ONNX or safetensors directory")
-    parser.add_argument("--split", required=True, choices=("dev", "holdout"))
+    parser.add_argument("--split", required=True, choices=("dev", "holdout", "transfer"))
+    parser.add_argument("--selection-result", type=Path, help="Committed final DEV selection for transfer")
     parser.add_argument("--root", type=Path, default=Path("E:/BhuAayam-data/datasets/ramp"))
     parser.add_argument("--run-id", default=datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"))
     parser.add_argument("--provider", choices=("cpu", "cuda"), default="cpu")
@@ -269,7 +327,7 @@ def main():
     args = parser.parse_args()
     if not 0 < args.score_threshold < 1:
         parser.error("score threshold must be between 0 and 1")
-    if args.split == "holdout" and args.score_threshold != .5:
+    if args.split in ("holdout", "transfer") and args.score_threshold != .5:
         parser.error("Nondefault HOLDOUT threshold denied before slot reservation")
     if not __import__("re").fullmatch(r"[A-Za-z0-9_-]+", args.run_id):
         parser.error("run-id must be a simple new directory name")
@@ -281,10 +339,17 @@ def main():
     split_path = EVIDENCE / "split/split.json"
     split = json.loads(split_path.read_bytes())
     split_sha = repo_sha(split_path)
+    if args.split == "transfer":
+        split, transfer = transfer_inputs(args)
+        split_sha = hashlib.sha256(json.dumps(transfer, sort_keys=True).encode()).hexdigest()
     expected = split["splits"][args.split]
     if id_hash(expected["chip_ids"]) != expected["chip_ids_sha256"]:
         raise ValueError("Frozen split id hash differs")
-    log = holdout_reserve(args, split, model_sha, split_sha) if args.split == "holdout" else None
+    log = None
+    if args.split == "holdout":
+        log = holdout_reserve(args, split, model_sha, split_sha)
+    elif args.split == "transfer":
+        log = transfer_reserve(args, model_sha, split_sha)
     output.mkdir(parents=True)
     artifacts = args.artifacts_dir or output
     if artifacts != output:
@@ -302,8 +367,11 @@ def main():
             raise ValueError("Installed ONNX hash differs from production registry")
         coco_dir = args.root / "coco" / args.split
         coco_path = coco_dir / "_annotations.coco.json"
-        export_receipt = json.loads((EVIDENCE / "data/coco-export.json").read_bytes())
-        expected_coco = next(x for x in export_receipt["splits"] if x["split"] == args.split)
+        if args.split == "transfer":
+            expected_coco = {"annotations_sha256": expected["coco_sha256"]}
+        else:
+            export_receipt = json.loads((EVIDENCE / "data/coco-export.json").read_bytes())
+            expected_coco = next(x for x in export_receipt["splits"] if x["split"] == args.split)
         if sha(coco_path) != expected_coco["annotations_sha256"]:
             raise ValueError("Frozen COCO annotations changed")
         coco = json.loads(coco_path.read_bytes())

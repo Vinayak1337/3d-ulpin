@@ -232,6 +232,14 @@ def export(items, output, role):
     return {"split": role, "images": len(images), "instances": len(annotations), "empty_chips": sum(x["empty"] for x in images), "zero_pixel_features": len(zero), "annotations_sha256": sha(target / "_annotations.coco.json")}
 
 
+def reject_transfer_training(region: str) -> None:
+    prereg_path = REPO / "docs/evidence/gf-ai/preregistration.json"
+    if prereg_path.is_file():
+        transfer = json.loads(prereg_path.read_bytes()).get("building_mask_transfer", {})
+        if transfer.get("status") == "frozen" and transfer.get("region") == region:
+            raise ValueError("Region is frozen for transfer HOLDOUT, never TRAIN")
+
+
 def transfer_shard(root: Path, region: str, target: Path, manifest: dict) -> dict:
     """Reserve a whole Bangladesh region as transfer-only, never a TRAIN shard."""
     if not region.endswith("_bangladesh"):
@@ -261,6 +269,7 @@ def main():
         print(json.dumps(transfer_shard(root, args.transfer_region, args.transfer_root, manifest)), flush=True)
         return
     if args.bangladesh_region:
+        reject_transfer_training(args.bangladesh_region)
         if not args.bangladesh_region.endswith("_bangladesh"):
             raise ValueError("Bangladesh shard must be Bangladesh")
         items = region_items(root, args.bangladesh_region, manifest)
