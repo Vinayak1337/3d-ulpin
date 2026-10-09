@@ -29,7 +29,7 @@ export async function mappingTeacherGatewayRuntime(mode=process.env.ULPIN_MAPPIN
     price:{version:'offline-no-charge',inputPerMillionMicroInr:'1',cachedInputPerMillionMicroInr:'1',outputPerMillionMicroInr:'1'},
     inputBound:{version:'offline-byte-bound/1',maxPromptTokens:34816},maxOutputTokens:4096,timeoutMs:45000,paceMs:1500});
   const ledger=new PgModelCallLedger(async()=>{throw new AppError(503,'MODEL_REPLAY_UNAVAILABLE','Replay never dispatches or debits a paid ledger.');},config,hash('offline'),'replay');
-  return new ModelGateway(config,ledger,new ReplayAdapter(key=>recordings.replay(key)));
+  return new ModelGateway(config,ledger,new ReplayAdapter(key=>recordings.replay(key,['sarvam'])));
 }
 export function modelGatewayPolicyHash(): string | undefined {
   const config = configuredGateway();

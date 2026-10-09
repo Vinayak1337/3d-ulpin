@@ -1,7 +1,6 @@
 import {createReadStream,openSync,writeSync,closeSync} from 'node:fs';
 import {createInterface} from 'node:readline';
-import {resolve,relative,isAbsolute,dirname} from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {assertTeacherOutputOutsideGit} from '../../model-gateway/recordings';
 import {z} from 'zod';
 import {ColumnProfileDocumentSchema,type ColumnProfileDocument,type MappingV2Operation,type MappingTarget} from '@ulpin/contracts';
 import {validateMappingPlanV2,layoutFingerprint} from './mapping-plan-v2';
@@ -16,8 +15,7 @@ const labelSchema=z.strictObject({profileHash:z.string().regex(/^[a-f0-9]{64}$/)
 /** Public development profiles only; passing this verifier is NOT independent truth or officer approval. */
 export async function ingestTeacherLabels(inputPath:string,profiles:ReadonlyMap<string,TeacherProfileEntry>,outputPath:string){
   for(const path of [inputPath,outputPath])if(/(?:^|[\\/])\.env(?:\.|$)/i.test(path))throw new Error('TEACHER_LABEL_PATH_FORBIDDEN');
-  const root=resolve(dirname(fileURLToPath(import.meta.url)),'../../../../../..'),rel=relative(root,resolve(outputPath));
-  if(!rel.startsWith('..')&&!isAbsolute(rel))throw new Error('TEACHER_LABEL_OUTPUT_IN_GIT');
+  assertTeacherOutputOutsideGit(outputPath);
   // Exclusive create: never replace/append a pre-existing training artifact.
   const fd=openSync(outputPath,'wx',0o600);
   const report={accepted:0,rejected:0,examples:0,verifiedExamples:0,rejections:[] as {line:number;codes:string[]}[]};
