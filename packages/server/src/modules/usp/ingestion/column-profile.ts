@@ -103,9 +103,12 @@ export function profileGisAttributes(rows:MappingRow[],names?:string[]):Profiled
 function workbookRows(path:string,sheet?:string,headerRow?:number):{rows:MappingRow[];names:string[]}{
   if(headerRow!==undefined&&(!Number.isSafeInteger(headerRow)||headerRow<1||headerRow>1048576))throw new Error('COLUMN_HEADER_ROW_INVALID');
   const root=resolve(dirname(fileURLToPath(import.meta.url)),'../../../../../..');
-  const program=`import sys,json,zipfile\nsys.path.insert(0,sys.argv[1])\nfrom geo.native_workbook import extract_native_workbook\nfrom geo.native_ods import extract_native_ods,is_ods_archive\nwith zipfile.ZipFile(sys.argv[2]) as z:\n if len(z.infolist())>512 or sum(i.file_size for i in z.infolist())>20000000: raise ValueError('COLUMN_WORKBOOK_LIMIT')\n result=extract_native_ods(z) if is_ods_archive(z) else extract_native_workbook(z)\nprint(json.dumps(result,ensure_ascii=False))`;
-  const run=spawnSync(process.env.ULPIN_PROFILE_PYTHON??'python',['-c',program,resolve(root,'services/geo'),resolve(path)],
-    {encoding:'utf8',timeout:30000,maxBuffer:2*1024*1024,env:{...process.env,PYTHONDONTWRITEBYTECODE:'1'}});
+  const scriptPath = resolve(root, 'scripts/agent/read_workbook_cells.py');
+  const servicesGeoPath = resolve(root, 'services/geo');
+  const run = spawnSync(process.env.ULPIN_PROFILE_PYTHON ?? 'python', [scriptPath, servicesGeoPath, resolve(path)], {
+    encoding: 'utf8', timeout: 30000, maxBuffer: 2 * 1024 * 1024,
+    env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' },
+  });
   if(run.status!==0)throw new Error('COLUMN_NATIVE_READER_UNAVAILABLE');
   const parsed=JSON.parse(run.stdout),parts=parsed.parts as {text:string;locator:{sheet:string;cell:string;cellState:string;ods?:{rowRepeat:number;columnRepeat:number}}}[];
   const selected=sheet??parts[0]?.locator.sheet;
