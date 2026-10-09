@@ -10,7 +10,7 @@ Status: `exists` = path, method and the shape the Studio reads are published; `p
 | `/api/v1/workspace-capabilities` | GET | exists | — |
 | `/api/v1/work-queue` | GET | exists | No stage, readiness or next action: the Studio derives the next action from `kind`, `state`, `jobStatus`. `state`, `areaId`, `dataKind` are null for cases; `status` accepts only `all`, `processing`, `recorded` |
 | `/api/v1/work-board` | GET | missing | Draft `WorkBoard` (READY-01). Batches leave Stage and Readiness empty |
-| `/api/v1/buildings/{buildingId}/ledger` | GET | partial | Path published as `building-ledger/1` (parcel ULPIN object, spaces, sources, history, `assessment`, `missing`). The Studio reads the draft `BuildingLedger` (rights, shares, readiness, checks, revisions). The two share no fields; the Studio ignores the published shape until it is mapped |
+| `/api/v1/buildings/{buildingId}/ledger` | GET | partial | Published as `building-ledger/1`; **live**, mapped to the screens' `BuildingLedger` by `apps/studio/src/api/ledger.ts`. The published shape has the parcel ULPIN, spaces, sources, history, `assessment` and `missing`. Rights, shares, readiness, checks, deviation, address, declaration, ground elevation, and the actor and hash of each revision are absent: the screens show them as Unknown or Not assessed |
 | `/api/v1/buildings/{buildingId}/residents` | GET | missing | Draft `BuildingResidents` (REGISTER-02) |
 | `/api/v1/buildings/{buildingId}/levels/{levelId}/review` | GET | missing | Draft `LevelReview` (EXTRACT-02) |
 | `/api/v1/import-batches/{batchId}` | GET | missing | Draft `ImportBatch` (INGEST-03) |
@@ -39,15 +39,17 @@ Status: `exists` = path, method and the shape the Studio reads are published; `p
 | `/api/v1/buildings/{buildingId}/register` | GET | exists | 404 `NOT_FOUND` for a building that is only a proposal (all 64 in the demo database). Error bodies are `{ error: { code, message, requestId } }`, not a top-level `message` |
 | `/api/v1/sources/{sourceId}/file` | GET | exists | The file name is in `filename*=UTF-8''…` form |
 | `/api/v1/resolve` | GET | exists | Called by the building search; not in the route table |
-| `/api/v1/areas/{areaId}/canonical` | GET | pending-merge | On branch `k1`: the canonical area scene. Not wired in this task |
-| `/api/v1/buildings/{buildingId}/canonical` | GET | pending-merge | On branch `k1`: the canonical building record. Not wired in this task |
+| `/api/v1/areas/{areaId}/canonical` | GET | exists | **Live**: the map draws its footprints from this record through `toSceneInputs()`. Every building of the demo Bronx area is `recordState: candidate`; the Gurugram area has `buildings: []` and its two road base features have no polygons (`value: null`, state `unknown`) and no line geometry |
+| `/api/v1/buildings/{buildingId}/canonical` | GET | exists | **Live**: the inspector shows its `recordState` and `gaps`; the scene adds its storeys and levels when it has them |
 
 ## Backend requests
 
 One line per route or field the Studio needs and the screen that needs it.
 
 - `GET /work-board` (READY-01): Batches, for Stage, Readiness and count cards.
-- `GET /buildings/{id}/ledger` in the draft shape, or a mapping to `building-ledger/1` (READY-01, RIGHTS-01, HISTORY-02): Map inspector, Register, Review. The published shape has no rights, shares, readiness or checks.
+- `building-ledger/1` fields the screens read and the published shape lacks (READY-01, RIGHTS-01, HISTORY-02): address, declaration, ground elevation, per-space rights, areas and shares, readiness, checks, deviation, and the actor and hash of each revision. Map inspector, Register, Review.
+- Evidence locators in `building-ledger/1` are `feature:<id>` text; the evidence viewer needs a `jsonPointer` or `row` to open the exact feature.
+- Line geometry in the canonical area record for roads that have no polygon (the scene has no line primitive either): Map of the Gurugram area.
 - `GET /buildings/{id}/residents` (REGISTER-02): Register, Residents tab.
 - `GET /buildings/{id}/levels/{levelId}/review` (EXTRACT-02): Review.
 - `GET /sources/{id}/pages` without `sha256` and `revision`, or those values carried on evidence references: Evidence viewer for plans and deeds.
@@ -55,5 +57,4 @@ One line per route or field the Studio needs and the screen that needs it.
 - Line geometry drawn, or a `roads` polygon, for road proposals: Map of the Gurugram area (the 2 road lines are not drawn).
 - `GET /import-batches/{id}` (INGEST-03), `POST /buildings/{id}/imports/inspect`, `POST /buildings/{id}/imports`, `GET /building-imports/{id}` (INGEST-04): Add files for building documents.
 - `GET /public/*`, `POST /public/requests`, `POST /public/requests/track`, `GET` and `PATCH /register-requests` (PUBLIC-01, REQUEST-01): the public portal and the Registry requests screen.
-- Error bodies read through `ApiError`: `@ulpin/api-client` should read `body.error.message` as well as `body.message` (the Studio normalises it in `apps/studio/src/api/queries.ts` until then).
 - A committed, recorded building in the demo database: no register exists to check S12 and S5 levels against the live API.

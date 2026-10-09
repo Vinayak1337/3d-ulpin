@@ -62,7 +62,8 @@ export interface BuildingLedger {
     volume: { geometry: { type: 'Polygon'; coordinates: number[][][] }; lowerM: number; upperM: number } | null;
     note: string;
   } | null;
-  revisions: Array<{ kind: 'recorded' | 'evidence' | 'draft'; title: string; actor: string; at: string; hash: string; previousHash: string | null }>;
+  /** `actor` and `hash` are null where the record does not carry them (the published ledger history). */
+  revisions: Array<{ kind: 'recorded' | 'evidence' | 'draft'; title: string; actor: string | null; at: string; hash: string | null; previousHash: string | null }>;
   sources: Array<{ sourceId: string; kind: 'feature' | 'table' | 'document'; name: string; file: string; summary: string }>;
 }
 

@@ -16,8 +16,9 @@ import { EvidenceProvider, useOpenEvidence } from '../evidence/EvidenceContext';
 import { parseLocator } from '../evidence/refs';
 import { CardDialog } from '../identity/CardDialog';
 import { levelSummary } from '../map/inspector/BuildingInspector';
-import { ledgerSpace, ledgerStatus } from '../map/ledger';
+import { ledgerSpace, ledgerStatus, revisionChain, revisionKey } from '../map/ledger';
 import { polygonsOf } from '../map/footprints';
+import { useCanonicalFootprints } from '../map/canonicalScene';
 import { useBuildingScene } from '../map/useBuildingScene';
 import { CheckGroups } from '../review/CheckGroups';
 import { useBuildingActions, useBuildingWorkflow, useClearAction, useRecordAction } from '../workflow/useWorkflow';
@@ -81,7 +82,8 @@ function Register({ register }: { register: BuildingRegister }) {
   // Streamed areas carry their map layers as display features.
   const features = context?.displayFeatures ?? context?.features ?? NO_FEATURES;
   const feature = features.find((f) => f.id === property.id) ?? null;
-  const { base, footprints, detail, groundM } = useBuildingScene(features, feature, model, ledger, levelId ? 'rights' : 'none');
+  const drawn = useCanonicalFootprints(register.area.id, property.id, features).footprints;
+  const { base, footprints, detail, groundM } = useBuildingScene(features, feature, model, ledger, levelId ? 'rights' : 'none', drawn);
   const level = model.levels.find((l) => l.id === levelId) ?? null;
   const record = recordId ? model.spaceById.get(recordId) ?? null : null;
   const recordWorkflow = record ? byId.get(record.id) : undefined;
@@ -430,12 +432,12 @@ function History({ register, ledger, workflow, actions }: {
     ...actions.map((a) => ({ id: a.hash, title: a.title, kind: a.kind === 'finding' ? 'evidence' as const : 'draft' as const, at: a.at, by: a.by, hash: a.hash, previousHash: a.previousHash })),
     ...workflow.flatMap((w) => w.events.map((e) => ({ id: `${w.spaceId}-${e.hash}`, title: `${w.spaceName}: ${e.title}`, kind: e.kind, at: e.at, by: e.by, hash: e.hash, previousHash: e.previousHash }))),
   ];
-  const recorded = ledger?.revisions.map((r) => ({ id: r.hash, title: r.title, kind: r.kind, at: r.at, by: r.actor, hash: r.hash, previousHash: r.previousHash }))
+  const recorded = ledger?.revisions.map((r) => ({ id: revisionKey(r), title: r.title, kind: r.kind, at: r.at, by: r.actor ?? 'Unknown', hash: r.hash, previousHash: r.previousHash }))
     ?? register.sources.slice(0, 1).map((s) => ({ id: s.id, title: `r${register.property.revision} Imported from ${s.name}`, kind: 'draft' as const, at: s.createdAt, by: 'Import', hash: s.sha256, previousHash: null }));
   const revisions = [...own, ...recorded].sort((a, b) => b.at.localeCompare(a.at)).map((r) => ({
-    id: r.id, title: r.title, kind: r.kind, byline: `${r.by} · ${formatDateTime(r.at)}`, hash: shortHash(r.hash), previousHash: r.previousHash ? shortHash(r.previousHash) : null,
+    id: r.id, title: r.title, kind: r.kind, byline: `${r.by} · ${formatDateTime(r.at)}`, hash: r.hash ? shortHash(r.hash) : null, previousHash: r.previousHash ? shortHash(r.previousHash) : null,
   }));
-  return <RevisionTimeline revisions={revisions} chain={ledger ? 'consistent' : 'unknown'} />;
+  return <RevisionTimeline revisions={revisions} chain={ledger ? revisionChain(ledger.revisions) : 'unknown'} />;
 }
 
 function DeviationPanel({ ledger, buildingId, created }: {

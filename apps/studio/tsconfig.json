@@ -6,6 +6,9 @@
   ],
   "compilerOptions": {
     "paths": {
+      "@ulpin/contracts": [
+        "./src/types/contracts-canonical.d.ts"
+      ],
       "@ulpin/contracts/usp": [
         "./src/types/contracts-usp.d.ts"
       ]
