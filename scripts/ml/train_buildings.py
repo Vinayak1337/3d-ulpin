@@ -81,6 +81,8 @@ class RampTrain(Dataset):
         if hashlib.sha256(np.asarray(image).tobytes()).hexdigest() != item['rgb_pixel_sha256']:
             raise ValueError('TRAIN source pixels drift')
         w, h = image.size
+        if w > 512 or h > 512:
+            raise ValueError('TRAIN chip exceeds production single-tile size; explicit tile export required')
         rgb = torch.from_numpy(np.asarray(image.resize((432,432), Image.Resampling.BILINEAR)).copy()).permute(2,0,1).float() / 255
         boxes, masks = [], []
         for a in self.annotations[item['id']]:
@@ -132,6 +134,16 @@ class DevEpochs(TrainerCallback):
         self.duration = duration_minutes * 60
         self.best_f1, self.bad_epochs = -1., 0
         self.results = []
+        if train_args.get('resume'):
+            # Preserve high-water mark/patience across resumable segments. Read
+            # only original DEV decisions, never another split's results.
+            previous = Path(train_args['resume']).parent / 'dev-selection.jsonl'
+            if not previous.is_file():
+                raise ValueError('Resume requires the original DEV selection journal')
+            records = [json.loads(x) for x in previous.read_text().splitlines()]
+            if records:
+                self.best_f1 = max(x['dev_f1'] for x in records)
+                self.bad_epochs = records[-1]['bad_epochs']
         self.trainer = None
 
     def on_pre_optimizer_step(self, args, state, control, model=None, **kwargs):
