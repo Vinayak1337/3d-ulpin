@@ -16,10 +16,12 @@ import json
 import math
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 from types import SimpleNamespace
 import unittest
+import uuid
 
 REPO = Path(__file__).resolve().parents[4]
 parser = argparse.ArgumentParser(description=__doc__)
@@ -28,6 +30,82 @@ parser.add_argument("--assignment", type=Path, required=True)
 options, unittest_args = parser.parse_known_args()
 ROOT = options.receipt_root.resolve()
 TASK = json.loads(options.assignment.read_bytes())
+
+# This selected filesystem control needs no copied code/train fixture or
+# execution-shaped assignment. The five prior controls retain their setup.
+if unittest_args == ["PrefixControls.test_stage_prefix_paths"]:
+    sys.path[:0] = [str(REPO / "services/geo")]
+    path_native_attempts = []
+    path_original_import = builtins.__import__
+
+    def path_no_native(name, *args, **kwargs):
+        if name.split(".")[0] in {"torch", "transformers", "peft", "accelerate", "safetensors", "numpy", "psutil"}:
+            path_native_attempts.append(name)
+            raise AssertionError("native import refused in path control: " + name)
+        return path_original_import(name, *args, **kwargs)
+
+    builtins.__import__ = path_no_native
+    from geo.usp_learning.association import fragment_rank_phase_adapter as path_phase
+
+    class PrefixControls(unittest.TestCase):
+        def test_stage_prefix_paths(self):
+            self.assertEqual(os.name, "nt", "This filesystem control qualifies Windows only")
+            prefix = path_phase.BALANCED_AUTHORITY.STAGE_PREFIX
+            self.assertEqual(prefix, "adapter-rank-b-")
+            self.assertEqual(path_phase._configuration(path_phase.balanced_metadata_assignment())["prefix"], prefix)
+            self.assertEqual(path_phase.STAGE_PREFIX, "adapter-fragment-rank-phase-")
+            analysis_raw = Path(TASK["pathAnalysis"]["path"]).read_bytes()
+            self.assertEqual(path_phase.sha(analysis_raw), TASK["pathAnalysis"]["physicalSha256"])
+            analysis = path_phase.strict_json(analysis_raw)
+            map_pin = analysis["inputMetadata"]
+            raw = Path(map_pin["path"]).read_bytes()
+            self.assertEqual(len(raw), map_pin["bytes"])
+            self.assertEqual(path_phase.sha(raw), map_pin["physicalSha256"])
+            mapping = path_phase.strict_json(raw)
+            self.assertEqual(len(mapping), 19689)
+            self.assertEqual(path_phase.sha(path_phase.checkpoint.canonical(mapping)), map_pin["physicalSha256"])
+            parent = path_phase.rank.PUBLICATION_ROOT.parent
+            units = lambda path: len(str(path).encode("utf-16-le")) // 2
+            predicted = parent / (prefix + "fit-" + "0" * 32)
+            destinations = [predicted / name for name in mapping]
+            maximum_file = max(units(p) for p in destinations)
+            maximum_directory = max(units(p.parent) for p in destinations)
+            self.assertEqual((maximum_file, maximum_directory), (239, 191))
+            self.assertTrue(all(units(p) <= 259 for p in destinations))
+            relative = analysis["results"]["adapter-fragment-rank-balanced-phase-"]["longestFile"]
+            old_root = parent / ("adapter-fragment-rank-balanced-phase-fit-" + "0" * 32)
+            self.assertEqual(units(old_root / relative), 261)
+
+            fixture = parent / (prefix + "fit-" + uuid.uuid4().hex)
+            self.assertIsNotNone(re.fullmatch(re.escape(prefix) + r"fit-[a-f0-9]{32}", fixture.name))
+            fixture.mkdir(exist_ok=False)
+            path_phase.checkpoint.checked_path(fixture)
+            destination = fixture / relative
+            destination.parent.mkdir(parents=True, exist_ok=False)
+            marker = b"STUDENT-46 synthetic path-only control.\n"
+            with destination.open("xb") as stream:
+                stream.write(marker); stream.flush(); os.fsync(stream.fileno())
+            self.assertEqual(destination.read_bytes(), marker)
+            self.assertEqual(units(destination), maximum_file)
+            with self.assertRaises(FileExistsError):
+                with destination.open("xb"):
+                    self.fail("exclusive create replaced a retained file")
+            self.assertEqual(destination.read_bytes(), marker)
+            self.assertFalse((fixture / "profile.json").exists())
+            self.assertFalse((fixture / "stage.json").exists())
+            self.assertEqual(path_native_attempts, [])
+            value = {"fixtureRoot": str(fixture), "fixtureQualification": "Path-only synthetic marker; no model/runtime/code/input copy, profile or stage.",
+                "relativePath": relative, "actualPath": str(destination), "bytes": destination.stat().st_size,
+                "physicalSha256": path_phase.sha(destination.read_bytes()), "actualUtf16Units": units(destination),
+                "predictedMap": map_pin, "plannedFiles": len(mapping), "maxFileUtf16Units": maximum_file,
+                "maxDirectoryUtf16Units": maximum_directory, "prefix": prefix, "legacyPrefix": path_phase.STAGE_PREFIX,
+                "exclusiveWriteReadback": True, "collisionRefused": True, "oldLengthProbePerformed": False,
+                "nativeImports": path_native_attempts, "oldControlsRun": False, "stagePerformed": False}
+            with (ROOT / "path-controls.json").open("xb") as stream:
+                stream.write((json.dumps(value, sort_keys=True, indent=2) + "\n").encode()); stream.flush(); os.fsync(stream.fileno())
+
+    unittest.main(argv=[sys.argv[0], *unittest_args], verbosity=2)
+
 FIXTURE = ROOT / "cpu-fixture"
 FIXTURE.mkdir(exist_ok=False)
 CODE, INPUTS = FIXTURE / "code", FIXTURE / "inputs"
