@@ -1,0 +1,304 @@
+{
+  "schema": "building-onnx-parity/1",
+  "status": "failed",
+  "checkpoint": "E:\\BhuAayam-data\\ml\\runs\\b3-ka-smoke-bf16-20261010\\segment-final",
+  "checkpoint_sha256": "7f82fd7f27c878f517cb0d199aff485fd130e05a21638d1aaaf4d650dd90b1da",
+  "onnx_path": "E:\\BhuAayam-data\\ml\\runs\\b3-smoke-parity-noopt-20261010\\building.onnx",
+  "onnx_sha256": "2908e9dd4d11cc964210364b01f4f9a788a345f00bc48047511247679b92bb31",
+  "parity_graph": "E:\\BhuAayam-data\\ml\\runs\\b3-smoke-parity-noopt-20261010\\building-parity-boxes.onnx",
+  "parity_graph_sha256": "1f6992679d712364e9e436b93418591534b753374384ba07a2ee35406eb387ab",
+  "box_comparison": "Same graph with a third debug output; production graph removes only that output, retains identical learned parameters. Production logits/masks also compared on all 20 chips.",
+  "split": "dev",
+  "dev_annotations_sha256": "07c332c0e356164974c04ce6f463ed3be1e4a56727a73656343daf94c3a665e7",
+  "chips": 20,
+  "profile": "RGB432/Pillow bilinear/ImageNet float32; production tile512 stride384",
+  "max_abs_difference": {
+    "logits": 0.3644886016845703,
+    "masks": 38.735206604003906,
+    "boxes": 0.18756794929504395,
+    "production_vs_parity_logits": 0.0,
+    "production_vs_parity_masks": 0.0
+  },
+  "tolerance": {
+    "logits": 0.001,
+    "masks": 0.001,
+    "boxes": 0.0001
+  },
+  "per_chip": [
+    {
+      "chip_id": "00b7c967-d761-43df-a996-aaba86e15107",
+      "publisher_features": 0,
+      "empty": true,
+      "max_abs_difference": {
+        "logits": 8.106231689453125e-06,
+        "masks": 0.0011186599731445312,
+        "boxes": 1.615285873413086e-05,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 1
+    },
+    {
+      "chip_id": "0281d015-04c2-49aa-ac16-8274fab5455c",
+      "publisher_features": 0,
+      "empty": true,
+      "max_abs_difference": {
+        "logits": 0.00013208389282226562,
+        "masks": 0.009212493896484375,
+        "boxes": 0.0008755326271057129,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 2
+    },
+    {
+      "chip_id": "02ca878a-bf78-48f6-862e-467480c25177",
+      "publisher_features": 0,
+      "empty": true,
+      "max_abs_difference": {
+        "logits": 0.3644886016845703,
+        "masks": 38.735206604003906,
+        "boxes": 0.18756794929504395,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 2240
+    },
+    {
+      "chip_id": "04e6a59b-3872-4ddd-9959-2f6860a29292",
+      "publisher_features": 0,
+      "empty": true,
+      "max_abs_difference": {
+        "logits": 0.0007243156433105469,
+        "masks": 0.024547576904296875,
+        "boxes": 7.700920104980469e-05,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 4
+    },
+    {
+      "chip_id": "012fa79e-9b01-4494-8622-5a86648cb421",
+      "publisher_features": 30,
+      "empty": false,
+      "max_abs_difference": {
+        "logits": 0.00043392181396484375,
+        "masks": 0.1684112548828125,
+        "boxes": 7.604062557220459e-05,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 1
+    },
+    {
+      "chip_id": "019ada3b-b97b-4d80-9a4d-286377140c19",
+      "publisher_features": 17,
+      "empty": false,
+      "max_abs_difference": {
+        "logits": 0.0037431716918945312,
+        "masks": 0.40656280517578125,
+        "boxes": 0.00045190751552581787,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 2
+    },
+    {
+      "chip_id": "02225658-43a7-426f-841b-b6758d127353",
+      "publisher_features": 18,
+      "empty": false,
+      "max_abs_difference": {
+        "logits": 0.00012969970703125,
+        "masks": 0.09452056884765625,
+        "boxes": 0.00011616945266723633,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 2
+    },
+    {
+      "chip_id": "03a87c3f-0fe4-47b4-9fff-125aec4ec78b",
+      "publisher_features": 36,
+      "empty": false,
+      "max_abs_difference": {
+        "logits": 0.0009970664978027344,
+        "masks": 0.13574600219726562,
+        "boxes": 0.00028620660305023193,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 3
+    },
+    {
+      "chip_id": "0020b409-a333-4eb4-89c8-531b8110312a",
+      "publisher_features": 11,
+      "empty": false,
+      "max_abs_difference": {
+        "logits": 0.00010251998901367188,
+        "masks": 0.011768341064453125,
+        "boxes": 2.6166439056396484e-05,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 1
+    },
+    {
+      "chip_id": "00304e47-f747-4013-bea7-8080a682d8d2",
+      "publisher_features": 10,
+      "empty": false,
+      "max_abs_difference": {
+        "logits": 0.00012922286987304688,
+        "masks": 0.0355682373046875,
+        "boxes": 3.314018249511719e-05,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 0
+    },
+    {
+      "chip_id": "00b74c18-52e2-4e15-9abf-1e9c2bd070dc",
+      "publisher_features": 9,
+      "empty": false,
+      "max_abs_difference": {
+        "logits": 0.00011730194091796875,
+        "masks": 0.024688720703125,
+        "boxes": 1.9103288650512695e-05,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 2
+    },
+    {
+      "chip_id": "01e015ef-f552-40b1-bb51-6f4e8b3be571",
+      "publisher_features": 6,
+      "empty": false,
+      "max_abs_difference": {
+        "logits": 0.00017023086547851562,
+        "masks": 0.108551025390625,
+        "boxes": 9.950995445251465e-05,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 0
+    },
+    {
+      "chip_id": "0254e446-1ded-451e-b601-b319b638990d",
+      "publisher_features": 9,
+      "empty": false,
+      "max_abs_difference": {
+        "logits": 0.0007724761962890625,
+        "masks": 0.2138195037841797,
+        "boxes": 0.00031259655952453613,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 1
+    },
+    {
+      "chip_id": "02b0adf1-73d6-45ef-b959-2348248bfd73",
+      "publisher_features": 12,
+      "empty": false,
+      "max_abs_difference": {
+        "logits": 9.655952453613281e-05,
+        "masks": 0.0678863525390625,
+        "boxes": 3.985315561294556e-05,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 0
+    },
+    {
+      "chip_id": "02d2fd01-cd34-43f1-9af6-d8a47d7424bc",
+      "publisher_features": 7,
+      "empty": false,
+      "max_abs_difference": {
+        "logits": 0.0002079010009765625,
+        "masks": 0.02740478515625,
+        "boxes": 4.377216100692749e-05,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 1
+    },
+    {
+      "chip_id": "031b3891-3ecf-4cba-9efa-2a189de1838b",
+      "publisher_features": 11,
+      "empty": false,
+      "max_abs_difference": {
+        "logits": 0.00010156631469726562,
+        "masks": 0.04022979736328125,
+        "boxes": 0.00022125244140625,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 2
+    },
+    {
+      "chip_id": "03ce002d-f36c-4e62-b64e-037fc5d68bf0",
+      "publisher_features": 12,
+      "empty": false,
+      "max_abs_difference": {
+        "logits": 0.0013217926025390625,
+        "masks": 0.0309600830078125,
+        "boxes": 0.00010533630847930908,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 2
+    },
+    {
+      "chip_id": "03d8cdaf-9b9b-4caf-95d3-0f264e2101fa",
+      "publisher_features": 17,
+      "empty": false,
+      "max_abs_difference": {
+        "logits": 0.0001888275146484375,
+        "masks": 0.02291107177734375,
+        "boxes": 5.295872688293457e-05,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 0
+    },
+    {
+      "chip_id": "03dab7c5-d53b-42fa-9a4a-2be706634905",
+      "publisher_features": 35,
+      "empty": false,
+      "max_abs_difference": {
+        "logits": 0.0007772445678710938,
+        "masks": 0.16278076171875,
+        "boxes": 0.0001741647720336914,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 0
+    },
+    {
+      "chip_id": "044dc0c6-2729-4a9f-a71f-a2375163b38e",
+      "publisher_features": 7,
+      "empty": false,
+      "max_abs_difference": {
+        "logits": 0.00020885467529296875,
+        "masks": 0.11170387268066406,
+        "boxes": 0.0010333210229873657,
+        "production_vs_parity_logits": 0.0,
+        "production_vs_parity_masks": 0.0
+      },
+      "mask_sign_disagreement_pixels": 4
+    }
+  ],
+  "seconds": 30.07799999997951,
+  "providers": [
+    "CPUExecutionProvider"
+  ],
+  "opset": 17,
+  "static_input_shape": [
+    1,
+    3,
+    432,
+    432
+  ],
+  "ort_optimization": "ORT_DISABLE_ALL",
+  "export_repair": "Instance-local fixed-grid PE matches eager 432 path; original interpolation restored before all PyTorch parity references",
+  "holdout_calls": 0,
+  "git_sha": "85a71a2a312a41a878659422d6f86e3039db44b9"
+}
