@@ -1,8 +1,7 @@
 /**
- * Type surface the Studio uses from @ulpin/contracts (backend-owned source, compiled with looser settings than
- * the Studio's). The records are the published OpenAPI responses; at runtime Vite resolves `toSceneInputs` from
- * packages/contracts/src/canonical/building-scene.ts (see the alias in vite.config.ts). Keep the scene types in
- * sync with that file.
+ * Type surface the Studio uses from @ulpin/contracts/canonical-scene (backend-owned source, compiled with looser
+ * settings than the Studio's). The records are the published OpenAPI responses; at runtime Vite resolves the
+ * package export to packages/contracts/src/canonical/building-scene.ts. Keep the scene types in sync with it.
  */
 import type { GetResponse } from '@ulpin/api-client';
 import type { BaseFeatureInput, BuildingDetailInput, FootprintInput, OverlayInput } from '@ulpin/scene';

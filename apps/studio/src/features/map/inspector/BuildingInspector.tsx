@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { CircleDashed, FilePlus, Stack, Trash, WarningOctagon } from '@phosphor-icons/react';
-import type { NormalizedBuilding } from '@ulpin/contracts';
+import type { NormalizedBuilding } from '@ulpin/contracts/canonical-scene';
 import type { BuildingLedger } from '@ulpin/api-client/draft';
 import {
   Badge, Button, DescriptionList, EvidenceChip, Icon, ReadinessMeter, RevisionTimeline, Skeleton, StatusBadge, Tabs, formatCount, formatDate,
