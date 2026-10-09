@@ -1,12 +1,47 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync, chmodSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, chmodSync, realpathSync, statSync } from 'node:fs';
 import { randomBytes } from 'node:crypto';
 import { createServer } from 'node:net';
-import { join } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { command, dockerRuntime } from './runtime.mjs';
 
 export const demoDir = 'E:/BhuAayam-data/runtime/ulpin-demo';
 export const demoProject = 'ulpin-demo';
 export const demoFile = join(demoDir, 'demo.env');
+export const demoOcrFile = join(demoDir, 'ocr-paths.json');
+const ocrNames = ['PYTHON', 'MODELS', 'TESSERACT', 'TESSDATA', 'SCRATCH'];
+
+/** Optional non-secret paths only. Never derive or replace credentials. */
+export function readDemoOcrPaths() {
+  if (!existsSync(demoOcrFile)) return {};
+  const paths = JSON.parse(readFileSync(demoOcrFile, 'utf8'));
+  const expected = ocrNames.map(name => `ULPIN_DOCUMENT_OCR_${name}`);
+  if (Object.keys(paths).length !== expected.length || Object.keys(paths).some(key => !expected.includes(key))) {
+    throw new Error('OCR path configuration has unexpected keys.');
+  }
+  for (const key of expected) {
+    const path = paths[key];
+    if (typeof path !== 'string' || !/^[A-Za-z]:[\\/]/.test(path) || !existsSync(path)) {
+      throw new Error(`OCR path unavailable: ${key}.`);
+    }
+    const isFile = key.endsWith('_PYTHON') || key.endsWith('_TESSERACT');
+    if (statSync(path).isFile() !== isFile) throw new Error(`OCR path has the wrong kind: ${key}.`);
+  }
+  const scratch = realpathSync(paths.ULPIN_DOCUMENT_OCR_SCRATCH);
+  const runtime = realpathSync(demoDir);
+  const repository = realpathSync(resolve(dirname(fileURLToPath(import.meta.url)), '../..'));
+  const runtimeRelative = relative(runtime, scratch);
+  const repoRelative = relative(repository, scratch);
+  if (!runtimeRelative || runtimeRelative.startsWith('..') || isAbsolute(runtimeRelative)
+    || (!repoRelative.startsWith('..') && !isAbsolute(repoRelative))) {
+    throw new Error('OCR scratch must be a new directory inside demo runtime and outside the repository.');
+  }
+  for (const path of [join(paths.ULPIN_DOCUMENT_OCR_TESSDATA, 'eng.traineddata'),
+    join(paths.ULPIN_DOCUMENT_OCR_MODELS, 'docling-project--docling-layout-heron', 'model.safetensors')]) {
+    if (!existsSync(path) || !statSync(path).isFile()) throw new Error('Pinned OCR assets are unavailable.');
+  }
+  return paths;
+}
 const expectedPorts = { POSTGRES_PORT: '15434', S3_PORT: '19020', S3_CONSOLE_PORT: '19021', REDIS_PORT: '16381', GEO_PORT: '18002', API_PORT: '3194' };
 export function readDemo() {
   if (!existsSync(demoFile)) throw new Error('Demo configuration missing; use --profile demo --create after inventory reconciliation.');
@@ -24,7 +59,7 @@ export function readDemo() {
   if (env.DATABASE_URL !== `postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@127.0.0.1:${env.POSTGRES_PORT}/${env.POSTGRES_DB}`
     || env.S3_ENDPOINT !== `http://127.0.0.1:${env.S3_PORT}` || env.GEO_URL !== `http://127.0.0.1:${env.GEO_PORT}`
     || env.REDIS_URL !== `redis://127.0.0.1:${env.REDIS_PORT}/0`) throw new Error('Demo endpoint binding mismatch.');
-  return env;
+  return { ...env, ...readDemoOcrPaths() };
 }
 export async function freePort(port) {
   await new Promise((ok, fail) => {
