@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { toSceneInputs, type NormalizedArea, type NormalizedBuilding } from '@ulpin/contracts';
+import { toSceneInputs, type NormalizedArea, type NormalizedBuilding } from '@ulpin/contracts/canonical-scene';
 import type { FootprintInput } from '@ulpin/scene';
 import { isDemoId } from '../../api/demo-import';
 import { useAreaCanonical, useBuildingCanonical, type AreaFeature } from '../../api/queries';

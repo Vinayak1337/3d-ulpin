@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { NormalizedArea } from '@ulpin/contracts';
+import type { NormalizedArea } from '@ulpin/contracts/canonical-scene';
 import { canonicalFootprints } from './canonicalScene';
 
 const ring = [[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]];

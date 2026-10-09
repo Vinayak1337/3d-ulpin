@@ -6,8 +6,8 @@
   ],
   "compilerOptions": {
     "paths": {
-      "@ulpin/contracts": [
-        "./src/types/contracts-canonical.d.ts"
+      "@ulpin/contracts/canonical-scene": [
+        "./src/types/contracts-canonical-scene.d.ts"
       ],
       "@ulpin/contracts/usp": [
         "./src/types/contracts-usp.d.ts"

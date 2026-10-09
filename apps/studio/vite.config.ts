@@ -9,13 +9,6 @@ const API_TARGET = process.env.ULPIN_API_TARGET ?? 'http://127.0.0.1:3188';
 const API_PROXY = { '/api': { target: API_TARGET, changeOrigin: true, headers: { origin: API_TARGET } } };
 
 export default defineConfig({
-  // The Studio needs only the canonical scene adapter, not the zod schemas of the whole contracts package.
-  resolve: {
-    alias: [{
-      find: new RegExp('^@ulpin/contracts$'),
-      replacement: resolve(__dirname, '../../packages/contracts/src/canonical/building-scene.ts'),
-    }],
-  },
   plugins: [
     studioDemoImport(),
     react(),
