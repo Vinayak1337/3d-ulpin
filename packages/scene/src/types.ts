@@ -37,6 +37,8 @@ export interface FootprintInput {
   storeys?: StoreyInput[];
   /** Thematic colour (Colour by height and similar), replacing the facade tint. */
   color?: string;
+  /** An unreviewed proposal: drawn as a ghosted outline, never with the solid facade of a reviewed record. */
+  candidate?: boolean;
 }
 
 /** Flat base-map features and underground envelopes, drawn under the massing. */

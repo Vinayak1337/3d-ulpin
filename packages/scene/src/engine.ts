@@ -7,7 +7,7 @@ import {
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TilesRenderer } from '3d-tiles-renderer';
 import { presetFor } from './camera';
-import { FLAT_THICKNESS_M, hasKnownHeight, prismGeometry, shapesFor } from './geometry';
+import { FLAT_THICKNESS_M, buildingLook, hasKnownHeight, prismGeometry, shapesFor, type BuildingLook } from './geometry';
 import { enhanceFacade, enhanceSurface, facadeStyle, labelPoint, laneDashes, lookUniforms, padGeometry, paintGeometry, skyTexture, treeMeshes, type SceneLook } from './look';
 import type {
   BaseFeatureInput, Bounds2D, BuildingDetailInput, FindingInput, FootprintInput, Measurement, MultiPolygon, Pick, SceneMode,
@@ -41,6 +41,8 @@ interface Entry {
   grow?: number;
   /** Drawn with a thematic colour (Colour by). */
   themed?: boolean;
+  /** Buildings only: ghost for a candidate, hatch for an unknown or estimated height. */
+  look?: BuildingLook;
 }
 
 const CAMERA_MS = 600;
@@ -660,17 +662,20 @@ export class SceneEngine {
 
   private addFootprintBuilding(input: FootprintInput, grow?: number) {
     const known = hasKnownHeight(input);
+    const look = buildingLook(input);
     const geometry = prismGeometry(input.polygons, input.baseM ?? 0, known ? input.heightM! : FLAT_THICKNESS_M);
-    if (!known) applyPlanarUV(geometry);
+    if (look === 'hatch') applyPlanarUV(geometry);
     const themed = Boolean(input.color) && known;
     const style = facadeStyle(input.id, known ? input.heightM : null);
     paintGeometry(geometry, themed ? new Color(input.color) : style.color, style.seed);
-    const mesh = new Mesh(geometry, themed ? this.m.themed : known ? this.m.bldg : this.m.unknown);
-    mesh.castShadow = known;
+    const entry: Entry = { kind: 'building', id: input.id, buildingId: input.id, meshes: [], edges: [], known, bounds: geometry.boundingBox!.clone(), grow, themed, look };
+    const mesh = new Mesh(geometry, this.restMaterial(entry));
+    mesh.castShadow = known && look !== 'candidate';
     mesh.receiveShadow = true;
     const edge = new LineSegments(edgeGeometry(geometry, input), this.m.edge);
     edge.raycast = () => {};
-    const entry: Entry = { kind: 'building', id: input.id, buildingId: input.id, meshes: [mesh], edges: [edge], known, bounds: geometry.boundingBox!.clone(), grow, themed };
+    entry.meshes.push(mesh);
+    entry.edges.push(edge);
     mesh.userData.entry = entry;
     this.buildings.add(mesh, edge);
     this.entries.set(input.id, entry);
@@ -822,16 +827,19 @@ export class SceneEngine {
       if (entry.kind === 'building') {
         const selected = entry.id === buildingId;
         if (hides(entry.id)) { this.setEntry(entry, m.occluder, m.occluderEdge, true, false); continue; }
-        let material: Material = entry.themed ? m.themed : entry.known ? m.bldg : m.unknown;
+        let material: Material = this.restMaterial(entry);
         let edge: Material = m.edge;
         if (mode === 'findings') { material = selected ? m.ghost : m.bldgContext; edge = selected ? m.inkEdge : m.edgeContext; }
         else if (mode === 'underground') { material = selected ? m.ghost : m.faint; edge = selected ? m.inkEdge : m.ghostEdge; if (!selected) { this.setEntry(entry, material, edge, false, false); continue; } }
         else if (selected && exploring) { material = m.ghost; edge = m.ghostEdge; }
-        else if (selected) { material = m.selected; edge = m.haloEdge; }
-        else if (selectedSomething) { material = entry.themed ? m.themed : entry.known ? m.bldgContext : m.unknownContext; edge = m.edgeContext; }
+        else if (selected) { material = entry.look === 'candidate' ? m.ghostDark : m.selected; edge = m.haloEdge; }
+        else if (selectedSomething) { material = this.contextMaterial(entry); edge = m.edgeContext; }
         // Hover (area and building views): a lighter facade and a dark outline, never on the selection.
-        if (!selected && entry.known && !entry.themed && entry.id === this.hovered && (mode === 'area' || mode === 'building')) { material = m.hover; edge = m.inkEdge; }
-        this.setEntry(entry, material, edge, true, entry.known && material !== m.ghost && material !== m.faint);
+        if (!selected && entry.id === this.hovered && (mode === 'area' || mode === 'building')) {
+          if (entry.look === 'candidate') edge = m.inkEdge;
+          else if (entry.known && !entry.themed && entry.look !== 'hatch') { material = m.hover; edge = m.inkEdge; }
+        }
+        this.setEntry(entry, material, edge, true, entry.known && entry.look !== 'candidate' && material !== m.ghost && material !== m.faint);
       } else if (entry.kind === 'storey') {
         const selected = entry.buildingId === buildingId;
         if (hides(entry.buildingId)) { this.setEntry(entry, m.occluder, m.occluderEdge, !entry.storey!.belowGround, false); continue; }
@@ -922,6 +930,21 @@ export class SceneEngine {
     point.project(this.camera);
     this.camera.aspect = w / h; this.camera.updateProjectionMatrix();
     return { x: half + ((point.x + 1) / 2) * (w - half), y: ((1 - point.y) / 2) * h, visible: point.z < 1 && Math.abs(point.x) < 1.1 };
+  }
+
+  /** A building's material at rest: thematic colour, candidate ghost, hatch (unknown or estimated height), else solid. */
+  private restMaterial(entry: Entry): Material {
+    if (entry.themed) return this.m.themed;
+    if (entry.look === 'candidate') return this.m.ghostDark;
+    if (entry.look !== 'hatch') return this.m.bldg;
+    return entry.known ? this.m.estimated : this.m.unknown;
+  }
+
+  /** The same, once something else is selected: neighbours fade back. */
+  private contextMaterial(entry: Entry): Material {
+    if (entry.themed) return this.m.themed;
+    if (entry.look === 'candidate') return this.m.ghost;
+    return entry.known ? this.m.bldgContext : this.m.unknownContext;
   }
 
   private setEntry(entry: Entry, material: Material, edge: Material, visible: boolean, shadow: boolean) {
@@ -1206,7 +1229,9 @@ export class SceneEngine {
     const targets: Object3D[] = [];
     const m = this.m;
     for (const entry of this.entries.values()) {
-      for (const mesh of entry.meshes) if (mesh.visible && mesh.material !== m.ghost && mesh.material !== m.faint && mesh.material !== m.ghostDark) targets.push(mesh);
+      // Ghosted levels are see-through to picks; a candidate building is a ghost that must stay selectable.
+      const seeThrough = (mesh: Mesh) => entry.look !== 'candidate' && (mesh.material === m.ghost || mesh.material === m.faint || mesh.material === m.ghostDark);
+      for (const mesh of entry.meshes) if (mesh.visible && !seeThrough(mesh)) targets.push(mesh);
     }
     targets.push(this.ground);
     const hits = this.raycaster.intersectObjects(targets, false);
