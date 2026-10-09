@@ -1,0 +1,184 @@
+{
+  "schemaVersion": "usp-data-pack/1",
+  "packId": "D8",
+  "version": 1,
+  "profile": "messy-india-heldout-20261010",
+  "createdAt": "2026-10-09T19:16:05.872924+00:00",
+  "purpose": "test_only",
+  "styleQualification": "usp-data-pack/1-style acquisition extension, NOT strict application DTO: D8 and column/family fields need downstream contract support outside task.",
+  "teacherPolicy": "Development teacher may read dev profiles only. Never open heldout.json, holdout originals or schema documents; evaluators must not send them to teachers.",
+  "families": [
+    {
+      "id": "mi-h01",
+      "split": "holdout",
+      "publisher": "Gurugram Metropolitan Development Authority",
+      "schemaIdentity": "Licensed_Commercial_Plot",
+      "fileCount": 1,
+      "dictionaryState": "publisher aliases/types; expanded definitions undocumented"
+    },
+    {
+      "id": "mi-h02",
+      "split": "holdout",
+      "publisher": "Gurugram Metropolitan Development Authority",
+      "schemaIdentity": "VILLAGE ABADI",
+      "fileCount": 1,
+      "dictionaryState": "publisher aliases/types; expanded definitions undocumented"
+    }
+  ],
+  "assets": [
+    {
+      "id": "mi-h01-original",
+      "family": "mi-h01",
+      "split": "holdout",
+      "mediaType": "application/json",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10/query?objectIds=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24&outFields=*&returnGeometry=true&outSR=32643&f=json"
+      },
+      "issuer": "Gurugram Metropolitan Development Authority",
+      "acquiredAt": "2026-10-09T19:09:44.958350+00:00",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/mi-h01/original.json",
+        "sha256": "9b5e062a216f44c32fecdf7160844eb58b5e970d866bb45faa3c2750fec13547",
+        "bytes": 39225
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "reason": "Public authority endpoint; reuse/training terms unverified."
+      },
+      "reference": {
+        "horizontalCrs": "EPSG:32643",
+        "horizontalUnit": "metre",
+        "verticalReference": null
+      },
+      "purpose": "test_only",
+      "stage": "acquired",
+      "columns": [
+        {"name": "FID", "publisherMeaning": "FID", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/0", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeOID", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Shape", "publisherMeaning": "Shape", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/1", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeGeometry", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "CaseNo", "publisherMeaning": "CaseNo", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/2", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeString", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Block_Code", "publisherMeaning": "Block_Code", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/3", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeString", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "License_No", "publisherMeaning": "License_No", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/4", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeString", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Sector_Cod", "publisherMeaning": "Sector_Cod", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/5", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeString", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Block_No", "publisherMeaning": "Block_No", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/6", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeString", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Area", "publisherMeaning": "Area", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/7", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeDouble", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Zone_Plan_", "publisherMeaning": "Zone_Plan_", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/8", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeInteger", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Zone_Date_", "publisherMeaning": "Zone_Date_", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/9", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeDate", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Zoning_Pla", "publisherMeaning": "Zoning_Pla", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/10", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeString", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Zoning_Pl1", "publisherMeaning": "Zoning_Pl1", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/11", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeString", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Demarcatio", "publisherMeaning": "Demarcatio", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/12", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeString", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Area_as_pe", "publisherMeaning": "Area_as_pe", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/13", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeDouble", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Dimension_", "publisherMeaning": "Dimension_", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/14", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeString", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Bldg_Plan_", "publisherMeaning": "Bldg_Plan_", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/15", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeInteger", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Bldg_Plan1", "publisherMeaning": "Bldg_Plan1", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/16", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeInteger", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Date_Bld_S", "publisherMeaning": "Date_Bld_S", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/17", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeDate", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Date_Bld_A", "publisherMeaning": "Date_Bld_A", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/18", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeDate", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Date_Part_", "publisherMeaning": "Date_Part_", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/19", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeDate", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Date_Ser_A", "publisherMeaning": "Date_Ser_A", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/20", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeDate", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Ground_Cov", "publisherMeaning": "Ground_Cov", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/21", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeInteger", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Achieved_F", "publisherMeaning": "Achieved_F", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/22", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeInteger", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "No_of_Base", "publisherMeaning": "No_of_Base", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/23", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeInteger", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "No_of_Stor", "publisherMeaning": "No_of_Stor", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/24", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeInteger", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Total_Ht", "publisherMeaning": "Total_Ht", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/25", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeInteger", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Occupation", "publisherMeaning": "Occupation", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/26", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeInteger", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Part_Compl", "publisherMeaning": "Part_Compl", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/27", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeInteger", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Zoning_Pl2", "publisherMeaning": "Zoning_Pl2", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/28", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeString", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Dimensions", "publisherMeaning": "Dimensions", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/29", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeString", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "ID", "publisherMeaning": "ID", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/30", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeInteger", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Plot_ID", "publisherMeaning": "Plot_ID", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/31", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeString", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "PlotKey", "publisherMeaning": "PlotKey", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/32", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeString", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Sector_No", "publisherMeaning": "Sector_No", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/33", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeString", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Dist_Code", "publisherMeaning": "Dist_Code", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson", "documentationLocator": "/fields/34", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeString", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."}
+      ],
+      "sourceTable": {
+        "features": 25,
+        "schemaIdentity": "Licensed_Commercial_Plot"
+      },
+      "dictionary": {
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/mi-h01/publisher-schema.json",
+        "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10?f=pjson",
+        "sha256": "1ee2a41e7993d9d1ee973584aa3073cdbca90d6c782efaa25a1f9c30102265d7",
+        "bytes": 8117,
+        "acquiredAt": "2026-10-09T19:09:03.119796+00:00"
+      },
+      "selection": {
+        "operation": "first 25 IDs from unchanged publisher returnIdsOnly response; exact objectIds query",
+        "idsOriginal": {
+          "externalPath": "E:/BhuAayam-data/datasets/messy-india/mi-h01/publisher-object-ids.json",
+          "sha256": "5bb28e975f285a59fa2b7f5b5c79341129fc82ce5e7630d1f0fed07ad69c2464",
+          "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/10/query?where=1%3D1&returnIdsOnly=true&f=json",
+          "bytes": 471,
+          "acquiredAt": "2026-10-09T19:09:44.746879+00:00",
+          "acquisitionTimeBasis": "filesystem save time; exact request timestamp not separately retained"
+        },
+        "notFullLayer": true
+      },
+      "cases": [
+        {"name": "GIS_attributes", "locator": "/features/*/attributes", "evidence": "Nonempty original source attributes; publisher aliases/types."},
+        {"name": "declared_projected_crs", "locator": "/spatialReference", "evidence": "Explicit source query output EPSG:32643; NOT a missing-prj or wrong-CRS example."}
+      ]
+    },
+    {
+      "id": "mi-h02-original",
+      "family": "mi-h02",
+      "split": "holdout",
+      "mediaType": "application/json",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/3/query?objectIds=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24&outFields=*&returnGeometry=true&outSR=32643&f=json"
+      },
+      "issuer": "Gurugram Metropolitan Development Authority",
+      "acquiredAt": "2026-10-09T19:09:45.344932+00:00",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/mi-h02/original.json",
+        "sha256": "e10e2f21e23cef5c2b674226fe477c691dbbb2df64fe7ddb627bde8cb34e4835",
+        "bytes": 97606
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "reason": "Public authority endpoint; reuse/training terms unverified."
+      },
+      "reference": {
+        "horizontalCrs": "EPSG:32643",
+        "horizontalUnit": "metre",
+        "verticalReference": null
+      },
+      "purpose": "test_only",
+      "stage": "acquired",
+      "columns": [
+        {"name": "FID", "publisherMeaning": "FID", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/3?f=pjson", "documentationLocator": "/fields/0", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeOID", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Shape", "publisherMeaning": "Shape", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/3?f=pjson", "documentationLocator": "/fields/1", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeGeometry", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."},
+        {"name": "Id", "publisherMeaning": "Id", "documentationUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/3?f=pjson", "documentationLocator": "/fields/2", "documentationStrength": "publisher_schema_alias_and_type_only", "sourceType": "esriFieldTypeInteger", "unit": null, "expandedDefinition": "undocumented", "evaluationEligible": true, "qualification": "Alias/type documented; no units/legal meaning inferred."}
+      ],
+      "sourceTable": {
+        "features": 25,
+        "schemaIdentity": "VILLAGE ABADI"
+      },
+      "dictionary": {
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/mi-h02/publisher-schema.json",
+        "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/3?f=pjson",
+        "sha256": "3219cfcd6ef60a86b7f65cb3e94bb1625ce82cc8098704db6c9892470c5b7e47",
+        "bytes": 4028,
+        "acquiredAt": "2026-10-09T19:09:45.171055+00:00"
+      },
+      "selection": {
+        "operation": "first 25 IDs from unchanged publisher returnIdsOnly response; exact objectIds query",
+        "idsOriginal": {
+          "externalPath": "E:/BhuAayam-data/datasets/messy-india/mi-h02/publisher-object-ids.json",
+          "sha256": "ad750108f5f65dc2e22dd036b330d648ce1e44c4d9158589a023c0ef30c153e7",
+          "url": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/3/query?where=1%3D1&returnIdsOnly=true&f=json",
+          "bytes": 475,
+          "acquiredAt": "2026-10-09T19:09:45.084570+00:00",
+          "acquisitionTimeBasis": "filesystem save time; exact request timestamp not separately retained"
+        },
+        "notFullLayer": true
+      },
+      "cases": [
+        {"name": "GIS_attributes", "locator": "/features/*/attributes", "evidence": "Nonempty original source attributes; publisher aliases/types."},
+        {"name": "declared_projected_crs", "locator": "/spatialReference", "evidence": "Explicit source query output EPSG:32643; NOT a missing-prj or wrong-CRS example."}
+      ]
+    }
+  ]
+}

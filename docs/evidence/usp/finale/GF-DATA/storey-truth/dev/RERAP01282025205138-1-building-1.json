@@ -1,0 +1,163 @@
+{
+  "schemaVersion": "rera-storey-source-truth/1",
+  "projectSourceId": "RERAP01282025205138-1",
+  "buildingLiteral": "3D APARTMENT",
+  "canonicalBuildingId": null,
+  "split": "dev",
+  "recordedAt": "2026-10-09T19:20:12.549778+00:00",
+  "purpose": "test_only",
+  "authority": "Bihar RERA registry; issuing municipal/area authority sanction or approved drawing hosted as project attachment",
+  "truthKind": "publisher_registry_literals_with_independent_document_citations",
+  "oracleQualification": "Structured registry fields are independent of extraction PDF. Manual visual PDF quote transcription is source-supported evidence, not teacher truth or an independently reviewed label.",
+  "reference": {
+    "horizontalCrs": null,
+    "verticalReference": "building_relative drawing labels only; global datum unknown"
+  },
+  "permission": {
+    "state": "unconfirmed",
+    "scope": "Owner-approved public local development; no redistribution/training/launch grant."
+  },
+  "sources": [
+    {
+      "role": "independent_registry",
+      "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP01282025205138-1",
+      "retrievedAt": "2026-10-09T19:09:45.878779+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/rera-storeys/RERAP01282025205138-1/registry-system-trust.html",
+      "sha256": "7a1e3f74e142c0d02cb49a0cc2f6c9bdb4de7b434f30e3d8c809dbb57338b773",
+      "bytes": 152112,
+      "transport": "curl Windows system TLS trust; no override"
+    },
+    {
+      "role": "extraction_pdf",
+      "url": "https://rera.bihar.gov.in/All_Document/RERAP01282025205138RERAP01282025205138-1SanctionedbuildingPlan.pdf",
+      "retrievedAt": "2026-10-09T19:06:24.976772+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/rera-storeys/RERAP01282025205138-1/sanctioned-building-plan.pdf",
+      "sha256": "b6f0178b9951b71fe68c9213efa15dedfa5bf7fa78ee0ce30c57515f6975e53d",
+      "bytes": 28181151,
+      "transport": "curl with Windows system TLS trust; no verification override"
+    }
+  ],
+  "registry": {
+    "projectSanctionedBuildingOrWingCount": {
+      "value": "2",
+      "state": "source_supported",
+      "unit": null,
+      "citations": [
+        {
+          "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP01282025205138-1",
+          "retrievedAt": "2026-10-09T19:09:45.878779+00:00",
+          "sha256": "7a1e3f74e142c0d02cb49a0cc2f6c9bdb4de7b434f30e3d8c809dbb57338b773",
+          "locator": "#Label141, Sanctioned No of Building(s) or Wing(s)",
+          "page": null,
+          "quote": "2"
+        }
+      ],
+      "method": "source_literal",
+      "registryAdmission": "not_reviewed"
+    },
+    "floorExpression": {
+      "value": "B+G+6",
+      "state": "source_supported",
+      "unit": null,
+      "citations": [
+        {
+          "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP01282025205138-1",
+          "retrievedAt": "2026-10-09T19:09:45.878779+00:00",
+          "sha256": "7a1e3f74e142c0d02cb49a0cc2f6c9bdb4de7b434f30e3d8c809dbb57338b773",
+          "locator": "#GV_Building tr[2] td[2]",
+          "page": null,
+          "quote": "B+G+6"
+        }
+      ],
+      "method": "source_literal",
+      "registryAdmission": "not_reviewed"
+    },
+    "basementCount": {
+      "value": null,
+      "state": "unknown",
+      "unit": null,
+      "citations": [
+        {
+          "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP01282025205138-1",
+          "retrievedAt": "2026-10-09T19:09:45.878779+00:00",
+          "sha256": "7a1e3f74e142c0d02cb49a0cc2f6c9bdb4de7b434f30e3d8c809dbb57338b773",
+          "locator": "#GV_Building; no separate basement-count field",
+          "page": null,
+          "quote": null
+        }
+      ],
+      "method": "source_literal",
+      "registryAdmission": "not_reviewed"
+    },
+    "unitCount": {
+      "value": "12",
+      "state": "source_supported",
+      "unit": null,
+      "citations": [
+        {
+          "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP01282025205138-1",
+          "retrievedAt": "2026-10-09T19:09:45.878779+00:00",
+          "sha256": "7a1e3f74e142c0d02cb49a0cc2f6c9bdb4de7b434f30e3d8c809dbb57338b773",
+          "locator": "#GV_Building tr[2] td[4]",
+          "page": null,
+          "quote": "12"
+        }
+      ],
+      "method": "source_literal",
+      "registryAdmission": "not_reviewed"
+    },
+    "unitCountsByApartmentType": [
+      {
+        "apartmentTypeLiteral": "3.5 BHK",
+        "countLiteral": "12",
+        "citations": [
+          {
+            "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP01282025205138-1",
+            "retrievedAt": "2026-10-09T19:09:45.878779+00:00",
+            "sha256": "7a1e3f74e142c0d02cb49a0cc2f6c9bdb4de7b434f30e3d8c809dbb57338b773",
+            "locator": "#GV_Building tr[2] td[3..4]",
+            "page": null,
+            "quoteLiterals": [
+              "3.5 BHK",
+              "12"
+            ],
+            "quoteQualification": "Two exact source-cell literals, not a fabricated joined quote."
+          }
+        ]
+      }
+    ]
+  },
+  "documentStatements": [
+    {
+      "kind": "plan_floor_scope",
+      "value": "3RD. TO 6TH. FLOOR PLAN BLOCK-A",
+      "citation": {
+        "url": "https://rera.bihar.gov.in/All_Document/RERAP01282025205138RERAP01282025205138-1SanctionedbuildingPlan.pdf",
+        "retrievedAt": "2026-10-09T19:06:24.976772+00:00",
+        "sha256": "b6f0178b9951b71fe68c9213efa15dedfa5bf7fa78ee0ce30c57515f6975e53d",
+        "locator": "middle-left floor-plan caption",
+        "page": 3,
+        "quote": "3RD. TO 6TH. FLOOR PLAN BLOCK-A"
+      }
+    },
+    {
+      "kind": "basement_scope",
+      "value": "BASEMENT FLOOR COVER",
+      "citation": {
+        "url": "https://rera.bihar.gov.in/All_Document/RERAP01282025205138RERAP01282025205138-1SanctionedbuildingPlan.pdf",
+        "retrievedAt": "2026-10-09T19:06:24.976772+00:00",
+        "sha256": "b6f0178b9951b71fe68c9213efa15dedfa5bf7fa78ee0ce30c57515f6975e53d",
+        "locator": "top-right PARKING AREA CALCULATION BLOCK-B",
+        "page": 1,
+        "quote": "BASEMENT FLOOR COVER"
+      }
+    }
+  ],
+  "limitations": [
+    "Floor labels remain literals: B/S/G are not expanded into numbers or an officer-reviewed schedule.",
+    "Repeated inventory categories are retained separately; no invented total or unit ID.",
+    "Sanction/current-revision/as-built/property-rights correspondence is not qualified.",
+    "No PDF extraction metric, teacher label or registry write executed.",
+    "PDF contains distinct blocks; registry-to-block association is unknown. Do not force a per-block crosswalk."
+  ]
+}
