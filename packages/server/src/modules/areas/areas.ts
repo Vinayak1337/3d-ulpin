@@ -1,4 +1,7 @@
 import { requireQualifiedGeometryRecords } from '../usp/geometry';
+import {
+  commitSourceBuildingsTx, isGeometryFreePackage, reviewSourceBuildings,
+} from '../usp/ingestion/source-building-review';
 import type {GisGeometryDisposition} from '@ulpin/contracts';
 import {gisQuarantine} from './gis-quarantine';
 import {displayAreaProposals} from './area-display-proposals';
@@ -1012,6 +1015,8 @@ async function withNeighbours(
   area: MapArea,
   client?: PoolClient,
 ): Promise<PhysicalFeature[]> {
+  // Source-only declarations have no geometry to qualify or analyse.
+  features = features.filter(feature => feature.geometry !== null);
   if (!area.reference || !features.length) return features;
   const positions: number[][] = [];
   function visit(value: unknown) {
@@ -1220,6 +1225,7 @@ export async function createPackageCorrection(id: string, requestKey: string) {
   });
 }
 export async function reviewPackage(id: string, expectedRevision: number) {
+  if (isGeometryFreePackage(await getPackage(id))) return reviewSourceBuildings(id, expectedRevision);
   if ((await getPackage(id)).sourceWorkspace) throw new AppError(422, "SOURCE_WORKSPACE", "Review the derived footprint draft or assign documents to a property before recording.");
   const pkg = await getPackage(id),
     area = await getArea(pkg.areaId);
@@ -1292,6 +1298,9 @@ export async function commitPackage(
       )
     ).rows[0];
     if (!raw) notFound();
+    if (isGeometryFreePackage(raw.body)) {
+      return commitSourceBuildingsTx(client, raw.body, expectedRevision, acknowledgement);
+    }
     const pkg = raw.body as ImportPackage & {
       extent: Normalized["extent"];
       geographicExtent: Normalized["extent"];

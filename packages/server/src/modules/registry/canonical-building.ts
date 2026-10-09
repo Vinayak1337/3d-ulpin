@@ -157,7 +157,9 @@ export async function assertCanonicalAreaScope(area: MapArea): Promise<MapArea> 
 function citationLocator(entry: SourceLocator): BuildingCitation['locator'] {
   if (entry.region && entry.page) return { kind: 'region', page: entry.page, ...entry.region };
   if (entry.featureId) return { kind: 'feature', featureId: entry.featureId };
-  if (entry.page) return { kind: 'page', page: entry.page };
+  if (entry.page) {
+    return { kind: 'page', page: entry.page, ...(entry.jsonPointer ? { text: entry.jsonPointer } : {}) };
+  }
   if (entry.row !== undefined) return { kind: 'row', row: entry.row };
   return { kind: 'entity', entityId: entry.partId ?? entry.jsonPointer ?? entry.sourceRevisionId };
 }
@@ -373,7 +375,10 @@ function markConflicting(building: NormalizedBuilding, property: string): void {
   if (property.endsWith('floorCount') || property.endsWith('storeyCount')) {
     building.storeyCount = canonicalValue(null, 'conflicting');
   }
-  if (property.endsWith('storeyLabel')) building.storeyLabel = canonicalValue(null, 'conflicting');
+  if (property.endsWith('storeyLabel')) {
+    building.storeyLabel = canonicalValue(null, 'conflicting');
+    building.storeyCount = canonicalValue(null, 'conflicting');
+  }
   if (property.endsWith('exteriorHeight')) {
     building.heightM = canonicalValue(null, 'conflicting', [], 'source_literal', 'm');
     building.heightState = 'conflicting';

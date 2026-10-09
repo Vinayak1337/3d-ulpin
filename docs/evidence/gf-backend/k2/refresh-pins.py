@@ -8,6 +8,14 @@ pins = json.loads(PIN_FILE.read_text())
 # Reviewed integrated changes: K1 routes/projections, D3 HTML, D1b dataset metadata,
 # A1 canonical target exports and A2 retained mapping admission helpers.
 reviewed = [
+    'apps/api/src/modules/intake/import-packages.controller.ts',
+    'apps/api/src/modules/intake/wire-schemas.ts',
+    'packages/contracts/src/canonical/building-import.ts',
+    'packages/server/src/modules/usp/ingestion/source-building-admission.test.ts',
+    'packages/server/src/modules/usp/ingestion/source-building-import.ts',
+    'packages/server/src/modules/usp/ingestion/source-building-records.ts',
+    'packages/server/src/modules/usp/ingestion/source-building-review.ts',
+    'packages/server/src/modules/usp/ingestion/source-building-values.ts',
     'apps/api/src/modules/register/operation-manifest.json',
     'apps/api/src/modules/register/register.module.ts',
     'apps/api/src/modules/register/canonical.controller.test.ts',
