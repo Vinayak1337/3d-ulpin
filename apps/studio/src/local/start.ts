@@ -1,3 +1,5 @@
+import { localLayerOn } from './routes';
+
 /**
  * Starts the local data layer in development or an explicitly selected hosted demonstration build.
  * Ordinary production builds exclude it. Hosted defaults never overwrite a visitor's existing work.
@@ -8,7 +10,7 @@
  */
 export async function startLocalData(): Promise<void> {
   const hosted = import.meta.env.VITE_HOSTED_DEMO === '1';
-  if ((!import.meta.env.DEV && !hosted) || import.meta.env.VITE_LOCAL_DATA !== 'on') return;
+  if (!localLayerOn) return;
   // `?reset-session` starts the workstation over: no imports, no reviews, codes or cards.
   const url = new URL(window.location.href);
   if (url.searchParams.has('reset-session')) {

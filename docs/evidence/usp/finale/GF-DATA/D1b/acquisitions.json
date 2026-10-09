@@ -1,0 +1,432 @@
+{
+  "schemaVersion": "d1b-acquisitions/1",
+  "createdAt": "2026-10-09T20:03:22.284112+00:00",
+  "admittedDevelopmentAcquisitions": [
+    {
+      "assetId": "mi-d04-01.csv",
+      "family": "mi-d04",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/863209cb-4ced-4f51-b5c5-156939c50922/resource/51304220-abfd-4f4b-adc5-580ec1e15bc0/download/6ad468a8-b1b5-45dd-8a54-7e53123e56f9.csv",
+      "publisherPage": "https://data.opencity.in/dataset/gba-wards-delimitation-2025",
+      "acquiredAt": "2026-10-09T19:52:06.064015+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-gba-wards-delimitation-2025/51304220-abfd-4f4b-adc5-580ec1e15bc0.csv",
+      "sha256": "c2086fd9c02c183c5f9bacdf3e83e7d9a69aa00c21784e1ba239599d957c88f0",
+      "bytes": 33078,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d05-01.csv",
+      "family": "mi-d05",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/863209cb-4ced-4f51-b5c5-156939c50922/resource/0b0b7da4-64e8-480c-bc2f-84c4ac86510e/download/gba-wards-divisions-mapping.csv",
+      "publisherPage": "https://data.opencity.in/dataset/gba-wards-delimitation-2025",
+      "acquiredAt": "2026-10-09T19:52:06.233511+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-gba-wards-delimitation-2025/0b0b7da4-64e8-480c-bc2f-84c4ac86510e.csv",
+      "sha256": "97e551bd51532d60fe081853e9e6abdee545ea1035fba7680f6d2179acdbc4fd",
+      "bytes": 10785,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d06-01.csv",
+      "family": "mi-d06",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/7f7e9fd2-5192-4ee1-baa4-aff17ecde1cf/resource/67273849-ffd2-4596-a909-f8b5e7302d4c/download/25f5154b-6b44-4eda-ae93-bb54f91037c2.csv",
+      "publisherPage": "https://data.opencity.in/dataset/bengaluru-urban-slums",
+      "acquiredAt": "2026-10-09T19:52:06.453641+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bengaluru-urban-slums/67273849-ffd2-4596-a909-f8b5e7302d4c.csv",
+      "sha256": "6656ca6decba5484796dd013ccdd94eb6443ca84ebe1f98b2b427208d207a93a",
+      "bytes": 50539,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d07-01.csv",
+      "family": "mi-d07",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/0603800b-c075-4443-afb6-56cafb8a228b/resource/4eb35671-9325-4db1-b920-b24a958c61f1/download/c525ba4d-1e82-442c-9d22-bfaa7e4de63f.csv",
+      "publisherPage": "https://data.opencity.in/dataset/bengaluru-urban-land-use-maps-2011",
+      "acquiredAt": "2026-10-09T19:52:06.642044+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bengaluru-urban-land-use-maps-2011/4eb35671-9325-4db1-b920-b24a958c61f1.csv",
+      "sha256": "7704c93189a1c4026033c35c7c98f9a526e5ed75618084a54f07d178f7b0df18",
+      "bytes": 936,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d08-01.csv",
+      "family": "mi-d08",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/03e23dd0-8f29-4249-a28a-67bdf8fd07b3/resource/1d99702f-8dfc-4676-bd60-bff8a3beb61b/download/ka_dist_rainfall_2025.csv",
+      "publisherPage": "https://data.opencity.in/dataset/karnataka-annual-rainfall-districts-taluks-and-hoblis",
+      "acquiredAt": "2026-10-09T19:52:06.904299+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-karnataka-annual-rainfall-districts-taluks-and-hoblis/1d99702f-8dfc-4676-bd60-bff8a3beb61b.csv",
+      "sha256": "da8de386ff23b819049e93bde9ebafc156dc8ba2b8c082e24c66985fbcdb6565",
+      "bytes": 2363,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d08-02.csv",
+      "family": "mi-d08",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/03e23dd0-8f29-4249-a28a-67bdf8fd07b3/resource/ab0fe5b4-254a-456e-9e23-544161d5fad6/download/f28d92e7-7e61-4d58-84a7-52e2ab6ee469.csv",
+      "publisherPage": "https://data.opencity.in/dataset/karnataka-annual-rainfall-districts-taluks-and-hoblis",
+      "acquiredAt": "2026-10-09T19:52:07.274194+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-karnataka-annual-rainfall-districts-taluks-and-hoblis/ab0fe5b4-254a-456e-9e23-544161d5fad6.csv",
+      "sha256": "aa08e2d0f8362cf15072759778355df1e495dd3cd9908febeee025e66bd4d63b",
+      "bytes": 2284,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d09-01.csv",
+      "family": "mi-d09",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/03e23dd0-8f29-4249-a28a-67bdf8fd07b3/resource/b1b9805f-1df4-4049-bce7-31563c33710f/download/karnataka_rainfall_2025_table1_1.csv",
+      "publisherPage": "https://data.opencity.in/dataset/karnataka-annual-rainfall-districts-taluks-and-hoblis",
+      "acquiredAt": "2026-10-09T19:52:07.096085+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-karnataka-annual-rainfall-districts-taluks-and-hoblis/b1b9805f-1df4-4049-bce7-31563c33710f.csv",
+      "sha256": "bc14b7f35707d180f0c9839b6e2f4ed0229b366a4dc0c57fcc69d9b1155c9678",
+      "bytes": 31638,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d09-02.csv",
+      "family": "mi-d09",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/03e23dd0-8f29-4249-a28a-67bdf8fd07b3/resource/9a86a46b-e7ca-4703-a17e-91daf9af1385/download/0ec5ad8d-be55-4e92-a942-6918c025735b.csv",
+      "publisherPage": "https://data.opencity.in/dataset/karnataka-annual-rainfall-districts-taluks-and-hoblis",
+      "acquiredAt": "2026-10-09T19:52:07.498824+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-karnataka-annual-rainfall-districts-taluks-and-hoblis/9a86a46b-e7ca-4703-a17e-91daf9af1385.csv",
+      "sha256": "f467d4b03776ef4394126cca49afb5bcb3603d3bee2a766031dd30d07c252f3d",
+      "bytes": 31377,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d10-01.csv",
+      "family": "mi-d10",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/3e28a58b-22d4-4f6a-89ac-9738693eb745/resource/cf526819-7b0c-497a-b681-522d72db9b65/download/india_gw_2025.csv",
+      "publisherPage": "https://data.opencity.in/dataset/national-compilation-of-dynamic-ground-water-resources-of-india-2025",
+      "acquiredAt": "2026-10-09T19:52:07.700877+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-national-compilation-of-dynamic-ground-water-resources-of-india-2025/cf526819-7b0c-497a-b681-522d72db9b65.csv",
+      "sha256": "9c20032a80044527b24decd365e20e321de029f80453d12e4232b7e2ec6e7111",
+      "bytes": 3637,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d10-02.csv",
+      "family": "mi-d10",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/3e28a58b-22d4-4f6a-89ac-9738693eb745/resource/9f5bad83-69fd-4f61-a501-c5c7fc9d22d5/download/kar_gw_2025.csv",
+      "publisherPage": "https://data.opencity.in/dataset/national-compilation-of-dynamic-ground-water-resources-of-india-2025",
+      "acquiredAt": "2026-10-09T19:52:07.867286+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-national-compilation-of-dynamic-ground-water-resources-of-india-2025/9f5bad83-69fd-4f61-a501-c5c7fc9d22d5.csv",
+      "sha256": "82990ba28b2a10161004c99e64f089aa1fb135f8de7d318358820d19196dc2a1",
+      "bytes": 4706,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d10-03.csv",
+      "family": "mi-d10",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/3e28a58b-22d4-4f6a-89ac-9738693eb745/resource/1ebd568d-0d9b-495d-81fd-3101d27e0f64/download/major_cities_2025.csv",
+      "publisherPage": "https://data.opencity.in/dataset/national-compilation-of-dynamic-ground-water-resources-of-india-2025",
+      "acquiredAt": "2026-10-09T19:52:08.024629+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-national-compilation-of-dynamic-ground-water-resources-of-india-2025/1ebd568d-0d9b-495d-81fd-3101d27e0f64.csv",
+      "sha256": "1b65007ee40c8825392823b82a29e22ecc602c1aa9d613bd56441f97f040e9b1",
+      "bytes": 1441,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d11-01.csv",
+      "family": "mi-d11",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/3e28a58b-22d4-4f6a-89ac-9738693eb745/resource/d9ca9478-5302-4974-b7c5-ebbea5f5cd03/download/major_cities_taluks_cat_2025.csv",
+      "publisherPage": "https://data.opencity.in/dataset/national-compilation-of-dynamic-ground-water-resources-of-india-2025",
+      "acquiredAt": "2026-10-09T19:52:08.190063+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-national-compilation-of-dynamic-ground-water-resources-of-india-2025/d9ca9478-5302-4974-b7c5-ebbea5f5cd03.csv",
+      "sha256": "ceb36ecb3d456ff100964a87cde33ec13fead27e48feed7356716700d23eac60",
+      "bytes": 1426,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d12-01.csv",
+      "family": "mi-d12",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/375cd901-83a6-48c8-8c5b-b87aadb44731/resource/788533dc-868e-4425-9d75-f8a96ec5da74/download/12a62dc9-e38a-4af9-9d94-428d33d9d2e0.csv",
+      "publisherPage": "https://data.opencity.in/dataset/tamil-nadu-district-level-gddp-data",
+      "acquiredAt": "2026-10-09T19:52:08.390827+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-tamil-nadu-district-level-gddp-data/788533dc-868e-4425-9d75-f8a96ec5da74.csv",
+      "sha256": "04d0bf9271e83e75a05165c163a74d3f06a3d7828afde43bf1cc223747cbccf2",
+      "bytes": 2975,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d12-02.csv",
+      "family": "mi-d12",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/375cd901-83a6-48c8-8c5b-b87aadb44731/resource/64d60963-38f5-44e3-a206-a15f9ec30725/download/6ad86614-38d2-49fc-b3b6-218d0e25bd82.csv",
+      "publisherPage": "https://data.opencity.in/dataset/tamil-nadu-district-level-gddp-data",
+      "acquiredAt": "2026-10-09T19:52:08.560482+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-tamil-nadu-district-level-gddp-data/64d60963-38f5-44e3-a206-a15f9ec30725.csv",
+      "sha256": "eb92002248c07c41aa455f86ad4c2c54346c8c0ab2e8da36ed5e2f989bd1a1d6",
+      "bytes": 2953,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d13-01.csv",
+      "family": "mi-d13",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/375cd901-83a6-48c8-8c5b-b87aadb44731/resource/0c2ae7eb-dab7-4abe-835f-c0ea42a37bdb/download/3f6218b3-5d15-4463-91de-9179b66aa86b.csv",
+      "publisherPage": "https://data.opencity.in/dataset/tamil-nadu-district-level-gddp-data",
+      "acquiredAt": "2026-10-09T19:52:08.735040+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-tamil-nadu-district-level-gddp-data/0c2ae7eb-dab7-4abe-835f-c0ea42a37bdb.csv",
+      "sha256": "7e023954acd06613692c29f85e7a4fb62cd3de4fafb4b670cdb98dd26624fbe1",
+      "bytes": 7893,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d13-02.csv",
+      "family": "mi-d13",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/375cd901-83a6-48c8-8c5b-b87aadb44731/resource/f37ad598-5f0c-4af4-9e3f-22ef9b9140c9/download/c13f0ccc-729f-41b5-92cd-bafca4b4fd5a.csv",
+      "publisherPage": "https://data.opencity.in/dataset/tamil-nadu-district-level-gddp-data",
+      "acquiredAt": "2026-10-09T19:52:08.945714+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-tamil-nadu-district-level-gddp-data/f37ad598-5f0c-4af4-9e3f-22ef9b9140c9.csv",
+      "sha256": "6c87ace0dfd9b5bc80ce66b5706d4ca40012671378615a5b73439a0c697da5fd",
+      "bytes": 7643,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d14-01.csv",
+      "family": "mi-d14",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/49c4e917-e39a-4105-9ac2-47959e2373f4/resource/a7cd64ac-dada-4c3c-93d3-8880e0e6965e/download/56f6deb2-c7ad-4ade-88fb-92190eafe19b.csv",
+      "publisherPage": "https://data.opencity.in/dataset/bmtc-operation-performance-data",
+      "acquiredAt": "2026-10-09T19:52:09.903769+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bmtc-operation-performance-data/a7cd64ac-dada-4c3c-93d3-8880e0e6965e.csv",
+      "sha256": "434d58039499e13eaedfc7a72cc262790a4b0e674583582877ca3ca4dfa6862e",
+      "bytes": 1548,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d15-01.csv",
+      "family": "mi-d15",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/49c4e917-e39a-4105-9ac2-47959e2373f4/resource/fda5d502-4e92-4616-a9a1-bd5d2abfb3f7/download/fda5d502-4e92-4616-a9a1-bd5d2abfb3f7.csv",
+      "publisherPage": "https://data.opencity.in/dataset/bmtc-operation-performance-data",
+      "acquiredAt": "2026-10-09T19:52:10.071293+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bmtc-operation-performance-data/fda5d502-4e92-4616-a9a1-bd5d2abfb3f7.csv",
+      "sha256": "711e8350900b3e1a8a748373f2b5649a227b9c392cd519988aa12da2291c13b6",
+      "bytes": 3085,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d15-02.csv",
+      "family": "mi-d15",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/c7bf200b-03e1-403f-99be-487d3c4a294a/resource/0c917fe2-aaef-4873-95f3-4da9e50620f3/download/0c917fe2-aaef-4873-95f3-4da9e50620f3.csv",
+      "publisherPage": "https://data.opencity.in/dataset/chennai-mtc-performance-data",
+      "acquiredAt": "2026-10-09T19:52:10.238060+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-chennai-mtc-performance-data/0c917fe2-aaef-4873-95f3-4da9e50620f3.csv",
+      "sha256": "5bc4c11fb7d7d7bda945b03eaac97464238fdbd28e0c327c734a2bbaec15420e",
+      "bytes": 859,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d16-01.csv",
+      "family": "mi-d16",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/118434fe-dd69-4dd3-a6a8-4c577326cc34/resource/c63ef5a0-e7d2-49b3-9c88-5ca5ce309fcf/download/cmrl-metro-ridership-2023-26.csv",
+      "publisherPage": "https://data.opencity.in/dataset/chennai-metro-monthly-usage-data",
+      "acquiredAt": "2026-10-09T19:52:10.398677+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-chennai-metro-monthly-usage-data/c63ef5a0-e7d2-49b3-9c88-5ca5ce309fcf.csv",
+      "sha256": "9c147a1a4f2de54b67f019ce84930922283f0dbb3609d3fc4f3ee4724755b156",
+      "bytes": 3045,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d17-01.csv",
+      "family": "mi-d17",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/87b978d1-352e-4b90-aa2c-9991e55d3425/resource/01d485da-6509-4555-ab4c-036720ad0c51/download/3648198e-a595-4c6b-b76e-2ec180fc9f14.csv",
+      "publisherPage": "https://data.opencity.in/dataset/bbmp-ward-information",
+      "acquiredAt": "2026-10-09T19:56:00.572981+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bbmp-ward-information/01d485da-6509-4555-ab4c-036720ad0c51.csv",
+      "sha256": "26b70763b5c9dcc84d86f70f9f7da399ee3acced1a3233406cd69cbc4c751dcc",
+      "bytes": 19452,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d17-02.csv",
+      "family": "mi-d17",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/87b978d1-352e-4b90-aa2c-9991e55d3425/resource/7521f351-1bf6-429b-962a-028fbcdaf442/download/47c96a83-679b-4937-8287-09375946ac4f.csv",
+      "publisherPage": "https://data.opencity.in/dataset/bbmp-ward-information",
+      "acquiredAt": "2026-10-09T19:56:01.226677+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bbmp-ward-information/7521f351-1bf6-429b-962a-028fbcdaf442.csv",
+      "sha256": "c4acdc21cc978ce70058e7a060ecbea35f21286db0005f9c4f58923d4e1690a8",
+      "bytes": 12832,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d18-01.csv",
+      "family": "mi-d18",
+      "publisher": "OpenCity / Oorvani Foundation",
+      "url": "https://data.opencity.in/dataset/87b978d1-352e-4b90-aa2c-9991e55d3425/resource/ebf9c61c-338f-4f11-888a-914493100dc2/download/e08d0f26-d02b-4e0f-ad5b-4049048a9561.csv",
+      "publisherPage": "https://data.opencity.in/dataset/bbmp-ward-information",
+      "acquiredAt": "2026-10-09T19:56:01.047249+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bbmp-ward-information/ebf9c61c-338f-4f11-888a-914493100dc2.csv",
+      "sha256": "5e246c9a5a1ff95357b5ed3d5797e9d6fc53de6706fa5beb1d191e6135191f87",
+      "bytes": 16714,
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d19-01.xlsx",
+      "family": "mi-d19",
+      "publisher": "Reserve Bank of India",
+      "url": "https://rbidocs.rbi.org.in/rdocs/Publications/DOCs/18T_HBIE31072026F66166DD083C4F4AA4F2CDF71DBE801B.XLSX",
+      "acquiredAt": "2026-10-09T19:58:21.214477+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/rbi-development-table-18/original.xlsx",
+      "sha256": "fc3f75eafdb7b954348ac182d1db3c3a558fc08aecf072d6a3807735d15e38a2",
+      "bytes": 12398,
+      "documentation": {
+        "url": "https://www.rbi.org.in/Scripts/PublicationsView.aspx?id=23843",
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/rbi-development-table-18/publisher-documentation.html",
+        "sha256": "02cba77d6d77b714b7abe6d7ce312e6d9c3c1a1517e4e21d67e79a96dbd8cc58",
+        "bytes": 74452
+      },
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d20-01.xlsx",
+      "family": "mi-d20",
+      "publisher": "Reserve Bank of India",
+      "url": "https://rbidocs.rbi.org.in/rdocs/Publications/DOCs/19T_HBIE3107202629B99CB632CF4D45B187E8C67BE219D6.XLSX",
+      "acquiredAt": "2026-10-09T19:58:22.102339+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/rbi-development-table-19/original.xlsx",
+      "sha256": "28dc781d07775eba77d32b9103c6cf3681ffe25f02c97f4437dd989095ec8c21",
+      "bytes": 14456,
+      "documentation": {
+        "url": "https://www.rbi.org.in/Scripts/PublicationsView.aspx?id=23844",
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/rbi-development-table-19/publisher-documentation.html",
+        "sha256": "bee38e2f0bfd1d79d8325f41c5fead6129d225b0a708c615d0a4730d7978b3e7",
+        "bytes": 82635
+      },
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    },
+    {
+      "assetId": "mi-d21-01.xlsx",
+      "family": "mi-d21",
+      "publisher": "Reserve Bank of India",
+      "url": "https://rbidocs.rbi.org.in/rdocs/Publications/DOCs/22T_HBIE310720268357D2532C0D48E0B1903B23F39DF1B8.XLSX",
+      "acquiredAt": "2026-10-09T19:58:22.835416+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/rbi-development-table-22/original.xlsx",
+      "sha256": "fdaa51f7970249e550dae33185c57563505e2ce42238c94f6aa839ddfe2b9ecd",
+      "bytes": 13351,
+      "documentation": {
+        "url": "https://www.rbi.org.in/Scripts/PublicationsView.aspx?id=23847",
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/rbi-development-table-22/publisher-documentation.html",
+        "sha256": "4b919ff8077b7a241bb5ad7eedcd2082157d489e126fa8eaf6b1d44f0a5288e5",
+        "bytes": 78251
+      },
+      "transport": "Python urllib default verified TLS",
+      "disposition": "admitted_development_test_only"
+    }
+  ],
+  "teacherBlindAcquisitions": [
+    {
+      "id": "mi-h03",
+      "publisher": "Office of the Registrar General & Census Commissioner, India",
+      "fileCount": 1,
+      "caseNames": [
+        "publisher_documented_column_descriptions",
+        "merged_header_cells",
+        "multi_row_headers",
+        "multiple_worksheets",
+        "empty_worksheets"
+      ]
+    },
+    {
+      "id": "mi-h04",
+      "publisher": "Reserve Bank of India",
+      "fileCount": 1,
+      "caseNames": [
+        "publisher_documented_column_descriptions",
+        "merged_header_cells",
+        "multiple_worksheets"
+      ]
+    },
+    {
+      "id": "mi-h05",
+      "publisher": "Reserve Bank of India",
+      "fileCount": 1,
+      "caseNames": [
+        "publisher_documented_column_descriptions",
+        "merged_header_cells",
+        "multi_row_headers"
+      ]
+    }
+  ],
+  "excludedDevelopmentCandidates": [
+    {
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bengaluru-urban-udise-2024-25/95a90eb1-83b0-47f0-a869-57706d958850.csv",
+      "sha256": "7d18e3b7b3d77be8dc076189fa51fa1c46e33d6d3eb9014020a0a06d21fd12d2",
+      "bytes": 373007,
+      "reason": "Pseudocode-keyed school register; excluded conservatively under masked-ID exclusion.",
+      "disposition": "retained_external_unselected_never_teacher_input"
+    },
+    {
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bengaluru-urban-udise-2024-25/0ff6aaec-bfc7-47ad-978b-3e237ab0271e.csv",
+      "sha256": "ca1419bc74d88d55b384488d084d6b4fd701bfc913d6839ad48011159958a926",
+      "bytes": 546924,
+      "reason": "Pseudocode-keyed school register; excluded conservatively under masked-ID exclusion.",
+      "disposition": "retained_external_unselected_never_teacher_input"
+    },
+    {
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-chennai-bus-stop-audit-data/e2c3985c-927f-46d6-a5b8-66a7e2c0c8a6.csv",
+      "sha256": "ce21f2eaf1ce88fdc34e2b0d396a9efe0e97b7307b31e4926e68a62e9c41941c",
+      "bytes": 454547,
+      "reason": "Geolocated survey exports with submission identifiers/free text/photo references need further privacy review; excluded.",
+      "disposition": "retained_external_unselected_never_teacher_input"
+    },
+    {
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bengaluru-bus-stop-audit-data/c72a236f-d324-4b3f-96e1-f9fc1ce53cef.csv",
+      "sha256": "11c1aca291b2eefdb9992d52590d4ed1c153aa025387698781db26c3dcb1005a",
+      "bytes": 825524,
+      "reason": "Geolocated survey exports with submission identifiers/free text/photo references need further privacy review; excluded.",
+      "disposition": "retained_external_unselected_never_teacher_input"
+    },
+    {
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bbmp-ward-information/fa2ea7c0-3345-44c4-8855-b213b45a11db.csv",
+      "sha256": "06f2afabb340e9d20925bcc2e34ee3a274bf541c1c45bf89fb6706fa45cf9394",
+      "bytes": 74594,
+      "reason": "Staff-name/contact directory; excluded, no redaction/reformatted derivative admitted.",
+      "disposition": "retained_external_unselected_never_teacher_input"
+    }
+  ],
+  "retainedDiscoveryRoot": "E:/BhuAayam-data/datasets/messy-india/d1b-discovery",
+  "qualification": "Only admitted CSV/XLSX originals count toward 25-40. Discovery HTML/JSON, support documents, tooling packages and excluded originals are not datasets. Exact heldout pins/URLs/documents only in heldout.json."
+}

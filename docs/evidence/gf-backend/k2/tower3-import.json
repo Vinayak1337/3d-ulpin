@@ -1,0 +1,1 @@
+{"error":{"code":"INVALID_INPUT","message":"format: Invalid option: expected one of \"geojson\"|\"arcgis\"|\"gpkg\"|\"shapefile_zip\"","requestId":"89205130-f0a5-4b8f-8fe1-2fc32e93df94"}}

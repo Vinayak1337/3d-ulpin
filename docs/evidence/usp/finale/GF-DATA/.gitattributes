@@ -2,4 +2,5 @@
 /acquisitions.json text eol=lf
 /site-decision.md text eol=lf
 /D1-D2/** text eol=lf
+/D1b/** text eol=lf
 /storey-truth/** text eol=lf

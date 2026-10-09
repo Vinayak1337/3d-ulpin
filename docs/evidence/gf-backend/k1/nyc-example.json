@@ -1,0 +1,257 @@
+{
+  "schemaVersion": "normalized-building/1",
+  "buildingId": "fixture:NYC:doitt_id:353927",
+  "revisionId": "3caa6a916b75d49d0aa5cea16b70ec59a71715f2273c4aa2aba99aff707fc380",
+  "recordState": "candidate",
+  "areaId": "fixture:nyc-bronx-353927-context",
+  "frame": {
+    "areaId": "fixture:nyc-bronx-353927-context",
+    "origin": {
+      "lon": -73.869957915648,
+      "lat": 40.900305259723,
+      "hEllipsoidal": null
+    },
+    "axes": "ENU",
+    "unit": "m",
+    "placement": "source_supported",
+    "sourceCrs": [
+      "EPSG:4326"
+    ],
+    "verticalRefs": [
+      "building_relative"
+    ],
+    "horizontalOperation": "deterministic:wgs84-surface-to-enu@1"
+  },
+  "name": {
+    "value": "353927",
+    "state": "source_supported",
+    "citations": [
+      {
+        "sourceId": "fixture:real-area/original.geojson",
+        "sourceSha256": "869c5dc4fb50d71be4f62f4a2936c29bd95ade14c712bdf4f51986841d82771a",
+        "locator": {
+          "kind": "feature",
+          "featureId": "353927"
+        }
+      }
+    ],
+    "method": "source_literal",
+    "revisionId": "3caa6a916b75d49d0aa5cea16b70ec59a71715f2273c4aa2aba99aff707fc380"
+  },
+  "inputRevisions": [],
+  "parcelRefs": [],
+  "footprint": {
+    "value": [
+      [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            -7.874803662273426,
+            -1.1831169508475687
+          ],
+          [
+            -6.976672187416976,
+            -7.160786219848295
+          ],
+          [
+            -6.124289718479217,
+            -12.834485697608994
+          ],
+          [
+            -5.645680120342341,
+            -12.762595803175468
+          ],
+          [
+            -5.311579365071709,
+            -14.986405155882771
+          ],
+          [
+            2.0846148006219485,
+            -13.875178141162026
+          ],
+          [
+            2.462906258924317,
+            -13.74773899355273
+          ],
+          [
+            2.8152866990027507,
+            -13.560260916731025
+          ],
+          [
+            3.132348772973361,
+            -13.31763020544889
+          ],
+          [
+            3.405482505942649,
+            -13.026533862461344
+          ],
+          [
+            3.627376573210273,
+            -12.694661246591146
+          ],
+          [
+            3.7920172071356686,
+            -12.331103525927166
+          ],
+          [
+            3.8950903749862773,
+            -11.945454153005354
+          ],
+          [
+            3.933780477387768,
+            -11.54810926143328
+          ],
+          [
+            3.9070714998049576,
+            -11.149867215704566
+          ],
+          [
+            3.880439100892758,
+            -11.03682697692076
+          ],
+          [
+            3.815547899267292,
+            -10.761228979284807
+          ],
+          [
+            3.6618938529846314,
+            -10.392798678336836
+          ],
+          [
+            3.4499946954933227,
+            -10.054582092102297
+          ],
+          [
+            3.185737227483669,
+            -9.755387966493961
+          ],
+          [
+            2.876109545608525,
+            -9.503326864334838
+          ],
+          [
+            2.5295012797897307,
+            -9.305411042194907
+          ],
+          [
+            2.1552049996706266,
+            -9.166654598734318
+          ],
+          [
+            1.7632150075600146,
+            -9.090972223184972
+          ],
+          [
+            1.3642285135318246,
+            -9.08027989085006
+          ],
+          [
+            1.0989475000149727,
+            -7.31497545087994
+          ],
+          [
+            1.6938838594867835,
+            -7.225558061688691
+          ],
+          [
+            2.121710520772884,
+            -5.8620849481614155
+          ],
+          [
+            1.8228613085298628,
+            -3.8731293983433552
+          ],
+          [
+            0.9604266694792651,
+            -2.343639947154543
+          ],
+          [
+            0.3654903582000713,
+            -2.4330572788126013
+          ],
+          [
+            0,
+            0
+          ]
+        ]
+      ]
+    ],
+    "state": "source_supported",
+    "unit": "m",
+    "citations": [
+      {
+        "sourceId": "fixture:real-area/original.geojson",
+        "sourceSha256": "869c5dc4fb50d71be4f62f4a2936c29bd95ade14c712bdf4f51986841d82771a",
+        "locator": {
+          "kind": "feature",
+          "featureId": "353927"
+        }
+      }
+    ],
+    "method": "deterministic:wgs84-surface-to-enu@1",
+    "revisionId": "3caa6a916b75d49d0aa5cea16b70ec59a71715f2273c4aa2aba99aff707fc380"
+  },
+  "footprintKind": {
+    "value": null,
+    "state": "unknown",
+    "citations": [],
+    "method": "source_literal",
+    "revisionId": "3caa6a916b75d49d0aa5cea16b70ec59a71715f2273c4aa2aba99aff707fc380"
+  },
+  "baseM": {
+    "value": null,
+    "state": "unknown",
+    "citations": [],
+    "method": "source_literal",
+    "revisionId": "3caa6a916b75d49d0aa5cea16b70ec59a71715f2273c4aa2aba99aff707fc380"
+  },
+  "heightM": {
+    "value": 10.207752000000001,
+    "state": "source_supported",
+    "unit": "m",
+    "citations": [
+      {
+        "sourceId": "fixture:real-area/original.geojson",
+        "sourceSha256": "869c5dc4fb50d71be4f62f4a2936c29bd95ade14c712bdf4f51986841d82771a",
+        "locator": {
+          "kind": "feature",
+          "featureId": "353927"
+        }
+      }
+    ],
+    "method": "deterministic:international-foot-to-metre@1",
+    "revisionId": "3caa6a916b75d49d0aa5cea16b70ec59a71715f2273c4aa2aba99aff707fc380"
+  },
+  "heightState": "source_supported",
+  "storeyCount": {
+    "value": null,
+    "state": "unknown",
+    "citations": [],
+    "method": "source_literal",
+    "revisionId": "3caa6a916b75d49d0aa5cea16b70ec59a71715f2273c4aa2aba99aff707fc380"
+  },
+  "storeyLabel": {
+    "value": null,
+    "state": "unknown",
+    "citations": [],
+    "method": "source_literal",
+    "revisionId": "3caa6a916b75d49d0aa5cea16b70ec59a71715f2273c4aa2aba99aff707fc380"
+  },
+  "storeys": {
+    "value": null,
+    "state": "unknown",
+    "citations": [],
+    "method": "source_literal",
+    "revisionId": "3caa6a916b75d49d0aa5cea16b70ec59a71715f2273c4aa2aba99aff707fc380"
+  },
+  "levels": [],
+  "conflicts": [],
+  "gaps": [
+    "test_only foreign fixture; source keys are not allocated registry identities.",
+    "Outline role and measured terrain base remain unknown."
+  ],
+  "candidates": []
+}

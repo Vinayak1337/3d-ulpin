@@ -1,0 +1,89 @@
+{
+  "task":"D3","gate":"GF-AGENT","codeCommit":"4921857d",
+  "status":"python_reader_and_dispatch_verified_ts_import_unqualified",
+  "environment":{
+    "pythonExecutable":"E:/BhuAayam-data/task-data/d3/geo-py311/Scripts/python.exe","pythonVersion":"3.11.15",
+    "dependencies":"services/geo/requirements-dev.txt; exact direct pins installed with --only-binary=:all:"
+  },
+  "checks":[
+    {"command":
+      "python -m pytest services/geo/tests/test_native_html_table.py services/geo/tests/test_native_workbook_xml.py -q",
+      "exitCode":0,"passed":11},
+    {"command":"python docs/evidence/gf-agent/d3/verify_real_inputs.py","exitCode":0},
+    {"command":"git diff --check","exitCode":0},
+    {"command":"git diff --cached --check","exitCode":0},
+    {"command":
+      "git diff staging...HEAD --diff-filter=A --name-only | xargs awk 'length>120 {print FILENAME\":\"FNR}'",
+      "exitCode":0,"findings":0}
+  ],
+  "inputs":[
+    {
+      "family":"mi-d03","split":"dev","purpose":"test_only","permissionState":"unconfirmed","role":"good",
+      "selectionReason":"Small project list with a nested pagination table and missing address cells.",
+      "file":"E:/BhuAayam-data/datasets/messy-india/br-project-list/registered-page-3.html",
+      "sourceSha256":"26d3db17a4c42233e19448b81ba273393340883c55a9d7811fd21ae6847444e8","sourceBytes":65333,
+      "status":"ready","tableCount":2,"cellsPerTable":[60,11],"characterCount":1924,
+      "cellStates":{"literal":63,"nested_table":1,"spanned":4,"whitespace":3},
+      "mainTableHtmlId":"ContentPlaceHolder1_GV_Building",
+      "mainTableHeader":{"sheet":"table-1","row":1,"text":[
+        "Project Name","Registration No.","Promoter Name","Project Address","Date of Registration"]},
+      "warnings":[
+        "Native cell text only: headers, units and types are not inferred; source th/td cell kinds are retained.",
+        "Span values are not expanded or copied; covered positions have empty text and cite the top-left source cell.",
+        "Page layout tables may be included; nested tables are separate sheets.",
+        "Unrepresented cells remain unknown, not explicit blanks, nulls or zero. CSS and page layout are not evaluated."
+      ],
+      "sourceUnchanged":true,"spanInvariant":"passed"
+    },
+    {
+      "family":"mi-d02","split":"dev","purpose":"test_only","permissionState":"unconfirmed","role":"difficult",
+      "selectionReason":"Full building page with layout tables, row/column spans and nesting.",
+      "file":"E:/BhuAayam-data/datasets/messy-india/br-building/RERAP01282025205138-1.html",
+      "sourceSha256":"7a1e3f74e142c0d02cb49a0cc2f6c9bdb4de7b434f30e3d8c809dbb57338b773","sourceBytes":152112,
+      "status":"ready","tableCount":32,"characterCount":7206,
+      "cellsPerTable":[1,10,50,84,21,30,1,54,42,54,2,14,1,18,36,1,28,2,1,2,6,2,2,2,2,2,2,2,64,18,5,8],
+      "cellStates":{"empty_string":10,"literal":399,"nested_table":12,"spanned":73,"whitespace":73},
+      "mainTableHtmlId":"GV_Building","mainTableHeader":{"sheet":"table-12","row":1,"text":[
+        "Name of Building","Sanctioned No of Floor","Type of Apartment","No of Apartment","Carpet Area",
+        "Area of exclusive balcony","Area of exclusive open terrace"]},
+      "warnings":[
+        "Native cell text only: headers, units and types are not inferred; source th/td cell kinds are retained.",
+        "Span values are not expanded or copied; covered positions have empty text and cite the top-left source cell.",
+        "Page layout tables may be included; nested tables are separate sheets.",
+        "Unrepresented cells remain unknown, not explicit blanks, nulls or zero. CSS and page layout are not evaluated."
+      ],
+      "sourceUnchanged":true,"spanInvariant":"passed"
+    }
+  ],
+  "limits":{"bytes":10485760,"tables":200,"rows":2000,"sourceAndEmittedCells":2000,
+    "cellCharacters":32767,"collectedTextCharacters":250000},
+  "decisions":[
+    "BOM takes precedence over declared meta charset; UTF-8 is the strict default.",
+    "Reuse native_ods._cell_ref and native_workbook bounds; no new dependency.",
+    "Row spans stop at existing row-group boundaries; rowspan=0 covers the remaining group, never invented rows.",
+    "Missing positions are omitted; explicit empty strings and whitespace retain distinct states.",
+    "Malformed span attributes default to one; overlapping spans fail closed with NATIVE_HTML_INVALID.",
+    "Multiple direct nested tables cite the first through nestedSheet and all through nestedSheets."
+  ],
+  "gaps":[
+    "CSS visibility/browser layout are not evaluated; downstream selection/redaction must exclude private source text.",
+    "Outside ownership: document-native.ts still identifies HTML as text; documentReaderSha needs the HTML module.",
+    "DocumentLocatorSchema rejects HTML caption/spanOf/nestedSheet(s), spanned/nested_table and missing sheetId/ODS.",
+    "document-native.ts filters empty parts; DocumentPartSchema requires nonempty text. HTML import is unqualified.",
+    "OpenAPI regeneration and an officer-reviewed end-to-end import remain lead-owned; no full GF-AGENT pass claimed."
+  ],
+  "privacy":{
+    "retained":"Only counts and selected non-personal development header rows.",
+    "excluded":"Whole HTML, contacts/bank sections and all extracted data-cell text remain outside Git.",
+    "heldoutFamilyProcessing":false,"teacherCalls":0
+  },
+  "environmentRecovery":{
+    "failedCommand":"python -m pip install -r services/geo/requirements-dev.txt",
+    "failedExecutable":"E:/BhuAayam-data/task-data/d3/venv/Scripts/python.exe","exitCode":1,
+    "signature":"Python 3.13 lacks the pinned pyproj==3.6.1 wheel; source build failed: proj executable not found.",
+    "comparison":"Use CPython 3.11.15 in separate task-local geo-py311 venv; require same pinned binary wheels.",
+    "stopCondition":"Stop on install failure; no shared environment changes.",
+    "result":"Install exit 0; focused tests exit 0."
+  },
+  "modelCalls":0,"apiWrites":0
+}

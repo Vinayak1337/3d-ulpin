@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { api, unwrap } from '@ulpin/api-client';
+import { api } from '@ulpin/api-client';
 import { Button, ImportStream, Skeleton, formatCount, type StreamRow } from '@ulpin/ui';
 import { isDemoId } from '../../api/demo-import';
-import { useBuildingImport } from '../../api/queries';
+import { unwrapApi, useBuildingImport } from '../../api/queries';
 
 const RUNNING = new Set(['RECEIVED']);
 const KINDS: { kinds: string[]; label: string; unit: string }[] = [
@@ -30,7 +30,7 @@ function useSettled(done: boolean) {
 export function ImportTray({ packageId, onClose }: { packageId: string; onClose: () => void }) {
   const pkg = useQuery({
     queryKey: ['import-packages', packageId],
-    queryFn: async () => unwrap(await api.GET('/api/v1/import-packages/{packageId}', { params: { path: { packageId } } })),
+    queryFn: async () => unwrapApi(await api.GET('/api/v1/import-packages/{packageId}', { params: { path: { packageId } } })),
     refetchInterval: (query) => isDemoId(packageId) ? false : (!query.state.data || RUNNING.has(query.state.data.state) ? 700 : false),
   });
   const running = !pkg.data || RUNNING.has(pkg.data.state);
