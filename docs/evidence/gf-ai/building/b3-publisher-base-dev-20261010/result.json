@@ -1,0 +1,1 @@
+{"schema":"building-interrupted-dev/1","status":"command_timeout","split":"dev","completed_chips":1063,"timeout_seconds":600,"artifacts":"E:\\BhuAayam-data\\ml\\runs\\b3-repo-artifacts-resume-20261010\\b3-publisher-base-dev-20261010","decision":"CPU base DEV comparison timed out; preserved partial journal, no rerun needed for candidate selection","holdout_calls":0}

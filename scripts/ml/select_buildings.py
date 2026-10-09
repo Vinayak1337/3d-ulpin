@@ -1,81 +1,133 @@
-"""Choose completed Karnataka checkpoints/thresholds on DEV only, never HOLDOUT.
+"""Select the completed run on DEV only using the previously recorded three-threshold rule."""
+from __future__ import annotations
 
-Use CPU while detached Run 1 owns CUDA. This is a provisional selection; the lead
-fixes the final candidate after training. Three prespecified thresholds only.
-"""
 import argparse
-import hashlib
 import json
 from pathlib import Path
+import re
 import subprocess
 import sys
+from typing import Any
 
-REPO = Path(__file__).resolve().parents[2]
-EVIDENCE = REPO / 'docs/evidence/gf-ai/building'
+from building_io import EVIDENCE, REPO, RUNS, configure_offline, read_json, sha, write_json
 
-
-def sha(path): return hashlib.sha256(Path(path).read_bytes()).hexdigest()
-
-
-def f1(m): return 2*m['tp']/(2*m['tp']+m['fp']+m['fn'])
+THRESHOLDS = (0.3, 0.5, 0.7)
 
 
-def main():
-    p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--run-id',required=True)
-    p.add_argument('--selection-id',required=True)
-    args=p.parse_args()
-    for value in [args.run_id,args.selection_id]:
-        if not __import__('re').fullmatch(r'[A-Za-z0-9_-]+',value): p.error('Simple new ids required')
-    run=Path('E:/BhuAayam-data/ml/runs') / args.run_id
-    entries=[json.loads(x) for x in (run / 'dev-selection.jsonl').read_text().splitlines()]
-    if not entries: raise ValueError('No completed epoch DEV receipt; leave training alone')
-    output=EVIDENCE / args.selection_id
+def f1(metrics: dict[str, Any]) -> float:
+    return 2 * metrics["tp"] / (2 * metrics["tp"] + metrics["fp"] + metrics["fn"])
+
+
+def parse_arguments() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--run-id", required=True)
+    parser.add_argument("--selection-id", required=True)
+    parser.add_argument("--provider", choices=("cpu", "cuda"), default="cpu")
+    parser.add_argument("--final", action="store_true", help="Require finished training before fixing candidate")
+    args = parser.parse_args()
+    for value in (args.run_id, args.selection_id):
+        if not re.fullmatch(r"[A-Za-z0-9_-]+", value):
+            parser.error("Simple new ids required")
+    return args
+
+
+def selection_plan(args: argparse.Namespace, entries: list[dict[str, Any]]) -> dict[str, Any]:
+    baseline = read_json(EVIDENCE / "b1-installed-dev-20261010/result.json")["metrics"]
+    return {
+        "schema": "building-dev-selection/1", "status": "started", "run_id": args.run_id,
+        "thresholds": list(THRESHOLDS), "completed_epochs": [entry["epoch"] for entry in entries],
+        "selection_rule": "Meet P>=.75 and R>=.70 if possible; otherwise max polygon F1, precision tie-break",
+        "checkpoint_rule": "Compare all completed epochs at the same three previously recorded DEV thresholds",
+        "baseline_dev_precision": baseline["per_building"]["precision"],
+        "baseline_dev_recall": baseline["per_building"]["recall"],
+        "baseline_dev_f1": f1(baseline["per_building"]),
+        "baseline_empty_fp": baseline["false_buildings_on_empty"],
+        "final_candidate_fixed": args.final, "holdout_calls": 0,
+        "git_sha": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip(),
+    }
+
+
+def cached_evaluation(checkpoint: Path, threshold: float) -> Path | None:
+    digest = sha(checkpoint / "model.safetensors")
+    for path in sorted(EVIDENCE.glob("*/result.json")):
+        record = read_json(path)
+        if record.get("schema") != "building-evaluation/1" or record.get("split") != "dev":
+            continue
+        if record["model"]["sha256"] == digest and record["profile"]["object_threshold"] == threshold:
+            return path
+    return None
+
+
+def evaluate_epoch(args: argparse.Namespace, epoch: dict[str, Any], threshold: float) -> Path:
+    checkpoint = Path(epoch["checkpoint"])
+    cached = cached_evaluation(checkpoint, threshold)
+    if cached is not None:
+        return cached
+    run_id = f"{args.selection_id}-e{epoch['epoch']:03d}-t{round(threshold * 100):03d}"
+    command = [
+        sys.executable, "-B", "-u", str(REPO / "scripts/ml/eval_buildings.py"),
+        "--model", str(checkpoint), "--split", "dev", "--provider", args.provider,
+        "--score-threshold", str(threshold), "--run-id", run_id,
+    ]
+    with (RUNS / args.run_id / f"{run_id}.log").open("x") as log:
+        subprocess.run(command, cwd=REPO, stdout=log, stderr=subprocess.STDOUT, check=True)
+    return EVIDENCE / run_id / "result.json"
+
+
+def evaluation_summary(path: Path, epoch: dict[str, Any], threshold: float) -> dict[str, Any]:
+    record = read_json(path)
+    checkpoint = Path(epoch["checkpoint"])
+    digest = sha(checkpoint / "model.safetensors")
+    if record["split"] != "dev" or record["model"]["sha256"] != digest:
+        raise ValueError("DEV receipt/checkpoint binding drift")
+    if record["coverage"]["completed_chips"] != 1434:
+        raise ValueError("DEV coverage incomplete")
+    metrics = record["metrics"]["per_building"]
+    return {
+        "epoch": epoch["epoch"], "checkpoint": str(checkpoint), "model_sha256": digest,
+        "threshold": threshold, "run_id": record["run_id"], "result_sha256": sha(path),
+        "precision": metrics["precision"], "recall": metrics["recall"], "f1": f1(metrics),
+        "empty_fp": record["metrics"]["false_buildings_on_empty"],
+        "gate_thresholds_met": metrics["precision"] >= 0.75 and metrics["recall"] >= 0.70,
+    }
+
+
+def complete_selection(plan: dict[str, Any], rows: list[dict[str, Any]]) -> dict[str, Any]:
+    chosen = max(rows, key=lambda row: (row["gate_thresholds_met"], row["f1"], row["precision"]))
+    return {
+        **plan, "status": "completed", "threshold_results": rows, "chosen": chosen,
+        "model_sha256": chosen["model_sha256"], "object_threshold": chosen["threshold"],
+        "beats_baseline_dev_f1": chosen["f1"] > plan["baseline_dev_f1"],
+        "precision_delta": chosen["precision"] - plan["baseline_dev_precision"],
+        "recall_delta": chosen["recall"] - plan["baseline_dev_recall"],
+        "empty_fp_delta": chosen["empty_fp"]["buildings"] - plan["baseline_empty_fp"]["buildings"],
+        "profile_version": f"rfdetr-rgb432-tile512-stride384-threshold{round(chosen['threshold'] * 100):03d}-mask000-v2",
+        "note": "Selection uses DEV only. Freeze this committed result before final HOLDOUT reservation.",
+    }
+
+
+def main() -> None:
+    configure_offline()
+    args = parse_arguments()
+    run = RUNS / args.run_id
+    if args.final and not (run / "result.json").is_file():
+        raise ValueError("Final selection requires a successfully finished training segment")
+    entries = [json.loads(line) for line in (run / "dev-selection.jsonl").read_text().splitlines()]
+    if not entries:
+        raise ValueError("No completed epoch DEV receipt")
+    output = EVIDENCE / args.selection_id
     output.mkdir(exist_ok=False)
-    # Choose among completed epochs using the same .5 polygon-F1 objective used
-    # by training/early stopping; never use visual inspection or held-out scores.
-    epoch=max(entries,key=lambda x:(x['dev_f1'],-x['epoch']))
-    checkpoint=Path(epoch['checkpoint'])
-    baseline=json.loads((EVIDENCE / 'b1-installed-dev-20261010/result.json').read_bytes())
-    base=baseline['metrics']['per_building']
-    plan={'schema':'building-dev-selection/1','status':'started','run_id':args.run_id,
-        'checkpoint':str(checkpoint),'checkpoint_sha256':sha(checkpoint / 'model.safetensors'),
-        'completed_epoch_records':entries,'thresholds':[.3,.5,.7],
-        'selection_rule':'Prefer a threshold meeting preregistered precision>=.75 and recall>=.70; otherwise highest production polygon F1, precision tie-break.',
-        'baseline_dev_precision':base['precision'],'baseline_dev_recall':base['recall'],
-        'baseline_dev_f1':f1(base),'baseline_empty_fp':baseline['metrics']['false_buildings_on_empty'],
-        'provisional':True,'final_candidate_fixed':False,'holdout_calls':0,
-        'git_sha':subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip()}
-    with (output / 'plan.json').open('x') as f: json.dump(plan,f,indent=2)
-    results=[]
-    for threshold in plan['thresholds']:
-        if threshold==.5:
-            run_id=epoch['dev_run_id']
-        else:
-            run_id=args.selection_id + '-t' + str(round(threshold*100)).zfill(3)
-            command=[sys.executable,'-B','-u',str(REPO / 'scripts/ml/eval_buildings.py'),
-                '--model',str(checkpoint),'--split','dev','--provider','cpu',
-                '--score-threshold',str(threshold),'--run-id',run_id]
-            with (run / (run_id+'.log')).open('x') as log:
-                subprocess.run(command,cwd=REPO,stdout=log,stderr=subprocess.STDOUT,check=True)
-        result=json.loads((EVIDENCE / run_id / 'result.json').read_bytes())
-        if result['split']!='dev' or result['model']['sha256']!=plan['checkpoint_sha256'] or result['coverage']['completed_chips']!=1434:
-            raise ValueError('DEV receipt/checkpoint/coverage binding drift')
-        m=result['metrics']['per_building']
-        results.append({'threshold':threshold,'run_id':run_id,'result_sha256':sha(EVIDENCE / run_id / 'result.json'),
-            'precision':m['precision'],'recall':m['recall'],'f1':f1(m),
-            'empty_fp':result['metrics']['false_buildings_on_empty'],
-            'gate_thresholds_met':m['precision']>=.75 and m['recall']>=.70})
-    best=max(results,key=lambda x:(x['gate_thresholds_met'],x['f1'],x['precision']))
-    result={**plan,'status':'completed','threshold_results':results,'chosen':best,
-        'beats_baseline_dev_f1':best['f1']>plan['baseline_dev_f1'],
-        'precision_delta':best['precision']-base['precision'],
-        'recall_delta':best['recall']-base['recall'],
-        'empty_fp_delta':best['empty_fp']['buildings']-plan['baseline_empty_fp']['buildings'],
-        'production_threshold_version_change_required':best['threshold']!=.5,
-        'note':'No HOLDOUT attempt 2; a non-.5 threshold is DEV-only until the lead approves/binds the final profile. Training may produce a better later checkpoint.'}
-    with (output / 'result.json').open('x') as f: json.dump(result,f,indent=2,allow_nan=False)
-    print(json.dumps(result,indent=2),flush=True)
+    plan = selection_plan(args, entries)
+    write_json(output / "plan.json", plan)
+    rows = []
+    for epoch in entries:
+        for threshold in THRESHOLDS:
+            path = evaluate_epoch(args, epoch, threshold)
+            rows.append(evaluation_summary(path, epoch, threshold))
+    result = complete_selection(plan, rows)
+    write_json(output / "result.json", result)
+    print(json.dumps(result["chosen"]), flush=True)
 
 
-if __name__=='__main__': main()
+if __name__ == "__main__":
+    main()
