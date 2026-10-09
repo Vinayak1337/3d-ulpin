@@ -1,0 +1,85 @@
+{
+  "version": "vector-plan-result/1",
+  "task": "P1",
+  "gate": [
+    "GF-AI:plan_rooms",
+    "GF-T16-prerequisite"
+  ],
+  "createdAt": "2026-10-09T19:09:28.144962+00:00",
+  "gitSha": "28d5f6aeb90a747a2c9aa08336cc8205f224620d",
+  "codeSha256": {
+    "scripts\\plans\\read_vector_plan.py": "072161ef27f4eda282fab2aad6b2d8a3c95440582407e836f32d652de5a135f0",
+    "services\\geo\\geo\\vector_plan.py": "d352090a140d201690baa049b2166cab3309e147a5a33fa7864dc9e7d9938948"
+  },
+  "dependencies": {
+    "PyMuPDF": "1.25.5",
+    "Shapely": "2.0.7",
+    "Pillow": "11.2.1",
+    "numpy": "2.5.3"
+  },
+  "inputManifest": {
+    "name": "bihar-magnolia-sanctioned-layout-original.pdf",
+    "path": "E:\\BhuAayam-data\\task-data\\association-sources-20260929\\bihar-magnolia-sanctioned-layout-original.pdf",
+    "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+    "bytes": 2455183,
+    "issuer": "unknown",
+    "originalUrl": null,
+    "acquiredAt": null,
+    "permission": {
+      "state": "unconfirmed",
+      "reason": "source-specific permission not provided"
+    },
+    "geography": "unknown",
+    "horizontalCrs": null,
+    "purpose": "test_only"
+  },
+  "inputSha256After": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+  "sourceHashUnchanged": true,
+  "pages": [
+    2
+  ],
+  "pageResults": {
+    "2": {
+      "classification": {
+        "kind": "vector_plan",
+        "reason": "vector strokes and stated dimension pairs or literal FLOOR PLAN heading",
+        "drawingPaths": 123763,
+        "strokeItems": 160562,
+        "nativeTextLines": 1093,
+        "dimensionPairLines": 44,
+        "images": 0
+      },
+      "roomsFound": 27,
+      "roomsWithParsedLabel": 6,
+      "roomsWithStatedDims": 9,
+      "consistency": {
+        "unknown": 19,
+        "mismatch": 8
+      },
+      "unattachedTextLines": 164,
+      "scaleMethod": "dimension_layer_tick_intersections+robust_consensus+least_squares_through_origin",
+      "metresPerPdfPoint": 0.03396031151158365,
+      "scaleMedianAbsoluteRelativeResidual": 0.0007501396291569576,
+      "scaleRmsResidualM": 0.0025874233457593987,
+      "scaleInliers": 110,
+      "runtimeSeconds": 2.3541903999866918,
+      "overlay": {
+        "file": "page-02-overlay.png",
+        "size": [
+          1601,
+          907
+        ],
+        "clipPdf": [
+          400.0,
+          1150.0,
+          1265.0,
+          1640.0
+        ],
+        "bytes": 361224
+      }
+    }
+  },
+  "runtimeSeconds": 2.7078233999200165,
+  "apiRouteWired": false,
+  "registryWrites": 0
+}

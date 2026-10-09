@@ -1,0 +1,282 @@
+{
+  "version": "vector-plan-result/1",
+  "task": "P1",
+  "gate": [
+    "GF-AI:plan_rooms",
+    "GF-T16-prerequisite"
+  ],
+  "createdAt": "2026-10-09T19:17:09.481751+00:00",
+  "gitSha": "309c93913c51bf6db4951206faaff374e3600b1a",
+  "codeSha256": {
+    "scripts\\plans\\read_vector_plan.py": "50a72a37003cf3ce7087b09942181c551992107c46e5ca908413635b530b6261",
+    "services\\geo\\geo\\vector_plan.py": "718d640d90204ca5b265be3fc9bdac775ab56d79676835df830b9a004c029352"
+  },
+  "dependencies": {
+    "PyMuPDF": "1.25.5",
+    "Shapely": "2.0.7",
+    "Pillow": "11.2.1",
+    "numpy": "2.5.3",
+    "Python": "3.13.7",
+    "MuPDF": "1.25.6"
+  },
+  "inputManifest": {
+    "name": "bihar-magnolia-sanctioned-layout-original.pdf",
+    "path": "E:\\BhuAayam-data\\task-data\\association-sources-20260929\\bihar-magnolia-sanctioned-layout-original.pdf",
+    "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+    "bytes": 2455183,
+    "issuer": "Bihar RERA / project submitter",
+    "originalUrl": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3SanctionedLayoutPlan.pdf",
+    "acquiredAt": "2026-09-25T00:38:59.574536Z",
+    "permission": {
+      "state": "unconfirmed",
+      "reason": "Source-specific redistribution and reuse licence not verified; local development evidence only"
+    },
+    "geography": "IN-BR: Magnolia Residency, Begusarai (source catalogue)",
+    "horizontalCrs": null,
+    "purpose": "test_only",
+    "catalogueRef": "docs/api/datasets.json#assets/bihar-magnolia-sanctioned-layout.pdf",
+    "sourceVersion": "drawings V5-01 and V5-02 dated 08.06.21",
+    "privacy": "May contain names, stamps or signatures. No public-service activation or reuse qualification."
+  },
+  "inputSha256After": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+  "sourceHashUnchanged": true,
+  "pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "pageResults": {
+    "1": {
+      "classification": {
+        "kind": "vector_other",
+        "reason": "vector content without room dimension pairs or floor-plan heading",
+        "drawingPaths": 81360,
+        "strokeItems": 82520,
+        "nativeTextLines": 104,
+        "dimensionPairLines": 0,
+        "images": 0
+      },
+      "roomsFound": 0,
+      "roomsWithParsedLabel": 0,
+      "roomsWithStatedDims": 0,
+      "consistency": {},
+      "unattachedTextLines": 49,
+      "scaleMethod": null,
+      "metresPerPdfPoint": null,
+      "scaleMedianAbsoluteRelativeResidual": null,
+      "scaleRmsResidualM": null,
+      "scaleInliers": null,
+      "runtimeSeconds": 0.39856000000145286,
+      "overlay": {
+        "file": "page-01-overlay.png",
+        "size": [
+          640,
+          542
+        ],
+        "clipPdf": [
+          0.0,
+          0.0,
+          1950.0,
+          1650.0
+        ],
+        "nonplanThumbnail": true,
+        "bytes": 86444
+      }
+    },
+    "2": {
+      "classification": {
+        "kind": "vector_plan",
+        "reason": "vector strokes and stated dimension pairs or literal FLOOR PLAN heading",
+        "drawingPaths": 123763,
+        "strokeItems": 160562,
+        "nativeTextLines": 1093,
+        "dimensionPairLines": 44,
+        "images": 0
+      },
+      "roomsFound": 27,
+      "roomsWithParsedLabel": 6,
+      "roomsWithStatedDims": 9,
+      "consistency": {
+        "unknown": 19,
+        "mismatch": 5,
+        "ok": 3
+      },
+      "unattachedTextLines": 164,
+      "scaleMethod": "dimension_layer_tick_intersections+robust_consensus+least_squares_through_origin",
+      "metresPerPdfPoint": 0.03396031151158365,
+      "scaleMedianAbsoluteRelativeResidual": 0.0007501396291569576,
+      "scaleRmsResidualM": 0.0025874233457593987,
+      "scaleInliers": 110,
+      "runtimeSeconds": 2.283114399993792,
+      "overlay": {
+        "file": "page-02-overlay.png",
+        "size": [
+          1601,
+          907
+        ],
+        "clipPdf": [
+          400.0,
+          1150.0,
+          1265.0,
+          1640.0
+        ],
+        "nonplanThumbnail": false,
+        "bytes": 361290
+      }
+    },
+    "3": {
+      "classification": {
+        "kind": "not_vector",
+        "reason": "insufficient_vector_linework; native reader does not OCR or infer rooms from raster images",
+        "drawingPaths": 0,
+        "strokeItems": 0,
+        "nativeTextLines": 0,
+        "dimensionPairLines": 0,
+        "images": 1
+      },
+      "roomsFound": 0,
+      "roomsWithParsedLabel": 0,
+      "roomsWithStatedDims": 0,
+      "consistency": {},
+      "unattachedTextLines": 0,
+      "scaleMethod": null,
+      "metresPerPdfPoint": null,
+      "scaleMedianAbsoluteRelativeResidual": null,
+      "scaleRmsResidualM": null,
+      "scaleInliers": null,
+      "runtimeSeconds": 0.0004056000616401434,
+      "overlay": {
+        "file": "page-03-overlay.png",
+        "size": [
+          449,
+          640
+        ],
+        "clipPdf": [
+          0.0,
+          0.0,
+          578.1599731445312,
+          824.4000244140625
+        ],
+        "nonplanThumbnail": true,
+        "bytes": 206618
+      }
+    },
+    "4": {
+      "classification": {
+        "kind": "not_vector",
+        "reason": "insufficient_vector_linework; native reader does not OCR or infer rooms from raster images",
+        "drawingPaths": 0,
+        "strokeItems": 0,
+        "nativeTextLines": 0,
+        "dimensionPairLines": 0,
+        "images": 1
+      },
+      "roomsFound": 0,
+      "roomsWithParsedLabel": 0,
+      "roomsWithStatedDims": 0,
+      "consistency": {},
+      "unattachedTextLines": 0,
+      "scaleMethod": null,
+      "metresPerPdfPoint": null,
+      "scaleMedianAbsoluteRelativeResidual": null,
+      "scaleRmsResidualM": null,
+      "scaleInliers": null,
+      "runtimeSeconds": 0.0004293000092729926,
+      "overlay": {
+        "file": "page-04-overlay.png",
+        "size": [
+          449,
+          640
+        ],
+        "clipPdf": [
+          0.0,
+          0.0,
+          578.1599731445312,
+          824.4000244140625
+        ],
+        "nonplanThumbnail": true,
+        "bytes": 200023
+      }
+    },
+    "5": {
+      "classification": {
+        "kind": "not_vector",
+        "reason": "insufficient_vector_linework; native reader does not OCR or infer rooms from raster images",
+        "drawingPaths": 0,
+        "strokeItems": 0,
+        "nativeTextLines": 0,
+        "dimensionPairLines": 0,
+        "images": 1
+      },
+      "roomsFound": 0,
+      "roomsWithParsedLabel": 0,
+      "roomsWithStatedDims": 0,
+      "consistency": {},
+      "unattachedTextLines": 0,
+      "scaleMethod": null,
+      "metresPerPdfPoint": null,
+      "scaleMedianAbsoluteRelativeResidual": null,
+      "scaleRmsResidualM": null,
+      "scaleInliers": null,
+      "runtimeSeconds": 0.0004088999703526497,
+      "overlay": {
+        "file": "page-05-overlay.png",
+        "size": [
+          449,
+          640
+        ],
+        "clipPdf": [
+          0.0,
+          0.0,
+          578.1599731445312,
+          824.4000244140625
+        ],
+        "nonplanThumbnail": true,
+        "bytes": 204120
+      }
+    },
+    "6": {
+      "classification": {
+        "kind": "not_vector",
+        "reason": "insufficient_vector_linework; native reader does not OCR or infer rooms from raster images",
+        "drawingPaths": 0,
+        "strokeItems": 0,
+        "nativeTextLines": 0,
+        "dimensionPairLines": 0,
+        "images": 1
+      },
+      "roomsFound": 0,
+      "roomsWithParsedLabel": 0,
+      "roomsWithStatedDims": 0,
+      "consistency": {},
+      "unattachedTextLines": 0,
+      "scaleMethod": null,
+      "metresPerPdfPoint": null,
+      "scaleMedianAbsoluteRelativeResidual": null,
+      "scaleRmsResidualM": null,
+      "scaleInliers": null,
+      "runtimeSeconds": 0.00034499994944781065,
+      "overlay": {
+        "file": "page-06-overlay.png",
+        "size": [
+          449,
+          640
+        ],
+        "clipPdf": [
+          0.0,
+          0.0,
+          578.1599731445312,
+          824.4000244140625
+        ],
+        "nonplanThumbnail": true,
+        "bytes": 249763
+      }
+    }
+  },
+  "runtimeSeconds": 3.4194222999503836,
+  "apiRouteWired": false,
+  "registryWrites": 0
+}
