@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "k2-runtime-evidence/1",
+  "gatesPassed": [],
+  "gateStatus": {
+    "GF-CONTRACT": "focused_contract_verified",
+    "GF-SCENE": "adapter_verified_renderer_unqualified",
+    "GF-BACKEND": "blocked",
+    "GF-DATA": "blocked"
+  },
+  "runtime": {
+    "profile": "demo",
+    "worktree": "E:/Projects/ulpin-wt/k1",
+    "leftRunning": true,
+    "health": true
+  },
+  "http": {
+    "area": 200,
+    "building": 200,
+    "exactCurrentRevision": 200,
+    "unavailableRevision": 404,
+    "crossSite": 403
+  },
+  "records": {
+    "gmdaRoadProposals": 2,
+    "nycBuildingProposals": 62,
+    "reviewedOrCommittedBuildings": 0,
+    "tower3BuildingInstalled": false,
+    "biharMagnoliaBuildingInstalled": false,
+    "sourceReceipts": 3
+  },
+  "sources": {
+    "nycSha256": "869c5dc4fb50d71be4f62f4a2936c29bd95ade14c712bdf4f51986841d82771a",
+    "tower3Sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+    "originalHashesUnchanged": true
+  },
+  "difficultInput": {
+    "nativeStatus": "needs_ocr",
+    "nativeCode": "NATIVE_TEXT_UNAVAILABLE",
+    "ocr": {
+      "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+      "sourceRevision": 1,
+      "sourcePage": 1,
+      "requestedRegion": null,
+      "sourcePageFrame": null,
+      "method": "ocr:tesseract-cli-5.5.1:sparse-tsv-v1",
+      "toolStatus": "unavailable",
+      "outputStatus": "failed",
+      "textCompleteness": "unverified",
+      "issues": [
+        "OCR_RUNTIME_UNAVAILABLE"
+      ]
+    },
+    "storeyConflict": [
+      "G+41",
+      "G+42"
+    ],
+    "conflictLocation": "../k1/tower3-example.json",
+    "conflictInstalled": false
+  },
+  "import": {
+    "packageId": "ba7a0da7-766b-4def-8282-191a3b47d4a6",
+    "areaId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b",
+    "questionCount": 0,
+    "review": "USP_GEOMETRY_PAYLOAD_UNQUALIFIED",
+    "prepare": "USP_GEOMETRY_PAYLOAD_UNQUALIFIED",
+    "commit": "STALE_REVISION",
+    "pdfImport": "INVALID_INPUT",
+    "pdfInspection": "AREA_PROCESSING"
+  },
+  "sourcePinsRegeneration": "lead required: docs/api/source-pins.json is outside K1 ownership",
+  "next": [
+    "Resolve fresh-import source review versus geometry-analysis qualification without bypassing analytical safeguards.",
+    "Extend the existing import contract to admit source-cited buildings with unknown footprint and placement; no parallel importer or invented polygons.",
+    "Admit sector boundaries as administrative context, not parcels or public land; preserve road centrelines without guessed widths.",
+    "Configure the existing local OCR runtime; no credentials changed or provider used.",
+    "Install Tower 3 and Bihar Magnolia after import support, retain storey conflict, then recurl both routes.",
+    "Scene owner to consume styles sidecar for candidate outlines and estimated envelope hatching.",
+    "Add exact complete historical projection support using existing retained snapshots; current-only revision reads are honest 404."
+  ]
+}
