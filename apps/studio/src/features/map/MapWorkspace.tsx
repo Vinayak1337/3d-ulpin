@@ -15,10 +15,11 @@ import { AddFilesDialog } from '../intake/AddFilesDialog';
 import { DeleteDialog } from '../manage/DeleteDialog';
 import { CardDialog } from '../identity/CardDialog';
 import { useSpaceWorkflow } from '../workflow/useWorkflow';
-import { polygonsOf } from './footprints';
+import { polygonsOf, undrawnNote } from './footprints';
 import { findingVolume, useBuildingScene } from './useBuildingScene';
 import { PlanCheck, type MapPlanCheck } from './PlanCheck';
 import { isDemoId } from '../../api/demo-import';
+import { isServed } from '../../local/routes';
 import { MapSidebar, type ViewKey } from './MapSidebar';
 import { BuildingImportTray, ImportTray } from './ImportTray';
 import { ScaleAndNorth } from './ScaleAndNorth';
@@ -47,6 +48,8 @@ const shownQuarantine = new Set<string>();
  * one inspector and one left navigation. The URL holds the selection.
  */
 const NO_LOADED_OVERLAYS: LoadedOverlay[] = [];
+const canDeleteBuilding = isServed('DELETE', '/api/v1/buildings/:buildingId');
+const canDeleteArea = isServed('DELETE', '/api/v1/areas/:areaId');
 
 export function MapWorkspace({ context }: { context: AreaContext }) {
   context = { ...context, features: context.displayFeatures ?? context.features };
@@ -120,7 +123,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   ], [loadedOverlays, mapView.overlays, showContextOverlays, activePlan]);
   const visibleOverlays = loadedOverlays.filter((o) => showContextOverlays && mapView.overlays[o.layer]);
   const overlayNotes = visibleOverlays.map((o) => o.note);
-  const viewNotes = [mapView.look === 'enhanced' ? 'Enhanced view' : null, ...visibleOverlays.map((o) => o.caption), ...(overlayQuery.data?.warnings ?? [])].filter(Boolean);
+  const viewNotes = [mapView.look === 'enhanced' ? 'Enhanced view' : null, ...visibleOverlays.map((o) => o.caption), undrawnNote(context.features), ...(overlayQuery.data?.warnings ?? [])].filter(Boolean);
   const layerSwitches = [
     { key: 'look', label: 'Enhanced view', checked: mapView.look === 'enhanced' },
     ...(baseKinds.has('road') ? [{ key: 'roads', label: 'Roads', checked: mapView.layers.roads }] : []),
@@ -320,7 +323,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   } else if (feature) {
     inspector = (
       <BuildingInspector feature={feature} register={register} model={model} ledger={ledger} registerPending={registerQuery.isPending} crumbs={crumbs}
-        exploring={selection.mode === 'level'} onAddFiles={() => setDialog('files')} onDelete={() => setDialog('delete-building')}
+        exploring={selection.mode === 'level'} onAddFiles={() => setDialog('files')} onDelete={canDeleteBuilding ? () => setDialog('delete-building') : undefined}
         onExplore={() => { const f = typicalFloor(); if (f) dispatch({ type: 'selectLevel', id: f.id }); }}
         onFindings={(findingId) => dispatch({ type: 'openFindings', findingId: findingId ?? null })} />
     );
@@ -417,7 +420,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                 onSelectSpace={(s) => s.levelId && dispatch({ type: 'pickSpace', id: s.id, levelId: s.levelId })}
                 viewFooter={<>
                   <p className={styles.gestures}>Drag to move. Two-finger swipe or right-drag to rotate. Pinch or scroll to zoom.</p>
-                  {!feature ? <Button variant="ghost" icon={Trash} className={styles.deleteArea} onClick={() => setDialog('delete-area')}>Delete area</Button> : null}
+                  {!feature && canDeleteArea ? <Button variant="ghost" icon={Trash} className={styles.deleteArea} onClick={() => setDialog('delete-area')}>Delete area</Button> : null}
                 </>}
               />
             </details>
