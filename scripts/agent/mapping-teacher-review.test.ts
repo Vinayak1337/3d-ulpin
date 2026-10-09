@@ -4,6 +4,8 @@ import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { profileColumns } from '../../packages/server/src/modules/usp/ingestion/column-profile';
+import { hash } from '../../packages/server/src/modules/model-gateway/config';
+import { TeacherRecordings, type TeacherRecording } from '../../packages/server/src/modules/model-gateway/recordings';
 import { columnProfileHash } from '../../packages/server/src/modules/usp/ingestion/mapping-teacher';
 import {
   DEVELOPMENT_TEACHER_METHOD,
@@ -46,4 +48,30 @@ test('label verification is per field, accepts a ten-percent issue rate, and rep
   assert.deepEqual(examples.map(example => example.verified), [true, true, false]);
   assert.deepEqual(examples[1].dryRun, { cells: 10, needsInput: 1, conflicting: 0 });
   assert.deepEqual(examples[2].dryRun, { cells: 10, needsInput: 2, conflicting: 0 });
+});
+
+test('replay selects the newest valid timestamp, not UUID order, and ignores invalid newer entries', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'a2-latest-replay-'));
+  const profileHash = hash('software-control-profile');
+  const replayKey = hash({ template: 'control-template', profileHash, model: 'sarvam-105b' });
+  function entry(recordedAt: string, marker: string, valid = true): TeacherRecording {
+    const response = { output: { marker }, responseHash: hash(marker), httpStatus: 200 };
+    return {
+      version: 'teacher-recording/1', adapterKind: 'control', recordedAt,
+      templateVersion: 'control-template', model: 'sarvam-105b', requestHash: hash('control-request'),
+      profileHash, replayKey, attempt: 1, latencyMs: 0, rawResponse: response.output,
+      responseHash: response.responseHash, response, responseIntegrity: hash(response),
+      parsedPlan: { softwareControl: true }, validation: { success: valid },
+      tokens: null, costMicroInr: null, priceVersion: 'software-control',
+    };
+  }
+  function save(name: string, recording: TeacherRecording) {
+    writeFileSync(join(directory, name), JSON.stringify({ ...recording, recordHash: hash(recording) }) + '\n');
+  }
+  save('teacher-0000.jsonl', entry('2026-10-10T12:00:00Z', 'newest-valid'));
+  save('teacher-ffff.jsonl', entry('2026-10-09T12:00:00Z', 'older'));
+  save('teacher-ffff-ffff.jsonl', entry('2026-10-11T12:00:00Z', 'invalid-newer', false));
+  save('teacher-abcd.jsonl', entry('invalid-date', 'invalid-timestamp'));
+  const replay = await new TeacherRecordings(directory).replay(replayKey);
+  assert.deepEqual(replay?.response.output, { marker: 'newest-valid' });
 });
