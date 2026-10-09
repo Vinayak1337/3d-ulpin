@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "rera-storey-split/1",
+  "allocationUnit": "project; all tower/plan/page relatives kept together",
+  "frozenAt": "2026-10-09T19:20:12.549778+00:00",
+  "extraProjects": [
+    {
+      "projectSourceId": "RERAP01282025205138-1",
+      "split": "dev",
+      "buildingRecords": 1,
+      "pdfAcquired": true
+    },
+    {
+      "projectSourceId": "RERAP285201800427-9",
+      "split": "dev",
+      "buildingRecords": 4,
+      "pdfAcquired": true
+    },
+    {
+      "projectSourceId": "RERAP279201800923-1",
+      "split": "dev",
+      "buildingRecords": 1,
+      "pdfAcquired": true
+    },
+    {
+      "projectSourceId": "RERAP269201800915-2",
+      "split": "holdout",
+      "buildingRecords": 1,
+      "pdfAcquired": true
+    },
+    {
+      "projectSourceId": "RERAP69201800824-1",
+      "split": "holdout",
+      "buildingRecords": 1,
+      "pdfAcquired": true
+    },
+    {
+      "projectSourceId": "RERAP296201800558-2",
+      "split": "holdout",
+      "buildingRecords": 1,
+      "pdfAcquired": true
+    }
+  ],
+  "teacherPolicy": "No teacher sees holdout project documents or truths. Evaluate rules/student only; no holdout tuning.",
+  "demoProjects": [
+    "haryana-2831",
+    "RERAP2311201700019-3"
+  ],
+  "holdoutSeal": {
+    "path": "docs/evidence/usp/finale/GF-DATA/storey-truth/holdout-manifest.json",
+    "sha256": "51a484acf1e1b514182d4843c7ebb5d29bb6ee74a9e0892a3bfb2b4ed67676dc",
+    "frozenAt": "2026-10-09T19:22:22.239613+00:00"
+  }
+}
