@@ -1,4 +1,6 @@
 import {z} from 'zod';
+import type {MappingPlanV2} from '@ulpin/contracts';
+import {isMappingPlanV2,mappingContextFromGisProfile,validateMappingPlanV2,type MappingValidationContext} from './mapping-plan-v2';
 import {
   AdaptiveMappingModelOutputSchema,INGESTION_VERSION,MappingPlanSchema,SourceProfileSchema,
   type MappingPlan,type SourceProfile,
@@ -10,8 +12,20 @@ type Decision={status:'proposed'|'needs_input';code:string|null;plan:MappingPlan
 const invalid=(code:string,message:string):Decision=>({status:'needs_input',code,plan:null,validationErrors:[message]});
 const decodedField=(path:string)=>path.split('/properties/')[1]?.replaceAll('~1','/').replaceAll('~0','~') ?? '';
 
+type V2Decision={status:'proposed'|'needs_input';code:string|null;plan:MappingPlanV2|null;validationErrors:string[]};
 /** This checks source inventory and executable mechanics. Human/source-document review still decides meaning. */
-export function validateAdaptiveMapping(raw:unknown,sourceProfile:SourceProfile,visiblePaths?:readonly string[]):Decision{
+export function validateAdaptiveMapping(raw:MappingPlanV2,sourceProfile:SourceProfile|MappingValidationContext,visiblePaths?:readonly string[]):V2Decision;
+export function validateAdaptiveMapping(raw:unknown,sourceProfile:SourceProfile,visiblePaths?:readonly string[]):Decision;
+export function validateAdaptiveMapping(raw:unknown,sourceProfile:MappingValidationContext,visiblePaths?:readonly string[]):V2Decision;
+export function validateAdaptiveMapping(raw:unknown,sourceProfile:SourceProfile|MappingValidationContext,visiblePaths?:readonly string[]):Decision|V2Decision{
+  if(isMappingPlanV2(raw)||'sourceKind' in sourceProfile){
+    const context='sourceKind' in sourceProfile?sourceProfile:mappingContextFromGisProfile(sourceProfile);
+    const result=validateMappingPlanV2(raw,context);
+    if(!result.success)return {status:'needs_input',code:result.errors[0].code,plan:null,validationErrors:result.errors.map(error=>error.code)};
+    if(visiblePaths&&result.plan.fields.some(field=>!visiblePaths.includes(field.sourceField)))
+      return {status:'needs_input',code:'MAPPING_SOURCE_FIELD_UNKNOWN',plan:null,validationErrors:['MAPPING_SOURCE_FIELD_UNKNOWN']};
+    return {status:'proposed',code:null,plan:result.plan,validationErrors:[]};
+  }
   const profile=SourceProfileSchema.parse(sourceProfile),parsed=AdaptiveMappingModelOutputSchema.safeParse(raw);
   if(!parsed.success)return invalid('MODEL_OUTPUT_INVALID','The model output does not match the mapping proposal schema.');
   const output=parsed.data;
