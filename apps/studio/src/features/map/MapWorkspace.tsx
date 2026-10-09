@@ -15,7 +15,7 @@ import { AddFilesDialog } from '../intake/AddFilesDialog';
 import { DeleteDialog } from '../manage/DeleteDialog';
 import { CardDialog } from '../identity/CardDialog';
 import { useSpaceWorkflow } from '../workflow/useWorkflow';
-import { polygonsOf } from './footprints';
+import { polygonsOf, undrawnNote } from './footprints';
 import { findingVolume, useBuildingScene } from './useBuildingScene';
 import { PlanCheck, type MapPlanCheck } from './PlanCheck';
 import { isDemoId } from '../../api/demo-import';
@@ -120,7 +120,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   ], [loadedOverlays, mapView.overlays, showContextOverlays, activePlan]);
   const visibleOverlays = loadedOverlays.filter((o) => showContextOverlays && mapView.overlays[o.layer]);
   const overlayNotes = visibleOverlays.map((o) => o.note);
-  const viewNotes = [mapView.look === 'enhanced' ? 'Enhanced view' : null, ...visibleOverlays.map((o) => o.caption), ...(overlayQuery.data?.warnings ?? [])].filter(Boolean);
+  const viewNotes = [mapView.look === 'enhanced' ? 'Enhanced view' : null, ...visibleOverlays.map((o) => o.caption), undrawnNote(context.features), ...(overlayQuery.data?.warnings ?? [])].filter(Boolean);
   const layerSwitches = [
     { key: 'look', label: 'Enhanced view', checked: mapView.look === 'enhanced' },
     ...(baseKinds.has('road') ? [{ key: 'roads', label: 'Roads', checked: mapView.layers.roads }] : []),

@@ -49,12 +49,22 @@ async function getDraft<T>(path: string): Promise<T | null> {
   return (await response.json()) as T;
 }
 
+/**
+ * The running API serves this path as `building-ledger/1` (parcel ULPIN, spaces, sources, history), a different
+ * shape from the draft the screens read. Only the draft shape is accepted; any other body counts as "none".
+ */
+const isDraftLedger = (body: unknown): body is BuildingLedger =>
+  typeof body === 'object' && body !== null && !('schemaVersion' in body);
+
 /** Rights, areas, shares, readiness, checks and history of a building. Null when the backend has none. */
 export function useBuildingLedger(buildingId: string | null | undefined, live = false) {
   return useQuery({
     queryKey: queryKeys.ledger(buildingId ?? ''),
     enabled: Boolean(buildingId),
-    queryFn: () => getDraft<BuildingLedger>(`/api/v1/buildings/${buildingId}/ledger`),
+    queryFn: async () => {
+      const body = await getDraft<unknown>(`/api/v1/buildings/${buildingId}/ledger`);
+      return isDraftLedger(body) ? body : null;
+    },
     staleTime: 60_000,
     refetchInterval: live ? 700 : false,
   });

@@ -109,3 +109,15 @@ export function polygonsOf(geometry: AreaFeature['geometry']): MultiPolygon {
   if (g.type === 'MultiPolygon') return g.coordinates as MultiPolygon;
   return [];
 }
+
+/** Features recorded as lines or points have no area to draw; the map says how many it leaves out. */
+export function undrawnNote(features: AreaFeature[]): string | null {
+  const counts = new Map<string, number>();
+  for (const feature of features) {
+    if (polygonsOf(feature.geometry).length) continue;
+    counts.set(feature.kind, (counts.get(feature.kind) ?? 0) + 1);
+  }
+  if (!counts.size) return null;
+  const parts = [...counts].map(([kind, count]) => `${count} ${kind.replace('_', ' ')}`);
+  return `Not drawn: ${parts.join(', ')} recorded as lines or points. The map draws areas only.`;
+}
