@@ -17,6 +17,7 @@ import numpy as np
 from PIL import Image
 import rasterio
 from rasterio.features import rasterize
+from rasterio.warp import transform_geom
 from pyproj import Transformer
 from pycocotools import mask as mask_api
 
@@ -142,15 +143,41 @@ def export(items, output, role):
     if (target / "_annotations.coco.json").exists():
         raise FileExistsError(f"Frozen export already exists: {target}")
     images, annotations, zero = [], [], []
+    # Durable per-image export records survive a worker time box. Never replace
+    # originals/PNGs or discard an interrupted export; resume checked records.
+    journal_path = target / "export-progress.jsonl"
+    cached = {}
+    if journal_path.exists():
+        for line in journal_path.read_text(encoding="utf-8").splitlines():
+            record = json.loads(line)
+            if record["method"] != "pixel-centre-declared-crs/2":
+                raise ValueError("Partial export method differs; preserve and diagnose")
+            cached[(record["image"]["region"], record["image"]["source_id"])] = record
     for image_id, item in enumerate(sorted(items, key=lambda x: (x["region"], x["id"])), 1):
+        prior = cached.get((item["region"], item["id"]))
+        if prior:
+            image = prior["image"]
+            if image["id"] != image_id or image["source_image_sha256"] != item["source_image"]["sha256"] or image["source_label_sha256"] != item["source_label"]["sha256"]:
+                raise ValueError("Partial export source inventory/order changed")
+            rgb = np.asarray(Image.open(target / image["file_name"]))
+            if hashlib.sha256(rgb.tobytes()).hexdigest() != image["rgb_pixel_sha256"]:
+                raise ValueError("Partial export RGB pixels changed")
+            if any(a["id"] != len(annotations) + i + 1 for i, a in enumerate(prior["annotations"])):
+                raise ValueError("Partial export instance order changed")
+            images.append(image)
+            annotations.extend(prior["annotations"])
+            zero.extend(prior["zero"])
+            continue
+        annotation_start, zero_start = len(annotations), len(zero)
         image_path = Path(item["source_image"]["local_path"])
         label_path = Path(item["source_label"]["local_path"])
         doc = json.loads(label_path.read_bytes())
         with rasterio.open(image_path) as ds:
             rgb = ds.read().transpose(1, 2, 0)
             transform = ds.transform
-            if ds.crs.to_epsg() != 4326:
-                raise ValueError("GeoJSON/WGS84 raster mismatch: explicit geometry reprojection required")
+            source_crs = ds.crs
+            if not source_crs:
+                raise ValueError("Unknown original raster CRS; never infer a zone")
         file_name = item["region"] + "--" + item["id"] + ".png"
         png = target / file_name
         if png.exists():
@@ -159,11 +186,16 @@ def export(items, output, role):
         else:
             with png.open("xb") as f:
                 Image.fromarray(rgb).save(f, format="PNG")
-        images.append({"id": image_id, "file_name": file_name, "width": item["width"], "height": item["height"], "license": 1, "source_id": item["id"], "region": item["region"], "cluster_id": item["cluster_id"], "source_image_sha256": item["source_image"]["sha256"], "source_label_sha256": item["source_label"]["sha256"], "rgb_pixel_sha256": hashlib.sha256(rgb.tobytes()).hexdigest(), "empty": item["empty"]})
+        images.append({"id": image_id, "file_name": file_name, "width": item["width"], "height": item["height"], "license": 1, "source_id": item["id"], "region": item["region"], "cluster_id": item["cluster_id"], "source_image_sha256": item["source_image"]["sha256"], "source_label_sha256": item["source_label"]["sha256"], "source_crs": item["source_crs"], "source_affine": item["affine"], "label_crs": "EPSG:4326 (RFC 7946)", "label_to_raster_operation": "identity" if source_crs.to_epsg() == 4326 else "rasterio.warp.transform_geom: EPSG:4326 to declared original raster CRS", "rgb_pixel_sha256": hashlib.sha256(rgb.tobytes()).hexdigest(), "empty": item["empty"]})
         for index, feature in enumerate(doc["features"]):
             if feature["geometry"]["type"] not in ("Polygon", "MultiPolygon") or feature.get("properties", {}).get("label") != "building":
                 raise ValueError("Unsupported publisher feature; never silently drop/relabel")
-            mask = rasterize([(feature["geometry"], 1)], out_shape=(item["height"], item["width"]), transform=transform, all_touched=False, dtype="uint8")
+            geometry = feature["geometry"]
+            if source_crs.to_epsg() != 4326:
+                # RFC 7946 label coordinates are WGS84; use ONLY the GeoTIFF's
+                # declared CRS (Dhaka is EPSG:32646), never guess from ranges.
+                geometry = transform_geom("EPSG:4326", source_crs, geometry, precision=-1)
+            mask = rasterize([(geometry, 1)], out_shape=(item["height"], item["width"]), transform=transform, all_touched=False, dtype="uint8")
             # Same uncompressed column-major RLE as prepare_ramp_coco.py.
             flat = mask.ravel(order="F")
             changes = np.flatnonzero(flat[1:] != flat[:-1]) + 1
@@ -180,9 +212,11 @@ def export(items, output, role):
             annotations.append({"id": ann_id, "image_id": image_id, "category_id": 1, "segmentation": rle, "area": int(mask.sum()), "bbox": bbox, "iscrowd": 0, "source_locator": f"{item['source_label']['sha256']}#features/{index}", "publisher_feature_id": feature.get("id"), "zero_pixel": not len(xx)})
             if not len(xx):
                 zero.append({"chip_id": item["id"], "feature_index": index})
+        with journal_path.open("a", encoding="utf-8") as checkpoint:
+            checkpoint.write(json.dumps({"method": "pixel-centre-declared-crs/2", "image": images[-1], "annotations": annotations[annotation_start:], "zero": zero[zero_start:]}) + "\n")
         if image_id % 500 == 0:
-            print(json.dumps({"export": role, "images": image_id}), flush=True)
-    value = {"info": {"description": "RAMP publisher-reviewed roof instances; test_only; no property/rights truth", "version": "1", "split": role, "rasterization": "Pixel-centre, source affine, exterior minus holes; one instance per original feature, no relabelling", "zero_pixel_policy": "Retain source features with area/bbox zero; evaluator reports raster-unresolvable instances separately, trainer must declare disposition", "zero_pixel_features": zero}, "licenses": [{"id": 1, "name": "CC-BY-NC-4.0", "url": "https://creativecommons.org/licenses/by-nc/4.0/"}], "categories": [{"id": 1, "name": "building", "supercategory": "roofprint"}], "images": images, "annotations": annotations}
+            print(json.dumps({"export": role, "images": image_id, "instances": len(annotations)}), flush=True)
+    value = {"info": {"description": "RAMP publisher-reviewed roof instances; test_only; no property/rights truth", "version": "1", "split": role, "rasterization": "Pixel-centre, source affine, exterior minus holes; WGS84 GeoJSON reprojected explicitly to each declared original GeoTIFF CRS with rasterio/PROJ; one instance per original feature, no relabelling", "zero_pixel_policy": "Retain source features with area/bbox zero; evaluator reports raster-unresolvable instances separately, trainer must declare disposition", "zero_pixel_features": zero}, "licenses": [{"id": 1, "name": "CC-BY-NC-4.0", "url": "https://creativecommons.org/licenses/by-nc/4.0/"}], "categories": [{"id": 1, "name": "building", "supercategory": "roofprint"}], "images": images, "annotations": annotations}
     save_new(target / "_annotations.coco.json", value)
     return {"split": role, "images": len(images), "instances": len(annotations), "empty_chips": sum(x["empty"] for x in images), "zero_pixel_features": len(zero), "annotations_sha256": sha(target / "_annotations.coco.json")}
 

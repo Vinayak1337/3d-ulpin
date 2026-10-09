@@ -74,10 +74,12 @@ def download(root, item):
         if start > item["size"]:
             raise ValueError(f"Oversize transfer state: {part}")
         if start != item["size"]:
-            headers = {"Range": f"bytes={start}-"} if start else {}
+            # Anonymous legacy Azure Blob API ignores standard Range unless an
+            # explicit modern service version is supplied. Tested x-ms-range.
+            headers = {"x-ms-range": f"bytes={start}-", "x-ms-version": "2023-11-03"} if start else {}
             with urllib.request.urlopen(urllib.request.Request(item["url"], headers=headers), timeout=90) as response:
                 if start and (response.status != 206 or not response.headers.get("Content-Range", "").startswith(f"bytes {start}-")):
-                    raise ValueError("Server did not honour resume range")
+                    raise ValueError(f"Server did not honour resume range: status={response.status}, Content-Range={response.headers.get('Content-Range')!r}")
                 with part.open("ab" if start else "wb") as f:
                     while chunk := response.read(1024 * 1024):
                         f.write(chunk)
@@ -104,9 +106,22 @@ def main():
     journal = root / "download-journal.jsonl"
     completed = {}
     if journal.exists():
-        for line in journal.read_text(encoding="utf-8").splitlines():
-            record = json.loads(line)
+        # A process can die during its final journal write. Retain that line,
+        # recover only valid records and hash-recover its immutable original
+        # through the normal pending path. Never truncate acquisition evidence.
+        raw_journal = journal.read_text(encoding="utf-8")
+        for number, line in enumerate(raw_journal.splitlines(), 1):
+            if not line.strip():
+                continue
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError:
+                print(json.dumps({"event": "torn_journal_line_preserved", "line": number}), flush=True)
+                continue
             completed[record["path"]] = record
+        if raw_journal and not raw_journal.endswith("\n"):
+            with journal.open("a", encoding="utf-8") as f:
+                f.write("\n")
     all_inventory = []
     failures = []
     def manifest():
