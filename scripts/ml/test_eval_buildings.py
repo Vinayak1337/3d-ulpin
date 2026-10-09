@@ -34,6 +34,17 @@ class CommittedGuardRegression(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "differs from committed"):
                     evaluate.committed(path)
 
+    def test_original_run_selection_is_not_a_continuation_selection(self) -> None:
+        args = __import__("argparse").Namespace(
+            selection_result=evaluate.EVIDENCE / "b3-final-dev-selection-20261010/result.json"
+        )
+        log = evaluate.EVIDENCE / "transfer-runs.jsonl"
+        before = log.read_bytes() if log.exists() else None
+        with patch.object(evaluate, "committed", return_value="committed"):
+            with self.assertRaisesRegex(ValueError, "finished B4 continuation"):
+                evaluate.transfer_reserve(args, "unused", "unused")
+        self.assertEqual(log.read_bytes() if log.exists() else None, before)
+
     def test_two_reserved_attempts_deny_before_model_loading(self):
         with tempfile.TemporaryDirectory(dir="E:/BhuAayam-data/ml") as root:
             evidence = Path(root)

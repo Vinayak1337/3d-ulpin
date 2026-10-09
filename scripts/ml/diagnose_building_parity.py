@@ -6,6 +6,7 @@ import argparse
 from functools import partial
 import json
 from pathlib import Path
+import re
 import time
 from typing import Any
 
@@ -49,6 +50,7 @@ class IntermediateExport(Export):
         elif name == "decoder":
             self.captured[name] = output.last_hidden_state
         elif name not in self.captured:
+            # The classifier is called again on selected queries; retain pre-TopK scores.
             self.captured[name] = output
 
     def capture_decoder_input(self, module: Any, arguments: Any, keywords: dict[str, Any]) -> None:
@@ -186,9 +188,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--run-id", required=True)
-    parser.add_argument("--chip-index", type=int, default=0)
+    parser.add_argument("--chip-index", type=int, choices=range(20), default=0)
     parser.add_argument("--measure-fallback", action="store_true")
     args = parser.parse_args()
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", args.run_id):
+        parser.error("Simple unique run-id required")
     torch.set_num_threads(2)
     torch.manual_seed(26011)
     output = RUNS / args.run_id
