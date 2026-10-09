@@ -1,0 +1,268 @@
+{
+  "schemaVersion": "rera-storey-source-truth/1",
+  "canonicalBuildingId": null,
+  "split": "demo",
+  "recordedAt": "2026-10-09T19:21:27.571665+00:00",
+  "purpose": "test_only",
+  "permission": {
+    "state": "unconfirmed",
+    "scope": "Owner-approved public local development; no operational publication or training grant."
+  },
+  "reference": {
+    "horizontalCrs": null,
+    "verticalReference": "building_relative drawing labels; global datum unknown"
+  },
+  "projectSourceId": "2831",
+  "buildingLiteral": "TOWER 3",
+  "truthKind": "conflict_preservation_with_registry_scope_gaps",
+  "sources": [
+    {
+      "role": "independent_registry",
+      "url": "https://haryanarera.gov.in/view_project/project_preview_open/2831",
+      "retrievedAt": "2026-09-30T12:55:17.366887+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/haryana-2831-project.html",
+      "sha256": "ab2eecce106b47aeea784fb34bd1853f0501c0c70ad582ad0976ff6e8b773ea8",
+      "bytes": 108086,
+      "reuseFrom": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-project.html",
+      "operation": "unchanged copy of retained original; not new download"
+    },
+    {
+      "role": "extraction_pdf",
+      "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/0cb8f93289NDg2NTA=",
+      "retrievedAt": "2026-09-30T12:56:26.540725+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/haryana-2831-site-plan.pdf",
+      "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+      "bytes": 3782332,
+      "reuseFrom": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-site-plan.pdf",
+      "operation": "unchanged copy of retained original; not new download"
+    },
+    {
+      "role": "extraction_pdf",
+      "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/781dca7f03NDg2NTc=",
+      "retrievedAt": "2026-09-25T00:41:16.696207Z",
+      "externalPath": "E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/haryana-2831-tower3-plan1.pdf",
+      "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "bytes": 1655334,
+      "reuseFrom": "E:/BhuAayam-data/task-data/association-sources-20260929/haryana-2831-tower3-plan1.pdf",
+      "operation": "unchanged copy of retained original; not new download"
+    },
+    {
+      "role": "extraction_pdf",
+      "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/c313c18c7bNDg2NjA=",
+      "retrievedAt": "2026-09-25T00:43:08.042067Z",
+      "externalPath": "E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/haryana-2831-tower3-section.pdf",
+      "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+      "bytes": 2448909,
+      "reuseFrom": "E:/BhuAayam-data/task-data/association-sources-20260929/haryana-2831-tower3-section.pdf",
+      "operation": "unchanged copy of retained original; not new download"
+    },
+    {
+      "role": "extraction_pdf",
+      "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/b76ed9cb4dNDg2NTg=",
+      "retrievedAt": "2026-09-30T12:56:26.681798+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/haryana-2831-tower3-plan2.pdf",
+      "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+      "bytes": 1630108,
+      "reuseFrom": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-tower3-plan2.pdf",
+      "operation": "unchanged copy of retained original; not new download"
+    }
+  ],
+  "registry": {
+    "projectSanctionedBuildingOrWingCount": {
+      "value": null,
+      "state": "unknown",
+      "method": "source_literal",
+      "citations": [
+        {
+          "url": "https://haryanarera.gov.in/view_project/project_preview_open/2831",
+          "retrievedAt": "2026-09-30T12:55:17.366887+00:00",
+          "sha256": "ab2eecce106b47aeea784fb34bd1853f0501c0c70ad582ad0976ff6e8b773ea8",
+          "locator": "Number of towers in apartment-category rows; not an unambiguous project/tower total",
+          "quote": null,
+          "page": null
+        }
+      ],
+      "registryAdmission": "not_reviewed"
+    },
+    "floorExpression": {
+      "value": null,
+      "state": "unknown",
+      "method": "source_literal",
+      "citations": [
+        {
+          "url": "https://haryanarera.gov.in/view_project/project_preview_open/2831",
+          "retrievedAt": "2026-09-30T12:55:17.366887+00:00",
+          "sha256": "ab2eecce106b47aeea784fb34bd1853f0501c0c70ad582ad0976ff6e8b773ea8",
+          "locator": "No Tower-3 keyed storey field found in retained project page",
+          "quote": null,
+          "page": null
+        }
+      ],
+      "registryAdmission": "not_reviewed"
+    },
+    "basementCount": {
+      "value": null,
+      "state": "unknown",
+      "method": "source_literal",
+      "citations": [
+        {
+          "url": "https://haryanarera.gov.in/view_project/project_preview_open/2831",
+          "retrievedAt": "2026-09-30T12:55:17.366887+00:00",
+          "sha256": "ab2eecce106b47aeea784fb34bd1853f0501c0c70ad582ad0976ff6e8b773ea8",
+          "locator": "No Tower-3 keyed basement count",
+          "quote": null,
+          "page": null
+        }
+      ],
+      "registryAdmission": "not_reviewed"
+    },
+    "unitCount": {
+      "value": null,
+      "state": "unknown",
+      "method": "source_literal",
+      "citations": [
+        {
+          "url": "https://haryanarera.gov.in/view_project/project_preview_open/2831",
+          "retrievedAt": "2026-09-30T12:55:17.366887+00:00",
+          "sha256": "ab2eecce106b47aeea784fb34bd1853f0501c0c70ad582ad0976ff6e8b773ea8",
+          "locator": "Apartment count rows have no unambiguous Tower-3 key",
+          "quote": null,
+          "page": null
+        }
+      ],
+      "registryAdmission": "not_reviewed"
+    }
+  },
+  "floorExpression": {
+    "value": [
+      "G+41",
+      "G+42"
+    ],
+    "state": "conflicting",
+    "method": "source_literal",
+    "citations": [
+      {
+        "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/0cb8f93289NDg2NTA=",
+        "retrievedAt": "2026-09-30T12:56:26.540725+00:00",
+        "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": "central T-3 tower graphic",
+        "quote": "T-3 G+41",
+        "page": 1
+      },
+      {
+        "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/0cb8f93289NDg2NTA=",
+        "retrievedAt": "2026-09-30T12:56:26.540725+00:00",
+        "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": "lower-right UNIT DETAIL, TOWER 3 row",
+        "quote": "G + 42",
+        "page": 1
+      },
+      {
+        "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/0cb8f93289NDg2NTA=",
+        "retrievedAt": "2026-09-30T12:56:26.540725+00:00",
+        "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": "bottom TOWER AREA DETAIL, TOWER 3 row",
+        "quote": "G + 42",
+        "page": 1
+      }
+    ],
+    "registryAdmission": "not_reviewed"
+  },
+  "documentStatements": [
+    {
+      "kind": "floor_expression",
+      "value": "G+41",
+      "citation": {
+        "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/0cb8f93289NDg2NTA=",
+        "retrievedAt": "2026-09-30T12:56:26.540725+00:00",
+        "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": "central T-3 tower graphic",
+        "quote": "T-3 G+41",
+        "page": 1
+      }
+    },
+    {
+      "kind": "floor_expression",
+      "value": "G+42",
+      "citation": {
+        "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/0cb8f93289NDg2NTA=",
+        "retrievedAt": "2026-09-30T12:56:26.540725+00:00",
+        "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": "lower-right UNIT DETAIL, TOWER 3 row",
+        "quote": "G + 42",
+        "page": 1
+      }
+    },
+    {
+      "kind": "tower_unit_count",
+      "value": "81",
+      "citation": {
+        "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/0cb8f93289NDg2NTA=",
+        "retrievedAt": "2026-09-30T12:56:26.540725+00:00",
+        "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": "UNIT DETAIL, TOWER 3 row, TOTAL NO. OF UNITS",
+        "quote": "81",
+        "page": 1
+      }
+    }
+  ],
+  "projectContextLevelLabels": [
+    {
+      "value": "BASEMENT 01",
+      "citation": {
+        "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/0cb8f93289NDg2NTA=",
+        "retrievedAt": "2026-09-30T12:56:26.540725+00:00",
+        "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": "BASEMENT AREA PROPOSED / STILT AREA PROPOSED tables; project scope",
+        "quote": "BASEMENT 01",
+        "page": 1
+      }
+    },
+    {
+      "value": "BASEMENT 02",
+      "citation": {
+        "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/0cb8f93289NDg2NTA=",
+        "retrievedAt": "2026-09-30T12:56:26.540725+00:00",
+        "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": "BASEMENT AREA PROPOSED / STILT AREA PROPOSED tables; project scope",
+        "quote": "BASEMENT 02",
+        "page": 1
+      }
+    },
+    {
+      "value": "BASEMENT 03",
+      "citation": {
+        "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/0cb8f93289NDg2NTA=",
+        "retrievedAt": "2026-09-30T12:56:26.540725+00:00",
+        "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": "BASEMENT AREA PROPOSED / STILT AREA PROPOSED tables; project scope",
+        "quote": "BASEMENT 03",
+        "page": 1
+      }
+    },
+    {
+      "value": "STILT",
+      "citation": {
+        "url": "https://haryanarera.gov.in/project/view_uploaded_Document_open/0cb8f93289NDg2NTA=",
+        "retrievedAt": "2026-09-30T12:56:26.540725+00:00",
+        "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "locator": "BASEMENT AREA PROPOSED / STILT AREA PROPOSED tables; project scope",
+        "quote": "STILT",
+        "page": 1
+      }
+    }
+  ],
+  "placement": {
+    "state": "unknown",
+    "coordinate": null,
+    "referenceArea": "Gurugram sectors 59/63A; not a Tower-3 point or site parcel"
+  },
+  "limitations": [
+    "G+41/G+42 is a genuine same-sheet source conflict, never resolved by a teacher.",
+    "The site-plan 81-unit statement is document evidence, not an independently keyed registry count.",
+    "Shared project basement labels do not establish a Tower-3 basement count or geometry.",
+    "Plans are scanned images; native text/vector paths absent.",
+    "No independent sanction-letter storey count or current approved-revision register located; registry oracle coverage for Tower 3 remains unknown.",
+    "No normalization to an integer level schedule, height, placement, as-built fact or right."
+  ]
+}
