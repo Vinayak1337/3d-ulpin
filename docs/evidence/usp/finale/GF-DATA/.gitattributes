@@ -1,0 +1,5 @@
+# D1/D2 hash-pinned metadata only; historical evidence attributes unchanged.
+/acquisitions.json text eol=lf
+/site-decision.md text eol=lf
+/D1-D2/** text eol=lf
+/storey-truth/** text eol=lf
