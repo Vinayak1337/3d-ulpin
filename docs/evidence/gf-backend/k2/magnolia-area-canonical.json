@@ -1,6 +1,6 @@
 {
   "schemaVersion": "normalized-building/1",
-  "revisionId": "ae93772eaf02a1c9de61abc5f7492a5dfe899bbb2d8b7453ccc00531c984faf7",
+  "revisionId": "dc9746b95149b7093b5022250a8d35544cab488f65b5e28b5b3d24c616650b3f",
   "frame": {
     "areaId": "e5742536-cedd-455b-b59d-c8172875c6f2",
     "origin": {
@@ -18,7 +18,7 @@
   "buildings": [
     {
       "buildingId": "e8777ffc-9409-4129-bacf-f680160d8795",
-      "revisionId": "3499e1eeb653636e37c8e9e83396f474a9beba1f923f2d86de3baa4ed790b4e1",
+      "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72",
       "recordState": "reviewed",
       "name": {
         "value": "Magnolia Residency",
@@ -35,7 +35,7 @@
           }
         ],
         "method": "source_literal",
-        "revisionId": "3499e1eeb653636e37c8e9e83396f474a9beba1f923f2d86de3baa4ed790b4e1"
+        "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
       },
       "footprint": {
         "value": null,
@@ -53,7 +53,7 @@
           }
         ],
         "method": "deterministic:wgs84-surface-to-enu@1",
-        "revisionId": "3499e1eeb653636e37c8e9e83396f474a9beba1f923f2d86de3baa4ed790b4e1"
+        "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
       },
       "heightM": {
         "value": null,
@@ -61,7 +61,7 @@
         "unit": "m",
         "citations": [],
         "method": "source_literal",
-        "revisionId": "3499e1eeb653636e37c8e9e83396f474a9beba1f923f2d86de3baa4ed790b4e1"
+        "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
       },
       "heightState": "unknown"
     }
