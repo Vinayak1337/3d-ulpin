@@ -4252,24 +4252,30 @@
     {
       "id": "d1-messy-india-development-20261010",
       "classification": "test_only",
-      "originKind": "official_source_native_tables",
-      "issuer": "Ministry of Panchayati Raj / LGD via data.gov.in; Bihar RERA",
-      "geography": "India; Bihar building/project registries and national administrative codes",
+      "originKind": "mixed_official_original_tables_and_OpenCity_publisher_csv_derivatives_test_only",
+      "issuer": "Ministry of Panchayati Raj / LGD via data.gov.in; Bihar RERA; Reserve Bank of India; OpenCity / Oorvani Foundation",
+      "geography": "India; original operational registry context remains separate from national/state/city aggregate development tables",
       "manifest": "fixtures/usp/D8-messy-india/manifest.json",
-      "manifestSha256": "24f126773b03f4b6f2130c2310949e1b8ca4d7a1b7972a0a8e528e6ed63f95f3",
+      "manifestSha256": "7e4292a4b75fda2e249495157636e789ba15d5bc7c05c0c6b409f3b9ec124593",
       "manifestHashScope": "Exact UTF-8 metadata bytes; original files use exact-byte hashes",
       "guide": "fixtures/usp/D8-messy-india/README.md",
-      "sourceCount": 6,
-      "sourceFamilies": 3,
-      "totalOriginalBytes": 648963,
+      "sourceCount": 32,
+      "sourceFamilies": 21,
+      "totalOriginalBytes": 942377,
       "horizontalCrs": null,
       "verticalReference": null,
       "content": {
         "externalRoot": "E:/BhuAayam-data/datasets/messy-india",
         "itemsPointer": "/assets",
-        "formats": ["CSV", "HTML source-native table"],
+        "formats": [
+          "CSV",
+          "XLSX",
+          "HTML source-native table"
+        ],
         "repositoryBytesVerified": false,
-        "smallDevelopmentCopy": "fixtures/usp/D8-messy-india/dev/lgd-districts.csv"
+        "smallDevelopmentCopy": "fixtures/usp/D8-messy-india/dev/lgd-districts.csv",
+        "developmentCopiesDirectory": "fixtures/usp/D8-messy-india/dev/d1b",
+        "additionalDevelopmentCopies": 26
       },
       "terms": {
         "state": "unconfirmed",
@@ -4280,36 +4286,91 @@
       "standingInstallation": false,
       "runtimeVerified": false,
       "limitations": [
-        "Five originals are HTML tables, not qualified CSV/XLSX import inputs; no reformatted CSV counted.",
-        "Publisher manual documents seven building fields including square-foot entry units; project list has literal headers only; LGD expanded meanings remain undocumented.",
-        "Originals unchanged; missing messy/CRS/injection cases explicitly remain gaps.",
-        "D8 is acquisition metadata in usp-data-pack/1 style, not the existing strict D0-D7 application DTO.",
-        "No teacher output, officer review, normalized property fact or runtime GF-DATA/GF-AGENT pass."
+        "D1b adds 26 development CSV/XLSX originals in 18 families; 23 CSVs are OpenCity-published originals, potentially transcriptions/derivatives, NOT issuing-authority exports. Development test_only, never official registry facts.",
+        "Three new development XLSX originals are RBI publications. Unit captions include hectares; no silently inferred conversions, field targets or rights.",
+        "Five historical dev originals are HTML tables, not qualified CSV/XLSX import inputs; legacy HTML remains external because of unrelated contact/bank sections.",
+        "Development dictionaries are optional; expanded unsupported meanings remain undocumented. Publisher table descriptions support only their explicit scope.",
+        "Originals unchanged; absent script/date/floor/CRS/injection cases stay listed in missingCapabilities. Staff/contact, pseudocode and survey-export candidates are retained outside Git but excluded.",
+        "D8 is acquisition metadata in usp-data-pack/1 style, not the strict D0-D7 application DTO; no live CSV/XLSX import, teacher/model run, officer review or GF-AGENT runtime pass."
       ]
     },
     {
       "id": "d1-messy-india-heldout-20261010",
       "classification": "test_only",
       "originKind": "official_issuing_portal_blind_layout_holdout",
-      "issuer": "Gurugram Metropolitan Development Authority",
-      "geography": "Gurugram, Haryana, India",
+      "issuer": "Gurugram Metropolitan Development Authority; Office of the Registrar General & Census Commissioner, India; Reserve Bank of India",
+      "geography": "India; per-source details evaluator-only",
       "manifest": "fixtures/usp/D8-messy-india/heldout.json",
-      "manifestSha256": "5781dbd1c5da49338e59b15825817aa64b3ac9252535f52cfb30e5f6ab65add9",
-      "sourceCount": 2,
+      "manifestSha256": "c745ee8e6646b2fbcbaad5ed0fc69df3bc981e76b3fd98ca4ba5328aa4d259e6",
+      "sourceCount": 5,
       "families": [
-        { "id": "mi-h01", "fileCount": 1, "caseNames": ["GIS_attributes", "declared_projected_crs"] },
-        { "id": "mi-h02", "fileCount": 1, "caseNames": ["GIS_attributes", "declared_projected_crs"] }
+        {
+          "id": "mi-h01",
+          "publisher": "Gurugram Metropolitan Development Authority",
+          "fileCount": 1,
+          "caseNames": [
+            "GIS_attributes",
+            "declared_projected_crs"
+          ]
+        },
+        {
+          "id": "mi-h02",
+          "publisher": "Gurugram Metropolitan Development Authority",
+          "fileCount": 1,
+          "caseNames": [
+            "GIS_attributes",
+            "declared_projected_crs"
+          ]
+        },
+        {
+          "id": "mi-h03",
+          "publisher": "Office of the Registrar General & Census Commissioner, India",
+          "fileCount": 1,
+          "caseNames": [
+            "publisher_documented_column_descriptions",
+            "merged_header_cells",
+            "multi_row_headers",
+            "multiple_worksheets",
+            "empty_worksheets"
+          ]
+        },
+        {
+          "id": "mi-h04",
+          "publisher": "Reserve Bank of India",
+          "fileCount": 1,
+          "caseNames": [
+            "publisher_documented_column_descriptions",
+            "merged_header_cells",
+            "multiple_worksheets"
+          ]
+        },
+        {
+          "id": "mi-h05",
+          "publisher": "Reserve Bank of India",
+          "fileCount": 1,
+          "caseNames": [
+            "publisher_documented_column_descriptions",
+            "merged_header_cells",
+            "multi_row_headers"
+          ]
+        }
       ],
       "content": {
         "externalRoot": "E:/BhuAayam-data/datasets/messy-india",
         "repositoryBytesVerified": false,
         "metadataAccess": "evaluator_only; original URLs, schemas, meanings and exact pins deliberately only in heldout.json"
       },
-      "terms": { "state": "unconfirmed", "limitations": "Local development only; public endpoint is not a redistribution/training grant" },
+      "terms": {
+        "state": "unconfirmed",
+        "limitations": "Local development only; public endpoint is not a redistribution/training grant"
+      },
       "apiInstallation": "not-installed",
       "standingInstallation": false,
       "runtimeVerified": false,
-      "limitations": ["Never expose heldout files/schema/meanings to teachers or use them for calibration; distinct layouts, not an accuracy claim."]
+      "limitations": [
+        "Five whole publisher/schema families, including three new tabular families with exact publisher hierarchical column descriptions and document URLs. Not an expanded canonical/legal dictionary or model accuracy claim.",
+        "Never expose heldout originals, URLs, schema/meanings or supporting publication documents to teachers or use them for calibration; exact details only in heldout.json."
+      ]
     },
     {
       "id": "d2-rera-storey-source-truth-20261010",
@@ -7460,6 +7521,36 @@
         "recovery": "Publisher polygon correction or independent expert source-image boundary review under an agreed annotation policy."
       },
       "scoringPolicy": "Use scoringMask == 1; all-zero source RGB pixels are a conservative analysis ignore mask, not authoritative missing-data truth. Preserve empty scenes, holes/partial buildings and ignored/positive pixel counts."
+    },
+    {
+      "id": "d1b-messy-india-acquisition-ledger-20261010",
+      "classification": "test_only",
+      "originKind": "public_source_acquisition_and_privacy_screening_receipts",
+      "issuer": "OpenCity / Oorvani Foundation; Reserve Bank of India; Office of the Registrar General & Census Commissioner, India",
+      "geography": "India",
+      "manifest": "docs/evidence/usp/finale/GF-DATA/D1b/acquisitions.json",
+      "manifestSha256": "a6e297da0f5737487cf68eaf4698d4013710aeefbd9d63d3c7904611bfde968f",
+      "guide": "docs/evidence/usp/finale/GF-DATA/D1b/HANDOFF.md",
+      "sourceCount": 29,
+      "content": {
+        "developmentItemsPointer": "/admittedDevelopmentAcquisitions",
+        "blindSummaryPointer": "/teacherBlindAcquisitions",
+        "excludedItemsPointer": "/excludedDevelopmentCandidates",
+        "externalRoot": "E:/BhuAayam-data/datasets/messy-india",
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "state": "unconfirmed",
+        "limitations": "Portal/publication access and observed license labels do not establish upstream redistribution or ML permission."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "29 admitted tabular originals; discovery/support/tooling responses and five excluded candidate originals are NOT counted as admitted datasets.",
+        "All exact heldout URLs, pins, column descriptions and supporting originals remain exclusively in heldout.json; ledger exposes permitted summary only.",
+        "No application/runtime/teacher/model/DB changes."
+      ]
     }
   ],
   "offlineLearningCorpus": {
