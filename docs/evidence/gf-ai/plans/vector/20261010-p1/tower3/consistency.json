@@ -1,0 +1,40 @@
+{
+  "version": "vector-plan-consistency/1",
+  "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+  "pages": {
+    "1": {
+      "classification": {
+        "kind": "not_vector",
+        "reason": "insufficient_vector_linework; native reader does not OCR or infer rooms from raster images",
+        "drawingPaths": 0,
+        "strokeItems": 0,
+        "nativeTextLines": 0,
+        "dimensionPairLines": 0,
+        "images": 1
+      },
+      "scale": {
+        "state": "unknown",
+        "metresPerPdfPoint": null,
+        "method": null,
+        "gap": "no_scale",
+        "supports": [],
+        "scopePdfBboxes": [
+          [
+            0.0,
+            0.0,
+            2586.0,
+            1695.0
+          ]
+        ]
+      },
+      "summary": {
+        "roomsFound": 0,
+        "roomsWithParsedLabel": 0,
+        "roomsWithStatedDims": 0,
+        "consistency": {},
+        "unattachedTextLines": 0
+      },
+      "rooms": []
+    }
+  }
+}
