@@ -10,7 +10,7 @@ import {UNIT_SUFFIXES} from './unit-table';
 
 const digits=(text:string)=>text.replace(/[०-९]/gu,c=>String(c.charCodeAt(0)-0x966));
 const floor=/^(?:G|GF|UGF|LGF|Stilt|B\d+|Mezz(?:anine)?|Terrace|Ground|First|Second|Third|\d+(?:st|nd|rd|th)?\s*(?:floor|fl))$/i;
-const personalHeader=/(?:^|[\s_.-])(?:owner|person|applicant|allottee|purchaser|seller|buyer|father|mother|husband|wife|contact|phone|mobile|email|aadhaar|aadhar|pan)(?:$|[\s_.-])|नाम|पिता|मोबाइल|आधार/iu;
+const personalHeader=/(?:^|[\s_.-])(?:name|owner|person|applicant|allottee|purchaser|seller|buyer|father|mother|husband|wife|contact|phone|mobile|email|aadhaar|aadhar|pan)(?:$|[\s_.-])|नाम|पिता|मोबाइल|आधार/iu;
 // Conservative privacy: arbitrary free-text words are masked, including names in unlabelled columns.
 // These are source tokens retained for shape/enum diagnosis, not value-level synonym mappings.
 const safeWords=new Set(('email pan aadhaar phone blank absent array object b residential commercial industrial institutional mixed group housing flat apartment common parking unit basement ground upper stilt podium mezzanine terrace room kitchen bedroom bathroom balcony shaft approved sanctioned registered draft expired revoked unknown absent null withheld conflicting sq square m meter meters metre metres ft foot feet yd yds yard yards gaj marla bigha kanal cent guntha count g gf ugf lgf mezz first second third floor fl true false yes no').split(' '));
@@ -18,6 +18,7 @@ export function maskColumnSample(raw:unknown,name=''):string{
   if(raw===undefined)return '[absent]';if(raw===null)return '[null]';
   if(typeof raw==='object')return Array.isArray(raw)?'[array]':'[object]';
   let text=String(raw).slice(0,256);if(!text.trim())return '[blank]';
+  if(/^\[(?:null|absent|blank|array|object)\]$/.test(text))return text;
   text=text.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,'[email]')
     .replace(/\b[A-Z]{5}[0-9]{4}[A-Z]\b/gi,'[PAN:AAAAADDDDA]')
     .replace(/(?<![\d०-९])(?:[\d०-९]{4}[ -]?){2}[\d०-९]{4}(?![\d०-९])/gu,'[Aadhaar:DDDD DDDD DDDD]')
@@ -61,7 +62,7 @@ export function profileColumns(rows:readonly MappingRow[],fields:readonly Pick<M
     throw new Error('COLUMN_LAYOUT_AMBIGUOUS');
   const columns:ColumnProfile[]=fields.map(({name})=>{
     const values=rows.map(row=>row[name]),present=values.filter(v=>v!==undefined&&v!==null&&!(typeof v==='string'&&!v.trim()));
-    const denominator=present.length||1,rate=(predicate:(value:unknown)=>boolean)=>present.filter(predicate).length/denominator;
+    const rate=(predicate:(value:unknown)=>boolean)=>present.length?present.filter(predicate).length/present.length:null;
     const evidence=new Set(headerUnits(name));let conflict=false;
     for(const value of present){const observed=suffix(value);if(observed.unit)evidence.add(observed.unit);if(observed.unrecognised)conflict=true;}
     const declaredUnit=!conflict&&evidence.size===1?[...evidence][0]:undefined;
@@ -83,9 +84,10 @@ export function profileColumns(rows:readonly MappingRow[],fields:readonly Pick<M
       devanagariDigitRate:rate(v=>typeof v==='string'&&/[०-९]/u.test(v)),
       khasraLikeRate:rate(v=>typeof v==='string'&&/^\d+\/\d+$/.test(digits(v.trim()))),
       floorLabelRate:rate(v=>typeof v==='string'&&floor.test(digits(v.trim()))),
-      nullRate:values.length?values.filter(v=>v==null).length/values.length:0,
-      blankRate:values.length?values.filter(v=>typeof v==='string'&&!v.trim()).length/values.length:0,
-      distinctRatio:present.length?new Set(present.map(v=>JSON.stringify(v))).size/present.length:0},
+      nullRate:values.length?values.filter(v=>v===null).length/values.length:null,
+      blankRate:values.length?values.filter(v=>typeof v==='string'&&!v.trim()).length/values.length:null,
+      absentRate:values.length?values.filter(v=>v===undefined).length/values.length:null,
+      distinctRatio:present.length?new Set(present.map(v=>JSON.stringify(v))).size/present.length:null},
       maskedSamples:samples.map(v=>maskColumnSample(v,name))};
   });
   return ColumnProfileDocumentSchema.parse({version:'column-profile/1',sourceKind,columns,

@@ -22,6 +22,7 @@ export const ModelGatewayConfigSchema = z.strictObject({
   projectCapMicroInr: amount.refine(v => BigInt(v) > 0n),
   ingestProtectedBps: z.number().int().min(7000).max(10000).default(7000),
   principalDailyCallCap: z.number().int().min(1).max(10000),
+  projectDailyCapMicroInr: amount.refine(v => BigInt(v) > 0n).optional(),
   price: z.strictObject({ version, inputPerMillionMicroInr: amount,
     cachedInputPerMillionMicroInr: amount, outputPerMillionMicroInr: amount }),
   cushionBps: z.number().int().min(0).max(10000).default(2000),
