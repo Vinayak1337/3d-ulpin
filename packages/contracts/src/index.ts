@@ -1,3 +1,5 @@
+export * from './canonical/targets';
+export * from './canonical/mapping-plan';
 export type Point2 = [number, number];
 export * from "./officer";
 export * from "./building-ledger";
