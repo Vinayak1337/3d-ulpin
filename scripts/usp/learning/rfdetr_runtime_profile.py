@@ -584,6 +584,21 @@ need(peak<=budget and reserved<=budget,'Torch memory allocation cap exceeded')
 need(failure is None,'Accepted runner failed: '+str(failure))
 '''.lstrip()
 
+# The repaired host authorization carries a declared pin for the mounted
+# root-fit-assignment JSON after the host adds the assignment receipt. Keep the
+# bridge contract explicit: validate the pin and JSON schema before consuming
+# it, and never call .encode() on a dictionary.
+REPAIRED_ROOT_ASSIGNMENT_CONTRACT = r'''assignment=initial.get('rootAssignment')
+need(isinstance(assignment,dict) and set(assignment)=={'path','bytes','sha256'} and assignment['path']=='/inputs/pilot/root-fit-assignment.json' and type(assignment['bytes']) is int and 0<assignment['bytes']<=1048576 and isinstance(assignment['sha256'],str) and len(assignment['sha256'])==64 and all(c in '0123456789abcdef' for c in assignment['sha256']),'Root assignment pin malformed')
+assignment_raw=Path(assignment['path']).read_bytes()
+need(len(assignment_raw)==assignment['bytes'] and hashlib.sha256(assignment_raw).hexdigest()==assignment['sha256'],'Root assignment pin mismatch')
+assignment=json.loads(assignment_raw)
+need(isinstance(assignment,dict) and assignment.get('schemaVersion')=='ramp-pilot-root-assignment/1' and isinstance(assignment.get('rootInstruction'),dict) and isinstance(assignment.get('verbatimRootInstruction'),str),'Root assignment JSON/schema malformed')
+root_raw=assignment['verbatimRootInstruction'].encode('utf-8')
+need(len(root_raw)==assignment['rootInstruction'].get('bytes') and hashlib.sha256(root_raw).hexdigest()==assignment['rootInstruction'].get('sha256')==initial['rootAssignmentSha256'],'Root release text/pin mismatch')
+root=json.loads(root_raw)
+need(isinstance(root,dict),'Root release must be a JSON object')'''
+
 
 PROBE_FORWARD = r'''
 # Same native process, new root scope; no old baseline/fit authority is accepted.
@@ -987,8 +1002,7 @@ def pilot_bridge(repaired=False):
     bridge = REFERENCE_BRIDGE.replace(REF_ROOT_SHA, FIT_ROOT_SHA)
     if repaired:
         bridge = bridge.replace("need(initial['rootAssignmentSha256']=='" + FIT_ROOT_SHA + "','Root instruction mismatch')",
-            "need(initial['rootAssignmentSha256']==hashlib.sha256(initial['rootAssignment'].encode('utf-8')).hexdigest(),'Root release text mismatch')\n"
-            "root=json.loads(initial['rootAssignment'])\n"
+            REPAIRED_ROOT_ASSIGNMENT_CONTRACT + "\n"
             "need(root['schemaVersion']=='rfdetr-repaired-fit-release/1' and root['task']=='" + REPAIRED_TASK + "' "
             "and root['fitAuthorized'] is True and root['evaluationAuthorized'] is False "
             "and root['scope']=='" + REPAIRED_SCOPE + "' and root['planSha256']==cfg['planSha256'] "
