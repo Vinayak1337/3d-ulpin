@@ -1,33 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ULPIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-bash "$ULPIN_ROOT/scripts/platform-env.sh"
-if ! command -v docker >/dev/null 2>&1; then
-  echo 'Install the runtime first: brew install colima docker docker-compose' >&2
-  exit 1
-fi
-if [[ -z "${ULPIN_DOCKER_CONTEXT:-}" ]] && command -v colima >/dev/null 2>&1; then
-  if ! colima status --profile ulpin >/dev/null 2>&1; then
-    colima start --profile ulpin --vm-type vz --vz-rosetta --cpu 4 --memory 6 --disk 20 --mount-type virtiofs
-  fi
-fi
+case "${1:-}" in
+  ''|'--infra-only') ;;
+  *) echo 'Usage: pnpm platform:start [--infra-only]' >&2; exit 2 ;;
+esac
 source "$ULPIN_ROOT/scripts/platform-lib.sh"
-docker info >/dev/null
-ULPIN_PROJECT="$(node "$ULPIN_ROOT/scripts/platform-mode.mjs" project)"
+# Check actual engine storage BEFORE Compose/configuration. Never generate .env,
+# initialize a bucket, migrate/reseed, build, or create/recreate containers here.
+node "$ULPIN_ROOT/scripts/platform/runtime.mjs" "${1:-}"
 if [[ "${1:-}" = '--infra-only' ]]; then
-  ulpin_compose up -d --wait postgres minio redis
-  ulpin_compose run --rm minio-init
+  ulpin_compose start --wait --wait-timeout 90 postgres minio redis
 else
-  if [[ ! -f "$ULPIN_ROOT/services/geo/Dockerfile" ]]; then
-    echo 'Geo Dockerfile is not present. Use --infra-only during initial development.' >&2
-    exit 1
-  fi
-  if [[ "$ULPIN_PROJECT" = 'ulpin-repo' ]]; then
-    ulpin_compose up -d --wait postgres minio redis
-    ulpin_compose run --rm minio-init
-    cd "$ULPIN_ROOT"
-    pnpm db:migrate
-  fi
-  ulpin_compose --profile app up -d --build --wait
+  ulpin_compose --profile app start --wait --wait-timeout 90 postgres minio redis geo worker
 fi
-bash "$ULPIN_ROOT/scripts/platform-health.sh" "${1:-}"
+node "$ULPIN_ROOT/scripts/platform/doctor" "${1:-}"

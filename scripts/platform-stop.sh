@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/platform-lib.sh"
-ulpin_compose --profile app stop
-echo 'Services stopped; database, objects, and queue volumes preserved.'
+ULPIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Stop only existing ulpin-labelled containers; no configuration/credentials needed.
+node "$ULPIN_ROOT/scripts/platform/runtime.mjs" --stop
