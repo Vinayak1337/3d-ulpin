@@ -203,7 +203,12 @@ function SourcePreview({ text, type, evidence }: { text: string; type: string; e
       </div>
     );
   }
-  return <pre className={styles.raw}>{text.slice(0, 4000)}</pre>;
+  return (
+    <>
+      <p className="ul-help">The record does not name a position in this file. Showing the start of the original.</p>
+      <pre className={styles.raw}>{text.slice(0, 4000)}</pre>
+    </>
+  );
 }
 
 function geometrySummary(wkt: string | undefined): string {
@@ -229,5 +234,7 @@ function parseCsvRows(text: string): string[][] {
 
 function fileName(response: Response): string {
   const disposition = response.headers.get('content-disposition') ?? '';
+  const encoded = /filename\*=UTF-8''([^;]+)/i.exec(disposition)?.[1];
+  if (encoded) return decodeURIComponent(encoded);
   return /filename="?([^";]+)"?/.exec(disposition)?.[1] ?? 'Source file';
 }
