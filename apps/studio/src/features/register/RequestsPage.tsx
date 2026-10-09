@@ -3,12 +3,12 @@ import { Link, useSearchParams } from 'react-router';
 import { useQueries, useQueryClient } from '@tanstack/react-query';
 import { Check, FilePlus, MapPin, Tray, Trash, X } from '@phosphor-icons/react';
 import type { RegisterRequest, RequestState } from '@ulpin/api-client/draft';
-import { api } from '@ulpin/api-client';
+import { api, unwrap } from '@ulpin/api-client';
 import {
   Badge, Button, DataTable, DescriptionList, EmptyState, Icon, SegmentedControl, Skeleton, Tabs, UlpinCode, formatCount, formatDateTime, formatRelative,
 } from '@ulpin/ui';
 import {
-  decideRegisterRequest, featureCode, queryKeys, unwrapApi, useAreas, useRegisterRequests, type AreaFeature, type RequestFilter,
+  decideRegisterRequest, featureCode, queryKeys, useAreas, useRegisterRequests, type AreaFeature, type RequestFilter,
 } from '../../api/queries';
 import { DeleteDialog } from '../manage/DeleteDialog';
 import { REQUEST_KINDS } from '../../local/requestKinds';
@@ -226,7 +226,7 @@ function BuildingsView() {
   const contexts = useQueries({
     queries: (areas.data ?? []).map((area) => ({
       queryKey: queryKeys.areaContext(area.id),
-      queryFn: async () => unwrapApi(await api.GET('/api/v1/areas/{areaId}/context', { params: { path: { areaId: area.id } } })),
+      queryFn: async () => unwrap(await api.GET('/api/v1/areas/{areaId}/context', { params: { path: { areaId: area.id } } })),
       staleTime: 30_000,
     })),
   });
