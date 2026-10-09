@@ -47584,7 +47584,7 @@ export interface components {
                 reasonCodes: string[];
                 source: {
                     /** @enum {string} */
-                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
+                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "html" | "png" | "jpeg" | "archive" | "unsupported";
                     /** @enum {string} */
                     nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                     readerSha256: string;
@@ -48198,7 +48198,7 @@ export interface components {
                     /** @enum {string} */
                     kind: "document";
                     /** @enum {string} */
-                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
+                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "html" | "png" | "jpeg" | "archive" | "unsupported";
                     /** @enum {string} */
                     nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                     code: string | null;
@@ -48402,7 +48402,7 @@ export interface components {
                     /** @enum {string} */
                     kind: "document_ocr";
                     /** @enum {string} */
-                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
+                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "html" | "png" | "jpeg" | "archive" | "unsupported";
                     /** @enum {string} */
                     nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                     nativeCode: string | null;
@@ -50442,7 +50442,7 @@ export interface components {
                         /** @enum {string} */
                         kind: "document";
                         /** @enum {string} */
-                        format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
+                        format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "html" | "png" | "jpeg" | "archive" | "unsupported";
                         /** @enum {string} */
                         nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                         code: string | null;
@@ -50646,7 +50646,7 @@ export interface components {
                         /** @enum {string} */
                         kind: "document_ocr";
                         /** @enum {string} */
-                        format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
+                        format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "html" | "png" | "jpeg" | "archive" | "unsupported";
                         /** @enum {string} */
                         nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                         nativeCode: string | null;
@@ -61983,7 +61983,7 @@ export interface components {
                 /** @enum {string} */
                 status: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                 /** @enum {string} */
-                format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
+                format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "html" | "png" | "jpeg" | "archive" | "unsupported";
                 readerSha256: string;
                 code: string | null;
                 warnings: string[];
