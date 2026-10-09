@@ -1,7 +1,8 @@
+import { ledgerFromPublished } from './ledger';
 import { demoAreas, isDemoId, useDemoAreaStream } from './demo-import';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api, ApiError, unwrap, type GetResponse } from '@ulpin/api-client';
-import type { BuildingImport, BuildingLedger, DocumentPages, FileDetection, ImportBatch, LevelReview, RegisterRequest, RequestState, WorkBoard, BuildingResidents } from '@ulpin/api-client/draft';
+import type { BuildingImport, DocumentPages, FileDetection, ImportBatch, LevelReview, RegisterRequest, RequestState, WorkBoard, BuildingResidents } from '@ulpin/api-client/draft';
 
 export type WorkQueue = GetResponse<'/api/v1/work-queue'>;
 export type WorkItem = WorkQueue['items'][number];
@@ -15,27 +16,12 @@ export type BuildingRegister = Extract<GetResponse<'/api/v1/buildings/{buildingI
 export type RegisterRecord = BuildingRegister['register'][number];
 export type RegisterSource = BuildingRegister['sources'][number];
 
-/** The API wraps failures as `{ error: { code, message } }`; `ApiError` reads a top-level `message`. */
-export function apiError(status: number, path: string, body: unknown): ApiError {
-  const wrapped = (body as { error?: unknown } | null)?.error;
-  return new ApiError(status, path, wrapped && typeof wrapped === 'object' ? wrapped : body);
-}
-
-/** `unwrap` that keeps the API's own message on the error. */
-export function unwrapApi<T>(result: Parameters<typeof unwrap<T>>[0]): T {
-  try {
-    return unwrap(result);
-  } catch (error) {
-    throw error instanceof ApiError ? apiError(error.status, error.path, error.body) : error;
-  }
-}
-
 /** Published identifier resolver; keeps ULPIN and registry associations on the backend. */
 export function useMapIdentifierSearch(identifier: string) {
   return useQuery({
     queryKey: ['map-identifier-search', identifier],
     enabled: identifier.length >= 3,
-    queryFn: async ({ signal }) => unwrapApi(await api.GET('/api/v1/resolve', {
+    queryFn: async ({ signal }) => unwrap(await api.GET('/api/v1/resolve', {
       params: { query: { identifier } }, signal,
     })),
     staleTime: 30_000,
@@ -47,6 +33,8 @@ export const queryKeys = {
   workQueue: (status: WorkStatusFilter, q: string, page: number) => ['work-queue', status, q, page] as const,
   areas: ['areas'] as const,
   areaContext: (areaId: string) => ['areas', areaId, 'context'] as const,
+  areaCanonical: (areaId: string) => ['areas', areaId, 'canonical'] as const,
+  buildingCanonical: (buildingId: string) => ['buildings', buildingId, 'canonical'] as const,
   capabilities: ['workspace-capabilities'] as const,
   register: (buildingId: string) => ['buildings', buildingId, 'register'] as const,
   ledger: (buildingId: string) => ['buildings', buildingId, 'ledger'] as const,
@@ -60,25 +48,18 @@ export const queryKeys = {
 async function getDraft<T>(path: string): Promise<T | null> {
   const response = await globalThis.fetch(path, { headers: { accept: 'application/json' } });
   if (response.status === 404) return null;
-  if (!response.ok) throw apiError(response.status, path, await response.json().catch(() => null));
+  if (!response.ok) throw new ApiError(response.status, path, await response.json().catch(() => null));
   return (await response.json()) as T;
 }
 
-/**
- * The running API serves this path as `building-ledger/1` (parcel ULPIN, spaces, sources, history), a different
- * shape from the draft the screens read. Only the draft shape is accepted; any other body counts as "none".
- */
-const isDraftLedger = (body: unknown): body is BuildingLedger =>
-  typeof body === 'object' && body !== null && !('schemaVersion' in body);
-
-/** Rights, areas, shares, readiness, checks and history of a building. Null when the backend has none. */
+/** The published ledger in the shape the screens read. Null when the backend has no such building. */
 export function useBuildingLedger(buildingId: string | null | undefined, live = false) {
   return useQuery({
     queryKey: queryKeys.ledger(buildingId ?? ''),
     enabled: Boolean(buildingId),
-    queryFn: async () => {
-      const body = await getDraft<unknown>(`/api/v1/buildings/${buildingId}/ledger`);
-      return isDraftLedger(body) ? body : null;
+    queryFn: async ({ signal }) => {
+      const result = await api.GET('/api/v1/buildings/{buildingId}/ledger', { params: { path: { buildingId: buildingId! } }, signal });
+      return result.response.status === 404 ? null : ledgerFromPublished(unwrap(result));
     },
     staleTime: 60_000,
     refetchInterval: live ? 700 : false,
@@ -146,7 +127,7 @@ export function useWorkBoard() {
 export function useWorkQueue(status: WorkStatusFilter, q: string, page: number) {
   return useQuery({
     queryKey: queryKeys.workQueue(status, q, page),
-    queryFn: async () => unwrapApi(await api.GET('/api/v1/work-queue', { params: { query: { status, q: q || undefined, page } } })),
+    queryFn: async () => unwrap(await api.GET('/api/v1/work-queue', { params: { query: { status, q: q || undefined, page } } })),
     placeholderData: keepPreviousData,
     // Poll while anything is processing; SSE replaces this when the backend streaming card lands.
     refetchInterval: (query) => (query.state.data?.items.some((item) => isProcessing(item.jobStatus)) ? 4000 : false),
@@ -156,7 +137,7 @@ export function useWorkQueue(status: WorkStatusFilter, q: string, page: number) 
 export function useAreas() {
   return useQuery({ queryKey: queryKeys.areas, queryFn: async () => {
     // Uploaded areas stay listed when the registry API is unavailable; registry areas need it.
-    const [registry, uploaded] = await Promise.allSettled([api.GET('/api/v1/areas').then(unwrapApi), demoAreas()]);
+    const [registry, uploaded] = await Promise.allSettled([api.GET('/api/v1/areas').then(unwrap), demoAreas()]);
     if (registry.status === 'rejected' && (uploaded.status === 'rejected' || !uploaded.value.length)) throw registry.reason;
     return [...(registry.status === 'fulfilled' ? registry.value : []), ...(uploaded.status === 'fulfilled' ? uploaded.value : [])];
   }, staleTime: 60_000 });
@@ -168,9 +149,30 @@ export function useAreaContext(areaId: string | undefined, live = false) {
   return useQuery({
     queryKey: queryKeys.areaContext(areaId ?? ''),
     enabled: Boolean(areaId) && !isDemoId(areaId),
-    queryFn: async () => unwrapApi(await api.GET('/api/v1/areas/{areaId}/context', { params: { path: { areaId: areaId! } } })),
+    queryFn: async () => unwrap(await api.GET('/api/v1/areas/{areaId}/context', { params: { path: { areaId: areaId! } } })),
     staleTime: 60_000,
     refetchInterval: live && !isDemoId(areaId) ? 700 : false,
+  });
+}
+
+/** The canonical area record in local metres: what the scene draws. Locally uploaded areas have none. */
+export function useAreaCanonical(areaId: string | undefined, live = false) {
+  return useQuery({
+    queryKey: queryKeys.areaCanonical(areaId ?? ''),
+    enabled: Boolean(areaId) && !isDemoId(areaId),
+    queryFn: async ({ signal }) => unwrap(await api.GET('/api/v1/areas/{areaId}/canonical', { params: { path: { areaId: areaId! } }, signal })),
+    staleTime: 60_000,
+    refetchInterval: live ? 700 : false,
+  });
+}
+
+/** The canonical record of one building: state, gaps, levels and spaces. */
+export function useBuildingCanonical(buildingId: string | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.buildingCanonical(buildingId ?? ''),
+    enabled: Boolean(buildingId),
+    queryFn: async ({ signal }) => unwrap(await api.GET('/api/v1/buildings/{buildingId}/canonical', { params: { path: { buildingId: buildingId! } }, signal })),
+    staleTime: 60_000,
   });
 }
 
@@ -179,7 +181,7 @@ export function useBuildingRegister(buildingId: string | null | undefined, live 
     queryKey: queryKeys.register(buildingId ?? ''),
     enabled: Boolean(buildingId),
     queryFn: async (): Promise<BuildingRegister> => {
-      const result = unwrapApi(await api.GET('/api/v1/buildings/{buildingId}/register', { params: { path: { buildingId: buildingId! } } }));
+      const result = unwrap(await api.GET('/api/v1/buildings/{buildingId}/register', { params: { path: { buildingId: buildingId! } } }));
       if (typeof result !== 'object' || result === null || !('register' in result)) {
         throw new Error('The API returned an unexpected building register profile.');
       }
@@ -194,7 +196,7 @@ export function useBuildingRegister(buildingId: string | null | undefined, live 
 export function useCapabilities() {
   return useQuery({
     queryKey: queryKeys.capabilities,
-    queryFn: async () => unwrapApi(await api.GET('/api/v1/workspace-capabilities')),
+    queryFn: async () => unwrap(await api.GET('/api/v1/workspace-capabilities')),
     staleTime: 5 * 60_000,
   });
 }
@@ -207,7 +209,7 @@ export async function detectBuildingFiles(buildingId: string, files: File[]): Pr
   const body = new FormData();
   for (const f of files) body.append('file', f);
   const response = await globalThis.fetch(`/api/v1/buildings/${buildingId}/imports/inspect`, { method: 'POST', body });
-  if (!response.ok) throw apiError(response.status, 'inspect', await response.json().catch(() => null));
+  if (!response.ok) throw new ApiError(response.status, 'inspect', await response.json().catch(() => null));
   return (await response.json()) as FileDetection[];
 }
 
@@ -215,7 +217,7 @@ export async function startBuildingImport(buildingId: string, files: File[]): Pr
   const body = new FormData();
   for (const f of files) body.append('file', f);
   const response = await globalThis.fetch(`/api/v1/buildings/${buildingId}/imports`, { method: 'POST', body });
-  if (!response.ok) throw apiError(response.status, 'import', await response.json().catch(() => null));
+  if (!response.ok) throw new ApiError(response.status, 'import', await response.json().catch(() => null));
   return (await response.json()) as BuildingImport;
 }
 
@@ -257,7 +259,7 @@ export async function decideRegisterRequest(ref: string, state: RequestState, no
 // ------------------------------------------------------------------ deletion
 async function remove(path: string) {
   const response = await globalThis.fetch(path, { method: 'DELETE' });
-  if (!response.ok && response.status !== 204) throw apiError(response.status, path, await response.json().catch(() => null));
+  if (!response.ok && response.status !== 204) throw new ApiError(response.status, path, await response.json().catch(() => null));
 }
 export const deleteBuilding = (buildingId: string) => remove(`/api/v1/buildings/${buildingId}`);
 export const deleteArea = (areaId: string) => remove(`/api/v1/areas/${areaId}`);
