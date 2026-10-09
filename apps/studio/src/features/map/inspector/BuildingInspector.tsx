@@ -155,7 +155,7 @@ function RightsSummary({ ledger }: { ledger: BuildingLedger }) {
   for (const s of ledger.spaces) counts.set(s.rights, (counts.get(s.rights) ?? 0) + 1);
   return (
     <>
-      <div className={styles.rightsList}>
+      {ledger.spaces.length ? <div className={styles.rightsList}>
         {(['exclusive', 'shared', 'public', 'unknown'] as const).map((r) => (
           <span key={r} className={styles.rightsRow}>
             <span className={`ul-swatch${r === 'unknown' ? ' ul-hatch' : ''}`} style={{ backgroundColor: `var(${RIGHTS_TOKEN[r]})` }} />
@@ -163,7 +163,7 @@ function RightsSummary({ ledger }: { ledger: BuildingLedger }) {
             <span className="ul-num ul-muted">{counts.get(r) ?? 0}</span>
           </span>
         ))}
-      </div>
+      </div> : null}
       <DescriptionList items={[
         { label: 'Declaration', value: ledger.declaration ?? <span className="ul-unknown">Unknown</span> },
         { label: 'Shares total', value: ledger.shareTotalPct === null ? <StatusBadge status="Unknown" /> : (
