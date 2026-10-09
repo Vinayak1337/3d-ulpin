@@ -180,12 +180,14 @@ def restore_dev_patience(recipe: dict[str, Any]) -> tuple[float, int]:
     if not previous.is_file():
         raise ValueError("Resume requires the original DEV selection journal")
     records = [json.loads(line) for line in previous.read_text().splitlines()]
-    if not records:
-        return -1.0, 0
     resume_epoch = int(read_json(Path(recipe["resume"]) / "trainer_state.json")["epoch"])
+    if not any(record["epoch"] == resume_epoch for record in records):
+        raise ValueError("Resume checkpoint must have its DEV score recorded")
     metric = "recall" if recipe.get("early_stopping_metric") == "recall" else "dev_f1"
     minimum_delta = 0.0 if metric == "recall" else 0.001
-    best, bad_epochs = -1.0, 0
+    checkpoint_recipe = read_json(Path(recipe["resume"]) / "training-config.json")
+    checkpoint_recipe["early_stopping_metric"] = recipe.get("early_stopping_metric", "f1")
+    best, bad_epochs = restore_dev_patience(checkpoint_recipe)
     for record in records:
         if record["epoch"] > resume_epoch:
             continue
@@ -241,6 +243,8 @@ class DevEpochs(TrainerCallback):
         self.start = time.monotonic()
         self.duration = duration_minutes * 60
         self.best_score, self.bad_epochs = restore_dev_patience(recipe)
+        if self.bad_epochs >= 3:
+            raise ValueError("DEV patience already exhausted; do not relaunch the same experiment")
         self.metric = recipe.get("early_stopping_metric", "f1")
         self.minimum_delta = 0.0 if self.metric == "recall" else 0.001
         self.results: list[dict[str, Any]] = []
