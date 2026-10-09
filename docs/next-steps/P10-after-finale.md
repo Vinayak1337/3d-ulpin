@@ -6,7 +6,9 @@ These start only after P9.1 passes, or when the owner explicitly moves them earl
 
 ## P10.1 Schema learner done right (FP-LEARN)
 
-**Gate:** FP-LEARN-TEST · **Depends:** P3.4 in use for a while (reviewed mappings accumulate)
+**Moved forward on 10 October:** the owner wants the learner in the selection demo. Its first version is now [P3.5](P3-ingestion.md): Claude as development teacher, Sarvam as runtime teacher, and a Stage A online student. What remains here after the finale is to widen it across many real imports and run shadow-mode promotion.
+
+**Gate:** FP-LEARN-TEST · **Depends:** P3.5 in use for a while (reviewed mappings accumulate)
 
 ```text
 Follow H21 §C literally before anything bigger:

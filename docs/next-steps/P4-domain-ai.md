@@ -1,199 +1,183 @@
 # P4 — Domain AI: the learned parts SIH26011 asks for
 
-Goal: pass GF-AI with the **two learned routes that already exist** (RF-DETR building masks, CubiCasa5K plan segmentation), evaluated on Indian team-labelled holdouts and fine-tuned only if needed. Then add document storey extraction and deterministic association. Vertical delineation and topology are deterministic (P5).
+Goal: pass GF-AI with the **two learned routes that already exist**:
+- RF-DETR for building masks, fine-tuned on public human-reviewed RAMP data;
+- CubiCasa5K for plan segmentation, plus a deterministic vector plan reader for CAD sanctioned plans.
 
-**Why this replaces the fragment-support lane:** the problem statement's AI tasks are pixel tasks (building extraction, floor segmentation). The text fine-tune had 23 training fragments and 1 development positive, and isn't in the finale. See [ML_REVIEW_RECOMMENDATIONS.md](../../ML_REVIEW_RECOMMENDATIONS.md).
+Document storey extraction is added through the agent (P3.4 teacher). Vertical delineation and topology are deterministic (P5).
+
+**Updated 10 October:**
+- RAMP gives 6,288 human-reviewed Karnataka chips and about 46k Bangladesh chips (P2.3), so the label deadlock is gone.
+- The earlier RF-DETR attempts (5–6 October) stalled in a sealed-container harness: about 25 preparation and diagnosis tasks, with no model trained.
+  - What to keep: the upstream bug they found, where the empty-mask loss isn't a scalar. The repair is on `staging` as `5bd61253` (`ulpin-rfdetr-empty-mask-scalar/1`).
+  - What to drop: the container ceremony for experiments.
+- The Tower 3 plans are scanned images. The Bihar Magnolia sanctioned plans are CAD vector PDFs with room labels and dimensions.
 
 ---
 
-## P4.0 ⭐ A plain, fast evaluation harness
+## P4.0 ⭐ A plain, fast GPU environment and evaluation harness
 
-**Gate:** GF-AI · **Depends:** P0.1 · **Owner:** the ML owner (single GPU owner)
+**Gate:** GF-AI · **Depends:** none · **Owner:** the single GPU owner (sprint B1)
 
 ```text
-Replace per-run staging (19,700 files / 8.6 GB for 2.3 s of compute) with a plain offline harness for
-experiments. Keep the AppContainer audit for the final pre-integration check only.
+Build a plain experiment environment; no per-run staging or sealed containers for experiments (keep one
+containment check for the final pre-integration run only).
 
-Build scripts/ml/eval/ (Python, one venv from services/geo/requirements-ml.txt + pinned extras):
-- run.py --task {building,plan,storeys} --model <model-card.json> --set <labels manifest> --split {dev,holdout}
-- Offline: HF_HUB_OFFLINE=1, local weights only, hash checked against the model card before loading.
-- Output: one docs/evidence/gf-ai/<task>/<run-id>/result.json with git SHA, dataset manifest hash, model hash,
-  preprocessing profile, per-class metrics with denominators, per-item predictions (paths to masks/polygons
-  outside Git), runtime and peak memory. Also a small HTML or PNG contact sheet of worst/best items.
-- A run on the dev set takes minutes. The holdout split refuses to run unless preregistration.json exists
-  and its hash is committed (P4.1), and it logs each holdout run.
-Reuse the model loaders/preprocessing from services/geo/geo/spatial_ml.py so evaluation matches production.
+- Python venv at E:/BhuAayam-data/ml/venv-vision (outside Git) with CUDA PyTorch for the RTX 3070 (8 GB), the
+  pinned rfdetr package, and services/geo's model dependencies; record exact versions in
+  scripts/ml/requirements-vision.lock. GPU smoke test: one forward/backward pass in under a minute. If native
+  Windows CUDA fails after one diagnosed attempt, use WSL2 Ubuntu with GPU, not the old harness.
+- scripts/ml/eval_buildings.py --model <onnx|checkpoint> --split {dev,holdout}: tiled inference matching the
+  production profile in services/geo/geo/spatial_ml.py; per-building precision/recall at IoU>=0.5, mean IoU of
+  matches, false buildings on empty chips, boundary F1 (2 px); denominators; a PNG contact sheet of best/worst.
+  Output docs/evidence/gf-ai/building/<run-id>/result.json (git SHA, split hash, model hash, metrics, runtime).
+- The holdout split refuses to run unless docs/evidence/gf-ai/preregistration.json is committed, and it logs
+  every holdout run.
 ```
 
-**Expect back:** one command that evaluates an installed model on the dev split in minutes, with a result JSON and contact sheet. The holdout guard is in place.
+**Expect back:** the venv recipe and lock file, a GPU smoke result, and one dev evaluation of the installed model in minutes, with the holdout guard in place.
 
 ---
 
 ## P4.1 ⭐ GF-AI preregistration
 
-**Gate:** GF-AI (DATA-04) · **Depends:** P2.3 · **Owner:** ML owner + data
+**Gate:** GF-AI (DATA-04) · **Depends:** P2.3 · **Owner:** GPU owner (sprint B1)
 
 ```text
-Write docs/evidence/gf-ai/preregistration.json and commit it BEFORE any holdout run:
-- tasks: building_mask (roofprints), plan_rooms (room classes) [, storeys if P4.4 is in scope];
-- metrics: building: per-building precision/recall at IoU>=0.5, mean IoU of matched, false buildings on empty
-  tiles, boundary F1 (2 px); plans: per-class IoU, room-count accuracy per page, unit-boundary IoU where
-  labelled; storeys: exact storey-count match, label-set F1, conflict/unknown flag accuracy;
-- thresholds (proposal; owner may adjust before freezing): building precision>=0.75, recall>=0.70 on the
-  holdout; plan mean room IoU>=0.55 with no class reported only pooled; storeys count exact>=0.80 where truth
-  is known and conflict/unknown flagged>=0.80, zero values without a verifiable citation;
-- holdout item IDs and label hashes, label authors (team), baseline definitions, and the rule that the
-  holdout is evaluated at most twice: (1) installed model, (2) final candidate.
+Commit docs/evidence/gf-ai/preregistration.json BEFORE any holdout run:
+- building_mask: RAMP Karnataka holdout clusters (ids + hash), metrics as in P4.0, thresholds precision>=0.75 and
+  recall>=0.70 at IoU>=0.5 (owner may adjust before freezing), baseline = installed
+  rfdetr-satellite-buildings-onnx-v1;
+- plan_rooms: CubiCasa5K test subset (ids + hash), per-class IoU and room-count accuracy; Indian raster plans are
+  reported as uncalibrated candidates (no human labels);
+- storeys: registry truth from P2.4 (holdout projects), exact storey-count match, label-set F1, conflict/unknown
+  flag accuracy, zero values without a verifiable citation;
+- label provenance (publisher, licence, review process); the rule that each holdout is evaluated at most twice:
+  (1) installed/baseline, (2) final candidate.
 ```
 
-**Expect back:** a committed, hashed preregistration. The commit date in Git must be earlier than the first holdout result.
+**Expect back:** a committed preregistration whose Git date is earlier than the first holdout result.
 
 ---
 
-## P4.2 ⭐ Building extraction: evaluate RF-DETR, fine-tune if below threshold
+## P4.2 ⭐ Building extraction: baseline, fine-tune and serve
 
-**Gate:** GF-AI · **Depends:** P4.0, P4.1 · **Owner:** ML owner
+**Gate:** GF-AI · **Depends:** P4.0, P4.1 · **Owner:** GPU owner (sprint B2, B3)
 
 ```text
-1. Evaluate rfdetr-satellite-buildings-onnx-v1 (services/geo/ml-models.json) as installed on the dev split,
-   then once on the holdout. Use the production tiling profile (512 tiles, stride 384).
-2. Error analysis on dev: false positives on empty/vegetation tiles, merged adjacent roofs (tiled union),
-   missed small/informal roofs, blur. Write 5 lines.
-3. If the holdout is below threshold: fine-tune RF-DETR segmentation on the dev split with the official
-   rfdetr training recipe (COCO export from P2.3), on the RTX 3070 within 6 GiB (batch/grad-accumulation/
-   resolution chosen to fit). Augment with flips/rotations/colour jitter only. Optionally pretrain on an
-   open, licence-checked building dataset (record it in the model card) before the Indian dev split.
-   Pick the checkpoint on dev; then a single final holdout run.
-   If fine-tuning can't beat the installed model on dev, keep the installed model and report it honestly.
-4. If RF-DETR's undocumented training data overlap can't be ruled out for any holdout source, also run H27's
-   documented fallback (torchvision DeepLabV3 with a building head, trained only on the dev split) and report
-   both.
-5. Export the chosen model to ONNX, check numerical parity on 5 real tiles, add a new entry to
-   services/geo/ml-models.json (new id; never overwrite the old one) with its model card.
+1. Baseline: evaluate rfdetr-satellite-buildings-onnx-v1 (services/geo/ml-models.json) as installed on the
+   Karnataka DEV split, then once on the HOLDOUT (prereg run 1). Five-line error analysis on dev (dense informal
+   roofs, merged neighbours, small roofs, empty/vegetation chips, chip-edge cuts).
+2. Fine-tune RF-DETR segmentation with rfdetr's own training API on TRAIN (Bangladesh + Karnataka train
+   clusters): the largest variant that fits 8 GB with gradient accumulation; flips/rotations/colour jitter only;
+   apply the empty-mask scalar-loss repair (staging 5bd61253) only if upstream still needs it. Train in resumable
+   segments of at most ~100 minutes (checkpoint every segment; resume from the last one). Choose the checkpoint on
+   DEV; then one HOLDOUT run (prereg run 2).
+3. If the fine-tune can't beat the installed model on DEV, keep the installed model and report it honestly.
+4. Export ONNX; check numerical parity on 5 real chips; add a NEW entry to services/geo/ml-models.json (never
+   overwrite the old one) with a model card: weights SHA-256, training data (RAMP regions, CC BY-NC 4.0,
+   attribution), preprocessing profile, metrics, failure modes, licence gaps.
+5. Serve it through the existing spatial-ml batch path and show candidates on one demo-area chip via the API.
 ```
 
-**Expect back:** dev and holdout `result.json` for the installed and the final model, a model card, ONNX parity, a 5-line error analysis, and the decision with its reason.
+**Expect back:** dev and holdout `result.json` for the installed and fine-tuned models, a model card, ONNX parity, the error analysis, and the decision with its reason.
 
 ---
 
-## P4.3 ⭐ Plan segmentation: evaluate CubiCasa5K, fine-tune if needed, vectorise and scale
+## P4.3 ⭐ Plans: vector reader first, plan model for scans, scale
 
-**Gate:** GF-AI · **Depends:** P4.0, P4.1 · **Owner:** ML owner
+**Gate:** GF-AI, GF-T16 prerequisite · **Depends:** P4.0 for evaluation · **Owner:** plans worker (sprint P1, P2)
 
 ```text
-1. Evaluate cubicasa5k-rooms-onnx-v1 as installed on the Indian dev split, then once on the holdout.
-2. Error analysis on dev: Indian plan conventions (thick hatched walls, Devanagari/English labels, dimension
-   chains, stilt/parking sheets, multi-unit typical floors). 5 lines.
-3. If below threshold: fine-tune the CubiCasa5K model (official repo, pinned commit) on the dev split, keeping
-   its class map. Licence: CC-BY-NC-4.0 for the original weights and data; record it as a launch-clearance gap
-   and keep the fine-tuned weights noncommercial unless retrained from permitted data.
-4. Vectorisation (deterministic, services/geo): mask -> room polygons (simplify, orthogonalise to dominant
-   wall directions within 3°, snap shared walls), with a confidence per room from the mean softmax.
-5. Scale: from a dimension string or scale bar the OCR finds on the page (feet-inch parsing per
-   00-STANDARDS §3) -> metres per pixel, with the method recorded; no scale -> polygons stay in pixel space
-   with state candidate and gap "no_scale".
-6. Output rooms as DomainCandidates through the existing spatial-ml batch/apply flow, linked to the source
-   page/region.
+a. Vector reader (deterministic, sprint P1). For CAD/vector PDFs (Bihar Magnolia sanctioned layout:
+   ~80–120k drawing paths and room labels such as "BEDROOM (12'11" X 10'2")"): extract wall/line work, build
+   closed room regions (polygonize; snap within tolerance), attach the room label text inside each region, parse
+   stated dimensions (feet-inch per 00-STANDARDS §3) to metres, derive the page scale from dimension strings vs
+   drawn lengths (record the method; no scale -> pixel space with gap "no_scale"), and report per room: polygon,
+   label literal, stated dims, computed area, stated-vs-drawn consistency. Every room cites page + bbox. Output
+   room candidates (method deterministic:vector-plan@1) into the canonical record's candidates.
+   Check by hand-free consistency on 3 real pages; flag rooms whose drawn size disagrees with the label.
+b. Scanned plans (sprint P2): OCR text and dimension strings (existing document-ocr) + CubiCasa5K room candidates
+   through the existing spatial-ml path with the v2 contour profile; scale from OCR'd dimensions where they
+   resolve, else "no_scale". Tower 3 is the real case.
+c. Evaluate CubiCasa5K as installed on the P4.1 CubiCasa test subset (foreign; per-class IoU, room count). No
+   plan fine-tune in this sprint unless an Indian human-labelled set appears; licence CC BY-NC 4.0 recorded.
 ```
 
-**Expect back:** dev and holdout results per class, vectorised rooms with scale (or an honest no-scale), candidates visible through `/api/v1/spatial-ml/batches/{id}`, a model card for any new weights, and an error analysis.
+**Expect back:** Bihar rooms with literal dimensions and metric areas, plus the consistency report; Tower 3 candidates with a scale or an honest `no_scale`; the CubiCasa result; candidates visible through the API.
 
 ---
 
-## P4.4 Storey extraction from documents (regex baseline vs zero-shot model)
+## P4.4 ⭐ Storeys and document facts: rules first, then the agent
 
-**Gate:** GF-AI support, GF-T16 prerequisite · **Depends:** P2.4, P4.0 · **Owner:** ML owner or backend/AI
+**Gate:** GF-AI support, GF-T16 prerequisite · **Depends:** P2.4, P3.4 teacher · **Owner:** document-agent worker (sprint A5)
 
 ```text
-Fill storeys[] from RERA/sanction documents as candidates.
+Fill storeys/levels and unit facts from RERA and sanction documents as CANDIDATES.
 
-1. Baseline: deterministic extractor over OCR/native text: G+N, "N storeys/floors", ordinal floor lists,
-   basement/stilt/podium/terrace/mezzanine labels, floor-to-floor heights with units. Every value carries its
-   quote and locator.
-2. Model: a local 3B–8B instruction model or VLM, 4-bit, on the 3070 (e.g. Qwen2.5-VL-3B/7B-Instruct or a
-   current Qwen instruct model; record revision/licence/hash), reading the page text plus page image, with
-   JSON-schema-constrained output: {storeyCount|null, labels[], heights[], conflicts[], citations[], abstain}.
-   No fine-tuning.
-3. Verification (deterministic): every cited quote must exist at its locator in the original's text layer or
-   OCR; otherwise the value is dropped. Units converted by code.
-4. Evaluate both on the P2.4 dev split, then once on the holdout. Keep the model only if it beats the regex
-   baseline; else ship the baseline.
-5. Output storey candidates into the canonical record (state candidate, method model:<id> or deterministic).
+1. Baseline: deterministic extractor over native text/OCR (extend scripts/usp/learning/document_fields_baseline.py
+   and the existing document-proposal packets): G+N, "N storeys/floors", ordinal floor lists, basement/stilt/
+   podium/terrace/mezzanine labels, unit counts, floor-to-floor heights with units. Every value carries its quote
+   and locator.
+2. Agent: the Sarvam teacher (P3.4) reads page text/OCR with layout positions and returns JSON-schema output
+   {storeyCount|null, labels[], heights[], unitCounts[], conflicts[], citations[], abstain}. Reuse the officer
+   AI extraction contract (modules/ai/officer-ai*.ts) and the document-proposal and decision routes.
+3. Verifier (deterministic): every cited quote must exist at its locator in the original's text layer or OCR;
+   otherwise the value is dropped. Units are converted by code.
+4. Score both against the P2.4 registry truth on development projects, then once on the holdout projects. Ship
+   whichever is better per field; the agent's verified outputs also feed the learner (P3.5) as pseudo_labels.
+5. Output storey candidates into the canonical record. Tower 3 must show "conflicting: G+41 vs G+42" with both
+   citations.
 ```
 
-**Expect back:** both systems' results, the chosen one wired as candidates, and Tower 3 showing "conflicting: G+41 vs G+42" with both citations.
+**Expect back:** results for both systems against registry truth, the chosen route wired as candidates, and Tower 3's conflict visible through the API.
 
 ---
 
 ## P4.5 Learned candidates into the canonical record and review queue
 
-**Gate:** GF-AI, GF-AGENT · **Depends:** P4.2, P4.3, P1.2 · **Owner:** backend
+**Gate:** GF-AI, GF-AGENT · **Depends:** P4.2, P4.3, P1.2 · **Owner:** GPU owner + backend (sprint B4)
 
 ```text
-Make the learned outputs first-class candidates in the canonical record and the officer review flow.
-- Roofprint candidates for the demo area: run the chosen building model on the area's imagery; polygons go
-  to local metres via the image's georeference; attach as footprint candidates (kind roofprint) to existing
-  buildings by overlap, or as new candidate buildings.
-- Room candidates from P4.3 attach to a building level only after a reviewer chooses the level (no guessing).
+- Roofprint candidates for the Karnataka demo area (holdout clusters): run the chosen building model on the
+  area's imagery; polygons go to local metres via the image's georeference; attach as footprint candidates (kind
+  roofprint) by overlap, or as new candidate buildings.
+- Room candidates (P4.3) attach to a building level only after a reviewer chooses the level.
 - Accept/reject through the existing review commands; acceptance creates a revision with lineage.
 - /buildings/{id}/canonical shows candidates separately from reviewed values.
 ```
 
-**Expect back:** in the API, a demo building whose footprint went from `unknown` → `candidate` (model) → `reviewed`, with lineage, and a room candidate accepted onto a chosen level.
+**Expect back:** a footprint that went `unknown` → `candidate` (model) → `reviewed` with lineage, and a room candidate accepted onto a chosen level.
 
 ---
 
-## P4.6 Deterministic association (document ↔ building/floor), with no model
+## P4.6 Deterministic association (document ↔ building/floor)
 
-**Gate:** GF-AGENT support (finale); prerequisite for P10.2 · **Depends:** P3.1 · **Owner:** backend
+**Gate:** GF-AGENT support · **Depends:** P3.1 · **Sprint:** after M2 unless the demo needs it
 
 ```text
-Before any learned linker, build the rule-based one and measure it.
-Rules, in order: exact issuer-scoped IDs (RERA reg no., sanction no., khasra/ULPIN where stated) -> project and
-tower/block names after normalisation (case, Devanagari digits, "T-3"/"Tower 3"/"टावर 3") -> spatial overlap
-of a stated location with candidate footprints -> storey-count compatibility. Output: candidate links with
-the rule that fired, plus one_to_many, no_match and ambiguous results. Never accept on name similarity alone.
-Use existing document-association(-targets/-authority).ts; this produces proposals for officer review only.
-Evaluate on whatever reviewed pairs exist (report the denominator even if tiny) and list every ambiguous case.
+Rules in order: exact issuer-scoped IDs (RERA reg no., sanction no., khasra where stated) -> normalised project
+and tower/block names ("T-3"/"Tower 3"/"टावर 3") -> stated-location overlap -> storey-count compatibility.
+Output candidate links with the rule that fired, plus one_to_many / no_match / ambiguous. Never accept on name
+similarity alone. Use document-association(-targets/-authority).ts. Report precision/recall with the denominator.
 ```
 
-**Expect back:** rule-based link proposals in the review flow, the measured precision/recall with the denominator, and the ambiguous cases listed. This becomes the baseline any future ML linker has to beat.
+**Expect back:** rule-based link proposals in the review flow and their measured precision and recall, with the denominator.
 
 ---
 
-## P4.7 Conditional: distil a strong teacher into the local storey extractor
+## P4.7 Superseded: distillation is now part of P3.5
 
-**Gate:** GF-AI support · **Depends:** P4.4 done, and **all three triggers below met** · **Owner:** ML owner
+As of 10 October, distillation into a local student is the core of the translate-and-learn learner (P3.5):
+- the development teacher is Claude (Opus 5.5, the lead);
+- the runtime teacher is Sarvam;
+- the owner allows learning from Sarvam outputs.
 
-**Run this only if all three hold:**
-1. The local zero-shot model in P4.4 misses its threshold on the dev split.
-2. A strong teacher (e.g. GPT-6.1 Sol at xhigh, or another frontier model) passes the same dev evaluation clearly.
-3. The deployment needs a local, offline or India-resident model.
+The rules that still apply to any student trained on teacher outputs:
+- teacher outputs are `pseudo_label` and never evaluation truth;
+- the deterministic verifier runs before learning;
+- held-out families and projects are never shown to a teacher;
+- only public documents go to external teachers, never private or restricted sources;
+- keep a student only if it beats the simpler baseline on the holdout.
 
-Otherwise ship the regex baseline or the teacher-assisted review flow and skip this.
-
-```text
-Goal: transfer the teacher's demonstrated storey-extraction ability to a small local model, using real
-documents, not hand-written examples.
-
-0. Permission check (write it down first): (a) the teacher provider's current terms on using outputs to train
-   models; (b) only public documents (RERA/sanction PDFs from P2.2 sources) go to an external teacher; no
-   private or restricted source; (c) never Sarvam outputs (H21). If (a) is unclear, stop and ask the owner.
-1. Ceiling: run the teacher once on the P2.4 DEV split with the same schema and verifier as P4.4. It must
-   beat the local model clearly. Never show the teacher the holdout.
-2. Unlabelled pool: 300–2,000 real public plan/approval pages from >=5 projects/issuers that are NOT in the
-   P2.4 holdout projects (exclude by project ID, not by page).
-3. Teacher pass: structured JSON (same schema as P4.4) with quotes and locators. The deterministic verifier
-   drops any value whose quote isn't found at its locator; abstentions are kept as abstain examples, not dropped.
-4. Human spot-check: a team member reviews a random 10% (minimum 50 items); record the agreement rate. If it
-   is under 90%, fix the prompt/verifier and repeat on a fresh sample. Don't train on unchecked bad batches.
-5. Train the student with standard tooling: QLoRA (TRL SFTTrainer + PEFT), all linear layers, on a 3B–7B
-   instruct model that fits the 3070 in 4-bit; outputs constrained to the JSON schema at inference.
-   Hold out a calibration project for any confidence threshold.
-6. Evaluate the student once on the P2.4 holdout against the regex baseline, the zero-shot local model and the
-   teacher's dev numbers. Keep the student only if it beats the zero-shot local model and the baseline.
-7. Record everything as pseudo_label lineage in the model card (teacher id/version, prompt hash, pool
-   manifest, verifier version, spot-check rate).
-```
-
-**Expect back:** the permission note, the teacher's dev ceiling, the pool manifest, the spot-check agreement rate, the student's holdout result against the three comparisons, and a model card. Or an early stop with the trigger that failed, which is a perfectly good outcome.
+Pixel tasks (roofprints, room masks) keep human-reviewed labels and pretrained vision models, not LLM teachers.

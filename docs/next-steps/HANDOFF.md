@@ -1,5 +1,11 @@
 # Handoff: cloud review session → local session on the owner's PC
 
+> **Superseded on 10 October 2026.** The reconciliation is done; see [docs/STATUS.md](../STATUS.md). The executable plan is [SPRINT-SELECTION.md](SPRINT-SELECTION.md). The owner answered the open decisions:
+> - Claude leads everything;
+> - no team labels;
+> - Sarvam is the runtime teacher;
+> - the selection demo is about 24 October.
+
 Written 6 October 2026 at the end of a cloud review session. A new Claude Code session on the owner's PC has none of that conversation, so start here.
 
 ## What the cloud session did

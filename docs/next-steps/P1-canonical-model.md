@@ -4,9 +4,33 @@ Goal: one versioned record that every reader and model feeds, and that the Three
 
 ---
 
+## P1.0 ⭐ Canonical field vocabulary for the agent (sprint A1, built first)
+
+**Gate:** GF-CONTRACT, GF-AGENT · **Depends:** none · **Owner:** agent-backend worker (A1). K1 consumes it in P1.1.
+
+```text
+The mapping agent and learner (P3.4/P3.5) need a target vocabulary much wider than today's three targets
+(building.sourceKey/name/geometry in packages/contracts/src/usp/ingestion.ts). Define it once in
+packages/contracts/src/canonical/targets.ts:
+- targets grouped by entity: building.* (sourceKey, name, address literal, use, storeyLabel literal, storeyCount,
+  heightM, footprint), parcel.* (khasra/plot/survey literal, ULPIN anchor as a sourced assertion only, area),
+  unit.* (unitNo literal, floorLabel literal, type, carpetArea, builtUpArea, balconyArea), level.* (label
+  literal, kind, lowerM, upperM), space.*, document.* (registrationNo, sanctionNo, date, issuer, status), and
+  unknown;
+- per target: value kind (text literal | number+unit | date | enum | geometry | key), allowed operations
+  (copy | enum_lookup | unit_convert | parse_literal | link_parent_key), unit family, and whether a model may
+  ever propose it (identifiers and official anchors: never invented, only copied from a source column);
+- a display label and one-line meaning per target (reused by the Studio's mapping questions).
+Keep the old three targets as aliases so existing plans still validate.
+```
+
+**Expect back:** the vocabulary module, its contract test, and the alias compatibility. No database changes.
+
+---
+
 ## P1.1 ⭐ Define `normalized-building/1`
 
-**Gate:** GF-CONTRACT · **Depends:** P0.2 · **Owner:** backend contracts owner
+**Gate:** GF-CONTRACT · **Depends:** P1.0 · **Owner:** backend worker (sprint K1)
 
 ```text
 Define the canonical building record that bridges registry data and the Three.js scene.
@@ -40,7 +64,7 @@ fixture (fixtures/real-area) and one with unknown height and a conflicting store
 
 ## P1.2 ⭐ Serve the projection from the API
 
-**Gate:** GF-CONTRACT, GF-SCENE · **Depends:** P1.1 · **Owner:** backend
+**Gate:** GF-CONTRACT, GF-SCENE · **Depends:** P1.1 · **Owner:** backend worker (sprint K1)
 
 ```text
 Expose the canonical record as read-only, record-backed API projections (no new data store).

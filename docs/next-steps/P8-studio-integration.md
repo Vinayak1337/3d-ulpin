@@ -2,7 +2,18 @@
 
 Goal: the Studio judges see must run on the **live backend** with the real demo area, not on the local NYC/Swiss mocks. Today `apps/studio/src/local/routes.ts` has 3 live and 33 local routes, and several of the local ones already exist in the backend.
 
-Owner: the frontend lane (Claude, per AGENTS.md). Backend changes discovered here go back to the backend owner as short requests. The frontend lane doesn't edit `apps/api`, `packages/server`, `database/` or `services/`. Before handing off any UI change, run `$ui-design-check` and include its report.
+**Owner (updated 10 October):** the Studio worker F1 under the Claude lead.
+- One writer per seam still holds. F1 owns `apps/studio`, `packages/scene`, `packages/ui` and `packages/api-client`.
+- Backend gaps found here go to the lead, who assigns them to K1/K2/A1 (or to F1 when the task file names that backend seam).
+- Before handing off any UI change, follow `.agents/skills/ui-design-check/SKILL.md` and include its report.
+- The UI stays desktop-first and light-only. Never copy sample values from `design-mockup/`.
+
+**State on 10 October:** the route table has **2 live / 31 local** routes. The backend now also serves:
+- document proposals and decisions;
+- source-only spatial-ML batches and candidate reviews;
+- AI extractions;
+- `property-cards/generate|read`;
+- `identity/assign|reviews`.
 
 ---
 
@@ -65,9 +76,11 @@ After a reload, everything persists from the backend. Delete the browser-store p
 
 ---
 
-## P8.4 Live import with progress
+## P8.4 ⭐ Live import with progress, agent questions and the learner panel
 
-**Gate:** GF-STREAM (UI side) · **Depends:** P8.1, P3.4 · **Owner:** frontend
+**Gate:** GF-STREAM, GF-AGENT (UI side) · **Depends:** P8.1, P3.4, P3.5 · **Owner:** F1
+
+The flow also shows the agent's mapping proposals as candidates. Uncertain fields appear as questions with the target's display label and meaning (from P1.0). A small learner panel shows, per chunk, how many fields came from memory, the student, the teacher or the officer, so the falling teacher-call curve is visible live.
 
 ```text
 Add files -> live inspect -> mapping questions (from the mapping agent, with "needs input" items) -> start import

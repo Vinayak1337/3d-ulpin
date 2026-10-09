@@ -1,101 +1,103 @@
-# P0 — Reset: stop drift, clean instructions, stable runtime
+# P0 — Reset: one lead, clean instructions, a runtime that stays up
 
-Goal: before building anything new, make sure every agent gets the same short, consistent instructions, works against a runtime that stays up, and is aimed at gates instead of side tasks.
+Goal: before building, every worker gets the same short instructions, the old Codex queue is closed without losing anything, and the runtime stays up.
 
----
-
-## P0.1 ⭐ Freeze breadth work and pause the ML distillation lane
-
-**Gate:** hygiene · **Depends:** none · **Owner:** lead
-
-```text
-Read docs/next-steps/README.md and 00-STANDARDS.md, PROJECT_DEEP_DIVE_ACTION_PLAN.md and ML_REVIEW_RECOMMENDATIONS.md.
-
-1. In docs/orchestration/ML_DISTILL_01.md and docs/evidence/usp/ml-distillation/status.md, add one dated top
-   paragraph: the fragment-support lane (STUDENT-44/45 and later) is paused; history is kept; the reason is
-   "task not in finale scope, data too small to measure (23 fragments, 1 dev positive)"; it resumes only under
-   P10.2. Do not delete any file.
-2. In docs/orchestration/NESTJS_MIGRATION.md, add a dated top paragraph: no new format readers, sufficiency
-   adapters, citation/export variants or review-of-review tasks until P9.1 passes. Name the in-flight branches
-   (planar and raster/point sufficiency) and say whether each is merged as is or parked.
-3. Make a list of every open worker assignment (PARALLEL_* files, last 4 days). For each, write one line:
-   keep (moves a gate test: name it) / park / close.
-
-Keep each paragraph at most 6 lines, in plain English.
-```
-
-**Expect back:** three short edits plus a table of open assignments with keep/park/close. No code changes, no deleted history.
+**Updated 10 October:** the owner made Claude the lead for the whole project. The Codex desktop chats (Orchestrator, D00 integration, AI-04B, GLTF-01, ML Teacher) are retired; they have been idle since 6 October. Workers now run through the pi codex-pool (SPRINT-SELECTION §3).
 
 ---
 
-## P0.2 ⭐ One short, consistent instruction set
+## P0.1 ⭐ Retire the old queue and preserve its work
 
-**Gate:** hygiene · **Depends:** P0.1 · **Owner:** lead
+**Gate:** hygiene · **Depends:** none · **Owner:** lead (sprint S0.1)
 
 ```text
-AGENTS.md has grown into a stack of dated overrides (model, effort, speed) that contradict each other and the
-release plan. Rewrite it so a new agent can act after reading one page.
-
-1. Create docs/orchestration/AGENT_SETTINGS_HISTORY.md and move every dated model/effort/speed/worker-launch
-   paragraph there unchanged, oldest first.
-2. Rewrite AGENTS.md to at most ~120 lines: product one-liner; precedence order (release-plan.json > H00 >
-   docs/next-steps/00-STANDARDS.md > feature handoff > older docs); current model/speed rule in ONE paragraph
-   (the latest one, 4 October); data rules (keep the substance of "Sources, records and selective cleanup");
-   permissions/safety boundaries; frontend/backend lane boundary; failure-recovery workflow (keep it, it is
-   good); link to docs/next-steps.
-3. Fix the contradictions:
-   - docs/usp-agent-handoffs/release-plan.json → deliveryPolicy.execution: speedPreference/
-     configuredServiceTier must match "default/standard";
-   - H00, H22, H23 statements that Cesium is the finale runtime → the Studio uses Three.js +
-     3d-tiles-renderer (apps/studio, packages/scene); apps/web is frozen legacy.
-4. Run tools/validate_handoffs.py if it exists and fix only the links you broke.
-
-Do not change any data, safety or permission rule's meaning. List every rule you moved or merged.
+1. Preserve every uncommitted change before anything else, each on its own branch, never integrated:
+   - desktop-plan-extraction worktree: the RF-DETR launcher bridge fix (2 files) -> wip/rfdetr-bridge-fix-20261006;
+   - 56f9 (fragment rank), b3eb (CityJSON), backend-review (native PDF/archive) -> wip/<name>-20261010;
+   - the teacher's failure record cf85c491 already sits on task/d07-native-cpu-empty-loss-20261006: keep.
+   Don't delete worktrees, branches or E:/BhuAayam-data task folders.
+2. In docs/orchestration/WORK_ITEMS.md add one dated top paragraph: queue retired on 10 October; Claude leads;
+   current plan is docs/next-steps/SPRINT-SELECTION.md; the RF-DETR container-harness chain and the
+   fragment-support lane are closed (history kept); D04–D08 code on staging is the base.
+3. Same 3-line note at the top of docs/orchestration/ML_DISTILL_01.md and NESTJS_MIGRATION.md.
 ```
 
-**Expect back:** AGENTS.md of about one page, a history file, the fixed release-plan fields, and a list of moved/merged rules. Validator passes.
+**Expect back:** the list of preservation branches and three short notes. No deletions.
+
+---
+
+## P0.2 ⭐ One short instruction set
+
+**Gate:** hygiene · **Depends:** P0.1 · **Owner:** lead (sprint S0.2)
+
+```text
+1. Move every dated model/effort/speed/worker/orchestrator paragraph from AGENTS.md unchanged into
+   docs/orchestration/AGENT_SETTINGS_HISTORY.md, oldest first.
+2. Rewrite AGENTS.md to about one page:
+   - product one-liner;
+   - precedence: release-plan.json > H00 > docs/next-steps/00-STANDARDS.md > feature handoff > older docs;
+   - roles: Claude leads all lanes; workers through the pi codex-pool (gpt-6.1-sol, high/xhigh);
+     spawn -> stop -> review on return -> integrate -> next; one writer per seam; one GPU owner;
+     one runtime/DB owner;
+   - data rules: the substance of "Sources, records and selective cleanup";
+   - permission/safety boundaries; no push to main or deploy;
+   - provider rules:
+     - Sarvam is the runtime teacher, one configured key, no rotation across accounts to stretch free credits;
+     - learning from Claude's/Sarvam's outputs is allowed for our non-competing mapping learner
+       (owner decision, 10 October), with outputs recorded as pseudo_label;
+     - private data never goes to an external provider;
+   - the failure-recovery workflow (keep it);
+   - links to docs/next-steps and docs/STATUS.md.
+3. Fix contradictions:
+   - release-plan.json deliveryPolicy.execution: speed/tier "default/standard";
+   - H00/H22/H23 Cesium statements -> the Studio uses Three.js + 3d-tiles-renderer (apps/studio,
+     packages/scene); apps/web is frozen legacy;
+   - H21/H23 Sarvam-training restriction -> superseded by the owner decision above (keep the old text in
+     history).
+4. Bring docs/next-steps/*, PROJECT_DEEP_DIVE_ACTION_PLAN.md, ML_REVIEW_RECOMMENDATIONS.md and docs/STATUS.md
+   from branch claude/magical-bardeen-31bi7c into staging as a docs-only commit (no code from that branch).
+5. Run tools/validate_handoffs.py if present; fix only links you broke.
+```
+
+**Expect back:** a one-page AGENTS.md, the history file, the fixed release-plan fields, and the next-steps docs on `staging`. List any rule you moved or merged.
 
 ---
 
 ## P0.3 ⭐ A runtime that stays up
 
-**Gate:** GF-BACKEND · **Depends:** none · **Owner:** one runtime owner
+**Gate:** GF-BACKEND · **Depends:** none · **Owner:** runtime worker R1 (sole runtime/DB owner until it hands over)
 
 ```text
-The local stack (PostgreSQL/PostGIS, object storage, Redis, Celery workers, API, dispatcher) runs on Docker on a
-Windows desktop and has repeatedly failed (stale sailor-ingest.sock, engine restarts, "desktop-linux" pipe
-missing). Recoveries became separate tasks. Make it boring.
+The local stack (PostgreSQL/PostGIS, object storage, Redis, Celery workers, API, dispatcher) runs on Docker
+Desktop on Windows and has repeatedly failed (stale sailor-ingest.sock, engine restarts, "desktop-linux" pipe
+missing); on 6 October the engine was down again. Make it boring.
 
-1. Read compose.yaml, package.json scripts platform:start/health/stop, docs/DESKTOP_SETUP.md, docs/OFFICER_STARTUP.md
-   and the recovery entries in docs/orchestration/NESTJS_MIGRATION.md (RUN-RECOVER-01, DOC-HTTP, 3–4 October).
-2. Write scripts/platform/doctor (one command): checks engine, socket, containers, DB migrations applied,
-   object store reachable, worker heartbeat, API /health, and prints one fix hint per failure.
-3. Make start idempotent and restart-safe (healthchecks, restart policies, named volumes untouched, no reseed).
-4. Decide with evidence: keep Docker Desktop on Windows, or move the stack into WSL2-native Docker or a small
-   Linux host. Write the decision in 5 lines with the failure history that justifies it.
-5. Write docs/RUNTIME.md (at most 1 page): start, stop, doctor, where the data lives, what never to delete.
-
+1. Read compose.yaml, package.json scripts platform:start/health/stop, scripts/platform-*.sh, docs/DESKTOP_SETUP.md,
+   docs/OFFICER_STARTUP.md, and the D07-DOCKER-AVAILABILITY / RUN-RECOVER-01 entries in
+   docs/orchestration/WORK_ITEMS.md and NESTJS_MIGRATION.md.
+2. Start Docker Desktop and the stack WITHOUT resets: named volumes untouched, no reseed, no `down -v`, no
+   prune. Record what failed and why (logs, not guesses).
+3. Write scripts/platform/doctor (one command): engine, socket, containers, DB migrations applied, object store,
+   worker heartbeat, API /health; one fix hint per failure.
+4. Make start idempotent and restart-safe (healthchecks, restart policies).
+5. If the failures point at Windows Defender or another security setting, STOP and report the exact
+   exclusion the owner should add: changing security settings is the owner's action.
+6. Write docs/RUNTIME.md (≤1 page): start, stop, doctor, where data lives, what never to delete.
 Never reset populated volumes, delete originals or overwrite .env.
 ```
 
-**Expect back:** `doctor` output from a cold start and from a warm restart, both green; RUNTIME.md; the runtime decision. Afterwards the API stays up across a machine reboot with one documented command.
+**Expect back:** `doctor` output from a cold start and a warm restart, both green; RUNTIME.md; the root cause of the earlier failures, or the owner action needed.
 
 ---
 
-## P0.4 Compact the evidence and the ledgers
+## P0.4 Status board
 
-**Gate:** hygiene · **Depends:** P0.2 · **Owner:** any
+**Gate:** hygiene · **Owner:** lead
 
-```text
-Documentation is ~837k lines versus ~150k lines of code. Agents can't find current state. Don't delete history;
-make the current state findable.
+[docs/STATUS.md](../STATUS.md) exists (6 October). The lead updates it after every integration:
+- gate states;
+- area lines (works / partial / missing);
+- the active workers with their branches;
+- the next dispatch.
 
-1. Create docs/STATUS.md (at most 1 page): for each gate GF0–GF5, its state, the last real receipt (link) and
-   the next prompt id from docs/next-steps. For each area (backend, readers, domain AI, geometry, identity,
-   card, Studio, data), one line: works / partial / missing.
-2. At the top of NESTJS_MIGRATION.md, ML_DISTILL_01.md and docs/api/real-sources.md, add a 5-line "current
-   state" box linking to STATUS.md. Leave the rest untouched.
-3. From now on, every new ledger entry uses the 00-STANDARDS §9 report format.
-```
-
-**Expect back:** STATUS.md that a newcomer can read in two minutes, and three short boxes.
+Ledger entries use the 00-STANDARDS §9 format.

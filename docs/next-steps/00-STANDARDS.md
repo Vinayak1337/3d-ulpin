@@ -51,22 +51,29 @@ Read this once before any prompt in this folder. Where it disagrees with an olde
 
 ## 7. ML rules
 
-- **Evaluation set before training.** Labelled by people, split by city/project/source family, holdout frozen and hashed **before** any model sees it (`preregistration.json`).
+- **Evaluation set before training.** It is split by geography, project or source family, and the holdout is frozen and hashed **before** any model sees it (`preregistration.json`).
+  - Truth comes from people who labelled it independently of us (publisher labels with review, such as RAMP), from official literals (registry fields, stated plan dimensions), or from publisher data dictionaries.
+  - There is no team labelling (owner, 10 October).
+  - Teacher or agent outputs are never truth.
 - **Baseline first:** the existing model as installed, or rules/regex, or a strong pretrained model without fine-tuning. Fine-tune only on a measured gap, with enough labels (hundreds of images, or 300+ text examples across 5+ families).
 - **Per-class metrics, never a single pooled score.** Report the denominators. State the abstention rate.
 - **Model card JSON** for every model used: source URL, revision, licence, weight SHA-256, preprocessing profile, training data (or "undocumented"), evaluation results, known failure modes.
 - Use standard tooling (torchvision/RF-DETR/CubiCasa scripts, Hugging Face TRL/PEFT, sentence-transformers, scikit-learn). Don't build custom training frameworks.
-- Hardware: one GPU owner (RTX 3070, ≤6 GiB). Offline weights (`HF_HUB_OFFLINE=1`), safetensors/ONNX only. One plain results JSON per run (git SHA, data hash, model hash, metrics). The heavy containment audit runs once before integration, not per experiment.
-- Sarvam-derived outputs never enter training or evaluation without written permission (H21).
-- **Distillation (teacher → student) is allowed for language tasks only, and only when it's real distillation:**
+- Hardware: one GPU owner (RTX 3070, 8 GB; plan for ≤6 GiB). Offline weights (`HF_HUB_OFFLINE=1`), safetensors/ONNX only. One plain results JSON per run (git SHA, data hash, model hash, metrics). Experiments run in a plain environment (P4.0). The heavy containment check runs once before integration, not per experiment.
+- **Teachers (owner decision, 10 October):**
+  - Claude (Opus 5.5, the lead) is the development teacher.
+  - Sarvam is the runtime teacher.
+  - Our learners may train on their verified outputs, because these learners don't compete with any provider. This supersedes the old H21 permission rule for this use.
+- **Distillation (teacher → student) is allowed for language and layout tasks, and only when it's real distillation:**
   - the teacher runs over **many real, unlabelled inputs**; it doesn't hand-write examples;
-  - every output passes deterministic checks (each quote exists at its locator, units are converted by code);
-  - a person spot-checks a sample;
-  - the teacher first passes the same human-labelled holdout the student will face; the teacher never sees that holdout;
-  - outputs are recorded as `pseudo_label` (`method: model:<teacher>`), never as truth;
-  - the provider's terms allow training on outputs, and private/restricted documents never go to an external provider.
+  - every output passes deterministic checks (schema, no literals, executor dry-run, each quote exists at its locator, units converted by code);
+  - agreement with the independent truth source (publisher dictionary, registry field) is measured on development data and reported;
+  - the teacher never sees the held-out families or projects;
+  - outputs are recorded as `pseudo_label` (`method: model:<teacher>@<version>`), never as truth;
+  - officer corrections outrank teacher labels;
+  - private or restricted documents never go to an external provider.
 
-  Pixel tasks (roofprints, room masks) use human labels and pretrained vision models, not LLM teachers. See P4.7.
+  Pixel tasks (roofprints, room masks) use human-reviewed labels (RAMP, CubiCasa) and pretrained vision models, not LLM teachers.
 
 ## 8. Verification policy (lean)
 
@@ -104,5 +111,10 @@ Numbers go in `docs/evidence/<gate>/<task>/result.json`. Don't put hashes in pro
 
 - One branch per prompt (`task/<prompt-id>-<slug>`), from the current integration head. Keep diffs small; split anything over about 800 changed lines.
 - Commit messages say what changed and why. Never commit secrets, `.env`, large originals or weights.
-- Don't push to `main`, deploy or call live paid providers without the owner's go-ahead.
+- Don't push to `main`, deploy or call live paid providers without the owner's go-ahead. Sarvam test calls are approved for the agent tasks that name them, with one configured key and no rotation across accounts.
 - If something fails twice for the same reason, stop and apply the AGENTS.md failure-recovery workflow. Don't retry unchanged.
+- **Workers** (SPRINT-SELECTION §3):
+  - they work only in their own worktree and on their own branch, and touch only the paths their task file names;
+  - they never change or delete originals, `.env` or Docker volumes, and never push;
+  - they stop at their time box with a resumable checkpoint and report in the §9 format, with commits and exit codes;
+  - the lead reviews every return before integrating it.
