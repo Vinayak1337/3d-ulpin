@@ -34,13 +34,13 @@ export const CanonicalMappedValueSchema=z.strictObject({value:z.union([z.string(
   unit:z.enum(['m2','m','count']).optional(),citations:z.array(MappingCellCitationSchema).min(1),
   method:z.string().min(1),literal:z.unknown().optional(),issueCode:z.string().regex(/^[A-Z][A-Z0-9_]*$/).optional(),
   conversionSource:z.string().url().optional(),sourceCrs:z.string().min(1).optional()});
-const profileRate=z.number().min(0).max(1);
+const profileRate=z.number().min(0).max(1).nullable();
 /** A derivative-only profile. No source paths, coordinates, raw rows or provenance secrets. */
 export const ColumnProfileSchema=z.strictObject({
   name:MappingSourceFieldSchema,inferredType:MappingInferredTypeSchema,declaredUnit:MappingSourceUnitSchema.optional(),
   valueShapes:z.strictObject({dateDmyRate:profileRate,dateIsoRate:profileRate,lakhGroupingRate:profileRate,
     devanagariDigitRate:profileRate,khasraLikeRate:profileRate,floorLabelRate:profileRate,
-    nullRate:profileRate,blankRate:profileRate,distinctRatio:profileRate}),
+    nullRate:profileRate,blankRate:profileRate,absentRate:profileRate,distinctRatio:profileRate}),
   // Do not pad small inputs with fabricated examples: fewer than five observed cells is explicit.
   maskedSamples:z.array(z.string().max(256)).max(20),
 });
