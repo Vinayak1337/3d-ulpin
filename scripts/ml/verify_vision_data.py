@@ -78,9 +78,12 @@ def main():
         checks.append({"chip_id": item["id"], "role": "difficult_publisher_empty" if item["empty"] else "good_positive", "publisher_instances": len(annotations), "original_image_hash_unchanged": True, "original_label_hash_unchanged": True, "rgb_pixels_equal": True, "source_feature_to_coco_mask_equal": True, "source_pixel_spacing_geodesic_m": spacing})
     result = {"status": "passed", "chips": len(ids), "clusters": len(clusters), "whole_cluster_separation": True, "all_centroids_recompute_to_grid": True, "prior_observed_dev_only": True, "empty_chips_in_all_splits": True, "source_features_in_downloaded_karnataka": sum(x["publisher_features"] for x in items), "documentation_claim_features": 51335, "documentation_feature_count_discrepancy": "Downloaded original GeoJSONs contain 50666 features, not the README/PDF's 51335; no correction or synthetic padding. Evaluation denominators use actual originals.", "real_inputs": checks, "model_calls": 0, "holdout_model_calls": 0}
     output = EVIDENCE / "data/verification.json"
-    with output.open("x", encoding="utf-8") as f:
-        json.dump(result, f, indent=2)
-        f.write("\n")
+    if output.exists():
+        assert json.loads(output.read_bytes()) == result, "Prior verification receipt differs; preserve it and diagnose"
+    else:
+        with output.open("x", encoding="utf-8") as f:
+            json.dump(result, f, indent=2)
+            f.write("\n")
     print(json.dumps(result))
 
 
