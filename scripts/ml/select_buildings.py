@@ -1,4 +1,5 @@
 """Select the completed run on DEV only using the previously recorded three-threshold rule."""
+
 from __future__ import annotations
 
 import argparse
@@ -34,15 +35,19 @@ def parse_arguments() -> argparse.Namespace:
 def selection_plan(args: argparse.Namespace, entries: list[dict[str, Any]]) -> dict[str, Any]:
     baseline = read_json(EVIDENCE / "b1-installed-dev-20261010/result.json")["metrics"]
     return {
-        "schema": "building-dev-selection/1", "status": "started", "run_id": args.run_id,
-        "thresholds": list(THRESHOLDS), "completed_epochs": [entry["epoch"] for entry in entries],
+        "schema": "building-dev-selection/1",
+        "status": "started",
+        "run_id": args.run_id,
+        "thresholds": list(THRESHOLDS),
+        "completed_epochs": [entry["epoch"] for entry in entries],
         "selection_rule": "Meet P>=.75 and R>=.70 if possible; otherwise max polygon F1, precision tie-break",
         "checkpoint_rule": "Compare all completed epochs at the same three previously recorded DEV thresholds",
         "baseline_dev_precision": baseline["per_building"]["precision"],
         "baseline_dev_recall": baseline["per_building"]["recall"],
         "baseline_dev_f1": f1(baseline["per_building"]),
         "baseline_empty_fp": baseline["false_buildings_on_empty"],
-        "final_candidate_fixed": args.final, "holdout_calls": 0,
+        "final_candidate_fixed": args.final,
+        "holdout_calls": 0,
         "git_sha": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip(),
     }
 
@@ -65,9 +70,20 @@ def evaluate_epoch(args: argparse.Namespace, epoch: dict[str, Any], threshold: f
         return cached
     run_id = f"{args.selection_id}-e{epoch['epoch']:03d}-t{round(threshold * 100):03d}"
     command = [
-        sys.executable, "-B", "-u", str(REPO / "scripts/ml/eval_buildings.py"),
-        "--model", str(checkpoint), "--split", "dev", "--provider", args.provider,
-        "--score-threshold", str(threshold), "--run-id", run_id,
+        sys.executable,
+        "-B",
+        "-u",
+        str(REPO / "scripts/ml/eval_buildings.py"),
+        "--model",
+        str(checkpoint),
+        "--split",
+        "dev",
+        "--provider",
+        args.provider,
+        "--score-threshold",
+        str(threshold),
+        "--run-id",
+        run_id,
     ]
     with (RUNS / args.run_id / f"{run_id}.log").open("x") as log:
         subprocess.run(command, cwd=REPO, stdout=log, stderr=subprocess.STDOUT, check=True)
@@ -84,9 +100,15 @@ def evaluation_summary(path: Path, epoch: dict[str, Any], threshold: float) -> d
         raise ValueError("DEV coverage incomplete")
     metrics = record["metrics"]["per_building"]
     return {
-        "epoch": epoch["epoch"], "checkpoint": str(checkpoint), "model_sha256": digest,
-        "threshold": threshold, "run_id": record["run_id"], "result_sha256": sha(path),
-        "precision": metrics["precision"], "recall": metrics["recall"], "f1": f1(metrics),
+        "epoch": epoch["epoch"],
+        "checkpoint": str(checkpoint),
+        "model_sha256": digest,
+        "threshold": threshold,
+        "run_id": record["run_id"],
+        "result_sha256": sha(path),
+        "precision": metrics["precision"],
+        "recall": metrics["recall"],
+        "f1": f1(metrics),
         "empty_fp": record["metrics"]["false_buildings_on_empty"],
         "gate_thresholds_met": metrics["precision"] >= 0.75 and metrics["recall"] >= 0.70,
     }
@@ -94,14 +116,20 @@ def evaluation_summary(path: Path, epoch: dict[str, Any], threshold: float) -> d
 
 def complete_selection(plan: dict[str, Any], rows: list[dict[str, Any]]) -> dict[str, Any]:
     chosen = max(rows, key=lambda row: (row["gate_thresholds_met"], row["f1"], row["precision"]))
+    threshold_percent = round(chosen["threshold"] * 100)
+    profile = f"rfdetr-rgb432-tile512-stride384-threshold{threshold_percent:03d}-mask000-v2"
     return {
-        **plan, "status": "completed", "threshold_results": rows, "chosen": chosen,
-        "model_sha256": chosen["model_sha256"], "object_threshold": chosen["threshold"],
+        **plan,
+        "status": "completed",
+        "threshold_results": rows,
+        "chosen": chosen,
+        "model_sha256": chosen["model_sha256"],
+        "object_threshold": chosen["threshold"],
         "beats_baseline_dev_f1": chosen["f1"] > plan["baseline_dev_f1"],
         "precision_delta": chosen["precision"] - plan["baseline_dev_precision"],
         "recall_delta": chosen["recall"] - plan["baseline_dev_recall"],
         "empty_fp_delta": chosen["empty_fp"]["buildings"] - plan["baseline_empty_fp"]["buildings"],
-        "profile_version": f"rfdetr-rgb432-tile512-stride384-threshold{round(chosen['threshold'] * 100):03d}-mask000-v2",
+        "profile_version": profile,
         "note": "Selection uses DEV only. Freeze this committed result before final HOLDOUT reservation.",
     }
 
