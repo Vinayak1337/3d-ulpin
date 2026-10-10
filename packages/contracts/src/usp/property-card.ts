@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { CoreRefSchema, CoreSha256Schema, coreText } from '../spatial/core/scalars';
 import { UspCreateGuardSchema, UspMutationGuardSchema, UspSnapshotScopeSchema, UspTargetPinSchema,
-  UspPrincipalSchema } from './common';
+  UspPrincipalSchema, UspUpdateGuardSchema } from './common';
 
 export const PROPERTY_CARD_ASCII_PROFILE = 'property-card-summary-ascii/1' as const;
 export const PROPERTY_CARD_UNICODE_PROFILE = 'property-card-summary-latin-deva/1' as const;
@@ -39,6 +39,28 @@ export const UspPropertyCardSchema = z.strictObject({
   artifact: z.strictObject({ sha256: CoreSha256Schema, bytes: z.number().int().positive().max(524288),
     contentType: z.literal('application/pdf'), pages: z.literal(1) }).readonly(), cardSha256: CoreSha256Schema,
 }).readonly();
+const generateFields = UspGeneratePropertyCardSchema.unwrap().shape;
+/** Same card input without a request key: a preview never reads or stores a command receipt. */
+export const UspPreviewPropertyCardSchema = z.strictObject({
+  planId: generateFields.planId, planVersion: generateFields.planVersion,
+  cardId: generateFields.cardId, expiresAt: generateFields.expiresAt,
+  guard: z.discriminatedUnion('mode', [
+    UspCreateGuardSchema.unwrap().omit({ requestKey: true }).readonly(),
+    UspUpdateGuardSchema.unwrap().omit({ requestKey: true }).readonly(),
+  ]),
+}).superRefine((command, ctx) => {
+  if (command.guard.mode === 'create' ? command.cardId !== null
+    : !command.cardId || !command.guard.expectedManifestId) {
+    ctx.addIssue({ code: 'custom',
+      message: 'Create a new card or append with an exact card/snapshot revision guard.' });
+  }
+}).readonly();
+export const UspPropertyCardPreviewSchema = z.strictObject({
+  mode: z.enum(['create', 'update']), revision: UspPropertyCardSchema.unwrap().shape.revision,
+  facts: UspPropertyCardSchema.unwrap().shape.facts,
+  expiresAt: generateFields.expiresAt, scope: UspSnapshotScopeSchema,
+}).describe('The rows a card made now from this executed plan would print. '
+  + 'A preview is not a card: nothing is stored and it has no id.').readonly();
 export const UspPropertyCardViewSchema = z.strictObject({
   card: UspPropertyCardSchema, currentTargetRevision: z.number().int().positive(),
   snapshotState: z.enum(['same_revision', 'changed_revision']),

@@ -2,7 +2,8 @@ import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import type { RequestContext } from '@ulpin/contracts/usp';
 import { UspGeneratePropertyCardSchema, UspReadPropertyCardSchema, UspPropertyCardSchema,
-  UspPropertyCardViewSchema, type PropertyCard } from '../../../../../contracts/src/usp/property-card';
+  UspPropertyCardViewSchema, UspPreviewPropertyCardSchema, UspPropertyCardPreviewSchema,
+  type PropertyCard } from '../../../../../contracts/src/usp/property-card';
 import { UspPacketPlanViewSchema, type AnyPacketPlan, type PacketPlanConfirmation,
   type PacketPlanExecution } from '../../../../../contracts/src/usp/packets';
 import type { AnyPdfPacketPlanExecution as PdfPacketPlanExecution } from '../../../../../contracts/src/usp/packet-pdf';
@@ -158,6 +159,66 @@ export async function currentRevisionTx(client: PoolClient, plan: AnyPacketPlan)
   if (!Number.isSafeInteger(revision) || revision < 1) conflict('The current target revision is unavailable.');
   return revision;
 }
+type CardPreviewCommand = ReturnType<typeof UspPreviewPropertyCardSchema.parse>;
+
+/** The existing revision guard, including transaction-scoped revocation protection. No row is written. */
+async function nextCardRevisionTx(client: PoolClient, ctx: RequestContext, command: CardPreviewCommand,
+  view: Executed) {
+  if (command.guard.mode === 'create') return 1;
+  const plan = view.plan;
+  const old = (await storedTx(client, command.cardId!, command.guard.expectedVersion)).card;
+  // A revision refreshes expiry for the same executed context; another snapshot gets a separate card.
+  actor(ctx, old);
+  if (old.planId !== plan.planId || old.planVersion !== plan.version
+    || command.guard.expectedManifestId !== old.scope.manifestId) {
+    throw new AppError(422, 'CARD_REVISION_CONTEXT',
+      'Create a separate card for a different executed plan or snapshot.');
+  }
+  link(old, view);
+  const latest = (await client.query('SELECT max(revision) AS revision FROM usp_property_cards WHERE id=$1',
+    [old.cardId])).rows[0];
+  if (Number(latest?.revision) !== old.revision) conflict('A newer immutable card revision exists.');
+  await lockCardTx(client, old.cardId);
+  if ((await cardLifecycleTx(client, old.cardId, old.revision, old.expiresAt)).revocation) {
+    throw new AppError(422, 'CARD_REVISION_REVOKED',
+      'The latest revision of this card was revoked. Create a separate card.');
+  }
+  if (old.revision === 2147483647) {
+    throw new AppError(422, 'CARD_REVISION_BOUND',
+      'This card has reached its revision bound. Create a separate card.');
+  }
+  return old.revision + 1;
+}
+
+/** Shared no-replay prepare path, called under protectedTx. SELECTs and transaction locks only. */
+async function prepareCardFactsTx(client: PoolClient, ctx: RequestContext, command: CardPreviewCommand,
+  view: Executed) {
+  const expiry = Date.parse(command.expiresAt) - Date.now();
+  if (expiry <= 0 || expiry > 24 * 60 * 60 * 1000) {
+    throw new AppError(422, 'CARD_EXPIRY', 'Use a card expiry within the next 24 hours.');
+  }
+  const revision = await nextCardRevisionTx(client, ctx, command, view);
+  const projection = await projectCardFactsTx(client, ctx, view.plan);
+  await authorizePlanTx(client, ctx, view.plan, true);
+  await liveTx(client, command.expiresAt);
+  return { revision, projection };
+}
+
+/** The rows a card made now from this executed plan would print. A preview is not a card:
+ * nothing is stored and it has no id. No PDF is rendered and no request receipt is read. */
+export async function previewPropertyCard(ctx: RequestContext, raw: unknown, io: PropertyCardIo = storage) {
+  assertLocalUsp(ctx);
+  const command = UspPreviewPropertyCardSchema.parse(raw);
+  const view = await executed(ctx, command.planId, command.planVersion);
+  const prepared = await transaction(async client => {
+    await protectedTx(client, ctx, view);
+    return prepareCardFactsTx(client, ctx, command, view);
+  });
+  await linkedPacket(ctx, view, io);
+  return UspPropertyCardPreviewSchema.parse({ mode: command.guard.mode, revision: prepared.revision,
+    facts: prepared.projection.facts, expiresAt: command.expiresAt, scope: view.plan.input.scope });
+}
+
 export async function generatePropertyCard(ctx: RequestContext, raw: unknown, io: PropertyCardIo = storage) {
   assertLocalUsp(ctx);
   const command = UspGeneratePropertyCardSchema.parse(raw), hash = fingerprint(command), operation = 'property_card_generate';
@@ -171,31 +232,10 @@ export async function generatePropertyCard(ctx: RequestContext, raw: unknown, io
       if (canonical(saved.card) !== canonical(card)) conflict('The replay card is unavailable.');
       return { replay: card };
     }
-    const expiry = Date.parse(command.expiresAt) - Date.now();
-    if (expiry <= 0 || expiry > 24 * 60 * 60 * 1000) throw new AppError(422, 'CARD_EXPIRY', 'Use a card expiry within the next 24 hours.');
-    let revision = 1;
-    if (command.guard.mode === 'update') {
-      const old = (await storedTx(client, command.cardId!, command.guard.expectedVersion)).card;
-      // This first profile appends a refreshed expiry for the same executed context.
-      // A different snapshot/plan gets a distinct card, never an implicit retarget.
-      actor(ctx, old);
-      if (old.planId !== plan.planId || old.planVersion !== plan.version || command.guard.expectedManifestId !== old.scope.manifestId)
-        throw new AppError(422, 'CARD_REVISION_CONTEXT', 'Create a separate card for a different executed plan or snapshot.');
-      link(old, view);
-      const latest = (await client.query('SELECT max(revision) AS revision FROM usp_property_cards WHERE id=$1', [old.cardId])).rows[0];
-      if (Number(latest?.revision) !== old.revision) conflict('A newer immutable card revision exists.');
-      await lockCardTx(client, old.cardId);
-      if ((await cardLifecycleTx(client, old.cardId, old.revision, old.expiresAt)).revocation)
-        throw new AppError(422, 'CARD_REVISION_REVOKED', 'The latest revision of this card was revoked. Create a separate card.');
-      if (old.revision === 2147483647) throw new AppError(422, 'CARD_REVISION_BOUND', 'This card has reached its revision bound. Create a separate card.');
-      revision = old.revision + 1;
-    }
-    const projection = await projectCardFactsTx(client, ctx, plan);
-    await authorizePlanTx(client, ctx, plan, true); await liveTx(client, command.expiresAt);
-    return { revision, projection };
+    return prepareCardFactsTx(client, ctx, command, view);
   };
   const first = await transaction(prepare);
-  if (first.replay) return first.replay;
+  if ('replay' in first) return first.replay;
   // The linked private packet is verified through its existing protected reader.
   const packet = await linkedPacket(ctx, view, io);
   const cardId = command.cardId ?? randomUUID(), revision = first.revision!;
@@ -215,7 +255,7 @@ export async function generatePropertyCard(ctx: RequestContext, raw: unknown, io
   await io.put(key, bytes, 'application/pdf');
   return transaction(async client => {
     const final = await prepare(client);
-    if (final.replay) return final.replay;
+    if ('replay' in final) return final.replay;
     if (final.revision !== revision || canonical(final.projection) !== canonical(first.projection)) conflict('The exact card projection changed.');
     await authorityTx(client, ctx, card, view);
     await client.query(`INSERT INTO usp_property_cards(id,revision,site_id,manifest_id,plan_id,plan_version,packet_id,subject,artifact_hash,object_key,body)
