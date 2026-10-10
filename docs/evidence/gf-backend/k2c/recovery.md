@@ -19,8 +19,8 @@
   original API uses `/api/v1/sources/{sourceId}/file`. Projection fallback and its regression now use that route;
   all 22 bound originals were downloaded and hash-checked. The earlier receipt remains unchanged.
 - The generic K1 building projector treated a retained ML draft's caller-provided alias and outline role as
-  source-supported literals. The final projection keeps both as candidates, with an explicit retained-alias
-  method. No stored package, original, geometry or physical revision was changed; the earlier candidate receipt
+  source-supported literals. The final projection keeps both as candidates, with explicit retained-alias
+  and retained-outline-role methods. No stored package, original, geometry or physical revision was changed; the earlier candidate receipt
   remains historical. A focused regression checks the actual retained ML draft.
 - The first post-addition LF checker found the new room operation missing from the pin inventory. The reviewed
   refresher now reconciles additions from generated OpenAPI without allowing established operations to disappear.

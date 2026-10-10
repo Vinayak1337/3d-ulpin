@@ -104,6 +104,7 @@ async function verifyImagery(): Promise<void> {
   assert.equal(selected.name.method, 'deterministic:retained-candidate-alias@1');
   assert.equal(selected.footprintKind.value, 'roofprint');
   assert.equal(selected.footprintKind.state, 'candidate');
+  assert.equal(selected.footprintKind.method, 'deterministic:retained-candidate-outline-role@1');
   assert.equal(selected.footprint.state, 'candidate');
   assert.equal(selected.inputRevisions.find(pin => pin.namespace === 'area_feature')?.revision, 0);
   await transport(selected);
