@@ -46457,7 +46457,7 @@
             }
           }
         },
-        "summary": "Read current ordered draft watermark, coverage and incomplete-source state",
+        "summary": "Read retained draft coverage with explicit current/history reasons; never grants mutation authority",
         "tags": [
           "private streaming vector drafts"
         ],
@@ -46687,7 +46687,7 @@
             }
           }
         },
-        "summary": "Read one published private source-native chunk or terminal quarantine marker",
+        "summary": "Read one integrity-verified private raw chunk, including obsolete pinned results",
         "tags": [
           "private streaming vector drafts"
         ],
@@ -47147,7 +47147,7 @@
             }
           }
         },
-        "summary": "Read provisional mapped coverage, recipe/proposal and source closure state",
+        "summary": "Read retained mapped coverage and recipe pins with explicit current/history reasons",
         "tags": [
           "private mapped vector drafts"
         ],
@@ -47377,7 +47377,7 @@
             }
           }
         },
-        "summary": "Read one published private source-linked mapped draft chunk",
+        "summary": "Read one integrity-verified private mapped chunk, including obsolete pinned results",
         "tags": [
           "private mapped vector drafts"
         ],
@@ -354452,6 +354452,26 @@
                   "developmentFamily": {
                     "type": "string",
                     "pattern": "^mi-d\\d+$"
+                  },
+                  "derivativeOf": {
+                    "type": "object",
+                    "properties": {
+                      "originalSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "version": {
+                        "type": "string",
+                        "enum": [
+                          "json-table-csv/1"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "originalSha256",
+                      "version"
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "required": [
@@ -355037,6 +355057,26 @@
                       "developmentFamily": {
                         "type": "string",
                         "pattern": "^mi-d\\d+$"
+                      },
+                      "derivativeOf": {
+                        "type": "object",
+                        "properties": {
+                          "originalSha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "version": {
+                            "type": "string",
+                            "enum": [
+                              "json-table-csv/1"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "originalSha256",
+                          "version"
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "required": [
@@ -355059,6 +355099,13 @@
                       "layoutFingerprint": {
                         "type": "string",
                         "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "layoutFingerprintVersion": {
+                        "type": "string",
+                        "enum": [
+                          "column-types/1",
+                          "tabular-header/2"
+                        ]
                       },
                       "sourceKind": {
                         "type": "string",
@@ -355891,6 +355938,26 @@
                       "developmentFamily": {
                         "type": "string",
                         "pattern": "^mi-d\\d+$"
+                      },
+                      "derivativeOf": {
+                        "type": "object",
+                        "properties": {
+                          "originalSha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "version": {
+                            "type": "string",
+                            "enum": [
+                              "json-table-csv/1"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "originalSha256",
+                          "version"
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "required": [
@@ -355913,6 +355980,13 @@
                       "layoutFingerprint": {
                         "type": "string",
                         "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "layoutFingerprintVersion": {
+                        "type": "string",
+                        "enum": [
+                          "column-types/1",
+                          "tabular-header/2"
+                        ]
                       },
                       "sourceKind": {
                         "type": "string",
@@ -356753,6 +356827,26 @@
                         "developmentFamily": {
                           "type": "string",
                           "pattern": "^mi-d\\d+$"
+                        },
+                        "derivativeOf": {
+                          "type": "object",
+                          "properties": {
+                            "originalSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "version": {
+                              "type": "string",
+                              "enum": [
+                                "json-table-csv/1"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "originalSha256",
+                            "version"
+                          ],
+                          "additionalProperties": false
                         }
                       },
                       "required": [
@@ -356775,6 +356869,13 @@
                         "layoutFingerprint": {
                           "type": "string",
                           "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "layoutFingerprintVersion": {
+                          "type": "string",
+                          "enum": [
+                            "column-types/1",
+                            "tabular-header/2"
+                          ]
                         },
                         "sourceKind": {
                           "type": "string",
@@ -370489,6 +370590,26 @@
                   "developmentFamily": {
                     "type": "string",
                     "pattern": "^mi-d\\d+$"
+                  },
+                  "derivativeOf": {
+                    "type": "object",
+                    "properties": {
+                      "originalSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "version": {
+                        "type": "string",
+                        "enum": [
+                          "json-table-csv/1"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "originalSha256",
+                      "version"
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "required": [
@@ -370515,6 +370636,22 @@
       "POST_ingestion_cases_caseId_sources_sourceId_streaming_vector_Response_202_application_json": {
         "type": "object",
         "properties": {
+          "current": {
+            "type": "boolean"
+          },
+          "reasons": {
+            "maxItems": 4,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "case_advanced",
+                "reader_changed",
+                "converter_changed",
+                "source_superseded"
+              ]
+            }
+          },
           "version": {
             "type": "string",
             "enum": [
@@ -370804,6 +370941,26 @@
               "developmentFamily": {
                 "type": "string",
                 "pattern": "^mi-d\\d+$"
+              },
+              "derivativeOf": {
+                "type": "object",
+                "properties": {
+                  "originalSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "version": {
+                    "type": "string",
+                    "enum": [
+                      "json-table-csv/1"
+                    ]
+                  }
+                },
+                "required": [
+                  "originalSha256",
+                  "version"
+                ],
+                "additionalProperties": false
               }
             },
             "required": [
@@ -370816,6 +370973,8 @@
           }
         },
         "required": [
+          "current",
+          "reasons",
           "version",
           "jobId",
           "caseId",
@@ -370839,6 +370998,22 @@
       "GET_ingestion_cases_caseId_sources_sourceId_streaming_vector_jobs_jobId_chunks_chunkIndex_Response_200_application_json": {
         "type": "object",
         "properties": {
+          "current": {
+            "type": "boolean"
+          },
+          "reasons": {
+            "maxItems": 4,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "case_advanced",
+                "reader_changed",
+                "converter_changed",
+                "source_superseded"
+              ]
+            }
+          },
           "slot": {
             "type": "object",
             "properties": {
@@ -371062,6 +371237,8 @@
           }
         },
         "required": [
+          "current",
+          "reasons",
           "slot",
           "payload",
           "sourceComplete",
@@ -371175,6 +371352,26 @@
               "developmentFamily": {
                 "type": "string",
                 "pattern": "^mi-d\\d+$"
+              },
+              "derivativeOf": {
+                "type": "object",
+                "properties": {
+                  "originalSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "version": {
+                    "type": "string",
+                    "enum": [
+                      "json-table-csv/1"
+                    ]
+                  }
+                },
+                "required": [
+                  "originalSha256",
+                  "version"
+                ],
+                "additionalProperties": false
               }
             },
             "required": [
@@ -371198,6 +371395,22 @@
       "POST_ingestion_cases_caseId_sources_sourceId_chunk_mapping_Response_202_application_json": {
         "type": "object",
         "properties": {
+          "current": {
+            "type": "boolean"
+          },
+          "reasons": {
+            "maxItems": 4,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "case_advanced",
+                "reader_changed",
+                "converter_changed",
+                "source_superseded"
+              ]
+            }
+          },
           "version": {
             "type": "string",
             "enum": [
@@ -371360,6 +371573,26 @@
               "developmentFamily": {
                 "type": "string",
                 "pattern": "^mi-d\\d+$"
+              },
+              "derivativeOf": {
+                "type": "object",
+                "properties": {
+                  "originalSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "version": {
+                    "type": "string",
+                    "enum": [
+                      "json-table-csv/1"
+                    ]
+                  }
+                },
+                "required": [
+                  "originalSha256",
+                  "version"
+                ],
+                "additionalProperties": false
               }
             },
             "required": [
@@ -371845,6 +372078,8 @@
           }
         },
         "required": [
+          "current",
+          "reasons",
           "version",
           "jobId",
           "rawJobId",
@@ -371882,6 +372117,22 @@
       "GET_ingestion_cases_caseId_sources_sourceId_chunk_mapping_jobs_jobId_chunks_chunkIndex_Response_200_application_json": {
         "type": "object",
         "properties": {
+          "current": {
+            "type": "boolean"
+          },
+          "reasons": {
+            "maxItems": 4,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "case_advanced",
+                "reader_changed",
+                "converter_changed",
+                "source_superseded"
+              ]
+            }
+          },
           "slot": {
             "type": "object",
             "properties": {
@@ -372134,6 +372385,26 @@
                   "developmentFamily": {
                     "type": "string",
                     "pattern": "^mi-d\\d+$"
+                  },
+                  "derivativeOf": {
+                    "type": "object",
+                    "properties": {
+                      "originalSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "version": {
+                        "type": "string",
+                        "enum": [
+                          "json-table-csv/1"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "originalSha256",
+                      "version"
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "required": [
@@ -372331,6 +372602,13 @@
                       "layoutFingerprint": {
                         "type": "string",
                         "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "layoutFingerprintVersion": {
+                        "type": "string",
+                        "enum": [
+                          "column-types/1",
+                          "tabular-header/2"
+                        ]
                       },
                       "sourceKind": {
                         "type": "string",
@@ -373166,6 +373444,8 @@
           }
         },
         "required": [
+          "current",
+          "reasons",
           "slot",
           "payload",
           "sourceComplete",

@@ -2,7 +2,11 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { TabularChunkMapper } from '../../packages/server/src/modules/usp/ingestion/chunk-mapping-agent';
+import { TabularChunkMapper, profileTabularChunk } from
+  '../../packages/server/src/modules/usp/ingestion/chunk-mapping-agent';
+import { markUnavailableCells } from '../../packages/server/src/modules/usp/ingestion/chunk-mapping-tabular';
+import { readTabularSource } from '../../packages/server/src/modules/usp/ingestion/tabular-source';
+import { TabularRawRowSchema } from '../../packages/contracts/src/usp';
 import { manualTeacherPlan, mappingContextFromColumnProfile } from
   '../../packages/server/src/modules/usp/ingestion/mapping-teacher';
 import { rememberMapping } from '../../packages/server/src/modules/usp/ingestion/mapping-memory';
@@ -52,7 +56,7 @@ test('33 real rows retain one versioned layout, questions only once and changed 
   assert.equal(changed.metrics.layout, 'new');
 });
 
-test('legacy A3c officer memory remains immutable and is explicitly read-compatible at its exact CSV layout', async () => {
+test('legacy A3c memory is immutable and explicitly compatible at its exact CSV layout', async () => {
   const memory = 'E:/BhuAayam-data/runtime/ulpin-demo/tabular-learning/accepted-plans.jsonl';
   const before = sha256(readFileSync(memory));
   const source = table('mi-d10-03.csv');
@@ -63,4 +67,31 @@ test('legacy A3c officer memory remains immutable and is explicitly read-compati
   assert.equal(draft.questions.length, 0);
   assert.equal(draft.proposal.plan.layoutFingerprintVersion, 'tabular-header/2');
   assert.equal(sha256(readFileSync(memory)), before);
+});
+
+test('real native unknown cells keep needsInput honest without repeating annotated column questions', async () => {
+  const asset = developmentManifest().assets.find(item => item.id === 'mi-d19-01.xlsx')!;
+  const selected = { format: 'xlsx' as const, sheet: 'T_18', table: null, headerRows: [4, 5] };
+  const source = readTabularSource(readFileSync(asset.original.externalPath), selected);
+  const offsets = source.cellStates!.flatMap((states, index) => states.includes('unknown') ? [index] : []);
+  const first = offsets[0];
+  const second = offsets.find(index => index !== first &&
+    JSON.stringify(source.cellStates![index]) === JSON.stringify(source.cellStates![first]));
+  assert(second !== undefined, 'The real workbook must supply two equally unavailable cell-state layouts.');
+  const mapper = new TabularChunkMapper();
+  const prepared = profileTabularChunk({ jobId: randomUUID(), chunkIndex: 0, headers: source.headers,
+    rows: [source.rows[first]], sourceRef: 'native-control', selection: selected });
+  const approvedPlan = manualTeacherPlan(prepared.profile, 'MAPPING_REVIEW_REQUIRED').plan;
+  for (const [chunkIndex, offset] of [first, second].entries()) {
+    const draft = await mapper.map({ jobId: randomUUID(), chunkIndex, headers: source.headers,
+      rows: [source.rows[offset]], sourceRef: 'native-control', selection: selected },
+    { ...routing('E:/BhuAayam-data/task-data/a3d/controls/no-memory'), approvedPlan });
+    const raw = TabularRawRowSchema.parse({ headers: source.headers, sheet: selected.sheet,
+      sourceRow: source.sourceRows[offset], cells: source.cellStates![offset].map((state, column) =>
+        state === 'literal' ? { state, value: source.rows[offset][column] } : { state }) });
+    markUnavailableCells(draft, [raw]);
+    mapper.deduplicateQuestions(draft);
+    assert(draft.metrics.needsInput > 0);
+    assert.equal(draft.questions.length, chunkIndex === 0 ? draft.metrics.needsInput : 0);
+  }
 });

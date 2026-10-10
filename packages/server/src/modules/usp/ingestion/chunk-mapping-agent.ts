@@ -58,7 +58,9 @@ export function profileTabularChunk(input: TabularChunkInput) {
   return { profile, rows, learnerColumns };
 }
 
-export function mappingQuestions(proposal: MappingRoutingResult, input: TabularChunkInput): MappingQuestion[] {
+export function mappingQuestions(
+  proposal: MappingRoutingResult, input: Pick<TabularChunkInput, 'headers'>,
+): MappingQuestion[] {
   const reasons = new Map(proposal.issues.map(issue => [issue.sourceField, issue.code]));
   return proposal.plan.fields.flatMap(field => {
     const reason = reasons.get(field.sourceField);
@@ -150,7 +152,7 @@ function acceptedMemoryProposal(
 /** Job-local validated proposal reuse does not create shared accepted memory or learning examples. */
 export class TabularChunkMapper {
   private readonly layouts = new Map<string, MappingRoutingResult>();
-  private readonly asked = new Set<string>();
+  private readonly asked = new Map<string, number>();
 
   async map(input: TabularChunkInput, options: RoutingOptions): Promise<TabularChunkDraft> {
     const started = performance.now();
@@ -172,16 +174,23 @@ export class TabularChunkMapper {
     if (options.dataPolicy.split !== 'held_out' && this.layouts.size < MAX_JOB_LAYOUTS) {
       this.layouts.set(layoutKey, verified);
     }
-    const unresolved = mappingQuestions(verified, input);
-    const questions = unresolved.filter(question => {
-      const key = `${prepared.profile.layoutFingerprint}/${question.sourceField}/${question.reason}`;
-      if (this.asked.has(key)) return false;
-      if (this.asked.size < MAX_JOB_LAYOUTS * 256) this.asked.add(key);
+    const questions = mappingQuestions(verified, input);
+    const draft = { profile: prepared.profile, proposal: verified, dryRun, questions,
+      metrics: chunkMetrics(input, verified, questions, Boolean(cached),
+        Math.round((performance.now() - started) * 100) / 100) };
+    this.deduplicateQuestions(draft);
+    return draft;
+  }
+
+  /** Permit final native-cell annotation on the same chunk without asking again on a later chunk. */
+  deduplicateQuestions(draft: TabularChunkDraft) {
+    draft.questions = draft.questions.filter(question => {
+      const key = `${draft.profile.layoutFingerprint}/${question.sourceField}/${question.reason}`;
+      const firstChunk = this.asked.get(key);
+      if (firstChunk !== undefined) return firstChunk === draft.metrics.chunkIndex;
+      if (this.asked.size < MAX_JOB_LAYOUTS * 256) this.asked.set(key, draft.metrics.chunkIndex);
       return true;
     });
-    return { profile: prepared.profile, proposal: verified, dryRun, questions,
-      metrics: chunkMetrics(input, verified, unresolved, Boolean(cached),
-        Math.round((performance.now() - started) * 100) / 100) };
   }
 
   private async routeLayout(

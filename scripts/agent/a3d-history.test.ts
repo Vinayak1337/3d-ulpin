@@ -43,7 +43,8 @@ function inputs(gis: boolean) {
   const raw = AnyStreamingInputSchema.parse({ ...base, inputFingerprint: fingerprint(base) });
   const mappedBase = { version: 'chunk-mapping/1', jobId: mappedId, caseId, caseRevision: 0, sourceId,
     sourceRevision: 1, sourceFamilyId: sourceId, sourceSha256: source.sha256, rawJobId: rawId,
-    rawInputFingerprint: fingerprint(raw), readerSha256: raw.readerSha256, route: gis ? 'approved_recipe' : 'proposal_only',
+    rawInputFingerprint: fingerprint(raw), readerSha256: raw.readerSha256,
+    route: gis ? 'approved_recipe' : 'proposal_only',
     recipeId: gis ? randomUUID() : null,
     recipeRevision: gis ? 1 : null, planHash: null, schemaFingerprint: null, workspaceFingerprint: null,
     converterSha256: chunkMappingConverterSha(), subject: binding.subject, accessBinding: binding.access,
@@ -70,7 +71,8 @@ class HistoryDb {
       const input = sql.includes("operation='streaming-vector'") ? this.f.raw : this.f.mapped;
       if (args[0] !== input.jobId || args[1] && args[1] !== input.caseId ||
           args[2] && args[2] !== input.sourceId) return { rows: [] };
-      return { rows: [{ payload: input, input_fingerprint: this.storedHashChanged ? '0'.repeat(64) : fingerprint(input) }] };
+      const inputHash = this.storedHashChanged ? '0'.repeat(64) : fingerprint(input);
+      return { rows: [{ payload: input, input_fingerprint: inputHash }] };
     }
     if (sql.includes('FROM usp_streaming_vector_imports') || sql.includes('FROM usp_chunk_mapping_imports')) {
       return { rows: [{ state: 'completed', next_publish_index: 1, sealed_chunks: 1, records: 0,
@@ -147,7 +149,8 @@ test('real CSV retained statuses report all history reasons; strict worker/enque
     assert.deepEqual(results[1].reasons, [...results[0].reasons, 'converter_changed']);
     assert(results.every(result => result.current === false));
     const client = db as unknown as PoolClient;
-    await assert.rejects(() => assertStreamingInputTx(client, db.f.raw), (error: any) => error.code === 'STALE_REVISION');
+    await assert.rejects(() => assertStreamingInputTx(client, db.f.raw),
+      (error: any) => error.code === 'STALE_REVISION');
     await assert.rejects(() => assertChunkMappingInputTx(client, db.f.mapped),
       (error: any) => error.code === 'STALE_REVISION');
     await assert.rejects(() => new ChunkMappingService().enqueue(db.f.raw.caseId, db.f.raw.sourceId,

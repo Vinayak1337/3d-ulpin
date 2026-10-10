@@ -9,7 +9,7 @@ Worker worktrees must never serve the demo: lazy imports would mix unreviewed ch
 ## Roll-out (no fetch)
 1. Confirm exclusive runtime ownership; notify any worker reading the API and keep downtime short.
 2. From the demo checkout, stop only the two recorded native processes:
-   `node --input-type=module -e "import {stopProcesses} from './scripts/platform/processes.mjs'; await stopProcesses();"`
+   `node --input-type=module -e "import('./scripts/platform/processes.mjs').then(m=>m.stopProcesses())"`
 3. Select an already-present, lead-reviewed staging commit:
    `git -C E:/Projects/ulpin-wt/demo checkout --detach <commit>`
 4. If `pnpm-lock.yaml` changed, run `pnpm install --frozen-lockfile` from that checkout.
