@@ -35,5 +35,6 @@ export function useTableData(caseId: string, sourceId: string) {
   }, [state.rawJobId, state.mappingJobId, state.recipeId, params, setParams, location.state]);
   const mappings = chunks.flatMap((chunk) => chunk.data?.payload?.mapping ? [chunk.data.payload.mapping] : []);
   const errors = [sourceCase.error, jobs.raw.error, jobs.mapping.error, ...chunks.map((chunk) => chunk.error)];
-  return { profile, sourceCase, stream, jobs, mappings, errors };
+  const freshness = [jobs.raw.data, jobs.mapping.data, ...chunks.map((chunk) => chunk.data)];
+  return { profile, sourceCase, stream, jobs, mappings, errors, freshness };
 }

@@ -9,7 +9,7 @@ export function LearnerPanel({ chunks }: { chunks: Metrics[] }) {
     <section className="ul-panel" aria-label="Mapping learner">
       <div className="ul-panel__head">
         <h2 className="ul-heading">Mapping learner</h2>
-        <span className="ul-caption">Teacher (Sarvam) is off on this runtime; zero calls is a real count.</span>
+        <span className="ul-caption">Counts as published by the mapping job</span>
       </div>
       {chunks.some((chunk) => chunk.teacherCalls === 0 && chunk.teacherFields > 0) ? (
         <p className="ul-pad ul-help">

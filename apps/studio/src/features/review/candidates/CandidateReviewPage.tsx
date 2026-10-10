@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router';
 import { WarningCircle } from '@phosphor-icons/react';
 import { EmptyState, Skeleton } from '@ulpin/ui';
 import { useAreaCanonical, useAreaContext, useBuildingCanonical } from '../../../api/queries';
+import { RecordedLayout } from '../recorded/RecordedLayout';
 import { levelChoices, type StagedDecision } from './decisions';
 import { candidateCards } from './model';
 import { PlanLocalPanel } from './PlanLocalPanel';
@@ -82,7 +83,7 @@ export function BuildingCandidatesPage() {
   const building = canonical.data;
   const choices = levelChoices(building.levels);
 
-  return (
+  const review = (
     <ReviewShell heading="Room candidates" scope={building.name.value ?? 'Name unknown'} cards={cards}
       withoutGeometry={withoutGeometry} backTo={{ to: `/studio/areas/${building.areaId}`, label: 'Open area map' }}
       selectedId={selectedId} onSelect={select}
@@ -92,4 +93,5 @@ export function BuildingCandidatesPage() {
           choices={choices} onRecorded={notify} />
       )} />
   );
+  return <RecordedLayout building={building}>{review}</RecordedLayout>;
 }
