@@ -8,6 +8,7 @@ the end marker too.
 from __future__ import annotations
 
 import argparse
+import ctypes
 from datetime import datetime, timezone
 import os
 from pathlib import Path
@@ -33,6 +34,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--duration-minutes", type=float, required=True, help="No epoch starts after this")
     parser.add_argument("--smoke-result", type=Path, help="Passed 50-step smoke of the same recipe")
     parser.add_argument("--receipt", type=Path, help="New launch receipt inside the repository")
+    parser.add_argument("--cpu-affinity-mask", type=lambda value: int(value, 0), help="Cores for the run, e.g. 0xFFFF")
     parser.add_argument("--supervise", action="store_true", help="Internal: run the trainer and mark its end")
     args = parser.parse_args()
     if not args.supervise and not (args.smoke_result and args.receipt):
@@ -100,8 +102,19 @@ def train_command(plan: dict[str, Any], run_id: str, duration_minutes: float) ->
     ]
 
 
+def pin_to_cores(mask: int) -> None:
+    """Windows runs a windowless process on efficiency cores at about half speed; children inherit this mask."""
+    kernel32 = ctypes.windll.kernel32
+    kernel32.GetCurrentProcess.restype = ctypes.c_void_p
+    process = ctypes.c_void_p(kernel32.GetCurrentProcess())
+    if not kernel32.SetProcessAffinityMask(process, ctypes.c_size_t(mask)):
+        raise OSError("Windows refused the CPU affinity mask")
+
+
 def supervise(args: argparse.Namespace) -> None:
     root = RUNS / args.run_id
+    if args.cpu_affinity_mask:
+        pin_to_cores(args.cpu_affinity_mask)
     command = train_command(read_json(args.plan), args.run_id, args.duration_minutes)
     with (root / "training.log").open("x") as log:
         trainer = subprocess.Popen(
@@ -153,6 +166,8 @@ def launch(args: argparse.Namespace) -> dict[str, Any]:
     root.mkdir(parents=True, exist_ok=False)
     command = [sys.executable, "-B", "-u", str(Path(__file__).resolve()), "--supervise", "--plan", str(args.plan)]
     command += ["--run-id", args.run_id, "--duration-minutes", str(args.duration_minutes)]
+    if args.cpu_affinity_mask:
+        command += ["--cpu-affinity-mask", hex(args.cpu_affinity_mask)]
     with (root / "supervisor.log").open("x") as log:
         supervisor, detached = spawn_detached(command, log)
     wait_for_start(root, supervisor)
@@ -166,6 +181,7 @@ def launch(args: argparse.Namespace) -> dict[str, Any]:
         "end_file": str(root / END_FILE),
         "end_file_meaning": "Written by the supervisor when the trainer process exits for any reason",
         "detached": detached,
+        "cpu_affinity_mask": hex(args.cpu_affinity_mask) if args.cpu_affinity_mask else None,
         "smoke_result": str(args.smoke_result),
         "smoke_sha256": sha(args.smoke_result),
         "trainer_sha256": repo_sha(TRAINER),
