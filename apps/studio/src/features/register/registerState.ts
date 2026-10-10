@@ -52,7 +52,7 @@ export function residentsStatement(
 ): ResidentsStatement | null {
   if (read.error) {
     const { code } = refusalOf(read.error);
-    return { kind: 'failed', text: code ? `${UNREAD_RESIDENTS} · ${code}` : `${UNREAD_RESIDENTS}.` };
+    return { kind: 'failed', text: code ? `${UNREAD_RESIDENTS} Â· ${code}` : `${UNREAD_RESIDENTS}.` };
   }
   if (read.data !== null) return null;
   return served ? { kind: 'none', text: NO_EXTRACT } : { kind: 'unserved', text: RESIDENTS_UNSERVED };
