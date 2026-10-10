@@ -356871,7 +356871,7 @@
                       "method": {
                         "type": "string",
                         "maxLength": 300,
-                        "pattern": "^(?:(?:model|learner):[^\\s:@]+@[^\\s:@]+|reviewer:[^\\s:]+|memory:[^\\s:]+)$"
+                        "pattern": "^(?:(?:model|learner):[^\\s:@]+@[^\\s:@]+|reviewer:[^\\s:]+|memory:[^\\s:]+|manual:[A-Z][A-Z0-9_]{0,63})$"
                       },
                       "fields": {
                         "minItems": 1,
@@ -357752,7 +357752,7 @@
                       "method": {
                         "type": "string",
                         "maxLength": 300,
-                        "pattern": "^(?:(?:model|learner):[^\\s:@]+@[^\\s:@]+|reviewer:[^\\s:]+|memory:[^\\s:]+)$"
+                        "pattern": "^(?:(?:model|learner):[^\\s:@]+@[^\\s:@]+|reviewer:[^\\s:]+|memory:[^\\s:]+|manual:[A-Z][A-Z0-9_]{0,63})$"
                       },
                       "fields": {
                         "minItems": 1,
@@ -358641,7 +358641,7 @@
                         "method": {
                           "type": "string",
                           "maxLength": 300,
-                          "pattern": "^(?:(?:model|learner):[^\\s:@]+@[^\\s:@]+|reviewer:[^\\s:]+|memory:[^\\s:]+)$"
+                          "pattern": "^(?:(?:model|learner):[^\\s:@]+@[^\\s:@]+|reviewer:[^\\s:]+|memory:[^\\s:]+|manual:[A-Z][A-Z0-9_]{0,63})$"
                         },
                         "fields": {
                           "minItems": 1,
@@ -374374,7 +374374,7 @@
                       "method": {
                         "type": "string",
                         "maxLength": 300,
-                        "pattern": "^(?:(?:model|learner):[^\\s:@]+@[^\\s:@]+|reviewer:[^\\s:]+|memory:[^\\s:]+)$"
+                        "pattern": "^(?:(?:model|learner):[^\\s:@]+@[^\\s:@]+|reviewer:[^\\s:]+|memory:[^\\s:]+|manual:[A-Z][A-Z0-9_]{0,63})$"
                       },
                       "fields": {
                         "minItems": 1,

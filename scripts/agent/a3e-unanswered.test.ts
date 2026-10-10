@@ -136,3 +136,18 @@ test('chunks and memory written before the change still parse and read as stored
   assert(looked.plan);
   assert.equal(looked.lineage?.source, 'teacher');
 });
+
+test('memory refuses a manual fallback plan under either lineage', async () => {
+  const source = table('mi-d10-01.csv');
+  const draft = await new TabularChunkMapper().map(chunk(source, randomUUID(), 0),
+    { ...options(), memoryPath: memoryPath() });
+  const plan = draft.proposal.plan;
+  const context = mappingContextFromColumnProfile(draft.profile, selection);
+  const path = memoryPath();
+  assert.equal(plan.method, manualMappingMethod('TEACHER_UNAVAILABLE'));
+  assert.throws(() => rememberMapping(plan, context,
+    { source: 'teacher', method: plan.method, labelFileSha256: 'd'.repeat(64) }, path));
+  assert.throws(() => rememberMapping(plan, context,
+    { source: 'officer', method: plan.method, officerDecisionId: randomUUID() }, path));
+  assert.equal(lookupMappingMemory(draft.profile.layoutFingerprint, context, path).plan, null);
+});
