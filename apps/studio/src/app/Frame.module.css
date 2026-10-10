@@ -19,7 +19,8 @@
   flex: 0 1 380px; min-width: 200px; height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 10px;
   border: 1px solid var(--ui-border-strong); border-radius: var(--ui-radius-8); background: var(--ui-background); color: var(--ui-muted);
 }
-.search:focus-within { border-color: var(--ui-focus); }
+/* The focus ring of the other header controls, drawn on the box that holds the field. */
+.search:focus-within { border-color: var(--ui-focus); outline: 2px solid var(--ui-focus); outline-offset: 3px; }
 .search input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ui-ink); font-size: 14px; outline: none; }
 .search input::placeholder { color: var(--ui-muted); }
 .spacer { flex: 1; }
