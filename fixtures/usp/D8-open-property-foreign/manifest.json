@@ -15,6 +15,42 @@
       "geography": "Seattle, Washington, United States",
       "schemaIdentity": "Publisher table design: seattle-energy",
       "familyRule": "Similar municipal/private templates and vintages grouped; no family per file."
+    },
+    {
+      "id": "opf-d03",
+      "split": "dev",
+      "publisher": "New York City Housing Authority",
+      "fileCount": 1,
+      "geography": "New York City, New York, United States",
+      "schemaIdentity": "Publisher table design: nycha-addresses",
+      "familyRule": "Similar municipal/private templates and vintages grouped; no family per file."
+    },
+    {
+      "id": "opf-d04",
+      "split": "dev",
+      "publisher": "City and County of San Francisco Environment Department",
+      "fileCount": 2,
+      "geography": "San Francisco, California, United States",
+      "schemaIdentity": "Publisher table design: sf-existing",
+      "familyRule": "Similar municipal/private templates and vintages grouped; no family per file."
+    },
+    {
+      "id": "opf-d05",
+      "split": "dev",
+      "publisher": "City of Kansas City Office of Environmental Quality",
+      "fileCount": 1,
+      "geography": "Kansas City, Missouri, United States",
+      "schemaIdentity": "Publisher table design: kansas-municipal",
+      "familyRule": "Similar municipal/private templates and vintages grouped; no family per file."
+    },
+    {
+      "id": "opf-d06",
+      "split": "dev",
+      "publisher": "City of Edmonton",
+      "fileCount": 1,
+      "geography": "Edmonton, Alberta, Canada",
+      "schemaIdentity": "Publisher table design: edmonton-heritage",
+      "familyRule": "Similar municipal/private templates and vintages grouped; no family per file."
     }
   ],
   "assets": [
@@ -73,12 +109,292 @@
         "script": "scripts/agent/acquire-d1f.py",
         "sourceSha256": "d1a8227bf9c7c82aea8279a67405add617271852a985d96bb6e4ac9070e8250f"
       }
+    },
+    {
+      "id": "nycha-addresses.csv",
+      "family": "opf-d03",
+      "split": "dev",
+      "mediaType": "text/csv",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://data.cityofnewyork.us/api/views/3ub5-4ph8/rows.csv?accessType=DOWNLOAD"
+      },
+      "issuer": "New York City Housing Authority",
+      "attribution": "New York City Housing Authority",
+      "acquiredAt": "2026-10-10T12:11:03.936503+00:00",
+      "geography": "New York City, New York, United States",
+      "purpose": "test_only",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d03/nycha-addresses.csv",
+        "sha256": "dfab1ad57770e8bd1642e4efd0c9766b0ba9db167f8a165ba29e49336f3c06a6",
+        "bytes": 551047
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "licence": "not stated",
+        "reference": null,
+        "scope": "Public local development only"
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null
+      },
+      "privacy": "Whole-file identity/contact screening; no redaction; excluded files never profiled",
+      "sourceSchema": {
+        "dataRows": 2955,
+        "columnCount": 26,
+        "canonicalTargets": null,
+        "evaluationEligible": false
+      },
+      "dictionary": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d03/nycha-addresses-dictionary.json",
+        "sha256": "cacfa8ec8f8544990f6b5e4cb315d80dc89c830d8141359c2f22e83ffdb44612",
+        "bytes": 44181,
+        "url": "https://data.cityofnewyork.us/api/views/3ub5-4ph8.json",
+        "acquiredAt": "2026-10-10T12:01:31.603412+00:00"
+      },
+      "profileInput": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d03/nycha-addresses-prefix-128.csv",
+        "sha256": "85447b761fc5c180950ac9a23d5854dd8e41fa6c1d696dce6e0bb9a3fe9bc951",
+        "bytes": 24024,
+        "rows": 128,
+        "scriptSha256": "3421f8a89a4088172f593de6a1ff8dde1a2043b473536ee026441cbfdbe76dab",
+        "sourceLocator": "CSV header and first 128 native-order data records",
+        "recipe": "byte-exact CSV record prefix; no re-serialization",
+        "script": "scripts/agent/acquire-d1f.py",
+        "sourceSha256": "dfab1ad57770e8bd1642e4efd0c9766b0ba9db167f8a165ba29e49336f3c06a6"
+      }
+    },
+    {
+      "id": "sf-existing.csv",
+      "family": "opf-d04",
+      "split": "dev",
+      "mediaType": "text/csv",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://data.sf.gov/api/views/96ck-qcfe/rows.csv?accessType=DOWNLOAD"
+      },
+      "issuer": "City and County of San Francisco Environment Department",
+      "attribution": "City and County of San Francisco Environment Department",
+      "acquiredAt": "2026-10-10T12:11:07.253943+00:00",
+      "geography": "San Francisco, California, United States",
+      "purpose": "test_only",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d04/sf-existing.csv",
+        "sha256": "f6120c2022ed3a5f137948549da52a5319b582a901836025def297eab6c2cf08",
+        "bytes": 11759632
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "licence": "Open Data Commons Public Domain Dedication and License",
+        "reference": "http://opendatacommons.org/licenses/pddl/1.0/",
+        "scope": "Public local development only"
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null
+      },
+      "privacy": "Whole-file identity/contact screening; no redaction; excluded files never profiled",
+      "sourceSchema": {
+        "dataRows": 30483,
+        "columnCount": 34,
+        "canonicalTargets": null,
+        "evaluationEligible": false
+      },
+      "dictionary": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d04/sf-existing-dictionary.json",
+        "sha256": "0bc25c9efd7215fefca6aee1525bb4cfbf06c4048afc392ebba26f7b95dac125",
+        "bytes": 63492,
+        "url": "https://data.sf.gov/api/views/96ck-qcfe.json",
+        "acquiredAt": "2026-10-10T12:04:03.354416+00:00"
+      },
+      "profileInput": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d04/sf-existing-prefix-128.csv",
+        "sha256": "028aaf1abffe9d35535a947ed64be0ae5ff22f1a6b6ebce479e145184012c16f",
+        "bytes": 49867,
+        "rows": 128,
+        "scriptSha256": "3421f8a89a4088172f593de6a1ff8dde1a2043b473536ee026441cbfdbe76dab",
+        "sourceLocator": "CSV header and first 128 native-order data records",
+        "recipe": "byte-exact CSV record prefix; no re-serialization",
+        "script": "scripts/agent/acquire-d1f.py",
+        "sourceSha256": "f6120c2022ed3a5f137948549da52a5319b582a901836025def297eab6c2cf08"
+      }
+    },
+    {
+      "id": "sf-municipal.csv",
+      "family": "opf-d04",
+      "split": "dev",
+      "mediaType": "text/csv",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://data.sf.gov/api/views/bfhx-j6n5/rows.csv?accessType=DOWNLOAD"
+      },
+      "issuer": "City and County of San Francisco Environment Department",
+      "attribution": "City and County of San Francisco Environment Department",
+      "acquiredAt": "2026-10-10T12:11:43.144801+00:00",
+      "geography": "San Francisco, California, United States",
+      "purpose": "test_only",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d04/sf-municipal.csv",
+        "sha256": "a538cf8d9be7e225ae988838ad41121f6ea00e9b7869303491d56e3c9570e669",
+        "bytes": 1479735
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "licence": "Open Data Commons Public Domain Dedication and License",
+        "reference": "http://opendatacommons.org/licenses/pddl/1.0/",
+        "scope": "Public local development only"
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null
+      },
+      "privacy": "Whole-file identity/contact screening; no redaction; excluded files never profiled",
+      "sourceSchema": {
+        "dataRows": 3871,
+        "columnCount": 32,
+        "canonicalTargets": null,
+        "evaluationEligible": false
+      },
+      "dictionary": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d04/sf-municipal-dictionary.json",
+        "sha256": "f41f5a626858de737047bc3dbab6f05cad83d7219c848f66451729009ff4e96a",
+        "bytes": 60336,
+        "url": "https://data.sf.gov/api/views/bfhx-j6n5.json",
+        "acquiredAt": "2026-10-10T12:04:03.354881+00:00"
+      },
+      "profileInput": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d04/sf-municipal-prefix-128.csv",
+        "sha256": "bce97714a6366455d9ce7ce1baf8d3876444cef33f991bf031018f6313f69f07",
+        "bytes": 49155,
+        "rows": 128,
+        "scriptSha256": "3421f8a89a4088172f593de6a1ff8dde1a2043b473536ee026441cbfdbe76dab",
+        "sourceLocator": "CSV header and first 128 native-order data records",
+        "recipe": "byte-exact CSV record prefix; no re-serialization",
+        "script": "scripts/agent/acquire-d1f.py",
+        "sourceSha256": "a538cf8d9be7e225ae988838ad41121f6ea00e9b7869303491d56e3c9570e669"
+      }
+    },
+    {
+      "id": "kansas-municipal.csv",
+      "family": "opf-d05",
+      "split": "dev",
+      "mediaType": "text/csv",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://data.kcmo.org/api/views/9xwa-2b59/rows.csv?accessType=DOWNLOAD"
+      },
+      "issuer": "City of Kansas City Office of Environmental Quality",
+      "attribution": "City of Kansas City Office of Environmental Quality",
+      "acquiredAt": "2026-10-10T12:11:48.415760+00:00",
+      "geography": "Kansas City, Missouri, United States",
+      "purpose": "test_only",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d05/kansas-municipal.csv",
+        "sha256": "cafdb2980f56143aaa2f302c7a19d424a98a5ab6472572f4ee007cbdb511e2d4",
+        "bytes": 66513
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "licence": "not stated",
+        "reference": null,
+        "scope": "Public local development only"
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null
+      },
+      "privacy": "Whole-file identity/contact screening; no redaction; excluded files never profiled",
+      "sourceSchema": {
+        "dataRows": 141,
+        "columnCount": 46,
+        "canonicalTargets": null,
+        "evaluationEligible": false
+      },
+      "dictionary": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d05/kansas-municipal-dictionary.json",
+        "sha256": "84569ad09f6538ac45865771ff5c9dba029ebf350425213f16ff4e2777c56751",
+        "bytes": 72537,
+        "url": "https://data.kcmo.org/api/views/9xwa-2b59.json",
+        "acquiredAt": "2026-10-10T12:04:03.355370+00:00"
+      },
+      "profileInput": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d05/kansas-municipal-prefix-128.csv",
+        "sha256": "010b015e868edd84cc0a60418f3a6c897d18ac8567d911b5a9b3d8aff831a52a",
+        "bytes": 60526,
+        "rows": 128,
+        "scriptSha256": "3421f8a89a4088172f593de6a1ff8dde1a2043b473536ee026441cbfdbe76dab",
+        "sourceLocator": "CSV header and first 128 native-order data records",
+        "recipe": "byte-exact CSV record prefix; no re-serialization",
+        "script": "scripts/agent/acquire-d1f.py",
+        "sourceSha256": "cafdb2980f56143aaa2f302c7a19d424a98a5ab6472572f4ee007cbdb511e2d4"
+      }
+    },
+    {
+      "id": "edmonton-heritage.csv",
+      "family": "opf-d06",
+      "split": "dev",
+      "mediaType": "text/csv",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://data.edmonton.ca/api/views/jgsn-dhai/rows.csv?accessType=DOWNLOAD"
+      },
+      "issuer": "City of Edmonton",
+      "attribution": "City of Edmonton",
+      "acquiredAt": "2026-10-10T12:11:51.712492+00:00",
+      "geography": "Edmonton, Alberta, Canada",
+      "purpose": "test_only",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d06/edmonton-heritage.csv",
+        "sha256": "1caa0303fdbcb9c18409154a0529f511b75fd3eb785877990a9718175f97f146",
+        "bytes": 271421
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "licence": "See Terms of Use",
+        "reference": null,
+        "scope": "Public local development only"
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null
+      },
+      "privacy": "Whole-file identity/contact screening; no redaction; excluded files never profiled",
+      "sourceSchema": {
+        "dataRows": 1105,
+        "columnCount": 14,
+        "canonicalTargets": null,
+        "evaluationEligible": false
+      },
+      "dictionary": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d06/edmonton-heritage-dictionary.json",
+        "sha256": "429c45b31d9990710ebd4ca9f191a124920097704e3b7e8312ad9f5760d55c86",
+        "bytes": 32683,
+        "url": "https://data.edmonton.ca/api/views/jgsn-dhai.json",
+        "acquiredAt": "2026-10-10T12:06:31.309275+00:00"
+      },
+      "profileInput": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d06/edmonton-heritage-prefix-128.csv",
+        "sha256": "ec17face198473776d74e97d47400862f7423e88cb2e2ea36ef12faae6872bee",
+        "bytes": 31705,
+        "rows": 128,
+        "scriptSha256": "3421f8a89a4088172f593de6a1ff8dde1a2043b473536ee026441cbfdbe76dab",
+        "sourceLocator": "CSV header and first 128 native-order data records",
+        "recipe": "byte-exact CSV record prefix; no re-serialization",
+        "script": "scripts/agent/acquire-d1f.py",
+        "sourceSha256": "1caa0303fdbcb9c18409154a0529f511b75fd3eb785877990a9718175f97f146"
+      }
     }
   ],
   "heldout": [],
   "fileCounts": {
-    "development": 1,
-    "families": 1
+    "development": 6,
+    "families": 5
   },
   "teacherPolicy": "No labels/models. Closed discovery and Indian evaluator material stay separate.",
   "missingCapabilities": [
