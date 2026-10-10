@@ -1,14 +1,18 @@
-import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
+import { CheckCircle, FilePlus, GitCommit } from '@phosphor-icons/react';
 import {
-  Button, DescriptionList, RevisionTimeline, Skeleton, UlpinCode, formatDate, formatDateTime,
+  Badge, Button, DescriptionList, Icon, Panel, Skeleton, UlpinCode, formatDate, formatDateTime,
 } from '@ulpin/ui';
-import { chainState, shortHash, type SpaceWorkflow } from '../../local/workflow';
+import { shortHash, type SpaceWorkflow, type WorkflowEvent } from '../../local/workflow';
 import { useResolveCode } from '../workflow/useWorkflow';
 import { useCardFacts } from '../identity/cardFacts';
+import { DraftNotice } from '../identity/DraftNotice';
+import { LOCAL_CHAIN_TONES, LOCAL_CHAIN_WORDS, useLocalChain, type LocalChain } from '../identity/localChain';
 import { usePublicCode } from '../../portal/queries';
 import type { PublicBuildingSummary } from '@ulpin/api-client/draft';
 import { ResultBanner, VerifyFrame } from './VerifyFrame';
+
+const EVENT_ICONS = { recorded: CheckCircle, evidence: GitCommit, draft: FilePlus };
 
 /**
  * P4L: the Property Card's QR opens this page. It resolves the exact code and revision and shows whether
@@ -22,10 +26,7 @@ export function VerifyPage() {
   // Not a Property Card on this device: the code may be a building's 3D ULPIN.
   const publicCode = usePublicCode(!resolved.isPending && !resolved.data ? code : '');
   const building = publicCode.data?.kind === 'building' ? publicCode.data.building : null;
-  const [chain, setChain] = useState<'consistent' | 'broken' | 'unknown'>('unknown');
-  useEffect(() => {
-    if (resolved.data) void chainState(resolved.data).then(setChain);
-  }, [resolved.data]);
+  const chain = useLocalChain(resolved.data);
   const retry = <Button variant="soft" onClick={() => void resolved.refetch()}>Try again</Button>;
 
   return (
@@ -53,12 +54,15 @@ export function VerifyPage() {
   );
 }
 
-function Result({ workflow, revision, chain }: { workflow: SpaceWorkflow; revision: number | null; chain: 'consistent' | 'broken' | 'unknown' }) {
+function Result({ workflow, revision, chain }: {
+  workflow: SpaceWorkflow; revision: number | null; chain: LocalChain;
+}) {
   const head = workflow.events[0]!;
   const superseded = revision !== null && revision < head.revision;
   const card = useCardFacts(workflow);
   return (
     <>
+      <DraftNotice />
       <ResultBanner tone={superseded ? 'warning' : 'success'}>
         {superseded ? `Superseded by revision r${head.revision}` : `Valid: revision r${head.revision}`}
       </ResultBanner>
@@ -70,14 +74,36 @@ function Result({ workflow, revision, chain }: { workflow: SpaceWorkflow; revisi
           { label: 'Revision hash', value: <span className="ul-mono">{shortHash(head.hash)}</span> },
         ]} />
       </section>
-      <RevisionTimeline
-        chain={chain}
-        revisions={workflow.events.map((e) => ({
-          id: String(e.revision), title: e.title, byline: `${e.by} · ${formatDateTime(e.at)}`, kind: e.kind,
-          hash: shortHash(e.hash), previousHash: e.previousHash ? shortHash(e.previousHash) : null,
-        }))}
-      />
+      <LocalHistory events={workflow.events} chain={chain} />
     </>
+  );
+}
+
+/**
+ * The draft's own revisions. The shared timeline words its badge as "Chain consistent"; this one names the
+ * check as this browser's.
+ */
+function LocalHistory({ events, chain }: { events: WorkflowEvent[]; chain: LocalChain }) {
+  const badge = <Badge tone={LOCAL_CHAIN_TONES[chain]} icon={null}>{LOCAL_CHAIN_WORDS[chain]}</Badge>;
+  return (
+    <Panel title="History" aside={badge}>
+      <ol className="ul-timeline">
+        {events.map((event) => (
+          <li key={event.revision}>
+            <span className={`ul-dot${event.kind === 'recorded' ? ' ul-dot--done' : ''}`}>
+              <Icon icon={EVENT_ICONS[event.kind]} size={16} />
+            </span>
+            <span>
+              <strong>{event.title}</strong>
+              <span className="ul-timeline__by">{event.by} · {formatDateTime(event.at)}</span>
+              <span className="ul-timeline__hash ul-mono">
+                {shortHash(event.hash)}{event.previousHash ? ` ← ${shortHash(event.previousHash)}` : ''}
+              </span>
+            </span>
+          </li>
+        ))}
+      </ol>
+    </Panel>
   );
 }
 
