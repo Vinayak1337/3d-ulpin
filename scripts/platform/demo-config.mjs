@@ -1,7 +1,7 @@
 import {
   existsSync, mkdirSync, readFileSync, writeFileSync, chmodSync, realpathSync, statSync,
 } from 'node:fs';
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { createServer } from 'node:net';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,6 +11,7 @@ export const demoDir = 'E:/BhuAayam-data/runtime/ulpin-demo';
 export const demoProject = 'ulpin-demo';
 export const demoFile = join(demoDir, 'demo.env');
 export const demoOcrFile = join(demoDir, 'ocr-paths.json');
+export const demoTabularFile = join(demoDir, 'tabular-paths.json');
 const demoOcrProfileFile = join(demoDir, 'ocr-paths-profile.json');
 const ocrNames = ['PYTHON', 'MODELS', 'TESSERACT', 'TESSDATA', 'SCRATCH'];
 
@@ -55,8 +56,63 @@ export function readDemoOcrPaths() {
   }
   return paths;
 }
+/** Required non-secret paths; a missing bridge or seed must be visible before runtime starts. */
+export function readDemoTabularPaths(file = demoTabularFile) {
+  if (!existsSync(file)) throw new Error('Demo tabular paths missing; configure tabular-paths.json first.');
+  let paths;
+  try { paths = JSON.parse(readFileSync(file, 'utf8')); }
+  catch { throw new Error('Demo tabular path file must be valid JSON.'); }
+  const keys = ['ULPIN_PROFILE_PYTHON', 'ULPIN_TABULAR_LEARNING_DIR', 'ULPIN_TABULAR_LEARNER_SEED'];
+  if (!paths || typeof paths !== 'object' || Object.keys(paths).sort().join(',') !== keys.sort().join(',')) {
+    throw new Error('Demo tabular path configuration has unexpected keys.');
+  }
+  for (const key of keys) {
+    const path = paths[key];
+    if (typeof path !== 'string' || !/^[A-Za-z]:[\\/]/.test(path) || !existsSync(path)) {
+      throw new Error(`Demo tabular path unavailable: ${key}.`);
+    }
+    const entry = statSync(path);
+    if (key === 'ULPIN_PROFILE_PYTHON' ? !entry.isFile() : !entry.isDirectory()) {
+      throw new Error(`Demo tabular path has the wrong kind: ${key}.`);
+    }
+  }
+  validateTabularArtifacts(paths);
+  return paths;
+}
+
+function validateTabularArtifacts(paths) {
+  const learning = realpathSync(paths.ULPIN_TABULAR_LEARNING_DIR);
+  const insideRuntime = relative(realpathSync(demoDir), learning);
+  const repository = realpathSync(resolve(dirname(fileURLToPath(import.meta.url)), '../..'));
+  for (const path of [learning, realpathSync(paths.ULPIN_TABULAR_LEARNER_SEED)]) {
+    const insideRepository = relative(repository, path);
+    if (!insideRepository.startsWith('..') && !isAbsolute(insideRepository)) {
+      throw new Error('Demo tabular artifacts must be outside the repository.');
+    }
+  }
+  if (!insideRuntime || insideRuntime.startsWith('..') || isAbsolute(insideRuntime)) {
+    throw new Error('Demo tabular learning directory must be inside demo runtime.');
+  }
+  const seed = paths.ULPIN_TABULAR_LEARNER_SEED;
+  const manifestFile = join(seed, 'manifest.json'), modelFile = join(seed, 'model.npz');
+  if (!existsSync(manifestFile) || !existsSync(modelFile)) throw new Error('Demo tabular learner seed is incomplete.');
+  let manifest;
+  try { manifest = JSON.parse(readFileSync(manifestFile, 'utf8')); }
+  catch { throw new Error('Demo tabular learner seed manifest is invalid.'); }
+  const digest = createHash('sha256').update(readFileSync(modelFile)).digest('hex');
+  if (manifest.version !== 'v43' || manifest.modelSha256 !== digest) {
+    throw new Error('Demo tabular learner seed must be the intact A4 v43 model.');
+  }
+}
+
 const expectedPorts = { POSTGRES_PORT: '15434', S3_PORT: '19020', S3_CONSOLE_PORT: '19021', REDIS_PORT: '16381', GEO_PORT: '18002', API_PORT: '3194' };
 export function readDemo() {
+  let tabular;
+  try { tabular = readDemoTabularPaths(); }
+  catch (error) {
+    console.error(error.message); // Only path-validation messages, never demo.env values.
+    throw error;
+  }
   if (!existsSync(demoFile)) throw new Error('Demo configuration missing; use --profile demo --create after inventory reconciliation.');
   // Only this explicitly authorized external file is read, never checkout .env.
   const env = Object.fromEntries(readFileSync(demoFile, 'utf8').split(/\r?\n/).filter(Boolean).map(line => {
@@ -72,7 +128,7 @@ export function readDemo() {
   if (env.DATABASE_URL !== `postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@127.0.0.1:${env.POSTGRES_PORT}/${env.POSTGRES_DB}`
     || env.S3_ENDPOINT !== `http://127.0.0.1:${env.S3_PORT}` || env.GEO_URL !== `http://127.0.0.1:${env.GEO_PORT}`
     || env.REDIS_URL !== `redis://127.0.0.1:${env.REDIS_PORT}/0`) throw new Error('Demo endpoint binding mismatch.');
-  return { ...env, ...readDemoOcrPaths() };
+  return { ...env, ...readDemoOcrPaths(), ...tabular };
 }
 export async function freePort(port) {
   await new Promise((ok, fail) => {
