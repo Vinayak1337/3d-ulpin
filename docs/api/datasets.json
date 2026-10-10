@@ -4250,6 +4250,103 @@
   ],
   "retainedExternalSources": [
     {
+      "id": "t1-municipal-unlabelled-pool-20261010",
+      "classification": "test_only",
+      "split": "pool",
+      "originKind": "official_issuing_portal_original_html_tables",
+      "issuer": "Surat Municipal Corporation",
+      "geography": "Surat, Gujarat, India",
+      "manifest": "E:/BhuAayam-data/datasets/messy-india-pool/manifest-v2.json",
+      "guide": "docs/evidence/gf-agent/t1/prep.json",
+      "profiledFamilies": 5,
+      "profiledFiles": 5,
+      "acquiredOriginals": 6,
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "terms": {
+        "state": "unconfirmed",
+        "licence": null,
+        "scope": "All six public responses; no explicit open licence or training grant verified"
+      },
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/datasets/messy-india-pool",
+        "repositoryBytesVerified": false,
+        "originalHashesVerified": true,
+        "formats": ["HTML source-native tables"]
+      },
+      "items": [
+        {
+          "family": "smc-building-stock",
+          "title": "High-rise and commercial building counts by zone",
+          "originalUrl": "https://www.suratmunicipal.gov.in/Departments/TownPlanningBuildingStatistics",
+          "acquiredAt": "2026-10-10T00:23:23.660191+00:00",
+          "pathRelativeToExternalRoot": "originals/smc-building-stock-7ff83846b56b.html",
+          "sha256": "7ff83846b56b006026f921f6df1a2ca78a2f77d5cebf277da30286a2d91fe18f",
+          "bytes": 100351,
+          "profileStatus": "profiled"
+        },
+        {
+          "family": "smc-tax-recovery",
+          "title": "Property-tax demand and recovery by category and financial year",
+          "originalUrl": "https://www.suratmunicipal.gov.in/Departments/PropertyTaxRecoveryStatistics",
+          "acquiredAt": "2026-10-10T00:20:32.610956+00:00",
+          "pathRelativeToExternalRoot": "originals/smc-tax-recovery-6cb0a801d581.html",
+          "sha256": "6cb0a801d5811f42d1eb395b68d51a3d85c406eb457a35aa4ccd78e51aa69097",
+          "bytes": 92570,
+          "profileStatus": "profiled"
+        },
+        {
+          "family": "smc-water-projects",
+          "title": "Water-supply project history across published years",
+          "originalUrl": "https://www.suratmunicipal.gov.in/Departments/HydraulicHome",
+          "acquiredAt": "2026-10-10T00:20:32.266331+00:00",
+          "pathRelativeToExternalRoot": "originals/smc-water-projects-399bc57267f6.html",
+          "sha256": "399bc57267f6584ce496bd55d0202390c64dbc411a732e6a8eb2ace012a585f7",
+          "bytes": 127303,
+          "profileStatus": "profiled"
+        },
+        {
+          "family": "smc-sewage-plants",
+          "title": "Sewage-treatment plant names and design capacities",
+          "originalUrl": "https://www.suratmunicipal.gov.in/Departments/DrainageTreatmentPlants",
+          "acquiredAt": "2026-10-10T00:23:23.595342+00:00",
+          "pathRelativeToExternalRoot": "originals/smc-sewage-plants-ebf1dfee2b1f.html",
+          "sha256": "ebf1dfee2b1f39a34412cb7650427398a2294f03fe79b6b37ab706abe399a5ac",
+          "bytes": 101721,
+          "profileStatus": "profiled"
+        },
+        {
+          "family": "smc-water-charges",
+          "title": "Water/sewerage tariffs by carpet area, connection size and usage",
+          "originalUrl": "https://www.suratmunicipal.gov.in/Departments/HydraulicUserCharges",
+          "acquiredAt": "2026-10-10T01:12:52.080182+00:00",
+          "pathRelativeToExternalRoot": "originals/smc-water-charges-b6aecd61e639.html",
+          "sha256": "b6aecd61e639b0afd877ce63fb112ed155a075f131f273fed26433a60882e446",
+          "bytes": 126192,
+          "profileStatus": "profiled"
+        },
+        {
+          "family": "smc-waste-collection",
+          "title": "Solid-waste collection modes, vehicles, trips and daily quantities",
+          "originalUrl": "https://www.suratmunicipal.gov.in/Departments/SolidWasteManagementStatistics",
+          "acquiredAt": "2026-10-10T00:24:18.541708+00:00",
+          "pathRelativeToExternalRoot": "originals/smc-waste-collection-99345b491a5b.html",
+          "sha256": "99345b491a5b8144bdf9b61b3f28205f8b0e50beba8430e14616765538984c5d",
+          "bytes": 1003719,
+          "profileStatus": "excluded_NATIVE_HTML_LIMIT"
+        }
+      ],
+      "apiInstallation": "not-installed",
+      "runtimeVerified": false,
+      "limitations": [
+        "Unlabelled development only; distinct schema/topics, not independent publishers or evaluation truth.",
+        "Acquisition times use retained curl response UTC modification times; all six observed HTTP 200.",
+        "Publisher spans are not expanded; no private rows, targets, measurements or rights are invented.",
+        "Native 2000-cell limit excludes solid waste even after selecting one table; originals retained.",
+        "No teacher calls, labels, training, registry import or GF-AGENT accuracy qualification."
+      ]
+    },
+    {
       "id": "d1-messy-india-development-20261010",
       "classification": "test_only",
       "originKind": "mixed_official_original_tables_and_OpenCity_publisher_csv_derivatives_test_only",
