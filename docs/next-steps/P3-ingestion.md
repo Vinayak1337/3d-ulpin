@@ -2,6 +2,8 @@
 
 Goal: any reasonable Indian input is accepted automatically. Deterministic readers handle file formats. A **translate-and-learn** pipeline handles meaning: a teacher model translates unfamiliar layouts, code verifies the translation, an officer reviews only what is uncertain, and a local learner absorbs every verified translation, so later chunks and similar files go through without the teacher.
 
+**Design above this file (11 October):** [INGESTION-ARCHITECTURE.md](INGESTION-ARCHITECTURE.md) says how any file, of any size and in any mix, is received, identified, read in parts, placed on the map or held and indexed, linked and reviewed. The tasks below fill its lanes; where the two differ, the architecture governs.
+
 **Updated 10 October.** Decided by the owner:
 - **A development teacher labels public development files to bootstrap the learner; learner work verifies, builds, trains and evaluates the student.** Neither role belongs to a model by name (changed 10 October evening). Each goes to the provider that has limit, and the model follows the provider: Claude Code CLI or a Claude desktop background task → Opus 5.5; pi codex-pool → `gpt-6.1-sol` ([WORKERS.md §8](WORKERS.md#8-teacher-and-learner-work-the-model-follows-the-provider)).
 - The lead designs the method and reviews.
