@@ -68,8 +68,8 @@ def freeze_selection(root: Path, index: dict[str, dict[str, Any]], archive: dict
     with split.open("xb") as stream:
         stream.write(data)
     paths = [line.strip("/\r ") for line in data.decode().splitlines() if line.strip()]
-    train = set((RETAINED / "provenance/train.txt").read_text().splitlines())
-    validation = set((RETAINED / "provenance/val.txt").read_text().splitlines())
+    train = set((RETAINED / "provenance/train.txt").read_text(encoding="utf-8").splitlines())
+    validation = set((RETAINED / "provenance/val.txt").read_text(encoding="utf-8").splitlines())
     selected = [path for path in paths if path not in EXCLUDED][:100]
     if len(set(selected)) != 100 or any(f"/{path}/" in train | validation for path in selected):
         raise ValueError("invalid_fixed_test_selection")
@@ -97,7 +97,8 @@ def retain_plan(identifier: str, root: Path, index: dict[str, dict[str, Any]],
                 raise ValueError("existing_original_crc_mismatch")
             receipt = {"archiveMember": entry["name"], "crc32": entry["crc32"],
                        "url": archive["links"]["self"], "resumedExistingBytes": True,
-                       "acquiredAt": None, "qualification": "Prior interrupted download; exact acquisition time unknown"}
+                       "acquiredAt": None,
+                       "qualification": "Prior interrupted download; exact acquisition time unknown"}
         else:
             data, receipt = read_member(entry, archive)
             with destination.open("xb") as stream:
@@ -117,13 +118,16 @@ def main() -> int:
     allowed = Path("E:/BhuAayam-data/datasets/cubicasa5k").resolve()
     if not root.is_relative_to(allowed):
         parser.error("use a task-specific subdirectory under the allowed private dataset root")
-    metadata = json.loads((RETAINED / "provenance/zenodo-record-2613548.json").read_text())
+    metadata = json.loads((RETAINED / "provenance/zenodo-record-2613548.json").read_text(encoding="utf-8"))
     archive = metadata["files"][0]
-    entries = json.loads((RETAINED / "provenance/archive-member-index.json").read_text())
+    entries = json.loads((RETAINED / "provenance/archive-member-index.json").read_text(encoding="utf-8"))
     index = {entry["name"]: entry for entry in entries}
     root.mkdir(parents=True, exist_ok=True)
     selection_path = root / "selection.json"
-    selection = json.loads(selection_path.read_text()) if selection_path.exists() else freeze_selection(root, index, archive)
+    if selection_path.exists():
+        selection = json.loads(selection_path.read_text(encoding="utf-8"))
+    else:
+        selection = freeze_selection(root, index, archive)
     if args.selection_only:
         print(json.dumps(pin(selection_path)))
         return 0
@@ -131,7 +135,8 @@ def main() -> int:
     with ThreadPoolExecutor(max_workers=2) as pool:
         for plan in pool.map(lambda identifier: retain_plan(identifier, root, index, archive), missing):
             print("retained", plan["id"], flush=True)
-    plans = [json.loads((root / identifier / "acquisition.json").read_text()) for identifier in selection["ids"]]
+    plans = [json.loads((root / identifier / "acquisition.json").read_text(encoding="utf-8"))
+             for identifier in selection["ids"]]
     write_json(root / "manifest.json", {"selection": pin(selection_path), "plans": plans})
     return 0
 
