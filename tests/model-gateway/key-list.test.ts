@@ -318,7 +318,7 @@ test('every key used up: one named refusal, nothing is sent, and the mapping tea
   const teacher = await proposeMappingWithTeacher(profile, { context: context as any, gateway,
     dataPolicy: { dataClass: 'public', split: 'development' }, authorize: async () => {},
     recordings: new TeacherRecordings(mkdtempSync(join(tmpdir(), 'gk1-recordings-'))) });
-  assert(teacher.issues.length > 0 && teacher.issues.every(issue => issue.code === 'TEACHER_UNAVAILABLE'));
+  assert(teacher.issues.length > 0 && teacher.issues.every(issue => issue.code === 'TEACHER_BUDGET_EXHAUSTED'));
   assert(teacher.plan.fields.every(field => field.target === 'unknown'));
   assert.deepEqual([sent.length, db.calls.length], [3, 3], 'the teacher sent nothing and reserved nothing');
 

@@ -144,6 +144,42 @@ letters, digits and `_ . : / -`. Only the owner can state these; the repository 
 
 Ranges are in `packages/server/src/modules/model-gateway/config.ts`. This empty template is refused as it stands.
 
+### Approved on 10 October 2026, and the pending file
+
+The owner approved these values on 10 October 2026. Each is counted across all keys together.
+
+| Field | Approved | In the file |
+|---|---|---|
+| `price.inputPerMillionMicroInr` | ₹15 per million input tokens | `"15000000"` |
+| `price.cachedInputPerMillionMicroInr` | ₹5 per million cached input tokens | `"5000000"` |
+| `price.outputPerMillionMicroInr` | ₹60 per million output tokens | `"60000000"` |
+| `projectCapMicroInr` | at most ₹100 in total | `"100000000"` |
+| `projectDailyCapMicroInr` | at most ₹25 a day | `"25000000"` |
+| `principalDailyCallCap` | 150 calls per person per day | `150` |
+| `secretReferences` | the owner's eleven keys, in order | `ULPIN_PROVIDER_KEY_SARVAM_01` to `_11` |
+
+The policy written from them is `E:/BhuAayam-data/task-data/gk2/demo-gateway-policy.pending.json`, outside Git
+(SHA-256 `d3a4576f564383185c3fd4fc4d99f1e7b43d6c2776fed755596d55d73c888969`). It is pending because the owner has not
+yet confirmed two statements. Both are `null` in the file, so the gateway refuses it as it stands.
+
+- `gatewayExclusiveFunding`: yes means the credit behind these keys is spent only through this gateway. Nobody
+  uses any of the keys anywhere else, so the gateway's own ledger is the whole account of what was spent.
+- `indiaPrivateApproved`: yes means the owner approves Sarvam as this project's India-private route for the
+  minimised text the gateway sends, on Sarvam's own word about hosting, logs, retention and training. The code
+  does not check any of that.
+
+Not part of the owner's approval: `inputBound` (`34816` tokens, labelled `schema-minimum/not-approved`) and `paceMs`
+(`1500`) are the smallest values the schema allows, as the live-proof plan uses them. `maxOutputTokens` `2048`,
+`timeoutMs` `45000`, `cushionBps` `2000` and `ingestProtectedBps` `7000` are the schema's defaults, written out.
+
+With both statements `true` the same content is accepted, with policy hash
+`efb90b3a440a875d80314024d30482abbc7c4c14a6e3682cd5ec946567dc6721`; any other change gives another hash. The check
+reads only the file it is given and sends nothing:
+
+```sh
+pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf-ai/gateway/gk2/check-policy.ts <policy.json>
+```
+
 ## Fail-closed behaviour
 
 - **One key at a time.** Only the keys the policy names are ever used, in the owner's order, never in turn and
