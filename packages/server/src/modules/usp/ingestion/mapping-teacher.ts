@@ -31,6 +31,10 @@ import { lookupMappingMemory } from './mapping-memory';
 export const MAPPING_TEACHER_TEMPLATE = 'mapping-teacher/2.1';
 export const MAPPING_TEACHER_MODEL = 'sarvam-105b';
 export const MAPPING_TEACHER_METHOD = 'model:sarvam-105b@2026-10-10';
+const MANUAL_MAPPING_METHOD_PREFIX = 'model:none@';
+/** Names a plan nobody interpreted; the plan schema's method rule leaves no `manual:` form. */
+export const manualMappingMethod = (code: string) => `${MANUAL_MAPPING_METHOD_PREFIX}${code}`;
+export const isManualMappingMethod = (method: string) => method.startsWith(MANUAL_MAPPING_METHOD_PREFIX);
 export type TeacherDataPolicy = {
   dataClass: 'public' | 'private' | 'restricted';
   split: 'development' | 'unlabelled' | 'held_out';
@@ -276,7 +280,7 @@ export function manualTeacherPlan(profile: ColumnProfileDocument, code: string):
       ...(profile.layoutFingerprint !== layoutFingerprint(profile.columns)
         ? { layoutFingerprintVersion: 'tabular-header/2' as const } : {}),
       sourceKind: profile.sourceKind,
-      method: MAPPING_TEACHER_METHOD,
+      method: manualMappingMethod(code),
       fields: profile.columns.map((column) => ({
         sourceField: column.name,
         target: 'unknown',
@@ -353,7 +357,12 @@ function retainValidFields(lastRaw: unknown, profile: ColumnProfileDocument) {
 }
 
 function failedResult(fallback: MappingTeacherResult, code: string, metadata: Partial<AttemptMetadata> = {}) {
-  return { ...fallback, ...metadata, issues: fallback.issues.map((issue) => ({ ...issue, code })) };
+  return {
+    ...fallback,
+    ...metadata,
+    plan: { ...fallback.plan, method: manualMappingMethod(code) },
+    issues: fallback.issues.map((issue) => ({ ...issue, code })),
+  };
 }
 
 async function resolveGateway(options: TeacherOptions) {
@@ -486,10 +495,11 @@ type RoutingOptions = TeacherOptions & {
   learnerColumns?: StudentColumnMetadata[];
   teacher?: (profile: ColumnProfileDocument, options: TeacherOptions) => Promise<MappingTeacherResult>;
 };
+type FieldSourceKind = 'memory' | 'student' | 'teacher' | 'officer' | 'unanswered';
 export type MappingRoutingResult = MappingTeacherResult & {
   activeLearnerVersion: string | null;
   memoryMatched?: boolean;
-  fieldSources: { sourceField: string; source: 'memory' | 'student' | 'teacher' | 'officer'; method: string }[];
+  fieldSources: { sourceField: string; source: FieldSourceKind; method: string }[];
   memoryReasonCode: string | null;
   studentReasonCode: string | null;
 };
@@ -568,6 +578,27 @@ async function remainingTeacher(
   return (options.teacher ?? proposeMappingWithTeacher)(remaining, options);
 }
 
+function routedMethod(student: string, confident: number, teacher: MappingTeacherResult | undefined): string {
+  const answered = teacher && !isManualMappingMethod(teacher.plan.method);
+  if (confident && answered) return 'model:mapping-router@1';
+  if (confident || !teacher) return student;
+  return teacher.plan.method;
+}
+
+function routedSources(
+  profile: ColumnProfileDocument, student: ReadonlyMap<string, unknown>, studentMethod: string,
+  teacher: MappingTeacherResult | undefined, fallbackMethod: string,
+): MappingRoutingResult['fieldSources'] {
+  const answered = teacher && !isManualMappingMethod(teacher.plan.method);
+  return profile.columns.map(column => {
+    if (student.has(column.name)) return { sourceField: column.name, source: 'student', method: studentMethod };
+    if (!answered) {
+      return { sourceField: column.name, source: 'unanswered', method: teacher?.plan.method ?? fallbackMethod };
+    }
+    return { sourceField: column.name, source: 'teacher', method: teacher.plan.method };
+  });
+}
+
 function routedResult(
   profile: ColumnProfileDocument, version: string | null, confident: MappingPlanV2['fields'],
   teacher: MappingTeacherResult | undefined, memoryReasonCode: string | null, studentReasonCode: string | null,
@@ -577,21 +608,17 @@ function routedResult(
   const fallback = manualTeacherPlan(profile, 'MAPPING_ROUTING_INVALID');
   const fields = profile.columns.map(column => student.get(column.name) ?? supplied.get(column.name));
   const method = `model:stage-a@${version ?? 'unavailable'}`;
-  let planMethod = teacher?.plan.method ?? method;
-  if (confident.length && teacher) planMethod = 'model:mapping-router@1';
-  else if (confident.length) planMethod = method;
-  const checked = validateMappingPlanV2({ ...fallback.plan, fields, method: planMethod },
-    mappingContextFromColumnProfile(profile));
+  const routed = { ...fallback.plan, fields, method: routedMethod(method, confident.length, teacher) };
+  const checked = validateMappingPlanV2(routed, mappingContextFromColumnProfile(profile));
   const accepted = checked.success ? acceptedResult(checked.plan, {
     profileHash: columnProfileHash(profile), attempts: teacher?.attempts ?? 0,
     replayed: teacher?.replayed ?? false, validationCodes: teacher?.validationCodes ?? [],
   }) : fallback;
   const issues = checked.success ? [...accepted.issues, ...(teacher?.issues ?? [])] : fallback.issues;
+  const fieldSources = checked.success ? routedSources(profile, student, method, teacher, fallback.plan.method)
+    : routedSources(profile, new Map(), method, fallback, fallback.plan.method);
   return { ...accepted, issues, state: issues.length ? 'needs_input' : 'candidate', activeLearnerVersion: version,
-    memoryReasonCode, studentReasonCode, fieldSources: profile.columns.map(column => ({
-      sourceField: column.name, source: student.has(column.name) ? 'student' : 'teacher',
-      method: student.has(column.name) ? method : (teacher?.plan.method ?? MAPPING_TEACHER_METHOD),
-    })) };
+    memoryReasonCode, studentReasonCode, fieldSources };
 }
 
 /** Proposal-only exact memory → calibrated local student → governed teacher; held-outs never reach a teacher. */

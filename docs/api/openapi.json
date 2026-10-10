@@ -39212,6 +39212,11 @@
                               "minimum": 0,
                               "maximum": 256
                             },
+                            "unansweredFields": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 256
+                            },
                             "needsInput": {
                               "type": "integer",
                               "minimum": 0,
@@ -374627,7 +374632,8 @@
                             "memory",
                             "student",
                             "teacher",
-                            "officer"
+                            "officer",
+                            "unanswered"
                           ]
                         },
                         "method": {
@@ -374761,6 +374767,11 @@
                         "maximum": 256
                       },
                       "teacherFields": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 256
+                      },
+                      "unansweredFields": {
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 256

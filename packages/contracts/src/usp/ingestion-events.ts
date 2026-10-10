@@ -10,6 +10,7 @@ export const MappingChunkMetricsSchema = z.strictObject({ kind: z.literal('mappi
   chunkIndex: z.number().int().nonnegative().max(4096), layout: z.enum(['new', 'memory']),
   teacherCalls: z.number().int().min(0).max(2), memoryHits: z.number().int().min(0).max(1),
   studentFields: z.number().int().min(0).max(256), teacherFields: z.number().int().min(0).max(256),
+  unansweredFields: z.number().int().min(0).max(256).optional(),
   needsInput: z.number().int().min(0).max(256), latencyMs: z.number().finite().nonnegative(),
   learnerVersion: z.string().regex(/^v[1-9]\d*$/).nullable() });
 export const CaseIngestionChangeSchema = z.discriminatedUnion('kind', [
