@@ -128,3 +128,58 @@ measurement, ownership, legal unit/level association, public redistribution,
 or independently reviewed room-count accuracy. Geometry extraction remains
 qualified only on this source family; unsupported wall-layer conventions or
 unreliable scale yield honest gaps, not inferred rooms.
+
+## P2 — offline raster plans and installed CubiCasa
+
+`services/geo/geo/raster_plan.py` reuses the P1 literal dimension parser and the
+unchanged `spatial_ml.py` v2 contour path. `read_raster_plan.py` calls the existing
+supervised region OCR runner with the retained OCR interpreter. It never changes
+OCR configuration, uses CPU only and does not touch the runtime/DB.
+
+The explicit four-panel selection is `tower3-raster-selection.json`; it cites two
+retained Haryana floor-plan sheets, not the site plan, area diagrams or section.
+Rooms retain full-page raster pixel geometry and PDF-point bbox citations.
+Dimension-line endpoints must be independently verified and uniquely associated
+with explicit-unit text on both axes before scale is accepted. No endpoint reader
+is qualified on these scans: all four panels correctly retain `no_scale` and null
+metric geometry. Printed scales, unitless numbers and predicted room extents do
+not supply a calibration. Levels remain unknown until a reviewer chooses them.
+
+Run with **new** directories only (Bash; semicolon is the Windows Python path separator):
+
+```bash
+PY=E:/BhuAayam-data/task-data/d07-vision-baseline-20261005/env/Scripts/python.exe
+export PYTHONPATH='E:/BhuAayam-data/task-data/p2/20261011/tools;services/geo'
+export CUDA_VISIBLE_DEVICES=''
+MODEL=E:/Projects/3d-ulpin/.runtime/ml-models
+TESS=E:/BhuAayam-data/task-data/k2/tesseract-runtime-k2b/Library/bin/tesseract.exe
+"$PY" scripts/plans/read_raster_plan.py --models "$MODEL" --tesseract "$TESS" \
+  --full-out E:/BhuAayam-data/task-data/p2/my-new-run/full \
+  --out docs/evidence/gf-ai/plans/raster/my-new-run/tower3
+```
+
+K2b's repaired Tesseract binary is hash-identical to the retained executable;
+its DLLs are pinned separately. The old runtime lacks `libcurl.dll`. This is an
+explicit read-only command override, not an OCR configuration or runner patch.
+The P2 tools directory supplies PyMuPDF 1.25.5 and pypdfium2 4.30.0 to the existing
+CPU environment; production dependencies and model weights were not changed.
+
+`--resume-ocr` reuses only hash-checked successful region-runner tiles from a P2
+private output. `--resume-model` accepts a completed P2 run receipt and reuses its
+exact mask and polygons; the continuation states `actualInference:false` rather
+than claiming a rerun. `publish_raster_continuation.py` combines recorded Docling
+and earlier sparse-TSV observations without assigning precedence or rewriting
+literals; it proves the model geometry stayed unchanged.
+
+`acquire_cubicasa_test.py` retains only missing publisher test members, with a
+fixed selection before inference. `cubicasa_labels.py` reuses the pinned D06 SVG
+transfer and publisher mapping. `evaluate_cubicasa_test.py` evaluates the
+unchanged installed model; no training or threshold tuning. `publish_raster_sources.py`
+publishes compact per-member provenance. Dataset CC-BY-NC-SA-4.0 and code/model
+CC-BY-NC-4.0 remain distinct; all plans are foreign `test_only` research data.
+
+Current evidence and exact execution/check receipts:
+`docs/evidence/gf-ai/plans/raster/20261011-tower3/README.md`.
+The primary `tower3-current/*.json` files have strict `normalized-building/1`
+candidate-reference elements and separate cited room payloads. No canonical
+building/level/space identity, API admission or officer acceptance is created.
