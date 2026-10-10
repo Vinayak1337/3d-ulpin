@@ -11,6 +11,11 @@ export function LearnerPanel({ chunks }: { chunks: Metrics[] }) {
         <h2 className="ul-heading">Mapping learner</h2>
         <span className="ul-caption">Teacher (Sarvam) is off on this runtime; zero calls is a real count.</span>
       </div>
+      {chunks.some((chunk) => chunk.teacherCalls === 0 && chunk.teacherFields > 0) ? (
+        <p className="ul-pad ul-help">
+          The server labels fallback fields as teacher fields even with no call. They are not teacher responses.
+        </p>
+      ) : null}
       {chunks.length ? <LearnerChunks chunks={chunks} /> : (
         <p className="ul-pad ul-muted">No chunk metrics received yet. Totals are unknown.</p>
       )}

@@ -8,6 +8,10 @@ export function useTableStream(caseId: string, sourceId: string, rawJobId: strin
   const [attempt, setAttempt] = useState(0);
   const cursor = useRef('0');
   useEffect(() => {
+    setState((previous) => ({ ...previous,
+      rawJobId: rawJobId || previous.rawJobId, mappingJobId: mappingJobId || previous.mappingJobId }));
+  }, [rawJobId, mappingJobId]);
+  useEffect(() => {
     const url = `/api/v1/ingestion/cases/${caseId}/events?cursor=${cursor.current}`;
     const stream = new EventSource(url);
     const apply = (event: MessageEvent) => {
