@@ -1,0 +1,108 @@
+{
+  "report": [
+    "TASK   F3i — Strict card requests; no draft card in a served registry            GATE GF4, GF5",
+    "WORKS  Prepare a listed card's next revision; served-registry dialogs never fall back to a browser draft.",
+    "SEE IT pnpm --filter @ulpin/studio exec vitest run src/features/identity/requestBodies.test.ts",
+    "INPUTS Tower 3 UNIT-3B valid card; difficult: source-only unit with absent geometry and REH1's strict refusal.",
+    "GAPS   No second revision stored; Part 2 seen in pure tests/source review, not browser screenshots.",
+    "DESIGN prepareRevision selects cardId/revision; card/packet api.POST calls select route fields.",
+    "       generateBody selects preview and guard fields; original request schemas gate regression tests.",
+    "       unitCardView gates UnitCardDialog; no-card units reuse the canonical unit's existing issue flow.",
+    "       AssignDialog alone removed; import audit lists no remaining unimported runtime identity module.",
+    "COMMITS b363e768 docs(studio): F3i which request bodies the Studio builds from a wider object",
+    "        b23c5a74 fix(studio): a card request holds only the fields its route takes",
+    "        f2aaa3c8 fix(studio): the Property Card button shows no browser draft where a registry is served",
+    "        61e1e00c refactor(studio): the unused draft code dialog is removed",
+    "        79057597 fix(studio): an unanswered card read does not show cached cards",
+    "        docs(studio): F3i evidence (this commit)",
+    "CHECKS pnpm studio:typecheck 0; pnpm studio:test 0 (336 to 350 Studio; scene 12, UI 7, client 2).",
+    "       requestBodies focused 1 expected red, 0 green; isolated prepareRevision 1 expected red, 0 green.",
+    "       capture.ts 0; imports.mjs 0; both UI scans 0; diff, UTF-8, JSON, new-lines checks 0.",
+    "       Initial static-schema typecheck 2; runtime imports and wider-variable test calls fixed it.",
+    "       AssignDialog grep found only its export; after-removal typecheck 0; Studio stop/bind probe 0.",
+    "NEXT   Lead: rehearse a storing revision on its approved runtime; review Step 0's other draft consumers.",
+    "       The Register button's existing gate is outside scope; port 5231 is free; no push."
+  ],
+  "base": "f4ed6f46",
+  "branch": "task/f3i-card-revision-read-and-no-draft-card",
+  "tests": {
+    "requestedBaseline": 322, "actualBaseline": 336, "reason": "EV2 was already merged",
+    "after": 350, "added": 14, "studioFiles": 51, "allAfter": 371,
+    "requestBodyRegressions": 9, "servedDecisionTests": 5,
+    "baselineExit": 0, "finalExit": 0, "finalTypecheckExit": 0
+  },
+  "part1": {
+    "audit": "step0.json committed before code; corrected schema line references in final evidence",
+    "schemaChanges": 0,
+    "proof": "Original contracts imported with vi.importActual; each emitted body is parsed by its route schema.",
+    "regressionBefore": "Nine request tests failed on extra route keys; isolated prepareRevision fails on mode/label.",
+    "regressionAfter": "Nine pass; seven api.POST boundaries and both revision/generation builders covered.",
+    "bodies": "Route fields selected at each owned card/packet POST; generateBody also selects guard fields.",
+    "notChanged": "Revision decisions, expiry rules, words, plan/snapshot lineage, contracts and server.",
+    "browser": "browser-result.json; 1440x900 and 720x450 CSS px at scale 2, the 200% zoom equivalent",
+    "screenshots": [
+      "mocked-1440-listed.png", "mocked-1440-prepared.png", "mocked-1440-rows.png",
+      "mocked-200pct-listed.png", "mocked-200pct-prepared.png", "mocked-200pct-rows.png"
+    ],
+    "readMock": "Archived real R3 card read; answers 200 only when UspReadPropertyCardSchema accepts the body.",
+    "preview": "Actual read-only POST preview on the demo; mode/revision/facts not fabricated.",
+    "responses": "Eight list reads, two archived card views and two actual previews parse original response schemas.",
+    "input": {
+      "buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+      "unitId": "46b7265e-ca88-402d-83df-065cf7c45140",
+      "cardId": "6a997624-6c8d-40a9-8215-8a671a74dc1c",
+      "storedRevision": 1,
+      "origin": "docs/evidence/gf5/f3d/responses.json and the archived R3 read named in capture.ts"
+    },
+    "difficult": "The same source-only unit has no qualified geometry/measurement/use; rights stay not_assessed.",
+    "historicalFailure": "REH1 http-c1-004.json preserves the real 400 for mode/label; no rehearsal API was asked."
+  },
+  "part2": {
+    "function": "features/identity/registryCard.ts unitCardView",
+    "servedLookup": "isServed('POST', '/api/v1/usp/property-cards/list'), same mechanism as RegisterPage",
+    "answers": ["registry", "none", "unanswered", "draft (not served)", "closed (not served)"],
+    "incomplete": "A search that did not cover every listed scope is unanswered, not none.",
+    "refusal": "A failed refresh with cached listed data is unanswered; no card shown.",
+    "issueAction": "Only the canonical recorded unit's reviewed code enables the existing IssueCardDialog.",
+    "local": "The false-served branch preserves prior draft behaviour; no route configuration changed.",
+    "outsideScope": "Other local code consumers and Register's existing opener gate are reported, not changed.",
+    "qualification": "Pure-function tests and component review only; no storing or browser-draft action tried."
+  },
+  "part3": {
+    "evidence": "removal.json from imports.mjs; grep before removal found only the exported declaration",
+    "removed": ["apps/studio/src/features/identity/AssignDialog.tsx"],
+    "exclusiveStyleOrTest": [], "remainingUnimportedRuntimeModules": [],
+    "tests": "Unimported Vitest entry points are separately listed in removal.json; retained.",
+    "postRemovalTypecheck": 0
+  },
+  "recovery": [
+    {
+      "signature": "Static contracts imports pull unrelated backend schemas into Studio strict typechecking.",
+      "comparison": "Use vi.importActual for original schema modules at test runtime; preserve schema assertions.",
+      "result": "Tests and Studio typecheck pass; no compiler configuration or contracts changed."
+    },
+    {
+      "signature": "Wider-object tests used excess-property literals and generic api.POST spy inferred never.",
+      "repair": "Bind wider bodies to variables; cast mock options at the boundary, without weakening production.",
+      "result": "Final typecheck passes."
+    },
+    {
+      "signature": "Self-review found served registry could show cached cards after a failed refresh.",
+      "repair": "Prioritize served read errors; extend the unanswered test with cached listing data.",
+      "result": "No draft or stale card shown for that failed read; focused and full suites pass."
+    }
+  ],
+  "safety": {
+    "api": "http://127.0.0.1:3194", "storingRequestsSent": 0, "blockedWrites": 0,
+    "runtimeStartedOrStopped": false, "otherRuntimeRequests": 0, "browserDraftCreated": false,
+    "studioPort": 5231, "studioStopped": true, "portFreeBindProbeExit": 0,
+    "push": false, "ownedPathsOnly": true
+  },
+  "designReport": "ui-design-check.md",
+  "verification": {
+    "captureCommand": "pnpm exec tsx docs/evidence/gf4/f3i/capture.ts", "captureExit": 0,
+    "importCommand": "node docs/evidence/gf4/f3i/imports.mjs", "importExit": 0,
+    "uiScanExit": 0, "studioScanExit": 0, "diffCheckExit": 0,
+    "utf8JsonNewLineExit": 0, "selfReview": "Full base-to-task code diff read; only owned paths changed."
+  }
+}
