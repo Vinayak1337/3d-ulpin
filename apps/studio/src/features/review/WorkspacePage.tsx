@@ -19,6 +19,7 @@ import { RegisterAbsent } from '../register/RegisterAbsent';
 import { absentReason } from '../register/registerState';
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import { CheckGroups } from './CheckGroups';
+import { registerCounts } from './registerCounts';
 import { useMapView } from '../map/useMapView';
 import styles from './Workspace.module.css';
 
@@ -287,8 +288,7 @@ function CheckStage({ register, model, ledger, actions }: { register: BuildingRe
     finding: finding ? findingVolume(finding, groundM) : null,
   }), [finding, groundM, register.property.id]);
   const blocking = ledger?.checks.filter((c) => c.state === 'blocking').length ?? findings.filter((f) => f.category === 'blocking').length;
-  const units = model.spaces.filter((s) => s.use === 'apartment').length;
-  const shared = new Set(model.spaces.filter((s) => s.use !== 'apartment').map((s) => s.name)).size;
+  const counts = useMemo(() => registerCounts(model), [model]);
 
   return (
     <div className={styles.check}>
@@ -305,7 +305,7 @@ function CheckStage({ register, model, ledger, actions }: { register: BuildingRe
               onOpen={(c) => setFindingId(c.findingId)} />
           ) : <p className="ul-help">Not assessed: no checks have run on this building's records.</p>}
         </Panel>
-        <Panel title={`Changes since r${ledger?.revision ?? register.property.revision}`}
+        <Panel title={`In the register at r${ledger?.revision ?? register.property.revision}`}
           footer={(
             <div className={styles.recordFoot}>
               {recorded ? <><StatusBadge status="Recorded" /><span className="ul-help">{formatDateTime(recorded.at)} · {recorded.by}</span></> : (
@@ -320,8 +320,8 @@ function CheckStage({ register, model, ledger, actions }: { register: BuildingRe
             </div>
           )}>
           <div className={styles.counts}>
-            {[[units, 'units'], [model.levels.length, 'levels'], [shared, 'shared spaces']].map(([n, l]) => (
-              <span key={l}><b className="ul-num">{n}</b><span className="ul-muted">{l}</span></span>
+            {counts.map(({ count, of }) => (
+              <span key={of}><b className="ul-num">{count}</b><span className="ul-muted">{of}</span></span>
             ))}
           </div>
           <p className="ul-help">{levelSummary(model)}</p>
