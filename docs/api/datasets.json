@@ -7551,6 +7551,57 @@
         "All exact heldout URLs, pins, column descriptions and supporting originals remain exclusively in heldout.json; ledger exposes permitted summary only.",
         "No application/runtime/teacher/model/DB changes."
       ]
+    },
+    {
+      "id": "p2-cubicasa5k-test100-20261011",
+      "classification": "test_only",
+      "originKind": "public_research_dataset_slice",
+      "issuer": "Aalto University / CubiCasa; Kalervo, Ylioinas, Haikio, Karhu, Kannala (2019)",
+      "originalUrl": "https://zenodo.org/records/2613548",
+      "version": "Zenodo 2613548 v1.0; publisher test.txt; code c34440266665a11f4484eb06cd2e4b7d72ad76c1",
+      "geography": "Foreign, mostly Finnish marketing plans; individual sites undisclosed",
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "units": "Source-image pixels; no metric or survey qualification",
+      "manifest": "docs/evidence/gf-ai/plans/raster/20261011-tower3/cubicasa-acquisition.json",
+      "guide": "docs/evidence/gf-ai/plans/raster/20261011-tower3/README.md",
+      "terms": {
+        "state": "publisher_metadata_observed",
+        "license": "CC-BY-NC-SA-4.0",
+        "reference": "https://zenodo.org/records/2613548",
+        "codeModelLicense": "CC-BY-NC-4.0",
+        "attribution": "Kalervo, Ylioinas, Häikiö, Karhu, Kannala / Aalto University / CubiCasa (2019)",
+        "scope": "Foreign test-only noncommercial diagnostics; retain attribution/share-alike; no operational admission"
+      },
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/datasets/cubicasa5k/p2-test-20261011",
+        "originalPairsRetained": 100,
+        "originalBytes": 42938141,
+        "formats": ["publisher F1_scaled.png", "publisher model.svg"],
+        "repositoryBytesVerified": false,
+        "privateManifestSha256": "7a8fc5f76d9d0421b13fedb75d62961efd88b653cf97746cdc7482781ce5357c"
+      },
+      "partition": {
+        "trainingItems": 0,
+        "diagnosticTestItems": 100,
+        "selectionSha256": "83b48fd309647f60024f9c98e6fcbd161cfc1c47c39a5fc798fdb85148954eeb",
+        "selection": "First 100 publisher test paths excluding two prior feasibility plans; all architectural category",
+        "checkpointPopulationOverlap": "unaudited; not a fresh independent final holdout"
+      },
+      "labelProvenance": {
+        "origin": "Publisher human SVG annotations; retained deterministic integer polygon transfer",
+        "modelOrTeacherTargets": false
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "modelInferenceRun": true,
+      "modelEvaluation": "docs/evidence/gf-ai/plans/raster/20261011-tower3/cubicasa-result.json",
+      "limitations": [
+        "Range-selected unchanged ZIP members only; full 5.47 GB archive not downloaded or whole-archive verified",
+        "No fine-tuning, threshold search, Indian accuracy, canonical records, ownership, rights or deployment claim",
+        "Interrupted-file original acquisition times remain unknown; resumed bytes verified by CRC and SHA"
+      ]
     }
   ],
   "offlineLearningCorpus": {
