@@ -1,6 +1,6 @@
 import { formatCount } from '@ulpin/ui';
 
-export type IndexView = 'requests' | 'buildings';
+type IndexView = 'requests' | 'buildings';
 
 /**
  * Which tab the Register index shows. A tab named in the address wins. With none named it opens on Buildings
