@@ -1,0 +1,166 @@
+{
+  "task": "K13",
+  "gate": "GF1",
+  "status": "blocked at mandatory Step 0 history-proof gate",
+  "design": "Neither design chosen: Step 0.6 requires stopping when intervening changes cannot be proved.",
+  "fourReadsBefore": ["stale","stale","stale","completed"],
+  "fourReadsAfter": ["stale","stale","stale","completed"],
+  "qualification": "Protocol controls only; last completed result is unsupported, not extracted text.",
+  "report": [
+    "TASK   K13 — Document read survives a later file            GATE GF1",
+    "WORKS  Step 0 reproduces the defect and proves the mandatory history-recording prerequisite.",
+    "SEE IT pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/document-later-receipt.test.ts",
+    "INPUTS Real four-original read deferred by stop rule; in-process binary protocol controls only.",
+    "GAPS   No complete revision-change history; no repair or real batch qualification.",
+    "DESIGN Neither design authorised: missing history triggers Step 0.6; pins remain strict.",
+    "       step0.json maps pins, 20 revision writers, consumers and 15 other readers; no shared helper added.",
+    "       document-later-receipt.test.ts keeps reproduction and failing TODO regression; four reads unchanged.",
+    "COMMITS 4eee3a78 docs(documents): K13 what a document read pins and what advances a case revision",
+    "        77a575f7 test(documents): a read queued before another file was added ends stale today",
+    "        HEAD docs(documents): K13 evidence",
+    "CHECKS focused test 0 (2 pass, 1 failing TODO); full document suite 1 before and after (same baseline failure).",
+    "       pnpm typecheck:backend 0; OpenAPI --check 0; python -B scripts/api/check.py 1 (runtime receipt changed).",
+    "       git diff --check 0; JSON/reference/line-length/self-review checks 0.",
+    "NEXT   Lead: authorise complete transition recording or revise stop rule; repair baseline SQL double separately."
+  ],
+  "stop": {
+    "reason": "Current case/context/source equality cannot distinguish receipts from intervening edits.",
+    "proof": "step0.json: events lack revision boundaries; outbox is incomplete; snapshots are optional.",
+    "otherPinsChangedByReceipt": ["caseRevision only; two-source test checks every existing input field"],
+    "productionFilesChanged": 0,
+    "prerequisites": [
+      [
+        "Atomic exhaustive structured case transitions: caseId, from/to revision, change kind and",
+        "affected source pins."
+      ],
+      "Cover every writer, including non-document receipts, source revisions, review/unit/frame/context changes.",
+      "Unique contiguous coverage, same transaction/case lock; unknown/legacy gaps remain stale, never inferred.",
+      "Security/data-policy epochs or history if change-and-revert must revoke jobs; retain all other strict pins.",
+      "Schema/migration/non-document writers are outside K13 ownership; lead must assign the foundation task."
+    ],
+    "successor": "Not implemented: fallback design does not override the explicit mandatory stop rule.",
+    "sharedRule": "Proposed ingestion/source-pin.ts with no document imports; details in step0.json designDecision."
+  },
+  "reproduction": {
+    "test": "tests/document-later-receipt.test.ts",
+    "method": "Actual retain/enqueue/register/claim/failure/status/accept via in-memory pool and S3 transport doubles.",
+    "database": "None; no populated or throwaway database touched; no PostgreSQL durability/contention claim.",
+    "two": {"claim":"refused before attempt","status":"stale","code":"DOCUMENT_INPUT_STALE"},
+    "four": {"jobStatuses":["stale","stale","stale","succeeded"],"readStatuses":["stale","stale","stale","completed"]},
+    "immutablePins": "Stored payloads retain revisions 1,2,3,4; no existing result/contract rewritten.",
+    "regression": "Executable test.todo expects four succeeded jobs; currently fails for the actual defect.",
+    "focused": {"exit":0,"tests":3,"pass":2,"fail":0,"todo":1},
+    "fixtureCorrections": [
+      [
+        "Initial run: missing S3_ENDPOINT at client construction, before any network. Use temporary fake",
+        "getter values."
+      ],
+      "Second run: receipt putOriginal verifies bytes with a read; measure no additional I/O during refused claim.",
+      "Third run: two reproductions pass; pending regression fails specifically with three stale jobs."
+    ]
+  },
+  "checks": {
+    "focused": {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/document-later-receipt.test.ts",
+      "exit": 0
+    },
+    "documentSuite": {
+      "commandFragments": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/document-*.test.ts",
+        "tests/registry-document-*.test.ts",
+        "packages/server/src/modules/usp/ingestion/document-proposal-quotes.test.ts"
+      ],
+      "before": {"exit":1,"tests":81,"pass":77,"fail":1,"skipped":3,"todo":0},
+      "after": {"exit":1,"tests":84,"pass":79,"fail":1,"skipped":3,"todo":1},
+      "unchangedFailure": "registry-document-lock-order.test.ts:150 rejects SELECT from usp_declaration_revisions.",
+      "cause": "New declaration snapshot projection SQL is absent from the pre-existing test double.",
+      "refs": [
+        "tests/registry-document-lock-order.test.ts:150,153",
+        "packages/server/src/modules/usp/declarations/projection.ts:12",
+        "packages/server/src/modules/usp/snapshots.ts:127"
+      ],
+      "decision": "Observed at baseline and final suite only; no retry or change to the required unchanged test."
+    },
+    "backend": {"command":"pnpm typecheck:backend","exit":0},
+    "openapi": {
+      "commandFragments": ["pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check"],
+      "exit": 0,
+      "prints": [
+        "Native API catalogue matches: 301 operations, 342 named schemas;",
+        "no listener or domain operation opened."
+      ]
+    },
+    "api": {"command":"python -B scripts/api/check.py","exit":1,"prints":"API-DOC: runtime receipt changed"},
+    "apiDecision": "Known line-ending receipt artefact; no qualification receipt or API schema changed.",
+    "diff": {"command":"git diff --check","exit":0},
+    "selfReview": "Read staging diff; owned paths only; long-line scan and evidence JSON/reference checks pass."
+  },
+  "realInputs": {
+    "used": false,
+    "reason": "Mandatory stop after Step 0; do not proceed to repair/real-input qualification.",
+    "harnessLimit": [
+      "Document default PDF extractor calls areaGeo; current harness uses a transport double, not local",
+      "PDF execution."
+    ],
+    "databaseHarness": "Existing document tests have in-process SQL doubles, not a disposable PostgreSQL database.",
+    "refs": [
+      "packages/server/src/modules/usp/ingestion/document-native.ts:64-73",
+      "docs/evidence/runtime/reh1/plan-b.json",
+      "docs/evidence/gf-backend/k2/original-integrity.json"
+    ],
+    "pathPrefix": "E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/",
+    "nominated": [
+      {"file":"haryana-2831-site-plan.pdf","sha256":"26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9"},
+      {
+        "file": "haryana-2831-tower3-plan1.pdf",
+        "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865"
+      },
+      {
+        "file": "haryana-2831-tower3-section.pdf",
+        "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b"
+      },
+      {
+        "file": "haryana-2831-tower3-plan2.pdf",
+        "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1"
+      }
+    ],
+    "difficult": "Plan1 read was stale in REH1; cannot qualify its native extraction here.",
+    "runtimeOwnerReadCommandFragments": [
+      "curl --fail 'http://127.0.0.1:21016/api/v1/ingestion/cases/05de834a-859b-4bc0-bb4e-cfe7be0871cf/",
+      "sources/8f7e1ef9-ae44-445b-b238-815d497f5fe6/documents/jobs/eab47584-f3c3-498c-9489-c03c3eb38184'"
+    ],
+    "runtimeCommandJoining": "Concatenate URL fragments without spaces; command not run by worker.",
+    "runtimeCommandScope": "Owner-only: read preserved refusal after restart, not repair qualification.",
+    "nextQualification": "After repair, sequential intake of four real originals needs runtime-owner evidence."
+  },
+  "safety": {
+    "runtimeStartedStoppedChanged": false,
+    "demoOrRehearsalRequests": 0,
+    "providerCalls": 0,
+    "gpuUsed": false,
+    "originalsReadOrChanged": false,
+    "credentialsReadOrChanged": false,
+    "forbiddenFoldersOpened": false,
+    "storage": [
+      "Only memory objects; fake constructor getter constants; no provider key, environment file or",
+      "real S3 request."
+    ],
+    "existingTests": "Baseline tests reuse permitted retained task-data controls; not runtime/**.",
+    "pushes": 0
+  },
+  "next": [
+    [
+      "Lead reviews Step 0 and assigns revision-transition recording beyond K13 scope, or changes the",
+      "stop rule explicitly."
+    ],
+    "Once history is trustworthy, implement shared proof query plus document path under unchanged lock order.",
+    [
+      "Enable pending four-file regression; add source/access/policy/reader/history refusals against",
+      "the shared function."
+    ],
+    "Address baseline declaration SQL-double gap separately; do not weaken lock-order assertions.",
+    "Runtime owner qualifies four unchanged public originals after repair; no runtime actions were taken here."
+  ],
+  "format": "Long prose arrays join with spaces; commandFragments join with spaces unless stated otherwise.",
+  "integrationBranchAdvancedReadOnly": "staging moved to f3e22076 (status-only); task still based on 113dfb8f."
+}
