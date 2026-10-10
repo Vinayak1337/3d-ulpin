@@ -1,0 +1,1354 @@
+{
+ "schemaVersion": "storey-count-candidate/1",
+ "kind": "storey_count",
+ "state": "abstained",
+ "method": "deterministic:storey-rules@1",
+ "route": "baseline",
+ "building": {
+  "label": "Magnolia Residency",
+  "projectSourceId": "RERAP2311201700019-3",
+  "canonicalBuildingId": "e8777ffc-9409-4129-bacf-f680160d8795",
+  "write": "none; reference for the reviewer only"
+ },
+ "candidates": [
+  {
+   "candidateId": "a5:storey-rules@1:f8a55dc251fa:none",
+   "task": "storey_count",
+   "taskVersion": "storey-rules@1",
+   "inputManifest": "sha256:f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+   "outputRef": null,
+   "state": "abstained"
+  }
+ ],
+ "storeyCount": {
+  "value": null,
+  "state": "abstained",
+  "alternatives": []
+ },
+ "unitCounts": [],
+ "labels": [
+  {
+   "value": "TERRACE",
+   "field": "floorLabel",
+   "citations": [
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 1159.04,
+      "y": 1413.18,
+      "width": 17.769999999999982,
+      "height": 4.1599999999998545,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 1353.8,
+      "y": 1382.7,
+      "width": 17.769999999999982,
+      "height": 4.1599999999998545,
+      "unit": "pt"
+     }
+    }
+   ],
+   "method": "deterministic:storey-rules@1",
+   "quotes": [
+    "TERRACE"
+   ],
+   "verifier": {
+    "status": "quote_at_locator"
+   }
+  },
+  {
+   "value": "GROUND",
+   "field": "floorLabel",
+   "citations": [
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 1329.68,
+      "y": 1001.57,
+      "width": 13.929999999999836,
+      "height": 3.1299999999999955,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 373.16,
+      "y": 1001.57,
+      "width": 13.92999999999995,
+      "height": 3.1299999999999955,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 970.88,
+      "y": 1001.57,
+      "width": 13.92999999999995,
+      "height": 3.1299999999999955,
+      "unit": "pt"
+     }
+    }
+   ],
+   "method": "deterministic:storey-rules@1",
+   "quotes": [
+    "GROUND"
+   ],
+   "verifier": {
+    "status": "quote_at_locator"
+   }
+  },
+  {
+   "value": "GROUND FLR",
+   "field": "floorLabel",
+   "citations": [
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 1329.68,
+      "y": 988.01,
+      "width": 20.899999999999864,
+      "height": 3.1299999999999955,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 373.16,
+      "y": 988.01,
+      "width": 20.899999999999977,
+      "height": 3.1299999999999955,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 970.88,
+      "y": 988.01,
+      "width": 20.899999999999977,
+      "height": 3.1299999999999955,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 2093.96,
+      "y": 674.28,
+      "width": 106.57000000000016,
+      "height": 8.990000000000009,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 2093.72,
+      "y": 754.2,
+      "width": 135.47000000000025,
+      "height": 8.990000000000009,
+      "unit": "pt"
+     }
+    }
+   ],
+   "method": "deterministic:storey-rules@1",
+   "quotes": [
+    "GROUND FLR",
+    "GROUND FLR."
+   ],
+   "verifier": {
+    "status": "quote_at_locator"
+   }
+  },
+  {
+   "value": "FIRST FLOOR",
+   "field": "floorLabel",
+   "citations": [
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 1330.76,
+      "y": 898.25,
+      "width": 20.90000000000009,
+      "height": 3.1299999999999955,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 374.24,
+      "y": 898.25,
+      "width": 20.899999999999977,
+      "height": 3.1299999999999955,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 971.96,
+      "y": 898.25,
+      "width": 20.899999999999977,
+      "height": 3.1299999999999955,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 695.0,
+      "y": 592.49,
+      "width": 244.03999999999996,
+      "height": 11.990000000000009,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 984.92,
+      "y": 592.37,
+      "width": 162.86,
+      "height": 11.990000000000009,
+      "unit": "pt"
+     }
+    }
+   ],
+   "method": "deterministic:storey-rules@1",
+   "quotes": [
+    "FIRST FLOOR"
+   ],
+   "verifier": {
+    "status": "quote_at_locator"
+   }
+  },
+  {
+   "value": "SECOND FLOOR",
+   "field": "floorLabel",
+   "citations": [
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 1329.68,
+      "y": 803.33,
+      "width": 25.25,
+      "height": 3.1299999999999955,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 373.16,
+      "y": 803.33,
+      "width": 25.25,
+      "height": 3.1299999999999955,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 970.88,
+      "y": 803.21,
+      "width": 25.25,
+      "height": 3.1299999999999955,
+      "unit": "pt"
+     }
+    }
+   ],
+   "method": "deterministic:storey-rules@1",
+   "quotes": [
+    "SECOND FLOOR"
+   ],
+   "verifier": {
+    "status": "quote_at_locator"
+   }
+  },
+  {
+   "value": "GROUND FLOOR PLAN",
+   "field": "floorLabel",
+   "citations": [
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 436.4,
+      "y": 1606.01,
+      "width": 130.34000000000003,
+      "height": 11.990000000000009,
+      "unit": "pt"
+     }
+    }
+   ],
+   "method": "deterministic:storey-rules@1",
+   "quotes": [
+    "GROUND FLOOR PLAN"
+   ],
+   "verifier": {
+    "status": "quote_at_locator"
+   }
+  },
+  {
+   "value": "FIRST FLOOR PLAN",
+   "field": "floorLabel",
+   "citations": [
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 724.16,
+      "y": 1606.01,
+      "width": 103.41000000000008,
+      "height": 11.990000000000009,
+      "unit": "pt"
+     }
+    }
+   ],
+   "method": "deterministic:storey-rules@1",
+   "quotes": [
+    "FIRST FLOOR PLAN"
+   ],
+   "verifier": {
+    "status": "quote_at_locator"
+   }
+  },
+  {
+   "value": "SECOND FLOOR PLAN",
+   "field": "floorLabel",
+   "citations": [
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 1014.44,
+      "y": 1606.01,
+      "width": 126.89999999999986,
+      "height": 11.990000000000009,
+      "unit": "pt"
+     }
+    }
+   ],
+   "method": "deterministic:storey-rules@1",
+   "quotes": [
+    "SECOND FLOOR PLAN"
+   ],
+   "verifier": {
+    "status": "quote_at_locator"
+   }
+  },
+  {
+   "value": "TERRACE FLOOR PLAN",
+   "field": "floorLabel",
+   "citations": [
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 1302.2,
+      "y": 1606.01,
+      "width": 127.66999999999985,
+      "height": 11.990000000000009,
+      "unit": "pt"
+     }
+    }
+   ],
+   "method": "deterministic:storey-rules@1",
+   "quotes": [
+    "TERRACE FLOOR PLAN"
+   ],
+   "verifier": {
+    "status": "quote_at_locator"
+   }
+  },
+  {
+   "value": "FIRST FLR",
+   "field": "floorLabel",
+   "citations": [
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 2093.96,
+      "y": 694.2,
+      "width": 86.36999999999989,
+      "height": 8.990000000000009,
+      "unit": "pt"
+     }
+    }
+   ],
+   "method": "deterministic:storey-rules@1",
+   "quotes": [
+    "FIRST FLR."
+   ],
+   "verifier": {
+    "status": "quote_at_locator"
+   }
+  },
+  {
+   "value": "SECOND FLR",
+   "field": "floorLabel",
+   "citations": [
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 2094.08,
+      "y": 714.24,
+      "width": 103.99000000000024,
+      "height": 8.990000000000009,
+      "unit": "pt"
+     }
+    }
+   ],
+   "method": "deterministic:storey-rules@1",
+   "quotes": [
+    "SECOND FLR."
+   ],
+   "verifier": {
+    "status": "quote_at_locator"
+   }
+  },
+  {
+   "value": "TYPICAL",
+   "field": "floorLabel",
+   "citations": [
+    {
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+     "locator": {
+      "kind": "region",
+      "page": 2,
+      "x": 495.08,
+      "y": 592.49,
+      "width": 127.69999999999999,
+      "height": 11.990000000000009,
+      "unit": "pt"
+     }
+    }
+   ],
+   "method": "deterministic:storey-rules@1",
+   "quotes": [
+    "TYPICAL"
+   ],
+   "verifier": {
+    "status": "quote_at_locator"
+   }
+  }
+ ],
+ "otherStatements": [],
+ "outsideCanonicalSources": [],
+ "packet": {
+  "declaredOrigin": {
+   "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+   "bytes": 2455183
+  },
+  "proposals": [
+   {
+    "proposalId": "p1",
+    "fieldRole": "floorLabel",
+    "quote": "TERRACE",
+    "lineQuote": "TERRACE",
+    "quoteCharacterSpan": [
+     0,
+     7
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel TERRACE; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      1159.04,
+      1413.18,
+      1176.81,
+      1417.34
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p2",
+    "fieldRole": "floorLabel",
+    "quote": "GROUND",
+    "lineQuote": "GROUND",
+    "quoteCharacterSpan": [
+     0,
+     6
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel GROUND; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      1329.68,
+      1001.57,
+      1343.61,
+      1004.7
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p3",
+    "fieldRole": "floorLabel",
+    "quote": "GROUND FLR",
+    "lineQuote": "GROUND FLR",
+    "quoteCharacterSpan": [
+     0,
+     10
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel GROUND FLR; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      1329.68,
+      988.01,
+      1350.58,
+      991.14
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p4",
+    "fieldRole": "floorLabel",
+    "quote": "FIRST FLOOR",
+    "lineQuote": "FIRST FLOOR",
+    "quoteCharacterSpan": [
+     0,
+     11
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel FIRST FLOOR; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      1330.76,
+      898.25,
+      1351.66,
+      901.38
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p5",
+    "fieldRole": "floorLabel",
+    "quote": "SECOND FLOOR",
+    "lineQuote": "SECOND FLOOR",
+    "quoteCharacterSpan": [
+     0,
+     12
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel SECOND FLOOR; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      1329.68,
+      803.33,
+      1354.93,
+      806.46
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p6",
+    "fieldRole": "floorLabel",
+    "quote": "TERRACE",
+    "lineQuote": "TERRACE",
+    "quoteCharacterSpan": [
+     0,
+     7
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel TERRACE; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      1353.8,
+      1382.7,
+      1371.57,
+      1386.86
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p7",
+    "fieldRole": "floorLabel",
+    "quote": "GROUND",
+    "lineQuote": "GROUND",
+    "quoteCharacterSpan": [
+     0,
+     6
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel GROUND; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      373.16,
+      1001.57,
+      387.09,
+      1004.7
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p8",
+    "fieldRole": "floorLabel",
+    "quote": "GROUND FLR",
+    "lineQuote": "GROUND FLR",
+    "quoteCharacterSpan": [
+     0,
+     10
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel GROUND FLR; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      373.16,
+      988.01,
+      394.06,
+      991.14
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p9",
+    "fieldRole": "floorLabel",
+    "quote": "FIRST FLOOR",
+    "lineQuote": "FIRST FLOOR",
+    "quoteCharacterSpan": [
+     0,
+     11
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel FIRST FLOOR; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      374.24,
+      898.25,
+      395.14,
+      901.38
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p10",
+    "fieldRole": "floorLabel",
+    "quote": "SECOND FLOOR",
+    "lineQuote": "SECOND FLOOR",
+    "quoteCharacterSpan": [
+     0,
+     12
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel SECOND FLOOR; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      373.16,
+      803.33,
+      398.41,
+      806.46
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p11",
+    "fieldRole": "floorLabel",
+    "quote": "GROUND",
+    "lineQuote": "GROUND",
+    "quoteCharacterSpan": [
+     0,
+     6
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel GROUND; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      970.88,
+      1001.57,
+      984.81,
+      1004.7
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p12",
+    "fieldRole": "floorLabel",
+    "quote": "GROUND FLR",
+    "lineQuote": "GROUND FLR",
+    "quoteCharacterSpan": [
+     0,
+     10
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel GROUND FLR; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      970.88,
+      988.01,
+      991.78,
+      991.14
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p13",
+    "fieldRole": "floorLabel",
+    "quote": "FIRST FLOOR",
+    "lineQuote": "FIRST FLOOR",
+    "quoteCharacterSpan": [
+     0,
+     11
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel FIRST FLOOR; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      971.96,
+      898.25,
+      992.86,
+      901.38
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p14",
+    "fieldRole": "floorLabel",
+    "quote": "SECOND FLOOR",
+    "lineQuote": "SECOND FLOOR",
+    "quoteCharacterSpan": [
+     0,
+     12
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel SECOND FLOOR; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      970.88,
+      803.21,
+      996.13,
+      806.34
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p15",
+    "fieldRole": "floorLabel",
+    "quote": "GROUND FLOOR PLAN",
+    "lineQuote": "GROUND FLOOR PLAN",
+    "quoteCharacterSpan": [
+     0,
+     17
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel GROUND FLOOR PLAN; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      436.4,
+      1606.01,
+      566.74,
+      1618.0
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p16",
+    "fieldRole": "floorLabel",
+    "quote": "FIRST FLOOR PLAN",
+    "lineQuote": "FIRST FLOOR PLAN",
+    "quoteCharacterSpan": [
+     0,
+     16
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel FIRST FLOOR PLAN; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      724.16,
+      1606.01,
+      827.57,
+      1618.0
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p17",
+    "fieldRole": "floorLabel",
+    "quote": "SECOND FLOOR PLAN",
+    "lineQuote": "SECOND FLOOR PLAN",
+    "quoteCharacterSpan": [
+     0,
+     17
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel SECOND FLOOR PLAN; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      1014.44,
+      1606.01,
+      1141.34,
+      1618.0
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p18",
+    "fieldRole": "floorLabel",
+    "quote": "TERRACE FLOOR PLAN",
+    "lineQuote": "TERRACE FLOOR PLAN",
+    "quoteCharacterSpan": [
+     0,
+     18
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel TERRACE FLOOR PLAN; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      1302.2,
+      1606.01,
+      1429.87,
+      1618.0
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p19",
+    "fieldRole": "floorLabel",
+    "quote": "FIRST FLOOR",
+    "lineQuote": "FIRST FLOOR FRAMING PLAN AT LVL(+)11'4\"",
+    "quoteCharacterSpan": [
+     0,
+     11
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel FIRST FLOOR; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      695.0,
+      592.49,
+      939.04,
+      604.48
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p20",
+    "fieldRole": "floorLabel",
+    "quote": "FIRST FLOOR",
+    "lineQuote": "FIRST FLOOR SLAB R/F DETAIL",
+    "quoteCharacterSpan": [
+     0,
+     11
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel FIRST FLOOR; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      984.92,
+      592.37,
+      1147.78,
+      604.36
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p21",
+    "fieldRole": "floorLabel",
+    "quote": "GROUND FLR.",
+    "lineQuote": "2. BUILT UP GROUND FLR.",
+    "quoteCharacterSpan": [
+     12,
+     23
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel GROUND FLR; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      2093.96,
+      674.28,
+      2200.53,
+      683.27
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p22",
+    "fieldRole": "floorLabel",
+    "quote": "FIRST FLR.",
+    "lineQuote": "3. BUILT UP FIRST FLR.",
+    "quoteCharacterSpan": [
+     12,
+     22
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel FIRST FLR; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      2093.96,
+      694.2,
+      2180.33,
+      703.19
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p23",
+    "fieldRole": "floorLabel",
+    "quote": "SECOND FLR.",
+    "lineQuote": "4. BUILT UP SECOND FLR.",
+    "quoteCharacterSpan": [
+     12,
+     23
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel SECOND FLR; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      2094.08,
+      714.24,
+      2198.07,
+      723.23
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p24",
+    "fieldRole": "floorLabel",
+    "quote": "GROUND FLR.",
+    "lineQuote": "6. OPEN AREA AT GROUND FLR.",
+    "quoteCharacterSpan": [
+     16,
+     27
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel GROUND FLR; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      2093.72,
+      754.2,
+      2229.19,
+      763.19
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p25",
+    "fieldRole": "floorLabel",
+    "quote": "TYPICAL",
+    "lineQuote": "TYPICAL PILE(1) DETAIL",
+    "quoteCharacterSpan": [
+     0,
+     7
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel TYPICAL; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 2,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2384.0,
+      "height": 1684.0
+     },
+     "box": [
+      495.08,
+      592.49,
+      622.78,
+      604.48
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   }
+  ],
+  "rejected": [],
+  "conflicts": [],
+  "unknowns": [
+   "floor count meaning (G+N versus N floors) is not expanded",
+   "building association inside a multi-tower sheet is not verified"
+  ]
+ }
+}
