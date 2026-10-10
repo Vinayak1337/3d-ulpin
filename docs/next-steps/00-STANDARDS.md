@@ -111,7 +111,7 @@ Numbers go in `docs/evidence/<gate>/<task>/result.json`. Don't put hashes in pro
 
 - One branch per prompt (`task/<prompt-id>-<slug>`), from the current integration head. Keep diffs small; split anything over about 800 changed lines.
 - Commit messages say what changed and why. Never commit secrets, `.env`, large originals or weights.
-- Don't push to `main`, deploy or call live paid providers without the owner's go-ahead. Sarvam test calls are approved for the agent tasks that name them, with one configured key and no rotation across accounts.
+- Don't push to `main`, deploy or call live paid providers without the owner's go-ahead. Sarvam test calls are approved for the agent tasks that name them, through the gateway's key list as AGENTS.md "Sarvam keys" states it (owner decision, 10 October night): one key in use at a time, money caps across all keys together, key values never printed.
 - If something fails twice for the same reason, stop and apply the AGENTS.md failure-recovery workflow. Don't retry unchanged.
 - **Workers** (SPRINT-SELECTION §3):
   - they work only in their own worktree and on their own branch, and touch only the paths their task file names;
