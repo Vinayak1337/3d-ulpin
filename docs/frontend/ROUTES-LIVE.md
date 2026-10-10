@@ -62,6 +62,54 @@ Status: `exists` = path, method and the shape the Studio reads are published; `p
 Evidence: [F2c result](../evidence/gf-ai/ui/f2c/result.json) and
 [UI design check](../evidence/gf-ai/ui/f2c/ui-design-check.md).
 
+## F2b table imports — UI complete, live reads / intercepted writes, 10 October 2026
+
+Studio route: `/studio/work/cases/:caseId/tables/:sourceId`. Optional `rawJobId`, `mappingJobId` and
+`recipeId` parameters preserve the selected jobs and recipe. Add files offers **Import as a table** for
+CSV/XLSX; it selects or creates an unassigned case, retains the original and queues raw/mapping jobs.
+Workbook sheet and header rows are entered explicitly; there is no sheet-list endpoint.
+
+Published routes used (all prefixed `/api/v1`):
+
+- `GET /work-queue`, `GET /cases/{caseId}`, `POST /cases`: source-case selection, validation and creation.
+- `POST /ingestion/cases/{caseId}/sources` (multipart),
+  `GET /ingestion/cases/{caseId}/sources/{sourceId}/profile`: retained table, hash and selected headers.
+- `POST /ingestion/cases/{caseId}/sources/{sourceId}/streaming-vector`,
+  `GET /ingestion/cases/{caseId}/sources/{sourceId}/streaming-vector/jobs/{jobId}`: raw rows and progress.
+- `POST /ingestion/cases/{caseId}/sources/{sourceId}/chunk-mapping`,
+  `GET /ingestion/cases/{caseId}/sources/{sourceId}/chunk-mapping/jobs/{jobId}`,
+  `GET /ingestion/cases/{caseId}/sources/{sourceId}/chunk-mapping/jobs/{jobId}/chunks/{chunkIndex}`:
+  candidate column proposals, questions, field origins and model confidence.
+- `GET /ingestion/cases/{caseId}/events`: native SSE with cursor resume; stream failures disclose
+  2-second job-status polling. Durable per-chunk metrics are deduplicated by job and chunk.
+- `POST /ingestion/cases/{caseId}/sources/{sourceId}/recipes`,
+  `GET /ingestion/cases/{caseId}/recipes/{recipeId}`,
+  `POST /ingestion/cases/{caseId}/recipes/{recipeId}/approve`: every column needs a target and reason;
+  proposal and approval are separate confirmations. Approval uses the configured local operator.
+
+Qualification:
+
+- **Live, read-only:** A3c case `4ad9cb6d-56c0-445e-a9b6-357d1dc1d452`; source profiles, raw status,
+  recipe revisions and durable SSE metrics. First CSV reports new/memory/new; second reports accepted
+  memory and learner v44; native XLSX reports sheet `T_18` and header rows 4/5. Teacher calls are zero.
+- **Live limitation:** all three historical mapping-status reads return 409 `STALE_REVISION` after later
+  sources advance the case revision. Studio shows the exact refusal and unknown proposals; it does not
+  replace unavailable mapping data with offline results. Automatic ordinary-dispatcher rollout remains owed.
+- **Intercepted:** import, case creation, refusal/retry, mapping proposal, operator approval and following
+  its new mapping job. JSON mutation bodies and responses validate against the published contract;
+  multipart serialization is tested. No F2b live write or runtime restart was made. Offline second-file
+  reuse is job-local, not proof of accepted learning.
+- Public D8 development originals only, `test_only`, permission unconfirmed. Tables produce draft rows,
+  not buildings, registry entries or map features. No table execute control exists. No mapping-accuracy,
+  authenticated officer-truth or student-improvement claim is made.
+- Canonical labels and meanings come from the contracts vocabulary. `openapi-fetch` null-only type loss
+  requires narrowly documented transport casts; authored bodies otherwise use generated API types.
+
+Evidence: [F2b result](../evidence/gf-agent/ui/f2b/result.json),
+[intercepted browser checks](../evidence/gf-agent/ui/f2b/browser-result.json),
+[live read checks](../evidence/gf-agent/ui/f2b/live-result.json) and
+[UI design check](../evidence/gf-agent/ui/f2b/ui-design-check.md).
+
 ## Backend requests
 
 One line per route or field the Studio needs and the screen that needs it.
@@ -79,3 +127,8 @@ One line per route or field the Studio needs and the screen that needs it.
 - `GET /public/*`, `POST /public/requests`, `POST /public/requests/track`, `GET` and `PATCH /register-requests` (PUBLIC-01, REQUEST-01): the public portal and the Registry requests screen.
 - The officer geometry-qualification route (K2e) (F2a): not in `docs/api/openapi.json` yet. Until it is, every accepted roofprint stops at the blocked state; the typed TODO is `reviewDraftForRegistry` in `apps/studio/src/features/review/candidates/commands.ts`.
 - A committed, recorded building in the demo database: no register exists to check S12 and S5 levels against the live API.
+- XLSX sheet listing before retention (F2b): Add files currently asks for the exact sheet name and header rows.
+- Per-case retained table-source and latest-job listing (F2b): reopen saved source/job links without relying on SSE replay.
+- Historical mapping job/chunk reads that preserve source fences after an unrelated source changes the case (F2b/A3c).
+- Ordinary dispatcher rollout of tabular raw/mapping jobs (F2b/A3c): the live fenced-worker receipt is not automatic dispatch.
+- Preserve null-only fields in `openapi-fetch` Readable/Writable types (F2b): `selection.table` and `destination` are null.
