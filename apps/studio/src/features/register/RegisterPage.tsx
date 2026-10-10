@@ -43,6 +43,8 @@ import styles from './RegisterPage.module.css';
 
 type Tab = 'units' | 'residents' | 'shares' | 'documents' | 'checks' | 'history';
 const TABS: Tab[] = ['units', 'residents', 'shares', 'documents', 'checks', 'history'];
+// What the deviation check needs, said under the button while it is disabled and in its title.
+const DEVIATION_NEEDS = 'Needs a sanctioned plan and an observed survey of this building';
 
 /** S12/S13 Register: the building in 3D beside its units, shares, documents, checks and history. */
 export function RegisterPage() {
@@ -205,11 +207,14 @@ function Register({ register }: { register: BuildingRegister }) {
             </p>
           </div>
           <Link to={mapHref} className="ul-btn ul-btn--ghost"><Icon icon={MapTrifold} />Back to map</Link>
-          <Button variant={compare ? 'soft' : 'secondary'} icon={Intersect} disabled={!ledger?.deviation}
-            title={ledger?.deviation ? undefined : 'Needs a sanctioned plan and an observed survey of this building'}
-            onClick={() => set({ mode: compare ? null : 'deviation' })}>
-            {compare ? 'Close compare' : 'Deviation check'}
-          </Button>
+          <div className={styles.primary}>
+            <Button variant={compare ? 'soft' : 'secondary'} icon={Intersect} disabled={!ledger?.deviation}
+              title={ledger?.deviation ? undefined : DEVIATION_NEEDS}
+              onClick={() => set({ mode: compare ? null : 'deviation' })}>
+              {compare ? 'Close compare' : 'Deviation check'}
+            </Button>
+            {ledger?.deviation ? null : <span className={`${styles.blocked} ${styles.needs}`}>{DEVIATION_NEEDS}</span>}
+          </div>
           <Menu label="Export" icon={DownloadSimple} items={[
             { label: 'Building register (PDF)', disabled: !model.levels.length, onSelect: () => void exportAs('pdf') },
             { label: 'Register data package (ZIP)', disabled: !model.levels.length, onSelect: () => void exportAs('zip') },
