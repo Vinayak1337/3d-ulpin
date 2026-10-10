@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CoreSha256Schema, coreText } from '../spatial/core/scalars';
+import { CoreRefSchema, CoreSha256Schema, coreText } from '../spatial/core/scalars';
 import { UspCreateGuardSchema, UspMutationGuardSchema, UspSnapshotScopeSchema, UspTargetPinSchema,
   UspPrincipalSchema } from './common';
 
@@ -100,7 +100,46 @@ export const UspPropertyCardRevocationSchema = z.strictObject({
   reasonCode: UspPropertyCardRevocationReasonCodeSchema, reason: coreText(1024), scope: UspSnapshotScopeSchema,
   revokedAt: z.iso.datetime({ offset: true }),
 }).readonly();
+/** Lists the caller's own card revisions of one target in the site of a checked snapshot scope. */
+export const UspListPropertyCardsSchema = z.strictObject({
+  scope: UspSnapshotScopeSchema, target: CoreRefSchema, limit: z.number().int().min(1).max(50).default(20),
+}).readonly();
+/** One card revision without any card fact. A row whose body cannot be relied on carries its key only. */
+const UspPropertyCardListItemSchema = z.strictObject({
+  cardId: z.uuid(), revision: z.number().int().positive().max(2147483647),
+  integrity: z.enum(['consistent', 'inconsistent']),
+  latestRevision: z.number().int().positive().max(2147483647).nullable(), superseded: z.boolean().nullable(),
+  createdAt: z.iso.datetime({ offset: true }).nullable(), expiresAt: z.iso.datetime({ offset: true }).nullable(),
+  expired: z.boolean().nullable(), revoked: z.boolean().nullable(),
+  revokedAt: z.iso.datetime({ offset: true }).nullable(),
+  targetRevision: z.number().int().positive().nullable(),
+  currentTargetRevision: z.number().int().positive().nullable(),
+  snapshotState: z.enum(['same_revision', 'changed_revision']).nullable(),
+  profile: UspPropertyCardProfileSchema.nullable(),
+  artifact: z.strictObject({ sha256: CoreSha256Schema, bytes: z.number().int().positive().max(524288) })
+    .readonly().nullable(),
+  cardSha256: CoreSha256Schema.nullable(), resolverUrl: z.url().max(256).nullable(),
+}).superRefine((item, ctx) => {
+  const issue = (message: string) => ctx.addIssue({ code: 'custom', message });
+  const { cardId: _, revision, integrity, revokedAt, ...facts } = item;
+  const stated = Object.values(facts).filter(value => value !== null).length;
+  if (integrity === 'inconsistent') {
+    if (stated || revokedAt !== null) issue('An inconsistent row states its card and revision only.');
+    return;
+  }
+  if (stated !== Object.keys(facts).length) issue('A consistent row states every fact.');
+  if (facts.revoked !== (revokedAt !== null)) issue('A revocation time is stated exactly for a revoked revision.');
+  if (facts.superseded !== (facts.latestRevision ?? 0) > revision || (facts.latestRevision ?? 0) < revision)
+    issue('A revision is superseded exactly when a later revision of the same card exists.');
+  if ((facts.snapshotState === 'same_revision') !== (facts.targetRevision === facts.currentTargetRevision))
+    issue('The snapshot state must follow from the two target revisions.');
+}).readonly();
+/** Newest first. `truncated` says that more rows matched than the limit, before any row was left out. */
+export const UspPropertyCardListSchema = z.strictObject({
+  items: z.array(UspPropertyCardListItemSchema).max(50).readonly(), truncated: z.boolean(),
+}).readonly();
 export type PropertyCard = z.infer<typeof UspPropertyCardSchema>;
+export type PropertyCardList = z.infer<typeof UspPropertyCardListSchema>;
 export type PropertyCardRevocation = z.infer<typeof UspPropertyCardRevocationSchema>;
 export type PropertyCardVerification = z.infer<typeof UspPropertyCardVerificationSchema>;
 export type PropertyCardFact = z.infer<typeof UspPropertyCardFactSchema>;
