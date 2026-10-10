@@ -36,7 +36,10 @@
 .footRow { display: flex; align-items: center; gap: var(--ui-space-3); width: 100%; }
 .footRow > :first-child { flex: 1; }
 
+/* Narrow, or a desktop window at 200% zoom: the columns stack and the page takes the height of its content, so the
+   frame's main area is the one scroller. Held to the window's height, the stacked tabs were squeezed to nothing. */
 @media (max-width: 1100px) {
+  .frame { height: auto; }
   .body { grid-template-columns: minmax(0, 1fr); }
   .canvasWrap { min-height: 420px; }
 }
