@@ -13,6 +13,7 @@ import {
 } from '@ulpin/contracts';
 import type { RequestContext } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
+import { minimizeMessages } from '../../model-gateway/adapter';
 import { hash } from '../../model-gateway/config';
 import type { ModelGateway, TrustedCall } from '../../model-gateway/gateway';
 import { TeacherRecordings } from '../../model-gateway/recordings';
@@ -31,6 +32,8 @@ import { lookupMappingMemory } from './mapping-memory';
 export const MAPPING_TEACHER_TEMPLATE = 'mapping-teacher/2.1';
 export const MAPPING_TEACHER_MODEL = 'sarvam-105b';
 export const MAPPING_TEACHER_METHOD = 'model:sarvam-105b@2026-10-10';
+/** The request is over the gateway's size bound: with no samples left, the gateway is not asked. */
+const TEACHER_INPUT_LIMIT = 'TEACHER_INPUT_LIMIT';
 const MANUAL_MAPPING_METHOD_PREFIX = 'manual:';
 /** Names a plan nobody interpreted, outside the `model:` namespace. */
 export const manualMappingMethod = (code: string) => `${MANUAL_MAPPING_METHOD_PREFIX}${code}`;
@@ -192,8 +195,40 @@ function promptColumns(profile: ColumnProfileDocument) {
   }));
 }
 
+/** The profile with at most `samples` sample values in each column; every column and its order are kept. */
+const withSamples = (profile: ColumnProfileDocument, samples: number): ColumnProfileDocument => ({
+  ...profile,
+  columns: profile.columns.map((column) => ({ ...column, maskedSamples: column.maskedSamples.slice(0, samples) })),
+});
+
+/** The gateway's own answer for these messages: true when it would refuse them for size. */
+function overGatewayBound(messages: Parameters<typeof minimizeMessages>[0]): boolean {
+  try {
+    minimizeMessages(messages);
+    return false;
+  } catch (error) {
+    return error instanceof AppError && error.code === 'MODEL_INPUT_LIMIT';
+  }
+}
+
+/**
+ * A request within the gateway's size bound is built from every sample of the profile. One over it carries fewer
+ * samples per column, the same number for every column, one fewer at a time down to none. `samplesPerColumn` is
+ * the number it ended on; `overBound` says that it is still too long with none, and then it must not be asked.
+ * The bound checked is the one on messages: beside it the gateway's bound on the whole body, which adds the
+ * output schema, cannot be the one that refuses a profile of at most 256 columns.
+ */
 export function mappingTeacherRequest(profile: ColumnProfileDocument, errors: string[] = []) {
   const inspected = ColumnProfileDocumentSchema.parse(profile);
+  const most = Math.max(0, ...inspected.columns.map((column) => column.maskedSamples.length));
+  for (let samples = most; ; samples--) {
+    const request = requestWithSamples(withSamples(inspected, samples), errors);
+    const overBound = overGatewayBound(request.messages);
+    if (!overBound || samples === 0) return { ...request, samplesPerColumn: samples, overBound };
+  }
+}
+
+function requestWithSamples(inspected: ColumnProfileDocument, errors: string[]) {
   const aliases = inspected.columns.map((column, index) => ({ alias: alias(index), name: column.name }));
   const targetVocabulary = Object.entries(CANONICAL_TARGETS).map(([target, definition]) => ({
     target,
@@ -295,6 +330,7 @@ export function teacherFailureCode(error: unknown): string {
     return 'TEACHER_AUTH_FAILED';
   if (code === 'MODEL_REPLAY_UNAVAILABLE') return 'TEACHER_REPLAY_UNAVAILABLE';
   if (code === 'MODEL_RECORDING_UNAVAILABLE') return 'TEACHER_RECORDING_UNAVAILABLE';
+  if (code === 'MODEL_INPUT_LIMIT') return TEACHER_INPUT_LIMIT;
   return 'TEACHER_UNAVAILABLE';
 }
 
@@ -426,9 +462,10 @@ async function recordTeacherResponse(
   });
 }
 
-async function callTeacherOnce(attempt: number, errors: string[], call: TeacherCallContext) {
+async function callTeacherOnce(
+  attempt: number, request: ReturnType<typeof mappingTeacherRequest>, call: TeacherCallContext,
+) {
   const { profile, gateway, options, deadlineAt, invocationKey } = call;
-  const request = mappingTeacherRequest(profile, errors);
   const profileHash = columnProfileHash(profile);
   const replayKey = teacherReplayKey(profileHash);
   return gateway.propose(
@@ -493,8 +530,12 @@ export async function proposeMappingWithTeacher(
   // Only a complete invalid response uses the single repair; transport/credit failures never retry.
   const maxAttempts = options.maxAttempts === 1 ? 1 : 2;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const request = mappingTeacherRequest(profile, metadata.validationCodes);
+    // Too long even with no samples: the gateway is not asked. A repair that is too long ends as an exhausted one.
+    if (request.overBound && attempt === 1) return failedResult(fallback, TEACHER_INPUT_LIMIT, metadata);
+    if (request.overBound) break;
     try {
-      const result = await callTeacherOnce(attempt, metadata.validationCodes, call);
+      const result = await callTeacherOnce(attempt, request, call);
       metadata.attempts++;
       metadata.replayed = !!result.replayed;
       lastRaw = result.receipt?.semanticError ? {} : result.output;
