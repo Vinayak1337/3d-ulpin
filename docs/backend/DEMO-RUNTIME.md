@@ -89,9 +89,15 @@ For offline development, another checkout is permitted only with `--dry-run --ou
 They do not activate configuration or services. Never reuse a worker-checkout profile for the demo: its absolute
 `repo` and physical closure are different. Rebuild deliberately after every reviewed checkout/runtime change.
 
-The Tower 3 plan1 metadata frame is 2586 × 1695 pt. Whole-page raster remains unsupported because its existing
-2000-pt page-side limit is exceeded. Packet regions have a separate 14,400-pt source-side bound and a 2000-pt
-**selected-side** bound. The caption `[850,875,1020,910]` (170 × 35 pt) and label `[596,390,644,409]` (48 × 19 pt)
+The Tower 3 plan1 metadata frame is 2586 × 1695 pt, over the 2000-pt whole-page limit. After a roll that
+includes K9e the pages listing marks such a page `renderSupport: "reduced"` with `reducedScalePxPerPt` (0.5414
+here) and a `url`, and the raster read draws the whole sheet at the largest scale the existing pixel bounds allow
+(1400 × 918 px, 1.06 MB) with the header `X-Page-View: reduced`. That picture is for viewing only: OCR,
+measurement, packet regions and candidates never read it and keep the 2000-pt limit. A page whose reduced scale
+would fall below 0.4 px per pt (a legibility floor) keeps `422 DOCUMENT_PAGES_RENDER_PROFILE_UNSUPPORTED`. The
+roll must rebuild the region profile (step 5), because `run_pdf_pages.py` is one of its pinned files. Packet
+regions have a separate 14,400-pt source-side bound and a 2000-pt **selected-side** bound.
+The caption `[850,875,1020,910]` (170 × 35 pt) and label `[596,390,644,409]` (48 × 19 pt)
 fit without changing any limit or scale: the existing 3× choice gives 510 × 105 and 144 × 57 px respectively.
 Only the inward-rounded region bitmap is allocated, not the 7758 × 5085 transform canvas. These citations prove
 literal labels only, never a unit boundary, numeric level, measurements, rights or current approval.

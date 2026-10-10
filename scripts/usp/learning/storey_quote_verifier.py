@@ -42,10 +42,29 @@ def boxes_intersect(first: list[float], second: list[float]) -> bool:
     return first[0] < second[2] and second[0] < first[2] and first[1] < second[3] and second[1] < first[3]
 
 
+def within_stored_region(entry: JsonDict, bbox: list[float] | None) -> bool:
+    """A page read from a selected OCR region answers only for a cited box that lies in that region.
+
+    Exactly; or, when the OCR result states its region edge, within one rendered pixel of it. The allowance
+    is the result's own scale, never a number typed here. Same answer as the TypeScript quote check, which
+    asks the contract's measureOcrRegionEdge; a test runs both on the same inputs.
+    """
+    region = entry.get("storedRegion")
+    if region is None:
+        return True
+    if bbox is None:
+        return False
+    edge = entry.get("regionEdge")
+    allowed = 1 / edge["renderScalePxPerPt"] if edge else 0
+    return not (bbox[0] < region[0] - allowed or bbox[1] < region[1] - allowed
+                or bbox[2] > region[2] + allowed or bbox[3] > region[3] + allowed)
+
+
 def region_text(store: JsonDict, page: int, bbox: list[float] | None) -> str | None:
-    """Normalised text of the lines on a page that touch the box; None for an unknown page."""
+    """Normalised text of the lines on a page that touch the box; None for an unknown page or a box
+    outside the page's stored OCR region."""
     entry = store["pages"].get(str(page))
-    if entry is None:
+    if entry is None or not within_stored_region(entry, bbox):
         return None
     lines = entry["lines"]
     if bbox is not None:

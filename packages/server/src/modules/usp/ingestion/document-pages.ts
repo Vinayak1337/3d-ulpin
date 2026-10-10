@@ -142,6 +142,14 @@ let runtimeBlocked=false;
 function sameAuthority(before:DocumentPageAuthority,after:DocumentPageAuthority){
   if(fingerprint(before)!==fingerprint(after))conflict('The private document source or access context changed during page inspection.');
 }
+type ListedPage=DocumentPagesWorker['pages'][number];
+/** A reduced picture is published only as reduced, at the scale its listing states; a picture at the normal
+ * scale never carries the mark. The picture is for viewing: it leaves through `raster` to the HTTP answer
+ * and is read by no OCR, measurement, packet or candidate path. */
+function rasterMatchesListing(page:ListedPage,render:NonNullable<DocumentPagesWorker['render']>){
+  if(page.renderSupport==='reduced')return render.reduced===true&&render.scale===page.reducedScalePxPerPt;
+  return page.renderSupport==='supported'&&render.reduced===undefined;
+}
 /** One metadata parser or raster worker at a time in this local API process. */
 export class DocumentPagesService{
   constructor(private readonly dependencies:Dependencies=defaults){}
@@ -169,7 +177,7 @@ export class DocumentPagesService{
         if(!png||!render||render.page!==selection.page||render.bytes!==png.length||sha256(png)!==render.sha256||
           png.length<24||!png.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))||
           png.toString('ascii',12,16)!=='IHDR'||png.readUInt32BE(16)!==render.pixels[0]||png.readUInt32BE(20)!==render.pixels[1]||
-          render.pixels[0]*render.pixels[1]>limits.pixels||result.pages[0].renderSupport!=='supported')
+          render.pixels[0]*render.pixels[1]>limits.pixels||!rasterMatchesListing(result.pages[0],render))
           fail(503,'DOCUMENT_PAGES_RESULT_INTEGRITY','The bounded raster differs from its page receipt.');
       }else if(result.render!==null||inspected.png!==undefined)
         fail(503,'DOCUMENT_PAGES_RESULT_INTEGRITY','A metadata selection cannot publish a raster.');
@@ -186,7 +194,8 @@ export class DocumentPagesService{
       sourceBytes:authority.sourceBytes,name:authority.name,
       revision:String(authority.sourceRevision),pageCount:result.pageCount,offset:result.offset,limit:result.limit,
       hasMore:result.offset+result.pages.length<result.pageCount,
-      pages:result.pages.map(page=>({...page,url:page.renderSupport==='supported'?`/api/v1/sources/${authority.sourceId}/pages/${page.page}/raster?${parameters}`:null,
+      pages:result.pages.map(page=>({...page,url:page.renderSupport==='unsupported'?null:
+        `/api/v1/sources/${authority.sourceId}/pages/${page.page}/raster?${parameters}`,
         locator:{kind:'pdf_page',page:page.page},calibration:null})),
       anchors:result.pages.map(page=>({locator:`page:${page.page}`,page:page.page,region:null}))});
   }

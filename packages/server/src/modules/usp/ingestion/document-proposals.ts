@@ -165,7 +165,7 @@ function resultQuotePages(result:DocumentResult,productSha256:string):QuotePage[
   }
   const ocr=result.ocr;
   if(ocr&&ocr.sourcePageFrame&&ocr.outputStatus!=='failed')pages.set(ocr.sourcePage,{
-    page:ocr.sourcePage,frame:ocr.sourcePageFrame,storedRegion:ocr.requestedRegion,
+    page:ocr.sourcePage,frame:ocr.sourcePageFrame,storedRegion:ocr.requestedRegion,regionEdge:ocr.regionEdge,
     basis:{kind:'ocr_observations',productSha256},
     // A multi-box item has no text-to-sub-box alignment. Do not repeat its text or invent a covering box.
     lines:ocr.items.map(item=>({text:item.text,
