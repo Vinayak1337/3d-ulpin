@@ -1,9 +1,10 @@
 import { Controller, Get, HttpCode, Param, Post, Req, Res, UseFilters, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
-import { UspGeneratePropertyCardSchema, UspReadPropertyCardSchema, UspPropertyCardSchema,
-  UspPropertyCardVerificationSchema, UspPropertyCardViewSchema } from '../../../../../packages/contracts/src/usp/property-card';
+import { UspGeneratePropertyCardSchema, UspReadPropertyCardSchema, UspPropertyCardRevocationSchema, UspPropertyCardSchema,
+  UspPropertyCardVerificationSchema, UspPropertyCardViewSchema, UspRevokePropertyCardSchema } from '../../../../../packages/contracts/src/usp/property-card';
 import { generatePropertyCard, readPropertyCard, resolvePropertyCard } from '@ulpin/server/modules/usp/packets/card-service';
+import { revokePropertyCard } from '@ulpin/server/modules/usp/packets/card-revocation';
 import { verifyPropertyCard } from '@ulpin/server/modules/usp/packets/card-verification';
 import { localRequestContext } from '@ulpin/server/modules/usp/principal';
 import { requestId } from '../../common/request-context';
@@ -38,13 +39,21 @@ export class PropertyCardController {
     const view = await readPropertyCard(localRequestContext(requestId(req)), command);
     return uspEnvelope(req, view.card.scope, view);
   }
+  @Post('revoke') @HttpCode(200)
+  @UspJsonPost('POST_api_v1_usp_property_cards_revoke', 'Revoke one exact card revision as its creator; the card row and its PDF stay unchanged and later reads are refused', UspRevokePropertyCardSchema, UspPropertyCardRevocationSchema)
+  async revoke(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    res.setHeader('Cache-Control', 'private, no-store');
+    const command = await readUspBody(req, UspRevokePropertyCardSchema);
+    const revocation = await revokePropertyCard(localRequestContext(requestId(req)), command);
+    return uspEnvelope(req, revocation.scope, revocation);
+  }
   @Get(':cardId/revisions/:revision')
   @ApiOperation({ operationId: 'GET_api_v1_usp_property_cards_cardId_revisions_revision', summary: 'Resolve one exact local-operator card revision; the QR is not an access grant' })
   @ApiParam({ name: 'cardId', schema: { type: 'string', format: 'uuid' } })
   @ApiParam({ name: 'revision', schema: { type: 'string', pattern: '^[1-9][0-9]*$' } })
   @ApiResponse({ status: 200, description: 'Bounded private one-page PDF, at most 512 KiB',
     content: { 'application/pdf': { schema: { type: 'string', format: 'binary' } } } })
-  @ApiResponse({ status: 403, description: 'Current operator/source access or exact-card expiry denied' })
+  @ApiResponse({ status: 403, description: 'Current operator/source access, exact-card expiry or revocation denied' })
   @ApiResponse({ status: 404, description: 'Exact revision unavailable; no latest-revision fallback' })
   async resolve(@Req() req: Request, @Res() res: Response, @Param('cardId') cardId: string, @Param('revision') revision: string) {
     res.setHeader('Cache-Control', 'private, no-store');
@@ -66,7 +75,7 @@ export class PropertyCardController {
   @ApiParam({ name: 'cardId', schema: { type: 'string', format: 'uuid' } })
   @ApiParam({ name: 'revision', schema: { type: 'string', pattern: '^[1-9][0-9]*$' } })
   @ApiResponse({ status: 200, schema: envelopeSchema(UspPropertyCardVerificationSchema),
-    description: 'Private consistency report. A failed check, an expired card and a later revision are reported here, not refused' })
+    description: 'Private consistency report. A failed check, an expired or revoked card and a later revision are reported here, not refused' })
   @ApiResponse({ status: 403, description: 'Current operator/source access denied; the QR is not an access grant' })
   @ApiResponse({ status: 404, description: 'Exact revision unavailable; no latest-revision fallback' })
   async verification(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Param('cardId') cardId: string, @Param('revision') revision: string) {
