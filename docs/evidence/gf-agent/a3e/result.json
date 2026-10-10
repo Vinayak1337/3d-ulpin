@@ -3,7 +3,7 @@
   "gate": "GF-AGENT",
   "defect": "A fallback plan carried the teacher's method and fields were labelled source teacher although no model answered.",
   "fix": {
-    "planMethod": "manualMappingMethod(code) = model:none@<code>; the plan schema method rule has no manual: form",
+    "planMethod": "manualMappingMethod(code) = manual:<CODE>; MappingMethodSchema gains manual:[A-Z][A-Z0-9_]{0,63}",
     "fieldSource": "unanswered (additive enum value)",
     "metrics": "unansweredFields optional on mapping.chunk; teacherFields counts teacher-answered fields only",
     "memory": "a reused field that was unanswered stays unanswered; officer keeps officer; others become memory as before"
@@ -20,7 +20,7 @@
   },
   "assertionsChanged": ["scripts/agent/a3-chunk.test.ts: later chunk of a fallback layout is unanswered, not memory"],
   "checks": {
-    "node": "a3e, a3d, a3-chunk, a3b-wiring, mapping-routing, mapping-teacher: 38 of 38 pass",
+    "node": "a3e, a3d, a3-chunk, a3b-wiring, mapping-routing, mapping-teacher: 47 of 47 pass, including the manual-method memory refusal",
     "studio": "typecheck and 93 tests pass without editing apps/studio",
     "apiLf": "only the known runtime-receipt failure remains"
   }

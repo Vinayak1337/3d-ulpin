@@ -31,8 +31,8 @@ import { lookupMappingMemory } from './mapping-memory';
 export const MAPPING_TEACHER_TEMPLATE = 'mapping-teacher/2.1';
 export const MAPPING_TEACHER_MODEL = 'sarvam-105b';
 export const MAPPING_TEACHER_METHOD = 'model:sarvam-105b@2026-10-10';
-const MANUAL_MAPPING_METHOD_PREFIX = 'model:none@';
-/** Names a plan nobody interpreted; the plan schema's method rule leaves no `manual:` form. */
+const MANUAL_MAPPING_METHOD_PREFIX = 'manual:';
+/** Names a plan nobody interpreted, outside the `model:` namespace. */
 export const manualMappingMethod = (code: string) => `${MANUAL_MAPPING_METHOD_PREFIX}${code}`;
 export const isManualMappingMethod = (method: string) => method.startsWith(MANUAL_MAPPING_METHOD_PREFIX);
 export type TeacherDataPolicy = {
