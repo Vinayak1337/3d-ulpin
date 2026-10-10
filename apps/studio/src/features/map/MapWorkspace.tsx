@@ -18,7 +18,7 @@ import { polygonsOf, undrawnNote } from './footprints';
 import { useCanonicalFootprints } from './canonicalScene';
 import { findingVolume, useBuildingScene } from './useBuildingScene';
 import { PlanCheck, type MapPlanCheck } from './PlanCheck';
-import { isDemoId } from '../../api/demo-import';
+import { attachDemoScene, isDemoId } from '../../api/demo-import';
 import { isServed } from '../../local/routes';
 import { MapSidebar, type ViewKey } from './MapSidebar';
 import { BuildingImportTray, ImportTray } from './ImportTray';
@@ -236,11 +236,9 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     return () => { delete target.__ulpinSceneStats; delete target.__ulpinScene; };
   }, [engine]);
 
-  // While an area import streams, the view pulls back to keep every arriving building in frame.
-  const buildingCount = buildings.length;
   useEffect(() => {
-    if (packageId && engine && buildingCount && selection.mode === 'area' && !selection.buildingId) engine.resetCamera();
-  }, [packageId, engine, buildingCount, selection.mode, selection.buildingId]);
+    if (engine && isDemoId(context.area.id)) return attachDemoScene(context.area.id, engine);
+  }, [engine, context.area.id]);
 
   const onView = useCallback(() => setTick((t) => (t + 1) % 1_000_000), []);
   const snapshot = useCallback(() => engine?.snapshot() ?? null, [engine]);
@@ -376,7 +374,10 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   } else inspector = null;
 
   const closeParam = (key: string) => setSearchParams((p) => { const n = new URLSearchParams(p); n.delete(key); return n; }, { replace: true });
-  const tray = packageId ? <ImportTray packageId={packageId} onClose={() => closeParam('package')} />
+  const tray = packageId ? (
+    <ImportTray packageId={packageId} drawnBuildings={engine?.drawnBuildings().count}
+      onClose={() => closeParam('package')} />
+  )
     : buildingImportId ? <BuildingImportTray importId={buildingImportId} onClose={() => closeParam('building-import')} /> : selection.mode === 'findings' && findings.length ? (
     <div className={`ul-panel ${styles.findingTray}`} role="listbox" aria-label="Findings">
       {findings.map((f) => (
