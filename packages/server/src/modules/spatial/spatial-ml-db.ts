@@ -5,4 +5,5 @@ import { query } from "../../infrastructure/db";
 export async function migrateSpatialMl() {
   await query(sql('spatial-ml.schema'));
   await query(sql('spatial-ml.source-batches'));
+  await query(sql('spatial-ml.reject-only-footprints'));
 }
