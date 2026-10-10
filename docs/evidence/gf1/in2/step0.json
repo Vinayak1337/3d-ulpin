@@ -1,0 +1,168 @@
+{
+  "task": "IN2",
+  "base": "2940b55c",
+  "method": "Read-only audit; no database connection, migration, file ingestion or container mutation.",
+  "migration": {
+    "order": {
+      "at": "packages/server/src/modules/usp/migrations.ts:7-57",
+      "answer": [
+        "One transaction: advisory lock and ledger, guarded F1 and identity, geometry, guarded declarations.",
+        "Then manual, large original, events, projected vector, MVT, semantic, sufficiency, streaming vector,",
+        "chunk mapping and streamed profile; then guarded packet plans, cards, PDF checkpoints and revocations."
+      ]
+    },
+    "neighbours": {
+      "at": "packages/server/src/modules/usp/ingestion/migration.ts:4-40",
+      "answer": [
+        "Each helper sends its named sql(id) in one client.query; large original sends schema and capacity.",
+        "No ingestion helper records an applied marker."
+      ]
+    },
+    "ledgerHelper": {
+      "at": "packages/server/src/modules/usp/ingestion/intake-migration.ts:4-6",
+      "answer": "One query for ingestion.intake.schema; currently never called by migrateUsp."
+    },
+    "dependencies": {
+      "at": "database/sql/95-ingestion/intake-ledger.sql:4-6,39,47,52,63,69,73,78",
+      "answer": [
+        "Existing sources, cases and jobs; self-reference and later references within the four new tables.",
+        "PostGIS geometry and functions are required for usp_holding_extent at lines 75-76.",
+        "Core creates cases, sources and jobs at database/sql/01-core/core.sql:3,15,51.",
+        "infrastructure/db.ts:176-183 runs core before registry, areas, officer, officer AI, spatial ML and USP.",
+        "No preceding ingestion helper is a ledger SQL dependency; bootstrap must have established PostGIS.",
+        "If cleared to continue, after migrateStreamedProfileTx at migrations.ts:36 is a valid insertion point."
+      ]
+    },
+    "repeatability": {
+      "at": "database/sql/95-ingestion/intake-ledger.sql:1-80",
+      "answer": [
+        "Fully read: four CREATE TABLE IF NOT EXISTS and five CREATE INDEX IF NOT EXISTS statements.",
+        "No ALTER, UPDATE, INSERT or DELETE. A second successful run skips all nine existing objects.",
+        "This is schema/data no-op repeatability, not a claim of zero locks or drift reconciliation.",
+        "Manifest lines 2610-2618 specify always, additive IF NOT EXISTS, one query call, USP scope and usp.lock.",
+        "scripts/migrate.ts:1-10 calls migrate and bucket setup; it is not a universal applied-step ledger.",
+        "USP records markers only for guarded blocks; intake relies on statement repeatability."
+      ],
+      "runtimeVerified": false
+    },
+    "lock": {
+      "at": "database/sql/95-ingestion/intake-ledger.sql:4-5,52",
+      "answer": [
+        "First creation installs foreign keys to sources, cases and jobs, taking SHARE ROW EXCLUSIVE locks",
+        "on those existing referenced tables. This also occurs when they contain rows; it blocks writers",
+        "and is held until the enclosing USP migration transaction ends. No existing row is rewritten.",
+        "Population and lock duration were not measured; no connection to a populated runtime was made."
+      ],
+      "authority": {
+        "url": "https://raw.githubusercontent.com/postgres/postgres/REL_17_STABLE/src/backend/commands/tablecmds.c",
+        "at": "src/backend/commands/tablecmds.c:9646-9654 (REL_17_STABLE, read during this audit)",
+        "statement": "pkrel = table_openrv(fkconstraint->pktable, ShareRowExclusiveLock);"
+      }
+    }
+  },
+  "verifier": {
+    "admission": {
+      "at": "scripts/db/verify_extraction.py:126-138",
+      "answer": [
+        "Allowlist admits authored SQL provenance, not runtime tables or execution permission.",
+        "Requires source.path = database/ + step.file, allowed source.task, and 40-hex acceptedBase.",
+        "K4a and K5 are admitted at line 133. Ledger manifest source.task is IN1, not IN2",
+        "(database/manifest.json:2600-2606); adding IN2 alone would not fix the refusal."
+      ]
+    },
+    "requirements": {
+      "at": "scripts/db/verify_extraction.py:155-183,210-250",
+      "answer": [
+        "Requires exact SQL file bytes, batch SHA-256, per-statement hashes, contiguous manifest order,",
+        "unique step IDs/files, complete SQL file coverage and one named loader query in its runtime file.",
+        "It does not trace migration-helper reachability; a separate migration call test is necessary.",
+        "No separate table inventory, expected-objects file or runtime receipt is an input to this checker.",
+        "Runtime relation expectations derive from manifest SQL in infrastructure/database-readiness.ts:10-26.",
+        "The existing manifest already supplies the four-table ledger inventory and hashes at lines 2600-2660.",
+        "A real-run receipt is required by this task, not by verify_extraction.py; none is claimed here."
+      ]
+    },
+    "invocation": {
+      "at": "database/README.md:118-127; scripts/db/verify_extraction.py:253-271",
+      "answer": "python -B scripts/db/verify_extraction.py; static audit only, no database option or connection.",
+      "observedExit": 1,
+      "observedError": "Authored SQL provenance is invalid: ingestion.intake.schema"
+    }
+  },
+  "events": {
+    "contract": {
+      "at": "packages/contracts/src/usp/ingestion-events.ts:16-80",
+      "answer": [
+        "Strict discriminated change union; no intake.item. Outbox holds version, caseId, caseRevision, change.",
+        "Wire event adds decimal sequence, createdAt and requiresRefresh:true; no original payload."
+      ]
+    },
+    "append": {
+      "at": "packages/server/src/modules/usp/ingestion/events.ts:57-65",
+      "answer": "Reads case revision, validates strict outbox body, appends with caller's transaction and access binding."
+    },
+    "route": {
+      "at": "apps/api/src/modules/ingestion/events.controller.ts:33-40,81-85",
+      "answer": "GET /api/v1/ingestion/cases/:caseId/events sends ingestion.change SSE frames with bound cursor IDs."
+    },
+    "consumer": {
+      "at": "apps/studio/src/features/intake/table/events.ts:37-67; useTableStream.ts:33-55",
+      "answer": [
+        "Studio parses JSON and calls reduceFrame, not the strict shared change schema.",
+        "Valid unknown change kind advances sequence/cursor. An intake.item without sourceId returns next",
+        "at events.ts:55; no drawing, metrics, refresh increment or disconnect follows.",
+        "Malformed envelope/sequence throws at events.ts:17-18,43-44 and closes to polling in",
+        "useTableStream.ts:48-50; that is not unknown-kind rejection.",
+        "No ingestion SSE runtime consumer was found under packages/api-client/src; its schema is generated.",
+        "No Studio reader edit is needed for the requested additive kind."
+      ],
+      "unknownKindBreaksReader": false
+    },
+    "writes": {
+      "at": "packages/server/src/modules/usp/ingestion/intake-service.ts:31-34,89-102,106-126,174-184",
+      "answer": [
+        "Registration, probe publication and pin use transaction callbacks. Registration emits no event.",
+        "Probe success and pin call notifyTx, emitting only source.retained for needs_input sources.",
+        "Future intake.item must take values from rows in those write transactions, including probe failures."
+      ]
+    }
+  },
+  "upload": {
+    "controller": {
+      "at": "apps/api/src/modules/ingestion/ingestion.controller.ts:64-97",
+      "answer": "IngestionController.retain handles POST cases/:caseId/sources for geojson, csv and xlsx."
+    },
+    "declaration": {
+      "at": "apps/api/src/modules/ingestion/ingestion.controller.ts:69-74; geoparquet.controller.ts:32-33",
+      "answer": [
+        "multipartBody first array marks required fields; properties declares optional fields too",
+        "(apps/api/src/modules/intake/wire-schemas.ts:319-323). Provenance is not in either declaration.",
+        "GeoParquet declares its lineage/selection and validates its own allowed field set; it is read-only here."
+      ]
+    },
+    "loss": {
+      "at": "apps/api/src/modules/ingestion/ingestion.controller.ts:79-81,88-94",
+      "answer": [
+        "issuer, licence and containsPersonalData are absent from allowed fields and forwarding object.",
+        "Supplying any currently returns 422 INVALID_INPUT before service; omitting them loses stated provenance.",
+        "Absent fields must remain absent, and origin must not become an accepted multipart field."
+      ]
+    },
+    "validation": {
+      "at": "packages/contracts/src/usp/ingestion.ts:89-93,106-116; ingestion/service.ts:119",
+      "answer": [
+        "Service parses AnyRetainSourceSchema. issuer is nonblank text up to 500 characters or null;",
+        "licence is unconfirmed|open|restricted; containsPersonalData is unknown|yes|no.",
+        "licence public is invalid. Existing Zod error response is 422 INVALID_INPUT",
+        "(apps/api/src/common/api-exception.filter.ts:23-26)."
+      ]
+    }
+  },
+  "stopRule": {
+    "triggered": true,
+    "part": "Step 0.1",
+    "reason": "Foreign-key creation locks existing referenced tables, including if populated.",
+    "action": "Stop after Step 0; no production, contract, verifier or SQL changes; no runtime migration.",
+    "next": "Lead must explicitly clear the referenced-table lock before wiring, or commission an owned SQL redesign."
+  }
+}
