@@ -167,6 +167,38 @@ export const BuildingConflictSchema = z.strictObject({
   alternatives: z.array(conflictValue).min(2),
   reason: z.string(),
 });
+const conflictProperty = z.enum(['building.storeyLabel', 'building.storeyCount', 'building.floorCount']);
+const conflictScalar = z.union([z.string().trim().min(1).max(500), z.number().int().nonnegative()]);
+const checkedPage = BuildingCitationSchema.extend({ locator: BuildingCitationSchema.shape.locator.options[0] });
+const decisionFields = {
+  requestKey: z.string().uuid(),
+  expectedCanonicalRevision: z.string().regex(/^[a-f0-9]{64}$/),
+  property: conflictProperty,
+  reason: z.string().trim().min(1).max(2000),
+  citation: checkedPage,
+};
+export const BuildingConflictDecisionRequestSchema = z.discriminatedUnion('outcome', [
+  z.strictObject({ ...decisionFields, outcome: z.literal('selected'), chosenValue: conflictScalar }),
+  z.strictObject({ ...decisionFields, outcome: z.literal('unresolved') }),
+]);
+export const BuildingConflictDecisionSchema = z.strictObject({
+  ...decisionFields,
+  outcome: z.enum(['selected', 'unresolved']),
+  chosenValue: conflictScalar.nullable(),
+  alternatives: z.array(conflictValue).min(2),
+  actor: id,
+  time: z.string().datetime(),
+  recordRevision: z.number().int().positive(),
+}).superRefine((decision, ctx) => {
+  const valid = decision.outcome === 'unresolved' ? decision.chosenValue === null
+    : decision.alternatives.some(alternative => alternative.value === decision.chosenValue);
+  if (!valid) ctx.addIssue({
+    code: 'custom', message: 'A decision selects a retained alternative or remains unresolved.',
+  });
+});
+export type BuildingConflictDecisionRequest = z.infer<typeof BuildingConflictDecisionRequestSchema>;
+export type BuildingConflictDecision = z.infer<typeof BuildingConflictDecisionSchema>;
+
 export const BuildingCandidateRefSchema = z.strictObject({
   candidateId: id,
   task: id,
@@ -209,6 +241,8 @@ export const NormalizedBuildingSchema = z.strictObject({
   storeys: buildingValueSchema(z.array(BuildingStoreySchema)),
   levels: z.array(BuildingLevelSchema),
   conflicts: z.array(BuildingConflictSchema),
+  conflictDecisions: z.array(BuildingConflictDecisionSchema).optional(),
+  resolvedConflicts: z.array(BuildingConflictDecisionSchema).optional(),
   gaps: z.array(z.string()),
   candidates: z.array(BuildingCandidateRefSchema),
 }).superRefine(addHeightStateIssue);

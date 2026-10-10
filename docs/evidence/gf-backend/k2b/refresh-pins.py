@@ -5,6 +5,11 @@ from pathlib import Path
 
 
 REVIEWED = [
+    "apps/api/src/modules/register/officer.controller.ts",
+    "apps/api/src/modules/register/officer.service.ts",
+    "apps/api/src/modules/register/operation-manifest.json",
+    "packages/server/src/modules/officer/canonical-conflict-decisions.ts",
+    "apps/api/src/modules/register/conflict-decision.controller.test.ts",
     "apps/api/src/modules/intake/import-packages.controller.ts",
     "apps/api/src/modules/intake/wire-schemas.ts",
     "packages/contracts/src/canonical/building.ts",

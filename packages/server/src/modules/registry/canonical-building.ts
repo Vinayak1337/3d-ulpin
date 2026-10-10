@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
 import {
+  BuildingConflictDecisionSchema,
   ClaimTranscriptionSchema,
+  type BuildingConflictDecision,
   NormalizedBuildingSchema,
   type AreaContext,
   type AreaFrame,
@@ -441,6 +443,51 @@ async function applyClaimProperty(
   markConflicting(building, property, alternatives.flatMap(alternative => alternative.citations));
 }
 
+function conflictAlternativesMatch(
+  current: NormalizedBuilding['conflicts'][number], decision: BuildingConflictDecision,
+): boolean {
+  const signatures = (alternatives: typeof current.alternatives) => alternatives.map(alternative => (
+    JSON.stringify({ value: alternative.value, citations: alternative.citations })
+  )).sort();
+  return JSON.stringify(signatures(current.alternatives)) === JSON.stringify(signatures(decision.alternatives));
+}
+
+/** Decisions are reviewed only for their exact retained alternatives; never infer a level schedule. */
+export function applyConflictDecisions(
+  building: NormalizedBuilding, decisions: BuildingConflictDecision[],
+): void {
+  if (!decisions.length) return;
+  building.conflictDecisions = decisions;
+  const latest = new Map(decisions.map(decision => [decision.property, decision]));
+  for (const decision of latest.values()) {
+    const conflict = building.conflicts.find(item => item.property === decision.property);
+    if (!conflict || !conflictAlternativesMatch(conflict, decision)) {
+      building.gaps.push(`${decision.property}: retained decision is stale against current source alternatives.`);
+      continue;
+    }
+    if (decision.outcome === 'unresolved') continue;
+    const method = `reviewer:${encodeURIComponent(decision.actor)}`;
+    if (decision.property === 'building.storeyLabel' && typeof decision.chosenValue === 'string') {
+      building.storeyLabel = canonicalValue(decision.chosenValue, 'reviewed', [decision.citation], method);
+      if (!building.conflicts.some(item => ['building.floorCount', 'building.storeyCount'].includes(item.property))) {
+        building.storeyCount = canonicalValue(null, 'unknown', [decision.citation], method, 'count');
+      }
+    } else if (decision.property !== 'building.storeyLabel' && typeof decision.chosenValue === 'number') {
+      building.storeyCount = canonicalValue(decision.chosenValue, 'reviewed', [decision.citation], method, 'count');
+    } else continue;
+    building.resolvedConflicts ??= [];
+    building.resolvedConflicts.push(decision);
+    building.conflicts = building.conflicts.filter(item => item !== conflict);
+  }
+}
+
+function retainedConflictDecisions(dossier: CanonicalBuildingSource): BuildingConflictDecision[] {
+  return dossier.records.flatMap(record => {
+    if (!('canonicalConflictDecisions' in record)) return [];
+    return BuildingConflictDecisionSchema.array().max(20).parse(record.canonicalConflictDecisions);
+  });
+}
+
 // Retain unresolved source statements, never pick the newest package or turn G+42 into 43 levels.
 async function applyRetainedClaims(building: NormalizedBuilding, dossier: CanonicalBuildingSource): Promise<void> {
   for (const property of CLAIM_PROPERTIES) await applyClaimProperty(building, dossier, property);
@@ -559,6 +606,7 @@ export async function projectBuilding(
   addGeometryGaps(building, polygons, kind);
   building.parcelRefs = await projectParcelRefs(dossier);
   await applyRetainedClaims(building, dossier);
+  applyConflictDecisions(building, retainedConflictDecisions(dossier));
   const storeys = await projectLevels(building, dossier, frame);
   if (storeys.length) {
     building.storeys = canonicalValue(storeys, 'reviewed', [], 'deterministic:recorded-level-schedule-projection@1');
