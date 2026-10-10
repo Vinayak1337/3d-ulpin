@@ -1,0 +1,125 @@
+{"task":"K3d","claim":"Source investigation, not adopted analytical geometry or legal unit boundaries","sources":{
+"magnolia":"f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3","tower3Section":
+"f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b","tower3Plan1":
+"2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865","apartment3d":
+"b6f0178b9951b71fe68c9213efa15dedfa5bf7fa78ee0ce30c57515f6975e53d","heritage":
+"0f793ce7ebd5c5a3b02e5f41b802f41a1bcae89cbbffa26b5c25eeb1ad35b008","biharPinnacle":
+"cf152f3220e7a60efc244875923862fd405c2540444d6afd30b9948dd89ea4a7"},"privateRoot":"E:/BhuAayam-data/task-data/k3d/",
+"magnolia":{"verdict":"one decision short","verdictScope":
+"Only an offline source-local room, explicitly an FFL-to-FFL envelope, not a numbered villa","decisionOwner":
+"P5.2 lead/officer","decision":[
+"Decide whether the first-prism target may be the written-dimension BEDROOM template on page 2",
+"Explicitly select its nominal interior boundary and FFL-to-FFL meaning, not clear air or legal scope",
+"Do not use the P1 paper-scale polygon as a measured boundary; the source says not to scale it"],
+"identifiedVillaVerdict":"not possible from retained sources","identifiedVillaReason":
+"Blank UNIT NO.; no verified template-to-numbered-villa boundary crosswalk","reviewedLevels":[{"label":
+"GROUND FLOOR PLAN","levelId":"5a1d717b-b2f0-4e63-938a-a2d19d1cc3ee","classification":"stated","lowerLiteral":
+"FFL +1'6\"","upperLiteral":"FFL +11'6\"","lowerRegionPt":[376.16,979.49,392.54,983.67],"upperRegionPt":[376.16,889.73,
+394.85,893.92],"lowerM":"0.4572","upperM":"3.5052","heightClassification":"derivable","arithmetic":
+"(11*0.3048+6*0.0254)-(1*0.3048+6*0.0254)=3.048 m","heightM":"3.048","meaning":
+"Ground finished floor to FIRST finished floor; includes intervening material","clearRoomHeight":
+"not stated for the nominated BEDROOM","liveLimits":"unknown/null, unchanged"},{"label":"FIRST FLOOR PLAN","levelId":
+"00c167c8-cd53-409a-aea3-fa2c59b407de","classification":"stated","lowerLiteral":"FFL +11'6\"","upperLiteral":
+"FFL +22'1\"","lowerRegionPt":[376.16,889.73,394.85,893.92],"upperRegionPt":[376.16,794.81,394.85,799.0],"lowerM":
+"3.5052","upperM":"6.731","heightClassification":"derivable","arithmetic":
+"(22*0.3048+1*0.0254)-(11*0.3048+6*0.0254)=3.2258 m","heightM":"3.2258","meaning":
+"FIRST FFL to SECOND FFL; not clear room height","balconyException":
+"FFL of Balcony + 11'5\"; do not apply the indoor FFL to the balcony","liveLimits":"unknown/null, unchanged"},{"label":
+"SECOND FLOOR PLAN","levelId":"825119e9-76ba-4651-86ea-28809626e3b7","classification":"stated","lowerLiteral":
+"FFL +22'1\"","upperLiteral":"FFL +32'6\"","lowerRegionPt":[376.16,794.81,394.85,799.0],"upperRegionPt":[376.16,701.33,
+394.85,705.52],"lowerM":"6.731","upperM":"9.906","heightClassification":"derivable","arithmetic":
+"(32*0.3048+6*0.0254)-(22*0.3048+1*0.0254)=3.175 m (10'5\")","heightM":"3.175","admissibleHeight":null,"conflict":
+"Adjacent vertical arrow says 10'-7\", not the 10'5\" difference between printed FFLs","meaning":
+"Roof over MUMTY; not a uniform ceiling over the open TERRACE","liveLimits":"unknown/null, unchanged"}],"heightEvidence"
+:{"page":2,"source":"magnolia","view":"magnolia-section-aa.png","regionPt":[115,670,420,1050],"visuallyRead":true,
+"datumLiteral":"FFL ±00 / GROUND","datum":"Drawing-local ground reference, not surveyed elevation","unitsLiteral":
+"ALL LEVELS INDICATED ARE IN FEET AND INCHES.","unitsView":"magnolia-notes.png","unitsRegionPt":[2080,42,2325,323],
+"generalWarning":"DIMENSIONS / LEVELS INDICATED ARE UNFINISHED UNLESS OTHERWISE SPECIFIED.","fflInterpretation":
+"FFL explicitly specifies finished floor; structural LVL (+)11'4\" is not interchangeable","slabThicknessAssumed":false,
+"equalSpacingAssumed":false,"upperPlansView":"magnolia-upper-plans.png","upperPlansRegionPt":[720,1090,1150,1640]},
+"outline":{"page":2,"view":"magnolia-ground.png","regionPt":[412,1090,690,1635],"literal":"BEDROOM (12'6\" X 10'2\")",
+"visuallyRead":true,"literalRegionPt":[542.6,1251.06,568.6,1260.87],"writtenLengthsM":["3.81","3.0988"],
+"dimensionProductM2":"11.806428","dimensionProductMeaning":
+"Two-length product, not a measured area or evidence of legal boundary","p1CandidateRegionPt":[522.96,1216.32,634.8,
+1307.16],"candidateAreaM2":"11.698157119","candidateState":"Unadopted, source-local, paper-scale diagnostic",
+"planCaption":"GROUND FLOOR PLAN","planScaleLiteral":"SCALE 1/8\" = 1'","scaleWarning":
+"ONLY WRITTEN DIMENSIONS TO BE FOLLOWED. DO NOT SCALE THE DRAWING.","scaleWarningView":"magnolia-notes.png",
+"scaleWarningRegionPt":[2080,42,2325,323],"selectedGeometry":null,"worldPlacement":"unknown","parcelOrSurveyAnchor":null
+,"unitTitleLiteral":"VILLA TYPE 5, UNIT NO. - _ _ _ _","titleView":"magnolia-title.png","titleRegionPt":[2070,825,2320,
+1010],"otherDetailLiteral":"VILLA TYPE 4","otherDetailView":"magnolia-type4-detail.png","otherDetailRegionPt":[910,405,
+1055,465],"association":"ROOM under reviewed GROUND caption; not a proved numbered-villa instance","reviewedAssociation"
+:"Live reviewed association is GROUND KITCHEN candidate /pages/2/candidates/0","notAssociation":
+"The BEDROOM candidate is not that reviewed KITCHEN; no silent reassociation is permitted","receipts":
+"Pages 3-6 searched; handwritten unit references do not bind this BEDROOM boundary"}},"tower3":{"verdict":
+"not possible from retained sources","verdictMeaning":
+"A qualified prism for the retained UNIT-3B is not supported by this investigation","notAnAbsenceClaim":
+"The section has explicit level numbers; unknown live limits were not source absence","reviewedLevels":[{"label":
+"2ND FLOOR PLAN","levelId":"614ca200-1f3d-48ac-b7db-d1b893b352a1","sourceClassification":
+"stated numeric elevations; metre limits not stated with verified units","classification":"not stated",
+"classificationScope":"Qualified limits in metres for this retained unit","lowerLiteral":"2ND. FLOOR / LVL. +10.500",
+"upperLiteral":"3RD. FLOOR / LVL. +13.900","arithmetic":
+"13.900-10.500=3.400 in the printed level-number unit; not converted to metres","lowerM":null,"upperM":null,"liveLimits"
+:"unknown/null, unchanged"}],"heightEvidence":{"source":"tower3Section","page":1,"view":"tower3-section-lower.png",
+"regionPt":[35,2030,225,2480],"visuallyRead":true,"datumLiteral":"ROAD / LVL. ±00","datum":
+"Road-relative drawing datum, not surveyed vertical CRS","otherLiteral":
+"GROUND FLOOR / LVL. +1.500; 1ST. FLOOR / LVL. +6.000","units":
+"Global elevation units not established; 3400/4500 chains do not declare them","unitConventionEvidence":{"view":
+"tower3-unit-conventions.png","source":"tower3Plan1","page":1,"regionPt":[1900,1100,2220,1350],"visuallyRead":true,
+"literal":"DOOR OPENING SCHEDULE / SILL LEVEL / 00 MM / LINTEL LVL / 2450 MM","scope":
+"Explicit millimetres for door/window schedule, not a global unit note for section decimals","notApplied":
+"Do not convert section +10.500 to metres merely from these lintel units"},"titleView":"tower3-section-title.png",
+"titleRegionPt":[2180,1740,2520,2580],"titleLiteral":"TOWER-3 / SECTION & ELEVATION / JAN-2024 / 1:200 (A1) / T3-4",
+"floorToFloorNotClearHeight":true,"equalSpacingAssumed":false},"outline":{"source":"tower3Plan1","page":1,"literal":
+"UNIT-3B","retainedCitationPt":[596,390,644,409],"citationMeaning":
+"Boxed label only; not an outer or inner unit boundary","view":"tower3-unit-label.png","visuallyRead":true,
+"candidateState":"Prior retained raster candidates are no_scale, not metric unit boundaries","qualification":
+"No verified dimension endpoint pair on both axes or reviewed UNIT-3B boundary","scale":
+"Printed sheet ratio is not a verified raster calibration","requiredSourceOrDecision":
+"Explicit linear/vertical units and a reviewed dimension-bound UNIT-3B outline","towerCountConflict":
+"G+41/G+42 remains unresolved; no ordinal inventory inferred from the section"}},"otherBihar":[{"project":
+"RERAP01282025205138-1","building":"3D APARTMENT, source Block A and Block B","source":"apartment3d","verdict":
+"not possible from retained sources","verdictMeaning":
+"No qualified exact metric unit outline demonstrated; raw plan does contain vertical evidence","reviewedLevels":[],
+"noRegistryIdentityInvented":true,"heightEvidence":[{"page":1,"view":"3d-apartment-block-b-section.png","regionPt":[100,
+850,900,1610],"literal":"SECTION AT --X-X / BLOCK-B; 3.03; six separately printed 3.66 intervals","unitView":
+"3d-apartment-height-unit.png","unitRegionPt":[865,170,905,600],"unitLiteral":"TOTAL BUILDING HEIGHT =24.99 M",
+"visuallyRead":true,"classification":"derivable","arithmetic":"3.03+3.66+3.66+3.66+3.66+3.66+3.66=24.99 m","reference":
+"P.L. on the section; local, not geodetic; floor/ceiling face must be chosen explicitly","notAssumed":
+"Six equal numbers are individually printed; no storey-count division was used"},{"page":3,"view":
+"3d-apartment-block-a-section.png","regionPt":[1250,80,1850,850],"literal":
+"SECTION- YY' / BLOCK-A; GROUND FLOOR; 1ST. FLOOR; 2ND. FLOOR; 3RD. FLOOR","intervalLiterals":["6.10","3.64","3.05",
+"3.05","3.05","3.05","3.05"],"classification":
+"stated dimensional chain; derived datum/face/unit association needs review","arithmetic":
+"6.10+3.64+3.05+3.05+3.05+3.05+3.05=24.99 in the dimension-chain unit","datum":
+"GROUND/F.G.FLOOR/G.L. labels, not surveyed CRS","visuallyRead":true}],"outline":
+"Scanned plans, rooms and flat markers; no retained reviewed, calibrated unit polygon","floorAssociation":
+"Block A captions distinguish commercial lower levels and 3RD TO 6TH plans","minimumNext":
+"Select a source unit/component, trace a closed dimension-bound outline and review slab-face meaning","notEnough":
+"Whole-building height and floor count are not a unit volume or a calibration"},{"project":"RERAP279201800923-1",
+"building":"A ONE HERITAGE, source Blocks A/B","source":"heritage","verdict":"not possible from retained sources",
+"reviewedLevels":[],"heightEvidence":{"page":2,"view":"heritage-section.png","regionPt":[610,800,1200,1510],"literal":
+"20.69","meaning":"Overall section dimension, not a selected floor lower/upper pair","classification":"not stated",
+"classificationScope":"Verified metre limits for a particular unit","units":"Not established from this section crop",
+"visuallyRead":true,"arithmetic":"None: do not divide an overall dimension by an assumed number of floors"},"outline":
+"Page 1 typical floor plans; no reviewed exact metric unit outline or explicit selected-floor binding","minimumNext":
+"A dimension-bound unit outline and explicit floor, datum, units and bound faces"},{"project":"RERAP285201800427-9",
+"building":"A M PINNACLE Towers 1, 2, 3 and 4 EWS/LIG","source":"biharPinnacle","verdict":
+"not possible from retained sources","reviewedLevels":[],"searchedPages":
+"All 11; native text absent; horizontal English OCR plus manual rotated-section inspection","heightEvidence":{"page":11,
+"view":"pinnacle-page11-upright.png","regionPt":[0,0,2484,1926],"literal":
+"TOWER 04 - LIG & EWS / ELEVATIONS & SECTIONS; F.F.L. +3.15 / 1ST FLOOR","otherLiteral":"F.F.L. +6.15 / 2ND FLOOR",
+"visuallyRead":true,"classification":"stated numeric FFLs; metre unit and precise target outline not qualified",
+"arithmetic":"6.15-3.15=3.00 in printed level-number units, not an assumed metre height","units":
+"No verified unit declaration retained by this investigation","datum":"Local road/FFL labels"},"otherSections":
+"Pages 7 and 9 have level columns; faded rotated detail is not source absence","outline":
+"Raster plan/flat annotations, but no reviewed dimension-bound polygon for a selected unit","minimumNext":
+"Readable explicit units, selected tower/unit/floor and reviewable closed metric boundary","ocrLimitation":
+"Horizontal English OCR has poor recall on rotated/faded pages; complete status is execution only"}],"step1":{"run":
+false,"fixtureCreated":false,"databaseWrites":0,"reason":
+"No selected outline admitted; template versus identified-unit scope needs a decision","pureBuilder":
+"services/geo/geo/geometry.py: build_prisms / prism/2","existingProjection":
+"packages/server/src/modules/registry/canonical-level-schedule.ts:14-41","projectionGuard":
+"Known limits AND reviewed building footprint; room association is not footprint admission","missingProducer":
+"packages/server/src/modules/usp/geometry.ts:78 qualification helper has no producing route","pathConclusion":
+"Reviewing a height alone will not extrude a room; no new producer or alternate route built","notCalled":[
+"build_prisms with fabricated real-unit inputs","height review","geometry admission","registry mutation"]}}
