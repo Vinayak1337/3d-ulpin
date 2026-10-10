@@ -8882,6 +8882,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -8935,6 +8936,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -8988,6 +8990,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -9055,6 +9058,7 @@ export interface components {
                 citations?: {
                     sourceId: string;
                     sourceSha256: string;
+                    sourceRevision?: number;
                     locator: {
                         /** @enum {string} */
                         kind: "page";
@@ -9134,6 +9138,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -9186,6 +9191,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -9239,6 +9245,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -9292,6 +9299,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -9344,6 +9352,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -9406,6 +9415,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -9459,6 +9469,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -9538,6 +9549,7 @@ export interface components {
                 citations: {
                     sourceId: string;
                     sourceSha256: string;
+                    sourceRevision?: number;
                     locator: {
                         /** @enum {string} */
                         kind: "page";
@@ -9635,6 +9647,7 @@ export interface components {
                 citations: {
                     sourceId: string;
                     sourceSha256: string;
+                    sourceRevision?: number;
                     locator: {
                         /** @enum {string} */
                         kind: "page";
@@ -9695,6 +9708,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -9749,6 +9763,7 @@ export interface components {
                 citations: {
                     sourceId: string;
                     sourceSha256: string;
+                    sourceRevision?: number;
                     locator: {
                         /** @enum {string} */
                         kind: "page";
@@ -9802,6 +9817,7 @@ export interface components {
                 citations: {
                     sourceId: string;
                     sourceSha256: string;
+                    sourceRevision?: number;
                     locator: {
                         /** @enum {string} */
                         kind: "page";
@@ -9855,6 +9871,7 @@ export interface components {
                 citations: {
                     sourceId: string;
                     sourceSha256: string;
+                    sourceRevision?: number;
                     locator: {
                         /** @enum {string} */
                         kind: "page";
@@ -9908,6 +9925,7 @@ export interface components {
                 citations: {
                     sourceId: string;
                     sourceSha256: string;
+                    sourceRevision?: number;
                     locator: {
                         /** @enum {string} */
                         kind: "page";
@@ -9963,6 +9981,7 @@ export interface components {
                 citations: {
                     sourceId: string;
                     sourceSha256: string;
+                    sourceRevision?: number;
                     locator: {
                         /** @enum {string} */
                         kind: "page";
@@ -10015,6 +10034,7 @@ export interface components {
                 citations: {
                     sourceId: string;
                     sourceSha256: string;
+                    sourceRevision?: number;
                     locator: {
                         /** @enum {string} */
                         kind: "page";
@@ -10070,6 +10090,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -10123,6 +10144,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -10176,6 +10198,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -10228,6 +10251,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -10280,6 +10304,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -10332,6 +10357,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -10385,6 +10411,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -10436,6 +10463,7 @@ export interface components {
                 citations: {
                     sourceId: string;
                     sourceSha256: string;
+                    sourceRevision?: number;
                     locator: {
                         /** @enum {string} */
                         kind: "page";
@@ -10491,6 +10519,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -10544,6 +10573,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -10597,6 +10627,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -10652,6 +10683,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -10705,6 +10737,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -10758,6 +10791,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -10811,6 +10845,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -10863,6 +10898,115 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "region";
+                                page: number;
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                /** @enum {string} */
+                                unit: "normalized" | "pt" | "pixel";
+                            } | {
+                                /** @enum {string} */
+                                kind: "row";
+                                row: number;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "cell";
+                                row: number;
+                                column: string;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "entity";
+                                entityId: string;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "point";
+                                pointId: string;
+                            };
+                        }[];
+                        method: string;
+                        revisionId: string;
+                    };
+                    label?: {
+                        value: string | null;
+                        /** @enum {string} */
+                        state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                        unit?: string;
+                        citations: {
+                            sourceId: string;
+                            sourceSha256: string;
+                            sourceRevision?: number;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "region";
+                                page: number;
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                /** @enum {string} */
+                                unit: "normalized" | "pt" | "pixel";
+                            } | {
+                                /** @enum {string} */
+                                kind: "row";
+                                row: number;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "cell";
+                                row: number;
+                                column: string;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "entity";
+                                entityId: string;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "point";
+                                pointId: string;
+                            };
+                        }[];
+                        method: string;
+                        revisionId: string;
+                    };
+                    /** @enum {string} */
+                    recordState?: "reviewed";
+                    areaM2?: {
+                        value: number | null;
+                        /** @enum {string} */
+                        state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                        unit?: string;
+                        citations: {
+                            sourceId: string;
+                            sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -10934,6 +11078,64 @@ export interface components {
                         volumeM3Exact: string;
                     } | null;
                 };
+                /** Format: uuid */
+                registryFloorId?: string;
+                polygons?: {
+                    value: (number)[][][][] | null;
+                    /** @enum {string} */
+                    state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                    /** @enum {string} */
+                    unit?: "m";
+                    citations: {
+                        sourceId: string;
+                        sourceSha256: string;
+                        sourceRevision?: number;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "region";
+                            page: number;
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized" | "pt" | "pixel";
+                        } | {
+                            /** @enum {string} */
+                            kind: "row";
+                            row: number;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "cell";
+                            row: number;
+                            column: string;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "entity";
+                            entityId: string;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "point";
+                            pointId: string;
+                        };
+                    }[];
+                    method: string;
+                    revisionId: string;
+                };
+                /** @enum {string} */
+                recordState?: "reviewed";
             }[];
             levelSchedule?: {
                 /** @enum {string} */
@@ -10954,6 +11156,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -11001,6 +11204,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -11058,6 +11262,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -11107,6 +11312,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -11209,6 +11415,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -11256,6 +11463,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -11313,6 +11521,7 @@ export interface components {
                             citations: {
                                 sourceId: string;
                                 sourceSha256: string;
+                                sourceRevision?: number;
                                 locator: {
                                     /** @enum {string} */
                                     kind: "page";
@@ -11362,6 +11571,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -11419,6 +11629,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -11475,6 +11686,7 @@ export interface components {
                 citation: {
                     sourceId: string;
                     sourceSha256: string;
+                    sourceRevision?: number;
                     locator: {
                         /** @enum {string} */
                         kind: "page";
@@ -11493,6 +11705,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -11552,6 +11765,7 @@ export interface components {
                 citation: {
                     sourceId: string;
                     sourceSha256: string;
+                    sourceRevision?: number;
                     locator: {
                         /** @enum {string} */
                         kind: "page";
@@ -11570,6 +11784,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -11640,6 +11855,7 @@ export interface components {
                 citations?: {
                     sourceId: string;
                     sourceSha256: string;
+                    sourceRevision?: number;
                     locator: {
                         /** @enum {string} */
                         kind: "page";
@@ -21447,6 +21663,7 @@ export interface components {
             citation: {
                 sourceId: string;
                 sourceSha256: string;
+                sourceRevision?: number;
                 locator: {
                     /** @enum {string} */
                     kind: "page";
@@ -21467,6 +21684,7 @@ export interface components {
             citation: {
                 sourceId: string;
                 sourceSha256: string;
+                sourceRevision?: number;
                 locator: {
                     /** @enum {string} */
                     kind: "page";
@@ -21487,6 +21705,7 @@ export interface components {
             citation: {
                 sourceId: string;
                 sourceSha256: string;
+                sourceRevision?: number;
                 locator: {
                     /** @enum {string} */
                     kind: "page";
@@ -21505,6 +21724,7 @@ export interface components {
                 citations: {
                     sourceId: string;
                     sourceSha256: string;
+                    sourceRevision?: number;
                     locator: {
                         /** @enum {string} */
                         kind: "page";
@@ -21582,6 +21802,7 @@ export interface components {
                 citations: {
                     sourceId: string;
                     sourceSha256: string;
+                    sourceRevision?: number;
                     locator: {
                         /** @enum {string} */
                         kind: "page";
@@ -21698,6 +21919,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -21745,6 +21967,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -21802,6 +22025,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -21851,6 +22075,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -21939,6 +22164,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -21986,6 +22212,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -22043,6 +22270,7 @@ export interface components {
                             citations: {
                                 sourceId: string;
                                 sourceSha256: string;
+                                sourceRevision?: number;
                                 locator: {
                                     /** @enum {string} */
                                     kind: "page";
@@ -22092,6 +22320,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -22158,6 +22387,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -22205,6 +22435,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";
@@ -22262,6 +22493,7 @@ export interface components {
                         citations: {
                             sourceId: string;
                             sourceSha256: string;
+                            sourceRevision?: number;
                             locator: {
                                 /** @enum {string} */
                                 kind: "page";
@@ -22311,6 +22543,7 @@ export interface components {
                     citations: {
                         sourceId: string;
                         sourceSha256: string;
+                        sourceRevision?: number;
                         locator: {
                             /** @enum {string} */
                             kind: "page";

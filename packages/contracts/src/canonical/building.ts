@@ -15,6 +15,7 @@ export const BuildingMethodSchema = z
 export const BuildingCitationSchema = z.strictObject({
   sourceId: id,
   sourceSha256: z.string().regex(/^[a-f0-9]{64}$/),
+  sourceRevision: z.number().int().positive().optional(),
   locator: z.discriminatedUnion('kind', [
     z.strictObject({
       kind: z.literal('page'),
@@ -227,6 +228,9 @@ export const BuildingSpaceSchema = z.strictObject({
   lowerM: buildingValueSchema(number, 'm'),
   upperM: buildingValueSchema(number, 'm'),
   proposedCode: buildingValueSchema(z.string()),
+  label: buildingValueSchema(z.string()).optional(),
+  recordState: z.literal('reviewed').optional(),
+  areaM2: buildingValueSchema(number).optional(),
 }).superRefine(addPrismIssue);
 export const BuildingLevelSchema = z.strictObject({
   levelId: id,
@@ -240,6 +244,9 @@ export const BuildingLevelSchema = z.strictObject({
   heightState: BuildingValueStateSchema.optional(),
   roomCandidateIds: z.array(id).optional(),
   prismAssessment: LevelPrismAssessmentSchema.optional(),
+  registryFloorId: z.uuid().optional(),
+  polygons: buildingValueSchema(BuildingMultiPolygonSchema, 'm').optional(),
+  recordState: z.literal('reviewed').optional(),
 });
 const conflictValue = buildingValueSchema(z.union([z.string(), number, z.boolean()]));
 export const BuildingConflictSchema = z.strictObject({

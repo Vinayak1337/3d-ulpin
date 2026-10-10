@@ -80081,6 +80081,12 @@
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
                           },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
                           "locator": {
                             "oneOf": [
                               {
@@ -80375,6 +80381,12 @@
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
                           },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
                           "locator": {
                             "oneOf": [
                               {
@@ -80645,6 +80657,12 @@
                           "sourceSha256": {
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
                           },
                           "locator": {
                             "oneOf": [
@@ -80996,6 +81014,12 @@
                       "sourceSha256": {
                         "type": "string",
                         "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "sourceRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 9007199254740991
                       },
                       "locator": {
                         "oneOf": [
@@ -81454,6 +81478,12 @@
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
                           },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
                           "locator": {
                             "oneOf": [
                               {
@@ -81722,6 +81752,12 @@
                           "sourceSha256": {
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
                           },
                           "locator": {
                             "oneOf": [
@@ -81993,6 +82029,12 @@
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
                           },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
                           "locator": {
                             "oneOf": [
                               {
@@ -82263,6 +82305,12 @@
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
                           },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
                           "locator": {
                             "oneOf": [
                               {
@@ -82531,6 +82579,12 @@
                           "sourceSha256": {
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
                           },
                           "locator": {
                             "oneOf": [
@@ -82845,6 +82899,12 @@
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
                           },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
                           "locator": {
                             "oneOf": [
                               {
@@ -83138,6 +83198,12 @@
                           "sourceSha256": {
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
                           },
                           "locator": {
                             "oneOf": [
@@ -83617,6 +83683,12 @@
                           "sourceSha256": {
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
                           },
                           "locator": {
                             "oneOf": [
@@ -84151,6 +84223,12 @@
                       "type": "string",
                       "pattern": "^[a-f0-9]{64}$"
                     },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
                     "locator": {
                       "oneOf": [
                         {
@@ -84463,6 +84541,12 @@
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
                           },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
                           "locator": {
                             "oneOf": [
                               {
@@ -84765,6 +84849,12 @@
                       "type": "string",
                       "pattern": "^[a-f0-9]{64}$"
                     },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
                     "locator": {
                       "oneOf": [
                         {
@@ -85038,6 +85128,12 @@
                       "type": "string",
                       "pattern": "^[a-f0-9]{64}$"
                     },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
                     "locator": {
                       "oneOf": [
                         {
@@ -85307,6 +85403,12 @@
                     "sourceSha256": {
                       "type": "string",
                       "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
                     },
                     "locator": {
                       "oneOf": [
@@ -85578,6 +85680,12 @@
                     "sourceSha256": {
                       "type": "string",
                       "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
                     },
                     "locator": {
                       "oneOf": [
@@ -85865,6 +85973,12 @@
                       "type": "string",
                       "pattern": "^[a-f0-9]{64}$"
                     },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
                     "locator": {
                       "oneOf": [
                         {
@@ -86133,6 +86247,12 @@
                     "sourceSha256": {
                       "type": "string",
                       "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
                     },
                     "locator": {
                       "oneOf": [
@@ -86417,6 +86537,12 @@
                                 "type": "string",
                                 "pattern": "^[a-f0-9]{64}$"
                               },
+                              "sourceRevision": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991
+                              },
                               "locator": {
                                 "oneOf": [
                                   {
@@ -86686,6 +86812,12 @@
                               "sourceSha256": {
                                 "type": "string",
                                 "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "sourceRevision": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991
                               },
                               "locator": {
                                 "oneOf": [
@@ -86957,6 +87089,12 @@
                                 "type": "string",
                                 "pattern": "^[a-f0-9]{64}$"
                               },
+                              "sourceRevision": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991
+                              },
                               "locator": {
                                 "oneOf": [
                                   {
@@ -87225,6 +87363,12 @@
                               "sourceSha256": {
                                 "type": "string",
                                 "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "sourceRevision": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991
                               },
                               "locator": {
                                 "oneOf": [
@@ -87495,6 +87639,12 @@
                                 "type": "string",
                                 "pattern": "^[a-f0-9]{64}$"
                               },
+                              "sourceRevision": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991
+                              },
                               "locator": {
                                 "oneOf": [
                                   {
@@ -87763,6 +87913,12 @@
                               "sourceSha256": {
                                 "type": "string",
                                 "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "sourceRevision": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991
                               },
                               "locator": {
                                 "oneOf": [
@@ -88058,6 +88214,12 @@
                                 "type": "string",
                                 "pattern": "^[a-f0-9]{64}$"
                               },
+                              "sourceRevision": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991
+                              },
                               "locator": {
                                 "oneOf": [
                                   {
@@ -88333,6 +88495,12 @@
                     "sourceSha256": {
                       "type": "string",
                       "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
                     },
                     "locator": {
                       "oneOf": [
@@ -88618,6 +88786,12 @@
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
                           },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
                           "locator": {
                             "oneOf": [
                               {
@@ -88888,6 +89062,12 @@
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
                           },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
                           "locator": {
                             "oneOf": [
                               {
@@ -89157,6 +89337,12 @@
                           "sourceSha256": {
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
                           },
                           "locator": {
                             "oneOf": [
@@ -89445,6 +89631,12 @@
                                 "sourceSha256": {
                                   "type": "string",
                                   "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "sourceRevision": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
                                 },
                                 "locator": {
                                   "oneOf": [
@@ -89740,6 +89932,12 @@
                                   "type": "string",
                                   "pattern": "^[a-f0-9]{64}$"
                                 },
+                                "sourceRevision": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
                                 "locator": {
                                   "oneOf": [
                                     {
@@ -90009,6 +90207,12 @@
                                 "sourceSha256": {
                                   "type": "string",
                                   "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "sourceRevision": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
                                 },
                                 "locator": {
                                   "oneOf": [
@@ -90280,6 +90484,12 @@
                                   "type": "string",
                                   "pattern": "^[a-f0-9]{64}$"
                                 },
+                                "sourceRevision": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
                                 "locator": {
                                   "oneOf": [
                                     {
@@ -90548,6 +90758,568 @@
                                 "sourceSha256": {
                                   "type": "string",
                                   "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "sourceRevision": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "locator": {
+                                  "oneOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "enum": [
+                                            "page"
+                                          ]
+                                        },
+                                        "page": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "exclusiveMinimum": true,
+                                          "maximum": 9007199254740991
+                                        },
+                                        "text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "page"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "enum": [
+                                            "region"
+                                          ]
+                                        },
+                                        "page": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "exclusiveMinimum": true,
+                                          "maximum": 9007199254740991
+                                        },
+                                        "x": {
+                                          "type": "number"
+                                        },
+                                        "y": {
+                                          "type": "number"
+                                        },
+                                        "width": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "exclusiveMinimum": true
+                                        },
+                                        "height": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "exclusiveMinimum": true
+                                        },
+                                        "unit": {
+                                          "type": "string",
+                                          "enum": [
+                                            "normalized",
+                                            "pt",
+                                            "pixel"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "page",
+                                        "x",
+                                        "y",
+                                        "width",
+                                        "height",
+                                        "unit"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "enum": [
+                                            "row"
+                                          ]
+                                        },
+                                        "row": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 9007199254740991
+                                        },
+                                        "sheet": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "row"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "enum": [
+                                            "cell"
+                                          ]
+                                        },
+                                        "row": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 9007199254740991
+                                        },
+                                        "column": {
+                                          "type": "string",
+                                          "minLength": 1,
+                                          "maxLength": 256
+                                        },
+                                        "sheet": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "row",
+                                        "column"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "enum": [
+                                            "entity"
+                                          ]
+                                        },
+                                        "entityId": {
+                                          "type": "string",
+                                          "minLength": 1,
+                                          "maxLength": 256
+                                        },
+                                        "text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "entityId"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "enum": [
+                                            "feature"
+                                          ]
+                                        },
+                                        "featureId": {
+                                          "type": "string",
+                                          "minLength": 1,
+                                          "maxLength": 256
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "featureId"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "enum": [
+                                            "point"
+                                          ]
+                                        },
+                                        "pointId": {
+                                          "type": "string",
+                                          "minLength": 1,
+                                          "maxLength": 256
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "pointId"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "sourceId",
+                                "sourceSha256",
+                                "locator"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "method": {
+                            "type": "string",
+                            "maxLength": 512,
+                            "pattern": "^(source_literal|deterministic:[^\\s@]+@[^\\s@]+|model:[^\\s@]+@[^\\s@]+|reviewer:[^\\s]+)$"
+                          },
+                          "revisionId": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 256
+                          }
+                        },
+                        "required": [
+                          "value",
+                          "state",
+                          "citations",
+                          "method",
+                          "revisionId"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "label": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "unknown",
+                              "absent",
+                              "null",
+                              "withheld",
+                              "conflicting",
+                              "estimated",
+                              "candidate",
+                              "source_supported",
+                              "reviewed"
+                            ]
+                          },
+                          "unit": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128
+                          },
+                          "citations": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "sourceId": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 256
+                                },
+                                "sourceSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "sourceRevision": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "locator": {
+                                  "oneOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "enum": [
+                                            "page"
+                                          ]
+                                        },
+                                        "page": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "exclusiveMinimum": true,
+                                          "maximum": 9007199254740991
+                                        },
+                                        "text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "page"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "enum": [
+                                            "region"
+                                          ]
+                                        },
+                                        "page": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "exclusiveMinimum": true,
+                                          "maximum": 9007199254740991
+                                        },
+                                        "x": {
+                                          "type": "number"
+                                        },
+                                        "y": {
+                                          "type": "number"
+                                        },
+                                        "width": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "exclusiveMinimum": true
+                                        },
+                                        "height": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "exclusiveMinimum": true
+                                        },
+                                        "unit": {
+                                          "type": "string",
+                                          "enum": [
+                                            "normalized",
+                                            "pt",
+                                            "pixel"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "page",
+                                        "x",
+                                        "y",
+                                        "width",
+                                        "height",
+                                        "unit"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "enum": [
+                                            "row"
+                                          ]
+                                        },
+                                        "row": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 9007199254740991
+                                        },
+                                        "sheet": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "row"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "enum": [
+                                            "cell"
+                                          ]
+                                        },
+                                        "row": {
+                                          "type": "integer",
+                                          "minimum": 0,
+                                          "maximum": 9007199254740991
+                                        },
+                                        "column": {
+                                          "type": "string",
+                                          "minLength": 1,
+                                          "maxLength": 256
+                                        },
+                                        "sheet": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "row",
+                                        "column"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "enum": [
+                                            "entity"
+                                          ]
+                                        },
+                                        "entityId": {
+                                          "type": "string",
+                                          "minLength": 1,
+                                          "maxLength": 256
+                                        },
+                                        "text": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "entityId"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "enum": [
+                                            "feature"
+                                          ]
+                                        },
+                                        "featureId": {
+                                          "type": "string",
+                                          "minLength": 1,
+                                          "maxLength": 256
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "featureId"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "kind": {
+                                          "type": "string",
+                                          "enum": [
+                                            "point"
+                                          ]
+                                        },
+                                        "pointId": {
+                                          "type": "string",
+                                          "minLength": 1,
+                                          "maxLength": 256
+                                        }
+                                      },
+                                      "required": [
+                                        "kind",
+                                        "pointId"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "sourceId",
+                                "sourceSha256",
+                                "locator"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "method": {
+                            "type": "string",
+                            "maxLength": 512,
+                            "pattern": "^(source_literal|deterministic:[^\\s@]+@[^\\s@]+|model:[^\\s@]+@[^\\s@]+|reviewer:[^\\s]+)$"
+                          },
+                          "revisionId": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 256
+                          }
+                        },
+                        "required": [
+                          "value",
+                          "state",
+                          "citations",
+                          "method",
+                          "revisionId"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "recordState": {
+                        "type": "string",
+                        "enum": [
+                          "reviewed"
+                        ]
+                      },
+                      "areaM2": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "nullable": true,
+                            "type": "number"
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "unknown",
+                              "absent",
+                              "null",
+                              "withheld",
+                              "conflicting",
+                              "estimated",
+                              "candidate",
+                              "source_supported",
+                              "reviewed"
+                            ]
+                          },
+                          "unit": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128
+                          },
+                          "citations": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "sourceId": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 256
+                                },
+                                "sourceSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "sourceRevision": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
                                 },
                                 "locator": {
                                   "oneOf": [
@@ -90908,6 +91680,317 @@
                     "prism"
                   ],
                   "additionalProperties": false
+                },
+                "registryFloorId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "polygons": {
+                  "type": "object",
+                  "properties": {
+                    "value": {
+                      "nullable": true,
+                      "minItems": 1,
+                      "type": "array",
+                      "items": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "minItems": 4,
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            },
+                            "minItems": 2,
+                            "maxItems": 2
+                          }
+                        }
+                      }
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "unknown",
+                        "absent",
+                        "null",
+                        "withheld",
+                        "conflicting",
+                        "estimated",
+                        "candidate",
+                        "source_supported",
+                        "reviewed"
+                      ]
+                    },
+                    "unit": {
+                      "type": "string",
+                      "enum": [
+                        "m"
+                      ]
+                    },
+                    "citations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "sourceId": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 256
+                          },
+                          "sourceSha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
+                          "locator": {
+                            "oneOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "page"
+                                    ]
+                                  },
+                                  "page": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "text": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "page"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "region"
+                                    ]
+                                  },
+                                  "page": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "x": {
+                                    "type": "number"
+                                  },
+                                  "y": {
+                                    "type": "number"
+                                  },
+                                  "width": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true
+                                  },
+                                  "height": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "enum": [
+                                      "normalized",
+                                      "pt",
+                                      "pixel"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "page",
+                                  "x",
+                                  "y",
+                                  "width",
+                                  "height",
+                                  "unit"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "row"
+                                    ]
+                                  },
+                                  "row": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "sheet": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "row"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "cell"
+                                    ]
+                                  },
+                                  "row": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "column": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256
+                                  },
+                                  "sheet": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "row",
+                                  "column"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "entity"
+                                    ]
+                                  },
+                                  "entityId": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256
+                                  },
+                                  "text": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "entityId"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "feature"
+                                    ]
+                                  },
+                                  "featureId": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "featureId"
+                                ],
+                                "additionalProperties": false
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "point"
+                                    ]
+                                  },
+                                  "pointId": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 256
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "pointId"
+                                ],
+                                "additionalProperties": false
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "sourceId",
+                          "sourceSha256",
+                          "locator"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "method": {
+                      "type": "string",
+                      "maxLength": 512,
+                      "pattern": "^(source_literal|deterministic:[^\\s@]+@[^\\s@]+|model:[^\\s@]+@[^\\s@]+|reviewer:[^\\s]+)$"
+                    },
+                    "revisionId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    }
+                  },
+                  "required": [
+                    "value",
+                    "state",
+                    "citations",
+                    "method",
+                    "revisionId"
+                  ],
+                  "additionalProperties": false
+                },
+                "recordState": {
+                  "type": "string",
+                  "enum": [
+                    "reviewed"
+                  ]
                 }
               },
               "required": [
@@ -91007,6 +92090,12 @@
                           "sourceSha256": {
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
                           },
                           "locator": {
                             "oneOf": [
@@ -91259,6 +92348,12 @@
                           "sourceSha256": {
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
                           },
                           "locator": {
                             "oneOf": [
@@ -91546,6 +92641,12 @@
                                   "type": "string",
                                   "pattern": "^[a-f0-9]{64}$"
                                 },
+                                "sourceRevision": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
                                 "locator": {
                                   "oneOf": [
                                     {
@@ -91805,6 +92906,12 @@
                         "sourceSha256": {
                           "type": "string",
                           "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "sourceRevision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
                         },
                         "locator": {
                           "oneOf": [
@@ -92270,6 +93377,12 @@
                                   "type": "string",
                                   "pattern": "^[a-f0-9]{64}$"
                                 },
+                                "sourceRevision": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
                                 "locator": {
                                   "oneOf": [
                                     {
@@ -92521,6 +93634,12 @@
                                 "sourceSha256": {
                                   "type": "string",
                                   "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "sourceRevision": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
                                 },
                                 "locator": {
                                   "oneOf": [
@@ -92808,6 +93927,12 @@
                                         "type": "string",
                                         "pattern": "^[a-f0-9]{64}$"
                                       },
+                                      "sourceRevision": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      },
                                       "locator": {
                                         "oneOf": [
                                           {
@@ -93067,6 +94192,12 @@
                               "sourceSha256": {
                                 "type": "string",
                                 "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "sourceRevision": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991
                               },
                               "locator": {
                                 "oneOf": [
@@ -93378,6 +94509,12 @@
                               "type": "string",
                               "pattern": "^[a-f0-9]{64}$"
                             },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
                             "locator": {
                               "oneOf": [
                                 {
@@ -93659,6 +94796,12 @@
                       "type": "string",
                       "pattern": "^[a-f0-9]{64}$"
                     },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
                     "locator": {
                       "type": "object",
                       "properties": {
@@ -93766,6 +94909,12 @@
                             "sourceSha256": {
                               "type": "string",
                               "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
                             },
                             "locator": {
                               "oneOf": [
@@ -94069,6 +95218,12 @@
                       "type": "string",
                       "pattern": "^[a-f0-9]{64}$"
                     },
+                    "sourceRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
                     "locator": {
                       "type": "object",
                       "properties": {
@@ -94176,6 +95331,12 @@
                             "sourceSha256": {
                               "type": "string",
                               "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
                             },
                             "locator": {
                               "oneOf": [
@@ -94540,6 +95701,12 @@
                       "sourceSha256": {
                         "type": "string",
                         "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "sourceRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 9007199254740991
                       },
                       "locator": {
                         "oneOf": [
@@ -142675,6 +143842,12 @@
                     "type": "string",
                     "pattern": "^[a-f0-9]{64}$"
                   },
+                  "sourceRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 9007199254740991
+                  },
                   "locator": {
                     "type": "object",
                     "properties": {
@@ -142777,6 +143950,12 @@
                     "type": "string",
                     "pattern": "^[a-f0-9]{64}$"
                   },
+                  "sourceRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 9007199254740991
+                  },
                   "locator": {
                     "type": "object",
                     "properties": {
@@ -142865,6 +144044,12 @@
               "sourceSha256": {
                 "type": "string",
                 "pattern": "^[a-f0-9]{64}$"
+              },
+              "sourceRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991
               },
               "locator": {
                 "type": "object",
@@ -142973,6 +144158,12 @@
                       "sourceSha256": {
                         "type": "string",
                         "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "sourceRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 9007199254740991
                       },
                       "locator": {
                         "oneOf": [
@@ -143353,6 +144544,12 @@
                           "sourceSha256": {
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
                           },
                           "locator": {
                             "oneOf": [
@@ -143957,6 +145154,12 @@
                                 "type": "string",
                                 "pattern": "^[a-f0-9]{64}$"
                               },
+                              "sourceRevision": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991
+                              },
                               "locator": {
                                 "oneOf": [
                                   {
@@ -144208,6 +145411,12 @@
                               "sourceSha256": {
                                 "type": "string",
                                 "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "sourceRevision": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991
                               },
                               "locator": {
                                 "oneOf": [
@@ -144495,6 +145704,12 @@
                                       "type": "string",
                                       "pattern": "^[a-f0-9]{64}$"
                                     },
+                                    "sourceRevision": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 9007199254740991
+                                    },
                                     "locator": {
                                       "oneOf": [
                                         {
@@ -144754,6 +145969,12 @@
                             "sourceSha256": {
                               "type": "string",
                               "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
                             },
                             "locator": {
                               "oneOf": [
@@ -145166,6 +146387,12 @@
                                 "type": "string",
                                 "pattern": "^[a-f0-9]{64}$"
                               },
+                              "sourceRevision": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991
+                              },
                               "locator": {
                                 "oneOf": [
                                   {
@@ -145417,6 +146644,12 @@
                               "sourceSha256": {
                                 "type": "string",
                                 "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "sourceRevision": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991
                               },
                               "locator": {
                                 "oneOf": [
@@ -145704,6 +146937,12 @@
                                       "type": "string",
                                       "pattern": "^[a-f0-9]{64}$"
                                     },
+                                    "sourceRevision": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 9007199254740991
+                                    },
                                     "locator": {
                                       "oneOf": [
                                         {
@@ -145963,6 +147202,12 @@
                             "sourceSha256": {
                               "type": "string",
                               "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
                             },
                             "locator": {
                               "oneOf": [
@@ -146298,6 +147543,12 @@
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
                           },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
                           "locator": {
                             "oneOf": [
                               {
@@ -146549,6 +147800,12 @@
                           "sourceSha256": {
                             "type": "string",
                             "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "sourceRevision": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
                           },
                           "locator": {
                             "oneOf": [
@@ -146836,6 +148093,12 @@
                                   "type": "string",
                                   "pattern": "^[a-f0-9]{64}$"
                                 },
+                                "sourceRevision": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
                                 "locator": {
                                   "oneOf": [
                                     {
@@ -147095,6 +148358,12 @@
                         "sourceSha256": {
                           "type": "string",
                           "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "sourceRevision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
                         },
                         "locator": {
                           "oneOf": [
