@@ -39,10 +39,10 @@ for (const [index, key] of [[0, '345'], [1620, '1272393']] as const) {
 
 test('one changed original byte fails integrity before feature extraction',
   async () => withFeaturePlan(0, async store => {
-  store.original = Buffer.from(store.original);
-  store.original[100] ^= 1;
-  await assert.rejects(() => assess(store), { code: 'PACKET_PLAN_ORIGINAL_INTEGRITY', status: 422 });
-}));
+    store.original = Buffer.from(store.original);
+    store.original[100] ^= 1;
+    await assert.rejects(() => assess(store), { code: 'PACKET_PLAN_ORIGINAL_INTEGRITY', status: 422 });
+  }));
 
 const refused: [string, (store: FeaturePlanStore) => void][] = [
   ['wrong sourceKey', store => { store.features[0].body.sourceKey = '345 '; }],
@@ -52,6 +52,12 @@ const refused: [string, (store: FeaturePlanStore) => void][] = [
   ['fractional index', store => { store.features[0].body.sourceFeatureIndex = 1.5; }],
   ['two matching captured members', store => {
     store.features.push({ ...structuredClone(store.features[0]), id: uuid(10) });
+  }],
+  ['native and derived duplicates are still ambiguous', store => {
+    const derived = structuredClone(store.features[0]);
+    derived.id = uuid(10);
+    derived.body.properties.spatialExtraction = null;
+    store.features.push(derived);
   }],
   ['no captured feature', store => { store.features = []; }],
   ['wrong mapped member', store => { store.features[0].body.properties.bin = 'different'; }],
@@ -90,12 +96,12 @@ test('no shared property names passes with nothing compared; product-only member
 
 test('16001-character properties object is unavailable at the plan bound',
   async () => withFeaturePlan(0, async store => {
-  const properties = `{"value":"${'x'.repeat(15989)}"}`;
-  assert.equal(properties.length, 16001);
-  store.original = Buffer.from(`{"features":[{"properties":${properties}}]}`);
-  store.source.sha256 = sha256(store.original);
-  store.source.bytes = store.original.length;
-  store.features[0].body.properties = {};
-  const result = await assess(store);
-  assert.equal(result.entries[0].reasonCode, 'exact_extract_unavailable');
-}));
+    const properties = `{"value":"${'x'.repeat(15989)}"}`;
+    assert.equal(properties.length, 16001);
+    store.original = Buffer.from(`{"features":[{"properties":${properties}}]}`);
+    store.source.sha256 = sha256(store.original);
+    store.source.bytes = store.original.length;
+    store.features[0].body.properties = {};
+    const result = await assess(store);
+    assert.equal(result.entries[0].reasonCode, 'exact_extract_unavailable');
+  }));

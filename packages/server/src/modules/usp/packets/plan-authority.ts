@@ -153,11 +153,11 @@ async function capturedFeatureTx(client: PoolClient, input: PacketPlanInput,
     const observation = captured.body, feature = observation.body;
     if (observation.record_id !== input.target.ref.id || !feature
       || feature.sourceRevisionId !== pointer.sourceRevision.ref.id || feature.sourceKey !== key
-      || !Number.isSafeInteger(feature.sourceFeatureIndex) || feature.sourceFeatureIndex < 0
-      || Object.hasOwn(feature.properties ?? {}, 'spatialExtraction')) continue;
+      || !Number.isSafeInteger(feature.sourceFeatureIndex) || feature.sourceFeatureIndex < 0) continue;
     matches.push(feature);
   }
-  return matches.length === 1 ? matches[0] : null;
+  if (matches.length !== 1 || Object.hasOwn(matches[0].properties ?? {}, 'spatialExtraction')) return null;
+  return matches[0];
 }
 function observedFeatureExtract(bytes: Uint8Array, observation: Record<string, any> | null) {
   if (!observation) return null;
@@ -253,7 +253,8 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
         bytes = await readBytes(source.body.object_key);
         if (bytes.length !== Number(source.body.bytes) || sha256(bytes) !== source.body.sha256)
           throw new AppError(422, 'PACKET_PLAN_ORIGINAL_INTEGRITY', 'The selected original does not match its byte receipt.');
-        featureBytes.set(id, bytes); verifiedBytes.add(id);
+        featureBytes.set(id, bytes);
+        verifiedBytes.add(id);
       }
       const observation = await capturedFeatureTx(client, input, manifest, pointer);
       excerpt = observedFeatureExtract(bytes, observation);

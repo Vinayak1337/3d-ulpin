@@ -66,7 +66,8 @@ export async function projectCardFactsTx(client: PoolClient, ctx: RequestContext
     else missing('parcel_assertions', 'Parent parcel assertions', 'Selected evidence does not support a parent '
       + `parcel assertion. ${anchorSentence(location.anchorState)}`, 'selected_parcel_evidence_unavailable');
   } else {
-    if (body.kind === 'building') available('project_identity', 'Application identity', 'Identity codes are for recorded spaces only');
+    if (body.kind === 'building')
+      available('project_identity', 'Application identity', 'Identity codes are for recorded spaces only');
     else missing('project_identity', 'Application identity', 'No captured P3/1 identity', 'project_identity_not_recorded');
     missing('vertical_locator', 'Recorded location', 'No captured structured location', 'location_not_recorded');
     missing('parcel_assertions', 'Parent parcel assertions', 'No selected source-backed parcel assertion', 'selected_parcel_evidence_unavailable');

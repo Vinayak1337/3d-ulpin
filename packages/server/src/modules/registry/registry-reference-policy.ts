@@ -23,3 +23,13 @@ export function permitsReferenceRecordSource(source: {
     source.inspection?.status === "reference_only" &&
     Number.isInteger(source.inspection.partCount) && (source.inspection.partCount ?? 0) > 0;
 }
+
+/** Only a record claim may cite an interpreted native map feature; the caller proves its committed observation. */
+export function permitsFeatureRecordSource(source: {
+  status?: string;
+  profile?: string;
+  inspection?: { status?: string } | null;
+}, purpose: "record" | "geometry" | "right"): boolean {
+  return purpose === "record" && source.status === "inspected" && source.inspection?.status === "interpreted" &&
+    ["geojson-area-v2", "arcgis-area-v2", "gpkg-area-v2", "shapefile_zip-area-v2"].includes(source.profile || "");
+}

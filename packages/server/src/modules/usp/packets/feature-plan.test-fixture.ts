@@ -9,7 +9,7 @@ import { withCardStore, type CardStore } from './card-verification.test-fixture'
 import type { PacketPlanIo } from './plan-service';
 
 // Exact original feature data with memory-only protocol identities; no normalization/placement qualification.
-export const originalPath = 'E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson';
+const originalPath = 'E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson';
 export const uuid = (index: number) => `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`;
 const pin = (namespace: string, index: number) => ({ ref: { namespace, id: uuid(index) }, revision: 1 });
 type Values = any[];
@@ -26,8 +26,6 @@ export class FeaturePlanStore {
   confirmations: any[] = [];
   executions: any[] = [];
   packets: any[] = [];
-  queries: string[] = [];
-  originalReads = 0;
   scope = { kind: 'snapshot' as const, scopeId: uuid(1), manifestId: uuid(4), snapshotDigest: 'a'.repeat(64),
     world: { namespace: 'world', id: `registry-site/${uuid(1)}` }, stage: 'recorded' as const };
   target = pin('registry_record', 5);
@@ -118,7 +116,6 @@ export class FeaturePlanStore {
 
   private async query(sql: string, values: Values, fallback: () => Promise<any>) {
     const text = sql.replace(/\s+/g, ' ').trim();
-    this.queries.push(text);
     assert(!text.includes('FROM physical_features'), 'selection never substitutes a live observation');
     const rows = this.rows(text, values);
     return rows === null ? fallback() : { rows, rowCount: rows.length };
@@ -137,7 +134,6 @@ export class FeaturePlanStore {
   io: PacketPlanIo = {
     read: async key => {
       if (key === this.source.object_key) {
-        this.originalReads++;
         return this.original;
       }
       return this.cards.io.readPacket(key);
