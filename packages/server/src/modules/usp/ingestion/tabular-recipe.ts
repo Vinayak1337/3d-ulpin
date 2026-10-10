@@ -5,12 +5,12 @@ import { mappingContextFromColumnProfile } from './mapping-teacher';
 import { validateMappingPlanV2 } from './mapping-plan-v2';
 import { executeMappingPlanV2 } from './mapping-executor';
 import { readTabularSource } from './tabular-source';
+import { compareWorkspacePins } from './source-pin';
 
 function assertRecipePins(plan: TabularMappingPlan, profile: TabularSourceProfile) {
   const sameSource = fingerprint(plan.source) === fingerprint(profile.source);
   const sameSelection = fingerprint(plan.tabular) === fingerprint(profile.tabular);
-  if (!sameSource || !sameSelection || plan.workspaceRevision !== profile.workspaceRevision ||
-      plan.workspaceFingerprint !== profile.workspaceFingerprint ||
+  if (!sameSource || !sameSelection || !compareWorkspacePins(profile, plan).current ||
       plan.caseId !== profile.caseId || plan.mapping.sourceKind !== 'tabular') {
     conflict('The tabular source, selection or workspace changed; author a current recipe.');
   }

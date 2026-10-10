@@ -17,7 +17,7 @@ import {fingerprint} from '../../cases/domain';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,assertIngestionBinding,ingestionBinding} from './events';
 import {assertStreamingInputTx,streamingReadContextTx} from './streaming-vector';
-import {compareSourcePins} from './source-pin';
+import {compareSourcePins,compareWorkspacePins} from './source-pin';
 import {manualProfileForLockedSourceTx,tabularProfileForLockedSourceTx} from './service';
 import {validateMappingPlanV2} from './mapping-plan-v2';
 import {mappingContextFromColumnProfile} from './mapping-teacher';
@@ -76,8 +76,8 @@ async function approvedRecipeTx(client:PoolClient,caseId:string,sourceId:string,
     if(receipt.planHash!==fingerprint({plan,destination:null})||receipt.approval?.planHash!==receipt.planHash
       ||receipt.approval.subject!==subject||receipt.approval.provenance!=='server_configured_local_operator'
       ||plan.mapping.method!==officerMappingMethod(subject)||fingerprint(plan.source)!==fingerprint(profile.source)
-      ||fingerprint(plan.tabular)!==fingerprint(profile.tabular)||plan.workspaceRevision!==profile.workspaceRevision
-      ||plan.workspaceFingerprint!==profile.workspaceFingerprint||plan.caseId!==caseId)
+      ||fingerprint(plan.tabular)!==fingerprint(profile.tabular)||!compareWorkspacePins(profile,plan).current
+      ||plan.caseId!==caseId)
       conflict('The approved tabular recipe no longer belongs to this exact source context.');
     const context=mappingContextFromColumnProfile(profile.profile,profile.tabular.selection);
     if(!validateMappingPlanV2(plan.mapping,context).success)
@@ -91,8 +91,7 @@ async function approvedRecipeTx(client:PoolClient,caseId:string,sourceId:string,
     const planHash=fingerprint({plan,destination:receipt.destination});
     if(receipt.planHash!==planHash||receipt.approval?.planHash!==planHash||receipt.approval?.subject!==subject
       ||receipt.approval.provenance!=='server_configured_local_operator'
-      ||fingerprint(plan.source)!==fingerprint(profile.source)||plan.workspaceRevision!==profile.workspaceRevision
-      ||plan.workspaceFingerprint!==profile.workspaceFingerprint)
+      ||fingerprint(plan.source)!==fingerprint(profile.source)||!compareWorkspacePins(profile,plan).current)
       conflict('The approved recipe changed or no longer belongs to this exact source profile.');
     compileMapping(plan,profile);return {receipt,profile};
   }
@@ -107,15 +106,19 @@ async function approvedRecipeTx(client:PoolClient,caseId:string,sourceId:string,
   assertStreamedIssuerEvidence(plan,source);
   compileStreamedMapping(plan,profile);return {receipt,profile};
 }
+/** A manual profile states the workspace now; the input's was stated at admission. Streamed profiles state none. */
+function workspacePinCurrent(profile:SourceProfile|TabularSourceProfile|StreamedProfileGeneration|null,
+  input:ChunkMappingInput){
+  if(!profile||profile.version==='streamed-profile/1')return input.workspaceFingerprint===null;
+  return input.workspaceFingerprint!==null&&compareWorkspacePins(profile,
+    {workspaceRevision:input.caseRevision,workspaceFingerprint:input.workspaceFingerprint}).current;
+}
 
 /** Case and source are locked by the raw pin before any job, recipe or mapping state. */
 export async function assertChunkMappingInputTx(client:PoolClient,input:ChunkMappingInput){
   const {raw,ctx,rawInputFingerprint}=await rawContextTx(client,input.rawJobId);
   const {inputFingerprint,...base}=input;
   const now={...base,version:limits.version,caseRevision:ctx.current.revision,converterSha256:chunkMappingConverterSha()};
-  // Manual profiles pin the entire workspace source set; keep that route strict until its hash is redesigned.
-  if(input.profileJobId===undefined&&['geojson-manual-v1','tabular-manual-v1'].includes(ctx.source.profile)
-    &&ctx.current.revision!==input.caseRevision)conflict('The pinned manual mapping workspace changed.');
   if(!compareSourcePins(now,base).current||fingerprint(base)!==inputFingerprint
     ||rawInputFingerprint!==input.rawInputFingerprint||raw.readerSha256!==input.readerSha256
     ||raw.caseId!==input.caseId||raw.caseRevision!==input.caseRevision||raw.sourceId!==input.sourceId
@@ -126,12 +129,11 @@ export async function assertChunkMappingInputTx(client:PoolClient,input:ChunkMap
     ?(await (input.prefixAdmissionVersion?loadProvisionalStreamedProfileTx:loadSealedStreamedProfileTx)(
       client,input.profileJobId,input.profileGeneration!,input.profileHash!,
       input.rawJobId,input.caseId,input.sourceId)).profile
-    :await manualProfileTx(client,input.caseId,input.caseRevision,ctx.source);
+    :await manualProfileTx(client,input.caseId,ctx.current.revision,ctx.source);
   if(fingerprint(input.tabular??null)!==fingerprint(raw.framing==='tabular'?raw.tabular:null))
     conflict('The tabular raw pins changed.');
   if(input.schemaFingerprint!==(profile?.source.schemaFingerprint??null))conflict('The source schema fingerprint changed.');
-  if(input.workspaceFingerprint!==(profile&&profile.version!=='streamed-profile/1'?profile.workspaceFingerprint:null))
-    conflict('The source workspace fingerprint changed.');
+  if(!workspacePinCurrent(profile,input))conflict('The source workspace fingerprint changed.');
   const approved=await approvedRecipeTx(client,input.caseId,input.sourceId,input.subject,profile,ctx.source,
     !!input.prefixAdmissionVersion);
   if(input.route==='approved_recipe'){
@@ -164,8 +166,9 @@ export async function chunkMappingReadContextTx(
     throw new AppError(422,'MAPPING_INPUT_INTEGRITY','The mapped job differs from its retained raw source pins.');
   const pins=compareSourcePins({...base,caseRevision:ctx.current.revision,
     converterSha256:chunkMappingConverterSha()},base);
-  if(input.workspaceFingerprint!==null&&ctx.current.revision!==input.caseRevision
-    &&!freshness.reasons.includes('case_advanced'))freshness.reasons.push('case_advanced');
+  if(input.workspaceFingerprint!==null&&!freshness.reasons.includes('case_advanced')
+    &&!workspacePinCurrent(await manualProfileTx(client,caseId,ctx.current.revision,ctx.source),input))
+    freshness.reasons.push('case_advanced');
   if(pins.moved.includes('converterSha256'))freshness.reasons.push('converter_changed');
   freshness.current=freshness.current&&pins.current&&freshness.reasons.length===0;
   return {ctx,freshness};
