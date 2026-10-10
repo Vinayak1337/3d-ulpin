@@ -1,7 +1,7 @@
 {
   "task": "A5a",
   "gate": "GF-AGENT",
-  "status": "mask_fixed_byte_identity_proved",
+  "status": "complete_offline_scope_no_runtime_gate_claim",
   "baseline": "7602ef58",
   "step0": {
     "syntheticOnly": true,
@@ -13,42 +13,17 @@
         "code": "too_big",
         "maximum": 256,
         "inclusive": true,
-        "path": [
-          "columns",
-          0,
-          "maskedSamples",
-          0
-        ],
+        "path": ["columns", 0, "maskedSamples", 0],
         "message": "Too big: expected string to have <=256 characters"
       }
     ],
     "patterns": [
-      {
-        "rawLength": 6,
-        "masked": "[email]",
-        "maskedLength": 7,
-        "factor": 1.1666666666666667
-      },
-      {
-        "rawLength": 10,
-        "masked": "[PAN:XXXXXXXXXX]",
-        "maskedLength": 16,
-        "factor": 1.6
-      },
-      {
-        "rawLength": 12,
-        "masked": "[Aadhaar:DDDD DDDD DDDD]",
-        "maskedLength": 24,
-        "factor": 2
-      },
-      {
-        "rawLength": 10,
-        "masked": "[phone:DDDDDDDDDD]",
-        "maskedLength": 18,
-        "factor": 1.8
-      }
+      {"rawLength": 6, "masked": "[email]", "maskedLength": 7, "factor": 1.1666666666666667},
+      {"rawLength": 10, "masked": "[PAN:XXXXXXXXXX]", "maskedLength": 16, "factor": 1.6},
+      {"rawLength": 12, "masked": "[Aadhaar:DDDD DDDD DDDD]", "maskedLength": 24, "factor": 2},
+      {"rawLength": 10, "masked": "[phone:DDDDDDDDDD]", "maskedLength": 18, "factor": 1.8}
     ],
-    "minimality": "Shortest comma-separated combination of the four shortest synthetic pattern matches.",
+    "minimality": ["Shortest comma-separated combination of the four shortest synthetic pattern", "matches."],
     "callers": {
       "maskColumnSample": [
         "column-profile.ts: profileColumns sampled cells",
@@ -57,7 +32,9 @@
         "scripts/agent/mapping-teacher.test.ts"
       ],
       "profileColumns": [
-        "column-profile.ts: profileGisAttributes, csvColumns, profileColumnFile workbook branch",
+        "column-profile.ts: profileGisAttributes",
+        "column-profile.ts: csvColumns",
+        "column-profile.ts: profileColumnFile workbook branch",
         "chunk-mapping-agent.ts: profileTabularChunk (runtime ingestion kernel)",
         "scripts/agent/t1-profiles.ts: prepareColumn (T1/T1b/D1f preparation)",
         "scripts/agent/evaluate-a3.ts",
@@ -74,42 +51,52 @@
         "scripts/agent/mapping-teacher-review.test.ts",
         "scripts/agent/t1-prep.test.ts"
       ],
-      "profileGisAttributes": [
-        "column-profile.ts: profileColumnFile JSON branch"
-      ]
+      "profileGisAttributes": ["column-profile.ts: profileColumnFile JSON branch"]
     },
     "failureRouting": {
       "runtime": [
-        "TabularChunkMapper -> profileTabularChunk -> profileColumns throws ZodError before",
-        "routing/teacher. runChunkMappingJob catches non-AppError as MAPPING_WORKER_ERROR, queues",
-        "attempts 1/2, fails attempt 3; job reads/SSE expose that generic issue code to officer."
+        "TabularChunkMapper -> profileTabularChunk -> profileColumns throws ZodError",
+        "before",
+        "routing/teacher. runChunkMappingJob catches non-AppError as",
+        "MAPPING_WORKER_ERROR, queues",
+        "attempts 1/2, fails attempt 3; job reads/SSE expose that generic issue code to",
+        "officer."
       ],
       "nativeCli": [
-        "profileColumnFile/profileGisAttributes propagates ZodError; profile-columns, mapping-teacher",
+        "profileColumnFile/profileGisAttributes propagates ZodError; profile-columns,",
+        "mapping-teacher",
         "and check-workbooks abort to CLI stderr, no profile or provider call."
       ],
       "t1": [
-        "prepareColumn propagates ZodError; collectProfiles catches per asset and records error.message",
-        "as gap. T1 checks complete development coverage before writes; T1b preparation has no catch and",
+        "prepareColumn propagates ZodError; collectProfiles catches per asset and records",
+        "error.message",
+        "as gap. T1 checks complete development coverage before writes; T1b preparation",
+        "has no catch and",
         "aborts."
       ],
       "d1f": [
-        "prepareAssets recognizes only too_big maskedSamples max256 Zod issues; skips whole table with",
+        "prepareAssets recognizes only too_big maskedSamples max256 Zod issues; skips",
+        "whole table with",
         "D1F_T1_MASKED_SAMPLE_LIMIT_UNOWNED; CLI summary/check exposes gaps."
       ],
       "auxiliary": [
-        "measure-a4 and measure-a4b profile generation propagate; evaluate-a3 catches per asset and",
+        "measure-a4 and measure-a4b profile generation propagate; evaluate-a3 catches per",
+        "asset and",
         "records code=error.message."
       ]
     },
     "compatibilityDecision": [
-      "Retain historical raw 256-code-unit prefix, then maskPatterns and maskWords in the same order.",
-      "Final words and all digits are masked even when a raw identity pattern crosses that prefix;",
+      "Retain historical raw 256-code-unit prefix, then maskPatterns and maskWords in",
+      "the same order.",
+      "Final words and all digits are masked even when a raw identity pattern crosses",
+      "that prefix;",
       "only after masking shorten an expanded output. No raw fragment is returned."
     ],
     "patternQualification": [
-      "Aadhaar contiguous=24/12=2; spaced/hyphenated=24/14. Phone contiguous=18/10=1.8; optional",
-      "country/separators reduce factor. PAN=16/10=1.6 (maskWords further masks its As); shortest",
+      "Aadhaar contiguous=24/12=2; spaced/hyphenated=24/14. Phone contiguous=18/10=1.8;",
+      "optional",
+      "country/separators reduce factor. PAN=16/10=1.6 (maskWords further masks its",
+      "As); shortest",
       "email=7/6, longer emails shrink."
     ],
     "rawRuns": [
@@ -163,7 +150,13 @@
     "networkRequests": 0,
     "providerCalls": 0,
     "labelsProduced": 0,
-    "runtimeReads": 0
+    "runtimeReads": 0,
+    "externalFilesOverwritten": 0,
+    "externalFilesDeleted": 0,
+    "externalFilesMoved": 0,
+    "heldOutAndClosedFoldersOpened": 0,
+    "gpuUsed": false,
+    "pushed": false
   },
   "byteIdentity": [
     {
@@ -193,16 +186,18 @@
     "maskTestsPassed": 4,
     "existingFixtureSamplesUnchanged": 30,
     "mappingTeacherAndChunkTestsPassed": 19,
-    "initialBoundaryAssertionFailure": "The test rejected the historical Devanagari zero mask; allow zero, reject 1-9. No product defect."
+    "initialBoundaryAssertionFailure":
+    ["The test rejected the historical Devanagari zero mask; allow zero, reject 1-9.", "No product defect."]
   },
   "verificationException": {
     "requestedCommand": "python -B scripts/agent/verify-d1f.py --indian-development",
     "status": "not_run_safety_conflict",
-    "reason": "restart_integrity reads closed acquisitions receipts and scans closed provisional folders.",
+    "reason": ["restart_integrity reads closed acquisitions receipts and scans closed", "provisional folders."],
     "alternative": "python -B docs/evidence/gf-agent/a5a/verify-development.py",
     "exitCode": 0,
     "scope": [
-      "Nine foreign originals/dictionaries/prefixes and Indian development checked; no 104-file",
+      "Nine foreign originals/dictionaries/prefixes and Indian development checked; no",
+      "104-file",
       "restart reproof."
     ]
   },
@@ -212,5 +207,126 @@
     "recordings": "E:/BhuAayam-data/task-data/a5a/checks/recordings",
     "pythonBytecodeWrites": false,
     "testProviders": "In-process software controls only; no HTTP or real target labels produced."
-  }
+  },
+  "products": {
+    "root": "E:/BhuAayam-data/task-data/a5a",
+    "tables": [
+      {
+        "family": "opf-d07",
+        "file": "baton-footprint-prefix-128.csv",
+        "geography": "East Baton Rouge Parish, Louisiana, United States",
+        "columns": 10,
+        "profiles": 10,
+        "dictionaryLinkedRows": 10,
+        "columnDefinitions": 10,
+        "datasetScopeGeometryDescriptions": 0,
+        "samples": 100,
+        "shortenedSamples": 10,
+        "identityStyleSamples": 10,
+        "maxSampleLength": 256,
+        "identityByColumn": {"GEOMETRY": 10}
+      },
+      {
+        "family": "opf-d08",
+        "file": "nola-footprint-prefix-128.csv",
+        "geography": "New Orleans, Louisiana, United States",
+        "columns": 8,
+        "profiles": 8,
+        "dictionaryLinkedRows": 1,
+        "columnDefinitions": 0,
+        "datasetScopeGeometryDescriptions": 1,
+        "samples": 80,
+        "shortenedSamples": 10,
+        "identityStyleSamples": 14,
+        "maxSampleLength": 256,
+        "identityByColumn": {"the_geom": 10, "Shape.STArea()": 3, "GlobalID": 1}
+      },
+      {
+        "family": "opf-d09",
+        "file": "edmonton-footprint-prefix-128.csv",
+        "geography": "Edmonton, Alberta, Canada",
+        "columns": 3,
+        "profiles": 3,
+        "dictionaryLinkedRows": 1,
+        "columnDefinitions": 0,
+        "datasetScopeGeometryDescriptions": 1,
+        "samples": 30,
+        "shortenedSamples": 2,
+        "identityStyleSamples": 2,
+        "maxSampleLength": 256,
+        "identityByColumn": {"the_geom": 2}
+      }
+    ],
+    "profiles": 21,
+    "dictionaryLinkedRows": 12,
+    "shortenedSamples": 22,
+    "identityStyleSamples": 26,
+    "gaps": [],
+    "hashes": {
+      "profiles.jsonl": "6078691a13d5d4794b217d6744d10c44119fbac11bde0f3b6017191f9b11d1db",
+      "profiles/profiles.jsonl": "6078691a13d5d4794b217d6744d10c44119fbac11bde0f3b6017191f9b11d1db",
+      "profile-links.jsonl": "455af777c6080ec4e2f932bf847ea44038b2d51b365b89be575dbdebfa7bdf7f",
+      "dictionary.jsonl": "e7fad991880ae54ce48e55bf1d752e7799250a20d4995d6c0f3070532411e974",
+      "verifier/inventory.json": "86be2c40d5bd1822864c3c6d0ec95aaa6e36912b0146911a9941cfc8d5fd6ad6",
+      "profiles/summary.json": "45c014db93a1786c751901d653450c7dd75e8e87dd67c876c1613be8f0aba060"
+    }
+  },
+  "finding": [
+    "Conservative identity masks still match coordinate runs; unchanged by design.",
+    "New Orleans and Edmonton each gain one dataset-scope geometry citation, not a",
+    "column definition.",
+    "All nine retained D1f tables now profile, but only three recovered tables are",
+    "written to A5a.",
+    "Historical D1f gap records remain immutable; current preparation reports no",
+    "masking gap."
+  ],
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exitCode": 0},
+    {"command": "pnpm exec tsc -p scripts/agent/tsconfig.json", "exitCode": 0},
+    {
+      "command": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+        "packages/server/src/modules/usp/ingestion/column-profile.test.ts"
+      ],
+      "exitCode": 0,
+      "passed": 4
+    },
+    {
+      "command": [
+        "pnpm exec tsx --tsconfig scripts/agent/tsconfig.json --test",
+        "scripts/agent/mapping-teacher.test.ts",
+        "scripts/agent/mapping-teacher-review.test.ts",
+        "scripts/agent/a3-chunk.test.ts"
+      ],
+      "exitCode": 0,
+      "passed": 19
+    },
+    {
+      "command":
+      ["pnpm exec tsx --tsconfig scripts/agent/tsconfig.json", "docs/evidence/gf-agent/a5a/verify-profiles.ts"],
+      "exitCode": 0
+    },
+    {"command": "pnpm exec tsx scripts/agent/d1f-acquisition.ts --check", "exitCode": 0},
+    {
+      "command": ["pnpm exec tsx scripts/agent/d1f-acquisition.ts", "--output-root E:/BhuAayam-data/task-data/a5a"],
+      "exitCode": 0
+    },
+    {
+      "command":
+      ["pnpm exec tsx scripts/agent/d1f-acquisition.ts", "--output-root E:/BhuAayam-data/task-data/a5a --check"],
+      "exitCode": 0
+    },
+    {"command": "python -B docs/evidence/gf-agent/a5a/verify-development.py", "exitCode": 0},
+    {"command": "git diff --check", "exitCode": 0},
+    {"command": "git diff staging...HEAD --check", "exitCode": 0},
+    {"command": "owned files: awk length>120 audit", "exitCode": 0}
+  ],
+  "next": [
+    "Lead reviews and integrates; new profiles are development candidates, not labels",
+    "or evaluation truth.",
+    "The 104-file restart check needs permission to read its closed folders; no",
+    "bypass was attempted.",
+    "Coordinate-vs-identity mask semantics and foreign runtime admission remain",
+    "separate tasks."
+  ]
 }
