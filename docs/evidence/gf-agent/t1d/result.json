@@ -1,0 +1,269 @@
+{
+  "task": "T1d",
+  "gate": "GF-AGENT (mapping learner): teacher round on the 21 column profiles of the three A5a footprint tables",
+  "status": "labelled_not_verified",
+  "baseline": "2eb786f2",
+  "role": "development teacher: labels only; no verification, training or evaluation in this session",
+  "method": "model:claude-opus-5-5@dev-2026-10",
+  "labelKind": "pseudo_label",
+  "labels": {
+    "path": "E:/BhuAayam-data/task-data/t1d/labels/teacher-labels-v1.jsonl",
+    "sha256": "d267de96326cab764d09e08dd53418f422e6d47bd05a8c25c42ca219efa6f0e0", "bytes": 11328, "lines": 21,
+    "order": "the order of profiles.jsonl",
+    "lineShape": "{ profileId, field: { target, operation, confidence, rationale } }",
+    "methodInLine": "none: the verifier's line shape is closed, so the method id is recorded here"
+  },
+  "selfCheck": {
+    "script": "E:/BhuAayam-data/task-data/t1d/check-labels.py",
+    "sha256": "f11bb7a473f9d6a6d3800789f00a122264582e9090054d366389c1dc3c0a69dc",
+    "command": "python -B E:/BhuAayam-data/task-data/t1d/check-labels.py docs/evidence/gf-agent/t1c/result.json",
+    "exitCode": 0,
+    "counts": {"lines": 21, "profiles": 21, "positives": 6, "unknown": 15, "errors": 0},
+    "scope": "format only; scripts/agent/verify-teacher-labels.ts was not run",
+    "checks": [
+      "every line parses and has exactly the keys of the line shape",
+      "profile ids match profiles.jsonl one to one, in order",
+      "every target is a catalogue target and every operation is allowed for it, with allowed parameters",
+      "unit_convert names the unit the column profile declares",
+      "every label of a profile with a dictionary row carries that row's locator exactly",
+      "every quoted passage is verbatim from the profile's dictionary row and at most 20 words",
+      "a positive with a dictionary row quotes it; a positive without a definition is at or below 0.6",
+      "every unknown names its rule in the fixed words of the decision rule",
+      "a positive target appears once per table (the validator's MAPPING_TARGET_DUPLICATE rule)",
+      "UTF-8, LF line ends, no byte-order mark"
+    ],
+    "negativeControl": "two broken scratch copies (outside the data root) were refused with exit 1, then deleted"
+  },
+  "readFrom": {
+    "lineShape": "scripts/agent/verify-teacher-labels.ts addField; docs/evidence/gf-agent/t1/HOW-TO-VERIFY.md",
+    "fieldSchema": "packages/contracts/src/canonical/mapping-plan.ts MappingV2FieldSchema",
+    "targets": "packages/contracts/src/canonical/targets.ts CANONICAL_TARGETS, MappingTargetSchema",
+    "operations": "packages/contracts/src/canonical/mapping-plan.ts MappingV2OperationSchema",
+    "methodId": "packages/server/src/modules/usp/ingestion/teacher-labels.ts DEVELOPMENT_TEACHER_METHOD",
+    "operationRules": "packages/server/src/modules/usp/ingestion/mapping-plan-v2.ts validateMappingPlanV2",
+    "dryRun": "packages/server/src/modules/usp/ingestion/mapping-executor.ts mapGeometry, mapQuantity, mapLiteral",
+    "unitTable": "packages/server/src/modules/usp/ingestion/unit-table.ts UNIT_TABLE",
+    "declaredUnit": "scripts/agent/t1-profiles.ts prepareColumn: the table profile keeps the column's declared unit"
+  },
+  "catalogue": {
+    "source": "docs/evidence/gf-agent/t1c/result.json: catalogue and catalogueTargetMeanings, not repeated here",
+    "confirmedAgainstCode": true,
+    "how": "tsx import of the two contracts modules at the baseline, compared field by field with the T1c record",
+    "unchanged": [
+      "36 targets with their allowed operations", "36 target meanings", "37 mapping target names",
+      "legacy aliases", "12 source units", "4 literal kinds", "5 enum tables", "5 operation kinds"
+    ],
+    "readForThisRound": [
+      "building.footprint allows copy only; the catalogue has no operation that parses well-known text",
+      "the dry run of a footprint needs a reader-supplied source CRS, then a polygon object with closed rings",
+      "building.heightM is a length: unit_convert with source unit ft converts feet (international foot) to metres",
+      "unit_convert is valid only when the profiled column declares the same unit",
+      "building.storeyCount is a count: copy without a declared unit is read as a count"
+    ]
+  },
+  "decisionRule": [
+    "1 positive only when definition, masked samples and a catalogue target of that exact meaning agree",
+    "2 defined but no catalogue target: unknown",
+    "3 no dictionary row, or a row that only restates the header: label only if unmistakable, at most 0.6",
+    "4 definition and samples disagree: unknown",
+    "5 a point, centroid or parcel boundary is not a building footprint",
+    "6a lead decision: a foreign assessor's or tax parcel identifier stays unknown",
+    "6b lead decision: a system row id is a source key only if the definition says it identifies the building",
+    "6c lead decision: a height needs metres stated, or another stated unit that the catalogue converts"
+  ],
+  "totals": {
+    "tables": 3, "columns": 21, "positives": 6, "positivesColumnDefinition": 3,
+    "positivesDatasetScopeDescription": 2, "positivesHeaderOnly": 1, "unknownDefinedNoCatalogueTarget": 5,
+    "unknownDefinitionAndSamplesDisagree": 0, "unknownDefinitionOnlyRestatesHeader": 2, "unknownNoDictionaryRow": 8,
+    "nearFitLeftUnknown": 13
+  },
+  "perFamily": {
+    "opf-d07": {
+      "table": "East Baton Rouge", "columns": 10, "positives": 3, "positivesColumnDefinition": 3,
+      "positivesDatasetScopeDescription": 0, "positivesHeaderOnly": 0, "unknownDefinedNoCatalogueTarget": 5,
+      "unknownDefinitionAndSamplesDisagree": 0, "unknownDefinitionOnlyRestatesHeader": 2,
+      "unknownNoDictionaryRow": 0, "nearFitLeftUnknown": 6
+    },
+    "opf-d08": {
+      "table": "New Orleans", "columns": 8, "positives": 2, "positivesColumnDefinition": 0,
+      "positivesDatasetScopeDescription": 1, "positivesHeaderOnly": 1, "unknownDefinedNoCatalogueTarget": 0,
+      "unknownDefinitionAndSamplesDisagree": 0, "unknownDefinitionOnlyRestatesHeader": 0,
+      "unknownNoDictionaryRow": 6, "nearFitLeftUnknown": 5
+    },
+    "opf-d09": {
+      "table": "Edmonton", "columns": 3, "positives": 1, "positivesColumnDefinition": 0,
+      "positivesDatasetScopeDescription": 1, "positivesHeaderOnly": 0, "unknownDefinedNoCatalogueTarget": 0,
+      "unknownDefinitionAndSamplesDisagree": 0, "unknownDefinitionOnlyRestatesHeader": 0,
+      "unknownNoDictionaryRow": 2, "nearFitLeftUnknown": 2
+    }
+  },
+  "perTarget": {
+    "building.footprint": 3, "building.heightM": 1, "building.sourceKey": 1, "building.storeyCount": 1
+  },
+  "positivesByTargetAndFamily": {
+    "building.footprint": {"opf-d07": 1, "opf-d08": 1, "opf-d09": 1}, "building.heightM": {"opf-d07": 1},
+    "building.sourceKey": {"opf-d08": 1}, "building.storeyCount": {"opf-d07": 1}
+  },
+  "positivesByEvidence": {
+    "building.footprint": {"columnDefinition": 1, "datasetScopeDescription": 2},
+    "building.heightM": {"columnDefinition": 1}, "building.storeyCount": {"columnDefinition": 1},
+    "building.sourceKey": {"headerOnly": 1}
+  },
+  "targetsWithNoPositive": [
+    "building.addressLiteral", "building.name", "building.parentSourceKey", "building.storeyLabel", "building.use",
+    "document.date", "document.issuer", "document.registrationNo", "document.sanctionNo", "document.status",
+    "level.kind", "level.label", "level.lowerM", "level.parentSourceKey", "level.upperM", "parcel.area",
+    "parcel.khasra", "parcel.plot", "parcel.survey", "parcel.ulpinAnchor", "space.area", "space.kind", "space.name",
+    "space.parentSourceKey", "unit.balconyArea", "unit.builtUpArea", "unit.carpetArea", "unit.floorLabel",
+    "unit.parentSourceKey", "unit.type", "unit.unitNo"
+  ],
+  "operationsUsed": {"copy": 20, "unit_convert": 1},
+  "confidenceBins": {
+    "edges": "left-closed fifths; the last bin includes 1.0",
+    "all": {"0.0-0.2": 0, "0.2-0.4": 0, "0.4-0.6": 0, "0.6-0.8": 3, "0.8-1.0": 18},
+    "positives": {"0.0-0.2": 0, "0.2-0.4": 0, "0.4-0.6": 0, "0.6-0.8": 2, "0.8-1.0": 4},
+    "unknown": {"0.0-0.2": 0, "0.2-0.4": 0, "0.4-0.6": 0, "0.6-0.8": 1, "0.8-1.0": 14}, "distinctValues": 14,
+    "note": "the header-only positive sits at the 0.6 cap set by rule 3, not at a free estimate"
+  },
+  "nearFitFormat": "profile id: family, target considered, reason code (see nearFitReasons)",
+  "nearFit": {
+    "63456ef46f0a1b8767a3d5809b776771fa35318d2ef3c62091648c6b26b4ff69": "opf-d07 building.sourceKey feature_id",
+    "2310f77e86d4d9d426b2ad3c63320c56857edbe32a8f8f2010ae9074b85526a0": "opf-d07 building.sourceKey feature_id",
+    "04d4c0e0b4ef121602cc01376eed9a3b78b7e51995ef70d5e0bef175e9e3a30a": "opf-d07 unit.builtUpArea building_area",
+    "7151a0807c883b1702cc6c47676909af7eeb4ee5ec3d7a6b8866f48cf4b69538": "opf-d07 level.lowerM ground_elev",
+    "2165a93a141b7e6f1c1a612885a69d39f994bffaff3eedcbbeee7af9af55d888": "opf-d07 building.heightM roof_elev",
+    "204eb3bf08b9926e0f11318b2c4b6a64f1a78a28284283dc00e1922d8c55146e": "opf-d07 building.use type_class",
+    "2c01cb86f3a098341c857469d5727da89cd3b43edd6cffb59cf6d823cc26ad86": "opf-d08 building.sourceKey system_id",
+    "1a6dbc5015431dbd1887ecb06880835bd69b6b8cdb97eea5b7df5607b577a94d": "opf-d08 parcel.plot parcel_pin",
+    "f7b69775efada36cd032ed8e8fe11a116ec51d898e0696b6bf15bd7f0fc65776": "opf-d08 document.status record_flag",
+    "0bd4eb09c57a6371367f3d678a0d8089ab8bccf488d9ce00e2a65c5ee3546411": "opf-d08 unit.builtUpArea shape_area",
+    "810e7d55834b81e95b3dcf57e4ae520b626c8353bb1c5410002bebf6f3034c63": "opf-d08 building.sourceKey system_id",
+    "a340fbda4f5dca9fe296ea6a93dc4f56f6c1d48bb708202678d9a2c4e0ed08f4": "opf-d09 building.sourceKey constant_id",
+    "75c8254ac13fa6e1a4af46e0357af4ebf17ea60c4b7797cf5385f2c42693fea3": "opf-d09 unit.builtUpArea constant_area"
+  },
+  "nearFitReasons": {
+    "feature_id": "A feature id; the row does not say it identifies the building in the publisher's records.",
+    "building_area": "Area of the whole building, not a unit's built-up area; no building-area target.",
+    "ground_elev": "Ground elevation above sea level at the building, not the lower elevation of a level.",
+    "roof_elev": "Rooftop elevation above sea level, not the building's height, which has its own column.",
+    "type_class": "A type classification, not a stated use; every profiled cell is blank.",
+    "system_id": "A system object id or global id with no definition (lead decision on system row ids).",
+    "parcel_pin": "The header suggests a parcel identification number; undefined, and a foreign parcel id anyway.",
+    "record_flag": "An undefined record flag with one value, not the status of a document.",
+    "shape_area": "System-computed area of the shape, unit not stated; not a source-stated unit or parcel area.",
+    "constant_id": "The header ends in _ID, but every profiled cell holds the same value; it identifies nothing.",
+    "constant_area": "The header says area, with no unit; every profiled cell holds the same value."
+  },
+  "expectedVerifierRefusals": {
+    "basis": "read from the code named in readFrom; the verifier was not run",
+    "tablePlansExpectedRejected": 0,
+    "whyNoPlanRejection": [
+      "Every operation is allowed for its target, and a positive target appears once per table.",
+      "The one unit_convert names ft, the unit its column profile declares (else MAPPING_UNIT_NOT_DECLARED).",
+      "A plan-level code would reject the whole table; for East Baton Rouge that is 10 lines."
+    ],
+    "fieldsExpectedUnverified": {
+      "72fa66c715b73459a2f8ef68f841ad6af19b131b4afd11b4be3f77174424c5ab": "opf-d07 building.footprint copy",
+      "d1943ab145a1bad2daa8ab4c37eaac587f1b0b13be5229e6c0c7a1f02fde11f8": "opf-d08 building.footprint copy",
+      "b298bee9ecf4045f56e23b8166677455dfc99aadc3d4b756f79f2cb7f05b2821": "opf-d09 building.footprint copy"
+    },
+    "whyUnverified": [
+      "The line is accepted into its table plan; the dry run then returns needs_input on every filled cell.",
+      "The example is therefore written with verified false: the issue rate is above the 0.1 limit.",
+      "First code, MAPPING_CRS_UNVERIFIED: neither the profile nor the dictionary states a source CRS.",
+      "The verifier takes a CRS only from a recorded source reference, and the label assumes none.",
+      "Second code if a CRS is supplied, MAPPING_GEOMETRY_UNPARSEABLE: the cells are well-known text.",
+      "The executor accepts a polygon object; the catalogue has no operation that parses well-known text."
+    ],
+    "fieldsExpectedVerified": {
+      "building.storeyCount copy": "whole numbers; the blank share is below the 0.1 limit",
+      "building.heightM unit_convert ft": "plain numbers with the declared unit; factor from the code-owned table",
+      "building.sourceKey copy": "filled identifiers copied as written",
+      "unknown copy": "15 fields kept without interpretation"
+    },
+    "notChecked": [
+      "Whether the verifier admits the A5a families at its boundary check and under its output root.",
+      "That is learner work, and it reads files outside this session's four."
+    ]
+  },
+  "notDecidedForTheLead": [
+    {
+      "topic": "dataset-scope geometry descriptions", "columns": 2, "kept": "building.footprint under rule 1",
+      "why": "The row quotes the publisher's dataset description and links it to the table's only polygon column.",
+      "ifReadOtherwise": "If a dataset description is not a definition, both cap at 0.6; no target changes."
+    },
+    {
+      "topic": "Edmonton roof-lines", "columns": 1, "kept": "building.footprint, in the 0.6-0.8 bin",
+      "why": "The publisher says roof-lines; the catalogue footprint infers no ground or roof role.",
+      "ifReadOtherwise": "If a roof-line is a neighbour of the footprint, this column becomes unknown."
+    },
+    {
+      "topic": "New Orleans structure identifier", "columns": 1, "kept": "building.sourceKey at the 0.6 cap",
+      "why": "No definition; the header names the structure's identifier and every profiled cell is distinct.",
+      "ifReadOtherwise": "If it counts as a system row id under decision 6, it becomes unknown."
+    },
+    {
+      "topic": "rule 3 boundary, East Baton Rouge one-line definitions", "columns": 10,
+      "kept": "8 read as definitions (3 positives), 2 feature ids read as restating the header",
+      "why": "Eight rows name the subject (the building) or the datum; the two feature-id rows add nothing.",
+      "ifReadOtherwise": "If the three positive rows only restate the header, they cap at 0.6; no target changes."
+    },
+    {
+      "topic": "which foot", "columns": 1, "kept": "building.heightM with unit_convert ft",
+      "why": "Definition and header say feet; the catalogue's ft is the international foot, not the survey foot.",
+      "ifReadOtherwise": "If an unqualified foot has no converting operation, the height becomes unknown."
+    },
+    {
+      "topic": "identity-style tokens outside coordinate runs", "columns": 2, "kept": "labelled, both unknown",
+      "why": "The tokens sit on decimal digits of an area and on a digit run inside a global id: over-masking.",
+      "ifReadOtherwise": "Dropping the two lines leaves the New Orleans plan incomplete (source field unmapped)."
+    }
+  ],
+  "maskFinding": {
+    "note": "No personal value was found unmasked, and no name or phone number was seen in any profile.",
+    "overMatchInCoordinateRuns": [
+      "72fa66c715b73459a2f8ef68f841ad6af19b131b4afd11b4be3f77174424c5ab",
+      "d1943ab145a1bad2daa8ab4c37eaac587f1b0b13be5229e6c0c7a1f02fde11f8",
+      "b298bee9ecf4045f56e23b8166677455dfc99aadc3d4b756f79f2cb7f05b2821"
+    ],
+    "overMatchOutsideCoordinateRuns": [
+      "0bd4eb09c57a6371367f3d678a0d8089ab8bccf488d9ce00e2a65c5ee3546411",
+      "810e7d55834b81e95b3dcf57e4ae520b626c8353bb1c5410002bebf6f3034c63"
+    ],
+    "sameAsA5a": "the five columns and their sample counts are those A5a recorded under identityByColumn",
+    "shapeWord": "In all three geometry columns the shape word is letter-masked; brackets and number pairs are clear."
+  },
+  "filesOpened": [
+    "E:/BhuAayam-data/task-data/a5a/profiles/profiles.jsonl", "E:/BhuAayam-data/task-data/a5a/dictionary.jsonl",
+    "E:/BhuAayam-data/task-data/a5a/profile-links.jsonl",
+    "E:/BhuAayam-data/task-data/t1b/labels/teacher-labels-v2.jsonl (format reference only, first four lines)"
+  ],
+  "filesWritten": [
+    "E:/BhuAayam-data/task-data/t1d/labels/teacher-labels-v1.jsonl", "E:/BhuAayam-data/task-data/t1d/check-labels.py"
+  ],
+  "heldOutFilesOpened": false,
+  "providerCalls": 0,
+  "webRequests": 0,
+  "gpuUsed": false,
+  "verifierRun": false,
+  "report": [
+    "TASK   T1d — Teacher round on the three footprint tables            GATE GF-AGENT (mapping learner)",
+    "WORKS  The learner-work session can verify 21 pseudo-label lines: 6 positives, 15 unknown, 13 near fits.",
+    "SEE IT python -B E:/BhuAayam-data/task-data/t1d/check-labels.py docs/evidence/gf-agent/t1c/result.json",
+    "INPUTS Good: East Baton Rouge, ten column definitions. Difficult: New Orleans and Edmonton, where seven and",
+    "       two columns have no dictionary row and the geometry rests on a dataset description (roof-lines).",
+    "GAPS   Labelled, not verified. The three footprint labels are expected to come back unverified (no source",
+    "       CRS; well-known text is not a polygon object). No officer has seen any line.",
+    "DESIGN teacher-labels-v1.jsonl: one line per profile in profile order; rationale = rule words, quoted",
+    "       definition, exact locator, what the operation needs. check-labels.py: format checks and the counts",
+    "       in this file. Catalogue taken from the T1c record after a field-by-field comparison with the code.",
+    "COMMITS this commit — docs(agent): T1d teacher round on the three footprint tables, counts",
+    "CHECKS check-labels.py — 0 (21 lines, 0 errors); two broken scratch copies — 1 each, as intended.",
+    "       tsx catalogue comparison with the T1c record — 0 (all unchanged).",
+    "       git diff --check — 0; evidence lines over 120 characters — 0.",
+    "NEXT   Learner work (other provider): run verify-teacher-labels.ts on the label file and compare with",
+    "       expectedVerifierRefusals. Lead: the six notDecidedForTheLead topics; footprints stay unverified until",
+    "       a reader supplies the source CRS and parses well-known text into a polygon object.",
+    "       No provider call, web request, GPU, runtime, held-out read or push."
+  ]
+}
