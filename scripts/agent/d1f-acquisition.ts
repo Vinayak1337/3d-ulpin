@@ -8,6 +8,7 @@ import { developmentManifest, digest, stableHash, type SourceAsset, type SourceT
 
 const MANIFEST = 'fixtures/usp/D8-open-property-foreign/manifest.json';
 const OUTPUT = 'E:/BhuAayam-data/task-data/d1f';
+const RECOVERY_OUTPUT = 'E:/BhuAayam-data/task-data/a5a';
 const DATA_ROOT = 'E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f';
 type Pin = SourceAsset['original'];
 type Asset = SourceAsset & {
@@ -103,85 +104,108 @@ function dictionaryRows(asset: Asset, profiles: PreparedColumn[]) {
   });
 }
 
-function isMaskLimit(error: unknown) {
-  if (!(error instanceof Error) || error.name !== 'ZodError' || !('issues' in error)) return false;
-  const issues = error.issues as { code: string; maximum?: number; path: unknown[] }[];
-  return Array.isArray(issues) && issues.length > 0 && issues.every(issue => issue.code === 'too_big' &&
-    issue.maximum === 256 && issue.path.includes('maskedSamples'));
+function outputRoot() {
+  const index = process.argv.indexOf('--output-root');
+  const output = index < 0 ? OUTPUT : process.argv[index + 1];
+  assert(output && [OUTPUT, RECOVERY_OUTPUT].some(root => resolve(root) === resolve(output)),
+    'D1F_OUTPUT_ROOT_DENIED');
+  return output;
 }
 
-function prepareAssets(assets: Asset[]) {
-  const ready: { asset: Asset; prepared: ReturnType<typeof prepareTable> }[] = [];
-  const gaps: { file: string; family: string; code: string }[] = [];
-  for (const asset of assets) {
-    try {
-      ready.push({ asset, prepared: prepareTable(profileAsset(asset), prefixTable(asset)) });
-    } catch (error) {
-      if (!isMaskLimit(error)) throw error;
-      gaps.push({ file: asset.id, family: asset.family, code: 'D1F_T1_MASKED_SAMPLE_LIMIT_UNOWNED' });
-    }
-  }
-  return { ready, gaps };
+function prepareAssets(assets: Asset[], output: string) {
+  const summary = JSON.parse(readFileSync(join(OUTPUT, 'profiles/summary.json'), 'utf8')) as {
+    gaps: { file: string; family: string; code: string }[];
+  };
+  assert(summary.gaps.every(gap => gap.code === 'D1F_T1_MASKED_SAMPLE_LIMIT_UNOWNED'));
+  const skipped = new Set(summary.gaps.map(gap => gap.file));
+  assert.equal(skipped.size, 3, 'D1F_RECORDED_GAPS_CHANGED');
+  assert(summary.gaps.every(gap => assets.some(asset => asset.id === gap.file && asset.family === gap.family)));
+  // Prepare every table first: schema failures now surface, never silently become masking gaps.
+  const all = assets.map(asset => ({ asset, prepared: prepareTable(profileAsset(asset), prefixTable(asset)) }));
+  const recovery = resolve(output) === resolve(RECOVERY_OUTPUT);
+  // Historical --check still reproduces all 198 recorded profiles; the recovered set is a separate product.
+  const ready = all.filter(row => skipped.has(row.asset.id) === recovery);
+  return { ready, recoveredFiles: summary.gaps.map(gap => gap.file), allTablesProfiled: all.length === assets.length };
 }
 
-function writeProducts(profiles: PreparedColumn[], links: unknown[], dictionaries: unknown[],
+function writeProducts(output: string, profiles: PreparedColumn[], links: unknown[], dictionaries: unknown[],
   prepared: ReturnType<typeof prepareTable>[], summary: unknown) {
-  saveNew(join(OUTPUT, 'profiles.jsonl'), profiles, true);
-  saveNew(join(OUTPUT, 'profiles/profiles.jsonl'), profiles, true);
-  saveNew(join(OUTPUT, 'profile-links.jsonl'), links, true);
-  saveNew(join(OUTPUT, 'dictionary.jsonl'), dictionaries, true);
-  saveNew(join(OUTPUT, 'verifier/inventory.json'), prepared.map(table => table.inventory));
-  saveNew(join(OUTPUT, 'profiles/summary.json'), summary);
+  assert.equal(resolve(output), resolve(RECOVERY_OUTPUT), 'D1F_HISTORICAL_PRODUCTS_READ_ONLY');
+  saveNew(join(output, 'profiles.jsonl'), profiles, true);
+  saveNew(join(output, 'profiles/profiles.jsonl'), profiles, true);
+  saveNew(join(output, 'profile-links.jsonl'), links, true);
+  saveNew(join(output, 'dictionary.jsonl'), dictionaries, true);
+  saveNew(join(output, 'verifier/inventory.json'), prepared.map(table => table.inventory));
+  saveNew(join(output, 'profiles/summary.json'), summary);
 }
 
-function checkProducts(profiles: PreparedColumn[], links: unknown[], dictionaries: unknown[],
+function checkProducts(output: string, profiles: PreparedColumn[], links: unknown[], dictionaries: unknown[],
   prepared: ReturnType<typeof prepareTable>[]) {
-  const readRows = (path: string) => readFileSync(join(OUTPUT, path), 'utf8').trim().split(/\r?\n/).map(line =>
+  const readRows = (path: string) => readFileSync(join(output, path), 'utf8').trim().split(/\r?\n/).map(line =>
     JSON.parse(line) as unknown);
   assert.deepEqual(readRows('profiles.jsonl'), profiles, 'D1F_RECORDED_PROFILES_CHANGED');
+  const profileBytes = profiles.map(profile => JSON.stringify(profile)).join('\n') + '\n';
+  assert.equal(readFileSync(join(output, 'profiles.jsonl'), 'utf8'), profileBytes, 'D1F_PROFILE_BYTES_CHANGED');
   assert.deepEqual(readRows('profiles/profiles.jsonl'), profiles, 'D1F_RECORDED_PROFILE_COPY_CHANGED');
   assert.deepEqual(readRows('profile-links.jsonl'), links, 'D1F_RECORDED_LINKS_CHANGED');
   assert.deepEqual(readRows('dictionary.jsonl'), dictionaries, 'D1F_RECORDED_DICTIONARY_ROWS_CHANGED');
-  const inventory = JSON.parse(readFileSync(join(OUTPUT, 'verifier/inventory.json'), 'utf8')) as unknown;
+  const inventory = JSON.parse(readFileSync(join(output, 'verifier/inventory.json'), 'utf8')) as unknown;
   assert.deepEqual(inventory, prepared.map(table => table.inventory), 'D1F_RECORDED_INVENTORY_CHANGED');
 }
 
-function main() {
-  const assets = admittedAssets();
-  const { ready, gaps } = prepareAssets(assets);
-  const prepared = ready.map(row => row.prepared);
-  const profiles = prepared.flatMap(table => table.profiles);
-  assert.equal(new Set(profiles.map(profile => profile.profileId)).size, profiles.length);
-  const dictionaries = ready.flatMap(row => dictionaryRows(row.asset, row.prepared.profiles));
-  const links = prepared.flatMap(table => table.profiles.map((column, index) => ({
+function productLinks(prepared: ReturnType<typeof prepareTable>[]) {
+  return prepared.flatMap(table => table.profiles.map((column, index) => ({
     profileId: column.profileId, profileHash: columnProfileHash(table.inventory.profile),
     sourceField: table.inventory.profile.columns[index].name, family: column.family, split: column.split,
     header: column.header, neighbourHeaders: column.neighbourHeaders, inferredType: column.inferredType,
     declaredUnit: column.declaredUnit, valueShapes: column.valueShapes,
     cellCount: column.cellCount, emptyCount: column.emptyCount,
   })));
+}
+
+function familyCounts(assets: Asset[], profiles: PreparedColumn[], dictionaries: ReturnType<typeof dictionaryRows>) {
+  return [...new Set(assets.map(asset => asset.family))].map(family => {
+    const columns = profiles.filter(profile => profile.family === family);
+    const samples = columns.flatMap(profile => profile.maskedSamples);
+    return {
+      family, geography: assets.find(asset => asset.family === family)!.geography,
+      files: assets.filter(asset => asset.family === family).length, columns: columns.length,
+      documentedColumns: dictionaries.filter(row => row.family === family).length,
+      shortenedSamples: samples.filter(sample => sample.endsWith('[…]')).length,
+      identityStyleSamples: samples.filter(sample => /\[(?:Aadhaar|PAN|phone):/u.test(sample)).length,
+    };
+  });
+}
+
+function main() {
+  const output = outputRoot();
+  const allAssets = admittedAssets();
+  const { ready, recoveredFiles, allTablesProfiled } = prepareAssets(allAssets, output);
+  const assets = ready.map(row => row.asset);
+  const prepared = ready.map(row => row.prepared);
+  const profiles = prepared.flatMap(table => table.profiles);
+  assert.equal(new Set(profiles.map(profile => profile.profileId)).size, profiles.length);
+  const dictionaries = ready.flatMap(row => dictionaryRows(row.asset, row.prepared.profiles));
+  const links = productLinks(prepared);
   const summary = {
     manifestSha256: digest(MANIFEST), files: assets.length, families: new Set(assets.map(asset => asset.family)).size,
-    profiledFiles: ready.length, allTablesProfiled: gaps.length === 0, gaps,
+    profiledFiles: ready.length, allTablesProfiled, gaps: [], recoveredFiles,
+    checkedTables: allAssets.length,
+    productScope: resolve(output) === resolve(OUTPUT) ? 'immutable_d1f_products' : 'recovered_d1f_gaps',
     columns: profiles.length, documentedColumns: dictionaries.length,
-    perFamily: [...new Set(assets.map(asset => asset.family))].map(family => ({
-      family, geography: assets.find(asset => asset.family === family)!.geography,
-      files: assets.filter(asset => asset.family === family).length,
-      columns: profiles.filter(profile => profile.family === family).length,
-      documentedColumns: dictionaries.filter(row => row.family === family).length,
-    })),
+    perFamily: familyCounts(assets, profiles, dictionaries),
     dictionaryPolicy: 'Verbatim issuer text only; sourceField is the existing positional alias, linked by profileId.',
-    profilePolicy: 'Unchanged T1 prepareTable/masking on all prefix columns; definitions are emitted separately.',
+    profilePolicy: 'T1 preparation; post-mask shortening only when expanded; definitions emitted separately.',
     heldOutFilesOpened: false, teacherCalls: 0, providerCalls: 0, labelsProduced: 0,
     profilesRowsSha256: stableHash(profiles), dictionaryRowsSha256: stableHash(dictionaries),
   };
   assets.forEach(asset => checkedPin(asset.original));
   if (process.argv.includes('--check')) {
-    checkProducts(profiles, links, dictionaries, prepared);
+    checkProducts(output, profiles, links, dictionaries, prepared);
     console.log(JSON.stringify(summary));
     return;
   }
-  writeProducts(profiles, links, dictionaries, prepared, summary);
+  writeProducts(output, profiles, links, dictionaries, prepared, summary);
   console.log(JSON.stringify(summary));
 }
 
