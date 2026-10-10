@@ -64,6 +64,8 @@ test('without a plan frame, a polygon or an enclosed area the estimate is unknow
     assert.equal(estimate.basis, null);
     assert.equal(estimate.limitations.length, 1);
   }
+  const mixed = { ...roomPlanEstimate(kitchen), state: 'unknown' };
+  assert.throws(() => RoomPlanEstimateSchema.parse(mixed));
 });
 
 test('Tower 3, with no room candidate, keeps its canonical output and revisionId byte for byte', () => {

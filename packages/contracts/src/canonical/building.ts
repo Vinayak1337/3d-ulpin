@@ -288,14 +288,20 @@ export type BuildingConflictDecision = z.infer<typeof BuildingConflictDecisionSc
 
 const estimateBasis = z.strictObject({ method: z.literal('polygon_area_in_plan_metres@1'),
   scaleState: z.literal('candidate'), metresPerPdfPoint: number.positive() });
-/** A room's size in its plan's own metres, computed by the read; an estimate, never a measurement. */
-export const RoomPlanEstimateSchema = z.discriminatedUnion('state', [
-  z.strictObject({ state: z.literal('estimated'), areaM2: number.positive(),
-    extentM: z.tuple([number.nonnegative(), number.nonnegative()]), basis: estimateBasis,
-    limitations: z.array(z.string()) }),
-  z.strictObject({ state: z.literal('unknown'), areaM2: z.null(), extentM: z.null(), basis: z.null(),
-    limitations: z.array(z.string()) }),
-]);
+/**
+ * A room's size in its plan's own metres, computed by the read; an estimate, never a measurement. One object
+ * with nullable values (not a union with null-only members, which the Studio's typed client drops).
+ */
+export const RoomPlanEstimateSchema = z.strictObject({
+  state: z.enum(['estimated', 'unknown']), areaM2: number.positive().nullable(),
+  extentM: z.tuple([number.nonnegative(), number.nonnegative()]).nullable(), basis: estimateBasis.nullable(),
+  limitations: z.array(z.string()),
+}).superRefine((estimate, ctx) => {
+  const values = [estimate.areaM2, estimate.extentM, estimate.basis];
+  const valid = estimate.state === 'estimated' ? values.every(value => value !== null)
+    : values.every(value => value === null);
+  if (!valid) ctx.addIssue({ code: 'custom', message: 'An estimate states every value; an unknown one none.' });
+});
 export type RoomPlanEstimate = z.infer<typeof RoomPlanEstimateSchema>;
 
 export const BuildingCandidateRefSchema = z.strictObject({
