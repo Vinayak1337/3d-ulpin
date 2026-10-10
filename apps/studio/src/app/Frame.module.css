@@ -23,6 +23,7 @@
 .search input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ui-ink); font-size: 14px; outline: none; }
 .search input::placeholder { color: var(--ui-muted); }
 .spacer { flex: 1; }
+.actions { flex: none; display: flex; align-items: center; gap: var(--ui-space-4); }
 .addFiles { flex: none; text-decoration: none; }
 .areaSwitcher { position: relative; flex: none; width: 240px; }
 .areaButton {
@@ -44,3 +45,23 @@
 .areaMenu [aria-selected="true"] button { background: var(--ui-primary-soft); }
 .operator { flex: none; display: grid; place-items: center; width: 40px; height: 40px; color: var(--ui-ink-soft); }
 .main { min-height: 0; overflow: auto; position: relative; }
+
+/*
+ * One row needs about 1100 px (1140 px with a request count). Narrower, as at 200% zoom, the header wraps in
+ * reading order: the search stays beside the navigation while its hint fits, and the actions take a row of
+ * their own. The page keeps at least half the height, so a tall header scrolls away instead of covering it.
+ */
+@media (max-width: 1140px) {
+  .frame { grid-template-rows: auto minmax(50%, 1fr); }
+  .header { flex-wrap: wrap; row-gap: var(--ui-space-2); padding-block: var(--ui-space-2); }
+  .search { flex: 1 1 310px; min-width: 0; }
+  .search input { text-overflow: ellipsis; }
+  .spacer { display: none; }
+  .actions { flex: 1 1 100%; flex-wrap: wrap; row-gap: var(--ui-space-2); min-width: 0; }
+  .areaSwitcher { flex: 1 1 200px; width: auto; min-width: 0; }
+  .areaButton {
+    justify-content: flex-start; height: auto; min-height: var(--ui-touch-height); padding-block: var(--ui-space-1);
+  }
+  .areaName { white-space: normal; overflow-wrap: anywhere; }
+  .areaMenu { left: 0; min-width: 0; }
+}
