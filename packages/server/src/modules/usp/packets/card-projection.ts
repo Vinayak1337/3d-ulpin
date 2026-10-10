@@ -9,6 +9,7 @@ import { conflict } from '../../../infrastructure/errors';
 import { sha256 } from '../../../infrastructure/storage';
 import { scopedManifestTx } from '../commands';
 import { selectExactPart } from '../packet0';
+import { sourceStatedCardFacts } from './card-source-facts';
 
 /** Called only under the existing plan disclosure protection. No current body is
  * substituted for a captured body, and no dependency outside the plan is read. */
@@ -80,6 +81,9 @@ export async function projectCardFactsTx(client: PoolClient, ctx: RequestContext
   }
   if (shares.length) available('declared_share', 'Recorded declared share', shares.join('; '));
   else missing('declared_share', 'Recorded declared share', 'No included accepted applicability for this exact target and purpose', 'selected_declared_share_unavailable');
+  if (body.kind === 'space' && body.body?.sourceOnly) {
+    facts.push(...await sourceStatedCardFacts(manifest.members, captured, body));
+  }
   missing('geometry', 'Geometry / frame / datum', isPdfPlan(plan)
     ? 'Not qualified by the executed PDF region profile' : 'Not supplied by the executed text/CSV profile', 'geometry_profile_unavailable');
   missing('measurements', 'Measurements / quantities', 'No qualified measured quantities in this profile', 'measurements_profile_unavailable');

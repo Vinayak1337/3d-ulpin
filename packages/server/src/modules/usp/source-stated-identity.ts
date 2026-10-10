@@ -1,6 +1,6 @@
 import type { PoolClient } from 'pg';
 import { SourceStatedRecordSchema } from '@ulpin/contracts';
-import type { ProjectIdentityReviewSchema } from '@ulpin/contracts/usp';
+import type { ProjectIdentityReviewSchema, ProjectLocation } from '@ulpin/contracts/usp';
 import type { z } from 'zod';
 import { fingerprint } from '../cases/domain';
 import { AppError } from '../../infrastructure/errors';
@@ -9,17 +9,21 @@ type Review = z.infer<typeof ProjectIdentityReviewSchema>;
 const denied = () => new AppError(422, 'USP_SOURCE_IDENTITY',
   'Keep source-only identity evidence and location unqualified.');
 
+function assertUnknownLocation(location: ProjectLocation | undefined): void {
+  if (location && (location.anchorState !== 'not_supplied' || location.parcels.length
+    || location.locator.levels.length !== 1 || location.locator.levels[0] !== 'L?'
+    || location.locator.spaceKind !== '?' || location.locator.structureKind !== '?')) throw denied();
+}
+
 /** The P3 protocol is unchanged; source-only participants add literal/original and unknown-location guards. */
-export async function validateSourceStatedIdentityTx(client: PoolClient, rows: { body: any }[], review: Review) {
+export async function validateSourceStatedIdentityTx(client: PoolClient, rows: { id: string; body: any }[], review: Review) {
   for (const row of rows.filter(row => row.body?.sourceOnly)) {
     const result = SourceStatedRecordSchema.safeParse(row.body);
     if (!result.success || result.data.kind !== 'space'
       || !['assign', 'correct', 'cancel', 'retire'].includes(review.operation)) throw denied();
     const record = result.data;
-    const location = review.location;
-    if (location && (location.anchorState !== 'not_supplied' || location.parcels.length
-      || location.locator.levels.length !== 1 || location.locator.levels[0] !== 'L?'
-      || location.locator.spaceKind !== '?' || location.locator.structureKind !== '?')) throw denied();
+    assertUnknownLocation(review.location);
+    assertUnknownLocation(review.locations?.[row.id]);
     const evidence = record.sourceOnly.evidence;
     if (!review.evidence.some(item => item.sourceId === evidence.sourceId && item.revision === evidence.sourceRevision
       && item.locator === record.evidence[0].locator)) throw denied();

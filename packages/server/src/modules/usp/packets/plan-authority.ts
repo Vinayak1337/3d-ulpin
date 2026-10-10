@@ -3,7 +3,7 @@ import type { RequestContext, TargetPin, EvidencePointer, DeclarationEvidence } 
 import { z } from 'zod';
 import type { PacketPlan, PacketPlanInput, PacketPlanEntry,AnyPacketPlan } from '../../../../../contracts/src/usp/packets';
 import {isPdfPlan} from './plan-store';
-import {protectPdfPlanTx,authorizePdfPlanTx,assertPdfPlanActor} from './pdf-authority';
+import {protectPdfPlanTx,authorizePdfPlanTx,assertPdfPlanActor,plannedBindings} from './pdf-authority';
 import { UspPacketPlanEntrySchema } from '../../../../../contracts/src/usp/packets';
 import { canonical, fingerprint } from '../../cases/domain';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
@@ -81,7 +81,9 @@ async function disclosureDependenciesTx(client: PoolClient, plan: PacketPlan) {
  * precede recording and source/registry locks, matching the existing writers.
  * Rediscovery after protection rejects a changed case/lineage closure before disclosure. */
 export async function protectPlanDisclosureTx(client: PoolClient, ctx: RequestContext, plan: AnyPacketPlan) {
-  if(isPdfPlan(plan)){assertPdfPlanActor(ctx,plan);await protectPdfPlanTx(client,ctx,plan.input);return;}
+  if(isPdfPlan(plan)){
+    assertPdfPlanActor(ctx,plan);await protectPdfPlanTx(client,ctx,plan.input,plannedBindings(plan));return;
+  }
   assertPlanActor(ctx, plan);
   await scopedManifestTx(client, ctx, plan.input.scope);
   const dependencies = await disclosureDependenciesTx(client, plan);

@@ -1,0 +1,25 @@
+{
+  "requestKey": "c85083aa-ea4b-40f2-bcea-94b23e4b5dba",
+  "expectedCanonicalRevision": "READ_CURRENT_CANONICAL_REVISION_AT_RUNTIME",
+  "level": {
+    "label": "2ND FLOOR PLAN",
+    "evidence": {
+      "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429",
+      "sourceRevision": 1,
+      "page": 1,
+      "region": [850, 875, 1020, 910],
+      "literal": "2ND FLOOR PLAN"
+    }
+  },
+  "space": {
+    "label": "UNIT-3B",
+    "evidence": {
+      "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429",
+      "sourceRevision": 1,
+      "page": 1,
+      "region": [596, 390, 644, 409],
+      "literal": "UNIT-3B"
+    }
+  },
+  "reason": "Officer-cited boxed UNIT-3B / 2ND FLOOR PLAN label only; no boundary, geometry or rights."
+}
