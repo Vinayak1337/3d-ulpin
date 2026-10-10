@@ -1,0 +1,40 @@
+{
+  "realVectors": [
+    {
+      "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+      "bytes": 1103282,
+      "format": "geojson",
+      "features": 1662,
+      "fields": 8,
+      "rejected": 1,
+      "accepted": 1661,
+      "sourceCrs": "EPSG:4326"
+    },
+    {
+      "sha256": "caf05fa5c76cc3eb1d6d2fb43c494ce0bd6416b97946012adddba623e203cf7f",
+      "bytes": 1837922,
+      "format": "geojson",
+      "features": 446,
+      "fields": 7,
+      "rejected": 0,
+      "accepted": 446,
+      "sourceCrs": "EPSG:4326"
+    }
+  ],
+  "nativeUnits": {
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "successful": true,
+    "modules": [
+      "test_native_archive",
+      "test_document_archive_dispatch",
+      "test_native_workbook_xml",
+      "test_native_pdf_bounds"
+    ]
+  },
+  "runtimeStarted": false,
+  "databaseAccess": false,
+  "providerCalls": 0,
+  "qualification": "Native in-process checks, not API/DB persistence or frontend intake proof"
+}
