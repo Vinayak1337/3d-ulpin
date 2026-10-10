@@ -1,4 +1,5 @@
 import type { PoolClient } from 'pg';
+import type { PhysicalFeature } from '@ulpin/contracts';
 import {
   DataSufficiencyVerdictSchema, UspGeometryMetadataSchema, UspGeometryProjectionSchema,
   type TargetPin, type UspGeometryMetadata, type UspGeometryProjection,
@@ -87,6 +88,45 @@ export async function recordGeometryQualificationTx(client: PoolClient, target: 
   if (!row) throw new AppError(409, 'USP_GEOMETRY_STALE', 'The canonical geometry revision changed.');
   await client.query(`INSERT INTO usp_geometry_qualifications(namespace,record_id,record_revision,revision,target_body_sha256,body)
     VALUES($1,$2,$3,$4,$5,$6)`, [target.ref.namespace,target.ref.id,target.revision,revision,row.hash,value]);
+}
+
+/** A candidate read from a publisher's retained original, not yet recorded: its review is admission, not analysis. */
+export function isSourceNativeCandidate(feature: PhysicalFeature,
+  pkg: { sourceRevisionIds: readonly string[] }): boolean {
+  return feature.revision === 0 && ['observed', 'planned'].includes(feature.worldStatus)
+    && !Object.hasOwn(feature.properties, 'spatialExtraction')
+    && feature.sourceRevisionId.trim().length > 0 && pkg.sourceRevisionIds.includes(feature.sourceRevisionId)
+    && feature.evidence.some(entry => entry.sourceRevisionId === feature.sourceRevisionId);
+}
+
+/** Admission checks use candidates and qualified recorded context; omitted neighbours still pin the full review. */
+export async function splitPackageReviewGeometry(features: readonly PhysicalFeature[],
+  pkg: { features: readonly PhysicalFeature[]; sourceRevisionIds: readonly string[] }) {
+  const ownIds = new Set(pkg.features.map(feature => feature.id));
+  const candidates = features.filter(feature => ownIds.has(feature.id) && isSourceNativeCandidate(feature, pkg));
+  const candidateIds = new Set(candidates.map(feature => feature.id));
+  const requireQualification = features.filter(feature => ownIds.has(feature.id) && !candidateIds.has(feature.id));
+  const context = features.filter(feature => !ownIds.has(feature.id));
+  const qualified = await qualifiedGeometryRecordPins('FIND', 'area_feature', context);
+  const qualifiedContext = context.filter(feature => isQualifiedPin(qualified, geometryPin('area_feature', feature)));
+  const checkIds = new Set([...candidateIds, ...requireQualification.map(feature => feature.id),
+    ...qualifiedContext.map(feature => feature.id)]);
+  const unknownRoles = candidates.filter(feature => {
+    const role = feature.geometryRole ?? feature.semantics?.geometryRole;
+    return !role || role === 'unknown' || feature.semantics?.evidenceState === 'unresolved';
+  }).length;
+  const coverage = [
+    `${candidates.length} source-native candidate(s) checked for admission, not recorded-geometry analysis. `
+      + `${unknownRoles} of these have no stated role; what the outline represents is unknown. `
+      + `${qualifiedContext.length} recorded context feature(s) assessed; `
+      + 'recorded neighbours require canonical geometry qualification.',
+  ];
+  const omitted = context.length - qualifiedContext.length;
+  if (omitted) coverage.push(
+    `${omitted} recorded features in or beside this area hold no geometry qualification `
+      + 'and were not assessed against these candidates.',
+  );
+  return { requireQualification, checkFeatures: features.filter(feature => checkIds.has(feature.id)), coverage };
 }
 
 /** Caller payloads cannot reuse a qualified ID/revision while changing the geometry or its inputs. */
