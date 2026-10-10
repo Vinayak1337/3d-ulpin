@@ -68,7 +68,7 @@ def inspect_pages(source: Path, expected_hash: str, offset: int, limit: int,
                   selected_page: int | None, output: Path) -> dict:
     import fitz
     from geo.usp_document_candidates.docling_tesseract import (
-        render_pdf_selection, SourceOcrError, _selection, MAX_SOURCE_PAGES,
+        render_pdf_selection, SourceOcrError, whole_page_view_scale, MAX_SOURCE_PAGES,
     )
     if not source.is_file() or not 0 < source.stat().st_size <= MAX_SOURCE:
         raise PageError("DOCUMENT_PAGES_SOURCE_LIMIT")
@@ -102,27 +102,34 @@ def inspect_pages(source: Path, expected_hash: str, offset: int, limit: int,
             values = [*page.rect, *page.mediabox, *page.cropbox]
             if any(not math.isfinite(v) or abs(v) > 10_000_000 for v in values) or min(page.rect.width, page.rect.height) <= 0:
                 raise PageError("DOCUMENT_PAGES_FRAME_UNSUPPORTED")
-            supported = count <= MAX_SOURCE_PAGES
-            try:
-                _selection(page, None)
-            except SourceOcrError:
-                supported = False
+            support, reduced = "unsupported", None
+            if count <= MAX_SOURCE_PAGES:
+                try:
+                    reduced = whole_page_view_scale(page)
+                    support = "supported" if reduced is None else "reduced"
+                except SourceOcrError:
+                    pass
             pages.append({"page": index + 1, "label": label or f"Page {index + 1}", "sourceLabel": label,
                           "frame": {"kind": "pdf_display_page_top_left_points", "rotation": page.rotation,
                                     "width": float(page.rect.width), "height": float(page.rect.height)},
                           "mediaBox": list(page.mediabox), "cropBox": list(page.cropbox),
-                          "boxConvention": "pymupdf_page_rectangles/1",
-                          "renderSupport": "supported" if supported else "unsupported"})
+                          "boxConvention": "pymupdf_page_rectangles/1", "renderSupport": support,
+                          **({} if reduced is None else {"reducedScalePxPerPt": reduced})})
     rendered = None
     if selected_page is not None:
-        if pages[0]["renderSupport"] != "supported":
+        if pages[0]["renderSupport"] == "unsupported":
             raise PageError("DOCUMENT_PAGES_RENDER_PROFILE_UNSUPPORTED")
-        frame = render_pdf_selection(source, expected_hash, selected_page, None, output / "page.png")
+        # This picture is for viewing and goes to the HTTP answer only. It is the one caller that may draw
+        # a page over the whole-page limit, reduced; nothing reads it back as an input.
+        frame = render_pdf_selection(source, expected_hash, selected_page, None, output / "page.png",
+                                     viewing=True)
         if frame["source"] != {"bytes": len(original), "sha256": expected_hash}:
             raise PageError("DOCUMENT_PAGES_SOURCE_INTEGRITY")
         image = frame["render"]
         rendered = {"page": selected_page, "sha256": image["pngSha256"], "bytes": image["pngBytes"],
                     "pixels": image["pixels"], "scale": image["scale"], "pixelOrigin": image["pixelOrigin"], "dpi": image["dpi"]}
+        if pages[0]["renderSupport"] == "reduced":
+            rendered["reduced"] = True
     return {"version": "document-pages-local/1", "sourceSha256": expected_hash, "sourceBytes": len(original),
             "pageCount": count, "offset": offset, "limit": limit, "pages": pages, "render": rendered}
 
