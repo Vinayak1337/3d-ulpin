@@ -20,6 +20,8 @@ export interface SceneEngineOptions {
   onHover?: (pick: Pick) => void;
   /** Called after every rendered frame, so HTML overlays (labels, readout) can follow the camera. */
   onView?: () => void;
+  /** Called after rendering the last queued addition, not merely after building its meshes. */
+  onBuildingsDrawn?: () => void;
   onMeasure?: (measurement: Measurement) => void;
   onTrench?: (trench: Trench) => void;
   reducedMotion?: boolean;
@@ -47,6 +49,10 @@ interface Entry {
 
 const CAMERA_MS = 600;
 const GROW_MS = 220;
+// Leave most of a 16.7 ms frame for WebGL uploads, drawing and the browser. One building is atomic.
+const BUILDING_BUDGET_MS = 4;
+// Tree avoidance needs all footprints; bound global recomputation while a long queue drains.
+const DRESSING_INTERVAL_MS = 250;
 /** Sun direction (towards the sun) in scene axes: from the south-west, high. */
 const SUN_DIR = new Vector3(-0.5, 0.95, 0.55).normalize();
 
@@ -77,6 +83,20 @@ export class SceneEngine {
   private readonly options: SceneEngineOptions;
   private readonly entries = new Map<string, Entry>();
   private readonly buildingBounds = new Map<string, Box3>();
+  private readonly buildingInputs = new Map<string, FootprintInput>();
+  private readonly buildingEntries = new Map<string, Entry[]>();
+  private buildingQueue = new Map<string, { input: FootprintInput; growNew: boolean }>();
+  private readonly renderedBuildings = new Set<string>();
+  private readonly renderChanges = new Map<string, boolean>();
+  private readonly drawWaiters = new Set<{
+    buildings: readonly string[];
+    base: readonly string[];
+    finish: (drawn: boolean) => void;
+  }>();
+  private baseInputs: BaseFeatureInput[] = [];
+  private renderedBase = new Set<string>();
+  private baseNeedsDraw = false;
+  private notifyDrain = false;
   private readonly storeyBuildings = new Map<string, FootprintInput>();
   private readonly base = new Group();
   private readonly buildings = new Group();
@@ -126,7 +146,10 @@ export class SceneEngine {
   private readonly sky: CanvasTexture;
   private readonly footprintPolygons = new Map<string, MultiPolygon>();
   private lands: { id: string; polygons: MultiPolygon }[] = [];
-  private dressingKey = '';
+  private dressingDirty = false;
+  private dressingAt = -Infinity;
+  private readonly pads = new Map<string, Mesh>();
+  private readonly trees = new Group();
   private hasRoads = false;
   private readonly raised: Mesh[] = [];
   private readonly anchorSizes = new Map<string, number>();
@@ -203,6 +226,7 @@ export class SceneEngine {
     this.halo.visible = false;
     this.underground.add(this.utilities, this.trenchGroup);
     this.base.add(this.kerbs);
+    this.dressing.add(this.trees);
     this.scene.add(this.ground, this.overlays, this.dressing, this.plate, this.base, this.buildings, this.detail, this.findingGroup, this.underground, this.measureGroup, this.sectionGroup, this.deviationGroup, this.halo);
 
     const canvas = this.renderer.domElement;
@@ -368,7 +392,7 @@ export class SceneEngine {
     };
     for (const child of this.base.children) child.visible = on(child.userData.layer);
     this.kerbs.visible = this.lookName === 'enhanced' && this.layers.roads;
-    for (const child of this.dressing.children) child.visible = on(child.userData.layer);
+    this.trees.visible = this.layers.trees && this.layers.publicLand;
   }
 
   /** Top-down (2D) or oblique (3D) camera. */
@@ -415,6 +439,9 @@ export class SceneEngine {
 
   /** Base map: roads, public land, water and parcel lines; utilities are kept for underground mode. */
   setBase(features: BaseFeatureInput[]): void {
+    if (sameInputs(this.baseInputs, features)) return;
+    this.baseInputs = [...features];
+    this.baseNeedsDraw = true;
     disposeGroup(this.base);
     disposeGroup(this.kerbs);
     this.base.add(this.kerbs);
@@ -467,7 +494,7 @@ export class SceneEngine {
     this.hasRoads = features.some((f) => f.kind === 'road');
     if (hadRoads !== this.hasRoads) this.setLook(this.lookName);
     this.lands = features.filter((f) => f.kind === 'public_land').map((f) => ({ id: f.id, polygons: f.polygons }));
-    this.dressingKey = '';
+    this.dressingDirty = true;
     this.buildDressing();
     this.applyLayers();
     this.utilityInputs = features.filter((f) => f.kind === 'utility');
@@ -475,33 +502,97 @@ export class SceneEngine {
     this.apply();
   }
 
-  /**
-   * Replaces the area's buildings. Buildings not seen before grow in when `growNew` (a live import);
-   * the camera never moves because content arrived.
-   */
+  /** Whole-list truth: retain unchanged meshes, remove missing ids, rebuild changed ids, queue new ids. */
   setBuildings(inputs: FootprintInput[], { growNew = false } = {}): void {
-    const previous = new Set(this.buildingBounds.keys());
-    this.clearEntries(this.buildings, (e) => e.kind === 'building' || e.kind === 'storey');
-    this.buildingBounds.clear();
-    this.storeyBuildings.clear();
-    this.footprintPolygons.clear();
-    this.plateFor = null;
-    for (const input of inputs) this.footprintPolygons.set(input.id, input.polygons);
-    const now = performance.now();
-    for (const input of inputs) {
-      if (input.storeys?.length) this.addStoreyBuilding(input);
-      else this.addFootprintBuilding(input, growNew && !previous.has(input.id) ? now : undefined);
+    if (this.disposed) return;
+    const wanted = new Map(inputs.map((input) => [input.id, input]));
+    let removed = false;
+    for (const id of this.buildingInputs.keys()) {
+      if (wanted.has(id)) continue;
+      this.removeBuilding(id);
+      removed = true;
     }
-    this.areaBox = new Box3();
-    for (const [, box] of this.buildingBounds) this.areaBox.union(box);
-    this.fitGroundAndShadow();
-    this.buildDressing();
-    this.apply();
-    if (!this.cameraKey && inputs.length) this.applyCamera(true);
+    const queue = new Map<string, { input: FootprintInput; growNew: boolean }>();
+    for (const input of wanted.values()) {
+      const previous = this.buildingInputs.get(input.id);
+      if (!previous) {
+        queue.set(input.id, { input, growNew: this.buildingQueue.get(input.id)?.growNew ?? growNew });
+      } else if (!sameInput(previous, input)) {
+        this.removeBuilding(input.id);
+        this.addBuilding(input);
+        removed = true;
+      }
+    }
+    this.buildingQueue = queue;
+    if (removed) {
+      this.areaBox.makeEmpty();
+      for (const box of this.buildingBounds.values()) this.areaBox.union(box);
+      this.fitGroundAndShadow();
+      this.apply();
+    }
+    if (queue.size) this.notifyDrain = true;
+    if (queue.size || removed || this.notifyDrain) this.requestRender();
+  }
+
+  /** Only ids that have reached a rendered frame; queued inputs have no pick or label. */
+  drawnBuildings(): { count: number; pending: number; has: (id: string) => boolean } {
+    return {
+      count: this.renderedBuildings.size, pending: this.buildingQueue.size,
+      has: (id) => this.renderedBuildings.has(id),
+    };
+  }
+
+  /** Wait for a part's building AND base ids to reach a frame. Disposal/cancellation returns false. */
+  waitForDrawn(buildings: readonly string[], base: readonly string[] = [], signal?: AbortSignal): Promise<boolean> {
+    if (this.disposed || signal?.aborted) return Promise.resolve(false);
+    if (this.partIsDrawn(buildings, base)) return Promise.resolve(true);
+    return new Promise((resolve) => {
+      const cancel = () => waiter.finish(false);
+      const waiter = {
+        buildings, base,
+        finish: (drawn: boolean) => {
+          this.drawWaiters.delete(waiter);
+          signal?.removeEventListener('abort', cancel);
+          resolve(drawn);
+        },
+      };
+      this.drawWaiters.add(waiter);
+      signal?.addEventListener('abort', cancel, { once: true });
+    });
+  }
+
+  private partIsDrawn(buildings: readonly string[], base: readonly string[]): boolean {
+    return buildings.every((id) => this.renderedBuildings.has(id) && !this.renderChanges.has(id))
+      && !this.baseNeedsDraw && base.every((id) => this.renderedBase.has(id));
+  }
+
+  private finishDraw() {
+    for (const [id, added] of this.renderChanges) {
+      if (added) this.renderedBuildings.add(id);
+      else this.renderedBuildings.delete(id);
+    }
+    this.renderChanges.clear();
+    if (this.baseNeedsDraw) {
+      this.renderedBase = new Set(this.baseInputs.map((input) => input.id));
+      this.baseNeedsDraw = false;
+    }
+    for (const waiter of this.drawWaiters) {
+      if (this.partIsDrawn(waiter.buildings, waiter.base)) waiter.finish(true);
+    }
+    if (!this.buildingQueue.size && this.notifyDrain) {
+      this.notifyDrain = false;
+      this.options.onBuildingsDrawn?.();
+    }
   }
 
   /** Levels and spaces of the building being explored; null clears them. */
   setBuildingDetail(detail: BuildingDetailInput | null): void {
+    const pending = detail && this.buildingQueue.get(detail.buildingId);
+    if (pending) {
+      this.buildingQueue.delete(pending.input.id);
+      this.addBuilding(pending.input, pending.growNew);
+      this.fitGroundAndShadow();
+    }
     this.clearEntries(this.detail, (e) => e.kind === 'space');
     this.detailInput = detail;
     if (detail) {
@@ -652,6 +743,8 @@ export class SceneEngine {
 
   dispose(): void {
     this.disposed = true;
+    this.buildingQueue.clear();
+    for (const waiter of this.drawWaiters) waiter.finish(false);
     this.resizeObserver.disconnect();
     const canvas = this.renderer.domElement;
     canvas.removeEventListener('pointerdown', this.onPointerDown);
@@ -674,7 +767,77 @@ export class SceneEngine {
 
   // ---------------------------------------------------------------- builders
 
-  private addFootprintBuilding(input: FootprintInput, grow?: number) {
+  private addBuilding(input: FootprintInput, growNew = false): Entry[] {
+    this.footprintPolygons.set(input.id, input.polygons);
+    const grow = growNew ? performance.now() : undefined;
+    const entries = input.storeys?.length
+      ? this.addStoreyBuilding(input, grow)
+      : [this.addFootprintBuilding(input, grow)];
+    this.buildingEntries.set(input.id, entries);
+    this.buildingInputs.set(input.id, input);
+    this.renderChanges.set(input.id, true);
+    const bounds = this.buildingBounds.get(input.id);
+    if (bounds) this.areaBox.union(bounds);
+    const geometry = padGeometry([input.polygons], 2.2, 0.004);
+    if (geometry) {
+      const pad = new Mesh(geometry, this.m.pad);
+      pad.renderOrder = CONTEXT_FILL_ORDER;
+      pad.receiveShadow = true;
+      pad.raycast = () => {};
+      this.pads.set(input.id, pad);
+      this.dressing.add(pad);
+    }
+    this.dressingDirty = true;
+    return entries;
+  }
+
+  private removeBuilding(id: string) {
+    for (const entry of this.buildingEntries.get(id) ?? []) {
+      for (const object of [...entry.meshes, ...entry.edges]) {
+        this.buildings.remove(object);
+        object.geometry.dispose();
+      }
+      this.entries.delete(entry.id);
+    }
+    const pad = this.pads.get(id);
+    if (pad) {
+      this.dressing.remove(pad);
+      pad.geometry.dispose();
+      this.pads.delete(id);
+    }
+    this.buildingEntries.delete(id);
+    this.buildingInputs.delete(id);
+    this.buildingBounds.delete(id);
+    this.storeyBuildings.delete(id);
+    this.footprintPolygons.delete(id);
+    this.renderChanges.set(id, false);
+    if (this.plateFor === id) this.plateFor = null;
+    this.dressingDirty = true;
+  }
+
+  private drainBuildingQueue() {
+    const started = performance.now();
+    const added: Entry[] = [];
+    while (this.buildingQueue.size) {
+      const [id, pending] = this.buildingQueue.entries().next().value!;
+      this.buildingQueue.delete(id);
+      added.push(...this.addBuilding(pending.input, pending.growNew));
+      if (performance.now() - started >= BUILDING_BUDGET_MS) break;
+    }
+    if (added.length) {
+      this.fitGroundAndShadow();
+      const selectedArrived = added.some((entry) => entry.buildingId === this.state.buildingId);
+      if (selectedArrived) this.apply();
+      else this.apply(added);
+      if (!this.cameraKey) this.applyCamera(true);
+      else if (selectedArrived && this.state.mode !== 'area') this.applyCamera(false);
+    }
+    if (!this.buildingQueue.size || performance.now() - this.dressingAt >= DRESSING_INTERVAL_MS) {
+      this.buildDressing();
+    }
+  }
+
+  private addFootprintBuilding(input: FootprintInput, grow?: number): Entry {
     const known = hasKnownHeight(input);
     const look = buildingLook(input);
     const geometry = prismGeometry(input.polygons, input.baseM ?? 0, known ? input.heightM! : FLAT_THICKNESS_M);
@@ -694,9 +857,11 @@ export class SceneEngine {
     this.buildings.add(mesh, edge);
     this.entries.set(input.id, entry);
     this.buildingBounds.set(input.id, entry.bounds.clone());
+    return entry;
   }
 
-  private addStoreyBuilding(input: FootprintInput) {
+  private addStoreyBuilding(input: FootprintInput, grow?: number): Entry[] {
+    const added: Entry[] = [];
     this.storeyBuildings.set(input.id, input);
     const above = new Box3();
     for (const storey of input.storeys!) {
@@ -728,34 +893,32 @@ export class SceneEngine {
         bounds.union(geometry.boundingBox!);
         this.buildings.add(mesh, edge);
       }
+      entry.grow = grow;
+      added.push(entry);
       this.entries.set(id, entry);
       if (!storey.belowGround) above.union(bounds);
     }
     if (!above.isEmpty()) this.buildingBounds.set(input.id, above);
+    return added;
   }
 
   /** Sidewalk pads around every footprint and trees in public land (enhanced view only). */
   private buildDressing() {
+    if (!this.dressingDirty) return;
+    this.dressingDirty = false;
+    this.dressingAt = performance.now();
     const footprints = [...this.footprintPolygons.values()];
-    const key = `${footprints.length}|${this.lands.length}|${[...this.footprintPolygons.keys()].slice(0, 50).join(',')}|${this.lands.map((l) => l.id).join(',')}`;
-    if (key === this.dressingKey) return;
-    this.dressingKey = key;
-    disposeGroup(this.dressing);
-    const pads = padGeometry(footprints, 2.2, 0.004);
-    if (pads) {
-      const mesh = new Mesh(pads, this.m.pad);
-      mesh.renderOrder = CONTEXT_FILL_ORDER;
-      mesh.receiveShadow = true;
-      mesh.raycast = () => {};
-      this.dressing.add(mesh);
+    disposeGroup(this.trees);
+    for (const tree of treeMeshes(this.lands, footprints, this.m.crown, this.m.trunk)) {
+      tree.userData.layer = 'trees';
+      this.trees.add(tree);
     }
-    for (const tree of treeMeshes(this.lands, footprints, this.m.crown, this.m.trunk)) { tree.userData.layer = 'trees'; this.dressing.add(tree); }
-    this.applyLayers();
+    this.trees.visible = this.layers.trees && this.layers.publicLand;
   }
 
   /** Whether the area has any trees to show (public land large enough). */
   hasTrees(): boolean {
-    return this.dressing.children.some((c) => c.userData.layer === 'trees');
+    return this.trees.children.length > 0;
   }
 
   private buildUtilities() {
@@ -820,7 +983,7 @@ export class SceneEngine {
   // --------------------------------------------------------------- apply
 
   /** Materials and visibility for the current mode (map-and-3d.md, "What the scene shows per mode"). */
-  private apply() {
+  private apply(entries: Iterable<Entry> = this.entries.values()) {
     const { mode, buildingId, levelId, spaceId, finding } = this.state;
     const m = this.m;
     const selectedSomething = Boolean(buildingId) || mode !== 'area';
@@ -838,7 +1001,7 @@ export class SceneEngine {
       return Boolean(b && b.min.x < focus.max.x && b.max.x > focus.min.x && b.min.z < focus.max.z && b.max.z > focus.min.z);
     };
 
-    for (const entry of this.entries.values()) {
+    for (const entry of entries) {
       if (entry.kind === 'building') {
         const selected = entry.id === buildingId;
         if (hides(entry.id)) { this.setEntry(entry, m.occluder, m.occluderEdge, true, false); continue; }
@@ -1282,6 +1445,7 @@ export class SceneEngine {
     this.frameRequested = false;
     if (this.disposed) return;
     const started = performance.now();
+    this.drainBuildingQueue();
     let animating = false;
     if (this.flight) animating = this.stepFlight(performance.now());
     animating = this.stepGrow(now) || animating;
@@ -1290,8 +1454,11 @@ export class SceneEngine {
     if (this.state.mode === 'deviation') this.renderSplit();
     else this.renderer.render(this.scene, this.camera);
     this.recordFrameTime(performance.now() - started);
+    this.finishDraw();
     this.options.onView?.();
-    if (animating || [...this.tilesets].some((tiles) => tiles.loadProgress < 1)) this.requestRender();
+    if (animating || this.buildingQueue.size || [...this.tilesets].some((tiles) => tiles.loadProgress < 1)) {
+      this.requestRender();
+    }
   };
 
   /** Two views of one camera: sanctioned (left, without the observed-only volume) and observed (right). */
@@ -1470,6 +1637,18 @@ export class SceneEngine {
     this.apply();
     this.options.onHover?.({ kind: 'ground' });
   };
+}
+
+function sameInput(left: object, right: object): boolean {
+  if (left === right) return true;
+  const keys = Reflect.ownKeys(left);
+  return keys.length === Reflect.ownKeys(right).length && keys.every((key) =>
+    Object.prototype.hasOwnProperty.call(right, key)
+    && Object.is(Reflect.get(left, key), Reflect.get(right, key)));
+}
+
+function sameInputs(left: object[], right: object[]): boolean {
+  return left.length === right.length && left.every((input, index) => sameInput(input, right[index]!));
 }
 
 function makeMaterials(p: ScenePalette, clip: Plane) {
