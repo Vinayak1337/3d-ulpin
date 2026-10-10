@@ -1,8 +1,8 @@
 import { Link, useParams } from 'react-router';
 import { Badge, Button, DescriptionList, Panel, Skeleton, formatDateTime } from '@ulpin/ui';
 import { useCardVerification, type CardVerification } from '../../api/queries';
+import { CopyableId } from '../identity/CopyableId';
 import { cardPdfPath, isNotFound, readFailure } from '../identity/registryCard';
-import { CopyableId } from './CopyableId';
 import { cardAddress, checkRows, recordText, signatureText, verdictOf } from './verification';
 import { ResultBanner, VerifyFrame } from './VerifyFrame';
 import styles from './VerifyPage.module.css';
