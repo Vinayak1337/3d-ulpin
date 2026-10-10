@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { NormalizedBuildingSchema, type NormalizedBuilding } from '@ulpin/contracts';
-import { attachCandidateLevel, rejectCandidate } from './source-building-candidates';
+import { attachCandidateLevel, rejectCandidate, roomCandidateCitations } from './source-building-candidates';
 import { sanitizedOcrFailure } from './document-ocr';
 
 const retained = JSON.parse(readFileSync('docs/evidence/gf-backend/k2/magnolia-canonical.json', 'utf8'));
@@ -57,6 +57,26 @@ test('room rejection retains cited geometry and prior review refuses attachment 
     'fixture-operator', '2026-10-10T09:01:00Z'), decided);
   assert.throws(() => attachCandidateLevel(building, attached, building.levels[0].levelId,
     'Cannot reattach reviewed room', 'fixture-operator', '2026-10-10T09:01:00Z'), decided);
+});
+
+test('a stated size is checked with the room\'s own citation and stays on the candidate through a decision', () => {
+  const building = NormalizedBuildingSchema.parse(JSON.parse(
+    readFileSync('docs/evidence/gf-t16/k3b/magnolia-after-current.json', 'utf8'),
+  ));
+  const room = building.candidates.find(value => !value.review && value.levelId === null)!;
+  const [own] = room.citations!;
+  // Controlled contract fixture only; the text and box are not read from any sheet.
+  const statedSize = { literal: 'FIXTURE STATED SIZE', citation: { sourceId: own.sourceId,
+    sourceSha256: own.sourceSha256,
+    locator: { kind: 'region' as const, page: 2, x: 1, y: 2, width: 3, height: 4, unit: 'pt' as const } } };
+  const stated = { ...room, statedSize };
+  assert.deepEqual(roomCandidateCitations(room), [own]);
+  assert.deepEqual(roomCandidateCitations(stated), [own, statedSize.citation]);
+  const rejected = rejectCandidate(stated, 'RC2 contract fixture', 'fixture-operator', '2026-10-10T17:00:00Z');
+  assert.deepEqual(rejected.statedSize, statedSize);
+  const attached = attachCandidateLevel(building, stated, building.levels[0].levelId, 'RC2 contract fixture',
+    'fixture-operator', '2026-10-10T17:00:00Z');
+  assert.deepEqual(attached.statedSize, statedSize);
 });
 
 test('OCR diagnostics keep only allowlisted classes and fixed messages, never source text or paths', () => {

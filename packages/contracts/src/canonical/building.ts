@@ -304,6 +304,15 @@ export const RoomPlanEstimateSchema = z.strictObject({
 });
 export type RoomPlanEstimate = z.infer<typeof RoomPlanEstimateSchema>;
 
+/**
+ * The size a sheet prints beside a room, as its reader read it: the text as it is (never parsed into metres or
+ * converted here) and the place of that text on the sheet. Retained with the candidate; the read adds none.
+ */
+export const RoomStatedSizeSchema = z.strictObject({
+  literal: z.string().max(200).regex(/\S/),
+  citation: BuildingCitationSchema,
+});
+
 export const BuildingCandidateRefSchema = z.strictObject({
   candidateId: id,
   task: id,
@@ -325,6 +334,7 @@ export const BuildingCandidateRefSchema = z.strictObject({
       z.literal('page_right'), z.literal('page_up')]), placement: z.literal('unknown'),
     scaleState: z.literal('candidate') }).optional(),
   planEstimate: RoomPlanEstimateSchema.optional(),
+  statedSize: RoomStatedSizeSchema.optional(),
   review: z.strictObject({ outcome: z.enum(['accepted', 'rejected']), reason: z.string().min(1),
     actor: id, time: z.string().datetime() }).optional(),
 });

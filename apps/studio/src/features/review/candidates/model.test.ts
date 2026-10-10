@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { evidenceRef } from '../recorded/model';
 import {
-  candidateCard, candidateCards, candidateGroups, countByState, decisionHistory, itemIdOf, locatorText,
-  planEstimateView, type CanonicalCandidate,
+  candidateCard, candidateCards, candidateGroups, candidateLevel, citationOpenLabel, countByState, decisionHistory,
+  itemIdOf, locatorText, planEstimateView, statedSizeView, type CanonicalCandidate,
 } from './model';
 
 const ITEM = '11111111-1111-4111-8111-111111111111';
@@ -71,7 +72,7 @@ describe('candidateCard', () => {
   });
 
   it('carries the full source id of a citation, and shows its first characters and locator', () => {
-    expect(card.citations).toEqual([
+    expect(card.citations).toMatchObject([
       { sourceId: 'abcdef12-0000-4000-8000-000000000000', source: 'abcdef12', locator: 'p.1' },
     ]);
   });
@@ -112,7 +113,7 @@ describe('candidateCard', () => {
   it('does not invent a score or a level for a room', () => {
     const roomCard = candidateCard(room())!;
     expect(roomCard.confidence).toBe('Not scored');
-    expect(roomCard.levelId).toBeNull();
+    expect(roomCard.level).toEqual({ text: 'Not attached to a level', stated: false });
     expect(roomCard.title).toBe('FIXTURE ROOM');
     expect(roomCard.levelLiteral).toBe('FIXTURE FLOOR PLAN');
   });
@@ -129,6 +130,79 @@ describe('candidateCard', () => {
 
   it('counts only entries of the asked kind as without geometry', () => {
     expect(candidateCards([room(), roofprint()], 'room')).toMatchObject({ withoutGeometry: 0 });
+  });
+});
+
+describe('the target a citation opens', () => {
+  const target = (candidate: CanonicalCandidate) => {
+    const card = candidateCard(candidate)!;
+    return evidenceRef(card.title, card.citations[0]!);
+  };
+
+  it('is the cited source at its page and region, with the numbers and unit the record carries', () => {
+    const { x, y, width, height, unit } = region;
+    expect(target(room())).toMatchObject({
+      sourceId: citation.sourceId,
+      label: 'FIXTURE ROOM',
+      locator: { kind: 'region', page: 2, region: { x, y, width, height, unit } },
+    });
+  });
+
+  it('is the cited source at its page when the citation names no region', () => {
+    expect(target(roofprint())).toMatchObject({ sourceId: citation.sourceId, locator: { kind: 'page', page: 1 } });
+  });
+
+  it('pins the original only when the citation records its revision; none is assumed', () => {
+    expect(target(roofprint()).pin).toBeUndefined();
+    const pinned = roofprint({ citations: [{ ...citation, sourceRevision: 3 }] });
+    expect(target(pinned).pin).toEqual({ revision: 3, sha256: citation.sourceSha256 });
+  });
+
+  it('names the control by what it opens', () => {
+    expect(citationOpenLabel(candidateCard(roofprint())!.citations[0]!)).toBe('Open cited source abcdef12 at p.1');
+    expect(citationOpenLabel(candidateCard(room())!.citations[0]!))
+      .toBe('Open cited source abcdef12 at p.2 · x 443.8, y 1196.9 · 71.3 × 79.8 pt');
+  });
+
+  it('keeps two citations of one source apart', () => {
+    const twice = candidateCard(roofprint({ citations: [citation, citation] }))!;
+    expect(new Set(twice.citations.map((item) => item.key)).size).toBe(2);
+  });
+});
+
+describe('candidateLevel', () => {
+  const LEVEL = '5a1d717b-0000-4000-8000-000000000000';
+  const level = (value: string | null, state: string) => ({ levelId: LEVEL, order: 7, label: { value, state } });
+  const read = (levelId: string | null, levels: unknown[]) => candidateLevel(levelId, levels as never);
+  const stated = (text: string) => ({ text, stated: true });
+  const notStated = (text: string) => ({ text, stated: false });
+
+  it('prints a reviewed level by the label the read states', () => {
+    expect(read(LEVEL, [level('FIXTURE FLOOR PLAN', 'reviewed')])).toEqual(stated('FIXTURE FLOOR PLAN'));
+    const card = candidateCard(room({ levelId: LEVEL }), [level('FIXTURE FLOOR PLAN', 'reviewed')] as never)!;
+    expect(card.level).toEqual(stated('FIXTURE FLOOR PLAN'));
+  });
+
+  it('says in words when the level label is not reviewed', () => {
+    expect(read(LEVEL, [level('FIXTURE FLOOR PLAN', 'candidate')]))
+      .toEqual(stated('FIXTURE FLOOR PLAN (candidate)'));
+    expect(read(LEVEL, [level('FIXTURE FLOOR PLAN', 'source_supported')]))
+      .toEqual(stated('FIXTURE FLOOR PLAN (source supported)'));
+  });
+
+  it('never makes a label from an id or an order when the read states none', () => {
+    expect(read(LEVEL, [level(null, 'unknown')])).toEqual(notStated('Label unknown'));
+  });
+
+  it('says a level the read does not list is not listed, with the start of its id', () => {
+    const notListed = notStated('Level not listed in this record · 5a1d717b');
+    expect(read(LEVEL, [])).toEqual(notListed);
+    const other = { ...level('OTHER FLOOR', 'reviewed'), levelId: 'another-level' };
+    expect(read(LEVEL, [other])).toEqual(notListed);
+  });
+
+  it('says so when the candidate names no level', () => {
+    expect(read(null, [level('FIXTURE FLOOR PLAN', 'reviewed')])).toEqual(notStated('Not attached to a level'));
   });
 });
 
@@ -149,6 +223,32 @@ describe('planEstimateView', () => {
   it('states nothing when the read carries no estimate', () => {
     expect(planEstimateView(room())).toBeNull();
     expect(candidateCard(room())!.planEstimate).toBeNull();
+  });
+});
+
+describe('statedSizeView', () => {
+  const literal = "(8' X 8'11\")";
+  const line = { kind: 'region', page: 2, x: 472.16, y: 1256.7, width: 20.09, height: 4.16, unit: 'pt' };
+  const statedSize = { literal, citation: { ...citation, locator: line } };
+
+  it('keeps the text of the sheet exactly as read, with the place it was read from', () => {
+    const view = candidateCard(room({ statedSize }))!.statedSize!;
+    expect(view.literal).toBe(literal);
+    expect(view.citation).toMatchObject({ sourceId: citation.sourceId, place: line });
+    expect(evidenceRef('FIXTURE ROOM', view.citation).locator).toMatchObject({ kind: 'region', page: 2 });
+  });
+
+  it('leaves the estimate in its own words beside it', () => {
+    const basis = { method: 'polygon_area_in_plan_metres@1', scaleState: 'candidate', metresPerPdfPoint: 0.034 };
+    const planEstimate = { state: 'estimated', areaM2: 6.55, extentM: [2.42, 2.71], basis, limitations: [] };
+    const card = candidateCard(room({ statedSize, planEstimate }))!;
+    expect(card.planEstimate).toEqual(candidateCard(room({ planEstimate }))!.planEstimate);
+  });
+
+  it('states nothing when the record holds none: not from the label, not from the estimate', () => {
+    expect(statedSizeView(room({ labelLiteral: `KITCHEN ${literal}` }))).toBeNull();
+    expect(candidateCard(room())!.statedSize).toBeNull();
+    expect(candidateCard(roofprint())!.statedSize).toBeNull();
   });
 });
 

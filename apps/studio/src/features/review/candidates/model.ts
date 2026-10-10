@@ -1,9 +1,11 @@
 import type { GetResponse } from '@ulpin/api-client';
 import type { MultiPolygon } from '@ulpin/scene';
 import type { StatusWord } from '@ulpin/ui';
+import type { RecordedCitation } from '../recorded/model';
 
 type AreaCanonical = GetResponse<'/api/v1/areas/{areaId}/canonical'>;
 type BuildingCanonical = GetResponse<'/api/v1/buildings/{buildingId}/canonical'>;
+type Level = BuildingCanonical['levels'][number];
 
 /** One entry of `candidates` in a canonical area or building record, exactly as the API publishes it. */
 export type CanonicalCandidate = NonNullable<AreaCanonical['candidates']>[number]
@@ -25,11 +27,19 @@ export interface CandidateDecision {
 /** A room's size exactly as the read states it, formatted for the card; the Studio computes nothing. */
 export type PlanEstimateView = { state: 'estimated'; extent: string; area: string } | { state: 'unknown' };
 
-export interface CandidateCitation {
-  sourceId: string;
-  /** The first characters of the source id, as the chip shows it; the record carries no file name. */
-  source: string;
-  locator: string;
+/** A candidate's citation has the shape of a recorded label's, so both open the evidence viewer the same way. */
+export type CandidateCitation = RecordedCitation;
+
+/** The size a sheet prints beside a room: its text exactly as the read carries it, and where that text is. */
+export interface StatedSizeView {
+  literal: string;
+  citation: CandidateCitation;
+}
+
+/** The level line of a room's card. `stated` is false when the text stands in for a label the read lacks. */
+export interface CandidateLevel {
+  text: string;
+  stated: boolean;
 }
 
 export interface CandidateCard {
@@ -52,17 +62,21 @@ export interface CandidateCard {
   decision: CandidateDecision | null;
   /** The model inference item of a roofprint (from its output reference). */
   itemId: string | null;
-  levelId: string | null;
+  /** The level a room names, in the read's own words; see `candidateLevel`. */
+  level: CandidateLevel;
   levelLiteral: string | null;
   frame: string;
   /** Polygons in the candidate's own frame: area metres for a roofprint, plan metres for a room. */
   polygons: MultiPolygon;
   /** Null when the read states no estimate (an older server, or not a room). */
   planEstimate: PlanEstimateView | null;
+  /** Null when the record holds none; never filled from a label, a neighbour or the estimate. */
+  statedSize: StatedSizeView | null;
 }
 
 const ITEM_REF = /\/spatial-ml\/items\/([0-9a-f-]{36})#/;
 const ROOM_FALLBACK = 'Unlabelled region';
+const NO_LEVEL: CandidateLevel = { text: 'Not attached to a level', stated: false };
 
 export function itemIdOf(outputRef: string | null | undefined): string | null {
   return ITEM_REF.exec(outputRef ?? '')?.[1] ?? null;
@@ -128,17 +142,58 @@ export function planEstimateView(candidate: CanonicalCandidate): PlanEstimateVie
   return { state: 'estimated', extent, area: `${hundredths(estimate.areaM2)} m²` };
 }
 
+/** A state word of the read in plain words: `source_supported` reads `source supported`. */
+function stateWords(state: string): string {
+  return state.replaceAll('_', ' ');
+}
+
+function listedLevel(level: Level): CandidateLevel {
+  const { value, state } = level.label;
+  if (value === null) return { text: `Label ${stateWords(state)}`, stated: false };
+  return { text: state === 'reviewed' ? value : `${value} (${stateWords(state)})`, stated: true };
+}
+
+/**
+ * The level a room names, as the read states it: the level's label, with the label's state when it is not
+ * reviewed. A label is never made up from an id or an order.
+ */
+export function candidateLevel(levelId: string | null | undefined, levels: readonly Level[]): CandidateLevel {
+  if (!levelId) return NO_LEVEL;
+  const level = levels.find((item) => item.levelId === levelId);
+  if (level) return listedLevel(level);
+  return { text: `Level not listed in this record · ${levelId.slice(0, 8)}`, stated: false };
+}
+
 function titleOf(candidate: CanonicalCandidate, kind: CandidateKind): string {
   if (kind === 'room') return candidate.labelLiteral ?? ROOM_FALLBACK;
   return `Roofprint ${candidate.candidateId.slice(0, 8)}`;
 }
 
-function citationOf(citation: Citation): CandidateCitation {
+function citationOf(citation: Citation, index: number): CandidateCitation {
   const { sourceId } = citation;
-  return { sourceId, source: sourceId.slice(0, 8), locator: locatorText(citation.locator) };
+  return {
+    key: `${sourceId}:${index}`,
+    sourceId,
+    source: sourceId.slice(0, 8),
+    locator: locatorText(citation.locator),
+    place: citation.locator,
+    sha256: citation.sourceSha256,
+    revision: citation.sourceRevision ?? null,
+  };
 }
 
-export function candidateCard(candidate: CanonicalCandidate): CandidateCard | null {
+/** The stated size as the read carries it. The text is not parsed, converted or compared with the estimate. */
+export function statedSizeView(candidate: CanonicalCandidate): StatedSizeView | null {
+  const stated = candidate.statedSize;
+  return stated ? { literal: stated.literal, citation: citationOf(stated.citation, 0) } : null;
+}
+
+/** The accessible name of a citation's control: what it opens, by the source and place the chip shows. */
+export function citationOpenLabel(citation: CandidateCitation): string {
+  return `Open cited source ${citation.source} at ${citation.locator}`;
+}
+
+export function candidateCard(candidate: CanonicalCandidate, levels: readonly Level[] = []): CandidateCard | null {
   if (!candidate.kind || !candidate.polygons) return null;
   const state = candidateState(candidate);
   return {
@@ -156,18 +211,24 @@ export function candidateCard(candidate: CanonicalCandidate): CandidateCard | nu
     citations: (candidate.citations ?? []).map(citationOf),
     decision: candidate.review ?? null,
     itemId: itemIdOf(candidate.outputRef),
-    levelId: candidate.levelId ?? null,
+    level: candidateLevel(candidate.levelId, levels),
     levelLiteral: candidate.levelLabelLiteral ?? null,
     frame: candidate.coordinateFrame ?? 'Not recorded',
     polygons: candidate.polygons as MultiPolygon,
     planEstimate: planEstimateView(candidate),
+    statedSize: statedSizeView(candidate),
   };
 }
 
-/** Cards for every drawable candidate of a canonical record, plus how many entries carry no geometry. */
-export function candidateCards(candidates: readonly CanonicalCandidate[] | undefined, kind: CandidateKind) {
+/**
+ * Cards for every drawable candidate of a canonical record, plus how many entries carry no geometry. `levels`
+ * are the building's, for the level a room names; an area has none.
+ */
+export function candidateCards(
+  candidates: readonly CanonicalCandidate[] | undefined, kind: CandidateKind, levels: readonly Level[] = [],
+) {
   const ofKind = (candidates ?? []).filter((candidate) => candidate.kind === kind);
-  const cards = ofKind.flatMap((candidate) => candidateCard(candidate) ?? []);
+  const cards = ofKind.flatMap((candidate) => candidateCard(candidate, levels) ?? []);
   return { cards, withoutGeometry: ofKind.length - cards.length };
 }
 

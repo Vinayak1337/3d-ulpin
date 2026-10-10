@@ -77,7 +77,8 @@ export function BuildingCandidatesPage() {
   const canonical = useBuildingCanonical(buildingId);
   const [selectedId, select] = useSelectedCandidate();
   const candidates = canonical.data?.candidates;
-  const { cards, withoutGeometry } = useMemo(() => candidateCards(candidates, 'room'), [candidates]);
+  const levels = canonical.data?.levels;
+  const { cards, withoutGeometry } = useMemo(() => candidateCards(candidates, 'room', levels), [candidates, levels]);
   if (canonical.isPending) return <Loading />;
   if (!canonical.data) return <Unavailable message={canonical.error?.message ?? 'The building was not found.'} />;
   const building = canonical.data;

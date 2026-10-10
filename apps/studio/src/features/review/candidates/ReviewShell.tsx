@@ -2,6 +2,7 @@ import { useCallback, useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { Cursor } from '@phosphor-icons/react';
 import { EmptyState, Panel, Tabs, Toast } from '@ulpin/ui';
+import { EvidenceProvider } from '../../evidence/EvidenceContext';
 import { CandidateCardView } from './CandidateCardView';
 import { CandidateQueue } from './CandidateQueue';
 import { HistoryPanel } from './HistoryPanel';
@@ -34,8 +35,13 @@ function SelectedCard({ card, props, notify }: {
   );
 }
 
-/** Queue, canvas and one inspector. The queue and canvas select the same candidate; the URL holds it. */
+/** The review with the evidence viewer a card's citation opens. */
 export function ReviewShell(props: ReviewShellProps) {
+  return <EvidenceProvider><ReviewColumns {...props} /></EvidenceProvider>;
+}
+
+/** Queue, canvas and one inspector. The queue and canvas select the same candidate; the URL holds it. */
+function ReviewColumns(props: ReviewShellProps) {
   const [tab, setTab] = useState<InspectorTab>('candidate');
   const [notice, setNotice] = useState<string | null>(null);
   const selected = props.cards.find((card) => card.id === props.selectedId) ?? null;
