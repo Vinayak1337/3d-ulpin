@@ -1,18 +1,11 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import {
-  extractStoreyFacts, storeyPartSelection, storeyPartsHash, storeyReplayKey, type StoreyPageStore,
-} from '../../packages/server/src/modules/ai/document-storey-agent';
-import { ControlAdapter } from '../../packages/server/src/modules/model-gateway/adapter';
-import { hash } from '../../packages/server/src/modules/model-gateway/config';
-import { ModelGateway } from '../../packages/server/src/modules/model-gateway/gateway';
-import { TeacherRecordings } from '../../packages/server/src/modules/model-gateway/recordings';
-import { controlConfig, ControlLedger, requestContext } from './control-runtime';
-import {
-  assertLiveStart, buildPlan, dryRun, parseGatewayStatus, readTariff, PROPOSAL_LABEL, PROPOSED_POLICY,
+  assertLiveStart, buildPlan, dryRun, keyMoveWalk, parseGatewayStatus, readTariff, recordSoftwareControl,
+  PROPOSAL_LABEL, PROPOSED_POLICY, type KeyScenario,
 } from './live-proof';
 
 const scratch = () => mkdtempSync(join(tmpdir(), 's1-live-proof-'));
@@ -25,28 +18,10 @@ function policyFile(overrides: Record<string, unknown>): string {
 }
 
 const micro = (value: { microInr: string }) => BigInt(value.microInr);
-const STORES = 'E:/BhuAayam-data/task-data/a5/stores';
-const NOTHING = { value: null, expression: null, citations: [] };
-const ABSTAINS = {
-  storeyCount: NOTHING, basementCount: NOTHING, floorExpressions: [], labels: [], heights: [], unitCounts: [],
-  conflicts: [], abstain: true, abstainReason: 'software control',
-};
-
-/** What a software control leaves behind: one recording of the first planned storey request. */
-async function recordControlAnswer(sha256: string, replayKey: string, directory: string) {
-  const store = JSON.parse(readFileSync(join(STORES, `${sha256}.pages.json`), 'utf8')) as StoreyPageStore;
-  const parts = storeyPartSelection(store).batches[0];
-  assert.equal(storeyReplayKey(storeyPartsHash(parts)), replayKey);
-  const adapter = new ControlAdapter(async () => ({
-    output: ABSTAINS, responseHash: hash(ABSTAINS), httpStatus: 200, rawResponse: { output: ABSTAINS },
-    usage: { promptTokens: 1, completionTokens: 1 },
-  }));
-  return extractStoreyFacts(parts, {
-    context: requestContext, gateway: new ModelGateway(controlConfig(), new ControlLedger(), adapter),
-    recordings: new TeacherRecordings(directory), authorize: async () => {}, maxAttempts: 1,
-    dataPolicy: { dataClass: 'public', split: 'development' },
-  });
-}
+/** Made-up key names: a policy names keys, it never holds one, and no test here reads a key. */
+const KEY_NAMES = [1, 2, 3].map(index => `ULPIN_PROVIDER_KEY_SOFTWARE_${index}`);
+const moved = (attempt: number, code = 'MODEL_QUOTA_EXHAUSTED') => ({ attempt, state: 'key_moved_on', code });
+const walk = (scenario: KeyScenario) => keyMoveWalk(readTariff(), scratch(), scenario);
 
 test('plan: totals are sums of the calls, every figure names its kind and tariff, the proposal is not approved', () => {
   const plan = buildPlan(readTariff());
@@ -130,8 +105,8 @@ test('dry run: a recording made by a software control ends the first step and it
   const tariff = readTariff();
   const first = buildPlan(tariff).steps[0];
   const recordings = scratch();
-  const made = await recordControlAnswer(first.input.sha256, first.request!.replayKey, recordings);
-  assert.deepEqual([made.state, made.replayed], ['abstained', false]);
+  const made = await recordSoftwareControl(first, tariff, recordings);
+  assert.deepEqual([made?.state, made?.replayed], ['abstained', false]);
   const result = await dryRun(tariff, scratch(), recordings);
   const [call, replay, ...rest] = result.receipts;
   assert.deepEqual([call.endState, replay.endState], ['replayed_software_control', 'replayed_software_control']);
@@ -139,6 +114,68 @@ test('dry run: a recording made by a software control ends the first step and it
   assert(rest.every(receipt => !receipt.replayed));
   const { providerDispatches, fetchAttempts, ledgerReservations } = result.summary;
   assert.deepEqual([providerDispatches, fetchAttempts, ledgerReservations], [0, 0, 0]);
+});
+
+test('plan: a key list adds at most one extra attempt per key and no rupees; one key adds none', () => {
+  const one = buildPlan(readTariff());
+  const list = buildPlan(readTariff(policyFile({ secretReference: undefined, secretReferences: KEY_NAMES })));
+  assert.deepEqual([one.keyMoves.keysInPolicy, one.keyMoves.extraAttemptsAtMost], [1, 0]);
+  assert.deepEqual([list.keyMoves.keysInPolicy, list.keyMoves.extraAttemptsAtMost], [3, 3]);
+  assert.equal(list.keyMoves.ledgerRowsAtMost, list.totals.calls + 3);
+  assert.deepEqual([list.keyMoves.costOfAMovedOnCall.microInr, list.keyMoves.costOfAMovedOnCall.kind],
+    ['0', 'upper_bound']);
+  assert.deepEqual([list.totals.calls, micro(list.totals.atMost)], [one.totals.calls, micro(one.totals.atMost)]);
+});
+
+test('dry run: a used-up key moves step 1 on and replay answers it; every key marked ends the run', async () => {
+  const tariff = readTariff();
+  const steps = buildPlan(tariff).steps;
+  const { oneKeyUsedUp, everyKeyMarked } = (await dryRun(tariff, scratch(), scratch())).keyMoves;
+  assert.deepEqual(oneKeyUsedUp.firstStep, {
+    id: steps[0].id, attempts: 2, keyMoves: [moved(1)], gatewayCode: null, endState: 'replayed_software_control',
+    code: null, requestMatchesPlan: true,
+  });
+  assert.deepEqual([oneKeyUsedUp.stopped, oneKeyUsedUp.stepsWalked, oneKeyUsedUp.notRun], [null, steps.length, []]);
+  assert.deepEqual([oneKeyUsedUp.softwareKeyList.asksRefused, oneKeyUsedUp.softwareKeyList.markedAtEnd], [1, 1]);
+
+  const { attempts, keyMoves, gatewayCode, endState } = everyKeyMarked.firstStep;
+  assert.deepEqual([attempts, keyMoves, gatewayCode, endState], [1, [], 'MODEL_KEYS_EXHAUSTED', 'teacher_unavailable']);
+  assert.match(everyKeyMarked.stopped!, /every key of the policy is marked used up \(MODEL_KEYS_EXHAUSTED\)/);
+  assert.deepEqual(everyKeyMarked.notRun, steps.slice(1).map(({ step, id }) => ({ step, id, endState: 'not_run' })));
+  assert.deepEqual([everyKeyMarked.stepsWalked, everyKeyMarked.softwareKeyList.asksRefused], [1, 0]);
+  for (const proof of [oneKeyUsedUp, everyKeyMarked]) {
+    assert.deepEqual([proof.providerDispatches, proof.fetchAttempts], [0, 0]);
+  }
+});
+
+test('key moves: past the second, a step is attempted again only while the key report shows a free key', async () => {
+  const three = await walk({ keys: 3, markedAtStart: 0, refused: 3 });
+  assert.deepEqual([three.firstStep.attempts, three.firstStep.keyMoves], [3, [moved(1), moved(2), moved(3)]]);
+  assert.match(three.stopped!, /every key of the policy is marked used up, by the report of key states/);
+  assert.deepEqual([three.softwareKeyList.asksRefused, three.stepsWalked, three.notRun.length > 0], [3, 1, true]);
+
+  const last = await walk({ keys: 2, markedAtStart: 1, refused: 1 });
+  assert.deepEqual([last.firstStep.attempts, last.firstStep.keyMoves, last.firstStep.gatewayCode],
+    [2, [moved(1)], 'MODEL_KEYS_EXHAUSTED']);
+  assert.deepEqual([last.softwareKeyList.asksRefused, last.stepsWalked], [1, 1]);
+
+  const rejected = await walk({ keys: 2, markedAtStart: 0, refused: 1, answer: 'credential_invalid' });
+  assert.deepEqual(rejected.firstStep.keyMoves, [moved(1, 'MODEL_CREDENTIAL_INVALID')]);
+  assert.deepEqual([rejected.firstStep.attempts, rejected.stopped, rejected.notRun], [2, null, []]);
+});
+
+test('key moves: a rate limit, an unknown outcome and a one-key quota answer are not attempted again', async () => {
+  const cases: [KeyScenario, string][] = [
+    [{ keys: 2, markedAtStart: 0, refused: 1, answer: 'rate_limited' }, 'MODEL_RATE_LIMITED'],
+    [{ keys: 2, markedAtStart: 0, refused: 1, answer: 'outcome_unknown' }, 'MODEL_OUTCOME_UNKNOWN'],
+    [{ keys: 1, markedAtStart: 0, refused: 1 }, 'MODEL_QUOTA_EXHAUSTED'],
+  ];
+  for (const [scenario, code] of cases) {
+    const { firstStep, softwareKeyList, notRun } = await walk(scenario);
+    assert.deepEqual([firstStep.attempts, firstStep.keyMoves, firstStep.gatewayCode], [1, [], code], code);
+    assert.deepEqual([softwareKeyList.asksRefused, softwareKeyList.markedAtEnd, notRun], [1, 0, []], code);
+    assert.equal(firstStep.endState, 'teacher_unavailable', code);
+  }
 });
 
 test('live: refuses to start without an explicit enabled gateway state that carries the planned policy hash', () => {
