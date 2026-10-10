@@ -1,0 +1,67 @@
+{
+  "task": "R3",
+  "gates": ["GF1", "GF4"],
+  "artifactsRoot": "E:/BhuAayam-data/task-data/r3",
+  "api": "http://127.0.0.1:3194/api/v1",
+  "step0": {
+    "result": "done: cause located; nothing rebuilt, restarted or repaired in this step",
+    "doctorBefore": {
+      "at": "2026-10-10T13:34:05Z", "exit": 1, "failed": ["Document runtimes"],
+      "servedCommit": "9aad8da2e51e43dee279539a24efb0d0db645b45", "servedCheckoutClean": true
+    },
+    "diagnostic": {
+      "script": "E:/BhuAayam-data/task-data/r3/step0/diagnose-document-runtime.mjs",
+      "output": "E:/BhuAayam-data/task-data/r3/step0/diagnostic-output-2.txt",
+      "how": "paths through the demo checkout's readDemoDocumentRuntime(); verifiedProfile's comparisons one by one; read-only",
+      "firstRunNote": "diagnostic-output.txt shows FAIL 3 (profile shape): the diagnostic's own key-order mistake, corrected"
+    },
+    "helperChild": {"code": "PACKET_REGION_EXECUTABLE_DRIFT", "ms": 853},
+    "comparisons": {
+      "profileFileWithinLimit": "pass",
+      "profileBytesEqualConfiguredHash": "pass",
+      "profileBuiltAt": "2026-10-10T12:25:56Z",
+      "profileShape": "pass",
+      "repoEqualsServingCheckout": "pass",
+      "repoFilesEqualServedList": "pass",
+      "boundsAndClosure": "pass",
+      "pinnedFileBytes": "FAIL: 111 of 1361 pinned files drifted",
+      "repoAndInterpreterBinding": "pass"
+    },
+    "cause": {
+      "where": "verifiedRegionHash -> verifiedProfile, the per-file comparison (resolved path, length, bytes)",
+      "what": [
+        "The frozen profile's base interpreter is not a uv base Python. It is the Codex desktop application's",
+        "bundled runtime: C:/Users/kvina/.cache/codex-runtimes/codex-primary-runtime/dependencies/python (3.12.14).",
+        "That whole directory was re-created at 2026-10-10T13:14:56Z (18:44:56 IST), between R2's PASS (17:56 IST)",
+        "and the first FAIL (18:47 IST)."
+      ],
+      "drifted": {
+        "replacedBinaries": {
+          "count": 41,
+          "kinds": "python.exe, pythonw.exe, python3.dll, python312.dll, DLLs/*.pyd, DLLs/*.dll, Lib/venv/scripts/nt/*.exe",
+          "comparison": "length differs: each is exactly 864 bytes shorter than its pinned size",
+          "modified": "2026-10-07T19:25Z to 19:32Z (kept from the package)",
+          "created": "2026-10-10T13:14:56Z",
+          "signature": "all 41 Authenticode Valid, signer OpenAI OpCo, LLC, timestamped; file version 3.12.14"
+        },
+        "missingBytecodeCaches": {
+          "count": 70,
+          "kinds": "Lib/**/__pycache__/*.cpython-312.pyc (argparse, asyncio, multiprocessing, unittest, sqlite3 and others)",
+          "comparison": "unreadable, ENOENT: the re-created runtime has no such cache file"
+        },
+        "unchangedButRecreated": "791 other pinned files under the same base still match and were also created after the profile",
+        "repoFiles": 0, "configuredInterpreter": 0, "packages": 0
+      },
+      "who": [
+        "No project worker edited a pinned file. The Codex application replaced its own managed runtime (the same",
+        "Python version, re-signed binaries) while the demo was serving."
+      ],
+      "accountedFor": true,
+      "consequence": [
+        "The rebuild in Step 1 pins the replaced bytes. The check will fail again whenever the Codex application",
+        "next refreshes that runtime, because the demo's frozen interpreter base is owned by another program."
+      ],
+      "notTheCause": ["the check itself", "the 60-second helper timeout", "the demo checkout", "the profile file or its hash"]
+    }
+  }
+}
