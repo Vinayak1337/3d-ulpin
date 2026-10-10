@@ -1,0 +1,106 @@
+{
+  "task": "S2: what the MODEL_PROMPT_PRIVACY refusal on two Tower 3 plan page stores protects, and the options",
+  "gates": ["AG-S1", "ML-D1"],
+  "base": "staging 44c40f83 (S1 merged as 49076e9b); E3 receipt read from staging af317fe7",
+  "qualification": "Offline: no provider call, no key read, no network request, no runtime read, no held-out file.",
+  "step0": {
+    "rule": {
+      "raisedAt": "packages/server/src/modules/model-gateway/redaction.ts:7 (privacyFailure), decided at :24-27",
+      "whatItRefuses": [
+        "A string whose first non-blank character is { or [ (or which starts and ends with a double quote) is",
+        "read as JSON that was encoded into a string. It must parse to its last character; if it does not,",
+        "the whole request is refused. The only exemption is a string that starts with [redacted ...] (:25)."
+      ],
+      "why": [
+        "Comment at :18-21: an ambiguous or truncated structure never falls back to forwarding the unprocessed",
+        "text. Inside parsed JSON the minimizer masks by key (credential fields :70, personal fields :71-77).",
+        "Text that looks like JSON but cannot be parsed has no key context, so a keyed secret or personal value",
+        "in it could not be found; the rule refuses it instead of sending it as prose."
+      ],
+      "tests": [
+        "tests/model-gateway/control.test.ts:102-107: a truncated {\"apiKey\":... string, 41 nested brackets and",
+        "an escaped credential key inside prose are each refused with MODEL_PROMPT_PRIVACY; :57-58 and :86-93",
+        "show a parsed credential field masked and numbers kept exact."
+      ],
+      "callersRelyingOnIt": [
+        "model-gateway/adapter.ts:41 minimizeMessages (every message of every request)",
+        "model-gateway/gateway.ts:46 ModelGateway.propose, before admission, replay or dispatch",
+        "model-gateway/adapter.ts:99 SarvamAdapter (again, with the key), :150 control and :163 replay adapters",
+        "model-gateway/redaction.ts:120 minimizeDecodedOutput (provider answers before retention)",
+        "usp/ingestion/adaptive-mapping-service.ts:62; usp/ingestion/source-fusion-associations.ts:75",
+        "usp/ingestion/source-fusion-associations-projection.ts:54, :73, :221 (catch the refusal and drop the text)",
+        "ai/officer-ai-provider.ts:129; scripts/agent/live-proof.ts gatewayBody (the plan's own pre-check)"
+      ]
+    },
+    "lines": [
+      {
+        "store": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865 (Tower 3 plan 1)",
+        "partId": "p1-l276", "page": 1, "lineIndex": 276, "length": 34,
+        "characterClasses": "bracket, 5 capitals, space, 7 capitals, space, 6 capitals, space, 5 capitals, space, 3 x (capital, full stop)",
+        "onTheSheet": "The bold total row label at the foot of a floor-area (F.A.R.) table. No bracket is printed: the OCR read the table's left border as a square bracket. Seen on a local crop of page 1.",
+        "personalOrSecretContent": "none",
+        "otherBracketLedLinesInStore": "5 more (line 187, 273, 290, 333, 342), none selected for sending"
+      },
+      {
+        "store": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1 (Tower 3 plan 2)",
+        "partId": "p1-l284", "page": 1, "lineIndex": 284, "length": 27,
+        "characterClasses": "bracket, 5 capitals, space, 7 capitals, space, 5 capitals, space, 3 x (capital, full stop)",
+        "onTheSheet": "The bold total row label at the foot of the typical-floor area (F.A.R.) table; the same border-as-bracket OCR artefact. Seen on a local crop of page 1.",
+        "personalOrSecretContent": "none",
+        "otherBracketLedLinesInStore": "10 more (line 21, 83, 99, 110, 111, 112, 115, 150, 191, 283), none selected for sending"
+      }
+    ],
+    "whatTheGuardProtectsHere": "Nothing on these two lines: they are prose that begins with a stray bracket. The rule cannot tell that from truncated JSON, and refusing is its designed answer.",
+    "licenceAndClass": {
+      "datasetsJson": "haryana-2831-tower3-plan1.pdf: permission.state unconfirmed (redistribution and reuse licence not verified), trainingPermission unconfirmed. d2-rera-storey-source-truth-20261010: terms unconfirmed, 'Owner-approved public local development; no source-specific launch/redistribution/training grant'.",
+      "sourceRecord": "storey-truth/demo/haryana-2831-tower3.json: split demo, purpose test_only, permission unconfirmed, both PDFs retrieved from the public Haryana RERA portal without a login.",
+      "class": "public, demo. Neither document is private or restricted.",
+      "mayPageTextGoToTheProvider": "Not barred by the private-or-restricted rule, and the storey agent's own policy admits public development and demo documents. The licence is unconfirmed and the owner's recorded approval says local development: the same qualification S1 stated for all six planned storey calls. It is an owner line in the approval, not a reason to drop these two.",
+      "alsoSentFromTheseStores": "Each request holds the architect's title-block contact line (plan 1 p1-l322, plan 2 p1-l252 and the address-only p1-l253), selected because it holds the word Unit. The minimizer masks the mobile number and the e-mail; the office address and the office landline go as read. This is E3's finding F2 on these two sheets."
+    },
+    "options": {
+      "a": {
+        "what": "The storey part selection asks the minimizer about each selected line and leaves out a line it refuses; the selection returns the omitted lines (part id, page, line index, code), and the plan and receipt record them.",
+        "changes": "document-storey-agent.ts part selection only. The parts, their hash, the closed citation schema and the answer check all exclude the line, so an answer citing it is invalid.",
+        "risks": "The line is not asked. Here it is a table total label; other sent lines of each sheet carry the same floor words (plan 1: 4 lines with the refuge words, plan 2: 4 with the typical-floor words), and it holds no storey count, floor expression, height or unit count. Nothing the guard refuses is ever sent."
+      },
+      "b": {
+        "what": "The builder removes the leading bracket and records it, so the rest of the line is sent.",
+        "changes": "The text sent differs from the stored line; a quote from it still sits inside the stored line.",
+        "risks": "The builder would rewrite provider-bound text until a privacy guard stops firing, which needs its own rule for 'this bracket is not structure' beside the minimizer's. Where the two disagree, a keyed personal value from truncated JSON goes out as prose, where only patterns are masked. It is the minimizer's rule changed from outside."
+      },
+      "c": { "what": "A narrower JSON test in the minimizer.", "risks": "Changes the privacy rule for every caller above: the lead's and owner's decision, not built here." },
+      "smallestAndSafe": "a"
+    },
+    "mappingSide": {
+      "source": "E3 receipt on staging af317fe7: findings F1 and gatewayRefusals (17 of 50 mapping requests, 2 of 8 storey batches).",
+      "cause": {
+        "masker": "packages/server/src/modules/usp/ingestion/column-profile.ts:92-100 maskColumnSample writes whole-sample tokens [absent] (:93), [null] (:94), [array] or [object] (:95), [blank] (:98); maskPatterns (:53-62) writes [email], [PAN:...], [Aadhaar:...], [phone:...]",
+        "minimizer": "model-gateway/redaction.ts:24-27: a sample is one JSON string leaf of the request, so text() sees it alone and a leading [ sends it to the JSON parser",
+        "checkedHere": "Of the 9 tokens that can begin a masked sample, 8 are refused when they do ([absent], [array], [object], [blank], [email], [PAN:...], [Aadhaar:...], [phone:...]); only [null] parses as JSON and passes. A token after other text passes. E3 observed [blank] 13, [absent] 4, [object] 1 (one table holds two kinds): 17 requests."
+      },
+      "liveProofCalls": {
+        "affected": "0 of 8",
+        "why": "The two mapping calls are the first chunk of mi-d10-01.csv and mi-d10-02.csv; mi-d10 is not among E3's 17. The six storey calls passed; the two Tower 3 plans were the refused ones and were already under neverSent.",
+        "whyTheDryRunShowedIt": "The plan builds every request and passes it through minimizeMessages (live-proof.ts gatewayBody) before it is planned, so a refused request is listed under neverSent and never becomes a step. The dry run then sends each planned request through ModelGateway.propose, which minimizes before the replay adapter; the adapter saw 8 of 8 planned hashes, so all 8 had passed the minimizer."
+      },
+      "options": {
+        "changeMaskerTokens": {
+          "what": "Whole-sample tokens that no longer start with a bracket (column-profile.ts:93-99 and the two regexes at :83 and :99 that keep them atomic and idempotent).",
+          "requestHashesChanged": "Only requests whose profile holds a changed token: the 17 refused today. The other 33 of 50 keep their profile hash, request hash and replay key, provided [null] and the four pattern tokens are left as they are.",
+          "recordings": "0 by construction: every mode minimizes before the adapter (gateway.ts:46), so no recording made through the gateway can be keyed by a profile holding these tokens. The runtime recordings folder was not read (not allowed here), so this is derived, not counted.",
+          "trackedReplayFixtures": "0 (no mapping recording is tracked in Git)",
+          "teacherLabelLines": "0 of T1 (44 compared), T1c (198 lines) and T1d (21 lines) change key: a line is keyed by profileId, the hash of family, file, sheet and column (scripts/agent/t1-profiles.ts:58), not of the samples. T1b produced no labels. Whether a rationale quotes a token was not checked.",
+          "pinsThatMoveIfProfilesAreRegenerated": "2: profilesSha256 in t1/prep.json (411 columns) and in t1b/result.json (193 columns)",
+          "learnerFeatures": "0 of 9 feature extractors in services/geo/geo/usp_learning/stage_a.py read maskedSamples",
+          "testsAndText": "1 assertion (scripts/agent/t1-prep.test.ts:64) and 1 policy sentence (t1-profiles.ts:209) name [object]",
+          "staleCaptures": "2 UI evidence captures (gf-agent/ui/f2b/responses.json, gf1/ui/f3a/table-responses.json) each show 55 [blank] and 10 [absent]; no studio source names a token",
+          "leftOpen": "A sample that begins with a pattern token (a column of e-mails or phones) is still refused; E3 saw none in the 50. 2 of the 17 (mi-d22, 54 KB and 53 KB bodies) stay refused by the size bound, so 15 become askable."
+        },
+        "narrowerMinimizerTest": { "what": "The minimizer stops reading known mask tokens or non-JSON brackets as JSON.", "cost": "0 hashes, labels or features change; it changes the privacy rule for all 9 call sites above. Lead and owner decision; not built." },
+        "leave": { "what": "No change.", "cost": "17 of 50 development tables (and any table with a blank, absent or compound sample cell) can never be asked live; they fail closed to manual mapping." }
+      },
+      "recommendation": "Change the four whole-sample tokens that fail ([absent], [array], [object], [blank]) in the masker and leave [null], the pattern tokens and the minimizer alone: 15 of the 17 become askable, and no recording, label key or learner feature moves."
+    }
+  }
+}
