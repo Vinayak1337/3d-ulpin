@@ -15,8 +15,7 @@
       "teacherFields": 16, "unansweredFields": 0},
     "studentPlusFailedTeacher": {"file": "mi-d11-01.csv", "columns": 9, "student": 5, "unanswered": 4,
       "learner": "v43"},
-    "oldRecords": "chunk payload without unansweredFields and teacher-labelled fallback fields parses unchanged; "
-      "teacher-lineage memory entry still reads"
+    "oldRecords": "chunk payload without unansweredFields and teacher-labelled fallback fields parses unchanged; teacher-lineage memory entry still reads"
   },
   "assertionsChanged": ["scripts/agent/a3-chunk.test.ts: later chunk of a fallback layout is unanswered, not memory"],
   "checks": {
