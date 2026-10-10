@@ -1,0 +1,311 @@
+{
+  "task": "R5b", "part": 2,
+  "what": "The ordered requests that made the demo's reference area, with the origin of every value",
+  "nothingSent": ["Nothing in this file was sent. It was written from retained responses, the code that serves the",
+    "routes at staging 3a8f5df1, the retained K2 script and five GET requests to the demo",
+    "(2026-10-10T15:58Z; listed in result.json)."],
+  "correctionToR5a": [
+    "R5a said the area was made by hand through import, prepare and commit, and that only responses were",
+    "kept. Closer reading: one request made the area (A2, a roads file); its review, prepare and commit",
+    "were refused and it is still an unrecorded proposal. The sector context (A3 to A7) was sent by a",
+    "retained script, docs/evidence/gf-backend/k2/context-through-api.ts, three hours later. So only A2",
+    "had to be rebuilt, and the retained signature confirms it."
+  ],
+  "originals": [
+    {"id": "roads", "path": "E:/BhuAayam-data/task-data/ulpin-data-09/gmda-roads.json",
+      "sha256": "8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0", "bytes": 1773,
+      "issuer": "Gurugram Metropolitan Development Authority", "classification": "test_only",
+      "permission": "unconfirmed",
+      "describedIn": ["fixtures/usp/D4/reference-area-gurugram-59-63a/manifest.json, asset gmda-road-centrelines",
+        "(original URL, acquisition time, licence state)"],
+      "hashedAt": "2026-10-10T15:58Z, read-only"},
+    {"id": "sectors", "path": "E:/BhuAayam-data/task-data/ulpin-data-09/gmda-sectors-59-63a.json",
+      "sha256": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8", "bytes": 1728,
+      "issuer": "Gurugram Metropolitan Development Authority", "classification": "test_only",
+      "permission": "unconfirmed",
+      "describedIn": "fixtures/usp/D4/reference-area-gurugram-59-63a/manifest.json, asset gmda-sector-boundaries",
+      "hashedAt": "2026-10-10T15:58Z, read-only"}
+  ],
+  "orderOnTheDemo": ["2026-10-09T20:05:41Z A1, 20:05:52Z A2: the area exists, area revision 0",
+    "22:50:29Z Tower 3 package created, reviewed against area revision 0 and recorded (R5a S4; not this step)",
+    "23:19:53Z A3 to A7: the context import expected area revision 1"],
+  "orderNote": ["A rehearsal that keeps this order sends A2, then Tower 3, then A3 to A7. Whether the context import",
+    "also works before Tower 3 (area revision 0) has not been tried; nothing here says it does."],
+  "requests": [
+    {"id": "A1", "method": "POST", "path": "/api/v1/import-packages/inspect", "body": "multipart/form-data",
+      "createOnce": false, "stores": "nothing (the route inspects bytes without persistence)", "optional": true,
+      "fields": {
+        "file": {
+          "value": "the bytes of original \"roads\"",
+          "origin": ["retained file, SHA-256 8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0;",
+            "docs/evidence/gf-backend/k2/gmda-inspect.json field sourceSha256 is the same"]
+        },
+        "file name": {
+          "value": "gmda-roads.json",
+          "origin": ["docs/evidence/gf-backend/k2/gmda-inspect.json field suggestedTitle \"gmda roads\", which the",
+            "code derives from the file name (packages/server/src/modules/cases/gis-inspection.ts:85-90)"]
+        },
+        "layer": {"sent": false, "origin": "docs/evidence/gf-backend/k2/gmda-inspect.json field layer is null"}
+      },
+      "onTheDemo": {
+        "at": "2026-10-09T20:05:41Z", "status": 200, "response": "docs/evidence/gf-backend/k2/gmda-inspect.json",
+        "said": ["format arcgis, EPSG:32643 from the file itself, 2 line features, fields FID, Rd_Name, Road_ID,",
+          "Type"]
+      }},
+    {"id": "A2", "method": "POST", "path": "/api/v1/import-packages", "body": "multipart/form-data",
+      "createOnce": true,
+      "creates": ["the reference area and its site, one source, one import package with two road proposals.",
+        "This is the request that made the demo's area: the new database had no area",
+        "(scripts/platform/evidence/s03/result.json:293-294) and the area's name is this request's",
+        "name."],
+      "fields": {
+        "file": {
+          "value": "the bytes of original \"roads\"",
+          "origin": ["retained file, SHA-256 8ebabfa06cf6353564675c9c8c6a3cf654ad35b5b281351f0db67bd326bf3df0;",
+            "docs/evidence/gf-backend/k2/gmda-import.json field sourceHash is the same"]
+        },
+        "file name": {
+          "value": "gmda-roads.json",
+          "origin": ["GET /api/v1/sources/1811f56c-a5bd-413d-a787-ce41d611ede3/file on the demo at",
+            "2026-10-10T15:58:27Z: Content-Disposition names gmda-roads.json (stored at",
+            "packages/server/src/modules/areas/areas.ts:663-667)"]
+        },
+        "format": {
+          "value": "arcgis",
+          "origin": ["docs/evidence/gf-backend/k2/gmda-import.json field importSignature, recomputed from these",
+            "fields (packages/server/src/modules/areas/areas.ts:886-899)"]
+        },
+        "namespace": {
+          "value": "gmda:Toilet2:7",
+          "origin": ["docs/evidence/gf-backend/k2/gmda-import.json field importSignature, recomputed from these",
+            "fields (packages/server/src/modules/areas/areas.ts:886-899)"]
+        },
+        "name": {
+          "value": "Gurugram sectors 59/63A reference area",
+          "origin": ["docs/evidence/gf-backend/k2/gmda-import.json field importSignature, recomputed from these",
+            "fields (packages/server/src/modules/areas/areas.ts:886-899)"]
+        },
+        "mapping": {
+          "value": {"idField": "FID", "nameField": "Rd_Name", "kind": "road", "geometryRole": "road_surface"},
+          "origin": ["docs/evidence/gf-backend/k2/gmda-import.json field importSignature, recomputed from these",
+            "fields (packages/server/src/modules/areas/areas.ts:886-899)"],
+          "note": "Sent as one JSON text field (the controller parses it at :67)."
+        },
+        "sourceCrs": {
+          "value": "EPSG:32643",
+          "origin": ["docs/evidence/gf-backend/k2/gmda-import.json field importSignature, recomputed from these",
+            "fields (packages/server/src/modules/areas/areas.ts:886-899)"],
+          "note": "The file carries the same CRS, but the signature only matches with the field sent."
+        },
+        "worldStatus": {
+          "value": "observed",
+          "origin": ["docs/evidence/gf-backend/k2/gmda-import.json field importSignature, recomputed from these",
+            "fields (packages/server/src/modules/areas/areas.ts:886-899)"],
+          "note": ["The code signs \"observed\" whether the field is sent or left out",
+            "(packages/server/src/modules/areas/areas.ts:896); both give the same result."]
+        },
+        "layer": {
+          "sent": false,
+          "origin": ["docs/evidence/gf-backend/k2/gmda-import.json field importSignature, recomputed from these",
+            "fields (packages/server/src/modules/areas/areas.ts:886-899)"],
+          "note": "The signature holds layer null."
+        },
+        "areaId": {
+          "sent": false,
+          "origin": ["code: without it the area is looked up by \"namespace:name\" and created when none exists",
+            "(packages/server/src/modules/areas/areas.ts:390-393, 576-596)"],
+          "note": "No area existed, so there was no id to send."
+        },
+        "expectedAreaRevision": {
+          "sent": "unknown", "origin": "unknown",
+          "whatWouldEstablishIt": [
+            "the request itself, which is not among the retained K2 files. It is not in the signature and",
+            "is not echoed. Leaving it out is correct for a new area: the code only compares it when it",
+            "is sent (packages/server/src/modules/areas/areas.ts:451-452, 566-567)."
+          ]
+        }
+      },
+      "verifiedOffline": ["node docs/evidence/runtime/r5b/check-area-signature.mjs rebuilds the signed text from the",
+        "fields above and the demo's area id and gets the retained importSignature bdf4d8c2...e278.",
+        "One combination out of 96 tried in scratch matched (id field, name field, role, CRS sent or",
+        "not, format)."],
+      "onTheDemo": {
+        "at": "2026-10-09T20:05:52Z", "status": 201, "response": "docs/evidence/gf-backend/k2/gmda-import.json",
+        "areaId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b", "packageId": "ba7a0da7-766b-4def-8282-191a3b47d4a6",
+        "sourceId": "1811f56c-a5bd-413d-a787-ce41d611ede3", "packageState": "READY_FOR_REVIEW", "packageRevision": 1,
+        "stillSo": "GET /api/v1/import-packages/ba7a0da7-... at 2026-10-10T15:58:10Z: READY_FOR_REVIEW, revision 1"
+      },
+      "onANewRuntime": [
+        "The area id, site id, package id and source id are new random values. Everything later takes",
+        "the area id from this response; the Tower 3 scripts and the journey pin the demo's id today",
+        "(R5a K20, K21, K23)."
+      ],
+      "replay": ["An identical second request should find the area by its seed key and the package by source",
+        "hash and signature (packages/server/src/modules/areas/areas.ts:390-393, 422-426). Read from",
+        "code; not exercised."]},
+    {"id": "A3", "method": "GET", "path": "/api/v1/areas/{areaId}/context", "createOnce": false, "stores": "nothing",
+      "pathValues": {
+        "areaId": {
+          "value": "A2 response field areaId", "origin": "previous response",
+          "note": ["The script pins the demo's id (docs/evidence/gf-backend/k2/context-through-api.ts:24); a new",
+            "runtime has its own."]
+        }
+      },
+      "takes": "area.revision, for A4",
+      "onTheDemo": {
+        "value": 1, "from": "E:/BhuAayam-data/task-data/k2/gmda-context-input.json, field expectedAreaRevision"
+      }},
+    {"id": "A4", "method": "POST", "path": "/api/v1/import-packages", "body": "multipart/form-data",
+      "createOnce": true,
+      "creates": "one source and one geometry-free package naming sectors 63 A and 59; no physical feature",
+      "fields": {
+        "format": {
+          "value": "administrative_context", "origin": "docs/evidence/gf-backend/k2/context-through-api.ts:40"
+        },
+        "metadata": {
+          "value": "one JSON text field with the values below",
+          "origin": "docs/evidence/gf-backend/k2/context-through-api.ts:41",
+          "values": {
+            "format": {
+              "value": "administrative_context", "origin": "docs/evidence/gf-backend/k2/context-through-api.ts:29"
+            },
+            "requestKey": {
+              "value": "a new random UUID for each runtime",
+              "origin": "docs/evidence/gf-backend/k2/context-through-api.ts:29 (randomUUID)",
+              "note": "The demo used 3903944f-e08c-4878-b8a9-d853c5329ed6; do not reuse it."
+            },
+            "namespace": {
+              "value": "gmda-sector-boundary-context",
+              "origin": "docs/evidence/gf-backend/k2/context-through-api.ts:29"
+            },
+            "name": {
+              "value": "GMDA sector 59 / 63 A administrative boundaries (test_only)",
+              "origin": "docs/evidence/gf-backend/k2/context-through-api.ts:30"
+            },
+            "areaId": {"value": "A2 response field areaId", "origin": "previous response"},
+            "expectedAreaRevision": {"value": "A3 response field area.revision", "origin": "previous response"},
+            "documents[0].key": {
+              "value": "sectors", "origin": "docs/evidence/gf-backend/k2/context-through-api.ts:31"
+            },
+            "documents[0].filename": {
+              "value": "gmda-sectors-59-63a.json", "origin": "docs/evidence/gf-backend/k2/context-through-api.ts:31"
+            },
+            "documents[0].sourceSha256": {
+              "value": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8",
+              "origin": ["fixtures/usp/D4/reference-area-gurugram-59-63a/manifest.json, asset",
+                "gmda-sector-boundaries, provenance.original.sha256",
+                "(docs/evidence/gf-backend/k2/context-through-api.ts:31)"]
+            },
+            "documents[0].originalUrl": {
+              "value": "the asset's origin.url, taken from the fixture as it is",
+              "origin": ["fixtures/usp/D4/reference-area-gurugram-59-63a/manifest.json, asset",
+                "gmda-sector-boundaries, origin.url (docs/evidence/gf-backend/k2/context-through-api.ts:32)"]
+            },
+            "documents[0].issuer": {
+              "value": "Gurugram Metropolitan Development Authority",
+              "origin": ["fixtures/usp/D4/reference-area-gurugram-59-63a/manifest.json, asset",
+                "gmda-sector-boundaries, attribution",
+                "(docs/evidence/gf-backend/k2/context-through-api.ts:32)"]
+            },
+            "documents[0].acquiredAt": {
+              "value": "2026-09-25T15:47:11.790714+00:00",
+              "origin": ["fixtures/usp/D4/reference-area-gurugram-59-63a/manifest.json, asset",
+                "gmda-sector-boundaries, provenance.acquiredAt",
+                "(docs/evidence/gf-backend/k2/context-through-api.ts:32)"]
+            },
+            "documents[0].permission": {
+              "value": "unconfirmed", "origin": "docs/evidence/gf-backend/k2/context-through-api.ts:33"
+            },
+            "documents[0].classification": {
+              "value": "test_only", "origin": "docs/evidence/gf-backend/k2/context-through-api.ts:33"
+            },
+            "buildings": {"value": [], "origin": "docs/evidence/gf-backend/k2/context-through-api.ts:34"},
+            "administrativeContext": {
+              "value": {"kind": "sector", "idField": "FID", "nameField": "Name"},
+              "origin": "docs/evidence/gf-backend/k2/context-through-api.ts:34"
+            }
+          }
+        },
+        "sectors": {
+          "value": "the bytes of original \"sectors\", file name gmda-sectors-59-63a.json, type application/json",
+          "origin": ["retained file, SHA-256 733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8;",
+            "docs/evidence/gf-backend/k2/context-through-api.ts:21-23, 42"]
+        }
+      },
+      "exactBodyOnTheDemo": {
+        "path": "E:/BhuAayam-data/task-data/k2/gmda-context-input.json",
+        "sha256": "dc66df6247534c1f7717d105672d6342dd1c759352a04cda13ae1fe86fd25966",
+        "note": "private, outside Git; every value in it agrees with the list above"
+      },
+      "onTheDemo": {
+        "at": "2026-10-09T23:19:53.045Z (createdAt)",
+        "response": "docs/evidence/gf-backend/k2/gmda-context-import.json",
+        "packageId": "0f777141-7af8-4700-b0b0-38f9010c102d", "sourceId": "a6b2fd14-4bd2-43a7-b363-c9633cbb52c3",
+        "packageState": "READY_FOR_REVIEW", "packageRevision": 2
+      }},
+    {"id": "A5", "method": "POST", "path": "/api/v1/import-packages/{packageId}/prepare", "body": "application/json",
+      "createOnce": true, "changes": "the package to REVIEWED",
+      "pathValues": {"packageId": {"value": "A4 response field id", "origin": "previous response"}},
+      "json": {
+        "expectedRevision": {
+          "value": "A4 response field revision",
+          "origin": "previous response (docs/evidence/gf-backend/k2/context-through-api.ts:46-47)"
+        }
+      },
+      "onTheDemo": {
+        "response": "docs/evidence/gf-backend/k2/gmda-context-review.json", "packageState": "REVIEWED",
+        "packageRevision": 3, "reviewedAgainstAreaRevision": 1
+      }},
+    {"id": "A6", "method": "POST", "path": "/api/v1/import-packages/{packageId}/commit", "body": "application/json",
+      "createOnce": true, "changes": "the package to COMMITTED; the area gains the two sector memberships",
+      "pathValues": {"packageId": {"value": "A4 response field id", "origin": "previous response"}},
+      "json": {
+        "expectedRevision": {
+          "value": "A5 response field revision",
+          "origin": "previous response (docs/evidence/gf-backend/k2/context-through-api.ts:50)"
+        },
+        "acknowledgement": {
+          "value": ["Reviewed native GMDA names and boundary provenance for local administrative context only.",
+            "Not parcels, public-land, property rights, measured terrain or analytically qualified",
+            "geometry."],
+          "origin": ["docs/evidence/gf-backend/k2/context-through-api.ts:51-52;",
+            "docs/evidence/gf-backend/k2/gmda-context-commit.json field acknowledgement is the same text"],
+          "note": "One string; it is wrapped here only to keep the line short."
+        }
+      },
+      "onTheDemo": {
+        "response": "docs/evidence/gf-backend/k2/gmda-context-commit.json", "packageState": "COMMITTED",
+        "packageRevision": 4
+      }},
+    {"id": "A7", "method": "GET", "path": "/api/v1/areas/{areaId}/canonical", "createOnce": false,
+      "stores": "nothing",
+      "pathValues": {"areaId": {"value": "A2 response field areaId", "origin": "previous response"}},
+      "takes": "the proof that the area carries sectors 63 A and 59 as context",
+      "onTheDemo": {"response": "docs/evidence/gf-backend/k2/gmda-context-area-canonical.json"}}
+  ],
+  "sentOnTheDemoAndRefused": {
+    "note": ["These three followed A2 on the demo. Each was refused and changed nothing. They are not part of the",
+      "step and should not be sent: the roads stay an unrecorded proposal, as on the demo."],
+    "items": [
+      {"method": "POST", "path": "/api/v1/import-packages/ba7a0da7-766b-4def-8282-191a3b47d4a6/review",
+        "at": "2026-10-09T20:06:15Z", "status": 422, "code": "USP_GEOMETRY_PAYLOAD_UNQUALIFIED",
+        "response": "docs/evidence/gf-backend/k2/gmda-review.json"},
+      {"method": "POST", "path": "/api/v1/import-packages/ba7a0da7-766b-4def-8282-191a3b47d4a6/prepare",
+        "at": "2026-10-09T20:13:34Z", "status": 422, "code": "USP_GEOMETRY_PAYLOAD_UNQUALIFIED",
+        "response": "docs/evidence/gf-backend/k2/gmda-prepare.json"},
+      {"method": "POST", "path": "/api/v1/import-packages/ba7a0da7-766b-4def-8282-191a3b47d4a6/commit",
+        "at": "2026-10-09T20:14:43Z", "status": 409, "code": "STALE_REVISION",
+        "response": "docs/evidence/gf-backend/k2/gmda-commit.json"}
+    ],
+    "theirBodies": ["not kept. The routes take {expectedRevision} and, for commit, an acknowledgement",
+      "(apps/api/src/modules/intake/import-packages.controller.ts:155-192). Origin unknown, and not needed."]
+  },
+  "counts": {
+    "requests": 7, "post": 5, "get": 2, "createOnce": 4, "createOnceIds": ["A2", "A4", "A5", "A6"],
+    "valuesWithUnknownOrigin": 1,
+    "unknown": ["A2 expectedAreaRevision: whether the demo sent it; it has no effect when left out"]
+  },
+  "forC6": ["The fill script can send A2 as written and reuse docs/evidence/gf-backend/k2/context-through-api.ts",
+    "for A3 to A7 once that script takes the API address, the area id from A2 and its output folders as",
+    "arguments (today it pins the demo's: R5a K21). The demo's area id must appear nowhere in it."]
+}
