@@ -28,6 +28,7 @@ MEMORY = 6 * 1024**3
 MAX_LINES = 256
 MAX_WORDS = 1024
 MAX_TEXT = 32 * 1024
+MAX_STORE = 8 * 1024**2
 
 
 def digest(path: Path) -> str:
@@ -51,9 +52,9 @@ def load(path: Path) -> dict:
     return value
 
 
-def save(path: Path, value: dict) -> None:
+def save(path: Path, value: dict, limit: int = MAX_JSON) -> None:
     data = (json.dumps(value, ensure_ascii=False, allow_nan=False, indent=2) + "\n").encode()
-    if len(data) > MAX_JSON:
+    if len(data) > limit:
         raise ValueError("result exceeds byte bound")
     with path.open("xb") as stream:
         stream.write(data)
@@ -402,6 +403,382 @@ def propose(args) -> dict:
                               "accuracy": "not_assessed", "trainingLabels": False, "operatorReviewRequired": True}}
 
 
+# --- Storey and unit facts -------------------------------------------------------------
+# Native text, or supervised OCR on tiles, is retained as a page store. One pattern table then
+# runs over the stored lines, so every value keeps its quote and locator.
+STOREY_METHOD = "deterministic:storey-rules@1"
+TILE_EDGE_POINTS = 500.0
+TILE_OVERLAP_POINTS = 50.0
+NATIVE_TEXT_MIN_CHARS = 20
+RUNNER_MAX_PAGES = 8
+RUNNER_MAX_BYTES = 16 * 1024**2
+OCR_TILE_SECONDS = 90
+
+EXPRESSION_PART = r"(?:\d{0,2}B|S|G|P|UG|LG|ST|(?i:STILT|BASEMENT|GROUND|PODIUM))"
+FLOOR_EXPRESSION = re.compile(rf"(?<![A-Za-z0-9])(?:{EXPRESSION_PART}\s*\+\s*){{1,4}}\d{{1,3}}(?![0-9A-Za-z])")
+BASEMENT_PREFIX = re.compile(r"(?<![A-Za-z0-9])(\d{1,2})B\s*\+")
+NUMBER_WORDS = {"ONE": 1, "TWO": 2, "THREE": 3, "FOUR": 4, "FIVE": 5, "SIX": 6, "SEVEN": 7, "EIGHT": 8,
+                "NINE": 9, "TEN": 10, "ELEVEN": 11, "TWELVE": 12, "THIRTEEN": 13, "FOURTEEN": 14,
+                "FIFTEEN": 15, "SIXTEEN": 16, "SEVENTEEN": 17, "EIGHTEEN": 18, "NINETEEN": 19, "TWENTY": 20}
+ORDINAL_WORDS = {"FIRST": 1, "SECOND": 2, "THIRD": 3, "FOURTH": 4, "FIFTH": 5, "SIXTH": 6, "SEVENTH": 7,
+                 "EIGHTH": 8, "NINTH": 9, "TENTH": 10, "ELEVENTH": 11, "TWELFTH": 12, "THIRTEENTH": 13,
+                 "FOURTEENTH": 14, "FIFTEENTH": 15, "SIXTEENTH": 16, "SEVENTEENTH": 17, "EIGHTEENTH": 18,
+                 "NINETEENTH": 19, "TWENTIETH": 20}
+HINDI_ORDINALS = ("प्रथम", "द्वितीय", "तृतीय", "चतुर्थ", "पंचम", "षष्ठ", "सप्तम", "अष्टम", "नवम", "दशम")
+SPECIAL_LABELS = ("GROUND", "BASEMENT", "STILT", "PODIUM", "TERRACE", "MEZZANINE", "REFUGE", "TYPICAL")
+ORDINAL_TOKEN = rf"(?:{'|'.join(ORDINAL_WORDS)}|\d{{1,2}}\s*(?:ST|ND|RD|TH))"
+FLOOR_WORD = r"(?:FLOOR|FLR|FL)\b\.?"
+FLOOR_LABEL = re.compile(
+    rf"(?<![A-Za-z0-9])(?:"
+    rf"{ORDINAL_TOKEN}\.?\s*(?:(?:TO|-|&|AND)\s*{ORDINAL_TOKEN}\.?\s*)?{FLOOR_WORD}(?:\s*PLAN)?"
+    rf"|(?:{'|'.join(SPECIAL_LABELS)})\s*{FLOOR_WORD}(?:\s*PLAN)?"
+    rf"|(?:{'|'.join(SPECIAL_LABELS)})(?![A-Za-z0-9]))", re.I)
+HINDI_LABEL = re.compile(rf"(?:भूतल|(?:{'|'.join(HINDI_ORDINALS)})\s*(?:तल|मंजिल))")
+COUNT_TOKEN = rf"(?P<count>\d{{1,3}}|(?i:{'|'.join(NUMBER_WORDS)}))"
+STOREY_PHRASE = re.compile(
+    rf"(?<![A-Za-z0-9+]){COUNT_TOKEN}[\s-]*(?i:storeys?|stories|storied|storeyed|floors?)\b(?!\s*(?i:plan))")
+HINDI_STOREY_PHRASE = re.compile(r"(?P<count>[0-9०-९]{1,3})\s*(?:मंजिला|मंजिल|तल)")
+BASEMENT_PHRASE = re.compile(rf"(?<![A-Za-z0-9+]){COUNT_TOKEN}[\s-]*(?:(?i:levels?\s+of\s+))?(?i:basements?)\b")
+UNIT_NOUN = r"(?:dwelling\s+units?|units?|apartments?|flats?|tenements?)"
+UNIT_COUNT = re.compile(
+    rf"(?i:(?:total\s+)?(?:no\.?|number)\s*(?:of\s*)?{UNIT_NOUN}\s*[:=\-]?\s*(?P<after>\d{{1,4}})"
+    rf"|total\s+{UNIT_NOUN}\s*[:=\-]?\s*(?P<total>\d{{1,4}})"
+    rf"|(?<![\d.])(?P<before>\d{{1,4}})\s*(?:nos\.?\s*)?{UNIT_NOUN}\b)")
+HEIGHT_KEYWORD = r"(?i:floor\s*to\s*floor(?:\s*height)?|storey\s*height|floor\s*height|height|ht\.?)"
+HEIGHT_UNIT = r"(?:(?i:mtrs?|mts?|metres?|meters?|mm|m|ft|feet|foot)\b|['\"])"
+HEIGHT = re.compile(rf"{HEIGHT_KEYWORD}\W{{0,12}}(?P<number>\d+(?:\.\d+)?)\s*(?P<unit>{HEIGHT_UNIT})?")
+HEIGHT_UNITS = {"m": "m", "mt": "m", "mts": "m", "mtr": "m", "mtrs": "m", "metre": "m", "metres": "m",
+                "meter": "m", "meters": "m", "mm": "mm", "ft": "'", "feet": "'", "foot": "'", "'": "'",
+                '"': '"'}
+
+
+def count_literal_value(literal: str) -> int | None:
+    word = NUMBER_WORDS.get(literal.upper())
+    if word is not None:
+        return word
+    return int(literal) if literal.isdigit() else None
+
+
+def hit(field: str, match: re.Match, value, literal, **extra) -> dict:
+    return {"field": field, "value": value, "valueLiteral": literal, "quote": match.group(0),
+            "textSpan": list(match.span()), **extra}
+
+
+def find_floor_expressions(text: str) -> list[dict]:
+    """G+N, S+N, B+G+N, 2B+G+N: the printed expression stays a literal, never expanded."""
+    return [hit("floorExpression", match, re.sub(r"\s+", "", match.group(0)).upper(), match.group(0))
+            for match in FLOOR_EXPRESSION.finditer(text)]
+
+
+def find_basement_counts(text: str) -> list[dict]:
+    """A number written before B in an expression, or '2 basements'; a bare B states no count."""
+    found = []
+    for expression in FLOOR_EXPRESSION.finditer(text):
+        prefix = BASEMENT_PREFIX.match(expression.group(0))
+        if prefix:
+            found.append(hit("basementCount", expression, int(prefix.group(1)), prefix.group(1)))
+    for match in BASEMENT_PHRASE.finditer(text):
+        value = count_literal_value(match.group("count"))
+        if value is not None:
+            found.append(hit("basementCount", match, value, match.group("count")))
+    return found
+
+
+def find_storey_phrases(text: str) -> list[dict]:
+    """'N storeys / floors / storied'; the stated number is the value, its meaning is not expanded."""
+    found = []
+    for match in STOREY_PHRASE.finditer(text):
+        value = count_literal_value(match.group("count"))
+        if value is not None:
+            found.append(hit("storeyCount", match, value, match.group("count"), expression=match.group(0)))
+    for match in HINDI_STOREY_PHRASE.finditer(text):
+        found.append(hit("storeyCount", match, int(match.group("count")), match.group("count"),
+                         expression=match.group(0)))
+    return found
+
+
+def label_kind(label: str) -> str:
+    upper = label.upper()
+    for special in SPECIAL_LABELS:
+        if upper.startswith(special):
+            return special.lower()
+    return "ordinal"
+
+
+def find_floor_labels(text: str) -> list[dict]:
+    """Ordinal and ranged floor captions plus basement/stilt/podium/terrace/mezzanine/refuge labels."""
+    found = [hit("floorLabel", match, match.group(0).upper().rstrip(". "), match.group(0),
+                 labelKind=label_kind(match.group(0)))
+             for match in FLOOR_LABEL.finditer(text)]
+    for match in HINDI_LABEL.finditer(text):
+        kind = "ground" if match.group(0) == "भूतल" else "ordinal"
+        found.append(hit("floorLabel", match, match.group(0), match.group(0), labelKind=kind))
+    return found
+
+
+def find_unit_counts(text: str) -> list[dict]:
+    """'81 units', 'No. of Apartments : 85', 'Total flats 40'."""
+    found = []
+    for match in UNIT_COUNT.finditer(text):
+        literal = match.group("after") or match.group("total") or match.group("before")
+        found.append(hit("unitCount", match, int(literal), literal))
+    return found
+
+
+def length_literal(number: str, unit: str | None) -> str | None:
+    suffix = HEIGHT_UNITS.get(unit.lower()) if unit else None
+    if suffix is None:
+        return None
+    return f"{number}{suffix}" if suffix in {"'", '"'} else f"{number} {suffix}"
+
+
+def find_floor_heights(text: str) -> list[dict]:
+    """Floor-to-floor heights; the unit is converted in code, a missing unit stays unit_unknown."""
+    from geo.vector_plan import parse_length
+
+    found = []
+    for match in HEIGHT.finditer(text):
+        literal = length_literal(match.group("number"), match.group("unit"))
+        parsed = parse_length(literal) if literal else None
+        state = "candidate" if parsed and parsed["metres"] is not None else "unit_unknown"
+        found.append(hit("floorHeight", match, parsed["metres"] if state == "candidate" else None,
+                         match.group("number"), state=state, statedUnit=match.group("unit"),
+                         conversion=parsed["conversion"] if parsed else None))
+    return found
+
+
+RULES = (find_floor_expressions, find_basement_counts, find_storey_phrases, find_floor_labels,
+         find_unit_counts, find_floor_heights)
+
+
+def apply_rules(text: str) -> list[dict]:
+    return [found for rule in RULES for found in rule(text)]
+
+
+def native_lines(page) -> list[dict]:
+    lines = []
+    for block in page.get_text("dict")["blocks"]:
+        for line in block.get("lines", []):
+            text = "".join(span["text"] for span in line["spans"]).strip()
+            if text:
+                lines.append({"text": text, "box": [round(value, 2) for value in line["bbox"]]})
+    return lines
+
+
+def tile_boxes(width: float, height: float) -> list[list[float]]:
+    """Overlapping source-page tiles in PDF points, top-left origin."""
+    step = TILE_EDGE_POINTS - TILE_OVERLAP_POINTS
+    boxes, top = [], 0.0
+    while True:
+        left = 0.0
+        while True:
+            right, bottom = min(width, left + TILE_EDGE_POINTS), min(height, top + TILE_EDGE_POINTS)
+            boxes.append([left, top, right, bottom])
+            if right >= width:
+                break
+            left += step
+        if bottom >= height:
+            return boxes
+        top += step
+
+
+def ocr_environment(tesseract: Path, tessdata: Path) -> dict[str, str]:
+    kept = ("SystemRoot", "WINDIR", "PATH", "TEMP", "TMP", "USERPROFILE", "APPDATA", "LOCALAPPDATA")
+    environment = {key: os.environ[key] for key in kept if key in os.environ}
+    environment.update(CUDA_VISIBLE_DEVICES="", HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1",
+                       OMP_NUM_THREADS="2", PYTHONNOUSERSITE="1", TESSDATA_PREFIX=str(tessdata))
+    environment["PATH"] = str(tesseract.parent) + os.pathsep + environment.get("PATH", "")
+    return environment
+
+
+def runner_sources(source: Path, expected: str, work: Path) -> dict[int, dict]:
+    """Per original page, a PDF the supervised runner accepts (a one-page derivative when it is too big)."""
+    import fitz
+
+    with fitz.open(source) as document:
+        if len(document) <= RUNNER_MAX_PAGES and source.stat().st_size <= RUNNER_MAX_BYTES:
+            return {number: {"path": source, "sha256": expected, "page": number}
+                    for number in range(1, len(document) + 1)}
+        entries = {}
+        for number in range(1, len(document) + 1):
+            target = work / f"{expected[:12]}-page-{number}.pdf"
+            if not target.exists():
+                single = fitz.open()
+                single.insert_pdf(document, from_page=number - 1, to_page=number - 1)
+                single.save(target, garbage=3, deflate=True)
+                single.close()
+            entries[number] = {"path": target, "sha256": digest(target), "page": 1, "derivedFromPage": number}
+        return entries
+
+
+def read_tile_result(path: Path, box: list[float]) -> dict:
+    try:
+        result = load(path)
+    except (OSError, ValueError):
+        return {"box": box, "status": "ocr_unavailable", "issues": ["OCR_RESULT_MISSING"], "lines": []}
+    lines = []
+    for item in result.get("items", []):
+        boxes = [entry["box"] for entry in item["sourcePageBoxes"]]
+        merged = [min(b[0] for b in boxes), min(b[1] for b in boxes), max(b[2] for b in boxes), max(b[3] for b in boxes)]
+        lines.append({"text": item["text"], "box": [round(value, 2) for value in merged]})
+    if result.get("toolStatus") not in {"complete", "partial"}:
+        status = "ocr_unavailable"
+    else:
+        status = "partial" if result.get("outputStatus") == "partial" else "complete"
+    return {"box": box, "status": status, "issues": result.get("issues", []), "lines": lines}
+
+
+def ocr_tile(job: dict, box: list[float], output: Path) -> dict:
+    """One supervised OCR call; any failure becomes an ocr_unavailable tile with its issue code."""
+    command = [str(job["python"]), str(REPO / "scripts/usp/document-models/run_source_ocr.py"),
+               "--source", str(job["path"]), "--expected-source-sha256", job["sha256"], "--page", str(job["page"]),
+               "--region", *[str(round(value, 2)) for value in box], "--models", str(job["models"]),
+               "--tesseract", str(job["tesseract"]), "--tessdata", str(job["tessdata"]),
+               "--max-items", "64", "--max-seconds", str(OCR_TILE_SECONDS), "--output", str(output)]
+    if not (output / "result.json").exists():
+        subprocess.run(command, env=ocr_environment(job["tesseract"], job["tessdata"]), stdin=subprocess.DEVNULL,
+                       capture_output=True, timeout=OCR_TILE_SECONDS + 60, check=False)
+    return read_tile_result(output / "result.json", box)
+
+
+def overlap_ratio(first: list[float], second: list[float]) -> float:
+    width = min(first[2], second[2]) - max(first[0], second[0])
+    height = min(first[3], second[3]) - max(first[1], second[1])
+    smaller = min((box[2] - box[0]) * (box[3] - box[1]) for box in (first, second))
+    return max(width, 0) * max(height, 0) / smaller if smaller > 0 else 0.0
+
+
+def unique_words(tiles: list[dict]) -> list[dict]:
+    """Overlapping tiles see some words twice; keep one per text and place."""
+    kept: dict[str, list[dict]] = {}
+    for tile in tiles:
+        for line in tile["lines"]:
+            same = kept.setdefault(line["text"], [])
+            if not any(overlap_ratio(line["box"], other["box"]) >= 0.5 for other in same):
+                same.append(line)
+    return [line for group in kept.values() for line in group]
+
+
+def continues_row(row_box: list[float], word_box: list[float]) -> bool:
+    heights = (row_box[3] - row_box[1], word_box[3] - word_box[1])
+    shared = min(row_box[3], word_box[3]) - max(row_box[1], word_box[1])
+    gap = word_box[0] - row_box[2]
+    return min(heights) > 0 and shared >= 0.5 * min(heights) and -min(heights) <= gap <= 2.0 * max(heights)
+
+
+def join_rows(words: list[dict]) -> list[dict]:
+    """OCR emits words; patterns such as 'G + 41' or 'SIXTH FL.' need them joined along a row."""
+    rows: list[dict] = []
+    for word in sorted(words, key=lambda item: item["box"][0]):
+        row = next((row for row in rows if continues_row(row["box"], word["box"])), None)
+        if row is None:
+            rows.append({"text": word["text"], "box": list(word["box"])})
+            continue
+        row["text"] += " " + word["text"]
+        row["box"] = [min(row["box"][0], word["box"][0]), min(row["box"][1], word["box"][1]),
+                      max(row["box"][2], word["box"][2]), max(row["box"][3], word["box"][3])]
+    return sorted(rows, key=lambda item: (round(item["box"][1]), item["box"][0]))
+
+
+def merge_lines(page_number: int, tiles: list[dict]) -> list[dict]:
+    rows = join_rows(unique_words(tiles))
+    return [{"id": f"p{page_number}-l{index}", **row} for index, row in enumerate(rows)]
+
+
+def page_status(tile_states: set[str]) -> str:
+    if tile_states == {"ocr_unavailable"}:
+        return "ocr_unavailable"
+    return "complete" if tile_states == {"complete"} else "partial"
+
+
+def page_entry(page, number: int, sources: dict, settings: argparse.Namespace, pool) -> dict:
+    """Native text when the page has a text layer; otherwise OCR over tiles, in parallel."""
+    lines = native_lines(page)
+    width, height = page.rect.width, page.rect.height
+    if sum(len(line["text"]) for line in lines) >= NATIVE_TEXT_MIN_CHARS:
+        merged = [{"id": f"p{number}-l{index}", **line} for index, line in enumerate(lines)]
+        return {"width": width, "height": height, "origin": "native_text", "status": "complete", "lines": merged}
+    job = {**sources[number], "python": settings.ocr_python, "models": settings.models,
+           "tesseract": settings.tesseract, "tessdata": settings.tessdata}
+    boxes = tile_boxes(width, height)
+    folder = settings.output / "ocr" / settings.expected_source_sha256[:12]
+    outputs = [folder / f"p{number:02d}-t{index:02d}" for index in range(len(boxes))]
+    tiles = list(pool.map(lambda pair: ocr_tile(job, *pair), zip(boxes, outputs)))
+    status = page_status({tile["status"] for tile in tiles})
+    summary = [{key: tile[key] for key in ("box", "status", "issues")} for tile in tiles]
+    return {"width": width, "height": height, "origin": "ocr", "method": "ocr:docling-tesseract-cli-region-tiles",
+            "status": status, "tiles": summary, "lines": merge_lines(number, tiles)}
+
+
+def pages_command(args: argparse.Namespace) -> int:
+    """Retain the page text of one original PDF: native layer first, supervised OCR for the rest."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    import fitz
+
+    if digest(args.source) != args.expected_source_sha256:
+        raise ValueError("source hash mismatch")
+    args.output.mkdir(parents=True, exist_ok=True)
+    work = args.output / "derived"
+    work.mkdir(exist_ok=True)
+    sources = runner_sources(args.source, args.expected_source_sha256, work)
+    pages = {}
+    with fitz.open(args.source) as document, ThreadPoolExecutor(args.workers) as pool:
+        for number in range(1, len(document) + 1):
+            pages[str(number)] = page_entry(document[number - 1], number, sources, args, pool)
+    derived = {str(number): {"sha256": entry["sha256"], "page": entry["page"]}
+               for number, entry in sources.items() if "derivedFromPage" in entry}
+    source = {"sha256": args.expected_source_sha256, "bytes": args.source.stat().st_size, "path": str(args.source)}
+    store = {"schemaVersion": "storey-pages/1", "source": source, "derivedRunnerPdfs": derived, "pages": pages}
+    save(args.output / f"{args.expected_source_sha256}.pages.json", store, MAX_STORE)
+    print({number: entry["status"] for number, entry in pages.items()})
+    return 0
+
+
+def line_item(store: dict, page_number: int, line: dict, found: dict) -> dict:
+    locator = {"page": page_number, "bbox": line["box"], "textSpan": found.pop("textSpan"), "lineId": line["id"]}
+    return {**found, "locator": locator, "sourceSha256": store["source"]["sha256"], "method": STOREY_METHOD,
+            "state": found.get("state", "candidate")}
+
+
+def storey_items(store: dict) -> list[dict]:
+    items = []
+    for page_number, page in store["pages"].items():
+        for line in page["lines"]:
+            items.extend(line_item(store, int(page_number), line, found) for found in apply_rules(line["text"]))
+    return items
+
+
+def storey_command(args: argparse.Namespace) -> int:
+    """Run the rules over a retained page store; the shared verifier keeps or drops each value."""
+    from storey_quote_verifier import filter_verified, load_page_store
+
+    helpers()
+    store = load_page_store(args.pages)
+    kept, dropped = filter_verified(store, storey_items(store))
+    unavailable = [int(number) for number, page in store["pages"].items() if page["status"] == "ocr_unavailable"]
+    result = {"schemaVersion": "storey-rule-items/1", "method": STOREY_METHOD, "source": store["source"],
+              "pagesOcrUnavailable": unavailable, "items": kept, "dropped": dropped}
+    save(args.output, result, MAX_STORE)
+    print(args.output)
+    return 0
+
+
+def add_storey_parsers(sub) -> None:
+    pages = sub.add_parser("pages", help="retain native or supervised-OCR page text for one original PDF")
+    pages.add_argument("--source", type=Path, required=True)
+    pages.add_argument("--expected-source-sha256", required=True)
+    pages.add_argument("--output", type=Path, required=True, help="private directory outside Git")
+    pages.add_argument("--ocr-python", type=Path, required=True)
+    pages.add_argument("--models", type=Path, required=True)
+    pages.add_argument("--tesseract", type=Path, required=True)
+    pages.add_argument("--tessdata", type=Path, required=True)
+    pages.add_argument("--workers", type=int, default=3)
+    storey = sub.add_parser("storey", help="storey and unit rules over a retained page store")
+    storey.add_argument("--pages", type=Path, required=True)
+    storey.add_argument("--output", type=Path, required=True)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -427,7 +804,12 @@ def main() -> int:
             p.add_argument("--model-dir", type=Path, required=True)
         if name == "propose":
             p.add_argument("--inputs", type=Path, required=True)
+    add_storey_parsers(sub)
     args = parser.parse_args()
+    if args.command == "pages":
+        return pages_command(args)
+    if args.command == "storey":
+        return storey_command(args)
     if args.command == "ocr" and bool(args.reuse_tsv) != bool(args.expected_tsv_sha256):
         parser.error("reused TSV and expected hash must be supplied together")
     if args.worker:
