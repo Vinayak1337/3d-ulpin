@@ -2,14 +2,29 @@
 import { execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, realpathSync, renameSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { demoDir, readDemoDocumentRuntime, readDemoOcrPaths, safeEnvironment } from './demo-config.mjs';
+import { demoDir, demoOcrProfileFile, readDemoDocumentRuntime, readDemoOcrPaths,
+  safeEnvironment } from './demo-config.mjs';
 import { ownedProcess } from './processes.mjs';
 import { root } from './runtime.mjs';
 
 const servingCheckout = 'E:/Projects/ulpin-wt/demo';
-const usage = 'Usage: demo-document-runtime.mjs build [--python <absolute file>] [--dry-run --out <temporary folder>]';
+const usage = 'Usage: demo-document-runtime.mjs build [--python <absolute file>] [--dry-run --out <temporary folder>]'
+  + '\n       demo-document-runtime.mjs switch-ocr-python (--python <absolute file> | --restore <saved file name>)'
+  + ' [--dry-run --out <temporary folder>]'
+  + '\nRollback: switch-ocr-python --restore <the saved previous file name the switch printed>, then build.';
+const ocrPythonKey = 'ULPIN_DOCUMENT_OCR_PYTHON';
+const savedOverrideName = /^ocr-paths-profile\.previous-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z\.json$/;
+/** Exactly the third-party imports of the OCR step (run_source_ocr.py) and the region step (run_packet_region.py). */
+const importPreflight = [
+  'import fitz, psutil, pypdfium2, pypdfium2_raw',
+  'from PIL import Image',
+  'from docling.datamodel.accelerator_options import AcceleratorDevice, AcceleratorOptions',
+  'from docling.datamodel.base_models import ConversionStatus, InputFormat',
+  'from docling.datamodel.pipeline_options import OcrMode, PdfPipelineOptions, TesseractCliOcrOptions',
+  'from docling.document_converter import DocumentConverter, ImageFormatOption',
+].join('\n');
 const profileKey = 'ULPIN_PACKET_REGIONS_PROFILE';
 const hashKey = 'ULPIN_PACKET_REGIONS_PROFILE_SHA256';
 const pythonKey = 'ULPIN_PACKET_REGIONS_PYTHON';
@@ -88,9 +103,6 @@ function assertBuildLocation(dryRun, output) {
   if (process.platform === 'win32' && destination.startsWith(protectedRuntime + '\\')) {
     throw new Error('--out must be a temporary folder, not the shared runtime.');
   }
-  if (existsSync(join(output, 'document-runtime-paths.json'))) {
-    throw new Error('--out already contains document runtime keys; choose a fresh folder.');
-  }
   let insideCheckout = false;
   try {
     insideCheckout = execFileSync('git', ['-C', parent, 'rev-parse', '--is-inside-work-tree'], {
@@ -107,9 +119,13 @@ function selectedPython(configured) {
     try { python = readDemoOcrPaths().ULPIN_DOCUMENT_OCR_PYTHON; }
     catch { throw new Error('Configure ULPIN_DOCUMENT_OCR_PYTHON or supply --python.'); }
   }
+  return availableInterpreter(python, pythonKey);
+}
+
+function availableInterpreter(python, key) {
   try {
     if (!python || !isAbsolute(python) || !statSync(python).isFile()) throw new Error('python unavailable');
-  } catch { throw new Error(`Absolute available runtime file required: ${pythonKey}.`); }
+  } catch { throw new Error(`Absolute available runtime file required: ${key}.`); }
   return python;
 }
 
@@ -128,10 +144,122 @@ function buildProfile(python, directory) {
   } catch { throw new Error(`Frozen runtime build failed: ${pythonKey}, ${profileKey}, ${hashKey}.`); }
 }
 
+/** One bounded CPU import check shared by the forward switch and the build; only imports run, no model. */
+function preflightImports(python) {
+  try {
+    execFileSync(python, ['-I', '-B', '-c', importPreflight], {
+      cwd: root, timeout: 180000, windowsHide: true, stdio: 'ignore',
+      env: safeEnvironment({ CUDA_VISIBLE_DEVICES: '', HF_HUB_OFFLINE: '1', TRANSFORMERS_OFFLINE: '1' }),
+    });
+  } catch { throw new Error('Document runtime import preflight failed: the OCR and region packages must import.'); }
+}
+
+/** The base named by the environment's pyvenv.cfg; null when no single absolute, existing home can be read. */
+function interpreterBase(python) {
+  const environment = realpathSync(dirname(dirname(python)));
+  const config = join(environment, 'pyvenv.cfg');
+  const homes = existsSync(config) ? [...readFileSync(config, 'utf8').matchAll(/^home\s*=\s*(.+?)\s*$/gm)] : [];
+  if (homes.length !== 1 || !isAbsolute(homes[0][1]) || !existsSync(homes[0][1])) {
+    return { base: null, baseInsideEnvironment: null };
+  }
+  const base = realpathSync(homes[0][1]);
+  const location = relative(environment, base);
+  const inside = location !== '' && location !== '..' && !location.startsWith(`..${sep}`) && !isAbsolute(location);
+  return { base, baseInsideEnvironment: inside };
+}
+
+/** The shared reader validates the file; its own refusals name keys only, and any other failure stays private. */
+function readOverride(folder, name) {
+  const file = join(folder, name);
+  if (!existsSync(file)) throw new Error(`Document runtime OCR override not found: ${name}; this action creates none.`);
+  if (dirname(realpathSync(file)).toLowerCase() !== realpathSync(folder).toLowerCase()) {
+    throw new Error('Document runtime OCR override must resolve inside its own folder.');
+  }
+  const bytes = readFileSync(file);
+  let paths;
+  try { paths = readDemoOcrPaths(file); }
+  catch (error) {
+    const reason = /^(OCR|Pinned OCR) /.test(error.message) ? error.message : 'the shared reader could not parse it.';
+    throw new Error(`Document runtime OCR override refused: ${reason}`);
+  }
+  if (!readFileSync(file).equals(bytes)) throw new Error('Document runtime OCR override changed during validation.');
+  return { paths, bytes };
+}
+
+/** Replaces the one literal value in place: every other byte, value and key position stays as it was. */
+function withInterpreter(bytes, python) {
+  const text = bytes.toString('utf8');
+  const literal = /("ULPIN_DOCUMENT_OCR_PYTHON"\s*:\s*)"(?:[^"\\]|\\.)*"/g;
+  const changed = text.replace(literal, (_, key) => key + JSON.stringify(python));
+  const expected = JSON.parse(text);
+  expected.paths[ocrPythonKey] = python;
+  if ([...text.matchAll(literal)].length !== 1 || JSON.stringify(JSON.parse(changed)) !== JSON.stringify(expected)) {
+    throw new Error(`Document runtime OCR override must hold ${ocrPythonKey} exactly once, as a literal.`);
+  }
+  return Buffer.from(changed);
+}
+
+/** Forward switch: no flag relaxes the private-base rule, and the imports are proven before anything is written. */
+function forwardOverride(current, python, preflight) {
+  availableInterpreter(python, ocrPythonKey);
+  const { base, baseInsideEnvironment } = interpreterBase(python);
+  if (base === null) {
+    throw new Error('Document runtime interpreter requires a pyvenv.cfg with one absolute, existing home.');
+  }
+  if (!baseInsideEnvironment) {
+    throw new Error(`Document runtime interpreter base lies outside its environment: ${base}`);
+  }
+  const bytes = withInterpreter(current.bytes, python);
+  preflight(python);
+  return { python, bytes, baseInsideEnvironment };
+}
+
+/** Rollback: the saved file's bytes return as they were; the private-base rule is reported, not applied. */
+function savedOverride(folder, name) {
+  if (typeof name !== 'string' || !savedOverrideName.test(name)) {
+    throw new Error('Document runtime restore requires a saved ocr-paths-profile.previous-<UTC>.json file name.');
+  }
+  const saved = readOverride(folder, name);
+  const python = saved.paths[ocrPythonKey];
+  return { python, bytes: saved.bytes, baseInsideEnvironment: interpreterBase(python).baseInsideEnvironment };
+}
+
+/** Saves the current bytes beside the override, then replaces it by one rename. Nothing is ever deleted. */
+function publishOverride(file, before, after, rename) {
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const savedPreviousFile = `${basename(file, '.json')}.previous-${stamp}.json`;
+  const pending = `${file}.pending-${randomUUID()}`;
+  writeFileSync(pending, after, { flag: 'wx', mode: 0o600 });
+  readOverride(dirname(file), basename(pending));
+  writeFileSync(join(dirname(file), savedPreviousFile), before, { flag: 'wx', mode: 0o600 });
+  if (!readFileSync(file).equals(before)) throw new Error('Document runtime OCR override changed before publication.');
+  rename(pending, file);
+  return { savedPreviousFile, previousSha256: sha256(before), newSha256: sha256(after) };
+}
+
+/** Owner-run. A dry run works only on the copy already in --out. The second argument is for tests. */
+export function switchOcrPython({ dryRun = false, out, python, restore } = {}, seams = {}) {
+  const { rename = renameSync, preflight = preflightImports } = seams;
+  if ((python === undefined) === (restore === undefined)) throw new Error(usage);
+  const folder = assertBuildLocation(dryRun, out);
+  const name = basename(demoOcrProfileFile);
+  const current = readOverride(folder, name);
+  const next = restore === undefined ? forwardOverride(current, python, preflight) : savedOverride(folder, restore);
+  const published = publishOverride(join(folder, name), current.bytes, next.bytes, rename);
+  return {
+    restored: restore !== undefined, previousPython: current.paths[ocrPythonKey], newPython: next.python,
+    baseInsideEnvironment: next.baseInsideEnvironment, ...published,
+  };
+}
+
 /** Each rollout gets a new immutable profile directory; only the non-secret path-file pointer is replaced. */
 export function buildDocumentRuntime({ dryRun = false, out, python: configuredPython } = {}) {
   const output = assertBuildLocation(dryRun, out);
+  if (dryRun && existsSync(join(output, 'document-runtime-paths.json'))) {
+    throw new Error('--out already contains document runtime keys; choose a fresh folder.');
+  }
   const python = selectedPython(configuredPython);
+  preflightImports(python);
   const directory = privateBuildDirectory(output);
   const frozen = buildProfile(python, directory);
   const pagesScratch = join(directory, 'pages-scratch');
@@ -154,26 +282,33 @@ export function buildDocumentRuntime({ dryRun = false, out, python: configuredPy
 
 function options(arguments_) {
   const [action, ...flags] = arguments_;
-  if (action !== 'build') throw new Error(usage);
-  const result = {};
+  if (!['build', 'switch-ocr-python'].includes(action)) throw new Error(usage);
+  const result = { action };
   for (let index = 0; index < flags.length; index++) {
     const flag = flags[index];
     if (flag === '--dry-run' && !result.dryRun) result.dryRun = true;
-    else if (['--out', '--python'].includes(flag) && flags[index + 1] && !flags[index + 1].startsWith('--')) {
+    else if (['--out', '--python', '--restore'].includes(flag) && flags[index + 1]
+      && !flags[index + 1].startsWith('--')) {
       const key = flag.slice(2);
       if (result[key] !== undefined) throw new Error(usage);
       result[key] = flags[++index];
     } else throw new Error(usage);
   }
+  if (action === 'build' && result.restore !== undefined) throw new Error(usage);
   return result;
 }
 
 if (process.argv[1] && resolve(process.argv[1]).toLowerCase() === fileURLToPath(import.meta.url).toLowerCase()) {
   try {
-    const result = buildDocumentRuntime(options(process.argv.slice(2)));
-    console.log(`Configured keys: ${result.keys.join(', ')}`);
-    console.log(`${hashKey}: ${result.profileSha256}`);
-    console.log(`document-runtime-paths.json SHA256: ${result.pathsSha256}`);
+    const selected = options(process.argv.slice(2));
+    if (selected.action === 'switch-ocr-python') {
+      console.log(JSON.stringify(switchOcrPython(selected)));
+    } else {
+      const result = buildDocumentRuntime(selected);
+      console.log(`Configured keys: ${result.keys.join(', ')}`);
+      console.log(`${hashKey}: ${result.profileSha256}`);
+      console.log(`document-runtime-paths.json SHA256: ${result.pathsSha256}`);
+    }
   } catch (error) {
     console.error(error.message.startsWith('Document runtime') || error.message.startsWith('Frozen runtime')
       || error.message.startsWith('Normal document') || error.message.startsWith('Stop the recorded')
