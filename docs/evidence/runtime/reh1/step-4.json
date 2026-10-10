@@ -1,0 +1,25 @@
+{ "at": "2026-10-10T17:47:12.597Z", "commit": "afd23f2999c412ed5c2b21aae10c3fae0c859003", "receipt": { "command": [
+"node scripts/platform/demo-document-runtime.mjs build --runtime ulpin-reh-01" ],
+"from": "E:/Projects/ulpin-wt/ulpin-reh-01", "exit": 0, "seconds": 37.923, "output": [
+"Configured keys: ULPIN_DOCUMENT_PAGES_PYTHON, ULPIN_DOCUMENT_PAGES_SCRATCH, ULPIN_PACKET_R",
+"EGIONS_PYTHON, ULPIN_PACKET_REGIONS_PROFILE, ULPIN_PACKET_REGIONS_PROFILE_SHA256, ULPIN_PA", "CKET_REGIONS_SCRATCH",
+"ULPIN_PACKET_REGIONS_PROFILE_SHA256: [omitted non-source digest]",
+"document-runtime-paths.json SHA256: [omitted non-source digest]" ], "error": null }, "gpu": null, "state": {
+"runtimeEntries": [ "bootstrap.complete.json", "document-ocr-6ab9cbac-c311-4c70-99d7-66eb1d6f341d-N4MaNh",
+"document-runtime-paths.json", "learning", "logs", "models", "ocr-paths.json", "ocr-scratch", "runtime.env",
+"tabular-paths.json" ], "volumes": { "command": [ "docker volume ls --filter name=ulpin-reh-01_ --format \"{{.Name}}\""
+], "from": "E:/Projects/ulpin-wt/r5/docs/evidence/runtime/reh1", "exit": 0, "seconds": 0.168, "output": [
+"ulpin-reh-01_minio-data", "ulpin-reh-01_postgres-data", "ulpin-reh-01_redis-data" ], "error": null }, "containers": {
+"command": [ "docker ps -a --filter label=com.docker.compose.project=ulpin-reh-01 --format \"{{.Names}} {",
+"{.State}} {{.Status}}\"" ], "from": "E:/Projects/ulpin-wt/r5/docs/evidence/runtime/reh1", "exit": 0, "seconds": 0.181,
+"output": [ "ulpin-reh-01-worker-1 running Up 52 seconds (healthy)",
+"ulpin-reh-01-geo-1 running Up 58 seconds (healthy)", "ulpin-reh-01-minio-init-1 exited Exited (0) 58 seconds ago",
+"ulpin-reh-01-redis-1 running Up About a minute (healthy)", "ulpin-reh-01-minio-1 running Up About a minute (healthy)",
+"ulpin-reh-01-postgres-1 running Up About a minute (healthy)" ], "error": null }, "networks": { "command": [
+"docker network ls --filter name=ulpin-reh-01 --format \"{{.Name}}\"" ],
+"from": "E:/Projects/ulpin-wt/r5/docs/evidence/runtime/reh1", "exit": 0, "seconds": 0.157, "output": [
+"ulpin-reh-01_default" ], "error": null }, "listeners": [ { "LocalAddress": "127.0.0.1", "LocalPort": 21015,
+"OwningProcess": 12872 }, { "LocalAddress": "127.0.0.1", "LocalPort": 21014, "OwningProcess": 12872 }, {
+"LocalAddress": "127.0.0.1", "LocalPort": 21013, "OwningProcess": 12872 }, { "LocalAddress": "127.0.0.1",
+"LocalPort": 21012, "OwningProcess": 12872 }, { "LocalAddress": "127.0.0.1", "LocalPort": 21011, "OwningProcess": 12872
+} ] } }
