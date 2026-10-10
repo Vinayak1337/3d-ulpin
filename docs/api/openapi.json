@@ -107229,6 +107229,30 @@
                                 "worker"
                               ],
                               "additionalProperties": false
+                            },
+                            "regionEdge": {
+                              "type": "object",
+                              "properties": {
+                                "renderScalePxPerPt": {
+                                  "type": "number",
+                                  "minimum": 0.5
+                                },
+                                "boxesBeyondRegion": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 256
+                                },
+                                "largestOverhangPt": {
+                                  "type": "number",
+                                  "minimum": 0
+                                }
+                              },
+                              "required": [
+                                "renderScalePxPerPt",
+                                "boxesBeyondRegion",
+                                "largestOverhangPt"
+                              ],
+                              "additionalProperties": false
                             }
                           },
                           "required": [
@@ -122458,6 +122482,30 @@
                                 "worker"
                               ],
                               "additionalProperties": false
+                            },
+                            "regionEdge": {
+                              "type": "object",
+                              "properties": {
+                                "renderScalePxPerPt": {
+                                  "type": "number",
+                                  "minimum": 0.5
+                                },
+                                "boxesBeyondRegion": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 256
+                                },
+                                "largestOverhangPt": {
+                                  "type": "number",
+                                  "minimum": 0
+                                }
+                              },
+                              "required": [
+                                "renderScalePxPerPt",
+                                "boxesBeyondRegion",
+                                "largestOverhangPt"
+                              ],
+                              "additionalProperties": false
                             }
                           },
                           "required": [
@@ -132226,6 +132274,30 @@
                                 "receiptSha256",
                                 "candidateSha256",
                                 "worker"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "regionEdge": {
+                              "type": "object",
+                              "properties": {
+                                "renderScalePxPerPt": {
+                                  "type": "number",
+                                  "minimum": 0.5
+                                },
+                                "boxesBeyondRegion": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 256
+                                },
+                                "largestOverhangPt": {
+                                  "type": "number",
+                                  "minimum": 0
+                                }
+                              },
+                              "required": [
+                                "renderScalePxPerPt",
+                                "boxesBeyondRegion",
+                                "largestOverhangPt"
                               ],
                               "additionalProperties": false
                             }
@@ -218492,6 +218564,30 @@
                                 "worker"
                               ],
                               "additionalProperties": false
+                            },
+                            "regionEdge": {
+                              "type": "object",
+                              "properties": {
+                                "renderScalePxPerPt": {
+                                  "type": "number",
+                                  "minimum": 0.5
+                                },
+                                "boxesBeyondRegion": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 256
+                                },
+                                "largestOverhangPt": {
+                                  "type": "number",
+                                  "minimum": 0
+                                }
+                              },
+                              "required": [
+                                "renderScalePxPerPt",
+                                "boxesBeyondRegion",
+                                "largestOverhangPt"
+                              ],
+                              "additionalProperties": false
                             }
                           },
                           "required": [
@@ -301664,6 +301760,30 @@
                                 "worker"
                               ],
                               "additionalProperties": false
+                            },
+                            "regionEdge": {
+                              "type": "object",
+                              "properties": {
+                                "renderScalePxPerPt": {
+                                  "type": "number",
+                                  "minimum": 0.5
+                                },
+                                "boxesBeyondRegion": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 256
+                                },
+                                "largestOverhangPt": {
+                                  "type": "number",
+                                  "minimum": 0
+                                }
+                              },
+                              "required": [
+                                "renderScalePxPerPt",
+                                "boxesBeyondRegion",
+                                "largestOverhangPt"
+                              ],
+                              "additionalProperties": false
                             }
                           },
                           "required": [
@@ -312115,6 +312235,30 @@
                                     "receiptSha256",
                                     "candidateSha256",
                                     "worker"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "regionEdge": {
+                                  "type": "object",
+                                  "properties": {
+                                    "renderScalePxPerPt": {
+                                      "type": "number",
+                                      "minimum": 0.5
+                                    },
+                                    "boxesBeyondRegion": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 256
+                                    },
+                                    "largestOverhangPt": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    }
+                                  },
+                                  "required": [
+                                    "renderScalePxPerPt",
+                                    "boxesBeyondRegion",
+                                    "largestOverhangPt"
                                   ],
                                   "additionalProperties": false
                                 }
@@ -367057,6 +367201,30 @@
                   "receiptSha256",
                   "candidateSha256",
                   "worker"
+                ],
+                "additionalProperties": false
+              },
+              "regionEdge": {
+                "type": "object",
+                "properties": {
+                  "renderScalePxPerPt": {
+                    "type": "number",
+                    "minimum": 0.5
+                  },
+                  "boxesBeyondRegion": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 256
+                  },
+                  "largestOverhangPt": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "renderScalePxPerPt",
+                  "boxesBeyondRegion",
+                  "largestOverhangPt"
                 ],
                 "additionalProperties": false
               }

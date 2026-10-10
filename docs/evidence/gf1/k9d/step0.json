@@ -1,0 +1,330 @@
+{
+  "task": "K9d",
+  "step": 0,
+  "date": "2026-10-10",
+  "branch": "task/k9d-ocr-box-at-region-edge",
+  "base": "e9dcebde",
+  "ranNothing": "Read retained results only. No OCR, no interpreter, no demo, no runtime folder, no .env.",
+  "rule": {
+    "asWritten": {
+      "file": "packages/contracts/src/usp/document-ingestion.ts",
+      "lines": "144-147, inside DocumentOcrSchema.superRefine",
+      "text": [
+        "cite.box[0]<region[0]-1 || cite.box[1]<region[1]-1 || cite.box[2]>region[2]+1 ||",
+        "cite.box[3]>region[3]+1"
+      ],
+      "tolerance": "the literal 1, in points, on each side; only when requestedRegion is not null",
+      "refusal": "OCR boxes must stay in the selected source region."
+    },
+    "notInTheBridge": [
+      "document-ocr.ts has no box check of its own. Lines 177-180 call DocumentOcrSchema.parse on the worker result.",
+      "The contract's refusal is thrown there, caught at 181-185 and answered as the catch-all OCR_BRIDGE_FAILED.",
+      "The bridge's own reader (the candidate schema, lines 23-28) drops the worker's render block, so the bridge",
+      "does not see the render scale today."
+    ],
+    "introduced": {
+      "commit": "0272544c",
+      "subject": "Add private source-bound PDF OCR retries",
+      "author": "Vinayak1337",
+      "date": "2026-09-30",
+      "onlyCommitOnTheseLines": true,
+      "statedReason": [
+        "none. The commit has no body. Its handoff (docs/evidence/usp/private-ocr-jobs-handoff.md)",
+        "says only that output is admitted 'with source-page/region citation checks'. No test pins",
+        "the 1 pt value."
+      ],
+      "whatTheOtherSideAlreadyDoes": [
+        "The Python adapter checks a mapped box against the page frame with one rendered pixel, not 1 pt:",
+        "services/geo/geo/usp_document_candidates/docling_tesseract.py:251 'tolerance = 1 / scale + 1e-5'",
+        "(46454b8a, 30 Sep).",
+        "On 30 Sep the limits already admitted renders under 1 px per pt (2000 pt side, 1400 px side), so 1 pt was",
+        "never one pixel for every admitted region; it is one pixel only at a scale of 1 px per pt or more."
+      ]
+    },
+    "pinned": {
+      "file": "docs/api/source-pins.json",
+      "entries": [
+        "line 172: packages/contracts/src/usp/document-ingestion.ts",
+        "line 398: packages/server/src/modules/usp/ingestion/document-ocr.ts"
+      ],
+      "meaning": [
+        "Both are pinned producer sources. A change to either needs the lead's re-pin; docs/api is",
+        "not regenerated here."
+      ]
+    },
+    "whoDependsOnABoxInsideTheRegion": [
+      {
+        "who": "the bridge",
+        "where": "packages/server/src/modules/usp/ingestion/document-ocr.ts:177-185",
+        "tolerance": "the contract's 1 pt",
+        "effect": "a result with one box further out is refused whole: OCR_BRIDGE_FAILED, 0 lines"
+      },
+      {
+        "who": "every stored document result",
+        "where": [
+          "packages/contracts/src/usp/document-ingestion.ts:182 (DocumentResultSchema.ocr is",
+          "DocumentOcrSchema)"
+        ],
+        "tolerance": "the contract's 1 pt",
+        "effect": [
+          "a result the bridge let through would be refused again when the document result is",
+          "parsed"
+        ]
+      },
+      {
+        "who": "source fusion",
+        "where": "packages/server/src/modules/usp/ingestion/source-fusion.ts:55",
+        "tolerance": "the contract's 1 pt (DocumentOcrSchema.safeParse again)",
+        "effect": "fusion refuses the source"
+      },
+      {
+        "who": "the quote check of D2",
+        "where": [
+          "packages/server/src/modules/usp/ingestion/document-proposal-quotes.ts:25-31",
+          "(quoteRegionText)"
+        ],
+        "tolerance": "0 pt, on the cited locator box against the stored region",
+        "effect": [
+          "OCR lines are chosen by positive-area overlap with the cited box, so a line that",
+          "overhangs is still found by a citation inside the region. A citation that copies an",
+          "overhanging OCR box exactly gets no region text. This is already so today for an",
+          "overhang of 1 pt or less."
+        ]
+      },
+      {
+        "who": "the proposal locator check",
+        "where": [
+          "packages/server/src/modules/usp/ingestion/document-proposals.ts:43-48 (locatorWarnings);",
+          "OCR lines enter at 160-171"
+        ],
+        "tolerance": "0 pt",
+        "effect": [
+          "a proposal whose box is outside its selected region is kept with the warning",
+          "citation_extends_declared_region. A proposal that copies an overhanging OCR box exactly",
+          "gets that warning; already so today for 1 pt or less."
+        ]
+      },
+      {
+        "who": "the citation viewer",
+        "where": [
+          "apps/studio/src/features/evidence/CitedPageViewer.tsx:99-101 with pageGeometry.ts",
+          "(regionOutline)"
+        ],
+        "tolerance": "none against the OCR region: it draws a cited region when it lies inside the page frame",
+        "effect": "none. No file under apps/studio, packages/ui or packages/scene reads sourcePageBoxes."
+      },
+      {
+        "who": "registry document evidence and fusion observations",
+        "where": [
+          "packages/contracts/src/registry-document-evidence.ts:40,183;",
+          "packages/contracts/src/source-fusion.ts:103"
+        ],
+        "tolerance": "none: they use DocumentOcrItemSchema, one item at a time, without the region",
+        "effect": "none"
+      }
+    ]
+  },
+  "threeBoxes": {
+    "source": {
+      "retainedResult": "E:/BhuAayam-data/task-data/k9/new-ocr-config-3/result.json",
+      "sha256": "3d69916ebbb8a5a802a1996d7ca6582148a5a95015cacc78d709cce9e0e8b81e",
+      "sameBytesAs": [
+        "R5c's two runs (roll/ocr-site-plan.json, roll/ocr-check.json name this hash) and K9's",
+        "old-ocr-config-3"
+      ],
+      "r5cKeptNoWorkerResult": "R5c kept receipts only, so the reproduction reads K9's file with the same hash.",
+      "file": "haryana-2831-site-plan.pdf, page 1 (public RERA sheet, development only)"
+    },
+    "regionPt": [280, 860, 960, 2580],
+    "render": {
+      "scalePxPerPt": 0.813953488372093,
+      "onePixelPt": 1.228571,
+      "pixelOrigin": [227, 700],
+      "pixels": [555, 1400],
+      "regionInPixels": [227.907, 700, 781.3953, 2100],
+      "rasterInPoints": [278.885714, 860, 960.742857, 2580],
+      "rasterBeyondRegionPt": {"left": 1.114286, "top": 0, "right": 0.742857, "bottom": 0},
+      "rasterBeyondRegionPx": {"left": 0.906977, "top": 0, "right": 0.604651, "bottom": 0}
+    },
+    "boxes": [
+      {
+        "item": 0,
+        "text": "1 character",
+        "boxPt": [278.8857142857143, 1041.8513, 293.63041428571427, 1046.7662],
+        "boxInRasterPixels": [0, 148.0185, 12.0015, 152.019],
+        "overhangPt": {"left": 1.114286, "top": 0, "right": 0, "bottom": 0},
+        "overhangPx": {"left": 0.906977, "top": 0, "right": 0, "bottom": 0}
+      },
+      {
+        "item": 1,
+        "text": "1 character",
+        "boxPt": [278.8857142857143, 1117.2131, 293.63041428571427, 1174.5536],
+        "boxInRasterPixels": [0, 209.3595, 12.0015, 256.032],
+        "overhangPt": {"left": 1.114286, "top": 0, "right": 0, "bottom": 0},
+        "overhangPx": {"left": 0.906977, "top": 0, "right": 0, "bottom": 0}
+      },
+      {
+        "item": 2,
+        "text": "1 character",
+        "boxPt": [278.8857142857143, 1325.2772, 280.52401428571426, 1353.1282999999999],
+        "boxInRasterPixels": [0, 378.714, 1.3335, 401.3835],
+        "overhangPt": {"left": 1.114286, "top": 0, "right": 0, "bottom": 0},
+        "overhangPx": {"left": 0.906977, "top": 0, "right": 0, "bottom": 0}
+      }
+    ],
+    "whereTheOverhangComesFrom": {
+      "answer": "rounding at the pixel grid, met by an engine box that starts at the raster's first column",
+      "steps": [
+        "The region is rendered as asked, with no padding: docling_tesseract.py:128 makes the clip the region itself,",
+        "and :189 renders that clip. Nothing in the Python side or in the bridge widens it.",
+        "The scale is 0.814 px per pt because the region is 1720 pt tall and a raster side may be 1400 px (:132).",
+        "The region's left edge, 280 pt, falls at pixel 227.907. MuPDF renders whole pixels and takes the integer",
+        "bounds outward (floor of left and top, ceiling of right and bottom; the same bounds :140 preflights).",
+        "The raster therefore starts at pixel 227, which is 278.886 pt: 0.907 px, 1.114 pt, left of the region.",
+        "On the right it ends at pixel 782 (960.743 pt): 0.605 px, 0.743 pt beyond. Top and bottom land on whole",
+        "pixels (700 and 2100), so there is nothing beyond them.",
+        "Each of the three boxes starts at raster x = 0 exactly: the engine read ink in the first pixel column, which",
+        "is the column the region's left edge cuts. The mapping back to points (:244-249) is exact and unrounded,",
+        "so the box's left edge is the raster's left edge, 278.886 pt."
+      ],
+      "notThese": {
+        "renderPadding": "none is added anywhere; the padding the bridge adds is 0",
+        "mappingError": "no: pixel origin, DPI and scale are applied exactly; the box is where the ink was read"
+      },
+      "bound": [
+        "The raster can pass the region by less than one rendered pixel on a side, so a true box",
+        "can too: under 1/scale pt. Here that is under 1.228571 pt. The contract's 1 pt is below it",
+        "whenever the scale is under 1 px per pt: any region over 1400 pt on a side, or over 1.6",
+        "million square pt. The smallest admitted scale (a 2000 x 2000 pt region) is about 0.632 px",
+        "per pt, one pixel 1.581 pt."
+      ]
+    },
+    "reproducedOffline": {
+      "command": [
+        "node --import tsx docs/evidence/gf1/k9d/reproduce.ts",
+        "E:/BhuAayam-data/task-data/k9/new-ocr-config-3/result.json"
+      ],
+      "prints": {
+        "resultSha256": "3d69916ebbb8a5a802a1996d7ca6582148a5a95015cacc78d709cce9e0e8b81e",
+        "items": 64,
+        "boxes": 69,
+        "boxesBeyondRegion": 3,
+        "largestOverhangPt": 1.1142857142856997,
+        "renderScale": 0.813953488372093,
+        "oneRenderedPixelPt": 1.2285714285714286,
+        "contractAccepts": false,
+        "contractRefusal": [
+          "OCR boxes must stay in the selected source region."
+        ]
+      },
+      "ocrRunAgain": false
+    }
+  },
+  "retainedResults": {
+    "howRead": "every result.json or receipt under task-data k9, k9b, k9c and r5c; nothing run",
+    "columns": [
+      "where",
+      "result sha256 (first 8)",
+      "items",
+      "boxes",
+      "boxes beyond the region",
+      "beyond 1 pt",
+      "largest pt"
+    ],
+    "rows": [
+      ["k9/new-ocr-config-3", "3d69916e", 64, 69, 3, 3, 1.114286],
+      ["k9/old-ocr-config-3 (same bytes)", "3d69916e", 64, 69, 3, 3, 1.114286],
+      [
+        "r5c/roll ocr-site-plan and ocr-check (receipts naming the same bytes)",
+        "3d69916e",
+        64,
+        69,
+        3,
+        3,
+        1.114286
+      ],
+      [
+        "k9/new-ocr and k9/old-ocr (the run that failed before reading)",
+        "2f3b295b",
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        "k9/old-ocr-config-2 (harness fault before OCR)",
+        "7c06ee9e",
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        "k9/old-ocr-config (receipt only, no result)",
+        null,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        "r5c/roll ocr-label (tower 3 label, region 48 x 19 pt; receipt only)",
+        "d0ad10a2",
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        "k9b (image-region runs only, no OCR result)",
+        null,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        "k9c (override fixtures only, no OCR result)",
+        null,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "distinctResultsWithBoxes": 1,
+    "boxesInThem": 69,
+    "boxesBeyondRegion": 3,
+    "largestOverhangPt": 1.114286,
+    "limit": "One sheet and one region hold every retained box. This is one measurement, not a rate."
+  },
+  "againstTheLeadDecision": {
+    "causeIsAtTheRegionEdge": true,
+    "allowedOverhang": {
+      "oneRenderedPixelPt": 1.228571,
+      "whereDefined": "the worker result's render.scale (docling_tesseract.py:210), one pixel = 1/scale",
+      "paddingPt": 0,
+      "paddingWhereDefined": [
+        "nowhere: the clip is the region (docling_tesseract.py:128, :189); no padding exists to",
+        "read"
+      ],
+      "totalPt": 1.228571,
+      "coversTheThreeBoxes": "yes: 1.114286 is under 1.228571"
+    },
+    "whatStandsInTheWay": [
+      "The 1 pt rule is in the contract file, which K9d does not own, and it is applied three times (the bridge, the",
+      "stored document result, fusion). A rule written only in document-ocr.ts cannot make the result accepted:",
+      "the contract refuses it on the next line, and again when the document result is stored.",
+      "The contract cannot compute one rendered pixel either: a published OCR result does not carry the render scale.",
+      "DocumentOcrBaseSchema is a strict object, so boxesBeyondRegion as a field of its own is a published change",
+      "(docs/api/openapi.json, the generated client). Issue codes are free strings up to 200 characters, so",
+      "OCR_BOX_OUTSIDE_REGION and a count written as an issue fit the published shape without a change."
+    ]
+  }
+}

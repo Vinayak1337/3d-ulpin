@@ -14100,6 +14100,11 @@ export interface components {
                                 logSha256: string;
                             } | null;
                         };
+                        regionEdge?: {
+                            renderScalePxPerPt: number;
+                            boxesBeyondRegion: number;
+                            largestOverhangPt: number;
+                        };
                     };
                 } | {
                     id: string;
@@ -17134,6 +17139,11 @@ export interface components {
                                 logSha256: string;
                             } | null;
                         };
+                        regionEdge?: {
+                            renderScalePxPerPt: number;
+                            boxesBeyondRegion: number;
+                            largestOverhangPt: number;
+                        };
                     };
                 } | {
                     id: string;
@@ -19071,6 +19081,11 @@ export interface components {
                                 gatedStart: true;
                                 logSha256: string;
                             } | null;
+                        };
+                        regionEdge?: {
+                            renderScalePxPerPt: number;
+                            boxesBeyondRegion: number;
+                            largestOverhangPt: number;
                         };
                     };
                 };
@@ -35826,6 +35841,11 @@ export interface components {
                                 logSha256: string;
                             } | null;
                         };
+                        regionEdge?: {
+                            renderScalePxPerPt: number;
+                            boxesBeyondRegion: number;
+                            largestOverhangPt: number;
+                        };
                     };
                 };
                 item: {
@@ -51601,6 +51621,11 @@ export interface components {
                                 logSha256: string;
                             } | null;
                         };
+                        regionEdge?: {
+                            renderScalePxPerPt: number;
+                            boxesBeyondRegion: number;
+                            largestOverhangPt: number;
+                        };
                     } | null;
                     /** @enum {string} */
                     capability: "selected_ocr_observations" | "selection_required" | "ocr_unavailable";
@@ -53852,6 +53877,11 @@ export interface components {
                                     gatedStart: true;
                                     logSha256: string;
                                 } | null;
+                            };
+                            regionEdge?: {
+                                renderScalePxPerPt: number;
+                                boxesBeyondRegion: number;
+                                largestOverhangPt: number;
                             };
                         } | null;
                         /** @enum {string} */
@@ -65681,6 +65711,11 @@ export interface components {
                         gatedStart: true;
                         logSha256: string;
                     } | null;
+                };
+                regionEdge?: {
+                    renderScalePxPerPt: number;
+                    boxesBeyondRegion: number;
+                    largestOverhangPt: number;
                 };
             } | null;
             ocrItems?: {
