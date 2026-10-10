@@ -5,6 +5,7 @@
 .result { display: flex; align-items: center; gap: var(--ui-space-3); padding: 16px 18px; border-radius: var(--ui-radius-12); font: 600 20px/24px var(--ui-font-sans); }
 .resultText { flex: 1; }
 .success { background: var(--ui-success-soft); color: var(--ui-success); }
+.neutral { background: var(--ui-surface-subtle); color: var(--ui-ink); border: 1px solid var(--ui-border-strong); }
 .warning { background: var(--ui-warning-soft); color: var(--ui-warning); }
 .danger { background: var(--ui-danger-soft); color: var(--ui-danger); }
 /* A sentence in the banner (a failure with its reason) instead of a short result. */

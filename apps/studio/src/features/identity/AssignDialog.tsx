@@ -3,8 +3,12 @@ import { Banner, Button, DescriptionList, Dialog, StatusBadge, UlpinCode } from 
 import type { BuildingRegister } from '../../api/queries';
 import type { SpaceModel } from '../../model/building';
 import { useAssignCode } from '../workflow/useWorkflow';
+import { DraftNotice } from './DraftNotice';
 
-/** S11: confirm before a random proposed code is generated. Lineage and anchor are shown, never invented. */
+/**
+ * S11: confirm before a random proposed code is generated. Lineage and anchor are shown, never invented. The code
+ * is made in this browser (local/workflow.ts), so the dialog says before the action that it is a draft.
+ */
 export function AssignDialog({ space, register, onClose, onAssigned }: {
   space: SpaceModel; register: BuildingRegister; onClose: () => void; onAssigned: (code: string) => void;
 }) {
@@ -24,12 +28,13 @@ export function AssignDialog({ space, register, onClose, onAssigned }: {
             disabled={assign.isPending}
             onClick={() => assign.mutate({ spaceId: space.id, buildingId: register.property.id, spaceName: space.name, recordRevision: space.record.revision }, { onSuccess: (workflow) => onAssigned(workflow.code!) })}
           >
-            Assign code
+            Assign draft code
           </Button>
         </>
       )}
     >
       <div className="ul-stack" style={{ gap: 20 }}>
+        <DraftNotice>the code assigned here is made in this browser and is not sent to the server.</DraftNotice>
         <div style={{ padding: 16, borderRadius: 'var(--ui-radius-12)', background: 'var(--ui-surface-subtle)' }}>
           <UlpinCode code={null} state="draft" />
           <p className="ul-help" style={{ marginTop: 8 }}>A random code is generated on confirm. It carries no parcel, level or use, so corrections never change it.</p>

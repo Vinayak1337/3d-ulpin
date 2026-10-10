@@ -1,20 +1,32 @@
 import { Link, useParams } from 'react-router';
 import { DownloadSimple, WarningCircle } from '@phosphor-icons/react';
 import { Button, DescriptionList, EmptyState, PropertyCard, Skeleton, StrataSection, UlpinCode, formatDate } from '@ulpin/ui';
+import { DRAFT_FACT } from '../features/identity/draft';
+import { DraftNotice } from '../features/identity/DraftNotice';
+import { LOCAL_CHAIN_WORDS, useLocalChain } from '../features/identity/localChain';
 import { Qr } from '../features/identity/Qr';
+import { useSpaceWorkflow } from '../features/workflow/useWorkflow';
 import { shortHash } from '../local/workflow';
 import { Crumbs } from './PortalFrame';
 import { PublicScene } from './PublicScene';
 import { usePublicBuilding, usePublicMap, usePublicRecord } from './queries';
 import styles from './Portal.module.css';
 
-/** P3: one released record: its code, released facts, a view-only 3D view and its place in the building's section. */
+const DRAFT_HERE = 'the code and the Property Card of this record were made in this browser and are not checked by the '
+  + 'server.';
+
+/**
+ * P3: one released record: its code, released facts, a view-only 3D view and its place in the building's section.
+ * A code on this page is always this browser's own (local/public.ts takes it from local/workflow.ts), so the code
+ * and the card printed from here are named drafts; the released facts are not.
+ */
 export function RecordPage() {
   const { recordId } = useParams();
   const record = usePublicRecord(recordId);
   const r = record.data;
   const building = usePublicBuilding(r?.buildingId).data ?? null;
   const map = usePublicMap(building?.areaId).data ?? null;
+  const chain = useLocalChain(useSpaceWorkflow(recordId ?? null).data);
   if (record.isPending) return <div className={styles.wrap}><Skeleton width="50%" height={36} /><Skeleton height={320} /></div>;
   if (!r) {
     return (
@@ -40,8 +52,11 @@ export function RecordPage() {
       <div className={styles.recordHead}>
         <Crumbs items={[{ label: 'Home', to: '/portal' }, { label: r.buildingName, to: `/portal/buildings/${r.buildingId}` }, { label: r.name }]} />
         <h1 className="portal-h1">{title}</h1>
-        {r.code ? <UlpinCode code={r.code} location={r.location} /> : <span className="portal-body ul-muted">3D ULPIN (proposed): not assigned yet</span>}
+        {r.code
+          ? <UlpinCode code={r.code} location={r.location} state="draft" />
+          : <span className="portal-body ul-muted">3D ULPIN (proposed): not assigned yet</span>}
         {r.parcelUlpin ? <span className="portal-body-sm ul-muted">Parcel ULPIN <span className="ul-mono">{r.parcelUlpin}</span></span> : null}
+        {r.code ? <DraftNotice>{DRAFT_HERE}</DraftNotice> : null}
       </div>
       <div className={styles.note}>Released details only. Owner names and documents are not public.</div>
       <div className={styles.split}>
@@ -58,15 +73,19 @@ export function RecordPage() {
         <div className={styles.factsCard}>
           <DescriptionList items={facts} />
           {r.code && verify ? (
-            <Button variant="primary" icon={DownloadSimple} onClick={() => window.print()}>Download Property Card</Button>
+            <Button variant="primary" icon={DownloadSimple} onClick={() => window.print()}>
+              Download draft Property Card
+            </Button>
           ) : <p className="portal-body-sm ul-muted">A Property Card is issued once a proposed 3D ULPIN is assigned to this unit.</p>}
           <p className="portal-body-sm ul-muted">Something wrong? <Link to={`/portal/request?building=${r.buildingId}&record=${r.id}&kind=correction`}>Request a correction</Link> with your deed or plan.</p>
         </div>
       </div>
       {r.code && verify ? (
         <div className={styles.printOnly} aria-hidden="true">
-          <PropertyCard title={title} code={r.code} location={r.location} revision={`r${r.revision}`} hash={shortHash(r.revisionHash)} chain="Chain consistent"
-            qr={<Qr value={verify} size={88} label="QR code: verification page" />} facts={facts.slice(0, 4)} />
+          <PropertyCard title={title} code={r.code} location={r.location} revision={`r${r.revision}`}
+            hash={shortHash(r.revisionHash)} chain={LOCAL_CHAIN_WORDS[chain]}
+            qr={<Qr value={verify} size={88} label="QR code: verification page" />}
+            facts={[DRAFT_FACT, ...facts.slice(0, 4)]} />
         </div>
       ) : null}
     </div>
