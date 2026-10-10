@@ -1,6 +1,7 @@
 /**
- * Intercepted UI controls for the recorded floors and units panel. The K4b offline protocol doubles record the
- * K4c source labels in memory; no runtime, database or provider is touched and nothing here is a live record.
+ * Intercepted UI controls for F3a; no runtime, database or provider is touched and nothing here is a live record.
+ * Recorded floors and units: the K4b offline protocol doubles record the K4c source labels in memory.
+ * Table import: the F2b offline controls with the result freshness the published contract now requires.
  */
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
@@ -22,6 +23,12 @@ import { SourceIdentityControl } from '../../../packages/server/src/modules/usp/
 
 const out = resolve('docs/evidence/gf1/ui/f3a');
 const CANONICAL_SCHEMA = 'GET_buildings_buildingId_canonical_Response_200_application_json';
+const TABLE_ROUTE = 'ingestion_cases_caseId_sources_sourceId';
+const RAW_SCHEMA = `POST_${TABLE_ROUTE}_streaming_vector_Response_202_application_json`;
+const MAPPING_SCHEMA = `POST_${TABLE_ROUTE}_chunk_mapping_Response_202_application_json`;
+const CHUNK_SCHEMA = `GET_${TABLE_ROUTE}_chunk_mapping_jobs_jobId_chunks_chunkIndex_Response_200_application_json`;
+const FRESH = { current: true, reasons: [] };
+const STALE = { current: false, reasons: ['case_advanced'] };
 const validate = createContractValidator(JSON.parse(readFileSync('docs/api/openapi.json', 'utf8')));
 const k4cRequest = JSON.parse(readFileSync('docs/evidence/gf1/k4b/k4c-source-space-request.json', 'utf8'));
 const globals = globalThis as unknown as { ulpinPool?: unknown };
@@ -30,13 +37,32 @@ const location = { anchorState: 'not_supplied' as const, parcels: [], locator: {
   structureKind: '?' as const, structureNumber: 1, levels: ['L?'], spaceKind: '?' as const, spaceNumber: 1 } };
 
 type Recorded = Awaited<ReturnType<typeof commandSourceSpace>>;
+type TableFile = Record<'raw' | 'mapping' | 'chunk', object>;
+
+function checked<T>(schema: string, value: T): T {
+  assert.deepEqual(validate(schema, value), [], schema);
+  return value;
+}
+
+function withFreshness(file: TableFile, freshness: typeof FRESH) {
+  return { ...file, raw: checked(RAW_SCHEMA, { ...file.raw, ...freshness }),
+    mapping: checked(MAPPING_SCHEMA, { ...file.mapping, ...freshness }),
+    chunk: checked(CHUNK_SCHEMA, { ...file.chunk, ...freshness }) };
+}
+
+/** The F2b job and chunk responses as current results, and the second file once more as an earlier case state. */
+function tableControls() {
+  const f2b = JSON.parse(readFileSync('docs/evidence/gf-agent/ui/f2b/responses.json', 'utf8'));
+  return { note: 'The F2b intercepted table controls with the published result freshness added; stale is the '
+      + 'second file marked as a result from an earlier state of the case. Not live records.',
+    ...f2b, files: f2b.files.map((file: TableFile) => withFreshness(file, FRESH)),
+    stale: withFreshness(f2b.files[1], STALE) };
+}
 
 function canonicalBody(db: SourceSpaceControl, codes?: Awaited<ReturnType<typeof readSourceProjectCodes>>) {
   const building = structuredClone(retainedTower);
   projectSourceRecordedChildren(building, db.rows.map((row) => ({ ...row.body, revision: row.revision })), codes);
-  const body = finishBuilding(building);
-  assert.deepEqual(validate(CANONICAL_SCHEMA, body), [], CANONICAL_SCHEMA);
-  return body;
+  return checked(CANONICAL_SCHEMA, finishBuilding(building));
 }
 
 /** The existing review and assignment protocol, against the in-memory SQL double of the K4b test. */
@@ -75,6 +101,7 @@ async function main() {
         + 'doubles and the K4c request literals. Not live records. The code in withCode is a test value '
         + 'allocated in memory by the existing generator; it is not an issued identity.',
       buildingId: retainedTower.buildingId, withoutCode, withCode }));
+    writeFileSync(resolve(out, 'table-responses.json'), JSON.stringify(tableControls()));
   } finally {
     globals.ulpinPool = pool;
   }

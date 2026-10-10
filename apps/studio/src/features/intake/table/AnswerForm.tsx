@@ -9,12 +9,14 @@ import styles from './Table.module.css';
 export function AnswerForm({ profile, mapping, answers, change, markUnknown, record, pending }: {
   profile: TableProfile; mapping: ChunkMapping; answers: OfficerAnswers; pending: boolean;
   change: (sourceField: string, answer: OfficerAnswer) => void;
-  markUnknown: (reason: string) => void; record: () => void;
+  /** Null when the result is not current: one reason is never spread over a stale result. */
+  markUnknown: ((reason: string) => void) | null; record: () => void;
 }) {
   const unanswered = unansweredColumns(profile, answers);
   return (
     <div className={styles.form}>
-      <SharedUnknown count={unansweredUnknownColumns(profile, answers).length} apply={markUnknown} pending={pending} />
+      {markUnknown ? <SharedUnknown count={unansweredUnknownColumns(profile, answers).length}
+        apply={markUnknown} pending={pending} /> : null}
       <ColumnAnswers profile={profile} mapping={mapping} answers={answers} change={change} record={record}
         pending={pending} unanswered={unanswered} />
     </div>
