@@ -1,0 +1,98 @@
+{
+  "task": "K15",
+  "base": "be571c5a",
+  "phase": "Pre-code audit; line numbers refer to this base",
+  "aliases": { "i": "packages/server/src/modules/usp/ingestion/" },
+  "decision": {
+    "anyPlanReadsAnotherSource": false,
+    "proceed": true,
+    "rule": "compareWorkspacePins in i/source-pin.ts; every workspace pair comparison below decides through it"
+  },
+  "item1_comparisons": [
+    { "at": "i/chunk-mapping.ts:79-80", "what": "approvedRecipeTx tabular: plan pair == profile pair", "k15": "rule" },
+    { "at": "i/chunk-mapping.ts:94-95", "what": "approvedRecipeTx GeoJSON: plan pair == profile pair", "k15": "rule" },
+    { "at": "i/chunk-mapping.ts:116-118", "what": "manual profile: case revision == input.caseRevision",
+      "k15": "removed" },
+    { "at": "i/chunk-mapping.ts:133", "what": "input.workspaceFingerprint == rebuilt profile fingerprint",
+      "k15": "rule for manual profiles; null == null for streamed profiles" },
+    { "at": "i/chunk-mapping.ts:167-168", "what": "read: case_advanced on any advance of a manual-profile mapping",
+      "k15": "rule against the workspace now" },
+    { "at": "i/tabular-recipe.ts:12-13", "what": "assertRecipePins: plan pair == profile pair", "k15": "rule" },
+    { "at": "i/service.ts:86", "what": "validate: plan pair == current workspace pair", "k15": "rule" },
+    { "at": "i/adaptive-mapping-service.ts:29-33", "what": "one hash over source, case id and the request pair",
+      "k15": "source and case id exact; pair through the rule" },
+    { "at": "i/adaptive-mapping-service.ts:49", "what": "authorize: fingerprint(whole profile now) == first read",
+      "k15": "profile without its pair exact; pair through the rule" },
+    { "at": "i/sufficiency-context.ts:64-65,75", "what": "exactRecipe: recipe pair == case revision and hash now",
+      "k15": "rule, plus the existing latest-in-family value of :61; executed alternative unchanged" },
+    { "at": "i/chunk-mapping-learning.ts:171,175", "what": "plan.workspaceRevision passed as expectedCaseRevision",
+      "k15": "not owned (TB6); reported" }
+  ],
+  "item1_statementsNotCompared": [
+    "i/chunk-mapping.ts:258 stores the profile fingerprint in the mapping input",
+    "i/adaptive-mapping-service.ts:35-36 echoes the profile pair; :73 scopeHash keeps profileHash for gateway replay",
+    "i/adaptive-mapping.ts:43-44 writes the profile pair into a proposed plan",
+    "i/chunk-mapping-worker.ts:167-169 forwards the asserted profile pair to the proposal call"
+  ],
+  "item1_profileBuilders": [
+    { "at": "i/service.ts:26-34", "what": "workspace(): current revision, hash of every source row of the case" },
+    { "at": "i/service.ts:55-60", "what": "profile(row, scope): writes the given scope pair" },
+    { "at": "i/service.ts:62-68", "revision": "caller's", "callers": ["i/chunk-mapping.ts:65 via :129 and :241"] },
+    { "at": "i/service.ts:69-80", "revision": "caller's", "callers": ["i/chunk-mapping.ts:64 via :129 and :241"] },
+    { "at": "i/service.ts:128,135,148,155,176", "revision": "current (retain; :176 after its own increment)" },
+    { "at": "i/service.ts:188-189", "revision": "current (inspectAny, also adaptive readProfile)" },
+    { "at": "i/service.ts:200-201,231-241", "revision": "current (author, decide)" },
+    { "at": "i/chunk-mapping.ts:129", "revision": "pinned input.caseRevision over the current source list",
+      "k15": "current revision" },
+    { "at": "i/chunk-mapping.ts:241", "revision": "current (enqueue)" }
+  ],
+  "item2_planReads": {
+    "tabular": [
+      { "read": "profile columns, selection and source pin", "at": "i/tabular-recipe.ts:9-25,28-31",
+        "belongs": "own source (inspection.manualProfile)" },
+      { "read": "original bytes for the dry run", "at": "i/service.ts:88; i/tabular-recipe.ts:35-38",
+        "belongs": "own source" },
+      { "read": "canonical revalidation against the column profile", "at": "i/chunk-mapping.ts:82-84",
+        "belongs": "own source" },
+      { "read": "raw chunks of its own raw job", "at": "i/chunk-mapping-tabular.ts:27-30,79-117",
+        "belongs": "own source" },
+      { "read": "learner model and memory paths", "at": "i/chunk-mapping-learning.ts:30-40,141-153",
+        "belongs": "neither: global learner artifacts and its own source bytes, no case source" },
+      { "read": "destination", "at": "i/service.ts:251-253", "belongs": "none: tabular execution is refused" }
+    ],
+    "geojson": [
+      { "read": "profile paths", "at": "i/registry.ts:57-62 compileMapping", "belongs": "own source" },
+      { "read": "destination area revision and reference", "at": "i/service.ts:99-110", "belongs": "destination" },
+      { "read": "original bytes and retained original row", "at": "i/service.ts:255-257; areas/areas.ts:482",
+        "belongs": "own source (retainedOriginal.sourceId)" }
+    ],
+    "adaptiveProposal": [
+      { "read": "inspected profile only", "at": "i/adaptive-mapping-service.ts:28,51-60,83",
+        "belongs": "own source" }
+    ],
+    "conclusion": "No plan joins, looks up or references another source of the case."
+  },
+  "item3_latestAndArchive": [
+    { "path": "mapping job (enqueue, claim, heartbeat, publish, completion)",
+      "latest": "i/streaming-vector.ts:54,58-59 via rawContextTx i/chunk-mapping.ts:55",
+      "archived": "i/streaming-vector.ts:46 (403 STREAMING_CASE_ARCHIVED)" },
+    { "path": "mapping read", "latest": "i/streaming-vector.ts:94-95 reason source_superseded, current false",
+      "archived": "i/streaming-vector.ts:46" },
+    { "path": "approvedRecipeTx", "latest": "only after rawContextTx (i/chunk-mapping.ts:113,224)",
+      "archived": "same" },
+    { "path": "validate (author, approve, execute)", "latest": "i/service.ts:51-52 source()",
+      "archived": "none; the old equality never covered it (no server path archives a case)" },
+    { "path": "assertRecipePins", "latest": "through its callers: validate and the mapping job",
+      "archived": "through the mapping job only" },
+    { "path": "adaptive proposal", "latest": "i/service.ts:51-52 via inspect", "archived":
+      "i/adaptive-mapping-service.ts:103-107 assertCaseActive" },
+    { "path": "sufficiency exactRecipe", "latest": "i/sufficiency-context.ts:61, added to the rule alternative",
+      "archived": "i/sufficiency-context.ts:27" }
+  ],
+  "item4_rawBeforeLaterFile": {
+    "today": "enqueue at n+1 checks expectedCaseRevision n+1 (:232) and builds the profile at n+1 (:241), stores caseRevision n (:252) with the n+1 fingerprint, then statusTx calls assertChunkMappingInputTx and :117-118 refuses (409 STALE_REVISION); the transaction rolls back and no job exists. Without :117, :129 rebuilds at n over the n+1 source list and :133 refuses.",
+    "consequence": "a table whose raw job predates any later file can never be mapped; with an approved recipe from n, approvedRecipeTx :79-81 refuses first",
+    "test": "tests/table-later-receipt.test.ts 'a mapping enqueued after a later file, over a raw job queued before it, is admitted and runs'",
+    "todayResult": "fails: AppError 409 'The pinned manual mapping workspace changed.' at i/chunk-mapping.ts:118"
+  }
+}
