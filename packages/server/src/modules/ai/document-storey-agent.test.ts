@@ -6,10 +6,10 @@ import { join } from 'node:path';
 import { controlConfig, ControlLedger, requestContext } from '../../../../../scripts/agent/control-runtime';
 import { ModelGateway } from '../model-gateway/gateway';
 import { hash } from '../model-gateway/config';
-import { ControlAdapter, ReplayAdapter, type ProviderRequest } from '../model-gateway/adapter';
+import { ControlAdapter, minimizeMessages, ReplayAdapter, type ProviderRequest } from '../model-gateway/adapter';
 import { TeacherRecordings } from '../model-gateway/recordings';
 import {
-  extractStoreyFacts, heightMetres, storeyPartBatches, storeyRequest, validateStoreyOutput,
+  extractStoreyFacts, heightMetres, storeyPartBatches, storeyPartSelection, storeyRequest, validateStoreyOutput,
   type StoreyAgentOptions, type StoreyPart, type StoreyPageStore,
 } from './document-storey-agent';
 
@@ -125,6 +125,27 @@ test('batches: only storey-related lines are sent and each call stays under the 
   assert(batches.length > 1);
   assert(batches.flat().every((part) => part.partId !== 'p1-noise'));
   for (const batch of batches) assert(batch.reduce((sum, part) => sum + part.text.length, 0) <= 14000);
+});
+
+test('selection: a line the minimizer refuses is left out, named, and cannot be cited', async () => {
+  const lines = ['GROUND FLOOR PLAN', '[TOTAL TYPICAL FLOOR AREA', 'T-3 G+41'].map((text, index) => ({
+    id: `p1-l${index}`, text,
+  }));
+  const store: StoreyPageStore = { source: { sha256: 'b'.repeat(64) }, pages: { '1': { lines } } };
+  const asRead = lines.map((line) => ({ partId: line.id, page: 1, text: line.text }));
+  assert.throws(() => minimizeMessages(storeyRequest(asRead).messages), { code: 'MODEL_PROMPT_PRIVACY' });
+  const selection = storeyPartSelection(store);
+  assert.deepEqual(selection.omitted, [{ partId: 'p1-l1', page: 1, line: 1, code: 'MODEL_PROMPT_PRIVACY' }]);
+  const parts = selection.batches.flat();
+  assert.deepEqual(parts.map((part) => part.partId), ['p1-l0', 'p1-l2']);
+  assert.doesNotThrow(() => minimizeMessages(storeyRequest(parts).messages));
+  const citesOmitted = answer({ floorExpressions: [], unitCounts: [], conflicts: [], labels: [
+    { label: 'TYPICAL FLOOR', kind: 'typical', citations: [{ partId: 'p1-l1', quote: 'TYPICAL FLOOR' }] },
+  ] });
+  assert(!validateStoreyOutput(citesOmitted, parts).success);
+  const { gateway } = gatewayReturning(citesOmitted);
+  const result = await extractStoreyFacts(parts, optionsFor(gateway));
+  assert.deepEqual([result.state, result.code, result.output], ['teacher_unavailable', 'TEACHER_INVALID_OUTPUT', null]);
 });
 
 test('heights: units are converted by code and a missing unit stays unknown', () => {
