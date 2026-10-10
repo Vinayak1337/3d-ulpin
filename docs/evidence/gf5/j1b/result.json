@@ -94,5 +94,61 @@
   "resolverWrites": false, "readCardAuditedButNotAllowed": true,
   "claim": "No application database or object-store writes reachable; locks and transaction-local settings remain",
   "qualification": "Static source trace, not database instrumentation; serving code must match reviewed checkout"
- }
+ },
+ "run": {
+  "command": [
+   "pnpm exec tsx --tsconfig scripts/agent/tsconfig.json",
+   "scripts/golden-journey/run.ts --profile demo"
+  ],
+  "exit": 0, "startedAt": "2026-10-10T14:22:42.345Z", "totalMs": 12966,
+  "servedCommit": "83965a21078fede5a4f740ced05de40836e68a30",
+  "servedCommitSource": "git HEAD of doctor-checked serving checkout; health does not carry a commit field",
+  "health": {"http": 200, "ok": true, "databaseReadiness": "structurally_ready"},
+  "doctor": {"exit": 0, "gatewayDisabled": true, "failedComponents": []},
+  "summary": {"pass": 11, "fail": 0, "blocked": 0, "skipped": 2},
+  "routeAvailability": "K8 snapshot list 200 on first run; no five-minute wait or retry required",
+  "evidence": "docs/evidence/gf5/20261010/journey.json",
+  "previousArchived": "docs/evidence/gf5/20261010/attempt-2.json",
+  "archiveMatchesPreviousCommittedJson": true,
+  "earlierAttemptAndDoctorFailurePreserved": true,
+  "identity": {
+   "state": "pass", "canonicalState": "reviewed", "resolvedStatus": "assigned",
+   "recordId": "46b7265e-ca88-402d-83df-065cf7c45140", "recordVersion": 2,
+   "code": "P3-YBF8MA4FYHGFRA0CERYJ-T3",
+   "answeringManifest": "a9fd4c9d-0a5a-4f4d-9032-527ab7857b78", "fallbackToOlderScope": false
+  },
+  "card": {
+   "state": "pass", "listed": 1, "verified": 1, "checksPass": 6,
+   "cardId": "6a997624-6c8d-40a9-8215-8a671a74dc1c", "revision": 1,
+   "result": "consistent", "revoked": false, "expired": false, "expiresAt": "2026-10-11T13:39:30.390Z",
+   "answeringManifest": "a9fd4c9d-0a5a-4f4d-9032-527ab7857b78", "fallbackToOlderScope": false,
+   "signature": "not_assessed", "expiryNext": "P7 write-mode officer action to append a card revision"
+  },
+  "skipped": ["geometry: P5.2/K4 cited limits/placed geometry", "exchange: P5.3 readable nonempty export"],
+  "gate": "Partial: exit 0 means no failed steps, not that skipped capabilities passed"
+ },
+ "checks": {
+  "goldenJourneyTsc": 0, "agentTsc": 0, "liveJourney": 0, "diffCheck": 0, "linesOver120": 0,
+  "postRefusal": {
+   "command": [
+    "pnpm exec tsx --tsconfig scripts/agent/tsconfig.json",
+    "docs/evidence/gf5/j1b/refuse-post.ts"
+   ],
+   "exit": 1, "networkRequests": 0,
+   "message": "POST refused before request: /api/v1/usp/identity/assign is not a named pure read",
+   "earlierInlineAttempt": "tsx -e exited 0 with no output; not counted as a check; replaced by file command"
+  },
+  "writeModeRefusal": {
+   "exit": 1, "beforeRequests": true,
+   "message": "Write mode is not built; check mode reads only (GET, and 2 named POST reads)."
+  },
+  "evidence": "13 steps; summary/mode/request-response hashes valid; prior JSON archived unchanged",
+  "sourceComparison": "Serving checkout HEAD equals base 83965a21; diff of audited server/controller paths empty",
+  "selfReview": "Read full git diff staging...HEAD; only owned paths changed; no new line over 120 columns"
+ },
+ "notPerformed": [
+  "Runtime start/stop/rollout/reconfiguration; SQL; .env or external runtime-file reads by runner",
+  "Provider, GPU or held-out work; assignment, record, generate, revoke or append-card commands",
+  "Merge, rebase, push, edit of another checkout"
+ ]
 }
