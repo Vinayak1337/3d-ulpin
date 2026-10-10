@@ -2,7 +2,7 @@ import { Banner, Button, Dialog } from '@ulpin/ui';
 import { TableRefusal } from './Progress';
 import type { RecipeBody } from './types';
 
-export type Confirmation = { kind: 'propose'; body: RecipeBody } | {
+export type Confirmation = { kind: 'propose'; body: RecipeBody; sharedReasonCount: number } | {
   kind: 'approve'; recipeId: string; revision: number; requestKey: string;
 };
 
@@ -23,6 +23,7 @@ export function RecipeConfirmation({ confirmation, pending, error, confirm, clos
           Save {confirmation.body.plan.decisions.length} reasoned column decisions as an unapproved recipe.
           Approval is a separate step.
         </p> : <p>Approve recipe revision {confirmation.revision} under the configured local operator.</p>}
+        {proposal ? <p>{confirmation.sharedReasonCount} columns carry a shared reason.</p> : null}
         <Banner tone="info">
           Approval lets the server map draft rows and train the learner. It does not create buildings,
           complete identity, write the registry or place anything on the map.

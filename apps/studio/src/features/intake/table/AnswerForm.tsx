@@ -1,15 +1,30 @@
 import { Button } from '@ulpin/ui';
 import { targetDefinition } from './model';
-import { targetOptions, unansweredColumns } from './recipe';
+import { targetOptions, unansweredColumns, unansweredUnknownColumns } from './recipe';
+import { SharedUnknown } from './SharedUnknown';
 import type { OfficerAnswer, OfficerAnswers } from './recipe';
 import type { ChunkMapping, TableProfile } from './types';
 import styles from './Table.module.css';
 
-export function AnswerForm({ profile, mapping, answers, change, record, pending }: {
+export function AnswerForm({ profile, mapping, answers, change, markUnknown, record, pending }: {
   profile: TableProfile; mapping: ChunkMapping; answers: OfficerAnswers; pending: boolean;
-  change: (sourceField: string, answer: OfficerAnswer) => void; record: () => void;
+  change: (sourceField: string, answer: OfficerAnswer) => void;
+  markUnknown: (reason: string) => void; record: () => void;
 }) {
   const unanswered = unansweredColumns(profile, answers);
+  return (
+    <div className={styles.form}>
+      <SharedUnknown count={unansweredUnknownColumns(profile, answers).length} apply={markUnknown} pending={pending} />
+      <ColumnAnswers profile={profile} mapping={mapping} answers={answers} change={change} record={record}
+        pending={pending} unanswered={unanswered} />
+    </div>
+  );
+}
+
+function ColumnAnswers({ profile, mapping, answers, change, record, pending, unanswered }: {
+  profile: TableProfile; mapping: ChunkMapping; answers: OfficerAnswers; pending: boolean; unanswered: string[];
+  change: (sourceField: string, answer: OfficerAnswer) => void; record: () => void;
+}) {
   return (
     <form className={styles.form} onSubmit={(event) => {
       event.preventDefault();

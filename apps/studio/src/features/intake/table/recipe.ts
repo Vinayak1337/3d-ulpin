@@ -4,6 +4,7 @@ import type { ChunkMapping, RecipeBody, TableProfile, Target } from './types';
 export interface OfficerAnswer {
   target: Target | '';
   reason: string;
+  sharedReason?: boolean;
 }
 export type OfficerAnswers = Record<string, OfficerAnswer>;
 
@@ -21,6 +22,24 @@ export function unansweredColumns(profile: TableProfile, answers: OfficerAnswers
     if (answer?.target && answer.reason.trim()) return [];
     return [`${index + 1}: ${profile.headers[index] || 'Empty header'}`];
   });
+}
+
+export function unansweredUnknownColumns(profile: TableProfile, answers: OfficerAnswers) {
+  return profile.profile.columns.filter((column) => {
+    const answer = answers[column.name];
+    if (answer?.target && answer.target !== 'unknown') return false;
+    return !answer?.target || !answer.reason.trim();
+  }).map((column) => column.name);
+}
+
+export function fillUnknownAnswers(profile: TableProfile, answers: OfficerAnswers, reason: string) {
+  const sharedReason = reason.trim();
+  if (!sharedReason) throw new Error('Give a reason for marking unanswered fields as unknown.');
+  const next = { ...answers };
+  for (const name of unansweredUnknownColumns(profile, answers)) {
+    next[name] = { target: 'unknown', reason: sharedReason, sharedReason: true };
+  }
+  return next;
 }
 
 export function targetOptions(candidates: Target[]) {

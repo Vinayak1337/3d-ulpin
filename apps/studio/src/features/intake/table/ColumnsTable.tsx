@@ -33,7 +33,7 @@ export function ColumnsTable({ profile, mapping }: { profile: TableProfile; mapp
               if (!mapping) return 'Unknown';
               if (!row.question) return 'None reported';
               return <span className={styles.question}>
-                <Badge tone="warning">Needs input</Badge>{row.question.reason}
+                <Badge tone="warning">Needs review</Badge>{row.question.reason}
               </span>;
             } },
           ]} />
