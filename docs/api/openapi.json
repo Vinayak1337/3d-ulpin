@@ -82558,129 +82558,83 @@
                   "additionalProperties": false
                 },
                 "planEstimate": {
-                  "oneOf": [
-                    {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "estimated",
+                        "unknown"
+                      ]
+                    },
+                    "areaM2": {
+                      "nullable": true,
+                      "type": "number",
+                      "minimum": 0,
+                      "exclusiveMinimum": true
+                    },
+                    "extentM": {
+                      "nullable": true,
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          {
+                            "type": "number",
+                            "minimum": 0
+                          }
+                        ]
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    "basis": {
+                      "nullable": true,
                       "type": "object",
                       "properties": {
-                        "state": {
+                        "method": {
                           "type": "string",
                           "enum": [
-                            "estimated"
+                            "polygon_area_in_plan_metres@1"
                           ]
                         },
-                        "areaM2": {
+                        "scaleState": {
+                          "type": "string",
+                          "enum": [
+                            "candidate"
+                          ]
+                        },
+                        "metresPerPdfPoint": {
                           "type": "number",
                           "minimum": 0,
                           "exclusiveMinimum": true
-                        },
-                        "extentM": {
-                          "type": "array",
-                          "items": {
-                            "anyOf": [
-                              {
-                                "type": "number",
-                                "minimum": 0
-                              },
-                              {
-                                "type": "number",
-                                "minimum": 0
-                              }
-                            ]
-                          },
-                          "minItems": 2,
-                          "maxItems": 2
-                        },
-                        "basis": {
-                          "type": "object",
-                          "properties": {
-                            "method": {
-                              "type": "string",
-                              "enum": [
-                                "polygon_area_in_plan_metres@1"
-                              ]
-                            },
-                            "scaleState": {
-                              "type": "string",
-                              "enum": [
-                                "candidate"
-                              ]
-                            },
-                            "metresPerPdfPoint": {
-                              "type": "number",
-                              "minimum": 0,
-                              "exclusiveMinimum": true
-                            }
-                          },
-                          "required": [
-                            "method",
-                            "scaleState",
-                            "metresPerPdfPoint"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "limitations": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
                         }
                       },
                       "required": [
-                        "state",
-                        "areaM2",
-                        "extentM",
-                        "basis",
-                        "limitations"
+                        "method",
+                        "scaleState",
+                        "metresPerPdfPoint"
                       ],
                       "additionalProperties": false
                     },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "state": {
-                          "type": "string",
-                          "enum": [
-                            "unknown"
-                          ]
-                        },
-                        "areaM2": {
-                          "type": "string",
-                          "nullable": true,
-                          "enum": [
-                            null
-                          ]
-                        },
-                        "extentM": {
-                          "type": "string",
-                          "nullable": true,
-                          "enum": [
-                            null
-                          ]
-                        },
-                        "basis": {
-                          "type": "string",
-                          "nullable": true,
-                          "enum": [
-                            null
-                          ]
-                        },
-                        "limitations": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
-                        }
-                      },
-                      "required": [
-                        "state",
-                        "areaM2",
-                        "extentM",
-                        "basis",
-                        "limitations"
-                      ],
-                      "additionalProperties": false
+                    "limitations": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
                     }
-                  ]
+                  },
+                  "required": [
+                    "state",
+                    "areaM2",
+                    "extentM",
+                    "basis",
+                    "limitations"
+                  ],
+                  "additionalProperties": false
                 },
                 "review": {
                   "type": "object",
@@ -97370,129 +97324,83 @@
                   "additionalProperties": false
                 },
                 "planEstimate": {
-                  "oneOf": [
-                    {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "estimated",
+                        "unknown"
+                      ]
+                    },
+                    "areaM2": {
+                      "nullable": true,
+                      "type": "number",
+                      "minimum": 0,
+                      "exclusiveMinimum": true
+                    },
+                    "extentM": {
+                      "nullable": true,
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          {
+                            "type": "number",
+                            "minimum": 0
+                          }
+                        ]
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    "basis": {
+                      "nullable": true,
                       "type": "object",
                       "properties": {
-                        "state": {
+                        "method": {
                           "type": "string",
                           "enum": [
-                            "estimated"
+                            "polygon_area_in_plan_metres@1"
                           ]
                         },
-                        "areaM2": {
+                        "scaleState": {
+                          "type": "string",
+                          "enum": [
+                            "candidate"
+                          ]
+                        },
+                        "metresPerPdfPoint": {
                           "type": "number",
                           "minimum": 0,
                           "exclusiveMinimum": true
-                        },
-                        "extentM": {
-                          "type": "array",
-                          "items": {
-                            "anyOf": [
-                              {
-                                "type": "number",
-                                "minimum": 0
-                              },
-                              {
-                                "type": "number",
-                                "minimum": 0
-                              }
-                            ]
-                          },
-                          "minItems": 2,
-                          "maxItems": 2
-                        },
-                        "basis": {
-                          "type": "object",
-                          "properties": {
-                            "method": {
-                              "type": "string",
-                              "enum": [
-                                "polygon_area_in_plan_metres@1"
-                              ]
-                            },
-                            "scaleState": {
-                              "type": "string",
-                              "enum": [
-                                "candidate"
-                              ]
-                            },
-                            "metresPerPdfPoint": {
-                              "type": "number",
-                              "minimum": 0,
-                              "exclusiveMinimum": true
-                            }
-                          },
-                          "required": [
-                            "method",
-                            "scaleState",
-                            "metresPerPdfPoint"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "limitations": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
                         }
                       },
                       "required": [
-                        "state",
-                        "areaM2",
-                        "extentM",
-                        "basis",
-                        "limitations"
+                        "method",
+                        "scaleState",
+                        "metresPerPdfPoint"
                       ],
                       "additionalProperties": false
                     },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "state": {
-                          "type": "string",
-                          "enum": [
-                            "unknown"
-                          ]
-                        },
-                        "areaM2": {
-                          "type": "string",
-                          "nullable": true,
-                          "enum": [
-                            null
-                          ]
-                        },
-                        "extentM": {
-                          "type": "string",
-                          "nullable": true,
-                          "enum": [
-                            null
-                          ]
-                        },
-                        "basis": {
-                          "type": "string",
-                          "nullable": true,
-                          "enum": [
-                            null
-                          ]
-                        },
-                        "limitations": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
-                        }
-                      },
-                      "required": [
-                        "state",
-                        "areaM2",
-                        "extentM",
-                        "basis",
-                        "limitations"
-                      ],
-                      "additionalProperties": false
+                    "limitations": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
                     }
-                  ]
+                  },
+                  "required": [
+                    "state",
+                    "areaM2",
+                    "extentM",
+                    "basis",
+                    "limitations"
+                  ],
+                  "additionalProperties": false
                 },
                 "review": {
                   "type": "object",

@@ -100,7 +100,7 @@
     "packages/contracts/src/building-ledger.ts": "a285c2441840ad4bfaa7b35580935bf082ceb53ba4539a9b47b2ed90b5b957f8",
     "packages/contracts/src/building-registry-report.ts": "1315da350320d85d5919c6ecefdbd2f1c4adc09d820180250fafe4d0937e8018",
     "packages/contracts/src/canonical/building-scene.ts": "a9c2daa4b4f70319f2dfb090ec800dcce721093e3c937f5a6b1cc070a448c52b",
-    "packages/contracts/src/canonical/building.ts": "cfdf5bafa03b6e30d8c5089f9530cb7ebc22211b96da278d6a9fb2575964e57d",
+    "packages/contracts/src/canonical/building.ts": "35bb964973c44eff8b9a9c7dce87d933c0445f0d910fa37924b1d0657a2a6017",
     "packages/contracts/src/canonical/mapping-plan.ts": "1e6c21830437f9661f1ee8ad44a5c8946c31ade170ccaf057f6b9c2870c19c9c",
     "packages/contracts/src/canonical/source-spaces.ts": "893ffe89b1a5da67461b826e9993417c7e62813062ed2a71c7e0521da1d4a833",
     "packages/contracts/src/canonical/targets.ts": "1717d2eefb4fb60036de1d953c1a12f3e1359c9905951197e347300e67c40df7",

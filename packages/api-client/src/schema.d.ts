@@ -9246,26 +9246,16 @@ export interface components {
                 };
                 planEstimate?: {
                     /** @enum {string} */
-                    state: "estimated";
-                    areaM2: number;
-                    extentM: (number)[];
+                    state: "estimated" | "unknown";
+                    areaM2: number | null;
+                    extentM: (number)[] | null;
                     basis: {
                         /** @enum {string} */
                         method: "polygon_area_in_plan_metres@1";
                         /** @enum {string} */
                         scaleState: "candidate";
                         metresPerPdfPoint: number;
-                    };
-                    limitations: string[];
-                } | {
-                    /** @enum {string} */
-                    state: "unknown";
-                    /** @enum {string|null} */
-                    areaM2: null;
-                    /** @enum {string|null} */
-                    extentM: null;
-                    /** @enum {string|null} */
-                    basis: null;
+                    } | null;
                     limitations: string[];
                 };
                 review?: {
@@ -12067,26 +12057,16 @@ export interface components {
                 };
                 planEstimate?: {
                     /** @enum {string} */
-                    state: "estimated";
-                    areaM2: number;
-                    extentM: (number)[];
+                    state: "estimated" | "unknown";
+                    areaM2: number | null;
+                    extentM: (number)[] | null;
                     basis: {
                         /** @enum {string} */
                         method: "polygon_area_in_plan_metres@1";
                         /** @enum {string} */
                         scaleState: "candidate";
                         metresPerPdfPoint: number;
-                    };
-                    limitations: string[];
-                } | {
-                    /** @enum {string} */
-                    state: "unknown";
-                    /** @enum {string|null} */
-                    areaM2: null;
-                    /** @enum {string|null} */
-                    extentM: null;
-                    /** @enum {string|null} */
-                    basis: null;
+                    } | null;
                     limitations: string[];
                 };
                 review?: {
