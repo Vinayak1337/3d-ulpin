@@ -16,7 +16,17 @@
 .closeInspector:hover { background: var(--ui-surface-tint); }
 .closeInspector:focus-visible, .mapTools > summary:focus-visible { outline: 2px solid var(--ui-focus); outline-offset: 2px; }
 .searchPosition { position: absolute; top: var(--ui-space-4); right: var(--ui-space-4); width: min(390px, calc(100% - 32px)); z-index: calc(var(--ui-z-map-overlay) + 2); }
-.mapTools { position: absolute; top: var(--ui-space-4); left: var(--ui-space-4); z-index: calc(var(--ui-z-map-overlay) + 3); max-height: calc(100% - 80px); max-width: calc(100% - 32px); overflow: auto; border-radius: var(--ui-radius-12); background: var(--ui-surface); box-shadow: var(--ui-shadow-floating); }
+/* The tools and the view note share the map's left edge: the tools give way, so the note is never covered. */
+.leftStack {
+  position: absolute; top: var(--ui-space-4); left: var(--ui-space-4); bottom: var(--ui-space-4);
+  width: calc(100% - 2 * var(--ui-space-4)); z-index: calc(var(--ui-z-map-overlay) + 3);
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between;
+  gap: var(--ui-space-3); pointer-events: none;
+}
+.mapTools {
+  flex: 0 1 auto; min-height: 0; max-height: calc(100% - 48px); max-width: 100%; pointer-events: auto; overflow: auto;
+  border-radius: var(--ui-radius-12); background: var(--ui-surface); box-shadow: var(--ui-shadow-floating);
+}
 .mapTools > summary { display: flex; align-items: center; gap: 8px; padding: 12px 14px; cursor: pointer; list-style: none; font: 500 13px/20px var(--ui-font-sans); color: var(--ui-ink-soft); }
 .mapTools > summary::-webkit-details-marker { display: none; }
 .mapTools[open] { width: 280px; }
@@ -26,7 +36,12 @@
 .mapTools::-webkit-scrollbar { display: none; }
 .mapTools > summary { position: sticky; top: 0; z-index: 1; background: var(--ui-surface); }
 .deleteArea { justify-self: start; margin: 8px 0 4px; padding: 0 10px; color: var(--ui-danger); }
-.viewNote { display: grid; max-width: min(38rem, calc(100% - 20rem)); overflow-wrap: anywhere; position: absolute; left: var(--ui-space-4); bottom: var(--ui-space-4); z-index: var(--ui-z-map-overlay); margin: 0; padding: 4px 8px; border-radius: var(--ui-radius-4); background: color-mix(in srgb, var(--ui-surface) 90%, transparent); color: var(--ui-ink-soft); font: 400 11px/16px var(--ui-font-sans); pointer-events: none; }
+.viewNote {
+  flex: none; display: grid; max-width: min(38rem, calc(100% - 23rem)); overflow-wrap: anywhere; margin: 0;
+  padding: 4px 8px; border-radius: var(--ui-radius-4);
+  background: color-mix(in srgb, var(--ui-surface) 90%, transparent); color: var(--ui-ink-soft);
+  font: 400 11px/16px var(--ui-font-sans); pointer-events: none;
+}
 @media (prefers-reduced-motion: no-preference) {
   .inspectorColumn { animation: map-inspector-in 240ms cubic-bezier(.23, 1, .32, 1); }
   @keyframes map-inspector-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }

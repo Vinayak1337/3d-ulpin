@@ -29,7 +29,11 @@ import { UndrawnBuildings } from './UndrawnBuildings';
 import { BuildingSearch } from './BuildingSearch';
 import { CandidateBanner } from '../review/candidates/CandidateBanner';
 import { useMapView } from './useMapView';
-import { useOverlays, type AreaReference, type SupplementalDataset, type LoadedOverlay } from './overlays';
+import {
+  imageryAttribution, imageryFailureNote, listedImages, useOverlays, useRetainedImagery,
+  type AreaReference, type SupplementalDataset, type LoadedOverlay, type RetainedImages,
+} from './overlays';
+import { noFloorsState } from './floorState';
 import { HEIGHT_BANDS, heightCounts } from './heightBands';
 import { SceneLabels } from './SceneLabels';
 import type { SceneLabel } from './labels';
@@ -53,6 +57,7 @@ const WIDE_WINDOW = '(min-width: 1000px)';
  * one inspector and one left navigation. The URL holds the selection.
  */
 const NO_LOADED_OVERLAYS: LoadedOverlay[] = [];
+const NO_IMAGES: RetainedImages['overlays'] = [];
 const canDeleteBuilding = isServed('DELETE', '/api/v1/buildings/:buildingId');
 const canDeleteArea = isServed('DELETE', '/api/v1/areas/:areaId');
 
@@ -121,9 +126,15 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const supplemental = (context as unknown as { supplementalDatasets?: SupplementalDataset[] }).supplementalDatasets;
   const overlayQuery = useOverlays(context.area.id, supplemental, context.area.reference as AreaReference | null);
   const loadedOverlays = overlayQuery.data?.overlays ?? NO_LOADED_OVERLAYS;
+  // The pictures the area's canonical read lists: on until the viewer turns imagery off.
+  const listedPictures = useMemo(() => listedImages(drawn.area), [drawn.area]);
+  const retained = useRetainedImagery(context.area.id, listedPictures);
+  const retainedImages = retained.data?.overlays ?? NO_IMAGES;
+  const overlaysOn = { imagery: mapView.overlays.imagery ?? listedPictures.length > 0, lidar: mapView.overlays.lidar };
   // Nothing to scale or fit: no footprint, base feature or overlay, and every read has settled.
-  const nothingToDraw = !footprints.length && !base.length && !loadedOverlays.length && !drawn.pending
-    && !drawn.error && !overlayQuery.isLoading && !packageId && !buildingImportId;
+  const nothingToDraw = !footprints.length && !base.length && !loadedOverlays.length && !retainedImages.length
+    && !drawn.pending && !drawn.error && !overlayQuery.isLoading && !retained.isLoading && !packageId
+    && !buildingImportId;
   // On a wide window the tools open on the list of buildings without geometry, so a record that is not drawn is
   // still seen; a narrow one keeps the canvas clear and names the list instead.
   const [toolsOpen, setToolsOpen] = useState(false);
@@ -131,21 +142,27 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     if (drawn.undrawn.length && window.matchMedia(WIDE_WINDOW).matches) setToolsOpen(true);
   }, [drawn.undrawn.length]);
   const showContextOverlays = (selection.mode === 'area' || selection.mode === 'building');
+  const retainedShown = showContextOverlays && overlaysOn.imagery && retainedImages.length > 0;
   const overlayInputs = useMemo<OverlayInput[]>(() => [
-    ...loadedOverlays.filter((o) => showContextOverlays && mapView.overlays[o.layer]).map((o) => o.input),
+    ...(retainedShown ? retainedImages : []),
+    ...loadedOverlays.filter((o) => showContextOverlays && overlaysOn[o.layer]).map((o) => o.input),
     ...(activePlan && showContextOverlays ? [
       { id: 'simulated-area-plan', kind: 'comparison' as const, role: 'plan' as const, polygons: activePlan.plan, heightM: 0 },
       ...activePlan.findings.map(f => ({ id: `simulated-difference:${f.buildingId}`, kind: 'comparison' as const, role: 'conflict' as const, polygons: f.outside, heightM: f.heightM })),
     ] : []),
-  ], [loadedOverlays, mapView.overlays, showContextOverlays, activePlan]);
-  const visibleOverlays = loadedOverlays.filter((o) => showContextOverlays && mapView.overlays[o.layer]);
+  ], [retainedShown, retainedImages, loadedOverlays, overlaysOn.imagery, overlaysOn.lidar, showContextOverlays,
+    activePlan]);
+  const visibleOverlays = loadedOverlays.filter((o) => showContextOverlays && overlaysOn[o.layer]);
   const overlayNotes = visibleOverlays.map((o) => o.note);
   const viewNotes = [
     mapView.look === 'enhanced' ? 'Enhanced view' : null,
     ...visibleOverlays.map((o) => o.caption),
+    ...(retainedShown ? imageryAttribution(drawn.area?.imagery ?? []) : []),
     undrawnNote(context.features),
     ...(overlayQuery.data?.warnings ?? []),
   ].filter(Boolean);
+  // A listed picture that did not load is named by count beside the switch, never silently missing.
+  const picturesNotLoaded = (retained.data ? imageryFailureNote(retained.data) : null) ?? undefined;
   const layerSwitches = [
     { key: 'look', label: 'Enhanced view', checked: mapView.look === 'enhanced' },
     ...(baseKinds.has('road') ? [{ key: 'roads', label: 'Roads', checked: mapView.layers.roads }] : []),
@@ -153,7 +170,13 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     ...(baseKinds.has('public_land') ? [{ key: 'trees', label: 'Trees', checked: mapView.layers.trees, disabled: mapView.look !== 'enhanced' || !mapView.layers.publicLand }] : []),
     ...(baseKinds.has('parcel') ? [{ key: 'parcels', label: 'Parcels', checked: mapView.layers.parcels }] : []),
     ...(base.some((f) => f.name) ? [{ key: 'labels', label: 'Names', checked: mapView.labels }] : []),
-    ...loadedOverlays.map((o) => ({ key: `overlay:${o.layer}`, label: o.label, checked: mapView.overlays[o.layer] })),
+    ...loadedOverlays.map((o) => ({
+      key: `overlay:${o.layer}`, label: o.label, checked: overlaysOn[o.layer],
+      hint: o.layer === 'imagery' ? picturesNotLoaded : undefined,
+    })),
+    ...(listedPictures.length && !loadedOverlays.some((o) => o.layer === 'imagery') ? [{
+      key: 'overlay:imagery', label: 'Imagery', checked: overlaysOn.imagery, hint: picturesNotLoaded,
+    }] : []),
   ];
   useEffect(() => {
     if (!engine || !focusOverlay || !overlayInputs.some((o) => o.id === focusOverlay)) return;
@@ -320,7 +343,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   }
 
   const showRail = (selection.mode === 'building' || selection.mode === 'level') && Boolean(model?.levels.length);
-  const noFloors = selection.mode === 'building' && register && !model?.levels.length;
+  const noFloors = selection.mode === 'building' && register && !model?.levels.length
+    ? noFloorsState(register, canonical) : null;
   const namespaces = [...new Set(context.features.map((f) => f.datasetNamespace))].filter((ns) => ATTRIBUTION[ns]);
   const readout = [reference?.sourceCrs, groundM !== null ? `${groundM.toFixed(2)} m` : null, ledger?.siteDatum].filter(Boolean).join(' · ');
   const readoutTitle = reference
@@ -422,51 +446,58 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
             {noFloors ? (
               <div className={styles.emptyOverlay}>
                 <div className={`ul-float ${styles.emptyCard}`}>
-                  <span>No floors recorded. Add a plan.</span>
-                  <Button variant="primary" icon={FilePlus} onClick={() => setDialog('files')}>Add files</Button>
+                  {noFloors.lines.map((line) => <span key={line}>{line}</span>)}
+                  {noFloors.advise ? (
+                    <Button variant="primary" icon={FilePlus} onClick={() => setDialog('files')}>Add files</Button>
+                  ) : null}
                 </div>
               </div>
             ) : null}
             <SceneLabels engine={engine} labels={labels} tick={tick} />
-            <details
-              className={styles.mapTools}
-              open={toolsOpen}
-              onToggle={(event) => setToolsOpen(event.currentTarget.open)}
-            >
-              <summary><Icon icon={SlidersHorizontal} size={20} />Tools</summary>
-              <MapSidebar
-                undrawn={<UndrawnBuildings buildings={drawn.undrawn} />}
-                planCheck={isDemoId(context.area.id) ? <PlanCheck key={context.area.id} areaId={context.area.id} result={activePlan} onResult={(result) => { setPlanResult(result); if (result) dispatch({ type: 'selectBuilding', id: null }); }} /> : undefined}
-                views={[
-                  { key: 'area', label: 'Area' },
-                  { key: 'building', label: 'Building', disabled: !feature },
-                  { key: 'level', label: 'Floors', disabled: !model?.levels.length },
-                  { key: 'findings', label: 'Findings', disabled: !feature, badge: findings.length ? <span className={`ul-badge ${findings.some((f) => f.category === 'blocking') ? 'ul-badge--danger' : 'ul-badge--warning'}`}>{findings.length}</span> : null },
-                  { key: 'underground', label: 'Underground', detail: feature && !utilities.length ? 'No survey' : null, disabled: !feature },
-                ]}
-                active={selection.mode === 'area' ? (feature ? 'building' : 'area') : selection.mode}
-                onView={chooseView}
-                keySections={legend}
-                layers={layerSwitches} onLayer={onLayer}
-                layersNote={[mapView.look === 'enhanced' ? 'Illustrative styling. Geometry and records unchanged.' : null, ...overlayNotes].filter(Boolean).join(' ') || null}
-                colour={colour} onColour={chooseColour}
-                colourOptions={[
-                  { value: 'none', label: 'None' },
-                  { value: 'rights', label: 'Rights', disabled: !model?.levels.length },
-                  { value: 'utilities', label: 'Utilities', disabled: !utilities.length || !feature },
-                  { value: 'height', label: 'Height', disabled: !footprints.length },
-                ]}
-                floor={selection.mode === 'level' && level ? level.label : null}
-                spaces={selection.mode === 'level' && model ? model.spaces.filter((s) => s.levelId === selection.levelId && !s.parentId) : []}
-                rightsColour={(id) => (colour === 'rights' ? `var(${RIGHTS_TOKEN[ledgerSpace(ledger, id)?.rights ?? 'unknown']})` : null)}
-                selectedSpaceId={selection.spaceId}
-                onSelectSpace={(s) => s.levelId && dispatch({ type: 'pickSpace', id: s.id, levelId: s.levelId })}
-                viewFooter={<>
-                  <p className={styles.gestures}>Drag to move. Two-finger swipe or right-drag to rotate. Pinch or scroll to zoom.</p>
-                  {!feature && canDeleteArea ? <Button variant="ghost" icon={Trash} className={styles.deleteArea} onClick={() => setDialog('delete-area')}>Delete area</Button> : null}
-                </>}
-              />
-            </details>
+            <div className={styles.leftStack}>
+              <details
+                className={styles.mapTools}
+                open={toolsOpen}
+                onToggle={(event) => setToolsOpen(event.currentTarget.open)}
+              >
+                <summary><Icon icon={SlidersHorizontal} size={20} />Tools</summary>
+                <MapSidebar
+                  undrawn={<UndrawnBuildings buildings={drawn.undrawn} />}
+                  planCheck={isDemoId(context.area.id) ? <PlanCheck key={context.area.id} areaId={context.area.id} result={activePlan} onResult={(result) => { setPlanResult(result); if (result) dispatch({ type: 'selectBuilding', id: null }); }} /> : undefined}
+                  views={[
+                    { key: 'area', label: 'Area' },
+                    { key: 'building', label: 'Building', disabled: !feature },
+                    { key: 'level', label: 'Floors', disabled: !model?.levels.length },
+                    { key: 'findings', label: 'Findings', disabled: !feature, badge: findings.length ? <span className={`ul-badge ${findings.some((f) => f.category === 'blocking') ? 'ul-badge--danger' : 'ul-badge--warning'}`}>{findings.length}</span> : null },
+                    { key: 'underground', label: 'Underground', detail: feature && !utilities.length ? 'No survey' : null, disabled: !feature },
+                  ]}
+                  active={selection.mode === 'area' ? (feature ? 'building' : 'area') : selection.mode}
+                  onView={chooseView}
+                  keySections={legend}
+                  layers={layerSwitches} onLayer={onLayer}
+                  layersNote={[mapView.look === 'enhanced' ? 'Illustrative styling. Geometry and records unchanged.' : null, ...overlayNotes].filter(Boolean).join(' ') || null}
+                  colour={colour} onColour={chooseColour}
+                  colourOptions={[
+                    { value: 'none', label: 'None' },
+                    { value: 'rights', label: 'Rights', disabled: !model?.levels.length },
+                    { value: 'utilities', label: 'Utilities', disabled: !utilities.length || !feature },
+                    { value: 'height', label: 'Height', disabled: !footprints.length },
+                  ]}
+                  floor={selection.mode === 'level' && level ? level.label : null}
+                  spaces={selection.mode === 'level' && model ? model.spaces.filter((s) => s.levelId === selection.levelId && !s.parentId) : []}
+                  rightsColour={(id) => (colour === 'rights' ? `var(${RIGHTS_TOKEN[ledgerSpace(ledger, id)?.rights ?? 'unknown']})` : null)}
+                  selectedSpaceId={selection.spaceId}
+                  onSelectSpace={(s) => s.levelId && dispatch({ type: 'pickSpace', id: s.id, levelId: s.levelId })}
+                  viewFooter={<>
+                    <p className={styles.gestures}>Drag to move. Two-finger swipe or right-drag to rotate. Pinch or scroll to zoom.</p>
+                    {!feature && canDeleteArea ? <Button variant="ghost" icon={Trash} className={styles.deleteArea} onClick={() => setDialog('delete-area')}>Delete area</Button> : null}
+                  </>}
+                />
+              </details>
+              {viewNotes.length ? (
+                <p className={styles.viewNote}>{viewNotes.map((note, i) => <span key={i}>{note}</span>)}</p>
+              ) : null}
+            </div>
             {feature ? (
               <div className={styles.inspectorColumn} key={feature.id}>
                 <button type="button" className={styles.closeInspector} aria-label="Close building details" onClick={() => {
@@ -484,7 +515,6 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
               </div>
             )}
             {hint ? <div className={styles.hint} key={hint}>{hint}</div> : null}
-            {viewNotes.length ? <p className={styles.viewNote}>{viewNotes.map((note, i) => <span key={i}>{note}</span>)}</p> : null}
             {nothingToDraw ? null : (
               <div className={styles.readout}>
                 <ScaleAndNorth engine={engine} tick={tick} title={readoutTitle} prefix={readout} />
