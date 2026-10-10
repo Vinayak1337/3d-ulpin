@@ -2,7 +2,9 @@ import {Controller,Get,HttpCode,Inject,Param,Post,Req,UseGuards} from '@nestjs/c
 import {ApiOperation,ApiParam,ApiTags} from '@nestjs/swagger';
 import type {Request} from 'express';
 import {z} from 'zod';
-import {StreamingVectorRequestSchema,StreamingVectorStatusSchema,StreamingVectorChunkResponseSchema} from '@ulpin/contracts/usp';
+import {AnyStreamingRequestSchema as StreamingVectorRequestSchema,
+  AnyStreamingStatusSchema as StreamingVectorStatusSchema,
+  StreamingVectorChunkResponseSchema} from '@ulpin/contracts/usp';
 import {StreamingVectorService} from '@ulpin/server/modules/usp/ingestion/streaming-vector';
 import {AppError} from '@ulpin/server/infrastructure/errors';
 import {JSON_BODY_LIMIT,readJsonBody} from '../../common/body';
@@ -20,7 +22,7 @@ export class StreamingVectorController{
   constructor(@Inject(StreamingVectorService)private readonly streaming:StreamingVectorService){}
   @Post() @HttpCode(202) @param('caseId') @param('sourceId')
   @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_sources_sourceId_streaming_vector',
-    summary:'Queue a retained GeoJSON original for bounded source-native draft chunks'})
+    summary:'Queue retained GeoJSON or pinned D8 tabular bytes for bounded source-native draft chunks'})
   @jsonBody(StreamingVectorRequestSchema) @wireResponse(202,StreamingVectorStatusSchema,[429])
   async enqueue(@Param('caseId')caseId:string,@Param('sourceId')sourceId:string,@Req()request:Request){
     noQuery(request);return this.streaming.enqueue(caseId,sourceId,await readJsonBody(request,JSON_BODY_LIMIT));

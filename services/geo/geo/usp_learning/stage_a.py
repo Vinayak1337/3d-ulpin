@@ -128,7 +128,8 @@ def read_lines(path: Path) -> list[Row]:
 
 def development_families() -> set[str]:
     manifest = json.loads((REPO / "fixtures/usp/D8-messy-india/manifest.json").read_text(encoding="utf-8"))
-    return {family["id"] for family in manifest["families"] if family["split"] == "dev"}
+    blind = {family["id"] for family in manifest["heldout"]}
+    return {family["id"] for family in manifest["families"] if family["split"] == "dev" and family["id"] not in blind}
 
 
 def load_examples(path: Path) -> list[Row]:
@@ -285,6 +286,36 @@ def train(examples_paths: list[Path], out: Path, resume: Path | None = None) -> 
     return {"model": str(destination), "versions": index, "fitExamples": len(trained), "calibration": metrics}
 
 
+def online_update(examples_path: Path, out: Path, resume: Path) -> Row:
+    """One approved officer batch, serialized by the existing server job transaction."""
+    external_output(out)
+    rows = preferred_examples(load_examples(examples_path))
+    if not rows or any(row["labelKind"] != "officer" for row in rows):
+        raise ValueError("STAGE_A_OFFICER_BATCH_REQUIRED")
+    if any(row["family"] == CALIBRATION_FAMILY for row in rows):
+        raise ValueError("STAGE_A_CALIBRATION_FIT_DENIED")
+    model, previous = load_model(resume)
+    if previous["calibrationFamily"] != CALIBRATION_FAMILY:
+        raise ValueError("STAGE_A_CALIBRATION_CHANGED")
+    matrix = vectorizer().transform([feature_text(row) for row in rows])
+    model.partial_fit(matrix, [row["target"] for row in rows], classes=np.asarray(canonical_targets()))
+    trained = preferred_examples([*previous["trainingExamples"], *rows])
+    index = int(previous["version"].removeprefix("v")) + 1
+    destination = out / f"v{index}"
+    destination.mkdir(parents=True, exist_ok=False)
+    metrics = {"threshold": None, "committed": 0, "precision": None,
+               "qualification": "New weights abstain until frozen development recalibration; no holdout tuning."}
+    manifest = version_manifest(index, trained, [], metrics)
+    manifest["calibrationIds"] = previous["calibrationIds"]
+    manifest["qualification"] = "officer-approved; one partial_fit; old pseudo-label weights are not evaluation truth"
+    manifest["parentModelSha256"] = previous["modelSha256"]
+    manifest["approvedBatchSha256"] = sha256_file(examples_path)
+    save_model(model, destination / "model.npz", manifest)
+    write_json(destination / "manifest.json", manifest)
+    write_json(destination / "metrics.json", {**metrics, "fitExamples": len(trained), "partialFitCalls": 1})
+    return {"model": str(destination), "version": f"v{index}"}
+
+
 def predict(directory: Path, profiles: list[Row]) -> list[Row]:
     model, manifest = load_model(directory)
     if not profiles:
@@ -308,12 +339,18 @@ def main() -> None:
     fitting.add_argument("--examples", type=Path, nargs="+", required=True)
     fitting.add_argument("--out", type=Path, required=True)
     fitting.add_argument("--resume", type=Path)
+    online = commands.add_parser("online")
+    online.add_argument("--examples", type=Path, required=True)
+    online.add_argument("--out", type=Path, required=True)
+    online.add_argument("--resume", type=Path, required=True)
     inference = commands.add_parser("predict")
     inference.add_argument("--model", type=Path, required=True)
     inference.add_argument("--profiles", type=Path, required=True)
     args = parser.parse_args()
     if args.command == "train":
         print(json.dumps(train(args.examples, args.out, args.resume)))
+    elif args.command == "online":
+        print(json.dumps(online_update(args.examples, args.out, args.resume)))
     else:
         profiles = json.load(sys.stdin) if str(args.profiles) == "-" else read_lines(args.profiles)
         for prediction in predict(args.model, profiles):

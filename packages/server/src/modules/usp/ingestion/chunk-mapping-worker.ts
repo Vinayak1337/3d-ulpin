@@ -11,6 +11,8 @@ import {appendCaseIngestionTx} from './events';
 import {AdaptiveMappingService} from './adaptive-mapping-service';
 import {StreamingVectorService,lockStreamingRowsTx} from './streaming-vector';
 import {assertChunkMappingInputTx} from './chunk-mapping';
+import {TabularChunkMapper} from './chunk-mapping-agent';
+import {acceptTabularDataSlot} from './chunk-mapping-tabular';
 import {candidateKeyHashes,normalizeMappedChunk,type KeyRow} from './chunk-mapping-normalizer';
 
 const rawService=new StreamingVectorService(),adaptive=new AdaptiveMappingService();
@@ -50,7 +52,8 @@ async function acceptDataSlot(input:ChunkMappingInput,attempt:UspJobAttempt,rawC
   if(!payload||!slot.ref)conflict('A data slot requires its immutable raw payload.');
   const prepared=await transaction(async client=>{
     const {profile,approved}=await assertChunkMappingInputTx(client,input);
-    if(!profile||!approved)conflict('An approved source recipe is required.');
+    if(!profile||!approved||profile.version==='manual-tabular/1'||approved.receipt.plan.version==='manual-tabular/1')
+      conflict('An approved GIS source recipe is required.');
     await assertUspJobAttemptTx(client,attempt);
     const state=(await client.query('SELECT next_publish_index FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR SHARE',[input.jobId])).rows[0];
     if(state?.next_publish_index!==slot.chunkIndex)conflict('The mapping publication pointer changed.');
@@ -68,7 +71,8 @@ async function acceptDataSlot(input:ChunkMappingInput,attempt:UspJobAttempt,rawC
   const stored=await storePayload(mapped);
   await transaction(async client=>{
     const {profile,approved}=await assertChunkMappingInputTx(client,input);
-    if(!profile||!approved)conflict('The source recipe changed before mapped publication.');
+    if(!profile||!approved||profile.version==='manual-tabular/1'||approved.receipt.plan.version==='manual-tabular/1')
+      conflict('The GIS source recipe changed before mapped publication.');
     await assertUspJobAttemptTx(client,attempt);
     const state=(await client.query('SELECT * FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
     if(!state||state.state!=='running'||state.next_publish_index!==slot.chunkIndex||state.records!==slot.firstFeatureIndex)
@@ -263,6 +267,7 @@ export async function runChunkMappingJob(jobId:string){
   let attempt:UspJobAttempt;
   try{attempt=await claimUspJobAttempt(jobId,`chunk-mapping:${randomUUID()}`,client=>assertChunkMappingInputTx(client,input).then(()=>{}));}
   catch(error){await claimFailure(input,error);return;}
+  const tabularMapper=new TabularChunkMapper();
   let lastHeartbeat=Date.now(),waitStarted=Date.now();
   const pulse=async()=>{if(Date.now()-lastHeartbeat<30000)return;
     await heartbeatUspJobAttempt(attempt,client=>assertChunkMappingInputTx(client,input).then(()=>{}));
@@ -278,7 +283,7 @@ export async function runChunkMappingJob(jobId:string){
       await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,rawJobId:input.rawJobId,status:'running'},input.subject);
     });
-    if(input.route==='proposal_only'){await propose(input,attempt);return;}
+    if(input.route==='proposal_only'&&!input.tabular){await propose(input,attempt);return;}
     while(true){
       await pulse();const next=await window(input);
       if(next.slot){
@@ -286,7 +291,10 @@ export async function runChunkMappingJob(jobId:string){
         if(rawChunk.slot.resultSha256!==next.slot.result_sha256)conflict('The published raw slot changed.');
         if(!rawChunk.slot.ref){await terminal(input,attempt,rawChunk.slot.issueCode??'RAW_STREAM_FAILED',false,
           rawChunk.slot.resultSha256);return;}
-        await acceptDataSlot(input,attempt,rawChunk);waitStarted=Date.now();continue;
+        if(input.tabular)await acceptTabularDataSlot(input,attempt,rawChunk.payload!,rawChunk.slot.resultSha256,
+          tabularMapper,storePayload);
+        else await acceptDataSlot(input,attempt,rawChunk);
+        waitStarted=Date.now();continue;
       }
       if(['completed','completed_with_rejections'].includes(next.raw.state)){await complete(input,attempt);return;}
       if(['failed','stale'].includes(next.raw.state)){
