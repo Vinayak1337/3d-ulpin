@@ -509,6 +509,31 @@ unchanged. Four main panels have cited pixel room candidates, literal OCR observ
 Site plans, area-only diagrams and sections are not room inputs. No new source acquisition, canonical level
 assignment, API installation, DB mutation, survey calibration or Indian accuracy claim follows.
 
+## B9 extra roof-training shard (10 October 2026)
+
+[B9's preregistered roof-training comparison](../evidence/gf-ai/building/b9/plan.json) adds one TRAIN-only shard
+of RAMP Dhaka publisher chips to the frozen Karnataka TRAIN split. Nothing was downloaded: the complete
+9 October RAMP acquisition under `E:/BhuAayam-data/datasets/ramp/` (104,711 files, no failures) is reused in
+place, after all 44,478 Dhaka, Barishal and Jashore image and label files were re-verified by size and SHA-256.
+[The compact receipt](../evidence/gf-ai/building/b9/data.json) records per region the issuer, publisher URL,
+DOI, acquisition time, manifest hash, README claims, observed counts and the closed-list exclusion proof.
+
+- Dhaka (DOI 10.34911/rdnt.848og9): 11,905 source pairs, 188,284 publisher features, 3,059 empty chips; the
+  README claims 189,057 buildings. Kept: 9,000 chips (140,865 features, 2,323 empty), the ids with the lowest
+  SHA-256; 2,905 cut by the cap.
+- Barishal (DOI 10.34911/rdnt.cmejc0): 3,024 pairs, 39,834 features, 252 empty; README 41,248. Kept: 0.
+- Jashore (DOI 10.34911/rdnt.wn4jmp): 7,310 pairs, 79,058 features, 1,735 empty; README 80,050. Kept: 0.
+
+The shard is `E:/BhuAayam-data/ml/datasets/b9-dhaka-train-20261010/`: source card, source index with per-file
+pins, chip ids and the COCO export. Issuer DevGlobal / Radiant Earth MLHub, labels TaQadam / B.O.T with publisher
+Tier 1 review, imagery Maxar Open Data Program; **CC-BY-NC-4.0**, `test_only`, noncommercial research.
+README totals differ from the observed originals in all three regions; the observed features are kept as they
+are, nothing padded, relabelled or repaired. No kept chip is in the Karnataka DEV/holdout, Cox's Bazar or
+Chittagong lists, and Sylhet stays untouched. Roof outlines are not surveyed footprints, ownership or registry
+truth, and Bangladesh chips support no Indian accuracy claim. The dataset catalogue has no row for the shard
+yet: [the proposed row](../evidence/gf-ai/building/b9/catalog-row.json) belongs in
+`retained-local-datasets.json`, which generates it.
+
 ## Source-document worker evidence (27 September 2026)
 
 DOC-INGEST-01 reuses [NYC's unchanged official metadata text](../../fixtures/real-area/evidence/nyc-building-metadata.md), 12,973 bytes, SHA `520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27`. Its issuer URL, acquisition and terms remain in the [original area manifest](../../fixtures/real-area/manifest.json); the dataset catalogue now exposes this document separately from the geometry asset. It verifies native-text intake with the provider disabled, not property facts. The existing USGS1910 scanned PDF verifies honest `needs_ocr` and unchanged original download, not OCR. See [the document API guide](README.md#source-document-intake) and [pinned runtime proof](../evidence/usp/document-authority-correction.md). Final retained-package privacy checks are [service/query controls](../evidence/usp/document-package-authority-correction.md), separate from runtime qualification. All are foreign test inputs; no new original was acquired, installed into serving3188 or altered by this work.

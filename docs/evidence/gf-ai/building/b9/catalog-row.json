@@ -1,0 +1,45 @@
+{
+  "schema": "dataset-catalogue-row-proposal/1",
+  "status": "proposed_not_installed",
+  "target": "docs/api/retained-local-datasets.json",
+  "reason": [
+    "docs/api/datasets.json is generated from that file, which this task does not own.",
+    "Adding the row there and regenerating puts it in retainedExternalSources; --check then stays 0."
+  ],
+  "row": {
+    "id": "b9-ramp-dhaka-train-20261010",
+    "classification": "test_only",
+    "split": "train",
+    "originKind": "public_research_publisher_roof_labels",
+    "issuer": "DevGlobal / Radiant Earth MLHub; labels TaQadam / B.O.T; imagery Maxar Open Data Program",
+    "geography": "Dhaka, Bangladesh",
+    "manifest": "E:/BhuAayam-data/ml/datasets/b9-dhaka-train-20261010/source-index.json",
+    "manifestSha256": "2985abfc5820f12f29c87c4d7aa429986a655967a8620c50761bf34e31283d52",
+    "guide": "docs/evidence/gf-ai/building/b9/data.json",
+    "sourceCount": 18000,
+    "totalOriginalBytes": 1931635134,
+    "content": {
+      "externalRoot": "E:/BhuAayam-data/ml/datasets/b9-dhaka-train-20261010",
+      "originalsRoot": "E:/BhuAayam-data/datasets/ramp/originals/ramp_dhaka_bangladesh",
+      "chips": 9000,
+      "publisherFeatures": 140865,
+      "emptyChips": 2323,
+      "repositoryBytesVerified": false,
+      "pins": "Per chip: publisher URL, acquisition time, exact size and SHA-256 of the GeoTIFF and the GeoJSON"
+    },
+    "horizontalCrs": "EPSG:32646 (declared by each original GeoTIFF)",
+    "verticalReference": null,
+    "terms": {
+      "state": "CC-BY-NC-4.0",
+      "limitations": "Noncommercial research only; upstream Maxar imagery terms; owner clearance before launch"
+    },
+    "apiInstallation": "not-installed",
+    "standingInstallation": false,
+    "runtimeVerified": false,
+    "limitations": [
+      "TRAIN-only extra data for one preregistered roof-model comparison; never evaluation truth.",
+      "Roof outlines, not surveyed footprints, ownership or registry truth; no Indian accuracy claim.",
+      "9,000 of 11,905 publisher chips, kept by lowest SHA-256 of the chip id; README totals differ from originals."
+    ]
+  }
+}
