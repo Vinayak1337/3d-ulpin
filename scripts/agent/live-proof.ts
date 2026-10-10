@@ -15,7 +15,8 @@ import {
   type StoreyAgentResult, type StoreyOmittedLine, type StoreyPageStore, type StoreyPart,
 } from '../../packages/server/src/modules/ai/document-storey-agent';
 import {
-  minimizeMessages, ReplayAdapter, type Message, type ProviderAdapter,
+  citedKeyRefusal, ControlAdapter, minimizeMessages, ProviderFailure, ReplayAdapter, type FailureKind,
+  type Message, type ProviderAdapter,
 } from '../../packages/server/src/modules/model-gateway/adapter';
 import {
   hash, ModelGatewayConfigSchema, type GatewayConfig,
@@ -23,7 +24,9 @@ import {
 import { ModelGateway } from '../../packages/server/src/modules/model-gateway/gateway';
 import { cost, reservation } from '../../packages/server/src/modules/model-gateway/pricing';
 import { TeacherRecordings } from '../../packages/server/src/modules/model-gateway/recordings';
-import { mappingTeacherGatewayRuntime } from '../../packages/server/src/modules/model-gateway/runtime';
+import {
+  mappingTeacherGatewayRuntime, ownerKeyLedger,
+} from '../../packages/server/src/modules/model-gateway/runtime';
 import {
   profileTabularChunk, TabularChunkMapper, type TabularChunkInput,
 } from '../../packages/server/src/modules/usp/ingestion/chunk-mapping-agent';
@@ -49,6 +52,10 @@ const STOP_CODES = new Set([
   'TEACHER_BUDGET_EXHAUSTED', 'TEACHER_RATE_LIMITED', 'TEACHER_AUTH_FAILED', 'TEACHER_UNAVAILABLE',
   'TEACHER_RECORDING_UNAVAILABLE', 'TEACHER_REPLAY_UNAVAILABLE', 'TEACHER_DATA_DENIED',
 ]);
+/** gateway.ts answers a refused key of a list with one of these, retryable: the call is closed at zero. */
+const KEY_MOVED_CODES = new Set(['MODEL_QUOTA_EXHAUSTED', 'MODEL_CREDENTIAL_INVALID']);
+/** ledger.ts refuses the admission with this when every key of the list carries a mark; nothing is sent. */
+const KEYS_EXHAUSTED = 'MODEL_KEYS_EXHAUSTED';
 
 type BoxId = 'AG-S1' | 'AG-S2' | 'ML-D1' | 'ML-D3' | 'ML-L2' | 'AG-D1' | 'AG-E2';
 export const PROPOSAL_LABEL = "lead's proposal of 10 October 2026: not approved";
@@ -480,9 +487,16 @@ const TOKEN_METHOD = {
 };
 
 const STOP_RULES = [
-  'Every call is one attempt: no repair call, no retry, never another key.',
-  'The run stops at the first refusal by the gateway, the first HTTP 402 or quota answer, the first rate limit, '
-    + 'the first timeout or unknown outcome, and the first answer that could not be recorded.',
+  'Every call is one attempt with no repair call. The proof never picks a key: only the gateway moves a list on.',
+  'When the gateway answers that it moved a key on (MODEL_QUOTA_EXHAUSTED or MODEL_CREDENTIAL_INVALID, marked '
+    + 'retryable, the call closed at zero), the step is recorded as key_moved_on and attempted once more as a new '
+    + 'call. After a second such answer on one step it is attempted again only while the report of key states '
+    + 'shows a key without a mark.',
+  'MODEL_KEYS_EXHAUSTED ends the run at once: every key is marked, nothing was sent, and the steps not reached '
+    + 'are listed as not run.',
+  'The run stops at the first other refusal by the gateway, a quota or key answer on a one-key policy, the first '
+    + 'rate limit, the first timeout or unknown outcome, and the first answer that could not be recorded. None '
+    + 'of these is attempted again.',
   'It stops before a call when holding it at the full reservation would cross the total, daily, per-person or '
     + 'document-agent cap, counting every earlier call at its reservation.',
   'After a stop every later step asks the replay store only, ends in needs_input or teacher_unavailable when '
@@ -502,12 +516,35 @@ const CURVE_NOTE = {
   memory: 'a new, empty memory file inside the run folder: accepted runtime memory is neither read nor written',
 };
 
+/** One extra attempt per key of a list at most, because each one follows a key the gateway has just marked. */
+const extraAttemptsAtMost = (policy: GatewayConfig) => policy.secretReferences?.length ?? 0;
+
+/** What a key list adds to a run: attempts and ledger rows of zero rupees, never money. */
+function keyMovePlan(tariff: Tariff, calls: number) {
+  const { policy } = tariff;
+  const extra = extraAttemptsAtMost(policy);
+  return {
+    keysInPolicy: policy.secretReferences?.length ?? 1, extraAttemptsAtMost: extra,
+    rule: extra
+      ? 'one per key of the list: an extra attempt follows only a call the gateway closed while marking a key'
+      : 'none: a one-key policy has no key to move on to, and its quota or key answer stops the run',
+    costOfAMovedOnCall: { ...amount(0n, 'upper_bound', tariff), basis: 'the ledger closes the refused call at '
+      + 'zero with its receipt; its reservation is released before the next attempt reserves' },
+    ceilingInRupees: 'unchanged: totals.atMost counts each planned call once at its full reservation',
+    ledgerRowsAtMost: calls + extra,
+    callsPerPersonPerDayAtMost: `${share(BigInt(calls + extra), BigInt(policy.principalDailyCallCap))}: a `
+      + 'moved-on call is a ledger row and counts toward the per-person daily call cap',
+    paceBetweenAttempts: `${policy.paceMs} ms, the gateway's own pace, before a step is attempted again`,
+  };
+}
+
 export function buildPlan(tariff: Tariff) {
   const { steps, refused } = orderedSteps(tariff);
+  const totals = totalsFor(steps, tariff);
   return {
     schemaVersion: 'live-proof-plan/1', generatedAt: new Date().toISOString(), tariff: tariffReport(tariff),
-    tokenMethod: TOKEN_METHOD, steps, totals: totalsFor(steps, tariff), perBox: perBox(steps, tariff),
-    stopRules: STOP_RULES, neverSent: refused, curve: CURVE_NOTE,
+    tokenMethod: TOKEN_METHOD, steps, totals, perBox: perBox(steps, tariff),
+    keyMoves: keyMovePlan(tariff, totals.calls), stopRules: STOP_RULES, neverSent: refused, curve: CURVE_NOTE,
     ledgerAtStart: 'assumed empty: the plan does not read the runtime ledger; the live admission is the ledger',
   };
 }
@@ -515,11 +552,34 @@ export function buildPlan(tariff: Tariff) {
 const printable = (steps: PlannedStep[]) => steps.map(({ exec, ...step }) => ({ ...step, kind: exec.kind }));
 
 type Ask = { inputHash: string; replayKey: string | null };
+type GatewayRefusal = { code: string; retryable: boolean };
+type Supply = () => Promise<ModelGateway | undefined>;
 type Drivers = {
   mode: 'dry_run' | 'live'; subject: string; outDir: string; learnerModelPath?: string;
-  teacher: () => Promise<ModelGateway | undefined>; replay: () => Promise<ModelGateway | undefined>;
+  teacher: Supply; replay: Supply;
   asks: Ask[]; replayedKinds: Map<string, string>; recordings: TeacherRecordings | null;
+  /** The gateway's own refusals, in order: the callers fold them into teacher codes that hide a key move. */
+  refusals: GatewayRefusal[];
+  /** The report of key states: one entry per key of the policy, with its mark. */
+  keyStates: () => Promise<{ state: string }[]>;
+  /** Waited before a step is attempted again, so that the gateway's pace does not refuse the new call. */
+  paceMs: number;
+  extraAttemptsAtMost: number;
 };
+
+/** The same gateway, with each refusal of a request noted under the code the gateway threw. */
+function observed(supply: Supply, seen: GatewayRefusal[]): Supply {
+  return async () => {
+    const gateway = await supply();
+    if (!gateway) return gateway;
+    const propose: ModelGateway['propose'] = (...call) => gateway.propose(...call).catch((error: unknown) => {
+      const retryable = error instanceof AppError && (error.details as { retryable?: unknown })?.retryable === true;
+      if (error instanceof AppError) seen.push({ code: error.code, retryable });
+      throw error;
+    });
+    return Object.assign(Object.create(gateway) as ModelGateway, { propose });
+  };
+}
 
 /** A gateway whose only adapter is the replay store: it has no key, no transport and no paid ledger. */
 function dryRunDrivers(
@@ -542,8 +602,10 @@ function dryRunDrivers(
   const ledger = new ControlLedger();
   const gateway = new ModelGateway(tariff.policy, ledger, adapter);
   const supply = async () => gateway;
-  return { mode: 'dry_run', subject: 'local-os:s1-dry-run', outDir, teacher: supply, replay: supply, asks,
-    replayedKinds, recordings: null, ledger };
+  const refusals: GatewayRefusal[] = [];
+  return { mode: 'dry_run', subject: 'local-os:s1-dry-run', outDir, teacher: observed(supply, refusals),
+    replay: supply, asks, replayedKinds, recordings: null, ledger, refusals, keyStates: async () => [], paceMs: 0,
+    extraAttemptsAtMost: extraAttemptsAtMost(tariff.policy) };
 }
 
 function proofContext(subject: string): RequestContext {
@@ -554,10 +616,16 @@ function proofContext(subject: string): RequestContext {
 }
 
 type Outcome = { state: string; code: string | null; attempts: number; replayed: boolean; detail: unknown };
+type StepAnswer = StoreyAgentResult & { step: string; partIds: string[] };
 type RunState = {
   mappers: Map<number, TabularChunkMapper>; stopped: string | null;
-  storey: Map<string, { source: StoreyPageStore['source']; results: unknown[] }>;
+  storey: Map<string, { source: StoreyPageStore['source']; results: StepAnswer[] }>;
+  /** Set when every key is marked: the walk ends here and the later steps are listed as not run. */
+  halted: boolean;
+  extraAttempts: number;
 };
+const newRunState = (): RunState => (
+  { mappers: new Map(), stopped: null, storey: new Map(), halted: false, extraAttempts: 0 });
 
 async function runMapping(exec: Extract<Exec, { kind: 'mapping' }>, drivers: Drivers, state: RunState,
   gateway: Drivers['teacher']): Promise<Outcome> {
@@ -583,6 +651,8 @@ async function runStorey(exec: Extract<Exec, { kind: 'storey' }>, drivers: Drive
     dataPolicy: { dataClass: 'public', split: exec.split },
   });
   const kept = state.storey.get(exec.source.sha256) ?? { source: exec.source, results: [] };
+  // A step attempted again keeps its last result only: a moved-on attempt is no answer of the document.
+  kept.results = kept.results.filter(earlier => earlier.step !== id);
   kept.results.push({ ...result, step: id, partIds: exec.parts.map(part => part.partId) });
   state.storey.set(exec.source.sha256, kept);
   const { state: endState, code, attempts, replayed } = result;
@@ -598,7 +668,7 @@ function runExec(step: PlannedStep, exec: Exec, drivers: Drivers, state: RunStat
 /** A replay of a mapping call uses a fresh mapper, so that job-local reuse cannot stand in for the store. */
 function runReplay(step: PlannedStep, steps: PlannedStep[], drivers: Drivers, state: RunState) {
   const first = steps.find(item => item.exec.kind !== 'replay' && item.id === (step.exec as { of: string }).of)!;
-  const fresh: RunState = { mappers: new Map(), stopped: state.stopped, storey: new Map() };
+  const fresh: RunState = { ...newRunState(), stopped: state.stopped };
   return runExec(first, first.exec as Exec, drivers, fresh, drivers.replay);
 }
 
@@ -620,35 +690,93 @@ function endState(step: PlannedStep, outcome: Outcome, drivers: Drivers): string
   return drivers.replayedKinds.get(key) === 'control' ? 'replayed_software_control' : 'replayed_recording';
 }
 
+type KeyMove = { attempt: number; state: 'key_moved_on'; code: string };
+type Attempted = { outcome: Outcome; attempts: number; keyMoves: KeyMove[]; gatewayCode: string | null };
+const EVERY_KEY_MARKED = 'every key of the policy is marked used up';
+
+function stopRun(state: RunState, step: PlannedStep, reason: string, everyKeyMarked: boolean) {
+  if (!state.stopped) state.stopped = `${step.id}: ${reason}`;
+  state.halted ||= everyKeyMarked;
+}
+
+/** Why a step is not attempted again after a key move; null when it may be. */
+async function keyMoveStop(movesOnStep: number, drivers: Drivers, state: RunState) {
+  if (state.extraAttempts >= drivers.extraAttemptsAtMost) {
+    return { reason: 'a key was moved on and the run has used its one extra attempt per key', marked: false };
+  }
+  if (movesOnStep < 2) return null;
+  const keys = await drivers.keyStates().catch(() => null);
+  if (!keys) return { reason: 'a second key was moved on and the report of key states was not read', marked: false };
+  if (keys.some(key => key.state !== 'used_up')) return null;
+  return { reason: `${EVERY_KEY_MARKED}, by the report of key states`, marked: true };
+}
+
+/** One step. After a key move it is attempted again as a new call; past the second, only while a key is free. */
+async function attemptStep(
+  step: PlannedStep, steps: PlannedStep[], drivers: Drivers, state: RunState, gateway: Supply,
+): Promise<Attempted> {
+  const keyMoves: KeyMove[] = [];
+  for (let attempts = 1; ; attempts++) {
+    const seen = drivers.refusals.length;
+    const outcome = step.exec.kind === 'replay'
+      ? await runReplay(step, steps, drivers, state) : await runExec(step, step.exec, drivers, state, gateway);
+    const refusal = drivers.refusals.slice(seen).at(-1);
+    const attempted = { outcome, attempts, keyMoves, gatewayCode: refusal?.code ?? null };
+    if (refusal?.code === KEYS_EXHAUSTED) {
+      stopRun(state, step, `${EVERY_KEY_MARKED} (${KEYS_EXHAUSTED}); nothing was sent`, true);
+      return attempted;
+    }
+    if (!refusal?.retryable || !KEY_MOVED_CODES.has(refusal.code)) return attempted;
+    keyMoves.push({ attempt: attempts, state: 'key_moved_on', code: refusal.code });
+    const stop = await keyMoveStop(keyMoves.length, drivers, state);
+    if (stop) {
+      stopRun(state, step, stop.reason, stop.marked);
+      return attempted;
+    }
+    state.extraAttempts++;
+    if (step.exec.kind === 'mapping') state.mappers.delete(step.exec.file);
+    if (drivers.paceMs) await new Promise(resolve => setTimeout(resolve, drivers.paceMs));
+  }
+}
+
 async function runStep(step: PlannedStep, steps: PlannedStep[], drivers: Drivers, state: RunState, tariff: Tariff) {
   const asksBefore = drivers.asks.length;
   const refusedByCap = step.capAdmission && !step.capAdmission.admitted ? step.capAdmission.code : null;
   if (refusedByCap && !state.stopped) state.stopped = `${step.id}: ${refusedByCap}`;
   const afterStop = Boolean(state.stopped);
   const gateway = afterStop ? drivers.replay : drivers.teacher;
-  const outcome = step.exec.kind === 'replay'
-    ? await runReplay(step, steps, drivers, state) : await runExec(step, step.exec, drivers, state, gateway);
+  const { outcome, attempts, keyMoves, gatewayCode } = await attemptStep(step, steps, drivers, state, gateway);
   const asked = drivers.asks.slice(asksBefore);
   const stops = drivers.mode === 'live' && step.provider === 'call' && outcome.code && STOP_CODES.has(outcome.code);
   if (stops && !state.stopped) state.stopped = `${step.id}: ${outcome.code}`;
+  // Each moved-on attempt reached the provider once. The last attempt counts unless it was itself moved on,
+  // was answered from replay, or was refused at admission because every key is marked.
+  const lastSent = attempts > keyMoves.length && !outcome.replayed && gatewayCode !== KEYS_EXHAUSTED;
+  const lastCalls = lastSent ? outcome.attempts : 0;
   return {
     step: step.step, id: step.id, mode: drivers.mode, boxes: step.boxes, afterStop,
     requestHash: step.request?.requestHash ?? null, capAdmission: step.capAdmission,
     gatewayAsks: drivers.mode === 'dry_run' ? asked.length : null,
-    requestMatchesPlan: step.request && asked.length ? asked[0].inputHash === step.request.requestHash : null,
-    providerCalls: drivers.mode === 'dry_run' || outcome.replayed ? 0 : outcome.attempts,
+    requestMatchesPlan: step.request && asked.length
+      ? asked.slice(0, attempts).every(ask => ask.inputHash === step.request!.requestHash) : null,
+    attempts, keyMoves, gatewayCode,
+    providerCalls: drivers.mode === 'dry_run' ? 0 : keyMoves.length + lastCalls,
     endState: endState(step, outcome, drivers), code: outcome.code, replayed: outcome.replayed, detail: outcome.detail,
     live: await liveNumbers(step, drivers, tariff),
   };
 }
 
-/** One walk for both modes; only the drivers differ. */
+/** One walk for both modes; only the drivers differ. A walk that halts lists the steps it did not reach. */
 async function runSequence(tariff: Tariff, drivers: Drivers) {
   const { steps } = orderedSteps(tariff);
-  const state: RunState = { mappers: new Map(), stopped: null, storey: new Map() };
+  const state = newRunState();
   const receipts = [];
-  for (const step of steps) receipts.push(await runStep(step, steps, drivers, state, tariff));
-  return { steps, receipts, stopped: state.stopped, storey: state.storey };
+  for (const step of steps) {
+    if (state.halted) break;
+    receipts.push(await runStep(step, steps, drivers, state, tariff));
+  }
+  const notRun = steps.slice(receipts.length).map(step => ({ step: step.step, id: step.id, endState: 'not_run' }));
+  return { steps, receipts, notRun, stopped: state.stopped, storey: state.storey };
 }
 
 async function withoutNetwork<T>(action: () => Promise<T>) {
@@ -665,6 +793,113 @@ async function withoutNetwork<T>(action: () => Promise<T>) {
   }
 }
 
+/** A software ledger that marks a key as the gateway's ledger does. It holds no money and reads no key. */
+class KeyListControlLedger extends ControlLedger {
+  constructor(private readonly names: readonly string[], public marked: number) {
+    super();
+    this.refuseWhenEveryKeyIsMarked();
+  }
+  override async retainExposure(id: string, failure?: ProviderFailure) {
+    if (this.names.length > 1 && citedKeyRefusal(failure)) this.marked++;
+    this.refuseWhenEveryKeyIsMarked();
+    return super.retainExposure(id);
+  }
+  keyStates() {
+    const state = (index: number) => (index < this.marked ? 'used_up' : index === this.marked ? 'in_use' : 'waiting');
+    return this.names.map((reference, index) => ({ reference, state: state(index) }));
+  }
+  private refuseWhenEveryKeyIsMarked() {
+    if (this.marked >= this.names.length) this.denyCode = KEYS_EXHAUSTED;
+  }
+}
+
+/** A software key list: how many made-up keys, how many carry a mark at the start, how many asks are refused. */
+export type KeyScenario = {
+  keys: number; markedAtStart: number; refused: number; answer?: FailureKind; recordFirstStep?: boolean;
+};
+
+/**
+ * The dry-run drivers behind a software key list. A refused ask goes through a real ModelGateway, so the error
+ * is the one gateway.ts throws; every other ask goes to the replay store, as in the dry run.
+ */
+function keyScenarioDrivers(tariff: Tariff, outDir: string, scenario: KeyScenario) {
+  const base = dryRunDrivers(tariff, outDir, join(outDir, 'recordings'));
+  const names = Array.from({ length: scenario.keys }, (_, index) => `ULPIN_PROVIDER_KEY_SOFTWARE_${index + 1}`);
+  const named = names.length > 1 ? { secretReferences: names } : { secretReference: names[0] };
+  const policy = ModelGatewayConfigSchema.parse(
+    { ...tariff.policy, secretReference: undefined, secretReferences: undefined, ...named });
+  const keyLedger = new KeyListControlLedger(names, scenario.markedAtStart);
+  const answer = scenario.answer ?? 'quota_exhausted';
+  let toRefuse = scenario.refused;
+  const refusing = new ControlAdapter(async request => {
+    base.asks.push({ inputHash: request.inputHash, replayKey: request.replayKey ?? null });
+    toRefuse--;
+    const status = answer === 'credential_invalid' ? 403 : 429;
+    throw new ProviderFailure(answer, status, 0, undefined, hash('software key refusal'));
+  });
+  const keyList = new ModelGateway(policy, keyLedger, refusing);
+  const everyKeyMarked = () => keyLedger.marked >= names.length;
+  const supply: Supply = async () => (toRefuse > 0 || everyKeyMarked() ? keyList : base.replay());
+  return { ...base, teacher: observed(supply, base.refusals), keyStates: async () => keyLedger.keyStates(),
+    extraAttemptsAtMost: extraAttemptsAtMost(policy), keyLedger };
+}
+
+const NOTHING = { value: null, expression: null, citations: [] };
+/** What the software control answers: an abstention that states no fact. */
+const CONTROL_ABSTAINS = {
+  storeyCount: NOTHING, basementCount: NOTHING, floorExpressions: [], labels: [], heights: [], unitCounts: [],
+  conflicts: [], abstain: true, abstainReason: 'software control',
+};
+
+/** A software control's answer to a storey step, recorded in a folder of the run. No provider, no key. */
+export async function recordSoftwareControl(step: PlannedStep, tariff: Tariff, directory: string) {
+  if (step.exec.kind !== 'storey') return null;
+  const adapter = new ControlAdapter(async () => ({
+    output: CONTROL_ABSTAINS, responseHash: hash(CONTROL_ABSTAINS), httpStatus: 200,
+    rawResponse: { output: CONTROL_ABSTAINS }, usage: { promptTokens: 1, completionTokens: 1 },
+  }));
+  return extractStoreyFacts(step.exec.parts, {
+    context: proofContext('local-os:s1-software-control'), authorize: async () => {}, maxAttempts: 1,
+    gateway: new ModelGateway(tariff.policy, new ControlLedger(), adapter),
+    recordings: new TeacherRecordings(directory), dataPolicy: { dataClass: 'public', split: step.exec.split },
+  });
+}
+
+/** One software walk of the same steps behind a key list. Nothing can leave: no key, no transport. */
+export async function keyMoveWalk(tariff: Tariff, outDir: string, scenario: KeyScenario) {
+  const drivers = keyScenarioDrivers(tariff, outDir, scenario);
+  const first = orderedSteps(tariff).steps[0];
+  const recording = scenario.recordFirstStep
+    ? await recordSoftwareControl(first, tariff, join(outDir, 'recordings')) : null;
+  const walked = await withoutNetwork(() => runSequence(tariff, drivers));
+  const { receipts, notRun, stopped } = walked.value;
+  const providerDispatches = walked.fetchAttempts() + drivers.ledger.dispatched;
+  if (providerDispatches !== 0 || drivers.ledger.reserved !== 0) throw new Error('LIVE_PROOF_DRY_RUN_DISPATCHED');
+  const { id, attempts, keyMoves, gatewayCode, endState: ended, code, requestMatchesPlan } = receipts[0];
+  return {
+    softwareKeyList: { ...scenario, answer: scenario.answer ?? 'quota_exhausted',
+      asksRefused: drivers.keyLedger.dispatched, markedAtEnd: drivers.keyLedger.marked },
+    softwareControlRecording: recording?.state ?? null,
+    firstStep: { id, attempts, keyMoves, gatewayCode, endState: ended, code, requestMatchesPlan },
+    stopped, stepsWalked: receipts.length, notRun, providerDispatches, fetchAttempts: walked.fetchAttempts(),
+  };
+}
+
+const KEY_MOVE_NOTE = 'software only: a key list of made-up names in front of the same steps. A refused ask is '
+  + 'answered by a software provider through a real gateway, so the code is the one gateway.ts throws; the ledger '
+  + 'here is a software ledger that marks a key as the real one does. No key is read and nothing is sent.';
+
+/** The two walks the task names: one key used up on step 1, and every key marked before step 1. */
+async function keyMoveProof(tariff: Tariff, outDir: string) {
+  const folder = (name: string) => join(outDir, 'key-moves', name);
+  return {
+    note: KEY_MOVE_NOTE,
+    oneKeyUsedUp: await keyMoveWalk(tariff, folder('one-key-used-up'),
+      { keys: 2, markedAtStart: 0, refused: 1, recordFirstStep: true }),
+    everyKeyMarked: await keyMoveWalk(tariff, folder('every-key-marked'), { keys: 2, markedAtStart: 2, refused: 0 }),
+  };
+}
+
 /** Every request is built and asked; nothing can leave: the gateway here holds a replay adapter and no key. */
 export async function dryRun(tariff: Tariff, outDir: string, recordingsDir: string) {
   const drivers = dryRunDrivers(tariff, outDir, recordingsDir);
@@ -674,7 +909,7 @@ export async function dryRun(tariff: Tariff, outDir: string, recordingsDir: stri
   if (providerDispatches !== 0 || drivers.ledger.reserved !== 0) throw new Error('LIVE_PROOF_DRY_RUN_DISPATCHED');
   return {
     schemaVersion: 'live-proof-receipt/1', mode: 'dry_run' as const, generatedAt: new Date().toISOString(),
-    tariff: tariffReport(tariff), stopped, receipts,
+    tariff: tariffReport(tariff), stopped, receipts, keyMoves: await keyMoveProof(tariff, outDir),
     summary: {
       steps: receipts.length, gatewayAsks: drivers.asks.length, providerDispatches,
       ledgerReservations: drivers.ledger.reserved, fetchAttempts: walked.fetchAttempts(),
@@ -724,20 +959,24 @@ function liveDrivers(tariff: Tariff, outDir: string, learnerModelPath?: string):
     return gateway;
   };
   const os = userInfo();
+  const refusals: GatewayRefusal[] = [];
   return {
-    mode: 'live', subject: `local-os:${os.uid}:${os.username}`, outDir, learnerModelPath, teacher,
-    replay: () => mappingTeacherGatewayRuntime('replay'), asks: [], replayedKinds: new Map(),
-    recordings: new TeacherRecordings(),
+    mode: 'live', subject: `local-os:${os.uid}:${os.username}`, outDir, learnerModelPath,
+    teacher: observed(teacher, refusals), replay: () => mappingTeacherGatewayRuntime('replay'), asks: [],
+    replayedKinds: new Map(), recordings: new TeacherRecordings(), refusals,
+    keyStates: async () => (await ownerKeyLedger()).keyStates(), paceMs: tariff.policy.paceMs,
+    extraAttemptsAtMost: extraAttemptsAtMost(tariff.policy),
   };
 }
 
 async function runLive(tariff: Tariff, outDir: string, state: unknown, learnerModelPath?: string) {
   assertLiveStart(state, tariff);
-  const { receipts, stopped, storey } = await runSequence(tariff, liveDrivers(tariff, outDir, learnerModelPath));
+  const drivers = liveDrivers(tariff, outDir, learnerModelPath);
+  const { receipts, notRun, stopped, storey } = await runSequence(tariff, drivers);
   for (const [sha256, kept] of storey) saveNew(join(outDir, `${sha256}.agent.json`), { ...kept, mode: 'sarvam' });
   return {
     schemaVersion: 'live-proof-receipt/1', mode: 'live' as const, generatedAt: new Date().toISOString(),
-    tariff: tariffReport(tariff), gatewayState: state, stopped, receipts,
+    tariff: tariffReport(tariff), gatewayState: state, stopped, receipts, notRun,
   };
 }
 
