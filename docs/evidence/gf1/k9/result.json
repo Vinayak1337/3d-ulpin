@@ -397,6 +397,27 @@
       "Codex updates/shared uv patch-alias changes cannot replace this private full-version base."
     ]
   },
+  "step3": {
+    "document": "docs/backend/DEMO-RUNTIME.md#changing-the-document-interpreter",
+    "existingMechanism": "K3b demo-scoped OCR override; K4d build --python switches page/region profile",
+    "ocrSwitchCliExists": false,
+    "ownerAction": "edit only the existing non-secret override's Python path; preserve four other keys",
+    "proposal": "minimal owner-only override action on the existing builder; not implemented in this task",
+    "then": "existing rollout step 5, start, doctor, one stability driver run on demo paths and fresh owner receipt",
+    "rollback": "stop, restore old OCR path, rebuild with old interpreter, start and doctor",
+    "performed": false
+  },
+  "finalReview": {
+    "scope": "full evidence diff and only the new DEMO-RUNTIME section reviewed; no application edits",
+    "manifestAndSameProfileAuditExit": 0,
+    "pinnedOutsideMlAndWorktree": 0,
+    "protectedNameGuardExit": 0,
+    "guardChange": "also refuse arbitrary *.env and .env.* names, before filesystem access",
+    "auditSetupFault": "stdin shell escaping caused SyntaxError before access; character-code delimiter fixed it",
+    "syntaxExit": 0,
+    "diffCheckExit": 0,
+    "newLinesOver120": 0
+  },
   "safety": {
     "runtimeAccess": false,
     "envOrCredentialsRead": false,
