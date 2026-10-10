@@ -6,6 +6,7 @@ import { geographicMlComponent, projectedGeographicComponents } from './spatial-
 import type { PoolClient } from 'pg';
 import { spatialMlFootprintDraftSchema } from './spatial-ml-footprints';
 import { imageryOriginalUrl } from '../areas/canonical-area';
+import { canonicalFeatureName } from '../registry/canonical-building';
 
 const evidence = 'docs/evidence/gf-backend/k2c';
 const imagery: RetainedImagery = JSON.parse(readFileSync(`${evidence}/imagery-import.json`, 'utf8')).imagery;
@@ -28,6 +29,13 @@ test('real retained Karnataka pixels use their exact source affine, not invented
 
 test('pre-inference imagery overlays use the published original-file route, not an unregistered case subroute', () => {
   assert.equal(imageryOriginalUrl(chip.sourceId), `/api/v1/sources/${chip.sourceId}/file`);
+});
+
+test('retained ML draft aliases are candidates, not names literally supported by the source image', () => {
+  const draft = JSON.parse(readFileSync(`${evidence}/roofprint-draft.json`, 'utf8'));
+  const name = canonicalFeatureName(draft.package.features[0], []);
+  assert.equal(name.state, 'candidate');
+  assert.equal(name.method, 'deterministic:retained-candidate-alias@1');
 });
 
 test('changed original hash or image grid fails closed before georeferencing', () => {

@@ -294,6 +294,12 @@ function inputRevisions(dossier: CanonicalBuildingSource): NormalizedBuilding['i
   ];
 }
 
+export function canonicalFeatureName(feature: PhysicalFeature, citations: BuildingCitation[]): Value<string> {
+  const derived = Boolean(feature.properties.spatialExtraction);
+  return canonicalValue(feature.name, derived ? 'candidate' : 'source_supported', citations,
+    derived ? 'deterministic:retained-candidate-alias@1' : 'source_literal');
+}
+
 function baseBuilding(
   dossier: CanonicalBuildingSource,
   frame: AreaFrame,
@@ -312,11 +318,12 @@ function baseBuilding(
     revisionId: 'pending',
     recordState: proposal ? 'candidate' : 'reviewed',
     frame,
-    name: canonicalValue(feature.name, 'source_supported', citations),
+    name: canonicalFeatureName(feature, citations),
     inputRevisions: inputRevisions(dossier),
     parcelRefs: [],
     footprint: canonicalValue(polygons, polygons ? state : 'unknown', citations, ENU_METHOD, 'm'),
-    footprintKind: canonicalValue(kind, kind ? 'source_supported' : 'unknown', citations),
+    footprintKind: canonicalValue(kind, !kind ? 'unknown'
+      : feature.properties.spatialExtraction ? 'candidate' : 'source_supported', citations),
     baseM: canonicalValue<number>(null, 'unknown', [], 'source_literal', 'm'),
     heightM: heightValue,
     heightState: heightValue.state,
