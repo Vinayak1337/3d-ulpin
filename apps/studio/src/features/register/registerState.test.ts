@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@ulpin/api-client';
-import { absentReason, readingStatement, readingStatements, unstatedReadings } from './registerState';
+import {
+  absentReason, openCheckCount, readingStatement, readingStatements, unstatedReadings,
+} from './registerState';
 
 const SERVER_TEXT = 'Server text that is never shown.';
 const failure = (status: number, code?: string) => new ApiError(status, '/api/v1/buildings/b/register', {
@@ -26,6 +28,19 @@ describe('absentReason', () => {
     expect(absentReason(failure(500, 'STALE_REVISION'))).toBeNull();
     expect(absentReason(new Error('offline'))).toBeNull();
     expect(absentReason(null)).toBeNull();
+  });
+});
+
+describe('openCheckCount', () => {
+  it('gives no number when the ledger holds no check: not assessed is not 0', () => {
+    expect(openCheckCount([])).toBeUndefined();
+    expect(openCheckCount(undefined)).toBeUndefined();
+  });
+
+  it('counts the checks that block or need review, and 0 when every check passed', () => {
+    const checks = [{ state: 'blocking' }, { state: 'needs_review' }, { state: 'passed' }, { state: 'not_assessed' }];
+    expect(openCheckCount(checks)).toBe(2);
+    expect(openCheckCount([{ state: 'passed' }])).toBe(0);
   });
 });
 
