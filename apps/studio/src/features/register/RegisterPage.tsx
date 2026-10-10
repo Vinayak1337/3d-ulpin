@@ -23,8 +23,11 @@ import { useBuildingScene } from '../map/useBuildingScene';
 import { CheckGroups } from '../review/CheckGroups';
 import { useBuildingActions, useBuildingWorkflow, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import { cityJson, download, fileStem } from './exporters';
+import { ReadingStatementsContext } from './ReadingNote';
 import { RegisterAbsent } from './RegisterAbsent';
 import { absentReason } from './registerState';
+import { SourceList } from './SourceList';
+import { useReadingStatements } from './useReadingStatements';
 import { printRegistry, registryDetail, registryHtml, registryPackage, registryTables, registryWorkbook } from './registry';
 import { featureCode } from '../../api/queries';
 import type { ConsolidatedRegistryReport } from '../../../../../packages/contracts/src/building-registry-report';
@@ -409,22 +412,17 @@ function Shares({ ledger, model, workflow }: { ledger: BuildingLedger | null | u
 
 function Documents({ register, ledger }: { register: BuildingRegister; ledger: BuildingLedger | null | undefined }) {
   const openEvidence = useOpenEvidence();
+  // The consolidated read answers only for a recorded building (revision above 0).
+  const readings = useReadingStatements(register.property.id, register.property.revision > 0);
   const sources = ledger?.sources ?? register.sources.map((s) => ({ sourceId: s.id, kind: 'table' as const, name: s.name, file: s.name, summary: `r${s.revision}` }));
   const bySource = new Map(register.sources.map((s) => [s.id, s]));
   return (
     <Panel title="Sources" aside={<span className="ul-caption">{sources.length}</span>} flush={(
-      <ul className={styles.sources}>
-        {sources.map((s) => {
-          const retained = bySource.get(s.sourceId);
-          return (
-            <li key={s.sourceId}>
-              <EvidenceChip kind={s.kind} source={s.name} locator={s.summary}
-                onOpen={() => openEvidence({ sourceId: s.sourceId, label: s.name, locator: parseLocator({ locator: s.summary }) })} />
-              <span className="ul-caption">{s.file}{retained ? <> · r{retained.revision} · {formatDate(retained.createdAt)} · <span className="ul-mono">{shortHash(retained.sha256)}</span></> : null}</span>
-            </li>
-          );
-        })}
-      </ul>
+      <ReadingStatementsContext.Provider value={readings}>
+        <SourceList sources={sources} retained={bySource} onOpen={(s) => openEvidence({
+          sourceId: s.sourceId, label: s.name, locator: parseLocator({ locator: s.summary }),
+        })} />
+      </ReadingStatementsContext.Provider>
     )} />
   );
 }

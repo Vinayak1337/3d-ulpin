@@ -13,6 +13,8 @@ import { parseLocator } from '../evidence/refs';
 import { levelSummary } from '../map/inspector/BuildingInspector';
 import { useCanonicalFootprints } from '../map/canonicalScene';
 import { findingVolume, useBuildingScene } from '../map/useBuildingScene';
+import { RegisterAbsent } from '../register/RegisterAbsent';
+import { absentReason } from '../register/registerState';
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import { CheckGroups } from './CheckGroups';
 import { useMapView } from '../map/useMapView';
@@ -28,6 +30,9 @@ export function WorkspacePage() {
   const { buildingId } = useParams();
   const register = useBuildingRegister(buildingId);
   if (register.isPending) return <div className={styles.loading}><Skeleton width="40%" /><Skeleton /><Skeleton /></div>;
+  // A register the server refuses to read out (409) is worded here as on the register page.
+  const absent = absentReason(register.error);
+  if (absent && buildingId) return <RegisterAbsent buildingId={buildingId} reason={absent} />;
   if (register.error || !register.data) {
     return (
       <div className={styles.loading}>
