@@ -559,8 +559,8 @@
     "packages/server/src/modules/spatial/spatial-ml-canonical-candidates.ts": "ef8a016616457350ed6a1678a7be6024ecc7e6d0572fa3b076834275b21fdd59",
     "packages/server/src/modules/usp/ingestion/source-building-candidates.ts": "c5dc490ad826380434d495516fefde9f2a203a1c433345d7cf278466ce4799a7",
     "apps/api/src/modules/register/candidate.controller.test.ts": "88b8555b99d2c5bbe9352540ae5a974a8f8b0e054cad945c9cb231093444fd9b",
-    "packages/server/src/modules/officer/level-schedules.ts": "ccf7adc9c6103c6838f54419053511829439e13d478c7da4276acdb7a140df5b",
-    "packages/server/src/modules/registry/canonical-level-schedule.ts": "4c8bbade7b84e9236b7ade6e692b1ccd82c850819a627337eaa28777401a4372"
+    "packages/server/src/modules/officer/level-schedules.ts": "199faaade983fa13721473af06900011984daa5c891fc0124f5f635dadd997d5",
+    "packages/server/src/modules/registry/canonical-level-schedule.ts": "2ab7237c27f8a09b0afa175f7139c0540a36f16be8d77530dfacfd80366e625e"
   },
   "operations": [
     "GET /api",

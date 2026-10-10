@@ -69,6 +69,11 @@ export function applyLevelSchedules(building: NormalizedBuilding, records: Regis
   if (!latest) return;
   const schedule = LevelScheduleSchema.parse(latest);
   building.levelSchedule = schedule;
+  const oldGap = 'No detailed level schedule, spaces, rights or parcel association reviewed.';
+  building.gaps = building.gaps.filter(gap => gap !== oldGap);
+  building.gaps.push(
+    'Level schedule review does not create registry spaces, rights, parcel links or surveyed elevations.',
+  );
   building.levels = [];
   const citations = schedule.levels.flatMap(row => row.citations);
   const method = `reviewer:${schedule.decision.actor}`;
