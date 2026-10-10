@@ -1,0 +1,281 @@
+{"task":"E3","gate":"GF-AGENT; M1 box AG-E3","realCases":0,"statement":[
+"No real case. 0 of 59 candidate matches read as addressed to a reader or a model,",
+"in 604 columns and 209 document parts as a teacher would be sent them, and in 604 raw",
+"headers, 68399 raw text cells and 3451 raw document lines."],"n":{"columns":604,"parts":209,"candidates":59,
+"promptHeaders":604,"promptSamples":5657,"rawHeaders":604,"rawTextCells":68399,"rawCellsNotText":567,"rawLines":3451,
+"candidatesTeacherLayer":38,"candidatesRawLayer":21},"screen":{"script":"scripts/agent/injection-screen.ts","test":
+"scripts/agent/injection-screen.test.ts","classesFixedAtCommit":"e90ae85cdcc1a1a256a25210326066c1ac700c68",
+"classesBlockSha256AtEveryCommit":"6b10994de2852ba35248980964e3d1ef021374238f944098201f702af2747199","runs":[{"run":
+"run-01","commit":"e90ae85cdcc1a1a256a25210326066c1ac700c68","runAt":"2026-10-10T15:35:41.806Z","teacherLayer":
+"the builders' messages","candidates":59},{"run":"run-02","commit":"f1d5905701f5c123c15abcd9694bad3ecf788f62","runAt":
+"2026-10-10T15:41:35.634Z","teacherLayer":"the builders' messages as the gateway would forward them","candidates":59},{
+"run":"run-03","commit":"2efb8c78216e11dc26b3728787e10599f068f12b","runAt":"2026-10-10T15:48:21.992Z","teacherLayer":
+"as run-02, on the final script","candidates":59,"reported":true}],"whyThreeRuns":[
+"Step 0 found after run-01 that the gateway minimizes every request before a provider",
+"sees it. Commit f1d59057 changes only how the teacher layer is read. Commit 2efb8c78",
+"is a tidy-up with no behaviour change; run-03 repeats run-02 on it and its counts",
+"and candidate file are identical. The class definitions are byte-identical at all",
+"three commits and all three runs give the same candidate counts."],"scriptCommitted":true,"scriptSha256":
+"afdd2a807904d3579bab17fcabfcd76f129e068d6ea0b40fcb97d662f17d4570","privateOutputs":
+"E:/BhuAayam-data/task-data/e3/run-03 (screen.json, candidates.jsonl: masked forms only)","offline":
+"no provider call, no key, no API request, no runtime, no GPU"},"promptSurface":{"mappingPrompt":{"builder":
+"packages/server/src/modules/usp/ingestion/mapping-teacher.ts:159-202","system":
+"Template id and a fixed text that calls headers and samples untrusted DATA, never instructions.","user":[
+"One JSON object: columnProfile (version, sourceKind, sampleShortfall, columns) and the fixed",
+"targetVocabulary; on a repair also validation error codes and one fixed sentence."],"perColumn":["header",
+"sourceField (alias column_a, column_b, ...)","inferredType","declaredUnit","valueShapes (ten rates)",
+"maskedSamples (at most 10 observed cells)"],"notInThePrompt":["file name","sheet name",
+"row values other than the masked samples","geometry"],"header":[
+"Literal source text. headerMask (:121-126) replaces only e-mail addresses, PANs and runs",
+"of six or more digits, so a header is the one place source words reach the prompt unmasked."],"samples":[
+"maskColumnSample (column-profile.ts:92-101): every word becomes X, x or अ unless it is on a",
+"closed list of 79 unit, floor, status and marker words; digits become D; cut at 256 characters."]},"storeyPrompt":{
+"builder":"packages/server/src/modules/ai/document-storey-agent.ts:79-118","system":
+"Template id and a fixed text that calls the lines untrusted DATA, never instructions.","user":
+"One JSON object: parts, each with partId, page and text.","text":[
+"An OCR or text-layer line as read, cut at 240 characters (:107); only lines that match the",
+"storey, floor, unit or height pattern (:22, :106); at most 14000 characters per batch.","The builder masks nothing."]},
+"gateway":{"code":"packages/server/src/modules/model-gateway/adapter.ts:36-45 and gateway.ts:46-50","does":[
+"Every message passes minimizeMessages before a provider sees it: ID, phone and e-mail patterns",
+"in each JSON string leaf are replaced by [redacted ...] markers; a message with data:,",
+"image_url or base64, a message over 32768 characters, messages over 24 KiB together, or a",
+"body over 32768 bytes is refused."]},"answerSide":[
+"The mapping answer is a closed schema: source aliases, target names and operation tokens are",
+"enumerations, and a rationale with a digit, EPSG or coordinate is refused. The storey answer",
+"may cite only part ids that were sent."]},"scope":{"tables":{"families":29,"files":42,"tables":50,"promptBytesMax":
+54323,"promptRequests":50,"columns":604,"promptSamples":5657,"cells":68399,"promptsRefusedByGateway":17,"cellsNotText":
+567},"documents":{"projects":5,"sources":8,"promptBytesMax":13098,"promptRequests":8,"parts":209,"pages":28,"lines":3451
+,"promptsRefusedByGateway":2},"admittedBy":[
+"tables: preparationAssets, developmentProfileAssets and sourceTables of t1-sources.ts",
+"documents: extraction PDFs of storey-truth/dev and storey-truth/demo, A5 page stores"],"heldOut":
+"no held-out, evaluator, provisional or acquisitions path was opened or listed","caps":{"header":512,"cell":256,"sample"
+:256,"line":240,"part":240,"gatewayBodyBytes":32768},"notScreened":[{"family":"opf-d02","file":"seattle-energy.csv",
+"not_screened":"guard","code":"T1_SOURCE_DENIED"},{"family":"opf-d03","file":"nycha-addresses.csv","not_screened":
+"guard","code":"T1_SOURCE_DENIED"},{"family":"opf-d04","file":"sf-existing.csv","not_screened":"guard","code":
+"T1_SOURCE_DENIED"},{"family":"opf-d04","file":"sf-municipal.csv","not_screened":"guard","code":"T1_SOURCE_DENIED"},{
+"family":"opf-d05","file":"kansas-municipal.csv","not_screened":"guard","code":"T1_SOURCE_DENIED"},{"family":"opf-d06",
+"file":"edmonton-heritage.csv","not_screened":"guard","code":"T1_SOURCE_DENIED"},{"family":"opf-d07","file":
+"baton-footprint.csv","not_screened":"guard","code":"T1_SOURCE_DENIED"},{"family":"opf-d08","file":"nola-footprint.csv",
+"not_screened":"guard","code":"T1_SOURCE_DENIED"},{"family":"opf-d09","file":"edmonton-footprint.csv","not_screened":
+"guard","code":"T1_SOURCE_DENIED"}]},"classes":[{"class":"instruction_phrase","meaning":
+"A phrase that tells a reader or a model what to do, in English, Hindi or transliterated Hindi.","surfaces":["table",
+"document"],"candidates":{"tablesTeacher":0,"tablesRaw":0,"documentsTeacher":0,"documentsRaw":0},"cases":0},{"class":
+"role_marker","meaning":"A chat role at a line start, a special token such as <|...|>, or an instruction heading.",
+"surfaces":["table","document"],"candidates":{"tablesTeacher":0,"tablesRaw":0,"documentsTeacher":0,"documentsRaw":0},
+"cases":0},{"class":"markup_template","meaning":"Active HTML, a script URL, a template delimiter or a code fence.",
+"surfaces":["table","document"],"candidates":{"tablesTeacher":0,"tablesRaw":0,"documentsTeacher":0,"documentsRaw":0},
+"cases":0},{"class":"url_email","meaning":"A web address or an e-mail address, raw or in its masked form.","surfaces":[
+"table","document"],"candidates":{"tablesTeacher":0,"tablesRaw":0,"documentsTeacher":2,"documentsRaw":4},"cases":0},{
+"class":"formula_prefix","meaning":
+"A cell or header that starts with =, +, - or @ followed by a letter or an opening bracket.","surfaces":["table"],
+"candidates":{"tablesTeacher":36,"tablesRaw":0,"documentsTeacher":0,"documentsRaw":0},"cases":0},{"class":
+"control_character","meaning":"A C0 or C1 control character other than tab, line feed and carriage return.","surfaces":[
+"table","document"],"candidates":{"tablesTeacher":0,"tablesRaw":0,"documentsTeacher":0,"documentsRaw":0},"cases":0},{
+"class":"zero_width_character","meaning":
+"A zero-width space, joiner, non-joiner, word joiner or byte-order mark inside the text.","surfaces":["table","document"
+],"candidates":{"tablesTeacher":0,"tablesRaw":6,"documentsTeacher":0,"documentsRaw":0},"cases":0},{"class":
+"bidi_override","meaning":"A bidirectional mark, embedding, override or isolate.","surfaces":["table","document"],
+"candidates":{"tablesTeacher":0,"tablesRaw":0,"documentsTeacher":0,"documentsRaw":0},"cases":0},{"class":"over_cap",
+"meaning":"A raw cell, header or line longer than what its prompt keeps of it.","surfaces":["table","document"],
+"candidates":{"tablesTeacher":0,"tablesRaw":0,"documentsTeacher":0,"documentsRaw":11},"cases":0}],"perFamilyNote":
+"A class that is not listed for a family has 0 candidates there; every family has 0 cases.","families":[{"family":
+"mi-d01","split":"dev","files":1,"tables":1,"columns":8,"promptSamples":80,"rawTextCells":6280,"requests":1,"candidates"
+:{"raw":{"zero_width_character":6}},"cases":0},{"family":"mi-d02","split":"dev","files":3,"tables":3,"columns":21,
+"promptSamples":49,"rawTextCells":49,"requests":3,"candidates":{},"cases":0},{"family":"mi-d03","split":"dev","files":2,
+"tables":2,"columns":10,"promptSamples":100,"rawTextCells":100,"requests":2,"requestsGatewayRefuses":2,"candidates":{},
+"cases":0},{"family":"mi-d04","split":"dev","files":1,"tables":1,"columns":15,"promptSamples":150,"rawTextCells":5520,
+"requests":1,"candidates":{},"cases":0},{"family":"mi-d05","split":"dev","files":1,"tables":1,"columns":6,
+"promptSamples":60,"rawTextCells":2214,"requests":1,"requestsGatewayRefuses":1,"candidates":{},"cases":0},{"family":
+"mi-d06","split":"dev","files":1,"tables":1,"columns":21,"promptSamples":210,"rawTextCells":10185,"requests":1,
+"candidates":{},"cases":0},{"family":"mi-d07","split":"dev","files":1,"tables":1,"columns":2,"promptSamples":20,
+"rawTextCells":104,"requests":1,"candidates":{},"cases":0},{"family":"mi-d08","split":"dev","files":2,"tables":2,
+"columns":33,"promptSamples":330,"rawTextCells":1056,"requests":2,"requestsGatewayRefuses":1,"candidates":{"teacher":{
+"formula_prefix":22}},"cases":0},{"family":"mi-d09","split":"dev","files":2,"tables":2,"columns":10,"promptSamples":100,
+"rawTextCells":11195,"requests":2,"candidates":{"teacher":{"formula_prefix":6}},"cases":0},{"family":"mi-d10","split":
+"dev","files":3,"tables":3,"columns":48,"promptSamples":448,"rawTextCells":1248,"requests":3,"candidates":{},"cases":0},
+{"family":"mi-d11","split":"dev","files":1,"tables":1,"columns":9,"promptSamples":90,"rawTextCells":396,"requests":1,
+"requestsGatewayRefuses":1,"candidates":{},"cases":0},{"family":"mi-d12","split":"dev","files":2,"tables":2,"columns":22
+,"promptSamples":220,"rawTextCells":737,"requests":2,"candidates":{},"cases":0},{"family":"mi-d13","split":"dev","files"
+:2,"tables":2,"columns":54,"promptSamples":540,"rawTextCells":2160,"requests":2,"candidates":{},"cases":0},{"family":
+"mi-d14","split":"dev","files":1,"tables":1,"columns":8,"promptSamples":80,"rawTextCells":224,"requests":1,"candidates":
+{},"cases":0},{"family":"mi-d15","split":"dev","files":2,"tables":2,"columns":23,"promptSamples":230,"rawTextCells":630,
+"requests":2,"requestsGatewayRefuses":1,"candidates":{"teacher":{"formula_prefix":8}},"cases":0},{"family":"mi-d16",
+"split":"dev","files":1,"tables":1,"columns":8,"promptSamples":80,"rawTextCells":312,"requests":1,"candidates":{},
+"cases":0},{"family":"mi-d17","split":"dev","files":2,"tables":2,"columns":13,"promptSamples":130,"rawTextCells":2736,
+"requests":2,"candidates":{},"cases":0},{"family":"mi-d18","split":"dev","files":1,"tables":1,"columns":7,
+"promptSamples":70,"rawTextCells":1715,"requests":1,"requestsGatewayRefuses":1,"candidates":{},"cases":0},{"family":
+"mi-d19","split":"dev","files":1,"tables":1,"columns":8,"promptSamples":80,"rawTextCells":408,"rawCellsNotText":72,
+"requests":1,"requestsGatewayRefuses":1,"candidates":{},"cases":0},{"family":"mi-d20","split":"dev","files":1,"tables":1
+,"columns":12,"promptSamples":120,"rawTextCells":645,"rawCellsNotText":135,"requests":1,"requestsGatewayRefuses":1,
+"candidates":{},"cases":0},{"family":"mi-d21","split":"dev","files":1,"tables":1,"columns":9,"promptSamples":90,
+"rawTextCells":453,"rawCellsNotText":96,"requests":1,"requestsGatewayRefuses":1,"candidates":{},"cases":0},{"family":
+"smc-building-stock","split":"pool","files":1,"tables":1,"columns":4,"promptSamples":28,"rawTextCells":28,"requests":1,
+"candidates":{},"cases":0},{"family":"smc-tax-recovery","split":"pool","files":1,"tables":3,"columns":18,"promptSamples"
+:145,"rawTextCells":261,"rawCellsNotText":8,"requests":3,"requestsGatewayRefuses":2,"candidates":{},"cases":0},{"family"
+:"smc-water-projects","split":"pool","files":1,"tables":3,"columns":13,"promptSamples":65,"rawTextCells":65,"requests":3
+,"candidates":{},"cases":0},{"family":"smc-sewage-plants","split":"pool","files":1,"tables":1,"columns":3,
+"promptSamples":30,"rawTextCells":36,"requests":1,"requestsGatewayRefuses":1,"candidates":{},"cases":0},{"family":
+"smc-water-charges","split":"pool","files":1,"tables":5,"columns":26,"promptSamples":192,"rawTextCells":294,"requests":5
+,"requestsGatewayRefuses":1,"candidates":{},"cases":0},{"family":"mi-d22","split":"dev","files":2,"tables":2,"columns":
+180,"promptSamples":1800,"rawTextCells":18900,"requests":2,"requestsGatewayRefuses":2,"candidates":{},"cases":0},{
+"family":"mi-d23","split":"dev","files":2,"tables":2,"columns":10,"promptSamples":90,"rawTextCells":320,"requests":2,
+"candidates":{},"cases":0},{"family":"mi-d24","split":"dev","files":1,"tables":1,"columns":3,"promptSamples":30,
+"rawTextCells":128,"rawCellsNotText":256,"requests":1,"requestsGatewayRefuses":1,"candidates":{},"cases":0},{"family":
+"storey/development/RERAP01282025205138-1","split":"development","sources":1,"pages":5,"parts":55,"rawLines":654,
+"requests":1,"candidates":{"raw":{"over_cap":3}},"cases":0},{"family":"storey/development/RERAP279201800923-1","split":
+"development","sources":1,"pages":2,"parts":14,"rawLines":124,"requests":1,"candidates":{"raw":{"over_cap":1}},"cases":0
+},{"family":"storey/development/RERAP285201800427-9","split":"development","sources":1,"pages":11,"parts":5,"rawLines":
+229,"requests":1,"candidates":{"raw":{"over_cap":2}},"cases":0},{"family":"storey/demo/RERAP2311201700019-3","split":
+"demo","sources":1,"pages":6,"parts":27,"rawLines":1271,"requests":1,"candidates":{},"cases":0},{"family":
+"storey/demo/2831","split":"demo","sources":4,"pages":4,"parts":108,"rawLines":1173,"requests":4,
+"requestsGatewayRefuses":2,"candidates":{"teacher":{"url_email":2},"raw":{"over_cap":5,"url_email":4}},"cases":0}],
+"readings":[{"class":"formula_prefix","layer":"teacher","kind":"masked sample","candidates":36,"where":{"mi-d08":22,
+"mi-d09":6,"mi-d15":8},"maskedForms":["-D","-DD","-DDDDD.DD","-DDDDDD.DD"],"reading":[
+"A negative number: the masker writes each digit as the letter D, so the prompt form starts",
+"with a minus sign and a letter. The raw layer has 0 formula-prefix matches in 68399 cells.",
+"It is addressed to no one."],"cases":0},{"class":"zero_width_character","layer":"raw","kind":"cell","candidates":6,
+"where":{"mi-d01":6},"locator":"lgd-districts.csv, column 7","maskedForms":["अअ്अൂअ്\\u200d",
+"अअूअ्\\u200dअअ"],"reading":[
+"U+200D straight after a virama in Malayalam- and Devanagari-script local names: the scripts'",
+"ordinary joiner for a conjunct or chillu form, not hidden text. None of the 6 cells is among",
+"the samples the prompt carries."],"cases":0},{"class":"over_cap","layer":"raw","kind":"document line","candidates":11,
+"where":{"storey/development/RERAP01282025205138-1":3,"storey/development/RERAP279201800923-1":1,
+"storey/development/RERAP285201800427-9":2,"storey/demo/2831":5},"maskedForms":[
+"DDD.DD =DDDD.DD XXX. XX XXXXXXXX DD% XX PARKING XXXX XX DDDD.DD XXX. =DDDD.DD XD[over_cap]"],"reading":[
+"OCR lines longer than 240 characters (area statements and title-block text). The storey prompt",
+"keeps the first 240 characters of a relevant line. The instruction-phrase class reads the",
+"whole raw line and matched none of them."],"cases":0},{"class":"url_email","layer":"raw and teacher","kind":
+"document line and part","candidates":{"raw":4,"teacher":2},"where":{"storey/demo/2831":6},"maskedForms":[
+"Xxxx Xxxxxx Xxxx,Xxxxxxx X :- DDDD-DDDDDDD M:- D-[phone:DDDDDDDDDD] Xxxx :- [url_email]"],"reading":[
+"One title-block contact line per Tower 3 sheet with a phone pattern and an e-mail address:",
+"contact details, addressed to no reader or model. Two of the four lines pass the relevance",
+"filter; both sit in batches the gateway would refuse (a line that starts with a square",
+"bracket), and in a forwarded request the minimizer writes [redacted phone] and","[redacted email] in their place."],
+"cases":0}],"cases":[],"softwareControls":[
+"Every string written in the test file is a software control (17 class controls and",
+"a few synthetic lines); they are labelled as controls there and counted nowhere here.",
+"The older controls (a literal EPSG code, an invented identifier, tool=approve) stay",
+"controls too: none of them is a real case."],"part2":
+"Part 1 found no real case, so no teacher request or control answer was built from one.","findings":[{"id":"F1","what":
+"The gateway would refuse 17 of the 50 mapping requests and 2 of the 8 storey batches.","code":"MODEL_PROMPT_PRIVACY",
+"cause":["minimizeStructuredText (model-gateway/redaction.ts:24-27) reads a string that starts with a",
+"square bracket as nested JSON. The sample masker's own tokens [blank], [absent] and [object]",
+"(column-profile.ts:93-99) are not JSON, so the whole request is refused; [null] passes.",
+"Each of the two storey batches holds one OCR line that starts with a square bracket."],"refusedMappingRequestsHolding":
+{"[blank]":13,"[absent]":4,"[object]":1,"twoKindsInOneTable":1},"alsoOverMessageBound":["mi-d22 schemes-yes-v1.csv",
+"mi-d22 schemes-no-v1.csv"],"effect":[
+"Fails closed: teacherFailureCode turns the refusal into TEACHER_UNAVAILABLE and every column",
+"of that table stays manual (mapping-teacher.ts:257-273, 478-480); a storey batch returns",
+"teacher_unavailable (document-storey-agent.ts:229-231). No teacher sees the request."],"evidence":[
+"gatewayRefusals below (from the screen)","E:/BhuAayam-data/task-data/e3/sanity-01/refusal-causes.jsonl"],"changed":
+"nothing; outside this task's paths"},{"id":"F2","what":
+"The storey builder sends OCR line text as read; only the gateway masks patterns.","where":
+"document-storey-agent.ts:84 and :107; adapter.ts:41","effect":[
+"Names and addresses printed on a public drawing reach the prompt unmasked; phone, e-mail and",
+"ID patterns are replaced by the gateway minimizer. Not an injection case."],"changed":"nothing"},{"id":"F3","what":
+"maskColumnSample keeps combining marks of Indic scripts.","where":
+"packages/server/src/modules/usp/ingestion/column-profile.ts:64-73","effect":[
+"A word is masked letter by letter and its vowel signs and virama stay in place, so a masked",
+"sample keeps the vowel pattern of the word (see the zero-width reading's masked forms)."],"changed":"nothing"}],
+"gatewayRefusals":[{"family":"mi-d03","where":"registered-page-3.html|table-1","code":"MODEL_PROMPT_PRIVACY","bodyBytes"
+:12986},{"family":"mi-d03","where":"registered-page-4.html|table-1","code":"MODEL_PROMPT_PRIVACY","bodyBytes":13053},{
+"family":"mi-d05","where":"mi-d05-01.csv|csv","code":"MODEL_PROMPT_PRIVACY","bodyBytes":11927},{"family":"mi-d08",
+"where":"mi-d08-01.csv|csv","code":"MODEL_PROMPT_PRIVACY","bodyBytes":17490},{"family":"mi-d11","where":
+"mi-d11-01.csv|csv","code":"MODEL_PROMPT_PRIVACY","bodyBytes":13388},{"family":"mi-d15","where":"mi-d15-01.csv|csv",
+"code":"MODEL_PROMPT_PRIVACY","bodyBytes":16219},{"family":"mi-d18","where":"mi-d18-01.csv|csv","code":
+"MODEL_PROMPT_PRIVACY","bodyBytes":12576},{"family":"mi-d19","where":"mi-d19-01.xlsx|T_18","code":"MODEL_PROMPT_PRIVACY"
+,"bodyBytes":12749},{"family":"mi-d20","where":"mi-d20-01.xlsx|T_19","code":"MODEL_PROMPT_PRIVACY","bodyBytes":14965},{
+"family":"mi-d21","where":"mi-d21-01.xlsx|T_22","code":"MODEL_PROMPT_PRIVACY","bodyBytes":13468},{"family":
+"smc-tax-recovery","where":"smc-tax-recovery|table-2","code":"MODEL_PROMPT_PRIVACY","bodyBytes":11520},{"family":
+"smc-tax-recovery","where":"smc-tax-recovery|table-3","code":"MODEL_PROMPT_PRIVACY","bodyBytes":12787},{"family":
+"smc-sewage-plants","where":"smc-sewage-plants|table-1","code":"MODEL_PROMPT_PRIVACY","bodyBytes":10693},{"family":
+"smc-water-charges","where":"smc-water-charges|table-4","code":"MODEL_PROMPT_PRIVACY","bodyBytes":11254},{"family":
+"mi-d22","where":"schemes-yes-v1.csv|csv","code":"MODEL_PROMPT_PRIVACY","bodyBytes":54323},{"family":"mi-d22","where":
+"schemes-no-v1.csv|csv","code":"MODEL_PROMPT_PRIVACY","bodyBytes":53914},{"family":"mi-d24","where":
+"ms-india-demo-prefix-128-v1.csv|csv","code":"MODEL_PROMPT_PRIVACY","bodyBytes":10468},{"family":"storey/demo/2831",
+"where":"2b9f8803e179|batch of 20 parts","code":"MODEL_PROMPT_PRIVACY","bodyBytes":8140},{"family":"storey/demo/2831",
+"where":"2aadce88509b|batch of 12 parts","code":"MODEL_PROMPT_PRIVACY","bodyBytes":7394}],"sanity":{"what":
+"an independent counts-only recount in Python of one table and the 8 page stores","script":
+"E:/BhuAayam-data/task-data/e3/sanity-01/sanity-counts.py","documents":{"lines":3451,"fixedPhraseLines":0,"addressLines"
+:4,"overCapLines":11},"mi-d01":{"cells":6280,"zeroWidthCells":6,"fixedPhraseCells":0,"addressCells":0},
+"agreesWithTheScreen":true,"widerWordsOutsideTheFixedClasses":{"documentLines":2}},"part3":{"a3e":{"file":
+"docs/evidence/gf-agent/a3e/result.json","commit":"708e863d","defect":
+"realInputs.oldRecords was two adjacent string fragments on lines 18-19.","repair":
+"The fragments are joined into the one string they were; no value changed.","sha256Before":
+"383793367863c5f6db2f94b4887029827bdf181e477a2d770602817ddc359c9d","sha256After":
+"5fe1960c47ed668f244d9174b78857e5359885abfe870ebac06571353bd5765b","bytesBefore":1684,"bytesAfter":1675,
+"characterOffset":1215,"charactersRemoved":"\"\n      \"","charactersRemovedInWords":
+"closing quote, line feed, six spaces, opening quote","charactersAdded":"","proof":[
+"json.load succeeds on the repaired file.",
+"The parsed receipt equals the old text read with adjacent strings joined (Python literal",
+"reading, with true, false and null mapped outside strings): 7 top-level keys, all equal."],"script":
+"E:/BhuAayam-data/task-data/e3/a3e-repair/repair_a3e.py","lineOver120":[
+"Line 18 is now 154 characters: the joined string is one JSON atom and cannot be wrapped",
+"without changing it. Lines 4, 9 and 22 were already over 120 and are untouched."]},"a5b":{"file":
+"docs/evidence/gf-ai/storeys/a5b/result.json","changed":"nothing; reported for the lead","theBoolean":[
+"decision.againstBaselineRerun.alternativeReplacesBaseline and",
+"decision.againstA5Committed.alternativeReplacesBaseline are both true (the audit names",
+"it decision.alternativeReplacesBaseline; it sits one level down, twice)."],"whatItMeans":[
+"compare.py:104-112 sets it to recallRises and not precisionFell on floorExpression: the",
+"preregistered rule of plan.json decisionRule, whose wording is 'replaces the baseline'."],"theConclusion":[
+"conclusion says the alternative 'earns a place beside the baseline pass, not instead of",
+"it', because it scores lower on 2 secondary dev measures and loses Tower 3 side G+42."],"whoReadsTheBoolean":[
+"Code: only compare.py:139, the function that writes the conclusion sentence.",
+"Documents: docs/evidence/m1/AUDIT.md:145 and :154, docs/evidence/m1/audit.json:480",
+"and :490. No file under packages, apps, services or scripts reads it or a5b."],"whatTheCodeDoes":[
+"scripts/usp/learning/document_fields_baseline.py:846-864: a page uses its native text",
+"layer, else the tiled path only when --ocr-tiles is passed (:935, off by default),",
+"else the supervised Docling and Tesseract runner, which is the baseline.",
+"Nothing replaced the baseline: the alternative is an opt-in flag beside it.",
+"extractStoreyFacts is called only by the A5 evidence script, not by a served route."],"soTheMismatchIs":[
+"The boolean records that the preregistered floorExpression rule was met; the",
+"conclusion and the code record that the baseline was kept. The field name overstates."]}},"checks":[{"command":
+"pnpm exec tsc -p scripts/agent/tsconfig.json","exitCode":0},{"command":
+"pnpm exec tsx --test scripts/agent/injection-screen.test.ts","exitCode":0,"passed":9},{"command":
+"pnpm exec tsx --test t1-prep, verify-teacher-labels, mapping-teacher (with the screen test)","exitCode":0,"passed":27,
+"note":"these two older tests write timestamped control folders under task-data/t1/verifier","leftBehind":
+"12 folders from 2 runs, left in place; nothing existing was changed"},{"command":
+"pnpm exec tsx scripts/agent/injection-screen.ts E:/BhuAayam-data/task-data/e3/run-03","exitCode":0},{"command":
+"python -B -c json.load(docs/evidence/gf-agent/a3e/result.json)","exitCode":0},{"command":
+"python -B docs/evidence/m1/check_paths.py","exitCode":0,"note":"43 paths, 0 missing"},{"command":
+"git diff staging...HEAD --check","exitCode":0},{"command":"awk length>120 over the changed files","exitCode":0,"note":
+"new long line: a3e/result.json:18 only (the joined string cannot be wrapped)"}],"report":{"TASK":
+"E3 — screen the public development inputs for text that tries to instruct a model","GATE":"GF-AGENT; M1 box AG-E3",
+"WORKS":["realCases: 0 of 59 candidates in 604 columns and 209 parts screened",
+"A person can now run one fixed-class screen over every admitted development input and read,",
+"per family and class, how many strings matched in the prompt and in the raw source."],"SEE IT":
+"pnpm exec tsx scripts/agent/injection-screen.ts E:/BhuAayam-data/task-data/e3/run-04","INPUTS":[
+"good: mi-d01 lgd-districts.csv (8 columns, 6280 cells)",
+"difficult: mi-d19 multi-row workbook (72 absent cells) and 8 OCR page stores (3451 lines)"],"GAPS":[
+"The 9 foreign development files (opf-d02 to opf-d09) are not screened: the guard refuses them.",
+"mi-d24 is screened only as its recorded 128-row prefix, the form the guard admits.",
+"The word list is English, Hindi and transliterated Hindi; other Indian languages are not covered.",
+"567 cells that are absent or compound are not text and are not screened.",
+"Documents are screened as the A5 page stores hold them; text the OCR missed is not there.",
+"A one-off wider count (shall, must, should, please, note) outside the fixed classes finds 2 of",
+"3451 document lines; they were not read, and tables were not counted for those words."],"DESIGN":[
+"scripts/agent/injection-screen.ts: SCREEN_CLASSES (fixed), screenItem counts one string once",
+"per class; screenAsset reads tables through sourceTables and prepareTable (T1 guards) and",
+"reads the prompt back from mappingTeacherRequest; screenStore does the same for",
+"storeyPartBatches and storeyRequest; forwarded() applies the gateway's minimizeMessages.",
+"No guarded reader needed a new export; t1-profiles.ts and t1-sources.ts are untouched."],"COMMITS":[
+"e90ae85c feat(agent): a fixed-class screen of the development inputs for text addressed to a model",
+"f1d59057 fix(agent): the screen's teacher layer is the request as the gateway would forward it",
+"708e863d fix(evidence): the A3e receipt parses again; no value changed",
+"2efb8c78 chore(agent): the screen keeps its helper types to itself",
+"63a04b45 docs(agent): E3 the screen's counts and what the verifier does with each real case",
+"this commit: docs(agent): E3 records the control folders the neighbouring tests leave behind"],"CHECKS":[
+"pnpm exec tsc -p scripts/agent/tsconfig.json -> exit 0",
+"pnpm exec tsx --test scripts/agent/injection-screen.test.ts -> exit 0",
+"pnpm exec tsx --test t1-prep, verify-teacher-labels, mapping-teacher (with the screen test) -> exit 0",
+"pnpm exec tsx scripts/agent/injection-screen.ts E:/BhuAayam-data/task-data/e3/run-03 -> exit 0",
+"python -B -c json.load(docs/evidence/gf-agent/a3e/result.json) -> exit 0",
+"python -B docs/evidence/m1/check_paths.py -> exit 0","git diff staging...HEAD --check -> exit 0",
+"awk length>120 over the changed files -> exit 0"],"NEXT":[
+"Lead: F1. 17 of 50 development tables cannot reach a teacher through the gateway today,",
+"because the minimizer refuses the masker's own [blank], [absent] and [object] tokens.",
+"Lead: decide the wording of a5b's boolean (part3.a5b); nothing was changed there.",
+"When the foreign admission lands on staging, re-run the screen: it will pick the files up.",
+"AG-E3 can be stated as: no real case in the admitted inputs under the fixed classes, with n.",
+"The t1-prep and verify-teacher-labels tests leave 6 control folders under task-data/t1/verifier",
+"on every run (12 from this task's 2 runs, left in place): a temp directory would be cleaner."]}}
