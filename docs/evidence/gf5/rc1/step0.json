@@ -1,0 +1,397 @@
+{
+ "version": "rc1-step0/1",
+ "task": "RC1",
+ "gate": [
+  "GF5:B5",
+  "M2"
+ ],
+ "base": "e9dcebde",
+ "verdict": "stop",
+ "stopReason": "polygons_not_in_the_frame_the_scale_applies_to",
+ "summary": "A retained room candidate's polygons are already metres in the plan-local frame: the vector reader applied (pdf - originPdf) * metresPerPdfPoint with y flipped before retention. planFrame records how the metres were made; it is not a transform still to apply. The written rule (polygon area x scale squared) gives a 0.0076 m2 kitchen; the polygon's own area gives 6.55 m2 against the plan's stated 8' x 8'11\" (6.63 m2). Nothing was built.",
+ "builder": {
+  "function": "projectBuilding",
+  "file": "packages/server/src/modules/registry/canonical-building.ts",
+  "lines": "715-718",
+  "how": "Room candidates are not shaped at read time: projectBuilding copies record.body.canonicalCandidates verbatim into building.candidates, then finishBuilding hashes the projection (projectionDigest, line 163) and parses NormalizedBuildingSchema. The candidate itself is shaped by the caller of retain_rooms (docs/evidence/gf-backend/k2c/rooms-through-api.ts:37-51) and stored by commandTx.",
+  "revisionNote": "planEstimate added in projectBuilding enters projectionDigest, so Magnolia's canonical revisionId changes once at deploy; clients holding the old expectedCanonicalRevision get the existing 'Refresh the current canonical building' conflict."
+ },
+ "schemaReaders": [
+  {
+   "at": "packages/contracts/src/canonical/building.ts:316",
+   "use": "retain_rooms request extends the schema (strict); needs planEstimate: z.never().optional() so a caller cannot supply it"
+  },
+  {
+   "at": "packages/contracts/src/canonical/building.ts:376",
+   "use": "NormalizedBuildingSchema.candidates (the canonical read); optional field is additive"
+  },
+  {
+   "at": "packages/contracts/src/canonical/building.ts:437",
+   "use": "NormalizedAreaSchema.candidates (roofprints); never filled for roofprints"
+  },
+  {
+   "at": "packages/server/src/modules/usp/ingestion/source-building-candidates.ts:133",
+   "use": "parses stored canonicalCandidates; stored rows never carry planEstimate because it would be added only at read"
+  },
+  {
+   "at": "packages/server/src/modules/spatial/spatial-ml-canonical-candidates.ts:19",
+   "use": "reads only the review shape"
+  },
+  {
+   "at": "packages/server/src/modules/registry/canonical-level-schedule.ts:53",
+   "use": "reads candidateId/levelId only"
+  },
+  {
+   "at": "packages/server/src/modules/officer/level-schedules.ts:61",
+   "use": "reads levelId only"
+  }
+ ],
+ "units": {
+  "polygons": "metres, plan-local panel frame: x = page_right from planFrame.originPdf, y = page_up (PDF y flipped), unplaced",
+  "producer": "services/geo/geo/vector_plan.py:1248-1279 _metric_payload: affinity.translate(-origin) then scale(xfact=s, yfact=-s); polygonMetres is what the k2c caller retained as polygons",
+  "planFrameApplies": "planFrame.originPdf and metresPerPdfPoint map PDF points (the citation's region) into the polygon's frame; they do not apply to the polygon's coordinates, which are already the result.",
+  "proof": "For all 18 rooms the polygon's bbox equals the citation region (pt, top-left y-down) mapped through ((x - ox) * s, (oy - y) * s) to within 1e-6 m.",
+  "realData": "every room is one polygon with one ring; no holes or multipart rooms on Magnolia"
+ },
+ "demoRead": {
+  "url": "GET http://127.0.0.1:3194/api/v1/buildings/e8777ffc-9409-4129-bacf-f680160d8795/canonical",
+  "status": 200,
+  "revisionId": "489687094dc1233e360dc6bca586bc585cadd1f5b162faa706009ab4caf7fb85",
+  "rooms": 18,
+  "allWithPlanFrame": true,
+  "probe": "docs/evidence/gf5/rc1/probe-room-units.mjs"
+ },
+ "good": {
+  "label": "KITCHEN",
+  "level": "GROUND FLOOR PLAN",
+  "outputRef": "candidates.json#/pages/2/candidates/0",
+  "rings": [
+   1
+  ],
+  "polygonBbox": [
+   0.2649,
+   8.3083,
+   2.6852,
+   11.0179
+  ],
+  "citedRegionPt": {
+   "kind": "region",
+   "page": 2,
+   "x": 443.76,
+   "y": 1196.88,
+   "width": 71.28,
+   "height": 79.8,
+   "unit": "pt"
+  },
+  "bboxEqualsCitedRegionMappedThroughPlanFrame": true,
+  "metresPerPdfPoint": 0.033955696,
+  "asStored": {
+   "areaM2": 6.55,
+   "extentM": [
+    2.42,
+    2.71
+   ]
+  },
+  "byWrittenRule": {
+   "areaM2": 0.00755,
+   "extentM": [
+    0.0822,
+    0.092
+   ]
+  },
+  "statedOnPlan": {
+   "literal": "(8' X 8'11\")",
+   "productM2": 6.63
+  }
+ },
+ "difficult": [
+  {
+   "label": "MASTER BEDROOM",
+   "level": "FIRST FLOOR PLAN",
+   "outputRef": "candidates.json#/pages/2/candidates/10",
+   "rings": [
+    1
+   ],
+   "polygonBbox": [
+    2.9543,
+    0.872,
+    6.7521,
+    5.0773
+   ],
+   "citedRegionPt": {
+    "kind": "region",
+    "page": 2,
+    "x": 829.2,
+    "y": 1362.96,
+    "width": 111.84,
+    "height": 123.84,
+    "unit": "pt"
+   },
+   "bboxEqualsCitedRegionMappedThroughPlanFrame": true,
+   "metresPerPdfPoint": 0.033957627,
+   "asStored": {
+    "areaM2": 15.94,
+    "extentM": [
+     3.8,
+     4.21
+    ]
+   },
+   "byWrittenRule": {
+    "areaM2": 0.01838,
+    "extentM": [
+     0.129,
+     0.1428
+    ]
+   },
+   "statedOnPlan": {
+    "literal": "(12'6\" X 15'10\")",
+    "productM2": 18.39
+   }
+  },
+  {
+   "label": "unknown",
+   "level": "SECOND FLOOR PLAN",
+   "outputRef": "candidates.json#/pages/2/candidates/17",
+   "rings": [
+    1
+   ],
+   "polygonBbox": [
+    5.8044,
+    5.0463,
+    6.8846,
+    6.53
+   ],
+   "citedRegionPt": {
+    "kind": "region",
+    "page": 2,
+    "x": 1202.52,
+    "y": 1315.2,
+    "width": 31.8,
+    "height": 43.68,
+    "unit": "pt"
+   },
+   "bboxEqualsCitedRegionMappedThroughPlanFrame": true,
+   "metresPerPdfPoint": 0.033967904,
+   "asStored": {
+    "areaM2": 1.6,
+    "extentM": [
+     1.08,
+     1.48
+    ]
+   },
+   "byWrittenRule": {
+    "areaM2": 0.00185,
+    "extentM": [
+     0.0367,
+     0.0504
+    ]
+   },
+   "statedOnPlan": null
+  }
+ ],
+ "plausibility": {
+  "byWrittenRule": "implausible: areas 0.002-0.027 m2, extents 0.04-0.22 m for kitchens, bedrooms and a terrace",
+  "asStored": "plausible: of 10 rooms with a parsed stated product, 9 are within 0.13 m2 (1.1%) of it (room inside walls vs drawn face); MASTER BEDROOM (first floor) is 15.94 m2 against a stated 12'6\" x 15'10\" = 18.39 m2, the same literal as the ground floor's DINING AND LIVING, so the label pairing or the drawing differs and stays a finding, not a correction",
+  "allRooms": [
+   {
+    "label": "KITCHEN",
+    "level": "GROUND",
+    "asStoredM2": 6.55,
+    "extentM": [
+     2.42,
+     2.71
+    ],
+    "writtenRuleM2": 0.00755,
+    "statedM2": 6.63
+   },
+   {
+    "label": "BEDROOM",
+    "level": "GROUND",
+    "asStoredM2": 11.7,
+    "extentM": [
+     3.8,
+     3.08
+    ],
+    "writtenRuleM2": 0.01349,
+    "statedM2": 11.81
+   },
+   {
+    "label": "STAIRCASE",
+    "level": "GROUND",
+    "asStoredM2": 9.05,
+    "extentM": [
+     2.42,
+     3.77
+    ],
+    "writtenRuleM2": 0.01044,
+    "statedM2": null
+   },
+   {
+    "label": "TOILET",
+    "level": "GROUND",
+    "asStoredM2": 3.82,
+    "extentM": [
+     2.58,
+     1.48
+    ],
+    "writtenRuleM2": 0.00441,
+    "statedM2": 3.88
+   },
+   {
+    "label": "DINING AND LIVING",
+    "level": "GROUND",
+    "asStoredM2": 18.48,
+    "extentM": [
+     3.8,
+     5.06
+    ],
+    "writtenRuleM2": 0.02131,
+    "statedM2": 18.39
+   },
+   {
+    "label": "TOILET",
+    "level": "FIRST",
+    "asStoredM2": 4.59,
+    "extentM": [
+     2.43,
+     1.89
+    ],
+    "writtenRuleM2": 0.00529,
+    "statedM2": 4.65
+   },
+   {
+    "label": "BEDROOM",
+    "level": "FIRST",
+    "asStoredM2": 12.08,
+    "extentM": [
+     3.92,
+     3.08
+    ],
+    "writtenRuleM2": 0.01393,
+    "statedM2": 12.2
+   },
+   {
+    "label": "DRESSER",
+    "level": "FIRST",
+    "asStoredM2": 2.92,
+    "extentM": [
+     2.43,
+     1.41
+    ],
+    "writtenRuleM2": 0.00337,
+    "statedM2": null
+   },
+   {
+    "label": "STAIRCASE",
+    "level": "FIRST",
+    "asStoredM2": 11.86,
+    "extentM": [
+     2.43,
+     5.09
+    ],
+    "writtenRuleM2": 0.01368,
+    "statedM2": null
+   },
+   {
+    "label": "TOILET",
+    "level": "FIRST",
+    "asStoredM2": 3.85,
+    "extentM": [
+     2.83,
+     1.49
+    ],
+    "writtenRuleM2": 0.00444,
+    "statedM2": 3.88
+   },
+   {
+    "label": "MASTER BEDROOM",
+    "level": "FIRST",
+    "asStoredM2": 15.94,
+    "extentM": [
+     3.8,
+     4.21
+    ],
+    "writtenRuleM2": 0.01838,
+    "statedM2": 18.39
+   },
+   {
+    "label": "BALCONY",
+    "level": "FIRST",
+    "asStoredM2": 4.34,
+    "extentM": [
+     2.55,
+     1.71
+    ],
+    "writtenRuleM2": 0.005,
+    "statedM2": null
+   },
+   {
+    "label": "TOILET",
+    "level": "SECOND",
+    "asStoredM2": 4.58,
+    "extentM": [
+     2.42,
+     1.89
+    ],
+    "writtenRuleM2": 0.00528,
+    "statedM2": 4.65
+   },
+   {
+    "label": "BEDROOM",
+    "level": "SECOND",
+    "asStoredM2": 12.07,
+    "extentM": [
+     3.92,
+     3.08
+    ],
+    "writtenRuleM2": 0.01393,
+    "statedM2": 12.2
+   },
+   {
+    "label": "DRESSER",
+    "level": "SECOND",
+    "asStoredM2": 3.34,
+    "extentM": [
+     2.43,
+     1.41
+    ],
+    "writtenRuleM2": 0.00385,
+    "statedM2": null
+   },
+   {
+    "label": "STAIRCASE",
+    "level": "SECOND",
+    "asStoredM2": 11.22,
+    "extentM": [
+     2.43,
+     4.63
+    ],
+    "writtenRuleM2": 0.01294,
+    "statedM2": null
+   },
+   {
+    "label": "TERRACE",
+    "level": "SECOND",
+    "asStoredM2": 23.78,
+    "extentM": [
+     3.93,
+     6.53
+    ],
+    "writtenRuleM2": 0.02743,
+    "statedM2": null
+   },
+   {
+    "label": "unknown",
+    "level": "SECOND",
+    "asStoredM2": 1.6,
+    "extentM": [
+     1.08,
+     1.48
+    ],
+    "writtenRuleM2": 0.00185,
+    "statedM2": null
+   }
+  ]
+ },
+ "missing": "A lead decision on the rule. Proposed: areaM2 = the polygon's own area (outer rings minus holes, summed), extentM = its bbox width and height, both already metres; basis keeps method, scaleState and metresPerPdfPoint as the provenance of how the drawing was scaled, with the method renamed (for example 'polygon_area_in_plan_metres@1') because nothing is multiplied by the scale at read time. The estimate stays 'unknown' when planFrame is absent, since then the polygon's unit is not established."
+}

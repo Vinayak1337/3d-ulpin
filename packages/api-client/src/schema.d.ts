@@ -9244,6 +9244,20 @@ export interface components {
                     /** @enum {string} */
                     scaleState: "candidate";
                 };
+                planEstimate?: {
+                    /** @enum {string} */
+                    state: "estimated" | "unknown";
+                    areaM2: number | null;
+                    extentM: (number)[] | null;
+                    basis: {
+                        /** @enum {string} */
+                        method: "polygon_area_in_plan_metres@1";
+                        /** @enum {string} */
+                        scaleState: "candidate";
+                        metresPerPdfPoint: number;
+                    } | null;
+                    limitations: string[];
+                };
                 review?: {
                     /** @enum {string} */
                     outcome: "accepted" | "rejected";
@@ -12040,6 +12054,20 @@ export interface components {
                     placement: "unknown";
                     /** @enum {string} */
                     scaleState: "candidate";
+                };
+                planEstimate?: {
+                    /** @enum {string} */
+                    state: "estimated" | "unknown";
+                    areaM2: number | null;
+                    extentM: (number)[] | null;
+                    basis: {
+                        /** @enum {string} */
+                        method: "polygon_area_in_plan_metres@1";
+                        /** @enum {string} */
+                        scaleState: "candidate";
+                        metresPerPdfPoint: number;
+                    } | null;
+                    limitations: string[];
                 };
                 review?: {
                     /** @enum {string} */
@@ -21989,6 +22017,7 @@ export interface components {
                     /** @enum {string} */
                     scaleState: "candidate";
                 };
+                planEstimate?: unknown;
                 review?: unknown;
             }[];
         } | {

@@ -82557,6 +82557,85 @@
                   ],
                   "additionalProperties": false
                 },
+                "planEstimate": {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "estimated",
+                        "unknown"
+                      ]
+                    },
+                    "areaM2": {
+                      "nullable": true,
+                      "type": "number",
+                      "minimum": 0,
+                      "exclusiveMinimum": true
+                    },
+                    "extentM": {
+                      "nullable": true,
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          {
+                            "type": "number",
+                            "minimum": 0
+                          }
+                        ]
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    "basis": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "method": {
+                          "type": "string",
+                          "enum": [
+                            "polygon_area_in_plan_metres@1"
+                          ]
+                        },
+                        "scaleState": {
+                          "type": "string",
+                          "enum": [
+                            "candidate"
+                          ]
+                        },
+                        "metresPerPdfPoint": {
+                          "type": "number",
+                          "minimum": 0,
+                          "exclusiveMinimum": true
+                        }
+                      },
+                      "required": [
+                        "method",
+                        "scaleState",
+                        "metresPerPdfPoint"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "limitations": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "areaM2",
+                    "extentM",
+                    "basis",
+                    "limitations"
+                  ],
+                  "additionalProperties": false
+                },
                 "review": {
                   "type": "object",
                   "properties": {
@@ -97241,6 +97320,85 @@
                     "axes",
                     "placement",
                     "scaleState"
+                  ],
+                  "additionalProperties": false
+                },
+                "planEstimate": {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "estimated",
+                        "unknown"
+                      ]
+                    },
+                    "areaM2": {
+                      "nullable": true,
+                      "type": "number",
+                      "minimum": 0,
+                      "exclusiveMinimum": true
+                    },
+                    "extentM": {
+                      "nullable": true,
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          {
+                            "type": "number",
+                            "minimum": 0
+                          }
+                        ]
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    "basis": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "method": {
+                          "type": "string",
+                          "enum": [
+                            "polygon_area_in_plan_metres@1"
+                          ]
+                        },
+                        "scaleState": {
+                          "type": "string",
+                          "enum": [
+                            "candidate"
+                          ]
+                        },
+                        "metresPerPdfPoint": {
+                          "type": "number",
+                          "minimum": 0,
+                          "exclusiveMinimum": true
+                        }
+                      },
+                      "required": [
+                        "method",
+                        "scaleState",
+                        "metresPerPdfPoint"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "limitations": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "areaM2",
+                    "extentM",
+                    "basis",
+                    "limitations"
                   ],
                   "additionalProperties": false
                 },
@@ -146086,6 +146244,9 @@
                         "scaleState"
                       ],
                       "additionalProperties": false
+                    },
+                    "planEstimate": {
+                      "not": {}
                     },
                     "review": {
                       "not": {}

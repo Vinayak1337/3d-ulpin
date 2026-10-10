@@ -30,6 +30,7 @@ import { rasterSourceTx } from '../usp/ingestion/raster-window';
 import { AppError, notFound } from '../../infrastructure/errors';
 import { localOperatorSubject } from '../usp/principal';
 import { applyLevelSchedules, UNREVIEWED_LEVEL_SCHEDULE_GAP } from './canonical-level-schedule';
+import { addRoomPlanEstimates } from './canonical-room-estimate';
 import { assertSourceChildRevisions, readSourceProjectCodes,
   type SourceProjectCode } from './canonical-source-identity';
 
@@ -716,6 +717,7 @@ export async function projectBuilding(
     const body = record as typeof record & { canonicalCandidates?: NormalizedBuilding['candidates'] };
     return body.canonicalCandidates ?? [];
   });
+  addRoomPlanEstimates(building);
   await applyRetainedClaims(building, dossier);
   applyConflictDecisions(building, retainedConflictDecisions(dossier));
   const storeys = await projectLevels(building, dossier, frame);
