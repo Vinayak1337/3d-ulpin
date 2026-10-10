@@ -268,27 +268,68 @@ test('file-only image runtime resolution checks the base-first actual binary and
   }finally{assert(root.startsWith(join(tmpdir(),'ulpin-image-pins-')));rmSync(root,{recursive:true,force:true});}
 });
 
-test('retained current image runtime files match the accepted launcher/base/Pillow/native pins without execution',async()=>{
-  const configured='E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/venv/Scripts/python.exe';
-  const provenance=PacketImageRegionProvenanceSchema.parse(JSON.parse(readFileSync(crops+'/png-provenance.json','utf8')));
-  const pins=await inspectImageCheckpointRuntime(configured,Date.now()+10_000),expected=provenance.runtime;
-  assert.deepEqual(pins,{pythonSha256:expected.pythonSha256,launcherSha256:expected.launcherSha256,
-    pillowImageSha256:expected.pillowImageSha256,imagingSha256:expected.imagingSha256});
-  // Runtime binaries are retained; code hashes must describe this checkout's
-  // actual bytes. Git line-ending conversion can differ from the old recipe,
-  // which correctly makes that old binding ineligible for production reuse.
-  const previous=process.env.ULPIN_DOCUMENT_IMAGES_PYTHON;
-  process.env.ULPIN_DOCUMENT_IMAGES_PYTHON=configured;
-  let current;
-  try{current=await packetImageCheckpointRuntime(Date.now()+10_000);}
-  finally{if(previous===undefined)delete process.env.ULPIN_DOCUMENT_IMAGES_PYTHON;else process.env.ULPIN_DOCUMENT_IMAGES_PYTHON=previous;}
-  assert.deepEqual(current.runtime,pins);
-  const script='scripts/usp/document-models/';
-  assert.equal(current.recipe.workerSha256,sha256(readFileSync(script+'run_image_region.py')));
-  assert.equal(current.recipe.decoderSha256,sha256(readFileSync(script+'run_image_inspection.py')));
-  assert.equal(current.recipe.supervisorSha256,sha256(readFileSync(script+'run_trial.py')));
-  save('retained-runtime-files.json',{classification:'read-only current file hashes; no interpreter/import/decoder invocation or runtime readiness claim',
-    configured,actualBase:'C:/Users/kvina/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe',
-    actualImaging:'C:/Users/kvina/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/Lib/site-packages/PIL/_imaging.cp312-win_amd64.pyd',
-    pins,recipe:current.recipe,historicalRecipeMatches:canonical(current.recipe)===canonical(provenance.recipe),knownStartupHooksVerified:true});
-});
+const configuredImagePython = process.env.ULPIN_DOCUMENT_IMAGES_PYTHON;
+const imageInterpreterMissing = configuredImagePython ? '' : ' — no image interpreter configured';
+const imageRuntimeTestOptions = { skip: configuredImagePython ? false : 'no image interpreter configured' };
+
+test('configured image interpreter resolves accepted stable pins without execution' + imageInterpreterMissing,
+  imageRuntimeTestOptions, async () => {
+    const pins = await inspectImageCheckpointRuntime(configuredImagePython!, Date.now() + 10_000);
+    const second = await inspectImageCheckpointRuntime(configuredImagePython!, Date.now() + 10_000);
+    assert.deepEqual(second, pins);
+    const current = await packetImageCheckpointRuntime(Date.now() + 10_000);
+    assert.deepEqual(current.runtime, pins);
+    // Recipe pins still describe this checkout's physical bytes, never historical normalized hashes.
+    const script = 'scripts/usp/document-models/';
+    assert.equal(current.recipe.workerSha256, sha256(readFileSync(script + 'run_image_region.py')));
+    assert.equal(current.recipe.decoderSha256, sha256(readFileSync(script + 'run_image_inspection.py')));
+    assert.equal(current.recipe.supervisorSha256, sha256(readFileSync(script + 'run_trial.py')));
+    save('configured-runtime-files.json', {
+      classification: 'file-only resolution; no interpreter/import/decoder execution or runtime readiness claim',
+      configured: configuredImagePython, pins, recipe: current.recipe, stableAcrossTwoInspections: true,
+    });
+  });
+
+async function assertHistoricalBindingRefused(current: Awaited<ReturnType<typeof packetImageCheckpointRuntime>>) {
+  await control(async db => {
+    const { queued: job } = await queued(db);
+    db.failPdfPut = true;
+    await runPacketPdfJob(job.jobId, db.pdf);
+    assert.equal((await status(db, job.jobId)).status, 'failed');
+    assert.equal(db.state.checkpoints.length, 1);
+    const checkpoint = structuredClone(db.state.checkpoints[0]);
+    const before = [db.reads, db.extracts, db.cropPuts];
+    await retry(db, job.jobId);
+    db.failPdfPut = false;
+    // Hold the controlled recipe constant: real current runtime pins alone must deny the old crop.
+    db.pdf.imageRuntime = async () => ({ recipe: db.citation.validation.recipe, runtime: current.runtime });
+    await runPacketPdfJob(job.jobId, db.pdf);
+    const refused = await status(db, job.jobId);
+    assert.equal(refused.status, 'failed');
+    assert.equal(refused.errorCode, 'PACKET_PDF_INPUT_STALE');
+    assert.deepEqual([db.reads, db.extracts, db.cropPuts], before);
+    assert.deepEqual(db.state.checkpoints[0], checkpoint);
+    assert.equal(db.state.packets.length, 0);
+    save('historical-runtime-refusal.json', {
+      scope: 'existing checkpoint guard; historical recipe held constant to isolate actual runtime-pin drift',
+      historicalRuntime: db.citation.validation.runtime, currentPins: current.runtime,
+      historicalRecipeMatches: canonical(current.recipe) === canonical(db.citation.validation.recipe),
+      status: refused.status, errorCode: refused.errorCode, cropReadsAfterRefusal: 0,
+      retainedCheckpointUnchanged: true,
+    });
+  });
+}
+
+test('historical image binding with different current pins is refused before accepted crop reuse'
+  + imageInterpreterMissing, imageRuntimeTestOptions, async () => {
+    const current = await packetImageCheckpointRuntime(Date.now() + 10_000);
+    const provenance = PacketImageRegionProvenanceSchema.parse(
+      JSON.parse(readFileSync(crops + '/png-provenance.json', 'utf8')));
+    const expected = provenance.runtime;
+    const historicalPins = {
+      pythonSha256: expected.pythonSha256, launcherSha256: expected.launcherSha256,
+      pillowImageSha256: expected.pillowImageSha256, imagingSha256: expected.imagingSha256,
+    };
+    assert.notDeepEqual(current.runtime, historicalPins, 'this historical binding needs a newly reviewed runtime');
+    await assertHistoricalBindingRefused(current);
+  });
