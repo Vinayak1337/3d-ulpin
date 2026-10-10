@@ -1,0 +1,1063 @@
+{
+ "schemaVersion": "storey-count-candidate/1",
+ "kind": "storey_count",
+ "state": "candidate",
+ "method": "deterministic:storey-rules@1",
+ "route": "baseline",
+ "building": {
+  "label": "TOWER 3",
+  "projectSourceId": "2831",
+  "canonicalBuildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+  "write": "none; reference for the reviewer only"
+ },
+ "candidates": [
+  {
+   "candidateId": "a5:storey-rules@1:26c2d3101bfe:G+42",
+   "task": "storey_count",
+   "taskVersion": "storey-rules@1",
+   "inputManifest": "sha256:26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+   "outputRef": null,
+   "state": "candidate"
+  }
+ ],
+ "storeyCount": {
+  "value": "G+42",
+  "state": "candidate",
+  "alternatives": [
+   {
+    "value": "G+42",
+    "field": "floorExpression",
+    "citations": [
+     {
+      "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+      "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+      "locator": {
+       "kind": "region",
+       "page": 1,
+       "x": 360.59,
+       "y": 1129.56,
+       "width": 160.96999999999997,
+       "height": 39.070000000000164,
+       "unit": "pt"
+      }
+     }
+    ],
+    "method": "deterministic:storey-rules@1",
+    "quotes": [
+     "G+42"
+    ],
+    "verifier": {
+     "status": "quote_at_locator"
+    }
+   }
+  ]
+ },
+ "unitCounts": [],
+ "labels": [
+  {
+   "value": "BASEMENT",
+   "field": "floorLabel",
+   "citations": [
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 90.81,
+      "y": 824.07,
+      "width": 129.34,
+      "height": 78.13999999999999,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 431.33,
+      "y": 1011.3,
+      "width": 234.34999999999997,
+      "height": 75.5,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 618.17,
+      "y": 1103.16,
+      "width": 120.37,
+      "height": 62.82999999999993,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 177.92,
+      "y": 1389.26,
+      "width": 645.62,
+      "height": 346.8599999999999,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 388.57,
+      "y": 1863.69,
+      "width": 25.870000000000005,
+      "height": 57.549999999999955,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 110.87,
+      "y": 1949.22,
+      "width": 322.57,
+      "height": 88.17000000000007,
+      "unit": "pt"
+     }
+    }
+   ],
+   "method": "deterministic:storey-rules@1",
+   "quotes": [
+    "BASEMENT"
+   ],
+   "verifier": {
+    "status": "quote_at_locator"
+   }
+  },
+  {
+   "value": "GROUND",
+   "field": "floorLabel",
+   "citations": [
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 246.55,
+      "y": 983.85,
+      "width": 25.870000000000005,
+      "height": 56.489999999999895,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 246.55,
+      "y": 1059.34,
+      "width": 25.870000000000005,
+      "height": 55.440000000000055,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 370.09,
+      "y": 1791.55,
+      "width": 469.29,
+      "height": 67.3900000000001,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 616.59,
+      "y": 1885.87,
+      "width": 222.78999999999996,
+      "height": 89.75,
+      "unit": "pt"
+     }
+    }
+   ],
+   "method": "deterministic:storey-rules@1",
+   "quotes": [
+    "GROUND"
+   ],
+   "verifier": {
+    "status": "quote_at_locator"
+   }
+  },
+  {
+   "value": "TYPICAL",
+   "field": "floorLabel",
+   "citations": [
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 236.52,
+      "y": 1304.84,
+      "width": 44.87999999999997,
+      "height": 41.710000000000036,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 178.45,
+      "y": 1444.69,
+      "width": 86.05000000000001,
+      "height": 41.710000000000036,
+      "unit": "pt"
+     }
+    }
+   ],
+   "method": "deterministic:storey-rules@1",
+   "quotes": [
+    "TYPICAL"
+   ],
+   "verifier": {
+    "status": "quote_at_locator"
+   }
+  },
+  {
+   "value": "STILT",
+   "field": "floorLabel",
+   "citations": [
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 177.92,
+      "y": 1389.26,
+      "width": 645.62,
+      "height": 346.8599999999999,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 595.47,
+      "y": 1480.59,
+      "width": 278.23,
+      "height": 87.6400000000001,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 388.57,
+      "y": 1863.69,
+      "width": 25.870000000000005,
+      "height": 57.549999999999955,
+      "unit": "pt"
+     }
+    }
+   ],
+   "method": "deterministic:storey-rules@1",
+   "quotes": [
+    "STILT"
+   ],
+   "verifier": {
+    "status": "quote_at_locator"
+   }
+  },
+  {
+   "value": "REFUGE",
+   "field": "floorLabel",
+   "citations": [
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 178.45,
+      "y": 1520.71,
+      "width": 104.0,
+      "height": 46.460000000000036,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 178.45,
+      "y": 1594.63,
+      "width": 103.47000000000003,
+      "height": 46.45999999999981,
+      "unit": "pt"
+     }
+    },
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 179.5,
+      "y": 2042.14,
+      "width": 103.48000000000002,
+      "height": 54.37999999999988,
+      "unit": "pt"
+     }
+    }
+   ],
+   "method": "deterministic:storey-rules@1",
+   "quotes": [
+    "REFUGE"
+   ],
+   "verifier": {
+    "status": "quote_at_locator"
+   }
+  },
+  {
+   "value": "TERRACE",
+   "field": "floorLabel",
+   "citations": [
+    {
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+     "locator": {
+      "kind": "region",
+      "page": 1,
+      "x": 179.5,
+      "y": 2042.14,
+      "width": 103.48000000000002,
+      "height": 54.37999999999988,
+      "unit": "pt"
+     }
+    }
+   ],
+   "method": "deterministic:storey-rules@1",
+   "quotes": [
+    "TERRACE"
+   ],
+   "verifier": {
+    "status": "quote_at_locator"
+   }
+  }
+ ],
+ "otherStatements": [],
+ "outsideCanonicalSources": [
+  "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+  "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+  "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b"
+ ],
+ "packet": {
+  "declaredOrigin": {
+   "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+   "bytes": 3782332
+  },
+  "proposals": [
+   {
+    "proposalId": "p1",
+    "fieldRole": "floorLabel",
+    "quote": "BASEMENT",
+    "lineQuote": "TOTAL BASEMENT BASEMENT BASEMENT COMMUNITY TOWER TOWER TOWER",
+    "quoteCharacterSpan": [
+     6,
+     14
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel BASEMENT; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      90.81,
+      824.07,
+      220.15,
+      902.21
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p2",
+    "fieldRole": "floorLabel",
+    "quote": "GROUND",
+    "lineQuote": "COVERAGE GROUND",
+    "quoteCharacterSpan": [
+     9,
+     15
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel GROUND; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      246.55,
+      983.85,
+      272.42,
+      1040.34
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p3",
+    "fieldRole": "floorLabel",
+    "quote": "BASEMENT",
+    "lineQuote": "TOWER TOWER TOWER BASEMENT BASEMENT BASEMENT",
+    "quoteCharacterSpan": [
+     18,
+     26
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel BASEMENT; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      431.33,
+      1011.3,
+      665.68,
+      1086.8
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p4",
+    "fieldRole": "floorLabel",
+    "quote": "GROUND",
+    "lineQuote": "F.A.R. GROUND",
+    "quoteCharacterSpan": [
+     7,
+     13
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel GROUND; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      246.55,
+      1059.34,
+      272.42,
+      1114.78
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p5",
+    "fieldRole": "floorLabel",
+    "quote": "BASEMENT",
+    "lineQuote": "6320.237| \u2014_5689.540| BASEMENT",
+    "quoteCharacterSpan": [
+     22,
+     30
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel BASEMENT; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      618.17,
+      1103.16,
+      738.54,
+      1165.99
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p6",
+    "fieldRole": "floorExpression",
+    "quote": "G+42",
+    "lineQuote": "TOTAL NO. G+42 G+42 G+42 FLYER ELOOR sok",
+    "quoteCharacterSpan": [
+     10,
+     14
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorExpression G+42; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      360.59,
+      1129.56,
+      521.56,
+      1168.63
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p7",
+    "fieldRole": "floorLabel",
+    "quote": "TYPICAL",
+    "lineQuote": "(1) TYPICAL NO.",
+    "quoteCharacterSpan": [
+     4,
+     11
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel TYPICAL; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      236.52,
+      1304.84,
+      281.4,
+      1346.55
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p8",
+    "fieldRole": "floorLabel",
+    "quote": "STILT",
+    "lineQuote": "431.895 348.382 337.136) F.A.R. (2) frorat__\u2014|_ Istit ToTaL___| STILT BASEMENT",
+    "quoteCharacterSpan": [
+     64,
+     69
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel STILT; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      177.92,
+      1389.26,
+      823.54,
+      1736.12
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p9",
+    "fieldRole": "floorLabel",
+    "quote": "BASEMENT",
+    "lineQuote": "431.895 348.382 337.136) F.A.R. (2) frorat__\u2014|_ Istit ToTaL___| STILT BASEMENT",
+    "quoteCharacterSpan": [
+     70,
+     78
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel BASEMENT; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      177.92,
+      1389.26,
+      823.54,
+      1736.12
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p10",
+    "fieldRole": "floorLabel",
+    "quote": "TYPICAL",
+    "lineQuote": "4 4 4 (2) TYPICAL",
+    "quoteCharacterSpan": [
+     10,
+     17
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel TYPICAL; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      178.45,
+      1444.69,
+      264.5,
+      1486.4
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p11",
+    "fieldRole": "floorLabel",
+    "quote": "STILT",
+    "lineQuote": "ao7.ge9 _-407.969 AREA STILT 18610.444] 407.969] 18202.475| AREA",
+    "quoteCharacterSpan": [
+     23,
+     28
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel STILT; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      595.47,
+      1480.59,
+      873.7,
+      1568.23
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p12",
+    "fieldRole": "floorLabel",
+    "quote": "REFUGE",
+    "lineQuote": "431.895 348.382 337.136 {REFUGE) F.A.R. (3)",
+    "quoteCharacterSpan": [
+     25,
+     31
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel REFUGE; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      178.45,
+      1520.71,
+      282.45,
+      1567.17
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p13",
+    "fieldRole": "floorLabel",
+    "quote": "REFUGE",
+    "lineQuote": "3 3 3 (REFUGE) OF",
+    "quoteCharacterSpan": [
+     7,
+     13
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel REFUGE; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      178.45,
+      1594.63,
+      281.92,
+      1641.09
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p14",
+    "fieldRole": "floorLabel",
+    "quote": "GROUND",
+    "lineQuote": "OTAL AREA AREA PROPOSED REAL DENSITY TOTAL EQUIRED GROUND ET TE a TOTAL ITAL NET A.R. ESIDENTIAL TOTAL",
+    "quoteCharacterSpan": [
+     51,
+     57
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel GROUND; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      370.09,
+      1791.55,
+      839.38,
+      1858.94
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p15",
+    "fieldRole": "floorLabel",
+    "quote": "STILT",
+    "lineQuote": "STILT BASEMENT",
+    "quoteCharacterSpan": [
+     0,
+     5
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel STILT; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      388.57,
+      1863.69,
+      414.44,
+      1921.24
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p16",
+    "fieldRole": "floorLabel",
+    "quote": "BASEMENT",
+    "lineQuote": "STILT BASEMENT",
+    "quoteCharacterSpan": [
+     6,
+     14
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel BASEMENT; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      388.57,
+      1863.69,
+      414.44,
+      1921.24
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p17",
+    "fieldRole": "floorLabel",
+    "quote": "GROUND",
+    "lineQuote": "AREA COMMERCIAL COMMERCIAL COMPONENT GROUND (9.553416 10.071875",
+    "quoteCharacterSpan": [
+     37,
+     43
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel GROUND; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      616.59,
+      1885.87,
+      839.38,
+      1975.62
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p18",
+    "fieldRole": "floorLabel",
+    "quote": "BASEMENT",
+    "lineQuote": "7547.479 7992.328 8194.192 BASEMENT SQ.MTS.) PARKING(/32 243X1.5=",
+    "quoteCharacterSpan": [
+     27,
+     35
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel BASEMENT; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      110.87,
+      1949.22,
+      433.44,
+      2037.39
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p19",
+    "fieldRole": "floorLabel",
+    "quote": "TERRACE",
+    "lineQuote": "68.370) 68.370) 68.370 AREA TERRACE REFUGE",
+    "quoteCharacterSpan": [
+     28,
+     35
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel TERRACE; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      179.5,
+      2042.14,
+      282.98,
+      2096.52
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   },
+   {
+    "proposalId": "p20",
+    "fieldRole": "floorLabel",
+    "quote": "REFUGE",
+    "lineQuote": "68.370) 68.370) 68.370 AREA TERRACE REFUGE",
+    "quoteCharacterSpan": [
+     36,
+     42
+    ],
+    "status": "needs_review",
+    "reasons": [
+     "deterministic:storey-rules@1 matched floorLabel REFUGE; quote verified at the locator"
+    ],
+    "locator": {
+     "page": 1,
+     "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2585.0,
+      "height": 3390.0
+     },
+     "box": [
+      179.5,
+      2042.14,
+      282.98,
+      2096.52
+     ],
+     "selectedRegion": null,
+     "declaredPrecision": "retained text line box"
+    },
+    "declaredMethod": "deterministic:storey-rules@1",
+    "declaredObservation": null
+   }
+  ],
+  "rejected": [],
+  "conflicts": [],
+  "unknowns": [
+   "floor count meaning (G+N versus N floors) is not expanded",
+   "building association inside a multi-tower sheet is not verified"
+  ]
+ }
+}
