@@ -31,8 +31,9 @@ Retained plain native downloads (UTC; issuer, literal licence and dictionary pin
   https://data.edmonton.ca/api/views/6n9r-ddf8/rows.csv?accessType=DOWNLOAD
 
 [Measured per-family report](../evidence/gf-agent/d1f/families.json): nine originals/eight families, 219 native columns,
-203 column definitions and two separate dataset-scope geometry descriptions. Six tables yield 198 profiles and
-193 verbatim dictionary rows; all three WKT tables remain unprofiled. No profile-ready columns are claimed as labels.
+203 column definitions and two separate dataset-scope geometry descriptions. Only six retained families have column
+definitions. Six tables/five families yield 198 profiles and 193 verbatim dictionary rows; all three WKT tables remain
+unprofiled. No profile-ready columns are claimed as labels.
 
 Acquisition batches are additive. Final counts, closed-route decisions and the resumable checkpoint are in
 [the D1f receipt](../evidence/gf-agent/d1f/result.json). The task makes no labels, model/provider calls or runtime imports.
