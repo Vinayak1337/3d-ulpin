@@ -97,7 +97,8 @@ async function verifiedBatch(
 }
 
 function updateStudent(examples: string, out: string, previous?: string) {
-  const args = ['-m', 'geo.usp_learning.stage_a', 'train', '--examples', examples, '--out', out];
+  const args = ['-m', 'geo.usp_learning.stage_a', 'train', '--examples', examples, '--out', out,
+    '--calibration-mode', 'single_family'];
   if (previous) args.push('--resume', previous);
   const run = spawnSync(process.env.ULPIN_PROFILE_PYTHON ?? 'python', args, { encoding: 'utf8', timeout: 60000,
     env: { ...process.env, PYTHONPATH: resolve('services/geo'), PYTHONDONTWRITEBYTECODE: '1' } });
