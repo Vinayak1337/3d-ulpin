@@ -13,7 +13,7 @@ import {GltfInputSchema} from '../../../../contracts/src/usp/gltf-ingestion';
 import {KMLInputSchema} from '../../../../contracts/src/usp/kml-ingestion';
 import { AppError, conflict, notFound } from '../../infrastructure/errors';
 import { appendUspOutboxTx } from './commands';
-import { ProjectedVectorInputSchema, PrivateMvtInputSchema, DocumentInputSchema, StreamingVectorInputSchema,
+import { ProjectedVectorInputSchema, PrivateMvtInputSchema, DocumentInputSchema, AnyStreamingInputSchema,
   StreamedProfileInputSchema, ChunkMappingInputSchema, RasterWindowInputSchema, PointBatchInputSchema, CityJSONInputSchema, IFCInputSchema, DXFInputSchema } from '@ulpin/contracts/usp';
 
 const LEASE_SECONDS = 180;
@@ -114,7 +114,7 @@ export async function registerUspJobInputTx(client: PoolClient, jobId: string,
       ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint)
       throw new AppError(422,'POINT_INPUT_SCOPE','Point jobs must pin their retained source and exact intake context.');
   } else if(job.operation==='streaming-vector'){
-    const input=StreamingVectorInputSchema.parse(job.payload);
+    const input=AnyStreamingInputSchema.parse(job.payload);
     if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1
       ||input.jobId!==job.id||input.caseId!==job.case_id||input.sourceId!==job.source_id
       ||input.caseRevision!==job.case_revision||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint)
