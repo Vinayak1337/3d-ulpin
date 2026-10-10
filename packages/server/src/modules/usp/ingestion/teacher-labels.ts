@@ -25,6 +25,7 @@ export type TeacherProfileEntry = {
   dataPolicy: TeacherDataPolicy;
   rows?: MappingRow[];
   sourceRef?: string;
+  sourceCrs?: string;
 };
 export type PseudoLabelExample = {
   layoutFingerprint: string;
@@ -69,6 +70,7 @@ function labelExamples(
     execution = executeMappingPlanV2(plan, entry.rows, {
       ...mappingContextFromColumnProfile(profile),
       sourceRef: entry.sourceRef,
+      sourceCrs: entry.sourceCrs,
       rowCount: entry.rows.length,
     });
   }
