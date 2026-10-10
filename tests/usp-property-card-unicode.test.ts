@@ -77,7 +77,7 @@ print(json.dumps({'pages':1,'extraction':'PDFium exact logical samples/search pa
       { encoding: 'utf8', env: { ...process.env, PYTHONIOENCODING: 'utf-8' } });
     assert.equal(extract.status, 0, extract.error?.message ?? extract.stderr);
     const extraction = JSON.parse(extract.stdout);
-    assert(extraction.text.includes('Local demonstration link'));
+    assert(extraction.text.includes('Opens this card revision as a PDF,'));
     await writeFile(join(directory, 'pdf-text.txt'), extraction.text);
     await writeFile(join(directory, 'text-inspection.json'), JSON.stringify(extraction, null, 2));
   }
