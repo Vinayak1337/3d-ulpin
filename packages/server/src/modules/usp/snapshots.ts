@@ -4,7 +4,7 @@ import { z } from 'zod';
 import {
   UspSnapshotManifestSchema, UspResolvedTargetSchema, UspScopePageSchema,
   UspAuthorizedAssetSchema, UspVerticalContextSchema, type RequestContext, type SnapshotScope, type EvidencePointer,
-  type TargetPin,
+  type TargetPin, type RetainedDocumentFreshness,
 } from '@ulpin/contracts/usp';
 import { transaction } from '../../infrastructure/db';
 import { canonical, fingerprint } from '../cases/domain';
@@ -15,10 +15,34 @@ import { geometryProjection, withUspAnalyticalReader } from './geometry';
 import { localOperatorSubject } from './principal';
 import { captureSourceStatedOriginalTx, sourceStatedOriginalAuthorityTx,
   sourceStatedSnapshotPinsTx } from './source-stated-snapshots';
-import {documentAuthorityTx,documentSnapshotView,captureDocumentSourceTx} from './ingestion/document-authority';
+import {documentAuthorityTx,documentSnapshotView,captureDocumentSourceTx,
+  documentResultFreshnessTx} from './ingestion/document-authority';
 import { declarationSnapshotRowsTx, declarationMembership, declarationSnapshotView } from './declarations/projection';
 
-type BodyRow = { namespace: string; object_id: string; revision: number; body: Record<string, any> };
+type BodyRow = { namespace: string; object_id: string; revision: number; body: Record<string, any>;
+  documentResult?: RetainedDocumentFreshness };
+
+/** A snapshot captures what is recorded and derives nothing from a document reader, so a captured source keeps
+ * its access, case and original checks while moved-on reader pins are stated instead of refusing. */
+function retainedDocumentTx(client: PoolClient, source: Record<string, any>, protect = false) {
+  return documentAuthorityTx(client, source, 'snapshot', new Set(), protect, 'retained');
+}
+
+/** Every source of the site as it is recorded now, with the freshness of a retained document result beside it. */
+async function snapshotSourceRowsTx(client: PoolClient, siteId: string, sources: Record<string, any>[],
+  packageParts: Map<string, Record<string, unknown>[]>,
+  originalPins: Awaited<ReturnType<typeof sourceStatedSnapshotPinsTx>>): Promise<BodyRow[]> {
+  const rows: BodyRow[] = [];
+  for (const source of sources) {
+    const pin = originalPins.get(source.id);
+    const body = pin ? await captureSourceStatedOriginalTx(client, siteId, source, pin)
+      : await captureDocumentSourceTx(client, source, packageParts.get(source.id) ?? [], 'retained');
+    const freshness = await documentResultFreshnessTx(client, source);
+    rows.push({ namespace: 'source_revision', object_id: source.id, revision: Number(source.revision), body,
+      ...(freshness && !freshness.current ? { documentResult: freshness } : {}) });
+  }
+  return rows;
+}
 
 export function assertLocalUsp(ctx: RequestContext) {
   // Context must be constructed server-side; this is a second fail-closed adapter guard.
@@ -93,12 +117,7 @@ async function snapshotRows(client: PoolClient, siteId: string,
     }
   }
   const originalPins = await sourceStatedSnapshotPinsTx(client, siteId, records, selection);
-  const sourceBodies = new Map<string, Record<string, any>>();
-  for (const source of sources) {
-    const pin = originalPins.get(source.id);
-    sourceBodies.set(source.id, pin ? await captureSourceStatedOriginalTx(client, siteId, source, pin)
-      : await captureDocumentSourceTx(client, source, packageParts.get(source.id) ?? []));
-  }
+  const sourceRows = await snapshotSourceRowsTx(client, siteId, sources, packageParts, originalPins);
   const qualifications = (await client.query(`SELECT DISTINCT ON(q.namespace,q.record_id,q.record_revision) q.*
     FROM usp_geometry_qualifications q WHERE
       (q.namespace='registry_record' AND EXISTS(SELECT 1 FROM registry_records r WHERE r.id=q.record_id AND r.site_id=$1 AND r.revision=q.record_revision))
@@ -114,8 +133,7 @@ async function snapshotRows(client: PoolClient, siteId: string,
         status: row.project_status, location: row.project_location,
         successors: successors.get(row.id) ?? [] } : null, historicalAliases: aliases.get(row.id) ?? [] } })),
     ...features.map(row => ({ namespace: 'area_feature', object_id: row.id, revision: Number(row.revision), body: row })),
-    ...sources.map(row => ({ namespace: 'source_revision', object_id: row.id, revision: Number(row.revision),
-      body: sourceBodies.get(row.id)! })),
+    ...sourceRows,
   ] as BodyRow[]).map(row => ({ ...row, body: JSON.parse(JSON.stringify(row.body)) }))
     .sort((a, b) => `${a.namespace}:${a.object_id}@${a.revision}`.localeCompare(`${b.namespace}:${b.object_id}@${b.revision}`));
 }
@@ -157,7 +175,8 @@ export async function captureRegistrySnapshotTx(client: PoolClient, ctx: Request
         : row.namespace === 'geometry_qualification' ? 'geometry' as const
         : row.namespace === 'registry_record' ? 'registry' as const
         : row.namespace === 'area_feature' ? 'area_feature' as const
-        : row.namespace === 'source_revision' ? 'source' as const : 'registry' as const }));
+        : row.namespace === 'source_revision' ? 'source' as const : 'registry' as const,
+      ...(row.documentResult ? { documentResult: row.documentResult } : {}) }));
     const normalizedSelection = selection.kind === 'site' ? { kind: 'site' as const, pins: [] }
       : { kind: 'targets' as const, pins: [...selection.pins].sort((a, b) =>
         `${a.ref.namespace}:${a.ref.id}`.localeCompare(`${b.ref.namespace}:${b.ref.id}`)) };
@@ -191,7 +210,7 @@ export async function assertSnapshotDocumentsTx(client:PoolClient,ctx:RequestCon
   for(const source of sources){
     if(fingerprint(source.body)!==source.body_sha256)throw new AppError(409,'USP_REVISION_UNAVAILABLE','The exact captured source is unavailable.');
     if (source.body.sourceStatedOriginal) await sourceStatedOriginalAuthorityTx(client, scope.scopeId, source.body);
-    else await documentAuthorityTx(client,source.body,'snapshot',new Set(),protect);
+    else await retainedDocumentTx(client,source.body,protect);
   }
   assertLocalUsp(ctx);
 }
@@ -230,7 +249,7 @@ export async function readSnapshotBody(ctx: RequestContext, scope: SnapshotScope
   if (pin.ref.namespace === 'source_revision') return transaction(async client => {
     const document = found.body.sourceStatedOriginal
       ? await sourceStatedOriginalAuthorityTx(client, scope.scopeId, found.body)
-      : await documentAuthorityTx(client, found.body);
+      : await retainedDocumentTx(client, found.body);
     const view = documentSnapshotView(found.body, document);
     assertLocalUsp(ctx);
     return view;
@@ -257,7 +276,7 @@ export async function readSnapshotOriginal(ctx:RequestContext,scope:SnapshotScop
   await readManifest(ctx,scope);
   await transaction(client => source.sourceStatedOriginal
     ? sourceStatedOriginalAuthorityTx(client, scope.scopeId, source)
-    : documentAuthorityTx(client, source));
+    : retainedDocumentTx(client, source));
   assertLocalUsp(ctx);
   return {body:source,bytes};
 }
@@ -414,7 +433,7 @@ export async function readRegistryEvidence(ctx: RequestContext, scope: SnapshotS
   const source = await memberBody(scope, pointer.sourceRevision);
   if (!source || fingerprint(source.body) !== source.body_sha256) return { state: 'unavailable' as const, reasonCode: 'unavailable_revision' };
   const row = source.body;
-  await transaction(client=>documentAuthorityTx(client,row));
+  await transaction(client=>retainedDocumentTx(client,row));
   assertLocalUsp(ctx);
   if (row.revision !== pointer.sourceRevision.revision) return { state: 'unavailable' as const, reasonCode: 'unavailable_revision' };
   const data = UspAuthorizedAssetSchema.parse({
