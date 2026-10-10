@@ -43,7 +43,8 @@
     "adviceSentences": [
       {
         "line": 586,
-        "text": "A linked detailed representation changed. Review its source association before using it for this property."
+        "absence": "A linked detailed representation changed.",
+        "advice": "Review its source association before using it for this property."
       },
       {
         "line": 590,
