@@ -21,6 +21,7 @@ import { compileMapping, geojsonInventory, inspectedProfile } from './registry';
 import { appendCaseIngestionTx } from './events';
 import { inspectTabularSource, assertTabularPin } from './tabular-source';
 import { validateTabularRecipe, officerTabularPlan } from './tabular-recipe';
+import { compareWorkspacePins } from './source-pin';
 
 const uuid = z.string().uuid();
 async function workspace(client: PoolClient, caseId: string) {
@@ -83,7 +84,7 @@ async function validate(client: PoolClient,
   plan: z.infer<typeof MappingPlanSchema>|z.infer<typeof TabularMappingPlanSchema>,
   scope: {revision: number; fingerprint: string}) {
   const row = await source(client,plan.caseId,plan.source.sourceId), current = profile(row,scope);
-  if (fingerprint(current.source) !== fingerprint(plan.source) || current.workspaceRevision !== plan.workspaceRevision || current.workspaceFingerprint !== plan.workspaceFingerprint)
+  if (fingerprint(current.source) !== fingerprint(plan.source) || !compareWorkspacePins(current, plan).current)
     conflict('Source bytes, schema, revision or workspace changed; inspect and author a current recipe.');
   const bytes = await readObject(row.object_key);
   if (bytes.length !== Number(row.bytes) || sha256(bytes) !== row.sha256)

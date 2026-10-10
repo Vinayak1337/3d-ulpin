@@ -11,6 +11,7 @@ import {readDocumentResult} from './documents';
 import {acceptedProjectedTx} from './projected-vector';
 import {documentProfileFormats} from '../../../shared/document-formats';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
+import {compareWorkspacePins} from './source-pin';
 import {sufficiencyMeshOriginalTx,sufficiencyMeshEvidenceTx,type SufficiencyMeshOptions} from './sufficiency-mesh';
 import {sufficiencyIFCOriginalTx,sufficiencyIFCEvidenceTx,type SufficiencyIFCDependencies} from './sufficiency-ifc';
 import {sufficiencyXMLOriginalTx,sufficiencyXMLEvidenceTx,type SufficiencyXMLDependencies} from './sufficiency-xml';
@@ -72,7 +73,7 @@ export async function sufficiencySourceTx(client:PoolClient,scope:Awaited<Return
     recipe.planHash===fingerprint({plan:recipe.plan,destination:recipe.destination}) &&
     recipe.plan.source.sourceId===row.id && recipe.plan.source.sourceRevision===row.revision &&
     recipe.plan.source.sourceSha256===row.sha256 && recipe.plan.source.schemaFingerprint===row.manual?.schemaFingerprint &&
-    (recipe.plan.workspaceRevision===scope.row.revision && recipe.plan.workspaceFingerprint===manualWorkspace ||
+    (latest && compareWorkspacePins({workspaceRevision:scope.row.revision,workspaceFingerprint:manualWorkspace},recipe.plan).current ||
       recipe.state==='executed' && recipe.execution?.sourceRevisionId===row.id && executedPackage));
   const jobs=(await client.query(`SELECT j.id,j.status,j.operation,j.input_fingerprint,
     m.accepted_fence,m.result_ref FROM jobs j LEFT JOIN usp_job_metadata m ON m.job_id=j.id

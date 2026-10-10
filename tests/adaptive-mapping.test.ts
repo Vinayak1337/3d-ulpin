@@ -81,8 +81,14 @@ test('disabled provider and stale or changed access cannot yield a proposal',asy
       readProfile:async()=>profile,assertCaseActive:async()=>{},policyHash:()=> 'policy',gatewayFactory:async()=>fake});
     assert.equal(proposed.status,'proposed');assert.equal(proposed.validation,'mechanics_only');
     assert.deepEqual(proposed.plan?.operations,operations);assert.equal(proposed.reviewRequired,true);
-    await assert.rejects(proposeAdaptiveMapping(profile.caseId,profile.source.sourceId,request,{
+    const advanced=await proposeAdaptiveMapping(profile.caseId,profile.source.sourceId,request,{
       readProfile:async()=>++reads===1?profile:{...profile,workspaceRevision:profile.workspaceRevision+1},
+      assertCaseActive:async()=>{},
+      policyHash:()=> 'policy',gatewayFactory:async()=>fake});
+    assert.equal(advanced.status,'proposed');assert.equal(advanced.workspaceRevision,profile.workspaceRevision);
+    reads=0;
+    await assert.rejects(proposeAdaptiveMapping(profile.caseId,profile.source.sourceId,request,{
+      readProfile:async()=>++reads===1?profile:{...profile,source:{...profile.source,schemaFingerprint:'0'.repeat(64)}},
       assertCaseActive:async()=>{},
       policyHash:()=> 'policy',gatewayFactory:async()=>fake}),
     (error:any)=>error?.status===409);

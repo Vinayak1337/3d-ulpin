@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { createRequire } from 'node:module';
+import { mock } from 'node:test';
 import type { PoolClient } from 'pg';
+import { settings } from '../packages/server/src/infrastructure/config';
 import { fingerprint } from '../packages/server/src/modules/cases/domain';
 import { ingestionBinding } from '../packages/server/src/modules/usp/ingestion/events';
 
@@ -91,5 +94,112 @@ export async function localReaderControl(run: () => Promise<void>) {
   finally {
     if (prior === undefined) delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
     else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = prior;
+  }
+}
+
+type Row = Record<string, any>;
+const mappingState = { state: 'completed', next_publish_index: 1, sealed_chunks: 1, records: 0, accepted: 0,
+  quarantined: 0, normalized: 0, unresolved: 0, duplicate_keys: 0, schema_drift_chunks: 0, proposal: null,
+  issue_code: null, unknown_remainder: false };
+
+/** One manual source in a case that later receives other files: SQL protocol, not a database. */
+export class ManualCaseControl {
+  readonly caseId = randomUUID();
+  revision = 1;
+  archived = false;
+  others: Row[] = [];
+  recipe: Row | undefined;
+  jobs = new Map<string, Row>();
+
+  constructor(readonly source: Row) {
+    source.case_id = this.caseId;
+  }
+
+  get client() {
+    return this as unknown as PoolClient;
+  }
+
+  get latest() {
+    const family = [this.source, ...this.others].filter(row => row.family_id === this.source.family_id);
+    return Math.max(...family.map(row => row.revision));
+  }
+
+  /** Another file arrives: a new family, or with `own` the next revision of this source's family. */
+  receive(own = false) {
+    const id = randomUUID();
+    this.others.push({ id, case_id: this.caseId, family_id: own ? this.source.family_id : id,
+      revision: own ? this.latest + 1 : 1, sha256: fingerprint({ protocol: id }) });
+    this.revision++;
+  }
+
+  enroll(input: Row, operation: string) {
+    this.jobs.set(input.jobId, { id: input.jobId, case_id: input.caseId, source_id: input.sourceId, operation,
+      case_revision: input.caseRevision, payload: input, input_fingerprint: fingerprint(input) });
+  }
+
+  async query(sql: string, args: any[] = []) {
+    const rows = this.write(sql, args) ?? this.read(sql, args);
+    if (!rows) throw new Error(`Unexpected manual case SQL: ${sql}`);
+    return { rows, rowCount: rows.length };
+  }
+
+  protected write(sql: string, args: any[]): Row[] | undefined {
+    if (sql.startsWith('INSERT INTO jobs(')) {
+      this.jobs.set(args[0], { id: args[0], case_id: args[1], source_id: args[2], operation: 'chunk-mapping',
+        case_revision: args[3], input_fingerprint: args[4], payload: args[5] });
+    } else if (sql.startsWith('INSERT INTO usp_mapping_recipes(')) this.recipe = structuredClone(args[5]);
+    else if (sql.startsWith('UPDATE usp_mapping_recipes')) this.recipe = structuredClone(args[3]);
+    else if (sql.startsWith('UPDATE usp_outbox_streams')) return [{ sequence: '1' }];
+    else if (!/^(BEGIN|COMMIT|ROLLBACK|INSERT INTO|SELECT pg_advisory_xact_lock)/.test(sql)) return undefined;
+    return [];
+  }
+
+  protected read(sql: string, args: any[]): Row[] | undefined {
+    if (/FROM (registry_case_feature_mappings|import_packages|operations|usp_job_metadata|usp_chunk_mapping_slots)/
+      .test(sql)) return [];
+    if (sql.includes('count(*)')) return [{ n: 0 }];
+    if (sql.includes('FROM cases')) return [{ id: this.caseId, revision: this.revision, archived: this.archived }];
+    if (sql.includes('max(revision)')) return [{ revision: this.latest }];
+    if (sql.startsWith('SELECT id,family_id,revision,sha256 FROM sources')) return this.summaries();
+    if (sql.includes('FROM sources WHERE id=$1')) return this.all().filter(row => row.id === args[0]);
+    if (sql.includes('FROM sources')) return [structuredClone(this.source)];
+    if (sql.startsWith('SELECT id FROM jobs')) return this.rawJobs().slice(-1).map(job => ({ id: job.id }));
+    if (sql.includes('FROM jobs')) return this.jobs.has(args[0]) ? [structuredClone(this.jobs.get(args[0]))] : [];
+    if (sql.includes('FROM usp_mapping_recipes')) return this.recipe ? [{ body: structuredClone(this.recipe) }] : [];
+    if (/FROM usp_(streaming_vector|chunk_mapping)_imports/.test(sql)) return [{ ...mappingState }];
+    return undefined;
+  }
+
+  all() {
+    return [this.source, ...this.others].map(row => structuredClone(row));
+  }
+
+  private summaries() {
+    return this.all().map(({ id, family_id, revision, sha256 }) => ({ id, family_id, revision, sha256 }))
+      .sort((left, right) => left.id < right.id ? -1 : 1);
+  }
+
+  private rawJobs() {
+    return [...this.jobs.values()].filter(job => job.operation === 'streaming-vector');
+  }
+}
+
+/** Route the service pool and private object reads to a protocol control for one test. */
+export async function servicePoolControl(control: ManualCaseControl, bytes: Uint8Array, run: () => Promise<void>) {
+  const globals = globalThis as any;
+  const prior = globals.ulpinPool;
+  globals.ulpinPool = { connect: async () => ({ query: control.query.bind(control), release() {} }),
+    query: control.query.bind(control) };
+  const require = createRequire(new URL('../packages/server/package.json', import.meta.url));
+  const { S3Client } = require('@aws-sdk/client-s3');
+  for (const name of ['s3Endpoint', 's3Region', 's3Bucket', 's3AccessKey', 's3SecretKey'] as const) {
+    mock.getter(settings, name, () => name === 's3Endpoint' ? 'http://127.0.0.1:1' : 'k15-memory-control');
+  }
+  mock.method(S3Client.prototype, 'send', async () => ({ Body: { transformToByteArray: async () => bytes } }));
+  try { await run(); }
+  finally {
+    if (prior === undefined) delete globals.ulpinPool;
+    else globals.ulpinPool = prior;
+    mock.restoreAll();
   }
 }

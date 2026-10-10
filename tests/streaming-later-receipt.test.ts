@@ -208,13 +208,3 @@ test('streaming and both dependents preserve supersession, archive, reader and s
     f.raw.inputFingerprint = '0'.repeat(64);
     await assert.rejects(() => assertStreamingInputTx(db.client, f.raw), (e: any) => e.status === 409);
   }));
-
-test('manual-profile mapping explicitly stays strict while its raw stream survives', () => local(async () => {
-  const f = fixture();
-  const db = database(f);
-  f.source.profile = 'geojson-manual-v1';
-  (f.source.inspection as any).actor = f.raw.subject;
-  db.state.revision++;
-  await assertStreamingInputTx(db.client, f.raw);
-  await assert.rejects(() => assertChunkMappingInputTx(db.client, f.mapped), (e: any) => e.status === 409);
-}));

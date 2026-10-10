@@ -1,0 +1,55 @@
+{
+  "task": "K15",
+  "gate": "GF1, GF5, presentation blocker B1 (tables)",
+  "base": "be571c5a",
+  "aliases": { "i": "packages/server/src/modules/usp/ingestion/" },
+  "anyPlanReadsAnotherSource": false,
+  "rule": "i/source-pin.ts compareWorkspacePins: later revision current; same revision needs the same fingerprint; behind fails",
+  "sitesOnRule": [
+    "i/chunk-mapping.ts:79 approvedRecipeTx tabular", "i/chunk-mapping.ts:94 approvedRecipeTx GeoJSON",
+    "i/chunk-mapping.ts:109-115 workspacePinCurrent, used by the job check :136 and the read :169-171",
+    "i/tabular-recipe.ts:13 assertRecipePins", "i/service.ts:87 validate",
+    "i/adaptive-mapping-service.ts:33-34 request pair", "i/adaptive-mapping-service.ts:50-51 authorize (profile minus its pair exact)",
+    "i/sufficiency-context.ts:76 exactRecipe"
+  ],
+  "sitesOnRuleCount": 8,
+  "removed": "i/chunk-mapping.ts:116-118 (base) strict manual-profile revision equality",
+  "profileBuildRevision": "i/chunk-mapping.ts:132 now ctx.current.revision, as enqueue :244",
+  "strictThatStay": [
+    "streamed profiles: input.workspaceFingerprint must stay null (i/chunk-mapping.ts:112)",
+    "i/chunk-mapping.ts:235 enqueue expectedCaseRevision: the writer's own concurrency check",
+    "i/chunk-mapping.ts:124 raw.caseRevision == input.caseRevision: the job's own queued pin, not the workspace"
+  ],
+  "readReason": "case_advanced now only when the workspace is behind its pin (streaming freshness, K14) or equal with another fingerprint; a superseded own source reads source_superseded",
+  "inputs": {
+    "good": "public D8 development table mi-d10-01.csv (read only, SHA-256 checked against its manifest): approved recipe at revision 1, mapping admitted, then a table and a GeoJSON before claim and two more between claim and completion and one after; the job keeps route approved_recipe with the same planHash, the officer recipe revalidates on the revision-6 profile, the read and the status are current with no reason",
+    "difficult": "same table, its own family receives revision 2: assertChunkMappingInputTx 409 STALE_REVISION; read {current:false, reasons:[source_superseded]}",
+    "geojson": "fixtures/real-nyc/original.geojson (public, in repo, read only): approved plan at 1 is the route at 3; own new revision refuses",
+    "controls": "case, jobs, recipes and later receipts are SQL protocol controls in tests/reader-pin-control.ts (ManualCaseControl, servicePoolControl); no runtime, database, provider, key or GPU"
+  },
+  "queueApprovedTabular": {
+    "at": "i/chunk-mapping-learning.ts:163-178",
+    "today": "both enqueue calls pass expectedCaseRevision: receipt.plan.workspaceRevision; after any later file the 409 is swallowed and the approved table is never queued (shown in tests/table-later-receipt.test.ts, authored-then-approved test)",
+    "change": "read the case revision after the approval commits (SELECT revision FROM cases WHERE id=$1, receipt.plan.caseId) and pass that value as expectedCaseRevision to StreamingVectorService.enqueue and ChunkMappingService.enqueue; keep expectedSourceRevision and sourceSha256 from receipt.plan.source so a superseded source still refuses",
+    "otherCallers": "server: none. Same pattern outside the server, correct only while the profile is fresh: apps/studio/src/features/intake/table/queue.ts:12,22; scripts/agent/a3b-runtime.ts:91,97,185; scripts/agent/r1-live.ts:85; scripts/usp/sufficiency-smoke.mjs:37"
+  },
+  "testsChanged": [
+    { "file": "tests/streaming-later-receipt.test.ts", "old": "manual-profile mapping rejects 409 after any advance",
+      "new": "removed; tests/table-later-receipt.test.ts and manual-plan-later-receipt.test.ts cover the route" },
+    { "file": "tests/adaptive-mapping.test.ts", "old": "second profile read at revision+1 rejects 409",
+      "new": "revision+1 proposes; a changed schemaFingerprint on the second read rejects 409" }
+  ],
+  "gaps": [
+    "validate (i/service.ts:82-98) has no archived-case refusal; the old equality never gave one",
+    "docs/api/source-pins.json needs regeneration (six producer hashes); not committed: docs/api/** is IN1's",
+    "service.ts gains one import line at the top (outside validate), beside TB6's lines 120-185"
+  ],
+  "report": {
+    "TASK": "K15 — a table's profile, plan, recipe and mapping job keep their pins when another file arrives",
+    "WORKS": "a table or GeoJSON mapping job, its approved recipe, authoring/approval, a proposal and sufficiency survive unrelated files in the same case; a new revision of the file itself still refuses",
+    "SEE_IT": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/table-later-receipt.test.ts tests/manual-plan-later-receipt.test.ts",
+    "INPUTS": "good: D8 development table mi-d10-01.csv with six later receipts; difficult: the same with its own family superseded",
+    "GAPS": "source-pins.json regeneration and queueApprovedTabular are the lead's; validate has no archive refusal",
+    "NEXT": "apply the queueApprovedTabular change after TB6; regenerate docs/api/source-pins.json at merge"
+  }
+}
