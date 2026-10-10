@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
-import { CheckCircle, Warning, WarningOctagon } from '@phosphor-icons/react';
-import { Button, DescriptionList, Icon, RevisionTimeline, Skeleton, UlpinCode, formatDate, formatDateTime } from '@ulpin/ui';
+import {
+  Button, DescriptionList, RevisionTimeline, Skeleton, UlpinCode, formatDate, formatDateTime,
+} from '@ulpin/ui';
 import { chainState, shortHash, type SpaceWorkflow } from '../../local/workflow';
 import { useResolveCode } from '../workflow/useWorkflow';
 import { useCardFacts } from '../identity/cardFacts';
 import { usePublicCode } from '../../portal/queries';
 import type { PublicBuildingSummary } from '@ulpin/api-client/draft';
-import styles from './VerifyPage.module.css';
+import { ResultBanner, VerifyFrame } from './VerifyFrame';
 
 /**
  * P4L: the Property Card's QR opens this page. It resolves the exact code and revision and shows whether
@@ -25,35 +26,30 @@ export function VerifyPage() {
   useEffect(() => {
     if (resolved.data) void chainState(resolved.data).then(setChain);
   }, [resolved.data]);
+  const retry = <Button variant="soft" onClick={() => void resolved.refetch()}>Try again</Button>;
 
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <span className="ul-wordmark">BhuAayam <small>Verify</small></span>
-        <Link to="/studio/work" className="ul-btn ul-btn--ghost">Back to Studio</Link>
-      </header>
-      <main className={styles.main}>
-        {resolved.isPending || (!resolved.data && publicCode.isFetching) ? (
-          <div className="ul-panel ul-pad ul-stack"><Skeleton height={28} width="55%" /><Skeleton width="80%" /><Skeleton /><Skeleton width="40%" /></div>
-        ) : resolved.error ? (
-          <div className={`${styles.result} ${styles.danger}`} role="alert">
-            <Icon icon={WarningOctagon} />
-            <span className={styles.resultText}>Could not check this card. {resolved.error.message}</span>
-            <Button variant="soft" onClick={() => void resolved.refetch()}>Try again</Button>
-          </div>
-        ) : !resolved.data && building ? (
-          <BuildingResult building={building} />
-        ) : !resolved.data ? (
-          <div className="ul-panel ul-pad ul-stack">
-            <h1 className="ul-heading">No record found for this code</h1>
-            <p className="ul-help">No building or Property Card carries this code. Check the code printed on the card.</p>
-            <Link to="/studio/work" className="ul-btn">Back to Studio</Link>
-          </div>
-        ) : (
-          <Result workflow={resolved.data} revision={revision} chain={chain} />
-        )}
-      </main>
-    </div>
+    <VerifyFrame>
+      {resolved.isPending || (!resolved.data && publicCode.isFetching) ? (
+        <div className="ul-panel ul-pad ul-stack">
+          <Skeleton height={28} width="55%" /><Skeleton width="80%" /><Skeleton /><Skeleton width="40%" />
+        </div>
+      ) : resolved.error ? (
+        <ResultBanner tone="danger" small action={retry}>
+          Could not check this card. {resolved.error.message}
+        </ResultBanner>
+      ) : !resolved.data && building ? (
+        <BuildingResult building={building} />
+      ) : !resolved.data ? (
+        <div className="ul-panel ul-pad ul-stack">
+          <h1 className="ul-heading">No record found for this code</h1>
+          <p className="ul-help">No building or Property Card carries this code. Check the code printed on the card.</p>
+          <Link to="/studio/work" className="ul-btn">Back to Studio</Link>
+        </div>
+      ) : (
+        <Result workflow={resolved.data} revision={revision} chain={chain} />
+      )}
+    </VerifyFrame>
   );
 }
 
@@ -63,10 +59,9 @@ function Result({ workflow, revision, chain }: { workflow: SpaceWorkflow; revisi
   const card = useCardFacts(workflow);
   return (
     <>
-      <div className={`${styles.result} ${superseded ? styles.warning : styles.success}`}>
-        <Icon icon={superseded ? Warning : CheckCircle} />
-        <span className={styles.resultText}>{superseded ? `Superseded by revision r${head.revision}` : `Valid: revision r${head.revision}`}</span>
-      </div>
+      <ResultBanner tone={superseded ? 'warning' : 'success'}>
+        {superseded ? `Superseded by revision r${head.revision}` : `Valid: revision r${head.revision}`}
+      </ResultBanner>
       <section className="ul-panel ul-pad ul-stack">
         <h1 className="ul-heading">{card?.buildingName ? `${card.spaceName}, ${card.buildingName}` : workflow.spaceName}</h1>
         <UlpinCode code={workflow.code} location={card?.location ?? null} state="assigned" />
@@ -89,10 +84,7 @@ function Result({ workflow, revision, chain }: { workflow: SpaceWorkflow; revisi
 function BuildingResult({ building: b }: { building: PublicBuildingSummary }) {
   return (
     <>
-      <div className={`${styles.result} ${styles.success}`}>
-        <Icon icon={CheckCircle} />
-        <span className={styles.resultText}>Valid: building 3D ULPIN on record</span>
-      </div>
+      <ResultBanner tone="success">Valid: building 3D ULPIN on record</ResultBanner>
       <section className="ul-panel ul-pad ul-stack">
         <h1 className="ul-heading">{b.name}, {b.areaName}</h1>
         <UlpinCode code={b.code} location={b.location} state="assigned" />

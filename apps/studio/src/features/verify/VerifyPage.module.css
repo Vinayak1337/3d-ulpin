@@ -6,4 +6,8 @@
 .resultText { flex: 1; }
 .success { background: var(--ui-success-soft); color: var(--ui-success); }
 .warning { background: var(--ui-warning-soft); color: var(--ui-warning); }
-.danger { background: var(--ui-danger-soft); color: var(--ui-danger); font-size: 15px; }
+.danger { background: var(--ui-danger-soft); color: var(--ui-danger); }
+/* A sentence in the banner (a failure with its reason) instead of a short result. */
+.small { font-size: 15px; }
+/* A link in a stacked panel keeps its own width instead of stretching across the column. */
+.start { justify-self: start; }
