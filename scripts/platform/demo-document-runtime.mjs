@@ -4,15 +4,15 @@ import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, realpathSync, renameSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { demoDir, demoOcrProfileFile, readDemoDocumentRuntime, readDemoOcrPaths,
+import { definedRuntime, demoRuntime, readDemoDocumentRuntime, readDemoOcrPaths, runtimeDefinition,
   safeEnvironment } from './demo-config.mjs';
 import { ownedProcess } from './processes.mjs';
 import { root } from './runtime.mjs';
 
-const servingCheckout = 'E:/Projects/ulpin-wt/demo';
 const usage = 'Usage: demo-document-runtime.mjs build [--python <absolute file>] [--dry-run --out <temporary folder>]'
   + '\n       demo-document-runtime.mjs switch-ocr-python (--python <absolute file> | --restore <saved file name>)'
   + ' [--dry-run --out <temporary folder>]'
+  + '\nEither action takes --runtime <name> (default ulpin-demo) and works on that runtime only.'
   + '\nRollback: switch-ocr-python --restore <the saved previous file name the switch printed>, then build.';
 const ocrPythonKey = 'ULPIN_DOCUMENT_OCR_PYTHON';
 const savedOverrideName = /^ocr-paths-profile\.previous-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z\.json$/;
@@ -81,17 +81,25 @@ export function documentRuntimeReport(paths) {
   return report;
 }
 
-function assertBuildLocation(dryRun, output) {
-  if (!dryRun) {
-    if (resolve(root).toLowerCase() !== resolve(servingCheckout).toLowerCase() || output !== undefined) {
-      throw new Error('Normal document runtime build requires the demo serving checkout; '
-        + 'use --dry-run --out elsewhere.');
-    }
-    if (['api', 'dispatcher'].some(label => ownedProcess(label))) {
-      throw new Error('Stop the recorded demo native processes before rebuilding document runtime keys.');
-    }
-    return demoDir;
+/**
+ * A normal build writes into the named runtime's own folder, and only from that runtime's serving checkout
+ * while that runtime's own recorded processes are stopped. The third argument is for tests.
+ */
+export function runtimeBuildFolder(name = demoRuntime, output, { checkout = root, owned = ownedProcess } = {}) {
+  const runtime = definedRuntime(name);
+  const whose = runtime.rehearsal ? runtime.name : 'demo';
+  if (resolve(checkout).toLowerCase() !== resolve(runtime.servingCheckout).toLowerCase() || output !== undefined) {
+    throw new Error(`Normal document runtime build requires the ${whose} serving checkout; `
+      + 'use --dry-run --out elsewhere.');
   }
+  if (['api', 'dispatcher'].some(label => owned(label, runtime))) {
+    throw new Error(`Stop the recorded ${whose} native processes before rebuilding document runtime keys.`);
+  }
+  return runtime.dir;
+}
+
+function assertBuildLocation(dryRun, output, runtime) {
+  if (!dryRun) return runtimeBuildFolder(runtime, output);
   if (!output || !isAbsolute(output)) throw new Error('--dry-run requires --out with an absolute temporary folder.');
   let parent = resolve(output);
   while (!existsSync(parent) && dirname(parent) !== parent) parent = dirname(parent);
@@ -113,10 +121,10 @@ function assertBuildLocation(dryRun, output) {
   return resolve(output);
 }
 
-function selectedPython(configured) {
+function selectedPython(configured, runtime) {
   let python = configured;
   if (!python) {
-    try { python = readDemoOcrPaths().ULPIN_DOCUMENT_OCR_PYTHON; }
+    try { python = readDemoOcrPaths(runtime.ocrFile, runtime.ocrProfileFile).ULPIN_DOCUMENT_OCR_PYTHON; }
     catch { throw new Error('Configure ULPIN_DOCUMENT_OCR_PYTHON or supply --python.'); }
   }
   return availableInterpreter(python, pythonKey);
@@ -238,11 +246,12 @@ function publishOverride(file, before, after, rename) {
 }
 
 /** Owner-run. A dry run works only on the copy already in --out. The second argument is for tests. */
-export function switchOcrPython({ dryRun = false, out, python, restore } = {}, seams = {}) {
+export function switchOcrPython({ dryRun = false, out, python, restore, runtime } = {}, seams = {}) {
   const { rename = renameSync, preflight = preflightImports } = seams;
+  const definition = definedRuntime(runtime);
   if ((python === undefined) === (restore === undefined)) throw new Error(usage);
-  const folder = assertBuildLocation(dryRun, out);
-  const name = basename(demoOcrProfileFile);
+  const folder = assertBuildLocation(dryRun, out, definition);
+  const name = basename(definition.ocrProfileFile);
   const current = readOverride(folder, name);
   const next = restore === undefined ? forwardOverride(current, python, preflight) : savedOverride(folder, restore);
   const published = publishOverride(join(folder, name), current.bytes, next.bytes, rename);
@@ -253,12 +262,13 @@ export function switchOcrPython({ dryRun = false, out, python, restore } = {}, s
 }
 
 /** Each rollout gets a new immutable profile directory; only the non-secret path-file pointer is replaced. */
-export function buildDocumentRuntime({ dryRun = false, out, python: configuredPython } = {}) {
-  const output = assertBuildLocation(dryRun, out);
+export function buildDocumentRuntime({ dryRun = false, out, python: configuredPython, runtime } = {}) {
+  const definition = definedRuntime(runtime);
+  const output = assertBuildLocation(dryRun, out, definition);
   if (dryRun && existsSync(join(output, 'document-runtime-paths.json'))) {
     throw new Error('--out already contains document runtime keys; choose a fresh folder.');
   }
-  const python = selectedPython(configuredPython);
+  const python = selectedPython(configuredPython, definition);
   preflightImports(python);
   const directory = privateBuildDirectory(output);
   const frozen = buildProfile(python, directory);
@@ -287,7 +297,7 @@ function options(arguments_) {
   for (let index = 0; index < flags.length; index++) {
     const flag = flags[index];
     if (flag === '--dry-run' && !result.dryRun) result.dryRun = true;
-    else if (['--out', '--python', '--restore'].includes(flag) && flags[index + 1]
+    else if (['--out', '--python', '--restore', '--runtime'].includes(flag) && flags[index + 1]
       && !flags[index + 1].startsWith('--')) {
       const key = flag.slice(2);
       if (result[key] !== undefined) throw new Error(usage);
@@ -295,7 +305,8 @@ function options(arguments_) {
     } else throw new Error(usage);
   }
   if (action === 'build' && result.restore !== undefined) throw new Error(usage);
-  return result;
+  // The name is checked here, before any file of any runtime is read.
+  return { ...result, runtime: runtimeDefinition(result.runtime ?? demoRuntime) };
 }
 
 if (process.argv[1] && resolve(process.argv[1]).toLowerCase() === fileURLToPath(import.meta.url).toLowerCase()) {
@@ -313,7 +324,8 @@ if (process.argv[1] && resolve(process.argv[1]).toLowerCase() === fileURLToPath(
     console.error(error.message.startsWith('Document runtime') || error.message.startsWith('Frozen runtime')
       || error.message.startsWith('Normal document') || error.message.startsWith('Stop the recorded')
       || error.message.startsWith('--') || error.message.startsWith('Absolute available runtime')
-      || error.message.startsWith('Configure ULPIN') || error.message === usage
+      || error.message.startsWith('Configure ULPIN') || error.message.startsWith('Unknown runtime')
+      || error.message === usage
       ? error.message : 'Document runtime keys could not be built; private diagnostics withheld.');
     process.exitCode = 1;
   }

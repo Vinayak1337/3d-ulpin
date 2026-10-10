@@ -183,3 +183,48 @@ Like the build, both actions refuse outside `E:/Projects/ulpin-wt/demo` or while
 Elsewhere they run only with `--dry-run --out <absolute temporary folder>`, on an override already placed in that
 folder with its scratch inside it. A copy of the real override does not validate there, because its scratch
 belongs to the runtime folder; the rehearsal on a synthetic override is `docs/evidence/gf1/k9c/rehearsal.mjs`.
+
+## A rehearsal runtime
+
+A rehearsal is a second runtime beside the demo, for trying a roll-out or a journey on empty storage. Its name is
+`ulpin-reh-NN` with two digits; any other name is refused before anything is read. The demo's commands above are
+unchanged: without `--runtime` every script works on `ulpin-demo` with the values it had before.
+
+What a name gives `ulpin-reh-NN`, with `ulpin-reh-01` as the example:
+
+| Thing | Value |
+| --- | --- |
+| Folder | `E:/BhuAayam-data/runtime/ulpin-reh-01`, settings in `runtime.env` there |
+| Compose project and bucket | `ulpin-reh-01` |
+| Database and its user | `ulpin_reh_01` |
+| Loopback ports | `21000 + 10 × NN + k`: Postgres 21011, S3 21012 and 21013, Redis 21014, geo 21015, API 21016 |
+| Operator subject | `rehearsal-runtime-ulpin-reh-01` |
+| Serving checkout | `E:/Projects/ulpin-wt/ulpin-reh-01` |
+| Processor image | the demo's reviewed `ulpin-geo:demo-k3b`, reused; never built, tagged or pulled |
+
+No rehearsal port equals a demo port (3194 included) or a port of another rehearsal. The gateway is written
+disabled, and no real key goes into a rehearsal ([DEMO-GATEWAY.md](DEMO-GATEWAY.md)).
+
+Run the commands from the rehearsal's own checkout, a worktree at a lead-reviewed commit with `pnpm install
+--frozen-lockfile` done; start and the builder refuse a rehearsal name from any other checkout.
+
+1. Create: `pnpm platform:start --profile demo --create --runtime ulpin-reh-01`
+   It refuses when a volume or a container of that project exists but its settings file does not, and when one of
+   its ports is taken. It writes the folder with new secrets, an empty `learning` folder and `ocr-scratch`, and
+   `tabular-paths.json` and `ocr-paths.json`: those two name the demo's interpreter, seed, models and Tesseract
+   (read, never written) and the rehearsal's own two folders. Then it brings up storage, applies the schema with
+   no seed, checks that the reviewed image is on the engine and brings up the processors. It ends there: the API
+   and dispatcher are not started yet. Run again after a failure, it resumes and writes no file twice.
+2. Build or reuse: the processor image is reused and no command builds one. The document runtime is built:
+   `node scripts/platform/demo-document-runtime.mjs build --runtime ulpin-reh-01`
+   It writes `document-runtime-paths.json` and a new private profile directory in the rehearsal's folder.
+3. Start: `pnpm platform:start --profile demo --runtime ulpin-reh-01`
+4. Doctor: `pnpm platform:doctor --profile demo --runtime ulpin-reh-01`
+5. Stop: `pnpm platform:stop --profile demo --runtime ulpin-reh-01`
+   It stops that runtime's two recorded processes and the containers of its project, and removes nothing.
+
+Stop for one name never touches another: it goes by that runtime's own process records and project label. After
+any rehearsal step, the demo's doctor from the demo checkout must still show the same commit and process ids.
+A rehearsal runs the reviewed image as it is, so a commit that changes `services/**` is not tried by it, and its
+`models` folder starts empty. Removing a rehearsal (its folder, volumes and containers) is a separate,
+owner-approved step; no script does it.
