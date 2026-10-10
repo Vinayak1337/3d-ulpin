@@ -4,7 +4,7 @@ For a new chat that takes over as lead. It says what is done, what is half-done,
 
 ## 1. Start the new chat like this
 
-1. Open the session in `E:\Projects\3d-ulpin` (branch `staging`).
+1. Open the session in `E:\Projects\3d-ulpin` (branch `staging`). Other folders in `E:\Projects` have similar names; [docs/next-steps/PROJECT-FOLDERS.md](docs/next-steps/PROJECT-FOLDERS.md) says which are in use and what the old `3d-ulpin-claude` checkout holds.
 2. Read, in this order: `AGENTS.md`, this file (§8 has the exact spawn commands), [docs/next-steps/WORKERS.md](docs/next-steps/WORKERS.md), [docs/STATUS.md](docs/STATUS.md), [docs/next-steps/SPRINT-SELECTION.md](docs/next-steps/SPRINT-SELECTION.md) §3–§6.
 3. A first message that works:
 
@@ -135,6 +135,7 @@ Nothing to train without Indian plan labels. The demo uses the vector rooms (Mag
 
 | Thing | Path |
 | --- | --- |
+| Which folder is which | [docs/next-steps/PROJECT-FOLDERS.md](docs/next-steps/PROJECT-FOLDERS.md): the lead works in `E:/Projects/3d-ulpin`; `3d-ulpin-claude` is an archive of the rejected distillation lane and is never merged wholesale |
 | Task files, launchers, logs | `E:/Projects/ulpin-wt/_tasks/` (`<task>.md`, `_common.md`, `codex-subagent-win.mjs`, `claude-worker.sh`, `pool-watch.sh`, `claude-watch.sh`, `logs/`) |
 | Worktrees | `E:/Projects/ulpin-wt/{a2,b3,d1,f1,g2,k1,p1}` (agent, GPU/building, data, Studio, geometry, runtime/registry, plans/storeys) |
 | Building evidence | `docs/evidence/gf-ai/building/` (`b3-final-holdout-20261010`, `b4-final-transfer-20261010`, `b6/`, `b7/`, `b8/`, model card in `rfdetr-ramp-ka-seg-medium-b3-v1/`) |
