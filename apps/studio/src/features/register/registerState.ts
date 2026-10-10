@@ -20,6 +20,15 @@ export function absentReason(error: unknown): string | null {
   return ABSENT_REASONS[code] ?? code;
 }
 
+/**
+ * The checks that block or need review, for the Checks tab. Undefined when the ledger holds no check at all:
+ * nothing was assessed, so there is no number to show, and 0 would read as "all clear".
+ */
+export function openCheckCount(checks: readonly { state: string }[] | undefined): number | undefined {
+  if (!checks?.length) return undefined;
+  return checks.filter((check) => check.state === 'blocking' || check.state === 'needs_review').length;
+}
+
 type RegisterRead = GetResponse<'/api/v1/buildings/{buildingId}/register'>;
 /** The facts-only profile of the register read: the one whose sources carry the server's `documentResult`. */
 type ConsolidatedRegister = Extract<RegisterRead, { schemaVersion: 'building-registry-summary/1' }>;
