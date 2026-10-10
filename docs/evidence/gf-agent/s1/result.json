@@ -1,6 +1,14 @@
 {
  "task": "S1",
- "gates": ["AG-S1", "AG-S2", "ML-D1", "ML-D3", "ML-L2", "AG-D1", "AG-E2"],
+ "gates": [
+  "AG-S1",
+  "AG-S2",
+  "ML-D1",
+  "ML-D3",
+  "ML-L2",
+  "AG-D1",
+  "AG-E2"
+ ],
  "base": "e4623944",
  "qualification": "Planning and dry run only. No provider call, no key, no network request, no runtime read.",
  "step0": {
@@ -63,10 +71,684 @@
    }
   },
   "oneCallServes": {
-   "storeyCallOnADevelopmentDocument": ["AG-S1", "AG-S2", "ML-D1", "ML-D3", "AG-D1"],
-   "storeyCallOnADemoDocument": ["AG-S1", "AG-S2", "ML-D1", "AG-D1"],
-   "mappingCallOnANewLayout": ["AG-S1", "AG-S2", "ML-L2", "AG-E2"],
+   "storeyCallOnADevelopmentDocument": [
+    "AG-S1",
+    "AG-S2",
+    "ML-D1",
+    "ML-D3",
+    "AG-D1"
+   ],
+   "storeyCallOnADemoDocument": [
+    "AG-S1",
+    "AG-S2",
+    "ML-D1",
+    "AG-D1"
+   ],
+   "mappingCallOnANewLayout": [
+    "AG-S1",
+    "AG-S2",
+    "ML-L2",
+    "AG-E2"
+   ],
    "shortestRun": "Six storey calls and two mapping calls: no call exists only for the gateway boxes."
   }
+ },
+ "plan": {
+  "command": "pnpm exec tsx scripts/agent/live-proof.ts --plan",
+  "fullOutput": "E:/BhuAayam-data/task-data/s1/plan-20261010T154210380Z/plan.json",
+  "tariff": {
+   "label": "lead's proposal of 10 October 2026: not approved",
+   "approved": false,
+   "policyHash": "371070a6deb1880936a151e6779c463ed179175d263d8997b77cc6673a8ab51a",
+   "priceVersion": "lead-proposal-20261010/not-approved",
+   "rupeesPerMillionTokens": {
+    "input": "₹15.00",
+    "cachedInput": "₹5.00",
+    "output": "₹60.00"
+   },
+   "caps": {
+    "total": "₹100.00",
+    "daily": "₹25.00",
+    "callsPerPersonPerDay": 150,
+    "documentAgentShareOfTotal": "30%"
+   },
+   "bounds": {
+    "maxPromptTokens": 34816,
+    "maxOutputTokens": 2048,
+    "cushionBps": 2000,
+    "paceMs": 1500,
+    "timeoutMs": 45000
+   },
+   "heldPerCall": {
+    "kind": "upper_bound",
+    "microInr": "774144",
+    "rupees": "₹0.78",
+    "tariff": "lead-proposal-20261010/not-approved"
+   }
+  },
+  "tokenMethod": {
+   "tokenizer": "none for sarvam-105b in this repository",
+   "inputEstimate": "bytes of the body the gateway measures (messages, schema, model, output maximum) divided by 3",
+   "inputEstimateError": "not measured: 3 bytes per token is an assumption until the first receipt gives the ratio",
+   "inputUpperBound": "body bytes + 2048, the gateway's own admission rule (one token per byte at worst)",
+   "outputEstimate": "half the configured output maximum; reasoning tokens are billed as output",
+   "outputUpperBound": "the configured output maximum (max_tokens in the request)",
+   "held": "the ledger's reservation per call: the bound's prompt maximum and the output maximum, plus the cushion",
+   "paise": "every rupee figure is rounded up to the next paisa"
+  },
+  "totals": {
+   "calls": 8,
+   "estimate": {
+    "kind": "estimate",
+    "microInr": "940590",
+    "rupees": "₹0.95",
+    "tariff": "lead-proposal-20261010/not-approved"
+   },
+   "requestBound": {
+    "kind": "upper_bound",
+    "microInr": "2575890",
+    "rupees": "₹2.58",
+    "tariff": "lead-proposal-20261010/not-approved"
+   },
+   "atMost": {
+    "kind": "upper_bound",
+    "microInr": "6193152",
+    "rupees": "₹6.20",
+    "tariff": "lead-proposal-20261010/not-approved"
+   },
+   "shareOfCapsAtMost": {
+    "total": "6.20%",
+    "daily": "24.78%",
+    "callsPerPersonPerDay": "5.34%",
+    "documentAgentAllocation": "15.49%"
+   }
+  },
+  "perBox": {
+   "AG-S1": {
+    "calls": 8,
+    "estimate": "₹0.95",
+    "atMost": "₹6.20"
+   },
+   "AG-S2": {
+    "calls": 8,
+    "estimate": "₹0.95",
+    "atMost": "₹6.20"
+   },
+   "ML-D1": {
+    "calls": 6,
+    "estimate": "₹0.66",
+    "atMost": "₹4.65"
+   },
+   "ML-D3": {
+    "calls": 3,
+    "estimate": "₹0.32",
+    "atMost": "₹2.33"
+   },
+   "ML-L2": {
+    "calls": 2,
+    "estimate": "₹0.29",
+    "atMost": "₹1.55"
+   },
+   "AG-D1": {
+    "calls": 6,
+    "estimate": "₹0.66",
+    "atMost": "₹4.65"
+   },
+   "AG-E2": {
+    "calls": 2,
+    "estimate": "₹0.29",
+    "atMost": "₹1.55"
+   }
+  },
+  "steps": [
+   {
+    "step": 1,
+    "id": "storey-cf152f32-batch1",
+    "provider": "call",
+    "boxes": [
+     "AG-S1",
+     "AG-S2",
+     "ML-D1",
+     "ML-D3",
+     "AG-D1"
+    ],
+    "sourceId": "dev/RERAP285201800427-9-building-1.json",
+    "sha256": "cf152f3220e7a60efc244875923862fd405c2540444d6afd30b9948dd89ea4a7",
+    "split": "development",
+    "permission": "unconfirmed",
+    "consumer": "ASSIST",
+    "characters": 1888,
+    "bodyBytes": 6460,
+    "requestHash": "0d903c8168fe683444ebd135a1f4e68d11be9a767f0340e44e15ed2d02602a58",
+    "tokens": {
+     "inputEstimate": 2154,
+     "inputUpperBound": 8508,
+     "outputEstimate": 1024,
+     "outputUpperBound": 2048
+    },
+    "estimate": "₹0.10",
+    "upperBound": "₹0.26",
+    "held": "₹0.78",
+    "estimateMicroInr": "93750",
+    "upperBoundMicroInr": "250500"
+   },
+   {
+    "step": 2,
+    "id": "replay-of-storey-cf152f32-batch1",
+    "provider": "none",
+    "boxes": [
+     "AG-S2"
+    ],
+    "sourceId": "dev/RERAP285201800427-9-building-1.json",
+    "sha256": "cf152f3220e7a60efc244875923862fd405c2540444d6afd30b9948dd89ea4a7",
+    "split": "development",
+    "permission": "unconfirmed"
+   },
+   {
+    "step": 3,
+    "id": "curve-file1-chunk1",
+    "provider": "call",
+    "boxes": [
+     "AG-S1",
+     "AG-S2",
+     "ML-L2",
+     "AG-E2"
+    ],
+    "sourceId": "mi-d10/mi-d10-01.csv",
+    "sha256": "9c20032a80044527b24decd365e20e321de029f80453d12e4232b7e2ec6e7111",
+    "split": "development",
+    "permission": "unconfirmed",
+    "consumer": "INGEST",
+    "characters": 12267,
+    "bodyBytes": 16449,
+    "requestHash": "31239c7b58632002df0878c4989d7446fee3cec3d0f34fbf99a23b7b25a83a7f",
+    "tokens": {
+     "inputEstimate": 5483,
+     "inputUpperBound": 18497,
+     "outputEstimate": 1024,
+     "outputUpperBound": 2048
+    },
+    "estimate": "₹0.15",
+    "upperBound": "₹0.41",
+    "held": "₹0.78",
+    "estimateMicroInr": "143685",
+    "upperBoundMicroInr": "400335"
+   },
+   {
+    "step": 4,
+    "id": "curve-file1-chunk2",
+    "provider": "none",
+    "boxes": [
+     "ML-L2",
+     "AG-E2"
+    ],
+    "sourceId": "mi-d10/mi-d10-01.csv",
+    "sha256": "9c20032a80044527b24decd365e20e321de029f80453d12e4232b7e2ec6e7111",
+    "split": "development",
+    "permission": "unconfirmed"
+   },
+   {
+    "step": 5,
+    "id": "curve-file1-chunk3",
+    "provider": "none",
+    "boxes": [
+     "ML-L2",
+     "AG-E2"
+    ],
+    "sourceId": "mi-d10/mi-d10-01.csv",
+    "sha256": "9c20032a80044527b24decd365e20e321de029f80453d12e4232b7e2ec6e7111",
+    "split": "development",
+    "permission": "unconfirmed"
+   },
+   {
+    "step": 6,
+    "id": "curve-file2-chunk1",
+    "provider": "call",
+    "boxes": [
+     "AG-S1",
+     "AG-S2",
+     "ML-L2",
+     "AG-E2"
+    ],
+    "sourceId": "mi-d10/mi-d10-02.csv",
+    "sha256": "82990ba28b2a10161004c99e64f089aa1fb135f8de7d318358820d19196dc2a1",
+    "split": "development",
+    "permission": "unconfirmed",
+    "consumer": "INGEST",
+    "characters": 12661,
+    "bodyBytes": 16843,
+    "requestHash": "79783fc47c41c269ca6a7971b4966ce17f93afd64392b255743d44ea6e0c97c0",
+    "tokens": {
+     "inputEstimate": 5615,
+     "inputUpperBound": 18891,
+     "outputEstimate": 1024,
+     "outputUpperBound": 2048
+    },
+    "estimate": "₹0.15",
+    "upperBound": "₹0.41",
+    "held": "₹0.78",
+    "estimateMicroInr": "145665",
+    "upperBoundMicroInr": "406245"
+   },
+   {
+    "step": 7,
+    "id": "curve-file2-chunk2",
+    "provider": "none",
+    "boxes": [
+     "ML-L2",
+     "AG-E2"
+    ],
+    "sourceId": "mi-d10/mi-d10-02.csv",
+    "sha256": "82990ba28b2a10161004c99e64f089aa1fb135f8de7d318358820d19196dc2a1",
+    "split": "development",
+    "permission": "unconfirmed"
+   },
+   {
+    "step": 8,
+    "id": "curve-file2-chunk3",
+    "provider": "none",
+    "boxes": [
+     "ML-L2",
+     "AG-E2"
+    ],
+    "sourceId": "mi-d10/mi-d10-02.csv",
+    "sha256": "82990ba28b2a10161004c99e64f089aa1fb135f8de7d318358820d19196dc2a1",
+    "split": "development",
+    "permission": "unconfirmed"
+   },
+   {
+    "step": 9,
+    "id": "storey-0f793ce7-batch1",
+    "provider": "call",
+    "boxes": [
+     "AG-S1",
+     "AG-S2",
+     "ML-D1",
+     "ML-D3",
+     "AG-D1"
+    ],
+    "sourceId": "dev/RERAP279201800923-1-building-1.json",
+    "sha256": "0f793ce7ebd5c5a3b02e5f41b802f41a1bcae89cbbffa26b5c25eeb1ad35b008",
+    "split": "development",
+    "permission": "unconfirmed",
+    "consumer": "ASSIST",
+    "characters": 1885,
+    "bodyBytes": 7055,
+    "requestHash": "7a2a47446923a0693b057d6488b50379883c58282789c7e1689acff013ca835e",
+    "tokens": {
+     "inputEstimate": 2352,
+     "inputUpperBound": 9103,
+     "outputEstimate": 1024,
+     "outputUpperBound": 2048
+    },
+    "estimate": "₹0.10",
+    "upperBound": "₹0.26",
+    "held": "₹0.78",
+    "estimateMicroInr": "96720",
+    "upperBoundMicroInr": "259425"
+   },
+   {
+    "step": 10,
+    "id": "storey-b6f0178b-batch1",
+    "provider": "call",
+    "boxes": [
+     "AG-S1",
+     "AG-S2",
+     "ML-D1",
+     "ML-D3",
+     "AG-D1"
+    ],
+    "sourceId": "dev/RERAP01282025205138-1-building-1.json",
+    "sha256": "b6f0178b9951b71fe68c9213efa15dedfa5bf7fa78ee0ce30c57515f6975e53d",
+    "split": "development",
+    "permission": "unconfirmed",
+    "consumer": "ASSIST",
+    "characters": 4856,
+    "bodyBytes": 13143,
+    "requestHash": "cb8ce54322b3cf6b39efc677068f0b102e2960eb2aec32dbccb835c3cba10cdc",
+    "tokens": {
+     "inputEstimate": 4381,
+     "inputUpperBound": 15191,
+     "outputEstimate": 1024,
+     "outputUpperBound": 2048
+    },
+    "estimate": "₹0.13",
+    "upperBound": "₹0.36",
+    "held": "₹0.78",
+    "estimateMicroInr": "127155",
+    "upperBoundMicroInr": "350745"
+   },
+   {
+    "step": 11,
+    "id": "storey-f8a55dc2-batch1",
+    "provider": "call",
+    "boxes": [
+     "AG-S1",
+     "AG-S2",
+     "ML-D1",
+     "AG-D1"
+    ],
+    "sourceId": "demo/bihar-magnolia.json",
+    "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+    "split": "demo",
+    "permission": "unconfirmed",
+    "consumer": "ASSIST",
+    "characters": 2593,
+    "bodyBytes": 8966,
+    "requestHash": "d26fac3a82093137724a06533406a1859ca52df573bd65da02282356b1951f9e",
+    "tokens": {
+     "inputEstimate": 2989,
+     "inputUpperBound": 11014,
+     "outputEstimate": 1024,
+     "outputUpperBound": 2048
+    },
+    "estimate": "₹0.11",
+    "upperBound": "₹0.29",
+    "held": "₹0.78",
+    "estimateMicroInr": "106275",
+    "upperBoundMicroInr": "288090"
+   },
+   {
+    "step": 12,
+    "id": "storey-26c2d310-batch1",
+    "provider": "call",
+    "boxes": [
+     "AG-S1",
+     "AG-S2",
+     "ML-D1",
+     "AG-D1"
+    ],
+    "sourceId": "demo/haryana-2831-tower3.json",
+    "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+    "split": "demo",
+    "permission": "unconfirmed",
+    "consumer": "ASSIST",
+    "characters": 3468,
+    "bodyBytes": 10347,
+    "requestHash": "eaf4203c849143f24afebd661dea7989321e1ccb5baf4ab933eb2efcdba77eba",
+    "tokens": {
+     "inputEstimate": 3449,
+     "inputUpperBound": 12395,
+     "outputEstimate": 1024,
+     "outputUpperBound": 2048
+    },
+    "estimate": "₹0.12",
+    "upperBound": "₹0.31",
+    "held": "₹0.78",
+    "estimateMicroInr": "113175",
+    "upperBoundMicroInr": "308805"
+   },
+   {
+    "step": 13,
+    "id": "storey-f0dc0d56-batch1",
+    "provider": "call",
+    "boxes": [
+     "AG-S1",
+     "AG-S2",
+     "ML-D1",
+     "AG-D1"
+    ],
+    "sourceId": "demo/haryana-2831-tower3.json",
+    "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+    "split": "demo",
+    "permission": "unconfirmed",
+    "consumer": "ASSIST",
+    "characters": 3214,
+    "bodyBytes": 10543,
+    "requestHash": "bdf44f2a080cb460192ca4e22aaa3642c7f360e5f1597831de8f7e0e8f6e09c9",
+    "tokens": {
+     "inputEstimate": 3515,
+     "inputUpperBound": 12591,
+     "outputEstimate": 1024,
+     "outputUpperBound": 2048
+    },
+    "estimate": "₹0.12",
+    "upperBound": "₹0.32",
+    "held": "₹0.78",
+    "estimateMicroInr": "114165",
+    "upperBoundMicroInr": "311745"
+   }
+  ],
+  "stopRules": [
+   "Every call is one attempt: no repair call, no retry, never another key.",
+   "The run stops at the first refusal by the gateway, the first HTTP 402 or quota answer, the first rate limit, the first timeout or unknown outcome, and the first answer that could not be recorded.",
+   "It stops before a call when holding it at the full reservation would cross the total, daily, per-person or document-agent cap, counting every earlier call at its reservation.",
+   "After a stop every later step asks the replay store only, ends in needs_input or teacher_unavailable when nothing is recorded, and its receipt says afterStop.",
+   "An answer that fails validation is charged, recorded and reported as a result; it is not replayable."
+  ],
+  "neverSent": [
+   {
+    "input": "tabular family mi-h01",
+    "opened": false,
+    "reason": "held-out family: its files are never opened here and never reach a teacher"
+   },
+   {
+    "input": "tabular family mi-h02",
+    "opened": false,
+    "reason": "held-out family: its files are never opened here and never reach a teacher"
+   },
+   {
+    "input": "tabular family mi-h03",
+    "opened": false,
+    "reason": "held-out family: its files are never opened here and never reach a teacher"
+   },
+   {
+    "input": "tabular family mi-h04",
+    "opened": false,
+    "reason": "held-out family: its files are never opened here and never reach a teacher"
+   },
+   {
+    "input": "tabular family mi-h05",
+    "opened": false,
+    "reason": "held-out family: its files are never opened here and never reach a teacher"
+   },
+   {
+    "input": "docs/evidence/usp/finale/GF-DATA/storey-truth/holdout/ and holdout-manifest.json",
+    "opened": false,
+    "reason": "held-out RERA projects: only dev/ and demo/ records can make a document eligible"
+   },
+   {
+    "input": "any private or restricted document, and any input without a recorded permission state",
+    "opened": false,
+    "reason": "the builders return TEACHER_DATA_DENIED or T1_SOURCE_DENIED before a request exists"
+   },
+   {
+    "input": "storey-2b9f8803-batch1",
+    "reason": "the gateway would refuse this request: MODEL_PROMPT_PRIVACY",
+    "opened": true
+   },
+   {
+    "input": "storey-2aadce88-batch1",
+    "reason": "the gateway would refuse this request: MODEL_PROMPT_PRIVACY",
+    "opened": true
+   }
+  ],
+  "curve": {
+   "files": "the first two CSV files of development family mi-d10, the files of the A4 replay curve",
+   "chunking": "the worker rule: 16 rows per chunk, fewer for tables wider than 16 columns",
+   "expectedFall": "within a file the calls fall from 1 to 0 after the first chunk of a header layout, because the verified proposal is reused; the student removes columns from a request only where it commits",
+   "acrossFiles": "the second file asks again unless an officer-approved plan for its layout is in accepted memory or the student commits every column; this run approves nothing, so it promises no fall across files",
+   "honesty": "the receipt reports per chunk the paid calls, replay asks, reuse, student fields, unanswered fields and questions as they happen; a curve that does not fall is reported as it is",
+   "memory": "a new, empty memory file inside the run folder: accepted runtime memory is neither read nor written"
+  },
+  "ledgerAtStart": "assumed empty: the plan does not read the runtime ledger; the live admission is the ledger"
+ },
+ "dryRun": {
+  "command": "pnpm exec tsx scripts/agent/live-proof.ts --dry-run",
+  "fullOutput": "E:/BhuAayam-data/task-data/s1/dry-run-20261010T154211525Z/receipt.json",
+  "summary": {
+   "steps": 13,
+   "gatewayAsks": 9,
+   "providerDispatches": 0,
+   "ledgerReservations": 0,
+   "fetchAttempts": 0,
+   "requestsMatchingPlan": 8,
+   "endStates": {
+    "needs_input": 6,
+    "teacher_unavailable": 7
+   }
+  },
+  "stopped": null,
+  "keyHandling": "no key is read: the gateway is built here from the policy and a replay adapter; configuredGateway(), readProviderSecret() and the Sarvam adapter are never called",
+  "receiptShape": {
+   "step": 1,
+   "id": "storey-cf152f32-batch1",
+   "mode": "dry_run",
+   "boxes": [
+    "AG-S1",
+    "AG-S2",
+    "ML-D1",
+    "ML-D3",
+    "AG-D1"
+   ],
+   "afterStop": false,
+   "requestHash": "0d903c8168fe683444ebd135a1f4e68d11be9a767f0340e44e15ed2d02602a58",
+   "capAdmission": {
+    "admitted": true,
+    "code": null
+   },
+   "gatewayAsks": 1,
+   "requestMatchesPlan": true,
+   "providerCalls": 0,
+   "endState": "teacher_unavailable",
+   "code": "TEACHER_REPLAY_UNAVAILABLE",
+   "replayed": false,
+   "detail": {
+    "abstain": null
+   },
+   "live": {
+    "httpStatus": null,
+    "inputTokens": null,
+    "outputTokens": null,
+    "actualMicroInr": null,
+    "responseHash": null,
+    "ledgerCallId": null
+   }
+  }
+ },
+ "closure": {
+  "closes": [
+   "AG-S1",
+   "AG-S2",
+   "AG-E2",
+   "ML-D1 (after the offline quote check and scoring of the six answers)"
+  ],
+  "partly": {
+   "ML-D3": "registry-scored development answers yes; independent floor-label truth, blank unit counts and any held-out agent score no",
+   "ML-L2": "the paid call curve on two files yes; precision on committed fields has no committed n, and no fall across files is promised"
+  },
+  "cannotClose": {
+   "AG-D1": "the agent-to-proposal adapter is not on staging at e4623944; the run only supplies its input"
+  }
+ },
+ "inputs": {
+  "good": "mi-d10-01.csv and mi-d10-02.csv (development, 16 columns, 3 chunks each) and six development or demo storey page stores: 8 requests built, sized and asked",
+  "difficult": "the two Tower 3 plan page stores (2b9f8803, 2aadce88): one OCR line in each begins with a square bracket, the gateway's text minimizer refuses the whole request with MODEL_PROMPT_PRIVACY, so the plan lists them under neverSent"
+ },
+ "gaps": [
+  "Tower 3 plan 1 and plan 2 cannot be sent as they are: a line starting with a square bracket makes minimizeStructuredText refuse the request. The fix is in the storey agent's line preparation or the minimizer, outside this task's paths.",
+  "The estimate's token ratio (3 bytes per token) and the output estimate (half the maximum) are assumptions; the first live receipt replaces them.",
+  "The plan assumes an empty ledger and cold memory; it does not read the runtime ledger, accepted memory or recordings.",
+  "The live mode was written and never started. How the demo profile's environment reaches that process is for the runtime owner's task file.",
+  "The live receipt takes tokens and cost from the recording; the ledger call id is read from PostgreSQL by the runtime owner.",
+  "The proposal's input bound (34816) and pace (1500 ms) are the schema's smallest values, not approved bounds.",
+  "live-proof.ts is one long file; chunkRows mirrors the worker's private tabularChunkRows from the public TABULAR_LIMITS instead of importing the worker.",
+  "The replayed-software-control end state is coded but not exercised by a test; the default dry run has no recording to replay."
+ ],
+ "productionFilesChanged": [],
+ "exportsAdded": [],
+ "checks": [
+  {
+   "command": "pnpm exec tsc -p scripts/agent/tsconfig.json",
+   "exitCode": 0
+  },
+  {
+   "command": "pnpm typecheck:backend",
+   "exitCode": 0
+  },
+  {
+   "command": "pnpm exec tsx --test scripts/agent/live-proof.test.ts",
+   "exitCode": 0,
+   "pass": 4,
+   "fail": 0
+  },
+  {
+   "command": "pnpm exec tsx --test scripts/agent/mapping-teacher.test.ts",
+   "exitCode": 0,
+   "pass": 10,
+   "fail": 0
+  },
+  {
+   "command": "pnpm exec tsx --test scripts/agent/mapping-teacher-review.test.ts",
+   "exitCode": 0,
+   "pass": 5,
+   "fail": 0
+  },
+  {
+   "command": "pnpm exec tsx --test scripts/agent/mapping-routing.test.ts",
+   "exitCode": 0,
+   "pass": 3,
+   "fail": 0
+  },
+  {
+   "command": "pnpm exec tsx --test tests/model-gateway/control.test.ts",
+   "exitCode": 0,
+   "pass": 8,
+   "fail": 0
+  },
+  {
+   "command": "pnpm exec tsx --test packages/server/src/modules/ai/document-storey-agent.test.ts",
+   "exitCode": 0,
+   "pass": 8,
+   "fail": 0
+  },
+  {
+   "command": "live-proof.ts --plan, twice",
+   "exitCode": 0,
+   "equalApartFromTimestamps": true
+  },
+  {
+   "command": "live-proof.ts --dry-run, twice",
+   "exitCode": 0,
+   "equalApartFromTimestamps": true
+  },
+  {
+   "command": "git diff --check",
+   "exitCode": 0
+  },
+  {
+   "command": "awk length>120 on live-proof.ts, live-proof.test.ts, LIVE-PROOF.md",
+   "exitCode": 0,
+   "longLines": 0
+  }
+ ],
+ "report": {
+  "TASK": "S1 — The first approved Sarvam run, planned to the call and to the rupee, and a dry run that sends nothing. GATE AG-S1, AG-S2, ML-D1, ML-D3, ML-L2, AG-D1, AG-E2",
+  "WORKS": [
+   "8 calls; estimate ₹0.95, at most ₹6.20 of the ₹100 proposed (lead's proposal, not approved); closes boxes AG-S1, AG-S2, AG-E2 and, after offline scoring, ML-D1; cannot close AG-D1 (no agent-to-proposal adapter on staging), ML-D3's independent label truth, or ML-L2's precision (no committed n).",
+   "The dry run walks all 13 steps: 9 gateway asks, 0 provider dispatches, 0 ledger reservations, 0 fetch attempts, 8 of 8 requests equal to the planned hash; every step ends needs_input or teacher_unavailable."
+  ],
+  "SEE IT": "pnpm exec tsx scripts/agent/live-proof.ts --dry-run   (and --plan [--tariff <policy.json>])",
+  "INPUTS": "good: mi-d10-01.csv and mi-d10-02.csv plus six development or demo storey page stores; difficult: the two Tower 3 plan page stores, refused offline with MODEL_PROMPT_PRIVACY",
+  "GAPS": "Tower 3 plans 1 and 2 cannot be sent until a line starting with a square bracket stops tripping the minimizer; token ratio and output estimate are assumptions; live mode written, never started; ledger assumed empty.",
+  "DESIGN": [
+   "scripts/agent/live-proof.ts: orderedSteps() builds every request with mappingTeacherRequest and storeyRequest, sizes it as gateway.ts measures it, prices it with pricing.ts cost() and reservation(), and asks capAdmission() in the ledger's order.",
+   "runSequence() is one walk for both modes; dryRunDrivers() gives it a ModelGateway over a ReplayAdapter and a counting ledger double, liveDrivers() the runtime gateway behind assertLiveStart().",
+   "The tariff is a whole gateway policy parsed by ModelGatewayConfigSchema, so tariff.policyHash is the hash that status prints; docs/backend/LIVE-PROOF.md is the page for the day."
+  ],
+  "COMMITS": [
+   "cec89177 docs(agent): S1 what each blocked M1 box needs from one live answer",
+   "fb195a47 feat(agent): the first live Sarvam run as a computed plan and a dry run that sends nothing",
+   "ccf82993 docs(gateway): the approval day in order, with its cost in rupees",
+   "ccbcd57b refactor(agent): S1 keep live-proof's helpers private",
+   "(this commit) docs(agent): S1 evidence"
+  ],
+  "CHECKS": "tsc -p scripts/agent/tsconfig.json 0; pnpm typecheck:backend 0; live-proof.test.ts 4/4 0; mapping-teacher 10, mapping-teacher-review 5, mapping-routing 3, tests/model-gateway/control 8, document-storey-agent 8, all 0; plan twice equal 0; dry run twice equal 0; git diff --check 0; no line over 120",
+  "NEXT": [
+   "Lead: a small task to let the two Tower 3 plan batches pass the minimizer, then re-run --plan.",
+   "Owner: the policy file; re-run --plan --tariff with it for the real hash and rupees.",
+   "Runtime owner: on approval, follow docs/backend/LIVE-PROOF.md; the task file must say how the demo environment reaches the --live process, then reconcile the ledger rows by request hash.",
+   "After the run: storeys/a5/verify-candidates.ts and score.py on the written agent files for ML-D1 and ML-D3; the proposal adapter for AG-D1."
+  ]
  }
 }
