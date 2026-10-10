@@ -114,3 +114,13 @@ loss repair, registry, B5 parity/card and earlier preregistration sections stay 
    claims, never a new Karnataka HOLDOUT claim. Export/parity/inactive registration only if B6 wins.
 
 **Retain epoch 4, inactive/test-only/uncalibrated. No worker process or model installation is pending.**
+
+## Outcome (B6b, recorded 10 October 2026)
+
+- Chunked mask loss (loss-identical on CPU) let 672 train within the 6 GiB cap; run `b6b-train-r672` stopped at epoch 6 on recall patience.
+- **B6 is rejected on DEV.** Best epoch 3: recall 0.640, precision 0.866. Epoch 4 (B3, 432 px) has recall 0.662, precision 0.854.
+  The preregistered rule needs strictly higher DEV recall first, so transfer-2 never ran.
+- Small-roof bins did not improve either (128-256 px 0.352 vs 0.395; 64-128 px 0.257 vs 0.298; 16-64 px 0.106 vs 0.127).
+- Transfer-2: 0 evaluations; both slots (`epoch4`, `b6`) unspent. Keep epoch 4 as the demo candidate.
+- B6 checkpoints stay outside Git, are not registered and are not exported.
+- Revisit only with a different principal factor after a fresh diagnosis. Details: `b6/b6-decision.json`.
