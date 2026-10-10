@@ -1,0 +1,290 @@
+{
+  "task": "LV0",
+  "scope": "Documentation-only task sizing; no implementation, runtime qualification or architecture-file edits.",
+  "sizeKey": "S = one bounded seam; M = several callers/state seams; L = multi-lane qualification.",
+  "contractKey": "true means a new/changed published schema is needed, not permission to relax review or safety.",
+  "ownerBasis": "docs/next-steps/SPRINT-SELECTION.md:19-25",
+  "ownerSentences": [
+    "1. Presentation starts with nothing prepared on the runtime.",
+    "2. Our selected NYC and Indian files enter live through product routes.",
+    "3. A judge's unseen file enters without a code change and its meaning is reviewed.",
+    "4. With the model or without it, the file gets in.",
+    "5. Large files are drawn/listed in parts steadily, without freezing."
+  ],
+  "gaps": [
+    {
+      "id": "empty-runtime",
+      "sentence": 1,
+      "gap": "reset-session clears local session/IndexedDB, not runtime data; empty live intake is unqualified.",
+      "where": "apps/studio/src/local/start.ts:15-23",
+      "needsContractChange": false,
+      "size": "M",
+      "dependsOn": ["owner-approved rehearsal runtime", "exclusive runtime owner"],
+      "direction": "Qualify an owner-approved fresh runtime without resetting populated volumes."
+    },
+    {
+      "id": "mixed-front-door",
+      "sentence": 2,
+      "gap": "NewFiles sends GIS or table paths; mixed NYC ZIP, raster and point fusion remain demo-only.",
+      "where": [
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:134-193,239-242",
+        "scripts/demo-import/plugin.mjs:139-151",
+        "packages/server/src/modules/usp/ingestion/document-native.ts:65-81"
+      ],
+      "needsContractChange": true,
+      "size": "L",
+      "dependsOn": ["retention-first batch contract", "container-fan-out", "per-lane worker configuration"],
+      "direction": "Add one retained-original intake spine over existing routes, then dispatch by verified bytes."
+    },
+    {
+      "id": "area-ceiling",
+      "sentence": 2,
+      "gap": "NYC has 2363 vector features, 2362 native accepted; area display refuses more than 2000.",
+      "where": [
+        "docs/evidence/gf5/lv0/eight.json:1-109",
+        "packages/server/src/modules/areas/areas.ts:215-242",
+        "services/geo/geo/gis_inspection.py:71-72"
+      ],
+      "needsContractChange": true,
+      "size": "M",
+      "dependsOn": ["mapped-part-map-bridge", "LV1", "bounded view/page contract"],
+      "direction": "Read by bounded view/cursor rather than silently truncating or lifting all safety limits."
+    },
+    {
+      "id": "mapped-part-map-bridge",
+      "sentence": 5,
+      "gap": "Raw/mapped chunks and case events exist, but no live spatial chunk consumer feeds candidate scene state.",
+      "where": [
+        "apps/studio/src/features/map/canonicalScene.ts:55-70",
+        "packages/contracts/src/usp/chunk-mapping.ts:68-116",
+        "packages/contracts/src/usp/ingestion-events.ts:51-62"
+      ],
+      "needsContractChange": false,
+      "size": "M",
+      "dependsOn": ["current source/reference pins", "LV1", "officer review retained as record gate"],
+      "direction": "Join mapped geometryRefs to existing raw chunk reads into separate private candidate scene state.",
+      "contractNote": "Internal adapter is additive; a shared candidate-view GET would require a new contract."
+    },
+    {
+      "id": "sequential-document-staleness",
+      "sentence": 2,
+      "gap": "REH1's sequential receipts advanced case revision; earlier job GETs returned DOCUMENT_INPUT_STALE.",
+      "where": [
+        "staging:docs/evidence/runtime/reh1/part-b-notes.json:34-35",
+        "packages/server/src/modules/usp/ingestion/documents.ts:126-129,148-174",
+        "packages/server/src/modules/usp/ingestion/document-context.ts:56-81"
+      ],
+      "needsContractChange": true,
+      "size": "M",
+      "dependsOn": ["K13 owns repair", "retained freshness semantics"],
+      "direction": "Expose retained-read freshness without granting obsolete inputs current derivation/write authority."
+    },
+    {
+      "id": "unseen-table-admission",
+      "sentence": 3,
+      "gap": "Exact public D8 development hash/size gate refuses unfamiliar judge bytes with TABULAR_DATA_DENIED.",
+      "where": "packages/server/src/modules/usp/ingestion/tabular-source.ts:51-60",
+      "needsContractChange": true,
+      "size": "M",
+      "dependsOn": ["privacy/licence admission", "generic retained source pins", "masked mapping ladder"],
+      "direction": "Replace development-only admission with reviewed source authority, not a wider allowlist."
+    },
+    {
+      "id": "table-recording",
+      "sentence": 3,
+      "gap": "Tabular mapping can propose/read rows, but execution refuses registry creation as unqualified.",
+      "where": "packages/server/src/modules/usp/ingestion/service.ts:225-268",
+      "needsContractChange": true,
+      "size": "L",
+      "dependsOn": ["reviewed link targets", "verified unit/building semantics", "officer review"],
+      "direction": "Add reviewed source-cited fact/link admission without turning table rows into invented geometry."
+    },
+    {
+      "id": "all-layouts-ladder",
+      "sentence": 3,
+      "gap": "Mapping ladder operates on bounded profiles/chunks, not universal document/CAD/unknown-format semantics.",
+      "where": [
+        "packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts:1-80",
+        "packages/server/src/modules/usp/ingestion/document-native.ts:65-81"
+      ],
+      "needsContractChange": true,
+      "size": "L",
+      "dependsOn": ["holdings-card", "officer questions", "configured local readers/models"],
+      "direction": "Route supported profiles to the existing ladder and hold unsupported meaning explicitly."
+    },
+    {
+      "id": "unknown-retention-ui",
+      "sentence": 4,
+      "gap": "Backend document receipt retains unsupported bytes; Studio has no keep-unknown action or generic upload.",
+      "where": [
+        "packages/server/src/modules/usp/ingestion/documents.ts:119-129",
+        "packages/server/src/modules/usp/ingestion/document-native.ts:65-68",
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:134-158,222-242"
+      ],
+      "needsContractChange": true,
+      "size": "M",
+      "dependsOn": ["mixed-front-door", "explicit unknown provenance semantics"],
+      "direction": "Retain bytes as not understood and expose held state without attempting an invented conversion."
+    },
+    {
+      "id": "container-fan-out",
+      "sentence": 2,
+      "gap": "ZIP inventory/member reads exist; generic child-source fan-out/dependency grouping does not.",
+      "where": [
+        "services/geo/geo/native_archive.py:55-143",
+        "packages/contracts/src/usp/document-ingestion.ts:11-12",
+        "services/geo/geo/native_gis.py:180-205"
+      ],
+      "needsContractChange": true,
+      "size": "M",
+      "dependsOn": ["immutable parent/member locators", "mixed-front-door", "reviewed sidecar grouping"],
+      "direction": "Publish bounded child items tied to immutable parent/member pins rather than execute ZIP contents."
+    },
+    {
+      "id": "layer-selection",
+      "sentence": 2,
+      "gap": "GeoPackage/multiple-shapefile preflight lists layers, but NewFiles provides no layer selector.",
+      "where": [
+        "services/geo/geo/gis_inspection.py:40-48",
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:131-158,170-171,186-193"
+      ],
+      "needsContractChange": false,
+      "size": "S",
+      "dependsOn": ["existing explicit layer inspect request"],
+      "direction": "Ask for an existing layer selection before mapping, without guessing the preferred layer."
+    },
+    {
+      "id": "holdings-card",
+      "sentence": 4,
+      "gap": "Per-kind profiles/results and source-fusion views exist, but no common holdings-card/index contract.",
+      "where": [
+        "packages/server/src/modules/usp/ingestion/source-fusion.ts:138-183",
+        "packages/contracts/src/usp/streamed-profile.ts:6-29"
+      ],
+      "needsContractChange": true,
+      "size": "M",
+      "dependsOn": ["bounded per-kind profiles", "private keys present/absent only"],
+      "direction": "Add a source-cited common card preserving unknown/unread coverage and private-key presence."
+    },
+    {
+      "id": "triage-and-arrival-linking",
+      "sentence": 4,
+      "gap": "Sufficiency and explicit fusion associations exist; no generic arrival-triggered holdings linker.",
+      "where": [
+        "packages/server/src/modules/usp/ingestion/sufficiency.ts:104-175",
+        "packages/server/src/modules/usp/ingestion/source-fusion-associations.ts:89-118"
+      ],
+      "needsContractChange": true,
+      "size": "L",
+      "dependsOn": ["holdings-card", "source arrivals", "officer conflict review"],
+      "direction": "Re-evaluate exact/spatial cited candidate links on arrivals, holding ambiguous or unplaced sources."
+    },
+    {
+      "id": "remaining-lane-conductor",
+      "sentence": 5,
+      "gap": "Raster/point/GeoParquet select one part; vector/mapping already walk; tables still buffer 2000 rows.",
+      "where": [
+        "services/geo/geo/raster_window.py:54-98",
+        "services/geo/geo/point_batch.py:35-75",
+        "packages/contracts/src/usp/geoparquet-ingestion.ts:16-21",
+        "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts:174-190"
+      ],
+      "needsContractChange": true,
+      "size": "L",
+      "dependsOn": ["existing job authority", "per-lane coverage/continuation receipts", "owner size targets"],
+      "direction": "Extend bounded next-part scheduling only where missing and qualify each lane's new coverage bound."
+    },
+    {
+      "id": "scene-growing-replacement",
+      "sentence": 5,
+      "gap": "Accepted Part A: longest frame 1783.3 ms, 28 >100 ms; full replacement cost grows with prior buildings.",
+      "where": [
+        "docs/evidence/gf5/lv0/lag.json:12-25",
+        "packages/scene/src/engine.ts:404-486",
+        "packages/scene/src/react.tsx:65-66"
+      ],
+      "needsContractChange": false,
+      "size": "M",
+      "dependsOn": ["LV1 scene delta/frame budget", "mapped-part-map-bridge"],
+      "direction": "Apply only new scene work inside a measured frame budget, retaining explicit coverage state."
+    },
+    {
+      "id": "bulk-stream-review",
+      "sentence": 3,
+      "gap": "Package review/commit exists; raw/mapped chunks are not a bulk-reviewed spatial registry batch.",
+      "where": [
+        "apps/api/src/modules/intake/import-packages.controller.ts:146-200",
+        "packages/contracts/src/usp/chunk-mapping.ts:68-116"
+      ],
+      "needsContractChange": true,
+      "size": "M",
+      "dependsOn": ["mapped-part-map-bridge", "reviewed exact coverage and current source pins"],
+      "direction": "Add bulk candidate decisions to existing review/record authority without auto-recording streams."
+    }
+  ],
+  "architectureSection3Classification": [
+    {
+      "stage": "Receive",
+      "kind": "contract-additive",
+      "needsContractChange": true,
+      "gapIds": ["mixed-front-door", "unknown-retention-ui"],
+      "note": "Existing bytes routes reused; new batch/item/unknown-provenance shape, not a competing uploader."
+    },
+    {
+      "stage": "Identify",
+      "kind": "contract-additive",
+      "needsContractChange": true,
+      "gapIds": ["container-fan-out"],
+      "note": "Sniffer dispatch is additive code; durable parent/member items need a contract."
+    },
+    {
+      "stage": "Profile",
+      "kind": "contract-additive",
+      "needsContractChange": true,
+      "gapIds": ["holdings-card"],
+      "note": "Reuse inventories/profiles; common card/index is new, bounded, source-cited."
+    },
+    {
+      "stage": "Place?",
+      "kind": "contract-additive",
+      "needsContractChange": true,
+      "gapIds": ["triage-and-arrival-linking"],
+      "note": "Reuse sufficiency; triage/held/ask disposition needs one common shape."
+    },
+    {
+      "stage": "Read in parts",
+      "kind": "mixed",
+      "needsContractChange": true,
+      "gapIds": ["remaining-lane-conductor"],
+      "note": "Scheduling existing windows is additive; whole-lane coverage and raised limits change contracts."
+    },
+    {
+      "stage": "Understand",
+      "kind": "mixed",
+      "needsContractChange": true,
+      "gapIds": ["all-layouts-ladder", "unseen-table-admission"],
+      "note": "Reuse ladder; operational table authority and cross-kind meaning/unknown outputs change contracts."
+    },
+    {
+      "stage": "Publish",
+      "kind": "additive-internal",
+      "needsContractChange": false,
+      "gapIds": ["mapped-part-map-bridge", "scene-growing-replacement"],
+      "note": "Minimum adapter joins existing reads/events; optional shared candidate-view contract is additive."
+    },
+    {
+      "stage": "Link",
+      "kind": "contract-additive",
+      "needsContractChange": true,
+      "gapIds": ["holdings-card", "triage-and-arrival-linking"],
+      "note": "Reuse fusion; arrival-driven index/link candidates add state/reads, not ownership facts."
+    },
+    {
+      "stage": "Review, record",
+      "kind": "contract-additive",
+      "needsContractChange": true,
+      "gapIds": ["bulk-stream-review", "table-recording"],
+      "note": "Extend reviewed batch coverage/decisions in one registry authority; never auto-record."
+    }
+  ]
+}

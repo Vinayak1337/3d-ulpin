@@ -1,0 +1,757 @@
+{
+  "task": "LV0",
+  "basis": {
+    "productRevision": "b7657546e49299b3bd49b1e38c8656dc5dd421fd",
+    "architecture": "E:/Projects/3d-ulpin/docs/next-steps/INGESTION-ARCHITECTURE.md",
+    "architectureEdited": false,
+    "method": "Code audit plus eight.json native reads; no HTTP, runtime, DB, model or storing request.",
+    "boundsPolicy": "Numbers below are implemented ceilings, not qualified presentation capacity.",
+    "units": "MiB = 1048576 bytes; GiB = 1073741824 bytes.",
+    "sharedBounds": "paths.json.commonBounds supplies HTTP, area, event and upload bounds.",
+    "uiBasis": [
+      "apps/studio/src/features/intake/AddFilesDialog.tsx:131-193,222-242",
+      "apps/studio/src/local/routes.ts:105-145",
+      "apps/studio/src/features/intake/table/queries.ts:12-53",
+      "apps/studio/src/features/evidence/citedPage.ts:60-70"
+    ],
+    "genericNativeUi": "No NewFiles intake for the native 3D, raster, point, PDF or document job lanes.",
+    "notAdmission": "A native inventory, displayed candidate or source association is not a registry record."
+  },
+  "nyc": {
+    "nativeReceipt": "docs/evidence/gf5/lv0/eight.json:1-109",
+    "repeat": "PYTHONDONTWRITEBYTECODE=1 <owned-python> docs/evidence/gf5/lv0/eight-check.py",
+    "ownedPython": "E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe",
+    "setupAddition": "Owned Python environment: pip install boto3; no shared dependencies changed.",
+    "packBytes": 14621643,
+    "zipMembers": 10,
+    "profileLayers": 8,
+    "inventoryNote": "ZIP also has boundary-original.geojson and manifest.json; eight layers match demo profile.",
+    "profileWhere": "scripts/demo-import/nyc-profile.json:6-86",
+    "vectorFeatures": 2363,
+    "nativeAcceptedFeatures": 2362,
+    "nativeRejectedFeatures": 1,
+    "cap": 2000,
+    "demoExcess": 363,
+    "nativeExcess": 362,
+    "areaOutcome": "A single area's display of these accepted layers exceeds 2000: 422 AREA_LIMIT, not truncation.",
+    "areaWhere": "packages/server/src/modules/areas/areas.ts:215-242",
+    "perFile": [
+      {
+        "name": "buildings-original.geojson",
+        "measured": "1662 inspected; 1661 accepted; 1 quarantined, not repaired; 1103282 bytes.",
+        "realHttp": "GIS inspect succeeds with quarantine; import requires explicit valid mapping and source pins.",
+        "where": "services/geo/geo/gis_inspection.py:34-119"
+      },
+      {
+        "name": "roadbed.geojson",
+        "measured": "446 inspected/accepted; 0 quarantined; 1837922 bytes.",
+        "realHttp": "GIS preflight fits; native inspection is not proof of reviewed context import.",
+        "where": "services/geo/geo/gis_inspection.py:34-119"
+      },
+      {
+        "name": "sidewalk.geojson",
+        "measured": "213 inspected/accepted; 0 quarantined; 1854113 bytes.",
+        "realHttp": "GIS preflight fits; explicit role/mapping and package review still required.",
+        "where": "services/geo/geo/gis_inspection.py:34-119"
+      },
+      {
+        "name": "parks.geojson",
+        "measured": "41 inspected/accepted; 0 quarantined; 119417 bytes.",
+        "realHttp": "GIS preflight fits; explicit role/mapping and package review still required.",
+        "where": "services/geo/geo/gis_inspection.py:34-119"
+      },
+      {
+        "name": "hydrography.geojson",
+        "measured": "1 inspected/accepted; 0 quarantined; 2055 bytes.",
+        "realHttp": "GIS preflight fits; explicit role/mapping and package review still required.",
+        "where": "services/geo/geo/gis_inspection.py:34-119"
+      },
+      {
+        "name": "nyc-10013-lidar-2017.laz",
+        "measured": "11110715 bytes; 1726222 points; default 8192 read; 245760 artifact bytes.",
+        "realHttp": "Fits point receipt/reader; 201 queues first batch; configured worker and authority required.",
+        "studio": "Without demo, NewFiles marks this not-gis; no point receipt/upload control.",
+        "where": [
+          "services/geo/geo/point_batch.py:35-113",
+          "apps/api/src/modules/ingestion/point-batch.controller.ts:15-59"
+        ]
+      },
+      {
+        "name": "nyc-10013-dem-2017.tif",
+        "measured": "989186 bytes; 832x911, 1 band; 256x256 read; 117176 artifact bytes.",
+        "realHttp": "Fits raster receipt/reader; 201 queues first window, not full-source fusion or height.",
+        "studio": "Without demo, NewFiles marks this not-gis; no raster receipt/upload control.",
+        "where": [
+          "services/geo/geo/raster_window.py:54-151",
+          "apps/api/src/modules/ingestion/raster-window.controller.ts:15-59"
+        ]
+      },
+      {
+        "name": "nyc-10013-ortho-2018.tif",
+        "measured": "1036134 bytes; 768x768, 4 bands; 256x256 read; 95494 artifact bytes.",
+        "realHttp": "Fits raster receipt/reader; 201 queues first window; no automatic canonical overlay.",
+        "studio": "Without demo, NewFiles marks this not-gis; no raster receipt/upload control.",
+        "where": [
+          "services/geo/geo/raster_window.py:54-151",
+          "apps/api/src/modules/ingestion/raster-window.controller.ts:15-59"
+        ]
+      }
+    ],
+    "mixedZipOutcome": "GIS ZIP route expects shapefile companions; not a generic NYC mixed-layer importer.",
+    "mixedZipWhere": "services/geo/geo/native_gis.py:165-204",
+    "documentZipOutcome": "Retains ZIP first; this pack exceeds inventory's reader bound; no fan-out or fusion.",
+    "documentZipBounds": "Native reader stops above 10 MiB although receipt supports 16 MiB; this ZIP is 14.62 MB.",
+    "documentZipCode": "NATIVE_READER_BYTE_LIMIT, native status tool_error; original still retained.",
+    "documentZipWhere": "packages/server/src/modules/usp/ingestion/document-native.ts:65-81",
+    "largeZipOutcome": "Both large-original profiles require at least 16777217 bytes; this ZIP is below that floor.",
+    "largeZipWhere": "packages/contracts/src/usp/ingestion.ts:179-185",
+    "qualification": "Native outcomes measured; HTTP/status implications code-derived, not runtime-tested."
+  },
+  "readers": [
+    {
+      "id": "area-gis",
+      "formats": "GeoJSON FeatureCollection, ArcGIS 2D JSON, SQLite GeoPackage, zipped 2D shapefile sets.",
+      "detect": "Byte signature then structure; GeoJSON RFC7946 CRS84 default is specification, not guessed CRS.",
+      "detectWhere": "services/geo/geo/gis_inspection.py:34-72",
+      "bounds": "16 MiB; 2000 features; 100000 vertices; 10000/feature; 256 fields/parts; 50 km extent.",
+      "boundsExtra": "Shapefile ZIP: 1000 members, 64 MiB expanded; GPKG/shapefile: 100 layers; SQLite 5 s.",
+      "boundsWhere": [
+        "services/geo/geo/area.py:30-39,83-117,316-415",
+        "services/geo/geo/native_gis.py:24-39,79-151,165-234",
+        "services/geo/geo/gis_inspection.py:16-18,71-78,100-110"
+      ],
+      "processing": "Whole selected layer materialized and normalized synchronously; no semantic continuation.",
+      "nextPart": "Caller must select another layer/import; inspection can list layers, UI lacks selector.",
+      "outputs": "Inspection/quarantine; package proposals and area candidate display; canonical reviewed records.",
+      "events": "No per-part feature event; Studio polls import package and area reads.",
+      "studioDemoOff": "Reachable NewFiles GIS inspect/map/import; one selected ready file.",
+      "where": [
+        "packages/server/src/modules/areas/areas.ts:370-480,863-909",
+        "apps/api/src/modules/intake/import-packages.controller.ts:80-119,146-200",
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:127-193"
+      ]
+    },
+    {
+      "id": "streaming-vector",
+      "formats": "UTF-8 FeatureCollection or RFC7464 RS+LF GeoJSON sequence; not arbitrary NDJSON.",
+      "detect": "Caller framing pin; parser verifies type before features, unique keys, exact numeric roundtrip.",
+      "detectWhere": "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts:12-75,130-170",
+      "bounds": "128 MiB original; 1 MiB feature; 512 KiB/100 features per chunk; 4096 chunks; 10000 positions.",
+      "boundsExtra": "64 KiB/32 metadata fields; nesting 64; 600 s; 8 lookahead slots; 64 MiB staged; active 2.",
+      "boundsWhere": [
+        "packages/contracts/src/usp/streaming-vector.ts:4-10",
+        "packages/server/src/modules/usp/ingestion/streaming-vector.ts:133-139"
+      ],
+      "processing": "One streaming job walks original, emits bounded chunks, verifies full original at EOF.",
+      "nextPart": "Worker consume/flush loop; no browser request or render ack for the next part.",
+      "outputs": "Job coverage and up to 32 slots; numbered chunk GET includes offsets/hash and freshness.",
+      "events": "streaming-vector.changed and streaming-vector.chunk; notifications, not geometry payloads.",
+      "studioDemoOff": "Table dialog calls this lane; no generic spatial-file streaming control/map subscriber.",
+      "where": [
+        "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts:176-224",
+        "apps/api/src/modules/ingestion/streaming-vector.controller.ts:19-45",
+        "packages/contracts/src/usp/ingestion-events.ts:51-55",
+        "apps/studio/src/features/intake/table/queue.ts:13-21"
+      ]
+    },
+    {
+      "id": "streamed-profile",
+      "formats": "Published raw vector chunks; profile inventory, not a new original parser.",
+      "detect": "Pinned raw source/job/reader and hash; generation binds observed coverage.",
+      "detectWhere": "packages/contracts/src/usp/streamed-profile.ts:8-29",
+      "bounds": "64 paths; 4097 generations; 100 quarantine locators; 65536 body bytes; active 1; wait 720 s.",
+      "boundsWhere": "packages/contracts/src/usp/streamed-profile.ts:6-7",
+      "processing": "Worker follows raw chunks and seals final generation; partial coverage is not whole-source truth.",
+      "nextPart": "Worker window loop follows raw slots; caller reads specific generation and approves recipe.",
+      "outputs": "Status/generation GET and reviewed full/prefix recipe; no direct map geometry output.",
+      "events": "streamed-profile.changed / streamed-profile.generation with coverage and hash.",
+      "studioDemoOff": "No generic spatial streamed-profile NewFiles control; table profile path is separate.",
+      "where": [
+        "packages/server/src/modules/usp/ingestion/streamed-profile-worker.ts:176-200",
+        "apps/api/src/modules/ingestion/streamed-profile.controller.ts:22-95",
+        "packages/contracts/src/usp/ingestion-events.ts:63-68"
+      ]
+    },
+    {
+      "id": "chunk-mapping",
+      "formats": "Published raw GIS chunks or pinned tabular chunks; not a separate original format parser.",
+      "detect": "Raw job, recipe/profile, schema and converter pins; officer recipe or proposal-only route.",
+      "detectWhere": "packages/server/src/modules/usp/ingestion/chunk-mapping.ts:51-129",
+      "bounds": "256 KiB/100 records per chunk; 4096 chunks; 720 s; active 1; 32 status slots.",
+      "boundsWhere": "packages/contracts/src/usp/chunk-mapping.ts:12-13,68-116",
+      "processing": "One job follows raw slots to EOF; tabular mapping has memory/student/teacher/officer routes.",
+      "nextPart": "Worker window loop consumes newly published raw chunk; waits boundedly for raw completion.",
+      "outputs": "Status + chunk GET; GIS observations carry geometryRef, not map-ready geometry or legal IDs.",
+      "events": "chunk-mapping.changed, chunk-mapping.chunk and mapping metrics on case stream.",
+      "studioDemoOff": "Table list/stream reachable; map does not consume these chunk outputs.",
+      "where": [
+        "packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts:285-325",
+        "apps/api/src/modules/ingestion/chunk-mapping.controller.ts:19-45",
+        "packages/contracts/src/usp/ingestion-events.ts:56-62",
+        "apps/studio/src/features/intake/table/queries.ts:34-53"
+      ]
+    },
+    {
+      "id": "tabular-intake",
+      "formats": "CSV UTF-8/UTF-16 and selected XLSX sheet/header rows; JSON only approved CSV derivatives.",
+      "detect": "Exact public D8 development hash/size admission; unknown bytes denied before generic use.",
+      "detectWhere": "packages/server/src/modules/usp/ingestion/tabular-source.ts:25-77",
+      "bounds": "16 MiB; 2000 rows; 256 columns; tabular chunkRows 16; workbook child 30 s/8 MiB reply.",
+      "boundsWhere": [
+        "packages/contracts/src/usp/ingestion.ts:71-85",
+        "packages/server/src/modules/usp/ingestion/tabular-source.ts:65-77"
+      ],
+      "processing": "Whole admitted file buffered before bounded row chunks; not unlimited row streaming.",
+      "nextPart": "Raw worker iterates parsed rows; caller pins sheet/header selection once.",
+      "outputs": "Profile, recipe, raw/mapped jobs and mapped row chunks; registry execution explicitly refused.",
+      "events": "source/recipe changes; raw/mapped chunk notifications and mapping metrics.",
+      "studioDemoOff": "NewFiles CSV/XLSX -> TableImportDialog -> live table data/stream and questions.",
+      "where": [
+        "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts:174-190",
+        "packages/server/src/modules/usp/ingestion/service.ts:225-268",
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:195-196,239-242",
+        "apps/studio/src/features/intake/table/useTableData.ts:1-40"
+      ]
+    },
+    {
+      "id": "document-native",
+      "formats": "PDF, UTF-8 text/CSV, PNG/JPEG signatures; ZIP dispatch to DOCX/XLSX/ODS or inventory.",
+      "detect": "Bytes, not extension/MIME; JSON excluded; ZIP members select native office profile.",
+      "detectWhere": [
+        "packages/server/src/modules/usp/ingestion/document-native.ts:25-39,65-106",
+        "services/geo/geo/area.py:620-655"
+      ],
+      "bounds": "16 MiB receipt; 10 MiB parse; 4 MiB result; 250000 characters; 10000 parts; 4096 chars/part.",
+      "boundsExtra": "25 parts/read; 32 jobs; 40 proposals; model input 12000 characters/12 parts.",
+      "boundsWhere": "packages/contracts/src/usp/document-ingestion.ts:3-12",
+      "processing": "Whole bounded native parse, all text parts retained; job reads paginate output afterward.",
+      "nextPart": "No native-part conductor; caller asks next read page or explicit OCR/archive retry.",
+      "outputs": "Original retained before parse; native parts/quotes, format/status/code, inventory and proposals.",
+      "events": "document.changed; not incremental page/part publication.",
+      "studioDemoOff": "No generic case document upload; building document imports remain local draft handlers.",
+      "where": [
+        "apps/api/src/modules/ingestion/documents.controller.ts:12-50",
+        "packages/server/src/modules/usp/ingestion/documents.ts:92-174",
+        "packages/contracts/src/usp/ingestion-events.ts:29-30",
+        "apps/studio/src/local/routes.ts:109-118"
+      ]
+    },
+    {
+      "id": "pdf-native-ocr-and-display",
+      "formats": "PDF native text; local OCR selected page/region; separate retained PDF page display.",
+      "detect": "PDF signature and parser; page display requires retained original marked PDF.",
+      "detectWhere": "packages/server/src/modules/usp/ingestion/document-pages.ts:30-41",
+      "bounds": "Native: 10 MiB, 100 pages, 8 MiB decoded page content, 250000 chars; 384 MiB/45 s child.",
+      "boundsExtra": "OCR selection page 1-8, optional region; no automatic OCR walk of 100 or 400 pages.",
+      "displayBounds": "16 MiB; 400 pages; 50/read; 128 KiB metadata; 8 MiB PNG; 1.6 MP/1400 px; 30 s/2 GiB.",
+      "boundsWhere": [
+        "services/geo/geo/area.py:36-39,587-616",
+        "services/geo/geo/native_pdf.py:17-20,34-58",
+        "packages/contracts/src/usp/document-ingestion.ts:10-12",
+        "packages/contracts/src/document-pages.ts:3-11"
+      ],
+      "processing": "Native parses whole bounded PDF; OCR one selected page/region; display read-only selection.",
+      "nextPart": "Caller explicitly asks OCR retry or next display page; native iterates pages in one child.",
+      "outputs": "Native job parts and quote proposals; pages metadata/PNG display, not geometry/record admission.",
+      "events": "document.changed for extraction; read-only page display has no ingestion event.",
+      "studioDemoOff": "Cited retained-page viewer reachable; generic upload absent; legacy pages route local.",
+      "where": [
+        "packages/server/src/modules/usp/ingestion/document-pages.ts:28-62,93-110",
+        "apps/studio/src/features/evidence/citedPage.ts:60-70",
+        "apps/studio/src/local/routes.ts:46-54"
+      ]
+    },
+    {
+      "id": "docx-xlsx-ods-reference",
+      "formats": "OOXML Word paragraphs/direct table cells; spreadsheet cells; ODF stored lexical cells.",
+      "detect": "ZIP Word/workbook members or ODS media; namespace structure validated, not extension dispatch.",
+      "detectWhere": "services/geo/geo/area.py:623-666",
+      "bounds": "Common document limits; office ZIP 1000 members/30 MiB; XML member 5 MiB.",
+      "workbookBounds": "16 sheets; 2000 rows/2000 cells; 10000 shared strings; 250000 chars; 32767 chars/cell.",
+      "odsBounds": "Unexpanded repeats: row 1048576/column 16384; inherits workbook/XML ceilings.",
+      "boundsWhere": [
+        "services/geo/geo/area.py:623-663",
+        "services/geo/geo/native_workbook.py:15-21",
+        "services/geo/geo/native_ods.py:5-15,137-177"
+      ],
+      "processing": "Whole bounded office file; native source-reference outputs, not inferred headers or records.",
+      "nextPart": "None in native parse; caller paginates retained document parts.",
+      "outputs": "Paragraph/cell parts with exact locators and states; omitted content remains in original.",
+      "events": "document.changed; XLSX tabular lane separately uses raw/mapped chunk events.",
+      "studioDemoOff": "XLSX table path only; no generic DOCX/ODS case receipt control.",
+      "where": [
+        "services/geo/geo/area.py:668-710",
+        "packages/server/src/modules/usp/ingestion/document-native.ts:78-106",
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:239-242"
+      ]
+    },
+    {
+      "id": "archive-inventory",
+      "formats": "ZIP inventory; bounded explicitly selected member inspection; never execute nested content.",
+      "detect": "ZIP signature then safe member paths/types/hash; GIS ZIP and KMZ have different bounds.",
+      "detectWhere": "services/geo/geo/native_archive.py:28-125",
+      "bounds": "Document 10 MiB parser; 256 members; 256-char names; 8 MiB/member; 30 MiB expanded.",
+      "boundsExtra": "Compression ratio 1000; 15 s; declared safe integer 9007199254740991.",
+      "boundsWhere": "services/geo/geo/native_archive.py:14-20",
+      "processing": "Whole inventory; explicit one-member inspection; no generic child-source fan-out.",
+      "nextPart": "Caller selects member ordinal/hash/bytes in native_only retry.",
+      "outputs": "Member inventory and coverage/issues, optional selected-member result; no member registry IDs.",
+      "events": "document.changed; no automatic per-member candidate/map stream.",
+      "studioDemoOff": "Mixed ZIP gets GIS shapefile preflight, not document inventory/fan-out interface.",
+      "where": [
+        "packages/contracts/src/usp/document-ingestion.ts:11-12",
+        "packages/server/src/modules/usp/ingestion/document-native.ts:78-89",
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:134-158"
+      ]
+    },
+    {
+      "id": "raster-window",
+      "formats": "GDAL GTiff native georeferenced rasters, including readable COG; not JPEG/world-file fan-in.",
+      "detect": "Rasterio driver GTiff, dimensions, dtype/mask/nodata consistency and original hash.",
+      "detectWhere": "services/geo/geo/raster_window.py:54-117",
+      "bounds": "16 MiB; 100 MP; 1-4 bands; 256x256 window; 2 MiB raw; 4 MiB output; WKT 8192 chars.",
+      "contractBounds": "64 sources/256 MiB retained; 32 jobs/source; active 2; result 32 KiB; x/y <=100000.",
+      "boundsWhere": [
+        "services/geo/geo/raster_window.py:21-25,89-98,117-129",
+        "packages/contracts/src/usp/raster-window.ts:3-11"
+      ],
+      "processing": "Copies/verifies whole source per job; reads one selected/default native-grid window.",
+      "nextPart": "Caller POSTs next x/y/width/height window; no automatic entire-raster walk.",
+      "outputs": "Job metadata + accepted GeoTIFF artifact; explicit placement unqualified; no roof/height output.",
+      "events": "raster-window.changed; separate publication/fusion authorities exist, not automatic intake.",
+      "studioDemoOff": "No raster NewFiles upload; existing canonical imagery overlays are downstream display.",
+      "where": [
+        "services/geo/geo/raster_window.py:69-86,119-149",
+        "apps/api/src/modules/ingestion/raster-window.controller.ts:15-59",
+        "packages/contracts/src/usp/ingestion-events.ts:31-32"
+      ]
+    },
+    {
+      "id": "point-batch",
+      "formats": "Compressed LAZ/COPC LAS 1.4 point format 6; uncompressed LAS is refused.",
+      "detect": "Laspy header: compressed, format 6/30 bytes, no extra dimensions; source hash verified.",
+      "detectWhere": "services/geo/geo/point_batch.py:35-71",
+      "bounds": "16 MiB; 5000000 source points; 8192/batch; 512 KiB artifact; WKT 8192 chars.",
+      "contractBounds": "64 sources/256 MiB retained; 32 jobs/source; active 2; result 32 KiB.",
+      "boundsWhere": [
+        "services/geo/geo/point_batch.py:16-19,78-95",
+        "packages/contracts/src/usp/point-batch.ts:3-13"
+      ],
+      "processing": "Copies/verifies whole source per job, seeks point index, returns native records for one batch.",
+      "nextPart": "Caller POSTs next start/count; no automatic cloud walk or footprint height fusion.",
+      "outputs": "Job metadata + accepted binary records; source reference/vertical state; placement unqualified.",
+      "events": "point-batch.changed; publication/fusion separate from reading.",
+      "studioDemoOff": "No point NewFiles upload; demo LiDAR summaries are not this API lane.",
+      "where": [
+        "services/geo/geo/point_batch.py:50-113",
+        "apps/api/src/modules/ingestion/point-batch.controller.ts:15-59",
+        "packages/contracts/src/usp/ingestion-events.ts:49-50"
+      ]
+    },
+    {
+      "id": "kml-kmz",
+      "formats": "KML 2.2 namespace document or explicit unnamespaced feature fragment; KMZ selected KML.",
+      "detect": "ZIP/XML structure; multiple KML members -> needs_input KML_MEMBER_SELECTION_REQUIRED.",
+      "detectWhere": "services/geo/geo/native_kml.py:341-363",
+      "bounds": "16 MiB input/output; 64 MiB expansion; 256 members; ratio 100; 10000 features.",
+      "boundsExtra": "100000 coordinate tuples/nodes; depth 64; 45 s; contract familyNative bounds below.",
+      "boundsWhere": "services/geo/geo/native_kml.py:21-30",
+      "processing": "Whole selected bounded XML; no feature-page continuation; inventory first if ambiguous.",
+      "nextPart": "Caller retries exact KMZ member pin; not a next-feature conductor.",
+      "outputs": "Status, members/selection, literal feature/geometry native JSON artifact and original.",
+      "events": "kml-native.changed",
+      "studioDemoOff": "No KML/KMZ upload control in NewFiles; private controller exists.",
+      "where": [
+        "apps/api/src/modules/ingestion/kml.controller.ts:26-85",
+        "packages/contracts/src/usp/kml-ingestion.ts:4-6,29-51",
+        "packages/contracts/src/usp/ingestion-events.ts:37-38"
+      ]
+    },
+    {
+      "id": "geoparquet",
+      "formats": "PAR1 unencrypted Parquet; supported GeoParquet metadata 1.1.0 and bounded WKB projection.",
+      "detect": "PAR1 start/end, bounded footer, geo metadata/profile; incompatible metadata unsupported.",
+      "detectWhere": "services/geo/geo/native_geoparquet.py:18-19,74-79,259-293",
+      "bounds": "32 MiB input; 16 MiB output; 2 GiB/60 s/2 CPU profile; 1 MiB footer/cell; 128 cols/groups.",
+      "boundsExtra": "128 MiB/100000 rows selected group; 1000 selected rows; 100000 coords; strings 32 KiB.",
+      "boundsTree": "250000 nodes; depth 32; aggregate selected-group prefix/batch scan 100000 rows.",
+      "boundsWhere": "services/geo/geo/native_geoparquet.py:18-39,369-384",
+      "processing": "Whole input buffered; bounded selected row groups/window; no automatic EOF traversal.",
+      "nextPart": "Caller retries selection and hash-pinned continuation nextRowIndex.",
+      "outputs": "Status summary/continuation; literal native artifact and original; admission=false.",
+      "events": "geoparquet-native.changed",
+      "studioDemoOff": "No GeoParquet NewFiles control; private controller exists.",
+      "where": [
+        "apps/api/src/modules/ingestion/geoparquet.controller.ts:26-85",
+        "packages/contracts/src/usp/geoparquet-ingestion.ts:4-6,16-30,53-60",
+        "packages/contracts/src/usp/ingestion-events.ts:45-46"
+      ]
+    },
+    {
+      "id": "dxf",
+      "formats": "ASCII DXF R12-R2018: AC1009/1012/1014/1015/1018/1021/1024/1027/1032; ezdxf pin.",
+      "detect": "Declared $ACADVER and byte/tag structure; binary DXF/DWG not supported.",
+      "detectWhere": "services/geo/geo/native_dxf.py:268-283,386-388",
+      "bounds": "16 MiB input/output; 100000 records; 10000 projected entities; 100000 points; 500000 tags.",
+      "boundsExtra": "2 GiB memory; 45 s child; familyNative contract bounds, except 16 KiB result/status.",
+      "boundsWhere": "services/geo/geo/native_dxf.py:23-30,469-507",
+      "processing": "Whole bounded source in isolated child; sheet/source-local, no block expansion/placement.",
+      "nextPart": "No continuation; caller retry rereads complete bounded source.",
+      "outputs": "Job summary/version/units/findings; source-literal native artifact; no registered levels/units.",
+      "events": "dxf-native.changed",
+      "studioDemoOff": "No DXF NewFiles control; building plan intake is local draft.",
+      "where": [
+        "apps/api/src/modules/ingestion/dxf.controller.ts:26-85",
+        "packages/contracts/src/usp/dxf-ingestion.ts:4-6,25-43",
+        "packages/contracts/src/usp/ingestion-events.ts:35-36"
+      ]
+    },
+    {
+      "id": "ifc",
+      "formats": "STEP IFC2X3/IFC4, pinned IfcOpenShell 0.8.5 metadata profile only.",
+      "detect": "STEP/schema declaration checked before and after parser; IFC4X3 outside profile.",
+      "detectWhere": "services/geo/geo/native_ifc.py:18-30,153-178",
+      "bounds": "32 MiB input; 100000 entities; 10000 projected records; 16 MiB output; depth 64.",
+      "boundsExtra": "2 GiB/60 s/2 CPU profile; contract active 2; 16 KiB result/status; other familyNative bounds.",
+      "boundsWhere": [
+        "services/geo/geo/native_ifc.py:21-30",
+        "packages/contracts/src/usp/ifc-ingestion.ts:4-6"
+      ],
+      "processing": "Whole bounded source metadata; geometry unsupported, placement not qualified.",
+      "nextPart": "None; caller retry complete source.",
+      "outputs": "Buildings/storeys/spaces metadata and relationships in native artifact, not legal unit records.",
+      "events": "ifc-native.changed",
+      "studioDemoOff": "No IFC NewFiles control; private controller exists.",
+      "where": [
+        "apps/api/src/modules/ingestion/ifc.controller.ts:26-85",
+        "packages/contracts/src/usp/ifc-ingestion.ts:25-43",
+        "packages/contracts/src/usp/ingestion-events.ts:33-34"
+      ]
+    },
+    {
+      "id": "citygml",
+      "formats": "CityGML 2.0, XML 1.0 UTF-8; literal building/coordinate/reference inventory.",
+      "detect": "Namespaces and XML declaration; external resources denied; not full GML validation.",
+      "detectWhere": "services/geo/geo/native_citygml.py:15-24,89-107,339-345",
+      "bounds": "32 MiB input; 16 MiB output; 25000 elements; depth 64; 64 KiB strings; 100000 coord values.",
+      "boundsExtra": "2 GiB/60 s/2 CPU profile; see familyNative contract bounds.",
+      "boundsWhere": "services/geo/geo/native_citygml.py:43-53",
+      "processing": "Whole bounded XML; local references inventoried, not composed into globally placed models.",
+      "nextPart": "None; caller retry complete source.",
+      "outputs": "Native element/building/LoD/coordinate/reference artifact; analytic and registry admission=false.",
+      "events": "citygml-native.changed",
+      "studioDemoOff": "No CityGML NewFiles control; private controller exists.",
+      "where": [
+        "apps/api/src/modules/ingestion/citygml.controller.ts:26-85",
+        "packages/contracts/src/usp/citygml-ingestion.ts:4-6,24-55",
+        "packages/contracts/src/usp/ingestion-events.ts:39-40"
+      ]
+    },
+    {
+      "id": "cityjson",
+      "formats": "CityJSON/CityJSONFeature 2.0 bounded source structural projection, not general city-model mesh.",
+      "detect": "JSON type/profile/version; supplied transform only; header/feature declaration checked.",
+      "detectWhere": "services/geo/geo/native_cityjson.py:236-277",
+      "bounds": "8 MiB input; 32 MiB output; 1000 objects; 100000 vertices; 500000 boundary indices.",
+      "boundsExtra": "Depth 64; 1000000 tree nodes; 15 s; retained 64 sources/128 MiB; 16 jobs/source; active 2.",
+      "boundsContract": "16 KiB result/status, unlike 32 MiB native artifact.",
+      "boundsWhere": [
+        "services/geo/geo/native_cityjson.py:14-21",
+        "packages/contracts/src/usp/cityjson-ingestion.ts:4-5"
+      ],
+      "processing": "Whole bounded source; no global CRS conversion/watertight qualification/interior floors.",
+      "nextPart": "None; caller retry complete source.",
+      "outputs": "Structural native artifact and summary; source coordinates remain unqualified for placement.",
+      "events": "cityjson-native.changed",
+      "studioDemoOff": "No CityJSON NewFiles control; private controller exists.",
+      "where": [
+        "apps/api/src/modules/ingestion/cityjson.controller.ts:18-64",
+        "packages/contracts/src/usp/cityjson-ingestion.ts:23-44",
+        "packages/contracts/src/usp/ingestion-events.ts:47-48"
+      ]
+    },
+    {
+      "id": "gltf-glb",
+      "formats": "glTF/GLB 2.0; embedded buffers/source-local triangle inspection; external dependencies not fetched.",
+      "detect": "GLB magic/version or JSON asset.version, selected scene; format structure checked.",
+      "detectWhere": "services/geo/geo/native_gltf.py:156-176,471-473",
+      "bounds": "16 MiB input/buffer/output; 10000 nodes; 100000 positions; 300000 indices.",
+      "boundsExtra": "Depth 64; 500000 JSON values; 45 s; familyNative contract bounds.",
+      "boundsWhere": "services/geo/geo/native_gltf.py:17-25",
+      "processing": "Whole bounded source; structural triangle-context artifact, no georeferenced registry mesh.",
+      "nextPart": "Caller selects scene on receipt/retry; no page/part traversal.",
+      "outputs": "Job/native artifact including unresolved resources/findings; global transform not qualified.",
+      "events": "gltf-native.changed",
+      "studioDemoOff": "No glTF/GLB NewFiles control; private controller exists.",
+      "where": [
+        "apps/api/src/modules/ingestion/gltf.controller.ts:26-88",
+        "packages/contracts/src/usp/gltf-ingestion.ts:4-6",
+        "packages/contracts/src/usp/ingestion-events.ts:43-44"
+      ]
+    },
+    {
+      "id": "obj",
+      "formats": "Wavefront OBJ bounded source-literal polygon syntax; unsupported free-form/resources retained.",
+      "detect": "Source text statement/token profile, independent indices; not filename-based version.",
+      "detectWhere": "services/geo/geo/native_obj.py:20-24,43-68",
+      "bounds": "16 MiB input/output; 100000 vertices/faces; 500000 references; 300000 lines.",
+      "boundsExtra": "64 KiB/line; 250000 records; familyNative contract bounds.",
+      "boundsWhere": "services/geo/geo/native_obj.py:14-19",
+      "processing": "Whole bounded source; no triangulation, materials fetched, inferred CRS or unit conversion.",
+      "nextPart": "None; caller retry complete source.",
+      "outputs": "Literal polygon/statement native artifact and job summary; not analytical geometry/identity.",
+      "events": "obj-native.changed",
+      "studioDemoOff": "No OBJ NewFiles control; private controller exists.",
+      "where": [
+        "apps/api/src/modules/ingestion/obj.controller.ts:26-85",
+        "packages/contracts/src/usp/obj-ingestion.ts:4-6",
+        "packages/contracts/src/usp/ingestion-events.ts:41-42"
+      ]
+    },
+    {
+      "id": "survey-report",
+      "formats": "Narrow LP360 native TEXT report with literal title, four-component version and 19-field table.",
+      "detect": "Accepted native_only text result and exact report vocabulary; not generic GNSS/GPX ingestion.",
+      "detectWhere": "packages/server/src/modules/usp/ingestion/survey-report-parser.ts:16-45,63-70",
+      "bounds": "200 rows; 128 KiB text; 1 MiB response; 4096 request bytes; 15 s deadline.",
+      "boundsWhere": "packages/contracts/src/survey-report.ts:5-7",
+      "processing": "One bounded projection of retained document parts; no numeric residual/coordinate arithmetic.",
+      "nextPart": "None; other report/layout requires officer input, not automatic table continuation.",
+      "outputs": "Cited report-context values and explicit CRS/vertical/epoch/correspondence gaps.",
+      "events": "Read projection, not a semantic-part publication event.",
+      "studioDemoOff": "No generic survey intake; native text receipt and report context require backend path.",
+      "where": "packages/server/src/modules/usp/ingestion/survey-report-parser.ts:16-57"
+    },
+    {
+      "id": "document-image-display",
+      "formats": "Retained PNG/JPEG display; no world-file join or automatic roof/plan model dispatch.",
+      "detect": "Document byte signature; source image dimensions/orientation inspected locally.",
+      "detectWhere": "packages/server/src/modules/usp/ingestion/document-native.ts:25-29,65-70",
+      "bounds": "16 MiB; 25 MP/25000 px source; 128 KiB metadata; 8 MiB PNG; 1.6 MP/1400 px output.",
+      "boundsExtra": "30 s/2 GiB memory; one frame; calibration not established by display.",
+      "boundsWhere": "packages/contracts/src/document-images.ts:3-5,16-23",
+      "processing": "Read-only bounded single image; native document extraction reports needs_ocr.",
+      "nextPart": "No semantic next part; OCR retry requires explicit selection/configuration.",
+      "outputs": "Display metadata/PNG; evidence only, not globally placed geometry.",
+      "events": "Display read has no ingestion event; document extraction uses document.changed.",
+      "studioDemoOff": "No generic photo/scan NewFiles case upload; evidence display is downstream.",
+      "where": "packages/server/src/modules/usp/ingestion/document-images.ts:1-45"
+    },
+    {
+      "id": "projected-vector-specialized",
+      "formats": "Exact NWIC district ZIP/member profile, EPSG:7755 -> EPSG:4326; not generic projected GIS.",
+      "detect": "Exact ZIP/member hash/size/version and tool pins; optional semantic publication.",
+      "detectWhere": "packages/contracts/src/usp/projected-vector.ts:3-15,25-30,40-44",
+      "bounds": "733 features; 3125505 positions; 1 MiB native feature/index; 2 MiB geographic feature.",
+      "boundsExtra": "18000 positions/feature; 128 rings; 17000/ring; 384 MiB output; page 25; active 1; 120 s.",
+      "retentionBounds": "128 job/256 request receipts; 4 parser/8 accepted generations; 128 MiB/gen; 1 GiB total.",
+      "boundsWhere": "packages/contracts/src/usp/projected-vector.ts:3-15",
+      "processing": "Whole exact-profile source; optional committed partial chunks, not generic lane admission.",
+      "nextPart": "Worker publication; caller selects chunk/page/unit read, not manually next source feature.",
+      "outputs": "Status/chunk, administrative observation pages and native/geographic geometry.",
+      "events": "projected-vector.changed/chunk; administrative_context, not building/parcel issuance.",
+      "studioDemoOff": "Not generic NewFiles projected-vector intake; specialized read API exists.",
+      "where": [
+        "apps/api/src/modules/ingestion/projected-vector.controller.ts:28-74",
+        "packages/contracts/src/usp/ingestion-events.ts:22-24"
+      ]
+    },
+    {
+      "id": "large-opaque-original",
+      "formats": "Opaque application/zip or octet-stream; transport only, no semantic format reader.",
+      "detect": "Caller media type; part/original hashes verified; conversion unsupported.",
+      "detectWhere": "packages/contracts/src/usp/ingestion.ts:173-185,188-193",
+      "bounds": "8 MiB parts; minimum 16 MiB+1; v1 128 MiB/16 parts; opt-in v2 7 GiB/896 parts.",
+      "v1Retention": "2 active/case/operator, 4 global; 128 receipts; 17 zero-payload fences/receipt.",
+      "v1Storage": "512 MiB reserve/1 GiB including copies; 24 h lifetime; 2 downloads.",
+      "v1Deadlines": "Part/storage 30 s; lease 180 s; finalize/cleanup/download 120 s; 3 part/finalize attempts.",
+      "v2Retention": "1 active global; 8 receipts; 7 GiB reserve/22 GiB including copies; 7 d lifetime; 1 download.",
+      "v2Deadlines": "Part 30 s; storage 60 s; lease 180 s; finalize/cleanup/download 12 h; 3 attempts.",
+      "boundsWhere": "packages/contracts/src/usp/ingestion.ts:146-167",
+      "processing": "Byte part upload; v1 inline finalize, v2 queued verify/assemble; no semantic reader starts.",
+      "nextPart": "Caller PUTs numbered hashed bytes then finalizes; job authority verifies v2.",
+      "outputs": "Status/part receipts/final source and original; conversion=unsupported.",
+      "events": "upload.changed; not source-native geometry candidate parts.",
+      "studioDemoOff": "No arbitrary large-file upload control in NewFiles.",
+      "where": [
+        "apps/api/src/modules/ingestion/large-original.controller.ts:14-66",
+        "packages/contracts/src/usp/ingestion-events.ts:20-21"
+      ]
+    },
+    {
+      "id": "unimplemented-or-not-file-intake",
+      "formats": "FlatGeobuf, DWG, E57/PLY/XYZ, 7z/RAR/GDB, GPX, URLs/feeds are not admitted by audited readers.",
+      "detect": "No semantic operation in the audited format dispatch; unknown bytes may be retained as evidence.",
+      "detectWhere": [
+        "packages/server/src/modules/usp/ingestion/document-native.ts:25-39,65-68",
+        "services/geo/geo/gis_inspection.py:34-72",
+        "services/geo/geo/point_batch.py:67-71"
+      ],
+      "bounds": "Unsupported-byte document receipt <=16 MiB, parse status unsupported; large opaque path separately.",
+      "boundsWhere": "packages/contracts/src/usp/document-ingestion.ts:5-6",
+      "processing": "None for unsupported kind; no inferred conversion. 3D Tiles display is not original intake.",
+      "nextPart": "None; officer/manual format conversion outside these readers.",
+      "outputs": "Document original hash/status if API receipt used; Studio lists unrecognized files without upload.",
+      "events": "document.changed only if backend document receipt/extraction used.",
+      "studioDemoOff": "Not imported; no generic keep-as-unknown action.",
+      "where": "apps/studio/src/features/intake/AddFilesDialog.tsx:134-158,222-242"
+    }
+  ],
+  "familyNative": {
+    "applies": "KML, DXF, IFC, CityGML, OBJ, glTF, GeoParquet; CityJSON exceptions stated in its row.",
+    "constants": {
+      "retainedSources": 64,
+      "retainedBytes": 268435456,
+      "jobsPerSource": 16,
+      "active": 1,
+      "workerMs": 150000,
+      "requestMs": 45000,
+      "readMs": 60000,
+      "resultBytes": 524288,
+      "statusBytes": 524288
+    },
+    "exceptions": "IFC active 2; IFC/DXF result/status 16384 bytes; per-kind input/artifact ceilings above.",
+    "where": [
+      "packages/contracts/src/usp/kml-ingestion.ts:4-6",
+      "packages/contracts/src/usp/dxf-ingestion.ts:4-6",
+      "packages/contracts/src/usp/ifc-ingestion.ts:4-6",
+      "packages/contracts/src/usp/citygml-ingestion.ts:4-6",
+      "packages/contracts/src/usp/obj-ingestion.ts:4-6",
+      "packages/contracts/src/usp/gltf-ingestion.ts:4-6",
+      "packages/contracts/src/usp/geoparquet-ingestion.ts:4-6"
+    ],
+    "supervisionCaution": "CPU profiles do not mean literal two OS threads or denied OS egress.",
+    "supervisionWhere": "packages/contracts/src/usp/geoparquet-ingestion.ts:39-47"
+  },
+  "architectureSection4Corrections": [
+    {
+      "claim": "PDF native text and OCR (16 MiB, 100 pages), pages yes",
+      "correction": "16 MiB receipt !=10 MiB/100-page native parse; OCR is explicit page 1-8/region, not a walk.",
+      "where": [
+        "packages/contracts/src/usp/document-ingestion.ts:5-10",
+        "services/geo/geo/area.py:36-39,587-616"
+      ]
+    },
+    {
+      "claim": "DOCX: none / format will not be read by freeze",
+      "correction": "Bounded native DOCX body paragraphs/direct table cells already exist; no generic Studio upload.",
+      "where": "services/geo/geo/area.py:623-710"
+    },
+    {
+      "claim": "line-delimited GeoJSON",
+      "correction": "Streaming framing is RFC7464 record separator plus LF, not arbitrary newline-only JSON.",
+      "where": "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts:161-168"
+    },
+    {
+      "claim": "LAS/LAZ 1.4 format 6",
+      "correction": "Reader requires compressed records: LAZ/COPC only, format 6, 30 bytes, no extra dimensions.",
+      "where": "services/geo/geo/point_batch.py:67-71"
+    },
+    {
+      "claim": "3D yields geometry and levels/spaces directly",
+      "correction": "IFC reader is metadata-only, geometry unsupported; storeys/spaces are not reviewed legal units.",
+      "where": "packages/contracts/src/usp/ifc-ingestion.ts:25-29"
+    },
+    {
+      "claim": "GeoParquet 32 MiB / KML 16 MiB",
+      "correction": "Also 1000-row/100000-coordinate GeoParquet window; KML 10000 features/100000 tuples.",
+      "where": [
+        "services/geo/geo/native_geoparquet.py:24-39",
+        "services/geo/geo/native_kml.py:21-30"
+      ]
+    },
+    {
+      "claim": "Tables CSV/XLSX/ODS/DBF/JSON records, partly walks",
+      "correction": "Mapped table intake is exact admitted CSV/XLSX or approved JSON->CSV; ODS is native reference.",
+      "where": [
+        "packages/server/src/modules/usp/ingestion/tabular-source.ts:25-77",
+        "services/geo/geo/area.py:629-649"
+      ]
+    },
+    {
+      "claim": "One conductor missing everywhere; each request reads one part",
+      "correction": "Raw vector and chunk-mapping jobs already walk/follow chunks; area/native 3D read whole bounds.",
+      "where": [
+        "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts:176-224",
+        "packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts:309-324"
+      ]
+    },
+    {
+      "claim": "Unknown not stored",
+      "correction": "True of NewFiles, not backend: document receipt retains unsupported bytes first.",
+      "where": [
+        "packages/server/src/modules/usp/ingestion/documents.ts:119-129",
+        "packages/server/src/modules/usp/ingestion/document-native.ts:65-68"
+      ]
+    },
+    {
+      "claim": "Sidecars ignored except shapefile",
+      "correction": "Shapefile companions supported; generic world-file/metadata grouping still absent in NewFiles.",
+      "where": [
+        "services/geo/geo/native_gis.py:180-205",
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:134-158"
+      ]
+    }
+  ],
+  "mapBridge": {
+    "existingReads": [
+      "Raw status + /jobs/:jobId/chunks/:chunkIndex; freshness current/reasons and sourceComplete.",
+      "Mapped status + chunk GET; source pins, recipe/converter/profile pins, observations with geometryRef.",
+      "Area context + area/building canonical reads; scene adapter preserves candidate styling."
+    ],
+    "existingReadWhere": [
+      "apps/api/src/modules/ingestion/streaming-vector.controller.ts:29-45",
+      "apps/api/src/modules/ingestion/chunk-mapping.controller.ts:29-46",
+      "packages/contracts/src/usp/chunk-mapping.ts:68-116",
+      "apps/studio/src/features/map/canonicalScene.ts:29-35,55-70"
+    ],
+    "existingEvents": "Raw/mapped chunk notifications include job, index, hash, counts, not geometry.",
+    "eventWhere": "packages/contracts/src/usp/ingestion-events.ts:51-62",
+    "existingState": "usp_streaming_vector_imports/slots and usp_chunk_mapping_imports/slots store published prefix.",
+    "stateWhere": [
+      "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts:26-32,176-224",
+      "packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts:217-224,303-324"
+    ],
+    "missing": "Map draws canonical area/building or demo features; no live raw/mapped candidate chunk subscription.",
+    "missingWhere": "apps/studio/src/features/map/canonicalScene.ts:55-70",
+    "smallestSeam": [
+      "Subscribe to existing case chunk notifications; fetch mapped chunk and geometryRef-matched raw chunk.",
+      "Join by source/job/revision/index/hash; display only observed geometry with supported geographic reference.",
+      "Keep stale/unresolved/quarantined coverage visible separately; never coerce missing CRS/height to a value.",
+      "Maintain private per-source candidate scene state keyed by locators, separate from canonical registry IDs.",
+      "Feed only new candidates into LV1 scene delta seam; canonical recording remains explicit officer review."
+    ],
+    "contractClassification": "Additive internal adapter can use existing reads; no schema relaxation.",
+    "commonReadOption": "A shared candidate-view GET would add a versioned contract, not widen canonical authority.",
+    "reviewFence": "Mapped observation != building record; candidate draw cannot set reviewed/issued/ownership state.",
+    "reviewWhere": [
+      "packages/contracts/src/usp/chunk-mapping.ts:68-116",
+      "apps/api/src/modules/intake/import-packages.controller.ts:146-200"
+    ]
+  },
+  "reh1SequentialDocuments": {
+    "reportedOutcome": "Native job GET: HTTP 200/status stale/code DOCUMENT_INPUT_STALE after sequential receipts.",
+    "priorReceipt": "staging:docs/evidence/runtime/reh1/part-b-notes.json:33-46",
+    "mechanism": "New source advances case revision; earlier input pins old revision; status needs current pins.",
+    "where": [
+      "packages/server/src/modules/usp/ingestion/documents.ts:119-129,148-174",
+      "packages/server/src/modules/usp/ingestion/document-context.ts:35-43,47-81",
+      "packages/server/src/modules/usp/ingestion/document-worker.ts:41,83-96"
+    ],
+    "existingRetainedReadSeam": "locateDocumentInputTx returns freshness; documentAuthority has retained-read mode.",
+    "retainedWhere": [
+      "packages/server/src/modules/usp/ingestion/document-context.ts:56-70",
+      "packages/server/src/modules/usp/ingestion/document-authority.ts:16-18,61-67"
+    ],
+    "owner": "K13 owns repair; LV0 documents only, no retry/storing request or runtime manipulation.",
+    "direction": "Keep retained reads across unrelated arrivals; current derivation/write pins stay strict.",
+    "contractClassification": "Add retained freshness read; status shape changes need version/review."
+  },
+  "verificationLimits": [
+    "Only eight native reads and nine existing unit controls executed; all other rows are code audit.",
+    "No shared runtime/API/DB persistence/queued worker configuration or officer recording was qualified.",
+    "No new timing run: Part A remains the accepted d13b3c8b receipt.",
+    "Eight-check first attempt selected ten ZIP members; corrected to exact eight profile layer names.",
+    "Extra ZIP members unchanged; no synthetic bigger layers, combined source or new records."
+  ]
+}
