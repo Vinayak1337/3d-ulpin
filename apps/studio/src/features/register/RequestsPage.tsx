@@ -14,6 +14,7 @@ import {
 import { DeleteDialog } from '../manage/DeleteDialog';
 import { REQUEST_KINDS } from '../../local/requestKinds';
 import { isServed } from '../../local/routes';
+import { IDENTIFIER_HEADERS, NOT_STATED, identifierColumns } from './buildingColumns';
 import { buildingCount, indexView } from './indexView';
 import styles from './Requests.module.css';
 
@@ -219,6 +220,11 @@ function OpenRequests({ count }: { count: number | null }) {
   return count ? <>{count}</> : <span className="ul-muted">0</span>;
 }
 
+/** An identifier as the read holds it; a building whose read states none says so, with no assignment state. */
+function Identifier({ value }: { value: string | null | undefined }) {
+  return value ? <span className="ul-mono">{value}</span> : <span className="ul-unknown">{NOT_STATED}</span>;
+}
+
 function BuildingsView() {
   const areas = useAreas();
   const requests = useRegisterRequests('open');
@@ -235,7 +241,7 @@ function BuildingsView() {
     return (
       <div className={styles.empty}>
         <EmptyState icon={MapPin} title="No buildings recorded yet" action={<Link to="/studio/add-files" className="ul-btn ul-btn--primary"><Icon icon={FilePlus} />Add files</Link>}>
-          Buildings appear here once an area import is committed. Each gets its 3D ULPIN then.
+          Buildings appear here once an area import is committed.
         </EmptyState>
       </div>
     );
@@ -268,8 +274,12 @@ function BuildingsView() {
                 rowKey={(b) => b.id}
                 columns={[
                   { header: 'Building', cell: (b) => <Link to={`/studio/properties/${b.id}/register`}>{b.name}</Link> },
-                  { header: '3D ULPIN (proposed)', width: '300px', cell: (b) => featureCode(b) ? <span className="ul-mono">{featureCode(b)}</span> : <span className="ul-unknown">Not assigned</span> },
-                  { header: 'Building identifier', width: '220px', cell: (b) => <span className="ul-mono ul-muted">{b.identifier ?? 'Unknown'}</span> },
+                  ...identifierColumns(buildings.map(featureCode)).map((column) => ({
+                    header: IDENTIFIER_HEADERS[column], width: '300px',
+                    cell: (b: AreaFeature) => (
+                      <Identifier value={column === 'identifier' ? b.identifier : featureCode(b)} />
+                    ),
+                  })),
                   { header: 'Open requests', numeric: true, width: '120px', cell: (b) => <OpenRequests count={openFor(b.id)} /> },
                   {
                     header: 'Actions', width: '150px', cell: (b) => (
