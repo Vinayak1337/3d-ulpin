@@ -137,7 +137,7 @@ Nothing to train without Indian plan labels. The demo uses the vector rooms (Mag
 | --- | --- |
 | Which folder is which | [docs/next-steps/PROJECT-FOLDERS.md](docs/next-steps/PROJECT-FOLDERS.md): the lead works in `E:/Projects/3d-ulpin`; `3d-ulpin-claude` is an archive of the rejected distillation lane and is never merged wholesale |
 | Task files, launchers, logs | `E:/Projects/ulpin-wt/_tasks/` (`<task>.md`, `_common.md`, `codex-subagent-win.mjs`, `claude-worker.sh`, `pool-watch.sh`, `claude-watch.sh`, `logs/`) |
-| Worktrees | `E:/Projects/ulpin-wt/{a2,b3,d1,f1,g2,k1,p1}` (agent, GPU/building, data, Studio, geometry, runtime/registry, plans/storeys) |
+| Worktrees | `E:/Projects/ulpin-wt/{a2,b3,d1,f1,g2,k1,p1}` (agent, GPU/building, data, Studio, geometry, runtime/registry, plans/storeys); `s03` stays because the demo database container mounts a file from it. Cleanup record: `docs/orchestration/CLEANUP_20261010.md` |
 | Building evidence | `docs/evidence/gf-ai/building/` (`b3-final-holdout-20261010`, `b4-final-transfer-20261010`, `b6/`, `b7/`, `b8/`, model card in `rfdetr-ramp-ka-seg-medium-b3-v1/`) |
 | Building data and runs | `E:/BhuAayam-data/datasets/ramp/coco/{train,dev,holdout,bangladesh-train}`; runs and weights in `E:/BhuAayam-data/ml/runs/` (`b3-ka-run1-20261010` holds epochs 1–4) |
 | ML scripts | `scripts/ml/` (building), `scripts/usp/learning/` (storeys), `scripts/agent/` (mapping agent), `services/geo/geo/usp_learning/` (student) |
