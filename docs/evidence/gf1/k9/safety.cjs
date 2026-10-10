@@ -11,7 +11,7 @@ const normalize = value => {
 };
 const protectedFile = value => {
   const file = normalize(value);
-  return file === runtime || file.startsWith(runtime + '/') || /\/(?:demo)?\.env$/.test(file);
+  return file === runtime || file.startsWith(runtime + '/') || /\/[^/]*\.env(?:\.[^/]*)?$/.test(file);
 };
 const blockedOperations = [
   'readFileSync', 'readFile', 'writeFileSync', 'writeFile', 'openSync', 'open',
