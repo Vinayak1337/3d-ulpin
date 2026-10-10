@@ -2,7 +2,7 @@
 
 3D ULPIN (BhuAayam, SIH26011) turns fragmented survey, imagery, plan and document inputs into cited, reviewed building/level/unit/space records with 3D identities: **Identify → Prove → Govern**.
 
-Consolidated application baseline: `45d033baae7ec4e5a572d82459b0062c70a12c95`; sprint base `e95273e5`.
+Consolidated application baseline: `2b70d6c2a061fc7f83624fa8272e16edba3f4950`; sprint base `ed6b87ac`.
 
 <!-- plan-next-gate: GF0 -->
 

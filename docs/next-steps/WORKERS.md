@@ -133,6 +133,7 @@ A commit is the owner's: it has the git identity the repository already has, and
 - No worker sets `user.name`, `user.email`, `--author` or a `GIT_AUTHOR_*` / `GIT_COMMITTER_*` variable.
 - A commit message says what changed and why. It does not say which model, tool, account or worker did it; the board (`docs/STATUS.md`) is where that is recorded.
 - The lead checks author and message of every commit of a branch before merging it, and rewrites the branch if one breaks this.
+- **`staging` was rewritten once on 11 October at the owner's instruction** so that every commit on it follows this rule: same files, same dates, new commit ids. A commit id written down before that is an old id; `E:/Projects/ulpin-wt/_tasks/history-clean/map.tsv` gives the new one (old id, tab, new id). A branch or worktree cut before the rewrite (`main` and the other pushed branches were left as they were) is passed through `E:/Projects/ulpin-wt/_tasks/history-clean/rewrite.py` before it is merged, never merged as it is.
 
 `_common.md` and `_common.claude.md` carry this rule for workers; `claude-worker.sh` switches the tool's own attribution line off; a `commit-msg` hook in the main checkout's `.git/hooks` removes such a line if one is written anyway.
 
