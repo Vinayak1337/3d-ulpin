@@ -1,0 +1,132 @@
+{
+  "task": "A4e",
+  "gates": ["GF-AGENT", "FP-LEARN-TEST"],
+  "status": "completed_admission_and_one_arm_measurement",
+  "part1Status": "proven_and_committed_before_part_2",
+  "codeCommit": "cae053e7",
+  "mergeCommit": "359c6912",
+  "part2StartedAtPart1Evidence": false,
+  "admission": {
+    "manifest": "fixtures/usp/D8-open-property-foreign/manifest.json",
+    "manifestSha256": "2d89fdd0de35237c1fa69bca67d4e068555405b6f0c0b2dfd95144878e788a3d",
+    "foreignDevFamilies": ["opf-d02", "opf-d03", "opf-d04", "opf-d05", "opf-d06", "opf-d07", "opf-d08", "opf-d09"],
+    "foreignAssets": 9,
+    "devFamilies": 32,
+    "heldOutAliases": 5,
+    "boundary": [
+      "development/allFamilies include the manifest-listed foreign development ids; both held-out lists apply.",
+      "Every existing assertion stays. An unlisted opf id or an opf profile marked pool cannot pass.",
+      "No blind id anywhere in serialized profiles remains enforced over both manifests' alias lists."
+    ],
+    "source": [
+      "Third kind d1f: stableHash equality against the exact profileAsset projection of a manifest asset.",
+      "Legacy inventories select it by their manifest locator; no historical asset or profile bytes change.",
+      "Reuse D1f checkedPin/prefixTable; verify original, dictionary and prefix pins before materialization.",
+      "Permission, privacy, path and input-size refusals remain. Changed bytes yield T1_SOURCE_DENIED."
+    ],
+    "trainer": [
+      "development_families reads both manifests, checks test_only foreign assets/pins and excludes both blind lists.",
+      "Foreign pool and unlisted foreign development examples raise STAGE_A_TRAINING_SPLIT_DENIED.",
+      "Only that function and the split condition change; features, fit procedure and threshold rule stay unchanged."
+    ],
+    "sharedReaderSeam": [
+      "Exports require an import-safe main guard; CLI behavior and immutable --check products are unchanged.",
+      "D1f's collision guard uses the retained Indian-only id set, because allFamilies is now the union."
+    ]
+  },
+  "tests": {
+    "agentPassed": 18,
+    "agentFiles": [
+      "scripts/agent/t1-prep.test.ts",
+      "scripts/agent/verify-teacher-labels.test.ts",
+      "scripts/agent/a3-chunk.test.ts",
+      "scripts/agent/foreign-development.test.ts"
+    ],
+    "newTypeScriptTests": 6,
+    "stageAPassed": 12,
+    "existingStageATests": 7,
+    "newPythonCases": 5,
+    "controls": [
+      "Real opf-d02 prefix/profile passes; unlisted and foreign pool profiles do not.",
+      "Indian blind aliases and an injected foreign blind alias in profile metadata are refused.",
+      "Source metadata and virtual byte mutations are refused; no original is modified.",
+      "Verified opf-d02 split control is admitted; unlisted and foreign pool examples are refused."
+    ],
+    "initialFailures": [
+      "TS intersected array types selected SourceAsset overload; Omit<Manifest, assets> fixes the declaration.",
+      "Two mocks did not update ESM builtin bindings; syncBuiltinESMExports fixes the controls, not admission."
+    ]
+  },
+  "reproductions": [
+    {
+      "set": "T1", "tables": 45, "columns": 411, "byteIdentical": true,
+      "sha256": "82009732900f56a0157af8dc6f5679c286a370618f92e05c52359fb165360765"
+    },
+    {
+      "set": "T1b", "tables": 5, "columns": 193, "byteIdentical": true,
+      "sha256": "502f6658dfcb0b19316a5df2a5142b32f97154f8550a875bbc02759310cbee1b"
+    },
+    {"set": "D1f", "profiles": 198, "dictionaryRows": 193, "checkExitCode": 0},
+    {"set": "A5a", "profiles": 21, "dictionaryRows": 12, "checkExitCode": 0}
+  ],
+  "checks": [
+    {"command": "pnpm exec tsc -p scripts/agent/tsconfig.json", "exitCode": 0},
+    {"command": "pnpm typecheck:backend", "exitCode": 0},
+    {"command": "tsx agent tests with scripts/agent/tsconfig.json (agentFiles above)", "exitCode": 0},
+    {"command": "python -B pytest --noconftest, test_stage_a.py and test_foreign_stage_a.py", "exitCode": 0},
+    {"command": "python -B -m ruff check stage_a.py test_stage_a.py test_foreign_stage_a.py", "exitCode": 0},
+    {"command": "pnpm exec tsx scripts/agent/d1f-acquisition.ts --check", "exitCode": 0},
+    {
+      "command": [
+        "pnpm exec tsx scripts/agent/d1f-acquisition.ts", "--output-root E:/BhuAayam-data/task-data/a5a --check"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "pnpm exec tsx --tsconfig scripts/agent/tsconfig.json", "docs/evidence/gf-agent/a5a/verify-profiles.ts"
+      ],
+      "exitCode": 0
+    },
+    {"command": "git diff --check; new-file/added-line width audit", "exitCode": 0}
+  ],
+  "environment": {
+    "python": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe",
+    "testOutputs": "E:/BhuAayam-data/task-data/a4e/checks/",
+    "T1Snapshot": "Byte-identical test fixture copies only; no old file writes or new teacher labels.",
+    "pythonBytecode": "PYTHONDONTWRITEBYTECODE=1; explicit Python commands use -B."
+  },
+  "part1Safety": {
+    "experimentalFits": 0, "heldOutRuns": 0, "heldOutInputsOpened": 0,
+    "labelsEdited": 0, "providerCalls": 0, "acquisitionRequests": 0, "gpuUsed": false,
+    "existingExternalFilesModified": 0, "runtimeChanged": false, "pushed": false
+  },
+  "part2": {
+    "status": "completed_before_usage_limit_no_repeat_on_resume",
+    "codeCommit": "8dc02516",
+    "evidence": "docs/evidence/gf-agent/a4d/result.json",
+    "externalReceipt": "E:/BhuAayam-data/task-data/a4d/measurements/completed-v1/result.json",
+    "externalReceiptSha256": "2d7125a700d1892bcfc4ce6bb83869a8d9cb2a82aae3d5b1c83d2877fd94dc83",
+    "historicalAttempt": "A4d result attempts[0] preserves the original blocked evidence unchanged.",
+    "fitExamples": 805,
+    "verifiedPositiveTargetExamples": 33,
+    "stageBRequired": 300,
+    "stageBShortfall": 267,
+    "developmentFolds": 32,
+    "threshold": 0.9866563081741333,
+    "pooled": {"n": 741, "wrong": 0, "correctPositive": 0, "unknownCommitted": 2, "abstained": 739},
+    "Indian": {"n": 527, "wrong": 0, "correctPositive": 0, "unknownCommitted": 2, "abstained": 525},
+    "foreign": {"n": 214, "wrong": 0, "correctPositive": 0, "unknownCommitted": 0, "abstained": 214},
+    "t1c": {"tablesAccepted": 6, "verifiedFields": 196, "enumRefusals": 2},
+    "t1d": {"tablesAccepted": 3, "verifiedFields": 18, "crsRefusals": 3, "expectedDifferences": 0},
+    "heldOut": {
+      "scorableN": 2, "committed": 0, "correct": 0, "abstained": 2,
+      "nonScorableN": 2, "nonScorableCommitted": 0
+    },
+    "tData": true, "sixTargetsReaching12": 0, "tMethod": null,
+    "fits": 1, "heldOutRuns": 1, "extraFitsOnResume": 0, "extraHeldOutRunsOnResume": 0,
+    "tuningAfterMeasurements": false,
+    "qualification": "Pseudo-label agreement only; pooled zero wrong is by construction, not accuracy."
+  },
+  "next": "Lead review; T-data fires, but fallback Step 1 requires owner authorization. No fallback work started."
+}

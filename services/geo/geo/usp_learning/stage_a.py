@@ -131,8 +131,23 @@ def read_lines(path: Path) -> list[Row]:
 
 def development_families() -> set[str]:
     manifest = json.loads((REPO / "fixtures/usp/D8-messy-india/manifest.json").read_text(encoding="utf-8"))
-    blind = {family["id"] for family in manifest["heldout"]}
-    return {family["id"] for family in manifest["families"] if family["split"] == "dev" and family["id"] not in blind}
+    foreign = json.loads((REPO / "fixtures/usp/D8-open-property-foreign/manifest.json").read_text(encoding="utf-8"))
+    if foreign["purpose"] != "test_only":
+        raise ValueError("STAGE_A_TRAINING_SPLIT_DENIED")
+    blind = {family["id"] for family in [*manifest["heldout"], *foreign["heldout"]]}
+    admitted = {family["id"] for family in foreign["families"] if family["split"] == "dev"}
+    for family in admitted:
+        assets = [asset for asset in foreign["assets"] if asset["family"] == family]
+        if not assets or any(asset["split"] != "dev" for asset in assets):
+            raise ValueError("STAGE_A_TRAINING_SPLIT_DENIED")
+        for asset in assets:
+            if any(not re.fullmatch(r"[a-f0-9]{64}", asset[pin]["sha256"])
+                   for pin in ("original", "profileInput", "dictionary")):
+                raise ValueError("STAGE_A_TRAINING_SPLIT_DENIED")
+            if asset["profileInput"]["sourceSha256"] != asset["original"]["sha256"]:
+                raise ValueError("STAGE_A_TRAINING_SPLIT_DENIED")
+    return {family["id"] for family in [*manifest["families"], *foreign["families"]]
+            if family["split"] == "dev" and family["id"] not in blind}
 
 
 def load_examples(path: Path) -> list[Row]:
@@ -145,7 +160,8 @@ def load_examples(path: Path) -> list[Row]:
         if example.get("verified") is not True:
             continue
         link = links[(example["profileHash"], example["columnProfile"]["name"])]
-        if link["split"] not in ("dev", "pool") or (link["split"] == "dev" and link["family"] not in allowed):
+        if (link["split"] not in ("dev", "pool") or (link["split"] == "dev" and link["family"] not in allowed)
+                or (link["family"].startswith("opf-") and link["split"] != "dev")):
             raise ValueError("STAGE_A_TRAINING_SPLIT_DENIED")
         if link["family"].startswith("mi-h") or example["target"] not in targets:
             raise ValueError("STAGE_A_TRAINING_SPLIT_DENIED")
