@@ -20,7 +20,7 @@ test('a recorded original reads the same after its document reader hash changed,
     assert.deepEqual(after.documentResult, { current: false, reasons: ['reader_changed'] });
   }));
 
-test('a recorded original reads the same after a later import advanced its case revision',
+test('a recorded original and its reading stay current after a later import advanced its case revision',
   () => attributed(async () => {
     const f = control();
     const { source } = recordedOriginal(f);
@@ -29,7 +29,7 @@ test('a recorded original reads the same after a later import advanced its case 
     f.caseRow.revision += 1;
     const after = await registryRecordedSourceTx(f.client, f.siteId, source.id);
     assert.deepEqual(citation(after), citation(before));
-    assert.deepEqual(after.documentResult, { current: false, reasons: ['case_advanced'] });
+    assert.equal(after.documentResult, undefined);
   }));
 
 test('a recorded original that never had an accepted reading is readable and states no freshness',
