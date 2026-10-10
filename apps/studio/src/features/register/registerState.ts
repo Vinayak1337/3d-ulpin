@@ -29,6 +29,19 @@ export function openCheckCount(checks: readonly { state: string }[] | undefined)
   return checks.filter((check) => check.state === 'blocking' || check.state === 'needs_review').length;
 }
 
+type Canonical = GetResponse<'/api/v1/buildings/{buildingId}/canonical'>;
+
+/**
+ * The storey labels the sources state against each other, as literals in the record's order, while the record
+ * holds the building's storey label as conflicting. Empty when it does not: no conflict is made up.
+ */
+export function conflictingStoreys(building: Pick<Canonical, 'storeyLabel' | 'conflicts'> | undefined): string[] {
+  if (building?.storeyLabel.state !== 'conflicting') return [];
+  const conflict = building.conflicts.find((entry) => entry.property === 'building.storeyLabel');
+  const values = conflict?.alternatives.map((alternative) => alternative.value) ?? [];
+  return values.filter((value): value is string => typeof value === 'string');
+}
+
 type RegisterRead = GetResponse<'/api/v1/buildings/{buildingId}/register'>;
 /** The facts-only profile of the register read: the one whose sources carry the server's `documentResult`. */
 type ConsolidatedRegister = Extract<RegisterRead, { schemaVersion: 'building-registry-summary/1' }>;

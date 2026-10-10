@@ -27,7 +27,9 @@ import { cityJson, download, fileStem } from './exporters';
 import { NoGeometry } from './NoGeometry';
 import { ReadingStatementsContext } from './ReadingNote';
 import { RegisterAbsent } from './RegisterAbsent';
-import { NO_READING_STATEMENTS, absentReason, openCheckCount, unstatedReadings } from './registerState';
+import {
+  NO_READING_STATEMENTS, absentReason, conflictingStoreys, openCheckCount, unstatedReadings,
+} from './registerState';
 import { SourceList } from './SourceList';
 import { FloorFilter, UnitsTab } from './UnitsTab';
 import { unitsTabView } from './unitsTabView';
@@ -139,6 +141,7 @@ function Register({ register }: { register: BuildingRegister }) {
       level?.id ?? null),
     [units, canonical.data, canonical.error, canonical.isPending, level],
   );
+  const storeys = useMemo(() => conflictingStoreys(canonical.data).join(' / '), [canonical.data]);
   const clearLevel = useCallback(() => set({ level: null, record: null }), [set]);
   const workflowMap = useMemo(() => byId, [byId]);
   const snapshot = useCallback(() => engine?.snapshot() ?? null, [engine]);
@@ -192,7 +195,10 @@ function Register({ register }: { register: BuildingRegister }) {
               Parcel ULPIN{' '}
               {register.parcelIdentifiers.length ? <span className="ul-mono">{register.parcelIdentifiers.map((p) => p.value).join(', ')}</span> : <span className="ul-unknown">not supplied</span>}
               {ledger?.declaration ? <> · {ledger.declaration}</> : null}
-              {model.levels.length ? <> · {levelSummary(model)}</> : null}
+              {model.levels.length ? <> · {levelSummary(model)}{storeys ? ' recorded' : ''}</> : null}
+              {storeys ? (
+                <> · <Badge tone="warning" icon={null}>{`Storeys conflict between sources: ${storeys}`}</Badge></>
+              ) : null}
             </p>
           </div>
           <Link to={mapHref} className="ul-btn ul-btn--ghost"><Icon icon={MapTrifold} />Back to map</Link>
