@@ -63,6 +63,16 @@ test('the officer provider accepts a list with every key present and names the o
   assert.match((await inspectWith(gatewayEnv(single, 0))).status.message, new RegExp(`${names[0]} is absent`));
 });
 
+test('the officer provider reads a key whose value is empty as absent', async () => {
+  const list = { secretReferences: names };
+  const empty = await inspectWith({ ...gatewayEnv(list, 3), [names[1]]: '' });
+  assert.deepEqual([empty.status.state, empty.status.configured, empty.model], ['unconfigured', false, undefined]);
+  assert.match(empty.status.message, new RegExp(`provider key ${names[1]} is absent`));
+  holdsNoKey(JSON.stringify(empty));
+  assert.equal((await inspectWith({ ...gatewayEnv({ secretReference: names[0] }, 1), [names[0]]: '' })).status.state,
+    'unconfigured');
+});
+
 // The child can send nothing: a request or a socket would throw here, whatever the script went on to do.
 const closedNetwork = `data:text/javascript,${encodeURIComponent(`import net from 'node:net';
 const closed = () => { throw new Error('GK2_NETWORK_CLOSED'); };

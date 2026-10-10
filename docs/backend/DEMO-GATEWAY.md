@@ -93,6 +93,13 @@ pace and the one call in flight count across all keys together.
 
    It prints `key list: reconciled` (or `unchanged`, or `unpinned` for a ledger that has no call yet). It is
    refused when anything but the keys differs from the pinned policy, and while a call has unresolved exposure.
+
+   On 10 October 2026 the five statements ran for the first time, on a throwaway database built from the schema
+   of before the change ([the record](../evidence/gf-ai/gateway/gk3/result.json)): three `ALTER TABLE` and two
+   `CREATE` completed in one query call, and the budget row and the call row that were there stayed as they were,
+   with the new columns empty. Running them again changes nothing: each of the five answers
+   `already exists, skipping`, and the tables, columns, constraints, indexes and row counts are the same after
+   as before; the server's `migrate()` and `demo-schema.ts`, run once each after that, changed nothing either.
 5. **The live proof**: [LIVE-PROOF.md](LIVE-PROOF.md).
 6. **Disable**: stop the demo, `node scripts/platform/demo-gateway.mjs disable`, start it again.
 
