@@ -30,6 +30,22 @@ The platform start command resumes the existing project only; populated storage 
 If doctor fails, preserve the runtime and diagnose its specific failure; do not initialise replacement storage.
 Code changes merge on staging first, then roll here in a separately authorised runtime task.
 
+## Schema steps that a roll-out must apply first
+
+The roll-out never creates or resets the database, and `platform:start --profile demo` refuses to start when the
+served commit expects a migration the populated database has not run ("Demo schema missing"). An additive step is
+applied once by its own registered runner, from the demo checkout at the new commit, while the API still answers
+(before step 2), by the runtime owner only:
+
+| Needed from commit | Migration | Command | Receipt |
+| --- | --- | --- | --- |
+| K5 part 2 merge (card revocation) | `usp_property_card_revocations_001` (one new append-only table) | `node docs/evidence/gf4/k5/run-migration.mjs` | `docs/evidence/gf4/k5/migration-receipt.json` (create-once) |
+
+The K5 runner has not been executed anywhere yet (no PostgreSQL was available to its author): its first run is
+on the demo. It applies only the registered check/schema/mark steps in one transaction with short lock and
+statement timeouts, compares the card rows before and after, and stops if the database is not the served one.
+If it fails, do not start the new commit: go back to the previous served commit and report.
+
 ## Document runtime configuration
 
 The builder never opens or rewrites `demo.env`. It writes the non-secret `document-runtime-paths.json` beside it.

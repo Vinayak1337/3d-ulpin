@@ -2323,6 +2323,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/usp/property-cards/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke one exact card revision as its creator; the card row and its PDF stay unchanged and later reads are refused */
+        post: operations["POST_api_v1_usp_property_cards_revoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usp/property-cards/{cardId}/revisions/{revision}": {
         parameters: {
             query?: never;
@@ -49998,6 +50015,66 @@ export interface components {
                 };
             };
         };
+        POST_usp_property_cards_revoke_Request_application_json: {
+            /** Format: uuid */
+            cardId: string;
+            revision: number;
+            reasonCode: string;
+            reason: string;
+            guard: {
+                /** @enum {string} */
+                mode: "create";
+                requestKey: string;
+            };
+        };
+        POST_usp_property_cards_revoke_Response_200_application_json: {
+            readonly data: {
+                /** Format: uuid */
+                cardId: string;
+                revision: number;
+                cardSha256: string;
+                reasonCode: string;
+                reason: string;
+                readonly scope: {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+                /** Format: date-time */
+                revokedAt: string;
+            };
+            readonly meta: {
+                /** @enum {string} */
+                schemaVersion: "usp/1";
+                requestId: string;
+                scope: {
+                    /** @enum {string} */
+                    kind: "intake";
+                    workspaceId: string;
+                    version: number;
+                } | {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+            };
+        };
         GET_usp_property_cards_cardId_revisions_revision_verification_Response_200_application_json: {
             readonly data: {
                 /** Format: uuid */
@@ -83164,6 +83241,110 @@ export interface operations {
             };
         };
     };
+    POST_api_v1_usp_property_cards_revoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description JSON, maximum 1 MiB of received bytes */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_usp_property_cards_revoke_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Private exact-scope USP result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_property_cards_revoke_Response_200_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+        };
+    };
     GET_api_v1_usp_property_cards_cardId_revisions_revision: {
         parameters: {
             query?: never;
@@ -83187,7 +83368,7 @@ export interface operations {
                     "application/pdf": string;
                 };
             };
-            /** @description Current operator/source access or exact-card expiry denied */
+            /** @description Current operator/source access, exact-card expiry or revocation denied */
             403: {
                 headers: {
                     /** @description Server request identifier. */
@@ -83219,7 +83400,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Private consistency report. A failed check, an expired card and a later revision are reported here, not refused */
+            /** @description Private consistency report. A failed check, an expired or revoked card and a later revision are reported here, not refused */
             200: {
                 headers: {
                     /** @description Server request identifier. */
