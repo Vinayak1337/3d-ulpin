@@ -396,7 +396,7 @@ function restrictFolder(dir) {
 
 export async function createDemo(name = demoRuntime) {
   const definition = definedRuntime(name);
-  if (definition.rehearsal) throw new Error('Create is not yet available for a rehearsal: no writer of its path files.');
+  if (definition.rehearsal) throw new Error('Create is not yet available for a rehearsal: no writer of its files.');
   const { file, dir, project } = definition;
   const runtime = dockerRuntime();
   const volumes = runtime.docker('volume', 'ls', '--format', '{{.Name}}').split('\n');

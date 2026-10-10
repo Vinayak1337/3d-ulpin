@@ -4,7 +4,9 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { command, dockerRuntime, engine, inventory, storageProblems, migrationReady, root, services } from './runtime.mjs';
-import { readDemo, readDemoOcrPaths, readDemoDocumentRuntime, demoProject } from './demo-config.mjs';
+import {
+  readDemo, readDemoOcrPaths, readDemoDocumentRuntime, demoRuntime, runtimeDefinition,
+} from './demo-config.mjs';
 import { documentRuntimeReport } from './demo-document-runtime.mjs';
 import { gatewayReport, gatewayReportLines } from './demo-gateway.mjs';
 import { ownedProcess } from './processes.mjs';
@@ -15,7 +17,19 @@ const processingOnly = process.argv.includes('--processing-only');
 const profileIndex = process.argv.indexOf('--profile');
 const demo = process.env.ULPIN_PROFILE === 'demo' || (profileIndex >= 0 && process.argv[profileIndex + 1] === 'demo');
 const projectIndex = process.argv.indexOf('--project');
-const selectedProject = demo ? demoProject : projectIndex >= 0 ? process.argv[projectIndex + 1] : process.env.REPO_DATA === 'true' ? 'ulpin-repo' : 'ulpin';
+// --runtime <name> selects one runtime of the demo profile (default ulpin-demo); a refused name reads nothing.
+const runtimeIndex = process.argv.indexOf('--runtime');
+let named;
+try {
+  if (runtimeIndex >= 0 && !demo) throw new Error('--runtime needs --profile demo.');
+  named = runtimeDefinition(runtimeIndex >= 0 ? process.argv[runtimeIndex + 1] : demoRuntime);
+} catch (error) {
+  console.log(`FAIL Runtime name\n  Fix: ${error.message}\nDoctor: 1 failure(s); runtime NOT qualified.`);
+  process.exit(1);
+}
+const legacyProject = projectIndex >= 0 ? process.argv[projectIndex + 1]
+  : process.env.REPO_DATA === 'true' ? 'ulpin-repo' : 'ulpin';
+const selectedProject = demo ? named.project : legacyProject;
 let demoEnv;
 function result(name, passed, hint) {
   console.log(`${passed ? 'PASS' : 'FAIL'} ${name}`);
@@ -49,7 +63,7 @@ async function get(url) {
 }
 function exec(runtime, c, args) { return runtime.docker('exec', c.id, ...args); }
 function dispatcherRunning() {
-  if (demo) return !!ownedProcess('dispatcher');
+  if (demo) return !!ownedProcess('dispatcher', named);
   const entry = join(root, 'scripts/dispatcher.ts');
   if (process.platform === 'win32') return command('powershell.exe', [
     '-NoProfile', '-File', join(root, 'scripts/platform/dispatcher-probe.ps1'), '-DispatcherEntry', entry,
@@ -63,9 +77,10 @@ function dispatcherRunning() {
 }
 
 async function doctor() {
-  if (!['ulpin', 'ulpin-repo', demoProject].includes(selectedProject)) throw new Error('Unsupported project.');
+  if (!['ulpin', 'ulpin-repo', named.project].includes(selectedProject)) throw new Error('Unsupported project.');
+  if (runtimeIndex >= 0) console.log(`INFO Runtime ${named.name}: only its own folder, project and ports are read.`);
   if (demo) await attempt('Document runtimes', () => {
-    const paths = readDemoDocumentRuntime();
+    const paths = readDemoDocumentRuntime(named.documentFile);
     console.log(`  documentPagesConfigured: ${Boolean(paths.ULPIN_DOCUMENT_PAGES_PYTHON)}`);
     console.log(`  packetRegionsConfigured: ${Boolean(paths.ULPIN_PACKET_REGIONS_PROFILE)}`);
     const report = documentRuntimeReport(paths);
@@ -73,11 +88,11 @@ async function doctor() {
     console.log(`  regionRepoMatches: ${report.regionRepoMatches}`);
     return report.pagesConfigured && report.regionsConfigured && report.regionRepoMatches;
   }, 'the runtime owner must rebuild document-runtime-paths.json from the reviewed demo checkout before startup.');
-  if (demo && !await attempt('Demo external configuration', () => { demoEnv = readDemo(); return true; },
+  if (demo && !await attempt('Demo external configuration', () => { demoEnv = readDemo(named); return true; },
     'recover the original demo.env if demo volumes exist; otherwise use platform:start --profile demo --create.')) return;
   if (demo) {
     try {
-      const paths = readDemoOcrPaths();
+      const paths = readDemoOcrPaths(named.ocrFile, named.ocrProfileFile);
       if (!paths.ULPIN_DOCUMENT_OCR_PYTHON) console.log('INFO Local document OCR unavailable (paths not configured).');
       else {
         const hindi = existsSync(join(paths.ULPIN_DOCUMENT_OCR_TESSDATA, 'hin.traineddata'));
@@ -160,7 +175,8 @@ async function doctor() {
   }, 'resume the existing worker and verify its Redis broker connection.');
   else skip('Celery worker heartbeat');
   if (processingOnly) { console.log('SKIP native API/dispatcher and migration admission (processing-only compatibility check)'); return; }
-  if (demo) await attempt('API native process ownership', () => !!ownedProcess('api'), 'resume the demo launcher; do not adopt unrelated listener processes.');
+  if (demo) await attempt('API native process ownership', () => !!ownedProcess('api', named),
+    'resume the demo launcher; do not adopt unrelated listener processes.');
   await attempt('Dispatcher process ownership (liveness only)', dispatcherRunning,
     'start node --import tsx with this checkout\'s absolute scripts/dispatcher.ts path and approved operator/configuration.');
 
