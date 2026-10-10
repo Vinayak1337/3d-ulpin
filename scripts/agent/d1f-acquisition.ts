@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync, statSync } from 'node:fs';
 import { isAbsolute, join, relative, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { decodeColumnText, readColumnCsv } from '../../packages/server/src/modules/usp/ingestion/column-profile';
 import { columnProfileHash } from '../../packages/server/src/modules/usp/ingestion/mapping-teacher';
 import { prepareTable, saveNew, type PreparedColumn } from './t1-profiles';
@@ -11,7 +12,7 @@ const OUTPUT = 'E:/BhuAayam-data/task-data/d1f';
 const RECOVERY_OUTPUT = 'E:/BhuAayam-data/task-data/a5a';
 const DATA_ROOT = 'E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f';
 type Pin = SourceAsset['original'];
-type Asset = SourceAsset & {
+export type Asset = SourceAsset & {
   geography: string;
   profileInput: Pin & { rows: number; sourceSha256: string; sourceLocator: string };
   dictionary: Pin & { url: string };
@@ -27,7 +28,7 @@ function checkedPath(path: string) {
   assert(!/(?:^|[\\/])(?:\.env|heldout|provisional)(?:[\\/.]|$)/i.test(path), 'D1F_SOURCE_PATH_DENIED');
 }
 
-function checkedPin(pin: Pin) {
+export function checkedPin(pin: Pin) {
   checkedPath(pin.externalPath);
   assert.equal(statSync(pin.externalPath).size, pin.bytes, 'D1F_SOURCE_SIZE_CHANGED');
   assert.equal(digest(pin.externalPath), pin.sha256, 'D1F_SOURCE_HASH_CHANGED');
@@ -39,11 +40,11 @@ function admittedAssets() {
   };
   assert.equal(manifest.purpose, 'test_only');
   assert.equal(manifest.heldout.length, 0);
-  const { heldOut, allFamilies } = developmentManifest(); // Public alias summary only; no evaluator material is opened.
+  const { heldOut, indianFamilies } = developmentManifest(); // Public aliases only; evaluator material stays closed.
   const families = new Set(manifest.families.filter(row => row.split === 'dev').map(row => row.id));
   for (const asset of manifest.assets) {
     assert(asset.split === 'dev' && families.has(asset.family));
-    assert(!heldOut.has(asset.family) && !allFamilies.has(asset.family), 'D1F_FAMILY_BOUNDARY_CHANGED');
+    assert(!heldOut.has(asset.family) && !indianFamilies.has(asset.family), 'D1F_FAMILY_BOUNDARY_CHANGED');
     assert(asset.permission.state !== 'restricted' && !/private|restricted/i.test(asset.privacy ?? ''));
     assert.notEqual(asset.family, 'opf-d01', 'D1F_CLOSED_FAMILY_DENIED');
     assert.equal(asset.profileInput.sourceSha256, asset.original.sha256);
@@ -55,7 +56,7 @@ function admittedAssets() {
   return manifest.assets;
 }
 
-function prefixTable(asset: Asset): SourceTable {
+export function prefixTable(asset: Asset): SourceTable {
   assert(asset.profileInput.bytes <= 16 * 1024 * 1024 && asset.profileInput.rows <= 2000);
   const parsed = readColumnCsv(decodeColumnText(readFileSync(asset.profileInput.externalPath)));
   assert.equal(parsed.rows.length, asset.profileInput.rows);
@@ -66,7 +67,7 @@ function prefixTable(asset: Asset): SourceTable {
   };
 }
 
-function profileAsset(asset: Asset): SourceAsset {
+export function profileAsset(asset: Asset): SourceAsset {
   const { externalPath, sha256, bytes } = asset.profileInput;
   return {
     id: asset.id.replace(/\.csv$/, '-prefix-128.csv'), family: asset.family, split: 'dev', mediaType: 'text/csv',
@@ -209,4 +210,6 @@ function main() {
   console.log(JSON.stringify(summary));
 }
 
-main();
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  main();
+}
