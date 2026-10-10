@@ -7,11 +7,9 @@ import type { SpaceWorkflow } from '../../local/workflow';
 import { shortHash } from '../../local/workflow';
 import { Qr } from './Qr';
 import { useCardFacts } from './cardFacts';
+import { DRAFT_FACT } from './draft';
 import { DraftNotice } from './DraftNotice';
 import { LOCAL_CHAIN_WORDS, useLocalChain } from './localChain';
-
-// The printed card leaves the dialog and its notice behind, so the card itself says what it is.
-const DRAFT_FACT = { label: 'Record', value: 'Draft on this device, not a registry record' };
 
 export function verifyPath(workflow: SpaceWorkflow) {
   return `/verify/${encodeURIComponent(workflow.code!)}?rev=${workflow.events[0]!.revision}`;

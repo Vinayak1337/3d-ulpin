@@ -6,6 +6,7 @@ import type { BuildingRegister } from '../../../api/queries';
 import type { BuildingModel, LevelModel, SpaceModel } from '../../../model/building';
 import { useOpenEvidence } from '../../evidence/EvidenceContext';
 import { parseLocator } from '../../evidence/refs';
+import { DRAFT_ON_THIS_DEVICE } from '../../identity/draft';
 import { Cited } from '../../register/ReadingNote';
 import { useReadingStatements } from '../../register/useReadingStatements';
 import { useRecordReview, useSpaceWorkflow } from '../../workflow/useWorkflow';
@@ -18,7 +19,9 @@ type Tab = 'overview' | 'rights' | 'evidence';
 
 /**
  * Space variant: status (Draft → Reviewed → Assigned, or the ledger's review status), the proposed code
- * once assigned, facts with inline evidence, and one primary action that moves the space forward.
+ * once assigned, facts with inline evidence, and one primary action that moves the space forward. The code and
+ * that status are this browser's own (local/workflow.ts): the code is shown as a draft on this device and the
+ * header then reads "Draft", not "Assigned".
  */
 export function SpaceInspector({ space, level, model, register, ledger, buildingId, crumbs, datum, onSelectSpace, onAssign, onCard, onFinding }: {
   space: SpaceModel; level: LevelModel | null; model: BuildingModel; register: BuildingRegister; ledger: BuildingLedger | null | undefined;
@@ -94,7 +97,7 @@ export function SpaceInspector({ space, level, model, register, ledger, building
   const primary = status === 'Assigned'
     ? <Button variant="primary" icon={QrCode} onClick={onCard}>Property Card</Button>
     : status === 'Reviewed'
-      ? <Button variant="primary" icon={ShieldCheck} onClick={onAssign}>Assign code</Button>
+      ? <Button variant="primary" icon={ShieldCheck} onClick={onAssign}>Assign draft code</Button>
       : <Button variant="primary" icon={CheckCircle} disabled={review.isPending} onClick={() => review.mutate({ spaceId: space.id, buildingId, spaceName: space.name, recordRevision: space.record.revision })}>Record reviewed details</Button>;
   const secondary = finding && status !== 'Assigned'
     ? <Button onClick={() => onFinding(finding.id)}>{finding.code === 'carpet_area_deviation' ? 'Review area' : 'Open finding'}</Button> : null;
@@ -106,16 +109,25 @@ export function SpaceInspector({ space, level, model, register, ledger, building
       readings={readings}
       crumbs={crumbs}
       title={space.name}
-      status={<StatusBadge status={status} />}
+      status={<StatusBadge status={workflow.data?.code ? 'Draft' : status} />}
       subtitle={<span className="ul-mono">{space.record.identifier.replace(/\//g, ' / ')}</span>}
       tabs={<Tabs label="Space details" value={tab} onChange={setTab} tabs={[{ value: 'overview', label: 'Overview' }, { value: 'rights', label: 'Rights' }, { value: 'evidence', label: 'Evidence', count: refs.length }]} />}
       actions={<>{primary}{secondary}</>}
     >
       {tab === 'overview' ? (
         <>
-          {workflow.data?.code ? <UlpinCode code={workflow.data.code} state="assigned" /> : null}
+          {workflow.data?.code ? (
+            <div className="ul-stack">
+              <UlpinCode code={workflow.data.code} state="draft" />
+              <p className={styles.note}>{DRAFT_ON_THIS_DEVICE}.</p>
+            </div>
+          ) : null}
           <DescriptionList items={rows} />
-          {status === 'Draft' || status === 'Needs review' ? <p className={styles.note}>Review the details against the sources, then record them. A proposed code can be assigned after review.</p> : null}
+          {status === 'Draft' || status === 'Needs review' ? (
+            <p className={styles.note}>
+              Review the details against the sources, then record them. A draft code can be assigned after review.
+            </p>
+          ) : null}
         </>
       ) : tab === 'rights' ? (
         <DescriptionList items={[

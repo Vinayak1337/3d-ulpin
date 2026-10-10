@@ -4,13 +4,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import { FilePlus, SlidersHorizontal, Trash, X } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { OverlayInput, FindingInput, Pick, SceneEngine, SceneState, Trench } from '@ulpin/scene';
-import { Badge, Banner, Button, Icon, LevelRail, SeverityBadge, Toast, type LegendSection } from '@ulpin/ui';
+import { Banner, Button, Icon, LevelRail, SeverityBadge, Toast, type LegendSection } from '@ulpin/ui';
 import { useBuildingCanonical, useBuildingImport, useBuildingLedger, useBuildingRegister, type AreaContext } from '../../api/queries';
 import { buildingModel } from '../../model/building';
 import { effectiveColour } from '../../state/selection';
 import { useSelection } from '../../state/useSelection';
 import { EvidenceProvider } from '../evidence/EvidenceContext';
 import { AssignDialog } from '../identity/AssignDialog';
+import { DRAFT_ON_THIS_DEVICE } from '../identity/draft';
 import { AddFilesDialog } from '../intake/AddFilesDialog';
 import { DeleteDialog } from '../manage/DeleteDialog';
 import { UnitCardDialog } from '../identity/UnitCardDialog';
@@ -514,7 +515,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
       ) : null}
       {toast ? (
         <Toast onDone={() => setToast(null)}>
-          <Badge tone="primary">Assigned</Badge>
+          <span className="ul-body-sm">{DRAFT_ON_THIS_DEVICE}</span>
           <span className="ul-id">{toast.slice(0, 7)}…{toast.slice(-3)}</span>
           <button type="button" className="ul-btn ul-btn--soft" onClick={() => { setToast(null); setDialog('card'); }}>Make Property Card</button>
         </Toast>
