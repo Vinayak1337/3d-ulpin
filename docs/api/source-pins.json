@@ -573,7 +573,7 @@
     "packages/server/src/modules/officer/source-spaces.ts": "657dae61abc107a44ceea6a417f5aee55631e9f72d3ef2bc52926938b23d3b99",
     "packages/server/src/modules/usp/ingestion/source-building-children.ts": "d6cff09c2b00d2d8b4c0027e41d44682ecb5c9b0cee4a40cf41378811cbf903f",
     "packages/server/src/modules/registry/canonical-source-identity.ts": "a417d8d7b5cd1c970dbcffa0ce52c5feca430a83ce3034277af7b994e617c15b",
-    "packages/server/src/modules/usp/source-stated-identity.ts": "d0d59ebdb073da9bc621e3d18da1d1a1ac2bc37377f376c02079036a8f4eeb28",
+    "packages/server/src/modules/usp/source-stated-identity.ts": "70e181c0089a7b379d24d3d9282cb5769a82963e1fbe8a7060ff7d3952d8d132",
     "packages/server/src/modules/usp/source-stated-snapshots.ts": "92b65c96d5ad4e0b4984819fa16901c47f26391d7e6bb927988f9123bac3aed3"
   },
   "operations": [

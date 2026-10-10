@@ -137,6 +137,28 @@ test('exact source P3 stays unknown until assigned; corruption or later identity
     await assert.rejects(readSourceProjectCodes(current, retainedTower.areaId), errorCode('CANONICAL_CURRENT_ONLY'));
   }));
 
+test('source-only singular location refuses a known level before recording an identity review',
+  async () => control(async f => {
+    const { review } = await prepare(f);
+    const before = f.memory.reviews.size;
+    await assert.rejects(prepareProjectIdentityReview(f.ctx, { ...review, location: {
+      ...location, locator: { ...location.locator, levels: ['F02'] },
+    } } as any), errorCode('USP_SOURCE_IDENTITY'));
+    assert.equal(f.memory.reviews.size, before);
+  }));
+
+test('source-only per-record locations cannot bypass the unknown-location guard with a valid singular location',
+  async () => control(async f => {
+    const { review } = await prepare(f);
+    const before = f.memory.reviews.size;
+    await assert.rejects(prepareProjectIdentityReview(f.ctx, { ...review, locations: {
+      [f.recorded.spaceId]: { ...location, locator: { ...location.locator, levels: ['F02'] } },
+    } } as any), errorCode('USP_SOURCE_IDENTITY'));
+    assert.equal(f.memory.reviews.size, before);
+    await prepareProjectIdentityReview(f.ctx, { ...review, locations: { [f.recorded.spaceId]: location } } as any);
+    assert.equal(f.memory.reviews.size, before + 1);
+  }));
+
 test('literal 2ND caption never authorizes F02 or an anchor; generic snapshots remain extraction-gated',
   async () => control(async f => {
     const { review } = await prepare(f);
