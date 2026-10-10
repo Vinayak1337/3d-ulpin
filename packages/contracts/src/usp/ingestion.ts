@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import {LegacyMappingTargetSchema} from '../canonical/targets';
+import { ColumnProfileDocumentSchema, MappingPlanV2Schema } from '../canonical/mapping-plan';
+import { StreamingVectorInputSchema, StreamingVectorRequestSchema, StreamingVectorStatusSchema } from './streaming-vector';
 export {MappingPlanV2Schema} from '../canonical/mapping-plan';
 export type {MappingPlanV2} from '../canonical/mapping-plan';
 
@@ -64,6 +66,74 @@ export type MappingPlan = z.infer<typeof MappingPlanSchema>;
 export type MappingReceipt = z.infer<typeof MappingReceiptSchema>;
 export type SourceProfile = z.infer<typeof SourceProfileSchema>;
 export type MappingDestination = z.infer<typeof MappingDestinationSchema>;
+
+export const TABULAR_LIMITS = Object.freeze({ bytes: 16 * 1024 * 1024, rows: 2000, columns: 256 });
+export const TabularSelectionSchema = z.strictObject({
+  format: z.enum(['csv', 'xlsx']), sheet: z.string().min(1).max(150), table: z.null(),
+  headerRows: z.array(z.number().int().min(1).max(2000)).min(1).max(5),
+}).superRefine((value, ctx) => {
+  if (new Set(value.headerRows).size !== value.headerRows.length ||
+      value.headerRows.some((row, index) => index > 0 && row <= value.headerRows[index - 1])) {
+    ctx.addIssue({ code: 'custom', message: 'Header rows must be ordered, distinct physical source rows.' });
+  }
+  if (value.format === 'csv' && (value.sheet !== 'csv' || value.headerRows.length !== 1 || value.headerRows[0] !== 1)) {
+    ctx.addIssue({ code: 'custom', message: 'CSV admission requires the first logical record as its header.' });
+  }
+});
+export const TabularPinSchema = z.strictObject({
+  selection: TabularSelectionSchema, sourceBytes: z.number().int().positive().max(TABULAR_LIMITS.bytes),
+  developmentAssetId: z.string().min(1).max(150), developmentFamily: z.string().regex(/^mi-d\d+$/),
+});
+export const TabularSourceProfileSchema = z.strictObject({
+  version: z.literal('manual-tabular/1'), source: SourcePinSchema, tabular: TabularPinSchema,
+  caseId: id, workspaceRevision: z.number().int().nonnegative(), workspaceFingerprint: hash,
+  headers: z.array(z.string().max(400)).min(1).max(TABULAR_LIMITS.columns),
+  records: z.number().int().positive().max(TABULAR_LIMITS.rows), profile: ColumnProfileDocumentSchema,
+  limitations: z.array(z.string()),
+});
+export const AnySourceProfileSchema = z.union([SourceProfileSchema, TabularSourceProfileSchema]);
+export const AnyRetainSourceSchema = z.union([RetainGisSchema, z.strictObject({ ...RetainGisSchema.shape,
+  format: z.enum(['csv', 'xlsx']), selection: TabularSelectionSchema,
+}).superRefine((value, ctx) => {
+  if (value.format !== value.selection.format) ctx.addIssue({ code: 'custom', message: 'Format and selection differ.' });
+  if (Boolean(value.familyId) !== Boolean(value.expectedSourceRevision)) {
+    ctx.addIssue({ code: 'custom', message: 'A revised source requires its family and current revision.' });
+  }
+})]);
+export const TabularMappingPlanSchema = z.strictObject({
+  version: z.literal('manual-tabular/1'), mode: z.literal('manual_mapping'), source: SourcePinSchema,
+  caseId: id, workspaceRevision: z.number().int().nonnegative(), workspaceFingerprint: hash,
+  tabular: TabularPinSchema, mapping: MappingPlanV2Schema,
+  decisions: z.array(z.strictObject({ sourceField: z.string().min(1).max(512), reason: z.string().min(1).max(2000) }))
+    .min(1).max(TABULAR_LIMITS.columns),
+});
+export const TabularMappingReceiptSchema = MappingReceiptSchema.omit({ plan: true, destination: true }).extend({
+  plan: TabularMappingPlanSchema, destination: z.null(),
+});
+export const AnyMappingReceiptSchema = z.union([MappingReceiptSchema, TabularMappingReceiptSchema]);
+export const AnyAuthorMappingSchema = z.union([AuthorMappingSchema, AuthorMappingSchema.omit({ plan: true,
+  destination: true }).extend({ plan: TabularMappingPlanSchema, destination: z.null() })]);
+export const AnyStreamingRequestSchema = z.union([StreamingVectorRequestSchema,
+  StreamingVectorRequestSchema.omit({ framing: true }).extend({ framing: z.literal('tabular'), tabular: TabularPinSchema })]);
+export const AnyStreamingInputSchema = z.union([StreamingVectorInputSchema,
+  StreamingVectorInputSchema.omit({ framing: true }).extend({ framing: z.literal('tabular'), tabular: TabularPinSchema })]);
+export const AnyStreamingStatusSchema = StreamingVectorStatusSchema.omit({ framing: true }).extend({
+  framing: z.enum(['feature-collection', 'geojson-seq-rs', 'tabular']), tabular: TabularPinSchema.optional(),
+});
+export type TabularPin = z.infer<typeof TabularPinSchema>;
+export type TabularSelection = z.infer<typeof TabularSelectionSchema>;
+export type TabularSourceProfile = z.infer<typeof TabularSourceProfileSchema>;
+export type AnySourceProfile = z.infer<typeof AnySourceProfileSchema>;
+export type TabularMappingPlan = z.infer<typeof TabularMappingPlanSchema>;
+export type TabularMappingReceipt = z.infer<typeof TabularMappingReceiptSchema>;
+export type AnyMappingReceipt = z.infer<typeof AnyMappingReceiptSchema>;
+export type AnyStreamingInput = z.infer<typeof AnyStreamingInputSchema>;
+export const TabularRawRowSchema = z.strictObject({ headers: z.array(z.string().max(400)).min(1).max(256),
+  cells: z.array(z.discriminatedUnion('state', [z.strictObject({ state: z.literal('absent') }),
+    z.strictObject({ state: z.literal('unknown') }),
+    z.strictObject({ state: z.literal('literal'), value: z.string() })])).max(256),
+  sheet: z.string().min(1).max(150), sourceRow: z.number().int().positive(),
+});
 
 /** Byte receipt is independent of semantic parsing/conversion admission. */
 export const LARGE_ORIGINAL_LIMITS = {
