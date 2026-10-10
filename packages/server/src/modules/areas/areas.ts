@@ -75,7 +75,8 @@ type Normalized = {
   disposition?: GisGeometryDisposition;
 };
 export async function areaGeo<T>(
-  operation: "normalize" | "check" | "extract" | "crop" | "profile" | "inspect-gis" | "inspect-archive-member",
+  operation: "normalize" | "check" | "extract" | "crop" | "profile" | "inspect-gis" | "inspect-archive-member"
+    | "build-prisms",
   input: unknown,
   maxResultBytes?: number,
 ): Promise<T> {
