@@ -28,6 +28,9 @@ EVIDENCE = REPO / "docs/evidence/gf-ai/building"
 PREREG = REPO / "docs/evidence/gf-ai/preregistration.json"
 PROFILE = "rfdetr-rgb432-tile512-stride384-threshold050-mask000-v2"
 BASELINE = "rfdetr-satellite-buildings-onnx-v1"
+TRANSFER_KEYS = {"transfer": "building_mask_transfer", "transfer2": "building_mask_transfer_2"}
+TRANSFER2_SLOTS = ("epoch4", "b6")
+TRANSFER2_LOG = EVIDENCE / "transfer-2-runs.jsonl"
 
 
 def repo_sha(path):
@@ -93,7 +96,7 @@ def holdout_reserve(args, split, model_sha, split_sha):
 
 
 def transfer_inputs(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any]]:
-    prereg = json.loads(PREREG.read_bytes())["building_mask_transfer"]
+    prereg = json.loads(PREREG.read_bytes())[TRANSFER_KEYS[args.split]]
     root = Path(prereg["data_root"])
     coco_path = root / "coco/transfer/_annotations.coco.json"
     if prereg["status"] != "frozen" or sha(coco_path) != prereg["holdout"]["coco_sha256"]:
@@ -150,6 +153,72 @@ def transfer_reserve(args: argparse.Namespace, model_sha: str, split_sha: str) -
     finally:
         lock.unlink()
     return log_path
+
+
+def require_transfer2_selection(slot: str, prereg: dict[str, Any], model_sha: str, selection_path: Path | None) -> str:
+    """Both slots wait for a committed, fixed B6 DEV selection; each slot is bound to its own model hash."""
+    if selection_path is None:
+        raise ValueError("TRANSFER2 requires a committed final B6 DEV selection")
+    selection_path = selection_path.resolve()
+    selection_commit = committed(selection_path)
+    selection = json.loads(selection_path.read_bytes())
+    if not selection.get("final_candidate_fixed"):
+        raise ValueError("TRANSFER2 denied: the B6 DEV selection is not fixed")
+    expected = prereg["reference"]["weights_sha256"] if slot == "epoch4" else selection.get("model_sha256")
+    if model_sha != expected:
+        raise ValueError(f"TRANSFER2 denied: model hash does not match slot {slot}")
+    return selection_commit
+
+
+def refuse_unavailable_slot(starts: list[dict[str, Any]], slot: str, model_sha: str) -> None:
+    if len(starts) >= len(TRANSFER2_SLOTS):
+        raise ValueError("TRANSFER2 denied: both attempts already reserved (including failures)")
+    if any(record["slot"] == slot for record in starts):
+        raise ValueError(f"TRANSFER2 denied: slot {slot} already reserved")
+    if any(record["model_sha256"] == model_sha for record in starts):
+        raise ValueError("TRANSFER2 denied: one model cannot take both slots")
+
+
+def reserve_transfer2_slot(log_path: Path, slot: str, run_id: str, model_sha: str, **extra: Any) -> Path:
+    """Reserve one of exactly two slots; the exclusive-create lock makes check and append atomic."""
+    if slot not in TRANSFER2_SLOTS:
+        raise ValueError(f"TRANSFER2 denied: slot must be one of {TRANSFER2_SLOTS}")
+    lock = log_path.with_suffix(".lock")
+    with lock.open("x") as handle:
+        handle.write(str(os.getpid()))
+    try:
+        lines = log_path.read_text(encoding="utf-8").splitlines() if log_path.exists() else []
+        starts = [record for record in map(json.loads, lines) if record["event"] == "started"]
+        refuse_unavailable_slot(starts, slot, model_sha)
+        append_log(log_path, "started", run_id, slot=slot, attempt=len(starts) + 1, model_sha256=model_sha, **extra)
+    finally:
+        lock.unlink()
+    return log_path
+
+
+def transfer2_reserve(args: argparse.Namespace, model_sha: str, split_sha: str) -> Path:
+    prereg_commit = committed(PREREG)
+    prereg = json.loads(PREREG.read_bytes())[TRANSFER_KEYS["transfer2"]]
+    if prereg["status"] != "frozen" or prereg["region"] != "chittagong_bangladesh":
+        raise ValueError("TRANSFER2 denied: frozen Chittagong preregistration required")
+    selection_commit = require_transfer2_selection(args.transfer2_slot, prereg, model_sha, args.selection_result)
+    return reserve_transfer2_slot(
+        TRANSFER2_LOG,
+        args.transfer2_slot,
+        args.run_id,
+        model_sha,
+        split_sha256=split_sha,
+        preregistration_commit=prereg_commit,
+        selection_commit=selection_commit,
+        git_sha=git("rev-parse", "HEAD").decode().strip(),
+    )
+
+
+def require_transfer2_protocol(args: argparse.Namespace, path: Path) -> None:
+    """Frozen evaluation profile: PyTorch FP32 on CUDA from a local checkpoint, with size bins."""
+    if path.suffix != ".safetensors" or args.provider != "cuda":
+        raise ValueError("TRANSFER2 denied: a safetensors checkpoint on --provider cuda is required")
+    args.size_bins = True
 
 
 def append_log(path, event, run_id, **extra):
@@ -367,7 +436,8 @@ def contact_sheet(rows, coco_dir, output):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model", required=True, help="onnx|checkpoint|path to ONNX or safetensors directory")
-    parser.add_argument("--split", required=True, choices=("dev", "holdout", "transfer"))
+    parser.add_argument("--split", required=True, choices=("dev", "holdout", "transfer", "transfer2"))
+    parser.add_argument("--transfer2-slot", choices=TRANSFER2_SLOTS, help="Reserved slot for the Chittagong transfer")
     parser.add_argument("--selection-result", type=Path, help="Committed final DEV selection for transfer")
     parser.add_argument("--root", type=Path, default=Path("E:/BhuAayam-data/datasets/ramp"))
     parser.add_argument("--run-id", default=datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"))
@@ -379,7 +449,9 @@ def main():
     args = parser.parse_args()
     if not 0 < args.score_threshold < 1:
         parser.error("score threshold must be between 0 and 1")
-    if args.split in ("holdout", "transfer") and args.score_threshold != .5:
+    if (args.split == "transfer2") != (args.transfer2_slot is not None):
+        parser.error("--transfer2-slot is required for, and only valid with, --split transfer2")
+    if args.split in ("holdout", "transfer", "transfer2") and args.score_threshold != .5:
         parser.error("Nondefault HOLDOUT threshold denied before slot reservation")
     if not __import__("re").fullmatch(r"[A-Za-z0-9_-]+", args.run_id):
         parser.error("run-id must be a simple new directory name")
@@ -387,14 +459,18 @@ def main():
     if output.exists():
         raise FileExistsError("Run directory exists; preserve every attempt, never overwrite")
     path = model_path(args.model)
+    if args.split == "transfer2":
+        require_transfer2_protocol(args, path)
     model_sha = sha(path)
     split_path = EVIDENCE / "split/split.json"
     split = json.loads(split_path.read_bytes())
     split_sha = repo_sha(split_path)
-    if args.split == "transfer":
+    is_transfer = args.split in ("transfer", "transfer2")
+    data_split = "transfer" if is_transfer else args.split
+    if is_transfer:
         split, transfer = transfer_inputs(args)
         split_sha = hashlib.sha256(json.dumps(transfer, sort_keys=True).encode()).hexdigest()
-    expected = split["splits"][args.split]
+    expected = split["splits"][data_split]
     if id_hash(expected["chip_ids"]) != expected["chip_ids_sha256"]:
         raise ValueError("Frozen split id hash differs")
     log = None
@@ -402,6 +478,8 @@ def main():
         log = holdout_reserve(args, split, model_sha, split_sha)
     elif args.split == "transfer":
         log = transfer_reserve(args, model_sha, split_sha)
+    elif args.split == "transfer2":
+        log = transfer2_reserve(args, model_sha, split_sha)
     output.mkdir(parents=True)
     artifacts = args.artifacts_dir or output
     if artifacts != output:
@@ -417,9 +495,9 @@ def main():
             raise ValueError("Production tiling profile drift")
         if args.model in ("onnx", BASELINE) and model_sha != installed["sha256"]:
             raise ValueError("Installed ONNX hash differs from production registry")
-        coco_dir = args.root / "coco" / args.split
+        coco_dir = args.root / "coco" / data_split
         coco_path = coco_dir / "_annotations.coco.json"
-        if args.split == "transfer":
+        if is_transfer:
             expected_coco = {"annotations_sha256": expected["coco_sha256"]}
         else:
             export_receipt = json.loads((EVIDENCE / "data/coco-export.json").read_bytes())
