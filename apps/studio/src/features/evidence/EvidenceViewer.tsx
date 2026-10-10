@@ -8,8 +8,14 @@ import { CitedPageViewer, type Place } from './CitedPageViewer';
 import { resolvePointer, type EvidenceRef } from './refs';
 import styles from './EvidenceViewer.module.css';
 
+interface ViewerProps {
+  evidence: EvidenceRef;
+  still: string | null;
+  onClose: () => void;
+}
+
 /** A citation that names a page of a pinned original opens at that page; any other reference as before. */
-export function EvidenceViewer({ evidence, still, onClose }: { evidence: EvidenceRef; still: string | null; onClose: () => void }) {
+export function EvidenceViewer({ evidence, still, onClose }: ViewerProps) {
   const [fileView, setFileView] = useState(false);
   const { locator, pin } = evidence;
   const place: Place | null = locator.kind === 'page' || locator.kind === 'region' ? locator : null;
@@ -26,7 +32,7 @@ export function EvidenceViewer({ evidence, still, onClose }: { evidence: Evidenc
  * page the locator anchors to; files are previewed by locator kind (row → table rows, JSON pointer →
  * the pointed node), so a new format with an existing locator kind needs no new viewer.
  */
-function DraftPagesViewer({ evidence, still, onClose }: { evidence: EvidenceRef; still: string | null; onClose: () => void }) {
+function DraftPagesViewer({ evidence, still, onClose }: ViewerProps) {
   const pages = useDocumentPages(evidence.sourceId);
   if (pages.isPending) return <Dialog title={evidence.label} onClose={onClose} footer={<Button onClick={onClose}>Close</Button>}><div className="ul-stack">{Array.from({ length: 8 }, (_, i) => <Skeleton key={i} />)}</div></Dialog>;
   if (pages.data) return <PagedViewer evidence={evidence} still={still} doc={pages.data} onClose={onClose} />;
@@ -127,7 +133,7 @@ function FileViewer({ evidence, still, onClose }: { evidence: EvidenceRef; still
       if (!response.ok) throw new Error(`The source file could not be read (${response.status}).`);
       const type = response.headers.get('content-type') ?? '';
       const blob = await response.blob();
-      // A binary original (a PDF) is kept as bytes: reading it as text would corrupt the copy that Open original serves.
+      // A binary original (a PDF) stays bytes: read as text, the copy that Open original serves would be corrupt.
       return { blob, text: isTextual(type) ? await blob.text() : '', type, name: fileName(response) };
     },
     staleTime: Infinity,
