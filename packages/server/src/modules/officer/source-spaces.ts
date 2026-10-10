@@ -36,7 +36,8 @@ async function evidenceTx(client: PoolClient, record: BuildingMetadataRecord,
   const pin = (await client.query(`SELECT pin FROM import_packages p,
     jsonb_array_elements(p.body->'documentPins') pin WHERE p.area_id IN
     (SELECT area_id FROM physical_features WHERE id=$1) AND p.body->'features' @> $2::jsonb
-    AND pin->>'sourceId'=$3 LIMIT 1`, [record.id, JSON.stringify([{ id: record.id }]), evidence.sourceId])).rows[0]?.pin;
+    AND pin->>'sourceId'=$3 LIMIT 1`,
+  [record.id, JSON.stringify([{ id: record.id }]), evidence.sourceId])).rows[0]?.pin;
   if (!pin || pin.sourceRevision !== evidence.sourceRevision) {
     throw new AppError(422, 'SOURCE_SPACE_EVIDENCE', 'Cite a pinned retained original of this building.');
   }
@@ -54,12 +55,15 @@ function priorReceipt(record: BuildingMetadataRecord, input: SourceSpaceRequest,
     throw new AppError(409, 'SOURCE_SPACE_KEY', 'This request key names different source-space inputs.');
   }
   if (prior) return SourceSpaceReceiptSchema.parse(prior.receipt);
-  if (commands.length >= 100) throw new AppError(422, 'SOURCE_SPACE_LIMIT', 'At most one hundred decisions per building.');
+  if (commands.length >= 100) {
+    throw new AppError(422, 'SOURCE_SPACE_LIMIT', 'At most one hundred decisions per building.');
+  }
   return null;
 }
 
 async function inspectEvidence(evidence: Awaited<ReturnType<typeof evidenceTx>>, deps: Dependencies) {
-  const pages = DocumentPagesSchema.parse(await deps.pages(evidence.sourceId, { revision: String(evidence.sourceRevision),
+  const pages = DocumentPagesSchema.parse(await deps.pages(evidence.sourceId, {
+    revision: String(evidence.sourceRevision),
     sha256: evidence.sourceSha256, offset: String(evidence.page - 1), limit: '1' }));
   const page = pages.pages.find(row => row.page === evidence.page);
   const [x0, y0, x1, y1] = evidence.region;
@@ -111,6 +115,9 @@ export async function commandSourceSpace(buildingId: string, raw: unknown,
   if (before.prior) return before.prior;
   for (const evidence of before.evidence) await inspectEvidence(evidence, deps);
   return deps.transaction(async client => {
+    await client.query(`SELECT id FROM cases WHERE id IN
+      (SELECT case_id FROM sources WHERE id=ANY($1::uuid[])) ORDER BY id FOR SHARE`,
+    [[...new Set([input.level.evidence.sourceId, input.space.evidence.sourceId])]]);
     const record = await lockBuildingMetadataTx(client, buildingId);
     assertSourceBuilding(record);
     const evidence = await Promise.all([input.level.evidence, input.space.evidence]

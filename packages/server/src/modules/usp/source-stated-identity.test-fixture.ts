@@ -1,0 +1,142 @@
+import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { fingerprint } from '../cases/domain';
+import { SourceSpaceControl, retainedTower } from '../officer/source-spaces.test-fixture';
+
+const pins = JSON.parse(readFileSync('docs/evidence/gf-backend/k2/tower3-source-import.json', 'utf8')).documentPins;
+const sizes = [3782332, 1655334, 2448909, 1630108];
+const frame = JSON.parse(readFileSync('docs/evidence/gf1/k4a/site-readiness.json', 'utf8')).sites[1].frame;
+
+/** Existing SQL protocol in memory. Original hashes/byte counts are retained; no persisted allocation or object I/O. */
+export class SourceIdentityControl {
+  snapshots = new Map<string, any>();
+  captured = new Map<string, any[]>();
+  reviews = new Map<string, any>();
+  receipts = new Map<string, any>();
+  codes = new Map<string, any>();
+  identities = new Map<string, any>();
+  audit: any[] = [];
+  queries: string[] = [];
+  sequence = 0;
+  archived = false;
+  checkpoint: any;
+  sources: any[];
+  constructor(readonly db: SourceSpaceControl) {
+    const caseId = randomUUID();
+    this.sources = pins.map((pin: any, index: number) => ({ id: pin.sourceId, case_id: caseId, family_id: randomUUID(),
+      revision: pin.sourceRevision, sha256: pin.sourceSha256, bytes: sizes[index],
+      object_key: `memory-only-no-object-read/${index}`, inspection: { documentOriginal: {
+        version: 'source-document/1', subject: process.env.ULPIN_LOCAL_OPERATOR_SUBJECT,
+        format: 'pdf', sha256: pin.sourceSha256, bytes: sizes[index], receivedAt: '2026-10-10T00:00:00Z',
+      } } }));
+  }
+  private result(rows: any[] = []) { return { rows, rowCount: rows.length }; }
+  private snapshotReads(q: string, v: any[]) {
+    if (q.startsWith('SELECT * FROM registry_sites')) return this.result([{ id: retainedTower.areaId,
+      revision: this.db.siteRevision, frame }]);
+    if (q.startsWith('SELECT r.*,c.code')) return this.result(this.db.rows.map(row => ({ ...row,
+      project_code: this.codes.get(row.id)?.code ?? null, project_status: this.codes.get(row.id)?.status ?? null,
+      project_location: this.identities.get(row.id)?.location ?? null })));
+    if (q.startsWith('SELECT s.* FROM sources')) return this.result(this.sources);
+    if (q.startsWith('SELECT f.id,f.area_id')) return this.result([this.db.feature]);
+    if (q.startsWith('SELECT case_id,body')) return this.result();
+    if (q.startsWith('SELECT pin.value AS pin')) return this.result(pins.map((pin: any) => ({ pin })));
+    if (q.startsWith('SELECT predecessor_id') || q.startsWith('SELECT record_id,alias')
+      || q.startsWith('SELECT DISTINCT ON')) return this.result();
+    return null;
+  }
+  private sourceReads(q: string, v: any[]) {
+    if (q.startsWith('SELECT case_id FROM sources')) {
+      return this.result(this.sources.filter(source => source.id === v[0]));
+    }
+    if (q.startsWith('SELECT * FROM sources')) {
+      return this.result(this.sources.filter(source => source.id === v.at(-1)));
+    }
+    if (q.startsWith('SELECT id,revision,archived')) return this.result([{ id: v[0], revision: 1,
+      archived: this.archived, frame, context: {}, site_id: retainedTower.areaId }]);
+    if (q.startsWith('SELECT archived FROM cases')) return this.result([{ archived: this.archived }]);
+    if (q.startsWith('SELECT max(revision)')) return this.result([{ revision: this.sources.find(
+      source => source.family_id === v[1])?.revision }]);
+    if (q.startsWith('SELECT id FROM cases')) return this.result([{ id: v[0] }]);
+    return null;
+  }
+  private identityReads(q: string, v: any[]) {
+    if (q.startsWith('SELECT body FROM usp_snapshots')) return this.result(this.snapshots.has(v[0])
+      ? [{ body: this.snapshots.get(v[0]) }] : []);
+    if (q.includes('FROM usp_snapshot_bodies')) {
+      let rows = this.captured.get(v[0]) ?? [];
+      const ns = q.match(/namespace='([^']+)'/)?.[1];
+      if (ns) rows = rows.filter(row => row.namespace === ns);
+      else if (q.includes('namespace=$2')) rows = rows.filter(row => row.namespace === v[1]
+        && row.object_id === v[2] && row.revision === v[3]);
+      if (q.includes('object_id=$2')) rows = rows.filter(row => row.object_id === v[1] && row.revision === v[2]);
+      return this.result(rows);
+    }
+    if (q.startsWith('SELECT id,site_id,kind,revision,body')
+      || q.startsWith('SELECT id,revision FROM registry_records')) {
+      const ids = v[0];
+      return this.result(this.db.rows.filter(row => ids.includes(row.id)).map(row => ({ ...row })));
+    }
+    if (q.startsWith('SELECT * FROM usp_project_identity_reviews')) return this.result(this.reviews.has(v[0])
+      ? [this.reviews.get(v[0])] : []);
+    if (q.startsWith('SELECT 1 FROM usp_project_codes')) return this.result(this.codes.has(v[0]) ? [{}] : []);
+    if (q.startsWith('SELECT command_sha256,body')) return this.result(this.receipts.has(v[3])
+      ? [this.receipts.get(v[3])] : []);
+    if (q.startsWith('SELECT c.record_id,c.code')) return this.result([...this.codes.values()].map(code => ({ ...code,
+      revision: this.db.rows.find(row => row.id === code.record_id)?.revision,
+      version: this.identities.get(code.record_id)?.version,
+      reviewer_subject: process.env.ULPIN_LOCAL_OPERATOR_SUBJECT })));
+    return null;
+  }
+  private identityWrites(q: string, v: any[]) {
+    if (q.startsWith('INSERT INTO usp_snapshots')) this.snapshots.set(v[0], structuredClone(v[3]));
+    else if (q.startsWith('INSERT INTO usp_snapshot_bodies')) {
+      const rows = this.captured.get(v[0]) ?? [];
+      rows.push({ namespace: v[1], object_id: v[2], revision: v[3], body_sha256: v[4], body: structuredClone(v[5]) });
+      this.captured.set(v[0], rows);
+    } else if (q.startsWith('INSERT INTO usp_project_identity_reviews')) this.reviews.set(v[0], {
+      id: v[0], scope_id: v[1], manifest_id: v[2], operation: v[3], command_hash: v[4],
+      reviewer_subject: v[5], body: v[6] });
+    else if (q.startsWith('INSERT INTO usp_project_codes')) this.codes.set(v[1], {
+      code: v[0], record_id: v[1], scope_id: v[2], status: 'assigned', review_id: v[3] });
+    else if (q.startsWith('INSERT INTO usp_project_identity_state')) this.identities.set(v[0], {
+      location: v[1], review_id: v[2], version: v[3] });
+    else if (q.startsWith('INSERT INTO usp_project_identity_audit')) this.audit.push(v[6]);
+    else if (q.startsWith('INSERT INTO usp_command_receipts')) this.receipts.set(v[4], {
+      command_sha256: v[5], body: v[6] });
+    else if (q.startsWith('UPDATE usp_project_identity_reviews')) this.reviews.get(v[0]).consumed_at = true;
+    else if (q.startsWith('UPDATE registry_records SET revision=$2 WHERE')) this.db.rows.find(row => row.id === v[0])
+      .revision = v[1];
+    else if (q.startsWith('UPDATE usp_outbox_streams')) return this.result([{ sequence: String(++this.sequence) }]);
+    else if (q.startsWith('INSERT INTO usp_outbox')) { /* Existing event authority, not a competing outbox. */ }
+    else return null;
+    return this.result();
+  }
+  private boundary(q: string) {
+    if (q === 'BEGIN') this.checkpoint = structuredClone({ sources: this.sources, snapshots: this.snapshots,
+      captured: this.captured, reviews: this.reviews, receipts: this.receipts, codes: this.codes,
+      identities: this.identities, audit: this.audit, sequence: this.sequence,
+      rows: this.db.rows, histories: this.db.histories, siteRevision: this.db.siteRevision });
+    if (q === 'ROLLBACK' && this.checkpoint) {
+      const { rows, histories, siteRevision, ...state } = this.checkpoint;
+      Object.assign(this, state);
+      Object.assign(this.db, { rows, histories, siteRevision });
+    }
+    if (['BEGIN', 'COMMIT', 'ROLLBACK'].includes(q) || /^(SET |SAVEPOINT|RELEASE |ROLLBACK TO)/.test(q)
+      || q.startsWith('SELECT pg_advisory')) return this.result();
+    return null;
+  }
+  async query(sql: string, values: any[] = []): Promise<any> {
+    const q = sql.replace(/\s+/g, ' ').trim();
+    this.queries.push(q);
+    const own = this.boundary(q) ?? this.snapshotReads(q, values) ?? this.sourceReads(q, values)
+      ?? this.identityReads(q, values) ?? this.identityWrites(q, values);
+    return own ?? this.db.query(sql, values);
+  }
+  readonly pool = { connect: async () => ({ query: this.query.bind(this), release() {} }),
+    query: this.query.bind(this) };
+  assertSourceIntegrity() {
+    return this.sources.every(source => source.sha256
+      === pins.find((pin: any) => pin.sourceId === source.id).sourceSha256);
+  }
+}

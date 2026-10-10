@@ -30,6 +30,8 @@ import { rasterSourceTx } from '../usp/ingestion/raster-window';
 import { AppError, notFound } from '../../infrastructure/errors';
 import { localOperatorSubject } from '../usp/principal';
 import { applyLevelSchedules, UNREVIEWED_LEVEL_SCHEDULE_GAP } from './canonical-level-schedule';
+import { assertSourceChildRevisions, readSourceProjectCodes,
+  type SourceProjectCode } from './canonical-source-identity';
 
 export const ENU_METHOD = 'deterministic:wgs84-surface-to-enu@1';
 const WGS84_A = 6378137;
@@ -582,7 +584,7 @@ function sourceRecordCitations(record: SourceStatedRecord): BuildingCitation[] {
     locator: { kind: 'region', page: evidence.page, x: x0, y: y0, width: x1 - x0, height: y1 - y0, unit: 'pt' } }];
 }
 
-function sourceRecordSpace(record: SourceStatedRecord): CanonicalSpace {
+function sourceRecordSpace(record: SourceStatedRecord, assigned?: SourceProjectCode): CanonicalSpace {
   const citations = sourceRecordCitations(record);
   const method = `reviewer:${record.sourceOnly.decision.actor}`;
   return { spaceId: record.id, recordState: 'reviewed',
@@ -591,7 +593,9 @@ function sourceRecordSpace(record: SourceStatedRecord): CanonicalSpace {
     polygons: canonicalValue(null, 'absent', citations, method, 'm'),
     lowerM: canonicalValue(null, 'unknown', citations, method, 'm'),
     upperM: canonicalValue(null, 'unknown', citations, method, 'm'),
-    areaM2: canonicalValue(null, 'unknown', citations, method, 'm2'), proposedCode: canonicalValue(null) };
+    areaM2: canonicalValue(null, 'unknown', citations, method, 'm2'),
+    proposedCode: assigned ? canonicalValue(assigned.code, 'reviewed', citations, `reviewer:${assigned.actor}`)
+      : canonicalValue(null) };
 }
 
 function assertSourceChildHierarchy(
@@ -602,25 +606,29 @@ function assertSourceChildHierarchy(
   if (children.some(child => child.siteId !== parent?.siteId || child.sourceOnly.buildingId !== building.buildingId
     || (child.kind === 'floor' ? child.sourceOnly.parentId !== building.buildingId
       : !floors.has(child.sourceOnly.parentId)))) {
-    throw new AppError(409, 'CANONICAL_SOURCE_PARENT', 'The source-stated hierarchy is not a same-site building child.');
+    throw new AppError(409, 'CANONICAL_SOURCE_PARENT',
+      'The source-stated hierarchy is not a same-site building child.');
   }
 }
 
 /** Source-stated registry children are separate facts, never an inferred storey inventory or prism. */
-export function projectSourceRecordedChildren(building: NormalizedBuilding, records: RegistryRecord[]): void {
-  const children = records.filter(record => 'sourceOnly' in record).map(record => SourceStatedRecordSchema.parse(record));
+export function projectSourceRecordedChildren(building: NormalizedBuilding, records: RegistryRecord[],
+  codes = new Map<string, SourceProjectCode>()): void {
+  const children = records.filter(record => 'sourceOnly' in record)
+    .map(record => SourceStatedRecordSchema.parse(record));
   assertSourceChildHierarchy(building, records, children);
+  if (children.length) building.gaps.push(
+    'Source-stated labels are not unit boundaries, measured dimensions, rights or current sanctioned status.',
+  );
   for (const floor of children.filter(record => record.kind === 'floor')) {
-    if (floor.sourceOnly.buildingId !== building.buildingId || floor.sourceOnly.parentId !== building.buildingId) {
-      throw new AppError(409, 'CANONICAL_SOURCE_PARENT', 'The source-stated floor belongs to another building.');
-    }
     const citations = sourceRecordCitations(floor);
     const method = `reviewer:${floor.sourceOnly.decision.actor}`;
     const scheduleId = floor.sourceOnly.scheduleLevelId;
     const linked = scheduleId ? building.levels.find(level => level.levelId === scheduleId
       && level.label.value === floor.name) : undefined;
-    const spaces = children.filter(record => record.kind === 'space' && record.sourceOnly.parentId === floor.id)
-      .map(sourceRecordSpace);
+    const spaces = children.filter(record => record.kind === 'space'
+      && record.sourceOnly.parentId === floor.id)
+      .map(record => sourceRecordSpace(record, codes.get(record.id)));
     if (linked) {
       linked.registryFloorId = floor.id;
       linked.spaces.push(...spaces);
@@ -680,7 +688,8 @@ async function projectLevels(
   frame: AreaFrame,
 ): Promise<CanonicalStorey[]> {
   const storeys: CanonicalStorey[] = [];
-  const floors = dossier.detailedScene.filter(scene => scene.record.kind === 'floor' && !('sourceOnly' in scene.record));
+  const floors = dossier.detailedScene.filter(scene => scene.record.kind === 'floor'
+    && !('sourceOnly' in scene.record));
   for (const [order, detail] of floors.entries()) {
     storeys.push(await projectLevel(building, dossier, frame, detail, order));
   }
@@ -690,6 +699,7 @@ async function projectLevels(
 export async function projectBuilding(
   dossier: CanonicalBuildingSource,
   proposal = dossier.building.revision === 0,
+  codes = new Map<string, SourceProjectCode>(),
 ): Promise<NormalizedBuilding> {
   const feature = dossier.building;
   const frame = canonicalFrame(dossier.area);
@@ -713,7 +723,7 @@ export async function projectBuilding(
     building.storeys = canonicalValue(storeys, 'reviewed', [], 'deterministic:recorded-level-schedule-projection@1');
   }
   applyLevelSchedules(building, dossier.records);
-  projectSourceRecordedChildren(building, dossier.records);
+  projectSourceRecordedChildren(building, dossier.records, codes);
   return finishBuilding(building);
 }
 
@@ -766,11 +776,14 @@ export async function canonicalBuilding(
   if (dossier.area.revision !== context.area.revision || dossier.building.revision !== feature.revision) {
     throw new AppError(409, 'CANONICAL_INPUT_CHANGED', 'Area or building changed during projection; read again.');
   }
-  const result = await projectBuilding(dossier, proposal);
+  const codes = feature.geometry === null ? await readSourceProjectCodes(dossier.records, context.area.siteId)
+    : new Map<string, SourceProjectCode>();
+  const result = await projectBuilding(dossier, proposal, codes);
   await revalidateCanonicalSources(result, context.area.siteId);
   if ((await assertCanonicalAreaScope(context.area)).revision !== context.area.revision) {
     throw new AppError(409, 'CANONICAL_INPUT_CHANGED', 'The area changed during projection; read again.');
   }
+  if (feature.geometry === null) await assertSourceChildRevisions(dossier.records, context.area.siteId);
   if (revision !== 'current' && revision !== result.revisionId) {
     throw new AppError(404, 'CANONICAL_REVISION_NOT_FOUND', REVISION_NOT_CURRENT_MESSAGE);
   }

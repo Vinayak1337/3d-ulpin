@@ -57,14 +57,16 @@ test('missing current originals, source revisions, pages or in-page regions refu
   db.sourceRevision = 1;
   const page = structuredClone(towerRequest);
   page.space.evidence.page = 2;
-  await assert.rejects(commandSourceSpace(retainedTower.buildingId, page, db.deps), errorCode('SOURCE_SPACE_REGION'));
+  await assert.rejects(commandSourceSpace(retainedTower.buildingId, page, db.deps),
+    errorCode('SOURCE_SPACE_REGION'));
   const outside = structuredClone(towerRequest);
   outside.space.evidence.region[2] = 3000;
-  await assert.rejects(commandSourceSpace(retainedTower.buildingId, outside, db.deps), errorCode('SOURCE_SPACE_REGION'));
+  await assert.rejects(commandSourceSpace(retainedTower.buildingId, outside, db.deps),
+    errorCode('SOURCE_SPACE_REGION'));
   assert.equal(db.rows.length, 1);
 });
 
-test('one reasoned local officer decision is exact-key idempotent, stale-safe and duplicate-label refusing', async () => {
+test('reasoned officer decisions are exact-key idempotent, stale-safe and duplicate-label refusing', async () => {
   const db = new SourceSpaceControl();
   const receipt = await commandSourceSpace(retainedTower.buildingId, towerRequest, db.deps);
   assert.deepEqual(await commandSourceSpace(retainedTower.buildingId, towerRequest, db.deps), receipt);

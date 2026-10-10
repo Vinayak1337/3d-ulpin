@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
-import { SourceStatedRecordSchema, type SourceStatedRecord, type SourceSpaceRequest } from '@ulpin/contracts';
+import { SourceStatedRecordSchema, sourceSpaceStatementLocator,
+  type SourceStatedRecord, type SourceSpaceRequest } from '@ulpin/contracts';
 import { AppError } from '../../../infrastructure/errors';
 import type { BuildingMetadataRecord } from './source-building-candidates';
 
@@ -9,7 +10,7 @@ type Decision = SourceStatedRecord['sourceOnly']['decision'];
 
 /** Exact original region binding, shared by identity review and canonical citations. */
 export function sourceStatementLocator(evidence: Evidence): string {
-  return `page ${evidence.page}; region pt [${evidence.region.join(',')}]; literal ${evidence.literal}`;
+  return sourceSpaceStatementLocator(evidence);
 }
 
 export function sourceChildBody(building: BuildingMetadataRecord, parent: { id: string; identifier: string },
