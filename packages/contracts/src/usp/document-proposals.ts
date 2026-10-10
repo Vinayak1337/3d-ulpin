@@ -16,7 +16,7 @@ export const DocumentProposalLocatorSchema=z.strictObject({page:count.min(1).max
 });
 export const DocumentProposalArtifactClaimSchema=z.strictObject({sha256:hash,bytes:count.min(1).max(16*1024*1024)});
 export const DocumentProposalInputSchema=z.strictObject({proposalId:text(120),fieldRole:text(120),
-  quote:text(4096).nullable(),lineQuote:text(4096).nullable(),
+  quote:text(4096).nullable(),lineQuote:text(4096).nullable(),valueLiteral:text(512).optional(),
   quoteCharacterSpan:z.tuple([count.max(4096),count.max(4096)]).nullable(),
   status:z.enum(['needs_review','needs_input','rejected','unsupported']),reasons:z.array(text(2000)).min(1).max(16),
   locator:DocumentProposalLocatorSchema,declaredMethod:text(512).nullable(),
@@ -50,7 +50,39 @@ export const DocumentProposalSourcePinSchema=z.strictObject({sourceRevision:coun
   sourceBytes:count.min(1).max(16*1024*1024)});
 export const DocumentProposalsSaveSchema=z.strictObject({requestKey:id,expectedCaseRevision:count,
   source:DocumentProposalSourcePinSchema,packet:DocumentProposalPacketSchema});
-export const DocumentProposalSnapshotSchema=z.strictObject({version:z.literal('source-document-proposals/1'),
+export const DocumentProposalQuoteCheckSchema=z.strictObject({
+  outcome:z.enum(['quote_at_locator','quote_not_at_locator','not_checked']).describe(
+    'quote_at_locator: quoted characters occur in stored text of the cited region of this original. '+
+    'It does not say the text was read correctly from the page image, nor that the value is true.'),
+  reason:z.enum(['quote_not_at_locator','value_not_in_quote','no_quote','no_region_text']).nullable(),
+  basis:z.strictObject({kind:z.enum(['text_layer','ocr_observations']),productSha256:hash.nullable()}).nullable()
+});
+export const DocumentProposalCheckedSchema=DocumentProposalInputSchema.safeExtend({
+  quotationCheck:DocumentProposalQuoteCheckSchema
+});
+const checkedRejected=DocumentProposalRejectedSchema.extend({
+  originalProposal:DocumentProposalCheckedSchema.optional()
+});
+const checkedPacket=DocumentProposalPacketSchema.safeExtend({
+  proposals:z.array(DocumentProposalCheckedSchema).max(DOCUMENT_PROPOSAL_LIMITS.proposals),
+  rejected:z.array(checkedRejected).max(DOCUMENT_PROPOSAL_LIMITS.rejected)
+});
+// Conflict members may have been refused by the check; retain the original conflict, never elect a winner.
+export const DocumentProposalCheckedPacketSchema=z.strictObject(checkedPacket.shape).superRefine((v,ctx)=>{
+  const ids=[...v.proposals.map(p=>p.proposalId),
+    ...v.rejected.flatMap(r=>r.originalProposal?[r.originalProposal.proposalId]:[])];
+  if(!ids.length&&!v.rejected.length||new Set(ids).size!==ids.length||
+    new Set(v.rejected.map(r=>r.entryId)).size!==v.rejected.length)
+    ctx.addIssue({code:'custom',message:'Retain a nonempty explicit population with distinct IDs.'});
+  for(const c of v.conflicts){
+    if(new Set(c.proposalIds).size!==c.proposalIds.length||c.proposalIds.some(p=>!ids.includes(p)))
+      ctx.addIssue({code:'custom',message:'Conflict members must remain as proposals or refused original proposals.'});
+  }
+  const pages=[...v.proposals,...v.rejected].map(p=>p.locator.page);
+  if(Math.max(...pages)-Math.min(...pages)+1>DOCUMENT_PROPOSAL_LIMITS.pageSpan)
+    ctx.addIssue({code:'custom',message:'Use a span of at most 50 PDF pages per bounded packet.'});
+});
+const snapshotV1=z.strictObject({version:z.literal('source-document-proposals/1'),
   snapshotId:id,snapshotRevision:z.literal(1),caseId:id,caseRevision:count,
   source:DocumentProposalSourcePinSchema.extend({sourceId:id}),packet:DocumentProposalPacketSchema,
   locatorWarnings:z.array(z.strictObject({entryKind:z.enum(['proposal','rejected']),entryId:text(120),
@@ -63,12 +95,18 @@ export const DocumentProposalSnapshotSchema=z.strictObject({version:z.literal('s
     z.literal('canonical_building_floor'),z.literal('height_units_rights_and_placement')]),
   review:z.strictObject({actor:text(256),time:z.iso.datetime(),attribution:z.literal('local_process'),
     humanAuthenticated:z.literal(false),independentGroundTruth:z.literal(false)})});
-export const DocumentProposalSnapshotViewSchema=DocumentProposalSnapshotSchema.extend({currentCaseRevision:count,snapshotSha256:hash});
+const snapshotV2=snapshotV1.extend({version:z.literal('source-document-proposals/2'),
+  packet:DocumentProposalCheckedPacketSchema,quotationVerification:z.literal('locator_checks_recorded').describe(
+    'Each proposal carries its presence check or explicit not_checked reason; quote_truth remains unresolved.')});
+export const DocumentProposalSnapshotSchema=z.union([snapshotV1,snapshotV2]);
+const viewFields={currentCaseRevision:count,snapshotSha256:hash};
+export const DocumentProposalSnapshotViewSchema=z.union([snapshotV1.extend(viewFields),snapshotV2.extend(viewFields)]);
 export const DocumentProposalsHistoryQuerySchema=z.strictObject({after:id.optional(),
   limit:z.string().regex(/^(?:[1-9]|10)$/).default('5').transform(Number)});
-export const DocumentProposalReferenceSchema=DocumentProposalSnapshotSchema.pick({snapshotId:true,snapshotRevision:true,
+export const DocumentProposalReferenceSchema=snapshotV1.pick({snapshotId:true,snapshotRevision:true,
   caseRevision:true,review:true,method:true,provenanceAuthority:true,population:true,status:true,quotationVerification:true,
   qualification:true,learningLabel:true}).extend({snapshotSha256:hash,
+  quotationVerification:z.enum(['not_machine_verified','locator_checks_recorded']),
   proposalCount:count.max(DOCUMENT_PROPOSAL_LIMITS.proposals),rejectedCount:count.max(DOCUMENT_PROPOSAL_LIMITS.rejected),
   conflictCount:count.max(32),locatorWarningCount:count.max(288),readUrl:z.string().max(256)});
 export const DocumentProposalsHistorySchema=z.strictObject({version:z.literal('source-document-proposals-history/1'),
@@ -104,7 +142,8 @@ export const DocumentProposalDecisionSaveSchema=z.strictObject({requestKey:id,ex
 const decisionSnapshotBase=z.strictObject({version:z.literal('source-document-proposal-decision/1'),
   decisionId:id,decisionRevision:count.min(1),caseId:id,caseRevision:count,
   source:DocumentProposalSourcePinSchema.extend({sourceId:id}),proposal:DocumentProposalSelectionSchema,
-  originalProposal:DocumentProposalInputSchema,decision:z.enum(['reviewed','rejected','needs_input']),
+  originalProposal:z.union([DocumentProposalInputSchema,DocumentProposalCheckedSchema]),
+  decision:z.enum(['reviewed','rejected','needs_input']),
   citation:DocumentProposalDecisionCitationSchema,missingPrerequisites:z.array(text(2000)).max(16),
   correctionOf:DocumentProposalDecisionPinSchema.nullable(),
   sourceConflicts:DocumentProposalPacketSchema.shape.conflicts,sourceUnknowns:DocumentProposalPacketSchema.shape.unknowns,

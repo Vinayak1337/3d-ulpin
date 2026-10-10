@@ -6,14 +6,18 @@ import {DOCUMENT_PROPOSAL_LIMITS as limits,DocumentProposalsSaveSchema,DocumentP
   DocumentProposalDecisionSaveSchema,DocumentProposalDecisionSnapshotSchema,DocumentProposalDecisionViewSchema,
   DocumentProposalDecisionReadQuerySchema,DocumentProposalDecisionHistoryQuerySchema,DocumentProposalDecisionHistorySchema,
   type DocumentProposalDecisionSave,
-  type DocumentProposalSourcePin,type DocumentProposalPacket}
+  DocumentProposalCheckedPacketSchema,type DocumentProposalSourcePin,type DocumentProposalPacket}
   from '../../../../../contracts/src/usp/document-proposals';
 import {DOCUMENT_PAGE_LIMITS,DocumentPagesSchema} from '../../../../../contracts/src/document-pages';
+import {DOCUMENT_LIMITS,DocumentInputSchema,type DocumentResult,type DocumentInput}
+  from '../../../../../contracts/src/usp/document-ingestion';
 import {transaction} from '../../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
-import {verifyObjectStream} from '../../../infrastructure/storage';
+import {verifyObjectStream,readObjectBounded,type readObject} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
-import {documentSourceTx} from './document-context';
+import {documentSourceTx,assertDocumentInputTx} from './document-context';
+import {readDocumentResult,assertDocumentAcceptedResultTx} from './documents';
+import {checkDocumentProposalQuote,quoteRegionText,type QuotePage} from './document-proposal-quotes';
 import {assertIngestionBinding} from './events';
 import {DocumentPagesService,documentPageAuthorityTx,type DocumentPageAuthority} from './document-pages';
 
@@ -24,7 +28,10 @@ const storedSchema=z.strictObject({snapshot:DocumentProposalSnapshotSchema,subje
   sourceAuthoritySha256:hash,requestSha256:hash});
 type Stored=z.output<typeof storedSchema>;
 type Authority={caseId:string;caseRevision:number;contextSha256:string;subject:string;accessSha256:string;source:DocumentPageAuthority};
+type TextRead={pages:QuotePage[];input?:DocumentInput;productSha256?:string};
 type Dependencies={transaction:typeof transaction;pages:DocumentPagesService['pages'];
+  text?:(a:DocumentPageAuthority,deadline:number)=>Promise<TextRead>;
+  readTextObject?:typeof readObject;
   verify:(a:DocumentPageAuthority,deadline:number)=>Promise<unknown>};
 const defaults:Dependencies={transaction,pages:(source,pin)=>new DocumentPagesService().pages(source,pin),
   verify:(a,deadline)=>verifyObjectStream(a.objectKey,a.sourceBytes,a.sourceSha256,Math.max(1,Math.min(30_000,deadline-Date.now())))};
@@ -148,6 +155,68 @@ async function decisionCorrection(client:PoolClient,current:Authority,request:Do
   if(latest!==pin.decisionRevision||!Number.isSafeInteger(latest+1))conflict('Correct the latest decision revision; prior history remains immutable.');
   return {decisionId:pin.decisionId,decisionRevision:latest+1};
 }
+function resultQuotePages(result:DocumentResult,productSha256:string):QuotePage[]{
+  const pages=new Map<number,QuotePage>();
+  for(const part of result.native.parts){const page=part.locator.page;if(page===undefined)continue;
+    const entry=pages.get(page)??{page,frame:null,lines:[],basis:{kind:'text_layer' as const,productSha256}};
+    entry.lines.push({text:part.text,box:null});pages.set(page,entry);
+  }
+  const ocr=result.ocr;
+  if(ocr&&ocr.sourcePageFrame&&ocr.outputStatus!=='failed')pages.set(ocr.sourcePage,{
+    page:ocr.sourcePage,frame:ocr.sourcePageFrame,storedRegion:ocr.requestedRegion,
+    basis:{kind:'ocr_observations',productSha256},
+    // A multi-box item has no text-to-sub-box alignment. Do not repeat its text or invent a covering box.
+    lines:ocr.items.map(item=>({text:item.text,
+      box:item.sourcePageBoxes.length===1?item.sourcePageBoxes[0].box:null}))
+  });
+  return [...pages.values()];
+}
+async function storedQuoteText(a:DocumentPageAuthority,dependencies:Dependencies,deadline:number):Promise<TextRead>{
+  const pin=await dependencies.transaction(async client=>{
+    live(deadline);const ctx=await documentSourceTx(client,a.caseId,a.sourceId);
+    const accepted=ctx.source.inspection?.documentAccepted;if(!accepted)return null;
+    const job=(await client.query(`SELECT payload FROM jobs WHERE id=$1 AND case_id=$2 AND source_id=$3
+      AND operation='document-extraction'`,[accepted.jobId,a.caseId,a.sourceId])).rows[0];
+    if(!job||!hash.safeParse(accepted.sha256).success)
+      fail('DOCUMENT_PROPOSALS_TEXT_INTEGRITY','The accepted text product has invalid source/job pins.');
+    const input=DocumentInputSchema.parse(job.payload);
+    if(input.caseId!==a.caseId||input.sourceId!==a.sourceId||input.sourceRevision!==a.sourceRevision||
+      input.sourceSha256!==a.sourceSha256||input.sourceBytes!==a.sourceBytes)
+      fail('DOCUMENT_PROPOSALS_TEXT_INTEGRITY','The accepted text product differs from the selected original.');
+    await assertDocumentInputTx(client,input);await assertDocumentAcceptedResultTx(client,input,accepted.sha256);
+    return {input,productSha256:accepted.sha256 as string};
+  },{deadlineAt:deadline},'repeatable_read_only');
+  if(!pin)return {pages:[]};
+  live(deadline);
+  const read=dependencies.readTextObject??(key=>readObjectBounded(key,DOCUMENT_LIMITS.resultBytes,
+    deadline,AbortSignal.timeout(Math.max(1,deadline-Date.now()))));
+  const result=await readDocumentResult(pin.input,pin.productSha256,read);
+  live(deadline);
+  await dependencies.transaction(async client=>{
+    await assertDocumentInputTx(client,pin.input);
+    await assertDocumentAcceptedResultTx(client,pin.input,pin.productSha256);
+  },{deadlineAt:deadline},'repeatable_read_only');
+  return {...pin,pages:resultQuotePages(result,pin.productSha256)};
+}
+function checkedPacket(packet:DocumentProposalPacket,pages:QuotePage[]){
+  const proposals=[],rejected:z.output<typeof DocumentProposalCheckedPacketSchema>['rejected']=[...packet.rejected];
+  for(const proposal of packet.proposals){
+    const page=pages.find(p=>p.page===proposal.locator.page);
+    if(page?.frame&&fingerprint(page.frame)!==fingerprint(proposal.locator.frame))
+      fail('DOCUMENT_PROPOSALS_TEXT_FRAME','The stored text frame differs from the cited original frame.');
+    const check=checkDocumentProposalQuote(quoteRegionText(page,proposal.locator),proposal);
+    const originalProposal={...proposal,quotationCheck:{...check,basis:page?.basis??null}};
+    if(check.outcome==='quote_not_at_locator')rejected.push({entryId:proposal.proposalId,lineQuote:proposal.lineQuote,
+      reason:check.reason!,locator:proposal.locator,declaredMethod:proposal.declaredMethod,
+      declaredObservation:proposal.declaredObservation,originalProposal});
+    else proposals.push(originalProposal);
+  }
+  if(rejected.length>limits.rejected)
+    fail('DOCUMENT_PROPOSALS_REJECTED_LIMIT','The quote-refused population exceeds the rejected-entry limit.');
+  if(new Set(rejected.map(r=>r.entryId)).size!==rejected.length)
+    fail('DOCUMENT_PROPOSALS_REJECTED_ID','A quote-refused proposal ID collides with an existing rejected-entry ID.');
+  return DocumentProposalCheckedPacketSchema.parse({...packet,proposals,rejected});
+}
 export class DocumentProposalsService{
   constructor(private readonly dependencies:Dependencies=defaults){}
   private readTx<T>(deadline:number,action:(client:PoolClient)=>Promise<T>){
@@ -234,14 +303,21 @@ export class DocumentProposalsService{
     await this.verify(before.authority,deadline);
     if(before.prior)return this.disclose(before.authority,before.prior,deadline);
     await this.pages(before.authority,[...request.packet.proposals,...request.packet.rejected].map(p=>p.locator),deadline);
+    const text=await (this.dependencies.text?.(before.authority.source,deadline)??
+      storedQuoteText(before.authority.source,this.dependencies,deadline));
+    const packet=checkedPacket(request.packet,text.pages);
     const after=await this.readTx(deadline,client=>captureTx(client,caseId,sourceId,request.source));same(before.authority,after);
     const stored=await this.dependencies.transaction(async client=>{
       live(deadline);const current=await captureTx(client,caseId,sourceId,request.source,true);same(after,current);
       const prior=await replay(client,current,request.requestKey,digest);if(prior)return prior;
-      const snapshot=DocumentProposalSnapshotSchema.parse({version:'source-document-proposals/1',snapshotId:randomUUID(),snapshotRevision:1,
-        caseId,caseRevision:current.caseRevision,source:{sourceId,...request.source},packet:request.packet,locatorWarnings:locatorWarnings(request.packet),
+      if(text.input&&text.productSha256){await assertDocumentInputTx(client,text.input);
+        await assertDocumentAcceptedResultTx(client,text.input,text.productSha256);}
+      const snapshot=DocumentProposalSnapshotSchema.parse({version:'source-document-proposals/2',
+        snapshotId:randomUUID(),snapshotRevision:1,caseId,caseRevision:current.caseRevision,
+        source:{sourceId,...request.source},packet,locatorWarnings:locatorWarnings(packet),
         method:'caller_supplied_provisional',provenanceAuthority:'caller_supplied_unverified',population:'explicit_selection_only',
-        status:'needs_review',quotationVerification:'not_machine_verified',canonicalTarget:null,canonicalMatchState:'not_assessed',
+        status:'needs_review',quotationVerification:'locator_checks_recorded',
+        canonicalTarget:null,canonicalMatchState:'not_assessed',
         qualification:'not_assessed',learningLabel:false,unresolved:['quote_truth','producer_execution','approval_and_current_revision',
           'canonical_building_floor','height_units_rights_and_placement'],
         review:{actor:current.subject,time:new Date().toISOString(),attribution:'local_process',humanAuthenticated:false,independentGroundTruth:false}});
