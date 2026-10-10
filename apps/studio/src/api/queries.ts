@@ -1,6 +1,6 @@
 import { ledgerFromPublished } from './ledger';
 import { demoAreas, isDemoId, useDemoAreaStream } from './demo-import';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQueries, useQuery } from '@tanstack/react-query';
 import { api, ApiError, unwrap, type GetResponse } from '@ulpin/api-client';
 import type { BuildingImport, DocumentPages, FileDetection, ImportBatch, LevelReview, RegisterRequest, RequestState, WorkBoard, BuildingResidents } from '@ulpin/api-client/draft';
 
@@ -15,6 +15,9 @@ export type Capabilities = GetResponse<'/api/v1/workspace-capabilities'>;
 export type BuildingRegister = Extract<GetResponse<'/api/v1/buildings/{buildingId}/register'>, { register: unknown }>;
 export type RegisterRecord = BuildingRegister['register'][number];
 export type RegisterSource = BuildingRegister['sources'][number];
+export type SpatialMlBatch = GetResponse<'/api/v1/spatial-ml/batches/{batchId}'>;
+export type SpatialMlItem = GetResponse<'/api/v1/spatial-ml/items/{itemId}'>;
+export type ImportPackage = GetResponse<'/api/v1/import-packages/{packageId}'>;
 
 /** Published identifier resolver; keeps ULPIN and registry associations on the backend. */
 export function useMapIdentifierSearch(identifier: string) {
@@ -42,6 +45,9 @@ export const queryKeys = {
   workBoard: ['work-board'] as const,
   levelReview: (buildingId: string, levelId: string) => ['buildings', buildingId, 'levels', levelId, 'review'] as const,
   documentPages: (sourceId: string) => ['sources', sourceId, 'pages'] as const,
+  spatialMlBatch: (batchId: string) => ['spatial-ml', 'batches', batchId] as const,
+  spatialMlItem: (itemId: string) => ['spatial-ml', 'items', itemId] as const,
+  importPackage: (packageId: string) => ['import-packages', packageId] as const,
 };
 
 /** Draft routes (not in the OpenAPI document yet): same client conventions, typed by the draft contract. */
@@ -173,6 +179,55 @@ export function useBuildingCanonical(buildingId: string | null | undefined) {
     enabled: Boolean(buildingId),
     queryFn: async ({ signal }) => unwrap(await api.GET('/api/v1/buildings/{buildingId}/canonical', { params: { path: { buildingId: buildingId! } }, signal })),
     staleTime: 60_000,
+  });
+}
+
+/** One retained inference batch with its items: model, state and the decisions already applied. */
+export function useSpatialMlBatch(batchId: string | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.spatialMlBatch(batchId ?? ''),
+    enabled: Boolean(batchId),
+    queryFn: async ({ signal }) => unwrap(await api.GET('/api/v1/spatial-ml/batches/{batchId}', {
+      params: { path: { batchId: batchId! } }, signal,
+    })),
+    staleTime: 30_000,
+  });
+}
+
+/** One inference item: its batch, the package it was run for, the model receipt and any footprint drafts. */
+export function useSpatialMlItem(itemId: string | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.spatialMlItem(itemId ?? ''),
+    enabled: Boolean(itemId),
+    queryFn: async ({ signal }) => unwrap(await api.GET('/api/v1/spatial-ml/items/{itemId}', {
+      params: { path: { itemId: itemId! } }, signal,
+    })),
+    staleTime: 30_000,
+  });
+}
+
+/** An import package: its revision is what a decision on its candidates must quote. */
+export function useImportPackage(packageId: string | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.importPackage(packageId ?? ''),
+    enabled: Boolean(packageId),
+    queryFn: async ({ signal }) => unwrap(await api.GET('/api/v1/import-packages/{packageId}', {
+      params: { path: { packageId: packageId! } }, signal,
+    })),
+    staleTime: 30_000,
+  });
+}
+
+/** Several import packages at once, for example every footprint draft an inference item has produced. */
+export function useImportPackages(packageIds: readonly string[]) {
+  return useQueries({
+    queries: packageIds.map((packageId) => ({
+      queryKey: queryKeys.importPackage(packageId),
+      queryFn: async ({ signal }: { signal: AbortSignal }) => unwrap(
+        await api.GET('/api/v1/import-packages/{packageId}', { params: { path: { packageId } }, signal }),
+      ),
+      staleTime: 30_000,
+    })),
   });
 }
 
