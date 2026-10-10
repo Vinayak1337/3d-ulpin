@@ -150471,6 +150471,12 @@
                 "updatedAt": {
                   "type": "string"
                 },
+                "tableSourceIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
                 "state": {
                   "type": "string",
                   "nullable": true
@@ -215335,6 +215341,24 @@
                     },
                     "recordedAt": {
                       "type": "string"
+                    },
+                    "recordKind": {
+                      "type": "string",
+                      "enum": [
+                        "parcel",
+                        "building",
+                        "floor",
+                        "space"
+                      ],
+                      "nullable": true
+                    },
+                    "recordName": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "actor": {
+                      "type": "string",
+                      "nullable": true
                     }
                   },
                   "required": [
