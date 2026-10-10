@@ -1,0 +1,11 @@
+{
+  "task": "A4",
+  "calibrationFamily": "mi-d03",
+  "chosenBeforeTraining": true,
+  "reason": "Contains a real positive registration-number concept plus unknown columns in two files; held out whole from fitting, unlike choosing on outcomes.",
+  "features": "Masked profile metadata only; no raw rows or sample decoding. Missing magnitude/unit-suffix statistics remain unavailable.",
+  "thresholdPolicy": "Smallest plain-SGD probability threshold with nonzero committed fields and zero mistakes on whole calibration family; otherwise no commits.",
+  "heldOutPolicy": "Evaluation only after frozen model and threshold; no teacher, fitting or calibration access.",
+  "learner": "HashingVectorizer alternate_sign=False, n_features=32768; SGD log_loss random_state=17; one partial_fit per verified batch.",
+  "qualification": "pseudo_label-trained; calibration labels are teacher pseudo-labels, not independent accuracy truth."
+}
