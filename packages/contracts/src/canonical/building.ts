@@ -208,6 +208,7 @@ export type LevelSchedule = z.infer<typeof LevelScheduleSchema>;
 export type LevelScheduleContent = z.infer<typeof LevelScheduleContentSchema>;
 export type LevelScheduleRequest = z.infer<typeof LevelScheduleRequestSchema>;
 export type LevelScheduleReceipt = z.infer<typeof LevelScheduleReceiptSchema>;
+export * from './source-spaces';
 
 export const BuildingStoreySchema = z.strictObject({
   levelId: id,
