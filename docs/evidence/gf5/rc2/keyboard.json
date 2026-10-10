@@ -1,0 +1,48 @@
+{
+ "version": "rc2-keyboard/1",
+ "studio": "http://127.0.0.1:5217",
+ "servedEstimate": false,
+ "room": {
+  "attached": {
+   "room": "KITCHEN",
+   "level": "GROUND FLOOR PLAN",
+   "shot": "shots/room-card.png"
+  },
+  "unattached": {
+   "room": "STAIRCASE",
+   "level": "Not attached to a level"
+  },
+  "citation": {
+   "tabReaches": true,
+   "tabs": 38,
+   "accessibleName": "Open cited source 10946c4c at p.2 · x 443.8, y 1196.9 · 71.3 × 79.8 pt",
+   "enterOpens": true,
+   "controls": 1,
+   "viewerSays": "bihar-magnolia-sanctioned-layout-original.pdf | p.2 · x 443.8, y 1196.9 · 71.3 × 79.8 pt | Read by an earlier version of the document reader | Open original | This original is not a text file, so no preview is shown. Open it to read it. | No 3D view open | Close",
+   "shot": "shots/room-citation-open.png"
+  }
+ },
+ "roofprint": {
+  "candidate": "aab03543",
+  "citation": {
+   "tabReaches": true,
+   "tabs": 97,
+   "accessibleName": "Open cited source d01b30d6 at p.1",
+   "enterOpens": true,
+   "controls": 1,
+   "viewerSays": "56c4c27d-0e44-4de1-a916-646f71796780.tif | p.1 | Open original | This original is not a text file, so no preview is shown. Open it to read it. | No 3D view open | Close",
+   "shot": "shots/roofprint-citation-open.png"
+  }
+ },
+ "statedSize": {
+  "shown": true,
+  "mocked": "statedSize and planEstimate added to KITCHEN in the browser",
+  "cardSays": "Stated on the sheet: (8' X 8'11\") | 10946c4c | p.2 · x 472.2, y 1256.7 · 20.1 × 4.2 pt",
+  "estimateSays": "Estimated size | Bounding extent | 2.42 × 2.71 m (estimated) | Area | 6.55 m² (estimated) | From the candidate polygon in the plan's own metres, at the plan's candidate scale; not a measurement.",
+  "statedAboveEstimate": true,
+  "controls": 1,
+  "controlName": "Open cited source 10946c4c at p.2 · x 472.2, y 1256.7 · 20.1 × 4.2 pt",
+  "shot": "shots/mocked-stated-size.png"
+ },
+ "refused": []
+}
