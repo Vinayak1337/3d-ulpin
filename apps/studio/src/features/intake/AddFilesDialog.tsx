@@ -9,6 +9,7 @@ import { demoImportEnabled, inspectDemoFile, startDemoImport } from '../../api/d
 import { detectBuildingFiles, startBuildingImport, useBuildingRegister, useImportBatch } from '../../api/queries';
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import styles from './AddFilesDialog.module.css';
+import { TableImportDialog } from './table/TableImportDialog';
 
 type Inspection = Schemas['POST_import_packages_inspect_Response_200_application_json'] & { demoContents?: string };
 type Kind = 'building' | 'parcel' | 'road' | 'public_land' | 'utility';
@@ -119,6 +120,7 @@ function NewFiles({ onClose }: { onClose: () => void }) {
   const [mapping, setMapping] = useState<Mapping | null>(null);
   const [editing, setEditing] = useState(false);
   const [summary, setSummary] = useState<string | null>(null);
+  const [tableFile, setTableFile] = useState<File | null>(null);
   const input = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
@@ -190,6 +192,9 @@ function NewFiles({ onClose }: { onClose: () => void }) {
           : null;
 
   const rows = useMemo(() => files, [files]);
+  if (tableFile) {
+    return <TableImportDialog file={tableFile} onClose={onClose} onBack={() => setTableFile(null)} />;
+  }
   return (
     <Dialog
       title="Add files"
@@ -213,7 +218,9 @@ function NewFiles({ onClose }: { onClose: () => void }) {
           >
             <Icon icon={FileArrowUp} size={32} />
             <span className="ul-heading">Drop files here, or choose files</span>
-            <span className="ul-help">GIS layers are read now. Plans, tables and documents are kept as evidence for a case upload.</span>
+            <span className="ul-help">
+              GIS layers are read now. CSV and XLSX can be imported as tables; other files need a case upload.
+            </span>
             <input ref={input} type="file" multiple className="ul-visually-hidden" onChange={(event) => void add(event.target.files)} />
           </label>
         ) : null}
@@ -229,7 +236,12 @@ function NewFiles({ onClose }: { onClose: () => void }) {
                 { header: 'Detected', cell: (f) => (f.state === 'ready' ? formatLabel(f.inspection!.format) : f.state === 'inspecting' ? 'Reading…' : f.state === 'not-gis' ? 'Document or table' : <span className="ul-error"><Icon icon={Warning} size={16} />{f.error}</span>) },
                 { header: 'CRS', cell: (f) => (f.inspection ? (f.inspection.sourceCrs ?? <Badge tone="warning" icon={Warning}>CRS unverified</Badge>) : '—') },
                 { header: 'Contents', numeric: true, cell: (f) => f.via === 'demo' && f.inspection?.demoContents ? f.inspection.demoContents : (f.inspection?.featureCount === null || f.inspection?.featureCount === undefined ? '—' : `${formatCount(f.inspection.featureCount)} features`) },
-                { header: 'Mapping', cell: (f) => (f.state === 'ready' ? <Badge tone="info" icon={null}>Proposed</Badge> : f.state === 'not-gis' ? <Badge icon={null}>Kept as evidence</Badge> : '—') },
+                { header: 'Mapping', cell: (f) => {
+                  if (f.state === 'not-gis' && /\.(csv|xlsx)$/i.test(f.file.name)) {
+                    return <Button variant="soft" onClick={() => setTableFile(f.file)}>Import as a table</Button>;
+                  }
+                  return f.state === 'ready' ? <Badge tone="info" icon={null}>Proposed</Badge> : 'Not imported';
+                } },
                 ...(step < 2 ? [{ header: '', cell: (f: Picked) => <Button variant="ghost" iconOnly icon={Trash} aria-label={`Remove ${f.file.name}`} onClick={() => setFiles((c) => c.filter((x) => x !== f))} /> }] : []),
               ]}
             />
