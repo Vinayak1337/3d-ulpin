@@ -75,6 +75,8 @@ def _file_sha(path, size, modified_ns):
 
 
 def _verified_path(model):
+    if model.get("active", True) is not True:
+        _fail("MODEL_NOT_ACTIVE", "Candidate model is registered but inactive; activation needs lead review.")
     path = _model_dir() / model["filename"]
     try:
         stat = path.stat()

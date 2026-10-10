@@ -92,6 +92,70 @@
       },
       "quality": "Reviewed assistance only. Fixed 12 published OAM/OSM test tiles using this runtime: aggregate IoU 0.2874, precision 0.3418, recall 0.6434. Clear occupied tiles reach IoU 0.57\u20130.86; empty and blurred scenes show false positives. No threshold tuning. Single-tile feasibility results do not establish tiled boundary accuracy; overlap union may merge touching roofs and retain edge false positives. No cadastral or Indian pilot accuracy claim.",
       "name": "RF-DETR \u00b7 building outlines"
+    },
+    {
+      "id": "rfdetr-ramp-ka-seg-medium-b3-v1",
+      "name": "RF-DETR RAMP Karnataka epoch 4 (candidate)",
+      "task": "building",
+      "state": "candidate",
+      "active": false,
+      "use": "test_only",
+      "filename": "building-ramp-ka-epoch004.onnx",
+      "sha256": "dbf09254c6c7246f10139432e25de1f6d538aff0a680ab01c12a89fc7532affd",
+      "bytes": 130713387,
+      "profileVersion": "rfdetr-rgb432-tile512-stride384-threshold050-mask000-v2",
+      "confidence": "uncalibrated",
+      "license": "CC-BY-NC-4.0 training data; Apache-2.0 upstream model-card claim; test_only",
+      "source": "https://huggingface.co/merve/rf-detr-seg-satellite-buildings",
+      "sourceRevision": "05b80dce9a57701724ad6a0fc052827c8b724257",
+      "weightsSha256": "b6ef62646ed85d8102e37561324cee1dfc7e8c5e57e10c207a37927544ad5172",
+      "configSha256": "c10551bbd1135503279c6aab80fe6966d88a506d685098530bcd7f9fcbe7659e",
+      "modelCard": "docs/evidence/gf-ai/building/rfdetr-ramp-ka-seg-medium-b3-v1/model-card.json",
+      "parityEvidence": "docs/evidence/gf-ai/building/b5-instance-parity-20261010/result.json",
+      "preprocessing": {
+        "profileRef": "rfdetr-satellite-buildings-onnx-v1",
+        "inputShape": [1, 3, 432, 432],
+        "tileEdge": 512,
+        "tileStride": 384,
+        "objectThreshold": 0.5,
+        "maskLogitThreshold": 0,
+        "confidence": "uncalibrated instance sigmoid; mean over returned polygon pixels",
+        "geometry": "pixel-edge polygons; no metric inference"
+      },
+      "trainingData": {
+        "dataset": "RAMP Karnataka v1.0 TRAIN only",
+        "license": "CC-BY-NC-4.0",
+        "attribution": "DevGlobal / TaQadam / B.O.T; publisher human annotation and QC",
+        "use": "test_only"
+      },
+      "quality": {
+        "claim": "Roofprint research candidates; recall below preregistered target",
+        "matchIoU": 0.5,
+        "dev": {"precision": 0.8544117647058823, "recall": 0.6624353906962602, "chips": 1434},
+        "karnatakaHoldout": {
+          "precision": 0.8363968008979935,
+          "recall": 0.6492049662382923,
+          "chips": 1273
+        },
+        "transfer": {
+          "geography": "Bangladesh/Coxs Bazar",
+          "precision": 0.8303292256759243,
+          "recall": 0.35534653075681844,
+          "chips": 2375,
+          "indianAccuracyClaim": false
+        },
+        "recallBelowPreregisteredTarget": true,
+        "target": {"precision": 0.75, "recall": 0.70},
+        "instanceParityV2": "passed on 20 fixed DEV chips",
+        "rawTensorParityV1": "failed; retained unchanged",
+        "limitations": [
+          "Uncalibrated confidence; no surveyed footprint, ownership or registry truth",
+          "Publisher checkpoint pretraining overlap cannot be ruled out",
+          "No buffer between Karnataka geographic split cells",
+          "Both Karnataka holdout slots and Coxs Bazar transfer are spent",
+          "Inactive pending lead review; no demo inference or automatic activation"
+        ]
+      }
     }
   ]
 }
