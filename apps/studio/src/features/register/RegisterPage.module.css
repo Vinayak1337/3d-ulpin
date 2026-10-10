@@ -33,6 +33,8 @@
 @media (prefers-reduced-motion: no-preference) { .tabBody { animation: ul-fade 160ms ease-out; } }
 .stack { display: grid; gap: var(--ui-space-4); }
 .filterBar { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-space-3); padding: 8px 8px 8px 16px; border-bottom: 1px solid var(--ui-divider); font-size: 13px; }
+/* Alone in its panel the bar closes it: no rule beneath. */
+.filterBar:last-child { border-bottom: 0; }
 .gaps { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 13px; line-height: 19px; color: var(--ui-ink-soft); }
 .sources { list-style: none; margin: 0; padding: 8px 16px 12px; display: grid; }
 .sources li { display: grid; gap: 4px; justify-items: start; padding: 10px 0; border-top: 1px solid var(--ui-divider); }

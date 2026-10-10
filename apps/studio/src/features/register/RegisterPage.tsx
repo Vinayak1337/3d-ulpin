@@ -29,9 +29,11 @@ import { ReadingStatementsContext } from './ReadingNote';
 import { RegisterAbsent } from './RegisterAbsent';
 import { NO_READING_STATEMENTS, absentReason, unstatedReadings } from './registerState';
 import { SourceList } from './SourceList';
+import { FloorFilter, UnitsTab } from './UnitsTab';
+import { unitsTabView } from './unitsTabView';
 import { useReadingStatementsRead } from './useReadingStatements';
 import { printRegistry, registryDetail, registryHtml, registryPackage, registryTables, registryWorkbook } from './registry';
-import { featureCode, useUnitCards } from '../../api/queries';
+import { featureCode, useBuildingCanonical, useUnitCards } from '../../api/queries';
 import type { ConsolidatedRegistryReport } from '../../../../../packages/contracts/src/building-registry-report';
 import { useMapView } from '../map/useMapView';
 import styles from './RegisterPage.module.css';
@@ -131,6 +133,13 @@ function Register({ register }: { register: BuildingRegister }) {
     const top = model.spaces.filter((s) => !s.parentId);
     return level ? top.filter((s) => s.levelId === level.id) : top.filter((s) => s.use === 'apartment');
   }, [model, level]);
+  const canonical = useBuildingCanonical(property.id);
+  const unitsView = useMemo(
+    () => unitsTabView(units, { data: canonical.data, error: canonical.error, isPending: canonical.isPending },
+      level?.id ?? null),
+    [units, canonical.data, canonical.error, canonical.isPending, level],
+  );
+  const clearLevel = useCallback(() => set({ level: null, record: null }), [set]);
   const workflowMap = useMemo(() => byId, [byId]);
   const snapshot = useCallback(() => engine?.snapshot() ?? null, [engine]);
 
@@ -234,7 +243,7 @@ function Register({ register }: { register: BuildingRegister }) {
               <>
                 <Tabs label="Register sections" value={tab} onChange={(value) => set({ tab: value === 'units' ? null : value })}
                   tabs={[
-                    { value: 'units', label: 'Units', count: units.length },
+                    { value: 'units', label: 'Units', count: unitsView.count },
                     { value: 'residents', label: 'Residents', count: residents ? residents.units.reduce((n, u) => n + u.occupants.length, 0) : undefined },
                     { value: 'shares', label: 'Shares' },
                     { value: 'documents', label: 'Documents', count: ledger?.sources.length ?? register.sources.length },
@@ -243,9 +252,13 @@ function Register({ register }: { register: BuildingRegister }) {
                   ]} />
                 <div key={tab} className={styles.tabBody}>
                   {tab === 'units' ? (
-                    <UnitsTable register={register} units={units} levelLabel={level?.label ?? null} levels={new Map(model.levels.map((l) => [l.id, l.label]))}
-                      ledger={ledger} workflow={workflowMap} selectedId={record?.id ?? null}
-                      onSelect={(s) => set({ record: s.id === record?.id ? null : s.id, level: s.levelId })} onClearLevel={() => set({ level: null, record: null })} />
+                    <UnitsTab view={unitsView} floorLabel={level?.label ?? null} onClearFloor={clearLevel} table={(
+                      <UnitsTable register={register} units={unitsView.rows} levelLabel={level?.label ?? null}
+                        levels={new Map(model.levels.map((l) => [l.id, l.label]))}
+                        ledger={ledger} workflow={workflowMap} selectedId={record?.id ?? null}
+                        onSelect={(s) => set({ record: s.id === record?.id ? null : s.id, level: s.levelId })}
+                        onClearLevel={clearLevel} />
+                    )} />
                   ) : tab === 'residents' ? (
                     <Residents residents={residents} levelLabel={level?.label ?? null} selectedId={record?.id ?? null}
                       onSelect={(spaceId) => { const s = model.spaceById.get(spaceId); if (s) set({ record: s.id === record?.id ? null : s.id, level: s.levelId }); }}
@@ -316,12 +329,7 @@ function UnitsTable({ register, units, levelLabel, levels, ledger, workflow, sel
   const unknown = <em className="ul-unknown">Unknown</em>;
   return (
     <div className="ul-panel">
-      {levelLabel ? (
-        <div className={styles.filterBar}>
-          <span>Spaces on <b>{levelLabel}</b></span>
-          <button type="button" className="ul-btn ul-btn--ghost" onClick={onClearLevel}>All units</button>
-        </div>
-      ) : null}
+      {levelLabel ? <FloorFilter label={levelLabel} onClear={onClearLevel} /> : null}
       <DataTable
         caption={levelLabel ? `Spaces on ${levelLabel}` : 'Units in this building'}
         rows={units}
