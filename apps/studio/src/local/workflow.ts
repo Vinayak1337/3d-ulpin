@@ -103,7 +103,9 @@ export async function listBuildingWorkflow(buildingId: string): Promise<SpaceWor
 }
 
 /** Record reviewed details for one space: Draft → Reviewed, a new hashed revision. */
-export async function recordReview(input: { spaceId: string; buildingId: string; spaceName: string; recordRevision: number }): Promise<SpaceWorkflow> {
+async function recordReview(
+  input: { spaceId: string; buildingId: string; spaceName: string; recordRevision: number },
+): Promise<SpaceWorkflow> {
   const existing = await getSpaceWorkflow(input.spaceId);
   if (existing && existing.status !== 'Draft') return existing;
   const at = new Date().toISOString();
