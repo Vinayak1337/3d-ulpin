@@ -5,3 +5,7 @@ huggingface-hub==0.24.7
 safetensors==0.4.5
 numpy==1.26.4
 psutil==6.0.0
+
+# Stage A CPU classifier (separate from the historical E5/Torch recipe above).
+scikit-learn==1.7.2
+scipy==1.16.3
