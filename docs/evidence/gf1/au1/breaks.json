@@ -1,0 +1,177 @@
+{
+  "task": "AU1",
+  "order": "most blocking first; every statement is a static read of the cited lines",
+  "breaks": [
+    {
+      "id": "B-stream-no-record",
+      "what": "A streamed or chunk-mapped footprint has no path to an import package or a registry record.",
+      "why": [
+        "streaming-vector writes jobs, usp_streaming_vector_imports and slots only",
+        "packages/server/src/modules/usp/ingestion/streaming-vector.ts:154-159",
+        "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts:74",
+        "chunk-mapping writes usp_chunk_mapping_imports and slots only",
+        "packages/server/src/modules/usp/ingestion/chunk-mapping.ts:265-268",
+        "The package writers are ingestArea callers (packages/server/src/modules/areas/area-intake-service.ts:44-54,",
+        "packages/server/src/modules/spatial/spatial-ml-footprints.ts:246,",
+        "packages/server/src/modules/usp/ingestion/service.ts:255) and the document_buildings path."
+      ],
+      "answer": "No: without the bounded area import (2000 features) a streamed footprint never becomes a record.",
+      "boundCite": "packages/server/src/modules/areas/areas.ts:1072-1076,242",
+      "fix": "a writer from accepted slots into the existing package/registry contract (one seam, not a new service)"
+    },
+    {
+      "id": "B-area-commit-revision-zero",
+      "what": "An area-import commit leaves the building's registry record at revision 0.",
+      "why": [
+        "ingestArea reserves registry_records at revision 0 with evidence [] and physical_exterior",
+        "packages/server/src/modules/areas/areas.ts:727-760",
+        "commitPackage records physical_features and identifiers only, then COMMITTED",
+        "packages/server/src/modules/areas/areas.ts:1386,1440",
+        "snapshots take records with revision>0 only: packages/server/src/modules/usp/snapshots.ts:77",
+        "the lift is per building: prepareDetails refuses 422 MISSING_DETAIL_EVIDENCE without a detailed space",
+        "packages/server/src/modules/officer/officer-preparation.ts:463,500"
+      ],
+      "committedMeans": [
+        "For a building with no levels and no units, committed means a recorded physical feature and its",
+        "external identifiers (for NYC, nyc_bin). The registry record stays at revision 0, so it is not in",
+        "any snapshot, cannot be pinned by a plan, and the card is refused before it prints anything:",
+        "no snapshot target (409 USP_STALE_TARGET or 422 PACKET_PLAN_SELECTION), hence no executed plan,",
+        "hence 422 CARD_EXECUTED_PLAN_REQUIRED (packages/server/src/modules/usp/packets/card-service.ts:109-113)."
+      ],
+      "fix": "a rule-backed lift of an area-committed exterior to revision 1 with its feature as evidence"
+    },
+    {
+      "id": "B-snapshot-site-limit",
+      "what": "The site snapshot refuses a site holding the NYC pack.",
+      "why": [
+        "1000 records, 1000 features, 2000 sources per site, else 413 USP_SCOPE_LIMIT",
+        "packages/server/src/modules/usp/snapshots.ts:79,97,102",
+        "the pack's building layer alone accepts 1661 features (docs/evidence/gf5/lv0/eight.json:1-109)"
+      ],
+      "effect": "every identity, plan and card command for any building of that site fails once lifted past 1000",
+      "fix": "a snapshot scoped to the selected targets and their sources, not the whole site"
+    },
+    {
+      "id": "B-packet-citation-kind",
+      "what": "A card needs a packet, and a packet needs a citation kind GIS evidence does not have.",
+      "why": [
+        "text plan: an entry must equal a record body.evidence binding with a verbatim locator",
+        "packages/server/src/modules/usp/packets/plan-authority.ts:197-204",
+        "only text-reference-v2 line N and csv-reference-v2 CSV row N give an excerpt, else exact_extract_unavailable",
+        "packages/server/src/modules/usp/packets/plan-authority.ts:211-215",
+        "record evidence may cite only text and CSV reference parts",
+        "packages/server/src/modules/registry/registry-reference-policy.ts:16-24",
+        "PDF plan: a committed document or image region citation, or a source-stated space",
+        "packages/server/src/modules/usp/packets/pdf-authority.ts:52-53",
+        "entries discovery supports source-stated units only: 422 PACKET_PLAN_ENTRIES_SOURCE_ONLY",
+        "packages/server/src/modules/usp/packets/plan-entries.ts:22-24"
+      ],
+      "effect": "a footprint-only building ends at 422 PACKET_PLAN_BLOCKED, so at CARD_EXECUTED_PLAN_REQUIRED",
+      "effectCite": "packages/server/src/modules/usp/packets/plan-service.ts:146-147"
+    },
+    {
+      "id": "B-identity-spaces-only",
+      "what": "Identity assigns codes to recorded spaces only; a building gets none.",
+      "why": ["422 USP_IDENTITY_TARGET packages/server/src/modules/usp/project-identity.ts:46-47"],
+      "effect": [
+        "a building card prints project_identity_not_recorded",
+        "packages/server/src/modules/usp/packets/card-projection.ts:69-71",
+        "and geometry, measurements, render and rights are unavailable or not_assessed (:92-96)"
+      ]
+    },
+    {
+      "id": "B-site-digest-b1",
+      "what": "Any later source in any case of the site stales identity, declarations and proposals.",
+      "why": [
+        "the snapshot joins every source of every case of the site: packages/server/src/modules/usp/snapshots.ts:99",
+        "declarations fresh(): packages/server/src/modules/usp/declarations/service.ts:33-37",
+        "proposal digest: packages/server/src/modules/usp/commands.ts:57",
+        "case-revision pins also stale document-claims and sufficiency",
+        "packages/server/src/modules/usp/ingestion/document-claims.ts:147,170",
+        "packages/server/src/modules/usp/ingestion/sufficiency.ts:114"
+      ],
+      "effect": "while reading continues, every prepared identity or declaration in that site goes stale"
+    },
+    {
+      "id": "B-assign-bumps-revision",
+      "what": "Assign raises the record revision, so a plan must be made from a second snapshot.",
+      "why": ["packages/server/src/modules/usp/project-identity.ts:265",
+        "a pin on the old revision is 409 USP_STALE_TARGET packages/server/src/modules/usp/snapshots.ts:165"],
+      "effect": "plans cannot be prepared before the identity step; they are prepared after it"
+    },
+    {
+      "id": "B-links-after-record",
+      "what": "Linking proposals and the document association accept recorded targets only.",
+      "why": ["packages/contracts/src/source-fusion-associations.ts:16-24",
+        "packages/contracts/src/document-association.ts:10-18"],
+      "effect": "step 2 of the design (links before the draft) cannot run on candidates"
+    },
+    {
+      "id": "B-table-no-record",
+      "what": "A register table cannot become a record through the recipe path.",
+      "why": ["422 TABULAR_REGISTRY_UNQUALIFIED packages/server/src/modules/usp/ingestion/service.ts:250-253"]
+    },
+    {
+      "id": "B-candidate-outputs-unconsumed",
+      "what": "Sufficiency, document claims and document proposals write rows nothing downstream reads.",
+      "why": ["packages/server/src/modules/usp/ingestion/sufficiency.ts:114",
+        "packages/server/src/modules/usp/ingestion/document-claims.ts:147-170",
+        "packages/server/src/modules/usp/ingestion/document-proposals.ts:179-189"],
+      "effect": "readiness by sufficiency (13.2) has no consumer today"
+    }
+  ],
+  "traceNyc": [
+    "1 buildings layer streamed: slots only; stops here without the area import (B-stream-no-record).",
+    "2 bounded area import of at most 2000 features: package, registry rows at revision 0",
+    "  (B-area-commit-revision-zero).",
+    "3 package review (Studio apps/studio/src/features/review/candidates/commands.ts:33-38), then commit with an",
+    "  acknowledgement: physical feature recorded; record still at revision 0.",
+    "4 lift: preparation case, facts, placement, prepareDetails: refused MISSING_DETAIL_EVIDENCE with no space.",
+    "5 even if lifted: site snapshot over 1000 records refused USP_SCOPE_LIMIT (B-snapshot-site-limit).",
+    "6 even if snapshotted: identity refused for a building (B-identity-spaces-only); the plan has no supported",
+    "  citation (B-packet-citation-kind); the card is refused CARD_EXECUTED_PLAN_REQUIRED.",
+    "Result: a streamed NYC footprint cannot reach a printed card today."
+  ],
+  "traceRegisterAndPdf": [
+    "1 the register table: TABULAR_REGISTRY_UNQUALIFIED on the recipe path (B-table-no-record).",
+    "2 the PDF: a document_buildings package, review, commit with an acknowledgement: record at revision 1",
+    "  (packages/server/src/modules/usp/ingestion/source-building-records.ts:42,79).",
+    "3 source-spaces: the officer states each floor and space literal with page and region",
+    "  (packages/server/src/modules/officer/source-spaces.ts:103).",
+    "4 snapshot, identity review, assign on each space; a second snapshot (B-assign-bumps-revision).",
+    "5 plans entries, create, confirm, execute (PDF, synchronous), card preview, generate.",
+    "This is the REH1 path; it reached a generated card and a 200 PDF read",
+    "(docs/evidence/runtime/reh1/result.json:25-43).",
+    "The register rows reach the card only if the officer types them as source-space or declaration literals."
+  ],
+  "secondPerson": [
+    "No step needs a second person or role.",
+    "One local operator (packages/server/src/modules/usp/principal.ts:23-36);",
+    "confirm requires reviewer = creator (packages/server/src/modules/usp/packets/plan-store.ts:24);",
+    "assign requires reviewer = principal (packages/server/src/modules/usp/project-identity.ts:160);",
+    "card generation requires creator = principal (packages/server/src/modules/usp/packets/card-service.ts:66-70)."
+  ],
+  "longSteps": [
+    {"step": "streaming-vector and chunk-mapping", "how": "202 jobs; read by GET jobs/:jobId",
+      "cite": "apps/api/src/modules/ingestion/chunk-mapping.controller.ts:21,28"},
+    {"step": "PDF plan execute", "how": "synchronous, 6.7 s in REH1",
+      "cite": "docs/evidence/runtime/reh1/result.json:25-43"},
+    {"step": "PDF packet job", "how": "outbox packet.pdf.job.changed and GET usp/packets/jobs/:jobId",
+      "cite": "packages/server/src/modules/usp/packets/pdf-jobs.ts:20,39-59"},
+    {"step": "plan create for a PDF", "how": "synchronous, 8.0 s in REH1",
+      "cite": "docs/evidence/runtime/reh1/result.json:25-43"}
+  ],
+  "defaults": [
+    {"field": "card and plan expiresAt", "rule": "derivable by a policy rule (now + under 24 h)",
+      "cite": "packages/server/src/modules/usp/packets/card-service.ts:196-199"},
+    {"field": "inclusionReason", "rule": "officer", "cite": "apps/studio/src/features/identity/issue.ts:97-107"},
+    {"field": "commit acknowledgement", "rule": "officer", "cite": "packages/server/src/modules/areas/areas.ts:1342"},
+    {"field": "identity location", "rule": "derived for a source-only space; else officer",
+      "cite": "packages/server/src/modules/usp/project-identity.ts:97-102"},
+    {"field": "identity reason", "rule": "officer", "cite": "apps/studio/src/features/identity/useAssignFlow.ts:36"},
+    {"field": "declaration content", "rule": "officer (transcription of the instrument)",
+      "cite": "packages/contracts/src/usp/declarations.ts:24-40"},
+    {"field": "source-space literals", "rule": "officer, or a reviewed extraction once one is consumed",
+      "cite": "packages/server/src/modules/officer/source-spaces.ts:103"}
+  ]
+}
