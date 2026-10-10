@@ -3,13 +3,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
+import type { PoolClient } from 'pg';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import {
   BuildingConflictDecisionRequestSchema, BuildingConflictDecisionSchema, NormalizedBuildingSchema,
-  type BuildingConflictDecision, type BuildingConflictDecisionRequest,
+  type BuildingConflictDecision, type BuildingConflictDecisionRequest, type PhysicalFeature,
 } from '@ulpin/contracts';
-import { reviewedConflictDecision } from '@ulpin/server/modules/officer/canonical-conflict-decisions';
+import {
+  recordConflictFeatureRevisionTx, reviewedConflictDecision,
+} from '@ulpin/server/modules/officer/canonical-conflict-decisions';
 import { applyConflictDecisions, finishBuilding } from '@ulpin/server/modules/registry/canonical-building';
 import { setRuntimeLoopbackPort } from '@ulpin/server/infrastructure/loopback-host';
 import { OfficerController } from './officer.controller';
@@ -58,6 +61,27 @@ function checkRefusals(input: SelectedRequest, decision: BuildingConflictDecisio
     ...input, citation: { ...input.citation, locator: { kind: 'page', page: 2 } },
   }, decision.actor, decision.time, 2), /checked page/);
 }
+
+test('officer physical revisions retain the non-null original import package lineage', async () => {
+  const pkg = JSON.parse(readFileSync('docs/evidence/gf-backend/k2/tower3-source-commit.json', 'utf8'));
+  const feature: PhysicalFeature = pkg.features[0];
+  const decision = reviewedConflictDecision(retained, selectedRequest(), 'contract-test-operator',
+    '2026-10-10T00:00:00.000Z', 2);
+  let inserted = false;
+  const client = { query: async (sql: string, values: unknown[]) => {
+    if (sql.startsWith('SELECT package_id')) return { rows: [{ package_id: pkg.id }] };
+    if (sql.startsWith('INSERT INTO physical_feature_revisions')) {
+      assert(sql.includes('package_id'));
+      assert.equal(values[3], pkg.id);
+      inserted = true;
+    }
+    return { rows: [] };
+  } } as unknown as PoolClient;
+  await recordConflictFeatureRevisionTx(client, {
+    id: feature.id, area_id: pkg.areaId, revision: 1, body: feature,
+  }, decision, 3);
+  assert(inserted);
+});
 
 @Module({
   controllers: [OfficerController],
