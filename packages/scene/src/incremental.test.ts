@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { Box3, Group, MeshBasicMaterial } from 'three';
+import { Box3, Group, MeshBasicMaterial, PerspectiveCamera, Vector2 } from 'three';
 import { SceneEngine } from './engine';
 import type { FootprintInput } from './types';
 
@@ -29,8 +29,9 @@ function building(id: string): FootprintInput {
 }
 
 function draw(engine: ReturnType<typeof engineFixture>) {
-  engine.drainBuildingQueue();
-  engine.finishDraw();
+  // The starting engine builds synchronously; identity tests must reach their assertions there too.
+  engine.drainBuildingQueue?.();
+  engine.finishDraw?.();
 }
 
 afterEach(() => vi.restoreAllMocks());
@@ -135,6 +136,27 @@ describe('whole-list incremental building reconciliation', () => {
     expect(engine.buildingInputs.has('b')).toBe(true);
     expect(engine.buildingInputs.has('a')).toBe(false);
     expect(engine.buildingQueue.has('b')).toBe(false);
+  });
+
+  it('does not pick or label promoted geometry until its first rendered frame', () => {
+    const engine = engineFixture();
+    const intersectObjects = vi.fn((targets: Group[]) => {
+      const mesh = targets.find((target) => target.userData.entry?.buildingId === 'b');
+      return mesh ? [{ object: mesh, point: { y: 0 } }] : [];
+    });
+    Object.assign(engine, {
+      container: { clientWidth: 1440, clientHeight: 900 }, camera: new PerspectiveCamera(),
+      pointer: new Vector2(), ground: new Group(),
+      renderer: { domElement: { getBoundingClientRect: () => ({ left: 0, top: 0, width: 1440, height: 900 }) } },
+      raycaster: { setFromCamera: vi.fn(), intersectObjects },
+    });
+    engine.setBuildings([building('a'), building('b')]);
+    engine.setBuildingDetail({ buildingId: 'b', levels: [] });
+    expect(engine.project('b')).toBeNull();
+    expect(engine.pick(100, 100)).toEqual({ kind: 'ground' });
+    engine.finishDraw();
+    expect(engine.project('b')).not.toBeNull();
+    expect(engine.pick(100, 100)).toEqual({ kind: 'building', id: 'b' });
   });
 
   it('drops queued work and settles waiters on disposal', async () => {

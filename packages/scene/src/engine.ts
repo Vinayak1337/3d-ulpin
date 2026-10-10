@@ -675,10 +675,16 @@ export class SceneEngine {
     return entry.levelId ? { kind: 'building', id: entry.buildingId, levelId: entry.levelId } : { kind: 'building', id: entry.buildingId };
   }
 
+  private buildingHasDrawn(id: string): boolean {
+    return !this.buildingQueue.has(id) && (!this.buildingInputs.has(id)
+      || this.renderedBuildings.has(id) && !this.renderChanges.has(id));
+  }
+
   /** Screen position (CSS px within the container) of a record's top centre or a named anchor, for labels. */
   project(id: string): { x: number; y: number; visible: boolean } | null {
     let point: Vector3 | undefined;
     const entry = this.entries.get(id);
+    if (!this.buildingHasDrawn(entry?.buildingId ?? id)) return null;
     // A space anchors on its own box; it is shown only while its level is drawn.
     const hidden = entry?.kind === 'space' && !entry.meshes[0]!.visible;
     const box = entry?.kind === 'space' ? entry.bounds : this.buildingBounds.get(id);
@@ -1407,6 +1413,7 @@ export class SceneEngine {
     const targets: Object3D[] = [];
     const m = this.m;
     for (const entry of this.entries.values()) {
+      if (!this.buildingHasDrawn(entry.buildingId)) continue;
       // Ghosted levels are see-through to picks; a candidate building is a ghost that must stay selectable.
       const seeThrough = (mesh: Mesh) => entry.look !== 'candidate' && (mesh.material === m.ghost || mesh.material === m.faint || mesh.material === m.ghostDark);
       for (const mesh of entry.meshes) if (mesh.visible && !seeThrough(mesh)) targets.push(mesh);
