@@ -67211,7 +67211,7 @@ export interface components {
                     fieldSources: {
                         sourceField: string;
                         /** @enum {string} */
-                        source: "memory" | "student" | "teacher" | "officer";
+                        source: "memory" | "student" | "teacher" | "officer" | "unanswered";
                         method: string;
                     }[];
                     questions: {
@@ -67232,6 +67232,7 @@ export interface components {
                         memoryHits: number;
                         studentFields: number;
                         teacherFields: number;
+                        unansweredFields?: number;
                         needsInput: number;
                         latencyMs: number;
                         learnerVersion: string | null;
