@@ -1,156 +1,196 @@
-# Ingestion architecture: accept the whole, stream what can be shown, hold and index the rest
+# Ingestion architecture: probe everything, map files first, every part converted and shown as it is read
 
-**Status:** design by the lead, 11 October 2026, on the owner's direction of that night ("make the ingestion pipeline accept the whole … this is the first priority to plan and design"). It governs [P3](P3-ingestion.md) and section 1 of [the sprint plan](SPRINT-SELECTION.md). Nothing here is built yet unless a row says "exists". Sizes and the exact state of each reader are confirmed by task LV0 (parts B and C) before tasks are cut.
+**Status:** technical design by the lead, 11 October 2026 (second version, after the owner asked for the architecture itself: chunking, per-format handling at any size, order of work, linking). It governs [P3](P3-ingestion.md) and section 1 of [the sprint plan](SPRINT-SELECTION.md). Nothing here is built unless a line says "exists". Lines marked **(read)** were checked by the lead in code on 11 October; everything else about existing code is confirmed by task LV0 (`docs/evidence/gf5/lv0/readers.json`) before a build task is cut. Constants marked *proposed* are starting values; each is fixed by a measured run, not by this document.
 
-## 1. The idea in six sentences
+## 0. The answer in ten lines
 
-1. **One front door.** Any file, any size, any mix, is dropped in one place. The browser never interprets a file; it only uploads bytes in parts.
-2. **Every file is kept first.** The original is stored unchanged with its hash before anything tries to understand it. A file the product does not understand is still kept, and says so.
-3. **Each file is looked at once, cheaply,** to learn what it is and what it holds. That look writes a **holdings card**: its kind, its extent on the ground if it has one, and the keys it carries (parcel numbers, survey numbers, project numbers, building and tower names, floor and unit labels, addresses).
-4. **What can be placed on the map streams onto it at once,** part by part, as candidates. What cannot be placed is **held**, with its card.
-5. **All cards together are the holdings index.** Each time a file arrives, the linker asks the index what the new file connects to, and what earlier held files now connect to it. A register that arrived before its map is linked the moment the map arrives.
-6. **Nothing becomes a record without an officer.** Streams, links and model outputs are candidates. Review can be done in bulk, but it is done.
+1. **Upload is dumb, reading is smart.** The browser cuts bytes (8 MiB parts) and nothing else. The server cuts *meaning parts* (features, rows, pages, image windows, point chunks) with the reader for that format.
+2. **Probe everything first, read nothing yet.** Within about a second of each upload finishing, a header-only probe says what the file is, its size class, its CRS and extent, and the keys it carries. That is the batch manifest (the "map of what we hold").
+3. **Then a one-directional order, decided from the manifest:** wave 1 anchors (parcels, building footprints, boundaries) go to the map; wave 2 pictures and heights (imagery, elevation, point clouds) sit on them; wave 3 registers and tables attach to them; wave 4 documents and plans attach to them. Automatic by default; the officer can pin or reorder.
+4. **Every part runs the same five steps, ending in one transaction:** read → normalise → map fields → write candidates and keys → publish one event. The map draws that part before the next one is finished.
+5. **The plan for a file's fields is made once, on part 0,** and reused for every later part and every later file with the same layout. A model is asked per layout, never per part.
+6. **Linking happens inside the write step:** the keys of each part are looked up against the anchors already there (index lookups, exact then spatial). A closing pass per file does what needs the whole file (duplicates, fuzzy names).
+7. **A file that arrives out of order** (a register before any map) is read and indexed anyway and marked *waiting for an anchor*; when an anchor arrives, the same lookup runs from the other side.
+8. **Sequential formats** are read by one cursor in one forward pass. **Indexed formats** (COG, LAZ, shapefile, GeoPackage, Parquet, PDF, ZIP) are planned from their index and their parts run in parallel, most useful part first (coarse before fine, on-screen before off-screen).
+9. **A scheduler with reservations** picks the next part: probes first, then waves in order, round-robin between files inside a wave, and a part starts only if its stated memory and scratch disk fit in what is free.
+10. **Nothing is dropped and nothing is guessed:** over-limit or unknown files are kept and say so; unknown CRS is a question, not an assumption; everything on the map is a candidate until an officer reviews it.
 
-## 2. Two kinds of chunking (they are different, and both are needed)
+## 1. What the code does today, and the five things that block this design
 
-| | Transport parts | Meaning parts |
-|---|---|---|
-| What is cut | bytes | features, rows, pages, image windows, point batches |
-| Who cuts | the browser, without understanding the file | the server's reader for that kind of file |
-| Why | a large file uploads reliably, can resume, never times out | work is bounded, results appear before the file is finished, one bad part does not lose the rest |
-| Exists | yes: `large-original` upload, 8 MiB parts, each hashed, up to about 7 GiB | yes, per kind (section 4), but each request reads **one** part; nothing walks the whole file |
+| # | Finding | Where | Consequence |
+|---|---|---|---|
+| B1 | Every job pins the **case revision** and re-checks it at claim and at each heartbeat; finalising any upload advances the case revision. **(read)** | `streaming-vector.ts` `assertStreamingInputTx`; `streaming-vector-worker.ts:135,178`; `large-original.ts:267,438`; the same `UPDATE cases SET revision=revision+1` in `documents.ts:126`, `ifc.ts:170`, `kml.ts:170` and six more | Adding a second file to a batch ends the read of the first with a conflict. REH1 saw it for documents (`DOCUMENT_INPUT_STALE`); from the code it is general (not yet run for the other readers). **A batch cannot work until this is changed.** |
+| B2 | Lifetime and concurrency caps set for qualification: 128 streaming requests ever and 2 active; 128 upload receipts (v1), 8 receipts and 1 active (v2); 64 raster and 64 point sources; 1 active chunk mapping; 1 active streamed profile. **(read)** | `streaming-vector.ts` (`STREAMING_CAPACITY`, `STREAMING_HISTORY_CAPACITY`); `LARGE_ORIGINAL_LIMITS`, `LARGE_ORIGINAL_V2_LIMITS`, `RASTER_WINDOW_LIMITS`, `POINT_BATCH_LIMITS`, `CHUNK_MAPPING_LIMITS`, `STREAMED_PROFILE_LIMITS` | A horde of files exhausts them in one sitting. |
+| B3 | The dispatcher takes the 12 oldest jobs, first in first out. **(read)** | `cases/processing.ts:206` | No lanes, no priority, no fairness: one large file's parts would starve a ten-row table. |
+| B4 | The table reader collects the whole file in memory and stops at 2,000 rows. **(read)** | `streaming-vector-reader.ts:169-178`; `TABULAR_LIMITS` | Tables do not stream. |
+| B5 | The map's area read returns one answer of at most 2,000 features; nothing carries a streamed part to something the map draws. | `areas.ts:240-242` **(read)**; LV0 `mapGap` | The streamed parts exist but are invisible. |
 
-A browser cannot cut a shapefile, a LAZ cloud or a PDF into meaningful pieces: only the reader can. So the browser sends byte parts, the server assembles and verifies the original, and the reader for that kind cuts meaning parts and queues them.
+What already works and is kept: upload in 8 MiB hashed parts up to 7 GiB; the GeoJSON reader as a true stream (one object-store stream, a JSON cursor with byte offsets, parts of 100 features, ordered publication with a look-ahead of 8 parts, quarantine of a bad feature without losing the file) **(read)**; fenced job attempts with a 180 s lease, 30 s heartbeat and three attempts **(read)**; header-level readers for GeoPackage, shapefile ZIP, workbook (SAX), IFC, GeoParquet, LAS/LAZ (laspy), rasters (rasterio), PDFs (PyMuPDF, pypdf); mapping memory, learner, teacher; case event stream.
 
-**Decision:** reading starts when the upload is finalised, not while it is arriving. On a local network a 500 MB file uploads in seconds, most formats cannot be read before their last bytes are present (ZIP, GeoTIFF, LAZ, PDF), and one rule is simpler to make reliable. Reading-while-uploading for the two formats that allow it (line-delimited GeoJSON, CSV) is a later optimisation, not part of this sprint.
+## 2. The model: batch, item, part
 
-## 3. The path of one file
+- **Batch** = a case (exists). **Item** = one file or one member of a container = a source (exists). **Part** = one bounded piece of an item's meaning.
+- One new additive ledger, visible SQL, no new service:
 
 ```
- drop ──► RECEIVE ──► IDENTIFY ──► PROFILE ──► PLACE? ──► READ IN PARTS ──► UNDERSTAND ──► PUBLISH ──► LINK ──► REVIEW ──► RECORD
-          bytes in     by bytes,    cheap look   map /       queued jobs,      memory ►        candidates   against    officer,   registry
-          parts,       not by       ► holdings   link /      one part each,    learner ►       + one event  the        in bulk    ids
-          original     name; a      card         hold /      a conductor       teacher ►       per part     holdings   where
-          kept         container                 ask         walks them all    officer                      index      safe
-                       fans out
+usp_intake_items   item_id (= source id), case_id, parent_item_id, family, format, size_bytes, size_class,
+                   wave, state, placement, plan_ref, parts_planned (null = not known yet), parts_done,
+                   records_seen, limit_reason, probe_ref, pinned_by_officer
+usp_intake_parts   item_id, part_index, locator (byte range | record range | page | window+level | chunk | row group),
+                   priority, state, job_id, cost_memory_mb, cost_scratch_mb, counts, result_ref, issue_code
+usp_holding_keys   item_id, part_index, key_type, key_norm, key_raw, locator          index (key_type, key_norm)
+usp_holding_extent item_id, part_index, bbox in EPSG:4326, crs_state                    GiST index
 ```
 
-| Stage | What happens | Exists today | Missing |
+- **Item states:** `uploading → received → probed → planned → reading (n of m) → read | read_to_limit | failed_part` and, beside it, **placement:** `on_map | attached | waiting_for_anchor | needs_answer | not_understood`.
+- **Part states:** `planned → queued → running → published | quarantined`. A part is retried up to three times by the existing job authority; a part that still fails is quarantined with its locator and the item continues.
+- **Identity of a part's work** = hash(source SHA-256, reader version, locator). Running it twice is a no-op; a restart continues from the ledger; a changed reader marks old results stale, it does not delete them (the freshness field exists).
+- **Fix for B1 (decision):** a job pins what it reads: source id, source revision, source SHA-256, reader version, access binding. It does **not** pin the case revision. A read is stale only if its own source is superseded, the case is archived or access changed. K13 becomes this rule for every operation, in one shared check, not per reader.
+
+## 3. Upload: transport parts (the browser's only job)
+
+- `File.slice` in fixed 8 MiB parts (exists); 3 parts in flight *(proposed)*; each part hashed in a Web Worker; retry a part with back-off; **resume** by asking the server which parts it holds (`GET` upload exists). Browser memory is bounded by parts in flight, never by file size.
+- The server hashes the assembled original at finalise; the same SHA-256 already held in this batch is not read twice (the new item points at the existing source).
+- Folder drops keep relative paths, so sidecars can be grouped (section 4.2).
+- Size classes, by bytes, decide the upload profile and the reader's strategy, never whether the file is understood:
+
+| Class | Bytes | Upload | Reading |
 |---|---|---|---|
-| **Receive** | Upload in parts; original stored unchanged with SHA-256, size, time; provenance (issuer, licence, geography) asked once per batch, "unknown" allowed and recorded as unknown | chunked upload; per-kind receipt routes | one route for any file; today the Studio refuses what it does not recognise and does not store it |
-| **Identify** | Kind decided from the bytes (signatures, structure), never from the name. A container (ZIP, KMZ, GeoPackage, a shapefile's sidecar files, a folder) is listed and each member becomes its own item with a link to its parent | byte sniffing in each reader; ZIP inventory (256 members) | one sniffer in front of all readers; fan-out of members into items |
-| **Profile** | A bounded first look: columns and types, attribute names, CRS and extent, page count and page kinds, bands and pixel size, point count and classes. Writes the holdings card | column profiles, streamed profiles, GIS inspection, document page listing | the card itself, in one shape for every kind |
-| **Place?** | Triage (section 5): on the map now, on the map through a link, held, or one question to the officer | sufficiency questions | the triage rule |
-| **Read in parts** | The reader cuts meaning parts; each part is a job in the one job authority. A **conductor** queues the next part when one finishes, until the file is done or a stated limit is reached | every reader as a bounded job (section 4) | the conductor: today the caller must ask for each window, batch and chunk |
-| **Understand** | Format is read by code. Meaning is decided by the ladder in section 6 | mapping memory, learner, Sarvam teacher through the gateway, verifier, document agents, roof and floor-plan models | wiring every lane to the same ladder |
-| **Publish** | Each finished part becomes candidates and one event on the batch's stream. The map and the lists read what is new | case event stream; chunk reads | a read that carries a mapped part to candidates the map draws; today the map reads at most 2,000 features in one answer |
-| **Link** | Section 7 | source-fusion associations between sources | the index and the re-run on every arrival |
-| **Review, record** | Officer accepts or rejects; bulk actions for a streamed batch; identities are assigned after review | review, identity, card | bulk review of a streamed batch |
+| S | ≤ 16 MiB | one or two parts | may be read in one job, still published in parts |
+| M | ≤ 128 MiB | v1 multipart | streamed or planned in parts |
+| L | ≤ 7 GiB | v2 multipart | parts only; needs scratch reservation; derivatives built in bounded windows |
+| XL | > 7 GiB | refused at the door with the size said; alternative: *register in place* from a server folder the operator names (original hashed by stream, not copied) | as L |
 
-A batch of files is one **case**, as today. An item is one **source**, as today. No new service: the lanes are job operations in the existing job authority, each with its own bounded workers, so a slow point cloud never blocks a table.
+- Reading starts at finalise. Reading while uploading is not built: most formats keep their index at the end of the file (ZIP, Parquet, PDF, many TIFF and LAZ files).
 
-## 4. Every kind of input, what it yields, and what exists
+## 4. Probe and plan
 
-"Yields" is what the file can support in our model: **Parcel** (official ULPIN, issued by the authority), **Building**, **Level**, **Unit/Space** (application identities), **Evidence**, **Context** (roads, land use, imagery). Limits are today's code; "walks itself" says whether the whole file is read without a person asking for each part.
+### 4.1 Probe (lane `probe`, highest priority, target under one second per file)
+Reads headers only, by range requests on the stored object; never the body.
 
-| Family | Formats | Usually holds | Yields | On the map by itself? | Reader today (limit) | Walks itself |
-|---|---|---|---|---|---|---|
-| **Cadastral / 2D ULPIN** | parcel layers as shapefile, GeoJSON, KML, GeoPackage; village maps as scans | parcel boundaries with ULPIN or survey number | Parcel with the official number as an *official assertion*; the anchor everything else links to | yes if it has a CRS; a scanned village map needs georeferencing first | area import (16 MiB, 2,000 features, one request); KML (16 MiB) | no |
-| **Building footprints, other vector** | GeoJSON, line-delimited GeoJSON, shapefile, GeoPackage, GeoParquet, KML/KMZ, FlatGeobuf | footprints, roads, land use, boundaries, utilities | Building candidates (shape supported by the source; height only if an attribute states it); Context | yes if CRS known | streaming GeoJSON (128 MiB, 100 features a part, 4,096 parts); GeoParquet (32 MiB); FlatGeobuf: none | streaming GeoJSON yes; the rest no |
-| **Tables and registers** | CSV, XLSX, ODS, DBF, JSON records | RERA projects and units, property tax rolls, record of rights, unit schedules, owner lists | Unit, Level and Building *facts* and rights *claims*, each cited to its row; never geometry | no, unless it has coordinates; otherwise through a link (section 7) | tables (16 MiB, 2,000 rows, 256 columns), chunk mapping with memory, learner and teacher | partly; the row limit is the gap |
-| **Documents** | PDF born digital, scanned PDF, images of pages, DOCX | sanction and approval letters, RERA certificates, deeds, occupancy certificates, survey reports, property cards | Evidence; facts as candidates, each with the exact quote and page region | no; through a link | PDF native text and OCR (16 MiB, 100 pages), storey agent, cited proposals; DOCX: none | pages yes |
-| **Plans and blueprints** | PDF sheets, DXF, DWG, scanned drawings, images | floor plans, site plans, sections, elevations | Levels and Units/Spaces as candidates: labels, room outlines **in sheet coordinates**, areas "as printed" at the sheet's stated scale; never measured | no (a sheet is not on the ground); attaches to its building by a link; a site plan with coordinates can be placed | PDF pages and regions; DXF (16 MiB, text versions only); floor-plan model for scanned rooms; DWG: none | no |
-| **Imagery and rasters** | GeoTIFF, COG, JPEG/PNG with a world file, plain photos | orthophotos, satellite and drone images, DSM/DTM/DEM, scanned maps | Context picture; roofprint candidates from the roof model where no footprint exists; a height *estimate* from DSM minus DTM | yes if georeferenced; a plain photo is Evidence only | raster windows (16 MiB, 100 megapixels, 256 px windows) | no |
-| **Point clouds** | LAS, LAZ, E57, PLY, XYZ | LiDAR and photogrammetry points | height and roof-form *estimates* per footprint, with their own provenance; never survey truth unless control is supplied | yes if CRS known | LAS/LAZ 1.4 format 6 (16 MiB, 5 million points, 8,192 a batch); E57, PLY, XYZ: none | no |
-| **3D, BIM, city models** | IFC, CityGML, CityJSON, glTF/GLB, OBJ, 3D Tiles | buildings with storeys and spaces; LoD models | Building, Levels and Spaces directly when the model names them (IFC storeys and spaces); geometry | only if georeferenced; many IFC files are not, so they are held until placed | IFC (32 MiB, 2x3 and 4), CityGML 2.0 (32 MiB), CityJSON (8 MiB), glTF, OBJ; 3D Tiles: display only | whole file in one job |
-| **Survey and control** | GNSS/total-station CSV, GPX, survey reports | control points, measured corners | Controls that qualify placement and measurement | yes (points) | survey report parser; tables | n/a |
-| **Containers** | ZIP, KMZ, GeoPackage with several layers, shapefile sets, folders; 7z, RAR, File Geodatabase | any mix of the above | nothing itself; its members | n/a | ZIP inventory (256 members, 30 MiB expanded), no fan-out; 7z, RAR, GDB: none | no |
-| **Sidecars** | `.prj`, `.tfw`, `.cpg`, `.xml` metadata, `.aux` | CRS, georeference, encoding, source metadata | completes another file; never an item alone | n/a | read with shapefiles; otherwise ignored | n/a |
-| **Not files** | WMS/WFS/ArcGIS service URLs, database dumps, live feeds | | | | none | |
-| **Unknown** | anything else | | Evidence held as "not understood" with its hash, size and first-bytes signature | no | Studio lists it as "not imported" and does not store it | n/a |
-
-**What this table says:** almost every reader exists as a bounded piece. Three things are missing everywhere: the front door that takes any file, the conductor that reads a whole file without being asked for each part, and the path from a read part to something the map and the lists show. Limits were set for safety when each reader was qualified; they are raised lane by lane, on purpose, with a measured run each, never removed.
-
-**Formats we will not read by 22 October** (received, kept, stated as not understood): DWG (proprietary; ask for DXF or PDF), E57, 7z/RAR, File Geodatabase, DOCX, service URLs. Each is a named gap, not a silent failure.
-
-## 5. Can it go on the map? The triage rule
-
-Asked once after the profile, and again whenever the index changes.
-
-| Answer | When | What the screen does |
+| Signature | Reads | Learns |
 |---|---|---|
-| **Place now** | geometry with a known CRS; a table with coordinate columns; a georeferenced raster or cloud | streams onto the map as candidates |
-| **Place through a link** | no geometry, but its keys match something placed (a parcel number, a project, a tower name, an address) | appears on the record it links to: in its register, its evidence, its floor list |
-| **Hold** | nothing to link to yet | listed under "Held" with its card: what it is, what keys it carries, what it is waiting for; re-tried on every arrival |
-| **Ask** | CRS missing or local coordinates; two equally good links; a private document that may not go to a provider | one question to the officer, with "not sure" allowed; the file stays held until answered |
+| magic bytes, then structure | first 64 KiB, last 64 KiB | format and version; text files: encoding, JSON/XML root, delimiter |
+| GeoJSON | first value keys | collection or sequence framing, `crs` member, first feature's geometry type and properties |
+| shapefile set | `.shp` header (100 bytes), `.shx` length, `.dbf` header, `.prj`, `.cpg` | record count, bbox, fields, CRS, encoding |
+| GeoPackage | `gpkg_contents`, `gpkg_geometry_columns`, `gpkg_spatial_ref_sys` | layers (each becomes a child item), counts, bbox, CRS |
+| GeoParquet | footer | row groups, schema, `geo` metadata (CRS, bbox) |
+| CSV / XLSX / ODS / DBF | first rows; workbook's sheet list | sheets (child items), header rows, columns, types, coordinate columns if any |
+| GeoTIFF / COG | IFDs | size, bands, type, CRS, transform, tiling, overviews, nodata |
+| LAS / LAZ | public header, VLRs | point count, format, scale and offset, bbox, CRS, chunk table present |
+| PDF | trailer, page tree, first pages | page count, per-page: text layer, page size, image-only, vector operators; encrypted or not |
+| IFC | STEP header, a streaming count of entity types | schema, counts of buildings, storeys, spaces; site latitude/longitude or map conversion present |
+| CityGML / KML / GML | root and first members | version, member kinds, `srsName` |
+| ZIP / KMZ | central directory (end of file) | members (section 4.2) |
 
-Nothing is guessed to get a file onto the map: an unknown CRS is not assumed, a missing height is not 0, an ambiguous link is not chosen.
+The probe writes the **holdings card** (`probe_ref`): family, format, size class, CRS state (`stated | sidecar | absent | conflicting`), extent, counts, the key types present, and first keys found. The union of cards is the batch manifest.
 
-## 6. Who understands the file: the ladder
+### 4.2 Containers and sidecars
+- ZIP members are listed from the central directory without extracting. Guards: member count, total expanded bytes charged to the reservation, compression ratio, nesting depth 2, no absolute or parent paths. Each wanted member is extracted by stream into storage as a **child original** (own SHA-256, pointing at parent and member path).
+- Files with the same folder and base name are one item: `.shp+.shx+.dbf+.prj+.cpg`; raster + `.tfw/.jgw/.pgw` + `.prj` + `.aux.xml`; `.tab` sets. A sidecar is never an item alone. A missing `.prj` gives CRS state `absent` → question.
+- A pack with a manifest (the NYC pack) is an ordinary ZIP: its manifest is read as one more source of declared kinds, never trusted over the bytes.
 
-Code reads the *format*. The ladder decides the *meaning* (which column is the unit number, which page is a floor plan, which layer is buildings). Each part climbs only as far as it must, so most parts never reach a paid model:
+### 4.3 Waves: the one-directional order (owner's question, 11 October: yes, map files first)
+The planner assigns each item a wave from its card. Work of wave *n* is scheduled ahead of wave *n+1*; later waves still read in the background if capacity is free, but they attach **to** earlier waves, never the other way round.
 
-1. **Memory.** This layout was approved before (same fingerprint): apply the approved mapping. No model, immediate.
-2. **Local learner.** Our own trained mapper is confident: apply, marked as a candidate.
-3. **Teacher (Sarvam, through the gateway).** A layout nobody has seen: the teacher receives the masked profile (column names, types, a few masked samples), never the file; its answer is checked by code against the whole profile; an approved answer goes into memory and into the learner's training set, so the next part and the next similar file stop at step 1 or 2. Wide tables are asked in column groups (merged 10 October).
-4. **Domain models, local.** Roof model for imagery, floor-plan model for drawings, OCR for scans, the storey agent for document text.
-5. **The officer.** Whatever is still unanswered, as a short question.
-
-**PDFs:** yes, with AI, but in this order: the PDF's own text first (exact and free); OCR when it is a scan (local); then a model to turn text into fields, where **every value must be a quote found on the page** or it is dropped. Drawings go to the floor-plan model, not to a language model: a language model is not trusted for geometry. Private or restricted documents are never sent to an outside provider; they stop at local reading and the officer.
-
-**Private data:** the ladder is the same, minus step 3.
-
-## 7. Linking: the holdings index
-
-Each card carries the keys found in its file, normalised the same way for every kind:
-
-| Key | Found in | Joins to |
-|---|---|---|
-| ULPIN, survey/khasra number, village and district codes | cadastral layers, record of rights, deeds, tax rolls | Parcel |
-| RERA project and registration numbers, sanction and approval numbers | RERA tables and certificates, plans, letters | Building or project |
-| Building, tower, block and wing names | tables, plan captions, footprint attributes | Building |
-| Floor labels and ordinals; unit numbers | unit schedules, plans, deeds | Level, Unit |
-| Address, locality, PIN code | almost everything | Building, Parcel |
-| Extent on the ground | every georeferenced file | whatever it overlaps |
-| Owner and party names | registers, deeds | kept as *present / absent* in the index; values stay in their source and are never sent to a provider |
-
-Linking order, strongest first: exact key (a parcel number equals a parcel number); spatial (a point inside a parcel, a footprint inside a project boundary); name and address similarity, scored. An exact single match is proposed as a link; anything scored or plural goes to the officer. A link is a candidate with its two citations, never a fact, and it never creates ownership, issuance or geometry.
-
-The index answers the two questions the owner asked for: *what do we hold?* (the Held list, by kind and key) and *what does this new file connect?* (run on every arrival, in both directions).
-
-## 8. What the person at the screen sees
-
-- **One drop zone**, for files and folders. Each item appears at once in the tray with its size and upload progress.
-- **One line per item**, moving through: received · identified as … · reading 12 of 240 parts · on the map / linked to … / held: waiting for … / needs you · not understood.
-- **The map fills part by part**, candidates drawn as candidates, without frame drops (task LV1: the scene adds only what is new, inside a frame budget; the longest frame today is 1.8 s). A large area is read by the view, not as one list.
-- **Held and linked items** have their own list; opening one shows its card and what it waits for.
-- **Questions** are few and plain, one at a time, with "not sure".
-- **A reader's limit is said in words**: "read 409,600 of an estimated 1.2 million features; the rest is kept, not read".
-
-## 9. Build order to the 22 October freeze
-
-Each step is shown on the empty rehearsal runtime before the next begins. Sizes come from LV0 part C.
-
-| Step | By | What it delivers | Proof |
+| Wave | Items | Why here | Result |
 |---|---|---|---|
-| **A. Spine** | 14 Oct (M1) | front door for any file (upload in parts, sniff, keep, item states on one event stream); container fan-out; conductor for the vector lane; streamed parts become candidates the map draws; the scene takes parts smoothly (LV1); several files in a row all read (K13) | the NYC pack through the product's routes on an empty runtime, no file-specific code, no frame over 100 ms |
-| **B. Meaning and links** | 17 Oct | conductor for tables with the row limit raised by streaming, ladder on every part; holdings card and index; linker (exact and spatial first); documents and plans listed, read and linked; Held list | a footprint layer, then its register, then a plan, dropped in any order, end up linked; an unseen table layout is learned on the spot |
-| **C. Remaining lanes and limits** | 19 Oct (M2) | raster and point lanes walked by the conductor (roof candidates, height estimates); 3D lanes placed or held; every limit and every unknown format said in words; bulk review | one file per family from section 4, and one unknown file, on an empty runtime |
-| **D. Rehearse** | 20–21 Oct | two full rehearsals from empty with files nobody on the team chose | recorded runs, a list of what was not understood |
+| 0 | every file | probe | manifest; each placeable item's **extent rectangle drawn on the map at once** as "arriving" |
+| 1 Anchors | cadastral parcels, building footprints, administrative and project boundaries, georeferenced 3D/BIM with building identity | everything else attaches to these | candidates on the map, keys in the index |
+| 2 Surface | orthophotos, DSM/DTM, point clouds | need anchors to mean anything; heavy | picture under the anchors; roofprint candidates where no footprint exists; height estimates per footprint |
+| 3 Attributes | registers and tables (RERA, tax, rights, unit schedules), survey control | attach by key or coordinate | facts and claims on anchors; rows with coordinates also drawn |
+| 4 Evidence | PDFs, scans, plans, drawings, photos, ungeoreferenced models | slowest (OCR, models); attach by key | cited fields, levels and units, evidence on anchors |
 
-Already queued and still valid: LV1 (scene), K13 (stale reads), F3i (card revision), the platform task for an empty runtime (models installed by script).
+Rules: automatic by default; the tray shows the order before reading starts and the officer can pin an item to wave 1 or hold one back; a batch with no anchor at all skips to what it has (a lone register is read and indexed, placement `waiting_for_anchor`); a file dropped later joins its wave and the linker runs from its side (section 7).
 
-## 10. What does not bend
+## 5. Meaning parts: how each format is cut, at any size
 
-- Originals are immutable; every candidate cites its original and a locator (feature index, row, page and region, window, batch).
-- Unknown stays unknown: no assumed CRS, no height of 0, no invented unit, parcel, floor or owner.
-- Official parcel ULPINs are assertions by their issuer; application identities for buildings, levels and units are ours and are assigned only after review.
-- A model's or a teacher's output is a candidate; a teacher's answer is a `pseudo_label`, never evaluation truth.
-- Private or restricted files never go to an outside provider; the money caps of the gateway hold across all keys.
-- One job authority, one registry, one gateway, one conversion contract: lanes extend them, nothing parallel is built.
+Two cutting strategies. Which one a format gets depends on whether it has an index.
 
-## 11. Open decisions for the owner
+**Strategy A, one cursor (sequential formats).** One job opens one stream on the object and walks forward. Memory = one record plus the look-ahead window. A part closes at the first of: *R* records, *B* bytes of output, *T* ms of work (*proposed*: 500 records, 512 KiB, 250 ms), so a few huge geometries make a small part and many tiny ones a large part. Parts are published in file order with a bounded look-ahead (8, exists). Part boundaries are recorded as record index and byte range, so a locator always points into the unchanged original. Line-delimited formats may additionally be split by byte ranges across workers with the usual rule: *a part owns the records that start inside its range; it reads past its end to finish the last one and skips forward to the first record start*.
 
-1. **How large is "large" for the presentation?** The design scales by parts, but each lane's ceiling is raised only as far as we have measured. A working target is needed: for example one file up to 1 GB, a vector layer up to 500,000 features, a table up to 1 million rows, one image up to 2 GB. Smaller targets mean more lanes finished.
-2. **Which families matter most if time runs short?** Proposed order: vector and cadastral, tables, PDFs and plans, imagery, point clouds, 3D models.
-3. **May a judge's file be sent to Sarvam?** The ladder sends only masked column profiles and public text. If their file must be treated as private, step 3 is skipped and the officer answers instead.
+**Strategy B, plan then fan out (indexed formats).** A plan job reads the index and writes all parts with locators and priorities into `usp_intake_parts`. Part jobs are independent, run in parallel, and may finish in any order. Priority is *usefulness*: coarse before fine, on-screen before off-screen, first pages before last.
+
+| Format | Strategy | Part = | How it is cut | Memory bound | Notes at L size |
+|---|---|---|---|---|---|
+| GeoJSON collection | A (exists) | ≤ R features | JSON cursor, byte offsets per feature | 1 MiB a feature (exists) | lift 128 MiB and 4,096-part caps; cursor is already constant-memory |
+| GeoJSON sequence, NDJSON | A, splittable | ≤ R features | newline / RS framing; byte-range rule | one line | parallel by ranges |
+| Shapefile | B | record range | `.shx` gives each record's offset; `.dbf` rows are fixed width | N records | 2 GiB per component by format; encoding from `.cpg` |
+| GeoPackage | B | rowid range per layer | keyset `WHERE rowid > ? ORDER BY rowid LIMIT n`; geometry = GPKG header + WKB | n rows | needs the file on scratch disk (reserved); R-tree gives on-screen first |
+| GeoParquet | B | row group (or a slice of one) | footer lists groups and their byte ranges | one row group | column statistics give bbox per group where written |
+| KML / KMZ | A | ≤ R placemarks | SAX over `Placemark`; styles ignored | one placemark | always WGS 84 |
+| GML, CityGML | A | ≤ R members | SAX over `featureMember` / `cityObjectMember` | one member | building members carry storeys and LoD |
+| CityJSON | whole | one job | shared vertex array | file size × k | ceiling stays; CityJSON sequence is strategy A |
+| DXF (text) | A in two passes | layer, then ≤ R entities | pass 1 header, tables, blocks (kept); pass 2 entities | blocks table | drawing units from `$INSUNITS`; sheet coordinates unless georeferenced |
+| CSV / TSV | A, splittable if no quoted newlines | ≤ R rows | streaming decoder; delimiter and header rows from the probe | one row | replaces today's whole-file buffer (B4) |
+| XLSX | B over sheets, A inside a sheet | ≤ R rows of one sheet | ZIP member per sheet; SAX rows; shared strings loaded first, spilled to scratch above a bound | shared strings | formulas: cached values, flagged; merged headers via header rows (exists, ≤ 5) |
+| ODS, DBF, JSON records, HTML tables | A (DBF also B) | ≤ R rows | existing readers made to yield | one row | |
+| PDF | B | page (text pages in runs of ≤ 8) | page tree; each page classified at probe | one page raster at the stated dpi | routes per page, section 6.3; priority to first pages and pages holding keys |
+| Page images (JPEG, PNG, TIFF without georeference) | one part each | the image | classified: document scan, plan, photo (EXIF position → a point), aerial | image | |
+| GeoTIFF / COG | B | window at a pyramid level | tile grid from the IFDs; overview levels coarse → fine | one 256–512 px window × bands | if untiled or without overviews: one derivative job builds a tiled pyramid copy by strips (original untouched), then as COG |
+| LAS | B | record range | fixed record length: offset = header + i × record | N points | formats 0–10 of 1.2–1.4 *(today: 1.4 format 6 only)* |
+| LAZ, COPC | B | LAZ chunk (≈ 50,000 points); COPC octree node | chunk table; COPC levels coarse → fine | one chunk | |
+| IFC | scan, then B | storey | pass 1: streaming scan keeps only spatial-structure entities and their relations (small) → building, storeys, spaces without geometry; pass 2 (optional, under a ceiling): geometry per storey | pass 1: structure only; pass 2: one storey | multi-GB files still yield storeys and spaces; geometry above the ceiling is "kept, not read" |
+| glTF/GLB, OBJ, 3D Tiles | whole / already tiled | display only | never a source of records | file | placed only if georeferenced |
+| ZIP | B over members | member | central directory | stream copy | then each member by its own row above |
+
+**Display is cut separately from analysis.** A raster is shown through its pyramid (coarse first, so the whole image appears at once and sharpens), while the roof model reads its own grid of chips at the model's ground resolution with overlap, on the GPU lane, on-screen chips first, results merged across chip edges. A point cloud is never sent to the browser as points: its parts are folded into a height grid (highest and lowest return per cell) that both draws and feeds per-footprint height estimates, plus a thinned preview.
+
+## 6. The part pipeline: read → normalise → map → write → publish
+
+One job per part (strategy B) or one loop iteration per part (strategy A). Steps 4 and 5 are **one database transaction**, so a part is either fully visible or not at all.
+
+1. **Read** the part by its locator from the unchanged original. Bad records are quarantined with their locator; the part continues.
+2. **Normalise.** Geometry is validated and transformed for display to EPSG:4326 by the one existing normaliser; the source coordinates and CRS stay with the candidate. CRS `absent` or `conflicting` → the item stops at `needs_answer` after part 0 (which is shown in a neutral frame, not on the globe). Units, dates and numbers are parsed by the conversion registry, never by a model.
+3. **Map fields** with the item's mapping plan (section 6.1).
+4. **Write** candidate rows for the part (state `candidate`, citing item, part and record locator), their display geometry, their keys into `usp_holding_keys`, the part's extent, the link proposals found for those keys (section 7), the part's counts and state.
+5. **Publish** one event on the case stream: `{item, part, counts, cursor}`. No payload in the event.
+
+### 6.1 The plan is made once
+Part 0 is profiled (columns, types, samples). Its layout fingerprint goes down the ladder: **memory** (approved before) → **local learner** → **Sarvam teacher** (masked profile only, through the gateway, wide tables in column groups) → **officer question**. The resulting plan is stored on the item and applied to every later part without a model call. Each part checks drift cheaply (new columns, type change); drift produces a new fingerprint and one more trip down the ladder for the changed columns only. So a million-row table costs at most a handful of teacher calls, and the second file with the same layout costs none. While a plan waits for the teacher or the officer, raw parts keep being read and stored; they are mapped as soon as the plan exists (reading never blocks on a model).
+
+### 6.2 What the map does with an event
+The Studio holds one subscription per batch. On an event it fetches that part's display features by cursor (`GET …/items/:id/parts/:n/display`, a few hundred features) and hands them to the scene, which adds only what is new inside a frame budget (task LV1). **The client pulls at its own pace; the server never pushes geometry.** If the tab is slow, parts wait on the server, already stored; nothing is lost and nothing floods. Beyond a drawn-feature budget the map switches from per-part fetches to viewport reads (`bbox` + cursor on the candidate table's spatial index) with flat merged footprints when zoomed out and extruded buildings when near; that replaces the 2,000-feature list (B5).
+
+### 6.3 Documents and plans, per page
+- **Text page:** the page's own text with coordinates. **Scan:** local OCR. **Table page:** table extraction → rows → the table path above. **Drawing page** (large format, vector operators or line image): vector extraction when the PDF is vector, else rendered and given to the floor-plan model; results are rooms and labels in sheet coordinates, areas "as printed".
+- Fields (project number, tower, floors, unit numbers, areas) are extracted over bounded batches of page text; **every value must be a quote found on a named page region or it is dropped** (exists for storeys).
+- Encrypted PDF → `needs_answer` (an unlocked copy is asked for; no password is stored). Private or restricted documents stop at local reading and the officer.
+
+## 7. Linking: during the stream, at its end, and for late arrivals
+
+- **Keys** are normalised the same way for every format: parcel ULPIN; survey/khasra number with village and district codes; RERA project and registration numbers; sanction numbers; building, tower, wing names; floor label and ordinal; unit number; address, locality, PIN code. Party names are indexed only as *present*, their values stay in the source.
+- **During the stream (step 4 of each part).** For each key of the part: one index lookup `(key_type, key_norm)` among keys of earlier waves. For each geometry or coordinate: one spatial lookup (point in parcel, footprint in boundary, extent overlap). Exactly one exact match → a **link proposal** stored through source-fusion with its two citations and method `exact_key` or `spatial`. Several matches, or none → nothing is chosen; the key waits in the index. Cost per part is a few index lookups; it does not grow with the batch.
+- **At the end of an item (closing pass, one job).** What needs the whole file: duplicate keys inside the file, many-rows-to-one-building grouping (a unit schedule under its tower), name and address similarity inside a blocking key (same PIN code or locality), conflicts between sources on the same anchor (kept as a conflict, never resolved by a model).
+- **Late or out-of-order files.** The lookup is symmetric: when an anchor part is written, its keys are looked up among *waiting* keys of later-wave items already read, and proposals are created from that side. So order affects only how soon a link appears, not whether.
+- **Review.** A link is a candidate. Exact single links can be accepted in bulk per file; scored or plural ones are officer questions. A link never creates ownership, issuance or geometry.
+
+## 8. The scheduler: lanes, waves and reservations (replaces first-in-first-out, B3)
+
+- **Lanes** with their own concurrency: `probe` (many, tiny), `vector`, `table`, `document`, `raster`, `point`, `model3d`, `link`, `gpu` (exactly 1: roof model, floor-plan model, OCR when on GPU), `teacher` (paced by the gateway; money and call caps global).
+- **Pick rule** each tick: (1) any probe; (2) lowest wave with runnable parts; (3) inside the wave, deficit round-robin between items, each item earning a quantum of work per round, so a 5 GB raster cannot starve a 40-row table and small files finish first; (4) inside an item, highest part priority.
+- **Reservation rule (admission):** every part states its worst-case memory and scratch disk. It starts only if both fit in what is unreserved; it holds nothing else while it waits, so the machine never over-commits and no two jobs can wait on each other. The same rule already guards upload storage (`maxReservedOriginalBytes`); it is extended from bytes on disk to worker memory, scratch and the GPU.
+- **Back-pressure:** strategy A readers stop producing when their look-ahead is full; strategy B part jobs are released at most *W* ahead of what is published; the browser pulls. Three independent valves, no shared queue that can flood.
+- **Quotas instead of lifetime caps (B2):** active jobs per lane, reserved bytes per batch and in total, retention of finished parts by age. Finite, but renewable.
+- All of this is the existing dispatcher tick and job tables with a different `ORDER BY` and an admission check; no second broker.
+
+## 9. Limits said out loud
+For every lane a ceiling stays (bytes, records, pages, pixels, points). At the ceiling the item ends `read_to_limit` with what was read, what was not, and why ("409,600 of about 1.2 million features read; the rest is kept, not read"). Formats with no reader by 22 October are received, kept and marked `not_understood` with their signature: DWG, E57, PLY, 7z/RAR, File Geodatabase, DOCX, FlatGeobuf, service URLs.
+
+## 10. Build order
+
+| Step | By | Work | Proof on the empty rehearsal runtime |
+|---|---|---|---|
+| **A1 Foundation** | 12 Oct | B1 (jobs pin their source, not the case); ledger tables; probe lane for vector, table, ZIP; scheduler pick rule and quotas (B2, B3) | twenty files added one after another to one batch all read; manifest lists every file with wave |
+| **A2 Spine** | 14 Oct (M1) | one front-door route; ZIP fan-out with sidecar grouping; part pipeline steps 1–5 for GeoJSON, shapefile, GeoPackage; display read by part and by viewport (B5); LV1 scene | the NYC pack and one Indian parcel layer through the product's routes, extents at once, parts drawn as read, no frame over 100 ms |
+| **B Attach** | 17 Oct | table reader as a stream (B4) with the plan-once ladder; keys and during-stream linking; closing pass; PDF page lane routed per page; waiting-for-anchor list | footprints, then their register, then a plan PDF, in any order, end linked; an unseen table layout learned once and reused |
+| **C Surface and models** | 19 Oct (M2) | raster pyramid display and roof chips; LAS/LAZ parts into a height grid; IFC structure scan; limits in words; bulk review | one file per family, one L-class file, one unknown file |
+| **D Rehearse** | 20–21 Oct | two runs from empty with files the team did not choose | recorded; list of what was not understood |
+
+## 11. What does not bend
+Originals immutable, every candidate cites original and locator. Unknown stays unknown (no assumed CRS, no height 0, no invented unit, parcel, floor or owner). Official parcel ULPINs are their issuer's assertions; application identities are assigned only after review. Model and teacher outputs are candidates (`pseudo_label`, never evaluation truth). Private files never leave for a provider. One job authority, one registry, one gateway, one conversion contract.
+
+## 12. Decisions for the owner
+1. **Size targets for the presentation** (they set which ceilings are raised and measured): proposed one file ≤ 1 GB, a vector layer ≤ 500,000 features, a table ≤ 1 million rows, a raster ≤ 2 GB, a point cloud ≤ 1 GB.
+2. **Automatic waves with officer override** (proposed), or the officer always picks the anchor files by hand before anything is read.
+3. **May a judge's file go to the Sarvam teacher** as a masked column profile? If not, a new layout stops at the officer question.
