@@ -262,6 +262,7 @@ export function teacherFailureCode(error: unknown): string {
     'MODEL_PRINCIPAL_CAP',
     'MODEL_CONSUMER_CAP',
     'MODEL_QUOTA_EXHAUSTED',
+    'MODEL_KEYS_EXHAUSTED',
   ];
   if (budgetCodes.includes(code)) return 'TEACHER_BUDGET_EXHAUSTED';
   if (code === 'MODEL_RATE_LIMITED' || code === 'MODEL_COOLDOWN') return 'TEACHER_RATE_LIMITED';
