@@ -1,0 +1,141 @@
+{
+  "task": "REH1",
+  "part": "B step 0",
+  "beforeFirstRequest": true,
+  "api": "http://127.0.0.1:21016",
+  "guard": "Explicit --runtime ulpin-reh-01; every fetch refuses any other host/port or redirect.",
+  "sources": [
+    "docs/evidence/runtime/r3/result.json step3, scripts/agent/r3-live.ts (read, never executed)",
+    "docs/evidence/gf5/f3e2/result.json clickPath, and its actual pure builders",
+    "docs/evidence/gf-backend/k2/install-through-api.ts and its retained Tower 3 import request",
+    "docs/evidence/runtime/r5b/area-step.json A2: the real GMDA roads import that creates the area",
+    "docs/evidence/gf1/k4c/source-space-request.json, rebound only to returned rehearsal source IDs"
+  ],
+  "original": {
+    "path": ["E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/haryana-2831-tower3-plan1.pdf"],
+    "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+    "metadata": "K2 import request: issuer, URL, acquiredAt, unconfirmed permission, test_only",
+    "beforeUpload": "Hash all four retained PDFs and the roads original; assert against their recorded pins."
+  },
+  "goldenJourney": {
+    "writableSteps": [],
+    "why": [
+      "scripts/golden-journey/run.ts:12-14 refuses --write and accepts only --profile demo.",
+      "scripts/golden-journey/read.ts:60-63 allows only two proven-pure POST reads.",
+      "scripts/golden-journey/read.ts:55,64 uses the demo address from inputs.ts, not a runtime flag.",
+      "None can safely send a rehearsal write or read: no journey entry is executed."
+    ]
+  },
+  "orderedRequests": [
+    { "n": 1, "method": "GET", "route": "/api/v1/health", "bodyFrom": null },
+    {
+      "n": 2, "method": "POST", "route": "/api/v1/import-packages",
+      "bodyFrom": "R5b area-step.json A2 field values and hash-checked GMDA roads bytes",
+      "creates": "area/site and roads proposal, not invented geometry; remains uncommitted"
+    },
+    { "n": 3, "method": "GET", "route": "/api/v1/areas/{areaId}/context", "bodyFrom": null },
+    {
+      "n": 4, "method": "POST", "route": "/api/v1/import-packages",
+      "bodyFrom": "Retained K2 tower3-import-input.json plus its four unchanged public originals",
+      "rebindings": "new requestKey, returned areaId/revision; current required transcription.by=agent",
+      "agent": "REH1-worker; claims remain candidates, never represented as an officer's own transcription",
+      "creates": "Tower 3's case, originals, queued native reads, reserved building and source package"
+    },
+    { "n": 5, "method": "GET", "route": "/api/v1/cases", "bodyFrom": null },
+    { "n": 6, "method": "GET", "route": "/api/v1/cases/{caseId}", "bodyFrom": null },
+    {
+      "n": 7, "method": "GET",
+      "route": "/api/v1/ingestion/cases/{caseId}/sources/{planSourceId}/documents/jobs/{jobId}",
+      "bodyFrom": null, "expect": "CPU native extraction may honestly report needs_ocr"
+    },
+    {
+      "n": 8, "method": "GET", "route": "/api/v1/sources/{planSourceId}/pages",
+      "bodyFrom": "query: returned revision, recorded source hash, offset 0, limit 1"
+    },
+    {
+      "n": 9, "method": "POST", "route": "/api/v1/import-packages/{packageId}/prepare",
+      "bodyFrom": "expectedRevision from the import answer, as K2 recordBuilding"
+    },
+    {
+      "n": 10, "method": "POST", "route": "/api/v1/import-packages/{packageId}/commit",
+      "bodyFrom": "prepare revision and K2's acknowledgement of unknowns and G+41/G+42 conflict"
+    },
+    { "n": 11, "method": "GET", "route": "/api/v1/buildings/{buildingId}/canonical", "bodyFrom": null },
+    {
+      "n": 12, "method": "POST", "route": "/api/v1/buildings/{buildingId}/source-spaces",
+      "bodyFrom": "K4c statement request; returned source pin, current canonical revision and new key",
+      "reason": "REH1 replay of R2's label-only local demo decision, explicitly not a field officer decision"
+    },
+    { "n": 13, "method": "GET", "route": "/api/v1/buildings/{buildingId}/canonical", "bodyFrom": null },
+    {
+      "n": 14, "method": "GET", "route": "/api/v1/buildings/{buildingId}/register?format=json",
+      "bodyFrom": null
+    },
+    {
+      "n": 15, "method": "GET", "route": "/api/v1/usp/identity/records/{unitId}/reviews", "bodyFrom": null
+    },
+    { "n": 16, "method": "POST", "route": "/api/v1/usp/snapshots", "bodyFrom": "assignment.captureBody" },
+    {
+      "n": 17, "method": "POST", "route": "/api/v1/usp/identity/reviews",
+      "bodyFrom": "assignment.reviewBody: scope and subject as answered; no location"
+    },
+    {
+      "n": 18, "method": "POST", "route": "/api/v1/usp/identity/assign",
+      "bodyFrom": "assignment.answeredReview then assignBody with a new key"
+    },
+    { "n": 19, "method": "GET", "route": "/api/v1/buildings/{buildingId}/canonical", "bodyFrom": null },
+    {
+      "n": 20, "method": "GET", "route": "/api/v1/buildings/{buildingId}/register?format=json",
+      "bodyFrom": null
+    },
+    {
+      "n": 21, "method": "POST", "route": "/api/v1/usp/snapshots",
+      "bodyFrom": "prepare.prepareFirstCard -> assignment.captureBody at the assigned record revision"
+    },
+    {
+      "n": 22, "method": "POST", "route": "/api/v1/usp/packets/plans/entries",
+      "bodyFrom": "prepare.prepareFirstCard -> issue.entriesBody"
+    },
+    {
+      "n": 23, "method": "POST", "route": "/api/v1/usp/packets/plans/create",
+      "bodyFrom": "prepare.prepareFirstCard -> issue.planBody; one answered binding, reason and shared expiry"
+    },
+    {
+      "n": 24, "method": "POST", "route": "/api/v1/usp/packets/plans/confirm",
+      "bodyFrom": "prepare.prepareFirstCard -> issue.confirmBody"
+    },
+    {
+      "n": 25, "method": "POST", "route": "/api/v1/usp/packets/plans/execute",
+      "bodyFrom": "prepare.prepareFirstCard -> issue.executeBody"
+    },
+    {
+      "n": 26, "method": "POST", "route": "/api/v1/usp/property-cards/preview",
+      "bodyFrom": "prepare.prepareFirstCard -> issue.firstCard"
+    },
+    {
+      "n": 27, "method": "POST", "route": "/api/v1/usp/property-cards/generate",
+      "bodyFrom": "issue.generateBody on the prepared request; no hand-copied request bodies"
+    },
+    {
+      "n": 28, "method": "GET", "route": "/api/v1/usp/property-cards/{cardId}/revisions/{revision}",
+      "bodyFrom": null, "response": "PDF; capture status, byte count, local judge-readable artifact"
+    },
+    {
+      "n": 29, "method": "POST", "route": "/api/v1/usp/property-cards/read",
+      "bodyFrom": "cardId and revision from generate"
+    },
+    {
+      "n": 30, "method": "GET", "route": "/api/v1/buildings/{buildingId}/snapshots", "bodyFrom": null
+    },
+    {
+      "n": 31, "method": "POST", "route": "/api/v1/usp/property-cards/list",
+      "bodyFrom": "card scope and unit target from the answers"
+    },
+    {
+      "n": 32, "method": "GET",
+      "route": "/api/v1/usp/property-cards/{cardId}/revisions/{revision}/verification", "bodyFrom": null
+    }
+  ],
+  "idempotency": "Reuse only returned IDs; write keys generated once and stored before send; no automatic retry.",
+  "stop": "First unexplained HTTP refusal or unknown outcome ends this part, with request and answer kept."
+}

@@ -1,0 +1,7 @@
+{ "index": "016", "method": "POST", "route": "/api/v1/usp/snapshots", "status": 200, "seconds": 0.087,
+"requestKey": null, "idempotencyHeader": null, "ids": { "id": "3f85fca4-3fac-44c2-828b-0f00c5a26b9d",
+"accessViewId": "local-demo-view-1" }, "code": null, "rawPrefix": "E:/BhuAayam-data/task-data/reh1/016", "request": {
+"scopeId": "daf0c3e9-a952-4177-88a5-f90f15e39112", "world": { "namespace": "world",
+"id": "registry-site/daf0c3e9-a952-4177-88a5-f90f15e39112" }, "stage": "recorded", "selection": { "kind": "targets",
+"pins": [ { "ref": { "namespace": "registry_record", "id": "f6bb6847-0116-48b9-8cd3-e16ed0cb85ce" }, "revision": 1 } ] }
+} }

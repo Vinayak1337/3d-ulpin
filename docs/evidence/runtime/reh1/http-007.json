@@ -1,0 +1,7 @@
+{ "index": "007", "method": "GET", "route": [
+"/api/v1/ingestion/cases/05de834a-859b-4bc0-bb4e-cfe7be0871cf/sources/8f7e1ef9-ae44-445b-b2",
+"38-815d497f5fe6/documents/jobs/eab47584-f3c3-498c-9489-c03c3eb38184" ], "status": 200, "seconds": 0.031,
+"requestKey": null, "idempotencyHeader": null, "ids": { "version": "source-document/1",
+"caseId": "05de834a-859b-4bc0-bb4e-cfe7be0871cf", "sourceId": "8f7e1ef9-ae44-445b-b238-815d497f5fe6",
+"jobId": "eab47584-f3c3-498c-9489-c03c3eb38184", "status": "stale" }, "code": "DOCUMENT_INPUT_STALE",
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/007", "request": null }
