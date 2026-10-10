@@ -26,7 +26,10 @@ export class BuildingSnapshotsController {
     operationId: 'GET_api_v1_buildings_buildingId_snapshots',
     summary: 'List the recorded snapshots that hold a building and that the local operator may read, newest first',
     description: 'Each item carries the scope its manifest stores, to pass unchanged to the USP reads. '
-      + 'Order is the only statement about recency. Cited documents are not checked here: '
+      + 'Order is the only statement about recency: the capture time the server wrote into the manifest '
+      + '(capturedAt), newest first. Two captures with the same capture time follow the store time of their '
+      + 'rows (createdAt, shared by every snapshot one command stores) and then their ids, which says nothing '
+      + 'about which is newer. Cited documents are not checked here: '
       + 'a read that is given a listed scope applies its own document checks.',
   })
   @ApiParam({ name: 'buildingId', schema: { type: 'string', format: 'uuid' } })

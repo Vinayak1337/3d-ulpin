@@ -1703,7 +1703,7 @@ export interface paths {
         };
         /**
          * List the recorded snapshots that hold a building and that the local operator may read, newest first
-         * @description Each item carries the scope its manifest stores, to pass unchanged to the USP reads. Order is the only statement about recency. Cited documents are not checked here: a read that is given a listed scope applies its own document checks.
+         * @description Each item carries the scope its manifest stores, to pass unchanged to the USP reads. Order is the only statement about recency: the capture time the server wrote into the manifest (capturedAt), newest first. Two captures with the same capture time follow the store time of their rows (createdAt, shared by every snapshot one command stores) and then their ids, which says nothing about which is newer. Cited documents are not checked here: a read that is given a listed scope applies its own document checks.
          */
         get: operations["GET_api_v1_buildings_buildingId_snapshots"];
         put?: never;
@@ -35115,8 +35115,16 @@ export interface components {
                     /** @enum {string} */
                     stage: "draft" | "recorded" | "retained";
                 };
-                /** Format: date-time */
+                /**
+                 * Format: date-time
+                 * @description When the row was stored: the start of the storing transaction, so every snapshot stored by one command carries the same value.
+                 */
                 createdAt: string;
+                /**
+                 * Format: date-time
+                 * @description When the server captured the snapshot, as its stored manifest states. The list is ordered by this value, newest first.
+                 */
+                capturedAt: string;
                 readonly members: {
                     total: number;
                     documentResultNotCurrent: number;
