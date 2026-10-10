@@ -112,7 +112,7 @@ export function inspectTabularSource(bytes: Uint8Array, selection: TabularSelect
   }
   const table = readTabularSource(bytes, selection);
   const profile = profileTabularChunk({ jobId: 'inventory', chunkIndex: 0, headers: table.headers,
-    rows: table.rows.slice(0, 100), sourceRef: 'inventory' }).profile;
+    rows: table.rows.slice(0, 100), sourceRef: 'inventory', selection }).profile;
   const tabular = TabularPinSchema.parse({ selection, sourceBytes: bytes.length,
     developmentAssetId: asset.id, developmentFamily: asset.family });
   return { tabular, headers: table.headers, records: table.rows.length, profile,

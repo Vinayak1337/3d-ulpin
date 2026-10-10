@@ -45,6 +45,7 @@ export type MappingValidationContext = {
   sourceRef?: string;
   rowCount?: number;
   parentFields?: readonly string[];
+  layoutSelection?: { sheet: string; headerRows: readonly number[] };
 };
 export type MappingValidationError = { code: string; field?: string; message: string };
 export type MappingValidationResult =
@@ -64,6 +65,15 @@ export const normalizeMappingHeader = (name: string) =>
 /** Ordered columns/types only; no row values, filename, unit assumptions or CRS are hashed. */
 export function layoutFingerprint(fields: readonly MappingLayoutField[]): string {
   const layout = fields.map((field) => [normalizeMappingHeader(field.name), field.inferredType]);
+  return createHash('sha256').update(JSON.stringify(layout)).digest('hex');
+}
+
+/** Header structure is stable across short chunks; observed types remain verifier evidence, not identity. */
+export function tabularLayoutFingerprint(
+  fields: readonly MappingLayoutField[], selection: { sheet: string; headerRows: readonly number[] },
+): string {
+  const layout = ['tabular-header/2', selection.sheet, selection.headerRows,
+    fields.map(field => normalizeMappingHeader(field.name))];
   return createHash('sha256').update(JSON.stringify(layout)).digest('hex');
 }
 
@@ -294,7 +304,10 @@ function checkLayout(plan: MappingPlanV2, context: MappingValidationContext): Ma
       ),
     );
   }
-  if (plan.layoutFingerprint !== layoutFingerprint(context.fields)) {
+  const expected = plan.layoutFingerprintVersion === 'tabular-header/2' && context.layoutSelection
+    ? tabularLayoutFingerprint(context.fields, context.layoutSelection) : layoutFingerprint(context.fields);
+  if (plan.layoutFingerprintVersion === 'tabular-header/2' &&
+      (!context.layoutSelection || plan.sourceKind !== 'tabular') || plan.layoutFingerprint !== expected) {
     errors.push(
       validationError('MAPPING_LAYOUT_MISMATCH', 'The plan must pin the inspected layout fingerprint.'),
     );

@@ -115,7 +115,7 @@ function persistOfficerBatch(receipt: TabularMappingReceipt, profile: TabularSou
   const examples = join(directory, 'examples.jsonl');
   immutableText(examples, batch.examples.map(row => JSON.stringify(row)).join('\n') + '\n');
   immutableText(join(directory, 'profile-links.jsonl'), batch.links.map(row => JSON.stringify(row)).join('\n') + '\n');
-  rememberMapping(receipt.plan.mapping, mappingContextFromColumnProfile(profile.profile), {
+  rememberMapping(receipt.plan.mapping, mappingContextFromColumnProfile(profile.profile, profile.tabular.selection), {
     source: 'officer', method: receipt.plan.mapping.method, officerDecisionId: `${receipt.id}:${receipt.revision}`,
   }, tabularLearningPaths().memory);
   return examples;
