@@ -1,0 +1,188 @@
+{
+  "task": "REH1",
+  "status": "partial; stopped and preserved",
+  "branch": "task/reh1-first-rehearsal-runtime",
+  "workerCheckout": "E:/Projects/ulpin-wt/r5",
+  "servingCheckout": "E:/Projects/ulpin-wt/ulpin-reh-01",
+  "servingCommit": "afd23f2999c412ed5c2b21aae10c3fae0c859003",
+  "servingSelection": "staging at task start; detached, installed; git status is clean",
+  "runtime": "ulpin-reh-01",
+  "parts": {
+    "A": {
+      "runtimeSequenceDone": true,
+      "schemaProofDone": false,
+      "commands": "step-1 through step-7 receipts; first start receipt missing, one explicit resume only",
+      "rehearsalDoctor": { "exit": 0, "pass": 27, "fail": 0 },
+      "gateway": { "enabled": false, "providerKeysNamed": 0, "providerKeysPresent": 0 },
+      "schema": "Scripted bootstrap exited 0. Rehearsal column/constraint/index counts and no-op remain unproved.",
+      "gpu": "Compute PIDs unchanged; rehearsal PIDs absent. WDDM reports N/A, not measured zero memory.",
+      "evidence": ["part-a.json", "step-3.json", "step-5-resume.json", "step-6.json", "gpu-after-start.json"]
+    },
+    "B": {
+      "done": false,
+      "requests": 29,
+      "initialStorage": "Zero sources, import packages, physical features and active legacy datasets",
+      "completed": [
+        "Hash-checked GMDA roads import creates area; roads remain a proposal, not recorded geometry",
+        "Retained K2 request imports four unchanged Haryana RERA originals and queues native reads",
+        "Tower 3 package is prepared and committed via product routes",
+        "K4c source-space request creates cited floor/space records through the product route",
+        "Actual Studio builders capture, review and assign an application identity",
+        "Actual Studio preparation builds, confirms and executes the one-region evidence packet",
+        "Actual Studio generation issues card revision 1; exact revision PDF GET 200"
+      ],
+      "floorLabel": "2ND FLOOR PLAN",
+      "spaceLabel": "UNIT-3B",
+      "applicationCode": "P3-GS0J76ZSTEXDYMEF1V9H-YD",
+      "floorOrdinal": "unknown; caption is not a level ordinal",
+      "geometry": "absent",
+      "measurements": "unknown",
+      "rights": "not assessed",
+      "allElevenF3e2Routes": "200; builders imported, not hand-copied",
+      "stoppedAt": "Diagnostic read 029: HTTP 400 USP_REQUEST_FAILED for extra expiresAt from our driver",
+      "nativeReading": "Job status stale/DOCUMENT_INPUT_STALE; not a successful native extraction",
+      "retries": 0,
+      "evidence": ["plan-b.json", "part-b.json", "part-b-notes.json", "http-027.json", "http-029.json"]
+    },
+    "C1": {
+      "done": false,
+      "attempts": 1,
+      "intendedChange": "Shorter card validity, not an invented unit correction; proposed expiry is ~55 min earlier",
+      "cardBeforeAttempt": { "revision": 1, "integrity": "consistent", "superseded": false },
+      "snapshots": { "count": 5, "newestCapturedFirst": true },
+      "verification": { "result": "consistent", "checksPassed": 6, "targetState": "same_revision" },
+      "signature": "not_assessed / NO_TRUSTED_KEY_POLICY; byte consistency is not legal authenticity",
+      "stoppedAt": "Real Studio prepareRevision read: HTTP 400 USP_REQUEST_FAILED for extra mode and label",
+      "secondRevisionIssued": false,
+      "retries": 0,
+      "evidence": ["c1-result.json", "c1-recorded-change.json", "http-c1-004.json"]
+    },
+    "C2": {
+      "done": true,
+      "attempts": 1,
+      "state": "COMMITTED",
+      "contextNames": ["63 A", "59"],
+      "contextRows": 2,
+      "physicalFeaturesCreated": 0,
+      "originalUnchanged": true,
+      "evidence": ["c2-input.json", "c2-result.json", "http-c2-002.json", "http-c2-005.json"]
+    },
+    "C3": {
+      "done": false,
+      "attempts": 0,
+      "reason": "Wrong K3e reference and no installed rehearsal floor-plan model; no inference/review attempted",
+      "cpuInCode": true,
+      "modelCopiedOrLoaded": false,
+      "evidence": ["c3-result.json", "models-by-name.json"]
+    }
+  },
+  "ids": {
+    "area": "daf0c3e9-a952-4177-88a5-f90f15e39112",
+    "case": "05de834a-859b-4bc0-bb4e-cfe7be0871cf",
+    "building": "7b524f20-079c-40cb-a6a1-1b3bce1e730c",
+    "planSource": "8f7e1ef9-ae44-445b-b238-815d497f5fe6",
+    "floor": "651962f4-f6d7-49c1-8add-6052b609d506",
+    "space": "f6bb6847-0116-48b9-8cd3-e16ed0cb85ce",
+    "card": "cb44d4e3-7a45-47b8-9456-b0a11fb6e2fa",
+    "packet": "4189efc8-b66a-4106-a62c-484f07651ac0",
+    "referencePackage": "02936511-cf17-4100-bb9a-e89c718f60ac"
+  },
+  "findings": [
+    {
+      "where": "scripts/platform/demo.mjs:48-55,121-156; docs/backend/DEMO-GATEWAY.md step 4",
+      "what": "Bootstrap suppresses schema output; later start skips migrations. No documented schema-only command.",
+      "evidence": "part-a.json schema: no raw SQL, undocumented schema launch, keys or script repair"
+    },
+    {
+      "where": "docs/evidence/runtime/reh1/audit.mjs machine()",
+      "what": "Evidence chunk reassembly failed after first start. Fixed only helper; first command exit unknown.",
+      "evidence": "part-a.json step 5; step-6.json; step-5-resume.json"
+    },
+    {
+      "where": "docs/evidence/runtime/reh1/journey.ts issue()",
+      "what": "Our diagnostic read sent extra expiresAt to a strict schema. Driver defect, not card generation.",
+      "evidence": "http-029.json and contract-check-final.json; no corrected resend"
+    },
+    {
+      "where": "apps/studio/src/features/identity/prepare.ts:71; issue.ts:61; property-card.ts:17-19",
+      "what": "prepareRevision passes issueTarget's mode/label to readCard; strict server schema rejects it.",
+      "evidence": "http-c1-004.json; c1-result.json; offline reproduction in contract-check-final.json"
+    },
+    {
+      "where": "Tower 3 import's queued plan reader; document-pages route",
+      "what": "Early job pins are stale after four imports; whole-page render unsupported, but label crop succeeds.",
+      "evidence": "http-007.json, part-b.json pages, retained prepare-packet.json; no reader success claimed"
+    },
+    {
+      "where": "Task K3e citation; services/geo/geo/raster_plan.py:140-145 and spatial_ml.py:260",
+      "what": "Actual K3e covers Magnolia heights, not rooms. CPU inference requires an installed local model.",
+      "evidence": "c3-result.json; models-by-name.json is empty"
+    }
+  ],
+  "demo": {
+    "doctorBefore": 0,
+    "doctorAfterA": 0,
+    "doctorFinal": 0,
+    "sameCommitPidsStartTimes": true,
+    "commit": "18b5e74c2ce0a7ffd3c9da996c23b3bb4af37795",
+    "api": { "pid": 35160, "started": "2026-10-10T16:16:28.0434270Z" },
+    "dispatcher": { "pid": 28836, "started": "2026-10-10T16:16:28.6657640Z" },
+    "notClaimed": "A record-by-record demo comparison; only doctor health reads, OS processes and Git HEAD inspected",
+    "evidence": ["before.json", "demo-part-a.json", "demo-final.json", "containers-after-stop.json"]
+  },
+  "preserved": {
+    "stopExit": 0,
+    "rehearsalProcesses": [],
+    "rehearsalListeners": [],
+    "servingCheckout": "E:/Projects/ulpin-wt/ulpin-reh-01 (detached, clean)",
+    "runtimeDirectory": "E:/BhuAayam-data/runtime/ulpin-reh-01 (names only; no file contents opened)",
+    "scratch": "E:/BhuAayam-data/task-data/reh1 (raw exchanges, inputs, bundles, PDF and CPU-rendered PNG)",
+    "volumes": ["ulpin-reh-01_minio-data", "ulpin-reh-01_postgres-data", "ulpin-reh-01_redis-data"],
+    "network": "ulpin-reh-01_default",
+    "containersAllExited": [
+      "ulpin-reh-01-worker-1", "ulpin-reh-01-geo-1", "ulpin-reh-01-minio-init-1",
+      "ulpin-reh-01-redis-1", "ulpin-reh-01-minio-1", "ulpin-reh-01-postgres-1"
+    ],
+    "runtimeEntryNames": "step-7.json state.runtimeEntries; runtime.env and pointers retained, never read",
+    "evidence": ["step-7.json", "containers-after-stop.json", "rehearsal-after-routes.json"]
+  },
+  "seeIt": {
+    "savedPdf": "E:/BhuAayam-data/task-data/reh1/card-revision-1.pdf",
+    "savedJudgeImage": "E:/BhuAayam-data/task-data/reh1/card-revision-1.png",
+    "imageCheck": "view-card.py CPU render and text assertions exit 0; one-page image visually inspected",
+    "uiScope": "Headless actual Studio builders. No Studio browser/TUI or UI-design success is claimed.",
+    "afterRestart": {
+      "api": "http://127.0.0.1:21016",
+      "pdfGet": "/api/v1/usp/property-cards/cb44d4e3-7a45-47b8-9456-b0a11fb6e2fa/revisions/1",
+      "snapshotsGet": "/api/v1/buildings/7b524f20-079c-40cb-a6a1-1b3bce1e730c/snapshots",
+      "verificationGet": "/api/v1/usp/property-cards/cb44d4e3-7a45-47b8-9456-b0a11fb6e2fa/revisions/1/verification"
+    }
+  },
+  "checks": {
+    "contractCommand": "pnpm exec tsx docs/evidence/runtime/reh1/contract-check.ts --runtime ulpin-reh-01",
+    "contractExit": 0,
+    "contracts": "17 parses, 14 successful responses; six checks, snapshot order, unknowns, four original PDF hashes",
+    "difficultInputs": "Real stale Tower 3 job; unsupported whole page; actual revision refusal; no fabricated fixes",
+    "regressions": "Offline strict-read extra-field failures only; valid exact bodies parse but were never sent",
+    "evidence": ["contract-check.json", "contract-check-final.json", "validation.json"],
+    "scan": "All evidence JSON valid, lines <=120; connection/credential and non-source-digest scan passes",
+    "diffCheckExit": 0,
+    "selfReview": "Complete baseline-to-task diff and final staged diff inspected; no product files changed",
+    "scope": "Only docs/evidence/runtime/reh1 changed in Git; scratch under task-data/reh1 only",
+    "forbidden": "No raw SQL, provider call, key/enable operation, GPU model, pull/build/retag, deletion or push"
+  },
+  "restart": {
+    "from": "E:/Projects/ulpin-wt/ulpin-reh-01",
+    "start": "pnpm platform:start --profile demo --runtime ulpin-reh-01",
+    "doctor": "pnpm platform:doctor --profile demo --runtime ulpin-reh-01",
+    "stop": "pnpm platform:stop --profile demo --runtime ulpin-reh-01",
+    "caution": "Reuse current storage; no --create, reseed, restore, runner replay or runtime-file edit"
+  },
+  "next": [
+    "Release runtime ownership to lead now; rehearsal is stopped and checkpoint preserved.",
+    "First assign Studio owner to strip mode/label before readCard; add the observed strict-contract regression.",
+    "Runtime/platform owner should expose scripted schema counts and second-run no-op without hand SQL.",
+    "Lead should correct K3e room brief and approve model provisioning before scheduling CPU room review.",
+    "Do not rerun B/C runners: create-once guards do not prevent a duplicate HTTP side effect before receipt writing."
+  ]
+}
