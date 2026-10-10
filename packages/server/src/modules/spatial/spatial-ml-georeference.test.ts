@@ -5,6 +5,7 @@ import type { RetainedImagery, SpatialMlItem } from '@ulpin/contracts';
 import { geographicMlComponent, projectedGeographicComponents } from './spatial-ml-georeference';
 import type { PoolClient } from 'pg';
 import { spatialMlFootprintDraftSchema } from './spatial-ml-footprints';
+import { imageryOriginalUrl } from '../areas/canonical-area';
 
 const evidence = 'docs/evidence/gf-backend/k2c';
 const imagery: RetainedImagery = JSON.parse(readFileSync(`${evidence}/imagery-import.json`, 'utf8')).imagery;
@@ -25,8 +26,14 @@ test('real retained Karnataka pixels use their exact source affine, not invented
   assert.equal(projected.score, component.score);
 });
 
+test('pre-inference imagery overlays use the published original-file route, not an unregistered case subroute', () => {
+  assert.equal(imageryOriginalUrl(chip.sourceId), `/api/v1/sources/${chip.sourceId}/file`);
+});
+
 test('changed original hash or image grid fails closed before georeferencing', () => {
-  assert.throws(() => geographicMlComponent(item, { ...chip, sourceSha256: '0'.repeat(64) }, component), /exact retained/);
+  assert.throws(() => geographicMlComponent(item, {
+    ...chip, sourceSha256: '0'.repeat(64),
+  }, component), /exact retained/);
   assert.throws(() => geographicMlComponent(item, { ...chip, width: chip.width + 1 }, component), /exact retained/);
 });
 

@@ -101569,7 +101569,21 @@
                                     },
                                     "class": {
                                       "type": "string",
-                                      "pattern": "^[A-Za-z][A-Za-z0-9_]{0,79}$"
+                                      "enum": [
+                                        "RuntimeError",
+                                        "ValueError",
+                                        "TypeError",
+                                        "AttributeError",
+                                        "ModuleNotFoundError",
+                                        "ImportError",
+                                        "OSError",
+                                        "CalledProcessError",
+                                        "SourceOcrError",
+                                        "ValidationError",
+                                        "KeyError",
+                                        "AssertionError",
+                                        "UnknownWorkerFailure"
+                                      ]
                                     },
                                     "message": {
                                       "type": "string",
@@ -116784,7 +116798,21 @@
                                     },
                                     "class": {
                                       "type": "string",
-                                      "pattern": "^[A-Za-z][A-Za-z0-9_]{0,79}$"
+                                      "enum": [
+                                        "RuntimeError",
+                                        "ValueError",
+                                        "TypeError",
+                                        "AttributeError",
+                                        "ModuleNotFoundError",
+                                        "ImportError",
+                                        "OSError",
+                                        "CalledProcessError",
+                                        "SourceOcrError",
+                                        "ValidationError",
+                                        "KeyError",
+                                        "AssertionError",
+                                        "UnknownWorkerFailure"
+                                      ]
                                     },
                                     "message": {
                                       "type": "string",
@@ -126540,7 +126568,21 @@
                                     },
                                     "class": {
                                       "type": "string",
-                                      "pattern": "^[A-Za-z][A-Za-z0-9_]{0,79}$"
+                                      "enum": [
+                                        "RuntimeError",
+                                        "ValueError",
+                                        "TypeError",
+                                        "AttributeError",
+                                        "ModuleNotFoundError",
+                                        "ImportError",
+                                        "OSError",
+                                        "CalledProcessError",
+                                        "SourceOcrError",
+                                        "ValidationError",
+                                        "KeyError",
+                                        "AssertionError",
+                                        "UnknownWorkerFailure"
+                                      ]
                                     },
                                     "message": {
                                       "type": "string",
@@ -208614,7 +208656,21 @@
                                     },
                                     "class": {
                                       "type": "string",
-                                      "pattern": "^[A-Za-z][A-Za-z0-9_]{0,79}$"
+                                      "enum": [
+                                        "RuntimeError",
+                                        "ValueError",
+                                        "TypeError",
+                                        "AttributeError",
+                                        "ModuleNotFoundError",
+                                        "ImportError",
+                                        "OSError",
+                                        "CalledProcessError",
+                                        "SourceOcrError",
+                                        "ValidationError",
+                                        "KeyError",
+                                        "AssertionError",
+                                        "UnknownWorkerFailure"
+                                      ]
                                     },
                                     "message": {
                                       "type": "string",
@@ -289850,7 +289906,21 @@
                                     },
                                     "class": {
                                       "type": "string",
-                                      "pattern": "^[A-Za-z][A-Za-z0-9_]{0,79}$"
+                                      "enum": [
+                                        "RuntimeError",
+                                        "ValueError",
+                                        "TypeError",
+                                        "AttributeError",
+                                        "ModuleNotFoundError",
+                                        "ImportError",
+                                        "OSError",
+                                        "CalledProcessError",
+                                        "SourceOcrError",
+                                        "ValidationError",
+                                        "KeyError",
+                                        "AssertionError",
+                                        "UnknownWorkerFailure"
+                                      ]
                                     },
                                     "message": {
                                       "type": "string",
@@ -300289,7 +300359,21 @@
                                         },
                                         "class": {
                                           "type": "string",
-                                          "pattern": "^[A-Za-z][A-Za-z0-9_]{0,79}$"
+                                          "enum": [
+                                            "RuntimeError",
+                                            "ValueError",
+                                            "TypeError",
+                                            "AttributeError",
+                                            "ModuleNotFoundError",
+                                            "ImportError",
+                                            "OSError",
+                                            "CalledProcessError",
+                                            "SourceOcrError",
+                                            "ValidationError",
+                                            "KeyError",
+                                            "AssertionError",
+                                            "UnknownWorkerFailure"
+                                          ]
                                         },
                                         "message": {
                                           "type": "string",
@@ -353182,7 +353266,21 @@
                       },
                       "class": {
                         "type": "string",
-                        "pattern": "^[A-Za-z][A-Za-z0-9_]{0,79}$"
+                        "enum": [
+                          "RuntimeError",
+                          "ValueError",
+                          "TypeError",
+                          "AttributeError",
+                          "ModuleNotFoundError",
+                          "ImportError",
+                          "OSError",
+                          "CalledProcessError",
+                          "SourceOcrError",
+                          "ValidationError",
+                          "KeyError",
+                          "AssertionError",
+                          "UnknownWorkerFailure"
+                        ]
                       },
                       "message": {
                         "type": "string",

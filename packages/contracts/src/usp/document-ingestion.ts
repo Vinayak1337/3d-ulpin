@@ -93,7 +93,9 @@ export const DocumentOcrItemSchema=z.strictObject({text:z.string().min(1).max(20
       'tesseract_tsv_pixels_via_mupdf_pixel_origin'])})).min(1).max(4)});
 export const DocumentOcrExecutionSchema=z.strictObject({maxSeconds:z.number().int().min(1).max(90),
   exitCode:z.number().int().nullable(),receiptSha256:hash.nullable(),candidateSha256:hash.nullable(),
-  failure:z.strictObject({attemptId:z.uuid(),class:z.string().regex(/^[A-Za-z][A-Za-z0-9_]{0,79}$/),
+  failure:z.strictObject({attemptId:z.uuid(),class:z.enum(['RuntimeError','ValueError','TypeError','AttributeError',
+    'ModuleNotFoundError','ImportError','OSError','CalledProcessError','SourceOcrError','ValidationError',
+    'KeyError','AssertionError','UnknownWorkerFailure']),
     message:z.enum(['Native dependency unavailable','Python dependency unavailable','Invalid worker result',
       'Worker exception; sensitive detail withheld','Worker terminated by resource bound',
       'Worker failed before producing diagnostics'])}).optional(),

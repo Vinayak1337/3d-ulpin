@@ -143,6 +143,10 @@ function imageryCorners(
   return corners.every(corner => corner !== null) ? corners as [number, number][] : null;
 }
 
+export function imageryOriginalUrl(sourceId: string): string {
+  return `/api/v1/sources/${sourceId}/file`;
+}
+
 async function addImagery(result: NormalizedArea, context: AreaContext): Promise<void> {
   for (const pkg of context.packages) {
     if (pkg.state === 'RECEIVED' || !('imagery' in pkg)) continue;
@@ -162,11 +166,12 @@ async function addImagery(result: NormalizedArea, context: AreaContext): Promise
       const preview = rows.find(row => row.source_id === chip.sourceId)?.body.result?.raster.url;
       result.overlays.push({ id: chip.sourceId, kind: 'image', corners: corners as [
         [number, number], [number, number], [number, number], [number, number],
-      ], originalUrl: preview ?? `/api/v1/cases/${pkg.sourceWorkspace?.caseId}/sources/${chip.sourceId}/file`, citations });
+      ], originalUrl: preview ?? imageryOriginalUrl(chip.sourceId), citations });
     }
   }
   if (result.imagery?.length) {
-    result.gaps.push('RAMP imagery is test_only display context; native GeoTIFF display needs a decoder or ML RGB preview.');
+    result.gaps.push('RAMP imagery is test_only display context; '
+      + 'native GeoTIFF display needs a decoder or ML RGB preview.');
   }
 }
 

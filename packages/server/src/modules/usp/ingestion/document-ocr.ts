@@ -34,10 +34,9 @@ const receiptSchema=z.object({schemaVersion:z.literal('source-ocr-attempt/1'),
 /** Never echo an exception message: map known failure classes to a closed, content-free vocabulary. */
 export function sanitizedOcrFailure(attemptId:string,log:string,stopReason:string|null){
   const tail=log.slice(-4096),match=tail.match(/(?:^|\n)([A-Za-z][A-Za-z0-9_]{0,79}(?:Error|Exception)):/g)?.at(-1);
-  const allowed=['RuntimeError','ValueError','TypeError','AttributeError','ModuleNotFoundError','ImportError',
-    'OSError','CalledProcessError','SourceOcrError','ValidationError','KeyError','AssertionError'];
   const parsed=match?.trim().split(':')[0];
-  const failureClass=parsed&&allowed.includes(parsed)?parsed:'UnknownWorkerFailure';
+  const checked=DocumentOcrExecutionSchema.shape.failure.unwrap().shape.class.safeParse(parsed);
+  const failureClass=checked.success?checked.data:'UnknownWorkerFailure';
   const message=stopReason?'Worker terminated by resource bound':/0xC0000135|3221225781|DLL load failed/i.test(tail)
     ?'Native dependency unavailable':/ModuleNotFoundError:|ImportError:/.test(tail)?'Python dependency unavailable'
       :match?'Worker exception; sensitive detail withheld':'Worker failed before producing diagnostics';
@@ -148,7 +147,9 @@ export async function runSourceOcr(input:OcrInput,original:Uint8Array,deadline:n
     }catch{/* A failure before worker startup may have no receipt. Success requires it below. */}
     if(exitCode!==0){
       let log='';
-      try{log=(await readBoundedOcrArtifact(join(output,'worker.log'),2*1024**2)).toString('utf8');}catch{/* bounded absence */}
+      try{
+        log=(await readBoundedOcrArtifact(join(output,'worker.log'),2*1024**2)).toString('utf8');
+      }catch{/* bounded absence */}
       execution.failure=sanitizedOcrFailure(input.jobId,log,execution.worker?.stopReason??null);
     }
     const path=join(output,'result.json');let bytes:Buffer;
