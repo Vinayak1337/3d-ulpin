@@ -95,5 +95,185 @@
     "tests": ["E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe -B -m unittest",
       "scripts/agent/test_r5b_unit_region.py: 12 tests OK (7 new: 6 synthetic, 1 sheet)"],
     "nothingSent": "No request was sent for UNIT-3A. It is unrecorded on the demo."
+  },
+  "part1": {
+    "what": "The demo rolled from 83965a21 to staging 18b5e74c with the interpreter switch between steps 4 and 5",
+    "item1Before": {
+      "at": "2026-10-10T16:14:39Z to 16:14:46Z", "servedCommit": "83965a21078fede5a4f740ced05de40836e68a30",
+      "checkoutClean": true,
+      "doctor": {"exit": 0, "pass": 27, "fail": 0, "documentRuntimes": "PASS", "gatewayEnabled": false},
+      "api": {"pid": 36092, "started": "2026-10-10T14:07:16.521Z"},
+      "dispatcher": {"pid": 5820, "started": "2026-10-10T14:07:17.197Z"},
+      "health": {
+        "status": 200, "readiness": "structurally_ready", "sourceCount": 38, "importPackageCount": 7,
+        "physicalFeatureCount": 67, "activeLegacyDatasetCount": 0
+      },
+      "schema": {
+        "pending": false, "servedReady": true, "steps": 55,
+        "manifestSha256": "2a48bf71a14da7536a960ee53ee37b78b54cedd8522695355af3cb71c1f48ac9",
+        "same": [
+          "The served health's databaseReadiness.manifestSha256 equals the SHA-256 of database/manifest.json at",
+          "83965a21 and at 18b5e74c; its missing relations, columns and migrations are empty; no file under",
+          "database/ differs between the two commits."
+        ]
+      },
+      "alsoChecked": "pnpm-lock.yaml is the same at both commits, so no install was needed in the demo checkout."
+    },
+    "item2Roll": {
+      "target": "18b5e74c2ce0a7ffd3c9da996c23b3bb4af37795",
+      "targetIs": "the staging commit this branch was cut from",
+      "script": "one shell script, outputs under E:/BhuAayam-data/task-data/r5c/roll",
+      "times": ["16:15:51Z stop begins (roll-out step 2, stopProcesses)",
+        "16:15:52Z stop exit 0; git checkout --detach 18b5e74c exit 0",
+        "16:16:06Z switch-ocr-python exit 0, stderr empty",
+        "16:16:22Z build --python <the same> exit 0",
+        "16:16:38Z pnpm platform:start --profile demo exit 0; health 200"],
+      "downtime": {"start": "2026-10-10T16:15:51Z", "end": "2026-10-10T16:16:38Z", "seconds": 47},
+      "preparedBeforeTheStop": ["The new interpreter's imports were run once (13.6 s) so the switch's check was",
+        "quick."],
+      "switch": {
+        "refused": false,
+        "jsonLine": {
+          "restored": false,
+          "previousPython": "E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/venv/Scripts/python.exe",
+          "newPython": "E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe",
+          "baseInsideEnvironment": true,
+          "savedPreviousFile": "ocr-paths-profile.previous-2026-10-10T16-16-06-121Z.json",
+          "previousSha256": "6d04196dc0c66e72f1b3cebc597d7f971f93d77d1587d213feba60abb58f5873",
+          "newSha256": "aa0c4bbb63d3dd12fb7202982ee0275ee3d8ea829ddcb970e07dd973c68a656b"
+        },
+        "savedPreviousFile": "ocr-paths-profile.previous-2026-10-10T16-16-06-121Z.json",
+        "note": "The line is as printed: paths and two hashes of the path file, no file contents."
+      },
+      "build": {
+        "printed": "six configured key names and two hashes; no value",
+        "regionProfileSha256": "bebc234cadcc25609468353c1f5a4e848762c276afad084bdd222bcf86fdee9f",
+        "documentRuntimePathsSha256": "d506d3f76e06a1c37b1475928c9275dcf95c39a432fe2a0e36b8b42613ee4700"
+      }
+    },
+    "item3After": {
+      "doctor": {
+        "at": "2026-10-10T16:16:51Z", "exit": 0, "pass": 27, "fail": 0, "documentRuntimes": "PASS",
+        "regionRepoMatches": true, "gatewayEnabled": false, "mappingTeacherAdapter": "replay"
+      },
+      "servedCommit": "18b5e74c2ce0a7ffd3c9da996c23b3bb4af37795", "checkoutClean": true,
+      "api": {
+        "pid": 35160, "started": "2026-10-10T16:16:28.043Z",
+        "entry": "E:/Projects/ulpin-wt/demo/apps/api/src/main.ts"
+      },
+      "dispatcher": {
+        "pid": 28836, "started": "2026-10-10T16:16:28.665Z",
+        "entry": "E:/Projects/ulpin-wt/demo/scripts/dispatcher.ts"
+      },
+      "ownerChecks": {
+        "profile": {
+          "command": ["node E:/Projects/ulpin-wt/r5/docs/evidence/runtime/r5c/owner-checks.mjs",
+            "E:/Projects/ulpin-wt/demo"],
+          "repo": "E:\\Projects\\ulpin-wt\\demo", "repoIsTheDemoCheckout": true,
+          "python": "E:\\BhuAayam-data\\ml\\venv-demo-documents-20261010\\Scripts\\python.exe",
+          "pagesPythonIsTheSame": true, "regionsPythonIsTheSame": true,
+          "base": "E:\\BhuAayam-data\\ml\\venv-demo-documents-20261010\\base\\cpython-3.12.14-windows-x86_64-none",
+          "pythonInTheNewEnvironment": true, "baseInTheNewEnvironment": true,
+          "pins": {"files": 1175, "bytes": 110696811, "underTheCheckout": 9, "underDataMl": 1166, "elsewhere": 0}
+        },
+        "classes": {
+          "tool": "K9's profile-files.mjs, classes compared with K9's environment.json",
+          "files": {
+            "base_dlls": 37, "stdlib_source": 595, "stdlib_cache": 159, "stdlib_support_and_launchers": 2,
+            "base_interpreter_and_support": 6, "package_source": 177, "package_metadata": 36,
+            "package_assets_and_native": 111, "venv_config": 1, "venv_interpreter_and_support": 42, "repo": 9
+          },
+          "everyClassEqualsK9": true, "packageCacheClass": "absent, as K9 states"
+        },
+        "stability": {
+          "tool": "K9's stability.mjs, once, from the demo checkout at 16:17:18Z", "exit": 0, "starts": 10,
+          "everyStartExit0": true, "everyStderrEmpty": true, "sameProfileBeforeAndAfter": true,
+          "regionProfileSha256": "bebc234cadcc25609468353c1f5a4e848762c276afad084bdd222bcf86fdee9f",
+          "receipt": "E:/BhuAayam-data/task-data/r5c/roll/stability.json"
+        },
+        "ocr": {
+          "command": ["pnpm exec tsx --tsconfig scripts/agent/tsconfig.json scripts/agent/r5c-live.ts ocr-site-plan",
+            "| ocr-label"],
+          "how": [
+            "The product's own entry runSourceOcr, called from r5 (the same files as the served commit), with the",
+            "five OCR paths the demo itself reads through readDemoOcrPaths: the new interpreter and the existing",
+            "complete prefix. CPU only, two threads, the product's 90 second bound."
+          ],
+          "interpreter": "E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe",
+          "difficultInput": {
+            "file": "haryana-2831-site-plan.pdf", "regionPt": [280, 860, 960, 2580], "supervisorExit": 0,
+            "workerExit": 0, "stopReason": null, "workerSeconds": 74.844,
+            "resultSha256": "3d69916ebbb8a5a802a1996d7ca6582148a5a95015cacc78d709cce9e0e8b81e",
+            "bridge": {
+              "toolStatus": "failed", "outputStatus": "failed", "issues": ["OCR_BRIDGE_FAILED"], "lines": 0
+            },
+            "sameResultBytesAsK9AndK2f": true, "lines": 64,
+            "textSha256": "c4453529d7805ccb914775da6c67d5a2fc4134b6ef502ced2beb20ab374c4cb9",
+            "linesAndTextFrom": ["the scratch diagnosis run of the same input, which read the worker result before",
+              "the bridge"],
+            "verdict": [
+              "The OCR step on the new interpreter with the demo's prefix gives K9's and K2f's result byte for byte",
+              "(64 lines, the same text hash). The interpreter switch changed nothing in the OCR output."
+            ]
+          },
+          "labelRegion": {
+            "file": "haryana-2831-tower3-plan1.pdf", "regionPt": [596, 390, 644, 409], "supervisorExit": 0,
+            "workerExit": 0, "stopReason": null, "workerSeconds": 26.312,
+            "resultSha256": "d0ad10a234cf5826857efb5857e6e5387acd46c987a690a2b1c39de4d1667db3",
+            "bridge": {
+              "toolStatus": "complete", "outputStatus": "partial", "issues": ["no_ocr_text_emitted"], "lines": 0
+            },
+            "verdict": [
+              "The bridge accepts this answer end to end on the new interpreter. OCR emitted no text for the 48 by",
+              "19 pt label crop; UNIT-3B stays a literal read by eye, as K4c recorded."
+            ]
+          },
+          "finding": {
+            "id": "F1", "what": "The bridge refuses the correct result of the difficult input as OCR_BRIDGE_FAILED.",
+            "cause": ["The contract's rule \"OCR boxes must stay in the selected source region\" allows 1 pt",
+              "(packages/contracts/src/usp/document-ingestion.ts:144-147). The worker rendered this 680 by 1720 pt",
+              "region at 0.814 px per pt with pixel origin [227, 700], which is 278.886 pt: 1.114 pt left of the",
+              "requested 280. 3 of the 69 boxes (3 of 64 items) start there. Any region rendered under 1 px per pt",
+              "can do this."],
+            "hidden": ["The schema error is caught and answered as OCR_BRIDGE_FAILED with no items",
+              "(packages/server/src/modules/usp/ingestion/document-ocr.ts:182-186), so the reason is not in the",
+              "answer."],
+            "notTheSwitch": [
+              "The refusal depends only on the result bytes and the requested region, and the bytes are the ones",
+              "the old interpreter gave in K2f and K9 (3d69916e…). K2f and K9 ran the worker, not the bridge."
+            ],
+            "located": ["Two scratch runs that read the worker result and the receipt and replayed the contract",
+              "check."],
+            "action": "Not repaired. No rollback: Document runtimes passes and the OCR output is unchanged."
+          },
+          "runs": ["Six bridge runs in all: the first check, two for the diagnosis, and one each for ocr-check.json,",
+            "ocr-site-plan.json and ocr-label.json. Worker seconds for the difficult input, where recorded: 27.3,",
+            "28.1 and 74.8 (bound 90); the cause of the slow last run was not looked for."],
+          "bytecode": ["The bridge starts Python without -B (product code). It wrote one ignored cache file,",
+            "scripts/usp/document-models/__pycache__/run_trial.cpython-312.pyc, in r5; removed after the runs. No",
+            "file in the new environment is newer than the switch."],
+          "receipts": ["E:/BhuAayam-data/task-data/r5c/roll/ocr-site-plan.json",
+            "E:/BhuAayam-data/task-data/r5c/roll/ocr-label.json",
+            "E:/BhuAayam-data/task-data/r5c/roll/ocr-check.json",
+            "E:/BhuAayam-data/task-data/r5c/roll/ocr-summary.json"]
+        }
+      },
+      "rollback": "not needed"
+    },
+    "item4Step8": {
+      "state": "not exercised, as in R3 and R4",
+      "why": ["Proving that a job authority is dispatched automatically needs a new job, and this task forbids",
+        "every write request. What reads show: the dispatcher process is the one the start recorded and",
+        "doctor's \"Dispatcher process ownership (liveness only)\" passes. R1 holds the last proof with a real",
+        "dispatch."]
+    },
+    "item5Runbook": {
+      "file": "docs/backend/DEMO-RUNTIME.md",
+      "changed": [
+        "the \"Current reviewed staging commit\" line: 18b5e74c, R5c roll-out, project-owned interpreter",
+        ["\"Changing the document interpreter\": the switch was made by R5c on 10 October 2026; saved file",
+          "ocr-paths-profile.previous-2026-10-10T16-16-06-121Z.json"]
+      ]
+    }
   }
 }
