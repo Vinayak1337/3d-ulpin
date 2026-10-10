@@ -1,10 +1,11 @@
 {
   "task": "A4e",
   "gates": ["GF-AGENT", "FP-LEARN-TEST"],
-  "status": "part_1_proven_before_part_2",
+  "status": "completed_admission_and_one_arm_measurement",
+  "part1Status": "proven_and_committed_before_part_2",
   "codeCommit": "cae053e7",
   "mergeCommit": "359c6912",
-  "part2Started": false,
+  "part2StartedAtPart1Evidence": false,
   "admission": {
     "manifest": "fixtures/usp/D8-open-property-foreign/manifest.json",
     "manifestSha256": "2d89fdd0de35237c1fa69bca67d4e068555405b6f0c0b2dfd95144878e788a3d",
@@ -95,10 +96,37 @@
     "T1Snapshot": "Byte-identical test fixture copies only; no old file writes or new teacher labels.",
     "pythonBytecode": "PYTHONDONTWRITEBYTECODE=1; explicit Python commands use -B."
   },
-  "safety": {
+  "part1Safety": {
     "experimentalFits": 0, "heldOutRuns": 0, "heldOutInputsOpened": 0,
     "labelsEdited": 0, "providerCalls": 0, "acquisitionRequests": 0, "gpuUsed": false,
     "existingExternalFilesModified": 0, "runtimeChanged": false, "pushed": false
   },
-  "next": "Part 2: unchanged labels, verifier, one cross_fit/no-class-balance arm, one fixed-model held-out receipt."
+  "part2": {
+    "status": "completed_before_usage_limit_no_repeat_on_resume",
+    "codeCommit": "8dc02516",
+    "evidence": "docs/evidence/gf-agent/a4d/result.json",
+    "externalReceipt": "E:/BhuAayam-data/task-data/a4d/measurements/completed-v1/result.json",
+    "externalReceiptSha256": "2d7125a700d1892bcfc4ce6bb83869a8d9cb2a82aae3d5b1c83d2877fd94dc83",
+    "historicalAttempt": "A4d result attempts[0] preserves the original blocked evidence unchanged.",
+    "fitExamples": 805,
+    "verifiedPositiveTargetExamples": 33,
+    "stageBRequired": 300,
+    "stageBShortfall": 267,
+    "developmentFolds": 32,
+    "threshold": 0.9866563081741333,
+    "pooled": {"n": 741, "wrong": 0, "correctPositive": 0, "unknownCommitted": 2, "abstained": 739},
+    "Indian": {"n": 527, "wrong": 0, "correctPositive": 0, "unknownCommitted": 2, "abstained": 525},
+    "foreign": {"n": 214, "wrong": 0, "correctPositive": 0, "unknownCommitted": 0, "abstained": 214},
+    "t1c": {"tablesAccepted": 6, "verifiedFields": 196, "enumRefusals": 2},
+    "t1d": {"tablesAccepted": 3, "verifiedFields": 18, "crsRefusals": 3, "expectedDifferences": 0},
+    "heldOut": {
+      "scorableN": 2, "committed": 0, "correct": 0, "abstained": 2,
+      "nonScorableN": 2, "nonScorableCommitted": 0
+    },
+    "tData": true, "sixTargetsReaching12": 0, "tMethod": null,
+    "fits": 1, "heldOutRuns": 1, "extraFitsOnResume": 0, "extraHeldOutRunsOnResume": 0,
+    "tuningAfterMeasurements": false,
+    "qualification": "Pseudo-label agreement only; pooled zero wrong is by construction, not accuracy."
+  },
+  "next": "Lead review; T-data fires, but fallback Step 1 requires owner authorization. No fallback work started."
 }
