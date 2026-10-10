@@ -70,7 +70,7 @@ proposal, on a state that is not `enabled: true`, or when the enabled hash is no
 
 ## 5. What it costs at most
 
-At the proposal (not approved): **10 calls; estimate ₹1.15; at most ₹7.75 of the ₹100 proposed.**
+At the proposal (not approved): **10 calls; estimate ₹1.14; at most ₹7.75 of the ₹100 proposed.**
 
 - Estimate: request bytes divided by 3 as input tokens, half the output maximum as output tokens. No tokenizer for
   the provider is in the repository, so the error of this estimate is not measured.

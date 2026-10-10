@@ -270,12 +270,18 @@ function storeySpec(
   };
 }
 
+const OMISSION_REASONS: Record<StoreyOmittedLine['code'], string> = {
+  MODEL_PROMPT_PRIVACY: "the gateway's text minimizer refuses this line",
+  NOT_SELECTED_UNIT_NUMBER: 'not selected: its only matching word is a numbered unit, as in an address, which '
+    + 'states no level and no count of units',
+};
+
 /** One line of a document that is otherwise asked: named by position, never by its text. */
 function omittedLine(source: StoreySource, line: StoreyOmittedLine): Refusal {
   return {
     input: `${source.record}, document ${source.sha256.slice(0, 8)}: line ${line.partId} (page ${line.page}, `
       + `line ${line.line})`,
-    reason: `the gateway's text minimizer refuses this line (${line.code}); it is left out of the request and `
+    reason: `${OMISSION_REASONS[line.code]} (${line.code}); it is left out of the request and `
       + 'the answer cannot cite it',
     opened: true,
   };

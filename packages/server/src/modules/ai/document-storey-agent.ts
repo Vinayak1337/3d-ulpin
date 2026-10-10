@@ -20,8 +20,11 @@ const HEIGHT_UNITS = ['m', 'mm', 'ft', 'in', 'unit_unknown'] as const;
 const CONFLICT_FIELDS = ['storeyCount', 'basementCount', 'unitCount'] as const;
 const EXPRESSION_WORDS = String.raw`\bG\s*\+|\bB\s*\+|\bS\s*\+|\d\s*B\s*\+`;
 const FLOOR_WORDS = String.raw`storey|storied|stories|floor|\bfl\b|flr|basement|stilt|podium|terrace|mezzanine|refuge`;
-const UNIT_WORDS = String.raw`tower|block|unit|apartment|flat|height|\bht\b|मंजिल|तल`;
+/** "Unit No. 303" names one door, as an address does: it states no count of units, so it selects no line. */
+const DOOR_NUMBER = String.raw`\W*no\W*\d`;
+const UNIT_WORDS = String.raw`tower|block|unit(?!${DOOR_NUMBER})|apartment|flat|height|\bht\b|मंजिल|तल`;
 const RELEVANT_LINE = new RegExp(`${EXPRESSION_WORDS}|${FLOOR_WORDS}|${UNIT_WORDS}`, 'i');
+const NUMBERED_UNIT = new RegExp(`unit(?=${DOOR_NUMBER})`, 'i');
 
 export type StoreyPart = { partId: string; page: number; text: string };
 export type StoreyDataPolicy = { dataClass: 'public'; split: 'development' | 'demo' };
@@ -29,7 +32,9 @@ export type StoreyPageStore = {
   source: { sha256: string };
   pages: Record<string, { lines: { id: string; text: string }[] }>;
 };
-export type StoreyOmittedLine = { partId: string; page: number; line: number; code: 'MODEL_PROMPT_PRIVACY' };
+export type StoreyOmittedLine = {
+  partId: string; page: number; line: number; code: 'MODEL_PROMPT_PRIVACY' | 'NOT_SELECTED_UNIT_NUMBER';
+};
 export type StoreyPartSelection = { batches: StoreyPart[][]; omitted: StoreyOmittedLine[] };
 
 function citationSchema(partIds: [string, ...string[]]) {
@@ -115,6 +120,7 @@ function refusedByMinimizer(text: string): boolean {
 /**
  * Keep lines that mention storeys, floors, units or heights, then split into calls under the prompt bound.
  * A line the minimizer refuses is left out and named in `omitted`: it is in no part, so no citation can name it.
+ * A line whose only matching word is a numbered unit is not selected, and is named there under its own code.
  */
 export function storeyPartSelection(store: StoreyPageStore): StoreyPartSelection {
   const batches: StoreyPart[][] = [];
@@ -123,10 +129,15 @@ export function storeyPartSelection(store: StoreyPageStore): StoreyPartSelection
   let size = 0;
   for (const [page, entry] of Object.entries(store.pages)) {
     for (const [index, line] of entry.lines.entries()) {
-      if (!RELEVANT_LINE.test(line.text)) continue;
+      const omit = (code: StoreyOmittedLine['code']) =>
+        omitted.push({ partId: line.id, page: Number(page), line: index, code });
+      if (!RELEVANT_LINE.test(line.text)) {
+        if (NUMBERED_UNIT.test(line.text)) omit('NOT_SELECTED_UNIT_NUMBER');
+        continue;
+      }
       const text = line.text.slice(0, 240);
       if (refusedByMinimizer(text)) {
-        omitted.push({ partId: line.id, page: Number(page), line: index, code: 'MODEL_PROMPT_PRIVACY' });
+        omit('MODEL_PROMPT_PRIVACY');
         continue;
       }
       if (size + text.length > MAX_PROMPT_CHARS && current.length) {
