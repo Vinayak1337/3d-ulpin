@@ -1528,6 +1528,7 @@ export class SceneEngine {
       const distance = to[0].distanceTo(to[1]);
       to[0].set(to[1].x, to[1].y + distance, to[1].z + distance * 1e-4);
     }
+    if (mode === 'area' && this.framedBox) this.fitAreaPose(to, this.framedBox);
     if (instant || this.options.reducedMotion) {
       this.camera.position.copy(to[0]);
       this.controls.target.copy(to[1]);
@@ -1537,6 +1538,24 @@ export class SceneEngine {
     }
     this.flight = { from: [this.camera.position.clone(), this.controls.target.clone()], to, start: performance.now() };
     this.requestRender();
+  }
+
+  private fitAreaPose(to: [Vector3, Vector3], box: Box3) {
+    const direction = to[0].clone().sub(to[1]).normalize();
+    const right = new Vector3().crossVectors(this.camera.up, direction).normalize();
+    const up = new Vector3().crossVectors(direction, right);
+    const vertical = Math.tan(this.camera.fov * Math.PI / 360) * 0.9;
+    const horizontal = vertical * this.container.clientWidth / Math.max(1, this.container.clientHeight);
+    let distance = to[0].distanceTo(to[1]);
+    for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) {
+      for (const z of [box.min.z, box.max.z]) {
+        const offset = new Vector3(x, y, z).sub(to[1]);
+        const depth = offset.dot(direction);
+        distance = Math.max(distance, depth + Math.abs(offset.dot(right)) / horizontal,
+          depth + Math.abs(offset.dot(up)) / vertical);
+      }
+    }
+    to[0].copy(to[1]).addScaledVector(direction, distance);
   }
 
   /** Whether a box is fully on screen and at least 60 px tall, so it can be made out. */

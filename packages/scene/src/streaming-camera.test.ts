@@ -51,6 +51,15 @@ describe('streaming area camera', () => {
     expect(engine.flight).toBeNull();
     expect(engine.camera.position.equals(firstPosition)).toBe(true);
     expect(engine.framedBox.max.x).toBe(100);
+    engine.camera.aspect = 1440 / 900;
+    engine.camera.updateProjectionMatrix();
+    engine.camera.lookAt(engine.controls.target);
+    engine.camera.updateMatrixWorld();
+    for (const x of [0, 100]) for (const z of [-100, 0]) {
+      const projected = new Vector3(x, 0, z).project(engine.camera);
+      expect(Math.abs(projected.x)).toBeLessThanOrEqual(0.91);
+      expect(Math.abs(projected.y)).toBeLessThanOrEqual(0.91);
+    }
   });
 
   it('eases one refit per growth and waits for the active flight before framing further growth', () => {
