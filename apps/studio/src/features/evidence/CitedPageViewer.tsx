@@ -4,6 +4,7 @@ import { usePageImage } from '../../api/queries';
 import { pageFailure, useCitedPage, type CitedPage } from './citedPage';
 import { placeWords, regionOutline } from './pageGeometry';
 import type { EvidenceRef, Locator, SourcePin } from './refs';
+import { SourceReadingNote } from '../register/SourceReadingNote';
 import styles from './EvidenceViewer.module.css';
 
 export type Place = Extract<Locator, { kind: 'page' | 'region' }>;
@@ -43,6 +44,7 @@ function CitationWords({ evidence, place, pin }: { evidence: EvidenceRef; place:
       <dt>Source</dt>
       <dd className="ul-row">
         <span className="ul-mono">{evidence.sourceId} · revision {pin.revision}</span>
+        <SourceReadingNote sourceId={evidence.sourceId} />
         <Button variant="ghost" onClick={() => void navigator.clipboard.writeText(evidence.sourceId)}>
           Copy source ID
         </Button>

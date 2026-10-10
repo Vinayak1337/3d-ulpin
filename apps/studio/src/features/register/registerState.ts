@@ -76,13 +76,3 @@ export function unstatedReadings(error: unknown): string | null {
   const { code } = refusalOf(error);
   return code ? `${UNSTATED} · ${code}` : UNSTATED;
 }
-
-/**
- * The stated source that a citation showing only the first characters of its source id points at (the candidate
- * card's citations). Null unless exactly one stated source begins with those characters.
- */
-export function statedSourceId(statements: ReadingStatements, shortId: string): string | null {
-  if (!shortId) return null;
-  const [match, another] = [...statements.keys()].filter((id) => id.startsWith(shortId));
-  return match && !another ? match : null;
-}
