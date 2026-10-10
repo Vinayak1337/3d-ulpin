@@ -29,8 +29,13 @@ export function DecisionSheet({ itemId, decisions, areaRevision, titleOf, onRemo
   const submit = () => {
     if (!plan.ok) return;
     record.mutate(plan.body, {
-      onSuccess: (result) => onRecorded(`Recorded ${decisions.length} decision${decisions.length === 1 ? '' : 's'}. `
-        + `Draft package ${result.package.id.slice(0, 8)} holds the accepted roofprint; it is not in the registry.`),
+      onSuccess: (result) => {
+        // A request with rejections only records the decisions and creates no draft package.
+        const outcome = result.package
+          ? `Draft package ${result.package.id.slice(0, 8)} holds the accepted roofprint; it is not in the registry.`
+          : 'No draft package was created.';
+        onRecorded(`Recorded ${decisions.length} decision${decisions.length === 1 ? '' : 's'}. ${outcome}`);
+      },
     });
   };
 

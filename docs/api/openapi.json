@@ -15613,7 +15613,7 @@
             }
           }
         },
-        "summary": "Retain cited plan-local room candidates or review an existing level association",
+        "summary": "Retain plan-local room candidates, reject one or review an existing level association",
         "tags": [
           "officer"
         ],
@@ -31806,7 +31806,7 @@
             }
           }
         },
-        "summary": "Create a reviewed area draft from selected building pixels",
+        "summary": "Review source building pixels; reject-only decisions create no package",
         "tags": [
           "spatial ML"
         ],
@@ -143531,6 +143531,44 @@
               "expectedCanonicalRevision",
               "candidateId",
               "levelId",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "reject"
+                ]
+              },
+              "requestKey": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "expectedCanonicalRevision": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "candidateId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 2000
+              }
+            },
+            "required": [
+              "action",
+              "requestKey",
+              "expectedCanonicalRevision",
+              "candidateId",
               "reason"
             ],
             "additionalProperties": false
@@ -338353,7 +338391,6 @@
             "maximum": 9007199254740991
           },
           "selections": {
-            "minItems": 1,
             "maxItems": 100,
             "type": "array",
             "items": {
@@ -340285,7 +340322,8 @@
                   }
                 }
               }
-            }
+            },
+            "nullable": true
           },
           "receipt": {
             "type": "object",

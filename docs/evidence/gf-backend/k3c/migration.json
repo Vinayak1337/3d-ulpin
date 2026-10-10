@@ -1,0 +1,1 @@
+{"targetVerified":true,"receiptRowsBefore":1,"receiptRowsAfter":1,"packageIdNullable":true,"productRecordsWritten":0,"file":"database/sql/50-spatial-ml/01-reject-only-footprints.sql","sqlSha256":"446cf0df4644b887877d34b7f0dc95956f073fdaa2be4e43eb9e66ffc0d51958","forwardOnly":true,"foreignKeyPreserved":true,"manifestRegistration":"lead_required_outside_owned_paths"}
