@@ -52,13 +52,13 @@ function serverFault(error: unknown, code: string | null): boolean {
 
 /**
  * Why a command was not carried out, as the dialog states it. A refusal is the mapped words or the server's
- * sentence, with its code. No answer and every other 5xx is an unknown outcome: the caller then offers a read
- * of the record, never a resend.
+ * sentence, with its code. No answer and every other 5xx is an unknown outcome: one fixed sentence, with the
+ * server's code when it gave one and never the words the failure came with (the browser's "Failed to fetch", a
+ * gateway's status line). The caller then offers a read of the record, never a resend.
  */
 export function commandFailure(error: unknown): CommandFailure {
   if (isRouteAbsent(error)) return { unknown: false, text: NO_ROUTE };
   const { code, message } = refusalOf(error);
-  const said = code ? `${message} (${code})` : message;
-  if (serverFault(error, code)) return { unknown: true, text: `${UNKNOWN} ${said}` };
+  if (serverFault(error, code)) return { unknown: true, text: code ? `${UNKNOWN} (${code})` : UNKNOWN };
   return { unknown: false, text: code ? `${REFUSALS[code] ?? message} (${code})` : message };
 }

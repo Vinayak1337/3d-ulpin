@@ -132,12 +132,14 @@ describe('issueFailure', () => {
   it('calls a lost answer of a step that stores an unknown outcome, and names the step', () => {
     const failure = issueFailure(new StepFailure('the plan', true, lost));
     expect(failure.unknown).toBe(true);
-    expect(failure.text).toContain('Prepare stopped at the plan. The result is unknown');
+    expect(failure.text).toBe('Prepare stopped at the plan. '
+      + 'The result is unknown: no answer says whether the registry stored anything.');
   });
 
   it('states a lost answer of a step that only reads as a failed read', () => {
     const failure = issueFailure(new StepFailure('the rows of the card', false, lost));
-    expect(failure).toEqual({ unknown: false, text: 'Prepare stopped at the rows of the card. Failed to fetch' });
+    expect(failure).toEqual({ unknown: false,
+      text: 'Prepare stopped at the rows of the card. The server gave no answer.' });
   });
 
   it('states a refusal of a step and of the card request with the words of its code', () => {
