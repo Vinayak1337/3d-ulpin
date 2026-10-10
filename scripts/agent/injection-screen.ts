@@ -1,5 +1,7 @@
 // Screens the development inputs the guards admit for text that could act as an instruction to a model.
 // Usage: tsx scripts/agent/injection-screen.ts <new directory under E:/BhuAayam-data/task-data/e3>
+// The teacher layer is each builder's request as the gateway would forward it, after the shared minimizer;
+// a request the gateway would refuse is screened as built and listed with the refusal code.
 // Counts go to <out>/screen.json and masked examples to <out>/candidates.jsonl. No raw value is written:
 // an example keeps the matched fixed-list phrase and masks every other word with the product's own masker.
 import assert from 'node:assert/strict';
@@ -7,7 +9,11 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { isAbsolute, join, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { storeyPartBatches, type StoreyPageStore } from '../../packages/server/src/modules/ai/document-storey-agent';
+import { AppError } from '../../packages/server/src/infrastructure/errors';
+import {
+  storeyPartBatches, storeyRequest, type StoreyPageStore, type StoreyPart,
+} from '../../packages/server/src/modules/ai/document-storey-agent';
+import { minimizeMessages } from '../../packages/server/src/modules/model-gateway/adapter';
 import { maskColumnSample } from '../../packages/server/src/modules/usp/ingestion/column-profile';
 import { mappingTeacherRequest } from '../../packages/server/src/modules/usp/ingestion/mapping-teacher';
 import { prepareTable, saveNew } from './t1-profiles';
@@ -25,9 +31,10 @@ const STOREY_PAGE_DIRECTORIES = ['pages', 'pages-b', 'pages-h'].map((name) => `E
 const EXAMPLES_PER_GROUP = 5;
 const CONTEXT_CHARS = 80;
 // What each prompt keeps of one string: maskColumnSample cuts a cell at 256 characters, the profile contract
-// refuses a header over 512, storeyPartBatches cuts a line at 240, and the gateway budget is 32768 input bytes.
+// refuses a header over 512 and storeyPartBatches cuts a line at 240.
 export const CAPS = { header: 512, cell: 256, sample: 256, line: 240, part: 240 } as const;
-const GATEWAY_INPUT_BYTES = 32768;
+// gateway.ts refuses a request whose body (messages and output schema) is larger than this.
+const GATEWAY_BODY_BYTES = 32768;
 
 type Surface = 'table' | 'document';
 type Layer = 'teacher' | 'raw';
@@ -58,9 +65,18 @@ type Group = {
   examples: string[];
 };
 type NotScreened = { family: string; file: string; reason: string; code: string };
-export type Screen = { tallies: Map<string, FamilyTally>; groups: Map<string, Group>; notScreened: NotScreened[] };
+type Refusal = { family: string; where: string; code: string; bodyBytes: number };
+export type Screen = {
+  tallies: Map<string, FamilyTally>;
+  groups: Map<string, Group>;
+  notScreened: NotScreened[];
+  refusals: Refusal[];
+};
+type BuiltRequest = { messages: { role: 'system' | 'user'; content: string }[]; schema: unknown };
+type Forwarded<T> = { user: T; bodyBytes: number; code?: string };
 type PromptColumn = { header: string; maskedSamples: string[] };
-type PromptTable = { columns: PromptColumn[]; bytes: number };
+type PromptUser = { columnProfile: { columns: PromptColumn[] } };
+type PromptTable = { columns: PromptColumn[]; bodyBytes: number; code?: string };
 type StoreySource = { split: 'development' | 'demo'; project: string };
 
 // Entries are regular-expression fragments; a space stands for any run of white space.
@@ -206,7 +222,7 @@ export function screenItem(tally: FamilyTally, groups: Map<string, Group>, item:
 }
 
 export function newScreen(): Screen {
-  return { tallies: new Map(), groups: new Map(), notScreened: [] };
+  return { tallies: new Map(), groups: new Map(), notScreened: [], refusals: [] };
 }
 
 export function tallyFor(screen: Screen, family: string, split: string, surface: Surface): FamilyTally {
@@ -217,17 +233,39 @@ export function tallyFor(screen: Screen, family: string, split: string, surface:
   return tally;
 }
 
-/** What the mapping prompt carries for each column, read back from the existing builder's own user message. */
+/** The user message as the gateway would forward it; when the gateway would refuse, as built and the code. */
+function forwarded<T>(request: BuiltRequest): Forwarded<T> {
+  const size = (messages: unknown) => Buffer.byteLength(JSON.stringify({ messages, outputSchema: request.schema }));
+  try {
+    const messages = minimizeMessages(request.messages);
+    const bodyBytes = size(messages);
+    const user = JSON.parse(messages[1].content) as T;
+    return { user, bodyBytes, ...(bodyBytes > GATEWAY_BODY_BYTES ? { code: 'MODEL_INPUT_LIMIT' } : {}) };
+  } catch (error) {
+    const code = error instanceof AppError ? error.code : 'E3_MINIMIZER_FAILED';
+    return { user: JSON.parse(request.messages[1].content) as T, bodyBytes: size(request.messages), code };
+  }
+}
+
+/** What the mapping prompt carries for each column, read back from the existing builder's request. */
 function promptTable(prepared: ReturnType<typeof prepareTable>): PromptTable {
-  const profile = prepared.inventory.profile;
-  const columns = profile.columns.map((column, index) => {
+  const inventory = prepared.inventory.profile;
+  const columns = inventory.columns.map((column, index) => {
     const header = prepared.profiles[index].header;
     return { ...column, name: header.trim() ? header : column.name };
   });
-  const request = mappingTeacherRequest({ ...profile, columns });
-  const user = JSON.parse(request.messages[1].content) as { columnProfile: { columns: PromptColumn[] } };
-  const bytes = request.messages.reduce((total, message) => total + Buffer.byteLength(message.content), 0);
-  return { columns: user.columnProfile.columns, bytes };
+  const request = forwarded<PromptUser>(mappingTeacherRequest({ ...inventory, columns }));
+  return { columns: request.user.columnProfile.columns, bodyBytes: request.bodyBytes, code: request.code };
+}
+
+type RequestNote = { bodyBytes: number; code?: string };
+
+function noteRequest(screen: Screen, tally: FamilyTally, where: string, request: RequestNote) {
+  tally.n.promptBytesMax = Math.max(tally.n.promptBytesMax ?? 0, request.bodyBytes);
+  bump(tally.n, 'promptRequests');
+  if (!request.code) return;
+  bump(tally.n, 'promptsRefusedByGateway');
+  screen.refusals.push({ family: tally.family, where, code: request.code, bodyBytes: request.bodyBytes });
 }
 
 const columnLocator = (asset: SourceAsset, table: SourceTable, index: number) =>
@@ -236,8 +274,7 @@ const columnLocator = (asset: SourceAsset, table: SourceTable, index: number) =>
 function screenPromptTable(
   screen: Screen, tally: FamilyTally, asset: SourceAsset, table: SourceTable, prompt: PromptTable,
 ) {
-  tally.n.promptBytesMax = Math.max(tally.n.promptBytesMax ?? 0, prompt.bytes);
-  if (prompt.bytes > GATEWAY_INPUT_BYTES) bump(tally.n, 'promptsOverInputBudget');
+  noteRequest(screen, tally, `${asset.id}|${table.name}`, prompt);
   prompt.columns.forEach((column, index) => {
     const shared = { layer: 'teacher' as const, header: column.header, asPrompt: true };
     const where = columnLocator(asset, table, index);
@@ -324,14 +361,20 @@ export function eligibleStoreySources(): Map<string, StoreySource> {
   return eligible;
 }
 
+/** The parts of one batch as the storey prompt would carry them, read back from the existing builder's request. */
+function promptParts(screen: Screen, tally: FamilyTally, source: string, batch: StoreyPart[]): StoreyPart[] {
+  const request = forwarded<{ parts: StoreyPart[] }>(storeyRequest(batch));
+  noteRequest(screen, tally, `${source}|batch of ${batch.length} parts`, request);
+  return request.user.parts;
+}
+
 /** Screens the parts the storey prompt would carry and, for counts only, every retained line of the store. */
 export function screenStore(screen: Screen, tally: FamilyTally, store: StoreyPageStore) {
   const source = store.source.sha256.slice(0, 12);
   const batches = storeyPartBatches(store);
   bump(tally.n, 'sources');
-  bump(tally.n, 'batches', batches.length);
   const shared = { header: '', asPrompt: false };
-  for (const part of batches.flat()) {
+  for (const part of batches.flatMap((batch) => promptParts(screen, tally, source, batch))) {
     const where = `${source}|page ${part.page}`;
     bump(tally.n, 'parts');
     screenItem(tally, screen.groups, { ...shared, layer: 'teacher', kind: 'part', text: part.text, where });
@@ -383,10 +426,10 @@ function summary(screen: Screen) {
     task: 'E3', gate: 'GF-AGENT', runAt: new Date().toISOString(),
     screenCommit: git('rev-parse', 'HEAD'), scriptSha256: digest(SCRIPT),
     scriptCommitted: git('status', '--porcelain', '--', SCRIPT) === '',
-    caps: { ...CAPS, gatewayInputBytes: GATEWAY_INPUT_BYTES },
+    caps: { ...CAPS, gatewayBodyBytes: GATEWAY_BODY_BYTES },
     classes: SCREEN_CLASSES.map(({ id, meaning, surfaces }) => ({ id, meaning, surfaces })),
     totals: { tables: totals(tallies, 'table'), documents: totals(tallies, 'document') },
-    families: tallies, notScreened: screen.notScreened,
+    families: tallies, notScreened: screen.notScreened, gatewayRefusals: screen.refusals,
   };
 }
 
@@ -405,7 +448,8 @@ function main(args: string[]) {
   const result = summary(screen);
   saveNew(join(output, 'screen.json'), result);
   saveNew(join(output, 'candidates.jsonl'), [...screen.groups.values()], true);
-  console.log(JSON.stringify({ totals: result.totals, notScreened: result.notScreened }));
+  const { totals: counted, notScreened, gatewayRefusals } = result;
+  console.log(JSON.stringify({ totals: counted, notScreened, gatewayRefusals }));
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

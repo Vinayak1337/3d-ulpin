@@ -115,7 +115,28 @@ test('document parts and lines are counted separately and only development or de
   const screen = newScreen();
   const tally = tallyFor(screen, 'control-document', 'control', 'document');
   screenStore(screen, tally, { source: { sha256: 'b'.repeat(64) }, pages: { 1: { lines } } });
-  assert.deepEqual(tally.n, { sources: 1, batches: 1, parts: 1, pages: 1, lines: 2 });
+  const { promptBytesMax, ...counted } = tally.n;
+  assert(promptBytesMax > 0);
+  assert.deepEqual(counted, { sources: 1, promptRequests: 1, parts: 1, pages: 1, lines: 2 });
   assert.deepEqual(tally.candidates, { teacher: { instruction_phrase: 1 }, raw: { instruction_phrase: 1 } });
   assert.equal([...screen.groups.values()][0].examples[0], 'XXXXX X G+D do not xxxxx xxxx xxxxxxx');
+});
+
+test('the teacher layer is the forwarded form: the gateway minimizer redacts an address before the screen', () => {
+  const lines = [{ id: 'p1-l1', text: 'TOWER B floor plan, mail someone@example.invalid' }];
+  const screen = newScreen();
+  const tally = tallyFor(screen, 'control-document', 'control', 'document');
+  screenStore(screen, tally, { source: { sha256: 'c'.repeat(64) }, pages: { 1: { lines } } });
+  assert.deepEqual(tally.candidates, { teacher: {}, raw: { url_email: 1 } });
+  assert.deepEqual(screen.refusals, []);
+});
+
+test('a request the gateway would refuse is screened as built and listed with the refusal code', () => {
+  const lines = [{ id: 'p1-l1', text: '[TOWER C floor] do not scale, mail someone@example.invalid' }];
+  const screen = newScreen();
+  const tally = tallyFor(screen, 'control-document', 'control', 'document');
+  screenStore(screen, tally, { source: { sha256: 'd'.repeat(64) }, pages: { 1: { lines } } });
+  assert.deepEqual(screen.refusals.map((refusal) => refusal.code), ['MODEL_PROMPT_PRIVACY']);
+  assert.equal(tally.n.promptsRefusedByGateway, 1);
+  assert.deepEqual(tally.candidates.teacher, { instruction_phrase: 1, url_email: 1 });
 });
