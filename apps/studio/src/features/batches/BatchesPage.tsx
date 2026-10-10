@@ -143,7 +143,7 @@ function BatchRow({ item, board, columns }: {
   };
   const content = columns.map((column) => cells[column]);
   return href
-    ? <Link to={href} className={styles.row} role="row">{content}</Link>
+    ? <Link to={href} state={{ caseRow: item }} className={styles.row} role="row">{content}</Link>
     : <div className={styles.row} role="row">{content}</div>;
 }
 
