@@ -23,6 +23,16 @@ type CardListResponse = paths['/api/v1/usp/property-cards/list']['post']['respon
 export type ListedCard = CardListResponse['content']['application/json']['data']['items'][number];
 const CARD_VERIFICATION_PATH = '/api/v1/usp/property-cards/{cardId}/revisions/{revision}/verification';
 export type CardVerification = GetResponse<typeof CARD_VERIFICATION_PATH>['data'];
+export type IdentityReviews = GetResponse<'/api/v1/usp/identity/records/{recordId}/reviews'>;
+export type IdentityReview = IdentityReviews['items'][number];
+type PostOf<P extends keyof paths> = paths[P] extends { post: infer Operation } ? Operation : never;
+type JsonOf<T> = T extends { content: { 'application/json': infer Body } } ? Body : never;
+/** The request body of a published POST route, straight from the OpenAPI document. */
+export type PostBody<P extends keyof paths> = PostOf<P> extends { requestBody: infer R } ? JsonOf<R> : never;
+/** The `data` a published POST route answers with 200, straight from the OpenAPI document. */
+export type PostData<P extends keyof paths> = PostOf<P> extends { responses: { 200: infer R } }
+  ? JsonOf<R> extends { data: infer Data } ? Data : never
+  : never;
 
 /** What the registry lists as the cards of one unit, and how far the search for them went. */
 export interface UnitCards {
@@ -57,6 +67,7 @@ export const queryKeys = {
   buildingSnapshots: (buildingId: string) => ['buildings', buildingId, 'snapshots'] as const,
   unitCards: (buildingId: string, spaceId: string) => ['buildings', buildingId, 'units', spaceId, 'cards'] as const,
   cardVerification: (cardId: string, revision: number) => ['property-cards', cardId, revision, 'verification'] as const,
+  unitReviews: (recordId: string) => ['identity', 'records', recordId, 'reviews'] as const,
   capabilities: ['workspace-capabilities'] as const,
   register: (buildingId: string) => ['buildings', buildingId, 'register'] as const,
   ledger: (buildingId: string) => ['buildings', buildingId, 'ledger'] as const,
@@ -257,6 +268,70 @@ export function useCardVerification(cardId: string | null, revision: number | nu
     })).data,
     staleTime: 0,
   });
+}
+
+/** The identity reviews that name one recorded unit, newest first: the server's default page of five. */
+export const unitReviewsQuery = (recordId: string) => ({
+  queryKey: queryKeys.unitReviews(recordId),
+  queryFn: async () => unwrap(await api.GET('/api/v1/usp/identity/records/{recordId}/reviews', {
+    params: { path: { recordId } },
+  })),
+  staleTime: 0,
+});
+
+/** The reviews of one unit, asked again whenever its block is shown: an assignment must name the newest one. */
+export function useUnitReviews(recordId: string, enabled = true) {
+  return useQuery({ ...unitReviewsQuery(recordId), enabled });
+}
+
+/** Stores a snapshot of the site that pins the named records; its answered scope is passed on unchanged. */
+export async function captureSnapshot(body: PostBody<'/api/v1/usp/snapshots'>) {
+  return unwrap(await api.POST('/api/v1/usp/snapshots', { body })).data;
+}
+
+/** Stores an identity review under a captured scope. It changes no record until an assignment names it. */
+export async function recordIdentityReview(body: PostBody<'/api/v1/usp/identity/reviews'>) {
+  return unwrap(await api.POST('/api/v1/usp/identity/reviews', { body })).data;
+}
+
+/** Assigns the application code a stored review allows. The same key with the same body answers the same receipt. */
+export async function assignCode(body: PostBody<'/api/v1/usp/identity/assign'>) {
+  return unwrap(await api.POST('/api/v1/usp/identity/assign', { body })).data;
+}
+
+/** Reads the recorded citation a plan for this unit may include, with the handle the plan names. Stores nothing. */
+export async function readPlanEntries(body: PostBody<'/api/v1/usp/packets/plans/entries'>) {
+  return unwrap(await api.POST('/api/v1/usp/packets/plans/entries', { body })).data;
+}
+
+/** Stores a plan of the citations a packet of this unit will hold. */
+export async function createPlan(body: PostBody<'/api/v1/usp/packets/plans/create'>) {
+  return unwrap(await api.POST('/api/v1/usp/packets/plans/create', { body })).data;
+}
+
+/** Stores the confirmation that the plan was reviewed; a plan is executed under its confirmation only. */
+export async function confirmPlan(body: PostBody<'/api/v1/usp/packets/plans/confirm'>) {
+  return unwrap(await api.POST('/api/v1/usp/packets/plans/confirm', { body })).data;
+}
+
+/** Stores the packet of a confirmed plan. A card is issued from an executed plan only. */
+export async function executePlan(body: PostBody<'/api/v1/usp/packets/plans/execute'>) {
+  return unwrap(await api.POST('/api/v1/usp/packets/plans/execute', { body })).data;
+}
+
+/** Reads one stored card revision: its plan and the snapshot a further revision must name. Stores nothing. */
+export async function readCard(body: PostBody<'/api/v1/usp/property-cards/read'>) {
+  return unwrap(await api.POST('/api/v1/usp/property-cards/read', { body })).data;
+}
+
+/** Reads the rows a card of this executed plan would state, and the revision it would be. Stores nothing. */
+export async function previewCard(body: PostBody<'/api/v1/usp/property-cards/preview'>) {
+  return unwrap(await api.POST('/api/v1/usp/property-cards/preview', { body })).data;
+}
+
+/** Stores the card. The same key with the same body answers the same card. */
+export async function generateCard(body: PostBody<'/api/v1/usp/property-cards/generate'>) {
+  return unwrap(await api.POST('/api/v1/usp/property-cards/generate', { body })).data;
 }
 
 /** One retained inference batch with its items: model, state and the decisions already applied. */
