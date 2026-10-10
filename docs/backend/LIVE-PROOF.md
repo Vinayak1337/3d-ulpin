@@ -70,14 +70,14 @@ proposal, on a state that is not `enabled: true`, or when the enabled hash is no
 
 ## 5. What it costs at most
 
-At the proposal (not approved): **8 calls; estimate ₹0.95; at most ₹6.20 of the ₹100 proposed.**
+At the proposal (not approved): **10 calls; estimate ₹1.15; at most ₹7.75 of the ₹100 proposed.**
 
 - Estimate: request bytes divided by 3 as input tokens, half the output maximum as output tokens. No tokenizer for
   the provider is in the repository, so the error of this estimate is not measured.
 - Upper bound: every call held at the ledger's full reservation, ₹0.78 a call at the proposed tariff. A call cannot
   settle above its reservation without the gateway blocking the pool.
-- Share of each proposed cap at most: 6.20% of the total, 24.78% of the day, 8 of 150 calls for one person,
-  15.49% of the document agent's part.
+- Share of each proposed cap at most: 7.75% of the total, 30.97% of the day, 10 of 150 calls for one person,
+  20.65% of the document agent's part.
 
 ## 6. The receipts, and the boxes they close
 
@@ -90,13 +90,13 @@ answer was recorded, its HTTP status, tokens, response hash and actual micro-INR
 | 1: storey call on a development document | storey lines of one sanction PDF | AG-S1 | |
 | 2: replay of step 1, no call | nothing | AG-S2 | if the answer failed validation |
 | 3 to 8: two `mi-d10` files, 2 calls | masked column profiles | AG-E2 | ML-L2: precision has no committed n |
-| 9 to 13: 5 more storey calls | storey lines | ML-D1, after offline scoring | ML-D3, AG-D1 (below) |
+| 9 to 15: 7 more storey calls | storey lines | ML-D1, after offline scoring | ML-D3, AG-D1 (below) |
 
 ML-D3 gets registry-scored development answers but no independent floor-label truth. AG-D1 gets its input (the
 recorded answers) but needs the agent-to-proposal adapter, which is another task.
 
-Two Tower 3 plan documents are not in the run: one OCR line in each begins with `[` and the gateway's text
-minimizer refuses the whole request. They need a code change first; the plan lists them under `neverSent`.
+The two Tower 3 plan documents are asked without one OCR line each: the line begins with `[`, the gateway's text
+minimizer refuses it, and the plan names it by position under `neverSent` and in the step's `omitted`.
 The ledger rows themselves are read from PostgreSQL by the runtime owner and matched by request hash.
 
 ## 7. Stop rules
