@@ -65970,6 +65970,52 @@ export interface components {
                 proposals: {
                     proposalId: string;
                     fieldRole: string;
+                    agentFact?: {
+                        /** @enum {string} */
+                        kind: "storeyCount" | "basementCount";
+                        value: number | null;
+                        expression: string | null;
+                    } | {
+                        /** @enum {string} */
+                        kind: "floorExpression";
+                        expression: string;
+                        scope: string | null;
+                    } | {
+                        /** @enum {string} */
+                        kind: "floorLabel";
+                        label: string;
+                        /** @enum {string} */
+                        labelKind: "ordinal" | "ground" | "basement" | "stilt" | "podium" | "terrace" | "mezzanine" | "refuge" | "typical";
+                    } | {
+                        /** @enum {string} */
+                        kind: "height";
+                        statedValue: number;
+                        /** @enum {string} */
+                        statedUnit: "m" | "mm" | "ft" | "in" | "unit_unknown";
+                    } | {
+                        /** @enum {string} */
+                        kind: "unitCount";
+                        value: number;
+                        scope: string | null;
+                    };
+                    /** @description All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck. */
+                    agentCitations?: {
+                        partId: string;
+                        quote: string;
+                        locator: {
+                            page: number;
+                            frame: {
+                                /** @enum {string} */
+                                kind: "pdf_display_page_top_left_points";
+                                rotation: number;
+                                width: number;
+                                height: number;
+                            };
+                            box: (number)[] | null;
+                            selectedRegion: (number)[] | null;
+                            declaredPrecision: string | null;
+                        } | null;
+                    }[];
                     quote: string | null;
                     lineQuote: string | null;
                     valueLiteral?: string;
@@ -66012,8 +66058,54 @@ export interface components {
                         box: (number)[] | null;
                         selectedRegion: (number)[] | null;
                         declaredPrecision: string | null;
-                    };
+                    } | null;
                     declaredMethod: string | null;
+                    agentFact?: {
+                        /** @enum {string} */
+                        kind: "storeyCount" | "basementCount";
+                        value: number | null;
+                        expression: string | null;
+                    } | {
+                        /** @enum {string} */
+                        kind: "floorExpression";
+                        expression: string;
+                        scope: string | null;
+                    } | {
+                        /** @enum {string} */
+                        kind: "floorLabel";
+                        label: string;
+                        /** @enum {string} */
+                        labelKind: "ordinal" | "ground" | "basement" | "stilt" | "podium" | "terrace" | "mezzanine" | "refuge" | "typical";
+                    } | {
+                        /** @enum {string} */
+                        kind: "height";
+                        statedValue: number;
+                        /** @enum {string} */
+                        statedUnit: "m" | "mm" | "ft" | "in" | "unit_unknown";
+                    } | {
+                        /** @enum {string} */
+                        kind: "unitCount";
+                        value: number;
+                        scope: string | null;
+                    };
+                    /** @description All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck. */
+                    agentCitations?: {
+                        partId: string;
+                        quote: string;
+                        locator: {
+                            page: number;
+                            frame: {
+                                /** @enum {string} */
+                                kind: "pdf_display_page_top_left_points";
+                                rotation: number;
+                                width: number;
+                                height: number;
+                            };
+                            box: (number)[] | null;
+                            selectedRegion: (number)[] | null;
+                            declaredPrecision: string | null;
+                        } | null;
+                    }[];
                     declaredObservation: {
                         sha256: string;
                         bytes: number;
@@ -66053,6 +66145,52 @@ export interface components {
                 proposals: {
                     proposalId: string;
                     fieldRole: string;
+                    agentFact?: {
+                        /** @enum {string} */
+                        kind: "storeyCount" | "basementCount";
+                        value: number | null;
+                        expression: string | null;
+                    } | {
+                        /** @enum {string} */
+                        kind: "floorExpression";
+                        expression: string;
+                        scope: string | null;
+                    } | {
+                        /** @enum {string} */
+                        kind: "floorLabel";
+                        label: string;
+                        /** @enum {string} */
+                        labelKind: "ordinal" | "ground" | "basement" | "stilt" | "podium" | "terrace" | "mezzanine" | "refuge" | "typical";
+                    } | {
+                        /** @enum {string} */
+                        kind: "height";
+                        statedValue: number;
+                        /** @enum {string} */
+                        statedUnit: "m" | "mm" | "ft" | "in" | "unit_unknown";
+                    } | {
+                        /** @enum {string} */
+                        kind: "unitCount";
+                        value: number;
+                        scope: string | null;
+                    };
+                    /** @description All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck. */
+                    agentCitations?: {
+                        partId: string;
+                        quote: string;
+                        locator: {
+                            page: number;
+                            frame: {
+                                /** @enum {string} */
+                                kind: "pdf_display_page_top_left_points";
+                                rotation: number;
+                                width: number;
+                                height: number;
+                            };
+                            box: (number)[] | null;
+                            selectedRegion: (number)[] | null;
+                            declaredPrecision: string | null;
+                        } | null;
+                    }[];
                     quote: string | null;
                     lineQuote: string | null;
                     valueLiteral?: string;
@@ -66095,8 +66233,54 @@ export interface components {
                         box: (number)[] | null;
                         selectedRegion: (number)[] | null;
                         declaredPrecision: string | null;
-                    };
+                    } | null;
                     declaredMethod: string | null;
+                    agentFact?: {
+                        /** @enum {string} */
+                        kind: "storeyCount" | "basementCount";
+                        value: number | null;
+                        expression: string | null;
+                    } | {
+                        /** @enum {string} */
+                        kind: "floorExpression";
+                        expression: string;
+                        scope: string | null;
+                    } | {
+                        /** @enum {string} */
+                        kind: "floorLabel";
+                        label: string;
+                        /** @enum {string} */
+                        labelKind: "ordinal" | "ground" | "basement" | "stilt" | "podium" | "terrace" | "mezzanine" | "refuge" | "typical";
+                    } | {
+                        /** @enum {string} */
+                        kind: "height";
+                        statedValue: number;
+                        /** @enum {string} */
+                        statedUnit: "m" | "mm" | "ft" | "in" | "unit_unknown";
+                    } | {
+                        /** @enum {string} */
+                        kind: "unitCount";
+                        value: number;
+                        scope: string | null;
+                    };
+                    /** @description All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck. */
+                    agentCitations?: {
+                        partId: string;
+                        quote: string;
+                        locator: {
+                            page: number;
+                            frame: {
+                                /** @enum {string} */
+                                kind: "pdf_display_page_top_left_points";
+                                rotation: number;
+                                width: number;
+                                height: number;
+                            };
+                            box: (number)[] | null;
+                            selectedRegion: (number)[] | null;
+                            declaredPrecision: string | null;
+                        } | null;
+                    }[];
                     declaredObservation: {
                         sha256: string;
                         bytes: number;
@@ -66176,6 +66360,52 @@ export interface components {
                 proposals: {
                     proposalId: string;
                     fieldRole: string;
+                    agentFact?: {
+                        /** @enum {string} */
+                        kind: "storeyCount" | "basementCount";
+                        value: number | null;
+                        expression: string | null;
+                    } | {
+                        /** @enum {string} */
+                        kind: "floorExpression";
+                        expression: string;
+                        scope: string | null;
+                    } | {
+                        /** @enum {string} */
+                        kind: "floorLabel";
+                        label: string;
+                        /** @enum {string} */
+                        labelKind: "ordinal" | "ground" | "basement" | "stilt" | "podium" | "terrace" | "mezzanine" | "refuge" | "typical";
+                    } | {
+                        /** @enum {string} */
+                        kind: "height";
+                        statedValue: number;
+                        /** @enum {string} */
+                        statedUnit: "m" | "mm" | "ft" | "in" | "unit_unknown";
+                    } | {
+                        /** @enum {string} */
+                        kind: "unitCount";
+                        value: number;
+                        scope: string | null;
+                    };
+                    /** @description All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck. */
+                    agentCitations?: {
+                        partId: string;
+                        quote: string;
+                        locator: {
+                            page: number;
+                            frame: {
+                                /** @enum {string} */
+                                kind: "pdf_display_page_top_left_points";
+                                rotation: number;
+                                width: number;
+                                height: number;
+                            };
+                            box: (number)[] | null;
+                            selectedRegion: (number)[] | null;
+                            declaredPrecision: string | null;
+                        } | null;
+                    }[];
                     quote: string | null;
                     lineQuote: string | null;
                     valueLiteral?: string;
@@ -66232,8 +66462,54 @@ export interface components {
                         box: (number)[] | null;
                         selectedRegion: (number)[] | null;
                         declaredPrecision: string | null;
-                    };
+                    } | null;
                     declaredMethod: string | null;
+                    agentFact?: {
+                        /** @enum {string} */
+                        kind: "storeyCount" | "basementCount";
+                        value: number | null;
+                        expression: string | null;
+                    } | {
+                        /** @enum {string} */
+                        kind: "floorExpression";
+                        expression: string;
+                        scope: string | null;
+                    } | {
+                        /** @enum {string} */
+                        kind: "floorLabel";
+                        label: string;
+                        /** @enum {string} */
+                        labelKind: "ordinal" | "ground" | "basement" | "stilt" | "podium" | "terrace" | "mezzanine" | "refuge" | "typical";
+                    } | {
+                        /** @enum {string} */
+                        kind: "height";
+                        statedValue: number;
+                        /** @enum {string} */
+                        statedUnit: "m" | "mm" | "ft" | "in" | "unit_unknown";
+                    } | {
+                        /** @enum {string} */
+                        kind: "unitCount";
+                        value: number;
+                        scope: string | null;
+                    };
+                    /** @description All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck. */
+                    agentCitations?: {
+                        partId: string;
+                        quote: string;
+                        locator: {
+                            page: number;
+                            frame: {
+                                /** @enum {string} */
+                                kind: "pdf_display_page_top_left_points";
+                                rotation: number;
+                                width: number;
+                                height: number;
+                            };
+                            box: (number)[] | null;
+                            selectedRegion: (number)[] | null;
+                            declaredPrecision: string | null;
+                        } | null;
+                    }[];
                     declaredObservation: {
                         sha256: string;
                         bytes: number;
@@ -66241,6 +66517,52 @@ export interface components {
                     originalProposal?: {
                         proposalId: string;
                         fieldRole: string;
+                        agentFact?: {
+                            /** @enum {string} */
+                            kind: "storeyCount" | "basementCount";
+                            value: number | null;
+                            expression: string | null;
+                        } | {
+                            /** @enum {string} */
+                            kind: "floorExpression";
+                            expression: string;
+                            scope: string | null;
+                        } | {
+                            /** @enum {string} */
+                            kind: "floorLabel";
+                            label: string;
+                            /** @enum {string} */
+                            labelKind: "ordinal" | "ground" | "basement" | "stilt" | "podium" | "terrace" | "mezzanine" | "refuge" | "typical";
+                        } | {
+                            /** @enum {string} */
+                            kind: "height";
+                            statedValue: number;
+                            /** @enum {string} */
+                            statedUnit: "m" | "mm" | "ft" | "in" | "unit_unknown";
+                        } | {
+                            /** @enum {string} */
+                            kind: "unitCount";
+                            value: number;
+                            scope: string | null;
+                        };
+                        /** @description All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck. */
+                        agentCitations?: {
+                            partId: string;
+                            quote: string;
+                            locator: {
+                                page: number;
+                                frame: {
+                                    /** @enum {string} */
+                                    kind: "pdf_display_page_top_left_points";
+                                    rotation: number;
+                                    width: number;
+                                    height: number;
+                                };
+                                box: (number)[] | null;
+                                selectedRegion: (number)[] | null;
+                                declaredPrecision: string | null;
+                            } | null;
+                        }[];
                         quote: string | null;
                         lineQuote: string | null;
                         valueLiteral?: string;
@@ -66408,6 +66730,52 @@ export interface components {
             originalProposal: {
                 proposalId: string;
                 fieldRole: string;
+                agentFact?: {
+                    /** @enum {string} */
+                    kind: "storeyCount" | "basementCount";
+                    value: number | null;
+                    expression: string | null;
+                } | {
+                    /** @enum {string} */
+                    kind: "floorExpression";
+                    expression: string;
+                    scope: string | null;
+                } | {
+                    /** @enum {string} */
+                    kind: "floorLabel";
+                    label: string;
+                    /** @enum {string} */
+                    labelKind: "ordinal" | "ground" | "basement" | "stilt" | "podium" | "terrace" | "mezzanine" | "refuge" | "typical";
+                } | {
+                    /** @enum {string} */
+                    kind: "height";
+                    statedValue: number;
+                    /** @enum {string} */
+                    statedUnit: "m" | "mm" | "ft" | "in" | "unit_unknown";
+                } | {
+                    /** @enum {string} */
+                    kind: "unitCount";
+                    value: number;
+                    scope: string | null;
+                };
+                /** @description All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck. */
+                agentCitations?: {
+                    partId: string;
+                    quote: string;
+                    locator: {
+                        page: number;
+                        frame: {
+                            /** @enum {string} */
+                            kind: "pdf_display_page_top_left_points";
+                            rotation: number;
+                            width: number;
+                            height: number;
+                        };
+                        box: (number)[] | null;
+                        selectedRegion: (number)[] | null;
+                        declaredPrecision: string | null;
+                    } | null;
+                }[];
                 quote: string | null;
                 lineQuote: string | null;
                 valueLiteral?: string;
@@ -66436,6 +66804,52 @@ export interface components {
             } | {
                 proposalId: string;
                 fieldRole: string;
+                agentFact?: {
+                    /** @enum {string} */
+                    kind: "storeyCount" | "basementCount";
+                    value: number | null;
+                    expression: string | null;
+                } | {
+                    /** @enum {string} */
+                    kind: "floorExpression";
+                    expression: string;
+                    scope: string | null;
+                } | {
+                    /** @enum {string} */
+                    kind: "floorLabel";
+                    label: string;
+                    /** @enum {string} */
+                    labelKind: "ordinal" | "ground" | "basement" | "stilt" | "podium" | "terrace" | "mezzanine" | "refuge" | "typical";
+                } | {
+                    /** @enum {string} */
+                    kind: "height";
+                    statedValue: number;
+                    /** @enum {string} */
+                    statedUnit: "m" | "mm" | "ft" | "in" | "unit_unknown";
+                } | {
+                    /** @enum {string} */
+                    kind: "unitCount";
+                    value: number;
+                    scope: string | null;
+                };
+                /** @description All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck. */
+                agentCitations?: {
+                    partId: string;
+                    quote: string;
+                    locator: {
+                        page: number;
+                        frame: {
+                            /** @enum {string} */
+                            kind: "pdf_display_page_top_left_points";
+                            rotation: number;
+                            width: number;
+                            height: number;
+                        };
+                        box: (number)[] | null;
+                        selectedRegion: (number)[] | null;
+                        declaredPrecision: string | null;
+                    } | null;
+                }[];
                 quote: string | null;
                 lineQuote: string | null;
                 valueLiteral?: string;
