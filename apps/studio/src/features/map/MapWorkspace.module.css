@@ -64,6 +64,13 @@
 .emptyOverlay { position: absolute; inset: 0; z-index: calc(var(--ui-z-map-overlay) + 1); display: grid; place-items: center; background: color-mix(in srgb, var(--ui-map-ground) 60%, transparent); pointer-events: none; }
 .emptyCard { pointer-events: auto; display: grid; gap: 14px; justify-items: start; max-width: 380px; padding: 20px 24px; box-shadow: var(--ui-shadow-overlay); }
 .emptyCard a { text-decoration: none; }
+.noGeometry {
+  position: absolute; inset: 0; padding-top: 72px; z-index: var(--ui-z-map-overlay);
+  display: grid; place-items: center; pointer-events: none;
+}
+@media (min-width: 1000px) {
+  .canvasWrap:has(.mapTools[open]) .banner { left: 312px; width: min(520px, calc(100% - 328px)); }
+}
 
 .labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 5; }
 .label {
