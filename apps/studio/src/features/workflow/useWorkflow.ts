@@ -1,5 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { assignProposedCode, clearAction, getSpaceWorkflow, listBuildingActions, listBuildingWorkflow, recordAction, recordReview, resolveCode, type BuildingAction } from '../../local/workflow';
+import {
+  assignProposedCode, clearAction, getSpaceWorkflow, listBuildingActions, listBuildingWorkflow, recordAction,
+  resolveCode, type BuildingAction,
+} from '../../local/workflow';
 
 const keys = {
   space: (id: string) => ['workflow', 'space', id] as const,
@@ -18,17 +21,6 @@ export function useBuildingWorkflow(buildingId: string | null) {
 
 export function useResolveCode(code: string) {
   return useQuery({ queryKey: keys.code(code), queryFn: () => resolveCode(code), retry: false });
-}
-
-export function useRecordReview() {
-  const client = useQueryClient();
-  return useMutation({
-    mutationFn: recordReview,
-    onSuccess: (workflow) => {
-      void client.invalidateQueries({ queryKey: keys.space(workflow.spaceId) });
-      void client.invalidateQueries({ queryKey: keys.building(workflow.buildingId) });
-    },
-  });
 }
 
 export function useAssignCode() {

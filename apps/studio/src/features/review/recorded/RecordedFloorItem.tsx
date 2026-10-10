@@ -21,7 +21,9 @@ export function RecordedFloorItem({ buildingId, floor }: { buildingId: string; f
       ]} />
       {floor.units.length ? (
         <ul className={styles.list} aria-label={`Units recorded under ${floor.label}`}>
-          {floor.units.map((unit) => <RecordedUnitItem key={unit.id} buildingId={buildingId} unit={unit} />)}
+          {floor.units.map((unit) => (
+            <RecordedUnitItem key={unit.id} buildingId={buildingId} floorLabel={floor.label} unit={unit} />
+          ))}
         </ul>
       ) : <p className="ul-help">No unit is recorded under this floor.</p>}
     </li>
