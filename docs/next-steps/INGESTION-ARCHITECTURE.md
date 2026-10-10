@@ -1,6 +1,6 @@
 # Ingestion architecture: probe everything, map files first, every part converted and shown as it is read
 
-**Status:** technical design by the lead, 11 October 2026 (second version, after the owner asked for the architecture itself: chunking, per-format handling at any size, order of work, linking). It governs [P3](P3-ingestion.md) and section 1 of [the sprint plan](SPRINT-SELECTION.md). Nothing here is built unless a line says "exists". Lines marked **(read)** were checked by the lead in code on 11 October; everything else about existing code is confirmed by task LV0 (`docs/evidence/gf5/lv0/readers.json`) before a build task is cut. Constants marked *proposed* are starting values; each is fixed by a measured run, not by this document.
+**Status:** technical design by the lead, 11 October 2026 (second version, after the owner asked for the architecture itself: chunking, per-format handling at any size, order of work, linking). It governs [P3](P3-ingestion.md) and section 1 of [the sprint plan](SPRINT-SELECTION.md). Nothing here is built unless a line says "exists". Lines marked **(read)** were checked by the lead in code on 11 October; lines marked **(LV0)** come from the worker's audit of 24 readers, merged on 11 October (`docs/evidence/gf5/lv0/readers.json`, `gaps.json`), which also corrected this document's first version. Constants marked *proposed* are starting values; each is fixed by a measured run, not by this document.
 
 ## 0. The answer in ten lines
 
@@ -15,7 +15,7 @@
 9. **A scheduler with reservations** picks the next part: probes first, then waves in order, round-robin between files inside a wave, and a part starts only if its stated memory and scratch disk fit in what is free.
 10. **Nothing is dropped and nothing is guessed:** over-limit or unknown files are kept and say so; unknown CRS is a question, not an assumption; everything on the map is a candidate until an officer reviews it.
 
-## 1. What the code does today, and the five things that block this design
+## 1. What the code does today, and the seven things that block this design
 
 | # | Finding | Where | Consequence |
 |---|---|---|---|
@@ -23,9 +23,13 @@
 | B2 | Lifetime and concurrency caps set for qualification: 128 streaming requests ever and 2 active; 128 upload receipts (v1), 8 receipts and 1 active (v2); 64 raster and 64 point sources; 1 active chunk mapping; 1 active streamed profile. **(read)** | `streaming-vector.ts` (`STREAMING_CAPACITY`, `STREAMING_HISTORY_CAPACITY`); `LARGE_ORIGINAL_LIMITS`, `LARGE_ORIGINAL_V2_LIMITS`, `RASTER_WINDOW_LIMITS`, `POINT_BATCH_LIMITS`, `CHUNK_MAPPING_LIMITS`, `STREAMED_PROFILE_LIMITS` | A horde of files exhausts them in one sitting. |
 | B3 | The dispatcher takes the 12 oldest jobs, first in first out. **(read)** | `cases/processing.ts:206` | No lanes, no priority, no fairness: one large file's parts would starve a ten-row table. |
 | B4 | The table reader collects the whole file in memory and stops at 2,000 rows. **(read)** | `streaming-vector-reader.ts:169-178`; `TABULAR_LIMITS` | Tables do not stream. |
-| B5 | The map's area read returns one answer of at most 2,000 features; nothing carries a streamed part to something the map draws. | `areas.ts:240-242` **(read)**; LV0 `mapGap` | The streamed parts exist but are invisible. |
+| B5 | The map's area read returns one answer of at most 2,000 features; nothing carries a streamed part to something the map draws. | `areas.ts:240-242` **(read)**; `canonicalScene.ts:55-70` **(LV0)** | The streamed parts exist but are invisible. The NYC pack alone has 2,363 features (2,362 accepted, 1 quarantined) and is answered `AREA_LIMIT`. |
+| B6 | **A table is admitted only if its hash and size are in the D8 development set**; any other table is refused `TABULAR_DATA_DENIED`. **(read, LV0)** | `tabular-source.ts:51-60` | A judge's table is refused at the door today. Admission must become: any table whose provenance the officer states, with the privacy rule deciding whether the teacher may see its profile. |
+| B7 | Table mapping proposes and reads rows, but turning mapped rows into registry candidates is refused as unqualified. **(LV0)** | `ingestion/service.ts:225-268` | A register can be read but cannot become facts on a building. |
 
-What already works and is kept: upload in 8 MiB hashed parts up to 7 GiB; the GeoJSON reader as a true stream (one object-store stream, a JSON cursor with byte offsets, parts of 100 features, ordered publication with a look-ahead of 8 parts, quarantine of a bad feature without losing the file) **(read)**; fenced job attempts with a 180 s lease, 30 s heartbeat and three attempts **(read)**; header-level readers for GeoPackage, shapefile ZIP, workbook (SAX), IFC, GeoParquet, LAS/LAZ (laspy), rasters (rasterio), PDFs (PyMuPDF, pypdf); mapping memory, learner, teacher; case event stream.
+What already works and is kept: upload in 8 MiB hashed parts up to 7 GiB; the GeoJSON reader as a true stream (one object-store stream, a JSON cursor with byte offsets, parts of 100 features, ordered publication with a look-ahead of 8 parts, quarantine of a bad feature without losing the file) **(read)**; fenced job attempts with a 180 s lease, 30 s heartbeat and three attempts **(read)**; the chunk-mapping job, which follows the raw parts as they are published **(LV0)**; header-level readers for GeoPackage, shapefile ZIP, workbook (SAX), IFC (metadata only, no geometry), GeoParquet (windows of 1,000 rows), LAZ/COPC (laspy), rasters (rasterio), PDFs (PyMuPDF, pypdf; native parse to 10 MiB and 100 pages, OCR on request for pages 1 to 8), DOCX paragraphs and tables **(LV0)**; the document receipt keeps bytes it does not understand **(LV0)**; mapping memory, learner, teacher; case event stream with part notifications that carry job, index, hash and counts, never geometry **(LV0)**.
+
+Readers that read one part per request and have nothing asking for the next: raster window, point batch, GeoParquet continuation, PDF OCR, archive members. Readers that read their whole bounded file in one job: area import, KML, DXF, IFC, CityGML, CityJSON, glTF, OBJ **(LV0)**. These are where strategy B's plan job and the scheduler are added.
 
 ## 2. The model: batch, item, part
 
@@ -114,7 +118,7 @@ Two cutting strategies. Which one a format gets depends on whether it has an ind
 | Format | Strategy | Part = | How it is cut | Memory bound | Notes at L size |
 |---|---|---|---|---|---|
 | GeoJSON collection | A (exists) | ≤ R features | JSON cursor, byte offsets per feature | 1 MiB a feature (exists) | lift 128 MiB and 4,096-part caps; cursor is already constant-memory |
-| GeoJSON sequence, NDJSON | A, splittable | ≤ R features | newline / RS framing; byte-range rule | one line | parallel by ranges |
+| GeoJSON sequence, NDJSON | A, splittable | ≤ R features | record-separator framing exists (RFC 7464); plain newline framing is added; byte-range rule | one line | parallel by ranges |
 | Shapefile | B | record range | `.shx` gives each record's offset; `.dbf` rows are fixed width | N records | 2 GiB per component by format; encoding from `.cpg` |
 | GeoPackage | B | rowid range per layer | keyset `WHERE rowid > ? ORDER BY rowid LIMIT n`; geometry = GPKG header + WKB | n rows | needs the file on scratch disk (reserved); R-tree gives on-screen first |
 | GeoParquet | B | row group (or a slice of one) | footer lists groups and their byte ranges | one row group | column statistics give bbox per group where written |
@@ -128,7 +132,7 @@ Two cutting strategies. Which one a format gets depends on whether it has an ind
 | PDF | B | page (text pages in runs of ≤ 8) | page tree; each page classified at probe | one page raster at the stated dpi | routes per page, section 6.3; priority to first pages and pages holding keys |
 | Page images (JPEG, PNG, TIFF without georeference) | one part each | the image | classified: document scan, plan, photo (EXIF position → a point), aerial | image | |
 | GeoTIFF / COG | B | window at a pyramid level | tile grid from the IFDs; overview levels coarse → fine | one 256–512 px window × bands | if untiled or without overviews: one derivative job builds a tiled pyramid copy by strips (original untouched), then as COG |
-| LAS | B | record range | fixed record length: offset = header + i × record | N points | formats 0–10 of 1.2–1.4 *(today: 1.4 format 6 only)* |
+| LAS | B | record range | fixed record length: offset = header + i × record | N points | formats 0–10 of 1.2–1.4 *(today the reader takes compressed 1.4 format 6 only; an uncompressed LAS is refused)* |
 | LAZ, COPC | B | LAZ chunk (≈ 50,000 points); COPC octree node | chunk table; COPC levels coarse → fine | one chunk | |
 | IFC | scan, then B | storey | pass 1: streaming scan keeps only spatial-structure entities and their relations (small) → building, storeys, spaces without geometry; pass 2 (optional, under a ceiling): geometry per storey | pass 1: structure only; pass 2: one storey | multi-GB files still yield storeys and spaces; geometry above the ceiling is "kept, not read" |
 | glTF/GLB, OBJ, 3D Tiles | whole / already tiled | display only | never a source of records | file | placed only if georeferenced |
@@ -150,7 +154,7 @@ One job per part (strategy B) or one loop iteration per part (strategy A). Steps
 Part 0 is profiled (columns, types, samples). Its layout fingerprint goes down the ladder: **memory** (approved before) → **local learner** → **Sarvam teacher** (masked profile only, through the gateway, wide tables in column groups) → **officer question**. The resulting plan is stored on the item and applied to every later part without a model call. Each part checks drift cheaply (new columns, type change); drift produces a new fingerprint and one more trip down the ladder for the changed columns only. So a million-row table costs at most a handful of teacher calls, and the second file with the same layout costs none. While a plan waits for the teacher or the officer, raw parts keep being read and stored; they are mapped as soon as the plan exists (reading never blocks on a model).
 
 ### 6.2 What the map does with an event
-The Studio holds one subscription per batch. On an event it fetches that part's display features by cursor (`GET …/items/:id/parts/:n/display`, a few hundred features) and hands them to the scene, which adds only what is new inside a frame budget (task LV1). **The client pulls at its own pace; the server never pushes geometry.** If the tab is slow, parts wait on the server, already stored; nothing is lost and nothing floods. Beyond a drawn-feature budget the map switches from per-part fetches to viewport reads (`bbox` + cursor on the candidate table's spatial index) with flat merged footprints when zoomed out and extruded buildings when near; that replaces the 2,000-feature list (B5).
+The Studio holds one subscription per batch. On an event it fetches that part's display features and hands them to the scene. The first version of this needs no new contract **(LV0)**: the existing part notification names job and index; the Studio reads the mapped part and the raw part it points at (`geometryRef`), joins them by source, job, revision, index and hash, and keeps them in a candidate scene state keyed by locator, separate from registry identities. A shared `GET …/items/:id/parts/:n/display` read replaces the join once the ledger exists. Either way the scene adds only what is new inside a frame budget (task LV1). **The client pulls at its own pace; the server never pushes geometry.** If the tab is slow, parts wait on the server, already stored; nothing is lost and nothing floods. Beyond a drawn-feature budget the map switches from per-part fetches to viewport reads (`bbox` + cursor on the candidate table's spatial index) with flat merged footprints when zoomed out and extruded buildings when near; that replaces the 2,000-feature list (B5).
 
 ### 6.3 Documents and plans, per page
 - **Text page:** the page's own text with coordinates. **Scan:** local OCR. **Table page:** table extraction → rows → the table path above. **Drawing page** (large format, vector operators or line image): vector extraction when the PDF is vector, else rendered and given to the floor-plan model; results are rooms and labels in sheet coordinates, areas "as printed".
@@ -175,15 +179,15 @@ The Studio holds one subscription per batch. On an event it fetches that part's 
 - All of this is the existing dispatcher tick and job tables with a different `ORDER BY` and an admission check; no second broker.
 
 ## 9. Limits said out loud
-For every lane a ceiling stays (bytes, records, pages, pixels, points). At the ceiling the item ends `read_to_limit` with what was read, what was not, and why ("409,600 of about 1.2 million features read; the rest is kept, not read"). Formats with no reader by 22 October are received, kept and marked `not_understood` with their signature: DWG, E57, PLY, 7z/RAR, File Geodatabase, DOCX, FlatGeobuf, service URLs.
+For every lane a ceiling stays (bytes, records, pages, pixels, points). At the ceiling the item ends `read_to_limit` with what was read, what was not, and why ("409,600 of about 1.2 million features read; the rest is kept, not read"). Formats with no reader by 22 October are received, kept and marked `not_understood` with their signature: DWG, E57, PLY, 7z/RAR, File Geodatabase, FlatGeobuf, service URLs.
 
 ## 10. Build order
 
 | Step | By | Work | Proof on the empty rehearsal runtime |
 |---|---|---|---|
-| **A1 Foundation** | 12 Oct | B1 (jobs pin their source, not the case); ledger tables; probe lane for vector, table, ZIP; scheduler pick rule and quotas (B2, B3) | twenty files added one after another to one batch all read; manifest lists every file with wave |
+| **A1 Foundation** | 12 Oct | B1 (jobs pin their source, not the case); B6 (table admission by stated provenance); ledger tables; probe lane for vector, table, ZIP; scheduler pick rule and quotas (B2, B3) | twenty files added one after another to one batch all read; manifest lists every file with wave |
 | **A2 Spine** | 14 Oct (M1) | one front-door route; ZIP fan-out with sidecar grouping; part pipeline steps 1–5 for GeoJSON, shapefile, GeoPackage; display read by part and by viewport (B5); LV1 scene | the NYC pack and one Indian parcel layer through the product's routes, extents at once, parts drawn as read, no frame over 100 ms |
-| **B Attach** | 17 Oct | table reader as a stream (B4) with the plan-once ladder; keys and during-stream linking; closing pass; PDF page lane routed per page; waiting-for-anchor list | footprints, then their register, then a plan PDF, in any order, end linked; an unseen table layout learned once and reused |
+| **B Attach** | 17 Oct | table reader as a stream (B4) with the plan-once ladder; mapped rows become candidates on their anchor (B7); keys and during-stream linking; closing pass; PDF page lane routed per page; waiting-for-anchor list | footprints, then their register, then a plan PDF, in any order, end linked; an unseen table layout learned once and reused |
 | **C Surface and models** | 19 Oct (M2) | raster pyramid display and roof chips; LAS/LAZ parts into a height grid; IFC structure scan; limits in words; bulk review | one file per family, one L-class file, one unknown file |
 | **D Rehearse** | 20–21 Oct | two runs from empty with files the team did not choose | recorded; list of what was not understood |
 
