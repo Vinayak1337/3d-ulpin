@@ -36,8 +36,10 @@ describe('the cards listed for a recorded unit', () => {
   });
 
   it('shows no detail and offers no PDF for a row that could not be read back consistently', () => {
-    expect(cardRows([inconsistent])).toEqual([{ key: `${listed.cardId}:2`, cardId: listed.cardId,
-      card: '6a997624', revision: 2, issued: null, status: 'Inconsistent', tone: 'warning', readable: false, unit: null }]);
+    expect(cardRows([inconsistent])).toEqual([{
+      key: `${listed.cardId}:2`, cardId: listed.cardId, card: '6a997624', revision: 2, issued: null,
+      status: 'Inconsistent', tone: 'warning', readable: false, unit: null,
+    }]);
   });
 
   it('does not word a missing expiry as valid', () => {
