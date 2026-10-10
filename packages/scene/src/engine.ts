@@ -48,6 +48,21 @@ interface Entry {
   look?: BuildingLook;
 }
 
+interface BaseBatch {
+  inputs: Map<string, BaseFeatureInput>;
+  parcel: LineSegments | null;
+  roadKerbs: LineSegments | null;
+  sidewalkKerbs: LineSegments | null;
+  lanes: LineSegments | null;
+}
+
+interface BaseEntry {
+  input: BaseFeatureInput;
+  mesh: Mesh | null;
+  bounds: Box3;
+  batch: BaseBatch;
+}
+
 const CAMERA_MS = 600;
 const GROW_MS = 220;
 // Leave most of a 16.7 ms frame for WebGL uploads, drawing and the browser. One building is atomic.
@@ -95,6 +110,10 @@ export class SceneEngine {
     finish: (drawn: boolean) => void;
   }>();
   private baseInputs: BaseFeatureInput[] = [];
+  private readonly baseEntries = new Map<string, BaseEntry>();
+  private readonly baseBatches = new Set<BaseBatch>();
+  private readonly utilityMeshes = new Map<string, { input: BaseFeatureInput; mesh: Mesh }>();
+  private hasSidewalks = false;
   private renderedBase = new Set<string>();
   private baseNeedsDraw = false;
   private notifyDrain = false;
@@ -399,8 +418,13 @@ export class SceneEngine {
       if (layer === 'trees') return this.layers.trees && this.layers.publicLand;
       return true;
     };
-    for (const child of this.base.children) child.visible = on(child.userData.layer);
+    for (const child of this.base.children) {
+      if (child !== this.kerbs) child.visible = on(child.userData.layer);
+    }
     this.kerbs.visible = this.lookName === 'enhanced' && this.layers.roads;
+    for (const batch of this.baseBatches) {
+      if (batch.roadKerbs) batch.roadKerbs.visible = !this.hasSidewalks;
+    }
     this.trees.visible = this.layers.trees && this.layers.publicLand;
   }
 
@@ -448,73 +472,139 @@ export class SceneEngine {
 
   /** Base map: roads, public land, water and parcel lines; utilities are kept for underground mode. */
   setBase(features: BaseFeatureInput[]): void {
-    if (sameInputs(this.baseInputs, features)) return;
+    if (this.disposed || sameInputs(this.baseInputs, features)) return;
     this.baseInputs = [...features];
     this.baseNeedsDraw = true;
-    this.baseBox.makeEmpty();
-    const bounds = boundsOf(features.filter((feature) => feature.kind !== 'utility'));
-    if (bounds) this.baseBox.set(
-      new Vector3(bounds.minX, 0, -bounds.maxY), new Vector3(bounds.maxX, 0, -bounds.minY),
-    );
-    disposeGroup(this.base);
-    disposeGroup(this.kerbs);
-    this.base.add(this.kerbs);
-    for (const key of [...this.anchors.keys()]) if (key.startsWith('name:')) this.anchors.delete(key);
-    const m = this.m;
-    const kerbLines: number[] = [];
-    const laneLines: number[] = [];
-    const lift: Record<string, number> = { public_land: 0.019, road: 0.021, water: 0.03 };
-    this.raised.length = 0;
-    for (const key of [...this.anchorSizes.keys()]) if (key.startsWith('name:')) this.anchorSizes.delete(key);
-    // Recorded sidewalks carry the real kerb edges; then road seams get no kerb line.
-    const hasSidewalks = features.some((f) => f.surface === 'sidewalk');
-    const parcelLines: number[] = [];
-    for (const f of features) {
-      if (f.kind === 'utility') continue;
-      if (f.kind === 'parcel') {
-        for (const polygon of f.polygons) parcelLines.push(...ringLines(polygon[0] ?? [], 0.06));
-        continue;
-      }
-      const shapes = shapesFor(f.polygons);
-      if (!shapes.length) continue;
-      const sidewalk = f.surface === 'sidewalk';
-      if (f.kind === 'road' && sidewalk) {
-        for (const polygon of f.polygons) for (const ring of polygon) kerbLines.push(...ringLines(ring, SIDEWALK_M + 0.005));
-      } else if (f.kind === 'road' && f.surface !== 'court') {
-        if (!hasSidewalks) for (const polygon of f.polygons) for (const ring of polygon) kerbLines.push(...ringLines(ring, 0.05));
-        laneLines.push(...laneDashes(f.polygons, 0.05));
-      }
-      const material = sidewalk ? m.sidewalk : f.surface === 'court' ? m.court : f.kind === 'road' ? m.road : f.kind === 'water' ? m.water : m.publicLand;
-      // Sidewalks are raised a kerb's height in the enhanced view (illustrative 15 cm); flat in plain view.
-      const mesh = new Mesh(sidewalk ? prismGeometry(f.polygons, 0, SIDEWALK_M) : prismGeometry(f.polygons, lift[f.kind] ?? 0.02, 0.001), material);
-      mesh.receiveShadow = true;
-      mesh.renderOrder = CONTEXT_FILL_ORDER;
-      mesh.userData.layer = f.kind;
-      if (sidewalk) this.raised.push(mesh);
-      if (f.name) {
-        const point = labelPoint(f.polygons);
-        if (point) {
-          this.anchors.set(`name:${f.id}`, new Vector3(point.x, 0.3, -point.y));
-          this.anchorSizes.set(`name:${f.id}`, point.sizeM);
-        }
-      }
-      this.base.add(mesh);
+    const wanted = new Map(features.map((input) => [input.id, input]));
+    const dirty = new Set<BaseBatch>();
+    const arriving: BaseFeatureInput[] = [];
+    for (const [id, entry] of this.baseEntries) {
+      const input = wanted.get(id);
+      if (input && sameInput(entry.input, input)) continue;
+      this.removeBaseEntry(id, entry);
+      dirty.add(entry.batch);
+      if (input) this.addBaseEntry(input, entry.batch);
     }
-    if (parcelLines.length) { const l = lines(parcelLines, m.parcel); l.userData.layer = 'parcel'; this.base.add(l); }
-    if (kerbLines.length) this.kerbs.add(lines(kerbLines, hasSidewalks ? m.kerbEdge : m.kerb));
-    this.applyRaise();
-    if (laneLines.length) this.kerbs.add(lines(laneLines, m.kerb));
-    const hadRoads = this.hasRoads;
-    this.hasRoads = features.some((f) => f.kind === 'road');
-    if (hadRoads !== this.hasRoads) this.setLook(this.lookName);
-    this.lands = features.filter((f) => f.kind === 'public_land').map((f) => ({ id: f.id, polygons: f.polygons }));
-    this.dressingDirty = true;
-    this.buildDressing();
-    this.applyLayers();
-    this.utilityInputs = features.filter((f) => f.kind === 'utility');
-    this.buildUtilities();
+    for (const input of wanted.values()) if (!this.baseEntries.has(input.id)) arriving.push(input);
+    if (arriving.length) {
+      const batch: BaseBatch = { inputs: new Map(), parcel: null, roadKerbs: null, sidewalkKerbs: null, lanes: null };
+      this.baseBatches.add(batch);
+      for (const input of arriving) this.addBaseEntry(input, batch);
+      dirty.add(batch);
+    }
+    for (const batch of dirty) this.rebuildBaseLines(batch);
+    this.updateBaseDerived(features);
     this.apply();
     this.followArrivedContent();
+  }
+
+  private addBaseEntry(input: BaseFeatureInput, batch: BaseBatch) {
+    const mesh = this.baseSurface(input);
+    const bounds = boundsOf([input]);
+    const box = new Box3();
+    if (bounds && input.kind !== 'utility') box.set(
+      new Vector3(bounds.minX, 0, -bounds.maxY), new Vector3(bounds.maxX, 0, -bounds.minY),
+    );
+    batch.inputs.set(input.id, input);
+    this.baseEntries.set(input.id, { input, mesh, bounds: box, batch });
+    if (!mesh) return;
+    this.base.add(mesh);
+    if (input.surface === 'sidewalk') this.raised.push(mesh);
+    if (input.name) {
+      const point = labelPoint(input.polygons);
+      if (point) {
+        this.anchors.set(`name:${input.id}`, new Vector3(point.x, 0.3, -point.y));
+        this.anchorSizes.set(`name:${input.id}`, point.sizeM);
+      }
+    }
+  }
+
+  private baseSurface(input: BaseFeatureInput): Mesh | null {
+    if (input.kind === 'utility' || input.kind === 'parcel' || !shapesFor(input.polygons).length) return null;
+    const sidewalk = input.surface === 'sidewalk';
+    const m = this.m;
+    let material = m.publicLand;
+    if (input.kind === 'road') material = m.road;
+    if (input.kind === 'water') material = m.water;
+    if (input.surface === 'court') material = m.court;
+    if (sidewalk) material = m.sidewalk;
+    const lift: Record<string, number> = { public_land: 0.019, road: 0.021, water: 0.03 };
+    const geometry = sidewalk ? prismGeometry(input.polygons, 0, SIDEWALK_M)
+      : prismGeometry(input.polygons, lift[input.kind] ?? 0.02, 0.001);
+    const mesh = new Mesh(geometry, material);
+    mesh.receiveShadow = true;
+    mesh.renderOrder = CONTEXT_FILL_ORDER;
+    mesh.userData.layer = input.kind;
+    return mesh;
+  }
+
+  private removeBaseEntry(id: string, entry: BaseEntry) {
+    if (entry.mesh) {
+      this.base.remove(entry.mesh);
+      entry.mesh.geometry.dispose();
+      const raised = this.raised.indexOf(entry.mesh);
+      if (raised >= 0) this.raised.splice(raised, 1);
+    }
+    entry.batch.inputs.delete(id);
+    this.baseEntries.delete(id);
+    this.anchors.delete(`name:${id}`);
+    this.anchorSizes.delete(`name:${id}`);
+  }
+
+  private rebuildBaseLines(batch: BaseBatch) {
+    for (const object of [batch.parcel, batch.roadKerbs, batch.sidewalkKerbs, batch.lanes]) {
+      if (!object) continue;
+      object.removeFromParent();
+      object.geometry.dispose();
+    }
+    const parcel: number[] = [], roads: number[] = [], sidewalks: number[] = [], lanes: number[] = [];
+    for (const input of batch.inputs.values()) {
+      if (input.kind === 'parcel') {
+        for (const polygon of input.polygons) parcel.push(...ringLines(polygon[0] ?? [], 0.06));
+      } else if (input.kind === 'road') {
+        const sidewalk = input.surface === 'sidewalk';
+        if (!sidewalk && input.surface === 'court') continue;
+        const target = sidewalk ? sidewalks : roads;
+        for (const polygon of input.polygons) for (const ring of polygon) {
+          target.push(...ringLines(ring, sidewalk ? SIDEWALK_M + 0.005 : 0.05));
+        }
+        if (!sidewalk) lanes.push(...laneDashes(input.polygons, 0.05));
+      }
+    }
+    batch.parcel = this.baseLines(parcel, this.m.parcel, this.base, 'parcel');
+    batch.roadKerbs = this.baseLines(roads, this.m.kerb, this.kerbs);
+    batch.sidewalkKerbs = this.baseLines(sidewalks, this.m.kerbEdge, this.kerbs);
+    batch.lanes = this.baseLines(lanes, this.m.kerb, this.kerbs);
+    if (!batch.inputs.size) this.baseBatches.delete(batch);
+  }
+
+  private baseLines(points: number[], material: LineBasicMaterial, parent: Group, layer?: string) {
+    if (!points.length) return null;
+    const object = lines(points, material);
+    object.userData.layer = layer;
+    parent.add(object);
+    return object;
+  }
+
+  private updateBaseDerived(features: BaseFeatureInput[]) {
+    this.baseBox.makeEmpty();
+    for (const entry of this.baseEntries.values()) this.baseBox.union(entry.bounds);
+    this.hasSidewalks = features.some((input) => input.surface === 'sidewalk');
+    this.applyRaise();
+    const hadRoads = this.hasRoads;
+    this.hasRoads = features.some((input) => input.kind === 'road');
+    if (hadRoads !== this.hasRoads) this.setLook(this.lookName);
+    const lands = features.filter((input) => input.kind === 'public_land');
+    const previous = this.lands;
+    this.lands = lands.map((input) => ({ id: input.id, polygons: input.polygons }));
+    if (previous.length !== lands.length || previous.some((land, index) =>
+      land.id !== lands[index]?.id || land.polygons !== lands[index]?.polygons)) {
+      this.dressingDirty = true;
+    }
+    this.buildDressing();
+    this.applyLayers();
+    this.utilityInputs = features.filter((input) => input.kind === 'utility');
+    this.buildUtilities();
   }
 
   /** Whole-list truth: retain unchanged meshes, remove missing ids, rebuild changed ids, queue new ids. */
@@ -1016,20 +1106,34 @@ export class SceneEngine {
   }
 
   private buildUtilities() {
-    disposeGroup(this.utilities);
-    for (const u of this.utilityInputs) {
-      if (u.lowerM === undefined || u.upperM === undefined) continue;
-      const color = this.options.palette.utilities[u.network ?? ''] ?? this.options.palette.utilities.water!;
-      const corridor = u.upperM - u.lowerM > 1;
-      const material = corridor
-        ? new MeshStandardMaterial({ color, transparent: true, opacity: 0.42, depthWrite: false, roughness: 0.6 })
-        : new MeshStandardMaterial({ color, roughness: 0.35, metalness: 0.1 });
-      const mesh = new Mesh(prismGeometry(u.polygons, u.lowerM, u.upperM - u.lowerM), material);
-      mesh.castShadow = !corridor;
-      this.utilities.add(mesh);
-      const box = mesh.geometry.boundingBox!;
-      this.anchors.set(`utility:${u.id}`, new Vector3(box.max.x * 0.4, u.upperM, (box.min.z + box.max.z) / 2));
+    const wanted = new Map(this.utilityInputs.map((input) => [input.id, input]));
+    for (const [id, entry] of this.utilityMeshes) {
+      const input = wanted.get(id);
+      if (input && sameInput(entry.input, input)) continue;
+      entry.mesh.removeFromParent();
+      entry.mesh.geometry.dispose();
+      (entry.mesh.material as Material).dispose();
+      this.utilityMeshes.delete(id);
+      this.anchors.delete(`utility:${id}`);
     }
+    for (const input of wanted.values()) {
+      if (!this.utilityMeshes.has(input.id)) this.addUtility(input);
+    }
+  }
+
+  private addUtility(input: BaseFeatureInput) {
+    if (input.lowerM === undefined || input.upperM === undefined) return;
+    const color = this.options.palette.utilities[input.network ?? ''] ?? this.options.palette.utilities.water!;
+    const corridor = input.upperM - input.lowerM > 1;
+    const material = corridor
+      ? new MeshStandardMaterial({ color, transparent: true, opacity: 0.42, depthWrite: false, roughness: 0.6 })
+      : new MeshStandardMaterial({ color, roughness: 0.35, metalness: 0.1 });
+    const mesh = new Mesh(prismGeometry(input.polygons, input.lowerM, input.upperM - input.lowerM), material);
+    mesh.castShadow = !corridor;
+    this.utilities.add(mesh);
+    this.utilityMeshes.set(input.id, { input, mesh });
+    const box = mesh.geometry.boundingBox!;
+    this.anchors.set(`utility:${input.id}`, new Vector3(box.max.x * 0.4, input.upperM, (box.min.z + box.max.z) / 2));
   }
 
   /** Soil block, depth ruler and a "No survey" plate under the selected building (underground mode). */
