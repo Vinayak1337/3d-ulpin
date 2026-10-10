@@ -64270,6 +64270,46 @@
                 },
                 "subject": {
                   "type": "string"
+                },
+                "transcription": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "by": {
+                          "type": "string",
+                          "enum": [
+                            "agent"
+                          ]
+                        },
+                        "agent": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "by",
+                        "agent"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "by": {
+                          "type": "string",
+                          "enum": [
+                            "officer"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "by"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
                 }
               },
               "required": [
@@ -66742,6 +66782,46 @@
                 },
                 "subject": {
                   "type": "string"
+                },
+                "transcription": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "by": {
+                          "type": "string",
+                          "enum": [
+                            "agent"
+                          ]
+                        },
+                        "agent": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        }
+                      },
+                      "required": [
+                        "by",
+                        "agent"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "by": {
+                          "type": "string",
+                          "enum": [
+                            "officer"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "by"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
                 }
               },
               "required": [
@@ -71079,6 +71159,46 @@
                       },
                       "subject": {
                         "type": "string"
+                      },
+                      "transcription": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "by": {
+                                "type": "string",
+                                "enum": [
+                                  "agent"
+                                ]
+                              },
+                              "agent": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 500
+                              }
+                            },
+                            "required": [
+                              "by",
+                              "agent"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "by": {
+                                "type": "string",
+                                "enum": [
+                                  "officer"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "by"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
                       }
                     },
                     "required": [

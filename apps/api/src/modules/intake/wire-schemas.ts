@@ -1,6 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiResponse } from '@nestjs/swagger';
 import { z } from 'zod';
+import { ClaimTranscriptionSchema } from '@ulpin/contracts';
 import {GisQuarantineSchema} from '@ulpin/contracts';
 import { LargeOriginalEvidenceSchema } from '@ulpin/contracts/usp';
 
@@ -172,16 +173,20 @@ const factCandidate = z.object({
   method: z.enum(['native_parse', 'ai_extraction', 'human_entry', 'derived']),
   evidenceState: z.enum(['unresolved', 'estimated', 'source_supported', 'reviewed']),
   worldStatus: z.enum(['observed', 'planned', 'hypothetical', 'synthetic']), subject: z.string().optional(),
+  transcription: ClaimTranscriptionSchema.optional(),
 });
 export const importPackage = z.object({
   geometryFree: z.literal(true).optional(),
   administrativeContext: z.object({sourceId: uuid, sourceCrs: z.string(), units: z.array(z.object({
     id: uuid, sourceKey: z.string(), kind: z.literal('sector'), name: z.string(), rings: z.array(z.array(point)),
   }))}).optional(),
-  documentPins: z.array(z.object({sourceId: uuid, sourceRevision: z.number().int(), sourceSha256: z.string()})).optional(),
+  documentPins: z.array(z.object({
+    sourceId: uuid, sourceRevision: z.number().int(), sourceSha256: z.string(),
+  })).optional(),
   sourceMetadata: z.array(z.object({
     key: z.string(), filename: z.string(), sourceSha256: z.string(), originalUrl: z.string(),
-    issuer: z.string(), acquiredAt: z.string(), permission: z.literal('unconfirmed'), classification: z.literal('test_only'),
+    issuer: z.string(), acquiredAt: z.string(),
+    permission: z.literal('unconfirmed'), classification: z.literal('test_only'),
   })).optional(),
   quarantine:GisQuarantineSchema.optional(),
   id: uuid, schemaVersion: z.literal('ulpin-canonical/2'), areaId: uuid, name: z.string(),

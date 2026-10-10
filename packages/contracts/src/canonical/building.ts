@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { CanonicalMappedValueSchema } from './mapping-plan';
-import type { ImportPackage, PhysicalFeature } from '../area';
+import type { FactCandidate, ImportPackage, PhysicalFeature } from '../area';
 
 export const NORMALIZED_BUILDING_VERSION = 'normalized-building/1' as const;
 /** The mapping vocabulary also has needs_input (a workflow state, not a record value state). */
@@ -285,7 +285,14 @@ const sourceImportCitation = z.strictObject({
   quote: sourceImportText.optional(),
 });
 
-/** Original-backed human transcriptions, not extracted facts or analytical geometry. */
+export const ClaimTranscriptionSchema = z.discriminatedUnion('by', [
+  z.strictObject({ by: z.literal('agent'), agent: sourceImportText }),
+  z.strictObject({ by: z.literal('officer') }),
+]);
+export type ClaimTranscription = z.infer<typeof ClaimTranscriptionSchema>;
+export type SourceBuildingClaim = FactCandidate & { transcription: ClaimTranscription };
+
+/** Original-backed transcriptions; agent claims remain candidates until officer confirmation. */
 export const SourceBuildingImportSchema = z.strictObject({
   format: z.enum(['document_buildings', 'administrative_context']),
   requestKey: sourceImportId,
@@ -315,6 +322,7 @@ export const SourceBuildingImportSchema = z.strictObject({
       property: z.enum(['building.storeyLabel', 'building.storeyCount', 'building.floorCount']),
       value: z.union([sourceImportText, z.number().int().nonnegative()]),
       method: z.literal('source_literal'),
+      transcription: ClaimTranscriptionSchema,
       citations: z.array(sourceImportCitation).min(1).max(20),
     })).max(30),
   })).max(100),
@@ -329,7 +337,9 @@ export const SourceBuildingImportSchema = z.strictObject({
   }
   if (input.format === 'administrative_context' && (input.buildings.length || !input.administrativeContext
     || !input.areaId || input.documents.length !== 1)) {
-    ctx.addIssue({ code: 'custom', message: 'Administrative context needs one original, a pinned area and no buildings.' });
+    ctx.addIssue({
+      code: 'custom', message: 'Administrative context needs one original, a pinned area and no buildings.',
+    });
   }
   const keys = new Set(input.documents.map(document => document.key));
   if (keys.size !== input.documents.length) {
@@ -360,8 +370,9 @@ export type SourceBuildingImport = z.infer<typeof SourceBuildingImportSchema>;
 export type SourceBuildingFeature = Omit<
   PhysicalFeature, 'geometry' | 'geographicGeometry' | 'sourceGeometry'
 > & { geometry: null; geographicGeometry: null; sourceGeometry: null; placement: 'unknown' };
-export type SourceBuildingPackage = Omit<ImportPackage, 'features'> & {
+export type SourceBuildingPackage = Omit<ImportPackage, 'features' | 'factCandidates'> & {
   geometryFree: true;
+  factCandidates: SourceBuildingClaim[];
   features: SourceBuildingFeature[];
   documentPins: { sourceId: string; sourceRevision: number; sourceSha256: string }[];
   sourceMetadata: SourceBuildingImport['documents'];

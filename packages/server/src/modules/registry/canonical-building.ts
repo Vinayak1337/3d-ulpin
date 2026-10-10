@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import {
+  ClaimTranscriptionSchema,
   NormalizedBuildingSchema,
   type AreaContext,
   type AreaFrame,
@@ -349,9 +350,21 @@ async function projectParcelRefs(dossier: CanonicalBuildingSource): Promise<Norm
   return refs;
 }
 
+/** Legacy source-only claims have no verified transcriber; fail closed without rewriting their history. */
+function sourceClaimProvenance(claim: FactCandidate, sourceOnly: boolean): FactCandidate {
+  if (!sourceOnly) return claim;
+  const transcription = ClaimTranscriptionSchema.safeParse(
+    'transcription' in claim ? claim.transcription : undefined,
+  );
+  if (transcription.success && transcription.data.by === 'officer') return claim;
+  return { ...claim, method: 'ai_extraction', evidenceState: 'unresolved' };
+}
+
 function uniqueClaims(dossier: CanonicalBuildingSource, property: string): FactCandidate[] {
   const claims = dossier.packages
-    .flatMap(pack => pack.factCandidates)
+    .flatMap(pack => pack.factCandidates.map(claim => (
+      sourceClaimProvenance(claim, 'geometryFree' in pack && pack.geometryFree === true)
+    )))
     .filter(claim => claim.entityId === dossier.building.id && claim.property === property);
   return [...new Map(claims.map(claim => [JSON.stringify(claim.value), claim])).values()];
 }
@@ -362,6 +375,13 @@ function claimState(claim: FactCandidate): BuildingValueState {
 }
 
 function claimMethod(claim: FactCandidate, sourceLiteral: boolean): string {
+  if (claim.method === 'ai_extraction') {
+    const transcription = ClaimTranscriptionSchema.safeParse(
+      'transcription' in claim ? claim.transcription : undefined,
+    );
+    const agent = transcription.success && transcription.data.by === 'agent' ? transcription.data.agent : 'unverified';
+    return `model:agent-transcription@${encodeURIComponent(agent)}`;
+  }
   if (sourceLiteral || claim.method === 'native_parse') return 'source_literal';
   return 'deterministic:retained-claim-projection@1';
 }
@@ -376,7 +396,9 @@ async function claimAlternatives(
     const { value } = claim;
     if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') continue;
     const citations = await canonicalCitations(claim.evidence, siteId);
-    alternatives.push(canonicalValue(value, claimState(claim), citations, claimMethod(claim, sourceLiteral), claim.unit));
+    alternatives.push(canonicalValue(
+      value, claimState(claim), citations, claimMethod(claim, sourceLiteral), claim.unit,
+    ));
   }
   return alternatives;
 }
