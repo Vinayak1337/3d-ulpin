@@ -71,13 +71,16 @@ export class IngestionController {
     selection:{type:'string',description:'JSON tabular selection: format, sheet, table:null, ordered headerRows'},
     requestKey:{type:'string',format:'uuid'},expectedWorkspaceRevision:{type:'integer',minimum:0},
     familyId:{type:'string',format:'uuid'},expectedSourceRevision:{type:'integer',minimum:1},
+    issuer:{type:'string',minLength:1,maxLength:500},
+    licence:{type:'string',enum:['unconfirmed','open','restricted']},
+    containsPersonalData:{type:'string',enum:['unknown','yes','no']},
   })
   @wireResponse(201,AnySourceProfileSchema)
   async retain(@Param('caseId') caseId:string,@Req() request:Request){
     const form=await readMultipartBody(request,MULTIPART_BODY_LIMIT),file=form.get('file');
     if(!(file instanceof File))throw new AppError(400,'MISSING_FILE','Choose an original for the selected format.');
     const allowed=new Set(['file','format','selection','requestKey','expectedWorkspaceRevision',
-      'familyId','expectedSourceRevision']);
+      'familyId','expectedSourceRevision','issuer','licence','containsPersonalData']);
     for(const key of form.keys())if(!allowed.has(key)||form.getAll(key).length!==1)throw new AppError(422,'INVALID_INPUT','Use one value for each allowed receipt field.');
     let selection:unknown;
     if(form.has('selection')){
@@ -85,6 +88,9 @@ export class IngestionController {
       catch{throw new AppError(422,'INVALID_INPUT','Selection must be one JSON object.');}
     }
     return this.ingestion.retain(caseId,{...(selection!==undefined?{selection}:{}),
+      ...(form.has('issuer')?{issuer:form.get('issuer')}:{}),
+      ...(form.has('licence')?{licence:form.get('licence')}:{}),
+      ...(form.has('containsPersonalData')?{containsPersonalData:form.get('containsPersonalData')}:{}),
       format:form.get('format'),requestKey:form.get('requestKey'),
       expectedWorkspaceRevision:form.has('expectedWorkspaceRevision')?Number(form.get('expectedWorkspaceRevision')):undefined,
       ...(form.has('familyId')?{familyId:form.get('familyId')}:{}),...(form.has('expectedSourceRevision')?{expectedSourceRevision:Number(form.get('expectedSourceRevision'))}:{}),
