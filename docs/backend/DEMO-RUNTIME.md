@@ -1,8 +1,9 @@
 # Pinned demo runtime
 
 The demo API and dispatcher run from `E:/Projects/ulpin-wt/demo`, a detached, unedited checkout.
-Current reviewed staging commit: `83965a21` (10 October 2026; R4 rollout, K8 snapshot listing and J1a journey,
-no schema step pending, document runtimes rebuilt).
+Current reviewed staging commit: `18b5e74c` (10 October 2026; R5c roll-out, K8b snapshot order, K11b review reads
+and K12 plan entries and card preview, no schema step pending, document runtimes rebuilt on the project-owned
+interpreter).
 Loopback API: `http://127.0.0.1:3194`; external demo configuration stays outside every checkout.
 Only the runtime owner explicitly named in a task file may roll this checkout forward.
 Worker worktrees must never serve the demo: lazy imports would mix unreviewed changes into running processes.
@@ -98,7 +99,9 @@ literal labels only, never a unit boundary, numeric level, measurements, rights 
 ## Changing the document interpreter
 
 Runtime owner only, after lead review of `docs/evidence/gf1/k9/result.json` and `docs/evidence/gf1/k9c/result.json`.
-No switch was made by K9, K9b or K9c: the workers ran both actions only as dry runs on synthetic copies.
+K9, K9b and K9c ran both actions only as dry runs on synthetic copies. The switch was made by R5c on 10 October
+2026 at 16:16:06 UTC, during its roll-out; the file it saved, which a rollback needs, is
+`ocr-paths-profile.previous-2026-10-10T16-16-06-121Z.json`.
 The project-owned environment is `E:/BhuAayam-data/ml/venv-demo-documents-20261010`.
 Its `pyvenv.cfg` binds the full `base/cpython-3.12.14-windows-x86_64-none` directory, not uv's patch alias.
 The new environment/base deny ordinary writes; retain that ACL and rebuild deliberately after any owner change.
