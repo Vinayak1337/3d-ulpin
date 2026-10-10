@@ -32,5 +32,13 @@ path update. Doctor reports **eng+hin assets**, not Hindi execution: the accepte
 
 Success criterion: one new API region retry produces source-bound observations under unchanged bounds, or
 records its precise failure with no further retries. No source claim or officer decision adopts OCR output.
+**API comparison result:** job `828d327b-f9f7-4a12-b4fb-39c756c02ab3` completed with a failed OCR observation:
+`OCR_SUPERVISOR_FAILED`, no first lines. The bounded worker exited 1 after 10.25 seconds, peak private bytes
+999,006,208, no resource termination. The native missing-DLL failure was fixed and independently probed, but
+this subsequent pipeline failure is **not diagnosed**: the accepted bridge exposes only candidate/log hashes
+and cleans the underlying failed output. No second API retry or additional OCR execution was performed.
+[Status and hashes](ocr-result.json) are retained. Next prerequisite: runner/bridge-owner retention of sanitized
+failed candidate detail and traceback under the same bounds, not another crop sweep or blind retry.
+
 Full trace, render, direct receipts and acquisition log stay outside Git; only compact summaries are published.
 The lead must add these software/language assets to the unowned acquisition catalogue if a catalogue entry is required.

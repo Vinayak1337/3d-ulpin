@@ -106,7 +106,9 @@ test('checked-page decision preserves alternatives for both selection and unreso
     setRuntimeLoopbackPort(address.port);
     const url = `http://127.0.0.1:${address.port}/api/v1/buildings/${retained.buildingId}/conflict-decisions`;
     const input = selectedRequest();
-    const response = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' },
+    const response = await fetch(url, { method: 'POST', headers: {
+      'content-type': 'application/json', 'idempotency-key': input.requestKey,
+    },
       body: JSON.stringify(input) });
     assert.equal(response.status, 201);
     assert.equal(response.headers.get('cache-control'), 'private, no-store');

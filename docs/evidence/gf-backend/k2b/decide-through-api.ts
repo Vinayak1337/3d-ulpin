@@ -41,7 +41,8 @@ if (!existsSync(requestPath)) {
   save('officer-request', request);
 }
 const send = () => fetch(`${base}/buildings/${buildingId}/conflict-decisions`, {
-  method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(request),
+  method: 'POST', headers: { 'content-type': 'application/json', 'idempotency-key': request.requestKey },
+  body: JSON.stringify(request),
 });
 const response = await send();
 const raw = await response.json();
@@ -64,7 +65,9 @@ const revisions = await revisionsResponse.json();
 assert.equal(revisions.currentRevision, 2);
 assert.deepEqual(revisions.revisions.map((entry: { revision: number }) => entry.revision), [2, 1]);
 save('revision-history', { featureId: buildingId, currentRevision: revisions.currentRevision,
-  revisions: revisions.revisions.map((entry: { revision: number; createdAt: string; body: { properties: object } }) => ({
+  revisions: revisions.revisions.map((entry: {
+    revision: number; createdAt: string; body: { properties: object };
+  }) => ({
     revision: entry.revision, createdAt: entry.createdAt,
     hasOfficerDecision: Object.hasOwn(entry.body.properties, 'officerConflictDecision'),
   })), originalsOrAlternativesDeleted: false });

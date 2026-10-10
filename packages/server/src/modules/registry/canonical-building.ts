@@ -432,7 +432,10 @@ async function applyClaimProperty(
   if (unique.length === 1) {
     const [claim] = unique;
     if (property !== 'building.storeyLabel' || typeof claim.value !== 'string') return;
-    building.storeyLabel = canonicalValue(claim.value, 'candidate', await canonicalCitations(claim.evidence, siteId));
+    building.storeyLabel = canonicalValue(
+      claim.value, claimState(claim), await canonicalCitations(claim.evidence, siteId),
+      claimMethod(claim, dossier.building.geometry === null),
+    );
     return;
   }
   if (unique.length < 2) return;

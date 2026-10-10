@@ -36,4 +36,6 @@ const evidence = { issuer: 'tesseract-ocr/tessdata_fast', commit, acquiredAt: ne
     { language: 'eng', operation: 'unchanged copy of retained pinned asset', sha256: hash(english) },
   ], qualification: 'assets available; runner currently configured for English only, not Hindi execution' };
 writeFileSync('docs/evidence/gf-backend/k2b/tessdata-acquisition.json', JSON.stringify(evidence, null, 2) + '\n');
-console.log(JSON.stringify({ commit, hindiSha256: hash(hindi), languages: 'eng+hin', retainedEnvironmentModified: false }));
+console.log(JSON.stringify({
+  commit, hindiSha256: hash(hindi), languages: 'eng+hin', retainedEnvironmentModified: false,
+}));

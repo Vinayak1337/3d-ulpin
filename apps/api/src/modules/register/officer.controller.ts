@@ -1,5 +1,7 @@
-import { Controller, Get, Header, HttpCode, Inject, Param, Patch, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Controller, Get, Header, HttpCode, Inject, Param, Patch, Post, Query, Req, Res, UseGuards,
+} from '@nestjs/common';
+import { ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { BuildingConflictDecisionRequestSchema, BuildingConflictDecisionSchema } from '@ulpin/contracts';
@@ -35,11 +37,19 @@ export class OfficerController {
   @Header('Cache-Control', 'private, no-store')
   @ApiOperation({ operationId: 'POST_api_v1_buildings_buildingId_conflict_decisions',
     summary: 'Append a checked-page officer conflict decision without deleting source alternatives' })
+  @ApiParam({ name: 'buildingId', schema: { type: 'string', format: 'uuid' } })
+  @ApiHeader({ name: 'Idempotency-Key', required: true, schema: { type: 'string', format: 'uuid' } })
   @jsonBody(BuildingConflictDecisionRequestSchema)
   @wireResponse(201, BuildingConflictDecisionSchema)
   async conflictDecision(@Param('buildingId') buildingId: string, @Req() req: Request) {
-    if (queryUrl(req).search) throw new AppError(422, 'CONFLICT_DECISION_QUERY', 'This command accepts no query fields.');
-    return this.service.conflictDecision(uuid.parse(buildingId), await body(req, BuildingConflictDecisionRequestSchema));
+    if (queryUrl(req).search) {
+      throw new AppError(422, 'CONFLICT_DECISION_QUERY', 'This command accepts no query fields.');
+    }
+    const input = await body(req, BuildingConflictDecisionRequestSchema);
+    if (uuid.parse(req.header('idempotency-key')) !== input.requestKey) {
+      throw new AppError(422, 'CONFLICT_DECISION_KEY', 'Match Idempotency-Key to the decision request key.');
+    }
+    return this.service.conflictDecision(uuid.parse(buildingId), input);
   }
 
   @Get('work-queue')
