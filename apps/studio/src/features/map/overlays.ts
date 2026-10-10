@@ -109,7 +109,10 @@ async function imageryOverlay(d: SupplementalDataset, ref: AreaReference, signal
     label: `Aerial${d.captureYear ? ` · ${d.captureYear}` : ''}`,
     caption: `Aerial ${d.captureYear ?? 'date unknown'} · georeferenced`,
     note: `${d.name}: georeferenced image; source coverage only.`,
-    input: { id: d.sourceId, kind: 'image', corners: [local(west, south), local(east, south), local(east, north), local(west, north)], image: canvas },
+    input: {
+      id: d.sourceId, kind: 'image', role: 'ground',
+      corners: [local(west, south), local(east, south), local(east, north), local(west, north)], image: canvas,
+    },
   };
 }
 
@@ -244,7 +247,7 @@ async function loadImage(
   read: ReadPicture,
 ): Promise<ImageOverlayInput> {
   const corners = sceneCorners(overlay.corners);
-  return { id: overlay.id, kind: 'image', corners, image: await read(overlay.originalUrl, signal) };
+  return { id: overlay.id, kind: 'image', role: 'ground', corners, image: await read(overlay.originalUrl, signal) };
 }
 
 /** Asks for each listed picture once; one that fails is counted and never fails the others. */

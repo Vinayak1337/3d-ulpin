@@ -1,0 +1,200 @@
+{
+  "report": [
+    "TASK   MP3 — Pictures under records; no map draft assignment            GATE GF5 B7, M2",
+    "WORKS  Ground pictures stay below records; aerials require a choice; the map cannot assign a browser draft.",
+    "SEE IT pnpm --filter @ulpin/scene test",
+    "INPUTS Karnataka cb24dc86: 22 retained pictures; difficult: same real area with one PNG answered 404.",
+    "GAPS   Existing fog hides everything at 500 m; no live mixed-aerial area; 80 outlines remain report-only.",
+    "DESIGN engine.ts: ordered ground pictures without depth writes; ImageOverlayInput.role names their purpose.",
+    "       overlays.ts names both ground producers; imageryVisibility separates retained and aerial defaults.",
+    "       MapWorkspace and SpaceInspector drop assignment plumbing; UnitCardDialog is unchanged.",
+    "COMMITS 79bc74bf docs(scene): MP3 where each layer of the map is drawn and which image overlays there are",
+    "        057e8b48 fix(scene): a picture of the ground is drawn under every record",
+    "        06f27189 fix(studio): an aerial is drawn only when the viewer chose imagery",
+    "        9858cfa8 refactor(studio): the map holds no draft code dialog",
+    "        docs(studio): MP3 evidence (this commit)",
+    "CHECKS studio:typecheck 0; studio:test 0 (303→307, scene 10→12); scene regression red 1, green 0.",
+    "       capture before/after 0; both UI scans 0; diff --check 0; new-line/UTF-8/JSON checks 0.",
+    "NEXT   Lead decides candidate outlines and the retained card fallback; Studio port 5194 is free; no push."
+  ],
+  "base": "616f630a",
+  "demo": "http://127.0.0.1:3194",
+  "writes": { "sent": 0, "refusedByCaptureGuard": 0, "browserDraftAssignment": false },
+  "studio": { "port": 5194, "stopped": true, "portFree": true },
+  "part1": {
+    "role": "ImageOverlayInput.role?: ground; omitted keeps the old 0.2 m placement and depth settings",
+    "ordering": { "contextFills": -4, "groundPictures": -3, "selectionPlate": -2, "halo": -1, "records": 0 },
+    "groundPicture": {
+      "yM": 0,
+      "depthTest": false,
+      "depthWrite": false,
+      "transparent": false,
+      "alphaTest": 0.01,
+      "polygonOffset": false,
+      "raycast": "empty"
+    },
+    "why": [
+      "Opaque queue ordering puts pictures above fills but before every record, including opaque records.",
+      "No depth testing against fills means no precision-dependent bias; no writes means no record occlusion.",
+      "Alpha cutout keeps fully transparent no-data pixels clear; intermediate alpha is not blended.",
+      "No record base, height, geometry or unknown-height display thickness changed."
+    ],
+    "producers": [
+      "apps/studio/src/features/map/overlays.ts:112-115 supplemental aerial",
+      "apps/studio/src/features/map/overlays.ts:250 retained canonical PNG",
+      "MapWorkspace.tsx:149-150 active plan remains comparison, not a ground image"
+    ],
+    "regression": {
+      "file": "packages/scene/src/engine.test.ts",
+      "before": "Footprint ray distance 9.9499999993 is NOT less than picture distance 9.7999999970; exit 1",
+      "after": "Footprint is nearer; picture writes no depth and answers no ray; omitted role unchanged; exit 0"
+    },
+    "runtime": {
+      "area": "cb24dc86-2b91-4793-9586-24e8a443b8d8",
+      "pictures": 22,
+      "footprints": 1,
+      "recordState": "candidate",
+      "heightState": "unknown",
+      "beforeHidden": 1,
+      "afterHiddenByPicture": 0,
+      "footprintTopM": 0.050000000745,
+      "viewports": ["1440x900", "720x450 CSS pixels, scale 2 (200% zoom)"],
+      "distancesM": [30, 60, 120],
+      "buildingPicks": 6,
+      "realCanvasClicksSelectingBuilding": 2,
+      "stationaryFrameGroups": 6,
+      "framesPerGroup": 3,
+      "allFrameGroupsPixelIdentical": true,
+      "difficult": "PNG 404 browser double: 21 drawn; 3 building picks and 3 stable frame groups",
+      "failureHint": "1 of 22 images did not load",
+      "imageryOff": "Space on the switch removes pictures at both viewports; near/far captures retained",
+      "pageScrollsSideways": false,
+      "evidence": ["captured-before.json", "captured-after.json", "shots/before-*", "shots/after-*"],
+      "fogDiagnostic": "shots/fog-diagnostic-500.png: existing fog hides imagery AND records, before and after"
+    }
+  },
+  "part2": {
+    "function": "apps/studio/src/features/map/useMapView.ts:17 imageryVisibility",
+    "tests": "useMapView.test.ts: four cases; no choice with pictures, aerial only, chosen on, chosen off",
+    "wiring": "MapWorkspace.tsx:130-132, 147, 156 separates supplemental inputs and notes from retained visibility",
+    "switch": "Existing single switch; checked from retained default or explicit preference",
+    "notSeenLive": "No demo area with both a supplemental aerial and retained pictures; pure regressions pass"
+  },
+  "part3": {
+    "removed": ["AssignDialog import/element", "assign dialog state", "draft-code toast", "onAssign prop"],
+    "unchanged": ["features/identity/**", "features/workflow/**", "local/**", "registry card action"],
+    "newlyWithoutImporter": ["apps/studio/src/features/identity/AssignDialog.tsx"],
+    "importAudit": "Relative-import search across Studio identity/workflow/local: only AssignDialog lacks an importer",
+    "unitCardFallback": {
+      "at": "apps/studio/src/features/identity/UnitCardDialog.tsx:18-32; api/queries.ts:48,79",
+      "noneAndDraft": [
+        "snapshotCreatedAt is null when no snapshot lists a card; after settling, workflow.code opens CardDialog.",
+        "It shows DraftNotice, local code/revision/hash/chain, draft facts, audience and party-name controls.",
+        "Its QR/verification URL names the local code/revision; actions are Close, verification, Print or save PDF.",
+        "A complete empty read has no unanswered banner; incomplete/refused reads state the search gap or refusal."
+      ],
+      "listedRegistryCard": "A non-null snapshotCreatedAt opens ListedCards instead, with PDF/verification links",
+      "mapReachability": "SpaceInspector calls cardAction(cards,false): a browser draft alone enables no card button",
+      "decision": "Read and reported only; no changes and no draft code created during verification"
+    }
+  },
+  "part4": {
+    "read": "GET /api/v1/areas/cb24dc86-2b91-4793-9586-24e8a443b8d8/canonical",
+    "buildings": {
+      "count": 1,
+      "candidateRecordState": 1,
+      "name": "Reviewed roof projection candidate",
+      "fields": ["buildingId", "revisionId", "recordState", "name", "footprint", "heightM", "heightState"],
+      "height": "null / unknown; geometry present; one drawn ghost footprint, separate from the 80 proposals"
+    },
+    "candidates": {
+      "count": 80,
+      "fields": [
+        "candidateId", "task", "taskVersion", "inputManifest", "outputRef", "state", "kind", "method",
+        "modelId", "modelHash", "confidence", "confidenceCalibration", "limitations", "citations",
+        "polygons", "coordinateFrame", "levelId", "review (four only)"
+      ],
+      "kind": { "roofprint": 80 },
+      "task": { "building_roofprints": 80 },
+      "taskVersion": { "1": 80 },
+      "state": { "candidate": 76, "reviewed": 4 },
+      "reviewOutcome": { "absent": 76, "accepted": 1, "rejected": 3 },
+      "geometryPresent": 80,
+      "coordinateFrame": "area:cb24dc86-2b91-4793-9586-24e8a443b8d8:enu (80)",
+      "levelIdNull": 80,
+      "modelId": "rfdetr-ramp-ka-seg-medium-b3-v1 (80)",
+      "method": "model with modelHash (80)",
+      "confidence": { "present": 80, "min": 0.501854, "max": 0.8981, "uncalibrated": 80 },
+      "cited": 80,
+      "distinctCitedSources": 13,
+      "limitations": [
+        "test_only",
+        "Recall below preregistered target",
+        "Roof projection, not surveyed ground footprint; no height, level, ownership or rights",
+        "Confidence is uncalibrated; no new evaluation or analytical qualification",
+        "Review is source-candidate selection only, not registry recording or independent ground truth"
+      ],
+      "qualification": "Decisions select source candidates only; they are not registry admission or evaluation truth"
+    },
+    "outlineRequirements": [
+      {
+        "at": "packages/scene/src/types.ts:81-89; engine.ts:325-339, 1544-1560",
+        "need": [
+          "Add a narrow polygon-outline overlay input to the existing OverlayInput union, without height fields.",
+          "Reuse ringLines/LineDashedMaterial at display Y=0; draw after ground imagery with depthTest/write false.",
+          "No prism, grow animation, building Entry, bounds admission or raycasting; never a selectable record."
+        ]
+      },
+      {
+        "at": "apps/studio/src/features/map/canonicalScene.ts:30-37,65-72; MapWorkspace.tsx:126-178",
+        "need": [
+          "Adapt only canonical roofprint polygons in the declared area frame; missing/wrong frames stay gaps.",
+          "Keep candidates outside canonicalFootprints/toSceneInputs buildings and outside selection/search records.",
+          "Add them to overlayInputs only when their independent Layers switch is on; imagery stays independent.",
+          "Show Candidate, not reviewed with the read's test_only limitations; no height or ownership inferred."
+        ]
+      },
+      {
+        "at": "useMapView.ts:4-26,41-46; MapWorkspace.tsx:165-191; SceneLabels.tsx",
+        "need": [
+          "Persist a separate candidateOutlines display preference, default off until the lead decides otherwise.",
+          "Use the existing Layers switch plumbing and a visible candidate legend/note, with keyboard/zoom checks.",
+          "Decide whether to exclude the four decided proposals or label them separately, not as not reviewed."
+        ]
+      }
+    ],
+    "reuseWarning": [
+      "features/review/candidates/RoofprintMap.tsx:8-28 uses pickable candidate FootprintInput: not reusable as-is.",
+      "packages/contracts/src/canonical/building-scene.ts:181-207 intentionally draws buildings, not candidates.",
+      "No backend service, new acquisition, review command or registry write is needed for display-only outlines."
+    ],
+    "implemented": false
+  },
+  "checks": [
+    { "command": "pnpm studio:typecheck", "exit": 0 },
+    { "command": "pnpm studio:test (before)", "exit": 0, "studio": 303, "scene": 10, "all": 319 },
+    { "command": "pnpm studio:test (after)", "exit": 0, "studio": 307, "scene": 12, "all": 325 },
+    { "command": "pnpm --filter @ulpin/scene test (red)", "exit": 1, "expected": true },
+    { "command": "pnpm --filter @ulpin/scene test (green)", "exit": 0, "tests": 12 },
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/map/useMapView.test.ts", "exit": 0 },
+    { "command": "node docs/evidence/gf5/mp3/capture.mjs before", "exit": 0 },
+    { "command": "node docs/evidence/gf5/mp3/capture.mjs", "exit": 0 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs staging", "exit": 0 },
+    { "command": "node docs/evidence/gf-ai/ui/f2c/scan-studio.mjs staging", "exit": 0 },
+    { "command": "git diff --check", "exit": 0 },
+    { "command": "new-line / UTF-8 / evidence JSON checks", "exit": 0 },
+    { "command": "bind probe on 127.0.0.1:5194 after stopping owned Vite", "exit": 0 }
+  ],
+  "captureCorrections": [
+    "Initial near-point probe projected before camera matrix update and missed; updateMatrixWorld repaired the probe.",
+    "500 m was fog-bound on baseline and change; 30/60/120 m is the bounded visible-scene comparison.",
+    "Exact text probe missed the hint's leading middle dot twice; inspected Toggle DOM, then read Layers text instead."
+  ],
+  "designReport": "ui-design-check.md",
+  "next": [
+    "Lead: decide whether and how the 76 undecided plus four decided roofprints should be displayed.",
+    "Lead: decide whether to remove UnitCardDialog's browser-draft fallback in a separately owned task.",
+    "EV2: candidate banner's 80 waiting sentence currently includes four already-decided proposals.",
+    "Existing far-distance fog and 200% panel occupancy are unchanged; no screen-reader qualification."
+  ]
+}
