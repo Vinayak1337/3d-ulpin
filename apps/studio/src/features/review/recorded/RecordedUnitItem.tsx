@@ -23,6 +23,15 @@ function useFocusAfterClose(target: RefObject<HTMLElement | null>, open: boolean
   }, [open, target]);
 }
 
+/** A link from elsewhere names the unit in the address: the unit is scrolled to and takes focus on arrival. */
+function useArrival(target: RefObject<HTMLElement | null>, unitId: string) {
+  useEffect(() => {
+    if (window.location.hash !== `#unit-${unitId}`) return;
+    target.current?.scrollIntoView();
+    target.current?.focus();
+  }, [target, unitId]);
+}
+
 /**
  * One unit recorded from a source label: its literal, what is unknown about it, its citation and its code.
  * A unit without a code offers its review and assignment; a unit with one lists its registry cards and offers
@@ -38,8 +47,9 @@ export function RecordedUnitItem({ buildingId, floorLabel, unit }: {
   const item = useRef<HTMLLIElement>(null);
   const close = useCallback(() => { setAssigning(null); setIssuing(null); }, []);
   useFocusAfterClose(item, assigning !== null);
+  useArrival(item, unit.id);
   return (
-    <li ref={item} tabIndex={-1} className={styles.unit}>
+    <li ref={item} id={`unit-${unit.id}`} tabIndex={-1} className={styles.unit}>
       <h4 className={styles.label}>{unit.label}</h4>
       <DescriptionList items={[
         { label: 'Kind', value: <ValueText value={unit.kind} /> },
