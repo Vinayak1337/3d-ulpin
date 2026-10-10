@@ -1,0 +1,17 @@
+{
+  "task": "D1c",
+  "path": "E:/BhuAayam-data/task-data/d1c/heldout-truth.jsonl",
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "manifestSha256": "799c337913b5ccb4c380424133d5ae0bb78b14a1611ce74fbe1367ac344e86e8",
+  "files": 0,
+  "columns": 0,
+  "scorable": 0,
+  "positiveTargets": 0,
+  "families": [],
+  "status": "blocked_no_eligible_property_holdout",
+  "method": "Publisher-only freeze; no teacher/team labels. No qualifying new originals admitted.",
+  "teacherCalls": 0,
+  "trainingWrites": 0,
+  "memoryWrites": 0,
+  "evaluationBeforeFreeze": false
+}

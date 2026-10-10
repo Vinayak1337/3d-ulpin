@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import html
 import importlib.util
 import json
 import re
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -131,19 +133,51 @@ def workbook_truth(asset: Row) -> list[Row]:
     return result
 
 
-def write_new(path: Path, value: Any, lines: bool = False) -> None:
+def rendered(value: Any, lines: bool = False) -> bytes:
+    if lines:
+        text = "".join(json.dumps(line, ensure_ascii=True) + "\n" for line in value)
+    else:
+        text = json.dumps(value, ensure_ascii=True, indent=2) + "\n"
+    return text.encode("utf-8")
+
+
+def write_new(path: Path, value: Any, lines: bool = False, check: bool = False) -> None:
+    raw = rendered(value, lines)
+    if check:
+        existing = path.read_bytes()
+        if existing != raw and path.is_relative_to(REPO):
+            # Git checks out evidence JSON as CRLF on Windows; compare exact frozen Git bytes too.
+            relative = path.relative_to(REPO).as_posix()
+            if existing.replace(b"\r\n", b"\n") != raw:
+                raise ValueError("FROZEN_RECEIPT_CHECKOUT_CHANGED")
+            existing = subprocess.check_output(["git", "show", "HEAD:" + relative], cwd=REPO)
+        if existing != raw:
+            raise ValueError("FROZEN_TRUTH_BYTES_CHANGED")
+        return
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("x", encoding="utf-8", newline="\n") as handle:
-        if lines:
-            for line in value:
-                handle.write(json.dumps(line, ensure_ascii=True) + "\n")
-        else:
-            json.dump(value, handle, ensure_ascii=True, indent=2)
-            handle.write("\n")
+    with path.open("xb") as handle:
+        handle.write(raw)
 
 
-def main() -> None:
+def family_manifest(family_set: str) -> tuple[Row, Path]:
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    sets = manifest.get("familySets", {})
+    if family_set == "a3":
+        if "a3" in sets:
+            snapshot = pinned_file(sets["a3"]["frozenManifest"])
+            return json.loads(snapshot.read_text(encoding="utf-8")), snapshot
+        return manifest, MANIFEST
+    selected = sets[family_set]["familyIds"]
+    families = [family for family in manifest["families"] if family["id"] in selected]
+    if len(selected) != len(set(selected)) or len(families) != len(selected):
+        raise ValueError("EVALUATOR_FAMILY_SET_INVALID")
+    assets = [asset for asset in manifest["assets"] if asset["family"] in selected]
+    if assets:
+        raise ValueError("D1C_PROPERTY_DICTIONARY_ADAPTER_REQUIRED")
+    return {**manifest, "families": families, "assets": assets}, MANIFEST
+
+
+def collect_truth(manifest: Row) -> list[Row]:
     rows = []
     for asset in manifest["assets"]:
         if asset["split"] not in ("holdout", "heldout"):
@@ -151,23 +185,63 @@ def main() -> None:
         pinned_file(asset["original"])
         pinned_file(asset["dictionary"])
         rows.extend(gis_truth(asset) if asset.get("columns") else workbook_truth(asset))
-    path = ROOT / "heldout-truth.jsonl"
-    write_new(path, rows, lines=True)
-    counts = [{"family": family["id"], "columns": sum(row["family"] == family["id"] for row in rows),
-               "scorable": sum(row["family"] == family["id"] and row["expectedTarget"] != "truth_absent"
-                               for row in rows)} for family in manifest["families"]]
-    receipt = {"task": "A3", "path": path.as_posix(), "sha256": digest(path),
-               "manifestSha256": digest(MANIFEST), "columns": len(rows), "families": counts,
-               "method": "Literal publisher aliases/types or hierarchical descriptions; no teacher/team labels.",
-               "rules": ["Alias/type without expanded meaning is truth_absent.",
-                         "Documented non-property statistical concepts are unknown/copy.",
-                         "Undocumented columns and undifferentiated years are truth_absent.",
-                         "No propagation into merged header children; no source values in this receipt."],
-               "censusQualification": "Retained publisher metadata only; existing native limits block original.",
-               "teacherCalls": 0, "trainingWrites": 0, "memoryWrites": 0,
-               "evaluationBeforeFreeze": False}
-    write_new(REPO / "docs/evidence/gf-agent/a3/heldout-truth-freeze.json", receipt)
-    print(json.dumps({"columns": len(rows), "families": counts}))
+    return rows
+
+
+def family_counts(manifest: Row, rows: list[Row], positive: bool = False) -> list[Row]:
+    counts = []
+    for family in manifest["families"]:
+        selected = [row for row in rows if row["family"] == family["id"]]
+        count = {"family": family["id"], "columns": len(selected),
+                 "scorable": sum(row["expectedTarget"] != "truth_absent" for row in selected)}
+        if positive:
+            count["positiveTargets"] = sum(row["expectedTarget"] not in ("unknown", "truth_absent")
+                                           for row in selected)
+        counts.append(count)
+    return counts
+
+
+def a3_receipt(path: Path, manifest_path: Path, counts: list[Row], columns: int) -> Row:
+    return {"task": "A3", "path": path.as_posix(), "sha256": digest(path),
+            "manifestSha256": digest(manifest_path), "columns": columns, "families": counts,
+            "method": "Literal publisher aliases/types or hierarchical descriptions; no teacher/team labels.",
+            "rules": ["Alias/type without expanded meaning is truth_absent.",
+                      "Documented non-property statistical concepts are unknown/copy.",
+                      "Undocumented columns and undifferentiated years are truth_absent.",
+                      "No propagation into merged header children; no source values in this receipt."],
+            "censusQualification": "Retained publisher metadata only; existing native limits block original.",
+            "teacherCalls": 0, "trainingWrites": 0, "memoryWrites": 0,
+            "evaluationBeforeFreeze": False}
+
+
+def d1c_receipt(path: Path, manifest_path: Path, counts: list[Row], manifest: Row) -> Row:
+    return {"task": "D1c", "path": path.as_posix(), "sha256": digest(path),
+            "manifestSha256": digest(manifest_path), "files": len(manifest["assets"]),
+            "columns": sum(count["columns"] for count in counts),
+            "scorable": sum(count["scorable"] for count in counts),
+            "positiveTargets": sum(count["positiveTargets"] for count in counts), "families": counts,
+            "status": "blocked_no_eligible_property_holdout",
+            "method": "Publisher-only freeze; no teacher/team labels. No qualifying new originals admitted.",
+            "teacherCalls": 0, "trainingWrites": 0, "memoryWrites": 0, "evaluationBeforeFreeze": False}
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--family-set", choices=("a3", "d1c"), default="a3")
+    parser.add_argument("--check", action="store_true", help="Compare frozen bytes without writing any file.")
+    args = parser.parse_args()
+    manifest, manifest_path = family_manifest(args.family_set)
+    rows = collect_truth(manifest)
+    counts = family_counts(manifest, rows, positive=args.family_set != "a3")
+    path = ROOT.parent / args.family_set / "heldout-truth.jsonl"
+    write_new(path, rows, lines=True, check=args.check)
+    if args.family_set == "a3":
+        receipt = a3_receipt(path, manifest_path, counts, len(rows))
+    else:
+        receipt = d1c_receipt(path, manifest_path, counts, manifest)
+    receipt_path = REPO / "docs/evidence/gf-agent" / args.family_set / "heldout-truth-freeze.json"
+    write_new(receipt_path, receipt, check=args.check)
+    print(json.dumps({"columns": len(rows), "families": counts, "checked": args.check}))
 
 
 if __name__ == "__main__":

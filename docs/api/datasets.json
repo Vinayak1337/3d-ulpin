@@ -4353,7 +4353,7 @@
       "issuer": "Ministry of Panchayati Raj / LGD via data.gov.in; Bihar RERA; RBI; OpenCity / Oorvani; Tamil Nadu Housing Board",
       "geography": "India; original operational registry context remains separate from national/state/city aggregate development tables",
       "manifest": "fixtures/usp/D8-messy-india/manifest.json",
-      "manifestSha256": "d89ed3fb0ed2d3a7b29b7f65be6d47875846ba596dc754be2ae030fdbaec2376",
+      "manifestSha256": "5b7ac0b0f4e814bcf1dca3213a534155bead2c3552b3b01981129bbfde109d1e",
       "manifestHashScope": "Exact UTF-8 metadata bytes; original files use exact-byte hashes",
       "guide": "fixtures/usp/D8-messy-india/README.md",
       "sourceCount": 34,
@@ -4403,7 +4403,7 @@
       "issuer": "Gurugram Metropolitan Development Authority; Office of the Registrar General & Census Commissioner, India; Reserve Bank of India",
       "geography": "India; per-source details evaluator-only",
       "manifest": "fixtures/usp/D8-messy-india/heldout.json",
-      "manifestSha256": "c745ee8e6646b2fbcbaad5ed0fc69df3bc981e76b3fd98ca4ba5328aa4d259e6",
+      "manifestSha256": "799c337913b5ccb4c380424133d5ae0bb78b14a1611ce74fbe1367ac344e86e8",
       "sourceCount": 5,
       "families": [
         {

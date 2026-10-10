@@ -515,7 +515,7 @@
         "evaluationEligible": false
       },
       "cases": [{"name": "property_scheme_register", "locator": "/responseObject", "evidence": "Native scheme rows."}],
-      "privacy": "Scheme-level property facts; no owner/customer/contact fields. Audit identities are empty.",
+      "privacy": "No owner/customer/contact fields; audit labels are null or generic Admin/SPOTNHB roles, not names.",
       "qualification": "Public but unpublished-scheme rows are not offered/current or approved property assertions."
     }
   ],
@@ -546,14 +546,14 @@
   ],
   "freeze": {
     "heldoutManifest": "heldout.json",
-    "sha256": "c745ee8e6646b2fbcbaad5ed0fc69df3bc981e76b3fd98ca4ba5328aa4d259e6",
+    "sha256": "799c337913b5ccb4c380424133d5ae0bb78b14a1611ce74fbe1367ac344e86e8",
     "frozenAt": "2026-10-09T20:03:22.284112+00:00",
     "allocationUnit": "publisher + schema family",
     "heldoutBytesOutsideGit": true,
     "use": "evaluation only; no tuning/teacher labels",
-    "previousVersion": 1,
-    "previousManifestSha256": "5781dbd1c5da49338e59b15825817aa64b3ac9252535f52cfb30e5f6ab65add9",
-    "amendment": "Add three independently publisher-documented tabular families; preserve all v1 assets and families unchanged."
+    "previousVersion": 2,
+    "previousManifestSha256": "c745ee8e6646b2fbcbaad5ed0fc69df3bc981e76b3fd98ca4ba5328aa4d259e6",
+    "amendment": "Preserve all prior families/assets; pin A3 metadata bytes and record an empty, blocked D1c set."
   },
   "fileCounts": {
     "development": 34,
