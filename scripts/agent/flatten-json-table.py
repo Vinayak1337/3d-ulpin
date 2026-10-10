@@ -29,9 +29,16 @@ def reject_constant(value: str) -> None:
     raise ValueError("JSON_TABLE_NONFINITE_NUMBER")
 
 
-def read_rows(raw: bytes, pointer: str = "") -> list[dict[str, Any]]:
-    value = json.loads(raw.decode("utf-8-sig"), parse_int=NumberLiteral, parse_float=NumberLiteral,
-                       object_pairs_hook=unique_object, parse_constant=reject_constant)
+def read_rows(raw: bytes, pointer: str = "", jsonl: bool = False) -> list[dict[str, Any]]:
+    options = {"parse_int": NumberLiteral, "parse_float": NumberLiteral,
+               "object_pairs_hook": unique_object, "parse_constant": reject_constant}
+    text = raw.decode("utf-8-sig")
+    if jsonl:
+        if pointer:
+            raise ValueError("JSON_TABLE_JSONL_POINTER_UNSUPPORTED")
+        value = [json.loads(line, **options) for line in text.splitlines() if line.strip()]
+    else:
+        value = json.loads(text, **options)
     if pointer:
         if not pointer.startswith("/"):
             raise ValueError("JSON_TABLE_POINTER_INVALID")
@@ -79,9 +86,9 @@ def sha(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
-def flatten(source: Path, output: Path, pointer: str = "") -> dict[str, Any]:
+def flatten(source: Path, output: Path, pointer: str = "", jsonl: bool = False) -> dict[str, Any]:
     raw = source.read_bytes()
-    rows = read_rows(raw, pointer)
+    rows = read_rows(raw, pointer, jsonl)
     derivative, headers = csv_bytes(rows)
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("xb") as handle:
@@ -89,7 +96,8 @@ def flatten(source: Path, output: Path, pointer: str = "") -> dict[str, Any]:
     if source.read_bytes() != raw:
         raise ValueError("JSON_TABLE_ORIGINAL_CHANGED")
     return {"version": VERSION, "sourcePath": source.as_posix(), "sourceSha256": sha(raw),
-            "rowArrayPointer": pointer, "path": output.as_posix(), "sha256": sha(derivative),
+            "rowArrayPointer": pointer, "jsonl": jsonl,
+            "path": output.as_posix(), "sha256": sha(derivative),
             "bytes": len(derivative), "rows": len(rows), "columns": len(headers),
             "scriptSha256": sha(Path(__file__).read_bytes()),
             "nullLiteral": "null", "missingCell": "", "nestedValue": "compact JSON text"}
@@ -101,8 +109,9 @@ def main() -> None:
     parser.add_argument("output", type=Path)
     parser.add_argument("--pointer", default="", help="RFC 6901 pointer to the original object array.")
     parser.add_argument("--receipt", type=Path)
+    parser.add_argument("--jsonl", action="store_true", help="Native one-object-per-line table or byte-exact prefix.")
     args = parser.parse_args()
-    receipt = flatten(args.source, args.output, args.pointer)
+    receipt = flatten(args.source, args.output, args.pointer, args.jsonl)
     if args.receipt:
         args.receipt.parent.mkdir(parents=True, exist_ok=True)
         with args.receipt.open("x", encoding="utf-8", newline="\n") as handle:

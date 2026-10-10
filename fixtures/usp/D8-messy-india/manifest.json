@@ -1,7 +1,7 @@
 {
   "schemaVersion": "usp-data-pack/1",
   "packId": "D8",
-  "version": 3,
+  "version": 4,
   "createdAt": "2026-10-09T19:15:23.794944+00:00",
   "profile": "messy-india-development-20261010",
   "purpose": "test_only",
@@ -59,6 +59,18 @@
       "familyRule": "Published and unpublished schemes share one issuing-publisher layout, not two families.",
       "observedLayoutFingerprints": ["8f20fb71ec5fb9e870f0a83487c3b534bc1b1d073bc187332b690eaf102ff55e"],
       "qualification": "Property-relevant source-native JSON tables; native CSV/XLSX import is not qualified."
+    },
+    {
+      "id": "mi-d23", "split": "dev", "publisher": "Pune Municipal Corporation", "fileCount": 2,
+      "schemaIdentity": "Institutional library and office inventory; five-column facility/site layout",
+      "dictionaryState": "Undocumented; development has no canonical labels",
+      "familyRule": "All publisher layouts stay together; no family-per-file inflation."
+    },
+    {
+      "id": "mi-d24", "split": "dev", "publisher": "Microsoft", "fileCount": 1,
+      "schemaIdentity": "Native compressed GeoJSONL building footprint partition",
+      "dictionaryState": "Development unlabelled; original values and geometry unchanged",
+      "familyRule": "One publisher, one family; prefix and CSV are derivatives, not extra files or families."
     }
   ],
   "assets": [
@@ -517,10 +529,81 @@
       "cases": [{"name": "property_scheme_register", "locator": "/responseObject", "evidence": "Native scheme rows."}],
       "privacy": "No owner/customer/contact fields; audit labels are null or generic Admin/SPOTNHB roles, not names.",
       "qualification": "Public but unpublished-scheme rows are not offered/current or approved property assertions."
+    },
+    {
+      "id": "mi-d23-pmc-library-inventory.xlsx", "family": "mi-d23", "split": "dev",
+      "publisher": "Pune Municipal Corporation", "issuer": "Pune Municipal Corporation", "purpose": "test_only",
+      "mediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "origin": {
+        "kind": "issuing_authority_public_xlsx",
+        "url": "https://opendata.pmc.gov.in/opendata/196db7b1-a4f6-4959-9b16-6235ccd6021b.xlsx"
+      },
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/d1c/dev/pmc-library-inventory.xlsx",
+        "sha256": "c43f624104cf1e48f5dfb35e79b8ae4abb7ec692ff742c6b18555530b7f9087a", "bytes": 12814
+      },
+      "developmentCopy": "fixtures/usp/D8-messy-india/dev/d1c/mi-d23-pmc-library-inventory.xlsx",
+      "acquiredAt": "2026-10-10T09:58:57.735050+00:00",
+      "acquisitionDateBasis": "Additive immutable copy time; source response retained in earlier D1d discovery.",
+      "permission": {"state": "unconfirmed", "licence": "not stated"}, "geography": "Pune, Maharashtra, India",
+      "reference": {"horizontalCrs": null, "verticalReference": null},
+      "sourceSchema": {"dataRows": 56, "columnCount": 5, "canonicalTargets": null, "evaluationEligible": false},
+      "privacy": "Institution names/site addresses only; full workbook and generic igisgw creator label reviewed.",
+      "qualification": "Facility inventory; no verified physical-building, ownership or legal-unit association."
+    },
+    {
+      "id": "mi-d23-pmc-office-inventory.xlsx", "family": "mi-d23", "split": "dev",
+      "publisher": "Pune Municipal Corporation", "issuer": "Pune Municipal Corporation", "purpose": "test_only",
+      "mediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "origin": {
+        "kind": "issuing_authority_public_xlsx",
+        "url": "https://opendata.pmc.gov.in/opendata/204e9d18-f262-4833-b79e-f1a4746f778a.xlsx"
+      },
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/d1c/dev/pmc-office-inventory.xlsx",
+        "sha256": "2dd74f6e729f0c6dfbf092930e3ebbad7d8158cd6ea82b6fd4d4329ffbece38d", "bytes": 9262
+      },
+      "developmentCopy": "fixtures/usp/D8-messy-india/dev/d1c/mi-d23-pmc-office-inventory.xlsx",
+      "acquiredAt": "2026-10-10T09:58:57.746824+00:00",
+      "acquisitionDateBasis": "Additive immutable copy time; source response retained in earlier D1d discovery.",
+      "permission": {"state": "unconfirmed", "licence": "not stated"}, "geography": "Pune, Maharashtra, India",
+      "reference": {"horizontalCrs": null, "verticalReference": null},
+      "sourceSchema": {"dataRows": 8, "columnCount": 5, "canonicalTargets": null, "evaluationEligible": false},
+      "privacy": "Institution names/site addresses only; full workbook and generic igisgw creator label reviewed.",
+      "qualification": "Facility inventory; no verified physical-building, ownership or legal-unit association."
+    },
+    {
+      "id": "mi-d24-ms-india-demo-partition.csv.gz", "family": "mi-d24", "split": "dev",
+      "publisher": "Microsoft", "issuer": "Microsoft", "purpose": "test_only", "mediaType": "application/gzip",
+      "origin": {
+        "kind": "vendor_prediction_native_geojsonl",
+        "url": "https://bfppub.z5.web.core.windows.net/2026-08-13/global-buildings.geojsonl/RegionName=India/quadkey=123121303/part-00170-110f5303-ff85-4c71-a2bf-c6070024fec8.c000.csv.gz"
+      },
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/d1c/dev/ms-india-demo-partition.csv.gz",
+        "sha256": "e4a19ea244729c3967c0d47ab3e6b93a3d9ec167971ce73b4e52e1b53ba38256", "bytes": 131950214
+      },
+      "acquiredAt": "2026-10-10T09:41:06.283238+00:00",
+      "permission": {"state": "confirmed", "licence": "CDLA-Permissive-2.0"},
+      "licenceCitation": "https://github.com/microsoft/GlobalMLBuildingFootprints#license",
+      "geography": "India; native partition containing the existing Uttam Nagar demo bounds",
+      "reference": {"horizontalCrs": "GeoJSON WGS84 longitude/latitude", "verticalReference": null},
+      "sourceSchema": {"dataRows": 1187957, "columnCount": 3, "canonicalTargets": null, "evaluationEligible": false},
+      "privacy": "Every native row screened; numeric properties and polygon geometry only, no personal fields.",
+      "qualification": "Vendor candidates, not official geometry, measurements, ownership or learning truth."
     }
   ],
   "teacherPolicy": "Development teacher may read dev profiles only. Never open heldout.json, holdout originals or schema documents; evaluators must not send them to teachers.",
-  "description": "39 unchanged originals in 27 families: 34 development and 5 evaluator-only. D1c adds two unlabelled official property-scheme JSON tables in one family; no new qualifying holdout. OpenCity stays test_only.",
+  "description": "D1d checkpoint: three property-relevant development families, five originals; thresholds remain unmet.",
+  "derivativeIndex": "dev/d1c/derivatives.json",
+  "d1d": {
+    "developmentFamilies": 3, "developmentFiles": 5, "heldoutFamilies": 2, "heldoutFiles": 2,
+    "heldoutColumns": 4, "heldoutScorable": 2, "heldoutPositiveTargets": 2,
+    "splitAssignmentSha256": "14b313184db20f8d8244680fd4b2fba7d7786c117651599e3d54f447f2847729",
+    "evaluatorSourcesSha256": "9a1aba1349b91280976db11f60406d64ec84b334431635bd1c04736c58961e47",
+    "thresholdsMet": false,
+    "qualification": "Publisher-level split; all new heldout identities/fields/values remain external evaluator-only."
+  },
   "heldout": [
     {
       "id": "mi-h01",
@@ -546,26 +629,27 @@
   ],
   "freeze": {
     "heldoutManifest": "heldout.json",
-    "sha256": "799c337913b5ccb4c380424133d5ae0bb78b14a1611ce74fbe1367ac344e86e8",
+    "sha256": "5accd9267497ff89f1e579d2d48d70325aa0cf8df93219300967618e9c679bf1",
     "frozenAt": "2026-10-09T20:03:22.284112+00:00",
     "allocationUnit": "publisher + schema family",
     "heldoutBytesOutsideGit": true,
     "use": "evaluation only; no tuning/teacher labels",
     "previousVersion": 2,
     "previousManifestSha256": "c745ee8e6646b2fbcbaad5ed0fc69df3bc981e76b3fd98ca4ba5328aa4d259e6",
-    "amendment": "Preserve all prior families/assets; pin A3 metadata bytes and record an empty, blocked D1c set."
+    "amendment": "D1d preserves all historical assets and A3 bytes; adds a pinned private bridge-backed set.",
+    "d1cCheckpointManifestSha256": "799c337913b5ccb4c380424133d5ae0bb78b14a1611ce74fbe1367ac344e86e8"
   },
   "fileCounts": {
-    "development": 34,
-    "heldout": 5,
-    "total": 39,
-    "families": 27
+    "development": 37,
+    "heldout": 7,
+    "total": 44,
+    "families": 31
   },
   "missingCapabilities": [
-    "property_positive_heldout_truth",
+    "twenty_five_property_positive_heldout_columns",
     "four_new_property_development_families",
     "three_new_property_heldout_families",
-    "native_property_CSV_XLSX_originals",
+    "native_authority_unit_inventory_CSV_XLSX_originals",
     "native_tabular_JSON_import_route_unqualified",
     "Devanagari_or_mixed_script_headers",
     "Kruti_Dev_headers",
