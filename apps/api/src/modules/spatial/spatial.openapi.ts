@@ -231,6 +231,31 @@ export const packageProjection = {type:'object',required:['id','schemaVersion','
     findings:{type:'array',items:finding},coverage:{type:'array',items:{type:'string'}}}},
 }};
 
+export const footprintDraftResult = {
+  type: 'object', required: ['package', 'receipt'], properties: {
+    package: { ...packageProjection, nullable: true },
+    receipt: { type: 'object', required: [
+      'schemaVersion', 'itemId', 'jobId', 'inputFingerprint', 'originalSourceRevisionId', 'originalSha256',
+      'worldStatus', 'rasterSha256', 'calibration', 'selections', 'target', 'method', 'authority',
+    ], properties: {
+      schemaVersion: { type: 'string', enum: ['spatial-footprint-derivation/1'] },
+      itemId: { type: 'string', format: 'uuid' }, jobId: { type: 'string', format: 'uuid' },
+      inputFingerprint: { type: 'string' }, originalSourceRevisionId: { type: 'string', format: 'uuid' },
+      originalSha256: { type: 'string', pattern: '^[a-f0-9]{64}$' }, worldStatus: { type: 'string' },
+      rasterSha256: { type: 'string', pattern: '^[a-f0-9]{64}$' },
+      calibration: { type: 'object', nullable: true },
+      georeference: { type: 'string', nullable: true, enum: ['source_geotiff'] },
+      decisions: { type: 'array', items: { type: 'object' } },
+      selections: { type: 'array', items: { type: 'object' } },
+      target: { type: 'object', required: ['areaId', 'frame', 'analysisCrs', 'origin', 'expectedRevision'], properties: {
+        areaId: { type: 'string', format: 'uuid' }, frame: { type: 'string' }, analysisCrs: { type: 'string' },
+        origin: { type: 'array', items: { type: 'number' } }, expectedRevision: { type: 'integer' },
+      } },
+      method: { type: 'string' }, authority: { type: 'string' },
+    }, additionalProperties: true },
+  },
+};
+
 const xy = { type:'array', minItems:2, maxItems:2, items:{type:'number'} };
 const geometry = {type:'object',required:['type','coordinates'],properties:{
   type:{type:'string',enum:['Point','LineString','Polygon','MultiPolygon']},
