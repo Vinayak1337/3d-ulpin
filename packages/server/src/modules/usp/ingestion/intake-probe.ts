@@ -101,6 +101,9 @@ export async function probeOriginal(read: IntakeRangeReader, size: number, name:
     });
   }
   if (performance.now() >= started + limits.budgetMs) throw new IntakeProbeBudget();
+  if (card.format === 'unknown' && /\.(?:gdb|gdbtable|gdbtablx)$/i.test(name)) {
+    card.limits.push('File Geodatabase needs grouped directory components; no reliable single-head kind established.');
+  }
   card.nameDisagrees = intakeNameDisagrees(card.format, name);
   card.probeBytesRead = bounded.bytes();
   card.probeMs = Math.round((performance.now() - started) * 1000) / 1000;

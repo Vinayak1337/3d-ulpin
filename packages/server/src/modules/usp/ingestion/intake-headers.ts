@@ -1,7 +1,5 @@
-import { createHash } from 'node:crypto';
 import type { IntakeCard } from '@ulpin/contracts/usp';
-
-const digest = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
+import { sha256 } from '../../../infrastructure/storage';
 const shapeTypes: Record<number, string> = {
   1: 'Point', 3: 'LineString', 5: 'Polygon', 8: 'MultiPoint', 11: 'PointZ', 13: 'LineStringZ',
   15: 'PolygonZ', 18: 'MultiPointZ', 21: 'PointM', 23: 'LineStringM', 25: 'PolygonM', 28: 'MultiPointM',
@@ -16,7 +14,7 @@ export function probeShapefile(card: IntakeCard, bytes: Uint8Array) {
   if (type) card.geometryTypes = [type];
   const bbox = [36, 44, 52, 60].map(offset => head.readDoubleLE(offset));
   if (bbox.every(Number.isFinite)) card.extent.native = bbox as [number, number, number, number];
-  card.limits.push('Shapefile header only; .shx/.dbf counts and .prj require grouped companions.');
+  card.limits.push('Shapefile header only; companion counts/CRS are recorded only when grouped.');
 }
 
 export function probeDbf(card: IntakeCard, bytes: Uint8Array) {
@@ -57,12 +55,21 @@ export function applyShapefileCompanions(card: IntakeCard, companions: Map<strin
   }
   const prj = companions.get('prj');
   if (prj) {
-    card.crs = { state: 'sidecar', code: null, sidecarSha256: digest(prj) };
+    card.crs = { state: 'sidecar', code: null, sidecarSha256: sha256(prj) };
     card.limits.push('Sidecar hash covers the bounded .prj bytes; CRS code requires existing native CRS resolver.');
   }
   const cpg = companions.get('cpg');
   const encoding = cpg ? Buffer.from(cpg).toString('ascii').trim() : '';
   if (/^(?:UTF-8|UTF8|1252|65001|ISO-8859-1)$/i.test(encoding)) card.encoding = encoding;
+}
+
+export function applyRasterCompanions(card: IntakeCard, companions: Map<string, Uint8Array>) {
+  const prj = companions.get('prj');
+  if (prj) {
+    card.crs.sidecarSha256 = sha256(prj);
+    if (card.crs.state === 'absent') card.crs.state = 'sidecar';
+    card.limits.push('Raster .prj hash retained; world-file transform and CRS agreement need the native reader.');
+  }
 }
 
 export function probePdf(card: IntakeCard, head: Uint8Array, tail: Uint8Array) {

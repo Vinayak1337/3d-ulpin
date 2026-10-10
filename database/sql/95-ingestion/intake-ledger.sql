@@ -8,8 +8,9 @@ CREATE TABLE IF NOT EXISTS usp_intake_items (
   family text NOT NULL DEFAULT 'unknown'
     CHECK(family IN ('vector','table','raster','point_cloud','model3d','document','image','archive','unknown')),
   format text CHECK(format IS NULL OR length(format) BETWEEN 1 AND 64),
-  size_bytes bigint NOT NULL CHECK(size_bytes >= 0 AND size_bytes <= 9007199254740991),
-  size_class text NOT NULL CHECK(size_class IN ('S','M','L','XL')),
+  -- A workbook sheet has no separately known original byte size before extraction.
+  size_bytes bigint CHECK(size_bytes >= 0 AND size_bytes <= 9007199254740991),
+  size_class text CHECK(size_class IN ('S','M','L','XL')),
   wave smallint NOT NULL DEFAULT 4 CHECK(wave BETWEEN 1 AND 4),
   state text NOT NULL DEFAULT 'received'
     CHECK(state IN ('received','probed','planned','reading','read','read_to_limit','failed_part','probe_failed')),
@@ -28,6 +29,8 @@ CREATE TABLE IF NOT EXISTS usp_intake_items (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CHECK(source_id IS NOT NULL OR parent_item_id IS NOT NULL),
+  CHECK(parent_item_id IS NOT NULL OR (size_bytes IS NOT NULL AND size_class IS NOT NULL)),
+  CHECK((size_bytes IS NULL) = (size_class IS NULL)),
   CHECK((parent_item_id IS NULL AND member_path IS NULL) OR (parent_item_id IS NOT NULL AND member_path IS NOT NULL)),
   CHECK(parent_item_id IS NULL OR parent_item_id <> item_id),
   CHECK((card IS NULL) = (card_sha256 IS NULL)),

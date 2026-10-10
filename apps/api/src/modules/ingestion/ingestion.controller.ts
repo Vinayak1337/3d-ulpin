@@ -5,6 +5,8 @@ import { z } from 'zod';
 import { AnyAuthorMappingSchema, MappingDecisionSchema,
   AnyMappingReceiptSchema, AnySourceProfileSchema } from '@ulpin/contracts/usp';
 import { ManualIngestionService } from '@ulpin/server/modules/usp/ingestion/service';
+import { IntakeService } from '@ulpin/server/modules/usp/ingestion/intake-service';
+import { IntakeRegisterSchema, IntakePinSchema, IntakeItemSchema, IntakeManifestSchema } from '@ulpin/contracts/usp';
 import { CONVERSIONS, limitations } from '@ulpin/server/modules/usp/ingestion/registry';
 import { AppError } from '@ulpin/server/infrastructure/errors';
 import { JSON_BODY_LIMIT, MULTIPART_BODY_LIMIT, readJsonBody, readMultipartBody } from '../../common/body';
@@ -19,6 +21,40 @@ const registrySchema=z.object({version:z.literal('manual-geojson/1'),conversions
 @Controller('api/v1/ingestion')
 export class IngestionController {
   constructor(@Inject(ManualIngestionService) private readonly ingestion: ManualIngestionService) {}
+
+  private readonly intake = new IntakeService();
+
+  @Post('cases/:caseId/intake/items')
+  @HttpCode(201) @param('caseId')
+  @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_intake_items',
+    summary:'Register and header-probe an already retained source; no reader or case revision change'})
+  @jsonBody(IntakeRegisterSchema) @wireResponse(201,IntakeItemSchema)
+  async registerIntake(@Param('caseId') caseId:string,@Req() request:Request){
+    return this.intake.register(caseId,await readJsonBody(request,JSON_BODY_LIMIT));
+  }
+
+  @Get('cases/:caseId/intake')
+  @param('caseId')
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake',
+    summary:'Read the retained batch holdings manifest ordered by wave and name'})
+  @wireResponse(200,IntakeManifestSchema)
+  intakeManifest(@Param('caseId') caseId:string){return this.intake.manifest(caseId);}
+
+  @Get('cases/:caseId/intake/items/:itemId')
+  @param('caseId') @param('itemId')
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_items_itemId',
+    summary:'Read one holdings card under its original source authority'})
+  @wireResponse(200,IntakeItemSchema)
+  intakeItem(@Param('caseId') caseId:string,@Param('itemId') itemId:string){return this.intake.one(caseId,itemId);}
+
+  @Post('cases/:caseId/intake/items/:itemId/pin')
+  @HttpCode(200) @param('caseId') @param('itemId')
+  @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_intake_items_itemId_pin',
+    summary:'Pin an intake item to an officer-selected wave, kept across later probes'})
+  @jsonBody(IntakePinSchema) @wireResponse(200,IntakeItemSchema)
+  async pinIntake(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
+    return this.intake.pin(caseId,itemId,await readJsonBody(request,JSON_BODY_LIMIT));
+  }
 
   @Get('conversions')
   @ApiOperation({operationId:'GET_api_v1_ingestion_conversions',summary:'Read the constrained manual conversion registry and supported evidence requirements'})

@@ -141,7 +141,7 @@ const extensions: Record<string, string[]> = {
   'shapefile-index': ['shx'], csv: ['csv'], tsv: ['tsv'], png: ['png'], jpeg: ['jpg', 'jpeg'],
   las: ['las'], laz: ['laz'],
   pdf: ['pdf'], ifc: ['ifc'], citygml: ['gml', 'xml'], gml: ['gml', 'xml'], kml: ['kml', 'xml'],
-  glb: ['glb'], gltf: ['gltf', 'json'], obj: ['obj'], zip: ['zip', 'xlsx', 'ods', 'docx', 'kmz'],
+  glb: ['glb'], gltf: ['gltf', 'json'], obj: ['obj'], zip: ['zip'],
   dwg: ['dwg'], e57: ['e57'], ply: ['ply'], '7z': ['7z'], rar: ['rar'], flatgeobuf: ['fgb'], dxf: ['dxf'],
 };
 

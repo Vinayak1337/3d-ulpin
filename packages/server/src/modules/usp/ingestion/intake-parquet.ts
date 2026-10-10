@@ -53,9 +53,9 @@ class FooterCursor {
     if (type === 8) {
       const size = this.variable();
       if (this.at + size > this.bytes.length) throw new Error('PARQUET_FOOTER_TRUNCATED');
-      const text = new TextDecoder('utf-8', { fatal: true }).decode(this.bytes.subarray(this.at, this.at + size));
+      const value = this.bytes.subarray(this.at, this.at + size);
       this.at += size;
-      return text;
+      return value;
     }
     if (type === 9 || type === 10) {
       const header = this.byte();
@@ -80,11 +80,13 @@ export function probeParquet(card: IntakeCard, bytes: Uint8Array) {
   try {
     const cursor = new FooterCursor(tail.subarray(tail.length - 8 - size, tail.length - 8));
     const metadata = cursor.structure(0);
+    if (cursor.at !== size) throw new Error('PARQUET_FOOTER_TRAILING_BYTES');
     const pairs = metadata[5];
     if (!Array.isArray(pairs)) return;
-    const geoPair = pairs.find(pair => pair && pair[1] === 'geo');
-    if (!geoPair || typeof geoPair[2] !== 'string') return;
-    const geo = JSON.parse(geoPair[2]);
+    const geoPair = pairs.find(pair => pair?.[1] instanceof Uint8Array
+      && Buffer.from(pair[1]).toString('utf8') === 'geo');
+    if (!(geoPair?.[2] instanceof Uint8Array)) return;
+    const geo = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(geoPair[2]));
     if (typeof geo.version !== 'string' || !geo.columns || typeof geo.columns !== 'object') return;
     card.format = 'geoparquet';
     card.family = 'vector';

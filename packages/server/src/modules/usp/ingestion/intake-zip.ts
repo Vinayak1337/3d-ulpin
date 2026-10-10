@@ -1,7 +1,8 @@
 import { createInflateRaw, constants } from 'node:zlib';
 import { performance } from 'node:perf_hooks';
 import { INTAKE_PROBE_LIMITS as limits, type IntakeCard, type IntakeMember } from '@ulpin/contracts/usp';
-import { applyShapefileCompanions } from './intake-headers';
+import { applyShapefileCompanions, applyRasterCompanions } from './intake-headers';
+import { workbookSheets } from './intake-workbook';
 
 export type IntakeRangeReader = (start: number, end: number) => Promise<Uint8Array>;
 type Entry = { name: string; size: number; compressed: number; method: number; flags: number; offset: number };
@@ -37,8 +38,9 @@ function directoryEntries(directory: Buffer, count: number): Entry[] {
     const comment = directory.readUInt16LE(at + 32);
     if (at + 46 + names + extra + comment > directory.length) throw new Error('ZIP_DIRECTORY_INVALID');
     const flags = directory.readUInt16LE(at + 8);
-    const name = new TextDecoder(flags & 2048 ? 'utf-8' : 'windows-1252', { fatal: true })
-      .decode(directory.subarray(at + 46, at + 46 + names));
+    const nameBytes = directory.subarray(at + 46, at + 46 + names);
+    if (!(flags & 2048) && nameBytes.some(byte => byte >= 128)) throw new Error('ZIP_NAME_ENCODING_UNSUPPORTED');
+    const name = new TextDecoder('utf-8', { fatal: true }).decode(nameBytes);
     entries.push({ name, flags, method: directory.readUInt16LE(at + 10),
       compressed: directory.readUInt32LE(at + 20), size: directory.readUInt32LE(at + 24),
       offset: directory.readUInt32LE(at + 42) });
@@ -120,7 +122,28 @@ async function inspectEntry(read: IntakeRangeReader, entry: Entry, offset: numbe
   }
 }
 
-function groupSidecars(inspected: Awaited<ReturnType<typeof inspectEntry>>[], card: IntakeCard) {
+type InspectedEntry = Awaited<ReturnType<typeof inspectEntry>>;
+
+function mergeCompanionHeaders(item: InspectedEntry, companions: InspectedEntry[]) {
+  if (!item.member.card) return;
+  const bytes = new Map<string, Uint8Array>();
+  const merged = { ...item.member.card, members: [] };
+  for (const other of companions) {
+    const extension = other.member.name.split('.').pop()!.toLowerCase();
+    if (!other.bytes || other.member.refusalCode) continue;
+    if (extension === 'prj' && other.bytes.length !== other.member.sizeBytes) {
+      if (merged.crs.state === 'absent') merged.crs.state = 'sidecar';
+      merged.limits.push('PRJ member cut by the header bound; complete text hash and CRS remain unknown.');
+      continue;
+    }
+    bytes.set(extension, other.bytes);
+  }
+  if (merged.format === 'shapefile') applyShapefileCompanions(merged, bytes);
+  else if (merged.family === 'raster' || merged.family === 'image') applyRasterCompanions(merged, bytes);
+  item.member.card = shallowCard(merged);
+}
+
+function groupSidecars(inspected: InspectedEntry[], card: IntakeCard) {
   const sidecar = /\.(?:shx|dbf|prj|cpg|tfw|jgw|pgw|wld|aux\.xml)$/i;
   const primary = /\.(?:shp|tif|tiff|png|jpg|jpeg)$/i;
   const grouped = new Set<string>();
@@ -135,18 +158,7 @@ function groupSidecars(inspected: Awaited<ReturnType<typeof inspectEntry>>[], ca
         card.limits.push(`${other.member.refusalCode}: companion ${other.member.name} kept but not probed.`);
       }
     }
-    if (item.member.card?.format === 'shapefile') {
-      const bytes = new Map<string, Uint8Array>();
-      for (const other of companions) {
-        const extension = other.member.name.split('.').pop()!.toLowerCase();
-        if (!other.bytes || other.member.refusalCode) continue;
-        if (extension === 'prj' && other.bytes.length !== other.member.sizeBytes) continue;
-        bytes.set(extension, other.bytes);
-      }
-      const merged = { ...item.member.card, members: [] };
-      applyShapefileCompanions(merged, bytes);
-      item.member.card = shallowCard(merged);
-    }
+    mergeCompanionHeaders(item, companions);
   }
   const orphan = inspected.filter(item => sidecar.test(item.member.name) && !grouped.has(item.member.name));
   if (orphan.length) {
@@ -161,11 +173,8 @@ function officeKind(card: IntakeCard, inspected: Awaited<ReturnType<typeof inspe
     card.format = 'xlsx';
     card.family = 'table';
     const workbook = inspected.find(item => item.member.name === 'xl/workbook.xml');
-    if (workbook?.bytes && workbook.bytes.length === workbook.member.sizeBytes) {
-      const text = new TextDecoder().decode(workbook.bytes);
-      const sheets = [...text.matchAll(/<(?:\w+:)?sheet\b[^>]*\bname="([^"]+)"[^>]*\/?\s*>/g)];
-      card.sheets = sheets.map(match => ({ name: match[1], count: null }));
-    }
+    if (workbook?.bytes) workbookSheets(card, workbook.bytes, workbook.member.sizeBytes);
+    else card.limits.push('Workbook XML was refused or unavailable; sheet names remain unknown.');
     card.limits.push('Workbook sheet names only; no cell or shared-string member opened.');
   } else if (names.includes('word/document.xml') && names.includes('[Content_Types].xml')) {
     card.format = 'docx';
@@ -183,60 +192,72 @@ function officeKind(card: IntakeCard, inspected: Awaited<ReturnType<typeof inspe
   }
 }
 
-export async function probeZip(card: IntakeCard, read: IntakeRangeReader, size: number, tail: Uint8Array,
-  probe: MemberProbe, depth = 0) {
-  const end = Buffer.from(tail);
+function directoryProfile(end: Buffer, size: number, depth: number) {
   const at = endRecord(end);
-  if (at < 0) {
-    card.limits.push('ZIP end record outside bounded tail; ZIP64 or long comment needs native reader.');
-    return;
-  }
+  if (at < 0) return { count: 0, bytes: 0, offset: 0, refusal: 'ZIP_END_NOT_FOUND' };
   const count = end.readUInt16LE(at + 10);
   const bytes = end.readUInt32LE(at + 12);
   const offset = end.readUInt32LE(at + 16);
-  const fail = (code: string) => { card.limits.push(`${code}: archive kept, directory/member probe refused.`); };
-  if (depth > limits.nestingDepth) {
-    fail('ZIP_NESTING_LIMIT');
-    return;
+  const guards: [boolean, string][] = [
+    [depth > limits.nestingDepth, 'ZIP_NESTING_LIMIT'],
+    [count > limits.members, 'ZIP_MEMBER_LIMIT'],
+    [bytes > limits.directoryBytes, 'ZIP_DIRECTORY_LIMIT'],
+    [Boolean(end.readUInt16LE(at + 4) || end.readUInt16LE(at + 6)), 'ZIP_MULTIDISK_UNSUPPORTED'],
+    [offset + bytes > size - end.length + at, 'ZIP_DIRECTORY_INVALID'],
+  ];
+  return { count, bytes, offset, refusal: guards.find(([hit]) => hit)?.[1] ?? null };
+}
+
+async function readDirectory(card: IntakeCard, read: IntakeRangeReader, size: number, tail: Uint8Array, depth: number) {
+  const profile = directoryProfile(Buffer.from(tail), size, depth);
+  if (profile.refusal) {
+    card.limits.push(`${profile.refusal}: archive kept; bounded directory probe refused, native reader needed.`);
+    return null;
   }
-  if (count > limits.members) {
-    fail('ZIP_MEMBER_LIMIT');
-    return;
+  const directory = Buffer.from(await read(profile.offset, profile.offset + profile.bytes));
+  let entries: Entry[];
+  try { entries = directoryEntries(directory, profile.count); }
+  catch {
+    card.limits.push('ZIP_DIRECTORY_INVALID_OR_ENCODING: directory kept; CP437/non-UTF8 names need native reader.');
+    return null;
   }
-  if (bytes > limits.directoryBytes) {
-    fail('ZIP_DIRECTORY_LIMIT');
-    return;
-  }
-  if (end.readUInt16LE(at + 4) || end.readUInt16LE(at + 6)) {
-    fail('ZIP_MULTIDISK_UNSUPPORTED');
-    return;
-  }
-  if (offset + bytes > size - tail.length + at) {
-    fail('ZIP_DIRECTORY_INVALID');
-    return;
-  }
-  const entries = directoryEntries(Buffer.from(await read(offset, offset + bytes)), count);
   if (new Set(entries.map(entry => entry.name)).size !== entries.length) {
-    fail('ZIP_DUPLICATE_PATH');
-    return;
+    card.limits.push('ZIP_DUPLICATE_PATH: archive directory refused.');
+    return null;
   }
   if (entries.reduce((sum, entry) => sum + entry.size, 0) > limits.expandedBytes) {
-    fail('ZIP_EXPANDED_LIMIT');
-    return;
+    card.limits.push('ZIP_EXPANDED_LIMIT: archive member probe refused.');
+    return null;
   }
   card.depth = 'structure';
-  card.counts.members = count;
+  card.counts.members = profile.count;
+  return { entries, offset: profile.offset };
+}
+
+async function inspectZipMembers(read: IntakeRangeReader, entries: Entry[], offset: number,
+  probe: MemberProbe, depth: number) {
   const office = entries.some(entry => entry.name === 'xl/workbook.xml' || entry.name === 'word/document.xml')
     || entries.some(entry => entry.name === 'mimetype') && entries.some(entry => entry.name === 'content.xml');
-  const inspected: Awaited<ReturnType<typeof inspectEntry>>[] = [];
+  const inspected: InspectedEntry[] = [];
   for (const entry of entries.filter(entry => !entry.name.endsWith('/'))) {
     // Office signatures/sheet lists come from the directory plus workbook/mimetype, never cells/document text.
     if (office && !['xl/workbook.xml', 'mimetype'].includes(entry.name)) {
+      const directoryCard = await probe(new Uint8Array(), entry.size, entry.name);
+      directoryCard.limits = ['Office member listed from central directory only; no content opened.'];
+      const refusal = entry.flags & 1 ? 'ZIP_ENCRYPTED_MEMBER' : zipMemberRefusal(entry, depth);
       inspected.push({ member: { name: entry.name, sizeBytes: entry.size, compressedBytes: entry.compressed,
-        format: 'unknown', family: 'unknown', refusalCode: zipMemberRefusal(entry, depth), companions: [], card: null },
-      bytes: null });
+        format: 'unknown', family: 'unknown', refusalCode: refusal, companions: [],
+        card: shallowCard(directoryCard) }, bytes: null });
     } else inspected.push(await inspectEntry(read, entry, offset, probe));
   }
+  return inspected;
+}
+
+export async function probeZip(card: IntakeCard, read: IntakeRangeReader, size: number, tail: Uint8Array,
+  probe: MemberProbe, depth = 0) {
+  const directory = await readDirectory(card, read, size, tail, depth);
+  if (!directory) return;
+  const inspected = await inspectZipMembers(read, directory.entries, directory.offset, probe, depth);
   officeKind(card, inspected);
   groupSidecars(inspected, card);
 }

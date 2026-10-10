@@ -21,6 +21,7 @@ const fixtures: [string, Uint8Array][] = [
   ['dwg', bytes('AC1032')], ['e57', bytes('ASTM-E57')], ['7z', Buffer.from('377abcaf271c', 'hex')],
   ['rar', Buffer.from('526172211a070100', 'hex')], ['flatgeobuf', Buffer.from('6667620366676201', 'hex')],
   ['geojson', bytes('{"type":"FeatureCollection","features":[]}')],
+  ['cityjson', bytes('{"type":"CityJSON","version":"2.0","CityObjects":{}}')],
   ['geojson-seq', bytes('\x1e{"type":"Feature","geometry":null}\n')],
   ['ndjson', bytes('{"key":1}\n{"key":2}\n')], ['csv', bytes('key,value\n1,2\n')],
   ['tsv', bytes('key\tvalue\n1\t2\n')], ['ifc', bytes("ISO-10303-21;\nFILE_SCHEMA(('IFC4'));\n")],
@@ -213,6 +214,12 @@ test('loose SHX stays at signature depth and never becomes an anchor alone', asy
   assert.equal(card.detectedBy, 'bytes_and_name');
   assert.equal(card.depth, 'signature');
   assert.equal(intakeWave(card), 4);
+});
+
+test('nested property type never decides the original JSON format', async () => {
+  const card = await probe(bytes('{"record":{"type":"FeatureCollection","name":"VALUE_SECRET"}}'));
+  assert.equal(card.format, 'unknown');
+  assert.ok(!JSON.stringify(card).includes('VALUE_SECRET'));
 });
 
 test('a range that never completes exits within the single exported time budget', async () => {

@@ -696,6 +696,58 @@
     {"method":"GET","path":"/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/document-proposals","operationId":"GET_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals","batch":"D08-D07-REOPEN","disposition":"added","nativeController":"document-proposals","requestSchema":null,"responseSchema":"DocumentProposalsHistorySchema","responseStatus":200,"transportProfile":"private-bounded-read","runtimeEvidence":"pending"},
     {"method":"POST","path":"/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/document-proposals/{snapshotId}/decisions","operationId":"POST_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions","batch":"D08-PROPOSAL-DECISIONS","disposition":"added","nativeController":"document-proposals","requestSchema":"DocumentProposalDecisionSaveSchema","responseSchema":"DocumentProposalDecisionViewSchema","responseStatus":201,"transportProfile":"json","runtimeEvidence":"pending","maxBodyBytes":524288},
     {"method":"GET","path":"/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/document-proposals/{snapshotId}/decisions/{decisionId}","operationId":"GET_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions_decisionId","batch":"D08-PROPOSAL-DECISIONS","disposition":"added","nativeController":"document-proposals","requestSchema":"DocumentProposalDecisionReadQuerySchema query","responseSchema":"DocumentProposalDecisionViewSchema","responseStatus":200,"transportProfile":"private-bounded-read","runtimeEvidence":"pending"},
-    {"method":"GET","path":"/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/document-proposals/{snapshotId}/decisions","operationId":"GET_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions","batch":"D08-PROPOSAL-DECISIONS","disposition":"added","nativeController":"document-proposals","requestSchema":"DocumentProposalDecisionHistoryQuerySchema query","responseSchema":"DocumentProposalDecisionHistorySchema","responseStatus":200,"transportProfile":"private-bounded-read","runtimeEvidence":"pending"}
+    {"method":"GET","path":"/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/document-proposals/{snapshotId}/decisions","operationId":"GET_api_v1_ingestion_cases_caseId_sources_sourceId_document_proposals_snapshotId_decisions","batch":"D08-PROPOSAL-DECISIONS","disposition":"added","nativeController":"document-proposals","requestSchema":"DocumentProposalDecisionHistoryQuerySchema query","responseSchema":"DocumentProposalDecisionHistorySchema","responseStatus":200,"transportProfile":"private-bounded-read","runtimeEvidence":"pending"},
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_intake_items",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "IntakeRegisterSchema",
+      "responseSchema": "IntakeItemSchema",
+      "responseStatus": 201,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending",
+      "batch": "IN1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_intake",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": null,
+      "responseSchema": "IntakeManifestSchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending",
+      "batch": "IN1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_intake_items_itemId",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": null,
+      "responseSchema": "IntakeItemSchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "pending",
+      "batch": "IN1"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/pin",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_intake_items_itemId_pin",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "IntakePinSchema",
+      "responseSchema": "IntakeItemSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending",
+      "batch": "IN1"
+    }
   ]
 }
