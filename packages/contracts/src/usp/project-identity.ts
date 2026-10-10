@@ -50,11 +50,18 @@ export const ProjectParcelAssociationSchema = z.strictObject({
 export const ProjectLocatorPartsSchema = z.strictObject({
   // '?' preserves unassessed source-only structure classification; it is never an identity token.
   structureKind: z.enum(['S', 'U', 'A', '?']),
-  structureNumber: z.number().int().min(1).max(99),
+  structureNumber: z.number().int().min(1).max(99).optional().describe('Required unless structureKind is ?.'),
   levels: z.array(z.union([z.enum(['B2', 'B1', 'LG', 'UG', 'G', 'ST', 'M1', 'P1', 'T', 'R', 'L?']), z.string().regex(/^F(?:0[1-9]|[1-9][0-9])$/)])).min(1).max(2),
   // U means utility and V means volume/corridor, not unknown use.
   spaceKind: z.enum(['R', 'C', 'P', 'X', 'U', 'V', '?']),
-  spaceNumber: z.number().int().min(1).max(999),
+  spaceNumber: z.number().int().min(1).max(999).optional().describe('Required unless spaceKind is ?.'),
+}).superRefine((locator, ctx) => {
+  if (locator.structureKind !== '?' && locator.structureNumber === undefined) {
+    ctx.addIssue({ code: 'custom', path: ['structureNumber'], message: 'A known structure kind needs its number' });
+  }
+  if (locator.spaceKind !== '?' && locator.spaceNumber === undefined) {
+    ctx.addIssue({ code: 'custom', path: ['spaceNumber'], message: 'A known space kind needs its number' });
+  }
 });
 export const ProjectLocationSchema = z.strictObject({
   anchorState: ProjectAnchorStateSchema,
@@ -83,7 +90,10 @@ export function verticalLocator(location: ProjectLocation): string {
     : ['reviewed_complete', 'reviewed_partial'].includes(location.anchorState) && reviewed.length > 1 && primary.length === 0
       ? `MULTI(${reviewed.length})` : 'NO-ANCHOR';
   const part = location.locator;
-  return `${anchor} / ${part.structureKind}${String(part.structureNumber).padStart(2, '0')} / ${part.levels.join('-')} / ${part.spaceKind}${String(part.spaceNumber).padStart(3, '0')}`;
+  const structure = part.structureKind
+    + (part.structureNumber === undefined ? '' : String(part.structureNumber).padStart(2, '0'));
+  const space = part.spaceKind + (part.spaceNumber === undefined ? '' : String(part.spaceNumber).padStart(3, '0'));
+  return `${anchor} / ${structure} / ${part.levels.join('-')} / ${space}`;
 }
 
 const common = {
@@ -102,7 +112,8 @@ export const ProjectIdentityReviewSchema = z.strictObject({
   reason: z.string().trim().min(1).max(2000),
   evidence: z.array(z.strictObject({ sourceId: z.uuid(), revision: z.number().int().positive(),
     locator: z.string().min(1).max(500) })).min(1).max(30),
-  location: ProjectLocationSchema.optional(),
+  location: ProjectLocationSchema.optional()
+    .describe('Omit for source-stated reviews; required for other assign reviews.'),
   locations: z.record(z.uuid(), ProjectLocationSchema).optional(),
   transferredGeometry: z.unknown().optional(),
 });

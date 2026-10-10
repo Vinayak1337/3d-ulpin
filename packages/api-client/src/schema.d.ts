@@ -1978,7 +1978,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Record an exact project identity review */
+        /**
+         * Record an exact project identity review
+         * @description A source-stated review omits location; other assign reviews require it.
+         */
         post: operations["POST_api_v1_usp_identity_reviews"];
         delete?: never;
         options?: never;
@@ -41773,6 +41776,7 @@ export interface components {
                 revision: number;
                 locator: string;
             }[];
+            /** @description Omit for source-stated reviews; required for other assign reviews. */
             location?: {
                 /** @enum {string} */
                 anchorState: "not_supplied" | "supplied_unreviewed" | "reviewed_partial" | "reviewed_complete" | "conflicting" | "withdrawn";
@@ -41811,11 +41815,13 @@ export interface components {
                 locator: {
                     /** @enum {string} */
                     structureKind: "S" | "U" | "A" | "?";
-                    structureNumber: number;
+                    /** @description Required unless structureKind is ?. */
+                    structureNumber?: number;
                     levels: (("B2" | "B1" | "LG" | "UG" | "G" | "ST" | "M1" | "P1" | "T" | "R" | "L?") | string)[];
                     /** @enum {string} */
                     spaceKind: "R" | "C" | "P" | "X" | "U" | "V" | "?";
-                    spaceNumber: number;
+                    /** @description Required unless spaceKind is ?. */
+                    spaceNumber?: number;
                 };
             };
             locations?: {
@@ -41857,11 +41863,13 @@ export interface components {
                     locator: {
                         /** @enum {string} */
                         structureKind: "S" | "U" | "A" | "?";
-                        structureNumber: number;
+                        /** @description Required unless structureKind is ?. */
+                        structureNumber?: number;
                         levels: (("B2" | "B1" | "LG" | "UG" | "G" | "ST" | "M1" | "P1" | "T" | "R" | "L?") | string)[];
                         /** @enum {string} */
                         spaceKind: "R" | "C" | "P" | "X" | "U" | "V" | "?";
-                        spaceNumber: number;
+                        /** @description Required unless spaceKind is ?. */
+                        spaceNumber?: number;
                     };
                 };
             };

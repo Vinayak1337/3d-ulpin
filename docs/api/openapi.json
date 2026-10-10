@@ -23511,6 +23511,7 @@
     },
     "/api/v1/usp/identity/reviews": {
       "post": {
+        "description": "A source-stated review omits location; other assign reviews require it.",
         "operationId": "POST_api_v1_usp_identity_reviews",
         "parameters": [],
         "requestBody": {
@@ -247516,6 +247517,7 @@
             }
           },
           "location": {
+            "description": "Omit for source-stated reviews; required for other assign reviews.",
             "type": "object",
             "properties": {
               "anchorState": {
@@ -247702,6 +247704,7 @@
                     ]
                   },
                   "structureNumber": {
+                    "description": "Required unless structureKind is ?.",
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 99
@@ -247748,6 +247751,7 @@
                     ]
                   },
                   "spaceNumber": {
+                    "description": "Required unless spaceKind is ?.",
                     "type": "integer",
                     "minimum": 1,
                     "maximum": 999
@@ -247755,10 +247759,8 @@
                 },
                 "required": [
                   "structureKind",
-                  "structureNumber",
                   "levels",
-                  "spaceKind",
-                  "spaceNumber"
+                  "spaceKind"
                 ],
                 "additionalProperties": false
               }
@@ -247959,6 +247961,7 @@
                       ]
                     },
                     "structureNumber": {
+                      "description": "Required unless structureKind is ?.",
                       "type": "integer",
                       "minimum": 1,
                       "maximum": 99
@@ -248005,6 +248008,7 @@
                       ]
                     },
                     "spaceNumber": {
+                      "description": "Required unless spaceKind is ?.",
                       "type": "integer",
                       "minimum": 1,
                       "maximum": 999
@@ -248012,10 +248016,8 @@
                   },
                   "required": [
                     "structureKind",
-                    "structureNumber",
                     "levels",
-                    "spaceKind",
-                    "spaceNumber"
+                    "spaceKind"
                   ],
                   "additionalProperties": false
                 }
