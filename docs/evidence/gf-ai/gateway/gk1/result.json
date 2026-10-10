@@ -1,257 +1,746 @@
 {
-  "task": "GK1",
-  "title": "The model gateway works through a list of the owner's Sarvam keys, one at a time",
-  "branch": "task/gk1-sarvam-key-pool",
-  "base": "98fb47ff",
-  "ownerDecision": "10 October 2026, about 21:20 IST: cycle to multiple keys; eleven supplied, more on request",
-  "step0": {
-    "writtenBeforeAnyCode": true,
-    "today": {
-      "whereTheOneKeyIsRead": [
-        "config.ts:20 the policy field secretReference (one name, ULPIN_PROVIDER_KEY_ namespace, config.ts:8-14)",
-        "config.ts:53-70 readProviderSecret(reference, env): one environment name or one /run/secrets file",
-        "runtime.ts:26 modelGatewayRuntime() reads that one key; runtime.ts:27 returns no gateway when it is absent",
-        "runtime.ts:29 the one key becomes hash(key) for the ledger and the SarvamAdapter's constructor argument"
-      ],
-      "placesThatAssumeOneKey": [
-        "database/sql/90-model-gateway/model-gateway.sql:9 usp_model_budget.credential_hash, one hash on the single row",
-        "model-gateway.sql:10 blocked_reason: a quota or key refusal blocks the whole pool",
-        "ledger.ts:27-28 the ledger takes one credentialHash; ledger.ts:31-33 pins it on first admission",
-        "ledger.ts:35-36 MODEL_RECONCILIATION_REQUIRED when config_hash or credential_hash differs",
-        "ledger.ts:55 MODEL_COOLDOWN text 'No alternate key is attempted.'",
-        "ledger.ts:137-138 quota_exhausted, credential_invalid and capability_denied set blocked_reason",
-        "ledger.ts:133-135 the refused call stays outcome_unknown with its reservation held, so every later",
-        "  admission is denied MODEL_EXPOSURE_PENDING (ledger.ts:56-59): with one key that is the intended stop",
-        "adapter.ts:97 SarvamAdapter holds one key; adapter.ts:104 sends it as api-subscription-key",
-        "adapter.ts:99, 129, 135 with redaction.ts:16 mask that one key in the prompt sent and in the output kept",
-        "adapter.ts:117-119 a provider error body is dropped; only the classified kind and the body's hash are kept",
-        "runtime.ts:31 comment 'reads the one configured key'",
-        "scripts/platform/demo-config.mjs:197 providerKeyName, one fixed name",
-        "demo-config.mjs:234-248 assertGatewayEnabled: secretReference must be exactly that name and it must be set",
-        "scripts/platform/demo-gateway.mjs:2 header 'One key: it never lists, picks or rotates keys'",
-        "demo-gateway.mjs:24-34 gatewayReport: providerKeyPresent is that one name",
-        "scripts/platform/doctor:88-92 prints the five facts of gatewayReport",
-        "scripts/agent/live-proof.ts:62 PROPOSED_POLICY names the one key; live-proof.ts:665-693 assertLiveStart",
-        "  reads enabled, policyHash, providerKeyPresent, dailyCapPresent and mappingTeacherAdapter",
-        "packages/server/src/modules/ai/officer-ai-provider.ts:71-72 reads config.secretReference as a string",
-        "scripts/agent/mapping-teacher.ts:27-28 the one-call qualifier requires secretReference to be the one name",
-        "scripts/agent/a3-failures.ts:45 reads the name out of runtime.ts by a pattern on \"secretReference: '\"",
-        "tests/model-gateway/sql.test.ts:91-94 a changed policy and a different key are both refused",
-        "sql.test.ts:96-105 'single-pool quota block ... never cycle or refund'",
-        "docs/backend/DEMO-GATEWAY.md:13-14 and 88-93 ('One key.'); docs/backend/LIVE-PROOF.md:16, 50-60, 104, 110",
-        "docs/next-steps/00-STANDARDS.md:114 and SPRINT-SELECTION.md:43 still state the one-key rule (lead's files)"
-      ],
-      "noteOnTheNamedDocument": [
-        "The task names DEMO-RUNTIME.md; its only gateway lines (25, 76) say the G1 checks are unchanged.",
-        "The 'One key' section is in DEMO-GATEWAY.md, written by G1. That file and LIVE-PROOF.md are rewritten."
-      ],
-      "howTheSchemaReachesADatabase": [
-        "runtime.ts:55-59 migrateModelGateway() runs sql('model-gateway.schema') as one query batch",
-        "the file is pinned by SHA-256 and per statement in database/manifest.json; the loader refuses a mismatch",
-        "called by migrateOfficerAi() (officer-ai.ts:18-21) inside pnpm db:migrate (infrastructure/db.ts:181)",
-        "and by scripts/platform/demo-schema.ts:10; scripts/platform/demo.mjs:26-33 runs both at every demo start",
-        "safe to run again: an advisory transaction lock, then CREATE TABLE and CREATE INDEX IF NOT EXISTS only;",
-        "sql.test.ts:51 runs the file twice on a fresh schema",
-        "the budget row is not created by the SQL: ledger.ts:31-33 inserts it at the first paid admission"
-      ],
-      "noScriptToday": "no script reads or changes the ledger: blocked_reason and held exposure are cleared by hand"
+ "task": "GK1",
+ "title": "The model gateway works through a list of the owner's Sarvam keys, one at a time",
+ "branch": "task/gk1-sarvam-key-pool",
+ "base": "98fb47ff",
+ "ownerDecision": "10 October 2026, about 21:20 IST: cycle to multiple keys; eleven supplied, more on request",
+ "step0": {
+  "writtenBeforeAnyCode": true,
+  "today": {
+   "whereTheOneKeyIsRead": [
+    "config.ts:20 the policy field secretReference (one name,",
+    "  ULPIN_PROVIDER_KEY_ namespace, config.ts:8-14)",
+    "config.ts:53-70 readProviderSecret(reference, env): one",
+    "  environment name or one /run/secrets file",
+    "runtime.ts:26 modelGatewayRuntime() reads that one key;",
+    "  runtime.ts:27 returns no gateway when it is absent",
+    "runtime.ts:29 the one key becomes hash(key) for the ledger and",
+    "  the SarvamAdapter's constructor argument"
+   ],
+   "placesThatAssumeOneKey": [
+    "database/sql/90-model-gateway/model-gateway.sql:9",
+    "  usp_model_budget.credential_hash, one hash on the single row",
+    "model-gateway.sql:10 blocked_reason: a quota or key refusal",
+    "  blocks the whole pool",
+    "ledger.ts:27-28 the ledger takes one credentialHash;",
+    "  ledger.ts:31-33 pins it on first admission",
+    "ledger.ts:35-36 MODEL_RECONCILIATION_REQUIRED when",
+    "  config_hash or credential_hash differs",
+    "ledger.ts:55 MODEL_COOLDOWN text 'No alternate key is",
+    "  attempted.'",
+    "ledger.ts:137-138 quota_exhausted, credential_invalid and",
+    "  capability_denied set blocked_reason",
+    "ledger.ts:133-135 the refused call stays outcome_unknown",
+    "  with its reservation held, so every later",
+    "  admission is denied MODEL_EXPOSURE_PENDING",
+    "  (ledger.ts:56-59): with one key that is the intended stop",
+    "adapter.ts:97 SarvamAdapter holds one key; adapter.ts:104",
+    "  sends it as api-subscription-key",
+    "adapter.ts:99, 129, 135 with redaction.ts:16 mask that one",
+    "  key in the prompt sent and in the output kept",
+    "adapter.ts:117-119 a provider error body is dropped; only",
+    "  the classified kind and the body's hash are kept",
+    "runtime.ts:31 comment 'reads the one configured key'",
+    "scripts/platform/demo-config.mjs:197 providerKeyName, one",
+    "  fixed name",
+    "demo-config.mjs:234-248 assertGatewayEnabled:",
+    "  secretReference must be exactly that name and it must be set",
+    "scripts/platform/demo-gateway.mjs:2 header 'One key: it",
+    "  never lists, picks or rotates keys'",
+    "demo-gateway.mjs:24-34 gatewayReport: providerKeyPresent is",
+    "  that one name",
+    "scripts/platform/doctor:88-92 prints the five facts of",
+    "  gatewayReport",
+    "scripts/agent/live-proof.ts:62 PROPOSED_POLICY names the one",
+    "  key; live-proof.ts:665-693 assertLiveStart",
+    "  reads enabled, policyHash, providerKeyPresent,",
+    "  dailyCapPresent and mappingTeacherAdapter",
+    "packages/server/src/modules/ai/officer-ai-provider.ts:71-72",
+    "  reads config.secretReference as a string",
+    "scripts/agent/mapping-teacher.ts:27-28 the one-call",
+    "  qualifier requires secretReference to be the one name",
+    "scripts/agent/a3-failures.ts:45 reads the name out of",
+    "  runtime.ts by a pattern on \"secretReference: '\"",
+    "tests/model-gateway/sql.test.ts:91-94 a changed policy and a",
+    "  different key are both refused",
+    "sql.test.ts:96-105 'single-pool quota block ... never cycle",
+    "  or refund'",
+    "docs/backend/DEMO-GATEWAY.md:13-14 and 88-93 ('One key.');",
+    "  docs/backend/LIVE-PROOF.md:16, 50-60, 104, 110",
+    "docs/next-steps/00-STANDARDS.md:114 and SPRINT-",
+    "  SELECTION.md:43 still state the one-key rule (lead's files)"
+   ],
+   "noteOnTheNamedDocument": [
+    "The task names DEMO-RUNTIME.md; its only gateway lines (25,",
+    "  76) say the G1 checks are unchanged.",
+    "The 'One key' section is in DEMO-GATEWAY.md, written by G1.",
+    "  That file and LIVE-PROOF.md are rewritten."
+   ],
+   "howTheSchemaReachesADatabase": [
+    "runtime.ts:55-59 migrateModelGateway() runs",
+    "  sql('model-gateway.schema') as one query batch",
+    "the file is pinned by SHA-256 and per statement in",
+    "  database/manifest.json; the loader refuses a mismatch",
+    "called by migrateOfficerAi() (officer-ai.ts:18-21)",
+    "  inside pnpm db:migrate (infrastructure/db.ts:181)",
+    "and by scripts/platform/demo-schema.ts:10;",
+    "  scripts/platform/demo.mjs:26-33 runs both at every",
+    "  demo start",
+    "safe to run again: an advisory transaction lock, then",
+    "  CREATE TABLE and CREATE INDEX IF NOT EXISTS only;",
+    "sql.test.ts:51 runs the file twice on a fresh schema",
+    "the budget row is not created by the SQL:",
+    "  ledger.ts:31-33 inserts it at the first paid admission"
+   ],
+   "noScriptToday": [
+    "no script reads or changes the ledger: blocked_reason and held",
+    "exposure are cleared by hand"
+   ]
+  },
+  "provider": {
+   "readOn": "2026-10-10",
+   "endpoint": [
+    "POST https://api.sarvam.ai/v1/chat/completions (adapter.ts:103), header",
+    "api-subscription-key"
+   ],
+   "pages": {
+    "chat": "https://docs.sarvam.ai/api-reference/chat/chat-completions-v1",
+    "errors": "https://docs.sarvam.ai/api/getting-started/errors-troubleshooting",
+    "auth": "https://docs.sarvam.ai/api-reference/authentication",
+    "limits": "https://docs.sarvam.ai/api/getting-started/ratelimits",
+    "pricing": "https://docs.sarvam.ai/api/getting-started/pricing"
+   },
+   "errorBody": "{ error: { message, code, request_id } } (chat page, ErrorDetails)",
+   "answers": [
+    {
+     "class": "key rejected (missing, malformed or unknown)",
+     "documented": "HTTP 403 with error.code invalid_api_key_error",
+     "citations": [
+      "errors",
+      "auth",
+      "chat (403 Forbidden)"
+     ],
+     "quote": "errors page: \"Auth failures use HTTP 403, not 401.\"",
+     "adapterToday": [
+      "adapter.ts:56-58 credential_invalid; ledger.ts:137-138",
+      "blocks the pool"
+     ],
+     "movesTheGatewayOn": true
     },
-    "provider": {
-      "readOn": "2026-10-10",
-      "endpoint": "POST https://api.sarvam.ai/v1/chat/completions (adapter.ts:103), header api-subscription-key",
-      "pages": {
-        "chat": "https://docs.sarvam.ai/api-reference/chat/chat-completions-v1",
-        "errors": "https://docs.sarvam.ai/api/getting-started/errors-troubleshooting",
-        "auth": "https://docs.sarvam.ai/api-reference/authentication",
-        "limits": "https://docs.sarvam.ai/api/getting-started/ratelimits",
-        "pricing": "https://docs.sarvam.ai/api/getting-started/pricing"
-      },
-      "errorBody": "{ error: { message, code, request_id } } (chat page, ErrorDetails)",
-      "answers": [
-        {
-          "class": "key rejected (missing, malformed or unknown)",
-          "documented": "HTTP 403 with error.code invalid_api_key_error",
-          "citations": ["errors", "auth", "chat (403 Forbidden)"],
-          "quote": "errors page: \"Auth failures use HTTP 403, not 401.\"",
-          "adapterToday": "adapter.ts:56-58 credential_invalid; ledger.ts:137-138 blocks the pool",
-          "movesTheGatewayOn": true
-        },
-        {
-          "class": "credits used up",
-          "documented": "HTTP 429 with error.code insufficient_quota_error",
-          "citations": ["errors (row insufficient_quota_error, 429, credits are exhausted)", "chat (429 Quota Exceeded)"],
-          "quote": "limits page: \"Credits are universal and never expire.\"",
-          "adapterToday": "adapter.ts:54 quota_exhausted, tested before the 429 rule; ledger.ts:137-138 blocks the pool",
-          "movesTheGatewayOn": true
-        },
-        {
-          "class": "rate limit",
-          "documented": "HTTP 429 with error.code rate_limit_exceeded_error; HTTP 503 under load, same code",
-          "citations": ["limits", "errors"],
-          "quote": "limits page: \"All keys share the same rate limit pool.\"",
-          "adapterToday": "adapter.ts:55 rate_limited with a cool-down (Retry-After is not documented: 5 s default,",
-          "adapterTodayMore": "adapter.ts:48-53); a 503 is outcome_unknown with a 5 s cool-down (adapter.ts:61)",
-          "movesTheGatewayOn": false
-        }
-      ],
-      "silentOrAmbiguous": [
-        {
-          "answer": "HTTP 402, with or without a code",
-          "documentation": "not documented on any page read",
-          "adapterToday": "adapter.ts:54 quota_exhausted",
-          "inAList": "does not move the gateway on; handled as today (pool blocked, reservation held)"
-        },
-        {
-          "answer": "HTTP 401",
-          "documentation": "the errors page says auth failures are 403, not 401",
-          "adapterToday": "adapter.ts:56 credential_invalid",
-          "inAList": "does not move the gateway on; handled as today"
-        },
-        {
-          "answer": "insufficient_quota_error or invalid_api_key_error on any other status",
-          "documentation": "each code is documented on one status only",
-          "inAList": "does not move the gateway on; handled as today"
-        },
-        {
-          "answer": "HTTP 403 with another code, and the code authentication_error (listed on the chat page, never mapped)",
-          "adapterToday": "adapter.ts:59 capability_denied",
-          "inAList": "does not move the gateway on; handled as today"
-        },
-        {
-          "answer": "a deleted (revoked) key",
-          "documentation": "not described; the auth page only says to delete a lost key in the dashboard",
-          "inAList": "moves on only if the provider answers 403 invalid_api_key_error"
-        },
-        {
-          "answer": "an error body that is not JSON, is over 1 MB or is cut off",
-          "adapterToday": "adapter.ts:68-89 outcome_unknown whatever the status",
-          "inAList": "never moves the gateway on"
-        }
-      ],
-      "notDocumented": [
-        "whether a refused request (403 or 429) is ever billed: no page says",
-        "whether credits belong to an account or to a key: the dashboard shows credits used and remaining, the",
-        "  pricing page gives each new user credits, and rate limits are stated per account for all its keys.",
-        "  Eleven keys add credit only if they belong to accounts with their own credits; the owner knows which."
-      ],
-      "whatAFirstLiveRefusalMustShow": [
-        "the HTTP status and error.code of the first real 'credits used up' answer: 429 insufficient_quota_error",
-        "  moves on; anything else stops as today and is reported to the lead with status and code, no body",
-        "that the dashboard's remaining credit is unchanged by a refused request (the zero charge recorded below)",
-        "whether the next key answers at once or also says insufficient_quota_error (keys of one account)"
-      ]
+    {
+     "class": "credits used up",
+     "documented": "HTTP 429 with error.code insufficient_quota_error",
+     "citations": [
+      "errors (row insufficient_quota_error, 429, credits are",
+      "  exhausted)",
+      "chat (429 Quota Exceeded)"
+     ],
+     "quote": "limits page: \"Credits are universal and never expire.\"",
+     "adapterToday": [
+      "adapter.ts:54 quota_exhausted, tested before the 429",
+      "rule; ledger.ts:137-138 blocks the pool"
+     ],
+     "movesTheGatewayOn": true
     },
-    "design": {
-      "policyField": [
-        "exactly one of secretReference (one name, as today) or secretReferences (2 to 32 unique names in the same",
-        "  ULPIN_PROVIDER_KEY_ namespace, in the owner's order); both or neither is refused by the schema",
-        "a policy with secretReference parses to the same object as today, so its policy hash is unchanged",
-        "the parsed form of a list policy also carries secretReference = the list's first name, because",
-        "  officer-ai-provider.ts:71-72 and scripts/agent/mapping-teacher.ts:27 read that field and are not this",
-        "  task's files; the policy file itself never holds both",
-        "the server runtime builds a gateway only when every named key is present; otherwise none, as today"
-      ],
-      "oneKeyPolicy": "unchanged in every respect: same hash, same pinning, same pool block on a refusal, same tests",
-      "ledgerSql": {
-        "additiveOnly": true,
-        "statements": [
-          "ALTER TABLE usp_model_calls ADD COLUMN IF NOT EXISTS credential_hash text (nullable, same 64-hex check):",
-          "  the key that served the call, by the hash the ledger already uses for a credential",
-          "CREATE TABLE IF NOT EXISTS usp_model_key_marks: one row each time a key is marked used up, with the",
-          "  credential hash, the key's name, the reason, the HTTP status, the call, the time, and later the time and",
-          "  the owner's reason when the owner restores it; a unique partial index allows one open mark per key",
-          "ALTER TABLE usp_model_budget ADD COLUMN IF NOT EXISTS reconciled_at, reconciled_reason (nullable)"
-        ],
-        "noCheckConstraintChanges": "the state list and blocked_reason list of the existing tables are not touched",
-        "oldOneKeyDatabaseAfterTheSqlRunsAgain": [
-          "every existing row is valid and unchanged; old call rows have credential_hash NULL, which reads as",
-          "  'served by the one key pinned on the budget row at the time'",
-          "the budget row keeps its one-key policy hash and credential hash; the marks table is empty",
-          "with the same one-key policy the gateway behaves as before; with a list policy the first admission is",
-          "  refused MODEL_RECONCILIATION_REQUIRED until the owner's reconcile command adopts the list"
-        ]
-      },
-      "choosingTheKey": [
-        "inside reserve(), after the budget row is locked FOR UPDATE (the one serialization point) and after every",
-        "  existing refusal, the ledger reads the open marks and takes the first hash of the pinned list that has",
-        "  none; the reservation row is inserted with that credential_hash in the same transaction",
-        "the gateway passes the row's credential_hash to the adapter, which holds one SarvamAdapter per key and",
-        "  sends with exactly that one; a hash it does not hold is an unknown outcome, never another key",
-        "no round-robin and no per-call choice: the choice depends only on the list order and the open marks"
-      ],
-      "theCallThatReceivesUsedUp": {
-        "choice": "it fails with a retryable code; it is not sent again inside the same reservation",
-        "what": [
-          "only for a list policy and only for the two cited answers (429 insufficient_quota_error, 403",
-          "  invalid_api_key_error) with a readable body: in one transaction the key gets its mark and the call is",
-          "  closed as settled at 0 micro-INR with a receipt (HTTP status, response hash) and its error kind",
-          "the caller gets 503 MODEL_QUOTA_EXHAUSTED or MODEL_CREDENTIAL_INVALID (today's codes) with",
-          "  details.retryable true while another key remains; the mapping teacher turns both into a manual plan",
-          "the next admitted call, or the caller's second attempt of the same invocation, goes to the next key",
-          "asking again with the same invocation and attempt returns the same refusal, never an output"
-        ],
-        "why": [
-          "one HTTP request stays one ledger row with one key and one receipt: nothing is folded into another row",
-          "a second send inside the same reservation would put two requests inside one pace interval, could chain",
-          "  through all keys within one 45 s deadline, and after a crash between the two sends would leave a",
-          "  dispatched row whose first answer is lost; the two-attempt rule would also stop meaning two requests",
-          "closing at 0 is the only existing state that ends a dispatched row (released requires no dispatch, and",
-          "  changing a CHECK is not additive); left open, MODEL_EXPOSURE_PENDING would stop every later call"
-        ],
-        "assumption": "a refused request is not billed; the documentation is silent, the first live refusal checks it"
-      },
-      "everythingElseInAList": [
-        "rate limit: the shared cool-down and the held reservation of today; no other key is tried",
-        "timeout, network failure, 5xx, unreadable body, missing usage: held as today; nothing moves",
-        "any other 4xx: held as today; capability_denied, 402 and 401 still block the pool as today",
-        "caps, single in-flight call, reservation before dispatch, two attempts and pace: the same queries, over",
-        "  all rows of all keys; a zero-settled refusal counts as a call of the person's daily call cap"
-      ],
-      "reconciliation": [
-        "the budget row's credential_hash becomes, for a list, the hash of the ordered list of key hashes; for one",
-        "  key it stays hash(key). config_hash already covers the names and their order.",
-        "so adding, removing, reordering or replacing a key changes one of the two and the existing check refuses",
-        "  with MODEL_RECONCILIATION_REQUIRED; an unchanged list never does",
-        "demo-gateway.mjs reconcile --reason <text> (owner, demo stopped) adopts the configured policy when it",
-        "  differs from the pinned one only in its key names or key values, and no call has open exposure; a",
-        "  change of any cap, price, bound, pace or label is still refused, as today",
-        "marks follow the key's hash, so a used-up key stays used up wherever the new list puts it"
-      ],
-      "ownerRestoresAKey": "demo-gateway.mjs restore-key <NAME> --reason <text> closes the open mark with time and reason",
-      "allKeysUsedUp": "503 MODEL_KEYS_EXHAUSTED before any reservation; the mapping teacher resolves it to a manual plan"
-    },
-    "ownerSuppliesElevenKeys": {
-      "todayForOneKey": [
-        "the owner types one line ULPIN_PROVIDER_KEY_SARVAM=<key> into the demo's environment file by hand;",
-        "no script writes a key (DEMO-GATEWAY.md:88-89: 'Changing the key is the owner's edit')"
-      ],
-      "smallestStepForAList": [
-        "1. the owner makes a text file outside Git with one key per line, in the order they should be used",
-        "2. node scripts/platform/demo-gateway.mjs keys --from <that file>   (demo stopped)",
-        "   it writes ULPIN_PROVIDER_KEY_SARVAM_01 ... _NN into the demo's environment file and prints only",
-        "   '11 keys written as ULPIN_PROVIDER_KEY_SARVAM_01 to ULPIN_PROVIDER_KEY_SARVAM_11' and the names to put",
-        "   into the policy file as secretReferences; it never prints a value, a length or a part of one",
-        "3. the owner deletes the text file"
-      ],
-      "rehearsal": "keys --from <file> --dry-run --out <folder> writes the result into <folder> and touches nothing else"
-    },
-    "firstLiveRun": {
-      "assertLiveStartFactsUnchanged": [
-        "enabled", "policyHash", "providerKeyPresent (true when every key the policy names is present; with one",
-        "key that is today's meaning)", "mappingTeacherAdapter", "dailyCapPresent"
-      ],
-      "statusPrintsInAddition": ["providerKeysNamed: <count>", "providerKeysPresent: <count>"],
-      "usedUpCount": [
-        "not in status: no script reads the ledger today, and status must work with the database stopped.",
-        "demo-gateway.mjs key-marks (database up) prints each name with in use, waiting or used up."
-      ],
-      "liveProofNeedsNoChange": "parseGatewayStatus keeps unknown lines; assertLiveStart reads the same five facts"
-    },
-    "stopConditions": {
-      "nonAdditiveSchemaChange": false,
-      "moneyRuleChange": false,
-      "providerAnswerNotClassifiable": false,
-      "decision": "continue to Part 1"
+    {
+     "class": "rate limit",
+     "documented": [
+      "HTTP 429 with error.code rate_limit_exceeded_error; HTTP",
+      "503 under load, same code"
+     ],
+     "citations": [
+      "limits",
+      "errors"
+     ],
+     "quote": "limits page: \"All keys share the same rate limit pool.\"",
+     "adapterToday": [
+      "adapter.ts:55 rate_limited with a cool-down (Retry-",
+      "After is not documented: 5 s default,"
+     ],
+     "adapterTodayMore": [
+      "adapter.ts:48-53); a 503 is outcome_unknown with a",
+      "5 s cool-down (adapter.ts:61)"
+     ],
+     "movesTheGatewayOn": false
     }
-  }
+   ],
+   "silentOrAmbiguous": [
+    {
+     "answer": "HTTP 402, with or without a code",
+     "documentation": "not documented on any page read",
+     "adapterToday": "adapter.ts:54 quota_exhausted",
+     "inAList": [
+      "does not move the gateway on; handled as today",
+      "(pool blocked, reservation held)"
+     ]
+    },
+    {
+     "answer": "HTTP 401",
+     "documentation": [
+      "the errors page says auth failures are 403,",
+      "not 401"
+     ],
+     "adapterToday": "adapter.ts:56 credential_invalid",
+     "inAList": "does not move the gateway on; handled as today"
+    },
+    {
+     "answer": [
+      "insufficient_quota_error or invalid_api_key_error",
+      "on any other status"
+     ],
+     "documentation": "each code is documented on one status only",
+     "inAList": "does not move the gateway on; handled as today"
+    },
+    {
+     "answer": [
+      "HTTP 403 with another code, and the code",
+      "authentication_error (listed on the chat page,",
+      "never mapped)"
+     ],
+     "adapterToday": "adapter.ts:59 capability_denied",
+     "inAList": "does not move the gateway on; handled as today"
+    },
+    {
+     "answer": "a deleted (revoked) key",
+     "documentation": [
+      "not described; the auth page only says to",
+      "delete a lost key in the dashboard"
+     ],
+     "inAList": [
+      "moves on only if the provider answers 403",
+      "invalid_api_key_error"
+     ]
+    },
+    {
+     "answer": [
+      "an error body that is not JSON, is over 1 MB or is",
+      "cut off"
+     ],
+     "adapterToday": [
+      "adapter.ts:68-89 outcome_unknown whatever the",
+      "status"
+     ],
+     "inAList": "never moves the gateway on"
+    }
+   ],
+   "notDocumented": [
+    "whether a refused request (403 or 429) is ever billed: no page says",
+    "whether credits belong to an account or to a key: the dashboard",
+    "  shows credits used and remaining, the",
+    "  pricing page gives each new user credits, and rate limits are",
+    "  stated per account for all its keys.",
+    "  Eleven keys add credit only if they belong to accounts with",
+    "  their own credits; the owner knows which."
+   ],
+   "whatAFirstLiveRefusalMustShow": [
+    "the HTTP status and error.code of the first real",
+    "  'credits used up' answer: 429",
+    "  insufficient_quota_error",
+    "  moves on; anything else stops as today and is",
+    "  reported to the lead with status and code, no body",
+    "that the dashboard's remaining credit is unchanged",
+    "  by a refused request (the zero charge recorded",
+    "  below)",
+    "whether the next key answers at once or also says",
+    "  insufficient_quota_error (keys of one account)"
+   ]
+  },
+  "design": {
+   "policyField": [
+    "exactly one of secretReference (one name, as today) or",
+    "  secretReferences (2 to 32 unique names in the same",
+    "  ULPIN_PROVIDER_KEY_ namespace, in the owner's order); both or",
+    "  neither is refused by the schema",
+    "a policy with secretReference parses to the same object as today, so",
+    "  its policy hash is unchanged",
+    "the parsed form of a list policy also carries secretReference = the",
+    "  list's first name, because",
+    "  officer-ai-provider.ts:71-72 and scripts/agent/mapping-teacher.ts:27",
+    "  read that field and are not this",
+    "  task's files; the policy file itself never holds both",
+    "the server runtime builds a gateway only when every named key is",
+    "  present; otherwise none, as today"
+   ],
+   "oneKeyPolicy": [
+    "unchanged in every respect: same hash, same pinning, same pool block",
+    "on a refusal, same tests"
+   ],
+   "ledgerSql": {
+    "additiveOnly": true,
+    "statements": [
+     "ALTER TABLE usp_model_calls ADD COLUMN IF NOT EXISTS",
+     "  credential_hash text (nullable, same 64-hex check):",
+     "  the key that served the call, by the hash the ledger",
+     "  already uses for a credential",
+     "CREATE TABLE IF NOT EXISTS usp_model_key_marks: one row",
+     "  each time a key is marked used up, with the",
+     "  credential hash, the key's name, the reason, the HTTP",
+     "  status, the call, the time, and later the time and",
+     "  the owner's reason when the owner restores it; a unique",
+     "  partial index allows one open mark per key",
+     "ALTER TABLE usp_model_budget ADD COLUMN IF NOT EXISTS",
+     "  reconciled_at, reconciled_reason (nullable)"
+    ],
+    "noCheckConstraintChanges": [
+     "the state list and blocked_reason list of",
+     "the existing tables are not touched"
+    ],
+    "oldOneKeyDatabaseAfterTheSqlRunsAgain": [
+     "every existing row is valid",
+     "  and unchanged; old call rows",
+     "  have credential_hash NULL,",
+     "  which reads as",
+     "  'served by the one key",
+     "  pinned on the budget row at",
+     "  the time'",
+     "the budget row keeps its one-",
+     "  key policy hash and credential",
+     "  hash; the marks table is empty",
+     "with the same one-key policy",
+     "  the gateway behaves as before;",
+     "  with a list policy the first",
+     "  admission is",
+     "  refused",
+     "  MODEL_RECONCILIATION_REQUIRED",
+     "  until the owner's reconcile",
+     "  command adopts the list"
+    ]
+   },
+   "choosingTheKey": [
+    "inside reserve(), after the budget row is locked FOR UPDATE (the",
+    "  one serialization point) and after every",
+    "  existing refusal, the ledger reads the open marks and takes the",
+    "  first hash of the pinned list that has",
+    "  none; the reservation row is inserted with that credential_hash",
+    "  in the same transaction",
+    "the gateway passes the row's credential_hash to the adapter, which",
+    "  holds one SarvamAdapter per key and",
+    "  sends with exactly that one; a hash it does not hold is an",
+    "  unknown outcome, never another key",
+    "no round-robin and no per-call choice: the choice depends only on",
+    "  the list order and the open marks"
+   ],
+   "theCallThatReceivesUsedUp": {
+    "choice": [
+     "it fails with a retryable code; it is not sent",
+     "again inside the same reservation"
+    ],
+    "what": [
+     "only for a list policy and only for the two",
+     "  cited answers (429 insufficient_quota_error,",
+     "  403",
+     "  invalid_api_key_error) with a readable body:",
+     "  in one transaction the key gets its mark and",
+     "  the call is",
+     "  closed as settled at 0 micro-INR with a",
+     "  receipt (HTTP status, response hash) and its",
+     "  error kind",
+     "the caller gets 503 MODEL_QUOTA_EXHAUSTED or",
+     "  MODEL_CREDENTIAL_INVALID (today's codes) with",
+     "  details.retryable true (a retry with no key",
+     "  left is refused MODEL_KEYS_EXHAUSTED); the",
+     "  mapping teacher turns both into a manual plan",
+     "the next admitted call, or the caller's second",
+     "  attempt of the same invocation, goes to the",
+     "  next key",
+     "asking again with the same invocation and",
+     "  attempt returns the same refusal, never an",
+     "  output"
+    ],
+    "why": [
+     "one HTTP request stays one ledger row with one",
+     "  key and one receipt: nothing is folded into",
+     "  another row",
+     "a second send inside the same reservation would",
+     "  put two requests inside one pace interval, could",
+     "  chain",
+     "  through all keys within one 45 s deadline, and",
+     "  after a crash between the two sends would leave",
+     "  a",
+     "  dispatched row whose first answer is lost; the",
+     "  two-attempt rule would also stop meaning two",
+     "  requests",
+     "closing at 0 is the only existing state that",
+     "  ends a dispatched row (released requires no",
+     "  dispatch, and",
+     "  changing a CHECK is not additive); left open,",
+     "  MODEL_EXPOSURE_PENDING would stop every later",
+     "  call"
+    ],
+    "assumption": [
+     "a refused request is not billed; the",
+     "documentation is silent, the first live",
+     "refusal checks it"
+    ]
+   },
+   "everythingElseInAList": [
+    "rate limit: the shared cool-down and the held reservation of",
+    "  today; no other key is tried",
+    "timeout, network failure, 5xx, unreadable body, missing",
+    "  usage: held as today; nothing moves",
+    "any other 4xx: held as today; capability_denied, 402 and 401",
+    "  still block the pool as today",
+    "caps, single in-flight call, reservation before dispatch,",
+    "  two attempts and pace: the same queries, over",
+    "  all rows of all keys; a zero-settled refusal counts as a",
+    "  call of the person's daily call cap"
+   ],
+   "reconciliation": [
+    "the budget row's credential_hash becomes, for a list, the hash of",
+    "  the ordered list of key hashes; for one",
+    "  key it stays hash(key). config_hash already covers the names and",
+    "  their order.",
+    "so adding, removing, reordering or replacing a key changes one of",
+    "  the two and the existing check refuses",
+    "  with MODEL_RECONCILIATION_REQUIRED; an unchanged list never does",
+    "demo-gateway.mjs reconcile --reason <text> (owner, demo stopped)",
+    "  adopts the configured policy when it",
+    "  differs from the pinned one only in its key names or key values,",
+    "  and no call has open exposure; a",
+    "  change of any cap, price, bound, pace or label is still refused,",
+    "  as today",
+    "marks follow the key's hash, so a used-up key stays used up",
+    "  wherever the new list puts it"
+   ],
+   "ownerRestoresAKey": [
+    "demo-gateway.mjs restore-key <NAME> --reason <text> closes the",
+    "open mark with time and reason"
+   ],
+   "allKeysUsedUp": [
+    "503 MODEL_KEYS_EXHAUSTED before any reservation; the mapping teacher",
+    "resolves it to a manual plan"
+   ]
+  },
+  "ownerSuppliesElevenKeys": {
+   "todayForOneKey": [
+    "the owner types one line",
+    "  ULPIN_PROVIDER_KEY_SARVAM=<key> into the demo's",
+    "  environment file by hand;",
+    "no script writes a key (DEMO-GATEWAY.md:88-89:",
+    "  'Changing the key is the owner's edit')"
+   ],
+   "smallestStepForAList": [
+    "1. the owner makes a text file outside Git",
+    "  with one key per line, in the order they",
+    "  should be used",
+    "2. node scripts/platform/demo-gateway.mjs",
+    "  keys --from <that file>   (demo stopped)",
+    "   it writes ULPIN_PROVIDER_KEY_SARVAM_01",
+    "  ... _NN into the demo's environment file and",
+    "  prints only",
+    "   '11 keys written as",
+    "  ULPIN_PROVIDER_KEY_SARVAM_01 to",
+    "  ULPIN_PROVIDER_KEY_SARVAM_11' and the names",
+    "  to put",
+    "   into the policy file as secretReferences;",
+    "  it never prints a value, a length or a part",
+    "  of one",
+    "3. the owner deletes the text file"
+   ],
+   "rehearsal": [
+    "keys --from <file> --dry-run --out <folder> writes the",
+    "result into <folder> and touches nothing else"
+   ]
+  },
+  "firstLiveRun": {
+   "assertLiveStartFactsUnchanged": [
+    "enabled",
+    "policyHash",
+    "providerKeyPresent (true when every key the",
+    "  policy names is present; with one",
+    "key that is today's meaning)",
+    "mappingTeacherAdapter",
+    "dailyCapPresent"
+   ],
+   "statusPrintsInAddition": [
+    "providerKeysNamed: <count>",
+    "providerKeysPresent: <count>"
+   ],
+   "usedUpCount": [
+    "not in status: no script reads the ledger today, and status must",
+    "  work with the database stopped.",
+    "demo-gateway.mjs key-marks (database up) prints each name with",
+    "  in use, waiting or used up."
+   ],
+   "liveProofNeedsNoChange": [
+    "parseGatewayStatus keeps unknown lines;",
+    "assertLiveStart reads the same five facts"
+   ]
+  },
+  "stopConditions": {
+   "nonAdditiveSchemaChange": false,
+   "moneyRuleChange": false,
+   "providerAnswerNotClassifiable": false,
+   "decision": "continue to Part 1"
+  },
+  "amendedAfterBuild": [
+   "One wording of the design was corrected in the last commit: the closed call",
+   "  always carries",
+   "details.retryable true. Nothing else of Step 0 changed."
+  ]
+ },
+ "checks": {
+  "typecheckBackend": "pnpm typecheck:backend: pass",
+  "typecheckAgentScripts": "pnpm exec tsc -p scripts/agent/tsconfig.json: pass",
+  "gatewayTests": {
+   "command": [
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/model-",
+    "gateway/*.test.ts"
+   ],
+   "before": {
+    "tests": 10,
+    "pass": 9,
+    "skipped": 1
+   },
+   "after": {
+    "tests": 20,
+    "pass": 19,
+    "skipped": 1
+   },
+   "skipped": [
+    "sql.test.ts needs a PostgreSQL container (ULPIN_MODEL_SQL_URL);",
+    "offline, so not run"
+   ]
+  },
+  "testsThatBuildAGateway": {
+   "files": [
+    "scripts/agent/mapping-teacher.test.ts",
+    "scripts/agent/mapping-teacher-review.test.ts",
+    "scripts/agent/a3e-unanswered.test.ts",
+    "packages/server/src/modules/ai/document-storey-agent.test.ts",
+    "scripts/agent/live-proof.test.ts",
+    "tests/adaptive-mapping.test.ts",
+    "tests/usp-source-fusion-associations.test.ts"
+   ],
+   "before": {
+    "tests": 42,
+    "pass": 41,
+    "fail": 1
+   },
+   "after": {
+    "tests": 42,
+    "pass": 41,
+    "fail": 1
+   },
+   "sameFailureBeforeAndAfter": [
+    "a3e-unanswered.test.ts: student answers",
+    "stay student when the teacher part fails"
+   ]
+  },
+  "liveProof": {
+   "tests": {
+    "tests": 4,
+    "pass": 4
+   },
+   "dryRunOnce": {
+    "steps": 13,
+    "providerDispatches": 0,
+    "requestsMatchingPlan": 8,
+    "policyHash": [
+     "371070a6deb1880936a151e6779c463ed179175d263d8997b77cc",
+     "6673a8ab51a"
+    ],
+    "policyHashIsTheOneInS1Evidence": true,
+    "writtenTo": [
+     "E:/BhuAayam-data/task-data/gk1/live-proof-dry-",
+     "run/receipt.json"
+    ]
+   }
+  },
+  "platformTestsUnderTheK9cGuard": {
+   "command": [
+    "node --require ./docs/evidence/gf1/k9c/safety.cjs",
+    "--test --test-skip-pattern=<one name>",
+    "scripts/platform/demo-gateway.test.mjs",
+    "scripts/platform/demo-gateway-state.test.mjs"
+   ],
+   "run": 12,
+   "pass": 12,
+   "deselected": 1,
+   "deselectedTest": [
+    "a refused change leaves the file and its",
+    "folder as they were"
+   ],
+   "why": [
+    "the guard turns every delete into a no-op, so the",
+    "refused copy this test expects gone stays"
+   ],
+   "notRunOutsideTheGuard": true,
+   "fixtureName": [
+    "the made-up settings file is now demo-",
+    "settings.txt, so the guard no longer refuses",
+    "the rest"
+   ]
+  },
+  "ownerKeysStepRehearsal": {
+   "command": [
+    "demo-gateway.mjs keys --from <11 synthetic keys> --dry-run",
+    "--out <folder> --settings <synthetic>"
+   ],
+   "underTheGuard": true,
+   "folder": "E:/BhuAayam-data/task-data/gk1/keys-rehearsal",
+   "printed": [
+    "11 keys would be written as ULPIN_PROVIDER_KEY_SARVAM_01",
+    "to ULPIN_PROVIDER_KEY_SARVAM_11"
+   ]
+  },
+  "syntheticKeyStringsOutsideTestFiles": 0,
+  "gitDiffCheck": "clean",
+  "newLinesOver120Characters": 0,
+  "policySchemaPublishedInDocsApi": false,
+  "neverRun": [
+   "the additive SQL against PostgreSQL",
+   "scripts/platform/demo-gateway-ledger.ts (needs the database)",
+   "any provider call",
+   "any command against the real demo settings"
+  ]
+ },
+ "counts": {
+  "singlePolicyHashUnchanged": "d6212efc956d5a5c74ee6fe2e56886ca078b3cce92e307e793cd944bab0d5d8a",
+  "singleLedgerConfigHashUnchanged": "d6880b1466a876e339139668fc782cde45a44dbed57ecc9df96b039ed41e335c",
+  "newGatewayTests": 10,
+  "newPlatformTests": 3,
+  "sqlStatementsAdded": 5,
+  "filesChanged": 16
+ },
+ "report": {
+  "TASK": "GK1: the gateway works through the owner list of Sarvam keys, one at a time.",
+  "WORKS": [
+   "A policy names one key (unchanged, same hash) or a list of 2 to 32 names in the order",
+   "  of use.",
+   "The ledger picks the key under its one lock: the first of the list without an open mark.",
+   "Only two provider answers move it on; that call closes at zero and the key is marked.",
+   "Every call row names its key by credential hash; caps, pace and the one open call stay",
+   "  global.",
+   "All keys marked: MODEL_KEYS_EXHAUSTED before anything is sent; the mapping teacher",
+   "  goes manual.",
+   "A changed or reordered list is refused until the owner reconciles; only the owner",
+   "  restores a key.",
+   "The demo switch accepts a list, prints seven facts, and has keys, key-marks,",
+   "  reconcile, restore-key."
+  ],
+  "SEE_IT": [
+   "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/model-gateway/key-",
+   "  list.test.ts  (10 pass)",
+   "node --require ./docs/evidence/gf1/k9c/safety.cjs --test scripts/platform/demo-",
+   "  gateway.test.mjs",
+   "docs/backend/DEMO-GATEWAY.md, section: A list of keys: the owner steps in order"
+  ],
+  "INPUTS": [
+   "Synthetic keys made inside the tests; a fake transaction that runs the real ledger;",
+   "  an injected fetcher.",
+   "Sarvam public documentation pages, read 2026-10-10 (listed under step0.provider).",
+   "No real key, no settings file of the demo, no provider call, no database."
+  ],
+  "GAPS": [
+   "The five new SQL statements were read, hashed and pinned, never executed: no database",
+   "  offline.",
+   "demo-gateway-ledger.ts (key-marks, reconcile, restore-key) was never run; its argument",
+   "  rules are tested.",
+   "One platform test cannot pass under the guard and was not run outside it (see checks).",
+   "A closed key refusal answers the same invocation key at attempt 1 with the same",
+   "  refusal; the retry is",
+   "  attempt 2 or a new invocation. The mapping teacher uses a new invocation for every run.",
+   "A rate limit or timeout still leaves one call with unresolved exposure that blocks",
+   "  later calls, and an",
+   "  undocumented 402 or 401 still blocks the pool: both are the rule of today and no",
+   "  script clears them.",
+   "reconcile is refused while such a call exists, so a ledger in that state cannot move to",
+   "  a list yet.",
+   "Sarvam says all keys of one account share one rate limit; whether credits are per key",
+   "  is not documented.",
+   "a3e-unanswered.test.ts fails one test before and after this task."
+  ],
+  "DESIGN": [
+   "Single-key policies behave exactly as before, including the pool block on a quota answer.",
+   "The parsed list policy also carries secretReference = the first name, because",
+   "  officer-ai-provider.ts",
+   "  and scripts/agent/mapping-teacher.ts read that field and are not this task files.",
+   "database/manifest.json was changed although the task did not list it: it pins the",
+   "  hash of the SQL file.",
+   "status does not read the ledger; the used-up count is the separate key-marks command",
+   "  (database up).",
+   "The demo profile accepts list names of the form ULPIN_PROVIDER_KEY_SARVAM_NN only."
+  ],
+  "COMMITS": [
+   "42fb2ec2 docs(gateway): GK1 where the gateway assumes one key, what the provider",
+   "  answers, and the design",
+   "f1884dcb feat(gateway): the gateway works through the owner list of keys one at a",
+   "  time ...",
+   "53c5b8c7 feat(runtime): the demo gateway switch takes a list of key names and prints",
+   "  names and counts only",
+   "this commit: docs(gateway): GK1 evidence, and the owner steps in order"
+  ],
+  "CHECKS": "see checks: every listed check ran and passed, except the items under checks.neverRun",
+  "NEXT": [
+   "Lead: 00-STANDARDS.md:114 and SPRINT-SELECTION.md:43 still state the one-key rule.",
+   "mapping-teacher.ts teacherFailureCode: map MODEL_KEYS_EXHAUSTED to",
+   "  TEACHER_BUDGET_EXHAUSTED (now UNAVAILABLE).",
+   "officer-ai-provider.ts:71-72 checks only the first key; use providerKeyReferences(config).",
+   "scripts/agent/mapping-teacher.ts:27-28 requires the single name for its one-call qualifier.",
+   "live-proof.ts stops at the first quota answer; with a list its owner may let the run go on.",
+   "Runtime owner: run tests/model-gateway/sql.test.ts with a container before the roll-out.",
+   "Owner decision: a script that resolves a call left in outcome_unknown, which today",
+   "  nothing does."
+  ],
+  "ownerSteps": [
+   "1. Put the keys in (demo stopped): node scripts/platform/demo-gateway.mjs keys",
+   "  --from <keys file>",
+   "   prints: 11 keys written as ULPIN_PROVIDER_KEY_SARVAM_01 to",
+   "  ULPIN_PROVIDER_KEY_SARVAM_11",
+   "   and the secretReferences line for the policy file. Then delete the keys file.",
+   "2. Enable: node scripts/platform/demo-gateway.mjs enable --config <policy.json>",
+   "   prints: Changed: ... and the seven facts.",
+   "3. Status: node scripts/platform/demo-gateway.mjs status",
+   "   prints: enabled: true, policyHash, providerKeyPresent: true,",
+   "  mappingTeacherAdapter: sarvam,",
+   "   dailyCapPresent: true, providerKeysNamed: 11, providerKeysPresent: 11",
+   "4. Start the demo. If the ledger was pinned to another key or list:",
+   "   node scripts/platform/demo-gateway.mjs reconcile --reason \"<why>\"   prints:",
+   "  key list: reconciled",
+   "5. The live proof: docs/backend/LIVE-PROOF.md",
+   "6. Disable: stop the demo, node scripts/platform/demo-gateway.mjs disable, start",
+   "  again.",
+   "Any time, database up: demo-gateway.mjs key-marks prints each name with in_use,",
+   "  waiting or used_up;",
+   "   demo-gateway.mjs restore-key <NAME> --reason \"<what changed>\" prints <NAME>:",
+   "  restored"
+  ],
+  "providerAnswersThatMoveTheGatewayOn": [
+   "HTTP 429 with code insufficient_quota_error: credits",
+   "  used up. https://docs.sarvam.ai/api/getting-",
+   "  started/errors-troubleshooting (read 2026-10-10)",
+   "HTTP 403 with code invalid_api_key_error: key rejected.",
+   "  https://docs.sarvam.ai/api/getting-started/errors-",
+   "  troubleshooting (read 2026-10-10)",
+   "Nothing else: a rate limit (429",
+   "  rate_limit_exceeded_error, also 503), a timeout, a 5xx,",
+   "  a 402, a 401,",
+   "  either code on another status, and an answer without a",
+   "  readable body all leave the key in use."
+  ],
+  "rollOutOnAnExistingDemoDatabase": [
+   "Deploy the SQL file and database/manifest.json together: the",
+   "  loader refuses a hash mismatch.",
+   "The next demo start applies five additive statements (two",
+   "  columns on the budget row, one on calls,",
+   "  the key-marks table and its index). Earlier call rows keep",
+   "  credential_hash NULL.",
+   "With the single-key policy nothing else changes: its policy",
+   "  hash and ledger pin are the same.",
+   "To move to the list: owner steps 1 to 4; reconcile needs a",
+   "  ledger without unresolved exposure and",
+   "  leaves a blocked pool blocked."
+  ],
+  "onlyTheFirstLiveRunCanConfirm": [
+   "that Sarvam sends the two documented answers in the documented",
+   "  body shape (error.code);",
+   "that a refused request is not billed: the documentation does",
+   "  not say, and the row is closed at zero;",
+   "whether each of the eleven keys has its own credits, or",
+   "  several share one account;",
+   "that the additive SQL applies on the demo database and the",
+   "  ledger child runs against it."
+  ]
+ }
 }
