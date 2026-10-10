@@ -33,6 +33,7 @@ import {
   imageryAttribution, imageryFailureNote, listedImages, useOverlays, useRetainedImagery,
   type AreaReference, type SupplementalDataset, type LoadedOverlay, type RetainedImages,
 } from './overlays';
+import { noFloorsState } from './floorState';
 import { HEIGHT_BANDS, heightCounts } from './heightBands';
 import { SceneLabels } from './SceneLabels';
 import type { SceneLabel } from './labels';
@@ -342,7 +343,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   }
 
   const showRail = (selection.mode === 'building' || selection.mode === 'level') && Boolean(model?.levels.length);
-  const noFloors = selection.mode === 'building' && register && !model?.levels.length;
+  const noFloors = selection.mode === 'building' && register && !model?.levels.length
+    ? noFloorsState(register, canonical) : null;
   const namespaces = [...new Set(context.features.map((f) => f.datasetNamespace))].filter((ns) => ATTRIBUTION[ns]);
   const readout = [reference?.sourceCrs, groundM !== null ? `${groundM.toFixed(2)} m` : null, ledger?.siteDatum].filter(Boolean).join(' · ');
   const readoutTitle = reference
@@ -444,8 +446,10 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
             {noFloors ? (
               <div className={styles.emptyOverlay}>
                 <div className={`ul-float ${styles.emptyCard}`}>
-                  <span>No floors recorded. Add a plan.</span>
-                  <Button variant="primary" icon={FilePlus} onClick={() => setDialog('files')}>Add files</Button>
+                  {noFloors.lines.map((line) => <span key={line}>{line}</span>)}
+                  {noFloors.advise ? (
+                    <Button variant="primary" icon={FilePlus} onClick={() => setDialog('files')}>Add files</Button>
+                  ) : null}
                 </div>
               </div>
             ) : null}
