@@ -76,7 +76,9 @@ def _file_sha(path, size, modified_ns):
 
 def _model_active(model: dict[str, object]) -> bool:
     profile = os.environ.get("ULPIN_PROFILE")
-    return model.get("active", True) is True or (profile == "demo" and profile in model.get("activeProfiles", []))
+    return model.get("active", True) is True or (
+        profile is not None and profile in model.get("activeProfiles", [])
+    )
 
 
 def _verified_path(model):
