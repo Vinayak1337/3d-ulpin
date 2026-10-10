@@ -1,6 +1,7 @@
 import { sql } from '../../infrastructure/sql-loader';
 import { transaction } from '../../infrastructure/db';
 import { migrateUspGeometryTx } from './geometry-migration';
+import { migrateIntakeLedgerTx } from './ingestion/intake-migration';
 import { migrateManualIngestionTx, migrateLargeOriginalTx, migrateIngestionEventsTx, migrateProjectedVectorTx, migratePrivateMvtTx, migrateSemanticChunksTx, migrateSufficiencyTx, migrateStreamingVectorTx, migrateChunkMappingTx, migrateStreamedProfileTx } from './ingestion/migration';
 
 /** Additive metadata beside the existing registry/source/job authorities. */
@@ -34,6 +35,7 @@ export async function migrateUsp() {
     await migrateStreamingVectorTx(client);
     await migrateChunkMappingTx(client);
     await migrateStreamedProfileTx(client);
+    await migrateIntakeLedgerTx(client);
     const packetPlansName = 'usp_packet_plans_001';
     if (!(await client.query(sql('usp.packet-plans.check'), [packetPlansName])).rowCount) {
       await client.query(sql('usp.packet-plans.schema'));
