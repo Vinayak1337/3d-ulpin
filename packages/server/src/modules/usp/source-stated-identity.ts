@@ -9,10 +9,17 @@ type Review = z.infer<typeof ProjectIdentityReviewSchema>;
 const denied = () => new AppError(422, 'USP_SOURCE_IDENTITY',
   'Keep source-only identity evidence and location unqualified.');
 
+/** No source states a positional structure or space number for a label-only record. */
+export const UNQUALIFIED_SOURCE_LOCATION: ProjectLocation = {
+  anchorState: 'not_supplied', parcels: [],
+  locator: { structureKind: '?', levels: ['L?'], spaceKind: '?' },
+};
+
 function assertUnknownLocation(location: ProjectLocation | undefined): void {
   if (location && (location.anchorState !== 'not_supplied' || location.parcels.length
     || location.locator.levels.length !== 1 || location.locator.levels[0] !== 'L?'
-    || location.locator.spaceKind !== '?' || location.locator.structureKind !== '?')) throw denied();
+    || location.locator.spaceKind !== '?' || location.locator.structureKind !== '?'
+    || location.locator.structureNumber !== undefined || location.locator.spaceNumber !== undefined)) throw denied();
 }
 
 /** The P3 protocol is unchanged; source-only participants add literal/original and unknown-location guards. */
