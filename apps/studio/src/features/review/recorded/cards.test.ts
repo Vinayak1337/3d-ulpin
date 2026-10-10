@@ -18,7 +18,8 @@ const page = (...items: ListedCard[]) => ({ items, truncated: false });
 describe('the cards listed for a recorded unit', () => {
   it('shows the live card as valid until its expiry, with both actions', () => {
     expect(cardRows(live.cardList.data.items as ListedCard[])).toEqual([{
-      key: `${listed.cardId}:1`, cardId: listed.cardId, revision: 1, issued: '10 Oct 2026, 19:19',
+      key: `${listed.cardId}:1`, cardId: listed.cardId, card: '6a997624', revision: 1,
+      issued: '10 Oct 2026, 19:19',
       status: 'Valid until 11 Oct 2026, 19:09', tone: 'success', readable: true, unit: 'At its present revision',
     }]);
   });
@@ -35,8 +36,8 @@ describe('the cards listed for a recorded unit', () => {
   });
 
   it('shows no detail and offers no PDF for a row that could not be read back consistently', () => {
-    expect(cardRows([inconsistent])).toEqual([{ key: `${listed.cardId}:2`, cardId: listed.cardId, revision: 2,
-      issued: null, status: 'Inconsistent', tone: 'warning', readable: false, unit: null }]);
+    expect(cardRows([inconsistent])).toEqual([{ key: `${listed.cardId}:2`, cardId: listed.cardId,
+      card: '6a997624', revision: 2, issued: null, status: 'Inconsistent', tone: 'warning', readable: false, unit: null }]);
   });
 
   it('does not word a missing expiry as valid', () => {
@@ -85,6 +86,8 @@ describe('the cards of a unit across the snapshots the listing returns', () => {
     expect(searchGaps(merged)).toEqual([]);
     expect(cardRows(merged.cards).map((row) => row.unit))
       .toEqual(['Changed since this card', 'At its present revision', 'At its present revision']);
+    expect(cardRows(merged.cards).map((row) => `${row.card} r${row.revision}`))
+      .toEqual(['6a997624 r2', '6a997624 r1', 'an-older r1']);
   });
 
   it('counts a snapshot whose card read failed and names it in one sentence, never as none listed', () => {

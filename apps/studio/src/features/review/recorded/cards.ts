@@ -7,6 +7,8 @@ export type CardTone = 'danger' | 'warning' | 'neutral' | 'success';
 export interface CardRow {
   key: string;
   cardId: string;
+  /** The first eight characters of the card id: what tells two cards of one unit apart in the list. */
+  card: string;
   revision: number;
   /** When the revision was issued; null when the server could not read the row back consistently. */
   issued: string | null;
@@ -45,6 +47,7 @@ function cardRow(card: ListedCard): CardRow {
   return {
     key: `${card.cardId}:${card.revision}`,
     cardId: card.cardId,
+    card: card.cardId.slice(0, 8),
     revision: card.revision,
     issued: card.createdAt ? formatDateTime(card.createdAt) : null,
     ...statusOf(card),
