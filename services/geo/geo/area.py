@@ -75,7 +75,8 @@ def _analysis_crs(value):
     result = _crs(value, "analysisCrs")
     code = result.to_epsg()
     if code is None or not (code == 6933 or 32601 <= code <= 32660 or 32701 <= code <= 32760):
-        raise InputError("analysisCrs requires WGS84 UTM or EPSG:6933 in metres; display placement is not qualification.")
+        raise InputError("analysisCrs requires WGS84 UTM or EPSG:6933 in metres; "
+                         "display placement is not qualification.")
     return result
 
 

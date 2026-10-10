@@ -13178,7 +13178,8 @@ export interface components {
                             failure?: {
                                 /** Format: uuid */
                                 attemptId: string;
-                                class: string;
+                                /** @enum {string} */
+                                class: "RuntimeError" | "ValueError" | "TypeError" | "AttributeError" | "ModuleNotFoundError" | "ImportError" | "OSError" | "CalledProcessError" | "SourceOcrError" | "ValidationError" | "KeyError" | "AssertionError" | "UnknownWorkerFailure";
                                 /** @enum {string} */
                                 message: "Native dependency unavailable" | "Python dependency unavailable" | "Invalid worker result" | "Worker exception; sensitive detail withheld" | "Worker terminated by resource bound" | "Worker failed before producing diagnostics";
                             };
@@ -16211,7 +16212,8 @@ export interface components {
                             failure?: {
                                 /** Format: uuid */
                                 attemptId: string;
-                                class: string;
+                                /** @enum {string} */
+                                class: "RuntimeError" | "ValueError" | "TypeError" | "AttributeError" | "ModuleNotFoundError" | "ImportError" | "OSError" | "CalledProcessError" | "SourceOcrError" | "ValidationError" | "KeyError" | "AssertionError" | "UnknownWorkerFailure";
                                 /** @enum {string} */
                                 message: "Native dependency unavailable" | "Python dependency unavailable" | "Invalid worker result" | "Worker exception; sensitive detail withheld" | "Worker terminated by resource bound" | "Worker failed before producing diagnostics";
                             };
@@ -18148,7 +18150,8 @@ export interface components {
                             failure?: {
                                 /** Format: uuid */
                                 attemptId: string;
-                                class: string;
+                                /** @enum {string} */
+                                class: "RuntimeError" | "ValueError" | "TypeError" | "AttributeError" | "ModuleNotFoundError" | "ImportError" | "OSError" | "CalledProcessError" | "SourceOcrError" | "ValidationError" | "KeyError" | "AssertionError" | "UnknownWorkerFailure";
                                 /** @enum {string} */
                                 message: "Native dependency unavailable" | "Python dependency unavailable" | "Invalid worker result" | "Worker exception; sensitive detail withheld" | "Worker terminated by resource bound" | "Worker failed before producing diagnostics";
                             };
@@ -34072,7 +34075,8 @@ export interface components {
                             failure?: {
                                 /** Format: uuid */
                                 attemptId: string;
-                                class: string;
+                                /** @enum {string} */
+                                class: "RuntimeError" | "ValueError" | "TypeError" | "AttributeError" | "ModuleNotFoundError" | "ImportError" | "OSError" | "CalledProcessError" | "SourceOcrError" | "ValidationError" | "KeyError" | "AssertionError" | "UnknownWorkerFailure";
                                 /** @enum {string} */
                                 message: "Native dependency unavailable" | "Python dependency unavailable" | "Invalid worker result" | "Worker exception; sensitive detail withheld" | "Worker terminated by resource bound" | "Worker failed before producing diagnostics";
                             };
@@ -49418,7 +49422,8 @@ export interface components {
                             failure?: {
                                 /** Format: uuid */
                                 attemptId: string;
-                                class: string;
+                                /** @enum {string} */
+                                class: "RuntimeError" | "ValueError" | "TypeError" | "AttributeError" | "ModuleNotFoundError" | "ImportError" | "OSError" | "CalledProcessError" | "SourceOcrError" | "ValidationError" | "KeyError" | "AssertionError" | "UnknownWorkerFailure";
                                 /** @enum {string} */
                                 message: "Native dependency unavailable" | "Python dependency unavailable" | "Invalid worker result" | "Worker exception; sensitive detail withheld" | "Worker terminated by resource bound" | "Worker failed before producing diagnostics";
                             };
@@ -51669,7 +51674,8 @@ export interface components {
                                 failure?: {
                                     /** Format: uuid */
                                     attemptId: string;
-                                    class: string;
+                                    /** @enum {string} */
+                                    class: "RuntimeError" | "ValueError" | "TypeError" | "AttributeError" | "ModuleNotFoundError" | "ImportError" | "OSError" | "CalledProcessError" | "SourceOcrError" | "ValidationError" | "KeyError" | "AssertionError" | "UnknownWorkerFailure";
                                     /** @enum {string} */
                                     message: "Native dependency unavailable" | "Python dependency unavailable" | "Invalid worker result" | "Worker exception; sensitive detail withheld" | "Worker terminated by resource bound" | "Worker failed before producing diagnostics";
                                 };
@@ -63108,7 +63114,8 @@ export interface components {
                     failure?: {
                         /** Format: uuid */
                         attemptId: string;
-                        class: string;
+                        /** @enum {string} */
+                        class: "RuntimeError" | "ValueError" | "TypeError" | "AttributeError" | "ModuleNotFoundError" | "ImportError" | "OSError" | "CalledProcessError" | "SourceOcrError" | "ValidationError" | "KeyError" | "AssertionError" | "UnknownWorkerFailure";
                         /** @enum {string} */
                         message: "Native dependency unavailable" | "Python dependency unavailable" | "Invalid worker result" | "Worker exception; sensitive detail withheld" | "Worker terminated by resource bound" | "Worker failed before producing diagnostics";
                     };

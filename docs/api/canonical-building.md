@@ -55,6 +55,38 @@ K2b [OCR diagnosis](../evidence/gf-backend/k2b/ocr-diagnosis.md) fixes a missing
 runtime and records eng+hin asset availability. The single API region retry still failed with no text lines;
 Hindi execution, accuracy and accepted extracted fields remain unqualified.
 
+## Imagery and plan-room candidates
+
+The same multipart import accepts `format=imagery_area` with `ImageryAreaImportSchema`: one frozen Karnataka
+cluster containing 20–64 unchanged retained RGB GeoTIFFs, within the existing 16 MiB request bound. Filename,
+SHA-256, native dimensions, CRS and affine must match the retained publisher image index. This creates only
+an imagery/source workspace and area; no publisher truth polygons or physical records are imported.
+Canonical `imagery` retains CC BY-NC 4.0, upstream conditions, `test_only` and `analyticalEligibility:not_assessed`.
+Image overlays use current ML RGB artifacts when present, otherwise the published private original-file route.
+
+Existing spatial-ML batches accept these building GeoTIFFs. The Karnataka candidate stays `active:false` by
+default; only the explicitly enabled demo profile permits CPU inference. Canonical area `candidates` expose
+roof projections with exact source-affine placement, source/model hashes, uncalibrated confidence and limits.
+The existing `footprint-drafts` command supports either reviewed controls or `georeference:source_geotiff`,
+never both. Optional explicit rejected components and an accepted-selection reason retain actor/time decisions
+in the existing draft receipt. A `reviewed` candidate means **source-candidate selection only**, not registry
+recording, analytical qualification or independent ground truth. The current demo draft still has physical
+revision 0: the ordinary package review returns `USP_GEOMETRY_PAYLOAD_UNQUALIFIED`; no bypass or full
+unknown→candidate→reviewed registry lineage is claimed.
+
+`POST /api/v1/buildings/{buildingId}/candidates` accepts `action:retain_rooms` with cited deterministic vector
+room candidates, a caller-declared derivative hash, unknown `levelId:null` and named `plan-local:` coordinates.
+The caller verifies its retained derivative bytes; the command verifies current private original citations,
+pins the canonical digest and appends existing registry/physical histories without replacing originals.
+Use matching body `requestKey` and `Idempotency-Key`; exact replay creates no revision. `action:attach_level`
+requires an explicitly selected **existing reviewed level** and reason. It reviews only the association:
+plan-local coordinates remain unplaced and do not become registry space geometry or legal units. Panel titles
+never create or select levels automatically. Magnolia retains 18 page-2 candidates and zero levels.
+
+The OCR bridge retains an allowlisted exception class, fixed content-free message and attempt ID under the
+existing worker/log bounds; arbitrary exception text, paths and source/user text are not exposed. The one K2c
+region retry failed with sanitized `KeyError` and zero text lines; no additional OCR execution occurred.
+
 ## Two real examples (complete payloads linked)
 
 - **NYC OTI 353927, foreign `test_only`:** [payload](../evidence/gf-backend/k1/nyc-example.json), derived from `fixtures/real-area/original.geojson`. Source roof height **33.49 ft → 10.207752 m**, `state:source_supported`, cited feature `353927`, method `deterministic:international-foot-to-metre@1`. Footprint role, terrain base, count and interior levels remain unknown. Fixture source keys are explicitly labelled fixture references, not allocated registry identities. The separately installed NYC API example remains an **unreviewed proposal**, because import review is blocked by existing geometry qualification.

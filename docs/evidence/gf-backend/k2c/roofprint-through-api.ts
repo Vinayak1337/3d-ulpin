@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { NormalizedAreaSchema, type ImportPackage } from '../../../../packages/contracts/src/index';
+import { NormalizedAreaSchema, type AreaContext, type ImportPackage } from '../../../../packages/contracts/src/index';
 
 const base = 'http://127.0.0.1:3194/api/v1';
 const root = 'docs/evidence/gf-backend/k2c';
@@ -12,12 +12,12 @@ const rejected = 'abe4321d-d724-5328-bf4a-bdd90e53a87a';
 function save(name: string, value: unknown): void {
   writeFileSync(`${root}/${name}.json`, JSON.stringify(value) + '\n', { flag: 'wx' });
 }
-async function api(path: string, input?: unknown): Promise<any> {
+async function api<T = unknown>(path: string, input?: unknown): Promise<T> {
   const response = await fetch(`${base}${path}`, input ? { method: 'POST',
     headers: { 'content-type': 'application/json' }, body: JSON.stringify(input) } : undefined);
-  const value = await response.json();
+  const value: unknown = await response.json();
   assert(response.ok, `${response.status}: ${JSON.stringify(value)}`);
-  return value;
+  return value as T;
 }
 async function draft(recovery = false): Promise<void> {
   if (recovery) {
@@ -30,7 +30,7 @@ async function draft(recovery = false): Promise<void> {
   assert.equal(before.candidates?.length, 80);
   assert(before.candidates?.every(candidate => candidate.state === 'candidate'));
   save('roofprint-before-review', before);
-  const context = await api(`/areas/${pkg.areaId}/context`);
+  const context = await api<AreaContext>(`/areas/${pkg.areaId}/context`);
   const input = { requestKey: randomUUID(), expectedRevision: pkg.revision,
     expectedAreaRevision: context.area.revision, georeference: 'source_geotiff',
     selections: [{ componentId: accepted, subject: 'Reviewed roof projection candidate' }],
@@ -40,7 +40,9 @@ async function draft(recovery = false): Promise<void> {
   return publish(input);
 }
 async function publish(input: unknown): Promise<void> {
-  const receipt = await api(`/spatial-ml/items/${itemId}/footprint-drafts`, input);
+  const receipt = await api<{ package: ImportPackage; receipt: Record<string, unknown> }>(
+    `/spatial-ml/items/${itemId}/footprint-drafts`, input,
+  );
   save('roofprint-draft', receipt);
   const after = NormalizedAreaSchema.parse(await api(`/areas/${pkg.areaId}/canonical`));
   assert.equal(after.candidates?.find(candidate => candidate.candidateId === accepted)?.review?.outcome, 'accepted');
@@ -48,7 +50,7 @@ async function publish(input: unknown): Promise<void> {
   save('roofprint-after-review', after);
   const feature = receipt.package.features[0];
   save('roofprint-building-candidate', await api(`/buildings/${feature.id}/canonical`));
-  console.log(`Retained accepted/rejected source selections and draft building ${feature.id}; not yet registry-recorded.`);
+  console.log(`Accepted/rejected source selections retained; draft ${feature.id} is not registry-recorded.`);
 }
 async function record(): Promise<void> {
   assert(!existsSync(`${root}/roofprint-recording.json`), 'One bounded recording attempt only.');
@@ -56,11 +58,15 @@ async function record(): Promise<void> {
   const path = `/import-packages/${draft.package.id}/review`;
   const response = await fetch(`${base}${path}`, { method: 'POST', headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ expectedRevision: draft.package.revision }) });
-  const body = await response.json();
+  const body = await response.json() as ImportPackage & { error?: { code: string } };
   save('roofprint-recording', { stage: 'review', httpStatus: response.status, body,
     registryRecordingClaim: false, qualificationBypassed: false });
-  if (!response.ok) { console.log(`Registry review blocked: ${response.status} ${body.error?.code ?? body.code}`); return; }
-  const committed = await api(`/import-packages/${draft.package.id}/commit`, { expectedRevision: body.revision,
+  if (!response.ok) {
+    console.log(`Registry review blocked: ${response.status} ${body.error?.code}`);
+    return;
+  }
+  const committed = await api<ImportPackage>(`/import-packages/${draft.package.id}/commit`, {
+    expectedRevision: body.revision,
     acknowledgement: 'Reviewed roofprint physical observation only; no height, rights or analytical qualification' });
   save('roofprint-commit', committed);
   save('roofprint-building-after-commit', await api(`/buildings/${committed.features[0].id}/canonical`));

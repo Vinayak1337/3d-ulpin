@@ -15,7 +15,9 @@ function affinePoint(transform: Chip['affine'], point: number[]): [number, numbe
 }
 
 /** Pixel-edge -> original TIFF grid -> declared WGS84. No fabricated controls or similarity approximation. */
-export function geographicMlComponent(item: SpatialMlItem, chip: Chip, component: SpatialMlComponent): SpatialMlComponent {
+export function geographicMlComponent(
+  item: SpatialMlItem, chip: Chip, component: SpatialMlComponent,
+): SpatialMlComponent {
   const transform = item.result?.receipt.rasterTransform as Record<string, unknown> | undefined;
   if (!item.result || item.task !== 'building' || item.sourceRevisionId !== chip.sourceId
     || item.sourceSha256 !== chip.sourceSha256 || transform?.coordinateConvention !== 'pixel-edge'

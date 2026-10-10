@@ -341,7 +341,8 @@ export function gisImportBody(
   return applyDecorators(
     ApiConsumes('application/json', 'multipart/form-data'),
     ApiBody({
-      description: 'JSON retains an acquisition; multipart retains GIS, source-only buildings or original-only imagery.',
+      description: 'JSON retains an acquisition; multipart retains GIS, source-only buildings '
+        + 'or original-only imagery.',
       schema: {oneOf: variants},
     }),
   );

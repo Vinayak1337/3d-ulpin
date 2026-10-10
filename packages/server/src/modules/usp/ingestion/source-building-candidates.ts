@@ -36,7 +36,8 @@ async function verifyCandidateSources(client: PoolClient, record: RecordRow, can
       }
     }
     if (!candidate.coordinateFrame?.startsWith('plan-local:') || candidate.levelId !== null) {
-      throw new AppError(422, 'CANDIDATE_FRAME', 'Room candidates require an unplaced plan-local frame and unknown level.');
+      throw new AppError(422, 'CANDIDATE_FRAME',
+        'Room candidates require an unplaced plan-local frame and unknown level.');
     }
   }
 }
@@ -58,7 +59,9 @@ async function appendCandidateRevision(client: PoolClient, record: RecordRow,
   await client.query('INSERT INTO registry_revisions(record_id,revision,body,site_revision) VALUES($1,$2,$3,$4)',
     [record.id, body.revision, body, site.revision]);
   const feature = { ...row.body as PhysicalFeature, revision: row.revision + 1 };
-  await client.query('UPDATE physical_features SET revision=$2,body=$3 WHERE id=$1', [row.id, feature.revision, feature]);
+  await client.query('UPDATE physical_features SET revision=$2,body=$3 WHERE id=$1', [
+    row.id, feature.revision, feature,
+  ]);
   await client.query(
     'INSERT INTO physical_feature_revisions(feature_id,revision,body,package_id,area_revision) VALUES($1,$2,$3,$4,$5)',
     [row.id, feature.revision, feature, lineage.package_id, area.revision],

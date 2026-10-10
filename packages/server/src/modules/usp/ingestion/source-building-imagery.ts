@@ -69,8 +69,10 @@ async function inspectChip(chip: PublisherChip, file: SourceBuildingFile): Promi
 
 async function inspectFiles(input: ImageryAreaImport, files: SourceBuildingFile[]): Promise<RetainedImagery> {
   const selected = frozenChips(input.clusterId);
-  if (files.length !== selected.length || files.reduce((total, file) => total + file.bytes.length, 0) > 16 * 1024 ** 2) {
-    throw new AppError(413, 'IMAGERY_FILES', 'Attach the complete image cluster once within the existing intake bound.');
+  const totalBytes = files.reduce((total, file) => total + file.bytes.length, 0);
+  if (files.length !== selected.length || totalBytes > 16 * 1024 ** 2) {
+    throw new AppError(413, 'IMAGERY_FILES',
+      'Attach the complete image cluster once within the existing intake bound.');
   }
   const chips: Chip[] = [];
   for (const selectedChip of selected) {
@@ -122,8 +124,10 @@ async function contextTx(client: PoolClient, input: ImageryAreaImport, imagery: 
       areaReferenceFingerprint: fingerprint(reference) }, sourceImportSha256: digest,
     warnings: ['CC BY-NC 4.0 and Maxar upstream conditions; test_only. No evaluation or registry truth imported.'],
     createdAt: new Date().toISOString() };
-  await client.query('INSERT INTO import_packages(id,area_id,case_id,state,body,operation_key) VALUES($1,$2,$3,$4,$5,$6)',
-    [pkg.id, areaId, caseId, pkg.state, pkg, key]);
+  await client.query(
+    'INSERT INTO import_packages(id,area_id,case_id,state,body,operation_key) VALUES($1,$2,$3,$4,$5,$6)',
+    [pkg.id, areaId, caseId, pkg.state, pkg, key],
+  );
   await client.query('INSERT INTO import_package_revisions(package_id,revision,body) VALUES($1,1,$2)', [pkg.id, pkg]);
   return { package: pkg, caseId };
 }

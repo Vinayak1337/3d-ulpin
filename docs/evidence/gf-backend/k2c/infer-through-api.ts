@@ -22,7 +22,8 @@ async function api<T>(path: string, input?: unknown): Promise<T> {
 }
 
 async function queue(): Promise<void> {
-  assert(!existsSync(`${evidence}/batches.json`), 'Batches already enrolled; read them instead of running inference again.');
+  assert(!existsSync(`${evidence}/batches.json`),
+    'Batches already enrolled; read them instead of running inference again.');
   const batchIds: string[] = [];
   for (let offset = 0; offset < pkg.parts.length; offset += 12) {
     const input = { packageId: pkg.id, expectedRevision: pkg.revision, requestKey: randomUUID(),

@@ -8,7 +8,15 @@ const root = 'docs/evidence/gf-backend/k2c';
 const digest = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
 const pkg = JSON.parse(readFileSync('docs/evidence/gf-backend/k2/magnolia-source-commit.json', 'utf8'));
 const buildingId = pkg.features[0].id;
-const rounded = JSON.parse(readFileSync('docs/evidence/gf-ai/plans/vector/20261010-p1-panels/bihar/candidates.json', 'utf8'));
+const rounded = JSON.parse(readFileSync(
+  'docs/evidence/gf-ai/plans/vector/20261010-p1-panels/bihar/candidates.json', 'utf8',
+));
+type VectorRoom = {
+  taskVersion: string; outputRef: string; floorLabel: string; panelId: string; limitations: string[];
+  sourceParts: { bbox: [number, number, number, number] }[];
+  output: { polygonMetres: { coordinates: number[][][] }; label: string | null;
+    metricFrame: { originPdf: [number, number]; metresPerPdfPoint: number } };
+};
 const bytes = readFileSync(rounded.fullPrecisionRef.path);
 assert.equal(digest(bytes), rounded.fullPrecisionRef.sha256);
 const full = JSON.parse(bytes.toString('utf8'));
@@ -21,10 +29,11 @@ function save(name: string, value: unknown): void {
 
 async function main(): Promise<void> {
   assert(!existsSync(`${root}/rooms-receipt.json`), 'Room retention already recorded; do not submit twice.');
-  const before = NormalizedBuildingSchema.parse(await (await fetch(`${base}/buildings/${buildingId}/canonical`)).json());
+  const response = await fetch(`${base}/buildings/${buildingId}/canonical`);
+  const before = NormalizedBuildingSchema.parse(await response.json());
   assert.equal(before.levels.length, 0);
   save('magnolia-before-rooms', before);
-  const candidates = full.pages['2'].candidates.map((candidate: any) => {
+  const candidates = full.pages['2'].candidates.map((candidate: VectorRoom) => {
     const [x0, y0, x1, y1] = candidate.sourceParts[0].bbox;
     const frame = candidate.output.metricFrame;
     return { candidateId: `vector-plan:${full.parameterHash}:${candidate.outputRef}`,
@@ -47,7 +56,8 @@ async function retain(expectedCanonicalRevision: string, candidates: unknown[]):
     expectedCanonicalRevision, derivativeSha256: digest(bytes), candidates });
   save('rooms-request', input);
   const response = await fetch(`${base}/buildings/${buildingId}/candidates`, { method: 'POST',
-    headers: { 'content-type': 'application/json', 'idempotency-key': input.requestKey }, body: JSON.stringify(input) });
+    headers: { 'content-type': 'application/json', 'idempotency-key': input.requestKey },
+    body: JSON.stringify(input) });
   const receipt = await response.json();
   assert.equal(response.status, 201, JSON.stringify(receipt));
   save('rooms-receipt', receipt);
