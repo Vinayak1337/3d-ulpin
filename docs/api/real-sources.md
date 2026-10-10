@@ -1,5 +1,47 @@
 # Official source index and retained dataset catalogue
 
+## D1f documented property-table acquisition — 10 October 2026 UTC
+
+Foreign government CSV exports and publisher metadata are retained outside Git, `test_only` and development-only.
+The [sibling manifest](../../fixtures/usp/D8-open-property-foreign/manifest.json) keeps them out of Indian D8 geography.
+The maintained retained-source registry and generated catalogue record immutable originals and byte-exact prefixes.
+No original is edited, no dictionary definition is invented, and similar templates/vintages stay in one family.
+Licences are issuer statements; broader permission remains unconfirmed. Unverified export CRS/vertical references stay null.
+Edmonton's literal publisher CRS statements are retained separately, without assuming they describe the CSV export.
+
+Retained plain native downloads (UTC; issuer, literal licence and dictionary pins in the measured report below):
+
+- 2026-10-10T12:10:22Z — `seattle-energy.csv`:
+  https://cos-data.seattle.gov/api/views/teqw-tu6e/rows.csv?accessType=DOWNLOAD
+- 2026-10-10T12:11:03Z — `nycha-addresses.csv`:
+  https://data.cityofnewyork.us/api/views/3ub5-4ph8/rows.csv?accessType=DOWNLOAD
+- 2026-10-10T12:11:07Z — `sf-existing.csv`:
+  https://data.sf.gov/api/views/96ck-qcfe/rows.csv?accessType=DOWNLOAD
+- 2026-10-10T12:11:43Z — `sf-municipal.csv`:
+  https://data.sf.gov/api/views/bfhx-j6n5/rows.csv?accessType=DOWNLOAD
+- 2026-10-10T12:11:48Z — `kansas-municipal.csv`:
+  https://data.kcmo.org/api/views/9xwa-2b59/rows.csv?accessType=DOWNLOAD
+- 2026-10-10T12:11:51Z — `edmonton-heritage.csv`:
+  https://data.edmonton.ca/api/views/jgsn-dhai/rows.csv?accessType=DOWNLOAD
+- 2026-10-10T12:18:28Z — `baton-footprint.csv`:
+  https://data.brla.gov/api/views/w2dv-n5tp/rows.csv?accessType=DOWNLOAD
+- 2026-10-10T12:19:26Z — `nola-footprint.csv`:
+  https://data.nola.gov/api/views/prh5-qsuf/rows.csv?accessType=DOWNLOAD
+- 2026-10-10T12:19:55Z — `edmonton-footprint.csv`:
+  https://data.edmonton.ca/api/views/6n9r-ddf8/rows.csv?accessType=DOWNLOAD
+
+[Measured per-family report](../evidence/gf-agent/d1f/families.json): nine originals/eight families, 219 native columns,
+203 column definitions and two separate dataset-scope geometry descriptions. Only six retained families have column
+definitions. Six tables/five families yield 198 profiles and 193 verbatim dictionary rows; all three WKT tables remain
+unprofiled. No profile-ready columns are claimed as labels.
+
+Acquisition batches are additive. Final counts, closed-route decisions and the resumable checkpoint are in
+[the D1f receipt](../evidence/gf-agent/d1f/result.json). The task makes no labels, model/provider calls or runtime imports.
+Foreign family registration is **not** a one-line change: the current tabular contract requires `mi-d` family IDs,
+and the exact-source allowlist and derivative index are fenced to Indian D8. No backend/contract change is made here.
+No qualified Indian original was added; the existing Indian manifest and frozen evaluator material stay unchanged.
+The 120 matching-column goal is distinct from total profiled/documented columns and is not claimed as achieved.
+
 ## D1d inventory / building-attribute checkpoint — 10 October 2026 UTC
 
 Development now has three property-relevant publisher families, five immutable originals, no development labels:

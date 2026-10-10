@@ -5266,6 +5266,329 @@
           "manifestVerification": {}
         }
       ]
+    },
+    {
+      "manifest": "fixtures/usp/D8-open-property-foreign/manifest.json",
+      "manifestSha256": "2d89fdd0de35237c1fa69bca67d4e068555405b6f0c0b2dfd95144878e788a3d",
+      "packId": "D8-foreign",
+      "profile": "open-property-foreign-development-d1f",
+      "version": 1,
+      "description": "D1f foreign government property tables; development only, not Indian operational data.",
+      "apiInstallation": "not-verified",
+      "runtimeVerified": false,
+      "missingCapabilities": [
+        "ten_new_families",
+        "120_documented_target_matching_columns",
+        "12_columns_per_requested_target",
+        "additional_Indian_heldout_publisher",
+        "foreign_family_contract_and_manifest_registration",
+        "source_CRS_qualification"
+      ],
+      "assets": [
+        {
+          "id": "seattle-energy.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://cos-data.seattle.gov/api/views/teqw-tu6e/rows.csv?accessType=DOWNLOAD"
+          },
+          "attribution": "City of Seattle Office of Sustainability and Environment",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "Public Domain",
+            "reference": null,
+            "scope": "Public local development only"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "City of Seattle Office of Sustainability and Environment",
+          "acquiredAt": "2026-10-10T12:10:22.542007+00:00",
+          "geography": "Seattle, Washington, United States",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d02/seattle-energy.csv",
+            "sha256": "d1a8227bf9c7c82aea8279a67405add617271852a985d96bb6e4ac9070e8250f",
+            "bytes": 13321421,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "nycha-addresses.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://data.cityofnewyork.us/api/views/3ub5-4ph8/rows.csv?accessType=DOWNLOAD"
+          },
+          "attribution": "New York City Housing Authority",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "not stated",
+            "reference": null,
+            "scope": "Public local development only"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "New York City Housing Authority",
+          "acquiredAt": "2026-10-10T12:11:03.936503+00:00",
+          "geography": "New York City, New York, United States",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d03/nycha-addresses.csv",
+            "sha256": "dfab1ad57770e8bd1642e4efd0c9766b0ba9db167f8a165ba29e49336f3c06a6",
+            "bytes": 551047,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "sf-existing.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://data.sf.gov/api/views/96ck-qcfe/rows.csv?accessType=DOWNLOAD"
+          },
+          "attribution": "City and County of San Francisco Environment Department",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "Open Data Commons Public Domain Dedication and License",
+            "reference": "http://opendatacommons.org/licenses/pddl/1.0/",
+            "scope": "Public local development only"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "City and County of San Francisco Environment Department",
+          "acquiredAt": "2026-10-10T12:11:07.253943+00:00",
+          "geography": "San Francisco, California, United States",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d04/sf-existing.csv",
+            "sha256": "f6120c2022ed3a5f137948549da52a5319b582a901836025def297eab6c2cf08",
+            "bytes": 11759632,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "sf-municipal.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://data.sf.gov/api/views/bfhx-j6n5/rows.csv?accessType=DOWNLOAD"
+          },
+          "attribution": "SFPUC",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "Open Data Commons Public Domain Dedication and License",
+            "reference": "http://opendatacommons.org/licenses/pddl/1.0/",
+            "scope": "Public local development only"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "City and County of San Francisco Public Utilities Commission",
+          "acquiredAt": "2026-10-10T12:11:43.144801+00:00",
+          "geography": "San Francisco, California, United States",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d04/sf-municipal.csv",
+            "sha256": "a538cf8d9be7e225ae988838ad41121f6ea00e9b7869303491d56e3c9570e669",
+            "bytes": 1479735,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "kansas-municipal.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://data.kcmo.org/api/views/9xwa-2b59/rows.csv?accessType=DOWNLOAD"
+          },
+          "attribution": "City of Kansas City issuing portal",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "not stated",
+            "reference": null,
+            "scope": "Public local development only"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "City of Kansas City",
+          "acquiredAt": "2026-10-10T12:11:48.415760+00:00",
+          "geography": "Kansas City, Missouri, United States",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d05/kansas-municipal.csv",
+            "sha256": "cafdb2980f56143aaa2f302c7a19d424a98a5ab6472572f4ee007cbdb511e2d4",
+            "bytes": 66513,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "edmonton-heritage.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://data.edmonton.ca/api/views/jgsn-dhai/rows.csv?accessType=DOWNLOAD"
+          },
+          "attribution": "City of Edmonton",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "See Terms of Use",
+            "reference": null,
+            "scope": "Public local development only"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null,
+            "publisherDeclaredCrs": "LL-WGS84",
+            "crsDictionaryLocator": "/metadata/custom_fields/Spatial/Coordinate System",
+            "crsQualification": "Publisher source CRS is stated; native CSV export CRS remains unverified."
+          },
+          "issuer": "City of Edmonton",
+          "acquiredAt": "2026-10-10T12:11:51.712492+00:00",
+          "geography": "Edmonton, Alberta, Canada",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d06/edmonton-heritage.csv",
+            "sha256": "1caa0303fdbcb9c18409154a0529f511b75fd3eb785877990a9718175f97f146",
+            "bytes": 271421,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "baton-footprint.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://data.brla.gov/api/views/w2dv-n5tp/rows.csv?accessType=DOWNLOAD"
+          },
+          "attribution": "City of Baton Rouge / Parish of East Baton Rouge",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "Public Domain",
+            "reference": null,
+            "scope": "Public local development only"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "City of Baton Rouge / Parish of East Baton Rouge",
+          "acquiredAt": "2026-10-10T12:18:28.531088+00:00",
+          "geography": "East Baton Rouge Parish, Louisiana, United States",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d07/baton-footprint.csv",
+            "sha256": "0715a912e9f5f7f2a389bb9e1ee2d9fdd5b85f30b1ee1e36c72b43cf9fd79149",
+            "bytes": 76920137,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "nola-footprint.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://data.nola.gov/api/views/prh5-qsuf/rows.csv?accessType=DOWNLOAD"
+          },
+          "attribution": "City of New Orleans",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "Public Domain U.S. Government",
+            "reference": "https://www.usa.gov/government-works",
+            "scope": "Public local development only"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "City of New Orleans",
+          "acquiredAt": "2026-10-10T12:19:26.202540+00:00",
+          "geography": "New Orleans, Louisiana, United States",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d08/nola-footprint.csv",
+            "sha256": "a35ecdfc92cf070556835ba38c2c48fd9a87d43248d07faa3399102c99e5b9c7",
+            "bytes": 69616709,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "edmonton-footprint.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://data.edmonton.ca/api/views/6n9r-ddf8/rows.csv?accessType=DOWNLOAD"
+          },
+          "attribution": "City of Edmonton",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "See Terms of Use",
+            "reference": null,
+            "scope": "Public local development only"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null,
+            "publisherDeclaredCrs": "NAD83(CSRS) / Alberta 10-TM (Resource)",
+            "crsDictionaryLocator": "/metadata/custom_fields/Spatial/Coordinate System",
+            "crsQualification": "Publisher source CRS is stated; native CSV export CRS remains unverified."
+          },
+          "issuer": "City of Edmonton",
+          "acquiredAt": "2026-10-10T12:19:55.582079+00:00",
+          "geography": "Edmonton, Alberta, Canada",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d09/edmonton-footprint.csv",
+            "sha256": "889edcebb8f5612c2eeaf43826f6f52d3c9638747533179d5f76cf9fcbe980f0",
+            "bytes": 137471150,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        }
+      ]
     }
   ],
   "retainedOfficialTestSources": [
@@ -9038,6 +9361,42 @@
         "Range-selected unchanged ZIP members only; full 5.47 GB archive not downloaded or whole-archive verified",
         "No fine-tuning, threshold search, Indian accuracy, canonical records, ownership, rights or deployment claim",
         "Interrupted-file original acquisition times remain unknown; resumed bytes verified by CRC and SHA"
+      ]
+    },
+    {
+      "id": "d1f-open-property-foreign-development-20261010",
+      "classification": "test_only",
+      "split": "dev",
+      "originKind": "foreign_government_issuing_portal_native_CSV_exports",
+      "issuer": "Foreign municipal issuing authorities; exact publishers in manifest",
+      "geography": "Foreign development only; exact per-source geography in manifest",
+      "manifest": "fixtures/usp/D8-open-property-foreign/manifest.json",
+      "manifestSha256": "2d89fdd0de35237c1fa69bca67d4e068555405b6f0c0b2dfd95144878e788a3d",
+      "guide": "docs/evidence/gf-agent/d1f/result.json",
+      "sourceCount": 9,
+      "sourceFamilies": 8,
+      "totalOriginalBytes": 311457765,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f",
+        "itemsPointer": "/assets",
+        "formats": [
+          "CSV"
+        ],
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "state": "unconfirmed",
+        "reference": "Per-source issuing metadata",
+        "limitations": "Stated licences preserved; unconfirmed permission is local development only."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "Native originals and byte-exact prefixes are distinct; prefixes are not extra families.",
+        "No labels, training, provider calls, measurements, rights or Indian operational qualification.",
+        "Dataset-scope geometry descriptions are weaker than expanded column dictionaries.",
+        "Whole-file screening and closed disposition precede profile dispatch."
       ]
     }
   ],
