@@ -1,0 +1,680 @@
+{
+ "format": "Text longer than one line is stored as an array of lines.",
+ "task": "K10",
+ "gates": ["GF4"],
+ "scope": "offline protocol evidence only; no runtime request, no database",
+ "base": "2eb786f2",
+ "step0": {
+  "writtenBeforeCode": true,
+  "readFrom": [
+   "the code at staging 2eb786f2 and the R3 card as rendered (task-data/r3/step3/11-card.png and .pdf);",
+   "nothing was requested from a runtime or a database"
+  ],
+  "verification": {
+   "question": "Can a wording change break a card that exists?",
+   "answer": [
+    "No. None of the six checks projects facts or draws a PDF. Each compares stored things with stored",
+    "things, so the task proceeds and the verification code is not touched."
+   ],
+   "checks": {
+    "card_body": [
+     "The stored body with itself: it parses with UspPropertyCardSchema, the fingerprint of the body without",
+     "cardSha256 equals the stored cardSha256, previousRevision follows revision, and resolverUrl names this",
+     "card and revision on 127.0.0.1 (card-verification.ts:69-74, card-service.ts:45-55)."
+    ],
+    "stored_linkage": [
+     "The row columns with the stored body: object_key and artifact_hash name the cardId, revision and",
+     "artifact.sha256 of the body (card-service.ts:91-94)."
+    ],
+    "revision_chain": [
+     "Every earlier row of the card: its body by the card_body rule, its columns by the stored_linkage rule,",
+     "and the same plan, packet and target pin as this body (card-verification.ts:95-116). Facts are not",
+     "compared between revisions."
+    ],
+    "artifact_bytes": [
+     "The stored PDF bytes with the stored receipt: length and SHA-256 equal artifact.bytes and",
+     "artifact.sha256 of the body (card-service.ts:250-256). The PDF is read, never drawn again."
+    ],
+    "plan_link": [
+     "The stored body with the stored plan, confirmation and execution: ids, hashes, target, scope, creator,",
+     "entry hashes and omissions (card-service.ts:141-150), and those rows with the plan view (:127-140)."
+    ],
+    "packet_bytes": [
+     "The linked packet through its own reader: the stored packet bytes with the stored packet receipt",
+     "(card-service.ts:113-119)."
+    ]
+   },
+   "whereProjectionAndRenderRun": [
+    "projectCardFactsTx and renderPropertyCardProfile are called only by generatePropertyCard",
+    "(card-service.ts:193, :210), after the replay branch (:167-173) has returned a stored card as it is. The",
+    "read, the resolver and the verification call neither."
+   ],
+   "theLiveCard": [
+    "Revision 1 of 6a997624-6c8d-40a9-8215-8a671a74dc1c holds its facts as text in its body and its PDF under",
+    "its hash. It stays consistent whatever a later projection or renderer writes."
+   ],
+   "versioning": [
+    "Not needed for verification. The body stores profile, which names the script coverage of the renderer",
+    "and not its words: after this change two cards of one profile can print different words, each exactly as",
+    "its own body and bytes state. A wording version would be a new body field in the contract, which this",
+    "task does not own."
+   ],
+   "aNewRevisionOfAnOldCard": [
+    "A revision appended to an old card is projected and drawn again, so revision 2 prints the new words",
+    "while revision 1 stays as stored."
+   ]
+  },
+  "whatEachRowIsReadFrom": {
+   "stateWord": [
+    "No row text holds it. The projection stores fact.state (available, unavailable, not_assessed) and both",
+    "renderers print it raw in front of the value: card-render.ts:29, card-render-unicode.ts:93."
+   ],
+   "label": "Every label is a fixed string at the line named for its row.",
+   "rows": [
+    {
+     "label": "Selected record",
+     "at": "card-projection.ts:36",
+     "value": "read: the plan target label, the kind of the captured record, the pinned revision"
+    },
+    {
+     "label": "Registry identifier",
+     "at": "card-projection.ts:37",
+     "value": "read: identifier of the captured record (a fixed sentence at :38 when it has none)"
+    },
+    {
+     "label": "Application identity",
+     "at": "card-projection.ts:43",
+     "value": [
+      "read: projectIdentity.code and .status, printed raw (assigned, retired, cancelled_error); \"(P3/1)\" is",
+      "fixed"
+     ]
+    },
+    {
+     "label": "Recorded location",
+     "at": "card-projection.ts:46",
+     "value": [
+      "derived: verticalLocator over projectIdentity.location.locator with the anchor forced to not_supplied",
+      "and the parcels dropped, so the row prints NO-ANCHOR on every card. \"?\" and \"L?\" are the stored values",
+      "of an unknown kind and level"
+     ]
+    },
+    {
+     "label": "Parent parcel assertions",
+     "at": "card-projection.ts:62-63",
+     "value": [
+      "read when a selected text entry holds the parcel literal (literal, review state and issuer state, raw;",
+      "never on a PDF plan, :50); otherwise a fixed sentence and the anchor state read raw"
+     ]
+    },
+    {
+     "label": "Recorded declared share",
+     "at": "card-projection.ts:80-83",
+     "value": [
+      "read from a shared declaration on a text plan (share literal, allocation subject and basis raw, then the",
+      "fixed words \"technically_accepted; legal not_assessed\"); otherwise a fixed sentence"
+     ]
+    },
+    {
+     "label": "Space label (source literal)",
+     "at": "card-source-facts.ts:34",
+     "value": "read: name of the space; then the fixed words \"officer-entered, not a boundary\""
+    },
+    {
+     "label": "Floor label (source literal)",
+     "at": "card-source-facts.ts:35",
+     "value": "read: name of the parent floor; then fixed words"
+    },
+    {"label": "Building (recorded name)", "at": "card-source-facts.ts:36", "value": "read: name of the building"},
+    {
+     "label": "Source citation",
+     "at": "card-source-facts.ts:37-38",
+     "value": "read: page, region, source id, source revision and source hash of sourceOnly.evidence"
+    },
+    {"label": "Level ordinal", "at": "card-source-facts.ts:39-40", "value": "fixed sentence, state unavailable"},
+    {"label": "Use / classification", "at": "card-source-facts.ts:41", "value": "fixed sentence, state unavailable"},
+    {
+     "label": "Geometry / frame / datum",
+     "at": "card-projection.ts:87-88",
+     "value": "fixed sentence, one of two by the kind of plan; state unavailable"
+    },
+    {"label": "Measurements / quantities", "at": "card-projection.ts:89", "value": "fixed sentence, unavailable"},
+    {"label": "Selected-space render", "at": "card-projection.ts:90", "value": "fixed sentence, unavailable"},
+    {"label": "Rights / title / issuance", "at": "card-projection.ts:91", "value": "fixed sentence, not_assessed"}
+   ],
+   "aroundTheRows": [
+    "Heading, footer and the two lines under the QR are fixed sentences written twice, once in each renderer",
+    "(card-render.ts:23-26, :40-47, :55-56; card-render-unicode.ts:88-90, :100-106, :114-115)."
+   ]
+  },
+  "whoEnteredTheLabel": {
+   "field": [
+    "sourceOnly.decision.actor of the source-stated record, beside decision.reason and decision.time",
+    "(contracts canonical/source-spaces.ts:36-37)."
+   ],
+   "whatTheCommandWrites": [
+    "POST /api/v1/buildings/{buildingId}/source-spaces runs commandSourceSpace, which sets actor to",
+    "localOperatorSubject() (officer/source-spaces.ts:106, :88): the configured local operator subject, which",
+    "is process attribution and does not identify a person (usp/principal.ts:22-31). It is a subject id only."
+   ],
+   "role": [
+    "None is recorded. The record schema is strict and has no role field; the roles of the request principal",
+    "(operator in the local context, principal.ts:35) are not written to the record."
+   ],
+   "theWordOfficer": [
+    "sourceOnly.transcription is the literal officer_entered on every source-stated record (schema :35,",
+    "writer usp/ingestion/source-building-children.ts:25). It is a fixed word of the record version, says the",
+    "label was typed in from the cited region, and cannot tell an officer from another operator."
+   ],
+   "withoutANewQuery": [
+    "Yes. card-source-facts.ts:24 already parses the captured target with SourceStatedRecordSchema, so",
+    "sourceOnly.decision is in hand."
+   ],
+   "decision": [
+    [
+     "The record cannot state an officer role, so no wording path prints \"officer\". The row reads: the label,",
+     "\"entered by the recording operator from the cited source region; not a boundary\"."
+    ],
+    "The subject id is not printed: the card prints no subject today and none was asked for.",
+    [
+     "The test the task names for an officer-role actor therefore proves the other half: the row names no",
+     "officer, and a guard fails when the decision of the record gains a field the wording does not read."
+    ]
+   ]
+  },
+  "qr": {
+   "encodes": [
+    "card.resolverUrl, character for character (card-render.ts:49, card-render-unicode.ts:108):",
+    "http://127.0.0.1:<port>/api/v1/usp/property-cards/<cardId>/revisions/<revision>."
+   ],
+   "builtFrom": [
+    "propertyCardResolverUrl (card-render.ts:6-11) with the API_PORT setting, 3188 when unset; the demo",
+    "profile expects 3194 (scripts/platform/demo-config.mjs:255). The string is stored in the body, and the",
+    "card_body check requires host 127.0.0.1 and this card and revision in the path."
+   ],
+   "whatAnswers": [
+    "GET on that path is the resolver (apps/api evidence/property-card.controller.ts:60-81): the stored",
+    "one-page PDF of exactly that revision, inline, under the local operator context. 403 once the card is",
+    "expired (a card lives at most 24 hours, card-service.ts:174-175) or revoked; 404 for an unknown",
+    "revision. The verification read is another route (the same path with /verification)."
+   ],
+   "aPhoneOnAnotherMachine": [
+    "Gets nothing. 127.0.0.1 is the phone itself, so the request never leaves it and no card data is sent",
+    "anywhere. With the host rewritten to the address of the operator machine the API still refuses a host",
+    "that is not loopback (403, apps/api common/request-context.ts:64-77)."
+   ],
+   "reportOnly": "Making the link reachable from another device is a deployment decision and is not made here.",
+   "theRendererHasTheString": "Yes, both renderers hold card.resolverUrl, so it can be printed under the QR."
+  }
+ },
+ "change": {
+  "sharedSentences": "packages/server/src/modules/usp/packets/card-wording.ts",
+  "recordedLocation": [
+   "locationSentence(location): the anchor sentence, one clause for each locator field, the formal locator",
+   "kept in brackets (card-projection.ts)"
+  ],
+  "stateWords": [
+   "FACT_STATE_LEAD and printedFact(fact) in both renderers; inWords() for other stored enum words inside a",
+   "value; anchorSentence() for the anchor state"
+  ],
+  "labelAuthor": "SOURCE_LABEL_NOTE (card-source-facts.ts); the subject id is not printed",
+  "floorSequence": [
+   "levelOrdinalSentence(floorSegment): the clause is written only when the printed identifier continues the",
+   "identifier of the floor record and that segment is F<digits>"
+  ],
+  "underTheQr": [
+   "cardLinkLines(resolverUrl): two caption lines, then the encoded",
+   "string cut before and after the card id"
+  ],
+  "alsoMoved": "heading and footer lines, unchanged in wording, so neither renderer holds a sentence",
+  "notChanged": [
+   "stored states, the read contract, card-service.ts, the",
+   "verification code, any stored card or its bytes"
+  ]
+ },
+ "rowsAsRendered": {
+  "fixture": "TOWER 3 / UNIT-3B on the protocol double of source-stated-binding.test.ts, ASCII profile",
+  "changed": [
+   {
+    "row": "Recorded location",
+    "before": "NO-ANCHOR / ?01 / L? / ?001",
+    "after": [
+     "No parcel anchor supplied. Structure 1, kind not recorded; level not recorded; space 1, kind not",
+     "recorded. (Locator: NO-ANCHOR / ?01 / L? / ?001)"
+    ]
+   },
+   {
+    "row": "Parent parcel assertions",
+    "before": "unavailable: Selected evidence does not support a parent parcel assertion; anchor not_supplied",
+    "after": "Unavailable: Selected evidence does not support a parent parcel assertion. No parcel anchor supplied."
+   },
+   {
+    "row": "Recorded declared share",
+    "before": "unavailable: No included accepted applicability for this exact target and purpose",
+    "after": "Unavailable: No included accepted applicability for this exact target and purpose"
+   },
+   {
+    "row": "Space label (source literal)",
+    "before": "UNIT-3B; officer-entered, not a boundary",
+    "after": "UNIT-3B; entered by the recording operator from the cited source region; not a boundary"
+   },
+   {
+    "row": "Level ordinal",
+    "before": "unavailable: Not recorded; the floor caption is only a literal",
+    "after": [
+     "Unavailable: Not recorded; the floor caption is only a literal. F001 in the registry identifier is a",
+     "record sequence, not a floor number"
+    ]
+   },
+   {
+    "row": "Use / classification",
+    "before": "unavailable: Not recorded for this space",
+    "after": "Unavailable: Not recorded for this space"
+   },
+   {
+    "row": "Geometry / frame / datum",
+    "before": "unavailable: Not qualified by the executed PDF region profile",
+    "after": "Unavailable: Not qualified by the executed PDF region profile"
+   },
+   {
+    "row": "Measurements / quantities",
+    "before": "unavailable: No qualified measured quantities in this profile",
+    "after": "Unavailable: No qualified measured quantities in this profile"
+   },
+   {
+    "row": "Selected-space render",
+    "before": "unavailable: Rendering is unavailable in this profile",
+    "after": "Unavailable: Rendering is unavailable in this profile"
+   },
+   {
+    "row": "Rights / title / issuance",
+    "before": "not_assessed: No ownership, title, legality or official issuance determination",
+    "after": "Not assessed: No ownership, title, legality or official issuance determination"
+   },
+   {
+    "row": "under the QR",
+    "before": "Local demonstration link / Private operator access",
+    "after": [
+     "Opens this card revision as a PDF, / only on the machine that made it: /",
+     "http://127.0.0.1:3188/api/v1/usp/property-cards/ / 00000000-0000-4000-8000-000000000010 / /revisions/1"
+    ]
+   }
+  ],
+  "unchanged": [
+   "Selected record",
+   "Registry identifier",
+   "Application identity",
+   "Floor label (source literal)",
+   "Building (recorded name)",
+   "Source citation",
+   "the heading",
+   "the ten footer lines"
+  ]
+ },
+ "renders": {
+  "how": [
+   "K10_CARD_DIR=<folder> with the first test of source-stated-binding.test.ts writes card.pdf (the selected",
+   "profile) and card-unicode.pdf; docs/evidence/gf4/k10/rasterise.ts draws page 1 with pdfjs-dist and",
+   "writes the text one printed line a row. before/ was drawn with the code of staging 2eb786f2 and the same",
+   "hook."
+  ],
+  "before": {
+   "pdf": "E:/BhuAayam-data/task-data/k10/before/card.pdf",
+   "pdfSha256": "099423b0adacafc022ae8fbe7e60998b1f1f91f233f66586952c8706b9d48445",
+   "png": "E:/BhuAayam-data/task-data/k10/before/card.png",
+   "pngSha256": "24dac9b3e68b09ee778e7abb6efa4a1862ba3462b105c73c3eb3baf602ba44b0",
+   "rowsAsText": "E:/BhuAayam-data/task-data/k10/before/card.txt"
+  },
+  "after": {
+   "pdf": "E:/BhuAayam-data/task-data/k10/after/card.pdf",
+   "pdfSha256": "abb35bf5abfa1008220c20832237bc032a82cbae83ee8a2d33cf0bc406166239",
+   "png": "E:/BhuAayam-data/task-data/k10/after/card.png",
+   "pngSha256": "ec8bfacde03a35be19321707302a3f4a208d8f5f43c8c722ae3a6cde2e9138c1",
+   "rowsAsText": "E:/BhuAayam-data/task-data/k10/after/card.txt"
+  },
+  "afterUnicode": {
+   "pdf": "E:/BhuAayam-data/task-data/k10/after/card-unicode.pdf",
+   "pdfSha256": "bcf9670d2cbcd8b001fdb8f4ee4cb7307fab0267b0605f6245977859288ba7c3",
+   "png": "E:/BhuAayam-data/task-data/k10/after/card-unicode.png",
+   "pngSha256": "954bf96b7d78db4edf7d0a1627c19fd852a879f0eb2daab9b3db5136644aabd1",
+   "rowsAsText": "E:/BhuAayam-data/task-data/k10/after/card-unicode.txt"
+  },
+  "calibration": [
+   "The R3 card PDF drawn by the same rasteriser (calibration/r3-card-by-pdfjs.png, sha256",
+   "bfdda7e78ec27fc1dec031c37d4e186f2cca0bf5cc53d48d9abfd30d4a76a8a6) was compared by eye with",
+   "task-data/r3/step3/11-card.png: same rows and line breaks."
+  ],
+  "lookedAt": [
+   "All three PNGs were opened and read: every row is whole, the two-line rows break between words, nothing",
+   "crosses the rule or the page edge."
+  ]
+ },
+ "layout": {
+  "unit": "points; page 595.28 x 841.89; value column 190 to 555; rule ends at 559; QR 420 to 552",
+  "widestValueLines": {
+   "ascii": {"Recorded location, line 1": 552.7, "Level ordinal, line 1": 550.1, "Space label": 542.7},
+   "unicode": {"Recorded location, line 1": 550.5, "Recorded declared share": 537.3, "Level ordinal, line 1": 531.1}
+  },
+  "underTheQrRightEdges": {
+   "ascii": [543.6, 537.8, 546.1, 534.7, 450.3],
+   "unicode": [538.3, 538.8, 546.5, 524.5, 450.5]
+  },
+  "lowestBaseline": {"ascii": 819.0, "unicode": 823.9},
+  "found": [
+   "The first cut of the address in two lines ran past the QR (about 145 pt for the card id with the",
+   "revision); it is cut in three parts now and a test holds each part to 48 characters."
+  ]
+ },
+ "tests": {
+  "packages/server/src/modules/usp/packets/card-wording.test.ts": [
+   "a locator with a known level and known kinds prints them as the record states them",
+   "a record that holds an anchor says so and says that the locator of this row leaves it out",
+   "every stored fact state has its printed word, and no fact prints a stored word as a value",
+   "the floor clause is written only for a floor segment, and the QR address is the encoded string in parts",
+   "a source-stated record holds an actor and no role: a new field there must reach the label wording",
+   "a card made before this change still verifies consistent: its stored words are compared with nothing"
+  ],
+  "packages/server/src/modules/usp/packets/source-stated-binding.test.ts": [
+   "the card of a source-stated unit states an unknown location, state and author in words"
+  ]
+ },
+ "checks": {
+  "pnpm typecheck:backend": "exit 0",
+  "card tests": [
+   "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test on card-wording, source-stated-binding,",
+   "card-verification, card-listing, card-revocation, property-card.controller and",
+   "tests/usp-property-card{,-unicode,-image}: 45 tests, 45 pass"
+  ],
+  "neighbouring tests": [
+   "tests/usp-packet-pdf, usp-packet-plans, usp-packet-image-pdf, usp-packet-mixed-pdf, packet-pdf-bundle,",
+   "packet-pdf-render, usp-project-identity-code and source-stated-identity: 51 tests, 50 pass, 1 skipped",
+   "(an image crop test that skips itself)"
+  ],
+  "openapi.ts --check": [
+   "after the re-pin: 298 operations, 337 named schemas; before it: source-pins.json stale, as for any",
+   "changed server file"
+  ],
+  "python -B scripts/api/check.py": [
+   "exit 1, only \"runtime receipt changed\" (same on untouched staging here); with that comparison tolerated:",
+   "exit 0, 298 native operations"
+  ],
+  "git diff --check": "clean",
+  "line length": "no added line over 120 characters",
+  "paths": [
+   "git diff staging...HEAD --name-only: the owned files, their tests, this evidence folder and",
+   "docs/api/source-pins.json"
+  ]
+ },
+ "qrFinding": [
+  [
+   "The QR encodes card.resolverUrl, a string stored in the card body: http://127.0.0.1:<API_PORT, 3188 when",
+   "unset>/api/v1/usp/property-cards/<cardId>/revisions/<revision> (card-render.ts:6-11). The demo runs on",
+   "port 3194; the fixture render shows 3188 because no port is set offline."
+  ],
+  [
+   "At that address the API returns the stored PDF of that exact revision to a request from the same",
+   "machine, until the card expires (at most 24 hours) or is revoked."
+  ],
+  [
+   "A phone on another machine reaches nothing: 127.0.0.1 is the phone itself. A rewritten host is refused",
+   "by the loopback guard (apps/api common/request-context.ts:64-77)."
+  ],
+  [
+   "Report only, as the task says: making the link reachable from another device is a deployment decision of",
+   "the owner. The new lines under the QR say what it opens and print the encoded address, so a reader can",
+   "see it is a local address."
+  ]
+ ],
+ "followUp": {
+  "why": [
+   "Lead note after the first report: the 1 and 1 on the live card were constants of the assigning script,",
+   "and K11 makes both numbers optional beside an unknown kind."
+  ],
+  "commit": "99d537f9 fix(card): a location without a structure or space number says so",
+  "change": [
+   "card-wording.ts only: numberedClause(part, number: number | undefined, kind) writes the structure and",
+   "the space; locationSentence reads both numbers as possibly absent. The formal locator is still what",
+   "verticalLocator returns."
+  ],
+  "rowsAsRendered": {
+   "withNumbers": [
+    "No parcel anchor supplied. Structure 1, kind not recorded; level not recorded; space 1, kind not",
+    "recorded. (Locator: NO-ANCHOR / ?01 / L? / ?001)"
+   ],
+   "withoutNumbersToday": [
+    "No parcel anchor supplied. Structure number not recorded, kind not recorded; level not recorded; space",
+    "number not recorded, kind not recorded. (Locator: NO-ANCHOR / ?undefined / L? / ?undefined)"
+   ],
+   "withoutNumbersAfterK11": [
+    "No parcel anchor supplied. Structure number not recorded, kind not recorded; level not recorded; space",
+    "number not recorded, kind not recorded. (Locator: NO-ANCHOR / ? / L? / ?), by the lead's statement of",
+    "what verticalLocator will print; not rendered"
+   ]
+  },
+  "tests": [
+   "a number beside an unknown kind prints as the record states it, and the formal locator ends the row",
+   "a locator without numbers prints two \"number not recorded\" clauses and no digit before the formal locator"
+  ],
+  "render": {
+   "pdf": "E:/BhuAayam-data/task-data/k10/after-unqualified/card.pdf",
+   "pdfSha256": "125848495c0d132014a5eb5d26d7df1f24c4b0a65d54f5b074e2e3133908c7a8",
+   "png": "E:/BhuAayam-data/task-data/k10/after-unqualified/card.png",
+   "pngSha256": "84eef00a9d7eea52fec1e39d74e4c8d2fa66e7395b9154513d9e3732c5a42679",
+   "unicodePdf": "E:/BhuAayam-data/task-data/k10/after-unqualified/card-unicode.pdf",
+   "unicodePdfSha256": "fa8f85512af034a92ccf9c846a24a1517f638a796ad3e77fff9adc869acc90b6",
+   "unicodePng": "E:/BhuAayam-data/task-data/k10/after-unqualified/card-unicode.png",
+   "unicodePngSha256": "fa78f4b8dee36a9d05851f4899df91acbca4341c47ebbb691a4ddd12274fe2b5",
+   "lookedAt": [
+    "Both PNGs were opened and read: the row is three whole lines in each, nothing is clipped, the rows below",
+    "move down and stay above the rule."
+   ]
+  },
+  "layout": {
+   "unit": "points; value column 190 to 555",
+   "widestLineOfTheRow": {"ascii": 535.2, "unicode": 550.1},
+   "afterK11Ascii": {"lines": 3, "widths": [342.9, 356.8, 7.9], "columnWidth": 365}
+  },
+  "checks": {
+   "pnpm typecheck:backend": "exit 0",
+   "card tests": "the same nine files: 47 tests, 47 pass",
+   "openapi.ts --check": "after re-pinning card-wording.ts: 298 operations, 337 named schemas",
+   "python -B scripts/api/check.py": [
+    "as before: exit 1 on the runtime receipts only; exit 0",
+    "with that comparison tolerated"
+   ],
+   "git diff --check and line length": "clean; no added line over 120 characters"
+  }
+ },
+ "report": {
+  "TASK": [
+   "K10: a new property card says in words what it does not know. Worktree E:/Projects/ulpin-wt/a2, branch",
+   "task/k10-card-wording from staging 2eb786f2. Not pushed."
+  ],
+  "WORKS": [
+   [
+    "Recorded location, anchorless and unknown: No parcel anchor supplied. Structure 1, kind not recorded;",
+    "level not recorded; space 1, kind not recorded. (Locator: NO-ANCHOR / ?01 / L? / ?001)"
+   ],
+   [
+    "A known kind or level prints as the record states it (Structure 1, kind S; level G; space 1, kind R); a",
+    "record that holds an anchor says so and says that the locator of this row leaves it out."
+   ],
+   [
+    "Unavailable: and Not assessed: lead their rows; no row of the fixture card holds an underscore-joined",
+    "stored word or a lower-case state before its colon. The display map is total over the fact state enum",
+    "(by type and by a test against the published enum)."
+   ],
+   [
+    "Space label: UNIT-3B; entered by the recording operator from the cited source region; not a boundary. No",
+    "row says officer."
+   ],
+   [
+    "Level ordinal: Unavailable: Not recorded; the floor caption is only a literal. F001 in the registry",
+    "identifier is a record sequence, not a floor number (the segment is read from the identifier of that",
+    "card)."
+   ],
+   [
+    "Under the QR: Opens this card revision as a PDF, / only on the machine that made it: and the encoded",
+    "address in three short lines."
+   ],
+   [
+    "Both renderers take every sentence from card-wording.ts; their two PDFs of the fixture print the same",
+    "words (2062 characters each with whitespace removed)."
+   ],
+   [
+    "A stored card is untouched: a card whose body holds the earlier words reports consistent with six",
+    "passing checks."
+   ],
+   [
+    "Follow-up (99d537f9): a locator without its numbers prints \"Structure number not recorded\" and \"space",
+    "number not recorded\"; a locator with numbers prints as before."
+   ]
+  ],
+  "SEE IT": [
+   [
+    "E:/BhuAayam-data/task-data/k10/before/card.png and after/card.png, after/card-unicode.png beside it (PDF",
+    "and row text next to each)"
+   ],
+   [
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+    "packages/server/src/modules/usp/packets/card-wording.test.ts",
+    "packages/server/src/modules/usp/packets/source-stated-binding.test.ts"
+   ]
+  ],
+  "INPUTS": [
+   [
+    "The code at staging 2eb786f2; the R3 card PNG and PDF, read only; the offline fixture of",
+    "source-stated-binding.test.ts. No runtime, no database, no held-out file."
+   ],
+   [
+    "The backend tests and the contract check import the server configuration, which loads the own",
+    "environment file of the worktree when one exists, as in every earlier task; it was not opened or",
+    "printed."
+   ]
+  ],
+  "GAPS": [
+   [
+    "Nothing ran live: no request to the demo, no runtime, no SQL. The live card 6a997624 revision 1 keeps",
+    "its old words and bytes. To see the new words on the demo, the runtime owner restarts the API on the",
+    "merged code and generates a new card (or a new revision of that card)."
+   ],
+   [
+    "The before and after renders are the projected rows of the offline fixture drawn by the renderers, not",
+    "stored cards: the plan of that fixture is not executed, so confirmation id, packet id and packet hash",
+    "are zero placeholders, and the card id is a fixed placeholder. The application identity code and the",
+    "plan id differ between before and after because each fixture run assigns new ones."
+   ],
+   [
+    "The test \"names an officer only for an officer-role actor\" is written as \"names no officer\" plus a guard",
+    "on the record schema: the record holds decision.actor (a subject id) and no role, so no wording path",
+    "prints officer. The guard fails when the decision gains a field, so that field must then reach the",
+    "wording."
+   ],
+   [
+    "Words for a record that holds an anchor, a known kind or a known level are exercised by unit tests on",
+    "parsed locations only; no fixture with such a record was rendered."
+   ],
+   [
+    "The same rule was applied to stored words on rows the fixture does not reach: parcel review and issuer",
+    "states, and the declared-share row (technically_accepted; legal not_assessed became technically",
+    "accepted; legal status not assessed). These were not rendered."
+   ],
+   [
+    "A card body stores its render profile and no wording version, so a stored card shows which words it",
+    "carries only by reading them. A body field would be a contract change outside the owned paths."
+   ],
+   [
+    "The lines under the QR now reach lower on the page: the last address line has its baseline 22.9 pt",
+    "(ASCII) and 18.0 pt (Unicode) above the bottom edge. It is inside the page; a printer with a bottom",
+    "margin above about 6 mm would cut it."
+   ],
+   [
+    "tests/usp-property-card-unicode.test.ts: only the literal of its optional extraction branch changed (it",
+    "needs CARD_PDF_PYTHON with pypdfium2 and pypdf, absent on this machine); that branch was not run."
+   ],
+   [
+    "docs/api/source-pins.json is outside the owned list. It was re-pinned with the command the rules name",
+    "(five producer hashes; no operation or schema changed; openapi.json is byte-identical), because the",
+    "contract check cannot pass on any changed server file without it. The lead may drop it and regenerate at",
+    "the merge."
+   ],
+   [
+    "python -B scripts/api/check.py exits 1 in this worktree on untouched staging as well: three runtime",
+    "receipts are checked out with CRLF. With the receipt comparison tolerated it exits 0."
+   ],
+   "The session ran to about 95 minutes against a box of about 80.",
+   "Commit trailer: Co-Authored-By: Claude Opus 5.5, as the session requires, in place of the one in the task file.",
+   [
+    "Follow-up: the render in after-unqualified/ shows NO-ANCHOR / ?undefined / L? / ?undefined in the formal",
+    "locator. That is what verticalLocator returns today for a locator without numbers, an input the contract",
+    "does not yet accept; K11 changes it to NO-ANCHOR / ? / L? / ?. The worded clauses before it are final",
+    "and hold no digit and no \"undefined\"."
+   ],
+   [
+    "Follow-up: the number-less row takes three lines. With the locator K11 will print, the ASCII renderer",
+    "leaves \"?)\" alone on the third line (computed with its own line splitter, not rendered), and the Unicode",
+    "renderer breaks the formal locator after \"NO-\" at the hyphen (seen in the render). Both are whole and",
+    "inside the column; keeping the formal locator on one line would be a renderer change."
+   ],
+   [
+    "Follow-up: the number-less render was drawn once through a temporary edit of the drawing hook in",
+    "source-stated-binding.test.ts, restored before the commit; that test file is unchanged by the follow-up."
+   ]
+  ],
+  "DESIGN": [
+   [
+    "One file holds every sentence; the projection writes worded values into the card body and the renderers",
+    "add only the state lead, so body and page agree."
+   ],
+   "The formal locator stays at the end of the row, so nothing a reader could cite is lost.",
+   "The label row makes no claim about a role, because the record states none."
+  ],
+  "COMMITS": [
+   "c366a476 docs(card): K10 what each card row is read from and what verification compares",
+   "0b9d6680 fix(card): an unknown location, state and author are printed in words",
+   "d4f63b42 docs(card): K10 evidence",
+   "99d537f9 fix(card): a location without a structure or space number says so",
+   "docs(card): K10 evidence for a location without numbers (this file)"
+  ],
+  "CHECKS": {
+   "pnpm typecheck:backend": "exit 0",
+   "card tests": [
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test on card-wording, source-stated-binding,",
+    "card-verification, card-listing, card-revocation, property-card.controller and",
+    "tests/usp-property-card{,-unicode,-image}: 45 tests, 45 pass"
+   ],
+   "neighbouring tests": [
+    "tests/usp-packet-pdf, usp-packet-plans, usp-packet-image-pdf, usp-packet-mixed-pdf, packet-pdf-bundle,",
+    "packet-pdf-render, usp-project-identity-code and source-stated-identity: 51 tests, 50 pass, 1 skipped",
+    "(an image crop test that skips itself)"
+   ],
+   "openapi.ts --check": [
+    "after the re-pin: 298 operations, 337 named schemas; before it: source-pins.json stale, as for any",
+    "changed server file"
+   ],
+   "python -B scripts/api/check.py": [
+    "exit 1, only \"runtime receipt changed\" (same on untouched staging here); with that comparison tolerated:",
+    "exit 0, 298 native operations"
+   ],
+   "git diff --check": "clean",
+   "line length": "no added line over 120 characters",
+   "paths": [
+    "git diff staging...HEAD --name-only: the owned files, their tests, this evidence folder and",
+    "docs/api/source-pins.json"
+   ],
+   "follow-up": "typecheck exit 0; 47 card tests pass; contract check 298 operations"
+  },
+  "NEXT": [
+   "Runtime owner: after the merge, restart the demo API and generate a new card for UNIT-3B to see the words.",
+   "Owner decision, unchanged: whether the QR address should be reachable from another device.",
+   [
+    "If stored cards should state which wording they carry: an additive wordingVersion field in the card body",
+    "(packages/contracts/src/usp/property-card.ts and card-service.ts, both outside this task)."
+   ],
+   [
+    "The stored literal transcription: officer_entered (packages/contracts/src/canonical/source-spaces.ts:35,",
+    "written by ingestion/source-building-children.ts:25) still says officer for a record that holds no role.",
+    "Renaming it is a contract and data change; it is not printed on the card."
+   ]
+  ]
+ }
+}

@@ -1,6 +1,6 @@
 import type { PoolClient } from 'pg';
 import { UspDeclarationInputSchema, UspReviewDeclarationSchema, type RequestContext, type TargetPin } from '@ulpin/contracts/usp';
-import { normalizeProjectCode, ProjectLocationSchema, verticalLocator } from '../../../../../contracts/src/usp/project-identity';
+import { normalizeProjectCode, ProjectLocationSchema } from '../../../../../contracts/src/usp/project-identity';
 import { UspPropertyCardFactSchema, type PropertyCardFact } from '../../../../../contracts/src/usp/property-card';
 import type { AnyPacketPlan } from '../../../../../contracts/src/usp/packets';
 import { isPdfPlan } from './plan-store';
@@ -10,6 +10,7 @@ import { sha256 } from '../../../infrastructure/storage';
 import { scopedManifestTx } from '../commands';
 import { selectExactPart } from '../packet0';
 import { sourceStatedCardFacts } from './card-source-facts';
+import { anchorSentence, inWords, locationSentence } from './card-wording';
 
 /** Called only under the existing plan disclosure protection. No current body is
  * substituted for a captured body, and no dependency outside the plan is read. */
@@ -40,10 +41,11 @@ export async function projectCardFactsTx(client: PoolClient, ctx: RequestContext
   if (identity?.code) {
     if (normalizeProjectCode(identity.code) !== identity.code || !['assigned', 'retired', 'cancelled_error'].includes(identity.status))
       conflict('The captured application identity is invalid.');
-    available('project_identity', 'Application identity', `${identity.code}; ${identity.status} (P3/1)`);
+    available('project_identity', 'Application identity',
+      `${identity.code}; ${inWords(identity.status)} (P3/1)`);
     const location = ProjectLocationSchema.parse(identity.location);
     // Print the vertical parts without importing unselected parcel assertions.
-    available('vertical_locator', 'Recorded location', verticalLocator({ ...location, anchorState: 'not_supplied', parcels: [] }));
+    available('vertical_locator', 'Recorded location', locationSentence(location));
     const represented = [];
     // A reviewed pixel crop carries inclusion authority, not an exact structured
     // parcel literal. Only the existing text/CSV pointer proof supports these facts.
@@ -57,10 +59,12 @@ export async function projectCardFactsTx(client: PoolClient, ctx: RequestContext
       if (source.body_sha256 !== entry.sourceBodySha256 || source.body.sha256 !== entry.sourceSha256
         || excerpt === null || sha256(excerpt) !== entry.excerptSha256) conflict('The selected parcel assertion source changed.');
       if (!excerpt.includes(parcel.literalValue)) continue;
-      represented.push(`${parcel.literalValue} (${parcel.reviewState}; issuer ${parcel.issuer.state})`);
+      represented.push(`${parcel.literalValue} (${inWords(parcel.reviewState)}; `
+        + `issuer ${inWords(parcel.issuer.state)})`);
     }
     if (represented.length) available('parcel_assertions', 'Parent parcel assertions', `${represented.join('; ')}. These are recorded assertions, not issuance verification.`);
-    else missing('parcel_assertions', 'Parent parcel assertions', `Selected evidence does not support a parent parcel assertion; anchor ${location.anchorState}`, 'selected_parcel_evidence_unavailable');
+    else missing('parcel_assertions', 'Parent parcel assertions', 'Selected evidence does not support a parent '
+      + `parcel assertion. ${anchorSentence(location.anchorState)}`, 'selected_parcel_evidence_unavailable');
   } else {
     missing('project_identity', 'Application identity', 'No captured P3/1 identity', 'project_identity_not_recorded');
     missing('vertical_locator', 'Recorded location', 'No captured structured location', 'location_not_recorded');
@@ -77,7 +81,8 @@ export async function projectCardFactsTx(client: PoolClient, ctx: RequestContext
     if (selected.length !== 1 || declaration.technicalStatus !== 'technically_accepted'
       || !review.applicability.some(a => canonical(a.target) === canonical(plan.input.target) && a.state === 'applicable'
         && a.purpose === plan.input.purpose)) conflict('The selected declaration context is unavailable.');
-    shares.push(`${selected[0].literalShare}; ${input.allocationSubject}; ${input.basis}; technically_accepted; legal not_assessed`);
+    shares.push(`${selected[0].literalShare}; ${inWords(input.allocationSubject)}; ${inWords(input.basis)}; `
+      + 'technically accepted; legal status not assessed');
   }
   if (shares.length) available('declared_share', 'Recorded declared share', shares.join('; '));
   else missing('declared_share', 'Recorded declared share', 'No included accepted applicability for this exact target and purpose', 'selected_declared_share_unavailable');

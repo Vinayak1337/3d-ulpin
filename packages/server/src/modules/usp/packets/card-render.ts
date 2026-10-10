@@ -2,6 +2,7 @@ import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
 import type { PropertyCard } from '../../../../../contracts/src/usp/property-card';
 import { AppError } from '../../../infrastructure/errors';
+import { cardFooterLines, cardHeading, cardLinkLines, printedFact } from './card-wording';
 
 export function propertyCardResolverUrl(cardId: string, revision: number) {
   const port = process.env.API_PORT ?? '3188';
@@ -20,13 +21,14 @@ export function renderPropertyCard(card: CardContent) {
   doc.setCreationDate(new Date(card.createdAt));
   doc.setFillColor(237, 243, 240); doc.rect(0, 0, 596, 100, 'F');
   doc.setTextColor(20, 47, 38); doc.setFont('helvetica', 'bold'); doc.setFontSize(23);
-  doc.text('Property card', 36, 43);
+  const heading = cardHeading(card);
+  doc.text(heading.title, 36, 43);
   doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-  doc.text(`PRIVATE - Exact card revision ${card.revision} - ${card.scope.stage} snapshot`, 36, 64);
-  doc.setFontSize(9); doc.text('Application summary. No official ULPIN issuance, title or legal approval is implied.', 36, 82);
+  doc.text(heading.revision, 36, 64);
+  doc.setFontSize(9); doc.text(heading.disclaimer, 36, 82);
   let y = 122;
   for (const fact of card.facts) {
-    const value = fact.state === 'available' ? fact.value! : `${fact.state}: ${fact.value ?? fact.reasonCode}`;
+    const value = printedFact(fact);
     doc.setFontSize(9); doc.setFont('helvetica', 'normal');
     const lines = doc.splitTextToSize(value, 365) as string[];
     if (y + lines.length * 12 > 605)
@@ -37,23 +39,18 @@ export function renderPropertyCard(card: CardContent) {
   }
   doc.setDrawColor(170, 185, 178); doc.line(36, 622, 559, 622);
   doc.setFontSize(8); doc.setFont('helvetica', 'normal');
-  const footer = [
-    `Card: ${card.cardId} / ${card.revision}`, `Plan: ${card.planId} / ${card.planVersion}`,
-    `Packet: ${card.packetId}`, `Included entries: ${card.evidenceEntrySha256.length}; optional omissions: ${card.omissions.length}`,
-    `Snapshot captured: ${card.snapshotCapturedAt}`, `Card expires: ${card.expiresAt}`,
-    'Packet SHA-256 (byte consistency):', card.packetSha256,
-    'Snapshot facts are fixed; current record revisions may differ.',
-    'The detail packet remains separately authorized.',
-  ];
-  for (const [i, line] of footer.entries()) doc.text(line, 36, 644 + i * 13);
+  for (const [i, line] of cardFooterLines(card).entries()) doc.text(line, 36, 644 + i * 13);
   const qr = QRCode.create(card.resolverUrl, { errorCorrectionLevel: 'M' });
   const quiet = 4, size = qr.modules.size, step = 132 / (size + quiet * 2), x = 420, top = 635;
   doc.setFillColor(255, 255, 255); doc.rect(x, top, 132, 132, 'F'); doc.setFillColor(0, 0, 0);
   for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) if (qr.modules.get(r, c))
     doc.rect(x + (c + quiet) * step, top + (r + quiet) * step, step, step, 'F');
   doc.link(x, top, 132, 132, { url: card.resolverUrl });
-  doc.setFontSize(8); doc.text('Local demonstration link', x, 780);
-  doc.text('Private operator access', x, 792);
+  const link = cardLinkLines(card.resolverUrl);
+  doc.setFontSize(8);
+  for (const [i, line] of link.caption.entries()) doc.text(line, x, 780 + i * 12);
+  doc.setFontSize(6);
+  for (const [i, line] of link.address.entries()) doc.text(line, x, 803 + i * 8);
   const bytes = new Uint8Array(doc.output('arraybuffer'));
   if (bytes.length > 524288) throw new AppError(413, 'CARD_OUTPUT_BOUND', 'The bounded one-page PDF exceeds 512 KiB.');
   return bytes;
