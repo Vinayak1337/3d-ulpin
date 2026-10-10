@@ -18,7 +18,8 @@ export async function validateSourceStatedIdentityTx(client: PoolClient, rows: {
     const record = result.data;
     const location = review.location;
     if (location && (location.anchorState !== 'not_supplied' || location.parcels.length
-      || location.locator.levels.length !== 1 || location.locator.levels[0] !== 'L?')) throw denied();
+      || location.locator.levels.length !== 1 || location.locator.levels[0] !== 'L?'
+      || location.locator.spaceKind !== '?' || location.locator.structureKind !== '?')) throw denied();
     const evidence = record.sourceOnly.evidence;
     if (!review.evidence.some(item => item.sourceId === evidence.sourceId && item.revision === evidence.sourceRevision
       && item.locator === record.evidence[0].locator)) throw denied();

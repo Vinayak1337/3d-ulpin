@@ -48,10 +48,12 @@ export const ProjectParcelAssociationSchema = z.strictObject({
   reviewState: z.enum(['supplied_unreviewed', 'reviewed', 'disputed', 'withdrawn']),
 });
 export const ProjectLocatorPartsSchema = z.strictObject({
-  structureKind: z.enum(['S', 'U', 'A']),
+  // '?' preserves unassessed source-only structure classification; it is never an identity token.
+  structureKind: z.enum(['S', 'U', 'A', '?']),
   structureNumber: z.number().int().min(1).max(99),
   levels: z.array(z.union([z.enum(['B2', 'B1', 'LG', 'UG', 'G', 'ST', 'M1', 'P1', 'T', 'R', 'L?']), z.string().regex(/^F(?:0[1-9]|[1-9][0-9])$/)])).min(1).max(2),
-  spaceKind: z.enum(['R', 'C', 'P', 'X', 'U', 'V']),
+  // U means utility and V means volume/corridor, not unknown use.
+  spaceKind: z.enum(['R', 'C', 'P', 'X', 'U', 'V', '?']),
   spaceNumber: z.number().int().min(1).max(999),
 });
 export const ProjectLocationSchema = z.strictObject({

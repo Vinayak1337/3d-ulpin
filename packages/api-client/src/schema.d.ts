@@ -41694,11 +41694,11 @@ export interface components {
                 }[];
                 locator: {
                     /** @enum {string} */
-                    structureKind: "S" | "U" | "A";
+                    structureKind: "S" | "U" | "A" | "?";
                     structureNumber: number;
                     levels: (("B2" | "B1" | "LG" | "UG" | "G" | "ST" | "M1" | "P1" | "T" | "R" | "L?") | string)[];
                     /** @enum {string} */
-                    spaceKind: "R" | "C" | "P" | "X" | "U" | "V";
+                    spaceKind: "R" | "C" | "P" | "X" | "U" | "V" | "?";
                     spaceNumber: number;
                 };
             };
@@ -41740,11 +41740,11 @@ export interface components {
                     }[];
                     locator: {
                         /** @enum {string} */
-                        structureKind: "S" | "U" | "A";
+                        structureKind: "S" | "U" | "A" | "?";
                         structureNumber: number;
                         levels: (("B2" | "B1" | "LG" | "UG" | "G" | "ST" | "M1" | "P1" | "T" | "R" | "L?") | string)[];
                         /** @enum {string} */
-                        spaceKind: "R" | "C" | "P" | "X" | "U" | "V";
+                        spaceKind: "R" | "C" | "P" | "X" | "U" | "V" | "?";
                         spaceNumber: number;
                     };
                 };

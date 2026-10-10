@@ -209,7 +209,7 @@
     "packages/contracts/src/usp/point-batch.ts": "e02834e9a26a4131aa8e2f62a28efa06274b1c2364fbdd03a49905db952e704b",
     "packages/contracts/src/usp/ports.ts": "ef85e72a61782689f523a220c0284b0c0b0a879dc895a2a94e247fedcc9d49a4",
     "packages/contracts/src/usp/private-mvt.ts": "12a211e6b6dda2cc986c3523fed6bdde7a8c10b4c4c2eb9ebd05510d5d5e08bc",
-    "packages/contracts/src/usp/project-identity.ts": "4d63f10923e31ced9a4c558667983ac00eeae9060597ef096d69a189aed2d4b4",
+    "packages/contracts/src/usp/project-identity.ts": "27245eb36be1d13cf2113689d3c66486d689b5cb66168c0bfe88678bf2b64b0a",
     "packages/contracts/src/usp/projected-vector.ts": "bd1606c91b974f1092d22e59fd2f82ad17f5441b5d9221c76684434d286abcd3",
     "packages/contracts/src/usp/property-card.ts": "cbbe3bd39c609c0cee2b6db902e0fb4ae5576148ccf110a37ce6fe27950bf685",
     "packages/contracts/src/usp/raster-window.ts": "1aff1c86c299e5acec6afa98bd9a0e7fb06fb0e459b2c39a0a00b9399ad1326d",
@@ -573,7 +573,7 @@
     "packages/server/src/modules/officer/source-spaces.ts": "657dae61abc107a44ceea6a417f5aee55631e9f72d3ef2bc52926938b23d3b99",
     "packages/server/src/modules/usp/ingestion/source-building-children.ts": "d6cff09c2b00d2d8b4c0027e41d44682ecb5c9b0cee4a40cf41378811cbf903f",
     "packages/server/src/modules/registry/canonical-source-identity.ts": "a417d8d7b5cd1c970dbcffa0ce52c5feca430a83ce3034277af7b994e617c15b",
-    "packages/server/src/modules/usp/source-stated-identity.ts": "e2788d2d82289a44cb5b21f4ca66b689b857e3eb2b58c1a838c85d6ef307ca9c",
+    "packages/server/src/modules/usp/source-stated-identity.ts": "d0d59ebdb073da9bc621e3d18da1d1a1ac2bc37377f376c02079036a8f4eeb28",
     "packages/server/src/modules/usp/source-stated-snapshots.ts": "92b65c96d5ad4e0b4984819fa16901c47f26391d7e6bb927988f9123bac3aed3"
   },
   "operations": [
