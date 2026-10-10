@@ -50,7 +50,7 @@ const STOP_CODES = new Set([
   'TEACHER_RECORDING_UNAVAILABLE', 'TEACHER_REPLAY_UNAVAILABLE', 'TEACHER_DATA_DENIED',
 ]);
 
-export type BoxId = 'AG-S1' | 'AG-S2' | 'ML-D1' | 'ML-D3' | 'ML-L2' | 'AG-D1' | 'AG-E2';
+type BoxId = 'AG-S1' | 'AG-S2' | 'ML-D1' | 'ML-D3' | 'ML-L2' | 'AG-D1' | 'AG-E2';
 export const PROPOSAL_LABEL = "lead's proposal of 10 October 2026: not approved";
 /**
  * Not approved. Prices and caps are the lead's proposal to the owner; the bound, pace and labels are the
@@ -69,7 +69,7 @@ export const PROPOSED_POLICY = {
   paceMs: 1500,
 };
 
-export type Tariff = { policy: GatewayConfig; policyHash: string; label: string; fromFile: boolean };
+type Tariff = { policy: GatewayConfig; policyHash: string; label: string; fromFile: boolean };
 
 /** The tariff is a whole gateway policy, read by the gateway's own schema; the default is the proposal. */
 export function readTariff(path?: string): Tariff {
@@ -82,7 +82,7 @@ export function readTariff(path?: string): Tariff {
 type Amount = { kind: 'estimate' | 'upper_bound'; microInr: string; rupees: string; tariff: string };
 
 /** Rupees with paise, rounded up to the next paisa so that a printed figure never understates. */
-export function rupees(microInr: bigint): string {
+function rupees(microInr: bigint): string {
   const paise = (microInr + 9999n) / 10000n;
   return `₹${paise / 100n}.${(paise % 100n).toString().padStart(2, '0')}`;
 }
@@ -104,7 +104,7 @@ type CallSpec = {
   template: string; taskKind: string; scopeHash: string; replayKey: string;
   messages: Message[]; schema: Record<string, unknown>;
 };
-export type PlannedStep = {
+type PlannedStep = {
   step: number; id: string; provider: 'call' | 'none'; purpose: string; boxes: BoxId[]; input: StepInput;
   request: null | {
     template: string; consumer: 'INGEST' | 'ASSIST'; maxAttempts: 1; characters: number; bodyBytes: number;
@@ -298,7 +298,7 @@ function standingRefusals(): Refusal[] {
 type LedgerView = { calls: number; held: bigint; assistHeld: bigint };
 
 /** The ledger's own order of refusals, asked with every earlier call held at its full reservation. */
-export function capAdmission(policy: GatewayConfig, view: LedgerView, consumer: 'INGEST' | 'ASSIST') {
+function capAdmission(policy: GatewayConfig, view: LedgerView, consumer: 'INGEST' | 'ASSIST') {
   const reserve = reservation(policy);
   const cap = BigInt(policy.projectCapMicroInr);
   const assistCap = cap * BigInt(10000 - policy.ingestProtectedBps) / 10000n;
@@ -353,7 +353,7 @@ const estimateOf = (step: PlannedStep) => BigInt(step.request!.cost.estimate.mic
 const demoLast = (step: PlannedStep) => Number(step.input.split === 'demo');
 
 /** The first call serves the most boxes for the least estimated money; its replay follows at once. */
-export function orderedSteps(tariff: Tariff) {
+function orderedSteps(tariff: Tariff) {
   const refused = standingRefusals();
   const view: LedgerView = { calls: 0, held: 0n, assistHeld: 0n };
   const curve = curveSteps();
@@ -490,14 +490,14 @@ export function buildPlan(tariff: Tariff) {
 const printable = (steps: PlannedStep[]) => steps.map(({ exec, ...step }) => ({ ...step, kind: exec.kind }));
 
 type Ask = { inputHash: string; replayKey: string | null };
-export type Drivers = {
+type Drivers = {
   mode: 'dry_run' | 'live'; subject: string; outDir: string; learnerModelPath?: string;
   teacher: () => Promise<ModelGateway | undefined>; replay: () => Promise<ModelGateway | undefined>;
   asks: Ask[]; replayedKinds: Map<string, string>; recordings: TeacherRecordings | null;
 };
 
 /** A gateway whose only adapter is the replay store: it has no key, no transport and no paid ledger. */
-export function dryRunDrivers(
+function dryRunDrivers(
   tariff: Tariff, outDir: string, recordingsDir: string,
 ): Drivers & { ledger: ControlLedger } {
   const recordings = new TeacherRecordings(recordingsDir);
@@ -618,7 +618,7 @@ async function runStep(step: PlannedStep, steps: PlannedStep[], drivers: Drivers
 }
 
 /** One walk for both modes; only the drivers differ. */
-export async function runSequence(tariff: Tariff, drivers: Drivers) {
+async function runSequence(tariff: Tariff, drivers: Drivers) {
   const { steps } = orderedSteps(tariff);
   const state: RunState = { mappers: new Map(), stopped: null, storey: new Map() };
   const receipts = [];
@@ -662,7 +662,7 @@ export async function dryRun(tariff: Tariff, outDir: string, recordingsDir: stri
   };
 }
 
-export type GatewayState = {
+type GatewayState = {
   enabled: boolean; policyHash: string | null; providerKeyPresent: boolean;
   mappingTeacherAdapter: string; dailyCapPresent: boolean;
 };
