@@ -2,7 +2,14 @@ import type { GetResponse } from '@ulpin/api-client';
 import { refusalOf } from '../review/candidates/commands';
 
 type SourceCase = GetResponse<'/api/v1/cases/{caseId}'>;
-type CaseRow = Pick<GetResponse<'/api/v1/work-queue'>['items'][number], 'tableSourceIds'>;
+type QueueRow = GetResponse<'/api/v1/work-queue'>['items'][number];
+type CaseRow = Pick<QueueRow, 'tableSourceIds'>;
+
+/** A row opened from a filtered queue stays available if the unfiltered first page does not include it. */
+export function caseQueueRow(caseId: string, rows: readonly QueueRow[], opened?: QueueRow): QueueRow | undefined {
+  return rows.find((row) => row.kind === 'case' && row.id === caseId)
+    ?? (opened?.kind === 'case' && opened.id === caseId ? opened : undefined);
+}
 type CaseSource = Pick<SourceCase['sources'][number], 'id' | 'name' | 'profile' | 'createdAt'>;
 
 /** The profile the server retains a table under, and the only one its table profile read answers for. */
@@ -17,7 +24,7 @@ export interface CaseTable {
 }
 
 /**
- * The retained tables of a case as its read lists them, newest first. `Continue import` opens the table page when
+ * The retained tables in the row's stated order, or the case-source order for an older row. Opens the page when
  * there is exactly one, a list of them when there are several, and one sentence with Add files when there is none.
  */
 export function caseTables(caseId: string, sources: readonly CaseSource[], row?: CaseRow): CaseTable[] {

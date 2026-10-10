@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@ulpin/api-client';
-import { caseTables, noTableSentence, unreadCase } from './caseEntry';
+import { caseQueueRow, caseTables, noTableSentence, unreadCase } from './caseEntry';
 
 // Shape-only sources: every value below is a structural placeholder for the rule under test, not a record.
 const source = (id: string, profile: string, createdAt: string) => ({ id, name: `${id}.file`, profile, createdAt });
@@ -20,6 +20,17 @@ describe('where Continue import leads', () => {
   it('gives no table page for a case without a table source', () => {
     expect(caseTables('c1', [source('s1', 'geotiff-raster-v1', '2026-10-01T00:00:00Z')])).toEqual([]);
     expect(caseTables('c1', [])).toEqual([]);
+  });
+});
+
+describe('opening a case from a filtered queue', () => {
+  it('keeps that row when the unfiltered first page omits it, without using another case row', () => {
+    type Row = NonNullable<ReturnType<typeof caseQueueRow>>;
+    const opened = { id: 'c1', kind: 'case', tableSourceIds: ['s1'] } as Row;
+    expect(caseQueueRow('c1', [], opened)).toBe(opened);
+    expect(caseQueueRow('c2', [], opened)).toBeUndefined();
+    const fresh = { ...opened, tableSourceIds: [] };
+    expect(caseQueueRow('c1', [fresh], opened)).toBe(fresh);
   });
 });
 

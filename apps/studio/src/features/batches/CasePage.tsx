@@ -1,9 +1,9 @@
-import { Link, Navigate, useParams } from 'react-router';
+import { Link, Navigate, useLocation, useParams } from 'react-router';
 import { FilePlus, WarningCircle } from '@phosphor-icons/react';
 import { DataTable, EmptyState, Icon, Panel, Skeleton, formatDateTime } from '@ulpin/ui';
 import { useSourceCase } from '../intake/table/queries';
-import { useWorkQueue } from '../../api/queries';
-import { caseTables, noTableSentence, unreadCase, type CaseTable } from './caseEntry';
+import { useWorkQueue, type WorkItem } from '../../api/queries';
+import { caseQueueRow, caseTables, noTableSentence, unreadCase, type CaseTable } from './caseEntry';
 import styles from './BatchesPage.module.css';
 
 /**
@@ -12,6 +12,7 @@ import styles from './BatchesPage.module.css';
  */
 export function CasePage() {
   const caseId = useParams()['*']?.split('/')[0] ?? '';
+  const opened = (useLocation().state as { caseRow?: WorkItem } | null)?.caseRow;
   const sourceCase = useSourceCase(caseId);
   const queue = useWorkQueue('all', '', 1);
   if (sourceCase.isPending || queue.isPending) {
@@ -28,7 +29,7 @@ export function CasePage() {
     );
   }
   const { sources } = sourceCase.data;
-  const row = queue.data?.items.find((item) => item.kind === 'case' && item.id === caseId);
+  const row = caseQueueRow(caseId, queue.data?.items ?? [], opened);
   const tables = caseTables(caseId, sources, row);
   if (tables.length === 1) return <Navigate to={tables[0]!.href} replace />;
   return (
