@@ -64,7 +64,21 @@ export function ok(read: Read): unknown {
   return read.body;
 }
 export function refs(reads: Read[]): unknown[] {
-  return reads.map(({ body: _body, ...reference }) => reference);
+  const groups = new Map<string, Read[]>();
+  for (const read of reads) {
+    const key = JSON.stringify([read.route, read.query]);
+    groups.set(key, [...(groups.get(key) ?? []), read]);
+  }
+  return [...groups.values()].map(groupedRefs);
+}
+
+function groupedRefs(reads: Read[]): unknown {
+  const first = reads[0];
+  const shared = Object.fromEntries(Object.entries(first.params).filter(([key, value]) =>
+    reads.every(read => read.params[key] === value)));
+  return { route: first.route, params: shared, query: first.query,
+    reads: reads.map(read => ({ params: Object.fromEntries(Object.entries(read.params).filter(([key]) =>
+      !(key in shared))), status: read.status, code: read.code, bodySha256: read.bodySha256 })) };
 }
 
 export async function check(reader: Reader, id: string, title: string, promptId: string,

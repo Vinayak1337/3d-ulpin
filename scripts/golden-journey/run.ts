@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { constants, copyFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { repo } from './inputs';
 import { Reader, type Step, type State } from './read';
@@ -19,6 +19,32 @@ function table(steps: Step[]) {
   }
 }
 
+function compactEvidence(value: unknown): string {
+  const lines: string[] = [];
+  let current = '';
+  for (const line of JSON.stringify(value, null, 2).split('\n')) {
+    const token = line.trim();
+    if (current.length + token.length + 1 > 120) {
+      lines.push(current);
+      current = '';
+    }
+    current += (current ? ' ' : '') + token;
+  }
+  lines.push(current);
+  return lines.join('\n') + '\n';
+}
+
+function saveJourney(directory: string, result: unknown) {
+  mkdirSync(directory, { recursive: true });
+  const file = join(directory, 'journey.json');
+  if (existsSync(file)) {
+    let attempt = 1;
+    while (existsSync(join(directory, `attempt-${attempt}.json`))) attempt++;
+    copyFileSync(file, join(directory, `attempt-${attempt}.json`), constants.COPYFILE_EXCL);
+  }
+  writeFileSync(file, compactEvidence(result));
+}
+
 async function main() {
   options(process.argv.slice(2));
   const startedAt = new Date().toISOString();
@@ -35,8 +61,7 @@ async function main() {
     steps, summary };
   const date = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date(startedAt));
   const directory = join(repo, 'docs/evidence/gf5', date.replaceAll('-', ''));
-  mkdirSync(directory, { recursive: true });
-  writeFileSync(join(directory, 'journey.json'), JSON.stringify(result, null, 2) + '\n');
+  saveJourney(directory, result);
   table(steps);
   console.log(JSON.stringify(summary));
   process.exitCode = summary.fail ? 1 : 0;

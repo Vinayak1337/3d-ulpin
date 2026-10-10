@@ -1,0 +1,28 @@
+FAIL Document runtimes
+PASS Demo external configuration
+PASS Local document OCR paths available; eng+hin assets (runner uses eng).
+PASS Model gateway state
+PASS Docker local Linux engine and context/socket
+PASS Docker inventory readable
+PASS Existing ulpin-demo volume ownership and attachments
+PASS postgres container healthy
+PASS postgres restart policy
+PASS minio container healthy
+PASS minio restart policy
+PASS redis container healthy
+PASS redis restart policy
+PASS geo container healthy
+PASS geo restart policy
+PASS worker container healthy
+PASS worker restart policy
+PASS DB reachable / PostGIS
+PASS Object store reachable (read-only)
+PASS Redis reachable
+PASS Processor /health
+PASS Celery worker heartbeat
+PASS API native process ownership
+PASS Dispatcher process ownership (liveness only)
+PASS API /api/v1/health
+PASS DB migrations applied (API structural admission)
+PASS API bound to the inspected ulpin-demo database
+Doctor: 1 failure(s); runtime NOT qualified.

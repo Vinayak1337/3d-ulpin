@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
 import { ChunkMappingStatusSchema,
   ChunkMappingChunkResponseSchema } from '../../packages/contracts/src/usp/chunk-mapping';
 import { TabularSourceProfileSchema } from '../../packages/contracts/src/usp/ingestion';
@@ -49,8 +50,7 @@ function citedRegister(body: unknown, ledger: boolean): number {
     assert(records.every(record => list(record.evidence).length > 0), 'Recorded space lacks evidence');
     return records.length;
   }
-  const register = object(data.register);
-  const records = list(register.records).map(object);
+  const records = list(data.register).map(object);
   assert(records.length > 0 && records.every(record => list(record.evidence).length > 0),
     'Register facts lack citations');
   return records.length;
@@ -61,6 +61,7 @@ export async function register(context: Context): Promise<Step> {
     '200 with cited facts, or the exact known K6 source refusal', async () => {
       const observations = [];
       let blocked = false;
+      let failed = false;
       for (const buildingId of buildings) {
         for (const kind of ['register', 'ledger']) {
           const read = await context.reader.get(`/api/v1/buildings/{buildingId}/${kind}`, { buildingId },
@@ -69,11 +70,18 @@ export async function register(context: Context): Promise<Step> {
             blocked = true;
             observations.push({ buildingId, kind, status: read.status, code: read.code, fixTask: 'K6' });
           } else {
-            observations.push({ buildingId, kind, status: read.status, citedRecords: citedRegister(ok(read),
-              kind === 'ledger') });
+            try {
+              observations.push({ buildingId, kind, status: read.status,
+                citedRecords: citedRegister(ok(read), kind === 'ledger') });
+            } catch (error) {
+              failed = true;
+              observations.push({ buildingId, kind, status: read.status, code: read.code,
+                reason: error instanceof Error ? error.message : 'Register check could not decide' });
+            }
           }
         }
       }
+      if (failed) return { state: 'fail', observed: observations };
       return { state: blocked ? 'blocked' : 'pass', observed: observations };
     });
 }
@@ -142,18 +150,23 @@ export async function exchange(context: Context): Promise<Step> {
 }
 
 export async function card(context: Context): Promise<Step> {
-  return check(context.reader, 'card', 'Discover recorded unit card', 'K5/card-listing',
-    'Unit-scoped card discovery is missing; verification route availability is not card verification', async () => {
-      const route = committed<{ route: string }>('docs/evidence/gf4/k5/result.json').route;
-      // Use the real R2 SPACE uuid as an explicitly non-card routing token, never as a discovered card id.
-      const read = await context.reader.get(route, { cardId: r2.step2.record.spaceId, revision: 1 });
-      assert.equal(read.status, 404, 'Non-card route probe unexpectedly found a resource; cannot decide target');
-      const error = object(read.body);
-      const message = error.message ?? object(error.error).message;
-      return { state: 'skipped', observed: { missing: 'No published unit-scoped card listing; no actual cardId known',
+  return check(context.reader, 'card', 'Discover recorded unit card', 'K8',
+    'Skipped until snapshot listing unblocks K7; unknown-card GET probes routing only', async () => {
+      const route = committed<{ route: string }>('docs/evidence/gf4/k5/result.json').route.replace(/^GET /, '');
+      // Technical unknown UUID for the requested route probe; never a fabricated property/card record.
+      const read = await context.reader.get(route, { cardId: randomUUID(), revision: 1 });
+      const envelope = object(read.body);
+      const error = envelope.error;
+      const details = error && typeof error === 'object' ? object(error) : envelope;
+      const message = typeof details.message === 'string' ? details.message : '';
+      let routeAvailability = 'undecidable';
+      if (read.status === 404 && message.includes('Cannot GET')) routeAvailability = 'framework_404_route_absent';
+      else if (read.status === 404 && read.code === 'NOT_FOUND') routeAvailability = 'route_own_404_unknown_card';
+      return { state: 'skipped', observed: { missing: 'K8 readable snapshot scopes; K7 card listing is POST-only',
+        unblocks: 'K7 POST /api/v1/usp/property-cards/list (not sent in check mode)',
         verificationGetPublished: Boolean(contract.paths[route]?.get), routeProbeStatus: read.status,
-        routeProbeCode: read.code, tokenKind: 'existing registry_record UUID, not a card',
-        verificationRouteAbsent: text(message).includes('Cannot GET'), cardVerified: false } };
+        routeProbeCode: read.code, tokenKind: 'technical unknown card UUID',
+        routeAvailability, cardDiscovered: false, cardVerified: false } };
     });
 }
 
