@@ -1,0 +1,34 @@
+{
+  "task": "IN2", "gate": "GF1", "status": "stopped_after_step0", "base": "2940b55c",
+  "evidence": "docs/evidence/gf1/in2/step0.json",
+  "stop": {
+    "reason": "First ledger creation locks existing referenced sources, cases and jobs tables for foreign keys.",
+    "sql": "database/sql/95-ingestion/intake-ledger.sql:4-5,52",
+    "lock": "SHARE ROW EXCLUSIVE; conflicts with writers; held until USP transaction ends.",
+    "repeatable": true, "repeatabilityRuntimeVerified": false, "existingRowsRewritten": false,
+    "populationAndDurationMeasured": false
+  },
+  "findings": {
+    "verifierTaskToAdmit": "IN1 (the manifest source.task), not IN2 alone",
+    "extraVerifierInputs": "No separate table inventory, expected-objects file or runtime receipt is consumed.",
+    "studioUnknownKind": "Valid intake.item would advance cursor without drawing or closing the stream.",
+    "httpProvenance": "Three fields undeclared, rejected by allowed set and omitted from service forwarding."
+  },
+  "changes": "Evidence only; parts 1-4 not started under the explicit stop rule.",
+  "runtime": {
+    "dockerAvailable": true, "dockerServerVersion": "29.8.0", "createdContainers": [],
+    "createdVolumes": [], "createdNetworks": [], "databaseConnections": 0, "migrationRuns": 0,
+    "realInputsUsed": [], "containerRunSkippedBecause": "Step 0 stop rule, not Docker unavailability."
+  },
+  "checks": [
+    {"command": "python -B scripts/db/verify_extraction.py", "exit": 1,
+     "result": "Existing refusal: Authored SQL provenance is invalid: ingestion.intake.schema"},
+    {"command": "python -B docs/evidence/gf1/in1/verify-static.py", "exit": 0,
+     "result": "4 tables, 9 statement hashes, 5 mirrored enums; new source lines <=120"},
+    {"command": "docker version --format '{{.Server.Version}}'", "exit": 0},
+    {"command": "python JSON validation of step0.json and result.json", "exit": 0},
+    {"command": "git diff --check", "exit": 0}
+  ],
+  "notRun": "Typechecks, event/route/migration tests, contract generation and real-file runtime journey.",
+  "next": "Lead must clear referenced-table locking explicitly or assign SQL redesign; then resume parts 1-4."
+}

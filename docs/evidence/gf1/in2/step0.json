@@ -99,7 +99,7 @@
     },
     "append": {
       "at": "packages/server/src/modules/usp/ingestion/events.ts:57-65",
-      "answer": "Reads case revision, validates strict outbox body, appends with caller's transaction and access binding."
+      "answer": "Reads case revision, validates outbox body, appends in caller's transaction with access binding."
     },
     "route": {
       "at": "apps/api/src/modules/ingestion/events.controller.ts:33-40,81-85",
