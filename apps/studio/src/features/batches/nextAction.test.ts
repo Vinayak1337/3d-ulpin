@@ -20,6 +20,9 @@ describe('nextAction', () => {
     expect(nextAction(row({ kind: 'import', state: 'NEEDS_INPUT' })).label).toBe('Answer questions');
     expect(nextAction(row({ kind: 'import', state: 'COMMITTED', areaId: 'a' })).href).toBe('/studio/areas/a');
   });
+  it('sends Continue import to the case page, which reads the case and opens its table', () => {
+    expect(nextAction(row({ id: 'c1' }))).toMatchObject({ label: 'Continue import', href: '/studio/cases/c1' });
+  });
   it('opens the register only for a currently recorded building', () => {
     expect(nextAction(row({ buildingId: 'b', currentRecorded: true })).href).toBe('/studio/properties/b/register');
     expect(nextAction(row({ buildingId: 'b', recordedHistory: true })).label).toBe('Review changes');
