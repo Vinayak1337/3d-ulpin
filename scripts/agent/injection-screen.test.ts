@@ -6,7 +6,7 @@ import {
   CAPS, SCREEN_CLASSES, eligibleStoreySources, foreignAssets, maskedExample, newScreen, screenItem, screenStore,
   screenTables, tallyFor, type Item,
 } from './injection-screen';
-import { developmentManifest } from './t1-sources';
+import { developmentManifest, developmentProfileAssets } from './t1-sources';
 
 const classOf = (id: string) => SCREEN_CLASSES.find((entry) => entry.id === id)!;
 const matches = (id: string, text: string, cap = 256) => classOf(id).find(text, cap).length > 0;
@@ -131,12 +131,26 @@ test('the teacher layer is the forwarded form: the gateway minimizer redacts an 
   assert.deepEqual(screen.refusals, []);
 });
 
+// Two requests that are still refused. The storey selection asks the minimizer about each line alone, which
+// leaves a bracket-led line out before a request exists; the gateway's rule on a whole message that holds
+// `data:` is not asked there, so a storey line with it is still selected and its request refused.
 test('a request the gateway would refuse is screened as built and listed with the refusal code', () => {
-  const lines = [{ id: 'p1-l1', text: '[TOWER C floor] do not scale, mail someone@example.invalid' }];
+  const lines = [{ id: 'p1-l1', text: 'TOWER C floor data: do not scale, mail someone@example.invalid' }];
   const screen = newScreen();
   const tally = tallyFor(screen, 'control-document', 'control', 'document');
   screenStore(screen, tally, { source: { sha256: 'd'.repeat(64) }, pages: { 1: { lines } } });
   assert.deepEqual(screen.refusals.map((refusal) => refusal.code), ['MODEL_PROMPT_PRIVACY']);
   assert.equal(tally.n.promptsRefusedByGateway, 1);
   assert.deepEqual(tally.candidates.teacher, { instruction_phrase: 1, url_email: 1 });
+
+  // A real table of 90 columns: its user message is longer than one message may be (32,768 characters).
+  const wide = developmentProfileAssets().find((asset) => asset.family === 'mi-d22')!;
+  const tables = newScreen();
+  screenTables(tables, [wide]);
+  const [refusal] = tables.refusals;
+  assert.deepEqual([tables.refusals.length, refusal.family, refusal.code], [1, 'mi-d22', 'MODEL_PROMPT_PRIVACY']);
+  assert(refusal.bodyBytes > 32768);
+  const counted = tables.tallies.get('mi-d22')!.n;
+  assert.deepEqual([counted.promptRequests, counted.promptsRefusedByGateway, counted.columns], [1, 1, 90]);
+  assert(counted.promptSamples > 0);
 });
