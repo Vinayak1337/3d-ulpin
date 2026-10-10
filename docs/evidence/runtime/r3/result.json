@@ -1,98 +1,226 @@
 {
-  "task": "R3",
-  "gates": [
-    "GF1",
-    "GF4"
-  ],
-  "artifactsRoot": "E:/BhuAayam-data/task-data/r3",
-  "api": "http://127.0.0.1:3194/api/v1",
-  "step0": {
-    "result": "done: cause located; nothing rebuilt, restarted or repaired in this step",
-    "doctorBefore": {
-      "at": "2026-10-10T13:34:05Z",
-      "exit": 1,
-      "failed": [
-        "Document runtimes"
-      ],
-      "servedCommit": "9aad8da2e51e43dee279539a24efb0d0db645b45",
-      "servedCheckoutClean": true
+ "task": "R3",
+ "gates": [
+  "GF1",
+  "GF4"
+ ],
+ "artifactsRoot": "E:/BhuAayam-data/task-data/r3",
+ "api": "http://127.0.0.1:3194/api/v1",
+ "step0": {
+  "result": "done: cause located; nothing rebuilt, restarted or repaired in this step",
+  "doctorBefore": {
+   "at": "2026-10-10T13:34:05Z",
+   "exit": 1,
+   "failed": [
+    "Document runtimes"
+   ],
+   "servedCommit": "9aad8da2e51e43dee279539a24efb0d0db645b45",
+   "servedCheckoutClean": true
+  },
+  "diagnostic": {
+   "script": "E:/BhuAayam-data/task-data/r3/step0/diagnose-document-runtime.mjs",
+   "output": "E:/BhuAayam-data/task-data/r3/step0/diagnostic-output-4.txt",
+   "how": "paths through the demo checkout's readDemoDocumentRuntime(); verifiedProfile's comparisons one by one; read-only",
+   "firstRunNote": "diagnostic-output.txt shows FAIL 3 (profile shape): the diagnostic's own key-order mistake, corrected"
+  },
+  "helperChild": {
+   "code": "PACKET_REGION_EXECUTABLE_DRIFT",
+   "ms": 853
+  },
+  "comparisons": {
+   "profileFileWithinLimit": "pass",
+   "profileBytesEqualConfiguredHash": "pass",
+   "profileBuiltAt": "2026-10-10T12:25:56Z",
+   "profileShape": "pass",
+   "repoEqualsServingCheckout": "pass",
+   "repoFilesEqualServedList": "pass",
+   "boundsAndClosure": "pass",
+   "pinnedFileBytes": "FAIL: 111 of 1361 pinned files drifted",
+   "repoAndInterpreterBinding": "pass"
+  },
+  "cause": {
+   "where": "verifiedRegionHash -> verifiedProfile, the per-file comparison (resolved path, length, bytes)",
+   "what": [
+    "The frozen profile's base interpreter is not a uv base Python. It is the Codex desktop application's",
+    "bundled runtime: C:/Users/kvina/.cache/codex-runtimes/codex-primary-runtime/dependencies/python (3.12.14).",
+    "That whole directory was re-created at 2026-10-10T13:14:56Z (18:44:56 IST), between R2's PASS (17:56 IST)",
+    "and the first FAIL (18:47 IST)."
+   ],
+   "drifted": {
+    "replacedBinaries": {
+     "count": 41,
+     "kinds": "python.exe, pythonw.exe, python3.dll, python312.dll, DLLs/*.pyd, DLLs/*.dll, Lib/venv/scripts/nt/*.exe",
+     "comparison": "length differs: each is exactly 864 bytes shorter than its pinned size",
+     "modified": "2026-10-07T19:25Z to 19:32Z (kept from the package)",
+     "created": "2026-10-10T13:14:56Z",
+     "signature": "all 41 Authenticode Valid, signer OpenAI OpCo, LLC, timestamped; file version 3.12.14"
     },
-    "diagnostic": {
-      "script": "E:/BhuAayam-data/task-data/r3/step0/diagnose-document-runtime.mjs",
-      "output": "E:/BhuAayam-data/task-data/r3/step0/diagnostic-output-4.txt",
-      "how": "paths through the demo checkout's readDemoDocumentRuntime(); verifiedProfile's comparisons one by one; read-only",
-      "firstRunNote": "diagnostic-output.txt shows FAIL 3 (profile shape): the diagnostic's own key-order mistake, corrected"
+    "missingBytecodeCaches": {
+     "count": 70,
+     "kinds": "Lib/**/__pycache__/*.cpython-312.pyc (argparse, asyncio, multiprocessing, unittest, sqlite3 and others)",
+     "comparison": "unreadable, ENOENT: the re-created runtime has no such cache file"
     },
-    "helperChild": {
-      "code": "PACKET_REGION_EXECUTABLE_DRIFT",
-      "ms": 853
-    },
-    "comparisons": {
-      "profileFileWithinLimit": "pass",
-      "profileBytesEqualConfiguredHash": "pass",
-      "profileBuiltAt": "2026-10-10T12:25:56Z",
-      "profileShape": "pass",
-      "repoEqualsServingCheckout": "pass",
-      "repoFilesEqualServedList": "pass",
-      "boundsAndClosure": "pass",
-      "pinnedFileBytes": "FAIL: 111 of 1361 pinned files drifted",
-      "repoAndInterpreterBinding": "pass"
-    },
-    "cause": {
-      "where": "verifiedRegionHash -> verifiedProfile, the per-file comparison (resolved path, length, bytes)",
-      "what": [
-        "The frozen profile's base interpreter is not a uv base Python. It is the Codex desktop application's",
-        "bundled runtime: C:/Users/kvina/.cache/codex-runtimes/codex-primary-runtime/dependencies/python (3.12.14).",
-        "That whole directory was re-created at 2026-10-10T13:14:56Z (18:44:56 IST), between R2's PASS (17:56 IST)",
-        "and the first FAIL (18:47 IST)."
-      ],
-      "drifted": {
-        "replacedBinaries": {
-          "count": 41,
-          "kinds": "python.exe, pythonw.exe, python3.dll, python312.dll, DLLs/*.pyd, DLLs/*.dll, Lib/venv/scripts/nt/*.exe",
-          "comparison": "length differs: each is exactly 864 bytes shorter than its pinned size",
-          "modified": "2026-10-07T19:25Z to 19:32Z (kept from the package)",
-          "created": "2026-10-10T13:14:56Z",
-          "signature": "all 41 Authenticode Valid, signer OpenAI OpCo, LLC, timestamped; file version 3.12.14"
-        },
-        "missingBytecodeCaches": {
-          "count": 70,
-          "kinds": "Lib/**/__pycache__/*.cpython-312.pyc (argparse, asyncio, multiprocessing, unittest, sqlite3 and others)",
-          "comparison": "unreadable, ENOENT: the re-created runtime has no such cache file"
-        },
-        "unchangedButRecreated": "791 other pinned files under the same base still match and were also created after the profile",
-        "repoFiles": 0,
-        "configuredInterpreter": 0,
-        "packages": 0
-      },
-      "who": [
-        "No project worker edited a pinned file. The Codex application replaced its own managed runtime (the same",
-        "Python version, re-signed binaries) while the demo was serving."
-      ],
-      "accountedFor": true,
-      "consequence": [
-        "The rebuild in Step 1 pins the replaced bytes. The check will fail again whenever the Codex application",
-        "next refreshes that runtime, because the demo's frozen interpreter base is owned by another program."
-      ],
-      "notTheCause": [
-        "the check itself",
-        "the 60-second helper timeout",
-        "the demo checkout",
-        "the profile file or its hash"
-      ],
-      "interpreterEnvironment": {
-        "name": "desktop-ai04f-docling-tesseract/venv",
-        "underDataMl": false,
-        "note": "the configured OCR interpreter (Python 3.12); its base installation is the Codex runtime named above"
-      }
-    },
-    "leadCandidate": {
-      "file": "venv-vision/Lib/site-packages/__pycache__/_virtualenv.cpython-311.pyc",
-      "isPinnedEntry": false,
-      "pinnedEntriesInsideVenvVision": 0,
-      "pinnedEntriesNamedVirtualenv": 0,
-      "verdict": "not the cause of FAIL Document runtimes: another set of files, in another interpreter (3.12, not 3.11)",
-      "action": "file left alone: not moved, not read, not hashed by this task"
-    }
+    "unchangedButRecreated": "791 other pinned files under the same base still match and were also created after the profile",
+    "repoFiles": 0,
+    "configuredInterpreter": 0,
+    "packages": 0
+   },
+   "who": [
+    "No project worker edited a pinned file. The Codex application replaced its own managed runtime (the same",
+    "Python version, re-signed binaries) while the demo was serving."
+   ],
+   "accountedFor": true,
+   "consequence": [
+    "The rebuild in Step 1 pins the replaced bytes. The check will fail again whenever the Codex application",
+    "next refreshes that runtime, because the demo's frozen interpreter base is owned by another program."
+   ],
+   "notTheCause": [
+    "the check itself",
+    "the 60-second helper timeout",
+    "the demo checkout",
+    "the profile file or its hash"
+   ],
+   "interpreterEnvironment": {
+    "name": "desktop-ai04f-docling-tesseract/venv",
+    "underDataMl": false,
+    "note": "the configured OCR interpreter (Python 3.12); its base installation is the Codex runtime named above"
+   }
+  },
+  "leadCandidate": {
+   "file": "venv-vision/Lib/site-packages/__pycache__/_virtualenv.cpython-311.pyc",
+   "isPinnedEntry": false,
+   "pinnedEntriesInsideVenvVision": 0,
+   "pinnedEntriesNamedVirtualenv": 0,
+   "verdict": "not the cause of FAIL Document runtimes: another set of files, in another interpreter (3.12, not 3.11)",
+   "action": "file left alone: not moved, not read, not hashed by this task"
   }
+ },
+ "invariants": {
+  "before": {
+   "registry": 4,
+   "areas": 4,
+   "sites": 4,
+   "importPackages": 7,
+   "cases": 11,
+   "sources": 38,
+   "physicalFeatures": 67,
+   "learnerVersion": "v44"
+  },
+  "learnerVersionSource": "R1 last-job retained chunk metrics, the same read R1 and R2 used; no learning operation"
+ },
+ "step1": {
+  "result": "done",
+  "before": {
+   "commit": "9aad8da2e51e43dee279539a24efb0d0db645b45",
+   "doctorExit": 1,
+   "doctorFailed": [
+    "Document runtimes"
+   ],
+   "api": {
+    "pid": 25080,
+    "entry": "E:/Projects/ulpin-wt/demo/apps/api/src/main.ts",
+    "started": "2026-10-10T12:26:03.836Z"
+   },
+   "dispatcher": {
+    "pid": 14424,
+    "entry": "E:/Projects/ulpin-wt/demo/scripts/dispatcher.ts",
+    "started": "2026-10-10T12:26:04.558Z"
+   },
+   "health": {
+    "http": 200,
+    "databaseReadiness": "structurally_ready",
+    "missingRelations": [],
+    "missingMigrations": []
+   }
+  },
+  "schemaStep": {
+   "filesReadFirst": [
+    "docs/evidence/gf4/k5/run-migration.mjs",
+    "docs/evidence/gf4/k5/apply-migration.ts",
+    "database/sql/60-usp/23-property-card-revocations-check.sql",
+    "database/sql/60-usp/24-property-card-revocations-schema.sql",
+    "database/sql/60-usp/25-property-card-revocations-mark.sql"
+   ],
+   "readFinding": "additive only: one table with a foreign key to usp_property_cards(id, revision), one function, one trigger on the new table, one ledger row; 5 s statement and 2 s lock timeouts; nothing beyond the roll-out document",
+   "offlinePrecheck": "the four manifest hashes (usp.lock and the three steps) match the files in a2; card table has the referenced primary key and the compared columns",
+   "ranFrom": "E:/Projects/ulpin-wt/a2",
+   "worktreeCommit": {
+    "head": "b90176e5",
+    "is": "staging e387b37d plus two R3 evidence commits",
+    "stagingAtRun": "fbe525f7e63d9a8fae801da5a061d7be1f7bfecb",
+    "stagingMovedBy": [
+     "9b2a37c9 docs(status)",
+     "fbe525f7 docs(learner)"
+    ],
+    "nonDocPathsDifferingFromStaging": 0,
+    "note": "merge --ff-only was not possible: the Step 0 evidence commits were already on the branch. No merge or rebase was made. Both new staging commits change documentation only, so every file the runner loads is the staging file."
+   },
+   "command": "node docs/evidence/gf4/k5/run-migration.mjs",
+   "runs": 1,
+   "exit": 0,
+   "at": "2026-10-10T13:40:53.964Z",
+   "output": "usp_property_card_revocations_001: applied; card rows unchanged.",
+   "receipt": {
+    "file": "docs/evidence/gf4/k5/migration-receipt.json",
+    "applied": true,
+    "cardRowsBefore": 0,
+    "cardRowsAfter": 0,
+    "tableBefore": false,
+    "tableAfter": true,
+    "markedBefore": false,
+    "markedAfter": true
+   },
+   "oldApiAfter": {
+    "commit": "9aad8da2",
+    "healthHttp": 200,
+    "databaseReadiness": "structurally_ready"
+   }
+  },
+  "target": {
+   "commit": "fbe525f7e63d9a8fae801da5a061d7be1f7bfecb",
+   "selection": "lead checkout staging at roll-out time; contains e387b37d",
+   "lockfileChangedSince9aad8da2": false,
+   "install": "not needed"
+  },
+  "procedure": {
+   "stopExit": 0,
+   "checkoutExit": 0,
+   "documentBuildExit": 0,
+   "startExit": 0,
+   "doctorExit": 0,
+   "stoppedAt": "2026-10-10T13:41:26Z",
+   "answeringAgainBy": "2026-10-10T13:42:06Z",
+   "containersStoppedOrReplaced": false,
+   "create": false,
+   "step8AutomaticDispatch": "not in this task (steps 2 to 7 only)"
+  },
+  "after": {
+   "commit": "fbe525f7e63d9a8fae801da5a061d7be1f7bfecb",
+   "checkoutClean": true,
+   "api": {
+    "pid": 6308,
+    "entry": "E:/Projects/ulpin-wt/demo/apps/api/src/main.ts",
+    "started": "2026-10-10T13:41:45.071Z"
+   },
+   "dispatcher": {
+    "pid": 32148,
+    "entry": "E:/Projects/ulpin-wt/demo/scripts/dispatcher.ts",
+    "started": "2026-10-10T13:41:45.748Z"
+   },
+   "documentRuntimes": "PASS",
+   "regionProfileSha256": "b759a5ab6a85b73a1a901e53093afd50a2b634589a102372a35f7dc4da93723b",
+   "regionProfileNote": "pins the replaced Codex-runtime bytes found in Step 0",
+   "health": {
+    "http": 200,
+    "databaseReadiness": "structurally_ready",
+    "missingRelations": [],
+    "missingMigrations": []
+   },
+   "gatewayEnabled": false
+  },
+  "documentation": [
+   "DEMO-RUNTIME.md commit line -> fbe525f7",
+   "DEMO-RUNTIME.md K5 row -> applied 10 October 2026, applied: true"
+  ]
+ }
 }
