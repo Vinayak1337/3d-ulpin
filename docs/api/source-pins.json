@@ -356,7 +356,7 @@
     "packages/server/src/modules/spatial/spatial-dataset-http.ts": "aa5eaefc7efbe8b507145a0f8b8aad5599b55f7a524afdfc85ccf57e90f4197b",
     "packages/server/src/modules/spatial/spatial-datasets.ts": "db79ed998e82359a4fe2abf2f9ac28e2616900e5502640c8085dff1f4e5eed54",
     "packages/server/src/modules/spatial/spatial-identifiers.ts": "4a823a8dc4c4089c25704a3c20b432bb6257b359209375734e529cf8cf9c6a86",
-    "packages/server/src/modules/spatial/spatial-ml-db.ts": "32201c27967b885a017eafc796dee5c0b81664838a4fbae78f9d3d8cd4c45a13",
+    "packages/server/src/modules/spatial/spatial-ml-db.ts": "60d9b611e744c10c1ba73ba3c72e1c0c9465e98ae51c78e37e72671c0c3da055",
     "packages/server/src/modules/spatial/spatial-ml-footprints.ts": "87839e145f4c2c25779cc5744a0b5d1d654fab4cb6ed91ae7e5673df16646be4",
     "packages/server/src/modules/spatial/spatial-ml-retained-calibration.ts": "2d525149bc9bac2e0ea8e217d715e386787722e18e8c7b8f97a621775153a7ba",
     "packages/server/src/modules/spatial/spatial-ml-source-review.ts": "b6a0228f8cb8c40a1f126f68cf049aa34b738b63c890336a60eab8544944c8eb",
