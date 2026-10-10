@@ -1,0 +1,87 @@
+{
+  "task": "EV2",
+  "gates": ["GF5/B2", "GF5/C11", "M2"],
+  "branch": "task/ev2-reduced-sheet-and-candidate-citations",
+  "base": "e087fe2c",
+  "parts": {"reducedSheet": "complete, mocked", "candidatePage": "complete, live", "sharedChip": "complete"},
+  "step0": "step0.json; committed before Part 2 code as 0013962c",
+  "pinAgreement": {"candidateCitations": 18, "allBuildingCitations": 61, "citedSources": 1, "agreeingSources": 1},
+  "reducedSheet": {
+    "source": "5293cd72-2377-4deb-a51c-c76d11ccb429",
+    "page": 1,
+    "framePt": [2586, 1695],
+    "pixels": [1400, 918],
+    "listedScalePxPerPt": 0.5413766434648105,
+    "displayedScale": "0.54 px per pt",
+    "mock": "K9e's actual listing page and PNG, over the demo's unchanged source identity and hash",
+    "placement": "SVG viewBox and image width/height use page points; whole image and citation outline verified",
+    "region": "Only on pressing Show the cited region; live answer below whole sheet, with EV1 provenance",
+    "contractBreak": "Missing reduced scale or scale on a non-reduced page: listing refused before page returned",
+    "pageOnly": "Pure state and rendered-view tests: whole sheet and statement, no region action"
+  },
+  "candidatePage": {
+    "source": "10946c4c-0cae-41f7-8303-41f2512e630d",
+    "page": 2,
+    "pinRead": "Existing standard building register GET, now also loaded by the candidates page",
+    "pin": "The read's revision and hash, constrained by the candidate's own hash; never a calculated revision",
+    "live": "Actual candidate citation opened by Tab/Enter; page query pin and offset verified against reads",
+    "region": "Demo still lists unsupported; acknowledged live region read draws the candidate's cited outline",
+    "unpinned": "Mocked missing source pin: file view explains missing agreeing revision; no page or region read",
+    "disagreement": "Pure and rendered-view tests refuse conflicting loaded revisions or hashes"
+  },
+  "captures": {
+    "sheetDirectory": "E:/BhuAayam-data/task-data/ev2/capture-1791665857825",
+    "candidateDirectory": "E:/BhuAayam-data/task-data/ev2/candidates-1791665902879",
+    "sheetScreenshots": 12,
+    "candidateScreenshots": 8,
+    "views": "1440x1000 CSS px; 720x500 CSS px at DPR 2 emulates 200% on the same physical display",
+    "mockNames": "mocked-reduced-* and mocked-candidate-unpinned-*; no sheet picture or text committed",
+    "layout": {"dialogsWithinHorizontalViewport": 20, "dialogsScrollingSideways": 0},
+    "keyboard": "Tab/Enter opens candidate citations and requests Tower 3's region; Escape closes",
+    "regionPosts": 6,
+    "storingRequestsSent": 0,
+    "pageErrors": 0,
+    "otherPosts": "24 property-card list attempts blocked before dispatch during Tower 3 captures",
+    "answers": "Raw provenance, requests and screen text in capture.json/candidates.json outside Git"
+  },
+  "checks": {
+    "pnpm studio:typecheck": {"exit": 0},
+    "pnpm studio:test": {
+      "exit": 0, "studioBefore": 307, "studioAfter": 321, "studioFiles": 48,
+      "uiBefore": 4, "uiAfter": 7, "apiClient": 2, "scene": 12
+    },
+    "node docs/evidence/gf5/ev2/step0.mjs": {"exit": 0, "session": "before Part 2 code"},
+    "node docs/evidence/gf5/ev2/capture.mjs": {"exit": 0},
+    "node docs/evidence/gf5/ev2/candidates.mjs": {"exit": 0},
+    "node --check capture.mjs and candidates.mjs": {"exit": 0},
+    "ui-design-check": {"exit": 0, "report": "ui-design-check.md", "mechanicalScope": "apps/web only"},
+    "git diff --check": {"exit": 0},
+    "added-line and new-file length/UTF-8 check": {"exit": 0, "newLinesOver120": 0},
+    "Studio": {"port": 5223, "stoppedPid": 6172, "portFreeCheckExit": 0}
+  },
+  "recovered": [
+    "Initial step0 script treated fetch response.status as a function; corrected before its successful GET receipt.",
+    "Candidate URL initially left a fragment marker unescaped; encoded the real candidate id.",
+    "Unpinned screenshot initially counted a link icon as a page SVG; check now targets svg image.",
+    "One remaining test import was renamed with its call sites; final typecheck and tests pass.",
+    "Final captures disable animations to avoid capturing the dialog's opening fade."
+  ],
+  "report": [
+    "TASK   EV2 — Reduced whole sheets and pinned candidate citations            GATE GF5/B2, C11; M2",
+    "WORKS  See a reduced whole sheet's stated scale and cited region; open a candidate at its cited page.",
+    "SEE IT node docs/evidence/gf5/ev2/capture.mjs (own Studio on 5223, proxy to demo 3194)",
+    "INPUTS Magnolia's page-2 room citation; difficult: Tower 3's oversized sheet and missing candidate pins.",
+    "GAPS   Reduced whole-sheet path mocked until demo rollout; no screen-reader or contrast-tool measurement.",
+    "DESIGN citedPage.pageViewState reads listing support and scale; CitedPageViewer puts the region below the sheet.",
+    "       Candidates reuse the register pin read; candidateEvidenceRef preserves the hash for agreement checks.",
+    "       EvidenceViewer explains unpinned file views; EvidenceChip accepts an optional accessibleName.",
+    "COMMITS b7466f2d feat(studio): a sheet drawn whole at a reduced scale says so and still offers its cited region",
+    "        0013962c docs(studio): EV2 where a candidate citation's source revision can be read",
+    "        c1916c97 fix(studio): a candidate's citation opens at its page with the pin its read states",
+    "        7c73c7ca refactor(ui): the evidence chip takes a name for what it opens",
+    "        docs(studio): EV2 evidence (this commit)",
+    "CHECKS studio:typecheck 0; studio:test 0 (307→321 Studio, 4→7 UI); step0/capture/candidates scripts 0.",
+    "       Script syntax 0; ui-design-check 0; git diff --check 0; line/UTF-8 check 0; port 5223 free check 0.",
+    "NEXT   Lead: integrate without rebasing this branch; qualify reduced sheets live after the runtime rollout."
+  ]
+}
