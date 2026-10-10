@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import storey_quote_verifier as verifier
+import storey_quote_verifier as verifier  # noqa: E402
 
 SHA = "a" * 64
 
