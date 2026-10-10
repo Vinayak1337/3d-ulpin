@@ -5,7 +5,13 @@ import { createRequire } from 'node:module';
 import type { Pool } from 'pg';
 import { DocumentIngestionService } from '../packages/server/src/modules/usp/ingestion/documents';
 import { runDocumentJob } from '../packages/server/src/modules/usp/ingestion/document-worker';
-import { documentInput, documentSourceTx } from '../packages/server/src/modules/usp/ingestion/document-context';
+import {
+  assertDocumentInputTx, documentInput, documentInputFreshness, documentSourceTx, locateDocumentInputTx,
+} from '../packages/server/src/modules/usp/ingestion/document-context';
+import { extractSourceDocument } from '../packages/server/src/modules/usp/ingestion/document-native';
+import { documentOcrConfigSha } from '../packages/server/src/modules/usp/ingestion/document-ocr';
+import { AppError } from '../packages/server/src/infrastructure/errors';
+import type { DocumentInput } from '@ulpin/contracts/usp';
 import { fingerprint } from '../packages/server/src/modules/cases/domain';
 import { closeStorageClient } from '../packages/server/src/infrastructure/storage';
 import { settings } from '../packages/server/src/infrastructure/config';
@@ -149,6 +155,7 @@ class DocumentControl {
 async function isolated(work: (control: DocumentControl) => Promise<void>) {
   const priorPool = globals.ulpinPool;
   const priorSubject = process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+  const priorGatewayEnabled = process.env.ULPIN_MODEL_GATEWAY_ENABLED;
   const priorSend = S3Client.prototype.send;
   const control = new DocumentControl();
   const storageSettings = ['s3Endpoint', 's3AccessKey', 's3SecretKey'] as const;
@@ -157,6 +164,7 @@ async function isolated(work: (control: DocumentControl) => Promise<void>) {
     configurable: true, get: () => name === 's3Endpoint' ? 'http://127.0.0.1:1' : 'memory-only-control',
   }));
   process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'document-later-receipt-control';
+  process.env.ULPIN_MODEL_GATEWAY_ENABLED = '0';
   const pool = { query: control.query, connect: async () => ({ query: control.query, release() {} }) };
   globals.ulpinPool = pool as unknown as Pool;
   S3Client.prototype.send = control.send;
@@ -168,17 +176,20 @@ async function isolated(work: (control: DocumentControl) => Promise<void>) {
     storageSettings.forEach((name, index) => Object.defineProperty(settings, name, descriptors[index]));
     if (priorSubject === undefined) delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
     else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = priorSubject;
+    if (priorGatewayEnabled === undefined) delete process.env.ULPIN_MODEL_GATEWAY_ENABLED;
+    else process.env.ULPIN_MODEL_GATEWAY_ENABLED = priorGatewayEnabled;
   }
 }
 
-async function retain(control: DocumentControl, count: number) {
+async function retain(control: DocumentControl, count: number, mode: DocumentInput['mode'] = 'native_only') {
   const service = new DocumentIngestionService();
   const receipts = [];
+  const offset = control.sources.size;
   for (let index = 0; index < count; index++) {
-    // Distinct non-text bytes; the final job honestly completes as unsupported.
+    // Distinct non-text bytes; completed jobs honestly report unsupported.
     receipts.push(await service.retain(control.current.id, { requestKey: randomUUID(),
-      expectedCaseRevision: control.current.revision, mode: 'native_only' },
-    { name: `protocol-${index}.bin`, bytes: Uint8Array.from([0, index + 1]) }));
+      expectedCaseRevision: control.current.revision, mode },
+    { name: `protocol-${offset + index}.bin`, bytes: Uint8Array.from([0, offset + index + 1]) }));
   }
   return { service, receipts };
 }
@@ -187,51 +198,203 @@ function changedFields(before: Row, after: Row) {
   return Object.keys(before).filter(field => fingerprint(before[field]) !== fingerprint(after[field]));
 }
 
-test('a read queued before another file was added ends stale today, with only caseRevision moved', async () => {
+const clientFor = (control: DocumentControl) => ({ query: control.query }) as any;
+const refusal = (status: number, code: string) => (error: unknown) =>
+  error instanceof AppError && error.status === status && error.code === code;
+
+async function freshness(control: DocumentControl, input: DocumentInput) {
+  const ctx = await documentSourceTx(clientFor(control), input.caseId, input.sourceId);
+  return documentInputFreshness(ctx, input);
+}
+
+function pinJob(control: DocumentControl, jobId: string, fields: Partial<DocumentInput>) {
+  const job = control.jobs.get(jobId)!;
+  job.payload = { ...job.payload, ...fields };
+  job.input_fingerprint = fingerprint(job.payload);
+  job.input_sha256 = job.input_fingerprint;
+  return job.payload as DocumentInput;
+}
+
+async function staleRead(control: DocumentControl, jobId: string) {
+  const reads = control.objectReads;
+  await runDocumentJob(jobId);
+  const job = control.jobs.get(jobId)!;
+  assert.equal(job.status, 'stale');
+  assert.equal(job.error, 'DOCUMENT_INPUT_STALE');
+  assert.equal(job.attempt, undefined, 'Refused before claim.');
+  assert.equal(control.objectReads, reads, 'Refused claim performs no original or derivative I/O.');
+}
+
+test('a read queued before another file was added succeeds with only caseRevision moved', async () => {
   await isolated(async control => {
     const { service, receipts } = await retain(control, 2);
     const first = receipts[0];
-    const input = control.jobs.get(first.jobId)!.payload;
-    const client = { query: control.query } as any;
-    const now = documentInput(await documentSourceTx(client, first.caseId, first.sourceId), first.jobId, 'native_only');
+    const job = control.jobs.get(first.jobId)!;
+    const input = structuredClone(job.payload);
+    const digest = job.input_fingerprint;
+    const now = documentInput(await documentSourceTx(clientFor(control), first.caseId, first.sourceId),
+      first.jobId, 'native_only');
     assert.deepEqual(changedFields(input, now), ['caseRevision']);
-    const receiptReads = control.objectReads;
     await runDocumentJob(first.jobId);
-    assert.equal(control.jobs.get(first.jobId)!.status, 'stale');
-    assert.equal(control.jobs.get(first.jobId)!.error, 'DOCUMENT_INPUT_STALE');
-    assert.equal(control.jobs.get(first.jobId)!.logical_state, 'failed');
-    assert.equal(control.jobs.get(first.jobId)!.attempt, undefined, 'Refused before claiming an attempt.');
-    assert.equal(control.objectReads, receiptReads, 'Claim refusal performs no original or derivative I/O.');
+    assert.equal(job.status, 'succeeded');
     const status = await service.status(first.caseId, first.sourceId, first.jobId);
-    assert.equal(status.status, 'stale');
-    assert.equal(status.code, 'DOCUMENT_INPUT_STALE');
-    assert.deepEqual(control.jobs.get(first.jobId)!.payload, input, 'Never rewrite stored pins.');
+    assert.equal(status.status, 'completed');
+    assert.equal(status.code, null);
+    assert.deepEqual(await freshness(control, input), { current: true, reasons: [] });
+    assert.deepEqual(job.payload, input, 'Never rewrite stored pins.');
+    assert.equal(job.input_fingerprint, digest);
+    const result = JSON.parse(control.objects.get(`document-results/${first.jobId}/${job.result_ref.sha256}.json`)!);
+    assert.deepEqual(result.input, input, 'Result retains its queued revision.');
   });
 });
 
-test('four files retained in a row leave the first three reads stale today', async () => {
+test('all four queued reads survive later unrelated receipts, without rewriting their revisions', async () => {
   await isolated(async control => {
     const { service, receipts } = await retain(control, 4);
     for (const receipt of receipts) await runDocumentJob(receipt.jobId);
-    const statuses = [];
+    assert.deepEqual(receipts.map(receipt => control.jobs.get(receipt.jobId)!.status),
+      ['succeeded', 'succeeded', 'succeeded', 'succeeded']);
     for (const receipt of receipts) {
-      statuses.push(await service.status(receipt.caseId, receipt.sourceId, receipt.jobId));
+      const status = await service.status(receipt.caseId, receipt.sourceId, receipt.jobId);
+      assert.equal(status.status, 'completed');
+      assert.equal(status.code, null);
+      assert.equal(status.native?.status, 'unsupported', 'Completion is not extracted-text success.');
+      assert.deepEqual(await freshness(control, control.jobs.get(receipt.jobId)!.payload),
+        { current: true, reasons: [] });
     }
-    assert.deepEqual(statuses.map(status => status.status), ['stale', 'stale', 'stale', 'completed']);
-    assert.deepEqual(statuses.map(status => status.code),
-      ['DOCUMENT_INPUT_STALE', 'DOCUMENT_INPUT_STALE', 'DOCUMENT_INPUT_STALE', null]);
-    assert.equal(statuses[3].native?.status, 'unsupported', 'Job completion is not extracted-text success.');
     assert.deepEqual(receipts.map(receipt => control.jobs.get(receipt.jobId)!.payload.caseRevision), [1, 2, 3, 4]);
   });
 });
 
-test('all four queued reads must survive later unrelated receipts', {
-  todo: 'K13 Step 0 stop: no complete revision-change history exists; keep the failing repair regression.',
-}, async () => {
+test('another receipt between claim and completion, and after completion, keeps the reading current', async () => {
   await isolated(async control => {
-    const { receipts } = await retain(control, 4);
-    for (const receipt of receipts) await runDocumentJob(receipt.jobId);
-    assert.deepEqual(receipts.map(receipt => control.jobs.get(receipt.jobId)!.status),
-      ['succeeded', 'succeeded', 'succeeded', 'succeeded']);
+    const { service, receipts: [first] } = await retain(control, 1);
+    const input = structuredClone(control.jobs.get(first.jobId)!.payload);
+    await runDocumentJob(first.jobId, { extract: async (pinned, bytes) => {
+      assert.equal(control.jobs.get(first.jobId)!.status, 'running');
+      await retain(control, 1);
+      return extractSourceDocument(pinned, bytes);
+    } });
+    const status = () => service.status(first.caseId, first.sourceId, first.jobId);
+    assert.equal((await status()).status, 'completed');
+    const result = structuredClone(control.jobs.get(first.jobId)!.result_ref);
+    await retain(control, 1);
+    assert.equal((await status()).status, 'completed');
+    assert.deepEqual(await freshness(control, input), { current: true, reasons: [] });
+    assert.deepEqual(control.jobs.get(first.jobId)!.result_ref, result);
+    assert.deepEqual(control.jobs.get(first.jobId)!.payload, input);
+  });
+});
+
+test('a unit-edit counter advance without a receipt does not invalidate a source read', async () => {
+  await isolated(async control => {
+    const { receipts: [first] } = await retain(control, 1);
+    control.current.revision++;
+    await runDocumentJob(first.jobId);
+    assert.equal(control.jobs.get(first.jobId)!.status, 'succeeded');
+    assert.equal(control.sources.size, 1);
+    assert.deepEqual(await freshness(control, control.jobs.get(first.jobId)!.payload), { current: true, reasons: [] });
+  });
+});
+
+test('a newer receipt in this source family still stales the queued read as source_superseded', async () => {
+  await isolated(async control => {
+    const { service, receipts: [first] } = await retain(control, 1);
+    await service.retain(first.caseId, { requestKey: randomUUID(), expectedCaseRevision: 1,
+      familyId: first.sourceId, expectedSourceRevision: 1, mode: 'native_only' },
+    { name: 'revised-protocol.bin', bytes: Uint8Array.from([0, 2]) });
+    await staleRead(control, first.jobId);
+    assert.equal((await service.status(first.caseId, first.sourceId, first.jobId)).status, 'stale');
+    assert.deepEqual(await freshness(control, control.jobs.get(first.jobId)!.payload),
+      { current: false, reasons: ['source_superseded'] });
+  });
+});
+
+test('archived cases and changed subjects still deny document authority', async () => {
+  await isolated(async control => {
+    const { service, receipts: [first] } = await retain(control, 1);
+    const status = () => service.status(first.caseId, first.sourceId, first.jobId);
+    control.current.archived = true;
+    await assert.rejects(status, refusal(403, 'DOCUMENT_DENIED'));
+    control.current.archived = false;
+    process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'different-control-subject';
+    await assert.rejects(status, refusal(403, 'DOCUMENT_DENIED'));
+    assert.equal(control.jobs.get(first.jobId)!.attempt, undefined);
+  });
+});
+
+test('retained access drift denies disclosure and still refuses current derivation', async () => {
+  await isolated(async control => {
+    const { receipts: [first] } = await retain(control, 1);
+    const input = pinJob(control, first.jobId, { accessSha256: '0'.repeat(64) });
+    await assert.rejects(() => locateDocumentInputTx(clientFor(control), input), refusal(403, 'DOCUMENT_DENIED'));
+    await assert.rejects(() => assertDocumentInputTx(clientFor(control), input), refusal(409, 'STALE_REVISION'));
+    await staleRead(control, first.jobId);
+  });
+});
+
+for (const field of ['frame', 'context'] as const) {
+  test(`a changed case ${field} still stales the source read as case_advanced`, async () => {
+    await isolated(async control => {
+      const { receipts: [first] } = await retain(control, 1);
+      // Missing vs explicit empty frame; changed context contains no invented feature.
+      if (field === 'frame') Object.assign(control.current, { frame: {} });
+      else Object.assign(control.current, { context: null });
+      await staleRead(control, first.jobId);
+      assert.deepEqual(await freshness(control, control.jobs.get(first.jobId)!.payload),
+        { current: false, reasons: ['case_advanced'] });
+    });
+  });
+}
+
+for (const [field, reason, mode] of [
+  ['readerSha256', 'reader_changed', 'native_only'],
+  ['gatewayPolicySha256', 'policy_changed', 'propose'],
+] as const) {
+  test(`a moved ${field} still refuses despite a later case revision`, async () => {
+    await isolated(async control => {
+      const { receipts: [first] } = await retain(control, 1, mode);
+      const input = pinJob(control, first.jobId, { [field]: '0'.repeat(64) });
+      control.current.revision++;
+      await staleRead(control, first.jobId);
+      assert.deepEqual(await freshness(control, input), { current: false, reasons: [reason] });
+    });
+  });
+}
+
+test('a changed OCR configuration still refuses before any OCR worker or object I/O', async () => {
+  await isolated(async control => {
+    const { receipts: [first] } = await retain(control, 1);
+    const input = pinJob(control, first.jobId, { ocrSelection: { page: 1 }, ocrConfigSha256: documentOcrConfigSha() });
+    const prior = process.env.ULPIN_DOCUMENT_OCR_SCRATCH;
+    try {
+      process.env.ULPIN_DOCUMENT_OCR_SCRATCH = 'memory-only-changed-control';
+      await staleRead(control, first.jobId);
+      assert.deepEqual(await freshness(control, input), { current: false, reasons: ['policy_changed'] });
+    } finally {
+      if (prior === undefined) delete process.env.ULPIN_DOCUMENT_OCR_SCRATCH;
+      else process.env.ULPIN_DOCUMENT_OCR_SCRATCH = prior;
+    }
+  });
+});
+
+test('an archive selection differing from the registered job remains a conflict after a case advance', async () => {
+  await isolated(async control => {
+    const { receipts: [first] } = await retain(control, 2);
+    const input = control.jobs.get(first.jobId)!.payload;
+    const selected = { ...input, archiveSelection: { ordinal: 0, memberSha256: '0'.repeat(64), memberBytes: 1 } };
+    await assert.rejects(() => assertDocumentInputTx(clientFor(control), selected), (error: unknown) =>
+      refusal(409, 'STALE_REVISION')(error) && (error as AppError).message.includes('registered document job input'));
+    assert.equal(control.jobs.get(first.jobId)!.attempt, undefined);
+    assert.deepEqual(control.jobs.get(first.jobId)!.payload, input);
+  });
+});
+
+test('a missing source never grants document authority or discloses a derivative', async () => {
+  await isolated(async control => {
+    const { service, receipts: [first] } = await retain(control, 1);
+    control.sources.delete(first.sourceId);
+    await assert.rejects(() => service.status(first.caseId, first.sourceId, first.jobId), refusal(404, 'NOT_FOUND'));
+    assert.equal(control.jobs.get(first.jobId)!.attempt, undefined);
   });
 });
