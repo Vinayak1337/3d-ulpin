@@ -392,6 +392,28 @@ The same unchanged NWIC source now has [reviewed bounded cold/warm measurements]
 
 The separate [natural-lease recovery handoff](../evidence/usp/natural-lease-recovery-handoff.md) now qualifies operator-triggered dispatcher restart after actual180-second expiry on these same NWIC originals; prior scale-pair failure/history remains unchanged. No automaticfailover or continuousavailability claim follows.
 
+## P2 installed plan-model diagnostic slice (11 October 2026)
+
+[P2's frozen evaluation](../evidence/gf-ai/plans/raster/20261011-tower3/README.md) retains 100 unchanged
+CubiCasa5K publisher test image/SVG pairs (42,938,141 bytes) under
+`E:/BhuAayam-data/datasets/cubicasa5k/p2-test-20261011/`. Only missing test members were downloaded,
+using bounded ranges from [Zenodo record 2613548](https://zenodo.org/records/2613548).
+[The compact acquisition manifest](../evidence/gf-ai/plans/raster/20261011-tower3/cubicasa-acquisition.json)
+records source/archive/member hashes, CRCs, selection and acquisition metadata; the full archive was not downloaded.
+The first 100 publisher test paths, excluding two prior feasibility plans, were frozen before inference.
+All belong to the architectural category, not a balanced or independently audited final holdout.
+
+Attribution: Kalervo, Ylioinas, Häikiö, Karhu and Kannala / Aalto University / CubiCasa (2019).
+The dataset's Zenodo terms are **CC-BY-NC-SA-4.0**; pinned repository code/model documentation is
+**CC-BY-NC-4.0**. Both restrictions remain; this is foreign `test_only`, noncommercial diagnostic work.
+The unchanged installed CPU model scored mean class IoU 0.5236; room-count MAE was 30.10
+(publisher interior spaces versus returned v2 contours). No fine-tuning or model promotion was performed.
+
+P2 also reuses the two retained Haryana Tower 3 floor-plan sheets; originals and unconfirmed permissions are
+unchanged. Four main panels have cited pixel room candidates, literal OCR observations and explicit `no_scale`.
+Site plans, area-only diagrams and sections are not room inputs. No new source acquisition, canonical level
+assignment, API installation, DB mutation, survey calibration or Indian accuracy claim follows.
+
 ## Source-document worker evidence (27 September 2026)
 
 DOC-INGEST-01 reuses [NYC's unchanged official metadata text](../../fixtures/real-area/evidence/nyc-building-metadata.md), 12,973 bytes, SHA `520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27`. Its issuer URL, acquisition and terms remain in the [original area manifest](../../fixtures/real-area/manifest.json); the dataset catalogue now exposes this document separately from the geometry asset. It verifies native-text intake with the provider disabled, not property facts. The existing USGS1910 scanned PDF verifies honest `needs_ocr` and unchanged original download, not OCR. See [the document API guide](README.md#source-document-intake) and [pinned runtime proof](../evidence/usp/document-authority-correction.md). Final retained-package privacy checks are [service/query controls](../evidence/usp/document-package-authority-correction.md), separate from runtime qualification. All are foreign test inputs; no new original was acquired, installed into serving3188 or altered by this work.

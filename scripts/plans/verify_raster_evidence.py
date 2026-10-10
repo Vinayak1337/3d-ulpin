@@ -148,6 +148,23 @@ def verify_code_continuity(evidence: Path) -> None:
             raise ValueError("executed_inference_or_evaluation_ast_changed")
 
 
+def verify_publication_parity(evidence: Path) -> None:
+    result = load(evidence / "publication-parity.json")
+    if len(result["documents"]) != 4 or not result["allIdentical"] or result["excludedFields"]:
+        raise ValueError("incomplete_publication_parity")
+    for document in result["documents"]:
+        verify_pin(document["before"])
+        verify_pin(document["after"])
+        if document["before"]["sha256"] != document["after"]["sha256"]:
+            raise ValueError("full_precision_publication_changed")
+    verify_pin(result["historicalSelection"])
+    verify_pin(result["currentSelection"])
+    previous = load(Path(result["historicalSelection"]["path"]))
+    current = load(Path(result["currentSelection"]["path"]))
+    if previous["panels"] != current["panels"] or previous["excluded"] != current["excluded"]:
+        raise ValueError("publication_selection_scope_changed")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--evidence", type=Path, required=True)
@@ -156,6 +173,7 @@ def main() -> int:
     panels = [verify_panel(panel) for panel in raster["panels"]]
     evaluation = verify_evaluation(args.evidence / "cubicasa-result.json")
     verify_code_continuity(args.evidence)
+    verify_publication_parity(args.evidence)
     print(json.dumps({"panels": panels, "evaluation": evaluation, "status": "passed"}))
     return 0
 
