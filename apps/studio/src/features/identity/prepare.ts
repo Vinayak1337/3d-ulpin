@@ -68,7 +68,7 @@ export async function prepareFirstCard(
 export async function prepareRevision(
   target: Extract<IssueTarget, { mode: 'update' }>, expiresAt: string,
 ): Promise<Prepared> {
-  const { card } = await step('the listed card', false, readCard(target));
+  const { card } = await step('the listed card', false, readCard({ cardId: target.cardId, revision: target.revision }));
   const request = nextRevision(card, expiresAt);
   return { request, preview: await step('the rows of the card', false, previewCard(request)) };
 }

@@ -351,37 +351,54 @@ export async function assignCode(body: PostBody<'/api/v1/usp/identity/assign'>) 
 
 /** Reads the recorded citation a plan for this unit may include, with the handle the plan names. Stores nothing. */
 export async function readPlanEntries(body: PostBody<'/api/v1/usp/packets/plans/entries'>) {
-  return unwrap(await api.POST('/api/v1/usp/packets/plans/entries', { body })).data;
+  return unwrap(await api.POST('/api/v1/usp/packets/plans/entries', {
+    body: { scope: body.scope, target: body.target },
+  })).data;
 }
 
 /** Stores a plan of the citations a packet of this unit will hold. */
 export async function createPlan(body: PostBody<'/api/v1/usp/packets/plans/create'>) {
-  return unwrap(await api.POST('/api/v1/usp/packets/plans/create', { body })).data;
+  return unwrap(await api.POST('/api/v1/usp/packets/plans/create', {
+    body: { input: body.input, guard: body.guard },
+  })).data;
 }
 
 /** Stores the confirmation that the plan was reviewed; a plan is executed under its confirmation only. */
 export async function confirmPlan(body: PostBody<'/api/v1/usp/packets/plans/confirm'>) {
-  return unwrap(await api.POST('/api/v1/usp/packets/plans/confirm', { body })).data;
+  return unwrap(await api.POST('/api/v1/usp/packets/plans/confirm', {
+    body: { planId: body.planId, version: body.version, planSha256: body.planSha256,
+      reviewed: body.reviewed, guard: body.guard },
+  })).data;
 }
 
 /** Stores the packet of a confirmed plan. A card is issued from an executed plan only. */
 export async function executePlan(body: PostBody<'/api/v1/usp/packets/plans/execute'>) {
-  return unwrap(await api.POST('/api/v1/usp/packets/plans/execute', { body })).data;
+  return unwrap(await api.POST('/api/v1/usp/packets/plans/execute', {
+    body: { planId: body.planId, version: body.version, confirmationId: body.confirmationId, guard: body.guard },
+  })).data;
 }
 
 /** Reads one stored card revision: its plan and the snapshot a further revision must name. Stores nothing. */
 export async function readCard(body: PostBody<'/api/v1/usp/property-cards/read'>) {
-  return unwrap(await api.POST('/api/v1/usp/property-cards/read', { body })).data;
+  return unwrap(await api.POST('/api/v1/usp/property-cards/read', {
+    body: { cardId: body.cardId, revision: body.revision },
+  })).data;
 }
 
 /** Reads the rows a card of this executed plan would state, and the revision it would be. Stores nothing. */
 export async function previewCard(body: PostBody<'/api/v1/usp/property-cards/preview'>) {
-  return unwrap(await api.POST('/api/v1/usp/property-cards/preview', { body })).data;
+  return unwrap(await api.POST('/api/v1/usp/property-cards/preview', {
+    body: { planId: body.planId, planVersion: body.planVersion, cardId: body.cardId,
+      expiresAt: body.expiresAt, guard: body.guard },
+  })).data;
 }
 
 /** Stores the card. The same key with the same body answers the same card. */
 export async function generateCard(body: PostBody<'/api/v1/usp/property-cards/generate'>) {
-  return unwrap(await api.POST('/api/v1/usp/property-cards/generate', { body })).data;
+  return unwrap(await api.POST('/api/v1/usp/property-cards/generate', {
+    body: { planId: body.planId, planVersion: body.planVersion, cardId: body.cardId,
+      expiresAt: body.expiresAt, guard: body.guard },
+  })).data;
 }
 
 /** One retained inference batch with its items: model, state and the decisions already applied. */

@@ -143,7 +143,14 @@ export function nextRevision(card: StoredCard, expiresAt: string): CardRequest {
 
 /** The card request the officer read the rows of, with the one key of this prepared card. */
 export function generateBody(request: CardRequest, requestKey: string): GenerateBody {
-  return { ...request, guard: { ...request.guard, requestKey } };
+  const guard: GenerateBody['guard'] = request.guard.mode === 'create'
+    ? { mode: 'create', requestKey }
+    : { mode: 'update', requestKey, expectedVersion: request.guard.expectedVersion,
+      expectedManifestId: request.guard.expectedManifestId };
+  return {
+    planId: request.planId, planVersion: request.planVersion, cardId: request.cardId,
+    expiresAt: request.expiresAt, guard,
+  };
 }
 
 /** A step of Prepare that was not answered with 200, and whether that step stores anything. */

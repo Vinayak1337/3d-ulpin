@@ -51,7 +51,7 @@ export function readFailure(error: unknown): string {
   return `${REFUSALS[code] ?? message} (${code})`;
 }
 
-const CARDS_UNASKED = 'The registry could not be asked for the cards of this unit.';
+export const CARDS_UNASKED = 'The registry could not be asked for the cards of this unit.';
 
 /** The answer of `useUnitCards` as the gate reads it. */
 type CardsRead = { data?: UnitCards; error: unknown };
@@ -71,6 +71,15 @@ export interface CardAction {
 export function cardAction(cards: CardsRead, holdsDraft: boolean): CardAction {
   if (cards.data?.snapshotCreatedAt) return { opens: 'registry', unanswered: null };
   return { opens: holdsDraft ? 'draft' : null, unanswered: unanswered(cards) };
+}
+
+/** A served registry never falls back to a browser code, even when its card read did not answer. */
+export function unitCardView(cards: CardsRead, served: boolean, holdsDraft: boolean) {
+  if (served && cards.error) return 'unanswered';
+  if (cards.data?.snapshotCreatedAt) return 'registry';
+  if (!served) return holdsDraft ? 'draft' : 'closed';
+  if (cards.error || !cards.data || !cards.data.searchedAll) return 'unanswered';
+  return 'none';
 }
 
 function unanswered({ data, error }: CardsRead): string | null {
