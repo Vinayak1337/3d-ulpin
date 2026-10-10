@@ -33,6 +33,8 @@ export interface CandidateCard {
   kindLabel: string;
   title: string;
   state: CandidateState;
+  /** Only undecided candidates expose accept, reject or attach controls. */
+  canDecide: boolean;
   chip: StateChip;
   /** The recorded method, for example `model:<id>@<hash>` or `deterministic:vector-plan@1`. */
   method: string;
@@ -91,7 +93,8 @@ export function confidenceText(candidate: CanonicalCandidate): string {
 
 export function candidateState(candidate: CanonicalCandidate): CandidateState {
   if (candidate.review?.outcome === 'rejected') return 'rejected';
-  return candidate.state === 'reviewed' ? 'reviewed' : 'candidate';
+  if (candidate.review?.outcome === 'accepted' || candidate.state === 'reviewed') return 'reviewed';
+  return 'candidate';
 }
 
 /**
@@ -121,6 +124,7 @@ export function candidateCard(candidate: CanonicalCandidate): CandidateCard | nu
     kindLabel: candidate.kind === 'room' ? 'Room' : 'Roofprint',
     title: titleOf(candidate, candidate.kind),
     state,
+    canDecide: !candidate.review && state === 'candidate',
     chip: stateChip(state),
     method: candidate.method ?? 'Not recorded',
     modelId: candidate.modelId ?? null,

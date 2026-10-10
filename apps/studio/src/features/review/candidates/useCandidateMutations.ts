@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '../../../api/queries';
 import {
-  attachRoomToLevel, recordRoofprintDecisions, reviewDraftForRegistry,
+  attachRoomToLevel, recordRoofprintDecisions, rejectRoom, reviewDraftForRegistry,
 } from './commands';
-import type { AttachLevelBody, FootprintDraftBody } from './decisions';
+import type { AttachLevelBody, FootprintDraftBody, RejectRoomBody } from './decisions';
 
 /** After a command, everything that shows the candidates, their draft packages and the work queue is read again. */
 function useRefreshRecords() {
@@ -29,6 +29,14 @@ export function useAttachRoom(buildingId: string) {
   const refresh = useRefreshRecords();
   return useMutation({
     mutationFn: (body: AttachLevelBody) => attachRoomToLevel(buildingId, body),
+    onSuccess: refresh,
+  });
+}
+
+export function useRejectRoom(buildingId: string) {
+  const refresh = useRefreshRecords();
+  return useMutation({
+    mutationFn: (body: RejectRoomBody) => rejectRoom(buildingId, body),
     onSuccess: refresh,
   });
 }
