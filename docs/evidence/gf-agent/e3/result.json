@@ -232,9 +232,11 @@
 "conclusion and the code record that the baseline was kept. The field name overstates."]}},"checks":[{"command":
 "pnpm exec tsc -p scripts/agent/tsconfig.json","exitCode":0},{"command":
 "pnpm exec tsx --test scripts/agent/injection-screen.test.ts","exitCode":0,"passed":9},{"command":
-"pnpm exec tsx --test t1-prep, verify-teacher-labels, mapping-teacher (with the screen test)","exitCode":0,"passed":27},
-{"command":"pnpm exec tsx scripts/agent/injection-screen.ts E:/BhuAayam-data/task-data/e3/run-03","exitCode":0},{
-"command":"python -B -c json.load(docs/evidence/gf-agent/a3e/result.json)","exitCode":0},{"command":
+"pnpm exec tsx --test t1-prep, verify-teacher-labels, mapping-teacher (with the screen test)","exitCode":0,"passed":27,
+"note":"these two older tests write timestamped control folders under task-data/t1/verifier","leftBehind":
+"12 folders from 2 runs, left in place; nothing existing was changed"},{"command":
+"pnpm exec tsx scripts/agent/injection-screen.ts E:/BhuAayam-data/task-data/e3/run-03","exitCode":0},{"command":
+"python -B -c json.load(docs/evidence/gf-agent/a3e/result.json)","exitCode":0},{"command":
 "python -B docs/evidence/m1/check_paths.py","exitCode":0,"note":"43 paths, 0 missing"},{"command":
 "git diff staging...HEAD --check","exitCode":0},{"command":"awk length>120 over the changed files","exitCode":0,"note":
 "new long line: a3e/result.json:18 only (the joined string cannot be wrapped)"}],"report":{"TASK":
@@ -261,7 +263,8 @@
 "f1d59057 fix(agent): the screen's teacher layer is the request as the gateway would forward it",
 "708e863d fix(evidence): the A3e receipt parses again; no value changed",
 "2efb8c78 chore(agent): the screen keeps its helper types to itself",
-"this commit: docs(agent): E3 the screen's counts and what the verifier does with each real case"],"CHECKS":[
+"63a04b45 docs(agent): E3 the screen's counts and what the verifier does with each real case",
+"this commit: docs(agent): E3 records the control folders the neighbouring tests leave behind"],"CHECKS":[
 "pnpm exec tsc -p scripts/agent/tsconfig.json -> exit 0",
 "pnpm exec tsx --test scripts/agent/injection-screen.test.ts -> exit 0",
 "pnpm exec tsx --test t1-prep, verify-teacher-labels, mapping-teacher (with the screen test) -> exit 0",
@@ -273,4 +276,6 @@
 "because the minimizer refuses the masker's own [blank], [absent] and [object] tokens.",
 "Lead: decide the wording of a5b's boolean (part3.a5b); nothing was changed there.",
 "When the foreign admission lands on staging, re-run the screen: it will pick the files up.",
-"AG-E3 can be stated as: no real case in the admitted inputs under the fixed classes, with n."]}}
+"AG-E3 can be stated as: no real case in the admitted inputs under the fixed classes, with n.",
+"The t1-prep and verify-teacher-labels tests leave 6 control folders under task-data/t1/verifier",
+"on every run (12 from this task's 2 runs, left in place): a temp directory would be cleaner."]}}
