@@ -27,6 +27,7 @@ interface Props {
 /** Decisions on one roofprint: stage accept or reject with a reason, then record the image's decisions together. */
 export function RoofprintDecisions({ card, staged, areaRevision, titleOf, onStage, onUnstage, onRecorded }: Props) {
   const [dialog, setDialog] = useState<StagedDecision['outcome'] | null>(null);
+  if (!card.canDecide) return card.state === 'reviewed' ? <RegistryStep card={card} /> : null;
   const mine = staged.find((decision) => decision.candidateId === card.id);
   const sameImage = staged.filter((decision) => decision.itemId === card.itemId);
 
@@ -37,7 +38,7 @@ export function RoofprintDecisions({ card, staged, areaRevision, titleOf, onStag
 
   return (
     <>
-      {card.state === 'candidate' && !mine && card.itemId ? (
+      {!mine && card.itemId ? (
         <div className={styles.actions}>
           <Button variant="primary" icon={CheckCircle} onClick={() => setDialog('accepted')}>Accept</Button>
           <Button icon={XCircle} onClick={() => setDialog('rejected')}>Reject</Button>
@@ -50,7 +51,6 @@ export function RoofprintDecisions({ card, staged, areaRevision, titleOf, onStag
         <DecisionSheet itemId={card.itemId} decisions={sameImage} areaRevision={areaRevision} titleOf={titleOf}
           onRemove={onUnstage} onRecorded={onRecorded} />
       ) : null}
-      {card.state === 'reviewed' ? <RegistryStep card={card} /> : null}
       {dialog ? (
         <ReasonDialog title={`${dialog === 'accepted' ? 'Accept' : 'Reject'} ${card.title}`}
           confirmLabel={dialog === 'accepted' ? 'Stage acceptance' : 'Stage rejection'} onConfirm={confirm}

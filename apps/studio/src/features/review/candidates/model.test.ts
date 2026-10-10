@@ -77,6 +77,7 @@ describe('candidateCard', () => {
   it('never gives a candidate the reviewed chip', () => {
     expect(card.state).toBe('candidate');
     expect(card.chip).toEqual({ kind: 'status', word: 'Needs review' });
+    expect(card.canDecide).toBe(true);
   });
 
   it('shows a rejected candidate as rejected even though its record state is reviewed', () => {
@@ -85,12 +86,25 @@ describe('candidateCard', () => {
     expect(rejected.state).toBe('rejected');
     expect(rejected.chip).toEqual({ kind: 'plain', label: 'Rejected' });
     expect(rejected.decision).toEqual(review);
+    expect(rejected.canDecide).toBe(false);
   });
 
   it('shows Reviewed only for an accepted decision on record', () => {
     const review = decision('accepted', '2026-10-10T01:50:22.720Z');
     const accepted = candidateCard(roofprint({ state: 'reviewed', review }))!;
     expect(accepted.chip).toEqual({ kind: 'status', word: 'Reviewed' });
+    expect(accepted.decision).toEqual(review);
+    expect(accepted.canDecide).toBe(false);
+  });
+
+  it('hides room actions whenever a review exists, even if its state is still candidate', () => {
+    const rejected = candidateCard(room({ review: decision('rejected', '2026-10-10T03:00:00.000Z') }))!;
+    expect(rejected.state).toBe('rejected');
+    expect(rejected.chip).toEqual({ kind: 'plain', label: 'Rejected' });
+    expect(rejected.canDecide).toBe(false);
+    const accepted = candidateCard(room({ review: decision('accepted', '2026-10-10T02:00:00.000Z') }))!;
+    expect(accepted.state).toBe('reviewed');
+    expect(accepted.canDecide).toBe(false);
   });
 
   it('does not invent a score or a level for a room', () => {
