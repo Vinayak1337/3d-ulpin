@@ -4,15 +4,29 @@ import { ArrowSquareOut, WarningCircle } from '@phosphor-icons/react';
 import type { DocumentPages } from '@ulpin/api-client/draft';
 import { Badge, Button, Dialog, EmptyState, EvidenceChip, Icon, Skeleton } from '@ulpin/ui';
 import { useDocumentPages, usePageImage } from '../../api/queries';
+import { CitedPageViewer, type Place } from './CitedPageViewer';
 import { resolvePointer, type EvidenceRef } from './refs';
 import styles from './EvidenceViewer.module.css';
+
+/** A citation that names a page of a pinned original opens at that page; any other reference as before. */
+export function EvidenceViewer({ evidence, still, onClose }: { evidence: EvidenceRef; still: string | null; onClose: () => void }) {
+  const [fileView, setFileView] = useState(false);
+  const { locator, pin } = evidence;
+  const place: Place | null = locator.kind === 'page' || locator.kind === 'region' ? locator : null;
+  if (place && pin && !fileView) {
+    return <CitedPageViewer evidence={evidence} place={place} pin={pin} onClose={onClose}
+      openFile={() => setFileView(true)} />;
+  }
+  if (place && pin) return <FileViewer evidence={evidence} still={still} onClose={onClose} />;
+  return <DraftPagesViewer evidence={evidence} still={still} onClose={onClose} />;
+}
 
 /**
  * S7 Evidence viewer: the retained original beside a still of the 3D space. Paged documents show the
  * page the locator anchors to; files are previewed by locator kind (row → table rows, JSON pointer →
  * the pointed node), so a new format with an existing locator kind needs no new viewer.
  */
-export function EvidenceViewer({ evidence, still, onClose }: { evidence: EvidenceRef; still: string | null; onClose: () => void }) {
+function DraftPagesViewer({ evidence, still, onClose }: { evidence: EvidenceRef; still: string | null; onClose: () => void }) {
   const pages = useDocumentPages(evidence.sourceId);
   if (pages.isPending) return <Dialog title={evidence.label} onClose={onClose} footer={<Button onClick={onClose}>Close</Button>}><div className="ul-stack">{Array.from({ length: 8 }, (_, i) => <Skeleton key={i} />)}</div></Dialog>;
   if (pages.data) return <PagedViewer evidence={evidence} still={still} doc={pages.data} onClose={onClose} />;
@@ -111,14 +125,17 @@ function FileViewer({ evidence, still, onClose }: { evidence: EvidenceRef; still
     queryFn: async () => {
       const response = await fetch(`/api/v1/sources/${evidence.sourceId}/file`);
       if (!response.ok) throw new Error(`The source file could not be read (${response.status}).`);
-      return { text: await response.text(), type: response.headers.get('content-type') ?? '', name: fileName(response) };
+      const type = response.headers.get('content-type') ?? '';
+      const blob = await response.blob();
+      // A binary original (a PDF) is kept as bytes: reading it as text would corrupt the copy that Open original serves.
+      return { blob, text: isTextual(type) ? await blob.text() : '', type, name: fileName(response) };
     },
     staleTime: Infinity,
   });
   const [originalUrl, setOriginalUrl] = useState<string | null>(null);
   useEffect(() => {
     if (!file.data) return;
-    const url = URL.createObjectURL(new Blob([file.data.text], { type: file.data.type || 'text/plain' }));
+    const url = URL.createObjectURL(file.data.blob);
     setOriginalUrl(url);
     return () => URL.revokeObjectURL(url);
   }, [file.data]);
@@ -148,6 +165,10 @@ function FileViewer({ evidence, still, onClose }: { evidence: EvidenceRef; still
       </div>
     </Dialog>
   );
+}
+
+function isTextual(type: string): boolean {
+  return !type || /^text\/|json|csv|xml/.test(type);
 }
 
 function SourcePreview({ text, type, evidence }: { text: string; type: string; evidence: EvidenceRef }) {
@@ -202,6 +223,9 @@ function SourcePreview({ text, type, evidence }: { text: string; type: string; e
         </table>
       </div>
     );
+  }
+  if (!isTextual(type)) {
+    return <p className="ul-help">This original is not a text file, so no preview is shown. Open it to read it.</p>;
   }
   return (
     <>
