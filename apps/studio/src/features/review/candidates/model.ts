@@ -1,7 +1,8 @@
 import type { GetResponse } from '@ulpin/api-client';
 import type { MultiPolygon } from '@ulpin/scene';
 import type { StatusWord } from '@ulpin/ui';
-import type { RecordedCitation } from '../recorded/model';
+import { evidenceRef, type RecordedCitation } from '../recorded/model';
+import type { EvidenceRef } from '../../evidence/refs';
 
 type AreaCanonical = GetResponse<'/api/v1/areas/{areaId}/canonical'>;
 type BuildingCanonical = GetResponse<'/api/v1/buildings/{buildingId}/canonical'>;
@@ -186,6 +187,11 @@ function citationOf(citation: Citation, index: number): CandidateCitation {
 export function statedSizeView(candidate: CanonicalCandidate): StatedSizeView | null {
   const stated = candidate.statedSize;
   return stated ? { literal: stated.literal, citation: citationOf(stated.citation, 0) } : null;
+}
+
+/** Keep the candidate's stated hash even when its citation names no revision. */
+export function candidateEvidenceRef(title: string, citation: CandidateCitation): EvidenceRef {
+  return { ...evidenceRef(title, citation), sourceSha256: citation.sha256 };
 }
 
 /** The accessible name of a citation's control: what it opens, by the source and place the chip shows. */

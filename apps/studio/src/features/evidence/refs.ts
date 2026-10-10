@@ -10,6 +10,8 @@ export interface EvidenceRef {
   supports?: { source: string; locator: string }[];
   /** The exact original the citation was recorded against; page reads carry it so a changed original is refused. */
   pin?: SourcePin;
+  /** A citation may state the hash without a revision; retained pins must still match that original. */
+  sourceSha256?: string;
 }
 
 export interface SourcePin {

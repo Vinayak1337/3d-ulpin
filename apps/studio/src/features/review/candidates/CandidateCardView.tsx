@@ -6,11 +6,11 @@ import { useBuildingCanonical, useSpatialMlBatch, useSpatialMlItem } from '../..
 import { useOpenEvidence } from '../../evidence/EvidenceContext';
 import { Cited, ReadingStatementsContext } from '../../register/ReadingNote';
 import { useReadingStatements } from '../../register/useReadingStatements';
-import { evidenceRef } from '../recorded/model';
 import { CandidateChip } from './CandidateQueue';
 import { modelCardSummary } from './modelCard';
 import {
-  citationOpenLabel, type CandidateCard, type CandidateCitation, type PlanEstimateView, type StatedSizeView,
+  candidateEvidenceRef, citationOpenLabel,
+  type CandidateCard, type CandidateCitation, type PlanEstimateView, type StatedSizeView,
 } from './model';
 import styles from './CandidateReview.module.css';
 
@@ -107,7 +107,7 @@ function CitationControl({ title, citation }: { title: string; citation: Candida
   const open = useOpenEvidence();
   return (
     <button type="button" className="ul-evid" aria-label={citationOpenLabel(citation)}
-      onClick={() => open(evidenceRef(title, citation))}>
+      onClick={() => open(candidateEvidenceRef(title, citation))}>
       <Icon icon={FileText} size={16} />
       <b>{citation.source}</b>
       <span>{citation.locator}</span>

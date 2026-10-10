@@ -14,7 +14,8 @@ export function retainedSourcePin(evidence: EvidenceRef, sources: BuildingRegist
   if (evidence.pin) return evidence.pin;
   const matching = sources.filter((source) => source.id === evidence.sourceId);
   const first = matching[0];
-  if (!first || matching.some((source) => source.revision !== first.revision || source.sha256 !== first.sha256)) {
+  if (!first || (evidence.sourceSha256 !== undefined && evidence.sourceSha256 !== first.sha256) ||
+      matching.some((source) => source.revision !== first.revision || source.sha256 !== first.sha256)) {
     return undefined;
   }
   return { revision: first.revision, sha256: first.sha256 };
