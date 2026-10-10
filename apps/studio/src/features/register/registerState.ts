@@ -64,6 +64,19 @@ export function readingStatements(
   return statements;
 }
 
+const UNSTATED = 'The server did not state whether these readings are current';
+
+/**
+ * The one caption for a read of those statements that failed: the words, then the server's code when it gives
+ * one. Null while the read has not failed, and for a 404: the server holds no record to state anything about.
+ */
+export function unstatedReadings(error: unknown): string | null {
+  if (!error) return null;
+  if (error instanceof ApiError && error.status === 404) return null;
+  const { code } = refusalOf(error);
+  return code ? `${UNSTATED} · ${code}` : UNSTATED;
+}
+
 /**
  * The stated source that a citation showing only the first characters of its source id points at (the candidate
  * card's citations). Null unless exactly one stated source begins with those characters.
