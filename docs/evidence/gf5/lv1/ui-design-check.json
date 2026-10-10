@@ -1,0 +1,34 @@
+{
+  "blocking": [],
+  "designSystem": [],
+  "checkedNoIssue": [
+    {
+      "at": "apps/studio/src/features/map/ImportTray.tsx:50-59",
+      "rule": "docs/design-system/README.md:25-48",
+      "finding": "Received counts are stream counts; drawn counts come from the engine, not accepted proposals."
+    },
+    {
+      "at": "apps/studio/src/features/map/MapWorkspace.tsx:239-241,377-380",
+      "rule": "docs/design-system/map-and-3d.md:90-94",
+      "finding": "Removed the automatic camera reset on an append. No new controls, CSS, colours or fonts."
+    },
+    {
+      "at": "packages/scene/src/engine.ts:506-583,776-911",
+      "rule": "docs/design-system/map-and-3d.md:36-46",
+      "finding": "Existing candidate, unknown-height, thematic, selection and storey builders retain their inputs."
+    }
+  ],
+  "manualReview": {
+    "desktop": "1440 x 900 first, middle, final and same-identity replay screenshots; paths in result.json.",
+    "keyboard": "No control, focus style, label, tab order or keyboard handler changed.",
+    "qualification": "No new zoom/contrast measurement; existing UI tests passed. No live backend was used.",
+    "quarantine": "The existing quarantine message takes precedence over progress metadata in this pack.",
+    "look": "No look parameter was reduced to improve timings; pixel tolerance still misses (result.json)."
+  },
+  "unqualified": "Register, review workspace, roofprint map and portal screenshots remain for the lead.",
+  "scan": {
+    "limit": "The scanner covers apps/web only (0 added lines); changed Studio components were read manually.",
+    "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs staging",
+    "exit": 0
+  }
+}

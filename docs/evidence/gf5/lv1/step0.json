@@ -87,7 +87,7 @@
     },
     {
       "structure": "cameraKey, first fit, flight",
-      "at": "packages/scene/src/engine.ts:106,110,500,1139-1237; MapWorkspace.tsx:264-269",
+      "at": "packages/scene/src/engine.ts:106,110,500,1139-1237; MapWorkspace.tsx:239-243",
       "add": "Fit only first nonempty content; selected pending target fits when available.",
       "remove": "Retain camera pose; explicit reset/selection still works.",
       "scope": "First fit uses global bounds once. Studio currently resets on EVERY streamed building append.",
@@ -185,7 +185,10 @@
     "global trees at drain or >=250 ms. WeakMap feature conversion, stable base array, ack after",
     "engine render proof. No second design if criteria 1/2 miss."
   ],
-  "safety": "No backend/provider/GPU/runtime request. Owned server port 5234 stopped and free.",
+  "safety": [
+    "No backend/provider/GPU runtime started; no demo 3194/rehearsal 21016 request. Port 5234 stopped/free.",
+    "Inherited LV0 shell GETs failed through the Studio proxy at 3188; no responding backend was used."
+  ],
   "processGap": [
     "Before-test log was accidentally created at task-data/lv1-before-tests.log, not inside lv1/. It",
     "is a new test log only; not moved/deleted under immutable-data rule. Lead may retire exact path."

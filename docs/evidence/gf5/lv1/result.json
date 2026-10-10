@@ -1,0 +1,219 @@
+{
+  "task": "LV1",
+  "gate": "GF5 / M2",
+  "status": "partial",
+  "qualified": false,
+  "branch": "task/lv1-scene-takes-parts-incrementally",
+  "base": "3f70b3f29775c6955dc0a06ab9c9215696ffe4c1",
+  "measuredAfter": "4a9d86a3",
+  "lastSourceCommit": "95a77ddd",
+  "criteria": [
+    {
+      "id": 1,
+      "target": "Part work slope <0.01 ms per prior building, including deferred work.",
+      "beforeMsPerPriorBuilding": 0.12543,
+      "afterSetterMsPerPriorBuilding": 0.000028,
+      "afterDeferredInclusiveMsPerPriorBuilding": 0.011219,
+      "status": "fail",
+      "decision": "Setter passes, full work does not. Stopped performance changes after this one design."
+    },
+    {
+      "id": 2,
+      "target": "Exactly 1662 building inputs built; zero base rebuilds in building-only parts.",
+      "beforeInputsBuilt": 15857,
+      "afterInputsBuilt": 1662,
+      "beforeBaseRebuildsInBuildingOnlyParts": 17,
+      "afterBaseRebuildsInBuildingOnlyParts": 0,
+      "buildingOnlyParts": 17,
+      "status": "pass"
+    },
+    {
+      "id": 3,
+      "target": "Zero frames over 100 ms; profile every remaining frame over 50 ms.",
+      "before": {"p50Ms":16.7,"p95Ms":533.3,"longestMs":1983.3,"over50":32,"over100":27},
+      "after": {"p50Ms":16.7,"p95Ms":333.3,"longestMs":616.7,"over50":55,"over100":50},
+      "remainingFramesProfiled": 55,
+      "status": "fail"
+    },
+    {
+      "id": 4,
+      "target": "Same final building identities/bounds; RGB MAE <=1 and <=1% pixels changing by >8.",
+      "sourceBuildingKeysIdentical": true,
+      "independentUploadApplicationIdsIdentical": false,
+      "boundsIdentical": true,
+      "sameIdentityReplayApplicationIdsIdentical": true,
+      "sameIdentityReplayDrawn": 1662,
+      "sameIdentityReplayRgbMae255": 0.987542,
+      "sameIdentityReplayChangedFractionAbove8": 0.024215,
+      "status": "fail",
+      "limit": "Fresh upload intents change application ids and facade tints. The fixed-id replay still misses 1%."
+    }
+  ],
+  "implementation": {
+    "equality": "Identity or identical own fields by Object.is. No geometry walk or deep comparison.",
+    "wholeTruth": "Retains unchanged meshes, removes missing ids, rebuilds changed drawn ids, queues new ids.",
+    "additionBudgetMs": 4,
+    "atomicUnit": "One building; an individual build may overrun. Grow starts only when inserted.",
+    "globalDressingIntervalMs": 250,
+    "drawProof": "Live geometry plus a completed renderer frame; not grow-in completion or a GPU readback fence.",
+    "completion": "drawnBuildings(), waitForDrawn() and optional onBuildingsDrawn; cancellation/disposal settle waits.",
+    "studio": "Feature-object WeakMaps retain conversions; previous base identity survives building-only appends.",
+    "camera": "First content fits once. Removed append-time Studio reset. Explicit reset/selection remains available.",
+    "lateCorrection": "A detail-promoted building now cannot be picked or labelled until its first rendered frame.",
+    "lateCorrectionLimit": "Interaction-only guard and red/green regression added after measurement; no second design."
+  },
+  "remainingCost": {
+    "globalTrees": "buildDressing rebuilds tree avoidance against all footprints at drain or bounded intervals.",
+    "maxQueueStepIncludingGlobalTreesMs": 15.9,
+    "maxRenderFrameMs": 96,
+    "maxRenderFrameAtBuildingCount": 17,
+    "maxFullAreaRenderFrameMs": 40.7,
+    "renderDecision": "Full-area renderFrame did not exceed 50 ms at 1x. No look or geometry simplification.",
+    "profilingLimit": "rAF gaps include idle/compositor/software-render time. Main-thread samples are not GPU traces.",
+    "alignmentLimit": "Frame sample alignment is approximate by a few ms; each remaining gap has its own profile.",
+    "base": "Mixed/base parts still rebuild base geometry. This task guards identity, not base construction."
+  },
+  "streamProof": {
+    "normalAcknowledgements": 25,
+    "normalAcknowledgementsWithBacklog": 0,
+    "normal": "Every observed acknowledgement followed rendered geometry with drawn/received building counts equal.",
+    "throttledAcknowledgements": 25,
+    "throttledAcknowledgementsWithLaterPartBacklog": 14,
+    "throttledImportCompleteMs": 44490.2,
+    "throttledLastDrawMs": 63530.3,
+    "throttledActualInputsBuilt": 1662,
+    "throttledFinalDrawnIds": 1662,
+    "throttledFrames": {"count":428,"p50Ms":100,"p95Ms":233.2,"longestMs":850,"over100":190},
+    "qualification": "4x sender-waits proof fails: unchanged 1.5 s fallback advances parts before old ones are drawn.",
+    "scope": "scripts/demo-import remained read-only. No sender/plugin/protocol change."
+  },
+  "input": {
+    "path": "E:/BhuAayam-data/datasets/nyc-10013/nyc-10013-multimodal.zip",
+    "bytes": 14621643,
+    "sha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da",
+    "features": 2363,
+    "buildingInputs": 1662,
+    "difficult": "Same real pack at 4x Chromium CPU throttling, not duplicated/enlarged synthetic data.",
+    "repair": "The existing normalizer repaired one invalid source polygon; source records were not edited."
+  },
+  "evidence": {
+    "inventory": "docs/evidence/gf5/lv1/step0.json",
+    "comparison": "docs/evidence/gf5/lv1/lag.json",
+    "visualParity": "docs/evidence/gf5/lv1/parity.json",
+    "uiDesign": "docs/evidence/gf5/lv1/ui-design-check.json",
+    "before": "E:/BhuAayam-data/task-data/lv1/run-1791658537591",
+    "after": "E:/BhuAayam-data/task-data/lv1/run-1791659160666",
+    "throttledFailedCapture": "E:/BhuAayam-data/task-data/lv1/run-1791659310157",
+    "throttledCorrectedCapture": "E:/BhuAayam-data/task-data/lv1/run-1791659430765",
+    "sameIdentityReplay": "E:/BhuAayam-data/task-data/lv1/parity-1791660083589",
+    "remainingFrames": "E:/BhuAayam-data/task-data/lv1/comparison-1791660549350/remaining-frames.json",
+    "screenshots": "Each successful run has first.png, middle.png, final.png and aligned.png at 1440 x 900.",
+    "replayScreenshot": "The same-identity replay has final.png, using the before run's records, ids and camera.",
+    "checkLogs": "E:/BhuAayam-data/task-data/lv1/final-check-logs",
+    "finalTests": "E:/BhuAayam-data/task-data/lv1/final-tests.log",
+    "semanticRedTests": "E:/BhuAayam-data/task-data/lv1/red-sameinput-semantics.log",
+    "promotedRedTest": "E:/BhuAayam-data/task-data/lv1/promotion-before-fix.log"
+  },
+  "checks": [
+    {"command":"pnpm studio:test","phase":"before","exit":0,"studio":322,"scene":12},
+    {"command":"node docs/evidence/gf5/lv1/measure.mjs","phase":"before","exit":0},
+    {"command":"pnpm --filter @ulpin/scene exec vitest run","phase":"engine","exit":0},
+    {"command":"pnpm --filter @ulpin/scene typecheck","phase":"initial syntax/type fixes","exit":2},
+    {"command":"pnpm --filter @ulpin/scene typecheck","phase":"corrected","exit":0},
+    {"command":"pnpm --filter @ulpin/studio exec vitest run src/features/map","exit":0},
+    {"command":"pnpm studio:typecheck","phase":"Studio implementation","exit":0},
+    {
+      "command": "pnpm --filter @ulpin/scene exec vitest run src/incremental.test.ts",
+      "phase": "against staging engine",
+      "exit": 1,
+      "expected": true
+    },
+    {"command":"pnpm studio:test","phase":"after","exit":0,"studio":329,"scene":21},
+    {"command":"node docs/evidence/gf5/lv1/measure.mjs","phase":"after","exit":0},
+    {"command":"node docs/evidence/gf5/lv1/throttle.mjs","phase":"first capture","exit":1},
+    {"command":"node docs/evidence/gf5/lv1/throttle.mjs","phase":"corrected capture","exit":0},
+    {"command":"node docs/evidence/gf5/lv1/compare.mjs","phase":"initial analysis","exit":0},
+    {"command":"node docs/evidence/gf5/lv1/parity.mjs","phase":"same-identity replay","exit":0},
+    {"command":"node docs/evidence/gf5/lv1/compare.mjs","phase":"source-key analysis","exit":0},
+    {"command":"node docs/evidence/gf5/lv1/compare.mjs","phase":"final profile/compact evidence","exit":0},
+    {
+      "command": "pnpm --filter @ulpin/scene exec vitest run src/incremental.test.ts",
+      "phase": "promoted-geometry regression before fix",
+      "exit": 1,
+      "expected": true
+    },
+    {"command":"pnpm studio:test","phase":"final","exit":0,"studio":329,"scene":22},
+    {
+      "command": "pnpm --filter @ulpin/scene exec vitest run src/incremental.test.ts",
+      "phase": "three identity/addition regressions against staging; filter via -t",
+      "exit": 1,
+      "expected": true
+    },
+    {"command":"pnpm --filter @ulpin/scene test","phase":"restored final test harness","exit":0,"scene":22},
+    {"command":"pnpm --filter @ulpin/scene typecheck","phase":"final test harness","exit":0},
+    {"command":"pnpm studio:typecheck","phase":"final","exit":0},
+    {"command":"pnpm --filter @ulpin/scene typecheck","phase":"final","exit":0},
+    {"command":"node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs staging","exit":0},
+    {"command":"git diff --check","exit":0},
+    {"command":"freePort(5234); freePort(5235)","exit":0},
+    {"command":"node --check docs/evidence/gf5/lv1/*.mjs (each file)","exit":0}
+  ],
+  "failures": [
+    {
+      "signature": "4x analysis: firstFinalDraw undefined, 1042 of 1662 inputs built at capture.",
+      "cause": "Sender completion is not renderer completion under throttling.",
+      "attempt": "One measurement-only correction waits for final actual drawn count; no engine redesign.",
+      "result": "Corrected capture succeeds; 14 acknowledgements still have later-part backlog.",
+      "next": "Lead-owned sender/fallback qualification, outside this task's writable scope."
+    },
+    {
+      "signature": "Detail promotion exposes a label/pick before first drawn frame.",
+      "attempt": "Reproduced with a failing real-builder boundary test, then gate project/raycast on draw proof.",
+      "result": "Final full test suite and both type checks pass.",
+      "next": "No further correctness change planned."
+    },
+    {
+      "signature": "One inline read-only analysis command had an extra closing parenthesis (exit 1).",
+      "attempt": "Moved the intended render timing extraction into compare.mjs.",
+      "result": "Final artifact analysis passes (exit 0)."
+    }
+  ],
+  "deviations": [
+    "LV0 scripts were copied to owned LV1 destinations; unchanged invocation would write forbidden LV0 paths.",
+    "The copied probes add real build, queue and acknowledgement counters; post-profile screenshots do not tune code.",
+    "A separate same-id replay uses before state bytes unchanged, because independent upload ids are different.",
+    "Original LV0 serialized browser/profile functions remain copied; new engine/Studio helpers stay small.",
+    "Register, review workspace, roofprint map and portal have passing existing tests but no caller screenshots.",
+    "One initial test log was mistakenly written outside owned scratch; disclosed in step0 and left untouched."
+  ],
+  "safety": {
+    "ownedPorts": [5234,5235],
+    "portsStoppedAndVerifiedFree": true,
+    "backendProviderGpuRuntimeStarted": false,
+    "shellProxyReads": "Inherited LV0 shell GETs failed at proxy target 3188; no responding backend was used.",
+    "demo3194OrRehearsal21016Requests": false,
+    "heldoutOrForbiddenDataDirectoriesOpened": false,
+    "originalsModified": false,
+    "credentialsOrEnvReadEditedCommitted": false,
+    "otherWorktreesTouched": false,
+    "pushMergeDeploy": false,
+    "outsideScratchLog": "E:/BhuAayam-data/task-data/lv1-before-tests.log"
+  },
+  "report": {
+    "TASK": "LV1 / GF5 M2 - incremental scene parts; partial, not qualified.",
+    "WORKS":
+    "Whole-list reconciliation, retained meshes, 1662 builds, stable base, render-backed normal acknowledgements.",
+    "SEE IT": "node docs/evidence/gf5/lv1/measure.mjs; inspect lag.json and screenshots under the evidence paths above.",
+    "INPUTS":
+    "Real NYC 10013 ZIP: 2363 features / 1662 buildings; same pack at 4x; unchanged before-state visual replay.",
+    "GAPS": "Full slope 0.011219; 50 frames >100 ms; pixel change 2.42%; 4x fallback and four caller screenshots.",
+    "DESIGN": [
+      "Stable own-field inputs reconcile per id; new buildings drain in a 4 ms atomic-build budget.",
+      "Counts/acks follow completed renders; global tree work remains. No second performance design."
+    ],
+    "COMMITS": ["70e0b5f8","cdfc6733","4a9d86a3","95a77ddd","docs(studio): LV1 evidence (this commit)"],
+    "CHECKS": "Final studio:test 0 (329 Studio, 22 scene); both type checks 0; measurements/scan/diff/port checks 0.",
+    "NEXT":
+    "Lead review only the incremental checkpoint; follow-up for global/base/frame costs, sender proof and parity."
+  }
+}
