@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { IntakeFamilySchema, IntakeSizeClassSchema, IntakeStateSchema } from './intake';
 
 const id = z.string().uuid();
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -14,6 +15,9 @@ export const MappingChunkMetricsSchema = z.strictObject({ kind: z.literal('mappi
   needsInput: z.number().int().min(0).max(256), latencyMs: z.number().finite().nonnegative(),
   learnerVersion: z.string().regex(/^v[1-9]\d*$/).nullable() });
 export const CaseIngestionChangeSchema = z.discriminatedUnion('kind', [
+  z.strictObject({kind: z.literal('intake.item'), itemId: id, state: IntakeStateSchema,
+    family: IntakeFamilySchema, format: z.string().min(1).max(64).nullable(),
+    sizeClass: IntakeSizeClassSchema.nullable(), wave: z.number().int().min(1).max(4), pinnedByOfficer: z.boolean()}),
   z.strictObject({kind: z.literal('source.retained'), sourceId: id, sourceRevision: revision, status: z.literal('needs_input')}),
   z.strictObject({kind: z.literal('recipe.changed'), recipeId: id, recipeRevision: revision, sourceId: id,
     status: z.enum(['proposed', 'approved', 'executed'])}),
