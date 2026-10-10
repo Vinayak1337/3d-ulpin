@@ -39,15 +39,13 @@ export function IssueForm({ entries, refused, withReason, onChange }: {
   );
 }
 
-/** What was typed, as it was sent with Prepare: it cannot change while the rows below are the ones read. */
-export function TypedFacts({ typed, withReason }: { typed: Typed; withReason: boolean }) {
+/**
+ * The reason as it was sent with Prepare: it cannot change while the rows below are the ones read. The expiry is
+ * stated once, with those rows, as the registry answered it.
+ */
+export function TypedReason({ typed }: { typed: Typed }) {
   const why = <p className={styles.reason}>{typed.inclusionReason}</p>;
-  return (
-    <DescriptionList items={[
-      { label: 'Valid until', value: formatDateTime(typed.expiresAt) },
-      ...(withReason ? [{ label: 'Why this citation is included', value: why }] : []),
-    ]} />
-  );
+  return <DescriptionList items={[{ label: 'Why this citation is included', value: why }]} />;
 }
 
 /** The entry, the plan and the packet as the steps of Prepare answered them. */
