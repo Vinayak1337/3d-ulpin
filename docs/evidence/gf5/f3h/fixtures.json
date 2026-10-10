@@ -1,0 +1,53 @@
+{
+  "about": [
+    "The answers capture.mjs gives in place of the registry. The demo API is asked for GET reads and for the card",
+    "list (a POST read the Studio already sends) only. recorded: the stored R3 exchanges that",
+    "docs/evidence/gf5/f3e2/fixtures.json names by file. shaped: built here from a live answer or from the type",
+    "in packages/api-client/src/schema.d.ts and marked contract-shaped, not recorded."
+  ],
+  "reused": "docs/evidence/gf5/f3e2/fixtures.json (recorded.*, shaped.cardsNone); docs/evidence/gf5/f3d/responses.json",
+  "shaped": {
+    "unitAbsent": {
+      "marker": "contract-shaped, not recorded: the live canonical answer with two states of UNIT-3B changed",
+      "route": "GET /api/v1/buildings/{id}/canonical",
+      "change": {"levels[].spaces[].kind.state": "absent", "levels[].spaces[].areaM2.state": "absent"}
+    },
+    "registerWithoutFloor": {
+      "marker": "contract-shaped, not recorded: the live register answer without the entry of the floor",
+      "route": "GET /api/v1/buildings/{id}/register",
+      "change": "register[] loses the entry whose id is the floor's registryFloorId"
+    },
+    "cardsAcrossSnapshots": {
+      "marker": "contract-shaped, not recorded: one answer per snapshot of the live listing, newest first",
+      "route": "POST /api/v1/usp/property-cards/list",
+      "bySnapshot": ["none", "lost", "cards", "gateway"],
+      "none": "data.items = []",
+      "lost": "the connection is dropped: no answer",
+      "cards": "the card of docs/evidence/gf5/f3d/responses.json cardList, then olderCard",
+      "gateway": "502 with an empty body",
+      "olderCard": {
+        "marker": "the same row as another card that expired and was generated from the unit's revision 1",
+        "cardId": "00000000-0000-4000-8000-0000000000c1",
+        "expired": true,
+        "expiresAt": "2026-10-10T12:00:00.000Z",
+        "createdAt": "2026-10-10T11:00:00.000Z",
+        "targetRevision": 1,
+        "snapshotState": "changed_revision",
+        "resolverUrl": null
+      }
+    },
+    "gateway": {
+      "marker": "contract-shaped, not recorded: a gateway that answers 502 with an empty body",
+      "status": 502
+    },
+    "faultWithCode": {
+      "marker": [
+        "contract-shaped, not recorded: the 503 that apps/api answers when the state after an assignment",
+        "cannot be read back (code and sentence as the server's source has them)"
+      ],
+      "status": 503,
+      "body": {"error": {"code": "USP_POSTWRITE_MISSING", "message": "The identity post-state is unavailable.",
+        "retryable": true, "requestId": "00000000-0000-4000-8000-000000000000"}}
+    }
+  }
+}
