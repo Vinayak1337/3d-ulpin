@@ -2,7 +2,7 @@
   "schemaVersion": "ulpin-api-dataset-catalog/1",
   "purpose": "Source metadata for API integration; not installed records or permission grants.",
   "guide": "docs/api/real-sources.md",
-  "availabilityMeaning": "available refers to checked repository bytes; unavailable may mean retained outside Git. Neither proves an API import.",
+  "availabilityMeaning": "available refers to checked repository bytes; unavailable may mean retained outside Git; external repeats a manifest's recorded path, size and hash outside Git, not opened or verified here. None proves an API import.",
   "qualification": "Official provenance, permitted use, reference quality and runtime support are separate. Community OSM and research samples are not Indian official property records.",
   "servingObservation": {
     "schemaVersion": "ulpin-serving-observation/1",
@@ -3962,6 +3962,1310 @@
           }
         }
       ]
+    },
+    {
+      "manifest": "fixtures/usp/D8-messy-india/manifest.json",
+      "manifestSha256": "a4d7be15b399012fcb9877382dcb3e5de3880cbfc1634fac57213c791afa07a7",
+      "packId": "D8",
+      "profile": "messy-india-development-20261010",
+      "version": 4,
+      "description": "D1d checkpoint: three property-relevant development families, five originals; thresholds remain unmet.",
+      "apiInstallation": "not-verified",
+      "runtimeVerified": false,
+      "missingCapabilities": [
+        "twenty_five_property_positive_heldout_columns",
+        "four_new_property_development_families",
+        "three_new_property_heldout_families",
+        "native_authority_unit_inventory_CSV_XLSX_originals",
+        "native_tabular_JSON_import_route_unqualified",
+        "Devanagari_or_mixed_script_headers",
+        "Kruti_Dev_headers",
+        "Devanagari_digits",
+        "DD/MM/YYYY_record_dates",
+        "sq_yd_or_gaj_areas",
+        "acre_areas",
+        "UGF_LGF_Stilt_Podium_Mezz_B1_floor_literals",
+        "property_tax_register",
+        "building_permission_register_tabular",
+        "missing_prj_shapefile",
+        "naturally_wrong_or_doubtful_CRS",
+        "real_prompt_injection",
+        "expanded_dictionaries_for_LGD_and_GIS",
+        "native_HTML_table_import_route_unqualified"
+      ],
+      "assets": [
+        {
+          "id": "lgd-districts.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://www.data.gov.in/resource/local-government-directory-lgd-districts"
+          },
+          "attribution": "Ministry of Panchayati Raj / LGD via data.gov.in",
+          "permission": {
+            "state": "unconfirmed",
+            "reason": "Public access is not a reuse/training grant; owner approved local development."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "Ministry of Panchayati Raj / LGD via data.gov.in",
+          "acquiredAt": "2026-09-25T00:17:42.756870Z",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/ogd-lgd/lgd-districts.csv",
+            "sha256": "b8901c98350a4057d3371ce14228181e4bb12cc447f847490efee599a0e38b59",
+            "bytes": 89622,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "RERAP2311201700019-3.html",
+          "mediaType": "text/html",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP2311201700019-3"
+          },
+          "attribution": "Bihar Real Estate Regulatory Authority / registry submitter",
+          "permission": {
+            "state": "unconfirmed",
+            "reason": "Public access is not a reuse/training grant; owner approved local development."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "Bihar Real Estate Regulatory Authority / registry submitter",
+          "acquiredAt": "2026-09-30T12:55:36.8072729Z",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/br-building/RERAP2311201700019-3.html",
+            "sha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e",
+            "bytes": 132607,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "RERAP01282025205138-1.html",
+          "mediaType": "text/html",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP01282025205138-1"
+          },
+          "attribution": "Bihar Real Estate Regulatory Authority / registry submitter",
+          "permission": {
+            "state": "unconfirmed",
+            "reason": "Public access is not a reuse/training grant; owner approved local development."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "Bihar Real Estate Regulatory Authority / registry submitter",
+          "acquiredAt": "2026-10-09T19:09:45.878779+00:00",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/br-building/RERAP01282025205138-1.html",
+            "sha256": "7a1e3f74e142c0d02cb49a0cc2f6c9bdb4de7b434f30e3d8c809dbb57338b773",
+            "bytes": 152112,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "RERAP285201800427-9.html",
+          "mediaType": "text/html",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP285201800427-9"
+          },
+          "attribution": "Bihar Real Estate Regulatory Authority / registry submitter",
+          "permission": {
+            "state": "unconfirmed",
+            "reason": "Public access is not a reuse/training grant; owner approved local development."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "Bihar Real Estate Regulatory Authority / registry submitter",
+          "acquiredAt": "2026-10-09T19:09:47.130447+00:00",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/br-building/RERAP285201800427-9.html",
+            "sha256": "3f6801665a180f8febf69cea4d2cd4f413972493a695d40c6ea84994950ed24a",
+            "bytes": 143812,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "registered-page-3.html",
+          "mediaType": "text/html",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://rera.bihar.gov.in/RegisteredPP.aspx"
+          },
+          "permission": {
+            "state": "unconfirmed",
+            "reason": "Local development approved; reuse/ML rights not independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "Bihar Real Estate Regulatory Authority",
+          "acquiredAt": "2026-10-09T19:29:46.009019+00:00",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/br-project-list/registered-page-3.html",
+            "sha256": "26d3db17a4c42233e19448b81ba273393340883c55a9d7811fd21ae6847444e8",
+            "bytes": 65333,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "registered-page-4.html",
+          "mediaType": "text/html",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://rera.bihar.gov.in/RegisteredPP.aspx"
+          },
+          "permission": {
+            "state": "unconfirmed",
+            "reason": "Local development approved; reuse/ML rights not independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "Bihar Real Estate Regulatory Authority",
+          "acquiredAt": "2026-10-09T19:29:46.455175+00:00",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/br-project-list/registered-page-4.html",
+            "sha256": "9c73e08b9e379487e953e8d8752ff5fa9524b77f40c75414daf4ca6a1b9732bf",
+            "bytes": 65477,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d04-01.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/863209cb-4ced-4f51-b5c5-156939c50922/resource/51304220-abfd-4f4b-adc5-580ec1e15bc0/download/6ad468a8-b1b5-45dd-8a54-7e53123e56f9.csv",
+            "publisherPage": "https://data.opencity.in/dataset/gba-wards-delimitation-2025",
+            "resourceTitle": "Wards Populations of Draft Delimitation"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:06.064015+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-gba-wards-delimitation-2025/51304220-abfd-4f4b-adc5-580ec1e15bc0.csv",
+            "sha256": "c2086fd9c02c183c5f9bacdf3e83e7d9a69aa00c21784e1ba239599d957c88f0",
+            "bytes": 33078,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d05-01.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/863209cb-4ced-4f51-b5c5-156939c50922/resource/0b0b7da4-64e8-480c-bc2f-84c4ac86510e/download/gba-wards-divisions-mapping.csv",
+            "publisherPage": "https://data.opencity.in/dataset/gba-wards-delimitation-2025",
+            "resourceTitle": "GBA Wards Mapping to Divisions and Sub-divisions Tables"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:06.233511+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-gba-wards-delimitation-2025/0b0b7da4-64e8-480c-bc2f-84c4ac86510e.csv",
+            "sha256": "97e551bd51532d60fe081853e9e6abdee545ea1035fba7680f6d2179acdbc4fd",
+            "bytes": 10785,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d06-01.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/7f7e9fd2-5192-4ee1-baa4-aff17ecde1cf/resource/67273849-ffd2-4596-a909-f8b5e7302d4c/download/25f5154b-6b44-4eda-ae93-bb54f91037c2.csv",
+            "publisherPage": "https://data.opencity.in/dataset/bengaluru-urban-slums",
+            "resourceTitle": "Bengaluru List of Slums with Amenities - 2011"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:06.453641+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bengaluru-urban-slums/67273849-ffd2-4596-a909-f8b5e7302d4c.csv",
+            "sha256": "6656ca6decba5484796dd013ccdd94eb6443ca84ebe1f98b2b427208d207a93a",
+            "bytes": 50539,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d07-01.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/0603800b-c075-4443-afb6-56cafb8a228b/resource/4eb35671-9325-4db1-b920-b24a958c61f1/download/c525ba4d-1e82-442c-9d22-bfaa7e4de63f.csv",
+            "publisherPage": "https://data.opencity.in/dataset/bengaluru-urban-land-use-maps-2011",
+            "resourceTitle": "Land Use Type Index for the Maps"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:06.642044+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bengaluru-urban-land-use-maps-2011/4eb35671-9325-4db1-b920-b24a958c61f1.csv",
+            "sha256": "7704c93189a1c4026033c35c7c98f9a526e5ed75618084a54f07d178f7b0df18",
+            "bytes": 936,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d08-01.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/03e23dd0-8f29-4249-a28a-67bdf8fd07b3/resource/1d99702f-8dfc-4676-bd60-bff8a3beb61b/download/ka_dist_rainfall_2025.csv",
+            "publisherPage": "https://data.opencity.in/dataset/karnataka-annual-rainfall-districts-taluks-and-hoblis",
+            "resourceTitle": "District Level Rainfall in 2025"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:06.904299+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-karnataka-annual-rainfall-districts-taluks-and-hoblis/1d99702f-8dfc-4676-bd60-bff8a3beb61b.csv",
+            "sha256": "da8de386ff23b819049e93bde9ebafc156dc8ba2b8c082e24c66985fbcdb6565",
+            "bytes": 2363,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d08-02.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/03e23dd0-8f29-4249-a28a-67bdf8fd07b3/resource/ab0fe5b4-254a-456e-9e23-544161d5fad6/download/f28d92e7-7e61-4d58-84a7-52e2ab6ee469.csv",
+            "publisherPage": "https://data.opencity.in/dataset/karnataka-annual-rainfall-districts-taluks-and-hoblis",
+            "resourceTitle": "Karnataka Rainfall in 2024 for Districts"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:07.274194+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-karnataka-annual-rainfall-districts-taluks-and-hoblis/ab0fe5b4-254a-456e-9e23-544161d5fad6.csv",
+            "sha256": "aa08e2d0f8362cf15072759778355df1e495dd3cd9908febeee025e66bd4d63b",
+            "bytes": 2284,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d09-01.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/03e23dd0-8f29-4249-a28a-67bdf8fd07b3/resource/b1b9805f-1df4-4049-bce7-31563c33710f/download/karnataka_rainfall_2025_table1_1.csv",
+            "publisherPage": "https://data.opencity.in/dataset/karnataka-annual-rainfall-districts-taluks-and-hoblis",
+            "resourceTitle": "District Taluk and Hobli Level Rainfall in 2025"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:07.096085+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-karnataka-annual-rainfall-districts-taluks-and-hoblis/b1b9805f-1df4-4049-bce7-31563c33710f.csv",
+            "sha256": "bc14b7f35707d180f0c9839b6e2f4ed0229b366a4dc0c57fcc69d9b1155c9678",
+            "bytes": 31638,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d09-02.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/03e23dd0-8f29-4249-a28a-67bdf8fd07b3/resource/9a86a46b-e7ca-4703-a17e-91daf9af1385/download/0ec5ad8d-be55-4e92-a942-6918c025735b.csv",
+            "publisherPage": "https://data.opencity.in/dataset/karnataka-annual-rainfall-districts-taluks-and-hoblis",
+            "resourceTitle": "Karnataka Rainfall in 2024 at Taluk and Hobli Level"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:07.498824+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-karnataka-annual-rainfall-districts-taluks-and-hoblis/9a86a46b-e7ca-4703-a17e-91daf9af1385.csv",
+            "sha256": "f467d4b03776ef4394126cca49afb5bcb3603d3bee2a766031dd30d07c252f3d",
+            "bytes": 31377,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d10-01.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/3e28a58b-22d4-4f6a-89ac-9738693eb745/resource/cf526819-7b0c-497a-b681-522d72db9b65/download/india_gw_2025.csv",
+            "publisherPage": "https://data.opencity.in/dataset/national-compilation-of-dynamic-ground-water-resources-of-india-2025",
+            "resourceTitle": "State of GW Extraction in States and UTs"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:07.700877+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-national-compilation-of-dynamic-ground-water-resources-of-india-2025/cf526819-7b0c-497a-b681-522d72db9b65.csv",
+            "sha256": "9c20032a80044527b24decd365e20e321de029f80453d12e4232b7e2ec6e7111",
+            "bytes": 3637,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d10-02.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/3e28a58b-22d4-4f6a-89ac-9738693eb745/resource/9f5bad83-69fd-4f61-a501-c5c7fc9d22d5/download/kar_gw_2025.csv",
+            "publisherPage": "https://data.opencity.in/dataset/national-compilation-of-dynamic-ground-water-resources-of-india-2025",
+            "resourceTitle": "Karnataka - State of GW Extraction"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:07.867286+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-national-compilation-of-dynamic-ground-water-resources-of-india-2025/9f5bad83-69fd-4f61-a501-c5c7fc9d22d5.csv",
+            "sha256": "82990ba28b2a10161004c99e64f089aa1fb135f8de7d318358820d19196dc2a1",
+            "bytes": 4706,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d10-03.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/3e28a58b-22d4-4f6a-89ac-9738693eb745/resource/1ebd568d-0d9b-495d-81fd-3101d27e0f64/download/major_cities_2025.csv",
+            "publisherPage": "https://data.opencity.in/dataset/national-compilation-of-dynamic-ground-water-resources-of-india-2025",
+            "resourceTitle": "Major Cities - State of GW Extraction"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:08.024629+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-national-compilation-of-dynamic-ground-water-resources-of-india-2025/1ebd568d-0d9b-495d-81fd-3101d27e0f64.csv",
+            "sha256": "1b65007ee40c8825392823b82a29e22ecc602c1aa9d613bd56441f97f040e9b1",
+            "bytes": 1441,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d11-01.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/3e28a58b-22d4-4f6a-89ac-9738693eb745/resource/d9ca9478-5302-4974-b7c5-ebbea5f5cd03/download/major_cities_taluks_cat_2025.csv",
+            "publisherPage": "https://data.opencity.in/dataset/national-compilation-of-dynamic-ground-water-resources-of-india-2025",
+            "resourceTitle": "Major Cities - Categorisation of Taluks by GW Extraction"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:08.190063+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-national-compilation-of-dynamic-ground-water-resources-of-india-2025/d9ca9478-5302-4974-b7c5-ebbea5f5cd03.csv",
+            "sha256": "ceb36ecb3d456ff100964a87cde33ec13fead27e48feed7356716700d23eac60",
+            "bytes": 1426,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d12-01.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/375cd901-83a6-48c8-8c5b-b87aadb44731/resource/788533dc-868e-4425-9d75-f8a96ec5da74/download/12a62dc9-e38a-4af9-9d94-428d33d9d2e0.csv",
+            "publisherPage": "https://data.opencity.in/dataset/tamil-nadu-district-level-gddp-data",
+            "resourceTitle": "District Level GDDP at Constant Prices from 2011-12 to 2019-20"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:08.390827+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-tamil-nadu-district-level-gddp-data/788533dc-868e-4425-9d75-f8a96ec5da74.csv",
+            "sha256": "04d0bf9271e83e75a05165c163a74d3f06a3d7828afde43bf1cc223747cbccf2",
+            "bytes": 2975,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d12-02.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/375cd901-83a6-48c8-8c5b-b87aadb44731/resource/64d60963-38f5-44e3-a206-a15f9ec30725/download/6ad86614-38d2-49fc-b3b6-218d0e25bd82.csv",
+            "publisherPage": "https://data.opencity.in/dataset/tamil-nadu-district-level-gddp-data",
+            "resourceTitle": "District Level GDDP at Current Prices from 2011-12 to 2019-20"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:08.560482+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-tamil-nadu-district-level-gddp-data/64d60963-38f5-44e3-a206-a15f9ec30725.csv",
+            "sha256": "eb92002248c07c41aa455f86ad4c2c54346c8c0ab2e8da36ed5e2f989bd1a1d6",
+            "bytes": 2953,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d13-01.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/375cd901-83a6-48c8-8c5b-b87aadb44731/resource/0c2ae7eb-dab7-4abe-835f-c0ea42a37bdb/download/3f6218b3-5d15-4463-91de-9179b66aa86b.csv",
+            "publisherPage": "https://data.opencity.in/dataset/tamil-nadu-district-level-gddp-data",
+            "resourceTitle": "District Level Sector-wise GDDP and Per-Capita Income at Current Prices in 2022-23"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:08.735040+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-tamil-nadu-district-level-gddp-data/0c2ae7eb-dab7-4abe-835f-c0ea42a37bdb.csv",
+            "sha256": "7e023954acd06613692c29f85e7a4fb62cd3de4fafb4b670cdb98dd26624fbe1",
+            "bytes": 7893,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d13-02.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/375cd901-83a6-48c8-8c5b-b87aadb44731/resource/f37ad598-5f0c-4af4-9e3f-22ef9b9140c9/download/c13f0ccc-729f-41b5-92cd-bafca4b4fd5a.csv",
+            "publisherPage": "https://data.opencity.in/dataset/tamil-nadu-district-level-gddp-data",
+            "resourceTitle": "District Level Sector-wise GDDP and Per-Capita Income at Constant Prices in 2022-23"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:08.945714+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-tamil-nadu-district-level-gddp-data/f37ad598-5f0c-4af4-9e3f-22ef9b9140c9.csv",
+            "sha256": "6c87ace0dfd9b5bc80ce66b5706d4ca40012671378615a5b73439a0c697da5fd",
+            "bytes": 7643,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d14-01.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/49c4e917-e39a-4105-9ac2-47959e2373f4/resource/a7cd64ac-dada-4c3c-93d3-8880e0e6965e/download/56f6deb2-c7ad-4ade-88fb-92190eafe19b.csv",
+            "publisherPage": "https://data.opencity.in/dataset/bmtc-operation-performance-data",
+            "resourceTitle": "BMTC Fleet Utilization - 2016-20"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:09.903769+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bmtc-operation-performance-data/a7cd64ac-dada-4c3c-93d3-8880e0e6965e.csv",
+            "sha256": "434d58039499e13eaedfc7a72cc262790a4b0e674583582877ca3ca4dfa6862e",
+            "bytes": 1548,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d15-01.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/49c4e917-e39a-4105-9ac2-47959e2373f4/resource/fda5d502-4e92-4616-a9a1-bd5d2abfb3f7/download/fda5d502-4e92-4616-a9a1-bd5d2abfb3f7.csv",
+            "publisherPage": "https://data.opencity.in/dataset/bmtc-operation-performance-data",
+            "resourceTitle": "BMTC Operational Performance Data from 2012 to 2026"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:10.071293+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bmtc-operation-performance-data/fda5d502-4e92-4616-a9a1-bd5d2abfb3f7.csv",
+            "sha256": "711e8350900b3e1a8a748373f2b5649a227b9c392cd519988aa12da2291c13b6",
+            "bytes": 3085,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d15-02.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/c7bf200b-03e1-403f-99be-487d3c4a294a/resource/0c917fe2-aaef-4873-95f3-4da9e50620f3/download/0c917fe2-aaef-4873-95f3-4da9e50620f3.csv",
+            "publisherPage": "https://data.opencity.in/dataset/chennai-mtc-performance-data",
+            "resourceTitle": "Chennai MTC Performance Data - 2020-21 to 2025-26 "
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:10.238060+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-chennai-mtc-performance-data/0c917fe2-aaef-4873-95f3-4da9e50620f3.csv",
+            "sha256": "5bc4c11fb7d7d7bda945b03eaac97464238fdbd28e0c327c734a2bbaec15420e",
+            "bytes": 859,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d16-01.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/118434fe-dd69-4dd3-a6a8-4c577326cc34/resource/c63ef5a0-e7d2-49b3-9c88-5ca5ce309fcf/download/cmrl-metro-ridership-2023-26.csv",
+            "publisherPage": "https://data.opencity.in/dataset/chennai-metro-monthly-usage-data",
+            "resourceTitle": "Chennai Metro Monthly Ridership Data from 2023 to June 2026"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": "Other (Public Domain)",
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:52:10.398677+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-chennai-metro-monthly-usage-data/c63ef5a0-e7d2-49b3-9c88-5ca5ce309fcf.csv",
+            "sha256": "9c147a1a4f2de54b67f019ce84930922283f0dbb3609d3fc4f3ee4724755b156",
+            "bytes": 3045,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d17-01.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/87b978d1-352e-4b90-aa2c-9991e55d3425/resource/01d485da-6509-4555-ab4c-036720ad0c51/download/3648198e-a595-4c6b-b76e-2ec180fc9f14.csv",
+            "publisherPage": "https://data.opencity.in/dataset/bbmp-ward-information",
+            "resourceTitle": "BBMP Ward Information"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": null,
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:56:00.572981+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bbmp-ward-information/01d485da-6509-4555-ab4c-036720ad0c51.csv",
+            "sha256": "26b70763b5c9dcc84d86f70f9f7da399ee3acced1a3233406cd69cbc4c751dcc",
+            "bytes": 19452,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d17-02.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/87b978d1-352e-4b90-aa2c-9991e55d3425/resource/7521f351-1bf6-429b-962a-028fbcdaf442/download/47c96a83-679b-4937-8287-09375946ac4f.csv",
+            "publisherPage": "https://data.opencity.in/dataset/bbmp-ward-information",
+            "resourceTitle": "Mapping of 225 Wards to Assembly and Parliamentary Constituencies"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": null,
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:56:01.226677+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bbmp-ward-information/7521f351-1bf6-429b-962a-028fbcdaf442.csv",
+            "sha256": "c4acdc21cc978ce70058e7a060ecbea35f21286db0005f9c4f58923d4e1690a8",
+            "bytes": 12832,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d18-01.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "publisher_native_csv_possible_authority_transcription",
+            "url": "https://data.opencity.in/dataset/87b978d1-352e-4b90-aa2c-9991e55d3425/resource/ebf9c61c-338f-4f11-888a-914493100dc2/download/e08d0f26-d02b-4e0f-ad5b-4049048a9561.csv",
+            "publisherPage": "https://data.opencity.in/dataset/bbmp-ward-information",
+            "resourceTitle": "Constituencies to Wards Mapping for Old and New Wards"
+          },
+          "attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata",
+          "permission": {
+            "state": "unconfirmed",
+            "publisherLicenseLabel": null,
+            "reason": "Portal label observed only; no upstream/publication/ML grant independently established."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "OpenCity / Oorvani Foundation",
+          "acquiredAt": "2026-10-09T19:56:01.047249+00:00",
+          "geography": "India, public aggregate/administrative statistics; scope as publisher resource title",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bbmp-ward-information/ebf9c61c-338f-4f11-888a-914493100dc2.csv",
+            "sha256": "5e246c9a5a1ff95357b5ed3d5797e9d6fc53de6706fa5beb1d191e6135191f87",
+            "bytes": 16714,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d19-01.xlsx",
+          "mediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "classification": "observed",
+          "origin": {
+            "kind": "official_publisher_original_xlsx",
+            "url": "https://rbidocs.rbi.org.in/rdocs/Publications/DOCs/18T_HBIE31072026F66166DD083C4F4AA4F2CDF71DBE801B.XLSX",
+            "publisherPage": "https://www.rbi.org.in/Scripts/PublicationsView.aspx?id=23843",
+            "resourceTitle": "Table 18 : Area Under Cultivation - Foodgrains 12 kb 198 kb"
+          },
+          "permission": {
+            "state": "unconfirmed",
+            "reason": "Public access is not a resource-specific redistribution/training grant."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "Reserve Bank of India",
+          "acquiredAt": "2026-10-09T19:58:21.214477+00:00",
+          "geography": "India; national aggregate statistics, not parcel/property inventories",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/rbi-development-table-18/original.xlsx",
+            "sha256": "fc3f75eafdb7b954348ac182d1db3c3a558fc08aecf072d6a3807735d15e38a2",
+            "bytes": 12398,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d20-01.xlsx",
+          "mediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "classification": "observed",
+          "origin": {
+            "kind": "official_publisher_original_xlsx",
+            "url": "https://rbidocs.rbi.org.in/rdocs/Publications/DOCs/19T_HBIE3107202629B99CB632CF4D45B187E8C67BE219D6.XLSX",
+            "publisherPage": "https://www.rbi.org.in/Scripts/PublicationsView.aspx?id=23844",
+            "resourceTitle": "Table 19 : Area Under Cultivation - Major Commercial Crops 14 kb 201 kb"
+          },
+          "permission": {
+            "state": "unconfirmed",
+            "reason": "Public access is not a resource-specific redistribution/training grant."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "Reserve Bank of India",
+          "acquiredAt": "2026-10-09T19:58:22.102339+00:00",
+          "geography": "India; national aggregate statistics, not parcel/property inventories",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/rbi-development-table-19/original.xlsx",
+            "sha256": "28dc781d07775eba77d32b9103c6cf3681ffe25f02c97f4437dd989095ec8c21",
+            "bytes": 14456,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d21-01.xlsx",
+          "mediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "classification": "observed",
+          "origin": {
+            "kind": "official_publisher_original_xlsx",
+            "url": "https://rbidocs.rbi.org.in/rdocs/Publications/DOCs/22T_HBIE310720268357D2532C0D48E0B1903B23F39DF1B8.XLSX",
+            "publisherPage": "https://www.rbi.org.in/Scripts/PublicationsView.aspx?id=23847",
+            "resourceTitle": "Table 22 : Pattern of Land Use and Select Inputs for Agricultural Production 13 kb 199 kb"
+          },
+          "permission": {
+            "state": "unconfirmed",
+            "reason": "Public access is not a resource-specific redistribution/training grant."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "Reserve Bank of India",
+          "acquiredAt": "2026-10-09T19:58:22.835416+00:00",
+          "geography": "India; national aggregate statistics, not parcel/property inventories",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/rbi-development-table-22/original.xlsx",
+            "sha256": "fdaa51f7970249e550dae33185c57563505e2ce42238c94f6aa839ddfe2b9ecd",
+            "bytes": 13351,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d22-schemes-yes.json",
+          "mediaType": "application/json",
+          "classification": "observed",
+          "origin": {
+            "kind": "issuing_authority_public_json_table",
+            "url": "https://propertysalesapi.tnhb.org.in/api/getSchemeDataByPublishedStatus?publishedStatus=Yes",
+            "publisherPage": "https://propertysales.tnhb.tn.gov.in/all-schemes"
+          },
+          "attribution": "Tamil Nadu Housing Board public property-sales catalogue",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": null,
+            "reason": "Public GET; no explicit reuse/ML grant."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "Tamil Nadu Housing Board",
+          "acquiredAt": "2026-10-10T09:03:54.128858+00:00",
+          "geography": "Tamil Nadu, India",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/d1c/dev/schemes-yes.json",
+            "sha256": "e7d69b4ade9e49d5f6b7c0574864284acf2032b60977f296f018e5957cd476b5",
+            "bytes": 243327,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d22-schemes-no.json",
+          "mediaType": "application/json",
+          "classification": "observed",
+          "origin": {
+            "kind": "issuing_authority_public_json_table",
+            "url": "https://propertysalesapi.tnhb.org.in/api/getSchemeDataByPublishedStatus?publishedStatus=No",
+            "publisherPage": "https://propertysales.tnhb.tn.gov.in/all-schemes"
+          },
+          "attribution": "Tamil Nadu Housing Board public property-sales catalogue",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": null,
+            "reason": "Public GET; no explicit reuse/ML grant."
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "horizontalUnit": null,
+            "verticalReference": null,
+            "sourceDate": null
+          },
+          "issuer": "Tamil Nadu Housing Board",
+          "acquiredAt": "2026-10-10T09:03:54.557115+00:00",
+          "geography": "Tamil Nadu, India",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/d1c/dev/schemes-no.json",
+            "sha256": "010c71f25d114f63c65955738075a1c9c160fce4105b2b8ee43335e9b3eea33e",
+            "bytes": 229451,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d23-pmc-library-inventory.xlsx",
+          "mediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "origin": {
+            "kind": "issuing_authority_public_xlsx",
+            "url": "https://opendata.pmc.gov.in/opendata/196db7b1-a4f6-4959-9b16-6235ccd6021b.xlsx"
+          },
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "not stated"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "Pune Municipal Corporation",
+          "acquiredAt": "2026-10-10T09:58:57.735050+00:00",
+          "geography": "Pune, Maharashtra, India",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/d1c/dev/pmc-library-inventory.xlsx",
+            "sha256": "c43f624104cf1e48f5dfb35e79b8ae4abb7ec692ff742c6b18555530b7f9087a",
+            "bytes": 12814,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d23-pmc-office-inventory.xlsx",
+          "mediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "origin": {
+            "kind": "issuing_authority_public_xlsx",
+            "url": "https://opendata.pmc.gov.in/opendata/204e9d18-f262-4833-b79e-f1a4746f778a.xlsx"
+          },
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "not stated"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "Pune Municipal Corporation",
+          "acquiredAt": "2026-10-10T09:58:57.746824+00:00",
+          "geography": "Pune, Maharashtra, India",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/d1c/dev/pmc-office-inventory.xlsx",
+            "sha256": "2dd74f6e729f0c6dfbf092930e3ebbad7d8158cd6ea82b6fd4d4329ffbece38d",
+            "bytes": 9262,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "mi-d24-ms-india-demo-partition.csv.gz",
+          "mediaType": "application/gzip",
+          "origin": {
+            "kind": "vendor_prediction_native_geojsonl",
+            "url": "https://bfppub.z5.web.core.windows.net/2026-08-13/global-buildings.geojsonl/RegionName=India/quadkey=123121303/part-00170-110f5303-ff85-4c71-a2bf-c6070024fec8.c000.csv.gz"
+          },
+          "permission": {
+            "state": "confirmed",
+            "licence": "CDLA-Permissive-2.0"
+          },
+          "reference": {
+            "horizontalCrs": "GeoJSON WGS84 longitude/latitude",
+            "verticalReference": null
+          },
+          "issuer": "Microsoft",
+          "acquiredAt": "2026-10-10T09:41:06.283238+00:00",
+          "geography": "India; native partition containing the existing Uttam Nagar demo bounds",
+          "split": "dev",
+          "purpose": "test_only",
+          "licenceCitation": "https://github.com/microsoft/GlobalMLBuildingFootprints#license",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/messy-india/d1c/dev/ms-india-demo-partition.csv.gz",
+            "sha256": "e4a19ea244729c3967c0d47ab3e6b93a3d9ec167971ce73b4e52e1b53ba38256",
+            "bytes": 131950214,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        }
+      ]
     }
   ],
   "retainedOfficialTestSources": [
@@ -4272,7 +5576,9 @@
         "externalRoot": "E:/BhuAayam-data/datasets/messy-india-pool",
         "repositoryBytesVerified": false,
         "originalHashesVerified": true,
-        "formats": ["HTML source-native tables"]
+        "formats": [
+          "HTML source-native tables"
+        ]
       },
       "items": [
         {
@@ -4410,7 +5716,11 @@
       "manifestSha256": "5accd9267497ff89f1e579d2d48d70325aa0cf8df93219300967618e9c679bf1",
       "sourceCount": 7,
       "additionalEvaluatorOnly": {
-        "sources": 2, "families": 2, "columns": 4, "scorable": 2, "positiveTargets": 2,
+        "sources": 2,
+        "families": 2,
+        "columns": 4,
+        "scorable": 2,
+        "positiveTargets": 2,
         "sourceListSha256": "9a1aba1349b91280976db11f60406d64ec84b334431635bd1c04736c58961e47",
         "qualification": "Candidate research semantics only; not official property, measurement or registry truth."
       },
@@ -4503,10 +5813,18 @@
         "repositoryBytesVerified": false,
         "pins": "Per-record sources contain original URL, authority retrieval date, exact hash/size/path and page or HTML-cell locator"
       },
-      "partition": { "demoProjects": 2, "extraDevelopmentProjects": 3, "extraHoldoutProjects": 3, "allocationUnit": "whole project, including all tower/page/revision relatives" },
+      "partition": {
+        "demoProjects": 2,
+        "extraDevelopmentProjects": 3,
+        "extraHoldoutProjects": 3,
+        "allocationUnit": "whole project, including all tower/page/revision relatives"
+      },
       "horizontalCrs": null,
       "verticalReference": "building_relative drawing labels only; global datum unknown",
-      "terms": { "state": "unconfirmed", "limitations": "Owner-approved public local development; no source-specific launch/redistribution/training grant" },
+      "terms": {
+        "state": "unconfirmed",
+        "limitations": "Owner-approved public local development; no source-specific launch/redistribution/training grant"
+      },
       "apiInstallation": "not-installed",
       "standingInstallation": false,
       "runtimeVerified": false,
@@ -4531,11 +5849,16 @@
         "repositoryBytesVerified": false,
         "scope": "HTTP response originals including discovery/transport attempts; not 39 admitted dataset files; reused copies separately carry lineage"
       },
-      "terms": { "state": "unconfirmed", "limitations": "Public access and acquisition are not reuse, ML or publication grants" },
+      "terms": {
+        "state": "unconfirmed",
+        "limitations": "Public access and acquisition are not reuse, ML or publication grants"
+      },
       "apiInstallation": "not-installed",
       "standingInstallation": false,
       "runtimeVerified": false,
-      "limitations": ["OGD API connection failures, unsupported GMDA pagination and initial Bihar urllib TLS failures retained; Windows system-trusted admitted registry/PDF/pagination inputs selected without source edits."]
+      "limitations": [
+        "OGD API connection failures, unsupported GMDA pagination and initial Bihar urllib TLS failures retained; Windows system-trusted admitted registry/PDF/pagination inputs selected without source edits."
+      ]
     },
     {
       "manifest": "/Users/vinayak/.codex/task-data/ai03b-nyc-streamed/receipt.json",
@@ -7688,7 +9011,10 @@
         "externalRoot": "E:/BhuAayam-data/datasets/cubicasa5k/p2-test-20261011",
         "originalPairsRetained": 100,
         "originalBytes": 42938141,
-        "formats": ["publisher F1_scaled.png", "publisher model.svg"],
+        "formats": [
+          "publisher F1_scaled.png",
+          "publisher model.svg"
+        ],
         "repositoryBytesVerified": false,
         "privateManifestSha256": "7a8fc5f76d9d0421b13fedb75d62961efd88b653cf97746cdc7482781ce5357c"
       },

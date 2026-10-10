@@ -1,0 +1,110 @@
+{
+  "task": "C1 — The dataset catalogue check runs again",
+  "gate": "GF0",
+  "base": "069f771f",
+  "commits": {
+    "fix": "430adfdb",
+    "catalogue": "9484b7f7"
+  },
+  "failureOnBase": "build-dataset-catalog.py --check: KeyError: 'content' (exit 1)",
+  "manifestsWithAssetsLackingContent": {
+    "fixtures/usp/D8-messy-india/manifest.json": {
+      "assets": 37,
+      "lackingContent": 37,
+      "splits": {
+        "dev": 37
+      },
+      "pinFields": [
+        "original.externalPath",
+        "original.sha256",
+        "original.bytes"
+      ]
+    }
+  },
+  "packs": {
+    "before": 9,
+    "after": 10
+  },
+  "assets": {
+    "before": 32,
+    "after": 69
+  },
+  "assetsByPackAndContentState": {
+    "fixtures/usp/D1/single-roof/manifest.json": {
+      "available": 4
+    },
+    "fixtures/usp/D3/nwic-boundaries-v1/manifest.json": {
+      "unavailable": 1,
+      "available": 2
+    },
+    "fixtures/usp/D3/official-scale-v1/manifest.json": {
+      "unavailable": 1,
+      "available": 1
+    },
+    "fixtures/usp/D4/gf0-context-v1/manifest.json": {
+      "available": 2
+    },
+    "fixtures/usp/D4/gf0-structured-codes-v1/manifest.json": {
+      "available": 2
+    },
+    "fixtures/usp/D4/reference-area-gurugram-59-63a/manifest.json": {
+      "unavailable": 4,
+      "available": 2
+    },
+    "fixtures/usp/D5/gf0-multiunit-v1/manifest.json": {
+      "unavailable": 1,
+      "available": 3
+    },
+    "fixtures/usp/D5/gf0-public-plans-v1/manifest.json": {
+      "unavailable": 5,
+      "available": 2
+    },
+    "fixtures/usp/D5/official-runtime-pdf-v1/manifest.json": {
+      "unavailable": 1,
+      "available": 1
+    },
+    "fixtures/usp/D8-messy-india/manifest.json": {
+      "external": 37
+    }
+  },
+  "addedPacks": {
+    "fixtures/usp/D8-messy-india/manifest.json": {
+      "external": 37
+    }
+  },
+  "earlierPackEntriesUnchanged": true,
+  "retainedExternalSources": {
+    "before": 42,
+    "after": 42,
+    "valuesUnchanged": true,
+    "authoredOnlyInPublishedCatalogue": [
+      "t1-municipal-unlabelled-pool-20261010",
+      "d1-messy-india-development-20261010",
+      "d1-messy-india-heldout-20261010",
+      "d2-rera-storey-source-truth-20261010",
+      "d1-d2-public-acquisition-ledger-20261010",
+      "d1b-messy-india-acquisition-ledger-20261010",
+      "p2-cubicasa5k-test100-20261011"
+    ],
+    "note": "Absent from docs/api/retained-local-datasets.json; write mode would have erased them before this fix."
+  },
+  "externalFilesOpened": 0,
+  "checks": {
+    "build-dataset-catalog.py --check (worktree)": 0,
+    "build-dataset-catalog.py --check (LF export of 9484b7f7)": 0,
+    "build-dataset-catalog.py --check after changing one D8 pin in a scratch copy": 1,
+    "pytest --noconftest scripts/api/test_dataset_catalog.py (3 passed)": 0,
+    "ruff check on both scripts": 0,
+    "check.py (LF export)": {
+      "exit": 1,
+      "message": "API-DOC: runtime receipt changed"
+    },
+    "all 574 producer pins by check.py's rule (LF export)": 0,
+    "git diff --check staging...HEAD": 0
+  },
+  "unqualified": [
+    "check.py stops at the receipt hash; with that one line removed in a scratch copy it stops next at 'native operations differ from baseline plus declared additions' on staging too: POST /api/v1/buildings/{buildingId}/source-spaces is in openapi.json but not in source-pins.json operations.",
+    "fixtures/usp/D8-messy-india/verify-d1c.py requires the catalogue's packs section to equal commit 2432f8e4; it was not run here (it reads held-out data) and its verify_catalogue step will now reject the added D8 pack.",
+    "D8 is listed twice: as a pack and as retained external source d1-messy-india-development-20261010."
+  ]
+}
