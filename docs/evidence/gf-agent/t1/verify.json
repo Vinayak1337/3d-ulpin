@@ -1,0 +1,24 @@
+{
+  "accepted": 45,
+  "rejected": 0,
+  "examples": 411,
+  "verifiedExamples": 398,
+  "rejections": [],
+  "linkedProfiles": 411,
+  "outputDirectory": "E:\\BhuAayam-data\\task-data\\t1\\verifier\\labels-1791596171092",
+  "task": "A4-step-0",
+  "gate": "GF-AGENT",
+  "inputLines": 411,
+  "normalizedTables": 45,
+  "method": "model:claude-opus-5-5@dev-2026-10",
+  "teacherLabelsSha256": "6b082a60f780260fd1719e3fe26e1b09444c59fbeeb59d408395f08b289a925d",
+  "pseudoLabelsSha256": "1c20faaf809d8fd9f98dfaa0a0d953900e133516ddb279a399505b4007b2d46f",
+  "reportSha256": "b34c9c638b92fc38f31746b66b8ef2eec6ad4a700ed1a787ab0eb3196e06fddb",
+  "trace": "report.json labels[].inputLines and rejections[].inputLines preserve original labels file line numbers",
+  "qualification": "pseudo_label; deterministic verified flag does not mean semantic truth or officer approval",
+  "checks": {
+    "agentTypecheck": 0,
+    "twoTableAndDuplicateRegression": 0,
+    "leadLabelRerun": 0
+  }
+}
