@@ -101,8 +101,11 @@ answer was recorded, its HTTP status, tokens, response hash and actual micro-INR
 ML-D3 gets registry-scored development answers but no independent floor-label truth. AG-D1 gets its input (the
 recorded answers) but needs the agent-to-proposal adapter, which is another task.
 
-The two Tower 3 plan documents are asked without one OCR line each: the line begins with `[`, the gateway's text
-minimizer refuses it, and the plan names it by position under `neverSent` and in the step's `omitted`.
+The two Tower 3 plan documents are asked without five OCR lines, each named by position under `neverSent` and in
+its step's `omitted` with its reason. Three (two in the document of step 11, one in that of step 12) carry
+`NOT_SELECTED_UNIT_NUMBER`: the line's only matching word is a numbered unit, as in an address, so it is not
+selected. Two (one in each) carry `MODEL_PROMPT_PRIVACY`: the line begins with `[` and the gateway's text
+minimizer refuses it.
 The ledger rows themselves are read from PostgreSQL by the runtime owner and matched by request hash.
 
 ## 7. Stop rules
@@ -115,6 +118,19 @@ The ledger rows themselves are read from PostgreSQL by the runtime owner and mat
   document-agent cap.
 - After a stop every later step asks the replay store only and ends in `needs_input` or `teacher_unavailable`;
   its receipt says `afterStop`. Changing the key is the owner's decision, never this run's.
+
+With a list of keys there is one exception to the first two rules. When the gateway answers
+`MODEL_QUOTA_EXHAUSTED` or `MODEL_CREDENTIAL_INVALID` marked retryable, it has closed that call at zero with its
+receipt and marked the key, so the step's receipt records `key_moved_on` with the code under `keyMoves`, the run
+waits the gateway's pace, and the same step is attempted once more. The new attempt is a new call (a new
+invocation key at attempt 1), because the gateway answers the closed call's own key with the same refusal and
+keeps attempt 2 for a repair. After a second such answer on one step, the step is attempted again only while the
+report of key states shows a key without a mark, and a run makes at most one extra attempt per key of the policy.
+`MODEL_KEYS_EXHAUSTED` ends the run at once: every key is marked, nothing was sent, and the receipt lists the steps
+not reached under `notRun`. A moved-on call costs nothing, so the ceiling in rupees is the same; it is a ledger
+row and counts toward the calls per person per day. The same two codes on a one-key policy, a rate limit, a
+timeout and an unknown outcome stop the run as before and are not attempted again. `--plan` prints these bounds
+under `keyMoves`, and `--dry-run` walks both cases with a software key list of made-up names.
 
 ## 8. Turn the gateway off again
 
