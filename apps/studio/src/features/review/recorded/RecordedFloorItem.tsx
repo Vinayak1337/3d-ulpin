@@ -1,12 +1,25 @@
 import { DescriptionList, StatusBadge } from '@ulpin/ui';
+import { CopyableId } from '../../identity/CopyableId';
 import { CitationControls } from './CitationControls';
-import type { RecordedFloor } from './model';
+import type { RecordedFloor, RecordedValue } from './model';
 import { RecordedUnitItem } from './RecordedUnitItem';
 import { ValueText } from './ValueText';
 import styles from './Recorded.module.css';
 
-/** One recorded floor with the units recorded under it. Heights are the record's values, Unknown included. */
-export function RecordedFloorItem({ buildingId, floor }: { buildingId: string; floor: RecordedFloor }) {
+interface Props {
+  buildingId: string;
+  floor: RecordedFloor;
+  /** The identifier the register read states for this floor, or the sentence that says why none is shown. */
+  identifier: RecordedValue;
+}
+
+/**
+ * One recorded floor with the units recorded under it. The identifier is the register read's own string under
+ * that read's name for it; heights are the record's values, Unknown included.
+ */
+export function RecordedFloorItem({ buildingId, floor, identifier }: Props) {
+  const stated = identifier.known
+    ? <CopyableId id={identifier.text} name="identifier" /> : <ValueText value={identifier} />;
   return (
     <li className={styles.floor}>
       <div className={styles.head}>
@@ -15,6 +28,7 @@ export function RecordedFloorItem({ buildingId, floor }: { buildingId: string; f
       </div>
       <p className="ul-help">{floor.origin}</p>
       <DescriptionList items={[
+        { label: 'Identifier', value: stated },
         { label: 'Lower height', value: <ValueText value={floor.lower} /> },
         { label: 'Upper height', value: <ValueText value={floor.upper} /> },
         { label: 'Citation', value: <CitationControls label={floor.label} citations={floor.citations} /> },

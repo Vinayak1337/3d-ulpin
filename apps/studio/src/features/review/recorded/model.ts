@@ -1,5 +1,6 @@
 import type { GetResponse } from '@ulpin/api-client';
 import { formatMeasure } from '@ulpin/ui';
+import type { RegisterRecord } from '../../../api/queries';
 import type { EvidenceRef, Locator } from '../../evidence/refs';
 import { locatorText } from '../candidates/model';
 
@@ -39,6 +40,8 @@ export interface RecordedUnit {
 
 export interface RecordedFloor {
   id: string;
+  /** The id the register read lists this floor under. */
+  registerId: string;
   label: string;
   /** True for a floor recorded from a source label; false for a schedule row the server linked one to. */
   reviewed: boolean;
@@ -54,8 +57,12 @@ const UNIT_SYMBOLS = { m: 'm', m2: 'm²' } as const;
 // Gaps are plain sentences without a code, so the server's sentence is found by its opening words.
 const SOURCE_LABEL_GAP = /^Source-stated labels\b/;
 
-/** The state as a word, so unknown, absent, withheld and conflicting stay distinct and none becomes 0 or blank. */
+/**
+ * The state of a value the record lacks, in words: "Not recorded" where the record states it absent, "Unknown"
+ * only where it says unknown, and any other state by its own word. None becomes 0 or blank.
+ */
 function stateWord(state: string): RecordedValue {
+  if (state === 'absent') return { text: 'Not recorded', known: false };
   return { text: state.charAt(0).toUpperCase() + state.slice(1), known: false };
 }
 
@@ -70,6 +77,11 @@ function measureValue(measure: Measure | undefined): RecordedValue {
 function literalValue(field: { value: string | null; state: string } | undefined): RecordedValue {
   if (!field) return NOT_REPORTED;
   return field.value === null ? stateWord(field.state) : { text: field.value, known: true };
+}
+
+/** A kind the record gives as the word unknown is the read saying unknown, not a kind of unit. */
+function kindValue(field: Space['kind']): RecordedValue {
+  return field?.value === 'unknown' ? stateWord('unknown') : literalValue(field);
 }
 
 function citationOf(citation: Citation, index: number): RecordedCitation {
@@ -92,16 +104,17 @@ function recordedUnit(space: Space): RecordedUnit {
   return {
     id: space.spaceId,
     label: literalValue(space.label).text,
-    kind: literalValue(space.kind),
+    kind: kindValue(space.kind),
     area: measureValue(space.areaM2),
     citations: (space.label?.citations ?? []).map(citationOf),
     code: code.state === 'reviewed' ? code.value : null,
   };
 }
 
-function recordedFloor(level: Level): RecordedFloor {
+function recordedFloor(level: Level, registerId: string): RecordedFloor {
   return {
     id: level.levelId,
+    registerId,
     label: literalValue(level.label).text,
     reviewed: level.recordState === 'reviewed',
     origin: originText(level),
@@ -117,7 +130,26 @@ function recordedFloor(level: Level): RecordedFloor {
  * server linked to a schedule row arrives as that row, so it appears once. No number is read from a label.
  */
 export function recordedFloors(levels: BuildingCanonical['levels']): RecordedFloor[] {
-  return levels.filter((level) => level.registryFloorId).map(recordedFloor);
+  return levels.flatMap((level) => (level.registryFloorId ? [recordedFloor(level, level.registryFloorId)] : []));
+}
+
+/** The register read as the panel holds it: its entries once answered, or that it could not be read. */
+export interface RegisterRead {
+  records: readonly RegisterRecord[] | undefined;
+  failed: boolean;
+}
+
+/**
+ * A recorded floor's identifier exactly as the register read states it. The read publishes `identifier` as a
+ * required string, so a floor it states none for is one it lists no entry for; that, a failed read and a read
+ * still on its way are each said in words, and no identifier is composed here.
+ */
+export function floorIdentifier(register: RegisterRead, registerId: string): RecordedValue {
+  if (register.failed) return { text: 'The register could not be read, so no identifier is shown.', known: false };
+  if (!register.records) return { text: 'Reading the register…', known: false };
+  const identifier = register.records.find((record) => record.id === registerId)?.identifier;
+  if (!identifier) return { text: 'The register read states no identifier for this floor.', known: false };
+  return { text: identifier, known: true };
 }
 
 /** The building's own sentence on what a source-stated label does not establish, as returned. */
