@@ -42,8 +42,8 @@ export async function publishTabularMappingTx(
   await appendCaseIngestionTx(client, input.caseId, mapping.metrics, input.subject);
 }
 
-function tabularPayload(input: ChunkMappingInput, raw: StreamingVectorPayload, rawHash: string,
-  draft: TabularChunkDraft, items: ReturnType<typeof TabularRawRowSchema.parse>[]) {
+/** Native unavailable cells remain unknown, regardless of a mechanically executable proposed operation. */
+function markUnavailableCells(draft: TabularChunkDraft, items: ReturnType<typeof TabularRawRowSchema.parse>[]) {
   for (const [index, row] of draft.dryRun.rows.entries()) {
     for (const [column, cell] of row.fields.entries()) {
       if (items[index].cells[column].state !== 'unknown') continue;
@@ -57,6 +57,10 @@ function tabularPayload(input: ChunkMappingInput, raw: StreamingVectorPayload, r
       }
     }
   }
+}
+
+function tabularPayload(input: ChunkMappingInput, raw: StreamingVectorPayload, rawHash: string,
+  draft: TabularChunkDraft, items: ReturnType<typeof TabularRawRowSchema.parse>[]) {
   return ChunkMappingPayloadSchema.parse({ version: input.version, jobId: input.jobId,
     rawJobId: input.rawJobId, sourceId: input.sourceId, sourceRevision: input.sourceRevision,
     sourceSha256: input.sourceSha256, chunkIndex: raw.chunkIndex, rawResultSha256: rawHash,
@@ -110,6 +114,7 @@ export async function acceptTabularDataSlot(
     ...(input.route === 'approved_recipe' && approved?.version === 'manual-tabular/1'
       ? { approvedPlan: approved.mapping } : {}),
   });
+  markUnavailableCells(draft, items);
   const payload = tabularPayload(input, raw, rawHash, draft, items);
   const stored = await store(payload);
   await transaction(client => publishTabularMappingTx(client, input, attempt, stored,
