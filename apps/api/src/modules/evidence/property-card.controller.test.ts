@@ -82,3 +82,33 @@ test('the revoke route is published as a strict JSON command and refuses an inco
     assert.equal(headers.get('Cache-Control'), 'private, no-store');
   } finally { await app.close(); }
 });
+test('the card list is published as a strict JSON read without card facts and refuses a bad body before domain I/O', async () => {
+  const app = await NestFactory.create(CardControlModule, { logger: false, abortOnError: false });
+  try {
+    const doc = SwaggerModule.createDocument(app, new DocumentBuilder().setTitle('K7 leaf').build());
+    const operation = doc.paths['/api/v1/usp/property-cards/list']?.post as any;
+    assert.equal(operation.operationId, 'POST_api_v1_usp_property_cards_list');
+    const request = operation.requestBody.content['application/json'].schema;
+    assert.equal(request.additionalProperties, false);
+    assert.deepEqual(Object.keys(request.properties).sort(), ['limit', 'scope', 'target']);
+    assert.deepEqual([request.properties.limit.minimum, request.properties.limit.maximum], [1, 50]);
+    const list = operation.responses['200'].content['application/json'].schema.properties.data;
+    assert.deepEqual(list.required.slice().sort(), ['items', 'truncated']);
+    const item = list.properties.items.items;
+    assert.equal(item.additionalProperties, false);
+    assert.deepEqual(Object.keys(item.properties).sort(), ['artifact', 'cardId', 'cardSha256', 'createdAt',
+      'currentTargetRevision', 'expired', 'expiresAt', 'integrity', 'latestRevision', 'profile', 'resolverUrl',
+      'revision', 'revoked', 'revokedAt', 'snapshotState', 'superseded', 'targetRevision']);
+    assert.doesNotMatch(JSON.stringify(operation), /authentic|verified|valid|genuine/i);
+    const headers = new Map<string, string>(), res = { setHeader: (k: string, v: string) => headers.set(k, v) };
+    const controller = app.get(PropertyCardController), id = '00000000-0000-4000-8000-000000000001';
+    const scope = { kind: 'snapshot', scopeId: id, world: { namespace: 'world', id: `registry-site/${id}` },
+      manifestId: id, snapshotDigest: 'a'.repeat(64), stage: 'recorded' };
+    const target = { namespace: 'registry_record', id };
+    for (const body of [{}, { scope, target, limit: 51 }, { scope, target: { ...target, revision: 1 } }, { target }]) {
+      const req = Object.assign(Readable.from([Buffer.from(JSON.stringify(body))]), { headers: {} });
+      await assert.rejects(() => controller.list(req as any, res as any), (error: any) => error.status === 400);
+    }
+    assert.equal(headers.get('Cache-Control'), 'private, no-store');
+  } finally { await app.close(); }
+});
