@@ -1,0 +1,72 @@
+{
+ "task": "S1",
+ "gates": ["AG-S1", "AG-S2", "ML-D1", "ML-D3", "ML-L2", "AG-D1", "AG-E2"],
+ "base": "e4623944",
+ "qualification": "Planning and dry run only. No provider call, no key, no network request, no runtime read.",
+ "step0": {
+  "boxes": {
+   "AG-S1": {
+    "smallestLiveObservation": "One call on a public development input passes the gateway with the PostgreSQL ledger: reserved, dispatched, settled, and the answer fits its closed schema.",
+    "producedBy": "ModelGateway.propose, reached through extractStoreyFacts; started by scripts/agent/live-proof.ts --live",
+    "sent": "Step 1 of the plan: the storey lines of one development sanction document, each cut to 240 characters.",
+    "dataClassAndPermission": "public, development, permission unconfirmed; recorded in the storey-truth dev record and docs/api/datasets.json (rera-storeys)",
+    "receiptMustContain": "ledger call id and state settled, HTTP status, response hash, input and output tokens, actual micro-INR, price version, policy hash, served commit",
+    "liveCallCannotGive": "Nothing further; the ledger row itself is read by the runtime owner."
+   },
+   "AG-S2": {
+    "smallestLiveObservation": "The recording of that answer is found by its replay key and returned as replayed, with no reservation and no dispatch.",
+    "producedBy": "TeacherRecordings.record through observeResponse, then mappingTeacherGatewayRuntime('replay')",
+    "sent": "Nothing new: step 2 replays step 1.",
+    "dataClassAndPermission": "as step 1",
+    "receiptMustContain": "the recording's request hash equal to the planned one, replayed true, zero provider calls, ledger rows unchanged",
+    "liveCallCannotGive": "An answer that fails validation is recorded and charged but is not replayable."
+   },
+   "ML-D1": {
+    "smallestLiveObservation": "The storey agent answers on the retained development and demo page stores, and its quote-checked values are compared per field with the rule baseline.",
+    "producedBy": "extractStoreyFacts (ai/document-storey-agent.ts); afterwards, offline, storeys/a5/verify-candidates.ts and score.py",
+    "sent": "Per document one request: the OCR or text-layer lines that name a storey, floor, unit or height, each cut to 240 characters, with page and line id. No image, no whole page.",
+    "dataClassAndPermission": "public RERA and sanction documents, development or demo, permission unconfirmed; recorded in each storey-truth record and docs/api/datasets.json",
+    "receiptMustContain": "per document the state, attempts, the output file, and the per-field comparison with its denominators",
+    "liveCallCannotGive": "The comparison is an offline step after the run. Two Tower 3 plan documents cannot be sent as they are (see gaps)."
+   },
+   "ML-D3": {
+    "smallestLiveObservation": "The development answers are scored against the registry fields that exist: floor expression (7 literals) and unit count (4 known).",
+    "producedBy": "the three development calls of ML-D1, then storeys/a5/score.py",
+    "sent": "The development documents of ML-D1 only.",
+    "dataClassAndPermission": "as ML-D1, development only",
+    "receiptMustContain": "precision and recall per field with n, abstentions, and null where the registry is blank",
+    "liveCallCannotGive": "Independent floor-label truth; a score where the official unit count is blank; any held-out agent score, because held-out documents never go to a teacher."
+   },
+   "ML-L2": {
+    "smallestLiveObservation": "On two similar development files the paid calls per chunk are counted: one on the first chunk of a header layout, none on the next chunks, with questions and unanswered fields beside them.",
+    "producedBy": "TabularChunkMapper.map over proposeMapping (ingestion/chunk-mapping-agent.ts, mapping-teacher.ts)",
+    "sent": "Per new header layout one request: per column the masked header, inferred type, value shapes and up to 5 masked samples. No row.",
+    "dataClassAndPermission": "public, development (family mi-d10), permission unconfirmed; recorded in fixtures/usp/D8-messy-india/manifest.json and docs/api/datasets.json",
+    "receiptMustContain": "per chunk: paid calls, replay asks, reuse, student fields, unanswered fields, questions, candidate cells",
+    "liveCallCannotGive": "Precision on committed fields needs committed positives and an independent truth. A fall on the second file's first chunk needs an officer-approved plan in accepted memory or a student that commits every column; this run approves nothing."
+   },
+   "AG-D1": {
+    "smallestLiveObservation": "A recorded storey answer becomes proposals on the existing document-proposal route, and an accept or reject decision reads back.",
+    "producedBy": "Not on staging at e4623944: the adapter beside the storey agent is another worker's task.",
+    "sent": "Nothing new: the ML-D1 recordings are its input and replay at no cost.",
+    "dataClassAndPermission": "as ML-D1",
+    "receiptMustContain": "proposal ids, the decision, the read-back, the served commit",
+    "liveCallCannotGive": "The route receipt. A live call supplies only the agent answer."
+   },
+   "AG-E2": {
+    "smallestLiveObservation": "One JSON that separates paid calls, replay asks, reuse, student fields and unanswered fields per chunk for two files.",
+    "producedBy": "the curve steps of scripts/agent/live-proof.ts",
+    "sent": "The two ML-L2 requests.",
+    "dataClassAndPermission": "as ML-L2",
+    "receiptMustContain": "the per-chunk rows of ML-L2 for both files",
+    "liveCallCannotGive": "Committed-field accuracy; the receipt reports n as it is."
+   }
+  },
+  "oneCallServes": {
+   "storeyCallOnADevelopmentDocument": ["AG-S1", "AG-S2", "ML-D1", "ML-D3", "AG-D1"],
+   "storeyCallOnADemoDocument": ["AG-S1", "AG-S2", "ML-D1", "AG-D1"],
+   "mappingCallOnANewLayout": ["AG-S1", "AG-S2", "ML-L2", "AG-E2"],
+   "shortestRun": "Six storey calls and two mapping calls: no call exists only for the gateway boxes."
+  }
+ }
+}
