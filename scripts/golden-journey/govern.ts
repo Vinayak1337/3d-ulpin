@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { ChunkMappingStatusSchema,
   ChunkMappingChunkResponseSchema } from '../../packages/contracts/src/usp/chunk-mapping';
-import { TabularSourceProfileSchema } from '../../packages/contracts/src/usp/ingestion';
+import { TabularSourceProfileSchema, type TabularPin } from '../../packages/contracts/src/usp/ingestion';
 import { buildings, areas, mappingRoute, mappingPins, sourceRoute, r1, originalPins, committed } from './inputs';
 import { building, site, type Context } from './context';
 import { check, object, list, text, ok, knownK6, type Step } from './read';
@@ -128,6 +128,11 @@ export async function exchange(context: Context): Promise<Step> {
     });
 }
 
+export function assertDevelopmentDerivativePin(pin: TabularPin) {
+  assert('developmentAssetId' in pin, 'Case original cannot be a development derivative.');
+  return pin;
+}
+
 function tabularHashPins() {
   // R1 names these development assets; hashes come from their committed publisher/derivative receipts.
   const manifest = committed<{ assets: { id: string; original: { sha256: string } }[] }>(
@@ -156,8 +161,11 @@ export async function invariants(context: Context): Promise<Step> {
       for (const pin of tabularHashPins()) {
         const profile = TabularSourceProfileSchema.parse(ok(await context.reader.get(sourceRoute + '/profile', pin)));
         assert.equal(profile.source.sourceSha256, pin.sha256, 'Retained tabular bytes changed');
-        if (pin.sourceId === r1.step3.sourceId) assert.equal(profile.tabular.derivativeOf?.originalSha256,
-          r1.step3.asset.derivativeOf.originalSha256, 'TNHB derivative lost original lineage');
+        if (pin.sourceId === r1.step3.sourceId) {
+          const development = assertDevelopmentDerivativePin(profile.tabular);
+          assert.equal(development.derivativeOf?.originalSha256,
+            r1.step3.asset.derivativeOf.originalSha256, 'TNHB derivative lost original lineage');
+        }
         checked.push({ sourceId: pin.sourceId, sha256: profile.source.sourceSha256 });
       }
       assert(context.roofVerified && context.recordedVerified, 'Roof/recorded review invariant was not established');

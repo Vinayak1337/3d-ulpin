@@ -1,6 +1,6 @@
 import type { PoolClient } from 'pg';
 import { ChunkMappingPayloadSchema, TabularRawRowSchema, type ChunkMappingInput,
-  type ChunkMappingPayload, type StreamingVectorPayload } from '@ulpin/contracts/usp';
+  type ChunkMappingPayload, type StreamingVectorPayload, type TabularPin } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
@@ -10,6 +10,7 @@ import { appendCaseIngestionTx } from './events';
 import { assertChunkMappingInputTx } from './chunk-mapping';
 import { TabularChunkMapper, mappingQuestions, type TabularChunkDraft } from './chunk-mapping-agent';
 import { tabularLearningPaths, activeTabularLearner, learnApprovedTabularTx } from './chunk-mapping-learning';
+import { manualTeacherPlan, type TeacherDataPolicy } from './mapping-teacher';
 
 type Stored = { payload: ChunkMappingPayload; bytes: number; hash: string; key: string };
 type Store = (payload: ChunkMappingPayload) => Promise<Stored>;
@@ -90,6 +91,17 @@ async function tabularRoutingContext(input: ChunkMappingInput, attempt: UspJobAt
   });
 }
 
+/** Keep all case-original provider refusals here until header/profile masking is qualified. */
+export function tabularTeacherPolicy(pin: TabularPin) {
+  const dataPolicy: TeacherDataPolicy = { dataClass: 'public', split: 'development' };
+  if ('admission' in pin) {
+    return { dataPolicy: { ...dataPolicy, split: 'unlabelled' as const },
+      teacher: async (profile: Parameters<typeof manualTeacherPlan>[0]) =>
+        manualTeacherPlan(profile, 'CASE_ORIGINAL_TEACHER_REFUSED') };
+  }
+  return { dataPolicy };
+}
+
 export async function acceptTabularDataSlot(
   input: ChunkMappingInput, attempt: UspJobAttempt, raw: StreamingVectorPayload, rawHash: string,
   mapper: TabularChunkMapper, store: Store,
@@ -109,7 +121,7 @@ export async function acceptTabularDataSlot(
     rows: items.map(item => item.cells.map(cell => cell.state === 'literal' ? cell.value : undefined)),
     rowOffset: raw.records[0].featureIndex, selection: input.tabular!.selection,
     sourceRef: `source:${input.sourceId}?sheet=${input.tabular!.selection.sheet}` }, {
-    context: localRequestContext('tabular-mapping'), dataPolicy: { dataClass: 'public', split: 'development' },
+    context: localRequestContext('tabular-mapping'), ...tabularTeacherPolicy(input.tabular!),
     memoryPath: tabularLearningPaths().memory,
     learnerModelPath: context.model, authorize: async () => transaction(async client => {
       await assertChunkMappingInputTx(client, input);

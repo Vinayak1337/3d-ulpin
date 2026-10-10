@@ -140,6 +140,19 @@ async function assertRecordedApprovalTx(client: PoolClient, value: unknown) {
   return receipt;
 }
 
+async function rememberCaseOriginalTx(
+  client: PoolClient, key: string, receipt: TabularMappingReceipt, profile: TabularSourceProfile, bytes: Uint8Array,
+) {
+  validateTabularRecipe(receipt.plan, profile, bytes);
+  rememberMapping(receipt.plan.mapping, mappingContextFromColumnProfile(profile.profile, profile.tabular.selection), {
+    source: 'officer', method: receipt.plan.mapping.method, officerDecisionId: `${receipt.id}:${receipt.revision}`,
+  }, tabularLearningPaths().memory);
+  const result = { learner: 'not_updated', reason: 'case_original_has_no_family' };
+  await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) " +
+    "VALUES($1,$2,'manual-mapping',$3,$4)", [receipt.plan.caseId, key, receipt.planHash, result]);
+  return result;
+}
+
 /** The existing fenced chunk job is the background learner; a transaction lock serializes all CPU updates. */
 export async function learnApprovedTabularTx(client: PoolClient, value: unknown, profile: unknown, source: any) {
   const receipt = await assertRecordedApprovalTx(client, value);
@@ -157,9 +170,7 @@ export async function learnApprovedTabularTx(client: PoolClient, value: unknown,
   if (bytes.length !== Number(source.bytes) || sha256(bytes) !== source.sha256) {
     conflict('The original changed before learning.');
   }
-  if ('admission' in current.tabular) {
-    throw new AppError(422, 'TABULAR_LEARNING_DENIED', 'Case originals never enter family-split learning records.');
-  }
+  if ('admission' in current.tabular) return rememberCaseOriginalTx(client, key, receipt, current, bytes);
   const examples = persistOfficerBatch(receipt, current, bytes);
   const result = trainOfficerBatch(examples, await activeTabularLearner(client));
   await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) " +

@@ -13,6 +13,7 @@ function lines<T>(path: string): T[] {
 
 /** Lead-authorized development labels only; this is neither independent truth nor authenticated officer input. */
 export function t1OfficerAnswers(source: TabularSourceProfile) {
+  assert('developmentAssetId' in source.tabular, 'A3C_LABEL_SOURCE_DENIED: case original is not development data.');
   assert.equal(source.tabular.developmentAssetId, 'mi-d10-02.csv', 'A3C_LABEL_SOURCE_DENIED');
   const profiles = lines<Profile>('E:/BhuAayam-data/task-data/t1/profiles/profiles.jsonl')
     .filter(row => row.file === 'mi-d10-02.csv').sort((left, right) => left.column - right.column);

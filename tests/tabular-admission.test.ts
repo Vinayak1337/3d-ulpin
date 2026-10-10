@@ -20,6 +20,17 @@ import {
 } from '../packages/server/src/modules/usp/ingestion/tabular-source';
 import { ManualIngestionService } from '../packages/server/src/modules/usp/ingestion/service';
 import { readStreamingTabular } from '../packages/server/src/modules/usp/ingestion/streaming-vector-reader';
+import { learnApprovedTabularTx } from '../packages/server/src/modules/usp/ingestion/chunk-mapping-learning';
+import { tabularTeacherPolicy } from '../packages/server/src/modules/usp/ingestion/chunk-mapping-tabular';
+import { TabularChunkMapper } from '../packages/server/src/modules/usp/ingestion/chunk-mapping-agent';
+import { officerMappingMethod } from '../packages/server/src/modules/usp/ingestion/tabular-recipe';
+import { localRequestContext } from '../packages/server/src/modules/usp/principal';
+import {
+  manualTeacherPlan, mappingContextFromColumnProfile, mappingTeacherRequest,
+} from '../packages/server/src/modules/usp/ingestion/mapping-teacher';
+import { lookupMappingMemory } from '../packages/server/src/modules/usp/ingestion/mapping-memory';
+import { t1OfficerAnswers } from '../scripts/agent/a3c-officer-answers';
+import { assertDevelopmentDerivativePin } from '../scripts/golden-journey/govern';
 import { createContractValidator } from '../apps/studio/src/local/contract';
 
 const selection = { format: 'csv' as const, sheet: 'csv', table: null, headerRows: [1] };
@@ -35,6 +46,7 @@ const globals = globalThis as unknown as { ulpinPool?: Pool };
 const requireServer = createRequire(new URL('../packages/server/package.json', import.meta.url));
 const { S3Client } = requireServer('@aws-sdk/client-s3');
 const { z } = requireServer('zod');
+const childProcess = requireServer('node:child_process') as typeof import('node:child_process');
 let directory: string;
 let savedPool: Pool | undefined;
 let savedEnvironment: Record<string, string | undefined>;
@@ -174,6 +186,9 @@ test('development pin and old manual-tabular profile parse and fingerprint uncha
     caseId: randomUUID(), workspaceRevision: 0, workspaceFingerprint: fingerprint('protocol-control') };
   const { schemaFingerprint: _schemaFingerprint, ...stored } = oldProfile;
   assert.deepEqual(TabularSourceProfileSchema.parse(stored), stored);
+  assert.deepEqual(tabularTeacherPolicy(inventory.tabular), {
+    dataPolicy: { dataClass: 'public', split: 'development' },
+  });
 });
 
 test('known hash with a wrong size cannot use officer provenance to bypass development checks', () => {
@@ -241,6 +256,87 @@ test('case provenance remains closed and a case pin cannot acquire development f
   assert(!TabularPinSchema.safeParse({ ...profile.tabular, developmentFamily: development.family }).success);
   assert(!AnyRetainSourceSchema.safeParse({ requestKey: randomUUID(), expectedWorkspaceRevision: 0,
     format: 'csv', selection, origin: 'guessed', issuer: null }).success);
+});
+
+test('development-only scripts explicitly refuse a case-original pin before reading labels', async () => {
+  const { profile } = await retained();
+  assert.throws(() => t1OfficerAnswers(profile), /case original is not development data/);
+  assert.throws(() => assertDevelopmentDerivativePin(profile.tabular),
+    /Case original cannot be a development derivative/);
+});
+
+function approvedReceipt(profile: TabularSourceProfile) {
+  const method = officerMappingMethod('tb6-protocol-control');
+  const mapping = manualTeacherPlan(profile.profile, 'MAPPING_REVIEW_REQUIRED').plan;
+  mapping.method = method;
+  mapping.fields[0] = { ...mapping.fields[0], target: 'building.addressLiteral', confidence: 1,
+    rationale: 'Use the stated Building Address heading as unresolved address text.' };
+  const plan = { version: 'manual-tabular/1', mode: 'manual_mapping', source: profile.source,
+    caseId: profile.caseId, workspaceRevision: profile.workspaceRevision,
+    workspaceFingerprint: profile.workspaceFingerprint, tabular: profile.tabular, mapping,
+    decisions: mapping.fields.map(field => ({ sourceField: field.sourceField, reason: 'Leave the field unknown.' })) };
+  const planHash = fingerprint({ plan, destination: null });
+  return TabularMappingReceiptSchema.parse({ id: randomUUID(), revision: 2, state: 'approved', plan,
+    destination: null, planHash, authoredBy: 'tb6-protocol-control', authoredAt: new Date().toISOString(),
+    approval: { subject: 'tb6-protocol-control', at: new Date().toISOString(), planHash,
+      provenance: 'server_configured_local_operator' }, execution: null });
+}
+
+test('approved case mapping is remembered and applied but writes no family-split learning artefacts', async () => {
+  const { protocol, profile } = await retained();
+  const receipt = approvedReceipt(profile);
+  protocol.receipt = receipt;
+  const run = mock.method(childProcess, 'spawnSync', () => { throw new Error('Learner must not run.'); });
+  const client = { query: protocol.query.bind(protocol) } as unknown as PoolClient;
+  const outcome = await learnApprovedTabularTx(client, receipt, profile, protocol.source);
+  assert.deepEqual(outcome, { learner: 'not_updated', reason: 'case_original_has_no_family' });
+  assert.deepEqual(await learnApprovedTabularTx(client, receipt, profile, protocol.source), outcome);
+  assert.equal(run.mock.callCount(), 0);
+  const root = join(directory, 'learning');
+  assert.deepEqual(readdirSync(root), ['accepted-plans.jsonl']);
+  const entry = JSON.parse(readFileSync(join(root, 'accepted-plans.jsonl'), 'utf8'));
+  assert.equal(entry.lineage.officerDecisionId, `${receipt.id}:${receipt.revision}`);
+  assert(!('family' in entry) && !('split' in entry) && !('origin' in entry));
+  const memory = lookupMappingMemory(profile.profile.layoutFingerprint,
+    mappingContextFromColumnProfile(profile.profile, selection), join(root, 'accepted-plans.jsonl'));
+  assert(memory.plan);
+  const table = readTabularSource(originalBytes, selection);
+  const draft = await new TabularChunkMapper().map({ jobId: randomUUID(), chunkIndex: 0, headers: table.headers,
+    rows: table.rows.slice(0, 16), sourceRef: `source:${profile.source.sourceId}`, selection }, {
+    context: localRequestContext('tabular-mapping'), authorize: async () => {}, approvedPlan: receipt.plan.mapping,
+    memoryPath: join(root, 'accepted-plans.jsonl'), ...tabularTeacherPolicy(profile.tabular),
+  });
+  assert(draft.proposal.fieldSources.every(field => field.source === 'officer'));
+  assert.equal(draft.dryRun.rows.length, 16);
+  assert(draft.dryRun.rows.every((row, index) => row.fields[0].value === table.rows[index][0]));
+  assert.equal(draft.metrics.teacherCalls, 0);
+  const remembered = await new TabularChunkMapper().map({ jobId: randomUUID(), chunkIndex: 0,
+    headers: table.headers, rows: table.rows.slice(0, 16), sourceRef: 'protocol-control', selection }, {
+    context: localRequestContext('tabular-mapping'), authorize: async () => {},
+    memoryPath: join(root, 'accepted-plans.jsonl'), ...tabularTeacherPolicy(profile.tabular),
+  });
+  assert.equal(remembered.metrics.memoryHits, 1);
+  assert.equal(remembered.metrics.teacherCalls, 0);
+});
+
+test('every case-original teacher callback refuses before the request builder is called', async () => {
+  const table = readTabularSource(originalBytes, selection);
+  const builder = mock.fn(mappingTeacherRequest);
+  for (const provenance of [{}, { licence: 'restricted' as const }, { containsPersonalData: 'yes' as const }]) {
+    const inventory = inspectTabularSource(originalBytes, selection, provenance);
+    const draft = await new TabularChunkMapper().map({ jobId: randomUUID(), chunkIndex: 0, headers: table.headers,
+      rows: table.rows.slice(0, 16), sourceRef: 'protocol-control', selection }, {
+      context: localRequestContext('tabular-mapping'), authorize: async () => {},
+      memoryPath: join(directory, 'missing-memory'),
+      teacher: async profile => {
+        builder(profile);
+        return manualTeacherPlan(profile, 'TEACHER_UNAVAILABLE');
+      }, ...tabularTeacherPolicy(inventory.tabular),
+    });
+    assert(draft.proposal.issues.every(issue => issue.code === 'CASE_ORIGINAL_TEACHER_REFUSED'));
+    assert.equal(draft.metrics.teacherCalls, 0);
+  }
+  assert.equal(builder.mock.callCount(), 0);
 });
 
 function catalogueAsset(value: unknown, id: string): unknown {
