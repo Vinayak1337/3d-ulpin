@@ -1,0 +1,661 @@
+{
+  "task": "GK3",
+  "title": "GK1's five SQL statements and the ledger child, run for the first time on a throwaway database",
+  "branch": "task/gk3-key-list-sql-first-run",
+  "base": "staging 247899c1",
+  "ranAt": {
+    "started": "2026-10-10T17:02:56.525Z",
+    "finished": "2026-10-10T17:03:32.263Z"
+  },
+  "sqlDefectFound": false,
+  "ledgerChildDefectFound": false,
+  "runner": {
+    "command": "node tests/model-gateway/run-throwaway.mjs E:/BhuAayam-data/task-data/gk3/run-1.json",
+    "ranOnce": true,
+    "files": {
+      "tests/model-gateway/run-throwaway.mjs": "3009b668220ce0268c9be42aa31fc1d1a402642274960461ea05d5230a8b8837",
+      "tests/model-gateway/throwaway-steps.ts": "663d4c7b7cbb52fa9584fcc98709cf94e82f40231c1fd02704a56bc2b0957713"
+    },
+    "fullRecord": {
+      "path": "E:/BhuAayam-data/task-data/gk3/run-1.json",
+      "sha256": "c1fa325337103de8f064a33142c13fcf997573303fb4c1c02ffe477a66224e9b",
+      "holds": "names, counts and catalogue facts; no secret"
+    }
+  },
+  "container": {
+    "name": "ulpin-gk3-sqltest-45e10d8c",
+    "labels": {
+      "io.ulpin.task": "GK3",
+      "io.ulpin.nonce": "45e10d8c0bb684dd"
+    },
+    "image": "postgis/postgis@sha256:01a6a70e41e6c4467c8f55f6063555ed72db2d6662cd0d571040d42eadaeb6f6",
+    "imageOf": "compose.yaml:15 (postgis/postgis:17-3.5)",
+    "data": "tmpfs at /var/lib/postgresql/data; Docker made no volume",
+    "dockerMadeAVolume": false,
+    "network": "the existing bridge network",
+    "published": "one free loopback port (127.0.0.1)",
+    "password": "generated in the runner's memory, passed by environment name; never printed or written",
+    "readyAfterSeconds": 1,
+    "removed": "ulpin-gk3-sqltest-45e10d8c"
+  },
+  "schemaBeforeGk1": {
+    "producersInOrder": [
+      "bootstrap.postgis",
+      "core.schema",
+      "registry (migrateRegistry)",
+      "area (migrateAreas)",
+      "officer (migrateOfficer)",
+      "officer-ai.schema",
+      "spatial-ml (migrateSpatialMl)",
+      "usp (migrateUsp)",
+      "datasets (ensureSpatialDatasets)",
+      "dataset-ml (ensureDatasetMl)"
+    ],
+    "note": [
+      [
+        "The server's own producers in the manifest's order. migrateUsp() also applies its later steps",
+        "  (orders"
+      ],
+      "26 and up): it has no entry that stops at 24. None of them touches the gateway's tables."
+    ],
+    "gatewayFile": {
+      "commit": "63c986d5",
+      "sha256": "800e07948200bdd9cc97b44afa4a8d70a425b5005054d3ad1bb5bb8eb22d6bef",
+      "statements": 6
+    },
+    "publicTables": 100,
+    "controlRows": "one budget row pinned as a one-key policy and one settled call, in the shape of before GK1",
+    "gatewayTables": {
+      "catalogueSha256": "8d80a388302b7019b458b7ee2f45475ce6c8bf367041d239d77155ee9ef3843c",
+      "rows": {
+        "usp_model_budget": 1,
+        "usp_model_calls": 1
+      },
+      "columns": 31,
+      "constraints": 20,
+      "indexes": 6
+    }
+  },
+  "firstRun": {
+    "how": "the file as it is now in one query call, as migrateModelGateway() sends it (runtime.ts:75-79)",
+    "fileSha256": "db66379811b2c4c9d26d5d767b5527c02cb7877877e93ecafd42b3364635421c",
+    "statements": [
+      "1: SELECT",
+      "2: CREATE",
+      "3: CREATE",
+      "4: CREATE",
+      "5: CREATE",
+      "6: CREATE",
+      "7: ALTER (GK1)",
+      "8: ALTER (GK1)",
+      "9: ALTER (GK1)",
+      "10: CREATE (GK1)",
+      "11: CREATE (GK1)"
+    ],
+    "notices": [
+      "relation \"usp_model_budget\" already exists, skipping",
+      "relation \"usp_model_calls\" already exists, skipping",
+      "relation \"usp_model_calls_principal_day\" already exists, skipping",
+      "relation \"usp_model_calls_exposure\" already exists, skipping",
+      "relation \"usp_model_calls_scope\" already exists, skipping"
+    ],
+    "theFiveOfGk1": "statements 7 to 11 each completed: three ALTER TABLE, one CREATE TABLE, one CREATE INDEX",
+    "added": {
+      "columns": [
+        "usp_model_budget reconciled_at timestamp with time zone YES",
+        "usp_model_budget reconciled_reason text YES",
+        "usp_model_calls credential_hash text YES",
+        "usp_model_key_marks id uuid NO",
+        "usp_model_key_marks credential_hash text NO",
+        "usp_model_key_marks secret_reference text NO",
+        "usp_model_key_marks reason text NO",
+        "usp_model_key_marks http_status integer NO",
+        "usp_model_key_marks call_id uuid NO",
+        "usp_model_key_marks marked_at timestamp with time zone NO",
+        "usp_model_key_marks restored_at timestamp with time zone YES",
+        "usp_model_key_marks restored_reason text YES"
+      ],
+      "constraints": [
+        "usp_model_calls: CHECK ((credential_hash ~ '^[a-f0-9]{64}$'::text))",
+        "usp_model_key_marks: CHECK ((credential_hash ~ '^[a-f0-9]{64}$'::text))",
+        "usp_model_key_marks: CHECK (((http_status >= 400) AND (http_status <= 499)))",
+        [
+          "usp_model_key_marks: CHECK ((reason = ANY (ARRAY['quota_exhausted'::text,",
+          "  'credential_invalid'::text])))"
+        ],
+        "usp_model_key_marks: CHECK (((restored_at IS NULL) = (restored_reason IS NULL)))",
+        "usp_model_key_marks: FOREIGN KEY (call_id) REFERENCES usp_model_calls(id)",
+        "usp_model_key_marks: PRIMARY KEY (id)"
+      ],
+      "indexes": [
+        [
+          "CREATE UNIQUE INDEX usp_model_key_marks_open ON public.usp_model_key_marks USING btree",
+          "  (credential_hash) WHERE (restored_at IS NULL)"
+        ],
+        "CREATE UNIQUE INDEX usp_model_key_marks_pkey ON public.usp_model_key_marks USING btree (id)"
+      ]
+    },
+    "removedOrChanged": {
+      "columns": [],
+      "constraints": [],
+      "indexes": []
+    },
+    "gatewayTables": {
+      "catalogueSha256": "8050fd6a4763d24e76bcc49cb0f3cb6afca668eff42c744123d311fdab8b9772",
+      "rows": {
+        "usp_model_budget": 1,
+        "usp_model_calls": 1,
+        "usp_model_key_marks": 0
+      },
+      "columns": 43,
+      "constraints": 27,
+      "indexes": 8
+    }
+  },
+  "secondRun": {
+    "statements": [
+      "1: SELECT",
+      "2: CREATE",
+      "3: CREATE",
+      "4: CREATE",
+      "5: CREATE",
+      "6: CREATE",
+      "7: ALTER (GK1)",
+      "8: ALTER (GK1)",
+      "9: ALTER (GK1)",
+      "10: CREATE (GK1)",
+      "11: CREATE (GK1)"
+    ],
+    "notices": [
+      "relation \"usp_model_budget\" already exists, skipping",
+      "relation \"usp_model_calls\" already exists, skipping",
+      "relation \"usp_model_calls_principal_day\" already exists, skipping",
+      "relation \"usp_model_calls_exposure\" already exists, skipping",
+      "relation \"usp_model_calls_scope\" already exists, skipping",
+      "column \"credential_hash\" of relation \"usp_model_calls\" already exists, skipping",
+      "column \"reconciled_at\" of relation \"usp_model_budget\" already exists, skipping",
+      "column \"reconciled_reason\" of relation \"usp_model_budget\" already exists, skipping",
+      "relation \"usp_model_key_marks\" already exists, skipping",
+      "relation \"usp_model_key_marks_open\" already exists, skipping"
+    ],
+    "refusedOrNoOp": "no-ops: every statement completed and each of the five answered \"already exists, skipping\"",
+    "gatewayTables": {
+      "catalogueSha256": "8050fd6a4763d24e76bcc49cb0f3cb6afca668eff42c744123d311fdab8b9772",
+      "rows": {
+        "usp_model_budget": 1,
+        "usp_model_calls": 1,
+        "usp_model_key_marks": 0
+      },
+      "columns": 43,
+      "constraints": 27,
+      "indexes": 8
+    },
+    "changedNothing": true
+  },
+  "theServersOwnRunners": {
+    "migrate() of infrastructure/db.ts (what pnpm db:migrate calls)": {
+      "catalogueSha256": "8050fd6a4763d24e76bcc49cb0f3cb6afca668eff42c744123d311fdab8b9772",
+      "rows": {
+        "usp_model_budget": 1,
+        "usp_model_calls": 1,
+        "usp_model_key_marks": 0
+      },
+      "columns": 43,
+      "constraints": 27,
+      "indexes": 8
+    },
+    "scripts/platform/demo-schema.ts, started as demo.mjs:32 starts it": {
+      "exit": 0,
+      "printed": [
+        "Additional dataset/model-gateway schemas ready; this step does not change the gateway state."
+      ]
+    },
+    "changedNothing": true
+  },
+  "sqlTest": {
+    "file": "tests/model-gateway/sql.test.ts",
+    "against": "the same throwaway database",
+    "tests": 8,
+    "pass": 8,
+    "fail": 0,
+    "skipped": 0,
+    "lines": [
+      "ok 1 - G-02/G-07 concurrent admission serializes; cap includes settled spend plus full reserve",
+      "ok 2 - protected INGEST funds and principal daily attempt cap cannot be spent by assistance",
+      "ok 3 - G-10/G-11 durable unknown exposure, late duplicate settlement and changed config fail closed",
+      "ok 4 - G-04/G-05 single-pool quota block and durable 429 cooldown never cycle or refund",
+      "ok 5 - G-09/G-12 charged truncated output can repair once; missing usage holds and deficit suspends",
+      "ok 6 - G-19 storage outage and predispatch access failure make zero adapter calls",
+      "ok 7 - post-dispatch timeout keeps exposure; post-response revocation settles without publication",
+      [
+        "ok 1 - fresh owned SQL: atomic caps, restart exposure, settlements, privacy fences and bounded",
+        "  repairs"
+      ]
+    ],
+    "note": "Node counts the test and its seven sub-tests: 8. It applies the file twice in each of its schemas."
+  },
+  "ledgerChild": {
+    "file": "scripts/platform/demo-gateway-ledger.ts, started as demo-gateway.mjs:202-206 starts it",
+    "policy": "synthetic (project gk3-control), key names ULPIN_PROVIDER_KEY_GK3_A to _D, keys generated in the run",
+    "steps": [
+      {
+        "command": "key-marks",
+        "exit": 0,
+        "printed": [
+          "ULPIN_PROVIDER_KEY_GK3_A in_use",
+          "ULPIN_PROVIDER_KEY_GK3_B waiting",
+          "ULPIN_PROVIDER_KEY_GK3_C waiting"
+        ]
+      },
+      {
+        "inside": "throwaway-steps.ts reserve",
+        "result": {
+          "admitted": false,
+          "refusedWith": "MODEL_RECONCILIATION_REQUIRED"
+        }
+      },
+      {
+        "command": "reconcile GK3 control: the one key of the pinned policy becomes a list of three",
+        "exit": 0,
+        "printed": [
+          "key list: reconciled"
+        ]
+      },
+      {
+        "inside": "throwaway-steps.ts mark",
+        "result": {
+          "call": {
+            "state": "settled",
+            "errorKind": "quota_exhausted",
+            "actualMicroInr": "0"
+          }
+        }
+      },
+      {
+        "command": "key-marks",
+        "exit": 0,
+        "printed": [
+          "ULPIN_PROVIDER_KEY_GK3_A used_up quota_exhausted 2026-10-10T17:03:16.078Z",
+          "ULPIN_PROVIDER_KEY_GK3_B in_use",
+          "ULPIN_PROVIDER_KEY_GK3_C waiting"
+        ]
+      },
+      {
+        "command": "restore-key ULPIN_PROVIDER_KEY_GK3_A GK3 control: the mark was synthetic",
+        "exit": 0,
+        "printed": [
+          "ULPIN_PROVIDER_KEY_GK3_A: restored"
+        ]
+      },
+      {
+        "command": "restore-key ULPIN_PROVIDER_KEY_GK3_A GK3 control: the mark was synthetic",
+        "exit": 0,
+        "printed": [
+          "ULPIN_PROVIDER_KEY_GK3_A: was not marked used up"
+        ]
+      },
+      {
+        "command": "key-marks",
+        "exit": 0,
+        "printed": [
+          "ULPIN_PROVIDER_KEY_GK3_A in_use",
+          "ULPIN_PROVIDER_KEY_GK3_B waiting",
+          "ULPIN_PROVIDER_KEY_GK3_C waiting"
+        ]
+      },
+      {
+        "inside": "throwaway-steps.ts reserve",
+        "result": {
+          "admitted": false,
+          "refusedWith": "MODEL_RECONCILIATION_REQUIRED"
+        }
+      },
+      {
+        "command": "reconcile GK3 control: a changed price must be refused",
+        "exit": 1,
+        "printed": [
+          "MODEL_RECONCILIATION_REQUIRED: Only the key list may differ from the pinned policy."
+        ]
+      },
+      {
+        "command": "reconcile GK3 control: a fourth key joins the list",
+        "exit": 0,
+        "printed": [
+          "key list: reconciled"
+        ]
+      },
+      {
+        "command": "reconcile GK3 control: a fourth key joins the list",
+        "exit": 0,
+        "printed": [
+          "key list: unchanged"
+        ]
+      },
+      {
+        "inside": "throwaway-steps.ts reserve",
+        "result": {
+          "admitted": true,
+          "releasedBeforeDispatch": true
+        }
+      },
+      {
+        "command": "key-marks",
+        "exit": 0,
+        "printed": [
+          "ULPIN_PROVIDER_KEY_GK3_A in_use",
+          "ULPIN_PROVIDER_KEY_GK3_B waiting",
+          "ULPIN_PROVIDER_KEY_GK3_C waiting",
+          "ULPIN_PROVIDER_KEY_GK3_D waiting"
+        ]
+      },
+      {
+        "inside": "throwaway-steps.ts rows",
+        "result": {
+          "calls": [
+            {
+              "state": "settled",
+              "error_kind": null,
+              "actual_micro_inr": "1",
+              "names_its_key": false
+            },
+            {
+              "state": "settled",
+              "error_kind": "quota_exhausted",
+              "actual_micro_inr": "0",
+              "names_its_key": true
+            },
+            {
+              "state": "released",
+              "error_kind": "pre_dispatch_rejected",
+              "actual_micro_inr": null,
+              "names_its_key": true
+            }
+          ],
+          "marks": [
+            {
+              "secret_reference": "ULPIN_PROVIDER_KEY_GK3_A",
+              "reason": "quota_exhausted",
+              "http_status": 429,
+              "restored": true,
+              "restored_reason": "GK3 control: the mark was synthetic"
+            }
+          ],
+          "budget": [
+            {
+              "reconciled": true,
+              "reconciled_reason": "GK3 control: a fourth key joins the list",
+              "blocked_reason": null,
+              "key_names": 4
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "machine": {
+    "before": {
+      "containers": [
+        "docsetu-benchmark-20261002-mongo",
+        "ulpin-demo-geo-1",
+        "ulpin-demo-minio-1",
+        "ulpin-demo-minio-init-1",
+        "ulpin-demo-postgres-1",
+        "ulpin-demo-redis-1",
+        "ulpin-demo-worker-1",
+        "ulpin-raster-worker-20260929-geo-1",
+        "ulpin-raster-worker-20260929-minio-1",
+        "ulpin-raster-worker-20260929-minio-init-1",
+        "ulpin-raster-worker-20260929-postgres-1",
+        "ulpin-raster-worker-20260929-redis-1",
+        "ulpin-raster-worker-20260929-worker-1",
+        "ulpin-repo-geo-1",
+        "ulpin-repo-minio-1",
+        "ulpin-repo-minio-init-1",
+        "ulpin-repo-postgres-1",
+        "ulpin-repo-redis-1",
+        "ulpin-repo-worker-1",
+        "ulpin-usptest-8cd5555d8faac51d-geo-1",
+        "ulpin-usptest-8cd5555d8faac51d-minio-1",
+        "ulpin-usptest-8cd5555d8faac51d-minio-init-1",
+        "ulpin-usptest-8cd5555d8faac51d-postgres-1",
+        "ulpin-usptest-8cd5555d8faac51d-redis-1",
+        "ulpin-usptest-8cd5555d8faac51d-worker-1",
+        "ulpin-usptest-b050544f3d2cb99e-geo-1",
+        "ulpin-usptest-b050544f3d2cb99e-minio-1",
+        "ulpin-usptest-b050544f3d2cb99e-postgres-1",
+        "ulpin-usptest-b050544f3d2cb99e-redis-1",
+        "ulpin-usptest-b050544f3d2cb99e-worker-1"
+      ],
+      "volumes": [
+        "743d1eb1a29f4d17bafa5910c08fbb7dcc1b3e878c0edfe5630a1cb80eb4c557",
+        "docsetu-benchmark-20261002-db",
+        "ulpin-demo_minio-data",
+        "ulpin-demo_postgres-data",
+        "ulpin-demo_redis-data",
+        "ulpin-raster-worker-20260929_minio-data",
+        "ulpin-raster-worker-20260929_postgres-data",
+        "ulpin-raster-worker-20260929_redis-data",
+        "ulpin-repo_minio-data",
+        "ulpin-repo_postgres-data",
+        "ulpin-repo_redis-data",
+        "ulpin-usptest-8cd5555d8faac51d_minio-data",
+        "ulpin-usptest-8cd5555d8faac51d_postgres-data",
+        "ulpin-usptest-8cd5555d8faac51d_redis-data",
+        "ulpin-usptest-b050544f3d2cb99e_minio-data",
+        "ulpin-usptest-b050544f3d2cb99e_postgres-data",
+        "ulpin-usptest-b050544f3d2cb99e_redis-data"
+      ],
+      "networks": [
+        "bridge",
+        "host",
+        "none",
+        "ulpin-demo_default",
+        "ulpin-raster-worker-20260929_default",
+        "ulpin-repo_default",
+        "ulpin-usptest-8cd5555d8faac51d_default",
+        "ulpin-usptest-b050544f3d2cb99e_default"
+      ]
+    },
+    "after": {
+      "containers": [
+        "docsetu-benchmark-20261002-mongo",
+        "ulpin-demo-geo-1",
+        "ulpin-demo-minio-1",
+        "ulpin-demo-minio-init-1",
+        "ulpin-demo-postgres-1",
+        "ulpin-demo-redis-1",
+        "ulpin-demo-worker-1",
+        "ulpin-raster-worker-20260929-geo-1",
+        "ulpin-raster-worker-20260929-minio-1",
+        "ulpin-raster-worker-20260929-minio-init-1",
+        "ulpin-raster-worker-20260929-postgres-1",
+        "ulpin-raster-worker-20260929-redis-1",
+        "ulpin-raster-worker-20260929-worker-1",
+        "ulpin-repo-geo-1",
+        "ulpin-repo-minio-1",
+        "ulpin-repo-minio-init-1",
+        "ulpin-repo-postgres-1",
+        "ulpin-repo-redis-1",
+        "ulpin-repo-worker-1",
+        "ulpin-usptest-8cd5555d8faac51d-geo-1",
+        "ulpin-usptest-8cd5555d8faac51d-minio-1",
+        "ulpin-usptest-8cd5555d8faac51d-minio-init-1",
+        "ulpin-usptest-8cd5555d8faac51d-postgres-1",
+        "ulpin-usptest-8cd5555d8faac51d-redis-1",
+        "ulpin-usptest-8cd5555d8faac51d-worker-1",
+        "ulpin-usptest-b050544f3d2cb99e-geo-1",
+        "ulpin-usptest-b050544f3d2cb99e-minio-1",
+        "ulpin-usptest-b050544f3d2cb99e-postgres-1",
+        "ulpin-usptest-b050544f3d2cb99e-redis-1",
+        "ulpin-usptest-b050544f3d2cb99e-worker-1"
+      ],
+      "volumes": [
+        "743d1eb1a29f4d17bafa5910c08fbb7dcc1b3e878c0edfe5630a1cb80eb4c557",
+        "docsetu-benchmark-20261002-db",
+        "ulpin-demo_minio-data",
+        "ulpin-demo_postgres-data",
+        "ulpin-demo_redis-data",
+        "ulpin-raster-worker-20260929_minio-data",
+        "ulpin-raster-worker-20260929_postgres-data",
+        "ulpin-raster-worker-20260929_redis-data",
+        "ulpin-repo_minio-data",
+        "ulpin-repo_postgres-data",
+        "ulpin-repo_redis-data",
+        "ulpin-usptest-8cd5555d8faac51d_minio-data",
+        "ulpin-usptest-8cd5555d8faac51d_postgres-data",
+        "ulpin-usptest-8cd5555d8faac51d_redis-data",
+        "ulpin-usptest-b050544f3d2cb99e_minio-data",
+        "ulpin-usptest-b050544f3d2cb99e_postgres-data",
+        "ulpin-usptest-b050544f3d2cb99e_redis-data"
+      ],
+      "networks": [
+        "bridge",
+        "host",
+        "none",
+        "ulpin-demo_default",
+        "ulpin-raster-worker-20260929_default",
+        "ulpin-repo_default",
+        "ulpin-usptest-8cd5555d8faac51d_default",
+        "ulpin-usptest-b050544f3d2cb99e_default"
+      ]
+    },
+    "beforeEqualsAfter": true,
+    "beforeEqualsStep0List": true,
+    "duringTheRun": {
+      "added": {
+        "containers": [
+          "ulpin-gk3-sqltest-45e10d8c"
+        ],
+        "volumes": [],
+        "networks": []
+      }
+    },
+    "counts": {
+      "containers": 30,
+      "volumes": 17,
+      "networks": 8
+    }
+  },
+  "checks": {
+    "typecheckBackend": "pnpm typecheck:backend: pass",
+    "gatewayTests": {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/model-gateway/*.test.ts",
+      "onStaging": "23 tests: 22 pass, 1 skipped",
+      "nowWithoutADatabase": "24 tests: 23 pass, 1 skipped (one new test: an empty key value is absent)",
+      "theSkippedOneOnTheThrowawayDatabase": "ran: 8 of 8 pass (the test and its seven sub-tests), 0 skipped",
+      "theNewTestWithoutTheProviderLine": "fails (compared by git stash), passes with it"
+    },
+    "machineBeforeAndAfter": "30 containers, 17 volumes, 8 networks by name: equal, and equal to Step 0's list",
+    "gitDiffCheck": "clean",
+    "newLinesOver120Characters": 0,
+    "secretsInCommittedFilesOrReport": [
+      [
+        "None. The password and the four synthetic keys existed only in the runner's memory and its",
+        "  children's"
+      ],
+      "environment; the runner refuses to record any output that holds one of them. No connection string",
+      "with a password exists anywhere: the URL has no password and the driver reads PGPASSWORD."
+    ],
+    "platformTestsUnderTheK9cGuard": "not run: no platform script was changed (all read-only in this task)",
+    "neverRun": [
+      "No docker compose command; no stop, restart, rm, prune or volume rm of anything that existed.",
+      "No connection to the demo's database or any database this task did not create.",
+      "No provider call, no real key, no .env, no demo settings, nothing under E:/BhuAayam-data/runtime.",
+      "The runner ran once. No migration step was repeated after a failure, because none failed."
+    ]
+  },
+  "pinnedProducerSourcesChanged": {
+    "files": [
+      "packages/server/src/modules/ai/officer-ai-provider.ts"
+    ],
+    "docsApiRegenerated": false,
+    "note": "docs/api/source-pins.json names it; the lead re-pins at the merge. No other pinned source changed."
+  },
+  "report": {
+    "TASK": "GK3: GK1's five SQL statements and the ledger child, first run, on a throwaway database.",
+    "WORKS": [
+      "No SQL defect and no defect in the ledger child: nothing in the SQL file, the manifest or the child",
+      "  was changed.",
+      "First run on a database with the schema of before GK1 and two existing rows: the five statements",
+      "  each completed (three ALTER TABLE, CREATE TABLE, CREATE INDEX) in one query call. 12 columns,",
+      "  7 constraints and 2 indexes were added, nothing was removed or changed, and the budget row and",
+      "  the call row stayed, with the new columns empty.",
+      "Second run: no-ops, not refusals. Each of the five answered 'already exists, skipping'; tables,",
+      "  columns, constraints, indexes and row counts are identical (same catalogue hash).",
+      "The server's migrate() and scripts/platform/demo-schema.ts, once each after that: both ran, nothing",
+      "  changed.",
+      "sql.test.ts on that database: 8 of 8 pass, 0 skipped. The test skipped until now runs.",
+      "The ledger child ran every owner step: key-marks, reconcile, restore-key; exit 0 with names, states",
+      "  and times only, and exit 1 with the gateway's own closed message for a changed price.",
+      "A ledger pinned to one key refuses a hold under a list policy (MODEL_RECONCILIATION_REQUIRED) until",
+      "  reconcile; after it the first key serves. The same after a fourth key joined the list.",
+      "A cited 429 through the ledger's own retainExposure() closed the call at zero and marked the first",
+      "  key; the second key became in_use; restore-key put the first back.",
+      "The officer provider reads a key whose value is empty as absent and names it.",
+      "The container was removed by its exact name; containers, volumes and networks are the same before",
+      "  and after, by name."
+    ],
+    "SEE_IT": [
+      "node tests/model-gateway/run-throwaway.mjs E:/BhuAayam-data/task-data/gk3/<new name>.json",
+      "  (creates one container ulpin-gk3-sqltest-<8 hex>, removes it, about 40 seconds)",
+      "docs/evidence/gf-ai/gateway/gk3/result.json: firstRun, secondRun, ledgerChild.steps, machine",
+      "E:/BhuAayam-data/task-data/gk3/run-1.json: the run's full record (every column, constraint, index)",
+      "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/model-gateway/key-readers.test.ts"
+    ],
+    "INPUTS": [
+      "The image compose.yaml:15 pins by digest (already local, nothing pulled).",
+      "The gateway file and the manifest of commit 63c986d5 from Git; the file as it is now (sha256 in",
+      "  firstRun.fileSha256, equal to the manifest's).",
+      "A synthetic policy (project gk3-control) and four synthetic keys generated in the run."
+    ],
+    "GAPS": [
+      "The two existing rows were synthetic and the tables small. How long the ALTER TABLE on",
+      "  usp_model_calls holds its lock on the demo's real rows was not measured; it adds one empty column",
+      "  with a check.",
+      "No statement failed, so what a failure halfway leaves behind was not observed. The file is one",
+      "  query call, which PostgreSQL runs as one transaction; that is its documented behaviour, not a",
+      "  result of this run.",
+      "Each statement's result was read through the same text and the same driver call that",
+      "  migrateModelGateway() makes, because the function itself discards the results. The function ran",
+      "  third (inside migrate()) and fourth (demo-schema.ts), both as no-ops.",
+      "The base schema came from the server's producers in the manifest's order; migrateUsp() has no entry",
+      "  that stops before its later steps, so those were applied too. None touches the gateway's tables.",
+      "sql.test.ts now also accepts a throwaway container named by its runner. The old form (run-sql.mjs's",
+      "  container) was not run again: run-sql.mjs refuses this machine's Docker endpoint.",
+      "demo-gateway.mjs itself (the command line around the child) was not run: it reads the demo",
+      "  settings. The child was started with the same arguments it uses.",
+      "A pinned producer source changed (officer-ai-provider.ts); docs/api was not regenerated."
+    ],
+    "DESIGN": [
+      "The container keeps the task's name; the test got a second accepted form instead of a second name.",
+      "  It now reads only labels and published ports from Docker, never the container's environment,",
+      "  because this container holds a password there.",
+      "The URL carries no password: the pg driver reads PGPASSWORD from the child's environment.",
+      "The runner records a child's output only when it holds neither the password nor a synthetic key.",
+      "The base database was pinned as one key, so the run shows the real roll-out step: one key to a list."
+    ],
+    "COMMITS": [
+      [
+        "cdfc64e1 docs(gateway): GK3 how the gateway's SQL test gets its database, and what a first run",
+        "  touches"
+      ],
+      "c254de7a test(gateway): the key-list SQL and the ledger child run on a throwaway database; an empty",
+      "  key value is absent",
+      "docs(gateway): GK3 evidence (this commit)"
+    ],
+    "CHECKS": [
+      "pnpm typecheck:backend: pass.",
+      "tests/model-gateway: 24 tests, 23 pass, 1 skipped without a database (staging 23, 22, 1; one new).",
+      "  The skipped one on the throwaway database: 8 of 8 pass.",
+      "Containers 30, volumes 17, networks 8: the same names before and after, and the same as Step 0.",
+      "git diff --check clean; no new line over 120 characters; no password, key or connection string",
+      "  with a password in any committed file or in this report."
+    ],
+    "NEXT": [
+      "Lead: re-pin docs/api for officer-ai-provider.ts at the merge.",
+      "Runtime owner: on the demo's roll-out the schema step is safe to apply and to repeat. After the",
+      "  list policy is enabled, paid calls are refused until the owner runs reconcile (step 4 of",
+      "  DEMO-GATEWAY.md); key-marks works before it."
+    ]
+  }
+}
