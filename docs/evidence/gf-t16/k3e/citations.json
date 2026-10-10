@@ -1,0 +1,56 @@
+{
+ "task": "K3e",
+ "purpose": "Citations only: pinned source, page, box (PDF points from the page top-left), expected characters",
+ "source": {
+  "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+  "sourceRevision": 1,
+  "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+  "path": "E:/BhuAayam-data/datasets/rera-storeys/RERAP2311201700019-3/bihar-magnolia-sanctioned-layout-original.pdf",
+  "page": 2
+ },
+ "literals": {
+  "groundMark": {
+   "box": [376.1600036621094, 993.05908203125, 390.1804504394531, 997.224365234375],
+   "expected": "FFL ±00"
+  },
+  "fflGround": {
+   "box": [376.1600036621094, 979.4990844726562, 392.5296936035156, 983.6643676757812],
+   "expected": "FFL +1'6\""
+  },
+  "fflFirst": {
+   "box": [376.1600036621094, 889.7390747070312, 394.8372802734375, 893.9043579101562],
+   "expected": "FFL +11'6\""
+  },
+  "fflSecond": {
+   "box": [376.1600036621094, 794.819091796875, 394.8372802734375, 798.984375],
+   "expected": "FFL +22'1\""
+  },
+  "fflRoof": {
+   "box": [376.1600036621094, 701.339111328125, 394.8372802734375, 705.50439453125],
+   "expected": "FFL +32'6\""
+  },
+  "arrowGround": {
+   "box": [345.7790222167969, 938.5601196289062, 349.9443359375, 944.0],
+   "expected": "10'"
+  },
+  "arrowFirst": {
+   "box": [345.7790222167969, 843.822509765625, 349.9443359375, 854.239990234375],
+   "expected": "10'-7\""
+  },
+  "arrowSecond": {
+   "box": [345.7790222167969, 748.7825317382812, 349.9443359375, 759.2000122070312],
+   "expected": "10'-7\""
+  },
+  "levelsNote": {
+   "box": [2112.320068359375, 101.06351470947266, 2302.87451171875, 109.41275787353516],
+   "expected": "ALL LEVELS INDICATED ARE IN FEET AND INCHES."
+  }
+ },
+ "reference": "groundMark",
+ "units": "levelsNote",
+ "levels": [
+ {"levelId": "5a1d717b-b2f0-4e63-938a-a2d19d1cc3ee", "lower": "fflGround", "upper": "fflFirst", "arrow": "arrowGround"},
+ {"levelId": "00c167c8-cd53-409a-aea3-fa2c59b407de", "lower": "fflFirst", "upper": "fflSecond", "arrow": "arrowFirst"},
+ {"levelId": "825119e9-76ba-4651-86ea-28809626e3b7", "lower": "fflSecond", "upper": "fflRoof", "arrow": "arrowSecond"}
+ ]
+}
