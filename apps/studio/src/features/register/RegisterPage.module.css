@@ -15,11 +15,17 @@
 .canvas { position: absolute; inset: 0; }
 .rail { position: absolute; top: var(--ui-space-4); right: var(--ui-space-4); bottom: var(--ui-space-4); overflow: auto; z-index: var(--ui-z-map-overlay); }
 .sceneLoading { position: absolute; inset: 0; display: grid; place-items: center; }
-/* Where the scene would be when there is nothing to draw: a plain surface filling the pane it is put in. */
+/*
+ * Where the scene would be when there is nothing to draw: a plain surface filling the pane it is put in.
+ * The statement is centred in the room beside the controls that still apply, which keep the place they have
+ * over a drawn scene. It starts at the top when the pane is too low for it, so the pane scrolls to all of it.
+ */
 .noGeometry {
-  position: absolute; inset: 0; display: grid; place-items: center; overflow: auto;
+  position: absolute; inset: 0; display: flex; align-items: flex-start; overflow: auto;
   background: var(--ui-surface); border: 1px solid var(--ui-divider); border-radius: inherit;
 }
+.statement { flex: 1; min-width: 0; margin: auto; display: grid; justify-items: center; }
+.sceneControls { padding: var(--ui-space-4) var(--ui-space-4) var(--ui-space-4) 0; }
 .pill { position: absolute; top: var(--ui-space-4); z-index: var(--ui-z-map-overlay); padding: 5px 12px; border-radius: 999px; font: 500 12px/16px var(--ui-font-sans); color: var(--ui-ink); }
 .divider { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: var(--ui-border-strong); z-index: var(--ui-z-map-overlay); }
 .critical {
@@ -33,6 +39,8 @@
 @media (prefers-reduced-motion: no-preference) { .tabBody { animation: ul-fade 160ms ease-out; } }
 .stack { display: grid; gap: var(--ui-space-4); }
 .filterBar { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-space-3); padding: 8px 8px 8px 16px; border-bottom: 1px solid var(--ui-divider); font-size: 13px; }
+/* Alone in its panel the bar closes it: no rule beneath. */
+.filterBar:last-child { border-bottom: 0; }
 .gaps { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 13px; line-height: 19px; color: var(--ui-ink-soft); }
 .sources { list-style: none; margin: 0; padding: 8px 16px 12px; display: grid; }
 .sources li { display: grid; gap: 4px; justify-items: start; padding: 10px 0; border-top: 1px solid var(--ui-divider); }
