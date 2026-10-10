@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router';
 import { Frame } from './Frame';
+import { PageError } from './PageError';
 import { BatchesPage } from '../features/batches/BatchesPage';
 import { PlannedPage } from '../features/placeholder/PlannedPage';
 import { NotFoundPage } from '../features/placeholder/NotFoundPage';
@@ -13,34 +14,58 @@ export const router = createBrowserRouter([
     path: '/studio',
     element: <Frame />,
     children: [
-      { path: 'work', element: <BatchesPage /> },
+      // A render error in a page stays inside the frame: the header and navigation remain.
       {
-        path: 'work/cases/:caseId/tables/:sourceId',
-        lazy: async () => ({ Component: (await import('../features/intake/table/TablePage')).TablePage }),
+        errorElement: <PageError />,
+        children: [
+          { path: 'work', element: <BatchesPage /> },
+          {
+            path: 'work/cases/:caseId/tables/:sourceId',
+            lazy: async () => ({ Component: (await import('../features/intake/table/TablePage')).TablePage }),
+          },
+          // The map pulls in Three.js; load it only when a map route opens.
+          {
+            path: 'map',
+            lazy: async () => ({ Component: (await import('../features/map/MapPage')).MapIndexRedirect }),
+          },
+          {
+            path: 'areas/:areaId',
+            lazy: async () => ({ Component: (await import('../features/map/MapPage')).MapPage }),
+          },
+          {
+            path: 'areas/:areaId/candidates',
+            lazy: async () => ({
+              Component: (await import('../features/review/candidates/CandidateReviewPage')).AreaCandidatesPage,
+            }),
+          },
+          {
+            path: 'properties/:buildingId/candidates',
+            lazy: async () => ({
+              Component: (await import('../features/review/candidates/CandidateReviewPage')).BuildingCandidatesPage,
+            }),
+          },
+          {
+            path: 'add-files',
+            lazy: async () => ({ Component: (await import('../features/intake/AddFilesRoute')).AddFilesRoute }),
+          },
+          {
+            path: 'registry',
+            lazy: async () => ({ Component: (await import('../features/register/RequestsPage')).RegistryIndex }),
+          },
+          { path: 'registry/*', element: <Navigate to="/studio/registry" replace /> },
+          {
+            path: 'properties/:buildingId/register',
+            lazy: async () => ({ Component: (await import('../features/register/RegisterPage')).RegisterPage }),
+          },
+          {
+            path: 'review/:buildingId',
+            lazy: async () => ({ Component: (await import('../features/review/WorkspacePage')).WorkspacePage }),
+          },
+          { path: 'datasets/*', element: <PlannedPage title="Dataset" milestone="M5" /> },
+          { path: 'cases/*', element: <PlannedPage title="Workspace review" milestone="M5" /> },
+          { path: '*', element: <NotFoundPage /> },
+        ],
       },
-      // The map pulls in Three.js; load it only when a map route opens.
-      { path: 'map', lazy: async () => ({ Component: (await import('../features/map/MapPage')).MapIndexRedirect }) },
-      { path: 'areas/:areaId', lazy: async () => ({ Component: (await import('../features/map/MapPage')).MapPage }) },
-      {
-        path: 'areas/:areaId/candidates',
-        lazy: async () => ({
-          Component: (await import('../features/review/candidates/CandidateReviewPage')).AreaCandidatesPage,
-        }),
-      },
-      {
-        path: 'properties/:buildingId/candidates',
-        lazy: async () => ({
-          Component: (await import('../features/review/candidates/CandidateReviewPage')).BuildingCandidatesPage,
-        }),
-      },
-      { path: 'add-files', lazy: async () => ({ Component: (await import('../features/intake/AddFilesRoute')).AddFilesRoute }) },
-      { path: 'registry', lazy: async () => ({ Component: (await import('../features/register/RequestsPage')).RegistryIndex }) },
-      { path: 'registry/*', element: <Navigate to="/studio/registry" replace /> },
-      { path: 'properties/:buildingId/register', lazy: async () => ({ Component: (await import('../features/register/RegisterPage')).RegisterPage }) },
-      { path: 'review/:buildingId', lazy: async () => ({ Component: (await import('../features/review/WorkspacePage')).WorkspacePage }) },
-      { path: 'datasets/*', element: <PlannedPage title="Dataset" milestone="M5" /> },
-      { path: 'cases/*', element: <PlannedPage title="Workspace review" milestone="M5" /> },
-      { path: '*', element: <NotFoundPage /> },
     ],
   },
   // Public portal: search, buildings and released records, the public map, card verification, requests. No sign-in.
