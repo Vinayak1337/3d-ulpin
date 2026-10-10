@@ -1,6 +1,7 @@
 import {createHash} from 'node:crypto';
 import type {Readable} from 'node:stream';
-import {STREAMING_VECTOR_LIMITS as limits,TABULAR_LIMITS,type TabularPin,type StreamingVectorRecord} from '@ulpin/contracts/usp';
+import {STREAMING_VECTOR_LIMITS as limits,TABULAR_LIMITS,type TabularPin,
+  type StreamingVectorRecord} from '@ulpin/contracts/usp';
 import {readTabularSource,tabularDevelopmentAsset} from './tabular-source';
 import {AppError} from '../../../infrastructure/errors';
 
@@ -169,7 +170,9 @@ export async function readStreamingTabular(body:Readable,pin:TabularPin,onFeatur
   const chunks:Buffer[]=[];let length=0;
   for await(const value of body){
     const chunk=Buffer.from(value);length+=chunk.length;
-    if(length>TABULAR_LIMITS.bytes)throw new AppError(413,'TABULAR_SOURCE_BUDGET','Tabular bytes exceed the receipt bound.');
+    if(length>TABULAR_LIMITS.bytes){
+      throw new AppError(413,'TABULAR_SOURCE_BUDGET','Tabular bytes exceed the receipt bound.');
+    }
     chunks.push(chunk);
   }
   const raw=Buffer.concat(chunks),hash=createHash('sha256').update(raw).digest('hex');
@@ -187,9 +190,10 @@ export async function readStreamingTabular(body:Readable,pin:TabularPin,onFeatur
   }
   return {features:table.rows.length,metadata:{},bytes:raw.length,sha256:hash};
 }
-export function tabularSourceRecord(item:SourceFeature):StreamingVectorRecord{
-  return {featureIndex:item.index,byteStart:item.start,byteEnd:item.end,
-    rawSha256:item.rawSha256??createHash('sha256').update(item.raw).digest('hex'),disposition:'accepted',issueCode:null,feature:item.feature};
+export function tabularSourceRecord(item: SourceFeature): StreamingVectorRecord {
+  return { featureIndex: item.index, byteStart: item.start, byteEnd: item.end,
+    rawSha256: item.rawSha256 ?? createHash('sha256').update(item.raw).digest('hex'),
+    disposition: 'accepted', issueCode: null, feature: item.feature };
 }
 
 function ringIssue(value:unknown):string|null{

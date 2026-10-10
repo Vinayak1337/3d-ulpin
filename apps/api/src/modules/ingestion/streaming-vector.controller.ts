@@ -3,7 +3,8 @@ import {ApiOperation,ApiParam,ApiTags} from '@nestjs/swagger';
 import type {Request} from 'express';
 import {z} from 'zod';
 import {AnyStreamingRequestSchema as StreamingVectorRequestSchema,
-  AnyStreamingStatusSchema as StreamingVectorStatusSchema,StreamingVectorChunkResponseSchema} from '@ulpin/contracts/usp';
+  AnyStreamingStatusSchema as StreamingVectorStatusSchema,
+  StreamingVectorChunkResponseSchema} from '@ulpin/contracts/usp';
 import {StreamingVectorService} from '@ulpin/server/modules/usp/ingestion/streaming-vector';
 import {AppError} from '@ulpin/server/infrastructure/errors';
 import {JSON_BODY_LIMIT,readJsonBody} from '../../common/body';

@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import {LegacyMappingTargetSchema} from '../canonical/targets';
 import { ColumnProfileDocumentSchema, MappingPlanV2Schema } from '../canonical/mapping-plan';
-import { StreamingVectorInputSchema, StreamingVectorRequestSchema, StreamingVectorStatusSchema } from './streaming-vector';
+import { StreamingVectorInputSchema, StreamingVectorRequestSchema,
+  StreamingVectorStatusSchema } from './streaming-vector';
 export {MappingPlanV2Schema} from '../canonical/mapping-plan';
 export type {MappingPlanV2} from '../canonical/mapping-plan';
 
@@ -95,7 +96,9 @@ export const AnySourceProfileSchema = z.union([SourceProfileSchema, TabularSourc
 export const AnyRetainSourceSchema = z.union([RetainGisSchema, z.strictObject({ ...RetainGisSchema.shape,
   format: z.enum(['csv', 'xlsx']), selection: TabularSelectionSchema,
 }).superRefine((value, ctx) => {
-  if (value.format !== value.selection.format) ctx.addIssue({ code: 'custom', message: 'Format and selection differ.' });
+  if (value.format !== value.selection.format) {
+    ctx.addIssue({ code: 'custom', message: 'Format and selection differ.' });
+  }
   if (Boolean(value.familyId) !== Boolean(value.expectedSourceRevision)) {
     ctx.addIssue({ code: 'custom', message: 'A revised source requires its family and current revision.' });
   }
@@ -104,7 +107,8 @@ export const TabularMappingPlanSchema = z.strictObject({
   version: z.literal('manual-tabular/1'), mode: z.literal('manual_mapping'), source: SourcePinSchema,
   caseId: id, workspaceRevision: z.number().int().nonnegative(), workspaceFingerprint: hash,
   tabular: TabularPinSchema, mapping: MappingPlanV2Schema,
-  decisions: z.array(z.strictObject({ sourceField: z.string().min(1).max(512), reason: z.string().min(1).max(2000) }))
+  decisions: z.array(z.strictObject({ sourceField: z.string().min(1).max(512),
+    reason: z.string().min(1).max(2000).refine(value => Boolean(value.trim())) }))
     .min(1).max(TABULAR_LIMITS.columns),
 });
 export const TabularMappingReceiptSchema = MappingReceiptSchema.omit({ plan: true, destination: true }).extend({
@@ -114,9 +118,11 @@ export const AnyMappingReceiptSchema = z.union([MappingReceiptSchema, TabularMap
 export const AnyAuthorMappingSchema = z.union([AuthorMappingSchema, AuthorMappingSchema.omit({ plan: true,
   destination: true }).extend({ plan: TabularMappingPlanSchema, destination: z.null() })]);
 export const AnyStreamingRequestSchema = z.union([StreamingVectorRequestSchema,
-  StreamingVectorRequestSchema.omit({ framing: true }).extend({ framing: z.literal('tabular'), tabular: TabularPinSchema })]);
+  StreamingVectorRequestSchema.omit({ framing: true }).extend({
+    framing: z.literal('tabular'), tabular: TabularPinSchema })]);
 export const AnyStreamingInputSchema = z.union([StreamingVectorInputSchema,
-  StreamingVectorInputSchema.omit({ framing: true }).extend({ framing: z.literal('tabular'), tabular: TabularPinSchema })]);
+  StreamingVectorInputSchema.omit({ framing: true }).extend({
+    framing: z.literal('tabular'), tabular: TabularPinSchema })]);
 export const AnyStreamingStatusSchema = StreamingVectorStatusSchema.omit({ framing: true }).extend({
   framing: z.enum(['feature-collection', 'geojson-seq-rs', 'tabular']), tabular: TabularPinSchema.optional(),
 });
