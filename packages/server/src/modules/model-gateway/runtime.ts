@@ -1,8 +1,9 @@
 import { AppError } from '../../infrastructure/errors';
-import { configuredGateway, hash, readProviderSecret, ModelGatewayConfigSchema } from './config';
+import { configuredGateway, hash, providerKeyReferences, readProviderSecret, ModelGatewayConfigSchema,
+  type GatewayConfig } from './config';
 import { ModelGateway } from './gateway';
 import { PgModelCallLedger } from './ledger';
-import { SarvamAdapter, ReplayAdapter } from './adapter';
+import { SarvamAdapter, SarvamKeyListAdapter, ReplayAdapter } from './adapter';
 import { TeacherRecordings } from './recordings';
 
 // Replay never dispatches or debits the ledger. Funding/pricing fields are schema placeholders,
@@ -19,16 +20,35 @@ const REPLAY_GATEWAY_CONFIG = ModelGatewayConfigSchema.parse({
   maxOutputTokens: 4096, timeoutMs: 45000, paceMs: 1500,
 });
 
+/** Every key the policy names, in the owner's order. One absent key means no gateway, as with one key. */
+function readProviderKeys(config: GatewayConfig): string[] | undefined {
+  const keys = providerKeyReferences(config).map(reference => readProviderSecret(reference));
+  return keys.every(key => key !== undefined) ? keys : undefined;
+}
+/** The paid ledger of the configured policy: one key's hash, or the key hashes of a list in order. */
+async function configuredLedger(config: GatewayConfig, keys: readonly string[]): Promise<PgModelCallLedger> {
+  const { transaction } = await import('../../infrastructure/db');
+  const hashes = keys.map(key => hash(key));
+  return new PgModelCallLedger(transaction, config, config.secretReferences ? hashes : hashes[0], 'sarvam');
+}
 /** Lazy database import keeps manual/no-key checks independent of paid dispatch/storage. */
 export async function modelGatewayRuntime(): Promise<ModelGateway | undefined> {
   const config = configuredGateway();
-  if (!config) return undefined;
-  const key = readProviderSecret(config.secretReference);
-  if (!key) return undefined;
-  const { transaction } = await import('../../infrastructure/db');
-  return new ModelGateway(config,new PgModelCallLedger(transaction,config,hash(key),'sarvam'),new SarvamAdapter(key));
+  const keys = config && readProviderKeys(config);
+  if (!config || !keys) return undefined;
+  const adapter = config.secretReferences ? new SarvamKeyListAdapter(keys) : new SarvamAdapter(keys[0]);
+  return new ModelGateway(config, await configuredLedger(config, keys), adapter);
 }
-/** Mapping demo defaults to hash-pinned replay. Only explicit sarvam mode reads the one configured key. */
+/** For the owner's script: the ledger of the enabled policy, or a refusal that names no key. */
+export async function ownerKeyLedger(): Promise<PgModelCallLedger> {
+  const config = configuredGateway();
+  const keys = config && readProviderKeys(config);
+  if (!config || !keys) {
+    throw new AppError(503, 'MODEL_CONFIGURATION', 'The gateway is not enabled with every key its policy names.');
+  }
+  return configuredLedger(config, keys);
+}
+/** Mapping demo defaults to hash-pinned replay. Only explicit sarvam mode reads the configured key or keys. */
 export async function mappingTeacherGatewayRuntime(
   mode = process.env.ULPIN_MAPPING_TEACHER_ADAPTER ?? 'replay',
 ): Promise<ModelGateway | undefined> {

@@ -13,6 +13,8 @@ export type ProviderRequest = {
   signal: AbortSignal;
   authorize: () => Promise<void>;
   replayKey?: string;
+  /** The key the ledger chose for this call. Only a key list reads it; one key is always itself. */
+  credentialHash?: string;
 };
 export type ProviderResult = { output: unknown; responseHash: string; usage?: Usage;
   httpStatus: number; semanticError?: 'invalid_output' | 'truncated_output';
@@ -27,6 +29,8 @@ export class ProviderFailure extends Error {
     super('The provider call could not be accepted; manual preparation remains available.');
   }
 }
+export type KeyRefusalKind = 'quota_exhausted' | 'credential_invalid';
+export type CitedKeyRefusal = ProviderFailure & { kind: KeyRefusalKind; httpStatus: number; responseHash: string };
 export interface ProviderAdapter {
   readonly kind: 'sarvam' | 'control' | 'replay';
   propose(request: ProviderRequest): Promise<ProviderResult>;
@@ -59,6 +63,17 @@ export function classifyProviderFailure(status: number, code: unknown, retryAfte
   if (status === 401 || status === 403) return new ProviderFailure('capability_denied', status);
   if ([400,413,422].includes(status)) return new ProviderFailure('input_rejected', status);
   return new ProviderFailure('outcome_unknown', status, status >= 500 ? 5000 : 0);
+}
+
+/** The two answers Sarvam documents about the key itself (pages read on 10 October 2026):
+ * 429 insufficient_quota_error, credits used up, and 403 invalid_api_key_error, key rejected
+ * (https://docs.sarvam.ai/api/getting-started/errors-troubleshooting). Only these move a key list on.
+ * A 402, a 401 and either code on another status are not documented, so they are not among them.
+ */
+export function citedKeyRefusal(failure?: ProviderFailure): failure is CitedKeyRefusal {
+  if (!failure || !/^[a-f0-9]{64}$/.test(failure.responseHash ?? '')) return false;
+  if (failure.kind === 'quota_exhausted') return failure.httpStatus === 429;
+  return failure.kind === 'credential_invalid' && failure.httpStatus === 403;
 }
 
 const usageSchema = z.object({prompt_tokens:z.number().int().nonnegative().safe(),
@@ -140,6 +155,21 @@ export class SarvamAdapter implements ProviderAdapter {
       output: output ?? { invalidResponse: true }, responseHash: parsedResponse.responseHash,
       httpStatus: response.status, usage, semanticError, rawResponse,
     };
+  }
+}
+
+/** One SarvamAdapter per key of the owner's list. The ledger chooses the key; this adapter never does. */
+export class SarvamKeyListAdapter implements ProviderAdapter {
+  readonly kind = 'sarvam' as const;
+  private readonly adapters: ReadonlyMap<string, SarvamAdapter>;
+  constructor(keys: readonly string[], fetcher: typeof fetch = fetch) {
+    this.adapters = new Map(keys.map(key => [hash(key), new SarvamAdapter(key, fetcher)]));
+  }
+  async propose(request: ProviderRequest): Promise<ProviderResult> {
+    const adapter = this.adapters.get(request.credentialHash ?? '');
+    // A call without a key of this list is never sent with another one.
+    if (!adapter) throw new ProviderFailure('outcome_unknown');
+    return adapter.propose(request);
   }
 }
 

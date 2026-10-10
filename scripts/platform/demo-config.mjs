@@ -230,17 +230,29 @@ function assertGatewayDisabled(env) {
   }
 }
 
+/** The key names a policy asks for, in the owner's order: its list, or its one name. A name, never a value. */
+export function providerKeyNames(policy) {
+  if (policy?.secretReferences === undefined) {
+    if (policy?.secretReference !== providerKeyName) {
+      throw new Error(`${gatewayConfigKey}.secretReference must be exactly ${providerKeyName}.`);
+    }
+    return [providerKeyName];
+  }
+  const names = policy.secretReferences;
+  // A refused entry is never repeated: a key pasted where a name belongs must not reach a message.
+  if (!Array.isArray(names) || names.some(name => !/^ULPIN_PROVIDER_KEY_SARVAM_[0-9]{2}$/.test(name))) {
+    throw new Error(`${gatewayConfigKey}.secretReferences must list names of the form ${providerKeyName}_01.`);
+  }
+  return names;
+}
+
 /** Only the fields this profile gates on; every other rule is the schema's, through gatewayPolicyHash(). */
 function assertGatewayEnabled(env) {
   let policy;
   try { policy = JSON.parse(env[gatewayConfigKey] ?? ''); }
   catch { throw new Error(`Demo setting ${gatewayConfigKey} must be valid JSON while ${gatewayFlag} is 1.`); }
-  if (policy?.secretReference !== providerKeyName) {
-    throw new Error(`${gatewayConfigKey}.secretReference must be exactly ${providerKeyName}.`);
-  }
-  if (!env[providerKeyName]) {
-    throw new Error(`Demo setting ${providerKeyName} is required while ${gatewayFlag} is 1.`);
-  }
+  const missing = providerKeyNames(policy).find(name => !env[name]);
+  if (missing) throw new Error(`Demo setting ${missing} is required while ${gatewayFlag} is 1.`);
   if (typeof policy.projectDailyCapMicroInr !== 'string' || !policy.projectDailyCapMicroInr) {
     throw new Error(`${gatewayConfigKey}.projectDailyCapMicroInr is required while ${gatewayFlag} is 1.`);
   }
