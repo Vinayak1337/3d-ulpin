@@ -7,6 +7,13 @@
   grid-template-rows: minmax(520px, 1fr) auto;
 }
 
+/* Narrow, or a desktop window at 200% zoom: the review takes the height of its content, so the page is the one
+   scroller and the recorded panel is reached by scrolling it. `max-content`, not `auto`: the review's own
+   `min-height: 0` would let an `auto` row shrink back to the window and scroll inside itself. */
+@media (max-width: 960px) {
+  .layout { grid-template-rows: max-content auto; }
+}
+
 .below { min-width: 0; padding: 0 var(--ui-space-4) var(--ui-space-4); }
 .body { display: grid; gap: var(--ui-space-4); }
 .list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--ui-space-4); }
