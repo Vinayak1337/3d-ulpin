@@ -2,38 +2,43 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { saveNew, type PreparedColumn } from './t1-profiles';
-import { digest, stableHash } from './t1-sources';
-import { python, readLines, targetCounts, verifiedRecords, type RecordLabel } from './measure-a4b';
+import { saveNew, type PreparedColumn, type TableInventory } from './t1-profiles';
+import { digest, stableHash, sourceTables } from './t1-sources';
+import { EXAMPLES, python, readLines, safeHeldOutCounts, targetCounts, verifiedRecords } from './measure-a4b';
+import type { RecordLabel } from './measure-a4b';
 import type { ArmMetrics } from './measure-a4c';
+import type { MappingPlanV2 } from '../../packages/contracts/src/index';
+import type { PseudoLabelExample } from '../../packages/server/src/modules/usp/ingestion/teacher-labels';
+import { executeMappingPlanV2 } from '../../packages/server/src/modules/usp/ingestion/mapping-executor';
+import { mappingContextFromColumnProfile } from '../../packages/server/src/modules/usp/ingestion/mapping-teacher';
 
 type Round = 't1c' | 't1d';
 type Label = { profileId: string; field: { target: string } };
 type TeacherEvidence = {
   labels: { path: string; sha256: string; lines: number };
-  expectedVerifierRefusals?: { fieldsExpectedUnverified: Record<string, string>; tablePlansExpectedRejected: number };
+  expectedVerifierRefusals?: {
+    fieldsExpectedUnverified: Record<string, string>; tablePlansExpectedRejected: number;
+  };
 };
-type BoundaryReceipt = {
-  round: Round; labelPath: string; labelsSha256: string; profilesPath: string; profilesSha256: string;
-  outputDirectory: string; exitCode: number; status: string; refusalsPath: string; refusalsSha256: string;
-  error: { name: string; code: string; location: string; expression: string };
-};
-type Baseline = {
-  fitExamples: number; fitTargetCounts: Record<string, number>; chosen: string;
-  arms: (Omit<ArmMetrics, 'n' | 'perTarget'> & {
-    arm: string; model: string; pooledFields: number; perTargetPositives: ArmMetrics['perTarget'];
-  })[];
-};
+type Link = RecordLabel['link'];
+type Refusal = { profileId: string; reasonCode: string };
+type Report = { accepted: number; rejected: number; verifiedExamples: number;
+  rejections: { inputLines: number[]; codes: string[] }[] };
+type Baseline = { fitExamples: number; fitTargetCounts: Record<string, number>; chosen: string;
+  arms: { arm: string; model: string; threshold: number | null; pooledFields: number;
+    wrongCommitted: number; correctPositiveCommitted: number; unknownCommitted: number;
+    abstained: number; perTargetPositives: ArmMetrics['perTarget'] }[] };
+type Trained = { model: string; fitExamples: number; calibration: ArmMetrics };
 
 const ROOT = 'E:/BhuAayam-data/task-data/a4d';
-const BASELINE = 'docs/evidence/gf-agent/a4c/result.json';
-const RESULT = join(ROOT, 'measurements/result.json');
+const RUN = join(ROOT, 'measurements/completed-v1');
+const RESULT = join(RUN, 'result.json');
+const INPUT = join(ROOT, 'inputs/completed-v1');
+const MODEL_ROOT = join(ROOT, 'learner/one-arm-v1');
 const PROFILE_ROOTS = { t1c: 'd1f', t1d: 'a5a' };
 const SIX_TARGETS = ['document.registrationNo', 'building.name', 'building.storeyLabel',
   'unit.type', 'building.addressLiteral', 'building.footprint'];
-const FOREIGN = Array.from({ length: 8 }, (_, index) => `opf-d${String(index + 2).padStart(2, '0')}`);
-const BOUNDARY_EXPRESSION =
-  "assert(profile.split === 'dev' ? development.has(profile.family) : !allFamilies.has(profile.family))";
+const verifiedRoot = (round: Round) => join(ROOT, `verified/${round}-v2`);
 
 function json<T>(path: string): T {
   return JSON.parse(readFileSync(path, 'utf8')) as T;
@@ -50,31 +55,29 @@ function roundInputs(round: Round) {
   return { evidence, labels, profiles, profilesPath };
 }
 
-function captureBoundary(round: Round, inputs: ReturnType<typeof roundInputs>): BoundaryReceipt {
-  const output = join(ROOT, `verified/${round}-v1`);
-  const run = spawnSync(process.execPath, [resolve('node_modules/tsx/dist/cli.mjs'),
-    'scripts/agent/verify-teacher-labels.ts', inputs.evidence.labels.path, inputs.profilesPath, output], {
-    encoding: 'utf8', timeout: 120000,
-    env: { ...process.env, ULPIN_T1_ROOT: ROOT, PYTHONDONTWRITEBYTECODE: '1' },
-  });
-  assert.equal(run.status, 1, 'A4D_VERIFIER_BEHAVIOUR_CHANGED_REVIEW_REQUIRED');
-  assert(run.stderr.includes('ERR_ASSERTION') && run.stderr.includes(BOUNDARY_EXPRESSION),
-    'A4D_UNEXPECTED_VERIFIER_FAILURE');
-  const refusalsPath = join(output, 'refusals.jsonl');
-  const refused = inputs.labels.map(label => ({ profileId: label.profileId, reasonCode: 'ERR_ASSERTION' }));
-  saveNew(refusalsPath, refused, true);
-  const receipt: BoundaryReceipt = {
-    round, labelPath: inputs.evidence.labels.path, labelsSha256: inputs.evidence.labels.sha256,
-    profilesPath: inputs.profilesPath, profilesSha256: digest(inputs.profilesPath), outputDirectory: output,
-    exitCode: 1, status: 'round_boundary_refused', refusalsPath, refusalsSha256: digest(refusalsPath),
-    error: { name: 'AssertionError', code: 'ERR_ASSERTION', location: 'scripts/agent/t1-profiles.ts:107',
-      expression: BOUNDARY_EXPRESSION },
-  };
-  saveNew(join(output, 'verification-receipt.json'), receipt);
-  return receipt;
+function verifyRound(round: Round, check: boolean) {
+  const inputs = roundInputs(round);
+  const output = verifiedRoot(round);
+  const path = join(output, 'report.json');
+  if (!existsSync(path)) {
+    assert(!check, 'A4D_VERIFICATION_MISSING');
+    const run = spawnSync(process.execPath, [resolve('node_modules/tsx/dist/cli.mjs'),
+      'scripts/agent/verify-teacher-labels.ts', inputs.evidence.labels.path, inputs.profilesPath, output], {
+      encoding: 'utf8', timeout: 120000,
+      env: { ...process.env, ULPIN_T1_ROOT: ROOT, PYTHONDONTWRITEBYTECODE: '1' },
+    });
+    if (run.status !== 0) {
+      saveNew(join(output, 'further-guard.json'), { exitCode: run.status, stderr: run.stderr });
+      throw new Error(`A4D_FURTHER_VERIFIER_GUARD:${round}; stop, inspect verified output, do not relax it.`);
+    }
+  }
+  const report = json<Report & { inputPath: string; profilesPath: string }>(path);
+  assert.equal(report.inputPath, inputs.evidence.labels.path);
+  assert.equal(report.profilesPath, inputs.profilesPath);
+  return { ...inputs, report, output };
 }
 
-function admittedPositiveCounts(records: RecordLabel[], targets = Object.keys(targetCounts(records))) {
+function positiveCounts(records: RecordLabel[], targets = Object.keys(targetCounts(records))) {
   return Object.fromEntries(targets.filter(target => target !== 'unknown').map(target => {
     const selected = records.filter(record => record.example.target === target);
     const families = [...new Set(selected.map(record => record.link.family))].sort();
@@ -82,124 +85,241 @@ function admittedPositiveCounts(records: RecordLabel[], targets = Object.keys(ta
   }));
 }
 
-function roundSummary(round: Round, check: boolean) {
-  const inputs = roundInputs(round);
-  const path = join(ROOT, `verified/${round}-v1/verification-receipt.json`);
-  assert(!check || existsSync(path), 'A4D_CHECK_RECEIPT_MISSING');
-  const receipt = existsSync(path) ? json<BoundaryReceipt>(path) : captureBoundary(round, inputs);
-  assert.equal(receipt.round, round);
-  assert.equal(receipt.labelPath, inputs.evidence.labels.path);
-  assert.equal(receipt.profilesPath, inputs.profilesPath);
-  assert.equal(receipt.status, 'round_boundary_refused');
-  assert.equal(receipt.labelsSha256, inputs.evidence.labels.sha256);
-  assert.equal(receipt.profilesSha256, digest(inputs.profilesPath));
-  assert.equal(receipt.refusalsSha256, digest(receipt.refusalsPath));
-  assert.equal(receipt.error.expression, BOUNDARY_EXPRESSION);
-  assert.equal(receipt.exitCode, 1);
-  const refused = readLines<{ profileId: string; reasonCode: string }>(receipt.refusalsPath);
-  assert.deepEqual(refused, inputs.labels.map(label => ({ profileId: label.profileId, reasonCode: 'ERR_ASSERTION' })));
-  const targets = [...new Set(inputs.labels.map(label => label.field.target))].filter(target => target !== 'unknown');
-  const expected = inputs.evidence.expectedVerifierRefusals;
+function fitRecords() {
+  // Reuse the existing authority/deduplication join; add exactly the two new verified output paths for this call.
+  const length = EXAMPLES.length;
+  EXAMPLES.push(...(['t1c', 't1d'] as Round[]).map(round => join(verifiedRoot(round), 'pseudo-labels.jsonl')));
+  try {
+    return verifiedRecords();
+  } finally {
+    EXAMPLES.splice(length);
+  }
+}
+
+function dryRunRefusals(output: string, profilesPath: string, unverified: PseudoLabelExample[]): Refusal[] {
+  const links = readLines<Link>(join(output, 'profile-links.jsonl'));
+  const tables = json<TableInventory[]>(join(profilesPath, '../../verifier/inventory.json'));
+  const plans = readLines<{ profileHash: string; plan: MappingPlanV2 }>(join(output, 'normalized-labels.jsonl'));
+  return plans.flatMap(({ profileHash, plan }) => {
+    const failed = unverified.filter(example => example.profileHash === profileHash);
+    if (!failed.length) return [];
+    const link = links.find(entry => entry.profileHash === profileHash);
+    assert(link);
+    const table = tables.find(entry => entry.profileIds.includes(link.profileId));
+    assert(table && table.asset.family.startsWith('opf-'));
+    const native = sourceTables(table.asset).find(entry => entry.name === table.sheet);
+    assert(native);
+    const rows = native.rows.map(row => Object.fromEntries(table.profile.columns.map((column, index) =>
+      [column.name, row[index]])));
+    // Same execution context as this round's unchanged verifier: foreign references supply no registered CRS.
+    const execution = executeMappingPlanV2(plan, rows, { ...mappingContextFromColumnProfile(table.profile),
+      sourceRef: `${table.asset.original.externalPath}#sheet=${encodeURIComponent(table.sheet)}`,
+      rowCount: rows.length });
+    return failed.flatMap(example => {
+      const sourceField = example.columnProfile.name;
+      const linked = links.find(entry => entry.profileHash === profileHash && entry.sourceField === sourceField);
+      assert(linked);
+      const codes = new Set(execution.rows.flatMap(row => row.fields.filter(cell => cell.sourceField === sourceField)
+        .flatMap(cell => cell.issueCode ? [cell.issueCode] : [])));
+      assert(codes.size, 'A4D_UNVERIFIED_FIELD_WITHOUT_REASON');
+      return [...codes].sort().map(reasonCode => ({ profileId: linked.profileId, reasonCode }));
+    });
+  });
+}
+
+function compareExpected(checked: ReturnType<typeof verifyRound>, refused: Refusal[]) {
+  const expectation = checked.evidence.expectedVerifierRefusals;
+  if (!expectation) return null;
+  const expected = Object.keys(expectation.fieldsExpectedUnverified).sort();
+  const actual = [...new Set(refused.map(row => row.profileId))].sort();
+  const expectedVerified = checked.labels.length - expected.length;
   return {
-    round, labelsSha256: receipt.labelsSha256, profilesSha256: receipt.profilesSha256,
-    tablesSubmitted: new Set(inputs.profiles.map(profile => `${profile.file}/${profile.sheet}`)).size,
-    fieldsSubmitted: inputs.labels.length, tablesAccepted: 0, tablePlansEvaluated: 0,
-    fieldsVerified: 0, fieldsDryRunEvaluated: 0, fieldsBoundaryBlocked: refused.length,
-    refusalCodes: { ERR_ASSERTION: refused.length }, refused,
-    labelledPositives: Object.fromEntries(targets.map(target => [target,
-      inputs.labels.filter(label => label.field.target === target).length])),
-    verifiedPositives: admittedPositiveCounts([], targets),
-    expectedComparison: expected ? {
-      expectedTablePlansRejected: expected.tablePlansExpectedRejected,
-      expectedFieldRefusals: Object.keys(expected.fieldsExpectedUnverified).length,
-      actual: 'Entire round blocked before table validation; no MAPPING_CRS_UNVERIFIED result exists.',
-    } : null,
+    expectedRefusalIds: expected, actualRefusalIds: actual,
+    expectedVerifiedFields: expectedVerified, actualVerifiedFields: checked.report.verifiedExamples,
+    differences: {
+      unexpected: actual.filter(id => !expected.includes(id)), missing: expected.filter(id => !actual.includes(id)),
+      tablePlansRejected: checked.report.rejected - expectation.tablePlansExpectedRejected,
+      verifiedFields: checked.report.verifiedExamples - expectedVerified,
+      reasonCodes: refused.filter(row => expected.includes(row.profileId) &&
+        row.reasonCode !== 'MAPPING_CRS_UNVERIFIED'),
+    },
   };
 }
 
-function baselineGroups(model: string, threshold: number | null) {
+function roundSummary(round: Round, checked: ReturnType<typeof verifyRound>, records: RecordLabel[], check: boolean) {
+  const examples = readLines<PseudoLabelExample>(join(checked.output, 'pseudo-labels.jsonl'));
+  const unverified = examples.filter(example => !example.verified);
+  const refused = dryRunRefusals(checked.output, checked.profilesPath, unverified);
+  for (const rejection of checked.report.rejections) {
+    for (const inputLine of rejection.inputLines) {
+      for (const reasonCode of rejection.codes) refused.push({
+        profileId: checked.labels[inputLine - 1].profileId, reasonCode,
+      });
+    }
+  }
+  const refusalPath = join(RUN, `${round}-refusals.jsonl`);
+  if (check) assert.deepEqual(readLines<Refusal>(refusalPath), refused);
+  else saveNew(refusalPath, refused, true);
+  const families = new Set(checked.profiles.map(profile => profile.family));
+  const selected = records.filter(record => families.has(record.link.family));
+  const actual = [...new Set(refused.map(row => row.profileId))].sort();
+  const labelledTargets = [...new Set(checked.labels.map(label => label.field.target))];
+  return {
+    round, labelsSha256: checked.evidence.labels.sha256, profilesSha256: digest(checked.profilesPath),
+    reportSha256: digest(join(checked.output, 'report.json')), tablesAccepted: checked.report.accepted,
+    tablesRejected: checked.report.rejected, fieldsSubmitted: checked.labels.length,
+    fieldsVerified: checked.report.verifiedExamples, fieldsRefused: actual.length,
+    refusalCodes: Object.fromEntries([...new Set(refused.map(row => row.reasonCode))]
+      .map(code => [code, refused.filter(row => row.reasonCode === code).length])),
+    refused, verifiedPositives: positiveCounts(selected, labelledTargets),
+    expectedComparison: compareExpected(checked, refused),
+  };
+}
+
+function scoreGroups(model: string, threshold: number | null) {
   const scoresPath = join(model, '../cross-fit-scores.json');
   const manifest = json<{ crossFitScoresSha256: string }>(join(model, 'manifest.json'));
-  assert.equal(digest(scoresPath), manifest.crossFitScoresSha256, 'A4D_BASELINE_SCORES_PIN_CHANGED');
-  // Reuse the classifier's scorer on saved development scores; this performs no fit or prediction.
+  assert.equal(digest(scoresPath), manifest.crossFitScoresSha256, 'A4D_POOLED_SCORES_PIN_CHANGED');
   const code = [
-    'import json, sys',
-    'from pathlib import Path',
-    'from geo.usp_learning.stage_a import commit_counts',
-    'scores = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))',
-    'threshold = json.loads(sys.argv[2])',
+    'import json, sys', 'from pathlib import Path', 'from geo.usp_learning.stage_a import commit_counts',
+    'scores = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))', 'threshold = json.loads(sys.argv[2])',
     'groups = {name: commit_counts([s for s in scores if s["family"].startswith(prefix)], threshold)',
-    '          for name, prefix in [("Indian", "mi-"), ("foreign", "opf-")]}',
-    'print(json.dumps(groups))',
+    '          for name, prefix in [("Indian", "mi-"), ("foreign", "opf-")]}', 'print(json.dumps(groups))',
   ].join('\n');
   return JSON.parse(python(['-B', '-c', code, scoresPath, JSON.stringify(threshold)]));
 }
 
-function baselineRow(records: RecordLabel[]) {
-  const baseline = json<Baseline>(BASELINE);
-  assert.equal(baseline.chosen, 'B');
+function baselineRow() {
+  const path = 'docs/evidence/gf-agent/a4c/result.json';
+  const baseline = json<Baseline>(path);
   const arm = baseline.arms.find(row => row.arm === 'B');
-  assert(arm);
-  assert.equal(records.length, baseline.fitExamples, 'A4D_BASELINE_FIT_SET_CHANGED');
-  assert.deepEqual(targetCounts(records), baseline.fitTargetCounts, 'A4D_BASELINE_TARGET_COUNTS_CHANGED');
+  assert(arm && baseline.chosen === 'B');
   return { name: 'A4c arm B', ...arm, fitExamples: baseline.fitExamples, fitTargetCounts: baseline.fitTargetCounts,
-    byFamilyGroup: baselineGroups(arm.model, arm.threshold), baselineEvidenceSha256: digest(BASELINE) };
+    byFamilyGroup: scoreGroups(arm.model, arm.threshold), baselineEvidenceSha256: digest(path) };
 }
 
-function fallbackTriggers(records: RecordLabel[]) {
-  const six = admittedPositiveCounts(records, SIX_TARGETS);
-  const all = admittedPositiveCounts(records);
+function trainOnce(records: RecordLabel[], check: boolean): Trained {
+  const receipt = join(RUN, 'fit-receipt.json');
+  if (check) {
+    assert.deepEqual(readLines<PseudoLabelExample>(join(INPUT, 'pseudo-labels.jsonl')),
+      records.map(record => record.example));
+    assert.deepEqual(readLines<Link>(join(INPUT, 'profile-links.jsonl')), records.map(record => record.link));
+    return json<Trained>(receipt);
+  }
+  assert(!existsSync(MODEL_ROOT), 'A4D_ONE_ARM_ALREADY_STARTED_NO_REFIT');
+  saveNew(join(INPUT, 'pseudo-labels.jsonl'), records.map(record => record.example), true);
+  saveNew(join(INPUT, 'profile-links.jsonl'), records.map(record => record.link), true);
+  const run = spawnSync(process.env.ULPIN_PROFILE_PYTHON ?? 'python', ['-B', '-m', 'geo.usp_learning.stage_a',
+    'train', '--examples', join(INPUT, 'pseudo-labels.jsonl'), '--out', MODEL_ROOT,
+    '--calibration-mode', 'cross_fit', '--no-class-balance'], {
+    encoding: 'utf8', timeout: 600000, maxBuffer: 8 * 1024 * 1024,
+    env: { ...process.env, PYTHONPATH: resolve('services/geo'), PYTHONDONTWRITEBYTECODE: '1' },
+  });
+  if (run.status !== 0) {
+    saveNew(join(RUN, 'fit-failure.json'), { exitCode: run.status, stderr: run.stderr, signal: run.signal });
+    throw new Error('A4D_ONE_ARM_FAILED; stop without another fit; inspect development fit-failure.json.');
+  }
+  const fit = JSON.parse(run.stdout) as Trained;
+  assert.equal(fit.fitExamples, records.length);
+  saveNew(receipt, fit);
+  return fit;
+}
+
+function fitRow(fit: Trained, records: RecordLabel[]) {
+  const { calibration } = fit;
+  const manifest = json<{ modelSha256: string; classBalance: boolean; calibration: { mode: string } }>(
+    join(fit.model, 'manifest.json'));
+  assert.equal(digest(join(fit.model, 'model.npz')), manifest.modelSha256);
+  assert.equal(manifest.calibration.mode, 'cross_fit');
+  assert.equal(manifest.classBalance, false);
+  const groups = scoreGroups(fit.model, calibration.threshold);
+  assert.equal(groups.Indian.wrongCommitted + groups.foreign.wrongCommitted, calibration.wrongCommitted);
+  assert.equal(calibration.wrongCommitted, 0, 'A4D_CROSS_FIT_WRONG_COMMITS');
+  return {
+    name: 'A4d one arm', model: fit.model, modelSha256: manifest.modelSha256, fitExamples: records.length,
+    fitTargetCounts: targetCounts(records), threshold: calibration.threshold, pooledFields: calibration.n,
+    wrongCommitted: calibration.wrongCommitted, correctPositiveCommitted: calibration.correctPositiveCommitted,
+    perTargetPositives: Object.fromEntries(Object.entries(calibration.perTarget)
+      .filter(([target]) => target !== 'unknown')),
+    unknownCommitted: calibration.unknownCommitted, abstained: calibration.abstained, byFamilyGroup: groups,
+  };
+}
+
+function heldOutReceipt(model: string, check: boolean) {
+  const path = join(RUN, 'heldout-counts.json');
+  if (check) return json(path); // No held-out working file is reopened by a lead-readable check.
+  assert(!existsSync(join(ROOT, 'heldout/completed-v1')), 'A4D_HELDOUT_ALREADY_STARTED_NO_REPEAT');
+  const counts = safeHeldOutCounts(model, join(ROOT, 'heldout/completed-v1'));
+  const result = {
+    scorable: { n: counts.n, total: { count: counts.total, n: counts.n },
+      committed: { count: counts.committed, n: counts.n }, correct: { count: counts.committedCorrect, n: counts.n },
+      abstained: { count: counts.abstained, n: counts.n } },
+    nonScorable: { n: counts.nonScorable.n,
+      committed: { count: counts.nonScorable.committed, n: counts.nonScorable.n } },
+    profiles: { count: counts.profiles, n: counts.profiles },
+    truthSha256: counts.truthSha256, manifestSha256: counts.manifestSha256,
+    qualification: 'One frozen model/threshold; counts only, no accuracy claim and no tuning feedback.',
+  };
+  saveNew(path, result);
+  return result;
+}
+
+function fallbackTriggers(records: RecordLabel[], correctPositiveCommitted: number) {
+  const six = positiveCounts(records, SIX_TARGETS);
   const reach12 = Object.values(six).filter(count => count.columns >= 12).length;
+  const tData = SIX_TARGETS.length - reach12 > SIX_TARGETS.length / 2;
   const positiveExamples = records.filter(record => record.example.target !== 'unknown').length;
-  return {
-    scope: 'Admitted verified set only; both new rounds are blocked mechanically, not semantically refused.',
-    sixA4cTargets: six, everyVerifiedPositiveTarget: all, sixTargetsReaching12: reach12,
-    sixTargetsBelow12: SIX_TARGETS.length - reach12, tData: SIX_TARGETS.length - reach12 > SIX_TARGETS.length / 2,
-    tMethod: null, tMethodStatus: 'not_evaluated_tData_true_and_retrain_blocked',
-    stageB: { verifiedPositiveExamples: positiveExamples, required: 300, shortfall: 300 - positiveExamples },
-    decision: 'No fallback work dispatched. Admission repair is a prerequisite to assessing the new data.',
-  };
+  return { sixA4cTargets: six, everyVerifiedPositiveTarget: positiveCounts(records),
+    sixTargetsReaching12: reach12, sixTargetsBelow12: SIX_TARGETS.length - reach12, tData,
+    tMethod: tData ? null : correctPositiveCommitted === 0,
+    tMethodStatus: tData ? 'not_evaluated_T_data_true' : 'evaluated_zero_wrong_cross_fit_commits',
+    stageB: { verifiedPositiveExamples: positiveExamples, required: 300,
+      shortfall: Math.max(0, 300 - positiveExamples) },
+    fallbackWorkStarted: false };
 }
 
-function measurement(check: boolean) {
-  const rounds = (['t1c', 't1d'] as Round[]).map(round => roundSummary(round, check));
-  const records = verifiedRecords();
-  const dev = [...new Set(records.filter(record => record.link.split === 'dev').map(record => record.link.family))]
-    .sort();
-  const pool = [...new Set(records.filter(record => record.link.split === 'pool').map(record => record.link.family))]
-    .sort();
-  return {
-    task: 'A4d', gates: ['GF-AGENT', 'FP-LEARN-TEST'], status: 'blocked_verifier_foreign_development_boundary',
-    rounds, verifiedPositiveCounts: admittedPositiveCounts(records), baseline: baselineRow(records),
-    a4d: { fitExamples: null, threshold: null, wrongCommitted: null, correctPositiveCommitted: null,
-      unknownCommitted: null, abstained: null, byFamilyGroup: null, reason: 'No new labels reached verification.' },
-    families: { currentlyAdmittedDev: dev, pool, currentFoldCount: dev.length,
-      proposedForeignDev: FOREIGN, proposedFoldCount: dev.length + FOREIGN.length,
-      poolPolicy: 'Pool remains in fitting for every fold, as in A4c.' },
-    heldOut: { status: 'not_run_no_new_frozen_model', counts: null, heldOutFilesOpened: 0 },
-    fallbackTriggers: fallbackTriggers(records), freshFits: 0, heldOutRuns: 0,
+function measure(check: boolean) {
+  // Check both original label pins before any verification or fit.
+  (['t1c', 't1d'] as Round[]).forEach(roundInputs);
+  const checked = (['t1c', 't1d'] as Round[]).map(round => ({ round, verified: verifyRound(round, check) }));
+  const records = fitRecords();
+  const rounds = checked.map(({ round, verified }) => roundSummary(round, verified, records, check));
+  const baseline = baselineRow();
+  const fit = trainOnce(records, check);
+  const a4d = fitRow(fit, records); // Development counts and fixed model pin are finalized before held-out.
+  const dev = [...new Set(records.filter(record => record.link.split === 'dev')
+    .map(record => record.link.family))].sort();
+  const pool = [...new Set(records.filter(record => record.link.split === 'pool')
+    .map(record => record.link.family))].sort();
+  const result = {
+    task: 'A4d', gates: ['GF-AGENT', 'FP-LEARN-TEST'], status: 'completed_one_arm_no_accuracy_claim',
+    rounds, baseline, a4d,
+    families: { dev, pool, foldCount: dev.length, poolPolicy: 'Remain in every fit; never folded.' },
+    verifiedPositiveCounts: positiveCounts(records),
+    fallbackTriggers: fallbackTriggers(records, a4d.correctPositiveCommitted),
+    heldOut: heldOutReceipt(fit.model, check), freshFits: 1, heldOutRuns: 1, tuningAfterMeasurements: false,
+    rule: { calibrationMode: 'cross_fit', classBalance: false, variants: 0, featuresChanged: false },
+    inputsSha256: digest(join(INPUT, 'pseudo-labels.jsonl')), linksSha256: digest(join(INPUT, 'profile-links.jsonl')),
     labelsChanged: false, labelsProduced: 0, providerCalls: 0, runtimeChanged: false, gpuUsed: false,
-    qualification: 'Boundary failure is not a judgment on teacher labels; zero pooled wrong is by construction.',
-    next: [
-      'Admit exact pinned foreign development profiles in checkBoundary; retain blind and privacy exclusions.',
-      'Reuse the pinned D1f prefix reader in materialize/sourceTables; current T1_SOURCE_DENIED is the next guard.',
-      'Extend stage_a.development_families with the pinned foreign manifest; never mark foreign dev as pool.',
-      'Verifier output uses ULPIN_T1_ROOT=a4d. No output-root change is needed.',
-      'Resume unchanged labels, verify first, then one cross_fit/no-class-balance fit and one held-out receipt.',
-    ],
+    qualification: 'Pseudo-label agreement only. Zero pooled wrong commits is by threshold construction.',
   };
+  if (check) assert.equal(stableHash(json(RESULT)), stableHash(result), 'A4D_COMPLETED_RESULT_CHANGED');
+  else saveNew(RESULT, result);
+  return result;
 }
 
 function main() {
+  if (process.argv.includes('--blocked-check')) {
+    const blocked = json<{ status: string }>(join(ROOT, 'measurements/result.json'));
+    assert.equal(blocked.status, 'blocked_verifier_foreign_development_boundary');
+    console.log(JSON.stringify({ status: blocked.status, historicalAttemptPreserved: true }));
+    return;
+  }
   const check = process.argv.includes('--check');
   assert(check || !existsSync(RESULT), 'A4D_RESULT_EXISTS_NO_OVERWRITE');
-  const result = measurement(check);
-  if (check) assert.equal(stableHash(json(RESULT)), stableHash(result), 'A4D_RECORDED_RESULT_CHANGED');
-  else saveNew(RESULT, result);
-  console.log(JSON.stringify({ status: result.status, rounds: result.rounds.map(round => ({
-    round: round.round, tablesAccepted: round.tablesAccepted, fieldsVerified: round.fieldsVerified,
-    fieldsBoundaryBlocked: round.fieldsBoundaryBlocked, refusalCodes: round.refusalCodes,
-  })), freshFits: result.freshFits, heldOutRuns: result.heldOutRuns, fallbackTriggers: result.fallbackTriggers }));
+  const result = measure(check);
+  console.log(JSON.stringify({ status: result.status, rounds: result.rounds, a4d: result.a4d,
+    heldOut: result.heldOut, fallbackTriggers: result.fallbackTriggers }));
 }
 
 main();
