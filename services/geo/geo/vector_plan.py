@@ -1508,9 +1508,9 @@ def _draw_candidates(canvas: OverlayCanvas, candidates: list[JsonDict]) -> None:
 
 def _draw_panels(canvas: OverlayCanvas, panels: list[JsonDict]) -> None:
     for panel in panels:
-        x, y = canvas.point(panel["titleCitation"]["bbox"][:2])
+        pixel_x, pixel_y = canvas.point(panel["titleCitation"]["bbox"][:2])
         canvas.draw.text(
-            (x, y - 18),
+            (pixel_x, pixel_y - 18),
             f"{panel['panelId']} | {panel['floorLabel']}",
             fill="#2155a3",
             font=canvas.font,
@@ -1518,19 +1518,24 @@ def _draw_panels(canvas: OverlayCanvas, panels: list[JsonDict]) -> None:
             stroke_fill="white",
         )
         if panel.get("originPdf"):
-            x, y = canvas.point(panel["originPdf"])
-            canvas.draw.ellipse((x - 3, y - 3, x + 3, y + 3), fill="#2155a3")
+            pixel_x, pixel_y = canvas.point(panel["originPdf"])
+            canvas.draw.ellipse((pixel_x - 3, pixel_y - 3, pixel_x + 3, pixel_y + 3), fill="#2155a3")
             canvas.draw.text(
-                (x + 4, y + 2), "panel origin", fill="#2155a3", font=canvas.font, stroke_width=1, stroke_fill="white"
+                (pixel_x + 4, pixel_y + 2),
+                "panel origin",
+                fill="#2155a3",
+                font=canvas.font,
+                stroke_width=1,
+                stroke_fill="white",
             )
 
 
 def _draw_unattached(canvas: OverlayCanvas, audit: list[JsonDict]) -> None:
     for group in audit:
         if group["status"] != "attached":
-            x, y = canvas.point(group["anchorPdf"])
+            pixel_x, pixel_y = canvas.point(group["anchorPdf"])
             canvas.draw.text(
-                (x, y - 16),
+                (pixel_x, pixel_y - 16),
                 "UNATTACHED: " + group["name"]["literal"],
                 fill="#ac2879",
                 font=canvas.font,

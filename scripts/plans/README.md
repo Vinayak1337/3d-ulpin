@@ -46,7 +46,8 @@ Legacy parameter-receipt fields are retained solely to reproduce the accepted
 parameter hashes; the unused edge-polygonization implementation was removed.
 
 The structure-review proof is in
-`docs/evidence/gf-ai/plans/vector/20261010-p1-structure/result.json`. It compares
+`docs/evidence/gf-ai/plans/vector/20261010-p1-structure/post-merge/result.json`.
+It compares
 SHA-pinned **full precision**, canonicalising object-key order and excluding
 only `/codeSha256` and `/pages/*/runtimeSeconds` from candidates; consistency
 has **no excluded fields**. Neither compared document contains timestamps.

@@ -1,0 +1,7 @@
+# Hash-pinned metadata stays LF across Windows and Unix checkouts.
+*.json text eol=lf
+*.md text eol=lf
+# Original CSV bytes are immutable; never normalize source line endings.
+dev/*.csv -text
+dev/d1b/*.csv -text
+dev/d1b/*.xlsx -text

@@ -1,0 +1,29 @@
+{
+  "schema": "bangladesh-train-shard/1",
+  "region": "dhaka_bangladesh",
+  "geography": "Bangladesh/Dhaka",
+  "allocation": "TRAIN_only",
+  "path": "E:/BhuAayam-data/datasets/ramp/coco/bangladesh-train/dhaka_bangladesh",
+  "images": 11905,
+  "instances": 188284,
+  "empty_chips": 3059,
+  "zero_pixel_features": 16,
+  "annotations_sha256": "2955452b578c860af5ff410090f4bff560a1a27e6688b720bcc72cc1c3d9a7c7",
+  "original_crs": [
+    "EPSG:32646"
+  ],
+  "label_crs": "EPSG:4326 (RFC 7946)",
+  "label_to_raster": "Explicit rasterio/PROJ transform to GeoTIFF-declared CRS; no inferred UTM zone",
+  "good_real_input": "000f55e1-c102-4839-a9a0-c24c2895db08",
+  "difficult_empty_input": "000bb244-3b68-479d-883d-4c1dd946f1ab",
+  "source_hashes_after_processing_unchanged": true,
+  "real_positive_rle_area_verified": true,
+  "other_regions": "Acquire in detached process, then export as TRAIN-only shards. No Bangladesh DEV/HOLDOUT.",
+  "prior_failure": {
+    "signature": "GeoJSON/WGS84 raster mismatch: explicit geometry reprojection required",
+    "diagnosis": "Dhaka source GeoTIFF declares EPSG:32646; GeoJSON labels are WGS84. Karnataka is EPSG:4326.",
+    "failure_log": "E:/BhuAayam-data/datasets/ramp/prepare-dhaka-train.log",
+    "bounded_comparison": "Explicit declared-CRS reprojection, standard rasterio/PROJ; preserve original bytes and per-feature RLE. Complete shard with nonzero real positive masks; no label correction.",
+    "runtime_stop": "Foreground 240 s command timed out after 6000 PNGs. Originals and partial derivatives preserved. Added source-bound per-image export checkpoints; resumed using unchanged PNGs, completed with exit 0."
+  }
+}

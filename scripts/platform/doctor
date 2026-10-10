@@ -1,0 +1,176 @@
+#!/usr/bin/env node
+// Read-only health checks. Child stderr, HTTP bodies and configuration are never printed.
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { command, dockerRuntime, engine, inventory, storageProblems, migrationReady, root, services } from './runtime.mjs';
+import { readDemo, readDemoOcrPaths, demoProject } from './demo-config.mjs';
+import { ownedProcess } from './processes.mjs';
+
+let failures = 0;
+const infraOnly = process.argv.includes('--infra-only');
+const processingOnly = process.argv.includes('--processing-only');
+const profileIndex = process.argv.indexOf('--profile');
+const demo = process.env.ULPIN_PROFILE === 'demo' || (profileIndex >= 0 && process.argv[profileIndex + 1] === 'demo');
+const projectIndex = process.argv.indexOf('--project');
+const selectedProject = demo ? demoProject : projectIndex >= 0 ? process.argv[projectIndex + 1] : process.env.REPO_DATA === 'true' ? 'ulpin-repo' : 'ulpin';
+let demoEnv;
+function result(name, passed, hint) {
+  console.log(`${passed ? 'PASS' : 'FAIL'} ${name}`);
+  if (!passed) { failures++; console.log(`  Fix: ${hint}`); }
+  return passed;
+}
+function skip(name) { console.log(`SKIP ${name} (prerequisite unavailable)`); }
+async function attempt(name, check, hint) {
+  try { return result(name, await check(), hint); }
+  catch { return result(name, false, hint); }
+}
+function container(snapshot, service) {
+  const matches = snapshot.containers.filter(c => c.service === service);
+  return matches.length === 1 ? matches[0] : null;
+}
+function portUrl(c, port, path) {
+  const bindings = c?.ports?.[`${port}/tcp`] || [];
+  const binding = bindings.find(b => ['127.0.0.1', '::1'].includes(b.HostIp));
+  if (!binding || !/^\d+$/.test(binding.HostPort)) throw new Error('No loopback port binding.');
+  const host = binding.HostIp === '::1' ? '[::1]' : binding.HostIp;
+  return `http://${host}:${binding.HostPort}${path}`;
+}
+function apiUrl() {
+  const url = new URL(demo ? `http://127.0.0.1:${demoEnv.API_PORT}/api/v1/health` : process.env.ULPIN_DOCTOR_API_URL || 'http://127.0.0.1:3188/api/v1/health');
+  if (url.protocol !== 'http:' || !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
+    || url.username || url.password || url.search || url.hash) throw new Error('Expected a credential-free loopback health URL.');
+  return url;
+}
+async function get(url) {
+  return fetch(url, { signal: AbortSignal.timeout(8000), redirect: 'error' });
+}
+function exec(runtime, c, args) { return runtime.docker('exec', c.id, ...args); }
+function dispatcherRunning() {
+  if (demo) return !!ownedProcess('dispatcher');
+  const entry = join(root, 'scripts/dispatcher.ts');
+  if (process.platform === 'win32') return command('powershell.exe', [
+    '-NoProfile', '-File', join(root, 'scripts/platform/dispatcher-probe.ps1'), '-DispatcherEntry', entry,
+  ]) === 'present';
+  // Require this checkout's absolute entry, not an unrelated profile's dispatcher.
+  // Capture only for matching; never print process arguments.
+  const lines = command('ps', ['-eo', 'args=']);
+  const matches = lines.split('\n').filter(line => /(?:^|\s)(?:\S*\/)?node(?:\s|$)/.test(line)
+    && line.includes(entry));
+  return matches.length === 1;
+}
+
+async function doctor() {
+  if (!['ulpin', 'ulpin-repo', demoProject].includes(selectedProject)) throw new Error('Unsupported project.');
+  if (demo && !await attempt('Demo external configuration', () => { demoEnv = readDemo(); return true; },
+    'recover the original demo.env if demo volumes exist; otherwise use platform:start --profile demo --create.')) return;
+  if (demo) {
+    try {
+      const paths = readDemoOcrPaths();
+      if (!paths.ULPIN_DOCUMENT_OCR_PYTHON) console.log('INFO Local document OCR unavailable (paths not configured).');
+      else {
+        const hindi = existsSync(join(paths.ULPIN_DOCUMENT_OCR_TESSDATA, 'hin.traineddata'));
+        console.log(`PASS Local document OCR paths available; English only; Hindi ${hindi ? 'present' : 'unavailable'}.`);
+      }
+    } catch { console.log('INFO Local document OCR unavailable (invalid or missing local assets).'); }
+  }
+  let runtime;
+  if (!await attempt('Docker local Linux engine and context/socket', () => {
+    runtime = dockerRuntime();
+    const info = engine(runtime);
+    console.log(`  Context: ${runtime.context}; engine: ${info.version}`);
+    return true;
+  }, 'start Docker Desktop on its existing local Linux context; inspect %LOCALAPPDATA%/Docker/log if startup fails.')) return;
+
+  let snapshot;
+  if (!await attempt('Docker inventory readable', () => {
+    snapshot = inventory(runtime, selectedProject);
+    console.log(`  ${snapshot.volumes.length} existing volumes; ${snapshot.containers.length} ${selectedProject} containers`);
+    return true;
+  }, 'restore access to the existing Docker engine; do not reset its data.')) return;
+  const problems = storageProblems(snapshot, selectedProject);
+  await attempt(`Existing ${selectedProject} volume ownership and attachments`, () => {
+    problems.forEach(problem => console.log(`  ${problem}`));
+    return problems.length === 0;
+  }, 'ask the owner to reconcile the intended populated project; never create empty replacement volumes.');
+
+  for (const service of infraOnly ? services.slice(0, 3) : services) {
+    const c = container(snapshot, service);
+    // Worker ping below supplies health for older worker containers without a healthcheck.
+    await attempt(`${service} container healthy`, () => c?.state === 'running'
+      && (c.health === 'healthy' || (service === 'worker' && c.health === null)),
+    `resume the existing ${selectedProject}/${service} container after confirming storage bindings; inspect its healthcheck.`);
+    if (c) await attempt(`${service} restart policy`, () => c.restart === 'unless-stopped',
+      'have the runtime owner apply the reviewed unless-stopped policy without changing volume bindings.');
+  }
+
+  const postgres = container(snapshot, 'postgres');
+  const minio = container(snapshot, 'minio');
+  const redis = container(snapshot, 'redis');
+  const geo = container(snapshot, 'geo');
+  const worker = container(snapshot, 'worker');
+  let dbIdentity = null;
+  if (postgres?.state === 'running' && problems.length === 0) await attempt('DB reachable / PostGIS', () => {
+    // Credentials stay inside the container; this is metadata-only, bounded, read-only SQL.
+    const query = `BEGIN READ ONLY; SET LOCAL statement_timeout='3000ms'; SELECT json_build_object('database',current_database(),'role',current_user,'cluster',(SELECT system_identifier::text FROM pg_control_system()),'postgis',PostGIS_Lib_Version()); ROLLBACK;`;
+    const output = exec(runtime, postgres, ['sh', '-ec', 'psql -X -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc "$1"', 'doctor', query]);
+    dbIdentity = JSON.parse(output);
+    return typeof dbIdentity.postgis === 'string';
+  }, 'restore the existing database connection and metadata attestation permission; do not initialize another cluster.');
+  else skip('DB reachable / PostGIS');
+
+  if (minio?.state === 'running' && problems.length === 0) await attempt('Object store reachable (read-only)', async () =>
+    (await get(portUrl(minio, 9000, '/minio/health/ready'))).ok,
+  'resume the existing MinIO container and verify its loopback port; preserve minio-data.');
+  else skip('Object store reachable');
+  if (redis?.state === 'running' && problems.length === 0) await attempt('Redis reachable', () =>
+    exec(runtime, redis, ['redis-cli', 'ping']) === 'PONG',
+  'resume the existing Redis container; preserve its AOF/queue volume.');
+  else skip('Redis reachable');
+
+  if (infraOnly) {
+    console.log('SKIP migrations, processor, worker heartbeat, dispatcher and API (--infra-only is not a full runtime pass)');
+    return;
+  }
+  if (geo?.state === 'running') await attempt('Processor /health', async () =>
+    (await get(portUrl(geo, 8000, '/health'))).ok,
+  'resume the existing geo container and verify its loopback health endpoint.');
+  else skip('Processor /health');
+  if (worker?.state === 'running') await attempt('Celery worker heartbeat', () => {
+    const reply = JSON.parse(exec(runtime, worker, ['celery', '-A', 'geo.tasks:celery_app', 'inspect', 'ping',
+      '--destination', `celery@${exec(runtime, worker, ['hostname'])}`, '--timeout', '5', '--json']));
+    return Object.values(reply).some(value => value?.ok === 'pong');
+  }, 'resume the existing worker and verify its Redis broker connection.');
+  else skip('Celery worker heartbeat');
+  if (processingOnly) { console.log('SKIP native API/dispatcher and migration admission (processing-only compatibility check)'); return; }
+  if (demo) await attempt('API native process ownership', () => !!ownedProcess('api'), 'resume the demo launcher; do not adopt unrelated listener processes.');
+  await attempt('Dispatcher process ownership (liveness only)', dispatcherRunning,
+    'start node --import tsx with this checkout\'s absolute scripts/dispatcher.ts path and approved operator/configuration.');
+
+  let health = null;
+  await attempt('API /api/v1/health', async () => {
+    const response = await get(apiUrl());
+    if (!response.ok) return false;
+    health = await response.json();
+    return health.ok === true && ['database', 'storage', 'processor', 'redis', 'worker'].every(key => health.services?.[key] === true);
+  }, 'start the existing NestJS API with the approved local operator/configuration and restore its failed dependencies.');
+  await attempt('DB migrations applied (API structural admission)', () => {
+    const sha = createHash('sha256').update(readFileSync(join(root, 'database/manifest.json'))).digest('hex');
+    return migrationReady(health, sha, selectedProject === 'ulpin-repo' ? 'repository' : 'linked');
+  }, 'have the runtime/DB owner review missing schema against this checkout and apply only approved additive migrations.');
+  await attempt(`API bound to the inspected ${selectedProject} database`, () => {
+    if (!dbIdentity || !health) return false;
+    const port = new URL(portUrl(postgres, 5432, '')).port;
+    return ['127.0.0.1', 'localhost'].some(host => {
+      const token = createHash('sha256').update(JSON.stringify({ endpoint: `${host}:${port}/${dbIdentity.database}`,
+        database: dbIdentity.database, role: dbIdentity.role, cluster: dbIdentity.cluster })).digest('hex');
+      return health.databaseReadiness?.schema?.targetToken === token;
+    });
+  }, 'point the approved API configuration at this existing ulpin database; do not mix runtime profiles.');
+}
+
+try { await doctor(); }
+catch { result('Doctor completed', false, 'restore access to local runtime metadata and rerun doctor.'); }
+console.log(failures ? `Doctor: ${failures} failure(s); runtime NOT qualified.`
+  : (infraOnly || processingOnly) ? 'Doctor: infrastructure/processing checks passed only.' : 'Doctor: all checks passed (dispatcher liveness, not a job execution proof).');
+process.exitCode = failures ? 1 : 0;

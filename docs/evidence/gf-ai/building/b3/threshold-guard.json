@@ -1,0 +1,7 @@
+{
+  "status": "passed",
+  "dev_threshold_equivalence": true,
+  "holdout_nondefault_threshold_expected_exit": 2,
+  "holdout_log_unchanged": true,
+  "new_holdout_slots_reserved": 0
+}

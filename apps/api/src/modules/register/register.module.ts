@@ -2,6 +2,8 @@ import { CityJSONControlReviewController } from './cityjson-control-review.contr
 import { CityJSONControlReviewService } from '@ulpin/server/modules/registry/cityjson-control-review';
 import { Module } from '@nestjs/common';
 import { RegisterController } from './register.controller';
+import { CanonicalController } from './canonical.controller';
+import { CanonicalProjectionService } from './canonical.service';
 import { OfficerController } from './officer.controller';
 import { RegisterService } from './register.service';
 import { OfficerService } from './officer.service';
@@ -14,7 +16,7 @@ import { RegistryRecordEvidenceExportController } from './record-evidence-export
 import { RegistryRecordEvidenceExportService } from '@ulpin/server/modules/registry/registry-record-evidence-export';
 
 @Module({
-  controllers: [RegisterController, OfficerController, BuildingLedgerController, CityJSONControlAssessmentController, CityJSONControlReviewController, RegistryRecordEvidenceController, RegistryRecordEvidenceExportController],
-  providers: [RegisterService, OfficerService, CityJSONControlAssessmentService, CityJSONControlReviewService, RegistryRecordEvidenceService, RegistryRecordEvidenceExportService],
+  controllers: [CanonicalController, RegisterController, OfficerController, BuildingLedgerController, CityJSONControlAssessmentController, CityJSONControlReviewController, RegistryRecordEvidenceController, RegistryRecordEvidenceExportController],
+  providers: [CanonicalProjectionService, RegisterService, OfficerService, CityJSONControlAssessmentService, CityJSONControlReviewService, RegistryRecordEvidenceService, RegistryRecordEvidenceExportService],
 })
 export class RegisterModule {}

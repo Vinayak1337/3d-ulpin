@@ -1,3 +1,6 @@
+import type {MappingPlanV2} from '@ulpin/contracts';
+import {executeMappingPlanV2,mappedCellCounts,type MappingExecutionContext,type MappingExecutionResult,type MappingRow} from './mapping-executor';
+import {isMappingPlanV2,mappingContextFromGisProfile} from './mapping-plan-v2';
 import {type ChunkMappingObservation,type MappingPlan,type SourceProfile,type StreamedMappingPlan,
   type StreamedProfileGeneration,type StreamingVectorRecord} from '@ulpin/contracts/usp';
 import {sha256} from '../../../infrastructure/storage';
@@ -30,8 +33,10 @@ const field=(feature:Record<string,unknown>,path:string):Field=>{
   return value===null?{state:'null',value:null,sourcePath:path}
     :typeof value==='string'?{state:'known',value,sourcePath:path}:unknown(path);
 };
-export function candidateKeyHashes(records:StreamingVectorRecord[],plan:Plan){
-  const path=plan.operations.find(op=>op.target==='building.sourceKey')!.sourcePath;
+export function candidateKeyHashes(records:StreamingVectorRecord[],plan:Plan|MappingPlanV2){
+  const path=isMappingPlanV2(plan)?plan.fields.find(op=>op.target==='building.sourceKey')?.sourceField
+    :plan.operations.find(op=>op.target==='building.sourceKey')!.sourcePath;
+  if(!path)return [];
   return [...new Set(records.filter(record=>record.disposition==='accepted').map(record=>{
     const value=field(record.feature as Record<string,unknown>,path);
     return value.state==='known'?sha256(value.value!):null;
@@ -63,8 +68,43 @@ function sourceShapeIssues(feature:Record<string,unknown>,profile:Profile){
   return [...issues];
 }
 
-/** A source-linked draft projection. Geometry stays in the immutable raw chunk; no frame or role is inferred. */
+/** V2 is a pure candidate projection, not a new recipe authority or persistence route. */
+export function normalizeMappedChunk(records:StreamingVectorRecord[],plan:MappingPlanV2,profile:Profile|MappingExecutionContext,
+  rawJobId:string,chunkIndex:number,existing:KeyRow[]):MappingExecutionResult;
 export function normalizeMappedChunk(records:StreamingVectorRecord[],plan:Plan,profile:Profile,
+  rawJobId:string,chunkIndex:number,existing:KeyRow[]):ReturnType<typeof normalizeLegacyMappedChunk>;
+export function normalizeMappedChunk(records:StreamingVectorRecord[],plan:Plan|MappingPlanV2,profile:Profile|MappingExecutionContext,
+  rawJobId:string,chunkIndex:number,existing:KeyRow[]){
+  if(!isMappingPlanV2(plan))return normalizeLegacyMappedChunk(records,plan,profile as Profile,rawJobId,chunkIndex,existing);
+  const context:MappingExecutionContext='sourceKind' in profile?profile:{...mappingContextFromGisProfile(profile),
+    sourceRef:profile.source.sourceId,sourceCrs:profile.version==='manual-geojson/1'?profile.crs.value:profile.reference.sourceCrs??undefined};
+  const result=executeMappingPlanV2(plan,[],context);
+  for(const record of records){
+    const row:Record<string,unknown>=Object.create(null),feature=record.feature as Record<string,unknown>|null;
+    if(record.disposition==='accepted'&&feature)for(const field of context.fields){
+      const name=field.name,attributes=feature.properties as MappingRow|null;
+      if(name==='/features/*/id'||name==='/features/*/geometry'){
+        const key=name.endsWith('/id')?'id':'geometry';if(Object.hasOwn(feature,key))row[name]=feature[key];
+      }else{
+        const key=name.startsWith('/features/*/properties/')?name.slice('/features/*/properties/'.length).replaceAll('~1','/').replaceAll('~0','~'):name;
+        if(attributes&&Object.hasOwn(attributes,key))row[name]=attributes[key];
+      }
+    }
+    if(record.disposition==='accepted'&&feature?.properties&&typeof feature.properties==='object')
+      for(const [key,value] of Object.entries(feature.properties)){
+        const path=context.fields.some(field=>field.name.startsWith('/features/*/'))?pathForProperty(key):key;
+        if(!Object.hasOwn(row,path))row[path]=value;
+      }
+    const mapped=executeMappingPlanV2(plan,[row],{...context,rowOffset:record.featureIndex}).rows[0];
+    if(record.disposition!=='accepted')for(const field of mapped.fields){field.state='needs_input';field.issueCode=record.issueCode??'RAW_FEATURE_QUARANTINED';}
+    result.rows.push(mapped);
+  }
+  result.counts=mappedCellCounts(result.rows);
+  return result;
+}
+
+/** A source-linked draft projection. Geometry stays in the immutable raw chunk; no frame or role is inferred. */
+function normalizeLegacyMappedChunk(records:StreamingVectorRecord[],plan:Plan,profile:Profile,
   rawJobId:string,chunkIndex:number,existing:KeyRow[]){
   if(plan.version==='manual-geojson/1')compileMapping(plan,profile as SourceProfile);
   else compileStreamedMapping(plan,profile as StreamedProfileGeneration);

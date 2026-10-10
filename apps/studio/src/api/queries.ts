@@ -1,7 +1,8 @@
+import { ledgerFromPublished } from './ledger';
 import { demoAreas, isDemoId, useDemoAreaStream } from './demo-import';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api, ApiError, unwrap, type GetResponse } from '@ulpin/api-client';
-import type { BuildingImport, BuildingLedger, DocumentPages, FileDetection, ImportBatch, LevelReview, RegisterRequest, RequestState, WorkBoard, BuildingResidents } from '@ulpin/api-client/draft';
+import type { BuildingImport, DocumentPages, FileDetection, ImportBatch, LevelReview, RegisterRequest, RequestState, WorkBoard, BuildingResidents } from '@ulpin/api-client/draft';
 
 export type WorkQueue = GetResponse<'/api/v1/work-queue'>;
 export type WorkItem = WorkQueue['items'][number];
@@ -32,6 +33,8 @@ export const queryKeys = {
   workQueue: (status: WorkStatusFilter, q: string, page: number) => ['work-queue', status, q, page] as const,
   areas: ['areas'] as const,
   areaContext: (areaId: string) => ['areas', areaId, 'context'] as const,
+  areaCanonical: (areaId: string) => ['areas', areaId, 'canonical'] as const,
+  buildingCanonical: (buildingId: string) => ['buildings', buildingId, 'canonical'] as const,
   capabilities: ['workspace-capabilities'] as const,
   register: (buildingId: string) => ['buildings', buildingId, 'register'] as const,
   ledger: (buildingId: string) => ['buildings', buildingId, 'ledger'] as const,
@@ -49,12 +52,15 @@ async function getDraft<T>(path: string): Promise<T | null> {
   return (await response.json()) as T;
 }
 
-/** Rights, areas, shares, readiness, checks and history of a building. Null when the backend has none. */
+/** The published ledger in the shape the screens read. Null when the backend has no such building. */
 export function useBuildingLedger(buildingId: string | null | undefined, live = false) {
   return useQuery({
     queryKey: queryKeys.ledger(buildingId ?? ''),
     enabled: Boolean(buildingId),
-    queryFn: () => getDraft<BuildingLedger>(`/api/v1/buildings/${buildingId}/ledger`),
+    queryFn: async ({ signal }) => {
+      const result = await api.GET('/api/v1/buildings/{buildingId}/ledger', { params: { path: { buildingId: buildingId! } }, signal });
+      return result.response.status === 404 ? null : ledgerFromPublished(unwrap(result));
+    },
     staleTime: 60_000,
     refetchInterval: live ? 700 : false,
   });
@@ -149,6 +155,27 @@ export function useAreaContext(areaId: string | undefined, live = false) {
   });
 }
 
+/** The canonical area record in local metres: what the scene draws. Locally uploaded areas have none. */
+export function useAreaCanonical(areaId: string | undefined, live = false) {
+  return useQuery({
+    queryKey: queryKeys.areaCanonical(areaId ?? ''),
+    enabled: Boolean(areaId) && !isDemoId(areaId),
+    queryFn: async ({ signal }) => unwrap(await api.GET('/api/v1/areas/{areaId}/canonical', { params: { path: { areaId: areaId! } }, signal })),
+    staleTime: 60_000,
+    refetchInterval: live ? 700 : false,
+  });
+}
+
+/** The canonical record of one building: state, gaps, levels and spaces. */
+export function useBuildingCanonical(buildingId: string | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.buildingCanonical(buildingId ?? ''),
+    enabled: Boolean(buildingId),
+    queryFn: async ({ signal }) => unwrap(await api.GET('/api/v1/buildings/{buildingId}/canonical', { params: { path: { buildingId: buildingId! } }, signal })),
+    staleTime: 60_000,
+  });
+}
+
 export function useBuildingRegister(buildingId: string | null | undefined, live = false) {
   return useQuery({
     queryKey: queryKeys.register(buildingId ?? ''),
@@ -214,9 +241,9 @@ export type RequestFilter = 'open' | 'accepted' | 'rejected' | 'all';
 export function useRegisterRequests(filter: RequestFilter) {
   return useQuery({
     queryKey: ['register-requests', filter],
-    queryFn: async () => (await getDraft<RegisterRequest[]>(`/api/v1/register-requests?state=${filter}`)) ?? [],
-    // New requests from the portal show up without a reload.
-    refetchInterval: 3000,
+    queryFn: () => getDraft<RegisterRequest[]>(`/api/v1/register-requests?state=${filter}`),
+    // New requests from the portal show up without a reload; a missing route is not asked again.
+    refetchInterval: (query) => (query.state.data === null ? false : 3000),
   });
 }
 

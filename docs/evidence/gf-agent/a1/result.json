@@ -1,0 +1,111 @@
+{
+  "schemaVersion": "mapping-v2-a1-evidence/1",
+  "task": "A1",
+  "gates": [
+    "GF-CONTRACT",
+    "GF-AGENT"
+  ],
+  "scope": "Deterministic contract/executor foundation, not whole-gate qualification or held-out accuracy.",
+  "codeCommit": "eeeb0765317ab085daa57f8c7fe35bce38b9113b",
+  "runAt": "2026-10-09T19:27:08.490Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32"
+  },
+  "command": "pnpm exec tsx docs/evidence/gf-agent/a1/run.ts",
+  "exitCode": 0,
+  "inputs": [
+    {
+      "input": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+      "sha256": "9214ba1e83683e2735379dd8b17df3269218efde6f6491299b49a1d14a036bce",
+      "bytes": 239,
+      "sourceKind": "tabular",
+      "rows": 1,
+      "cells": 8,
+      "candidate": 0,
+      "needsInput": 0,
+      "unknown": 8,
+      "absent": 0,
+      "null": 0,
+      "conflicting": 0,
+      "validation": "passed",
+      "disposition": "explicit_unknown_no_invented_meaning",
+      "sourceCrs": null
+    },
+    {
+      "input": "E:/BhuAayam-data/task-data/ulpin-data-09/gmda-sectors-59-63a.json",
+      "sha256": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8",
+      "bytes": 1728,
+      "sourceKind": "gis_attributes",
+      "rows": 2,
+      "cells": 6,
+      "candidate": 0,
+      "needsInput": 0,
+      "unknown": 6,
+      "absent": 0,
+      "null": 0,
+      "conflicting": 0,
+      "validation": "passed",
+      "disposition": "explicit_unknown_no_invented_meaning",
+      "sourceCrs": "EPSG:32643"
+    }
+  ],
+  "literalRejections": [
+    {
+      "caseId": "literal_epsg",
+      "code": "MAPPING_LITERAL_FORBIDDEN",
+      "result": "rejected"
+    },
+    {
+      "caseId": "literal_factor",
+      "code": "MAPPING_LITERAL_FORBIDDEN",
+      "result": "rejected"
+    }
+  ],
+  "sourceHashesUnchanged": true,
+  "limitations": [
+    "Both Indian inputs are administrative context; all their fields correctly stay unknown. No positive Indian building/unit/parcel mapping accuracy is claimed.",
+    "GMDA coordinates stay in the original EPSG:32643 source; no reprojection, geometry role or parcel semantics are inferred.",
+    "Gaj lacks a verified Indian-government square-yard definition; gaj/marla/bigha/kanal/cent/guntha return needs_input.",
+    "Runtime provider, memory/student routing, persisted v2 review receipts and API activation belong to A2/A3; existing v1 API contracts are unchanged.",
+    "Existing manual-ingestion API metadata test has an unrelated operation-ledger count mismatch (288 actual versus 235 expected)."
+  ],
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm exec tsx --test packages/contracts/src/canonical/*.test.ts packages/server/src/modules/usp/ingestion/mapping-plan-v2.test.ts packages/server/src/modules/usp/ingestion/mapping-executor.test.ts packages/server/src/modules/usp/ingestion/unit-table.test.ts tests/adaptive-mapping.test.ts",
+      "exitCode": 0,
+      "result": "13 passed: 9 new tests and 4 existing adaptive tests."
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test --test-name-pattern=\"manual operation contract\" tests/manual-ingestion.test.ts",
+      "exitCode": 0,
+      "result": "1 existing manual literal-boundary test passed."
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm --filter @ulpin/server typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm exec tsc --noEmit --strict --skipLibCheck --target ES2022 --module ESNext --moduleResolution Bundler packages/contracts/src/index.ts packages/contracts/src/usp/index.ts",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm exec tsx --test packages/contracts/src/canonical/*.test.ts packages/server/src/modules/usp/ingestion/mapping-plan-v2.test.ts packages/server/src/modules/usp/ingestion/mapping-executor.test.ts packages/server/src/modules/usp/ingestion/unit-table.test.ts tests/adaptive-mapping.test.ts tests/manual-ingestion.test.ts",
+      "exitCode": 1,
+      "result": "Initial run: test fixture URL had one extra parent directory (fixed); API metadata import required decorator tsconfig (fixed invocation)."
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/contracts/src/canonical/*.test.ts packages/server/src/modules/usp/ingestion/mapping-plan-v2.test.ts packages/server/src/modules/usp/ingestion/mapping-executor.test.ts packages/server/src/modules/usp/ingestion/unit-table.test.ts tests/adaptive-mapping.test.ts tests/manual-ingestion.test.ts",
+      "exitCode": 1,
+      "result": "14 passed; API metadata-count assertion failed: 288 !== 235. No A1 routes added; broader ledger check remains failed."
+    }
+  ]
+}

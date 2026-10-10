@@ -5,6 +5,8 @@ import react from '@vitejs/plugin-react';
 import { studioDemoImport } from '../../scripts/demo-import/plugin.mjs';
 
 const API_TARGET = process.env.ULPIN_API_TARGET ?? 'http://127.0.0.1:3188';
+// The API checks Origin against its own allow-list: the proxy presents the target's origin, so local development passes.
+const API_PROXY = { '/api': { target: API_TARGET, changeOrigin: true, headers: { origin: API_TARGET } } };
 
 export default defineConfig({
   plugins: [
@@ -23,10 +25,9 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 5188,
     strictPort: true,
-    // The Nest API validates Host and Origin: start it with API_ALLOWED_ORIGINS=http://127.0.0.1:5188.
-    proxy: { '/api': { target: API_TARGET, changeOrigin: true } },
+    proxy: API_PROXY,
   },
-  preview: { host: '127.0.0.1', port: 5189, proxy: { '/api': { target: API_TARGET, changeOrigin: true } } },
+  preview: { host: '127.0.0.1', port: 5189, proxy: API_PROXY },
   build: { target: 'es2023', sourcemap: true },
   test: { environment: 'node' },
 });
