@@ -13,7 +13,7 @@ import { SourceIdentityControl } from './source-stated-identity.test-fixture';
 
 const globals = globalThis as unknown as { ulpinPool?: unknown };
 const location = { anchorState: 'not_supplied' as const, parcels: [], locator: {
-  structureKind: 'S' as const, structureNumber: 3, levels: ['L?'], spaceKind: 'U' as const, spaceNumber: 1 } };
+  structureKind: '?' as const, structureNumber: 1, levels: ['L?'], spaceKind: '?' as const, spaceNumber: 1 } };
 const errorCode = (code: string) => (error: any) => error.code === code;
 
 async function control(work: (f: Awaited<ReturnType<typeof fixture>>) => Promise<void>) {
@@ -75,7 +75,7 @@ test('real Tower labels traverse source-record → exact snapshot → P3 review/
     assert.equal(building.levelSchedule?.state, 'conflicting');
     const resolved = await resolveProjectIdentity(f.ctx, { scope: receipt.snapshot, identifier: code });
     assert.equal(resolved.projectCode, code);
-    assert.equal(resolved.location, 'NO-ANCHOR / S03 / L? / U001');
+    assert.equal(resolved.location, 'NO-ANCHOR / ?01 / L? / ?001');
     assert.equal(verticalLocator(location as any), resolved.location);
     assert(f.memory.assertSourceIntegrity());
     await assertSourceChildRevisions(records, retainedTower.areaId);
@@ -142,6 +142,8 @@ test('literal 2ND caption never authorizes F02 or an anchor; generic snapshots r
     const { review } = await prepare(f);
     const guessed = { ...review, location: { ...location, locator: { ...location.locator, levels: ['F02'] } } };
     await assert.rejects(prepareProjectIdentityReview(f.ctx, guessed as any), errorCode('USP_SOURCE_IDENTITY'));
+    const utility = { ...review, location: { ...location, locator: { ...location.locator, spaceKind: 'U' } } };
+    await assert.rejects(prepareProjectIdentityReview(f.ctx, utility as any), errorCode('USP_SOURCE_IDENTITY'));
     await assert.rejects(captureRegistrySnapshot(f.ctx, retainedTower.areaId, { kind: 'site' }),
       errorCode('DOCUMENT_STAGE_UNAVAILABLE'));
     const candidate = { ...review, recordIds: [randomUUID()] };
