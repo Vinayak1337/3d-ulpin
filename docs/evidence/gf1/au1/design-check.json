@@ -1,0 +1,86 @@
+{
+  "task": "AU1",
+  "checks": "docs/next-steps/INGESTION-ARCHITECTURE.md:202-236 (section 13.1 to 13.4)",
+  "rows131": [
+    {"step": 1, "mark": "wrong", "correction": [
+      "Streamed and chunk-mapped candidates stop at slots; only the bounded area import (2000) makes a package.",
+      "packages/server/src/modules/usp/ingestion/streaming-vector.ts:154-159"]},
+    {"step": 2, "mark": "wrong", "correction": [
+      "Fusion and association accept recorded targets only, so links come after step 5, not before step 4.",
+      "packages/contracts/src/source-fusion-associations.ts:16-24"]},
+    {"step": 3, "mark": "wrong", "correction": [
+      "The sufficiency route exists and pins the case revision, but nothing downstream reads its result.",
+      "packages/server/src/modules/usp/ingestion/sufficiency.ts:114"]},
+    {"step": 4, "mark": "wrong", "correction": [
+      "usp/proposals edits recorded records only (USP_PROPOSAL_UNSUPPORTED, USP_DRAFT_SCOPE); an area package",
+      "draft leaves the record at revision 0. packages/server/src/modules/usp/commands.ts:48,68"]},
+    {"step": 5, "mark": "wrong", "correction": [
+      "review and commit exist, but an area commit does not raise the registry record; the lift is per building",
+      "and refuses a building without spaces. packages/server/src/modules/officer/officer-preparation.ts:500"]},
+    {"step": 6, "mark": "wrong", "correction": [
+      "Identity is for recorded spaces only, needs one review per space, and assign bumps the revision.",
+      "packages/server/src/modules/usp/project-identity.ts:46-47,265"]},
+    {"step": 7, "mark": "wrong", "correction": [
+      "Declarations need an officer transcription of the instrument and an exact acknowledgement; no code",
+      "prepares them from register rows or document claims.",
+      "packages/server/src/modules/usp/declarations/service.ts:39-66"]},
+    {"step": 8, "mark": "wrong", "correction": [
+      "A plan needs a text, CSV or region citation on the record; GIS-only evidence is blocked. It must be made",
+      "after assign, from a second snapshot. packages/server/src/modules/usp/packets/plan-authority.ts:211-215"]},
+    {"step": 9, "mark": "holds", "note": [
+      "preview writes nothing and generate follows an executed plan; both exist.",
+      "packages/server/src/modules/usp/packets/card-service.ts:209-270"]}
+  ],
+  "sentences": [
+    {"ref": "13.1 the steps exist today as separate commands", "mark": "holds",
+      "cite": "apps/studio/src/local/routes.ts:126-145"},
+    {"ref": "13.1 each with its own idempotency key, so a restart continues and nothing runs twice",
+      "mark": "holds", "note": "true while the digest does not move; a moved digest refuses the retry",
+      "cite": "packages/server/src/modules/usp/commands.ts:29-40"},
+    {"ref": "13.2 one more additive table usp_intake_targets", "mark": "holds",
+      "note": "as a plan only: git grep -n usp_intake_targets -- packages services finds no table yet"},
+    {"ref": "13.2 ready is decided by rules, never by a model", "mark": "holds",
+      "note": "every gate cited in chain.json is a code rule"},
+    {"ref": "13.2 the sufficiency read says the required facts are present", "mark": "wrong",
+      "correction": "sufficiency is case-pinned and unconsumed; readiness would have to read it newly"},
+    {"ref": "13.2 each step up to the preview succeeded under current pins", "mark": "wrong",
+      "correction": "steps 6 to 9 cannot run before step 5; only 1 to 4 can be prepared before the confirmation"},
+    {"ref": "13.2 a change moves only the targets that used it", "mark": "wrong",
+      "correction": "the site snapshot digest stales every identity, declaration and proposal of the site",
+      "cite": "packages/server/src/modules/usp/snapshots.ts:99"},
+    {"ref": "13.3.1 one approval per new layout", "mark": "cannot say without running",
+      "note": "a per-job recipe approve route exists; reuse across files is not shown by a static read",
+      "cite": "apps/api/src/modules/ingestion/streamed-profile.controller.ts:58,81",
+      "command": "approve one recipe, then stream a second file of the same layout and read its job"},
+    {"ref": "13.3.2 answers only the officer can give; none has a default", "mark": "holds",
+      "note": "defaults listed in breaks.json; expiresAt is the one a policy rule may derive"},
+    {"ref": "13.3.3 one confirmation commits, assigns, accepts and confirms", "mark": "wrong",
+      "correction": "a sequence of commands under one screen, see oneConfirmation"},
+    {"ref": "13.3 the tray shows three counts from the first minute", "mark": "holds",
+      "note": "as a plan only: git grep -n needs_answer -- apps/studio/src finds nothing yet"},
+    {"ref": "13.4 never resolve a conflict, choose among matches, assume a CRS or a fact", "mark": "holds",
+      "note": "no command found that derives these; all are inputs"},
+    {"ref": "13.4 never make a card for a target that is not confirmed", "mark": "holds",
+      "cite": "packages/server/src/modules/usp/packets/card-service.ts:109-113"}
+  ],
+  "officerActionsPerBatch": [
+    "Smallest count today, REH1 path, per space: commit acknowledgement (per package), source-space literals",
+    "(per building), identity reason (per space), Prepare with expiry and reason (per space), Issue (per space).",
+    "So 1 per package + 1 per building + 3 per space. One per batch needs: a batch commit (exists), a rule lift",
+    "to revision 1, a batch identity review, a policy expiry and reason, and a batch issue: none exists today."
+  ],
+  "oneConfirmation": {
+    "answer": "a sequence of commands under one screen; one transaction is not possible",
+    "why": [
+      "each command opens its own transaction and request receipt (packages/server/src/modules/usp/commands.ts:29-40)",
+      "assign raises the revision, so the plan needs a snapshot taken after it",
+      "packages/server/src/modules/usp/project-identity.ts:265",
+      "execute and generate put objects outside SQL (packages/server/src/modules/usp/packets/card-service.ts:222-270)"
+    ],
+    "thirdOfFiveFails": [
+      "steps 1 and 2 stay recorded: a commit has no undo, an assigned code can only be mutated, a card only revoked.",
+      "Retry with the same request keys continues; if the site digest moved meanwhile, identity and declaration",
+      "steps refuse and need a new snapshot and new keys. The screen must show the stopped step and its code."
+    ]
+  }
+}
