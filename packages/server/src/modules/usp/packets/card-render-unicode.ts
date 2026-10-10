@@ -9,6 +9,7 @@ import QRCode from 'qrcode';
 import { settings } from '../../../infrastructure/config';
 import { sha256 } from '../../../infrastructure/storage';
 import { AppError } from '../../../infrastructure/errors';
+import { cardFooterLines, cardHeading, cardLinkLines, printedFact } from './card-wording';
 
 // Repo-owned, pinned assets also resolve from the existing bundled API/server.
 // Runtime require keeps PDFKit's own package resources intact when our code is bundled.
@@ -85,34 +86,28 @@ export async function renderUnicodePropertyCard(card: Content) {
   result.catch(() => {});
   try {
     doc.rect(0, 0, 596, 100).fill('#edf3f0'); doc.fillColor('#142f26');
-    drawText(doc, 'Property card', 36, 18, 523, 23);
-    drawText(doc, `PRIVATE - Exact card revision ${card.revision} - ${card.scope.stage} snapshot`, 36, 56, 523, 10);
-    drawText(doc, 'Application summary. No official ULPIN issuance, title or legal approval is implied.', 36, 76, 523, 8.5);
+    const heading = cardHeading(card);
+    drawText(doc, heading.title, 36, 18, 523, 23);
+    drawText(doc, heading.revision, 36, 56, 523, 10);
+    drawText(doc, heading.disclaimer, 36, 76, 523, 8.5);
     let y = 116;
     for (const fact of card.facts) {
-      const value = fact.state === 'available' ? fact.value! : `${fact.state}: ${fact.value ?? fact.reasonCode}`;
       const labelHeight = drawText(doc, fact.label, 36, y, 144, 9.2);
-      const valueHeight = drawText(doc, value, 190, y, 365, 9.2);
+      const valueHeight = drawText(doc, printedFact(fact), 190, y, 365, 9.2);
       if (doc.bufferedPageRange().count !== 1 || y + Math.max(labelHeight, valueHeight) > 605) throw layoutError();
       y += Math.max(labelHeight, valueHeight) + 8;
     }
     doc.moveTo(36, 622).lineTo(559, 622).lineWidth(0.5).stroke('#aab9b2');
-    const footer = [
-      `Card: ${card.cardId} / ${card.revision}`, `Plan: ${card.planId} / ${card.planVersion}`, `Packet: ${card.packetId}`,
-      `Included entries: ${card.evidenceEntrySha256.length}; optional omissions: ${card.omissions.length}`,
-      `Snapshot captured: ${card.snapshotCapturedAt}`, `Card expires: ${card.expiresAt}`,
-      'Packet SHA-256 (byte consistency):', card.packetSha256,
-      'Snapshot facts are fixed; current record revisions may differ.', 'The detail packet remains separately authorized.',
-    ];
-    for (const [i, text] of footer.entries()) drawText(doc, text, 36, 636 + i * 13.5, 375, 7.5);
+    for (const [i, text] of cardFooterLines(card).entries()) drawText(doc, text, 36, 636 + i * 13.5, 375, 7.5);
     const qr = QRCode.create(card.resolverUrl, { errorCorrectionLevel: 'M' }), quiet = 4;
     const step = 132 / (qr.modules.size + 2 * quiet), x = 420, top = 635;
     doc.rect(x, top, 132, 132).fill('#ffffff');
     for (let r = 0; r < qr.modules.size; r++) for (let c = 0; c < qr.modules.size; c++) if (qr.modules.get(r, c))
       doc.rect(x + (c + quiet) * step, top + (r + quiet) * step, step, step).fill('#000000');
     doc.link(x, top, 132, 132, card.resolverUrl); doc.fillColor('#142f26');
-    drawText(doc, 'Local demonstration link', x, 775, 140, 7.5);
-    drawText(doc, 'Private operator access', x, 790, 140, 7.5);
+    const link = cardLinkLines(card.resolverUrl);
+    for (const [i, text] of link.caption.entries()) drawText(doc, text, x, 775 + i * 15, 140, 7.5);
+    for (const [i, text] of link.address.entries()) drawText(doc, text, x, 803 + i * 8, 140, 5.5);
     if (doc.bufferedPageRange().count !== 1) throw layoutError();
     doc.end(); return await result;
   } catch (error) { doc.destroy(); throw error; }
