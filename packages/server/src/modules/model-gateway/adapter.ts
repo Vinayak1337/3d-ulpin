@@ -10,14 +10,20 @@ export type Message = { role: 'system' | 'user' | 'assistant'; content: string }
 export type ProviderRequest = {
   model: 'sarvam-105b'; messages: Message[]; outputSchema: Record<string, unknown>;
   maxOutputTokens: number; inputHash: string; sourceHashes: readonly string[];
-  signal: AbortSignal; authorize: () => Promise<void>;
+  signal: AbortSignal;
+  authorize: () => Promise<void>;
+  replayKey?: string;
 };
 export type ProviderResult = { output: unknown; responseHash: string; usage?: Usage;
-  httpStatus: number; semanticError?: 'invalid_output' | 'truncated_output'; };
+  httpStatus: number; semanticError?: 'invalid_output' | 'truncated_output';
+  /** Sanitized response envelope; visible reasoning/credentials are never retained. */
+  rawResponse?: unknown;
+};
 export type FailureKind = 'quota_exhausted' | 'rate_limited' | 'credential_invalid' | 'capability_denied'
   | 'input_rejected' | 'outcome_unknown';
 export class ProviderFailure extends Error {
-  constructor(readonly kind: FailureKind, readonly httpStatus?: number, readonly cooldownMs = 0) {
+  constructor(readonly kind: FailureKind, readonly httpStatus?: number, readonly cooldownMs = 0,
+    readonly rawResponse?: unknown, readonly responseHash?: string) {
     super('The provider call could not be accepted; manual preparation remains available.');
   }
 }
@@ -47,7 +53,9 @@ export function classifyProviderFailure(status: number, code: unknown, retryAfte
   };
   if (status === 402 || code === 'insufficient_quota_error') return new ProviderFailure('quota_exhausted', status);
   if (status === 429) return new ProviderFailure('rate_limited', status, cooldown());
-  if (status === 403 && code === 'invalid_api_key_error') return new ProviderFailure('credential_invalid', status);
+  if (status === 401 || status === 403 && code === 'invalid_api_key_error') {
+    return new ProviderFailure('credential_invalid', status);
+  }
   if (status === 401 || status === 403) return new ProviderFailure('capability_denied', status);
   if ([400,413,422].includes(status)) return new ProviderFailure('input_rejected', status);
   return new ProviderFailure('outcome_unknown', status, status >= 500 ? 5000 : 0);
@@ -55,11 +63,14 @@ export function classifyProviderFailure(status: number, code: unknown, retryAfte
 
 const usageSchema = z.object({prompt_tokens:z.number().int().nonnegative().safe(),
   completion_tokens:z.number().int().nonnegative().safe(),
-  prompt_tokens_details:z.object({cached_tokens:z.number().int().nonnegative().safe().optional()}).optional()});
+  prompt_tokens_details: z.object({ cached_tokens: z.number().int().nonnegative().safe().optional() }).nullish(),
+});
 export async function boundedProviderJson(response: Response): Promise<{body:unknown;responseHash:string}> {
   const reader = response.body?.getReader();
   if (!reader) throw new ProviderFailure('outcome_unknown', response.status);
-  const chunks: Uint8Array[] = []; let total = 0;
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  let responseHash: string | undefined;
   try {
     for (;;) {
       const {done,value} = await reader.read(); if (done) break;
@@ -68,8 +79,12 @@ export async function boundedProviderJson(response: Response): Promise<{body:unk
       chunks.push(value);
     }
     const bytes = Buffer.concat(chunks);
-    return {body:JSON.parse(bytes.toString('utf8')),responseHash:createHash('sha256').update(bytes).digest('hex')};
-  } catch { throw new ProviderFailure('outcome_unknown', response.status); }
+    responseHash = createHash('sha256').update(bytes).digest('hex');
+    return { body: JSON.parse(bytes.toString('utf8')), responseHash };
+  } catch {
+    throw new ProviderFailure('outcome_unknown', response.status, 0,
+      { body: '[unreadable or incomplete provider response]' }, responseHash);
+  }
   finally { await reader.cancel().catch(() => {}); }
 }
 
@@ -95,7 +110,14 @@ export class SarvamAdapter implements ProviderAdapter {
     } catch { throw new ProviderFailure('outcome_unknown'); }
     const parsedResponse = await boundedProviderJson(response);
     const upstream: any = parsedResponse.body;
-    if (!response.ok) throw classifyProviderFailure(response.status, upstream?.error?.code ?? upstream?.error?.type, response.headers.get('retry-after'));
+    if (!response.ok) {
+      const failure = classifyProviderFailure(
+        response.status, upstream?.error?.code ?? upstream?.error?.type, response.headers.get('retry-after'),
+      );
+      // Error bodies can echo prompts/secrets: retain only the classified provider code, not its prose.
+      throw new ProviderFailure(failure.kind, failure.httpStatus, failure.cooldownMs,
+        { error: { code: failure.kind } }, parsedResponse.responseHash);
+    }
     const parsed = usageSchema.safeParse(upstream?.usage);
     const usage = parsed.success ? {promptTokens:parsed.data.prompt_tokens,completionTokens:parsed.data.completion_tokens,
       ...(parsed.data.prompt_tokens_details?.cached_tokens === undefined ? {} : {cachedPromptTokens:parsed.data.prompt_tokens_details.cached_tokens})} : undefined;
@@ -105,7 +127,19 @@ export class SarvamAdapter implements ProviderAdapter {
       || typeof choice?.message?.content !== 'string' || !choice.message.content.trim())
       semanticError = choice?.finish_reason === 'length' ? 'truncated_output' : 'invalid_output';
     else { try { output = minimizeDecodedOutput(JSON.parse(choice.message.content),this.key); } catch { semanticError = 'invalid_output'; } }
-    return {output:output ?? {invalidResponse:true},responseHash:parsedResponse.responseHash,httpStatus:response.status,usage,semanticError};
+    let rawResponse: unknown;
+    try {
+      const choices = Array.isArray(upstream?.choices) ? upstream.choices.map((item: any) => ({
+        finish_reason: item?.finish_reason, message: { content: item?.message?.content },
+      })) : [];
+      rawResponse = minimizeDecodedOutput({ choices, usage: upstream?.usage }, this.key);
+    } catch {
+      rawResponse = { body: '[response text rejected by privacy minimizer]' };
+    }
+    return {
+      output: output ?? { invalidResponse: true }, responseHash: parsedResponse.responseHash,
+      httpStatus: response.status, usage, semanticError, rawResponse,
+    };
   }
 }
 
@@ -119,6 +153,7 @@ export class ControlAdapter implements ProviderAdapter {
 export type RetainedReplay = {
   inputHash: string; sourceHashes: readonly string[]; responseHash: string; response: ProviderResult;
   eligible: boolean;
+  replayKey?: string;
 };
 /** No supplied replay corpus. A caller must load actual retained eligible, authorized material. */
 export class ReplayAdapter implements ProviderAdapter {
@@ -127,8 +162,10 @@ export class ReplayAdapter implements ProviderAdapter {
   async propose(request: ProviderRequest): Promise<ProviderResult> {
     minimizeMessages(request.messages);
     await request.authorize();
-    const receipt = await this.retained(request.inputHash);
-    if (!receipt?.eligible || receipt.inputHash !== request.inputHash
+    const receipt = await this.retained(request.replayKey ?? request.inputHash);
+    const keyMismatch = request.replayKey
+      ? receipt?.replayKey !== request.replayKey : receipt?.inputHash !== request.inputHash;
+    if (!receipt?.eligible || keyMismatch
       || hash([...receipt.sourceHashes].sort()) !== hash([...request.sourceHashes].sort())
       || receipt.responseHash !== hash(receipt.response) || receipt.response.semanticError
       || !/^[a-f0-9]{64}$/.test(receipt.response.responseHash))
