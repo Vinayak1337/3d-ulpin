@@ -4350,15 +4350,15 @@
       "id": "d1-messy-india-development-20261010",
       "classification": "test_only",
       "originKind": "mixed_official_original_tables_and_OpenCity_publisher_csv_derivatives_test_only",
-      "issuer": "Ministry of Panchayati Raj / LGD via data.gov.in; Bihar RERA; Reserve Bank of India; OpenCity / Oorvani Foundation",
+      "issuer": "Ministry of Panchayati Raj / LGD; Bihar RERA; RBI; OpenCity; TNHB; Pune Municipal Corporation; Microsoft",
       "geography": "India; original operational registry context remains separate from national/state/city aggregate development tables",
       "manifest": "fixtures/usp/D8-messy-india/manifest.json",
-      "manifestSha256": "7e4292a4b75fda2e249495157636e789ba15d5bc7c05c0c6b409f3b9ec124593",
+      "manifestSha256": "a4d7be15b399012fcb9877382dcb3e5de3880cbfc1634fac57213c791afa07a7",
       "manifestHashScope": "Exact UTF-8 metadata bytes; original files use exact-byte hashes",
       "guide": "fixtures/usp/D8-messy-india/README.md",
-      "sourceCount": 32,
-      "sourceFamilies": 21,
-      "totalOriginalBytes": 942377,
+      "sourceCount": 37,
+      "sourceFamilies": 24,
+      "totalOriginalBytes": 133387445,
       "horizontalCrs": null,
       "verticalReference": null,
       "content": {
@@ -4367,12 +4367,18 @@
         "formats": [
           "CSV",
           "XLSX",
-          "HTML source-native table"
+          "HTML source-native table",
+          "JSON source-native table",
+          "Gzip-compressed GeoJSONL; derivative CSV is not a native publisher CSV"
         ],
         "repositoryBytesVerified": false,
         "smallDevelopmentCopy": "fixtures/usp/D8-messy-india/dev/lgd-districts.csv",
         "developmentCopiesDirectory": "fixtures/usp/D8-messy-india/dev/d1b",
-        "additionalDevelopmentCopies": 26
+        "additionalDevelopmentCopies": 26,
+        "propertyDevelopmentCopiesDirectory": "fixtures/usp/D8-messy-india/dev/d1c",
+        "propertyDevelopmentCopies": 4,
+        "propertyDerivativeCopies": 4,
+        "derivativeIndex": "fixtures/usp/D8-messy-india/dev/d1c/derivatives.json"
       },
       "terms": {
         "state": "unconfirmed",
@@ -4383,6 +4389,9 @@
       "standingInstallation": false,
       "runtimeVerified": false,
       "limitations": [
+        "D1d: three unlabelled property-relevant development families; five native originals and recorded CSV derivatives.",
+        "Pune institutional-site inventories are not verified building identities; Microsoft predictions stay test_only.",
+        "Prerequisite blocked: two new heldout families/files, four columns and two scorable positive targets.",
         "D1b adds 26 development CSV/XLSX originals in 18 families; 23 CSVs are OpenCity-published originals, potentially transcriptions/derivatives, NOT issuing-authority exports. Development test_only, never official registry facts.",
         "Three new development XLSX originals are RBI publications. Unit captions include hectares; no silently inferred conversions, field targets or rights.",
         "Five historical dev originals are HTML tables, not qualified CSV/XLSX import inputs; legacy HTML remains external because of unrelated contact/bank sections.",
@@ -4398,8 +4407,13 @@
       "issuer": "Gurugram Metropolitan Development Authority; Office of the Registrar General & Census Commissioner, India; Reserve Bank of India",
       "geography": "India; per-source details evaluator-only",
       "manifest": "fixtures/usp/D8-messy-india/heldout.json",
-      "manifestSha256": "c745ee8e6646b2fbcbaad5ed0fc69df3bc981e76b3fd98ca4ba5328aa4d259e6",
-      "sourceCount": 5,
+      "manifestSha256": "5accd9267497ff89f1e579d2d48d70325aa0cf8df93219300967618e9c679bf1",
+      "sourceCount": 7,
+      "additionalEvaluatorOnly": {
+        "sources": 2, "families": 2, "columns": 4, "scorable": 2, "positiveTargets": 2,
+        "sourceListSha256": "9a1aba1349b91280976db11f60406d64ec84b334431635bd1c04736c58961e47",
+        "qualification": "Candidate research semantics only; not official property, measurement or registry truth."
+      },
       "families": [
         {
           "id": "mi-h01",
