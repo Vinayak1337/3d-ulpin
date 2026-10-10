@@ -1,0 +1,37 @@
+{
+  "qualification": "Historical A2 recovery notes, retained through the review continuation.",
+  "attempts": [
+    {
+      "check": "mapping-teacher.test.ts",
+      "initialExitCode": 1,
+      "signature": "ERR_MODULE_NOT_FOUND at root script import",
+      "decision": "Use the workspace contracts relative import in the owned script; rerun passed."
+    },
+    {
+      "check": "mapping-teacher.test.ts",
+      "initialExitCode": 1,
+      "signature": "MAPPING_LAYOUT_INVALID: extended profile passed to strict A1 inventory schema",
+      "decision": "Project name/type/unit with mappingContextFromColumnProfile; bounded rerun passed."
+    },
+    {
+      "check": "System Python geo dependency import",
+      "initialExitCode": 1,
+      "signature": "ModuleNotFoundError: No module named 'shapely'",
+      "decision": "Reuse installed venv-plans interpreter; no installs or runtime changes."
+    },
+    {
+      "check": "profile-columns.ts on retained XLSX/ODS",
+      "initialExitCode": 1,
+      "signature": "Workbook preamble / repeated blank padding lacks a literal rectangular header",
+      "hypothesis": "Explicit header row and ignoring only empty padding preserve the real named table.",
+      "criterion": "Three XLSX / five ODS manifest-pinned columns, observed samples, unchanged originals.",
+      "result": "Passed with XLSX header-row 5; unnamed columns/repeated literal ODS data still fail closed."
+    },
+    {
+      "check": "tsc -p scripts/agent/tsconfig.json",
+      "initialExitCode": 2,
+      "signature": "TS2531: comparisons used nullable shape rates without narrowing",
+      "decision": "Narrow null explicitly; production and test typechecks passed."
+    }
+  ]
+}
