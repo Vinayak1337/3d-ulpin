@@ -41,7 +41,12 @@ function CitationWords({ evidence, place, pin }: { evidence: EvidenceRef; place:
       <dt>Cited place</dt>
       <dd>{placeWords(place)}</dd>
       <dt>Source</dt>
-      <dd className="ul-mono">{evidence.sourceId} · revision {pin.revision}</dd>
+      <dd className="ul-row">
+        <span className="ul-mono">{evidence.sourceId} · revision {pin.revision}</span>
+        <Button variant="ghost" onClick={() => void navigator.clipboard.writeText(evidence.sourceId)}>
+          Copy source ID
+        </Button>
+      </dd>
     </dl>
   );
 }
