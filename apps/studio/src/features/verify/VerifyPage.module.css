@@ -10,5 +10,7 @@
 .danger { background: var(--ui-danger-soft); color: var(--ui-danger); }
 /* A sentence in the banner (a failure with its reason) instead of a short result. */
 .small { font-size: 15px; }
+/* The code box clips an outline drawn outside its copy control, so the focus ring of the control is drawn inside. */
+.copyable :global(.ul-code__copy):focus-visible { outline-offset: -2px; }
 /* A link in a stacked panel keeps its own width instead of stretching across the column. */
 .start { justify-self: start; }

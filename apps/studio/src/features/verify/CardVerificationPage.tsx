@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router';
 import { Badge, Button, DescriptionList, Panel, Skeleton, formatDateTime } from '@ulpin/ui';
 import { useCardVerification, type CardVerification } from '../../api/queries';
 import { cardPdfPath, isNotFound, readFailure } from '../identity/registryCard';
+import { CopyableId } from './CopyableId';
 import { cardAddress, checkRows, recordText, signatureText, verdictOf } from './verification';
 import { ResultBanner, VerifyFrame } from './VerifyFrame';
 import styles from './VerifyPage.module.css';
@@ -84,7 +85,7 @@ function Report({ report }: { report: CardVerification }) {
       <section className="ul-panel ul-pad ul-stack">
         <h1 className="ul-heading">Property card verification</h1>
         <DescriptionList items={[
-          { label: 'Card', value: report.cardId, mono: true },
+          { label: 'Card', value: <CopyableId id={report.cardId} name="card id" /> },
           { label: 'Revision', value: `${report.revision} (latest: ${lifecycle.latestRevision})` },
           { label: 'Expires', value: expires },
           { label: 'Unit record', value: recordText(report.snapshot) },
