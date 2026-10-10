@@ -373,7 +373,7 @@ def parse_arguments() -> argparse.Namespace:
     if args.resolution < 432 or args.resolution % 24:
         parser.error("RF-DETR resolution must be at least 432 and divisible by 24")
     if args.batch_size * args.accumulation != 4 or min(args.batch_size, args.accumulation) < 1:
-        parser.error("Preserve effective batch4 with positive batch size and accumulation")
+        parser.error("Preserve effective batch 4 with positive batch size and accumulation")
     if args.max_epochs < 1 or args.max_epochs > 12:
         parser.error("Maximum epochs must be between 1 and 12")
     if args.resolution > 432 and args.max_epochs > 8:
@@ -381,6 +381,12 @@ def parse_arguments() -> argparse.Namespace:
     if not re.fullmatch(r"[A-Za-z0-9_-]+", args.run_id):
         parser.error("Simple unique run-id required")
     return args
+
+
+COMPARISON_NOTE = (
+    "Versus epoch 4, resolution and the chunked mask loss both differ. The chunked loss is CPU-proven identical "
+    "to upstream in values and gradients, so resolution is the principal factor."
+)
 
 
 def training_recipe(args: argparse.Namespace, dataset: RampTrain) -> dict[str, Any]:
@@ -408,6 +414,7 @@ def training_recipe(args: argparse.Namespace, dataset: RampTrain) -> dict[str, A
         "augmentation": "TRAIN horizontal/vertical flips only; smoke none",
         "zero_pixel_masks": "Retained; box/class and zero mask supervised; no relabel/drop",
         "loss_revision": REVISION,
+        "comparison_note": COMPARISON_NOTE,
         "data": dataset.binding,
         "resume": str(args.resume) if args.resume else None,
         "git_sha": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip(),
