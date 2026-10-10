@@ -1,8 +1,16 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import {
+  extractStoreyFacts, storeyPartSelection, storeyPartsHash, storeyReplayKey, type StoreyPageStore,
+} from '../../packages/server/src/modules/ai/document-storey-agent';
+import { ControlAdapter } from '../../packages/server/src/modules/model-gateway/adapter';
+import { hash } from '../../packages/server/src/modules/model-gateway/config';
+import { ModelGateway } from '../../packages/server/src/modules/model-gateway/gateway';
+import { TeacherRecordings } from '../../packages/server/src/modules/model-gateway/recordings';
+import { controlConfig, ControlLedger, requestContext } from './control-runtime';
 import {
   assertLiveStart, buildPlan, dryRun, parseGatewayStatus, readTariff, PROPOSAL_LABEL, PROPOSED_POLICY,
 } from './live-proof';
@@ -17,6 +25,28 @@ function policyFile(overrides: Record<string, unknown>): string {
 }
 
 const micro = (value: { microInr: string }) => BigInt(value.microInr);
+const STORES = 'E:/BhuAayam-data/task-data/a5/stores';
+const NOTHING = { value: null, expression: null, citations: [] };
+const ABSTAINS = {
+  storeyCount: NOTHING, basementCount: NOTHING, floorExpressions: [], labels: [], heights: [], unitCounts: [],
+  conflicts: [], abstain: true, abstainReason: 'software control',
+};
+
+/** What a software control leaves behind: one recording of the first planned storey request. */
+async function recordControlAnswer(sha256: string, replayKey: string, directory: string) {
+  const store = JSON.parse(readFileSync(join(STORES, `${sha256}.pages.json`), 'utf8')) as StoreyPageStore;
+  const parts = storeyPartSelection(store).batches[0];
+  assert.equal(storeyReplayKey(storeyPartsHash(parts)), replayKey);
+  const adapter = new ControlAdapter(async () => ({
+    output: ABSTAINS, responseHash: hash(ABSTAINS), httpStatus: 200, rawResponse: { output: ABSTAINS },
+    usage: { promptTokens: 1, completionTokens: 1 },
+  }));
+  return extractStoreyFacts(parts, {
+    context: requestContext, gateway: new ModelGateway(controlConfig(), new ControlLedger(), adapter),
+    recordings: new TeacherRecordings(directory), authorize: async () => {}, maxAttempts: 1,
+    dataPolicy: { dataClass: 'public', split: 'development' },
+  });
+}
 
 test('plan: totals are sums of the calls, every figure names its kind and tariff, the proposal is not approved', () => {
   const plan = buildPlan(readTariff());
@@ -74,6 +104,21 @@ test('dry run: a key and an enabled gateway in the environment change nothing; a
     assert(['needs_input', 'teacher_unavailable'].includes(receipt.endState));
     assert.deepEqual([receipt.providerCalls, receipt.live.inputTokens, receipt.live.actualMicroInr], [0, null, null]);
   }
+});
+
+test('dry run: a recording made by a software control ends the first step and its replay as a control', async () => {
+  const tariff = readTariff();
+  const first = buildPlan(tariff).steps[0];
+  const recordings = scratch();
+  const made = await recordControlAnswer(first.input.sha256, first.request!.replayKey, recordings);
+  assert.deepEqual([made.state, made.replayed], ['abstained', false]);
+  const result = await dryRun(tariff, scratch(), recordings);
+  const [call, replay, ...rest] = result.receipts;
+  assert.deepEqual([call.endState, replay.endState], ['replayed_software_control', 'replayed_software_control']);
+  assert.deepEqual([call.providerCalls, call.live.actualMicroInr], [0, null]);
+  assert(rest.every(receipt => !receipt.replayed));
+  const { providerDispatches, fetchAttempts, ledgerReservations } = result.summary;
+  assert.deepEqual([providerDispatches, fetchAttempts, ledgerReservations], [0, 0, 0]);
 });
 
 test('live: refuses to start without an explicit enabled gateway state that carries the planned policy hash', () => {
