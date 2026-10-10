@@ -46,8 +46,8 @@ function RecipeActions({ review, job, controls }: {
   review: ReturnType<typeof useRecipeReview>; job: MappingJob; controls: ReturnType<typeof reviewControls>;
 }) {
   const { current, record } = review;
-  const waiting = current?.state === 'approved' && job.route !== 'approved_recipe';
-  const replayable = controls.replay && waiting && Boolean(review.replay);
+  const awaitingJob = current?.state === 'approved' && job.route !== 'approved_recipe';
+  const replayable = controls.replay && awaitingJob && Boolean(review.replay);
   const approve = () => {
     if (!current) return;
     record.reset();

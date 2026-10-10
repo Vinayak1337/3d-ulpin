@@ -4,8 +4,8 @@ import { useSearchParams } from 'react-router';
 import { authorRecipe, approveRecipe, readRecipe } from './recipe-api';
 import { fillUnknownAnswers, officerAnswers, recipeBody } from './recipe';
 import { tableKey } from './queries';
-import type { Confirmation } from './RecipeConfirmation';
 import { focusStaleNotice } from './StaleNotice';
+import type { Confirmation } from './RecipeConfirmation';
 import type { OfficerAnswer, OfficerAnswers } from './recipe';
 import type { ChunkMapping, MappingJob, Recipe, TableProfile } from './types';
 
