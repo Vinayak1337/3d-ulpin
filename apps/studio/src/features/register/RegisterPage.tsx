@@ -3,7 +3,6 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { DownloadSimple, FilePlus, Intersect, MapTrifold, QrCode, WarningCircle } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { DeviationInput, MultiPolygon, Pick, SceneEngine, SceneState } from '@ulpin/scene';
-import { ApiError } from '@ulpin/api-client';
 import type { BuildingLedger, BuildingResidents } from '@ulpin/api-client/draft';
 import {
   Badge, Banner, Button, DataTable, DescriptionList, EmptyState, EvidenceChip, Icon, LevelRail, Menu, Panel, RevisionTimeline, Skeleton,
@@ -28,7 +27,8 @@ import { NoGeometry } from './NoGeometry';
 import { ReadingStatementsContext } from './ReadingNote';
 import { RegisterAbsent } from './RegisterAbsent';
 import {
-  NO_READING_STATEMENTS, absentReason, conflictingStoreys, openCheckCount, unstatedReadings,
+  NO_READING_STATEMENTS, absentReason, conflictingStoreys, openCheckCount, registerNotFound, unreadRegister,
+  unstatedReadings,
 } from './registerState';
 import { SourceList } from './SourceList';
 import { FloorFilter, UnitsTab } from './UnitsTab';
@@ -51,13 +51,15 @@ export function RegisterPage() {
     return <div className={styles.loading}><div className="ul-panel ul-pad ul-stack">{Array.from({ length: 7 }, (_, i) => <Skeleton key={i} width={i ? '100%' : '40%'} />)}</div></div>;
   }
   const absent = absentReason(register.error);
-  if (absent && buildingId) return <RegisterAbsent buildingId={buildingId} reason={absent} />;
+  if (buildingId && (absent || registerNotFound(register.error))) {
+    return <RegisterAbsent buildingId={buildingId} reason={absent} />;
+  }
   if (register.error || !register.data) {
-    const notRecorded = register.error instanceof ApiError && register.error.status === 404;
     return (
       <div className={styles.loading}>
-        <EmptyState icon={WarningCircle} title={notRecorded ? 'No register is recorded for this building' : 'This register could not be opened'} action={<Link to="/studio/registry">Back to Register</Link>}>
-          {register.error?.message ?? 'The building was not found.'}
+        <EmptyState icon={WarningCircle} title="This register could not be opened"
+          action={<Link to="/studio/registry">Back to Register</Link>}>
+          {unreadRegister(register.error)}
         </EmptyState>
       </div>
     );
