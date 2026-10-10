@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[3]
 PACK = Path(__file__).resolve().parent
 BASE = "f5539916"
 CHECKPOINT = "2432f8e4"
+D1D_CATALOGUE = "c1df5654"  # The last D1c/D1d commit that changed docs/api/datasets.json.
 Row = dict[str, Any]
 
 
@@ -220,19 +221,21 @@ def verify_freeze(heldout: Row, private: Row, manifest: Row) -> Row:
 
 def verify_catalogue() -> None:
     path = ROOT / "docs/api/datasets.json"
-    current = load(path)
+    landed = previous(path, D1D_CATALOGUE)
     old = previous(path, CHECKPOINT)
-    require(all(current[key] == old[key] for key in old if key != "retainedExternalSources"),
+    require(all(landed[key] == old[key] for key in old if key != "retainedExternalSources"),
             "Unrelated catalogue sections changed")
     old_entries = old["retainedExternalSources"]
-    entries = current["retainedExternalSources"]
+    entries = landed["retainedExternalSources"]
     require(len(entries) == len(old_entries), "Source catalogue history removed or added")
     changed = {"d1-messy-india-development-20261010", "d1-messy-india-heldout-20261010"}
+    current = {entry.get("id"): entry for entry in load(path)["retainedExternalSources"]}
     for before, after in zip(old_entries, entries):
         require(before.get("id") == after.get("id"), "Catalogue identity or order changed")
         if after.get("id") not in changed:
             require(before == after, "Unrelated catalogue source changed")
             continue
+        require(current.get(after["id"]) == after, "D1c/D1d catalogue source changed after it landed")
         require(after["manifestSha256"] == digest((ROOT / after["manifest"]).read_bytes()), "Catalogue pin stale")
         require(after["runtimeVerified"] is False and after["apiInstallation"] == "not-installed", "Runtime overclaim")
 
