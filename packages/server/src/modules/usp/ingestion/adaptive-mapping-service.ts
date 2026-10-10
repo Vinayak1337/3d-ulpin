@@ -13,6 +13,7 @@ import {localRequestContext} from '../principal';
 import {assertIngestionBinding,ingestionBinding} from './events';
 import {ManualIngestionService} from './service';
 import {validateAdaptiveMapping} from './adaptive-mapping';
+import {compareWorkspacePins} from './source-pin';
 
 const uuid=z.string().uuid();
 const outputSchema=z.toJSONSchema(AdaptiveMappingModelOutputSchema);
@@ -20,17 +21,17 @@ type Dependencies={readProfile:(caseId:string,sourceId:string)=>Promise<SourcePr
   assertCaseActive:(caseId:string)=>Promise<void>;
   gatewayFactory:()=>Promise<ModelGateway|undefined>;policyHash:()=>string|undefined};
 
+/** The profile's own content; the workspace pair it states is compared through the workspace pin rule. */
+function ownProfile({workspaceRevision,workspaceFingerprint,...own}:SourceProfile){return own;}
+
 /** One bounded proposal call. Source/profile/access/policy changes fail closed before dispatch and return. */
 export async function proposeAdaptiveMapping(caseValue:string,sourceValue:string,raw:unknown,deps:Dependencies):Promise<AdaptiveMappingResponse>{
   const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),input=AdaptiveMappingRequestSchema.parse(raw);
   const binding=ingestionBinding(caseId);
   await deps.assertCaseActive(caseId);
   const profile=await deps.readProfile(caseId,sourceId);
-  const expected=fingerprint({source:input.source,caseId,workspaceRevision:input.workspaceRevision,
-    workspaceFingerprint:input.workspaceFingerprint});
-  const actual=fingerprint({source:profile.source,caseId:profile.caseId,workspaceRevision:profile.workspaceRevision,
-    workspaceFingerprint:profile.workspaceFingerprint});
-  if(profile.source.sourceId!==sourceId || actual!==expected)conflict('Source, profile or workspace changed; inspect the current original.');
+  if(profile.source.sourceId!==sourceId || profile.caseId!==caseId || fingerprint(profile.source)!==fingerprint(input.source)
+    || !compareWorkspacePins(profile,input).current)conflict('Source, profile or workspace changed; inspect the current original.');
   const profileHash=fingerprint(profile);
   const base={version:ADAPTIVE_MAPPING_VERSION,requestKey:input.requestKey,source:profile.source,
     workspaceRevision:profile.workspaceRevision,workspaceFingerprint:profile.workspaceFingerprint,
@@ -46,7 +47,8 @@ export async function proposeAdaptiveMapping(caseValue:string,sourceValue:string
     await deps.assertCaseActive(caseId);
     if(deps.policyHash()!==policy)throw new AppError(403,'MODEL_POLICY_CHANGED','The model policy changed; refresh before proposing a mapping.');
     const current=await deps.readProfile(caseId,sourceId);
-    if(fingerprint(current)!==profileHash)conflict('Source, profile or workspace changed; inspect the current original.');
+    if(fingerprint(ownProfile(current))!==fingerprint(ownProfile(profile)) || !compareWorkspacePins(current,profile).current)
+      conflict('Source, profile or workspace changed; inspect the current original.');
   };
   const eligible=profile.paths.filter(path=>path.path==='/features/*/geometry'||path.literalIdEligible||path.literalTextEligible);
   const keyPaths=eligible.filter(path=>path.literalIdEligible&&path.path!=='/features/*/geometry');

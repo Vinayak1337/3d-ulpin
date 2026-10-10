@@ -11,7 +11,7 @@ import { ingestionBinding } from '../packages/server/src/modules/usp/ingestion/e
 import { streamingReaderSha } from '../packages/server/src/modules/usp/ingestion/streaming-vector';
 import { assertChunkMappingInputTx, chunkMappingReadContextTx, ChunkMappingService } from
   '../packages/server/src/modules/usp/ingestion/chunk-mapping';
-import { tabularProfileForLockedSourceTx } from
+import { ManualIngestionService, tabularProfileForLockedSourceTx } from
   '../packages/server/src/modules/usp/ingestion/service';
 import { inspectTabularSource } from '../packages/server/src/modules/usp/ingestion/tabular-source';
 import { manualTeacherPlan } from '../packages/server/src/modules/usp/ingestion/mapping-teacher';
@@ -97,7 +97,8 @@ async function approvedMapping(c: ManualCaseControl) {
 async function assertRunsOnRecipe(c: ManualCaseControl, input: ReturnType<typeof ChunkMappingInputSchema.parse>) {
   const current = await assertChunkMappingInputTx(c.client, input);
   assert.equal(current.approved?.receipt.planHash, input.planHash);
-  assert(current.profile?.version === 'manual-tabular/1' && current.approved?.receipt.plan.version === 'manual-tabular/1');
+  assert(current.profile?.version === 'manual-tabular/1');
+  assert(current.approved?.receipt.plan.version === 'manual-tabular/1');
   validateTabularRecipe(current.approved.receipt.plan, current.profile, table.bytes);
 }
 
@@ -195,5 +196,27 @@ test('an approved table recipe still refuses an approval recorded by another sub
       c.receive();
       approve(c, c.recipe!.plan as TabularMappingPlan, 'k15-another-operator');
       await assert.rejects(() => assertChunkMappingInputTx(c.client, input), stale);
+    });
+  }));
+
+test('a table recipe authored at revision n is approved at n+1 and the source pin still decides', () =>
+  localReaderControl(() => {
+    const c = tableCase();
+    return servicePoolControl(c, table.bytes, async () => {
+      const service = new ManualIngestionService();
+      const plan = await officerPlan(c);
+      const authored = await service.author(c.caseId, c.source.id, { requestKey: randomUUID(),
+        expectedRecipeRevision: 0, destination: null, plan });
+      c.receive();
+      queueRaw(c);
+      const approved = await service.decide(c.caseId, authored.id, { requestKey: randomUUID(),
+        expectedRecipeRevision: authored.revision }, 'approve');
+      assert.equal(approved.state, 'approved');
+      assert.equal(approved.plan.workspaceRevision, 1);
+      // queueApprovedTabular still asks for revision 1 and swallows the 409: reported, not changed here.
+      assert.equal([...c.jobs.values()].some(job => job.operation === 'chunk-mapping'), false);
+      c.receive(true);
+      await assert.rejects(() => service.author(c.caseId, c.source.id, { requestKey: randomUUID(),
+        expectedRecipeRevision: approved.revision, destination: null, plan }), stale);
     });
   }));
