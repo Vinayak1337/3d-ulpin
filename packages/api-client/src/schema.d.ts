@@ -1694,6 +1694,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/buildings/{buildingId}/snapshots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the recorded snapshots that hold a building and that the local operator may read, newest first
+         * @description Each item carries the scope its manifest stores, to pass unchanged to the USP reads. Order is the only statement about recency. Cited documents are not checked here: a read that is given a listed scope applies its own document checks.
+         */
+        get: operations["GET_api_v1_buildings_buildingId_snapshots"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/registry-drafts/{draftId}/native-exterior/control-assessment": {
         parameters: {
             query?: never;
@@ -35075,6 +35095,35 @@ export interface components {
                 reason: string;
             };
             missing: string[];
+        };
+        GET_buildings_buildingId_snapshots_Response_200_application_json: {
+            /** Format: uuid */
+            buildingId: string;
+            /** Format: uuid */
+            siteId: string;
+            readonly items: {
+                readonly scope: {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+                /** Format: date-time */
+                createdAt: string;
+                readonly members: {
+                    total: number;
+                    documentResultNotCurrent: number;
+                };
+            }[];
+            truncated: boolean;
+            unreadable: number;
         };
         POST_registry_drafts_draftId_native_exterior_control_assessment_Request_application_json: {
             expectedDraftRevision: number;
@@ -79945,6 +79994,109 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GET_buildings_buildingId_ledger_Response_200_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_buildings_buildingId_snapshots: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                buildingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_buildings_buildingId_snapshots_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
                 };
             };
         };

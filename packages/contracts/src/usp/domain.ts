@@ -92,6 +92,25 @@ export const UspSnapshotManifestSchema = z.strictObject({
     ctx.addIssue({ code: 'custom', path: ['members'], message: 'Members must be sorted and unique' });
   }
 }).readonly();
+/** Names one building and bounds the page of its snapshots. */
+export const UspListBuildingSnapshotsSchema = z.strictObject({
+  buildingId: z.uuid(), limit: z.number().int().min(1).max(20).default(5),
+}).readonly();
+/** One recorded snapshot: its stored scope, to pass on unchanged, and counts read from its stored members. */
+const UspBuildingSnapshotItemSchema = z.strictObject({
+  scope: UspSnapshotScopeSchema, createdAt: timestamp,
+  members: z.strictObject({
+    total: z.number().int().nonnegative().max(20000),
+    documentResultNotCurrent: z.number().int().nonnegative().max(20000),
+  }).readonly(),
+}).readonly();
+/** The snapshots of a building's site that list the building and that the caller may read, newest first.
+ * `unreadable` counts rows of the page whose stored body is not the manifest of its own row; none is listed. */
+export const UspBuildingSnapshotListSchema = z.strictObject({
+  buildingId: z.uuid(), siteId: z.uuid(),
+  items: z.array(UspBuildingSnapshotItemSchema).max(20).readonly(),
+  truncated: z.boolean(), unreadable: z.number().int().nonnegative().max(20),
+}).readonly();
 export const UspScopePageSchema = z.strictObject({
   items: z.array(UspResolvedTargetSchema).max(100).readonly(), nextCursor: coreText(4096).nullable(),
   manifestId: CoreIdSchema, coverage: UspSnapshotManifestSchema.unwrap().shape.coverage,
@@ -208,6 +227,7 @@ export const UspMeasuredQuantitySchema = z.strictObject({
 export type ResolvedTarget = z.infer<typeof UspResolvedTargetSchema>;
 export type AuthorizedAsset = z.infer<typeof UspAuthorizedAssetSchema>;
 export type SnapshotManifest = z.infer<typeof UspSnapshotManifestSchema>;
+export type BuildingSnapshotList = z.infer<typeof UspBuildingSnapshotListSchema>;
 export type ScopePage = z.infer<typeof UspScopePageSchema>;
 export type PrepareProposal = z.infer<typeof UspPrepareProposalSchema>;
 export type CommitProposal = z.infer<typeof UspCommitProposalSchema>;
