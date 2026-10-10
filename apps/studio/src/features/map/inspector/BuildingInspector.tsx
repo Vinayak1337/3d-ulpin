@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { CircleDashed, FilePlus, Stack, Trash, WarningOctagon } from '@phosphor-icons/react';
+import { FilePlus, Stack, Trash, WarningOctagon } from '@phosphor-icons/react';
 import type { NormalizedBuilding } from '@ulpin/contracts/canonical-scene';
 import type { BuildingLedger } from '@ulpin/api-client/draft';
 import {
-  Badge, Button, DescriptionList, EvidenceChip, Icon, ReadinessMeter, RevisionTimeline, Skeleton, StatusBadge, Tabs, formatCount, formatDate,
-  UlpinCode, formatMeasure, type Fact,
+  Button, DescriptionList, EvidenceChip, Icon, ReadinessMeter, RevisionTimeline, Skeleton, StatusBadge, Tabs,
+  formatCount, formatDate, UlpinCode, formatMeasure, type Fact,
 } from '@ulpin/ui';
 import { featureCode, type AreaFeature, type BuildingRegister } from '../../../api/queries';
 import type { BuildingModel } from '../../../model/building';
 import { useOpenEvidence } from '../../evidence/EvidenceContext';
 import { parseLocator } from '../../evidence/refs';
 import { CheckBadge } from '../CheckBadge';
+import { RecordState } from '../RecordState';
 import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerStatus, revisionChain, revisionKey } from '../ledger';
 import { featureEvidence } from './evidence';
 import { InspectorShell, type Crumb } from './InspectorShell';
@@ -29,12 +30,6 @@ export function levelSummary(model: BuildingModel): string {
   if (ground?.record.use?.toLowerCase().includes('stilt')) parts.push('stilt');
   if (below.length) parts.push(below.join(', '));
   return parts.join(' · ');
-}
-
-/** The record's state as the canonical record states it: a candidate proposal or a reviewed record. */
-function RecordState({ state }: { state: NormalizedBuilding['recordState'] }) {
-  if (state === 'reviewed') return <StatusBadge status="Reviewed" />;
-  return <Badge icon={CircleDashed}>Candidate</Badge>;
 }
 
 export function BuildingInspector({ feature, canonical, register, model, ledger, registerPending, crumbs, exploring, onExplore, onFindings, onAddFiles, onDelete }: {
