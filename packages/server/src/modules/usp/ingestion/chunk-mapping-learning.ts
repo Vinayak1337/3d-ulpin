@@ -184,13 +184,16 @@ export async function queueApprovedTabular(receipt: TabularMappingReceipt, reque
     'ORDER BY created_at DESC,id DESC LIMIT 1', [receipt.plan.caseId, receipt.plan.source.sourceId])).rows[0];
   const { ChunkMappingService } = await import('./chunk-mapping');
   const { StreamingVectorService } = await import('./streaming-vector');
+  const current = (await query('SELECT revision FROM cases WHERE id=$1', [receipt.plan.caseId])).rows[0];
+  if (!current) conflict('The approved table case no longer exists.');
+  const expectedCaseRevision = current.revision;
   try {
     const rawId = raw?.id ?? (await new StreamingVectorService().enqueue(receipt.plan.caseId,
-      receipt.plan.source.sourceId, { requestKey, expectedCaseRevision: receipt.plan.workspaceRevision,
+      receipt.plan.source.sourceId, { requestKey, expectedCaseRevision,
         expectedSourceRevision: receipt.plan.source.sourceRevision, sourceSha256: receipt.plan.source.sourceSha256,
         framing: 'tabular', tabular: receipt.plan.tabular })).jobId;
     await new ChunkMappingService().enqueue(receipt.plan.caseId, receipt.plan.source.sourceId, {
-      requestKey, rawJobId: rawId, expectedCaseRevision: receipt.plan.workspaceRevision,
+      requestKey, rawJobId: rawId, expectedCaseRevision,
       expectedSourceRevision: receipt.plan.source.sourceRevision, sourceSha256: receipt.plan.source.sourceSha256,
       tabular: receipt.plan.tabular,
     });

@@ -20,7 +20,11 @@ import {
 } from '../packages/server/src/modules/usp/ingestion/tabular-source';
 import { ManualIngestionService } from '../packages/server/src/modules/usp/ingestion/service';
 import { readStreamingTabular } from '../packages/server/src/modules/usp/ingestion/streaming-vector-reader';
-import { learnApprovedTabularTx } from '../packages/server/src/modules/usp/ingestion/chunk-mapping-learning';
+import {
+  learnApprovedTabularTx, queueApprovedTabular,
+} from '../packages/server/src/modules/usp/ingestion/chunk-mapping-learning';
+import { StreamingVectorService } from '../packages/server/src/modules/usp/ingestion/streaming-vector';
+import { ChunkMappingService } from '../packages/server/src/modules/usp/ingestion/chunk-mapping';
 import { tabularTeacherPolicy } from '../packages/server/src/modules/usp/ingestion/chunk-mapping-tabular';
 import { TabularChunkMapper } from '../packages/server/src/modules/usp/ingestion/chunk-mapping-agent';
 import { officerMappingMethod } from '../packages/server/src/modules/usp/ingestion/tabular-recipe';
@@ -337,6 +341,34 @@ test('every case-original teacher callback refuses before the request builder is
     assert.equal(draft.metrics.teacherCalls, 0);
   }
   assert.equal(builder.mock.callCount(), 0);
+});
+
+test('an approved table queues both jobs with the current case revision and unchanged source pins', async () => {
+  const { profile } = await retained();
+  const receipt = approvedReceipt(profile);
+  const currentRevision = receipt.plan.workspaceRevision + 2;
+  const caseRead = mock.fn(async (sql: string, args: unknown[]) => {
+    assert.equal(args[0], receipt.plan.caseId);
+    if (sql.includes('FROM jobs')) return { rows: [] };
+    assert.equal(sql, 'SELECT revision FROM cases WHERE id=$1');
+    return { rows: [{ revision: currentRevision }] };
+  });
+  globals.ulpinPool = { query: caseRead } as unknown as Pool;
+  const rawId = randomUUID();
+  const raw = mock.method(StreamingVectorService.prototype, 'enqueue', async () => ({ jobId: rawId }));
+  const mapping = mock.method(ChunkMappingService.prototype, 'enqueue', async () => ({}));
+  const requestKey = randomUUID();
+  await queueApprovedTabular(receipt, requestKey);
+  assert.equal(raw.mock.callCount(), 1);
+  assert.equal(mapping.mock.callCount(), 1);
+  for (const call of [raw.mock.calls[0], mapping.mock.calls[0]]) {
+    assert.deepEqual(call.arguments.slice(0, 2), [receipt.plan.caseId, receipt.plan.source.sourceId]);
+    assert.equal(call.arguments[2].expectedCaseRevision, currentRevision);
+    assert.equal(call.arguments[2].expectedSourceRevision, receipt.plan.source.sourceRevision);
+    assert.equal(call.arguments[2].sourceSha256, receipt.plan.source.sourceSha256);
+    assert.equal(call.arguments[2].requestKey, requestKey);
+  }
+  assert.equal(mapping.mock.calls[0].arguments[2].rawJobId, rawId);
 });
 
 function catalogueAsset(value: unknown, id: string): unknown {
