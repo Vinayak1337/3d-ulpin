@@ -127,6 +127,7 @@ function ReviewStage({ register, model, level, datum, actions, onLevel, onContin
 
 const NO_LEVEL = 'Choose a level in the level register to read what waits for review on it.';
 const NO_LEVELS = 'The register of this building holds no level, so there is no level to review.';
+const NO_REVIEW = 'The server holds no review of this level, so what waits for review on it is not known here.';
 const UNREAD_REVIEW = 'The server did not read the review of this level out';
 
 /** A level review that failed: the fixed words, then the server's code. Never the server's message. */
@@ -135,7 +136,10 @@ function unreadReview(error: unknown): string {
   return code ? `${UNREAD_REVIEW} · ${code}` : `${UNREAD_REVIEW}.`;
 }
 
-/** What the Review stage shows when there is no sheet: no level chosen, a review that failed, or its question. */
+/**
+ * What the Review stage shows when there is no sheet: no level chosen, a review the server does not hold (the
+ * read answers null for its 404), a review that failed, or the level's question.
+ */
 function LevelStatement({ register, level, levelCount, review, actions }: {
   register: BuildingRegister; level: LevelModel | null; levelCount: number;
   review: Pick<ReturnType<typeof useLevelReview>, 'data' | 'error'>; actions: BuildingAction[];
@@ -147,12 +151,15 @@ function LevelStatement({ register, level, levelCount, review, actions }: {
   }
   if (review.error) {
     return (
-      <EmptyState icon={WarningCircle} title="The review of this level could not be read">
+      <EmptyState icon={WarningCircle} title={`The review of ${level.label} could not be read`}>
         {unreadReview(review.error)}
       </EmptyState>
     );
   }
-  return <LevelQuestion register={register} level={level} review={review.data ?? null} actions={actions} />;
+  if (!review.data) {
+    return <EmptyState icon={WarningCircle} title={`No review of ${level.label} is held`}>{NO_REVIEW}</EmptyState>;
+  }
+  return <LevelQuestion register={register} level={level} review={review.data} actions={actions} />;
 }
 
 const CONFIDENCE: Record<LevelReview['candidates'][number]['confidence'], { label: string; tone: string }> = {
