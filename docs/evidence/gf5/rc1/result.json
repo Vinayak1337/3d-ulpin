@@ -1,39 +1,234 @@
 {
- "version": "rc1-result/1",
+ "version": "rc1-result/2",
  "task": "RC1",
  "gate": [
   "GF5:B5",
   "M2"
  ],
  "base": "e9dcebde",
- "outcome": "stopped_at_step0",
+ "outcome": "built",
  "step0": "docs/evidence/gf5/rc1/step0.json",
+ "revisionId": {
+  "magnolia": "489687094dc1233e360dc6bca586bc585cadd1f5b162faa706009ab4caf7fb85",
+  "namedBy": {
+   "buildingRead": 39,
+   "areaRead": 4,
+   "ledger": 0,
+   "snapshots": 0,
+   "dossier": 0,
+   "register": 0,
+   "expectedCanonicalRevision": 0
+  },
+  "towerUnchanged": "test: canonical-room-estimate.test.ts"
+ },
+ "demoRead": {
+  "served": "489687094dc1233e360dc6bca586bc585cadd1f5b162faa706009ab4caf7fb85",
+  "rooms": [
+   {
+    "label": "KITCHEN",
+    "level": "GROUND",
+    "areaM2": 6.55,
+    "extentM": [
+     2.42,
+     2.71
+    ]
+   },
+   {
+    "label": "BEDROOM",
+    "level": "GROUND",
+    "areaM2": 11.7,
+    "extentM": [
+     3.8,
+     3.08
+    ]
+   },
+   {
+    "label": "STAIRCASE",
+    "level": "GROUND",
+    "areaM2": 9.05,
+    "extentM": [
+     2.42,
+     3.77
+    ]
+   },
+   {
+    "label": "TOILET",
+    "level": "GROUND",
+    "areaM2": 3.82,
+    "extentM": [
+     2.58,
+     1.48
+    ]
+   },
+   {
+    "label": "DINING AND LIVING",
+    "level": "GROUND",
+    "areaM2": 18.48,
+    "extentM": [
+     3.8,
+     5.06
+    ]
+   },
+   {
+    "label": "TOILET",
+    "level": "FIRST",
+    "areaM2": 4.59,
+    "extentM": [
+     2.43,
+     1.89
+    ]
+   },
+   {
+    "label": "BEDROOM",
+    "level": "FIRST",
+    "areaM2": 12.08,
+    "extentM": [
+     3.92,
+     3.08
+    ]
+   },
+   {
+    "label": "DRESSER",
+    "level": "FIRST",
+    "areaM2": 2.92,
+    "extentM": [
+     2.43,
+     1.41
+    ]
+   },
+   {
+    "label": "STAIRCASE",
+    "level": "FIRST",
+    "areaM2": 11.86,
+    "extentM": [
+     2.43,
+     5.09
+    ]
+   },
+   {
+    "label": "TOILET",
+    "level": "FIRST",
+    "areaM2": 3.85,
+    "extentM": [
+     2.83,
+     1.49
+    ]
+   },
+   {
+    "label": "MASTER BEDROOM",
+    "level": "FIRST",
+    "areaM2": 15.94,
+    "extentM": [
+     3.8,
+     4.21
+    ]
+   },
+   {
+    "label": "BALCONY",
+    "level": "FIRST",
+    "areaM2": 4.34,
+    "extentM": [
+     2.55,
+     1.71
+    ]
+   },
+   {
+    "label": "TOILET",
+    "level": "SECOND",
+    "areaM2": 4.58,
+    "extentM": [
+     2.42,
+     1.89
+    ]
+   },
+   {
+    "label": "BEDROOM",
+    "level": "SECOND",
+    "areaM2": 12.07,
+    "extentM": [
+     3.92,
+     3.08
+    ]
+   },
+   {
+    "label": "DRESSER",
+    "level": "SECOND",
+    "areaM2": 3.34,
+    "extentM": [
+     2.43,
+     1.41
+    ]
+   },
+   {
+    "label": "STAIRCASE",
+    "level": "SECOND",
+    "areaM2": 11.22,
+    "extentM": [
+     2.43,
+     4.63
+    ]
+   },
+   {
+    "label": "TERRACE",
+    "level": "SECOND",
+    "areaM2": 23.78,
+    "extentM": [
+     3.93,
+     6.53
+    ]
+   },
+   {
+    "label": "unknown",
+    "level": "SECOND",
+    "areaM2": 1.6,
+    "extentM": [
+     1.08,
+     1.48
+    ]
+   }
+  ],
+  "allEstimated": true
+ },
+ "uiDesignCheck": "docs/evidence/gf5/rc1/ui-design-check.md",
  "report": {
+  "FIRST": "Nothing recorded names Magnolia's present canonical revisionId 4896870\u2026fb85 (GET only): ledger 0, snapshots 0 items, dossier 0, register 0, no expectedCanonicalRevision anywhere. Only the projections name it: 39 pinned revisionId fields in the building read and 4 in the area read (area revisionId 400c9d91\u2026b3c1). Both change once at deployment; buildings without rooms (Tower 3) do not move.",
   "TASK": "RC1 \u2014 A room candidate states its extent and area, as an estimate with its basis",
   "GATE": "GF5:B5, M2",
-  "WORKS": "Nothing new to use: Step 0 stopped under its rule; the evidence shows why the written area rule is wrong for retained rooms",
-  "SEE_IT": "node docs/evidence/gf5/rc1/probe-room-units.mjs",
-  "INPUTS": "Magnolia canonical read (GET demo :3194, 18 rooms); good: GROUND KITCHEN; difficult: FIRST MASTER BEDROOM (stated size disagrees) and the unlabelled SECOND floor face",
-  "GAPS": "No planEstimate built; the rule needs the lead's decision (polygons are already metres, so area x scale^2 gives a 0.0076 m2 kitchen)",
+  "WORKS": "A room candidate's card shows its bounding extent and area as estimates read from the canonical read (Unknown when the read says unknown)",
+  "SEE_IT": "pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf5/rc1/estimate-demo-read.ts",
+  "INPUTS": "Magnolia's 18 rooms from the demo read (GET :3194): good GROUND KITCHEN 6.55 m2, 2.42 x 2.71 m (stated 8' x 8'11\" = 6.63 m2); difficult FIRST MASTER BEDROOM and the unlabelled SECOND floor face (1.6 m2); Tower 3 for revision stability",
+  "GAPS": "The demo serves 18b5e74c and shows no estimate until rolled; the read holds no stated-size field, so the card prints no 'Stated in the drawing' line",
   "DESIGN": [
-   "Room candidates are copied verbatim from record.body.canonicalCandidates in projectBuilding (packages/server/src/modules/registry/canonical-building.ts:715-718); that is the one place to add planEstimate at read.",
-   "Their polygons are vector_plan.py polygonMetres: (pdf - originPdf) * metresPerPdfPoint with y flipped; planFrame is provenance, not a pending transform.",
-   "probe-room-units.mjs proves it on all 18 rooms (bbox equals the cited pt region mapped through planFrame to 1e-6 m)."
+   "packages/server/src/modules/registry/canonical-room-estimate.ts: roomPlanEstimate (pure) and addRoomPlanEstimates, called once in projectBuilding after the stored candidates are copied, before the digest.",
+   "packages/contracts canonical/building.ts: RoomPlanEstimateSchema on BuildingCandidateRefSchema (optional), z.never() on retain_rooms; one object with nullable values plus a refinement, because openapi-fetch's Readable drops properties typed exactly null.",
+   "apps/studio candidates/model.ts planEstimateView formats the read's numbers; CandidateCardView prints an 'Estimated size' section, Unknown, or nothing."
   ],
   "COMMITS": [
-   "d5e11659 docs(candidates): RC1 where a room candidate is built and what its polygon's units are"
+   "d5e11659 docs(candidates): RC1 where a room candidate is built and what its polygon's units are",
+   "e48b3b5a docs(candidates): RC1 evidence (Step 0)",
+   "34d47262 feat(candidates): a room candidate states its bounding extent and area as an estimate with its basis",
+   "0289f688 fix(candidates): the room estimate is one object with nullable values, which the Studio client keeps",
+   "60ab3337 feat(studio): a room candidate's card prints its estimated extent and area as the read states them",
+   "this commit: docs(candidates): RC1 evidence"
   ],
   "CHECKS": [
-   "node docs/evidence/gf5/rc1/probe-room-units.mjs (0)",
-   "git diff --check staging...HEAD (0)",
-   "long lines: only JSON string values in step0.json; the .mjs has none",
-   "typecheck/tests/openapi/ui-design-check not run: no code or UI changed"
+   "pnpm typecheck:backend (0)",
+   "pnpm studio:typecheck (0)",
+   "pnpm studio:test (0; studio 185, was 182)",
+   "tsx --test canonical-room-estimate.test.ts (0; 7 of 7)",
+   "tsx --test canonical-source-spaces.test.ts (0; 4 of 4)",
+   "openapi.ts --check (0)",
+   "check.py (1: 'runtime receipt changed' for three receipts this branch does not touch; they match their pins after CRLF to LF, so the worktree's autocrlf checkout is the cause)",
+   "scan-ui-diff.mjs e9dcebde (0)",
+   "estimate-demo-read.ts (0)",
+   "git diff --check (0)"
   ],
   "NEXT": [
-   "Lead decision: areaM2 = the polygon's own area and extentM = its bbox (both already metres); keep metresPerPdfPoint and scaleState in basis as provenance; rename the method (e.g. polygon_area_in_plan_metres@1); unknown when planFrame is absent.",
-   "If the helper should not grow canonical-building.ts (791 lines), allow a second module, e.g. registry/canonical-room-estimate.ts with its test.",
-   "Adding planEstimate at read changes Magnolia's canonical revisionId once (projectionDigest); the retain_rooms request must refuse it with z.never().optional().",
-   "MASTER BEDROOM (first floor) is 15.94 m2 against a stated 18.39 m2 with the same literal as the ground floor's DINING AND LIVING: a label-pairing finding for the vector reader's owner."
+   "Lead: decide the roll-out knowing that Magnolia's building and area revisionIds change once; nothing recorded holds them.",
+   "Stated size: the vector reader's output.statedDimensions[0].literal (e.g. \"(8' X 8'11\\\")\") would have to be retained on the room candidate, e.g. as statedDimensionsLiteral by the retain_rooms caller and contract, before the card can print 'Stated in the drawing'.",
+   "Vector reader owner: FIRST FLOOR MASTER BEDROOM is 15.94 m2 (polygon) against the stated 12'6\" x 15'10\" = 18.39 m2, the same literal as the ground floor's DINING AND LIVING (18.48 m2 polygon); left as the read states it.",
+   "Rounding: the card shows the read's hundredths to one decimal, half up (kitchen 6.549 m2 -> read 6.55 -> card 6.6), as the lead's wording does.",
+   "The lead regenerates openapi, source-pins and schema.d.ts at the merge (staging has moved past e9dcebde)."
   ]
  }
 }
