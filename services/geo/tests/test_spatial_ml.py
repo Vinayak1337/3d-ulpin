@@ -195,6 +195,11 @@ def test_demo_profile_activation_does_not_change_the_default_registry(monkeypatc
     monkeypatch.setenv("ULPIN_PROFILE", "production")
     assert ml._model_active(model) is False
     assert model["active"] is False
+    configured = {"active": False, "activeProfiles": ["fixture-only-authorised-profile"]}
+    monkeypatch.setenv("ULPIN_PROFILE", "fixture-only-authorised-profile")
+    assert ml._model_active(configured) is True
+    monkeypatch.delenv("ULPIN_PROFILE", raising=False)
+    assert ml._model_active(configured) is False
 
 
 def test_registered_inactive_candidate_is_not_ready_or_allowed_to_read_sources(monkeypatch: pytest.MonkeyPatch) -> None:
