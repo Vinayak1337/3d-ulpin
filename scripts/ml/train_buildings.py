@@ -61,7 +61,7 @@ def decode_targets(annotations: list[dict[str, Any]], width: int, height: int) -
         rle = annotation["segmentation"]
         raw = mask_api.decode(mask_api.frPyObjects(rle, *rle["size"]))
         resized = np.asarray(Image.fromarray(raw).resize((432, 432), Image.Resampling.NEAREST)).copy()
-        masks.append(torch.from_numpy(resized).float())
+        masks.append(torch.from_numpy(resized))
         left, top, box_width, box_height = annotation["bbox"]
         boxes.append(
             [
@@ -72,7 +72,7 @@ def decode_targets(annotations: list[dict[str, Any]], width: int, height: int) -
             ]
         )
     box_tensor = torch.tensor(boxes, dtype=torch.float32).reshape(-1, 4)
-    mask_tensor = torch.stack(masks) if masks else torch.empty((0, 432, 432))
+    mask_tensor = torch.stack(masks) if masks else torch.empty((0, 432, 432), dtype=torch.uint8)
     return box_tensor, mask_tensor
 
 
@@ -371,16 +371,22 @@ def parse_arguments() -> argparse.Namespace:
     if 0.5 not in args.dev_thresholds or any(not 0 < value < 1 for value in args.dev_thresholds):
         parser.error("DEV thresholds must include .5 and lie strictly between zero and one")
     if args.resolution < 432 or args.resolution % 24:
-        parser.error("RF-DETR resolution must be at least432 and divisible by24")
+        parser.error("RF-DETR resolution must be at least 432 and divisible by 24")
     if args.batch_size * args.accumulation != 4 or min(args.batch_size, args.accumulation) < 1:
-        parser.error("Preserve effective batch4 with positive batch size and accumulation")
+        parser.error("Preserve effective batch 4 with positive batch size and accumulation")
     if args.max_epochs < 1 or args.max_epochs > 12:
-        parser.error("Maximum epochs must be between1 and12")
+        parser.error("Maximum epochs must be between 1 and 12")
     if args.resolution > 432 and args.max_epochs > 8:
-        parser.error("Higher-resolution B6 ceiling is8epochs")
+        parser.error("Higher-resolution B6 ceiling is 8 epochs")
     if not re.fullmatch(r"[A-Za-z0-9_-]+", args.run_id):
         parser.error("Simple unique run-id required")
     return args
+
+
+COMPARISON_NOTE = (
+    "Versus epoch 4, resolution and the chunked mask loss both differ. The chunked loss is CPU-proven identical "
+    "to upstream in values and gradients, so resolution is the principal factor."
+)
 
 
 def training_recipe(args: argparse.Namespace, dataset: RampTrain) -> dict[str, Any]:
@@ -408,6 +414,7 @@ def training_recipe(args: argparse.Namespace, dataset: RampTrain) -> dict[str, A
         "augmentation": "TRAIN horizontal/vertical flips only; smoke none",
         "zero_pixel_masks": "Retained; box/class and zero mask supervised; no relabel/drop",
         "loss_revision": REVISION,
+        "comparison_note": COMPARISON_NOTE,
         "data": dataset.binding,
         "resume": str(args.resume) if args.resume else None,
         "git_sha": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO, text=True).strip(),
@@ -452,7 +459,7 @@ def configure_resolution(
     config = model.config.backbone_config
     multiple = config.patch_size * config.num_windows
     if resolution < 432 or resolution % multiple:
-        raise ValueError(f"Resolution must be at least432 and divisible by patch/window multiple {multiple}")
+        raise ValueError(f"Resolution must be at least 432 and divisible by patch/window multiple {multiple}")
     if model.config.to_dict().get("ulpin_input_resolution", resolution) != resolution:
         raise ValueError("Resume checkpoint resolution differs; do not silently change its recipe")
     model.config.ulpin_input_resolution = resolution
