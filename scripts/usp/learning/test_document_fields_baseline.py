@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -112,6 +113,59 @@ class PageTileTest(unittest.TestCase):
         words = [{"text": "G", "box": [0, 0, 8, 10]}, {"text": "+41", "box": [10, 0, 30, 10]},
                  {"text": "FLOOR", "box": [0, 50, 40, 60]}]
         self.assertEqual([row["text"] for row in rules.join_rows(words)], ["G +41", "FLOOR"])
+
+
+class NativeResolutionTileTest(unittest.TestCase):
+    def test_pixel_tiles_stay_within_the_bound_and_overlap_by_a_tenth(self) -> None:
+        scale = 300 / 72
+        boxes = rules.pixel_tile_boxes(2592, 1744, scale)
+        widths = [(box[2] - box[0]) * scale for box in boxes]
+        self.assertLessEqual(max(widths), rules.TILE_PIXELS)
+        self.assertAlmostEqual((boxes[0][2] - boxes[1][0]) / (boxes[0][2] - boxes[0][0]), 0.1, places=3)
+        self.assertEqual((max(box[2] for box in boxes), max(box[3] for box in boxes)), (2592, 1744))
+
+    def test_a_word_seen_by_two_tiles_keeps_the_higher_confidence(self) -> None:
+        low = {"text": "G+4l", "box": [10, 10, 40, 20], "confidence": 71.0}
+        high = {"text": "G+41", "box": [11, 10, 41, 20], "confidence": 93.0}
+        apart = {"text": "G+41", "box": [100, 10, 130, 20], "confidence": 65.0}
+        kept = rules.dedupe_words([low, high, apart])
+        self.assertEqual(sorted(word["text"] for word in kept), ["G+41", "G+41"])
+        self.assertIn(high, kept)
+
+    def test_tile_words_are_boxed_in_page_points_and_weak_words_dropped(self) -> None:
+        header = "\t".join(rules.TSV_COLUMNS)
+        strong = "\t".join(["5", "1", "1", "1", "1", "1", "120", "60", "60", "30", "92.5", "B+G+6"])
+        weak = "\t".join(["5", "1", "1", "1", "1", "2", "10", "10", "20", "20", "41.0", "noise"])
+        words = rules.tile_words("\n".join([header, strong, weak]), (300, 600), 2.0, (1000.0, 1000.0))
+        self.assertEqual(words, [{"text": "B+G+6", "box": [210.0, 330.0, 240.0, 345.0], "confidence": 92.5}])
+
+
+DEV_PLAN = Path("E:/BhuAayam-data/datasets/rera-storeys/RERAP01282025205138-1/sanctioned-building-plan.pdf")
+DEV_PLAN_SHA256 = "b6f0178b9951b71fe68c9213efa15dedfa5bf7fa78ee0ce30c57515f6975e53d"
+TESSERACT = Path("E:/BhuAayam-data/task-data/k2/tesseract-runtime-k2b/Library/bin/tesseract.exe")
+TESSDATA = Path("E:/BhuAayam-data/runtime/ulpin-demo/tessdata-complete")
+ASSETS_PRESENT = DEV_PLAN.is_file() and TESSERACT.is_file() and (TESSDATA / "eng.traineddata").is_file()
+
+
+@unittest.skipUnless(ASSETS_PRESENT, "private development PDF and OCR assets are not on this machine")
+class DevelopmentCropTest(unittest.TestCase):
+    def test_a_300_dpi_tile_of_the_3d_apartment_plan_reads_its_storey_expression(self) -> None:
+        import fitz
+
+        self.assertEqual(rules.digest(DEV_PLAN), DEV_PLAN_SHA256)
+        with tempfile.TemporaryDirectory() as folder, fitz.open(DEV_PLAN) as document:
+            page = document[4]
+            dpi = rules.scan_dpi(page)
+            scale = dpi / rules.PDF_POINTS_PER_INCH
+            job = {"scale": scale, "tesseract": TESSERACT, "tessdata": TESSDATA,
+                   "page_size": (page.rect.width, page.rect.height)}
+            box = rules.pixel_tile_boxes(page.rect.width, page.rect.height, scale)[37]
+            png = Path(folder) / "p05-t37.png"
+            tile, words = rules.ocr_scan_tile(job, box, png, rules.render_tile(page, box, scale, png))
+        found = [item["value"] for row in rules.join_rows(rules.dedupe_words(words))
+                 for item in rules.find_floor_expressions(row["text"])]
+        self.assertEqual((tile["status"], dpi), ("complete", 300.0))
+        self.assertIn("B+G+6", found)
 
 
 if __name__ == "__main__":
