@@ -6,6 +6,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   CANONICAL_TARGETS,
+  canonicalTarget,
   ColumnProfileDocumentSchema,
   MappingV2OperationSchema,
   type ColumnProfileDocument,
@@ -53,6 +54,8 @@ export type MappingTeacherResult = {
   replayed: boolean;
   validationCodes: string[];
   gatewayRefusal?: GatewayRefusal;
+  columnGroups?: number;
+  samplesPerColumn?: number[];
 };
 
 type TeacherOptions = {
@@ -67,7 +70,8 @@ type TeacherOptions = {
 };
 type AttemptMetadata = Pick<
   MappingTeacherResult,
-  'profileHash' | 'attempts' | 'replayed' | 'validationCodes' | 'gatewayRefusal'
+  'profileHash' | 'attempts' | 'replayed' | 'validationCodes' | 'gatewayRefusal' |
+  'columnGroups' | 'samplesPerColumn'
 >;
 type TeacherCallContext = {
   profile: ColumnProfileDocument;
@@ -228,6 +232,31 @@ export function mappingTeacherRequest(profile: ColumnProfileDocument, errors: st
     const overBound = overGatewayBound(request.messages);
     if (!overBound || samples === 0) return { ...request, samplesPerColumn: samples, overBound };
   }
+}
+
+/** Consecutive balanced subsets; the first groups receive the remainder columns. */
+function columnGroupProfiles(profile: ColumnProfileDocument, count: number): ColumnProfileDocument[] {
+  const width = Math.floor(profile.columns.length / count);
+  const remainder = profile.columns.length % count;
+  return Array.from({ length: count }, (_, index) => {
+    const start = index * width + Math.min(index, remainder);
+    const columns = profile.columns.slice(start, start + width + Number(index < remainder));
+    return { ...profile, columns, layoutFingerprint: layoutFingerprint(columns),
+      sampleShortfall: columns.some(column => column.maskedSamples.length < 5) };
+  });
+}
+
+/** Keep a fitting request byte-for-byte; otherwise find the fewest balanced groups, at most four. */
+export function mappingTeacherColumnGroups(profile: ColumnProfileDocument) {
+  profile = ColumnProfileDocumentSchema.parse(profile);
+  const single = { profile, request: mappingTeacherRequest(profile) };
+  if (!single.request.overBound) return { groups: [single], overBound: false };
+  for (let count = 2; count <= Math.min(4, profile.columns.length); count++) {
+    const groups = columnGroupProfiles(profile, count)
+      .map(group => ({ profile: group, request: mappingTeacherRequest(group) }));
+    if (groups.every(group => !group.request.overBound)) return { groups, overBound: false };
+  }
+  return { groups: [] as typeof single[], overBound: true };
 }
 
 function requestWithSamples(inspected: ColumnProfileDocument, errors: string[]) {
@@ -523,17 +552,27 @@ export async function proposeMappingWithTeacher(
   if (options.dataPolicy.dataClass !== 'public' || options.dataPolicy.split === 'held_out') {
     return failedResult(fallback, 'TEACHER_DATA_DENIED');
   }
+  const grouped = mappingTeacherColumnGroups(profile);
+  if (grouped.overBound) return failedResult(fallback, TEACHER_INPUT_LIMIT);
   const resolved = await resolveGateway(options);
   if (!resolved.gateway) return failedResult(fallback, resolved.code ?? 'TEACHER_UNAVAILABLE');
   const prepared = prepareRecordings(resolved.gateway, options);
   if (prepared.code) return failedResult(fallback, prepared.code);
-  const call = {
-    profile, options, gateway: resolved.gateway, recordings: prepared.recordings,
-    deadlineAt: new Date(Date.now() + resolved.gateway.config.timeoutMs),
-    invocationKey: options.invocationKey ?? randomUUID(),
-  };
+  if (grouped.groups.length === 1) {
+    return askMappingProfile(profile, options, resolved.gateway, prepared.recordings);
+  }
+  return askColumnGroups(profile, grouped.groups, options, resolved.gateway, prepared.recordings);
+}
+
+async function askMappingProfile(
+  profile: ColumnProfileDocument, options: TeacherOptions, gateway: ModelGateway, recordings?: TeacherRecordings,
+): Promise<MappingTeacherResult> {
+  const fallback = manualTeacherPlan(profile, 'TEACHER_UNAVAILABLE');
+  const call = { profile, options, gateway, recordings,
+    deadlineAt: new Date(Date.now() + gateway.config.timeoutMs), invocationKey: options.invocationKey ?? randomUUID() };
   const metadata: AttemptMetadata = {
     profileHash: fallback.profileHash, attempts: 0, replayed: false, validationCodes: [],
+    columnGroups: 1, samplesPerColumn: [mappingTeacherRequest(profile).samplesPerColumn],
   };
   let lastRaw: unknown;
   // Only a complete invalid response uses the single repair; transport/credit failures never retry.
@@ -544,6 +583,7 @@ export async function proposeMappingWithTeacher(
     if (request.overBound && attempt === 1) return failedResult(fallback, TEACHER_INPUT_LIMIT, metadata);
     if (request.overBound) break;
     try {
+      metadata.samplesPerColumn = [request.samplesPerColumn];
       const result = await callTeacherOnce(attempt, request, call);
       metadata.attempts++;
       metadata.replayed = !!result.replayed;
@@ -559,6 +599,75 @@ export async function proposeMappingWithTeacher(
     }
   }
   return { ...fallback, ...retainValidFields(lastRaw, profile), ...metadata };
+}
+
+type ColumnGroup = ReturnType<typeof mappingTeacherColumnGroups>['groups'][number];
+
+async function askColumnGroups(
+  profile: ColumnProfileDocument, groups: ColumnGroup[], options: TeacherOptions,
+  gateway: ModelGateway, recordings?: TeacherRecordings,
+): Promise<MappingTeacherResult> {
+  const results: MappingTeacherResult[] = [];
+  const invocation = options.invocationKey ?? randomUUID();
+  for (const group of groups) {
+    const invocationKey = hash({ invocation, profileHash: columnProfileHash(group.profile) });
+    const result = await askMappingProfile(group.profile, { ...options, invocationKey }, gateway, recordings);
+    results.push(result);
+    if (isManualMappingMethod(result.plan.method)) {
+      const code = result.issues[0]?.code ?? 'TEACHER_UNAVAILABLE';
+      return failedResult(manualTeacherPlan(profile, code), code, {
+        ...groupMetadata(profile, groups.map(item => item.request.samplesPerColumn), results),
+        ...(result.gatewayRefusal ? { gatewayRefusal: result.gatewayRefusal } : {}),
+      });
+    }
+  }
+  return mergeColumnGroupResults(profile, results);
+}
+
+function groupMetadata(profile: ColumnProfileDocument, samples: number[], results: MappingTeacherResult[]) {
+  return { profileHash: columnProfileHash(profile), columnGroups: samples.length, samplesPerColumn: samples,
+    attempts: results.reduce((sum, result) => sum + result.attempts, 0),
+    replayed: results.length === samples.length && results.every(result => result.replayed),
+    validationCodes: [...new Set(results.flatMap(result => result.validationCodes))] };
+}
+
+/** The whole inventory decides validity; every repeated non-unknown target is withheld from both claimants. */
+function mergeColumnGroupResults(
+  profile: ColumnProfileDocument, results: MappingTeacherResult[],
+): MappingTeacherResult {
+  const samples = results.map(result => result.samplesPerColumn?.[0] ?? 0);
+  const metadata = groupMetadata(profile, samples, results);
+  const fields = results.flatMap(result => result.plan.fields);
+  const order = new Map(profile.columns.map((column, index) => [column.name, index]));
+  const plan = { ...manualTeacherPlan(profile, 'TEACHER_INVALID_PLAN').plan, method: MAPPING_TEACHER_METHOD,
+    fields: [...fields].sort((left, right) =>
+      (order.get(left.sourceField) ?? -1) - (order.get(right.sourceField) ?? -1)) };
+  const checked = validateMappingPlanV2(plan, mappingContextFromColumnProfile(profile));
+  const duplicates = duplicateTargets(fields);
+  const repaired = { ...plan, fields: plan.fields.map(field => duplicates.has(canonicalTarget(field.target))
+    ? { ...field, target: 'unknown' as const, operation: { kind: 'copy' as const }, confidence: 0 } : field) };
+  const validated = validateMappingPlanV2(repaired, mappingContextFromColumnProfile(profile));
+  if (!validated.success) return failedResult(manualTeacherPlan(profile, 'TEACHER_INVALID_PLAN'),
+    'TEACHER_INVALID_PLAN', { ...metadata, validationCodes: validated.errors.map(error => error.code) });
+  const result = acceptedResult(validated.plan, { ...metadata,
+    validationCodes: [...new Set([...metadata.validationCodes, ...checked.errors.map(error => error.code)])] });
+  const duplicateNames = new Set(fields.filter(field => duplicates.has(canonicalTarget(field.target)))
+    .map(field => field.sourceField));
+  const groupIssues = new Map(results.flatMap(group => group.issues).map(issue => [issue.sourceField, issue]));
+  result.issues = result.issues.map(issue => duplicateNames.has(issue.sourceField)
+    ? { ...issue, code: 'MAPPING_TARGET_DUPLICATE' } : groupIssues.get(issue.sourceField) ?? issue);
+  return result;
+}
+
+function duplicateTargets(fields: MappingPlanV2['fields']): Set<string> {
+  const seen = new Set<string>();
+  const duplicates = new Set<string>();
+  for (const field of fields) {
+    const target = canonicalTarget(field.target);
+    if (target !== 'unknown' && seen.has(target)) duplicates.add(target);
+    seen.add(target);
+  }
+  return duplicates;
 }
 
 type StudentColumnMetadata = {
@@ -698,6 +807,8 @@ function routedResult(
     : routedSources(profile, new Map(), method, fallback, fallback.plan.method);
   return { ...accepted, issues, state: issues.length ? 'needs_input' : 'candidate', activeLearnerVersion: version,
     ...(teacher?.gatewayRefusal ? { gatewayRefusal: teacher.gatewayRefusal } : {}),
+    ...(teacher?.columnGroups
+      ? { columnGroups: teacher.columnGroups, samplesPerColumn: teacher.samplesPerColumn } : {}),
     memoryReasonCode, studentReasonCode, fieldSources };
 }
 
