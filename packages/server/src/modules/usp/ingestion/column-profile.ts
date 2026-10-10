@@ -73,15 +73,31 @@ function maskWords(text: string, sensitive: boolean): string {
     .replace(/[०-९]/gu, '०');
 }
 
+function shortenMaskedSample(masked: string): string {
+  const limit = 256;
+  if (masked.length <= limit) return masked;
+  const marker = '[…]';
+  const budget = limit - marker.length;
+  let end = 0;
+  // Bracket tokens are atomic, including tokens whose names mask under a personal header.
+  for (const match of masked.matchAll(/\[[^\[\]]*\]|[\s\S]/gu)) {
+    const next = match.index + match[0].length;
+    if (next > budget) break;
+    end = next;
+  }
+  return masked.slice(0, end) + marker;
+}
+
 /** Arbitrary free-text words are conservatively masked, even in unlabelled columns. */
 export function maskColumnSample(raw: unknown, name = ''): string {
   if (raw === undefined) return '[absent]';
   if (raw === null) return '[null]';
   if (typeof raw === 'object') return Array.isArray(raw) ? '[array]' : '[object]';
+  // Preserve the historical prefix; maskWords still masks every digit/free-text fragment in it.
   const text = String(raw).slice(0, 256);
   if (!text.trim()) return '[blank]';
   if (/^\[(?:null|absent|blank|array|object)\]$/.test(text)) return text;
-  return maskWords(maskPatterns(text), personalHeader.test(name));
+  return shortenMaskedSample(maskWords(maskPatterns(text), personalHeader.test(name)));
 }
 
 function headerUnits(name: string): Unit[] {

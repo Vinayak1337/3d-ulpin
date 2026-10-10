@@ -1,11 +1,10 @@
 {
   "task": "A5a",
   "gate": "GF-AGENT",
-  "status": "step_0_reproduced",
+  "status": "mask_fixed_byte_identity_proved",
   "baseline": "7602ef58",
   "step0": {
     "syntheticOnly": true,
-    "raw": "a@b.co,123412341234,123412341234,123412341234,123412341234,123412341234,123412341234,123412341234,123412341234,123412341234,123412341234",
     "rawLength": 136,
     "maskedLength": 257,
     "issues": [
@@ -50,138 +49,6 @@
       }
     ],
     "minimality": "Shortest comma-separated combination of the four shortest synthetic pattern matches.",
-    "fixtureHashes": [
-      [
-        {
-          "name": "Area (sq ft)",
-          "sha256": "fc24c4c8ff8164fd02d24ac279e4dbd31438ecaf17642894d76dd8c58b273645"
-        },
-        {
-          "name": "Mixed",
-          "sha256": "7b39e3e262c187d1f0d58d6a6bf66f1c02524ae86dd83a5a01f897fb5a656b1f"
-        },
-        {
-          "name": "Floor",
-          "sha256": "73aed191552229fd873cd90e3a01fbf920ef999c2a53f5c0d9c16a63afcbf1eb"
-        },
-        {
-          "name": "Khasra",
-          "sha256": "76c4bdd4cf53745c638c5428a63df62448ff16ca164b280de5adfc92a9efc465"
-        },
-        {
-          "name": "Date",
-          "sha256": "afbe4881f62d69ac77beb5189a362a187d14158d99e8705347a75f5387c85761"
-        },
-        {
-          "name": "Owner",
-          "sha256": "5fd622d92590939771bc203daf9f57bd27f26a40bcfafe1b6d607240ffc535db"
-        }
-      ],
-      [
-        {
-          "name": "Area (sq ft)",
-          "sha256": "8e460a58112ebe8b8ed2c6e74eda4388b62921ab7ca91d0fc1284edfc49f1499"
-        },
-        {
-          "name": "Mixed",
-          "sha256": "6fbf2b41b3f94199d841ba858d21a6e2f2483950561d037e94c5d72086b510be"
-        },
-        {
-          "name": "Floor",
-          "sha256": "99545ee4a5ffd432d648434c9030ff24d797bc7020e882da710b16cc151960bd"
-        },
-        {
-          "name": "Khasra",
-          "sha256": "d213315d260563f8e92dc559e13d87e3c529dcb3a01423cd81ca61facadac245"
-        },
-        {
-          "name": "Date",
-          "sha256": "50eee89c5553061ab86df55e63b8988661b956e73dd5dd63cdb25b1618d27854"
-        },
-        {
-          "name": "Owner",
-          "sha256": "00c8f7a48b8330cb7f4a3682751d4d8dbad9cb5da0e1234a7652aabc3ffbaac0"
-        }
-      ],
-      [
-        {
-          "name": "Area (sq ft)",
-          "sha256": "f345663db7b98277fe107c751aba82a9d08209d37469829495e8bd6da6df645e"
-        },
-        {
-          "name": "Mixed",
-          "sha256": "f1acf699ed5876f497c1338548df1e484aecfd1414e10bee9e78ee9ec7a3ca52"
-        },
-        {
-          "name": "Floor",
-          "sha256": "3422fe6bb0f56ed2b8f3508b03e6c2b890176fe266f38e9683977ff4b8d542c7"
-        },
-        {
-          "name": "Khasra",
-          "sha256": "f1acf699ed5876f497c1338548df1e484aecfd1414e10bee9e78ee9ec7a3ca52"
-        },
-        {
-          "name": "Date",
-          "sha256": "f1acf699ed5876f497c1338548df1e484aecfd1414e10bee9e78ee9ec7a3ca52"
-        },
-        {
-          "name": "Owner",
-          "sha256": "736c8141df5a83d253e530858db9fa4a11f0bb939db12ab22b922e95291350de"
-        }
-      ],
-      [
-        {
-          "name": "Area (sq ft)",
-          "sha256": "f1acf699ed5876f497c1338548df1e484aecfd1414e10bee9e78ee9ec7a3ca52"
-        },
-        {
-          "name": "Mixed",
-          "sha256": "f345663db7b98277fe107c751aba82a9d08209d37469829495e8bd6da6df645e"
-        },
-        {
-          "name": "Floor",
-          "sha256": "c50db343d48970c8bdc2def3f4da03e8fb8f8f7c2bf8cc18738a216db51cf800"
-        },
-        {
-          "name": "Khasra",
-          "sha256": "f345663db7b98277fe107c751aba82a9d08209d37469829495e8bd6da6df645e"
-        },
-        {
-          "name": "Date",
-          "sha256": "f345663db7b98277fe107c751aba82a9d08209d37469829495e8bd6da6df645e"
-        },
-        {
-          "name": "Owner",
-          "sha256": "c6fd8c4a63e46557853d168ed1c28c4bbcb2cabb40b56b5ad1f7d36f68cadf52"
-        }
-      ],
-      [
-        {
-          "name": "Area (sq ft)",
-          "sha256": "4c62be86489847ecc147134c3b092f451c8264076f1ed1a9990429eac3bf6d82"
-        },
-        {
-          "name": "Mixed",
-          "sha256": "d042af9ef7da455a76497cfdfa02ee406b4938af03775a22450bc732af6da2f6"
-        },
-        {
-          "name": "Floor",
-          "sha256": "96281876ce53ba08331dbc738acaf8f01f64d0f2dcaa1d9652209238ba60a27d"
-        },
-        {
-          "name": "Khasra",
-          "sha256": "cf038683f04281b15fc0477b8cf9332bf81d29f75983dbf0fbac28fe2a24b7cf"
-        },
-        {
-          "name": "Date",
-          "sha256": "afbe4881f62d69ac77beb5189a362a187d14158d99e8705347a75f5387c85761"
-        },
-        {
-          "name": "Owner",
-          "sha256": "da810c5f9d08e2231b417160ddffec4148085e6f45e49bd001ceed40de648975"
-        }
-      ]
-    ],
     "callers": {
       "maskColumnSample": [
         "column-profile.ts: profileColumns sampled cells",
@@ -212,19 +79,138 @@
       ]
     },
     "failureRouting": {
-      "runtime": "TabularChunkMapper -> profileTabularChunk -> profileColumns throws ZodError before routing/teacher. runChunkMappingJob catches non-AppError as MAPPING_WORKER_ERROR, queues attempts 1/2, fails attempt 3; job reads/SSE expose that generic issue code to officer.",
-      "nativeCli": "profileColumnFile/profileGisAttributes propagates ZodError; profile-columns, mapping-teacher and check-workbooks abort to CLI stderr, no profile or provider call.",
-      "t1": "prepareColumn propagates ZodError; collectProfiles catches per asset and records error.message as gap. T1 checks complete development coverage before writes; T1b preparation has no catch and aborts.",
-      "d1f": "prepareAssets recognizes only too_big maskedSamples max256 Zod issues; skips whole table with D1F_T1_MASKED_SAMPLE_LIMIT_UNOWNED; CLI summary/check exposes gaps.",
-      "auxiliary": "measure-a4 and measure-a4b profile generation propagate; evaluate-a3 catches per asset and records code=error.message."
+      "runtime": [
+        "TabularChunkMapper -> profileTabularChunk -> profileColumns throws ZodError before",
+        "routing/teacher. runChunkMappingJob catches non-AppError as MAPPING_WORKER_ERROR, queues",
+        "attempts 1/2, fails attempt 3; job reads/SSE expose that generic issue code to officer."
+      ],
+      "nativeCli": [
+        "profileColumnFile/profileGisAttributes propagates ZodError; profile-columns, mapping-teacher",
+        "and check-workbooks abort to CLI stderr, no profile or provider call."
+      ],
+      "t1": [
+        "prepareColumn propagates ZodError; collectProfiles catches per asset and records error.message",
+        "as gap. T1 checks complete development coverage before writes; T1b preparation has no catch and",
+        "aborts."
+      ],
+      "d1f": [
+        "prepareAssets recognizes only too_big maskedSamples max256 Zod issues; skips whole table with",
+        "D1F_T1_MASKED_SAMPLE_LIMIT_UNOWNED; CLI summary/check exposes gaps."
+      ],
+      "auxiliary": [
+        "measure-a4 and measure-a4b profile generation propagate; evaluate-a3 catches per asset and",
+        "records code=error.message."
+      ]
     },
-    "compatibilityDecision": "Retain historical raw 256-code-unit prefix, then maskPatterns and maskWords in the same order. Final words and all digits are masked even when a raw identity pattern crosses that prefix; only after masking shorten an expanded output. No raw fragment is returned.",
-    "patternQualification": "Aadhaar contiguous=24/12=2; spaced/hyphenated=24/14. Phone contiguous=18/10=1.8; optional country/separators reduce factor. PAN=16/10=1.6 (maskWords further masks its As); shortest email=7/6, longer emails shrink."
+    "compatibilityDecision": [
+      "Retain historical raw 256-code-unit prefix, then maskPatterns and maskWords in the same order.",
+      "Final words and all digits are masked even when a raw identity pattern crosses that prefix;",
+      "only after masking shorten an expanded output. No raw fragment is returned."
+    ],
+    "patternQualification": [
+      "Aadhaar contiguous=24/12=2; spaced/hyphenated=24/14. Phone contiguous=18/10=1.8; optional",
+      "country/separators reduce factor. PAN=16/10=1.6 (maskWords further masks its As); shortest",
+      "email=7/6, longer emails shrink."
+    ],
+    "rawRuns": [
+      "a@b.co",
+      "123412341234",
+      "123412341234",
+      "123412341234",
+      "123412341234",
+      "123412341234",
+      "123412341234",
+      "123412341234",
+      "123412341234",
+      "123412341234",
+      "123412341234"
+    ],
+    "construction": "Join rawRuns with commas; no real source data in the reproduction.",
+    "fixtureSampleHashes": [
+      "fc24c4c8ff8164fd02d24ac279e4dbd31438ecaf17642894d76dd8c58b273645",
+      "7b39e3e262c187d1f0d58d6a6bf66f1c02524ae86dd83a5a01f897fb5a656b1f",
+      "73aed191552229fd873cd90e3a01fbf920ef999c2a53f5c0d9c16a63afcbf1eb",
+      "76c4bdd4cf53745c638c5428a63df62448ff16ca164b280de5adfc92a9efc465",
+      "afbe4881f62d69ac77beb5189a362a187d14158d99e8705347a75f5387c85761",
+      "5fd622d92590939771bc203daf9f57bd27f26a40bcfafe1b6d607240ffc535db",
+      "8e460a58112ebe8b8ed2c6e74eda4388b62921ab7ca91d0fc1284edfc49f1499",
+      "6fbf2b41b3f94199d841ba858d21a6e2f2483950561d037e94c5d72086b510be",
+      "99545ee4a5ffd432d648434c9030ff24d797bc7020e882da710b16cc151960bd",
+      "d213315d260563f8e92dc559e13d87e3c529dcb3a01423cd81ca61facadac245",
+      "50eee89c5553061ab86df55e63b8988661b956e73dd5dd63cdb25b1618d27854",
+      "00c8f7a48b8330cb7f4a3682751d4d8dbad9cb5da0e1234a7652aabc3ffbaac0",
+      "f345663db7b98277fe107c751aba82a9d08209d37469829495e8bd6da6df645e",
+      "f1acf699ed5876f497c1338548df1e484aecfd1414e10bee9e78ee9ec7a3ca52",
+      "3422fe6bb0f56ed2b8f3508b03e6c2b890176fe266f38e9683977ff4b8d542c7",
+      "f1acf699ed5876f497c1338548df1e484aecfd1414e10bee9e78ee9ec7a3ca52",
+      "f1acf699ed5876f497c1338548df1e484aecfd1414e10bee9e78ee9ec7a3ca52",
+      "736c8141df5a83d253e530858db9fa4a11f0bb939db12ab22b922e95291350de",
+      "f1acf699ed5876f497c1338548df1e484aecfd1414e10bee9e78ee9ec7a3ca52",
+      "f345663db7b98277fe107c751aba82a9d08209d37469829495e8bd6da6df645e",
+      "c50db343d48970c8bdc2def3f4da03e8fb8f8f7c2bf8cc18738a216db51cf800",
+      "f345663db7b98277fe107c751aba82a9d08209d37469829495e8bd6da6df645e",
+      "f345663db7b98277fe107c751aba82a9d08209d37469829495e8bd6da6df645e",
+      "c6fd8c4a63e46557853d168ed1c28c4bbcb2cabb40b56b5ad1f7d36f68cadf52",
+      "4c62be86489847ecc147134c3b092f451c8264076f1ed1a9990429eac3bf6d82",
+      "d042af9ef7da455a76497cfdfa02ee406b4938af03775a22450bc732af6da2f6",
+      "96281876ce53ba08331dbc738acaf8f01f64d0f2dcaa1d9652209238ba60a27d",
+      "cf038683f04281b15fc0477b8cf9332bf81d29f75983dbf0fbac28fe2a24b7cf",
+      "afbe4881f62d69ac77beb5189a362a187d14158d99e8705347a75f5387c85761",
+      "da810c5f9d08e2231b417160ddffec4148085e6f45e49bd001ceed40de648975"
+    ]
   },
   "safety": {
     "networkRequests": 0,
     "providerCalls": 0,
     "labelsProduced": 0,
     "runtimeReads": 0
+  },
+  "byteIdentity": [
+    {
+      "set": "t1",
+      "tables": 45,
+      "columns": 411,
+      "sha256": "82009732900f56a0157af8dc6f5679c286a370618f92e05c52359fb165360765",
+      "reproducedFromRaw": true
+    },
+    {
+      "set": "t1b",
+      "tables": 5,
+      "columns": 193,
+      "sha256": "502f6658dfcb0b19316a5df2a5142b32f97154f8550a875bbc02759310cbee1b",
+      "reproducedFromRaw": true
+    },
+    {
+      "set": "d1f",
+      "tables": 6,
+      "columns": 198,
+      "sha256": "3a22f11297e292c9f2132defe9f3037fc16e0f0eac53b341b21efd55e9695bf6",
+      "reproducedFromRaw": true,
+      "allFiveProductPinsUnchanged": true
+    }
+  ],
+  "tests": {
+    "maskTestsPassed": 4,
+    "existingFixtureSamplesUnchanged": 30,
+    "mappingTeacherAndChunkTestsPassed": 19,
+    "initialBoundaryAssertionFailure": "The test rejected the historical Devanagari zero mask; allow zero, reject 1-9. No product defect."
+  },
+  "verificationException": {
+    "requestedCommand": "python -B scripts/agent/verify-d1f.py --indian-development",
+    "status": "not_run_safety_conflict",
+    "reason": "restart_integrity reads closed acquisitions receipts and scans closed provisional folders.",
+    "alternative": "python -B docs/evidence/gf-agent/a5a/verify-development.py",
+    "exitCode": 0,
+    "scope": [
+      "Nine foreign originals/dictionaries/prefixes and Indian development checked; no 104-file",
+      "restart reproof."
+    ]
+  },
+  "environment": {
+    "python": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe",
+    "TMP_TEMP": "E:/BhuAayam-data/task-data/a5a/checks/tmp",
+    "recordings": "E:/BhuAayam-data/task-data/a5a/checks/recordings",
+    "pythonBytecodeWrites": false,
+    "testProviders": "In-process software controls only; no HTTP or real target labels produced."
   }
 }
