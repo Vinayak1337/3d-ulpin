@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -63,6 +63,14 @@ test('plan: a line left out of a storey call is named under its own reason; a ma
     assert(Array.isArray(step.input.sampleForms));
     assert.equal(step.input.samplesPerColumn, 10);
   }
+});
+
+test('plan: the two mapping and eight storey request hashes remain exactly those measured in S5', () => {
+  const baseline = JSON.parse(readFileSync('docs/evidence/gf-agent/s5/step0.json', 'utf8'));
+  const expected = baseline.point4_tenRequestHashes.hashes as { id: string; requestHash: string }[];
+  const requests = buildPlan(readTariff()).steps.filter(step => step.request)
+    .map(step => ({ id: step.id, requestHash: step.request!.requestHash }));
+  assert.deepEqual(requests, expected.map(({ id, requestHash }) => ({ id, requestHash })));
 });
 
 test('plan: it follows the tariff it is given, and stops where a cap would be crossed', () => {
@@ -139,8 +147,9 @@ test('dry run: a used-up key moves step 1 on and replay answers it; every key ma
   assert.deepEqual([oneKeyUsedUp.stopped, oneKeyUsedUp.stepsWalked, oneKeyUsedUp.notRun], [null, steps.length, []]);
   assert.deepEqual([oneKeyUsedUp.softwareKeyList.asksRefused, oneKeyUsedUp.softwareKeyList.markedAtEnd], [1, 1]);
 
-  const { attempts, keyMoves, gatewayCode, endState } = everyKeyMarked.firstStep;
-  assert.deepEqual([attempts, keyMoves, gatewayCode, endState], [1, [], 'MODEL_KEYS_EXHAUSTED', 'teacher_unavailable']);
+  const { attempts, keyMoves, gatewayCode, endState, code } = everyKeyMarked.firstStep;
+  assert.deepEqual([attempts, keyMoves, gatewayCode, endState, code],
+    [1, [], 'MODEL_KEYS_EXHAUSTED', 'teacher_unavailable', 'TEACHER_BUDGET_EXHAUSTED']);
   assert.match(everyKeyMarked.stopped!, /every key of the policy is marked used up \(MODEL_KEYS_EXHAUSTED\)/);
   assert.deepEqual(everyKeyMarked.notRun, steps.slice(1).map(({ step, id }) => ({ step, id, endState: 'not_run' })));
   assert.deepEqual([everyKeyMarked.stepsWalked, everyKeyMarked.softwareKeyList.asksRefused], [1, 0]);

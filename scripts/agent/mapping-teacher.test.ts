@@ -1,7 +1,7 @@
 import test from 'node:test';
 import fixtures from './mapping-teacher.fixtures.json';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { mkdtempSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -21,7 +21,10 @@ import {
 } from '../../packages/server/src/modules/usp/ingestion/column-profile';
 import {
   proposeMappingWithTeacher,
+  proposeMapping,
+  manualTeacherPlan,
   mappingTeacherRequest,
+  mappingTeacherColumnGroups,
   executeTeacherMappingDryRun,
   columnProfileHash,
   teacherReplayKey,
@@ -34,6 +37,8 @@ import {
 } from '../../packages/server/src/modules/usp/ingestion/teacher-labels';
 import { validateMappingPlanV2 } from '../../packages/server/src/modules/usp/ingestion/mapping-plan-v2';
 import { ModelGateway } from '../../packages/server/src/modules/model-gateway/gateway';
+import { AppError } from '../../packages/server/src/infrastructure/errors';
+import { TabularChunkMapper } from '../../packages/server/src/modules/usp/ingestion/chunk-mapping-agent';
 import { hash } from '../../packages/server/src/modules/model-gateway/config';
 import {
   ControlAdapter,
@@ -214,14 +219,16 @@ test('size: a request over the bound carries fewer samples in every column; colu
 });
 
 test('size: a request over the bound with no samples is refused as size and the gateway is not asked', async () => {
-  const profile = madeUpProfile(60);
+  const profile = madeUpProfile(256);
   const request = mappingTeacherRequest(profile);
-  assert.deepEqual([request.samplesPerColumn, request.overBound, sentColumns(request).length], [0, true, 60]);
+  assert.deepEqual([request.samplesPerColumn, request.overBound, sentColumns(request).length], [0, true, 256]);
+  assert.deepEqual(mappingTeacherColumnGroups(profile), { groups: [], overBound: true });
   assert.throws(() => minimizeMessages(request.messages), { code: 'MODEL_INPUT_LIMIT' });
   const { result, ...counts } = await askCounted(profile);
   assert.deepEqual(counts, { asked: 0, reserved: 0, dispatched: 0 });
   assert.deepEqual([result.state, result.attempts], ['needs_input', 0]);
   assert.equal(result.plan.method, 'manual:TEACHER_INPUT_LIMIT');
+  assert.equal(result.gatewayRefusal, undefined);
   assert(result.issues.length > 0 && result.issues.every((issue) => issue.code === 'TEACHER_INPUT_LIMIT'));
   assert(validateMappingPlanV2({ ...result.plan, method: 'reviewer:control' },
     mappingContextFromColumnProfile(profile)).success);
@@ -237,7 +244,8 @@ function screenedProfile(asset: SourceAsset) {
   return { ...prepared.inventory.profile, columns };
 }
 
-test('size: the two recorded mi-d22 tables are over the bound with no samples, so the rule refuses them', async () => {
+test('size: the two recorded mi-d22 tables need two groups of consecutive columns, each carrying three samples',
+  async () => {
   const wide = developmentProfileAssets().filter((asset) => asset.family === 'mi-d22');
   const measured: number[][] = [];
   for (const asset of wide) {
@@ -247,11 +255,133 @@ test('size: the two recorded mi-d22 tables are over the bound with no samples, s
     measured.push([sentColumns(request).length, request.messages[1].content.length,
       Buffer.byteLength(JSON.stringify(request.messages))]);
     const { result, ...counts } = await askCounted(profile);
-    assert.deepEqual(counts, { asked: 0, reserved: 0, dispatched: 0 }, asset.id);
-    assert(result.issues.every((issue) => issue.code === 'TEACHER_INPUT_LIMIT'), asset.id);
+    assert.deepEqual(counts, { asked: 2, reserved: 2, dispatched: 2 }, asset.id);
+    assert.deepEqual([result.columnGroups, result.samplesPerColumn], [2, [3, 3]], asset.id);
+    assert(result.issues.every((issue) => issue.code === 'TEACHER_UNCERTAIN'), asset.id);
   }
   // Columns, characters of the user message and bytes of both messages with no samples, as Step 0 measured them.
   assert.deepEqual(measured.sort((a, b) => b[1] - a[1]), [[90, 33178, 37690], [90, 33054, 37566]]);
+});
+
+test('groups: one fitting request is unchanged; the fewest equal groups keep columns in order', () => {
+  const small = madeUpProfile(16);
+  const single = mappingTeacherColumnGroups(small);
+  assert.equal(single.groups.length, 1);
+  assert.deepEqual(single.groups[0].request, mappingTeacherRequest(small));
+  for (const [width, sizes] of [[90, [45, 45]], [91, [46, 45]]] as const) {
+    const profile = madeUpProfile(width);
+    const grouped = mappingTeacherColumnGroups(profile);
+    assert.equal(grouped.overBound, false);
+    assert.deepEqual(grouped.groups.map(group => group.profile.columns.length), sizes);
+    assert.deepEqual(grouped.groups.flatMap(group => group.profile.columns), profile.columns);
+    for (const group of grouped.groups) {
+      assert(ColumnProfileDocumentSchema.safeParse(group.profile).success);
+      assert.doesNotThrow(() => minimizeMessages(group.request.messages));
+      assert.notEqual(columnProfileHash(group.profile), columnProfileHash(profile));
+    }
+  }
+});
+
+async function askGroups(duplicate: boolean, failSecond = false) {
+  const profile = madeUpProfile(90);
+  let calls = 0;
+  let lastCompleted = 0;
+  const gaps: number[] = [];
+  const ledger = new ControlLedger();
+  const adapter = new ControlAdapter(async request => {
+    calls++;
+    if (lastCompleted) gaps.push(Date.now() - lastCompleted);
+    if (calls === 2 && failSecond) throw classifyProviderFailure(429, 'rate_limit_exceeded_error', null);
+    const response = unknownResponse(request);
+    const fields = (response.output as { fields: Record<string, unknown>[] }).fields;
+    fields[0] = { ...fields[0], target: calls === 1 || duplicate ? 'building.name' : 'building.addressLiteral',
+      confidence: 'high', rationale: 'Software interpretation for merge verification.' };
+    lastCompleted = Date.now();
+    return response;
+  });
+  const result = await proposeMappingWithTeacher(profile, options(new ModelGateway(controlConfig(), ledger, adapter)));
+  return { result, calls, profile, gaps };
+}
+
+test('merge: disjoint targets survive, but a target claimed by both groups belongs to neither', async () => {
+  const disjoint = await askGroups(false);
+  assert.equal(disjoint.calls, 2);
+  assert(disjoint.gaps.every(gap => gap >= controlConfig().paceMs));
+  assert.deepEqual(disjoint.result.plan.fields.filter(field => field.target !== 'unknown')
+    .map(field => field.target), ['building.name', 'building.addressLiteral']);
+  const duplicated = await askGroups(true);
+  assert(duplicated.result.plan.fields.every(field => field.target === 'unknown'));
+  assert(duplicated.result.validationCodes.includes('MAPPING_TARGET_DUPLICATE'));
+  assert.deepEqual(duplicated.result.issues.filter(issue => issue.code === 'MAPPING_TARGET_DUPLICATE')
+    .map(issue => issue.sourceField), [duplicated.profile.columns[0].name, duplicated.profile.columns[45].name]);
+  assert(validateMappingPlanV2(duplicated.result.plan, mappingContextFromColumnProfile(duplicated.profile)).success);
+});
+
+test('groups: recordings, replay and repair are scoped to exactly the columns of each group', async () => {
+  const profile = madeUpProfile(90);
+  const grouped = mappingTeacherColumnGroups(profile).groups;
+  const recordings = new TeacherRecordings(mkdtempSync(join(tmpdir(), 's6-group-replay-')));
+  let calls = 0;
+  const adapter = new ControlAdapter(async request => {
+    calls++;
+    const input = JSON.parse(request.messages[1].content);
+    if (calls === 1) return { ...unknownResponse(request), output: {} };
+    assert.equal(Boolean(input.validationErrorCodes), calls === 2, 'Repair errors stay in their own group.');
+    return unknownResponse(request);
+  });
+  const first = await proposeMappingWithTeacher(profile, {
+    ...options(new ModelGateway(controlConfig(), new ControlLedger(), adapter)), recordings,
+    invocationKey: 'software-group-invocation',
+  });
+  assert.equal(first.attempts, 3);
+  assert.equal(readdirSync(recordings.directory).length, 1);
+  const records = readdirSync(recordings.directory).flatMap(file =>
+    readFileSync(join(recordings.directory, file), 'utf8').trim().split('\n').map(line => JSON.parse(line)));
+  assert.equal(records.length, 3);
+  assert.deepEqual([...new Set(records.map(record => record.profileHash))].sort(),
+    grouped.map(group => columnProfileHash(group.profile)).sort());
+  for (const record of records) assert.equal(record.replayKey, teacherReplayKey(record.profileHash));
+  const ledger = new ControlLedger();
+  const replay = new ModelGateway(controlConfig(), ledger, new ReplayAdapter(key => recordings.replay(key)));
+  const second = await proposeMappingWithTeacher(profile, options(replay));
+  assert.deepEqual([second.replayed, second.attempts, ledger.reserved], [true, 2, 0]);
+  assert.deepEqual(second.plan, first.plan);
+});
+
+test('merge: one group failing returns the whole fallback and its gateway refusal, not a half plan', async () => {
+  const { result, calls } = await askGroups(false, true);
+  assert.equal(calls, 2);
+  assert.deepEqual([result.columnGroups, result.attempts], [2, 2]);
+  assert(result.plan.fields.length === 90 && result.plan.fields.every(field => field.target === 'unknown'));
+  assert(result.issues.every(issue => issue.code === 'TEACHER_RATE_LIMITED'));
+  assert.deepEqual(result.gatewayRefusal, { code: 'MODEL_RATE_LIMITED', retryable: false });
+});
+
+test('refusal: failed and routed results preserve the asked gateway code and retryable flag', async () => {
+  const { profile } = profileColumnFile(goodFile);
+  for (const retryable of [true, false]) {
+    const adapter = new ControlAdapter(async request => unknownResponse(request));
+    const gateway = new ModelGateway(controlConfig(), new ControlLedger(), adapter);
+    gateway.propose = async () => {
+      throw new AppError(503, 'MODEL_QUOTA_EXHAUSTED', 'Software refusal', { retryable });
+    };
+    const direct = await proposeMappingWithTeacher(profile, options(gateway));
+    const routed = await proposeMapping(profile, { ...options(gateway), memoryPath: join(tmpdir(), 's6-no-memory') });
+    for (const result of [direct, routed]) {
+      assert.deepEqual(result.gatewayRefusal, { code: 'MODEL_QUOTA_EXHAUSTED', retryable });
+      assert(result.issues.some(issue => issue.code === 'TEACHER_BUDGET_EXHAUSTED'));
+    }
+    const mapper = new TabularChunkMapper();
+    const draft = await mapper.map({ jobId: randomUUID(), chunkIndex: 0, headers: ['Field'], rows: [['value']],
+      sourceRef: 'software-control' }, { ...options(gateway), memoryPath: join(tmpdir(), 's6-no-memory') });
+    assert.deepEqual(draft.proposal.gatewayRefusal, direct.gatewayRefusal);
+  }
+  // Even when routing rejects a supplied plan and builds a fresh fallback, the refusal is kept.
+  const fallback = manualTeacherPlan(profile, 'TEACHER_BUDGET_EXHAUSTED');
+  const refusal = { code: 'MODEL_QUOTA_EXHAUSTED', retryable: true };
+  const rejected = await proposeMapping(profile, { ...options(), memoryPath: join(tmpdir(), 's6-no-memory'),
+    teacher: async () => ({ ...fallback, plan: { ...fallback.plan, fields: [] }, gatewayRefusal: refusal }) });
+  assert.deepEqual(rejected.gatewayRefusal, refusal);
 });
 
 test('two retained Indian inputs: profile to control plan, validator and dry-run; source immutable', async () => {

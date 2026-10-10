@@ -41,6 +41,11 @@ The plan prints `tariff.policyHash`, the ordered steps and the totals. The dry r
 gateway that holds only a replay store: its summary must say `providerDispatches: 0` and every planned request
 must match (`requestsMatchingPlan` equals the number of calls). Neither command reads a key or opens a connection.
 
+For the two wide development tables, add `--wide-tables` to `--plan` or `--dry-run`. It prints each
+column group's column count, byte count, samples per column and recording identity under
+`developmentWideTables`, separately from the unchanged ten-call sequence. These probes use no provider
+and are refused with `--live`. A missing group recording returns the whole table's fallback, never a half plan.
+
 ## 3. Turn the gateway on
 
 Stop the demo API and dispatcher, then enable and start again ([DEMO-GATEWAY.md](DEMO-GATEWAY.md#commands-owner-only)):
@@ -110,10 +115,10 @@ The ledger rows themselves are read from PostgreSQL by the runtime owner and mat
 
 ## 7. Stop rules
 
-- Every call is one attempt. There is no repair call and no retry. With a list of keys the gateway, not this
-  run, moves to the next key, and only after the provider says the key in use is used up or rejected.
-- The run stops at the first refusal by the gateway, the first HTTP 402 or quota answer, the first rate limit,
-  the first timeout or unknown outcome, and the first answer that could not be recorded.
+- Every call is one attempt with no repair. A step is attempted again only when its result carries the
+  gateway's own `gatewayRefusal` with a retryable key refusal, as bounded below. Only the gateway moves keys.
+- The run stops at every other gateway refusal, a non-retryable quota or key answer on a one-key policy,
+  the first rate limit, timeout or unknown outcome, and the first answer that could not be recorded.
 - It stops before a call that, held at its full reservation, would cross the total, daily, per-person or
   document-agent cap.
 - After a stop every later step asks the replay store only and ends in `needs_input` or `teacher_unavailable`;
