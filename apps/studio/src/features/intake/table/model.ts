@@ -1,5 +1,5 @@
 import { CANONICAL_TARGETS } from '@ulpin/contracts';
-import type { ChunkMapping, Freshness, Metrics, Recipe, TableProfile, Target } from './types';
+import type { ChunkMapping, Freshness, MappingJob, Metrics, Recipe, TableProfile, Target } from './types';
 
 const STALE_REASON_WORDS: Record<Freshness['reasons'][number], string> = {
   case_advanced: 'case advanced', reader_changed: 'reader changed',
@@ -21,6 +21,14 @@ export function columnRows(profile: TableProfile, mapping?: ChunkMapping) {
       target: field?.target ?? 'unknown', confidence: origin === 'officer' ? null : field?.confidence ?? null,
       origin, question };
   });
+}
+
+/**
+ * Every chunk the job has published. The job lists only its latest 32 slots, but the first chunks raise the
+ * questions and each chunk carries its own learner counts, so all of them are read by index.
+ */
+export function publishedChunkIndexes(job?: MappingJob): number[] {
+  return Array.from({ length: job?.nextPublishIndex ?? 0 }, (_, index) => index);
 }
 
 type Question = ChunkMapping['questions'][number];
