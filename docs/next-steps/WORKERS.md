@@ -125,16 +125,16 @@ bash claude-watch.sh "<YYYY-MM-DD HH:MM:SS +0530>"   # Claude: waits, then check
 
 **The lead's own subagents:** the Agent tool, `general-purpose`, `sonnet` or `opus`, in the background, with the same full task file. To stop one safely, send it the safe-stop message from §5 and wait for its report.
 
-## 7. Commit trailers
+## 7. Commits carry no attribution (owner's rule, 11 October)
 
-Each worker ends its commit messages with its own line:
+A commit is the owner's: it has the git identity the repository already has, and nothing in it says who or what did the typing.
 
-| Spawner | Trailer |
-| --- | --- |
-| codex | `Co-Authored-By: gpt-6.1-sol worker <noreply@openai.com>` |
-| Claude CLI or own subagent | `Co-Authored-By: Claude <Haiku\|Sonnet\|Opus> 5.5 <noreply@anthropic.com>` |
+- No `Co-Authored-By` line, no "generated with" line, no other trailer that names an AI model, a tool, a provider or a worker.
+- No worker sets `user.name`, `user.email`, `--author` or a `GIT_AUTHOR_*` / `GIT_COMMITTER_*` variable.
+- A commit message says what changed and why. It does not say which model, tool, account or worker did it; the board (`docs/STATUS.md`) is where that is recorded.
+- The lead checks author and message of every commit of a branch before merging it, and rewrites the branch if one breaks this.
 
-`_common.md` carries the codex line. For a Claude worker, swap it when building the `.full.md` file.
+`_common.md` and `_common.claude.md` carry this rule for workers; `claude-worker.sh` switches the tool's own attribution line off; a `commit-msg` hook in the main checkout's `.git/hooks` removes such a line if one is written anyway.
 
 ## 8. Teacher and learner work: the model follows the provider
 
