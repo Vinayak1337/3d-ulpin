@@ -1,0 +1,87 @@
+{
+  "schema": "building-b6-capacity-plan/1",
+  "hypothesis": "Higher RGB resolution improves detection below256 source-mask pixels;Dice stays5.",
+  "gpu_budget_bytes": 6442450944,
+  "capacity_bracket": [672, 624, 576],
+  "resolution_selection": "Largest passing bracket member,not an unrestricted maximum of all multiples of24.",
+  "effective_batch": 4,
+  "batch_size": 1,
+  "accumulation": 4,
+  "max_epochs": 8,
+  "target_mask_resolution": 432,
+  "lr_scheduler": "constant",
+  "coupled_changes": [
+    "Dynamic bicubic publisher positional-embedding interpolation;retain original432 parameter grid.",
+    "HF non-reentrant backbone/decoder recomputation,preserved RNG;no parameter/objective/label changes.",
+    "Prediction-mask grid and criterion sampled-point count automatically follow input resolution.",
+    "Retain epoch4's432 nearest-neighbour targets;normalized point sampling permits unequal grids.",
+    "Trainer keeps12-epoch default;callback capsB6 at8.The original constant LR is unchanged."
+  ],
+  "qualification": [
+    "50 optimizer steps,finite scalar losses/gradients,falling first/last20 mean loss,reserved<=6GiB.",
+    "Include empty,dense and maximum-label TRAIN chip;do not hide the worst-label memory case."
+  ],
+  "stop": [
+    "No unbounded resolution sweep,allocator/precision/objective tuning.Preserve every failed run.",
+    "Full-training micro-steps and optimizer steps retain nonfinite and memory guards."
+  ],
+  "attempts": [
+    {
+      "run_id": "b6-smoke-r672-20261010",
+      "status": "failed",
+      "signature": "CUDA OOM,target-mask cat requested1.66GiB,optimizer_step0,micro_steps3",
+      "cause": "Initial implementation unnecessarily upscaled target masks with RGB,differing from epoch4.",
+      "decision": "Preserve432 supervision.One bounded672 comparison with other capacity settings unchanged."
+    },
+    {
+      "run_id": "b6-smoke-r672-label432-20261010",
+      "status": "failed",
+      "signature": "CUDA OOM,target-mask cat requested704MiB,optimizer_step0,micro_steps3",
+      "cause": [
+        "Maximum-label TRAIN chip has76 features;13 matched groups repeat432 masks.",
+        "Previous graphs plus the988-mask concatenation exceed6GiB even with backbone recomputation."
+      ],
+      "hypothesis": "624 lowers image-dependent activations while preserving432 targets and learned parameters.",
+      "baseline": "672 fixed-target run;reserved5792333824bytes before failed704MiB allocation.",
+      "success": "50 finite/falling optimizer steps,including maximum labels;reserved<=6442450944bytes.",
+      "stop": "One bounded624 comparison.If failed,stop the resolution sweep;no576 or allocator trials."
+    },
+    {
+      "run_id": "b6-smoke-r624-label432-20261010",
+      "status": "failed",
+      "signature": "CUDA OOM,target-mask cat requested704MiB after4 optimizer steps/16 microsteps",
+      "peak_reserved_bytes": 6253707264,
+      "cause": "Resident optimizer plus dense13-group targets still limit memory.Shrinking inputs did not qualify.",
+      "decision": [
+        "Stop the resolution sweep.One materially different memory comparison:decoder plus backbone recomputation.",
+        "Retain432 targets and672 RGB.No objective,LR,allocator or precision changes."
+      ],
+      "hypothesis": "Recompute decoder attention to free stored activations without changing loss or parameters.",
+      "research": [
+        "Pinned HF _set_gradient_checkpointing implements gradient_checkpointing_enable.",
+        "RF-DETR decoder inherits GradientCheckpointingLayer,but enclosing model omits the support flag.",
+        "Use the pinned implementation,non-reentrant,preserve_rng_state=true."
+      ],
+      "success": "Same50-step finite/falling/maximum-label criteria at672,reserved<=6GiB.",
+      "stop": "If failed,no further capacity attempt;report blocker and preserve immutable records."
+    },
+    {
+      "run_id": "b6-smoke-r672-recompute-20261010",
+      "status": "failed",
+      "signature": "CUDA OOM,target-mask cat requested704MiB,optimizer_step0,micro_steps3",
+      "peak_reserved_bytes": 5945425920,
+      "result": "Decoder recomputation did not remove the fixed dense-target peak;no50-step qualification.",
+      "decision": "Stop.No more capacity trials,full training,DEV inference,transfer,export or registration.",
+      "next_prerequisite": [
+        "Lead approves a materially different bounded memory solution or smaller-resolution capacity plan.",
+        "576 was not tested;the hardware maximum is not established.No new accuracy result exists."
+      ]
+    }
+  ],
+  "research": [
+    "HF5.17.0 loss_rf_detr.py samples source/target masks at normalized coordinates;dimensions may differ.",
+    "modeling_rf_detr.py interpolates original position embeddings;patch12*windows2 requires multiples of24.",
+    "HF DINOv2 exposes gradient_checkpointing_enable(use_reentrant=false);decoder has supported layer classes."
+  ],
+  "closed_sets": "Karnataka HOLDOUT and Coxs Bazar remain permanently closed;capacity inputs are TRAIN only."
+}
