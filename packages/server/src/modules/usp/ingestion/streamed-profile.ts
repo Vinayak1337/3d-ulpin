@@ -14,6 +14,7 @@ import {fingerprint} from '../../cases/domain';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,ingestionBinding} from './events';
 import {assertStreamingInputTx} from './streaming-vector';
+import {compareSourcePins} from './source-pin';
 
 const uuid=z.string().uuid();
 const profileFiles=['packages/contracts/src/usp/streamed-profile.ts',
@@ -41,8 +42,9 @@ async function rawContextTx(client:PoolClient,rawJobId:string){
 export async function assertStreamedProfileInputTx(client:PoolClient,input:StreamedProfileInput){
   const {raw,ctx,rawInputFingerprint}=await rawContextTx(client,input.rawJobId);
   const {inputFingerprint,...base}=input;
-  if(input.version!==limits.version||fingerprint(base)!==inputFingerprint
-    ||input.profilerSha256!==streamedProfilerSha()||rawInputFingerprint!==input.rawInputFingerprint
+  const now={...base,version:limits.version,caseRevision:ctx.current.revision,profilerSha256:streamedProfilerSha()};
+  if(!compareSourcePins(now,base).current||fingerprint(base)!==inputFingerprint
+    ||rawInputFingerprint!==input.rawInputFingerprint
     ||raw.readerSha256!==input.readerSha256||raw.caseId!==input.caseId||raw.caseRevision!==input.caseRevision
     ||raw.sourceId!==input.sourceId||raw.sourceRevision!==input.sourceRevision
     ||raw.sourceFamilyId!==input.sourceFamilyId||raw.sourceSha256!==input.sourceSha256

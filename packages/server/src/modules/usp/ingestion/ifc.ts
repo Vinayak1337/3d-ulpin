@@ -11,6 +11,7 @@ import {settings} from '../../../infrastructure/config';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,openObjectStream,removeOrphan,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
+import {compareSourcePins} from './source-pin';
 import {registerUspJobInputTx} from '../jobs';
 import {ifcConfig,assertIFCReadTools} from './ifc-config';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
@@ -78,7 +79,7 @@ export function ifcInput(ctx:Awaited<ReturnType<typeof ifcSourceTx>>,jobId:strin
 }
 export async function assertIFCInputTx(client:PoolClient,input:IFCInput,lock=false){
   const ctx=await ifcSourceTx(client,input.caseId,input.sourceId,lock);
-  if(!ctx.latest||fingerprint(ifcInput(ctx,input.jobId,input.selection,input.tools))!==fingerprint(input))
+  if(!ctx.latest||!compareSourcePins(ifcInput(ctx,input.jobId,input.selection,input.tools),input).current)
     conflict('The IFC original, case, reader or private access context changed. Retry under current pins.');
   return ctx;
 }
@@ -241,7 +242,8 @@ export class IFCIngestionService{
     if(sha256(bytes)!==ctx.source.sha256)
       throw new AppError(422,'IFC_SOURCE_INTEGRITY','Retained original differs from its immutable source receipt.');
     await transaction(async client=>{const current=await ifcSourceTx(client,caseId,sourceId);
-      if(!current.latest||current.current.revision!==ctx.current.revision||current.context!==ctx.context||
+      if(!current.latest||!compareSourcePins({caseRevision:current.current.revision},{caseRevision:ctx.current.revision}).current
+        ||current.context!==ctx.context||
         current.source.sha256!==ctx.source.sha256||current.source.revision!==ctx.source.revision||
         current.source.object_key!==ctx.source.object_key||Number(current.source.bytes)!==Number(ctx.source.bytes))
         conflict('The original changed during download.');},bounds);

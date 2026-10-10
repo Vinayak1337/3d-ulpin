@@ -17,6 +17,7 @@ import {fingerprint} from '../../cases/domain';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,assertIngestionBinding,ingestionBinding} from './events';
 import {assertStreamingInputTx,streamingReadContextTx} from './streaming-vector';
+import {compareSourcePins} from './source-pin';
 import {manualProfileForLockedSourceTx,tabularProfileForLockedSourceTx} from './service';
 import {validateMappingPlanV2} from './mapping-plan-v2';
 import {mappingContextFromColumnProfile} from './mapping-teacher';
@@ -111,7 +112,11 @@ async function approvedRecipeTx(client:PoolClient,caseId:string,sourceId:string,
 export async function assertChunkMappingInputTx(client:PoolClient,input:ChunkMappingInput){
   const {raw,ctx,rawInputFingerprint}=await rawContextTx(client,input.rawJobId);
   const {inputFingerprint,...base}=input;
-  if(input.version!==limits.version||fingerprint(base)!==inputFingerprint||input.converterSha256!==chunkMappingConverterSha()
+  const now={...base,version:limits.version,caseRevision:ctx.current.revision,converterSha256:chunkMappingConverterSha()};
+  // Manual profiles pin the entire workspace source set; keep that route strict until its hash is redesigned.
+  if(input.profileJobId===undefined&&['geojson-manual-v1','tabular-manual-v1'].includes(ctx.source.profile)
+    &&ctx.current.revision!==input.caseRevision)conflict('The pinned manual mapping workspace changed.');
+  if(!compareSourcePins(now,base).current||fingerprint(base)!==inputFingerprint
     ||rawInputFingerprint!==input.rawInputFingerprint||raw.readerSha256!==input.readerSha256
     ||raw.caseId!==input.caseId||raw.caseRevision!==input.caseRevision||raw.sourceId!==input.sourceId
     ||raw.sourceRevision!==input.sourceRevision||raw.sourceFamilyId!==input.sourceFamilyId
@@ -157,8 +162,12 @@ export async function chunkMappingReadContextTx(
     ||input.subject!==raw.subject||input.accessBinding!==raw.accessBinding
     ||fingerprint(input.tabular??null)!==fingerprint(raw.framing==='tabular'?raw.tabular:null))
     throw new AppError(422,'MAPPING_INPUT_INTEGRITY','The mapped job differs from its retained raw source pins.');
-  if(input.converterSha256!==chunkMappingConverterSha())freshness.reasons.push('converter_changed');
-  freshness.current=freshness.reasons.length===0;
+  const pins=compareSourcePins({...base,caseRevision:ctx.current.revision,
+    converterSha256:chunkMappingConverterSha()},base);
+  if(input.workspaceFingerprint!==null&&ctx.current.revision!==input.caseRevision
+    &&!freshness.reasons.includes('case_advanced'))freshness.reasons.push('case_advanced');
+  if(pins.moved.includes('converterSha256'))freshness.reasons.push('converter_changed');
+  freshness.current=freshness.current&&pins.current&&freshness.reasons.length===0;
   return {ctx,freshness};
 }
 

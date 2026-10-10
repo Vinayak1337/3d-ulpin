@@ -2,22 +2,93 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {randomUUID} from 'node:crypto';
 import {PROJECTED_VECTOR_PROFILE as p,ProjectedVectorInputSchema,SemanticPreparationSchema,SemanticChunkSchema,
-  PrivateMvtCompilerSchema} from '../packages/contracts/src/usp';
+  PrivateMvtCompilerSchema,PrivateMvtInputSchema,PrivateMvtManifestSchema,PRIVATE_MVT_PROFILE} from '../packages/contracts/src/usp';
 import {fingerprint} from '../packages/server/src/modules/cases/domain';
 import {sha256} from '../packages/server/src/infrastructure/storage';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
 import {projectedParserSha,assertProjectedInput,assertProjectedReadInput,acceptedProjectedTx} from '../packages/server/src/modules/usp/ingestion/projected-vector';
 import {sealedPrefixTx,semanticPublisherSha} from '../packages/server/src/modules/usp/ingestion/semantic-chunks';
-import {mvtContextTx} from '../packages/server/src/modules/usp/tiles/service';
+import {mvtContextTx,assertMvtInputTx,readableMvtGenerationTx} from '../packages/server/src/modules/usp/tiles/service';
 import {mvtCodeSha,mvtReadCompilerCompatible} from '../packages/server/src/modules/usp/tiles/compiler';
 import {sufficiencySourceTx} from '../packages/server/src/modules/usp/ingestion/sufficiency-context';
+import {localReaderControl} from './reader-pin-control';
 
 // Memory protocol metadata only: no geometry bytes, persisted/property records,
 // official identities or claimed source predictions. Reconstructed pre-IFC code
 // hashes and existing NWIC profile counts are the subjects of these controls.
+test('projected vector later receipts preserve claim/execution/accepted reads; archive/context pins still refuse',()=>
+  localReaderControl(async()=>{
+    const f=fixture(semanticPublisherSha()),enrolled=fingerprint(f.input);
+    for(const phase of ['before_claim','execution','after_completion']){
+      f.current.revision++;assertProjectedInput(f.ctx,f.input);assertProjectedReadInput(f.ctx,f.input);
+      assert.equal((await acceptedProjectedTx(f.client,f.caseId,f.sourceId)).input.inputFingerprint,
+        f.input.inputFingerprint,phase);
+    }
+    assert.equal(fingerprint(f.input),enrolled);
+    const query=f.client.query.bind(f.client);
+    f.client.query=async(sql:string,args:any[]=[])=>sql.includes('max(revision)')?{rows:[{revision:2}]}:query(sql,args);
+    await assert.rejects(()=>acceptedProjectedTx(f.client,f.caseId,f.sourceId),(e:any)=>e.status===409);
+    f.client.query=query;f.current.archived=true;
+    await assert.rejects(()=>acceptedProjectedTx(f.client,f.caseId,f.sourceId),(e:any)=>e.code==='PROJECTED_CASE_ARCHIVED');
+    f.current.archived=false;f.current.revision=0;
+    assert.throws(()=>assertProjectedInput(f.ctx,f.input),(e:any)=>e.code==='PROJECTED_CONTEXT_STALE');
+    f.current.revision=4;
+    assert.throws(()=>assertProjectedInput({...f.ctx,access:technicalHash},f.input),
+      (e:any)=>e.code==='PROJECTED_CONTEXT_STALE');
+    assert.throws(()=>assertProjectedInput(f.ctx,{...f.input,inputFingerprint:technicalHash}),
+      (e:any)=>e.code==='PROJECTED_CONTEXT_STALE');
+  }));
+
+test('MVT nested source survives later receipts; generation and upstream seals stay immutable',()=>
+  localReaderControl(async()=>{
+    const {f,job,input,manifest,state}=await tileControl(),enrolled=fingerprint({job,manifest});
+    for(const phase of ['before_claim','execution','after_completion']){
+      f.current.revision++;await assertMvtInputTx(f.client,job);
+      const generation=await readableMvtGenerationTx(f.client,f.caseId,f.sourceId,job.id,1);
+      assert.deepEqual(generation.manifest.source,input.source,phase);
+      assert.equal(fingerprint({job,manifest}),enrolled,phase);
+    }
+    state.latest=2;
+    await assert.rejects(()=>assertMvtInputTx(f.client,job),(e:any)=>e.status===409);
+    state.latest=1;f.current.archived=true;
+    await assert.rejects(()=>assertMvtInputTx(f.client,job),(e:any)=>e.code==='PROJECTED_CASE_ARCHIVED');
+    f.current.archived=false;state.dependencyChanged=true;
+    await assert.rejects(()=>assertMvtInputTx(f.client,job),(e:any)=>e.code==='MVT_CONTEXT_STALE');
+  }));
+
 const publishers=['2fc75b285a9b57fffaebad822497a30c59274b6e7345e44f760470a39f284be1','2410cb1dc2581631c11f3eea1f10bbe79c5d328d457426b7fb60ae550594673a'];
 const compilers=['37f9c493f48724bc8d9627718a5781d3a3514e91d2055ab57492041729dbcbfc','9a9790012ba12ed203ecde3660406a307f59b178399f704e8e9d3e5246c83c76'];
 const technicalHash=sha256('memory-only integrity control');
+
+async function tileControl(){
+  const f=fixture(semanticPublisherSha()),ctx=await mvtContextTx(f.client,f.caseId,f.sourceId);
+  const cell={z:2,x:0,y:0},base={kind:'retained_administrative_observations',version:PRIVATE_MVT_PROFILE.version,
+    jobId:randomUUID(),source:ctx.source,compiler:ctx.compiler,base:null,window:null,catalog:[cell],plan:[cell],
+    invalidation:{version:PRIVATE_MVT_PROFILE.grid,cells:[cell],changes:[],includeHalo:true,includeParents:true}};
+  const input=PrivateMvtInputSchema.parse({...base,inputFingerprint:fingerprint(base)}),
+    job={id:input.jobId,case_id:f.caseId,source_id:f.sourceId,payload:input,input_fingerprint:input.inputFingerprint};
+  const {kind:_kind,jobId:_jobId,plan:_plan,...manifestBase}=base;
+  const manifest=PrivateMvtManifestSchema.parse({...manifestBase,grid:PRIVATE_MVT_PROFILE.grid,
+    generationId:job.id,sequence:1,fence:1,attempt:1,
+    pending:[cell],cells:[],complete:false,excludedQuarantined:13,extent:4096,buffer:64,layer:'nwic_districts',
+    purpose:'administrative_context',analyticEligible:false,
+    limitations:['display_quantization_clipping_may_omit_collapse_or_repair_geometry',
+      'administrative_context_not_property_geometry','source_accuracy_currentness_unqualified',
+      'post_admission_only_multi_chunk_import_stream_gate_pending']});
+  const hash=sha256(JSON.stringify(manifest)),query=f.client.query.bind(f.client),state={latest:1,dependencyChanged:false};
+  f.client.query=async(sql:string,args:any[]=[])=>{
+    if(sql.includes('max(revision)'))return {rows:[{revision:state.latest}]};
+    if(sql.includes('FROM jobs')&&args[2]===job.id)return {rows:[job]};
+    if(sql.includes('source_tile_generations'))return {rows:[{job_id:job.id,version:1,fence:1,attempt:1,
+      sha256:hash,body:manifest,input_fingerprint:job.input_fingerprint}]};
+    const result=await query(sql,args);
+    if(state.dependencyChanged&&sql.includes('administrative_unit_observations')){
+      result.rows=structuredClone(result.rows);result.rows[0].raw_sha='0'.repeat(64);
+    }
+    return result;
+  };
+  return {f,job,input,manifest,state};
+}
 function fixture(publisher:string){
   const caseId=randomUUID(),sourceId=randomUUID(),jobId=randomUUID(),binding=ingestionBinding(caseId),parserSha256=projectedParserSha();
   const base={kind:'retained_source',version:p.version,jobId,caseId,caseRevision:1,sourceId,sourceRevision:1,sourceFamilyId:sourceId,

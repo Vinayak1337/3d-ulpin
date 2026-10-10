@@ -145,7 +145,7 @@ test('real CSV retained statuses report all history reasons; strict worker/enque
     db.f.mapped.converterSha256 = '3'.repeat(64);
     rehash(db);
     const results = await statuses(db);
-    assert.deepEqual(results[0].reasons, ['case_advanced', 'reader_changed', 'source_superseded']);
+    assert.deepEqual(results[0].reasons, ['reader_changed', 'source_superseded']);
     assert.deepEqual(results[1].reasons, [...results[0].reasons, 'converter_changed']);
     assert(results.every(result => result.current === false));
     const client = db as unknown as PoolClient;
@@ -163,11 +163,11 @@ test('GIS historical status and chunks reopen retained bytes after case/reader/c
     db.caseRevision++;
     const { raw, mapped } = db.f;
     const before = await new StreamingVectorService().chunk(raw.caseId, raw.sourceId, raw.jobId, 0);
-    assert.equal(before.current, false);
-    assert.deepEqual(before.reasons, ['case_advanced']);
+    assert.equal(before.current, true);
+    assert.deepEqual(before.reasons, []);
     const retained = await new ChunkMappingService().chunk(mapped.caseId, mapped.sourceId, mapped.jobId, 0);
-    assert.equal(retained.current, false);
-    assert.deepEqual(retained.reasons, ['case_advanced']);
+    assert.equal(retained.current, true);
+    assert.deepEqual(retained.reasons, []);
     assert.equal(retained.payload?.sourceSha256, raw.sourceSha256);
     db.f.raw.readerSha256 = '2'.repeat(64);
     db.f.mapped.converterSha256 = '3'.repeat(64);

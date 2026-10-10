@@ -11,6 +11,7 @@ import {settings} from '../../../infrastructure/config';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,openObjectStream,removeOrphan,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
+import {compareSourcePins} from './source-pin';
 import {registerUspJobInputTx} from '../jobs';
 import {objConfig,assertObjReadTools} from './obj-config';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
@@ -78,7 +79,7 @@ export function objInput(ctx:Awaited<ReturnType<typeof objSourceTx>>,jobId:strin
 }
 export async function assertObjInputTx(client:PoolClient,input:ObjInput,lock=false){
   const ctx=await objSourceTx(client,input.caseId,input.sourceId,lock);
-  if(!ctx.latest||fingerprint(objInput(ctx,input.jobId,input.tools))!==fingerprint(input))
+  if(!ctx.latest||!compareSourcePins(objInput(ctx,input.jobId,input.tools),input).current)
     conflict('The Obj original, case, reader or private access context changed. Retry under current pins.');
   return ctx;
 }
@@ -241,7 +242,8 @@ export class ObjIngestionService{
     if(sha256(bytes)!==ctx.source.sha256)
       throw new AppError(422,'OBJ_SOURCE_INTEGRITY','Retained original differs from its immutable source receipt.');
     await transaction(async client=>{const current=await objSourceTx(client,caseId,sourceId);
-      if(!current.latest||current.current.revision!==ctx.current.revision||current.context!==ctx.context||
+      if(!current.latest||!compareSourcePins({caseRevision:current.current.revision},{caseRevision:ctx.current.revision}).current
+        ||current.context!==ctx.context||
         current.source.sha256!==ctx.source.sha256||current.source.revision!==ctx.source.revision||
         current.source.object_key!==ctx.source.object_key||Number(current.source.bytes)!==Number(ctx.source.bytes))
         conflict('The original changed during download.');},bounds);

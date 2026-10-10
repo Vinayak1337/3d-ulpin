@@ -16,6 +16,7 @@ import {localOperatorSubject} from '../principal';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,assertIngestionBinding,ingestionBinding} from './events';
 import {assertTabularPin} from './tabular-source';
+import {compareSourcePins} from './source-pin';
 
 const uuid=z.string().uuid();
 const readerFiles=[
@@ -58,17 +59,20 @@ export async function streamingContextTx(client:PoolClient,caseId:string,sourceI
 export async function assertStreamingInputTx(client:PoolClient,input:AnyStreamingInput){
   const ctx=await streamingContextTx(client,input.caseId,input.sourceId,true);
   const {inputFingerprint,...base}=input;
-  if(!ctx.latest||ctx.current.revision!==input.caseRevision||ctx.source.revision!==input.sourceRevision
-    ||ctx.source.family_id!==input.sourceFamilyId||ctx.source.sha256!==input.sourceSha256
-    ||Number(ctx.source.bytes)!==input.sourceBytes||ctx.source.object_key!==input.objectKey
-    ||ctx.binding.access!==input.accessBinding||ctx.binding.subject!==input.subject
-    ||input.readerSha256!==streamingReaderSha()||fingerprint(base)!==inputFingerprint)
+  if(!ctx.latest||!compareSourcePins(streamingPins(ctx,base),base).current||fingerprint(base)!==inputFingerprint)
     conflict('The retained original, reader, case or private access context changed.');
   if(input.framing==='tabular')assertTabularPin(input.tabular,ctx.source);
   else if(ctx.source.profile==='tabular-manual-v1'){
     conflict('A tabular original requires its explicit framing and pins.');
   }
   return ctx;
+}
+
+function streamingPins(ctx:Awaited<ReturnType<typeof streamingContextTx>>,base:Omit<AnyStreamingInput,'inputFingerprint'>){
+  return {...base,version:limits.version,caseId:ctx.current.id,caseRevision:ctx.current.revision,
+    sourceId:ctx.source.id,sourceRevision:ctx.source.revision,sourceFamilyId:ctx.source.family_id,
+    sourceSha256:ctx.source.sha256,sourceBytes:Number(ctx.source.bytes),objectKey:ctx.source.object_key,
+    subject:ctx.binding.subject,accessBinding:ctx.binding.access,readerSha256:streamingReaderSha()};
 }
 
 /** Read-only history checks immutable scope/access, but reports obsolescence instead of granting write authority. */
@@ -86,10 +90,11 @@ export async function streamingReadContextTx(
     ||input.objectKey!==ctx.source.object_key)
     throw new AppError(422,'STREAMING_INPUT_INTEGRITY','The retained job differs from its immutable source receipt.');
   const reasons:('case_advanced'|'reader_changed'|'source_superseded')[]=[];
-  if(ctx.current.revision!==input.caseRevision)reasons.push('case_advanced');
-  if(input.readerSha256!==streamingReaderSha())reasons.push('reader_changed');
+  const pins=compareSourcePins(streamingPins(ctx,base),base);
+  if(pins.caseRevisionAdvancedBy<0)reasons.push('case_advanced');
+  if(pins.moved.includes('readerSha256'))reasons.push('reader_changed');
   if(!ctx.latest)reasons.push('source_superseded');
-  return {ctx,freshness:RetainedResultFreshnessSchema.parse({current:reasons.length===0,reasons})};
+  return {ctx,freshness:RetainedResultFreshnessSchema.parse({current:pins.current&&ctx.latest,reasons})};
 }
 
 export function streamingSlot(row:any){return StreamingVectorSlotSchema.parse({

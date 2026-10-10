@@ -82,7 +82,7 @@ test('DXF input/accepted attempts bind exact case, access, source, hash and byte
     if(patch.result_ref)assert.throws(()=>dxfResultBytes(patch.result_ref!,input.jobId));else assert.throws(()=>assertDXFJobRow({...row,...patch},input,true));
   }
   await assertDXFInputTx(f.client as any,input);
-  f.current.revision++;await assert.rejects(()=>assertDXFInputTx(f.client as any,input),(e:any)=>e.status===409);f.current.revision--;
+  f.current.revision++;await assertDXFInputTx(f.client as any,input);f.current.revision--;
   f.current.context={changed:true} as any;await assert.rejects(()=>assertDXFInputTx(f.client as any,input),(e:any)=>e.status===409);f.current.context=null;
   f.setLatest(2);await assert.rejects(()=>assertDXFInputTx(f.client as any,input),(e:any)=>e.status===409);f.setLatest(1);
   process.env.ULPIN_LOCAL_OPERATOR_SUBJECT='other';await assert.rejects(()=>dxfSourceTx(f.client as any,f.caseId,f.sourceId),(e:any)=>e.status===403);
@@ -97,7 +97,7 @@ test('canonical original and general original paths recheck after I/O; snapshots
     assert.equal(await service.streamedSourceFile(f.sourceId,new AbortController().signal),null);
     const projected=sourceFrom(f.source as any);assert.equal(JSON.stringify(projected).includes('dxfOriginal'),false);assert.equal(JSON.stringify(projected).includes('retained'),false);
     assert.deepEqual(f.source,saved);
-    mutate=()=>{f.current.revision++;};await assert.rejects(()=>service.sourceFile(f.sourceId),(e:any)=>e.status===409);
+    mutate=()=>{f.current.revision++;};assert.deepEqual((await service.sourceFile(f.sourceId)).bytes,f.raw);
     mutate=()=>{f.current.archived=true;};await assert.rejects(()=>new DXFIngestionService().original(f.caseId,f.sourceId),(e:any)=>e.status===403);
     f.current.archived=false;mutate=()=>{process.env.ULPIN_LOCAL_OPERATOR_SUBJECT='other';};await assert.rejects(()=>service.sourceFile(f.sourceId),(e:any)=>e.status===403);
     process.env.ULPIN_LOCAL_OPERATOR_SUBJECT='dxf-protocol-control';mutate=()=>{};
@@ -148,7 +148,8 @@ test('unchanged receipt survives an outage and replays without another object wr
     assert.deepEqual(await service.retain(f.caseId,request,file),receipt);assert.equal(puts,1);
     assert.equal(f.jobs.get(receipt.jobId).payload.tools,null);await runDXFJob(receipt.jobId);assert.equal(f.jobs.get(receipt.jobId).error,'DXF_UNAVAILABLE');
     assert.deepEqual((await service.original(f.caseId,receipt.sourceId)).bytes,f.raw);assert.equal(stored.size,1);
-    f.current.revision++;await assert.rejects(()=>service.retain(f.caseId,request,file),(e:any)=>e.status===409);assert.equal(puts,1);
+    f.current.revision++;assert.deepEqual(await service.retain(f.caseId,request,file),receipt);assert.equal(puts,1);
+    await assert.rejects(()=>service.retain(f.caseId,{...request,requestKey:randomUUID()},file),(e:any)=>e.status===409);
   }finally{S3Client.prototype.send=send;}
 }));
 
@@ -193,8 +194,8 @@ test('retained declared-unit and absent-unit drawings pass original enrollment, 
       assert.throws(()=>assertDXFTools({...config.pins,profileSha256:'0'.repeat(64)}),(e:any)=>e.code==='DXF_TOOL_CHANGED');
       mutate=()=>{f.current.archived=true;};await assert.rejects(()=>service.artifact(f.caseId,f.source.id,job.id),(e:any)=>e.status===403);
       f.current.archived=false;mutate=()=>{};job.attempt.state='fenced';await assert.rejects(()=>service.artifact(f.caseId,f.source.id,job.id),(e:any)=>e.status===409);job.attempt.state='accepted';
-      f.current.revision++;assert.equal((await service.status(f.caseId,f.source.id,job.id)).status,'stale');
-      await assert.rejects(()=>service.artifact(f.caseId,f.source.id,job.id),(e:any)=>e.status===409);
+      f.current.revision++;assert.equal((await service.status(f.caseId,f.source.id,job.id)).status,status.status);
+      assert.deepEqual((await service.artifact(f.caseId,f.source.id,job.id)).bytes,artifact.bytes);
       const proof=process.env.ULPIN_DXF_PROOF_DIR;if(proof){mkdirSync(proof,{recursive:true});writeFileSync(proof+'/'+sourceName+'.native.json',artifact.bytes);
         writeFileSync(proof+'/'+sourceName+'.journey.json',JSON.stringify({scope:'actual native execution over unchanged test_only bytes; SQL/storage rows are memory controls',
           receipt,status,sourceSha256:f.hash,artifactSha256:sha256(artifact.bytes),artifactBytes:artifact.bytes.length,pins:config.pins,events:f.events},null,2)+'\n');}

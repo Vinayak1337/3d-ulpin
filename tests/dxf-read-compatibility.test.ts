@@ -18,7 +18,7 @@ test('pre-DXF semantic reads preserve input pins while admission remains strict 
   const caseId=randomUUID(),sourceId=randomUUID(),base={kind:'retained_source',version:p.version,jobId:randomUUID(),caseId,caseRevision:1,
     sourceId,sourceRevision:1,sourceFamilyId:sourceId,sha256:p.zipSha256,bytes:p.zipBytes,objectKey:'large-originals/protocol-only',
     parserSha256:projectedParserSha(),accessBinding:unknown};
-  const ctx={current:{id:caseId,revision:1},source:{id:sourceId,revision:1,family_id:sourceId,sha256:p.zipSha256,object_key:base.objectKey},access:unknown} as any;
+  const ctx={current:{id:caseId,revision:1},source:{id:sourceId,revision:1,family_id:sourceId,sha256:p.zipSha256,bytes:p.zipBytes,object_key:base.objectKey},access:unknown} as any;
   for(const publisherSha256 of old.semantic){
     const value={...base,semanticChunks:{version:'nwic-semantic-chunks/1',publisherSha256}},input=ProjectedVectorInputSchema.parse({...value,inputFingerprint:fingerprint(value)}),saved=JSON.stringify(input);
     assert.equal(semanticPublisherReadCompatible(publisherSha256),true);assertProjectedReadInput(ctx,input);

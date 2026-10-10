@@ -11,6 +11,7 @@ import {settings} from '../../../infrastructure/config';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,openObjectStream,removeOrphan,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
+import {compareSourcePins} from './source-pin';
 import {registerUspJobInputTx} from '../jobs';
 import {geoparquetConfig,assertGeoParquetReadTools} from './geoparquet-config';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
@@ -77,7 +78,7 @@ export function geoparquetInput(ctx:Awaited<ReturnType<typeof geoparquetSourceTx
     accessSha256:ctx.binding.access,readerSha256:geoparquetReaderSha(),tools,selection,continuation});
 }
 const currentGeoParquetInput=(ctx:Awaited<ReturnType<typeof geoparquetSourceTx>>,input:GeoParquetInput)=>
-  ctx.latest&&fingerprint(geoparquetInput(ctx,input.jobId,input.selection,input.tools,input.continuation))===fingerprint(input);
+  ctx.latest&&compareSourcePins(geoparquetInput(ctx,input.jobId,input.selection,input.tools,input.continuation),input).current;
 const advancingGeoParquetSelection=(parent:GeoParquetInput,nextRowIndex:number,startRowIndex:number)=>
   nextRowIndex===startRowIndex&&nextRowIndex>parent.selection.startRowIndex;
 /** Optional caller-owned bounded parent receipt read; old callers retain their
@@ -314,7 +315,8 @@ export class GeoParquetIngestionService{
     if(sha256(bytes)!==ctx.source.sha256)
       throw new AppError(422,'GEOPARQUET_SOURCE_INTEGRITY','Retained original differs from its immutable source receipt.');
     await transaction(async client=>{const current=await geoparquetSourceTx(client,caseId,sourceId);
-      if(!current.latest||current.current.revision!==ctx.current.revision||current.context!==ctx.context||
+      if(!current.latest||!compareSourcePins({caseRevision:current.current.revision},{caseRevision:ctx.current.revision}).current
+        ||current.context!==ctx.context||
         current.source.sha256!==ctx.source.sha256||current.source.revision!==ctx.source.revision||
         current.source.object_key!==ctx.source.object_key||Number(current.source.bytes)!==Number(ctx.source.bytes))
         conflict('The original changed during download.');},bounds);
