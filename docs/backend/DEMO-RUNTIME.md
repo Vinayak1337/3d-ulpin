@@ -1,7 +1,8 @@
 # Pinned demo runtime
 
 The demo API and dispatcher run from `E:/Projects/ulpin-wt/demo`, a detached, unedited checkout.
-Current reviewed staging commit: `9aad8da2` (10 October 2026; R2 rollout, document runtimes configured).
+Current reviewed staging commit: `fbe525f7` (10 October 2026; R3 rollout, K5 revocation table applied first,
+document runtimes rebuilt).
 Loopback API: `http://127.0.0.1:3194`; external demo configuration stays outside every checkout.
 Only the runtime owner explicitly named in a task file may roll this checkout forward.
 Worker worktrees must never serve the demo: lazy imports would mix unreviewed changes into running processes.
@@ -39,7 +40,7 @@ moving the serving checkout under running processes), while the old API still an
 
 | Needed from commit | Migration | Command | Receipt |
 | --- | --- | --- | --- |
-| K5 part 2 merge (card revocation) | `usp_property_card_revocations_001` (one new append-only table) | `node docs/evidence/gf4/k5/run-migration.mjs` | `docs/evidence/gf4/k5/migration-receipt.json` (create-once) |
+| K5 part 2 merge (card revocation) | `usp_property_card_revocations_001` (one new append-only table) | `node docs/evidence/gf4/k5/run-migration.mjs` | `docs/evidence/gf4/k5/migration-receipt.json` (create-once). **Applied on the demo 10 October 2026** (`applied: true`) |
 
 The K5 runner has not been executed anywhere yet (no PostgreSQL was available to its author): its first run is
 on the demo. It applies only the registered check/schema/mark steps in one transaction with short lock and

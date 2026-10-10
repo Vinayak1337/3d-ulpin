@@ -2,7 +2,8 @@
 // R1's helpers are private and bound to its create-once root; reuse its count routes and exchange shape here.
 import assert from 'node:assert/strict';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { SourceSpaceRequestSchema, SourceSpaceReceiptSchema,
 } from '../../packages/contracts/src/canonical/source-spaces';
 import { UspCaptureSnapshotRequestSchema } from '../../packages/contracts/src/usp/ports';
@@ -10,20 +11,20 @@ import { UspSnapshotManifestSchema } from '../../packages/contracts/src/usp/doma
 
 const base = 'http://127.0.0.1:3194';
 const root = 'E:/BhuAayam-data/task-data/r2';
-const buildingId = '6f95d04e-2067-4ac8-a3c2-6cc21ea46325';
-const sourceId = '5293cd72-2377-4deb-a51c-c76d11ccb429';
-const sourceHash = '2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865';
-const reason = 'Entered for the selection demo by the project lead from the cited boxed label UNIT-3B '
+export const buildingId = '6f95d04e-2067-4ac8-a3c2-6cc21ea46325';
+export const sourceId = '5293cd72-2377-4deb-a51c-c76d11ccb429';
+export const sourceHash = '2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865';
+export const reason = 'Entered for the selection demo by the project lead from the cited boxed label UNIT-3B '
   + 'on the 2ND FLOOR PLAN sheet. A label citation only: no boundary, geometry, area, use or rights. '
   + "Not a field officer's decision.";
-type Exchange = { status: number; body: any };
+export type Exchange = { status: number; body: any };
 
-function save(directory: string, name: string, value: unknown) {
+export function save(directory: string, name: string, value: unknown) {
   mkdirSync(directory, { recursive: true });
   writeFileSync(join(directory, name), JSON.stringify(value) + '\n', { flag: 'wx' });
 }
 
-async function exchange(directory: string, name: string, path: string, input?: unknown,
+export async function exchange(directory: string, name: string, path: string, input?: unknown,
   headers: Record<string, string> = {}): Promise<Exchange> {
   const method = input === undefined ? 'GET' : 'POST';
   save(directory, `${name}-request.json`, { method, path, body: input ?? null, headers, at: new Date().toISOString() });
@@ -38,7 +39,7 @@ async function exchange(directory: string, name: string, path: string, input?: u
   return result;
 }
 
-function accepted(step: string, result: Exchange) {
+export function accepted(step: string, result: Exchange) {
   if (result.status >= 200 && result.status < 300) return result.body;
   throw new Error(`R2_STEP_REFUSED ${step}: HTTP ${result.status} ${result.body?.code ?? result.body?.error?.code}`);
 }
@@ -60,8 +61,8 @@ async function probes() {
     canonicalRevision: canonical.revisionId, schedule: canonical.levelSchedule.state });
 }
 
-async function counts(stage: string) {
-  const directory = join(root, 'invariants');
+export async function counts(stage: string, artifacts = root) {
+  const directory = join(artifacts, 'invariants');
   const read = async (name: string) => accepted(name, await exchange(directory, `${stage}-${name}`, `/api/v1/${name}`));
   const [areas, registry, sites, cases, health] = [await read('areas'), await read('registry'), await read('sites'),
     await read('cases'), await read('health')];
@@ -159,7 +160,9 @@ async function main() {
   await actions[action]();
 }
 
-main().catch(error => {
-  console.error(error.message);
-  process.exitCode = 1;
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  main().catch(error => {
+    console.error(error.message);
+    process.exitCode = 1;
+  });
+}
