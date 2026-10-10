@@ -120,8 +120,10 @@ test('the card of a source-stated unit states an unknown location, state and aut
     const printed = facts.map(fact => `${fact.label}  ${printedFact(fact)}`);
 
     // An anchorless unknown locator is worded field by field and keeps the formal locator.
-    assert.equal(value('vertical_locator'), 'No parcel anchor supplied. Structure 1, kind not recorded; '
-      + 'level not recorded; space 1, kind not recorded. (Locator: NO-ANCHOR / ?01 / L? / ?001)');
+    // Since K11 a source-stated review sends no location, so no structure or space number is recorded.
+    assert.equal(value('vertical_locator'), 'No parcel anchor supplied. Structure number not recorded, '
+      + 'kind not recorded; level not recorded; space number not recorded, kind not recorded. '
+      + '(Locator: NO-ANCHOR / ? / L? / ?)');
     assert.equal(value('parcel_assertions'),
       'Selected evidence does not support a parent parcel assertion. No parcel anchor supplied.');
     // No row prints a stored word: neither an underscore-joined one nor a state in lower case before its colon.

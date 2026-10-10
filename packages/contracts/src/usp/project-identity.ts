@@ -117,6 +117,41 @@ export const ProjectIdentityReviewSchema = z.strictObject({
   locations: z.record(z.uuid(), ProjectLocationSchema).optional(),
   transferredGeometry: z.unknown().optional(),
 });
+/** Names one registry record and bounds the page of its identity reviews. */
+export const UspListIdentityReviewsSchema = z.strictObject({
+  recordId: z.uuid(), limit: z.number().int().min(1).max(20).default(5),
+}).readonly();
+const reviewOperation = ProjectIdentityReviewSchema.shape.operation;
+const storedTime = z.iso.datetime({ offset: true });
+/** One stored identity review as a reader is shown it: no evidence list, no location and no reviewer. */
+const UspIdentityReviewItemSchema = z.strictObject({
+  reviewId: z.uuid().describe('The reviewId the assignment or mutation names.'),
+  operation: reviewOperation.describe('The one operation this review allows.'),
+  reason: z.string().min(1).max(2000).describe('The reason as the review stores it.'),
+  createdAt: storedTime.describe('When the review was stored. The list is ordered by this value, newest first.'),
+  scope: UspSnapshotScopeSchema.describe('The scope the review is bound to, as its stored command states it: '
+    + 'the scope to pass unchanged to the assignment.'),
+  expectedManifestId: z.uuid().describe('The expectedManifestId the assignment must name: the manifest of scope.'),
+  expectedRecordVersion: z.number().int().positive().describe('The revision of this record the review was made '
+    + 'at, read from the expectedVersions of its stored command: the expectedRecordVersion the assignment must name.'),
+  used: z.strictObject({
+    at: storedTime.describe('When the review was consumed.'),
+    operation: reviewOperation.describe('The operation the audit row of the consuming command records.'),
+  }).readonly().nullable().describe('used: the assignment or mutation that consumed this review; a used review '
+    + 'cannot be used again. null while no command has consumed it.'),
+  commandSha256: z.string().regex(/^[a-f0-9]{64}$/).describe('The hash the review answered when it was stored.'),
+}).readonly();
+/** The identity reviews of a record's site that name the record and whose manifest the caller may read, newest
+ * first by the time they were stored and then by id. `unreadable` counts rows of the page whose stored columns
+ * and command do not agree with each other; none is listed. */
+export const UspIdentityReviewListSchema = z.strictObject({
+  recordId: z.uuid(), siteId: z.uuid(),
+  items: z.array(UspIdentityReviewItemSchema).max(20).readonly(),
+  truncated: z.boolean().describe('More reviews that the caller may read name this record than this page holds.'),
+  unreadable: z.number().int().nonnegative().max(20),
+}).readonly();
+export type IdentityReviewList = z.infer<typeof UspIdentityReviewListSchema>;
+
 export const AssignProjectCodeSchema = z.strictObject({ ...common,
   recordId: z.uuid(), expectedRecordVersion: z.number().int().positive(),
 });

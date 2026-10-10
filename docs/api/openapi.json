@@ -24242,6 +24242,200 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/usp/identity/records/{recordId}/reviews": {
+      "get": {
+        "description": "Each item carries the scope the review is bound to, to pass unchanged to the assignment with the item's expectedManifestId, reviewId and expectedRecordVersion. used is null until an assignment or mutation has consumed the review; a used review cannot be used again. Order is the time the review was stored (createdAt), newest first, then the id. The evidence a review cites, its location and its reviewer are not answered, and the cited documents are not checked here: the assignment applies its own checks.",
+        "operationId": "GET_api_v1_usp_identity_records_recordId_reviews",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 5
+            }
+          },
+          {
+            "name": "recordId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_usp_identity_records_recordId_reviews_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "List the identity reviews that name a record and that the local operator may read, newest first",
+        "tags": [
+          "USP proposals and project identity"
+        ],
+        "x-source-file": "apps/api/src/modules/evidence/identity-reviews.controller.ts",
+        "x-batch": "K11",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/evidence/operation-manifest.json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/usp/exchange/cityjson/export": {
       "post": {
         "operationId": "POST_api_v1_usp_exchange_cityjson_export",
@@ -249387,6 +249581,204 @@
         "required": [
           "data",
           "meta"
+        ],
+        "additionalProperties": false
+      },
+      "GET_usp_identity_records_recordId_reviews_Response_200_application_json": {
+        "readOnly": true,
+        "type": "object",
+        "properties": {
+          "recordId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "siteId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "items": {
+            "readOnly": true,
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "readOnly": true,
+              "type": "object",
+              "properties": {
+                "reviewId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "description": "The reviewId the assignment or mutation names."
+                },
+                "operation": {
+                  "type": "string",
+                  "enum": [
+                    "assign",
+                    "correct",
+                    "cancel",
+                    "retire",
+                    "split",
+                    "merge",
+                    "boundary_adjustment"
+                  ],
+                  "description": "The one operation this review allows."
+                },
+                "reason": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000,
+                  "description": "The reason as the review stores it."
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                  "description": "When the review was stored. The list is ordered by this value, newest first."
+                },
+                "scope": {
+                  "readOnly": true,
+                  "description": "The scope the review is bound to, as its stored command states it: the scope to pass unchanged to the assignment.",
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "snapshot"
+                      ]
+                    },
+                    "scopeId": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                    },
+                    "world": {
+                      "readOnly": true,
+                      "type": "object",
+                      "properties": {
+                        "namespace": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                        },
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                        }
+                      },
+                      "required": [
+                        "namespace",
+                        "id"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "manifestId": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                    },
+                    "snapshotDigest": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "stage": {
+                      "type": "string",
+                      "enum": [
+                        "draft",
+                        "recorded",
+                        "retained"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "scopeId",
+                    "world",
+                    "manifestId",
+                    "snapshotDigest",
+                    "stage"
+                  ],
+                  "additionalProperties": false
+                },
+                "expectedManifestId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "description": "The expectedManifestId the assignment must name: the manifest of scope."
+                },
+                "expectedRecordVersion": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": true,
+                  "maximum": 9007199254740991,
+                  "description": "The revision of this record the review was made at, read from the expectedVersions of its stored command: the expectedRecordVersion the assignment must name."
+                },
+                "used": {
+                  "nullable": true,
+                  "description": "used: the assignment or mutation that consumed this review; a used review cannot be used again. null while no command has consumed it.",
+                  "readOnly": true,
+                  "type": "object",
+                  "properties": {
+                    "at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                      "description": "When the review was consumed."
+                    },
+                    "operation": {
+                      "type": "string",
+                      "enum": [
+                        "assign",
+                        "correct",
+                        "cancel",
+                        "retire",
+                        "split",
+                        "merge",
+                        "boundary_adjustment"
+                      ],
+                      "description": "The operation the audit row of the consuming command records."
+                    }
+                  },
+                  "required": [
+                    "at",
+                    "operation"
+                  ],
+                  "additionalProperties": false
+                },
+                "commandSha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$",
+                  "description": "The hash the review answered when it was stored."
+                }
+              },
+              "required": [
+                "reviewId",
+                "operation",
+                "reason",
+                "createdAt",
+                "scope",
+                "expectedManifestId",
+                "expectedRecordVersion",
+                "used",
+                "commandSha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "More reviews that the caller may read name this record than this page holds."
+          },
+          "unreadable": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20
+          }
+        },
+        "required": [
+          "recordId",
+          "siteId",
+          "items",
+          "truncated",
+          "unreadable"
         ],
         "additionalProperties": false
       },
