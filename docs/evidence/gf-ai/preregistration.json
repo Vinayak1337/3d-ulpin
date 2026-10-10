@@ -342,6 +342,57 @@
           "only, every publisher feature of a kept chip, empty chips kept, closed lists excluded and",
           "proved by id."
         ]
+      },
+      {
+        "number": 2,
+        "at": "2026-10-10T19:18:00+05:30",
+        "decided_by": "lead",
+        "made": [
+          "After the smoke of the amended recipe and before the relaunch. No DEV result of this",
+          "comparison exists; none was read by the lead or by the worker."
+        ],
+        "subject": "The launch gate. Selection, budget, stops and outcomes are unchanged.",
+        "launch_gate": {
+          "a": "Peak reserved memory of the smoke within the 6 GiB budget.",
+          "b": "Every smoke step loss finite.",
+          "c": [
+            "Like-for-like on the smoke's own TRAIN chips, un-augmented, same sampled points: mean loss",
+            "after the smoke steps is lower than before, and lower on at least two thirds of the chips",
+            "that have roofs."
+          ]
+        },
+        "measured": {
+          "smoke_run": "b9-smoke-memory-three-regions-20261010",
+          "peak_reserved_bytes": 5165285376,
+          "budget_bytes": 6442450944,
+          "smoke_chip_losses": 195,
+          "non_finite_chip_losses": 0,
+          "same_chips": 35,
+          "mean_loss_before": 28.276,
+          "mean_loss_after": 24.845,
+          "chips_with_roofs": 27,
+          "chips_with_roofs_and_lower_loss": 26
+        },
+        "stated_plainly": [
+          "Criterion (c) was written after this measurement was seen. It uses TRAIN chips only: no DEV,",
+          "holdout or transfer chip. It is a runtime sanity gate with no part in selection."
+        ],
+        "statistic_that_does_not_apply": {
+          "what": "B3's smoke check: the mean of the last 20 chip losses below the mean of the first 20.",
+          "first_20_mean_loss": 26.234,
+          "last_20_mean_loss": 27.638,
+          "trainer_status": "failed_loss_not_falling",
+          "trainer_exit_code": 1,
+          "reason": [
+            "The smoke has 35 shuffled chips, so the two windows are two different random sets of",
+            "augmented chips: the statistic measures the draw, not the optimizer. The B9 task asked the",
+            "smoke for memory and time only; this check came with B3's launcher."
+          ],
+          "kept": [
+            "The failed statistic stays in b9/smoke.json and in the smoke run's result.json; B3's",
+            "require_smoke is not changed."
+          ]
+        }
       }
     ],
     "hypothesis": [
@@ -607,6 +658,18 @@
         "amendment 1). On pass_dev the outcome is reported and the task stops; the holdout run needs",
         "the owner's decision first."
       ]
+    },
+    "launch_gate": {
+      "amendment": 2,
+      "role": "Runtime sanity gate before launch; no part in selection",
+      "memory": "Peak reserved memory of the smoke within the 6 GiB budget",
+      "finite": "Every smoke step loss finite",
+      "same_chips": [
+        "On the smoke's own TRAIN chips, un-augmented, with the same sampled points: mean loss after",
+        "the smoke steps lower than before, and lower on at least two thirds of the chips that have",
+        "roofs"
+      ],
+      "evidence": "docs/evidence/gf-ai/building/b9/smoke.json (launch_gate)"
     },
     "run_id": "b9-ka-three-regions-20261010"
   },
