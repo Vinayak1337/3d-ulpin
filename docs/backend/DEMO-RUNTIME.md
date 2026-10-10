@@ -96,6 +96,11 @@ fit without changing any limit or scale: the existing 3× choice gives 510 × 10
 Only the inward-rounded region bitmap is allocated, not the 7758 × 5085 transform canvas. These citations prove
 literal labels only, never a unit boundary, numeric level, measurements, rights or current approval.
 
+A selected-region OCR result keeps every box as read: the render starts and ends on whole pixels, so a box may
+pass the region by up to one rendered pixel (1.229 pt at the site plan's 0.814 px per pt), the result states
+this as `regionEdge` (`renderScalePxPerPt`, `boxesBeyondRegion`, `largestOverhangPt`), and a box further out
+refuses the whole result as `OCR_BOX_OUTSIDE_REGION`.
+
 ## Changing the document interpreter
 
 Runtime owner only, after lead review of `docs/evidence/gf1/k9/result.json` and `docs/evidence/gf1/k9c/result.json`.

@@ -3,7 +3,8 @@ import {execFileSync,spawn,spawnSync} from 'node:child_process';
 import {access,mkdtemp,mkdir,open,realpath,rm,writeFile} from 'node:fs/promises';
 import {dirname,isAbsolute,join,relative,resolve,sep} from 'node:path';
 import {z} from 'zod';
-import {DocumentOcrSchema,DocumentOcrExecutionSchema,type DocumentInput,type DocumentResult} from '@ulpin/contracts/usp';
+import {DocumentOcrSchema,DocumentOcrExecutionSchema,measureOcrRegionEdge,
+  type DocumentInput,type DocumentResult} from '@ulpin/contracts/usp';
 import {settings} from '../../../infrastructure/config';
 import {sha256} from '../../../infrastructure/storage';
 import {documentFormat} from './document-native';
@@ -24,7 +25,8 @@ const candidate=z.object({schemaVersion:z.literal('source-ocr-candidate/1'),sour
   selection:z.object({kind:z.enum(['whole_page','selected_region']),sourcePageBox:z.array(z.number()).length(4),
     textCompleteness:z.literal('unverified')}),method:DocumentOcrSchema.shape.method,
   toolStatus:z.enum(['complete','partial','failed','unavailable']),outputStatus:z.enum(['complete','partial','failed']),
-  issues:z.array(z.string()),items:z.array(DocumentOcrSchema.shape.items.element)});
+  issues:z.array(z.string()),items:z.array(DocumentOcrSchema.shape.items.element),
+  render:z.object({scale:z.number().finite().positive()}).optional()});
 const receiptSchema=z.object({schemaVersion:z.literal('source-ocr-attempt/1'),
   source:z.object({sha256:z.string(),bytes:z.number(),page:z.number(),region:z.array(z.number()).length(4).nullable()}),
   limits:z.object({workerSeconds:z.number(),memoryBytes:z.literal(6*1024**3),cpuThreads:z.literal(2),
@@ -82,6 +84,27 @@ function unavailable(input:OcrInput,code:string):NonNullable<DocumentResult['ocr
 }
 function failed(input:OcrInput,code:string):NonNullable<DocumentResult['ocr']>{
   return {...unavailable(input,code),toolStatus:'failed'};
+}
+/** The worker's result against its request: scope, then the region's edge, then the published shape. */
+export function admitOcrCandidate(input:OcrInput,bytes:Buffer,
+  execution?:NonNullable<DocumentResult['ocr']>['execution']):NonNullable<DocumentResult['ocr']>{
+  const selection=input.ocrSelection!,region=selection.region;
+  const raw=candidate.parse(JSON.parse(bytes.toString('utf8'))),frame=raw.sourcePageFrame;
+  if(raw.method!==expectedMethod(input)||raw.sourceSha256!==input.sourceSha256||
+    raw.sourceBytes!==input.sourceBytes||raw.sourcePage!==selection.page||
+    JSON.stringify(raw.selection.sourcePageBox)!==JSON.stringify(region??[0,0,frame.width,frame.height])||
+    raw.selection.kind!==(region?'selected_region':'whole_page')||
+    raw.items.reduce((n,item)=>n+Buffer.byteLength(item.text,'utf8'),0)>32*1024)
+    return failed(input,'OCR_RESULT_SCOPE');
+  // The scale is the worker's own statement, never a guess; without it the contract's first rule applies.
+  const scale=raw.render?.scale,edge=region?measureOcrRegionEdge(region,raw.items,scale):undefined;
+  if(edge?.outside)return failed(input,'OCR_BOX_OUTSIDE_REGION');
+  const regionEdge=edge&&scale!==undefined?{renderScalePxPerPt:scale,boxesBeyondRegion:edge.boxesBeyondRegion,
+    largestOverhangPt:edge.largestOverhangPt}:undefined;
+  return DocumentOcrSchema.parse({sourceSha256:input.sourceSha256,sourceRevision:input.sourceRevision,
+    sourcePage:raw.sourcePage,requestedRegion:region??null,sourcePageFrame:frame,
+    method:raw.method,toolStatus:raw.toolStatus,outputStatus:raw.outputStatus,textCompleteness:'unverified',
+    issues:raw.issues,items:raw.items,execution,...(regionEdge?{regionEdge}:{})});
 }
 function childEnv(tesseract:string,tessdata:string){
   const keys=['SystemRoot','WINDIR','PATH','TEMP','TMP','USERPROFILE','APPDATA','LOCALAPPDATA'];
@@ -169,15 +192,7 @@ export async function runSourceOcr(input:OcrInput,original:Uint8Array,deadline:n
     if(!receipt||receipt.result.sha256!==execution.candidateSha256||receipt.result.method!==expectedMethod(input)||
       receipt.worker.exitCode!==0||receipt.worker.stopReason!==null)
       return finish(failed(input,'OCR_RECEIPT_INVALID'));
-    const raw=candidate.parse(JSON.parse(bytes.toString('utf8')));
-    if(raw.method!==expectedMethod(input)||raw.sourceSha256!==input.sourceSha256||raw.sourceBytes!==input.sourceBytes||raw.sourcePage!==input.ocrSelection.page||
-      JSON.stringify(raw.selection.sourcePageBox)!==JSON.stringify(input.ocrSelection.region??[0,0,raw.sourcePageFrame.width,raw.sourcePageFrame.height])||
-      raw.selection.kind!==(input.ocrSelection.region?'selected_region':'whole_page')||
-      raw.items.reduce((n,item)=>n+Buffer.byteLength(item.text,'utf8'),0)>32*1024)return finish(failed(input,'OCR_RESULT_SCOPE'));
-    return DocumentOcrSchema.parse({sourceSha256:input.sourceSha256,sourceRevision:input.sourceRevision,
-      sourcePage:raw.sourcePage,requestedRegion:input.ocrSelection.region??null,sourcePageFrame:raw.sourcePageFrame,
-      method:raw.method,toolStatus:raw.toolStatus,outputStatus:raw.outputStatus,textCompleteness:'unverified',
-      issues:raw.issues,items:raw.items,execution});
+    return finish(admitOcrCandidate(input,bytes,execution));
   }catch(error){
     const code=error instanceof Error?error.message:'';
     if(code==='OCR_CHILD_CLEANUP_UNRESOLVED')keepDirectory=true;
