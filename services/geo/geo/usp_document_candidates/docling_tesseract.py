@@ -24,6 +24,9 @@ MAX_SOURCE_BYTES = 16 * 1024**2
 MAX_SOURCE_PAGES = 8
 MAX_PAGE_SIDE_POINTS = 2_000
 MAX_SELECTED_SOURCE_PAGE_SIDE_POINTS = 14_400
+# Viewing only (K9e): a page over the whole-page limit is drawn whole only while its bounded scale keeps a
+# sheet's own caption readable. A legibility floor in pixels per point, not a measured limit of the renderer.
+MIN_WHOLE_PAGE_VIEW_SCALE = 0.4
 MAX_PIXELS = 1_600_000
 MAX_IMAGE_SIDE = 1_400
 MAX_PNG_BYTES = 8 * 1024**2
@@ -102,7 +105,8 @@ def verify_source(source: Path, expected_sha256: str) -> dict[str, Any]:
     return {"bytes": len(data), "sha256": actual}
 
 
-def _selection(page: fitz.Page, region: list[float] | None) -> tuple[fitz.Rect, list[float]]:
+def _selection(page: fitz.Page, region: list[float] | None, *,
+               viewing: bool = False) -> tuple[fitz.Rect, list[float]]:
     rect = page.rect
     if (page.rotation != 0 or not all(math.isfinite(v) for v in rect)
             or abs(rect.x0) > 1e-7 or abs(rect.y0) > 1e-7
@@ -112,8 +116,12 @@ def _selection(page: fitz.Page, region: list[float] | None) -> tuple[fitz.Rect, 
         raise SourceOcrError("unsupported_pdf_page_frame", unsupported=True)
     if region is None:
         # Whole-page support is unchanged. Large source frames are useful only
-        # through an explicit, bounded selection; never rasterize them whole.
-        if rect.width > MAX_PAGE_SIDE_POINTS or rect.height > MAX_PAGE_SIDE_POINTS:
+        # through an explicit, bounded selection; never rasterize them whole
+        # as an input. `viewing` is the one exception and only the pages read
+        # passes it: OCR, measurement, packet regions and candidates never do,
+        # so a page over the limit keeps this refusal for every one of them.
+        over = rect.width > MAX_PAGE_SIDE_POINTS or rect.height > MAX_PAGE_SIDE_POINTS
+        if over and not (viewing and _bounded_render_scale(rect) >= MIN_WHOLE_PAGE_VIEW_SCALE):
             raise SourceOcrError("unsupported_pdf_page_frame", unsupported=True)
         return rect, [rect.x0, rect.y0, rect.x1, rect.y1]
     if (len(region) != 4 or any(isinstance(v, bool) or not isinstance(v, (int, float))
@@ -157,8 +165,21 @@ def _bounded_render_scale(clip: fitz.Rect) -> float:
     return scale
 
 
+def whole_page_view_scale(page: fitz.Page) -> float | None:
+    """Viewing only. None: the page is within the whole-page limit and is drawn as always.
+
+    A number: the page is over it and is drawn whole at this reduced scale (pixels per point), the largest
+    the existing pixel bounds allow. Refuses a page the bounds would push below the legibility floor.
+    """
+    rect, _ = _selection(page, None, viewing=True)
+    if rect.width <= MAX_PAGE_SIDE_POINTS and rect.height <= MAX_PAGE_SIDE_POINTS:
+        return None
+    return _bounded_render_scale(rect)
+
+
 def render_pdf_selection(source: Path, expected_sha256: str, page_number: int,
-                         region: list[float] | None, png_path: Path) -> dict[str, Any]:
+                         region: list[float] | None, png_path: Path, *,
+                         viewing: bool = False) -> dict[str, Any]:
     """Render once inside the supervised worker; expose its exact pixel affine."""
     # Open exactly the bytes we hash. A path hash followed by a second parser
     # open could cite a replacement file if the path changes between them.
@@ -184,7 +205,7 @@ def render_pdf_selection(source: Path, expected_sha256: str, page_number: int,
         if len(document) > MAX_SOURCE_PAGES or page_number > len(document):
             raise SourceOcrError("page_count_or_selection_unsupported", unsupported=True)
         page = document[page_number - 1]
-        clip, selected = _selection(page, region)
+        clip, selected = _selection(page, region, viewing=viewing)
         scale = _bounded_render_scale(clip)
         pix = page.get_pixmap(matrix=fitz.Matrix(scale, scale), clip=clip,
                               colorspace=fitz.csRGB, alpha=False)

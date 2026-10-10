@@ -16,6 +16,7 @@ import fitz
 from geo.usp_document_candidates.docling_tesseract import (
     MAX_RESULT_BYTES, SourceOcrError, _selection, collect_items,
     encode_result_bounded, source_page_box, collect_tsv_items, render_pdf_selection,
+    extract_source_page, whole_page_view_scale,
 )
 
 
@@ -130,6 +131,54 @@ class SourceOcrCandidateTests(unittest.TestCase):
             self.assertGreaterEqual(cited[1], region[1])
             self.assertLessEqual(cited[2], region[2])
             self.assertLessEqual(cited[3], region[3])
+
+    def test_whole_page_over_the_limit_is_drawn_reduced_for_viewing_and_for_nothing_else(self) -> None:
+        # Technical controls with one drawn line; not source records or OCR labels.
+        def frame(width: float, height: float) -> SimpleNamespace:
+            return SimpleNamespace(rect=fitz.Rect(0, 0, width, height), rotation=0)
+
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+
+            def control(name: str, width: float, height: float) -> tuple[Path, str]:
+                with fitz.open() as document:
+                    document.new_page(width=width, height=height).insert_text((72, 72), "technical control")
+                    document.save(folder / name)
+                return folder / name, hashlib.sha256((folder / name).read_bytes()).hexdigest()
+
+            # Within the limit the viewing argument changes nothing, byte for byte.
+            source, digest = control("within.pdf", 2000, 1414)
+            plain = render_pdf_selection(source, digest, 1, None, folder / "plain.png")
+            viewed = render_pdf_selection(source, digest, 1, None, folder / "viewed.png", viewing=True)
+            self.assertEqual(plain, viewed)
+            self.assertEqual((folder / "plain.png").read_bytes(), (folder / "viewed.png").read_bytes())
+            self.assertEqual(plain["render"]["scale"], 0.7)
+            self.assertIsNone(whole_page_view_scale(frame(2000, 1414)))
+            # Over it: whole, at the largest scale the existing pixel bounds allow.
+            source, digest = control("over.pdf", 2586, 1695)
+            scale = whole_page_view_scale(frame(2586, 1695))
+            self.assertEqual(scale, 1400 / 2586)
+            drawn = render_pdf_selection(source, digest, 1, None, folder / "over.png", viewing=True)
+            self.assertEqual(drawn["regionKind"], "whole_page")
+            self.assertEqual(drawn["render"]["scale"], scale)
+            self.assertEqual(drawn["render"]["pixels"], [1400, 918])
+            # The OCR entry and every caller without the argument keep the refusal, before any picture.
+            refusal = "unsupported_pdf_page_frame"
+            with self.assertRaisesRegex(SourceOcrError, refusal):
+                render_pdf_selection(source, digest, 1, None, folder / "ocr.png")
+            with patch("geo.usp_document_candidates.docling_tesseract.verify_assets", return_value={}):
+                with self.assertRaisesRegex(SourceOcrError, refusal):
+                    extract_source_page(source, digest, 1, None, folder / "ocr.png", folder, folder, folder)
+            self.assertFalse((folder / "ocr.png").exists())
+        # A selected region is never widened by the argument.
+        for viewing in (False, True):
+            with self.subTest(viewing=viewing), self.assertRaisesRegex(SourceOcrError, "region_side_limit"):
+                _selection(frame(2586, 1695), [0, 0, 2001, 10], viewing=viewing)
+        # The floor: the site plan frame of the demo is drawn; a page the bounds push below it is not.
+        self.assertEqual(whole_page_view_scale(frame(2585, 3390)), 1400 / 3390)
+        for width, height in ((3600, 1000), (4000, 4000), (14400, 14400)):
+            with self.subTest(width=width), self.assertRaisesRegex(SourceOcrError, refusal):
+                whole_page_view_scale(frame(width, height))
 
     def test_sparse_tsv_keeps_literal_words_and_maps_pixels_without_docling_dpi(self) -> None:
         header = "level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext\n"
