@@ -24,6 +24,8 @@
 }
 
 .citations { display: flex; flex-wrap: wrap; gap: var(--ui-space-2); min-width: 0; }
+/* One citation: its chip, and beneath it what the server states about the cited document reading. */
+.citation { display: grid; gap: 4px; justify-items: start; min-width: 0; }
 
 /* A page-and-region locator is long: let the chip wrap instead of clipping at 200% zoom. */
 .citations :global(.ul-evid) {

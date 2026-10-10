@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@ulpin/api-client';
-import { absentReason } from './registerState';
+import { absentReason, readingStatement, readingStatements } from './registerState';
 
 const SERVER_TEXT = 'Server text that is never shown.';
 const failure = (status: number, code?: string) => new ApiError(status, '/api/v1/buildings/b/register', {
@@ -26,5 +26,43 @@ describe('absentReason', () => {
     expect(absentReason(failure(500, 'STALE_REVISION'))).toBeNull();
     expect(absentReason(new Error('offline'))).toBeNull();
     expect(absentReason(null)).toBeNull();
+  });
+});
+
+describe('readingStatement', () => {
+  it('maps each reason the server gives for a reading that is not current to words', () => {
+    const words = (reason: string) => readingStatement({ current: false, reasons: [reason] });
+    expect(words('reader_changed')).toBe('Read by an earlier version of the document reader');
+    expect(words('case_advanced')).toBe('The case has received newer sources since this reading');
+    expect(words('policy_changed')).toBe('The reading policy changed since this reading');
+    expect(words('source_superseded')).toBe('A newer version of this source exists');
+  });
+
+  it('joins several reasons in the order the server gave them', () => {
+    expect(readingStatement({ current: false, reasons: ['policy_changed', 'reader_changed'] }))
+      .toBe('The reading policy changed since this reading · Read by an earlier version of the document reader');
+  });
+
+  it('shows an unknown reason as the literal code, and no reason as no reason', () => {
+    expect(readingStatement({ current: false, reasons: ['reader_changed', 'something_new'] }))
+      .toBe('Read by an earlier version of the document reader · something_new');
+    expect(readingStatement({ current: false, reasons: [] })).toBe('No longer current; the server gave no reason');
+  });
+
+  it('says nothing when the reading is current or the server states nothing', () => {
+    expect(readingStatement({ current: true, reasons: [] })).toBeNull();
+    expect(readingStatement({ current: true, reasons: ['reader_changed'] })).toBeNull();
+    expect(readingStatement(undefined)).toBeNull();
+  });
+});
+
+describe('readingStatements', () => {
+  it('keeps only the sources the server states a not-current reading for', () => {
+    const statements = readingStatements([
+      { id: 'stated', documentResult: { current: false, reasons: ['source_superseded'] } },
+      { id: 'current', documentResult: { current: true, reasons: [] } },
+      { id: 'silent' },
+    ]);
+    expect([...statements]).toEqual([['stated', 'A newer version of this source exists']]);
   });
 });
