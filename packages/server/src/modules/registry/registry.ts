@@ -1,4 +1,5 @@
 import { requireQualifiedGeometryRecords } from '../usp/geometry';
+import { isExteriorOnly } from './exterior-only';
 import { RegistryMetadataSchema,RegistryDocumentCitationsSchema,RegistryCityJSONCandidateSchema,RegistryCityJSONReferencesSchema } from '@ulpin/contracts';
 import {assertRegistryDocumentCitationsTx,assertCitationEdit,publicRegistryBody,publicRegistryDraft,publicRegistryReview,
   documentReviewContext,assertDocumentReviewContext} from './registry-document-evidence';
@@ -647,6 +648,10 @@ async function linkedPreparationFingerprint(client: PoolClient, caseId: string, 
     conflict("The related documents, placement, exterior or prepared details changed. Prepare and build the current evidence before reviewing.");
   return preparationFingerprint;
 }
+function registryReviewInputs(current: RegistryRecord[], proposed: RegistryRecord[]) {
+  const ids = new Set(proposed.map(record => record.id));
+  return [...current.filter(record => !ids.has(record.id) && !isExteriorOnly(record)), ...proposed];
+}
 export async function prepareRegistryReview(
   draftId: string,
   expectedRevision: number,
@@ -670,11 +675,10 @@ export async function prepareRegistryReview(
       site.revision !== expectedSiteRevision
     )
       conflict("Draft or neighbours changed. Refresh and build checks again.");
-    const current = await currentRecords(client, d.siteId),
-      ids = new Set(d.records.map((r) => r.id));
+    const current = await currentRecords(client, d.siteId);
     if (d.records.some(record => record.revision !== (current.find(r => r.id === record.id)?.revision ?? 0)))
       conflict("A proposed record has a newer current revision. Create a correction from that current record.");
-    const combined = [...current.filter((r) => !ids.has(r.id)), ...d.records];
+    const combined = registryReviewInputs(current, d.records);
     await evidenceChecks(client, site, combined);
     const preparationFingerprint=await linkedPreparationFingerprint(client,d.caseId);
     return { d, site, current, combined, preparationFingerprint };
@@ -727,8 +731,8 @@ export async function persistRegistryReviewTx(client:PoolClient,
     await lockRegistryDocumentCasesTx(client,cases,regions);
     const site=siteFrom(await siteRow(client,snapshot.site.id,true));
     const draft=draftFrom((await client.query('SELECT * FROM registry_drafts WHERE id=$1 FOR UPDATE',[snapshot.d.id])).rows[0]??notFound());
-    const current=await currentRecords(client,site.id),ids=new Set(draft.records.map(record=>record.id));
-    const combined=[...current.filter(record=>!ids.has(record.id)),...draft.records];
+    const current=await currentRecords(client,site.id);
+    const combined=registryReviewInputs(current,draft.records);
     if(draft.siteId!==site.id||draft.caseId!==snapshot.d.caseId)conflict('The draft site or workspace changed.');
     assertRegistryDocumentCases(cases,registryDocumentCases(draft.caseId,combined));
     assertRegistryDocumentCases(regions,registryRegionCases(combined));
@@ -749,8 +753,7 @@ export async function commitRegistryReview(
 type RegistryReviewCaseLocks={reviewId:string;draftId:string;siteId:string;caseId:string;replayOnly:boolean;cases:string[];regions:string[]};
 function reviewCaseRecords(current:RegistryRecord[],draft:{records:RegistryRecord[]},row:{committed:boolean;body:RegistryReview}){
   if(row.committed)return row.body.records;
-  const ids=new Set(draft.records.map(record=>record.id));
-  return [...current.filter(record=>!ids.has(record.id)),...draft.records,...row.body.records];
+  return [...registryReviewInputs(current,draft.records),...row.body.records];
 }
 /** Lookup and acquire the complete gate set before any caller's recording/receipt locks.
  * A committed review is valid lookup input; cached USP replay does not need an active draft. */
@@ -843,10 +846,9 @@ export async function commitRegistryReviewTx(
         "ACKNOWLEDGEMENT_REQUIRED",
         "Explain why the remaining warnings are acknowledged.",
       );
-    const ids = new Set((d.records as RegistryRecord[]).map((r) => r.id));
     if ((d.records as RegistryRecord[]).some(record => record.revision !== (current.find(r => r.id === record.id)?.revision ?? 0)))
       conflict("A proposed record changed since this draft was created. Review a correction from the current record.");
-    const combined = [...current.filter((r) => !ids.has(r.id)), ...d.records];
+    const combined = registryReviewInputs(current, d.records);
     if (
       fingerprint({
         validatorVersion: "registry-relationships-v2",
