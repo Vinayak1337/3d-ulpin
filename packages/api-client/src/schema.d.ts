@@ -22839,6 +22839,7 @@ export interface components {
                 buildingId: string | null;
                 sourceCount: number;
                 updatedAt: string;
+                tableSourceIds?: string[];
                 state: string | null;
                 jobStatus: string | null;
                 recordedHistory: boolean;

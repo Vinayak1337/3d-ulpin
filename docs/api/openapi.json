@@ -150399,6 +150399,12 @@
                 "updatedAt": {
                   "type": "string"
                 },
+                "tableSourceIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
                 "state": {
                   "type": "string",
                   "nullable": true
