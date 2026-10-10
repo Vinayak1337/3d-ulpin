@@ -12,7 +12,7 @@ import { AppError, conflict, notFound } from '../../infrastructure/errors';
 import { appendUspOutboxTx, requestReceiptTx, scopedManifestTx } from './commands';
 import { assertLocalUsp, assertSnapshotDocumentsTx, captureRegistrySnapshotTx } from './snapshots';
 import { newProjectCode } from './project-code-generator';
-import { validateSourceStatedIdentityTx } from './source-stated-identity';
+import { UNQUALIFIED_SOURCE_LOCATION, validateSourceStatedIdentityTx } from './source-stated-identity';
 
 type Review = z.infer<typeof ProjectIdentityReviewSchema>;
 type Assign = z.infer<typeof AssignProjectCodeSchema>;
@@ -94,6 +94,13 @@ function validateLocationEvidence(location: ProjectLocation, evidence: Review['e
   }
 }
 
+/** Derive write state without adding fields to the client's stored, hashed review. */
+function assignmentLocation(row: { body: any }, review: Review): ProjectLocation {
+  if (review.location) return validateLocation(review.location);
+  if (row.body?.sourceOnly) return UNQUALIFIED_SOURCE_LOCATION;
+  return unsupported();
+}
+
 export async function prepareProjectIdentityReview(ctx: RequestContext, raw: Review) {
   officer(ctx);
   const review = ProjectIdentityReviewSchema.parse(raw);
@@ -101,7 +108,7 @@ export async function prepareProjectIdentityReview(ctx: RequestContext, raw: Rev
     || Object.keys(review.expectedVersions).sort().join(',') !== [...review.recordIds].sort().join(',')) unsupported();
   if (review.location) validateLocation(review.location);
   if (review.locations) for (const location of Object.values(review.locations)) validateLocation(location);
-  if (review.operation === 'assign' && (review.recordIds.length !== 1 || !review.location)) unsupported();
+  if (review.operation === 'assign' && review.recordIds.length !== 1) unsupported();
   if (review.operation === 'correct' && (review.recordIds.length !== 1 || !review.location)) unsupported();
   if (['split', 'merge'].includes(review.operation) && (!review.successors || !review.locations || review.location
     || Object.keys(review.locations).sort().join(',') !== [...review.successors].sort().join(','))) unsupported();
@@ -124,6 +131,7 @@ export async function prepareProjectIdentityReview(ctx: RequestContext, raw: Rev
       if (!valid) throw new AppError(422, 'USP_BOUNDARY_GEOMETRY', 'The transferred geometry must be a valid area.');
     }
     const rows = await lockedRecords(client, review.scope.scopeId, review.recordIds);
+    if (review.operation === 'assign') assignmentLocation(rows[0], review);
     const manifest = await pinnedManifest(client, ctx, review.scope);
     validateMembers(manifest, rows, review.expectedVersions, review.evidence);
     await validateSourceStatedIdentityTx(client, rows, review);
@@ -252,7 +260,8 @@ export async function assignProjectCode(ctx: RequestContext, raw: Assign,
     const code = await allocate(client, command.recordId, command.scope.scopeId, command.reviewId, codeFactory);
     if (afterCodeInsert) await afterCodeInsert();
     await client.query(`INSERT INTO usp_project_identity_state(record_id,location,review_id,version)
-      VALUES($1,$2,$3,$4)`, [command.recordId, validateLocation(review.location!), command.reviewId, rows[0].revision + 1]);
+      VALUES($1,$2,$3,$4)`, [command.recordId, assignmentLocation(rows[0], review),
+      command.reviewId, rows[0].revision + 1]);
     await bumpRevisions(client, command.scope.scopeId, rows);
     return finish(client, ctx, command.scope, 'assign', command.requestKey, hash,
       command.reviewId, rows, { [command.recordId]: code });

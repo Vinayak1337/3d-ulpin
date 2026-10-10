@@ -7,6 +7,7 @@ import { SourceSpaceControl, retainedTower, towerRequest } from '../officer/sour
 import { localRequestContext } from './principal';
 import { prepareProjectIdentityReview } from './project-identity';
 import { captureRegistrySnapshot } from './snapshots';
+import { UNQUALIFIED_SOURCE_LOCATION } from './source-stated-identity';
 
 const pins = JSON.parse(readFileSync('docs/evidence/gf-backend/k2/tower3-source-import.json', 'utf8')).documentPins;
 const sizes = [3782332, 1655334, 2448909, 1630108];
@@ -172,8 +173,10 @@ export class SourceIdentityControl {
 }
 
 const globals = globalThis as unknown as { ulpinPool?: unknown };
-export const location = { anchorState: 'not_supplied' as const, parcels: [], locator: {
-  structureKind: '?' as const, structureNumber: 1, levels: ['L?'], spaceKind: '?' as const, spaceNumber: 1 } };
+export const location = UNQUALIFIED_SOURCE_LOCATION;
+// The immutable R3 form stays parseable and printable; it is not a new source-only write.
+export const legacyNumberedLocation = { ...location, locator: { ...location.locator,
+  structureNumber: 1, spaceNumber: 1 } };
 export const errorCode = (code: string) => (error: any) => error.code === code;
 
 async function fixture(request: SourceSpaceRequest) {
@@ -206,7 +209,7 @@ export async function prepare(f: SourceFixture) {
   const review = { operation: 'assign' as const, scope: snapshot.scope, recordIds: [f.recorded.spaceId],
     expectedVersions: { [f.recorded.spaceId]: 1 }, reason: f.request.reason,
     evidence: [{ sourceId: f.request.space.evidence.sourceId, revision: 1,
-      locator: f.db.rows.find(row => row.id === f.recorded.spaceId).body.evidence[0].locator }], location };
+      locator: f.db.rows.find(row => row.id === f.recorded.spaceId).body.evidence[0].locator }] };
   const prepared = await prepareProjectIdentityReview(f.ctx, review as any);
   return { review, snapshot, command: { scope: snapshot.scope, expectedManifestId: snapshot.id,
     reviewId: prepared.reviewId, requestKey: randomUUID(), recordId: f.recorded.spaceId, expectedRecordVersion: 1 } };
