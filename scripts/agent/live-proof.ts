@@ -95,6 +95,8 @@ type Refusal = { input: string; reason: string; opened: boolean };
 type StepInput = {
   sourceId: string; sha256: string; dataClass: 'public'; split: 'development' | 'demo';
   permission: string; permissionRecordedIn: string; sent: string; omitted?: StoreyOmittedLine[];
+  /** Whole-sample tokens of the profile that the request carries in their plain-text form. */
+  sampleForms?: { token: string; form: string; samples: number }[];
 };
 type Exec =
   | { kind: 'mapping'; chunk: TabularChunkInput; file: number }
@@ -215,7 +217,8 @@ function curveSpec(asset: SourceAsset, chunk: TabularChunkInput, file: number): 
   return {
     id: `curve-file${file + 1}-chunk${chunk.chunkIndex + 1}`, boxes: ['AG-S1', 'AG-S2', 'ML-L2', 'AG-E2'],
     purpose: `Mapping teacher on a new header layout of ${asset.id}: one point of the two-file call curve`,
-    input: curveInput(asset, chunk), exec: { kind: 'mapping', chunk, file }, consumer: 'INGEST',
+    input: { ...curveInput(asset, chunk), sampleForms: request.sampleForms },
+    exec: { kind: 'mapping', chunk, file }, consumer: 'INGEST',
     template: MAPPING_TEACHER_TEMPLATE, taskKind: 'mapping_v2', scopeHash: profileHash,
     replayKey: teacherReplayKey(profileHash), messages: request.messages, schema: request.schema,
   };
@@ -267,12 +270,18 @@ function storeySpec(
   };
 }
 
+const OMISSION_REASONS: Record<StoreyOmittedLine['code'], string> = {
+  MODEL_PROMPT_PRIVACY: "the gateway's text minimizer refuses this line",
+  NOT_SELECTED_UNIT_NUMBER: 'not selected: its only matching word is a numbered unit, as in an address, which '
+    + 'states no level and no count of units',
+};
+
 /** One line of a document that is otherwise asked: named by position, never by its text. */
 function omittedLine(source: StoreySource, line: StoreyOmittedLine): Refusal {
   return {
     input: `${source.record}, document ${source.sha256.slice(0, 8)}: line ${line.partId} (page ${line.page}, `
       + `line ${line.line})`,
-    reason: `the gateway's text minimizer refuses this line (${line.code}); it is left out of the request and `
+    reason: `${OMISSION_REASONS[line.code]} (${line.code}); it is left out of the request and `
       + 'the answer cannot cite it',
     opened: true,
   };

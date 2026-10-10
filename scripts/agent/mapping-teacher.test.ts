@@ -39,6 +39,7 @@ import {
   ReplayAdapter,
   SarvamAdapter,
   classifyProviderFailure,
+  minimizeMessages,
   type ProviderRequest,
   type ProviderResult,
 } from '../../packages/server/src/modules/model-gateway/adapter';
@@ -69,8 +70,8 @@ test('profile: evidence-only units, disagreement, shapes and conservative PII ma
   const sent = JSON.parse(mappingTeacherRequest(profile).messages[1].content).columnProfile.columns;
   assert.deepEqual(
     sent[0].maskedSamples,
-    profile.columns[0].maskedSamples,
-    'Already masked shape samples must stay idempotent.',
+    profile.columns[0].maskedSamples.map((sample) => (sample === '[blank]' ? '(blank cell)' : sample)),
+    'Already masked shape samples stay as they are; the blank token goes in its plain-text form.',
   );
   assert.equal(profile.columns[3].valueShapes.khasraLikeRate, 1);
   for (const column of profile.columns) assert.equal(column.maskedSamples.length, 5);
@@ -101,6 +102,38 @@ test('profile: evidence-only units, disagreement, shapes and conservative PII ma
   assert.equal(unavailable.valueShapes.blankRate, 1 / 3);
   assert.equal(unavailable.valueShapes.distinctRatio, null);
   assert.equal(profileColumns([], [{ name: 'Empty' }], 'tabular').columns[0].valueShapes.nullRate, null);
+});
+
+test('request: the four whole-sample tokens go as plain-text forms the minimizer accepts; cell text stays text', () => {
+  const rows = [
+    { gap: '', compound: [1], note: '(blank cell)' },
+    { compound: { key: 1 }, note: '(object cell)' },
+  ];
+  const profile = profileColumns(rows, [{ name: 'gap' }, { name: 'compound' }, { name: 'note' }], 'tabular');
+  const tokens = [['[blank]', '[absent]'], ['[array]', '[object]']];
+  const text = ['(blank xxxx)', '(object xxxx)'];
+  assert.deepEqual(profile.columns.map((column) => column.maskedSamples), [...tokens, text]);
+  const refused = [{ role: 'user', content: JSON.stringify({ samples: tokens.flat() }) }];
+  assert.throws(() => minimizeMessages(refused), { code: 'MODEL_PROMPT_PRIVACY' });
+
+  const request = mappingTeacherRequest(profile);
+  const sent = (messages: unknown) =>
+    JSON.parse(minimizeMessages(messages)[1].content).columnProfile.columns.map(
+      (column: { maskedSamples: string[] }) => column.maskedSamples,
+    );
+  const forms = [['(blank cell)', '(absent cell)'], ['(array cell)', '(object cell)']];
+  assert.deepEqual(sent(request.messages), [...forms, text]);
+  assert.deepEqual(request.sampleForms, [
+    { token: '[absent]', form: '(absent cell)', samples: 1 },
+    { token: '[blank]', form: '(blank cell)', samples: 1 },
+    { token: '[array]', form: '(array cell)', samples: 1 },
+    { token: '[object]', form: '(object cell)', samples: 1 },
+  ]);
+
+  // A stored sample that already reads as a form is masked again as text, never passed through as a token.
+  const stored = { ...profile, columns: profile.columns.map((column) => ({ ...column, maskedSamples: forms[0] })) };
+  assert.deepEqual(sent(mappingTeacherRequest(stored).messages), Array(3).fill(['(blank xxxx)', '(absent xxxx)']));
+  assert.deepEqual(mappingTeacherRequest(stored).sampleForms, []);
 });
 
 test('two retained Indian inputs: profile to control plan, validator and dry-run; source immutable', async () => {

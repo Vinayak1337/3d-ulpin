@@ -148,6 +148,21 @@ test('selection: a line the minimizer refuses is left out, named, and cannot be 
   assert.deepEqual([result.state, result.code, result.output], ['teacher_unavailable', 'TEACHER_INVALID_OUTPUT', null]);
 });
 
+test('selection: a numbered unit in a contact line selects nothing; a stated unit count does', () => {
+  const lines = [
+    'Unit.No.12, Example Chambers, Sector-9, Sampleville O :- 011-5550100',
+    'UNIT=36',
+    'TOTAL NO. OF UNITS 36',
+    'UNIT NO. 7 SECOND FLOOR',
+    'NORTH',
+  ].map((text, index) => ({ id: `p1-l${index}`, text }));
+  const selection = storeyPartSelection({ source: { sha256: 'c'.repeat(64) }, pages: { '1': { lines } } });
+  assert.deepEqual(selection.batches.flat().map((part) => part.partId), ['p1-l1', 'p1-l2', 'p1-l3']);
+  // Left out by the selection, not by privacy: the minimizer would accept the contact line.
+  assert.deepEqual(selection.omitted, [{ partId: 'p1-l0', page: 1, line: 0, code: 'NOT_SELECTED_UNIT_NUMBER' }]);
+  assert.doesNotThrow(() => minimizeMessages([{ role: 'user', content: lines[0].text }]));
+});
+
 test('heights: units are converted by code and a missing unit stays unknown', () => {
   assert.equal(heightMetres(10, 'ft'), 3.048);
   assert.equal(heightMetres(3000, 'mm'), 3);

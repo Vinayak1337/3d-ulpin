@@ -69,6 +69,26 @@ test('plan: totals are sums of the calls, every figure names its kind and tariff
   assert(plan.neverSent.some(refusal => refusal.input.startsWith('tabular family') && !refusal.opened));
 });
 
+test('plan: a line left out of a storey call is named under its own reason; a mapping call names its forms', () => {
+  const plan = buildPlan(readTariff());
+  const calls = plan.steps.filter(step => step.request);
+  const storey = calls.filter(step => step.exec.kind === 'storey');
+  const omitted = storey.flatMap(step => step.input.omitted ?? []);
+  for (const code of ['MODEL_PROMPT_PRIVACY', 'NOT_SELECTED_UNIT_NUMBER']) {
+    const lines = omitted.filter(line => line.code === code);
+    assert(lines.length > 0, code);
+    assert.equal(plan.neverSent.filter(refusal => refusal.reason.includes(`(${code})`)).length, lines.length);
+  }
+  assert(plan.neverSent.some(refusal => refusal.reason.startsWith('not selected: ')));
+  for (const step of storey) {
+    const sent = step.exec.kind === 'storey' ? step.exec.parts.map(part => part.partId) : [];
+    assert((step.input.omitted ?? []).every(line => !sent.includes(line.partId)));
+  }
+  for (const step of calls.filter(entry => entry.exec.kind === 'mapping')) {
+    assert(Array.isArray(step.input.sampleForms));
+  }
+});
+
 test('plan: it follows the tariff it is given, and stops where a cap would be crossed', () => {
   const proposal = buildPlan(readTariff());
   const price = {
