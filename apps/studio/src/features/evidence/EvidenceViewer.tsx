@@ -4,6 +4,7 @@ import { ArrowSquareOut, WarningCircle } from '@phosphor-icons/react';
 import type { DocumentPages } from '@ulpin/api-client/draft';
 import { Badge, Button, Dialog, EmptyState, EvidenceChip, Icon, Skeleton } from '@ulpin/ui';
 import { useDocumentPages, usePageImage } from '../../api/queries';
+import { SourceReadingNote } from '../register/SourceReadingNote';
 import { CitedPageViewer, type Place } from './CitedPageViewer';
 import { resolvePointer, type EvidenceRef } from './refs';
 import styles from './EvidenceViewer.module.css';
@@ -64,6 +65,7 @@ function PagedViewer({ evidence, still, doc, onClose }: { evidence: EvidenceRef;
         <span className="ul-row">
           <Badge icon={null}>{doc.revision}</Badge>
           <span className="ul-caption">{doc.name}</span>
+          <SourceReadingNote sourceId={evidence.sourceId} />
           {image.data ? <a className="ul-btn ul-btn--ghost" href={image.data} target="_blank" rel="noreferrer"><Icon icon={ArrowSquareOut} />Open original</a> : null}
         </span>
       )}
@@ -153,6 +155,7 @@ function FileViewer({ evidence, still, onClose }: { evidence: EvidenceRef; still
       aside={(
         <span className="ul-row">
           <span className="ul-caption">{evidence.locator.text}</span>
+          <SourceReadingNote sourceId={evidence.sourceId} />
           {originalUrl ? <a className="ul-btn ul-btn--ghost" href={originalUrl} target="_blank" rel="noreferrer"><Icon icon={ArrowSquareOut} />Open original</a> : null}
         </span>
       )}

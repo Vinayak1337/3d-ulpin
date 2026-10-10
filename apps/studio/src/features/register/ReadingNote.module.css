@@ -1,0 +1,7 @@
+/* One citation: its chip, and beneath it what the server states about the cited document reading. */
+.cited {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; justify-items: start;
+  min-width: 0; max-width: 100%;
+}
+/* The same statement in a dialog's header row: narrow enough to wrap there and leave the title its line. */
+.inHeader { max-width: 280px; }
