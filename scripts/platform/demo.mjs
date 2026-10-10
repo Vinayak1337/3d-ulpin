@@ -142,6 +142,12 @@ async function startRuntime(definition, create) {
       throw new Error('Demo bootstrap is incomplete; explicit --create is required to resume schema-only setup.');
     }
     bootstrap(definition, runtime, env, compose);
+    if (definition.rehearsal) {
+      // Its document runtime can only be built while its API and dispatcher are stopped: create ends here.
+      console.log(`${definition.name} created: storage, schema and processors are up; API and dispatcher not `
+        + 'started. Build its document runtime, then start it.');
+      return;
+    }
   } else resume(definition, runtime, compose);
   await launchProcesses(env, definition);
   await waitForApi(env, definition);

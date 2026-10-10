@@ -4,7 +4,7 @@ import {
 import { createHash, randomBytes } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { createServer } from 'node:net';
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { command, dockerRuntime, root } from './runtime.mjs';
 
@@ -399,24 +399,68 @@ function restrictFolder(dir) {
   command('icacls.exe', [dir, '/inheritance:r', '/grant:r', ...grants]);
 }
 
+/** What a rehearsal shares with the demo, read-only: the demo's own two path files, through their readers. */
+function sharedDemoPaths() {
+  return { tabular: readDemoTabularPaths(), ocr: readDemoOcrPaths() };
+}
+
+function writeOnce(file, paths) {
+  if (existsSync(file)) return false;
+  writeFileSync(file, JSON.stringify(paths) + '\n', { flag: 'wx', mode: 0o600 });
+  return true;
+}
+
+/**
+ * A rehearsal's two path files, so that create finishes in one run. The interpreters, the learner seed, the
+ * OCR models and Tesseract are the demo's (non-secret paths, only ever read); the learning folder and the OCR
+ * scratch are new folders inside the rehearsal's own folder, never the demo's. A file that exists is left as
+ * it is, so a resumed create writes nothing twice. Both files must then pass their readers. Returns the
+ * names written. The second argument is for tests.
+ */
+export function writeRehearsalPaths(name, shared = sharedDemoPaths()) {
+  const runtime = definedRuntime(name);
+  if (!runtime.rehearsal) throw new Error('Path files are written for a rehearsal only; the demo keeps its own.');
+  const learning = join(runtime.dir, 'learning'), scratch = join(runtime.dir, 'ocr-scratch');
+  mkdirSync(learning, { recursive: true, mode: 0o700 });
+  const { ULPIN_PROFILE_PYTHON, ULPIN_TABULAR_LEARNER_SEED } = shared.tabular;
+  const tabular = { ULPIN_PROFILE_PYTHON, ULPIN_TABULAR_LEARNING_DIR: learning, ULPIN_TABULAR_LEARNER_SEED };
+  const written = writeOnce(runtime.tabularFile, tabular) ? [basename(runtime.tabularFile)] : [];
+  // Local OCR is optional for the demo; a rehearsal has it exactly when the demo does.
+  if (shared.ocr.ULPIN_DOCUMENT_OCR_PYTHON) {
+    mkdirSync(scratch, { recursive: true, mode: 0o700 });
+    const ocr = { ...shared.ocr, ULPIN_DOCUMENT_OCR_SCRATCH: scratch };
+    if (writeOnce(runtime.ocrFile, ocr)) written.push(basename(runtime.ocrFile));
+  }
+  readDemoTabularPaths(runtime.tabularFile, runtime.dir);
+  readDemoOcrPaths(runtime.ocrFile, runtime.ocrProfileFile);
+  return written;
+}
+
+/**
+ * Makes a runtime's folder and settings once. An existing settings file is only read back: nothing is
+ * regenerated. For a rehearsal the shared paths are read before anything is written, and its two path files
+ * follow the settings in the same run.
+ */
 export async function createDemo(name = demoRuntime) {
   const definition = definedRuntime(name);
-  if (definition.rehearsal) throw new Error('Create is not yet available for a rehearsal: no writer of its files.');
   const { file, dir, project } = definition;
   const runtime = dockerRuntime();
   const volumes = runtime.docker('volume', 'ls', '--format', '{{.Name}}').split('\n');
   const filter = `label=com.docker.compose.project=${project}`;
   const containers = runtime.docker('ps', '-a', '--filter', filter, '--format', '{{.ID}}');
   assertDemoConfigMayBeGenerated(existsSync(file), volumes, !!containers, project);
-  if (existsSync(file)) return readDemo(definition);
-  for (const port of Object.values(definition.ports)) await freePort(port);
-  mkdirSync(join(dir, 'logs'), { recursive: true, mode: 0o700 });
-  mkdirSync(join(dir, 'models'), { recursive: true, mode: 0o700 });
-  restrictFolder(dir);
-  const env = runtimeSettings(definition, () => randomBytes(32).toString('hex'));
-  const text = Object.entries(env).map(([k, v]) => `${k}=${v}`).join('\n') + '\n';
-  writeFileSync(file, text, { flag: 'wx', mode: 0o600 });
-  chmodSync(file, 0o600);
+  const shared = definition.rehearsal ? sharedDemoPaths() : null;
+  if (!existsSync(file)) {
+    for (const port of Object.values(definition.ports)) await freePort(port);
+    mkdirSync(join(dir, 'logs'), { recursive: true, mode: 0o700 });
+    mkdirSync(join(dir, 'models'), { recursive: true, mode: 0o700 });
+    restrictFolder(dir);
+    const env = runtimeSettings(definition, () => randomBytes(32).toString('hex'));
+    const text = Object.entries(env).map(([k, v]) => `${k}=${v}`).join('\n') + '\n';
+    writeFileSync(file, text, { flag: 'wx', mode: 0o600 });
+    chmodSync(file, 0o600);
+  }
+  if (shared) writeRehearsalPaths(definition, shared);
   return readDemo(definition);
 }
 export function safeEnvironment(env) {
