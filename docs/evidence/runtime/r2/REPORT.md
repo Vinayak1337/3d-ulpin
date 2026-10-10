@@ -1,18 +1,21 @@
-TASK   R2 — reviewed demo rollout and Tower 3 identity journey            GATE GF1 / GF4
-WORKS  Done Step 1: reviewed rollout, document runtimes PASS; pinned page and canonical GETs return 200.
-       Stopped at Step 2 / snapshot: record and exact replay 201; snapshot 409 STALE_REVISION, no retry.
-       Partly Step 3: recorded-panel read checks pending.
+TASK   R2 — reviewed demo rollout and Tower 3 source-stated identity journey; GF1/GF4, partial delivery.
+WORKS  Done Step 1: served 9aad8da2; document runtimes built with both natives stopped; doctor 0, containers preserved.
+       Stopped at Step 2 / snapshot: record and identical replay 201; snapshot 409 STALE_REVISION, no retry.
+       Partly Step 3: recorded-panel canonical/page reads 200; both cited labels present, assigned code unknown.
 SEE IT http://127.0.0.1:5188/studio/review/6f95d04e-2067-4ac8-a3c2-6cc21ea46325
-       Packet/card PDFs and PNGs are pending, not generated.
-INPUTS Retained Tower 3 plan1; good caption and difficult small boxed UNIT-3B on the oversized sheet.
-GAPS   Snapshot refused; no P3/card/PDF/QR. Labels establish no boundary, measurement, rights or level ordinal.
-DESIGN scripts/agent/r2-live.ts retains each request before sending and each response after receipt in new files.
-       Reuses R1's read-only count routes and contract schemas; no configuration access or application-code changes.
-COMMITS 1834874f — Step 1: reviewed rollout and live document-runtime probes.
-        Step 2 commit: source-space record/replay and stopped snapshot finding.
-CHECKS doctor before/after 0; tsc 0; probes 0; counts before/after 0; record/replay 0; snapshot driver 1 (HTTP 409).
-NEXT   Lead: review the source-only snapshot closure. Existing floor/space are retained; never record a second pair.
-       snapshotRows captures every same-site source; the refusal comes from assertDocumentInputTx's freshness gate.
-       The failing source is not exposed. The USP filter emits no log; no native-log reader is approved, so no raw
-       runtime files were read. Snapshot/review/assign/plan/card remain unrun beyond the saved failed snapshot.
-       Runtime is up at the reviewed target. No containers stopped/replaced; gateway disabled; no provider call.
+       Studio transport was unavailable; no frontend start/retry. Browser rendering is not verified.
+       Full exchanges/log receipts: E:/BhuAayam-data/task-data/r2/. No packet/card PDF or PNG was generated.
+INPUTS Tower 3 plan1, revision 1, original SHA pinned in result.json; caption [850,875,1020,910], page 1;
+       boxed UNIT-3B [596,390,644,409], page 1. R1 automatic-dispatch receipts reused; no new jobs or provider calls.
+GAPS   Snapshot refusal b94c1677-7e20-4ac7-91a0-ba2f02123e08, retryable false. No P3/card/QR/expiry/tamper proof.
+       No boundary, measurements, use, placement, rights or ordinal inferred. G+41/G+42 remains conflicting.
+DESIGN Existing platform scripts/contracts only; no app repair, SQL, alternate route/body, or second record key.
+COMMITS 1834874f — Step 1 rollout; 283b3f83 — Step 2 record/replay and refusal; Step 3 evidence — this commit.
+CHECKS final doctor 0; served checkout clean, API 25080 / dispatcher 14424 remain running; driver tsc 0.
+       Record/replay and counts 0; snapshot driver 1 (409 finding); Studio API 0, HTML transport 1; diff/120 columns 0.
+       Registry 2 to 4: exactly one floor and one space; building revision 4 to 5, both children at revision 1.
+       Areas 4, sites 4, packages 7, cases 11, sources 38, features 67, retained learner v44: all unchanged.
+NEXT   Lead: review same-site source snapshot closure and freshness authority; failed source is not exposed.
+       Requests/responses retained; read-only API log scan found zero matching lines (the USP filter does not log).
+       Resume only after a reviewed repair, from existing space 46b7265e-ca88-402d-83df-065cf7c45140 revision 1;
+       never record a second floor/space. Frontend owner: make the Studio URL available separately.
