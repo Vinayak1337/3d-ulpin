@@ -110,7 +110,9 @@ def main() -> None:
               "scopeExceptions": verified.pop("scopeExceptions"),
               "history": "Read-only current/reasons; private/source/input/payload checks survive; "
                          "write fences unchanged.",
-              "completion": "Unresolved drafts finish completed; actual quarantines/refusal markers keep rejections.",
+              "completion": "Tables: unresolved drafts finish completed; quarantines/refusal markers keep "
+                            "rejections. GIS: unresolved, duplicate-key and drifted records keep "
+                            "completed_with_rejections.",
               "gaps": ["Post-merge owner rollout and real historical/read/completion qualification are required.",
                        "No property-positive accuracy, student improvement, live teacher or TNHB runtime claim.",
                        "Frozen truth and holdout evaluation were not used; a forbidden filename scan is disclosed."],
