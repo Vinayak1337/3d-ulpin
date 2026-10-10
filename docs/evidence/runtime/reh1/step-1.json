@@ -1,0 +1,31 @@
+{ "at": "2026-10-10T17:45:23.809Z", "commit": "afd23f2999c412ed5c2b21aae10c3fae0c859003", "receipt": { "command": [
+"git worktree add --detach E:/Projects/ulpin-wt/ulpin-reh-01 afd23f2999c412ed5c2b21aae10c3f", "ae0c859003" ],
+"from": "E:/Projects/3d-ulpin", "exit": 0, "seconds": 1.81, "output": [
+"HEAD is now at afd23f29 Merge RC2: a candidate card names its level by the read's label, i",
+"ts citation is a control that opens the evidence viewer, and a room may carry the size its",
+" sheet states, as read, beside the estimate (no record holds a stated size yet; seen mocke", "d only)",
+"Preparing worktree (detached HEAD afd23f29)", "Updating files:  55% (2697/4876)", "Updating files:  56% (2731/4876)",
+"Updating files:  57% (2780/4876)", "Updating files:  58% (2829/4876)", "Updating files:  59% (2877/4876)",
+"Updating files:  60% (2926/4876)", "Updating files:  61% (2975/4876)", "Updating files:  62% (3024/4876)",
+"Updating files:  63% (3072/4876)", "Updating files:  64% (3121/4876)", "Updating files:  65% (3170/4876)",
+"Updating files:  66% (3219/4876)", "Updating files:  67% (3267/4876)", "Updating files:  68% (3316/4876)",
+"Updating files:  69% (3365/4876)", "Updating files:  70% (3414/4876)", "Updating files:  71% (3462/4876)",
+"Updating files:  72% (3511/4876)", "Updating files:  73% (3560/4876)", "Updating files:  74% (3609/4876)",
+"Updating files:  75% (3657/4876)", "Updating files:  76% (3706/4876)", "Updating files:  77% (3755/4876)",
+"Updating files:  78% (3804/4876)", "Updating files:  79% (3853/4876)", "Updating files:  80% (3901/4876)",
+"Updating files:  81% (3950/4876)", "Updating files:  82% (3999/4876)", "Updating files:  83% (4048/4876)",
+"Updating files:  84% (4096/4876)", "Updating files:  85% (4145/4876)", "Updating files:  86% (4194/4876)",
+"Updating files:  87% (4243/4876)", "Updating files:  88% (4291/4876)", "Updating files:  89% (4340/4876)",
+"Updating files:  90% (4389/4876)", "Updating files:  91% (4438/4876)", "Updating files:  92% (4486/4876)",
+"Updating files:  93% (4535/4876)", "Updating files:  94% (4584/4876)", "Updating files:  95% (4633/4876)",
+"Updating files:  96% (4681/4876)", "Updating files:  97% (4730/4876)", "Updating files:  98% (4779/4876)",
+"Updating files:  99% (4828/4876)", "Updating files: 100% (4876/4876)", "Updating files: 100% (4876/4876), done." ],
+"error": null }, "gpu": null, "state": { "runtimeEntries": [], "volumes": { "command": [
+"docker volume ls --filter name=ulpin-reh-01_ --format \"{{.Name}}\"" ],
+"from": "E:/Projects/ulpin-wt/r5/docs/evidence/runtime/reh1", "exit": 0, "seconds": 0.158, "output": [ "" ],
+"error": null }, "containers": { "command": [
+"docker ps -a --filter label=com.docker.compose.project=ulpin-reh-01 --format \"{{.Names}} {", "{.State}} {{.Status}}\""
+], "from": "E:/Projects/ulpin-wt/r5/docs/evidence/runtime/reh1", "exit": 0, "seconds": 0.161, "output": [ "" ],
+"error": null }, "networks": { "command": [ "docker network ls --filter name=ulpin-reh-01 --format \"{{.Name}}\"" ],
+"from": "E:/Projects/ulpin-wt/r5/docs/evidence/runtime/reh1", "exit": 0, "seconds": 0.164, "output": [ "" ],
+"error": null }, "listeners": [] } }
