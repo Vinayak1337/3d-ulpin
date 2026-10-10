@@ -10,9 +10,9 @@ import { profileTabularChunk } from '../../packages/server/src/modules/usp/inges
 import { t1OfficerAnswers } from './a3c-officer-answers';
 
 const base = 'http://127.0.0.1:3194';
-const a3c = process.argv.includes('--a3c');
-const enqueueOnly = process.argv.includes('--enqueue-only');
-const root = `E:/BhuAayam-data/task-data/${a3c ? 'a3c' : 'a3b'}`;
+const task = ['a3d', 'a3c'].find(name => process.argv.includes(`--${name}`)) ?? 'a3b';
+const a3c = task !== 'a3b';
+const root = `E:/BhuAayam-data/task-data/${task}`;
 type Receipt = { directory: string; caseId: string; profile: TabularSourceProfile; jobId: string };
 
 async function request(path: string, input?: unknown, form?: FormData) {
@@ -185,10 +185,6 @@ async function approvedJob(receipt: Receipt, profile: TabularSourceProfile, requ
       expectedCaseRevision: profile.workspaceRevision, expectedSourceRevision: profile.source.sourceRevision,
       sourceSha256: profile.source.sourceSha256, tabular: profile.tabular });
   artifact(receipt.directory, 'approval-job.json', mapped);
-  if (enqueueOnly) {
-    console.log(JSON.stringify({ directory: receipt.directory, jobId: mapped.jobId }));
-    return;
-  }
   artifact(receipt.directory, 'approval-status.json',
     await completed(receipt.caseId, profile.source.sourceId, mapped.jobId));
   console.log('Approval background job completed; second original may now test accepted memory.');
@@ -227,7 +223,7 @@ async function counts(directory: string, stage: string) {
 
 async function main() {
   const [action, first, second] = process.argv.slice(2)
-    .filter(value => !['--run-after-handover', '--a3c', '--enqueue-only'].includes(value));
+    .filter(value => !['--run-after-handover', '--a3c', '--a3d'].includes(value));
   if (action === 'layout') {
     const left = realAsset(first), right = realAsset(second);
     assert.equal(left.profile.layoutFingerprint, right.profile.layoutFingerprint, 'A3B_LAYOUT_MISMATCH');
@@ -250,19 +246,16 @@ async function main() {
   if (action === 'approve') return approve(first, second);
   if (action === 'propose-into') {
     const receipt = await upload(second, retained(first));
-    if (enqueueOnly) return console.log(JSON.stringify(receipt));
     return inspectJourney(receipt, false);
   }
   if (action === 'second') {
     const prior = retained(first), candidate = realAsset(second);
     assert.equal(prior.profile.profile.layoutFingerprint, candidate.profile.layoutFingerprint, 'A3B_LAYOUT_MISMATCH');
     const receipt = await upload(second, a3c ? prior : undefined);
-    if (enqueueOnly) return console.log(JSON.stringify(receipt));
     return inspectJourney(receipt, true);
   }
   assert.equal(action, 'propose', 'Use layout, propose, approve or second.');
   const receipt = await upload(first);
-  if (enqueueOnly) return console.log(JSON.stringify(receipt));
   return inspectJourney(receipt, false);
 }
 
