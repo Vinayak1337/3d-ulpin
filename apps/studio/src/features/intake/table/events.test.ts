@@ -19,6 +19,16 @@ describe('case ingestion reducer', () => {
     expect(reduceFrame(next, '1000001', frame('1', metric), sourceId)).toBe(next);
   });
 
+  it('accepts the unanswered count on a live chunk event, and refuses a bad one', () => {
+    const counted = { ...metric, unansweredFields: 3 };
+    const next = reduceFrame(initialStream(), '5', frame('1', counted), sourceId);
+    expect(next.metrics[0]!.unansweredFields).toBe(3);
+    expect(() => reduceFrame(initialStream(), '5', frame('1', { ...metric, unansweredFields: -1 }), sourceId))
+      .toThrow('learner frame');
+    const old = reduceFrame(initialStream(), '5', frame('1', metric), sourceId);
+    expect(old.metrics[0]!.unansweredFields).toBeUndefined();
+  });
+
   it('a failed job refreshes its authoritative status without inventing a reason', () => {
     const next = reduceFrame(initialStream(), '17', frame('2', {
       kind: 'chunk-mapping.changed', sourceId, jobId, status: 'failed',

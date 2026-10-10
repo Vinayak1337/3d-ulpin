@@ -6,6 +6,32 @@ const STALE_REASON_WORDS: Record<Freshness['reasons'][number], string> = {
   converter_changed: 'converter changed', source_superseded: 'source superseded',
 };
 
+// Reasons the server gives when nobody answered a column, in words. A code not listed here is shown as it is.
+const NO_ANSWER_WORDS: Record<string, string> = {
+  TEACHER_UNAVAILABLE: 'teacher unavailable',
+  TEACHER_BUDGET_EXHAUSTED: 'teacher budget exhausted',
+  TEACHER_RATE_LIMITED: 'teacher rate limited',
+  TEACHER_AUTH_FAILED: 'teacher authorisation failed',
+  TEACHER_REPLAY_UNAVAILABLE: 'teacher replay unavailable',
+  TEACHER_RECORDING_UNAVAILABLE: 'teacher recording unavailable',
+  TEACHER_INVALID_PLAN: 'teacher plan invalid',
+  TEACHER_DUPLICATE_TARGET: 'teacher plan repeated a target',
+  MAPPING_CACHED_PLAN_STALE: 'cached plan stale',
+  MAPPING_TEACHER_SCHEMA_INVALID: 'teacher answer failed its schema',
+};
+const MANUAL_METHOD = 'manual:';
+
+type FieldSource = ChunkMapping['fieldSources'][number];
+
+/** Nobody answered this column: an `unanswered` source, or a `manual:` method that an older job stored as memory. */
+function noAnswerReason(source: FieldSource | undefined): string | null {
+  if (!source) return null;
+  const manual = source.method.startsWith(MANUAL_METHOD);
+  if (source.source !== 'unanswered' && !(source.source === 'memory' && manual)) return null;
+  const code = manual ? source.method.slice(MANUAL_METHOD.length) : source.method;
+  return NO_ANSWER_WORDS[code] ?? code;
+}
+
 export function targetDefinition(target: Target) {
   if (target === 'building.geometry') return CANONICAL_TARGETS['building.footprint'];
   return CANONICAL_TARGETS[target];
@@ -15,11 +41,14 @@ export function columnRows(profile: TableProfile, mapping?: ChunkMapping) {
   return profile.profile.columns.map((column, index) => {
     const sourceField = mapping?.profile.columns[index]?.name ?? column.name;
     const field = mapping?.plan.fields.find((item) => item.sourceField === sourceField);
-    const origin = mapping?.fieldSources.find((item) => item.sourceField === sourceField)?.source;
+    const source = mapping?.fieldSources.find((item) => item.sourceField === sourceField);
+    const origin = source?.source;
+    const noAnswer = noAnswerReason(source);
     const question = mapping?.questions.find((item) => item.sourceField === sourceField);
     return { position: index + 1, header: profile.headers[index] ?? '', column, sourceField,
-      target: field?.target ?? 'unknown', confidence: origin === 'officer' ? null : field?.confidence ?? null,
-      origin, question };
+      target: field?.target ?? 'unknown',
+      confidence: origin === 'officer' || noAnswer !== null ? null : field?.confidence ?? null,
+      origin, noAnswer, question };
   });
 }
 
@@ -62,15 +91,34 @@ export function reviewControls(stale: boolean, recipeState: Recipe['state'] | un
     replay: !stale };
 }
 
+/**
+ * Sums of the chunk counts. Questions are not summed: the same question is raised for each chunk of a layout, so
+ * the open questions are the review's joined list. The unanswered count is summed over the chunks that report it.
+ */
 export function learnerTotals(chunks: Metrics[]) {
-  return chunks.reduce((total, chunk) => ({
-    teacherCalls: total.teacherCalls + chunk.teacherCalls,
-    memoryHits: total.memoryHits + chunk.memoryHits,
-    studentFields: total.studentFields + chunk.studentFields,
-    teacherFields: total.teacherFields + chunk.teacherFields,
-    needsInput: total.needsInput + chunk.needsInput,
-    latencyMs: total.latencyMs + chunk.latencyMs,
-  }), { teacherCalls: 0, memoryHits: 0, studentFields: 0, teacherFields: 0, needsInput: 0, latencyMs: 0 });
+  const reporting = chunks.filter((chunk) => chunk.unansweredFields !== undefined);
+  return {
+    chunks: chunks.length,
+    teacherCalls: sumOf(chunks, 'teacherCalls'),
+    memoryHits: sumOf(chunks, 'memoryHits'),
+    studentFields: sumOf(chunks, 'studentFields'),
+    teacherFields: sumOf(chunks, 'teacherFields'),
+    unansweredFields: sumOf(reporting, 'unansweredFields'),
+    unansweredNotReported: chunks.length - reporting.length,
+    latencyMs: sumOf(chunks, 'latencyMs'),
+  };
+}
+
+function sumOf(chunks: Metrics[], key: Exclude<keyof Metrics, 'kind' | 'jobId' | 'layout' | 'learnerVersion'>) {
+  return chunks.reduce((total, chunk) => total + (chunk[key] ?? 0), 0);
+}
+
+/** The total of unanswered fields: never 0 for chunks that did not report the count. */
+export function unansweredTotalText(totals: ReturnType<typeof learnerTotals>): string {
+  const { chunks, unansweredFields, unansweredNotReported } = totals;
+  if (unansweredNotReported === 0) return String(unansweredFields);
+  const missing = `Not reported for ${unansweredNotReported} of ${chunks} chunks`;
+  return unansweredNotReported === chunks ? missing : `${unansweredFields} · ${missing}`;
 }
 
 export function mergeMetrics(events: Metrics[], mappings: ChunkMapping[], jobId: string) {
