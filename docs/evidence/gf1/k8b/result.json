@@ -1,0 +1,118 @@
+{
+ "format": "Text longer than one line is stored as an array of lines.",
+ "task": "K8b",
+ "gates": ["GF1", "GF4"],
+ "scope": "offline protocol evidence only; no runtime request, no database",
+ "routes": ["GET /api/v1/buildings/{buildingId}/snapshots", "POST /api/v1/usp/property-cards/list"],
+ "base": "7602ef58",
+ "step0": {
+  "writtenBeforeCode": true,
+  "readFrom": [
+   "the code at staging 7602ef58 and docs/evidence/runtime/r4/result.json; nothing was requested from a",
+   "runtime or a database"
+  ],
+  "captureTime": {
+   "writtenBy": [
+    "captureRegistrySnapshotTx sets capturedAt: new Date().toISOString() while it builds the manifest",
+    "(usp/snapshots.ts:190): the wall clock of the API process, UTC with milliseconds."
+   ],
+   "notClientSupplied": [
+    "UspCaptureSnapshotRequestSchema has no time field (contracts usp/ports.ts:15-21) and",
+    "SnapshotEvidenceService.capture passes scopeId and selection only (apps/api evidence.services.ts:39-44).",
+    "The review, assignment and proposal paths call the same function. The value is not part of the digest",
+    "(snapshots.ts:183-184)."
+   ],
+   "alwaysPresent": [
+    [
+     "Every writer in the history of the repository wrote it. The first one (commit 9ad4a47c,",
+     "apps/web/lib/server/usp/snapshots.ts:90) already set it and parsed the manifest with a schema that",
+     "requires it (usp/domain.ts:57). usp_snapshots has one INSERT (snapshots.ts:198) and no UPDATE."
+    ],
+    [
+     "So a stored body can lack it only if the row was changed outside the application. This is stated from",
+     "the code; the database was not read here."
+    ]
+   ],
+   "aBodyWithoutIt": [
+    "The page statement orders with NULLS LAST: a row whose body has no capturedAt comes after every row that",
+    "has one (among such rows: created_at, then id). It fails the manifest schema, so it is never listed;",
+    "inside the page it is counted in unreadable."
+   ],
+   "canBeEqualForTwoCaptures": [
+    "Yes. The value has millisecond resolution and comes from a wall clock: two captures within one",
+    "millisecond carry the same value, and a clock step can give a later capture an earlier one. The two",
+    "captures of one assignment are separated by its writes (R4: .255Z and .428Z); nothing forbids equality."
+   ],
+   "remainingTieBreak": [
+    "created_at DESC (now(), the transaction start, equal for every capture of one transaction), then id DESC",
+    "(a random UUID). For two captures of one transaction with one capture time the order says nothing about",
+    "recency. The route description says so."
+   ],
+   "comparison": [
+    [
+     "As text in byte order (COLLATE \"C\"). That is chronological for the one form the writer produces: 24",
+     "characters, UTC, ending in Z."
+    ],
+    "A cast to timestamptz is not used: it would raise on one damaged value and fail the whole list.",
+    [
+     "The schema would also admit a form with another offset. No writer produces one; such a value would be",
+     "ordered by its text."
+    ]
+   ],
+   "cost": [
+    "The order is no longer the index order of usp_snapshots_scope (scope_id, created_at DESC). K8 could stop",
+    "after limit + 1 matches; the statement now tests every snapshot of the site, then sorts and limits. An",
+    "expression index would need a migration and is not added."
+   ]
+  },
+  "cardState": {
+   "whatTheContractSays": [
+    [
+     "UspPropertyCardListItemSchema (usp/property-card.ts:108-136) names no reference point in words. Its one",
+     "rule is the invariant at :134-135: snapshotState is same_revision exactly when targetRevision equals",
+     "currentTargetRevision."
+    ],
+    [
+     "The request comment (:103) says the scope names 'the site of a checked snapshot scope'. Nothing says",
+     "'relative to the scope passed'."
+    ],
+    [
+     "The card read (UspPropertyCardViewSchema :42-45) and the consistency report (:68-72: both revisions come",
+     "from the executed plan the row names and the registry) carry the same pair with the same meaning."
+    ]
+   ],
+   "whatTheCodeComputes": [
+    [
+     "card-listing.ts:85-86: targetRevision is card.target.revision, the revision of the target the card was",
+     "generated from; currentTargetRevision is the revision of the registry record now, read once (:119,",
+     "card-service.ts:154-160). snapshotState compares those two."
+    ],
+    [
+     "The scope passed is used twice: readManifest checks it (:111) and its scopeId selects the site (:51,",
+     ":54). It selects no row and enters no state."
+    ]
+   ],
+   "r4": [
+    "The card was generated from the post-assignment snapshot (unit at revision 2) and the record is at",
+    "revision 2, so same_revision, 2 and 2 are what the invariant and the code give for every scope of the",
+    "site, also for the three scopes that hold the unit at revision 1."
+   ],
+   "decision": [
+    [
+     "The words are the ambiguous part: a field called snapshotState in the answer to a request that carries a",
+     "snapshot scope can be read as 'the state of the scope I sent'. The contract never says that and the",
+     "three card reads agree with each other, so no behaviour changes."
+    ],
+    [
+     "The contract entries gain descriptions that are published with the schema: the scope names the site and",
+     "is checked, it neither selects nor qualifies rows; targetRevision belongs to the card;",
+     "currentTargetRevision is the record now; snapshotState compares those two and not the scope passed."
+    ]
+   ],
+   "whatAClientCannotLearnFromARow": [
+    "Whether the card was generated from the scope it passed: a row does not carry the card's own manifest",
+    "id. An additive field could state it; it is not added here."
+   ]
+  }
+ }
+}
