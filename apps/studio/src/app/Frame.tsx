@@ -9,6 +9,7 @@ import styles from './Frame.module.css';
 /**
  * One 56 px header with fixed-width slots, so nothing shifts between pages: wordmark · Batches / Map /
  * Register · search · Add files · area · operator. No theme or language menus (light, English only).
+ * When one row cannot hold the slots (browser zoom), they wrap in this same order; nothing is hidden.
  */
 export function Frame() {
   return (
@@ -23,9 +24,13 @@ export function Frame() {
         </nav>
         <HeaderSearch />
         <span className={styles.spacer} />
-        <Link to="/studio/add-files" className={`ul-btn ul-btn--ghost ${styles.addFiles}`}><Icon icon={FilePlus} />Add files</Link>
-        <AreaSwitcher />
-        <OperatorMenu />
+        <div className={styles.actions}>
+          <Link to="/studio/add-files" className={`ul-btn ul-btn--ghost ${styles.addFiles}`}>
+            <Icon icon={FilePlus} />Add files
+          </Link>
+          <AreaSwitcher />
+          <OperatorMenu />
+        </div>
       </header>
       <main id="main" className={styles.main}>
         <Outlet />
