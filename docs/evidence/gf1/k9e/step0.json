@@ -1,0 +1,201 @@
+{
+  "task": "K9e",
+  "step": 0,
+  "date": "2026-10-10",
+  "branch": "task/k9e-large-page-whole-at-reduced-scale",
+  "base": "b791d80a",
+  "limit": {
+    "what": "MAX_PAGE_SIDE_POINTS = 2000, services/geo/geo/usp_document_candidates/docling_tesseract.py:25",
+    "introduced": [
+      "46454b8a, 30 September 2026, 'Add bounded source PDF OCR candidate adapter': one page-side check for",
+      "the OCR adapter. The commit message states no reason and the line has no comment.",
+      "4575b58b, 2 October 2026, 'Support bounded OCR crops on large source pages': a selection may come from",
+      "a page up to 14,400 pt a side (line 26) when the selected side is at most 2000 pt (line 126); the",
+      "whole page keeps 2000 pt (lines 113-118)."
+    ],
+    "statedReason": [
+      "The only words are in 4575b58b. Its code comment (lines 114-115): 'Whole-page support is unchanged.",
+      "Large source frames are useful only through an explicit, bounded selection; never rasterize them",
+      "whole.' Its assignment, docs/orchestration/OCR_LARGE_PLAN_01.md: 'Keep whole-page support at its",
+      "existing 2000-point profile', 'Do not just remove checks or globally enlarge whole-page rendering',",
+      "and 'Metadata renderSupport currently describes whole-page rendering and may remain unsupported for a",
+      "large page; don't relabel it supported merely because cropping works.'",
+      "So the limit was set for OCR input. The pages read (d8ba409a, 1 October) borrowed the same check for",
+      "its picture (scripts/usp/document-models/run_pdf_pages.py:105-109); no reason for viewing was stated."
+    ],
+    "boundsAWholePageRenderObeysToday": [
+      {"bound": "original at most 16 MiB", "where": "docling_tesseract.py:23,165-172; run_pdf_pages.py:16,73-78"},
+      {"bound": "file of at most 8 pages for a picture; 400 for the listing",
+        "where": "docling_tesseract.py:24,184; run_pdf_pages.py:86,105"},
+      {"bound": "at most 50,000 PDF objects", "where": "docling_tesseract.py:180; run_pdf_pages.py:86"},
+      {"bound": "no rotation, origin at zero, frame side at most 14,400 pt", "where": "docling_tesseract.py:107-112"},
+      {"bound": "whole page: each side at most 2000 pt", "where": "docling_tesseract.py:116"},
+      {"bound": "scale at most 3 px per pt", "where": "docling_tesseract.py:132"},
+      {"bound": "picture side at most 1400 px", "where": "docling_tesseract.py:28,132,142,191; contract :22"},
+      {"bound": "picture at most 1,600,000 px in all",
+        "where": "docling_tesseract.py:27,133,143,191; document-pages.ts:172"},
+      {"bound": "PNG at most 8 MiB", "where": "docling_tesseract.py:29,195-196; document-pages.ts:135; contract :21"},
+      {"bound": "worker at most 25 s; request 30 s",
+        "where": "run_pdf_pages.py:152,155,166; document-pages.ts:100,152"},
+      {"bound": "worker memory 2 GiB (Windows Job), log 64 KiB", "where": "run_pdf_pages.py:18,166"},
+      {"bound": "answer JSON at most 128 KiB", "where": "run_pdf_pages.py:17,27"},
+      {"bound": "one page worker at a time in the API process", "where": "document-pages.ts:151"}
+    ],
+    "contract": "packages/contracts/src/document-pages.ts (the file that publishes the listing and raster answer)",
+    "scaleToday": [
+      "docling_tesseract.py:131-157: the smallest of 3, 1400 px / width, 1400 px / height and",
+      "sqrt(1,600,000 px / area), lowered once if MuPDF's whole-pixel bounds would pass a limit.",
+      "Measured with the function itself: A4 595 x 842 pt at 1.6627 (990 x 1400 px); A3 at 1.1755; a",
+      "2000 x 1414 pt page at 0.7 (1400 x 990 px); a 2000 x 2000 pt page at 0.6315 (1263 x 1263 px).",
+      "So a page within the limit is already drawn anywhere between 3 and 0.6315 px per pt."
+    ]
+  },
+  "published": {
+    "listing": [
+      "GET /api/v1/sources/{sourceId}/pages: DocumentPagesSchema (contract lines 31-38). Per page (lines",
+      "16-19, 36-37): page, label, sourceLabel, frame (kind, rotation, width, height in pt), mediaBox,",
+      "cropBox, boxConvention, renderSupport 'supported' | 'unsupported', url (the raster read, or null when",
+      "not supported: document-pages.ts:189), locator, calibration null.",
+      "No scale, no pixel size and no render profile is stated in the listing."
+    ],
+    "rasterRead": [
+      "GET /api/v1/sources/{sourceId}/pages/{page}/raster: the PNG, with headers set in",
+      "apps/api/src/modules/evidence/document-pages.controller.ts:48-55: X-Page-Pixels (w,h),",
+      "X-Page-Frame (kind;width,height;rotation), X-Page-Pixel-Affine (scale;pixel origin), X-Render-Sha256,",
+      "X-Source-Revision, X-Source-Sha256, X-Document-Page. The scale is stated here, and only here.",
+      "The worker's record behind them is DocumentPageRenderSchema (contract lines 20-24), not published."
+    ],
+    "readers": [
+      {"who": "the Studio's cited page viewer",
+        "where": "apps/studio/src/features/evidence/CitedPageViewer.tsx:83-110; citedPage.ts:26-34",
+        "reads": [
+          "url and frame. With url null it says the server cannot render the page. With a url it loads the",
+          "PNG and stretches it over an SVG whose viewBox is the frame in points, then outlines the region in",
+          "points. It reads neither renderSupport nor any header, so a reduced picture is placed correctly",
+          "as it is."
+        ]},
+      {"who": "the Studio's evidence viewer", "where": "apps/studio/src/features/evidence/EvidenceViewer.tsx:51",
+        "reads": ["url, the same way"]},
+      {"who": "server readers of the listing",
+        "where": [
+          "usp/ingestion/document-claims.ts:25, document-proposals.ts:36, usp/packets/source-stated-binding.ts:23,",
+          "usp/packets/pdf-service.ts:42, officer/source-spaces.ts:23, spatial/spatial-ml-source.ts:52"
+        ],
+        "reads": ["frame, mediaBox, cropBox. None reads renderSupport or url (git grep over packages/server)."]},
+      {"who": "renderSupport itself", "where": "document-pages.ts:172 and :189, and nowhere else",
+        "reads": ["whether to give a url, and whether a raster may be published"]},
+      {"who": "the OCR path and the packet region path", "where": "document-ocr.ts; usp/packets/region-*.ts",
+        "reads": ["neither the listing's picture fields nor the raster read"]}
+    ]
+  },
+  "tower3Measured": {
+    "file": "haryana-2831-tower3-plan1.pdf, page 1, 2586 x 1695 pt, public RERA sheet, development only",
+    "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+    "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429 (the demo's id for it; the demo was not asked)",
+    "copy": "E:/BhuAayam-data/task-data/k9e/input/, from E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/",
+    "how": [
+      "docs/evidence/gf1/k9e/measure_whole_page.py: each scale in its own process, MuPDF 1.25.5 as the",
+      "product uses it, CPU only, no OCR and no model. Pictures and measure.json are kept under",
+      "E:/BhuAayam-data/task-data/k9e/step0-measure/."
+    ],
+    "pixelBoundOfA2000PtPage": "1400 px on the longer side and 1,600,000 px in all",
+    "textLayer": "none: the sheet is a scan, so there are no glyph sizes to read; legibility is judged on pixels",
+    "rows": [
+      {"scalePxPerPt": 0.5413766434648105, "why": "the renderer's own bounded scale for this page: 1400 px wide",
+        "pixels": [1400, 918], "pngBytes": 1057621, "wallSeconds": 0.132, "cpuSeconds": 0.125,
+        "peakWorkingSetBytes": 135708672},
+      {"scalePxPerPt": 0.5, "pixels": [1293, 848], "pngBytes": 871911, "wallSeconds": 0.089,
+        "cpuSeconds": 0.094, "peakWorkingSetBytes": 135483392},
+      {"scalePxPerPt": 0.4, "pixels": [1035, 678], "pngBytes": 598499, "wallSeconds": 0.071,
+        "cpuSeconds": 0.062, "peakWorkingSetBytes": 135622656},
+      {"scalePxPerPt": 0.3, "pixels": [776, 509], "pngBytes": 362421, "wallSeconds": 0.049,
+        "cpuSeconds": 0.062, "peakWorkingSetBytes": 136695808},
+      {"scalePxPerPt": 0.25, "pixels": [647, 424], "pngBytes": 249381, "wallSeconds": 0.036,
+        "cpuSeconds": 0.031, "peakWorkingSetBytes": 136196096},
+      {"scalePxPerPt": 0.2, "pixels": [518, 339], "pngBytes": 173108, "wallSeconds": 0.032,
+        "cpuSeconds": 0.031, "peakWorkingSetBytes": 135499776}
+    ],
+    "cost": [
+      "At the bound: 1.06 MB of PNG (limit 8 MiB), 0.13 s, 136 MB peak (limit 2 GiB). The peak is the same at",
+      "every scale: it is the interpreter and the sheet's own image, not the picture drawn.",
+      "Times are of the draw alone; a refused request on the demo already costs about 2.1 s of worker start."
+    ],
+    "otherDemoPagesByTheSameFunction": [
+      "site plan 2585 x 3390 pt: 0.4130 px per pt, 1068 x 1400 px",
+      "Magnolia pages 1 and 2, 2384 x 1684 pt: 0.5872 px per pt, 1400 x 989 px",
+      "Not drawn here: only the Tower 3 plan was copied. These are the function's answers for their frames."
+    ]
+  },
+  "legibility": {
+    "seen": [
+      "The cited caption '2ND FLOOR PLAN' ([850,875,1020,910] pt; capitals about 11 pt high) cut from each",
+      "picture and enlarged without smoothing: step0-measure/caption-contact-sheet.png.",
+      "0.541 and 0.5: every letter clear (capitals about 6 px). 0.4: every letter still distinct (4.4 px).",
+      "0.3: the words can be guessed, letters run together (3.3 px). 0.25: 'FLOOR' is lost. 0.2: nothing reads.",
+      "Room names and dimensions on this sheet are smaller than the caption and are not legible at any of",
+      "these scales, the bound included: the whole-sheet picture shows where a region lies, not its words."
+    ],
+    "proposedFloor": {
+      "pxPerPt": 0.4,
+      "reason": [
+        "The lowest measured scale at which each letter of a sheet's own caption is still distinct. Below it",
+        "the picture can no longer confirm which drawing on the sheet a cited region belongs to.",
+        "With the pixel bounds this draws a page up to 3500 pt on its longer side and 10,000,000 sq pt:",
+        "an A0 sheet (2384 x 3370 pt) at 0.4154 and the demo's site plan at 0.4130; a larger page keeps",
+        "today's refusal. One sheet's caption is the whole basis: a proposal, not a measured threshold."
+      ]
+    }
+  },
+  "whoCouldTakeAWholePagePicture": [
+    {"caller": "the OCR worker", "where": "docling_tesseract.py:404-410 (extract_source_page) -> render_pdf_selection",
+      "today": "region None is whole-page OCR; the picture is the OCR input. Refused over 2000 pt.",
+      "mustStay": true},
+    {"caller": "the document fields learning baseline",
+      "where": "scripts/usp/learning/document_fields_baseline.py:125,131", "today": "same two functions, own region",
+      "mustStay": true},
+    {"caller": "the pages read", "where": "run_pdf_pages.py:107,120 -> document-pages.ts:135,193-198 -> controller :47",
+      "today": [
+        "the only viewing caller. The PNG goes to the HTTP answer and nowhere else: no other code calls",
+        "DocumentPagesService.raster, and the scratch folder is removed when the request ends."
+      ],
+      "mustStay": false},
+    {"caller": "packet regions and registry region evidence",
+      "where": "services/geo/geo/usp_packet_regions.py:53-110; usp/packets/region-extract.ts:36-42",
+      "today": "draw the selected region from the original with PDFium at their own scale; no whole-page picture",
+      "mustStay": true},
+    {"caller": "the raster plan reader", "where": "services/geo/geo/raster_plan.py:65",
+      "today": "reads only the constant, as the largest tile edge", "mustStay": true}
+  ],
+  "guaranteePlanned": [
+    "_selection and render_pdf_selection keep refusing a whole page over the limit unless the caller passes",
+    "an explicit viewing argument; run_pdf_pages.py is the only caller that passes it. The OCR worker, the",
+    "learning baseline and the region paths do not, so their answers for such a page stay today's refusal.",
+    "A test asks the OCR entry for a whole page over the limit and expects the refusal."
+  ],
+  "stopRule": {
+    "triggered": false,
+    "why": [
+      "A reduced picture can be told apart without touching a field another reader depends on: renderSupport",
+      "is read only inside document-pages.ts, so a new value 'reduced' (with 'supported' and 'unsupported'",
+      "meaning what they mean) plus one optional scale field in the listing is additive for every reader",
+      "found above. The scale alone would not tell them apart: Magnolia's reduced 0.587 lies between the",
+      "0.7 and 0.6315 that pages within the limit get today."
+    ]
+  },
+  "forTheLeadBeforeTheCode": [
+    {"point": "one line outside 'documentation only' in the controller",
+      "what": [
+        "The raster read's only fields are response headers, written in document-pages.controller.ts. To",
+        "state 'reduced' there (the scale is already in X-Page-Pixel-Affine) one header line is needed in",
+        "that file, which K9e owns for documentation only. Planned as one header line plus its",
+        "documentation, named in the report; say if it should be left out."
+      ]},
+    {"point": "the frozen region profile lists run_pdf_pages.py",
+      "what": [
+        "usp/packets/region-runtime.ts:13-16 and packet_region_loader.py:17-21 pin run_pdf_pages.py among the",
+        "region runtime's files. Changing it means the region read answers PACKET_REGION_EXECUTABLE_DRIFT",
+        "until the profile is rebuilt, which docs/backend/DEMO-RUNTIME.md step 5 already orders at every",
+        "roll. Nothing for this task to run; for the runtime owner to know."
+      ]}
+  ]
+}
