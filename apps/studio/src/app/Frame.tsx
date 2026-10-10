@@ -58,11 +58,7 @@ const REQUESTS_SERVED = isServed('GET', '/api/v1/register-requests');
 
 /** Register, with the count of open requests from the public where the build serves them. */
 function RegisterNavLink() {
-  return REQUESTS_SERVED ? <RegisterNavLinkWithCount /> : <NavLink to="/studio/registry">Register</NavLink>;
-}
-
-function RegisterNavLinkWithCount() {
-  const open = useRegisterRequests('open').data?.length ?? 0;
+  const open = useRegisterRequests('open', { enabled: REQUESTS_SERVED }).data?.length ?? 0;
   return (
     <NavLink to="/studio/registry" aria-label={open ? `Register, ${open} open requests` : 'Register'}>
       Register{open ? <span className={styles.navCount}>{open}</span> : null}
