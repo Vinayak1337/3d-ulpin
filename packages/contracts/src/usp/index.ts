@@ -9,6 +9,7 @@ export * from './project-identity';
 export * from './geometry';
 export * from './exchange';
 export * from './ingestion';
+export * from './intake';
 export * from './adaptive-mapping';
 export * from './ingestion-events';
 export * from './projected-vector';

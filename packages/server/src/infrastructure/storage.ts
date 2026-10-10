@@ -98,6 +98,41 @@ export async function readObjectBounded(key:string,maxBytes:number,deadlineAt:nu
     body?.destroy();controller.abort();
   }
 }
+/** Bounded original range, including large originals. End is exclusive; a server ignoring Range is refused. */
+export async function readObjectRange(key:string,start:number,end:number,size:number,deadlineAt:number,signal:AbortSignal):Promise<Uint8Array>{
+  if(![start,end,size].every(Number.isSafeInteger)||start<0||end<=start||end>size||end-start>1024*1024
+    ||!Number.isFinite(deadlineAt))throw new AppError(500,'STORAGE_READ_BOUNDS','Use a finite original byte range of at most 1 MiB.');
+  const controller=new AbortController();let body:Readable|undefined;
+  const stopped=()=>new AppError(503,'STORAGE_TIMEOUT','The bounded range read was interrupted or timed out.');
+  const parentAbort=()=>controller.abort(),abort=()=>body?.destroy(stopped());
+  const timer=setTimeout(()=>controller.abort(),Math.min(2147483647,Math.max(1,deadlineAt-Date.now())));timer.unref();
+  signal.addEventListener('abort',parentAbort,{once:true});controller.signal.addEventListener('abort',abort,{once:true});
+  const check=()=>{if(signal.aborted||Date.now()>=deadlineAt)controller.abort();if(controller.signal.aborted)throw stopped();};
+  try{
+    check();
+    const result=await s3().send(new GetObjectCommand({Bucket:settings.s3Bucket,Key:key,Range:`bytes=${start}-${end-1}`}),
+      {abortSignal:controller.signal});
+    body=result.Body instanceof Readable?result.Body:undefined;check();
+    if(!body||result.$metadata.httpStatusCode!==206||result.ContentLength!==end-start
+      ||result.ContentRange!==`bytes ${start}-${end-1}/${size}`)
+      throw new AppError(422,'SOURCE_INTEGRITY','Stored original does not honour its exact bounded range and receipt size.');
+    const chunks:Buffer[]=[];let count=0;
+    for await(const chunk of body){
+      check();
+      if(typeof chunk!=='string'&&!(chunk instanceof Uint8Array))
+        throw new AppError(422,'SOURCE_INTEGRITY','Stored range returned an unsupported byte stream.');
+      count+=typeof chunk==='string'?Buffer.byteLength(chunk):chunk.byteLength;
+      if(count>end-start)throw new AppError(422,'SOURCE_INTEGRITY','Stored range exceeded its byte bound.');
+      chunks.push(Buffer.from(chunk));
+    }
+    check();if(count!==end-start)throw new AppError(422,'SOURCE_INTEGRITY','Stored range length differs from its receipt.');
+    return Buffer.concat(chunks,count);
+  }catch(error){if(controller.signal.aborted)throw stopped();throw error;}
+  finally{
+    clearTimeout(timer);signal.removeEventListener('abort',parentAbort);controller.signal.removeEventListener('abort',abort);
+    body?.destroy();controller.abort();
+  }
+}
 export async function putOriginal(
   key: string,
   bytes: Uint8Array,

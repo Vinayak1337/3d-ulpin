@@ -36052,6 +36052,852 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/ingestion/cases/{caseId}/intake/items": {
+      "post": {
+        "operationId": "POST_api_v1_ingestion_cases_caseId_intake_items",
+        "parameters": [
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_ingestion_cases_caseId_intake_items_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_ingestion_cases_caseId_intake_items_Response_201_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "415": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Register and header-probe an already retained source; no reader or case revision change",
+        "tags": [
+          "manual ingestion"
+        ],
+        "x-source-file": "apps/api/src/modules/ingestion/ingestion.controller.ts",
+        "x-batch": "IN1",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
+        "x-transport-profile": "json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/ingestion/cases/{caseId}/intake": {
+      "get": {
+        "operationId": "GET_api_v1_ingestion_cases_caseId_intake",
+        "parameters": [
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_ingestion_cases_caseId_intake_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "415": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Read the retained batch holdings manifest ordered by wave and name",
+        "tags": [
+          "manual ingestion"
+        ],
+        "x-source-file": "apps/api/src/modules/ingestion/ingestion.controller.ts",
+        "x-batch": "IN1",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
+        "x-transport-profile": "none",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}": {
+      "get": {
+        "operationId": "GET_api_v1_ingestion_cases_caseId_intake_items_itemId",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_ingestion_cases_caseId_intake_items_Response_201_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "415": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Read one holdings card under its original source authority",
+        "tags": [
+          "manual ingestion"
+        ],
+        "x-source-file": "apps/api/src/modules/ingestion/ingestion.controller.ts",
+        "x-batch": "IN1",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
+        "x-transport-profile": "none",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/pin": {
+      "post": {
+        "operationId": "POST_api_v1_ingestion_cases_caseId_intake_items_itemId_pin",
+        "parameters": [
+          {
+            "name": "itemId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_ingestion_cases_caseId_intake_items_itemId_pin_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_ingestion_cases_caseId_intake_items_Response_201_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "415": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Pin an intake item to an officer-selected wave, kept across later probes",
+        "tags": [
+          "manual ingestion"
+        ],
+        "x-source-file": "apps/api/src/modules/ingestion/ingestion.controller.ts",
+        "x-batch": "IN1",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
+        "x-transport-profile": "json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/ingestion/conversions": {
       "get": {
         "operationId": "GET_api_v1_ingestion_conversions",
@@ -360183,6 +361029,2302 @@
             }
           }
         }
+      },
+      "POST_ingestion_cases_caseId_intake_items_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "sourceId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "requestKey": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "sourceId",
+          "requestKey"
+        ],
+        "additionalProperties": false
+      },
+      "POST_ingestion_cases_caseId_intake_items_Response_201_application_json": {
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "sourceId": {
+            "nullable": true,
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "caseId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "parentItemId": {
+            "nullable": true,
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "memberPath": {
+            "nullable": true,
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "family": {
+            "type": "string",
+            "enum": [
+              "vector",
+              "table",
+              "raster",
+              "point_cloud",
+              "model3d",
+              "document",
+              "image",
+              "archive",
+              "unknown"
+            ]
+          },
+          "format": {
+            "nullable": true,
+            "type": "string",
+            "maxLength": 64
+          },
+          "sizeBytes": {
+            "nullable": true,
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "sizeClass": {
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "S",
+              "M",
+              "L",
+              "XL"
+            ]
+          },
+          "wave": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "received",
+              "probed",
+              "planned",
+              "reading",
+              "read",
+              "read_to_limit",
+              "failed_part",
+              "probe_failed"
+            ]
+          },
+          "placement": {
+            "type": "string",
+            "enum": [
+              "undecided",
+              "on_map",
+              "attached",
+              "waiting_for_anchor",
+              "needs_answer",
+              "not_understood"
+            ]
+          },
+          "card": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "string",
+                "enum": [
+                  "intake-card/1"
+                ]
+              },
+              "family": {
+                "type": "string",
+                "enum": [
+                  "vector",
+                  "table",
+                  "raster",
+                  "point_cloud",
+                  "model3d",
+                  "document",
+                  "image",
+                  "archive",
+                  "unknown"
+                ]
+              },
+              "format": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "formatVersion": {
+                "nullable": true,
+                "type": "string",
+                "maxLength": 64
+              },
+              "detectedBy": {
+                "type": "string",
+                "enum": [
+                  "bytes",
+                  "bytes_and_name"
+                ]
+              },
+              "nameDisagrees": {
+                "type": "boolean"
+              },
+              "depth": {
+                "type": "string",
+                "enum": [
+                  "signature",
+                  "structure"
+                ]
+              },
+              "encoding": {
+                "nullable": true,
+                "type": "string",
+                "maxLength": 64
+              },
+              "crs": {
+                "type": "object",
+                "properties": {
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "stated",
+                      "sidecar",
+                      "absent",
+                      "conflicting",
+                      "not_applicable"
+                    ]
+                  },
+                  "code": {
+                    "nullable": true,
+                    "type": "string",
+                    "maxLength": 128
+                  },
+                  "sidecarSha256": {
+                    "nullable": true,
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "state",
+                  "code",
+                  "sidecarSha256"
+                ],
+                "additionalProperties": false
+              },
+              "extent": {
+                "type": "object",
+                "properties": {
+                  "native": {
+                    "nullable": true,
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  },
+                  "epsg4326": {
+                    "nullable": true,
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  }
+                },
+                "required": [
+                  "native",
+                  "epsg4326"
+                ],
+                "additionalProperties": false
+              },
+              "counts": {
+                "type": "object",
+                "properties": {
+                  "features": {
+                    "nullable": true,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "rows": {
+                    "nullable": true,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "pages": {
+                    "nullable": true,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "members": {
+                    "nullable": true,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "points": {
+                    "nullable": true,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "bands": {
+                    "nullable": true,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "features",
+                  "rows",
+                  "pages",
+                  "members",
+                  "points",
+                  "bands"
+                ],
+                "additionalProperties": false
+              },
+              "geometryTypes": {
+                "maxItems": 32,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                }
+              },
+              "layers": {
+                "maxItems": 2000,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1024
+                    },
+                    "count": {
+                      "nullable": true,
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "count"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "sheets": {
+                "maxItems": 2000,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1024
+                    },
+                    "count": {
+                      "nullable": true,
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "count"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "columns": {
+                "maxItems": 256,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1024
+                    },
+                    "inferredType": {
+                      "type": "string",
+                      "enum": [
+                        "unknown",
+                        "number",
+                        "boolean",
+                        "date",
+                        "text",
+                        "object",
+                        "array",
+                        "mixed",
+                        "geometry"
+                      ]
+                    },
+                    "sampledNonEmpty": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "inferredType",
+                    "sampledNonEmpty"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "limits": {
+                "maxItems": 2048,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                }
+              },
+              "probeBytesRead": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "probeMs": {
+                "type": "number",
+                "minimum": 0
+              },
+              "drawableHint": {
+                "type": "boolean"
+              },
+              "delimiter": {
+                "nullable": true,
+                "type": "string",
+                "enum": [
+                  ",",
+                  "\t",
+                  ";",
+                  "|"
+                ]
+              },
+              "encrypted": {
+                "nullable": true,
+                "type": "boolean"
+              },
+              "raster": {
+                "nullable": true,
+                "type": "object",
+                "properties": {
+                  "width": {
+                    "nullable": true,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "height": {
+                    "nullable": true,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "tiled": {
+                    "nullable": true,
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "width",
+                  "height",
+                  "tiled"
+                ],
+                "additionalProperties": false
+              },
+              "point": {
+                "nullable": true,
+                "type": "object",
+                "properties": {
+                  "format": {
+                    "nullable": true,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "scale": {
+                    "nullable": true,
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  }
+                },
+                "required": [
+                  "format",
+                  "scale"
+                ],
+                "additionalProperties": false
+              },
+              "citations": {
+                "maxItems": 32,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "locator": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1024
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "locator",
+                    "sha256"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "members": {
+                "maxItems": 2000,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1024
+                    },
+                    "sizeBytes": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "compressedBytes": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "format": {
+                      "type": "string",
+                      "maxLength": 64
+                    },
+                    "family": {
+                      "type": "string",
+                      "enum": [
+                        "vector",
+                        "table",
+                        "raster",
+                        "point_cloud",
+                        "model3d",
+                        "document",
+                        "image",
+                        "archive",
+                        "unknown"
+                      ]
+                    },
+                    "refusalCode": {
+                      "nullable": true,
+                      "type": "string",
+                      "maxLength": 128
+                    },
+                    "companions": {
+                      "maxItems": 8,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1024
+                      }
+                    },
+                    "card": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "version": {
+                          "type": "string",
+                          "enum": [
+                            "intake-card/1"
+                          ]
+                        },
+                        "family": {
+                          "type": "string",
+                          "enum": [
+                            "vector",
+                            "table",
+                            "raster",
+                            "point_cloud",
+                            "model3d",
+                            "document",
+                            "image",
+                            "archive",
+                            "unknown"
+                          ]
+                        },
+                        "format": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        },
+                        "formatVersion": {
+                          "nullable": true,
+                          "type": "string",
+                          "maxLength": 64
+                        },
+                        "detectedBy": {
+                          "type": "string",
+                          "enum": [
+                            "bytes",
+                            "bytes_and_name"
+                          ]
+                        },
+                        "nameDisagrees": {
+                          "type": "boolean"
+                        },
+                        "depth": {
+                          "type": "string",
+                          "enum": [
+                            "signature",
+                            "structure"
+                          ]
+                        },
+                        "encoding": {
+                          "nullable": true,
+                          "type": "string",
+                          "maxLength": 64
+                        },
+                        "crs": {
+                          "type": "object",
+                          "properties": {
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "stated",
+                                "sidecar",
+                                "absent",
+                                "conflicting",
+                                "not_applicable"
+                              ]
+                            },
+                            "code": {
+                              "nullable": true,
+                              "type": "string",
+                              "maxLength": 128
+                            },
+                            "sidecarSha256": {
+                              "nullable": true,
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "state",
+                            "code",
+                            "sidecarSha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "extent": {
+                          "type": "object",
+                          "properties": {
+                            "native": {
+                              "nullable": true,
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "epsg4326": {
+                              "nullable": true,
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            }
+                          },
+                          "required": [
+                            "native",
+                            "epsg4326"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "counts": {
+                          "type": "object",
+                          "properties": {
+                            "features": {
+                              "nullable": true,
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "rows": {
+                              "nullable": true,
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "pages": {
+                              "nullable": true,
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "members": {
+                              "nullable": true,
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "points": {
+                              "nullable": true,
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "bands": {
+                              "nullable": true,
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "features",
+                            "rows",
+                            "pages",
+                            "members",
+                            "points",
+                            "bands"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "geometryTypes": {
+                          "maxItems": 32,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                          }
+                        },
+                        "layers": {
+                          "maxItems": 2000,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "count": {
+                                "nullable": true,
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "name",
+                              "count"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "sheets": {
+                          "maxItems": 2000,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "count": {
+                                "nullable": true,
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "name",
+                              "count"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "columns": {
+                          "maxItems": 256,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "inferredType": {
+                                "type": "string",
+                                "enum": [
+                                  "unknown",
+                                  "number",
+                                  "boolean",
+                                  "date",
+                                  "text",
+                                  "object",
+                                  "array",
+                                  "mixed",
+                                  "geometry"
+                                ]
+                              },
+                              "sampledNonEmpty": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              }
+                            },
+                            "required": [
+                              "name",
+                              "inferredType",
+                              "sampledNonEmpty"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "limits": {
+                          "maxItems": 2048,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 2000
+                          }
+                        },
+                        "probeBytesRead": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "probeMs": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "drawableHint": {
+                          "type": "boolean"
+                        },
+                        "delimiter": {
+                          "nullable": true,
+                          "type": "string",
+                          "enum": [
+                            ",",
+                            "\t",
+                            ";",
+                            "|"
+                          ]
+                        },
+                        "encrypted": {
+                          "nullable": true,
+                          "type": "boolean"
+                        },
+                        "raster": {
+                          "nullable": true,
+                          "type": "object",
+                          "properties": {
+                            "width": {
+                              "nullable": true,
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "height": {
+                              "nullable": true,
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "tiled": {
+                              "nullable": true,
+                              "type": "boolean"
+                            }
+                          },
+                          "required": [
+                            "width",
+                            "height",
+                            "tiled"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "point": {
+                          "nullable": true,
+                          "type": "object",
+                          "properties": {
+                            "format": {
+                              "nullable": true,
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "scale": {
+                              "nullable": true,
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "minItems": 3,
+                              "maxItems": 3
+                            }
+                          },
+                          "required": [
+                            "format",
+                            "scale"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "citations": {
+                          "maxItems": 32,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "locator": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "sha256": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              }
+                            },
+                            "required": [
+                              "locator",
+                              "sha256"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "version",
+                        "family",
+                        "format",
+                        "formatVersion",
+                        "detectedBy",
+                        "nameDisagrees",
+                        "depth",
+                        "encoding",
+                        "crs",
+                        "extent",
+                        "counts",
+                        "geometryTypes",
+                        "layers",
+                        "sheets",
+                        "columns",
+                        "limits",
+                        "probeBytesRead",
+                        "probeMs",
+                        "drawableHint",
+                        "delimiter",
+                        "encrypted",
+                        "raster",
+                        "point",
+                        "citations"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "sizeBytes",
+                    "compressedBytes",
+                    "format",
+                    "family",
+                    "refusalCode",
+                    "companions",
+                    "card"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "version",
+              "family",
+              "format",
+              "formatVersion",
+              "detectedBy",
+              "nameDisagrees",
+              "depth",
+              "encoding",
+              "crs",
+              "extent",
+              "counts",
+              "geometryTypes",
+              "layers",
+              "sheets",
+              "columns",
+              "limits",
+              "probeBytesRead",
+              "probeMs",
+              "drawableHint",
+              "delimiter",
+              "encrypted",
+              "raster",
+              "point",
+              "citations",
+              "members"
+            ],
+            "additionalProperties": false
+          },
+          "cardSha256": {
+            "nullable": true,
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "probeVersion": {
+            "nullable": true,
+            "type": "string"
+          },
+          "partsPlanned": {
+            "nullable": true,
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "partsDone": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "recordsSeen": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "limitReason": {
+            "nullable": true,
+            "type": "string"
+          },
+          "pinnedByOfficer": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "itemId",
+          "sourceId",
+          "caseId",
+          "parentItemId",
+          "memberPath",
+          "name",
+          "family",
+          "format",
+          "sizeBytes",
+          "sizeClass",
+          "wave",
+          "state",
+          "placement",
+          "card",
+          "cardSha256",
+          "probeVersion",
+          "partsPlanned",
+          "partsDone",
+          "recordsSeen",
+          "limitReason",
+          "pinnedByOfficer",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "GET_ingestion_cases_caseId_intake_Response_200_application_json": {
+        "type": "object",
+        "properties": {
+          "caseId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "itemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "sourceId": {
+                  "nullable": true,
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "caseId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "parentItemId": {
+                  "nullable": true,
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "memberPath": {
+                  "nullable": true,
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1024
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1024
+                },
+                "family": {
+                  "type": "string",
+                  "enum": [
+                    "vector",
+                    "table",
+                    "raster",
+                    "point_cloud",
+                    "model3d",
+                    "document",
+                    "image",
+                    "archive",
+                    "unknown"
+                  ]
+                },
+                "format": {
+                  "nullable": true,
+                  "type": "string",
+                  "maxLength": 64
+                },
+                "sizeBytes": {
+                  "nullable": true,
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "sizeClass": {
+                  "nullable": true,
+                  "type": "string",
+                  "enum": [
+                    "S",
+                    "M",
+                    "L",
+                    "XL"
+                  ]
+                },
+                "wave": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 4
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "received",
+                    "probed",
+                    "planned",
+                    "reading",
+                    "read",
+                    "read_to_limit",
+                    "failed_part",
+                    "probe_failed"
+                  ]
+                },
+                "placement": {
+                  "type": "string",
+                  "enum": [
+                    "undecided",
+                    "on_map",
+                    "attached",
+                    "waiting_for_anchor",
+                    "needs_answer",
+                    "not_understood"
+                  ]
+                },
+                "card": {
+                  "nullable": true,
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string",
+                      "enum": [
+                        "intake-card/1"
+                      ]
+                    },
+                    "family": {
+                      "type": "string",
+                      "enum": [
+                        "vector",
+                        "table",
+                        "raster",
+                        "point_cloud",
+                        "model3d",
+                        "document",
+                        "image",
+                        "archive",
+                        "unknown"
+                      ]
+                    },
+                    "format": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64
+                    },
+                    "formatVersion": {
+                      "nullable": true,
+                      "type": "string",
+                      "maxLength": 64
+                    },
+                    "detectedBy": {
+                      "type": "string",
+                      "enum": [
+                        "bytes",
+                        "bytes_and_name"
+                      ]
+                    },
+                    "nameDisagrees": {
+                      "type": "boolean"
+                    },
+                    "depth": {
+                      "type": "string",
+                      "enum": [
+                        "signature",
+                        "structure"
+                      ]
+                    },
+                    "encoding": {
+                      "nullable": true,
+                      "type": "string",
+                      "maxLength": 64
+                    },
+                    "crs": {
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "stated",
+                            "sidecar",
+                            "absent",
+                            "conflicting",
+                            "not_applicable"
+                          ]
+                        },
+                        "code": {
+                          "nullable": true,
+                          "type": "string",
+                          "maxLength": 128
+                        },
+                        "sidecarSha256": {
+                          "nullable": true,
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        }
+                      },
+                      "required": [
+                        "state",
+                        "code",
+                        "sidecarSha256"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "extent": {
+                      "type": "object",
+                      "properties": {
+                        "native": {
+                          "nullable": true,
+                          "type": "array",
+                          "items": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          },
+                          "minItems": 4,
+                          "maxItems": 4
+                        },
+                        "epsg4326": {
+                          "nullable": true,
+                          "type": "array",
+                          "items": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          },
+                          "minItems": 4,
+                          "maxItems": 4
+                        }
+                      },
+                      "required": [
+                        "native",
+                        "epsg4326"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "counts": {
+                      "type": "object",
+                      "properties": {
+                        "features": {
+                          "nullable": true,
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "rows": {
+                          "nullable": true,
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "pages": {
+                          "nullable": true,
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "members": {
+                          "nullable": true,
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "points": {
+                          "nullable": true,
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "bands": {
+                          "nullable": true,
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "features",
+                        "rows",
+                        "pages",
+                        "members",
+                        "points",
+                        "bands"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "geometryTypes": {
+                      "maxItems": 32,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                      }
+                    },
+                    "layers": {
+                      "maxItems": 2000,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                          },
+                          "count": {
+                            "nullable": true,
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "count"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "sheets": {
+                      "maxItems": 2000,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                          },
+                          "count": {
+                            "nullable": true,
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "count"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "columns": {
+                      "maxItems": 256,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                          },
+                          "inferredType": {
+                            "type": "string",
+                            "enum": [
+                              "unknown",
+                              "number",
+                              "boolean",
+                              "date",
+                              "text",
+                              "object",
+                              "array",
+                              "mixed",
+                              "geometry"
+                            ]
+                          },
+                          "sampledNonEmpty": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "inferredType",
+                          "sampledNonEmpty"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "limits": {
+                      "maxItems": 2048,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2000
+                      }
+                    },
+                    "probeBytesRead": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "probeMs": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "drawableHint": {
+                      "type": "boolean"
+                    },
+                    "delimiter": {
+                      "nullable": true,
+                      "type": "string",
+                      "enum": [
+                        ",",
+                        "\t",
+                        ";",
+                        "|"
+                      ]
+                    },
+                    "encrypted": {
+                      "nullable": true,
+                      "type": "boolean"
+                    },
+                    "raster": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "width": {
+                          "nullable": true,
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "height": {
+                          "nullable": true,
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "tiled": {
+                          "nullable": true,
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "width",
+                        "height",
+                        "tiled"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "point": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "format": {
+                          "nullable": true,
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "scale": {
+                          "nullable": true,
+                          "type": "array",
+                          "items": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          },
+                          "minItems": 3,
+                          "maxItems": 3
+                        }
+                      },
+                      "required": [
+                        "format",
+                        "scale"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "citations": {
+                      "maxItems": 32,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "locator": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                          },
+                          "sha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          }
+                        },
+                        "required": [
+                          "locator",
+                          "sha256"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "members": {
+                      "maxItems": 2000,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1024
+                          },
+                          "sizeBytes": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "compressedBytes": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "format": {
+                            "type": "string",
+                            "maxLength": 64
+                          },
+                          "family": {
+                            "type": "string",
+                            "enum": [
+                              "vector",
+                              "table",
+                              "raster",
+                              "point_cloud",
+                              "model3d",
+                              "document",
+                              "image",
+                              "archive",
+                              "unknown"
+                            ]
+                          },
+                          "refusalCode": {
+                            "nullable": true,
+                            "type": "string",
+                            "maxLength": 128
+                          },
+                          "companions": {
+                            "maxItems": 8,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 1024
+                            }
+                          },
+                          "card": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "version": {
+                                "type": "string",
+                                "enum": [
+                                  "intake-card/1"
+                                ]
+                              },
+                              "family": {
+                                "type": "string",
+                                "enum": [
+                                  "vector",
+                                  "table",
+                                  "raster",
+                                  "point_cloud",
+                                  "model3d",
+                                  "document",
+                                  "image",
+                                  "archive",
+                                  "unknown"
+                                ]
+                              },
+                              "format": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64
+                              },
+                              "formatVersion": {
+                                "nullable": true,
+                                "type": "string",
+                                "maxLength": 64
+                              },
+                              "detectedBy": {
+                                "type": "string",
+                                "enum": [
+                                  "bytes",
+                                  "bytes_and_name"
+                                ]
+                              },
+                              "nameDisagrees": {
+                                "type": "boolean"
+                              },
+                              "depth": {
+                                "type": "string",
+                                "enum": [
+                                  "signature",
+                                  "structure"
+                                ]
+                              },
+                              "encoding": {
+                                "nullable": true,
+                                "type": "string",
+                                "maxLength": 64
+                              },
+                              "crs": {
+                                "type": "object",
+                                "properties": {
+                                  "state": {
+                                    "type": "string",
+                                    "enum": [
+                                      "stated",
+                                      "sidecar",
+                                      "absent",
+                                      "conflicting",
+                                      "not_applicable"
+                                    ]
+                                  },
+                                  "code": {
+                                    "nullable": true,
+                                    "type": "string",
+                                    "maxLength": 128
+                                  },
+                                  "sidecarSha256": {
+                                    "nullable": true,
+                                    "type": "string",
+                                    "pattern": "^[a-f0-9]{64}$"
+                                  }
+                                },
+                                "required": [
+                                  "state",
+                                  "code",
+                                  "sidecarSha256"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "extent": {
+                                "type": "object",
+                                "properties": {
+                                  "native": {
+                                    "nullable": true,
+                                    "type": "array",
+                                    "items": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "number"
+                                        }
+                                      ]
+                                    },
+                                    "minItems": 4,
+                                    "maxItems": 4
+                                  },
+                                  "epsg4326": {
+                                    "nullable": true,
+                                    "type": "array",
+                                    "items": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "number"
+                                        }
+                                      ]
+                                    },
+                                    "minItems": 4,
+                                    "maxItems": 4
+                                  }
+                                },
+                                "required": [
+                                  "native",
+                                  "epsg4326"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "counts": {
+                                "type": "object",
+                                "properties": {
+                                  "features": {
+                                    "nullable": true,
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "rows": {
+                                    "nullable": true,
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "pages": {
+                                    "nullable": true,
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "members": {
+                                    "nullable": true,
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "points": {
+                                    "nullable": true,
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "bands": {
+                                    "nullable": true,
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": [
+                                  "features",
+                                  "rows",
+                                  "pages",
+                                  "members",
+                                  "points",
+                                  "bands"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "geometryTypes": {
+                                "maxItems": 32,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 64
+                                }
+                              },
+                              "layers": {
+                                "maxItems": 2000,
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 1024
+                                    },
+                                    "count": {
+                                      "nullable": true,
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": [
+                                    "name",
+                                    "count"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "sheets": {
+                                "maxItems": 2000,
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 1024
+                                    },
+                                    "count": {
+                                      "nullable": true,
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": [
+                                    "name",
+                                    "count"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "columns": {
+                                "maxItems": 256,
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "name": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 1024
+                                    },
+                                    "inferredType": {
+                                      "type": "string",
+                                      "enum": [
+                                        "unknown",
+                                        "number",
+                                        "boolean",
+                                        "date",
+                                        "text",
+                                        "object",
+                                        "array",
+                                        "mixed",
+                                        "geometry"
+                                      ]
+                                    },
+                                    "sampledNonEmpty": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 9007199254740991
+                                    }
+                                  },
+                                  "required": [
+                                    "name",
+                                    "inferredType",
+                                    "sampledNonEmpty"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "limits": {
+                                "maxItems": 2048,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 2000
+                                }
+                              },
+                              "probeBytesRead": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "probeMs": {
+                                "type": "number",
+                                "minimum": 0
+                              },
+                              "drawableHint": {
+                                "type": "boolean"
+                              },
+                              "delimiter": {
+                                "nullable": true,
+                                "type": "string",
+                                "enum": [
+                                  ",",
+                                  "\t",
+                                  ";",
+                                  "|"
+                                ]
+                              },
+                              "encrypted": {
+                                "nullable": true,
+                                "type": "boolean"
+                              },
+                              "raster": {
+                                "nullable": true,
+                                "type": "object",
+                                "properties": {
+                                  "width": {
+                                    "nullable": true,
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "height": {
+                                    "nullable": true,
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "tiled": {
+                                    "nullable": true,
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "width",
+                                  "height",
+                                  "tiled"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "point": {
+                                "nullable": true,
+                                "type": "object",
+                                "properties": {
+                                  "format": {
+                                    "nullable": true,
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "scale": {
+                                    "nullable": true,
+                                    "type": "array",
+                                    "items": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "number"
+                                        }
+                                      ]
+                                    },
+                                    "minItems": 3,
+                                    "maxItems": 3
+                                  }
+                                },
+                                "required": [
+                                  "format",
+                                  "scale"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "citations": {
+                                "maxItems": 32,
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "locator": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 1024
+                                    },
+                                    "sha256": {
+                                      "type": "string",
+                                      "pattern": "^[a-f0-9]{64}$"
+                                    }
+                                  },
+                                  "required": [
+                                    "locator",
+                                    "sha256"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "version",
+                              "family",
+                              "format",
+                              "formatVersion",
+                              "detectedBy",
+                              "nameDisagrees",
+                              "depth",
+                              "encoding",
+                              "crs",
+                              "extent",
+                              "counts",
+                              "geometryTypes",
+                              "layers",
+                              "sheets",
+                              "columns",
+                              "limits",
+                              "probeBytesRead",
+                              "probeMs",
+                              "drawableHint",
+                              "delimiter",
+                              "encrypted",
+                              "raster",
+                              "point",
+                              "citations"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "sizeBytes",
+                          "compressedBytes",
+                          "format",
+                          "family",
+                          "refusalCode",
+                          "companions",
+                          "card"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "version",
+                    "family",
+                    "format",
+                    "formatVersion",
+                    "detectedBy",
+                    "nameDisagrees",
+                    "depth",
+                    "encoding",
+                    "crs",
+                    "extent",
+                    "counts",
+                    "geometryTypes",
+                    "layers",
+                    "sheets",
+                    "columns",
+                    "limits",
+                    "probeBytesRead",
+                    "probeMs",
+                    "drawableHint",
+                    "delimiter",
+                    "encrypted",
+                    "raster",
+                    "point",
+                    "citations",
+                    "members"
+                  ],
+                  "additionalProperties": false
+                },
+                "cardSha256": {
+                  "nullable": true,
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "probeVersion": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "partsPlanned": {
+                  "nullable": true,
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": true,
+                  "maximum": 9007199254740991
+                },
+                "partsDone": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "recordsSeen": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "limitReason": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "pinnedByOfficer": {
+                  "type": "boolean"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "itemId",
+                "sourceId",
+                "caseId",
+                "parentItemId",
+                "memberPath",
+                "name",
+                "family",
+                "format",
+                "sizeBytes",
+                "sizeClass",
+                "wave",
+                "state",
+                "placement",
+                "card",
+                "cardSha256",
+                "probeVersion",
+                "partsPlanned",
+                "partsDone",
+                "recordsSeen",
+                "limitReason",
+                "pinnedByOfficer",
+                "createdAt",
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "caseId",
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "POST_ingestion_cases_caseId_intake_items_itemId_pin_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "wave": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4
+          },
+          "requestKey": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "wave",
+          "requestKey"
+        ],
+        "additionalProperties": false
       },
       "GET_ingestion_conversions_Response_200_application_json": {
         "type": "object",

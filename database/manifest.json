@@ -2595,6 +2595,68 @@
         "path": "packages/server/src/modules/usp/migrations.ts",
         "function": "migrateUsp"
       }
+    },
+    {
+      "id": "ingestion.intake.schema",
+      "source": {
+        "path": "database/sql/95-ingestion/intake-ledger.sql",
+        "function": "migrateIntakeLedgerTx",
+        "kind": "authored-sql",
+        "task": "IN1",
+        "acceptedBase": "9fa4a20eacb59864158fe98aecb4ca8d03b96346"
+      },
+      "file": "sql/95-ingestion/intake-ledger.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp.lock",
+      "condition": "always; additive IF NOT EXISTS",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 55,
+      "sha256": "d9547bf5458beb07024b12c6a4c5ab3a8bd50fbc9720a65035b573c6801f1e65",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "ae73a6028294c5f0f5882eca4780d22c36596fb7f8c23a0a5887da61ef8f2be1"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "66b8dc42cfdd9b0eff71bd627922eafbe675a8049da1eae5ff6aa1adaefba767"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "a0747fbc0e448c50181646977eeeadfe3864d563045346c097d032a73cec7c8a"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "6c9b63f286ad13df40319750c51b09067e0099450134c7473302438afc0636b2"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "c1a9dce302f25b42452556f8f362ac880ecf80ed0d8d882e1e798f85a1646d38"
+        },
+        {
+          "ordinal": 6,
+          "sha256": "104242035f26d19a494a2d35b78928079c87aa377d481b858ad3299891553c34"
+        },
+        {
+          "ordinal": 7,
+          "sha256": "1ba4970227cb784af21cec29577dedf0c842293c0ced17cfebe10d640abc5d92"
+        },
+        {
+          "ordinal": 8,
+          "sha256": "630cbc8f145c6624e2fa11f480bc28c22954d8c0aa7130301e5d46a2a878cc88"
+        },
+        {
+          "ordinal": 9,
+          "sha256": "d282075fe916d8e89ccc7f51dcbd397f7afef75c999412d2bd03592b429c7872"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/ingestion/intake-migration.ts",
+        "function": "migrateIntakeLedgerTx"
+      }
     }
   ],
   "plannedButAbsent": []
