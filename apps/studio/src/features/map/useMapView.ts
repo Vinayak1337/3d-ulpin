@@ -13,6 +13,11 @@ export interface MapView {
   overlays: { imagery: boolean | null; lidar: boolean };
 }
 
+/** Only listed canonical pictures default on; a supplemental aerial needs the viewer's explicit choice. */
+export function imageryVisibility(preference: boolean | null, hasListedPictures: boolean) {
+  return { retained: preference ?? hasListedPictures, aerial: preference === true };
+}
+
 const KEY = 'bhuaayam.mapView';
 const DEFAULT: MapView = {
   look: 'enhanced', layers: { parcels: true, roads: true, publicLand: true, trees: true }, labels: true,

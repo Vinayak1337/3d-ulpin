@@ -10,8 +10,6 @@ import { buildingModel } from '../../model/building';
 import { effectiveColour } from '../../state/selection';
 import { useSelection } from '../../state/useSelection';
 import { EvidenceProvider } from '../evidence/EvidenceContext';
-import { AssignDialog } from '../identity/AssignDialog';
-import { DRAFT_ON_THIS_DEVICE } from '../identity/draft';
 import { AddFilesDialog } from '../intake/AddFilesDialog';
 import { DeleteDialog } from '../manage/DeleteDialog';
 import { UnitCardDialog } from '../identity/UnitCardDialog';
@@ -28,7 +26,7 @@ import { ScaleAndNorth } from './ScaleAndNorth';
 import { UndrawnBuildings } from './UndrawnBuildings';
 import { BuildingSearch } from './BuildingSearch';
 import { CandidateBanner } from '../review/candidates/CandidateBanner';
-import { useMapView } from './useMapView';
+import { imageryVisibility, useMapView } from './useMapView';
 import {
   imageryAttribution, imageryFailureNote, listedImages, useOverlays, useRetainedImagery,
   type AreaReference, type SupplementalDataset, type LoadedOverlay, type RetainedImages,
@@ -77,9 +75,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const [engine, setEngine] = useState<SceneEngine | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
-  const [dialog, setDialog] = useState<'assign' | 'card' | 'files' | 'delete-building' | 'delete-area' | null>(null);
+  const [dialog, setDialog] = useState<'card' | 'files' | 'delete-building' | 'delete-area' | null>(null);
   const navigate = useNavigate();
-  const [toast, setToast] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [trench, setTrench] = useState<Trench | null>(null);
   const [focusSearch, setFocusSearch] = useState(false);
@@ -130,7 +127,9 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const listedPictures = useMemo(() => listedImages(drawn.area), [drawn.area]);
   const retained = useRetainedImagery(context.area.id, listedPictures);
   const retainedImages = retained.data?.overlays ?? NO_IMAGES;
-  const overlaysOn = { imagery: mapView.overlays.imagery ?? listedPictures.length > 0, lidar: mapView.overlays.lidar };
+  const imagery = imageryVisibility(mapView.overlays.imagery, listedPictures.length > 0);
+  const overlaysOn = { imagery: imagery.retained, lidar: mapView.overlays.lidar };
+  const supplementalOn = { imagery: imagery.aerial, lidar: mapView.overlays.lidar };
   // Nothing to scale or fit: no footprint, base feature or overlay, and every read has settled.
   const nothingToDraw = !footprints.length && !base.length && !loadedOverlays.length && !retainedImages.length
     && !drawn.pending && !drawn.error && !overlayQuery.isLoading && !retained.isLoading && !packageId
@@ -145,14 +144,14 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const retainedShown = showContextOverlays && overlaysOn.imagery && retainedImages.length > 0;
   const overlayInputs = useMemo<OverlayInput[]>(() => [
     ...(retainedShown ? retainedImages : []),
-    ...loadedOverlays.filter((o) => showContextOverlays && overlaysOn[o.layer]).map((o) => o.input),
+    ...loadedOverlays.filter((o) => showContextOverlays && supplementalOn[o.layer]).map((o) => o.input),
     ...(activePlan && showContextOverlays ? [
       { id: 'simulated-area-plan', kind: 'comparison' as const, role: 'plan' as const, polygons: activePlan.plan, heightM: 0 },
       ...activePlan.findings.map(f => ({ id: `simulated-difference:${f.buildingId}`, kind: 'comparison' as const, role: 'conflict' as const, polygons: f.outside, heightM: f.heightM })),
     ] : []),
-  ], [retainedShown, retainedImages, loadedOverlays, overlaysOn.imagery, overlaysOn.lidar, showContextOverlays,
-    activePlan]);
-  const visibleOverlays = loadedOverlays.filter((o) => showContextOverlays && overlaysOn[o.layer]);
+  ], [retainedShown, retainedImages, loadedOverlays, supplementalOn.imagery, supplementalOn.lidar,
+    showContextOverlays, activePlan]);
+  const visibleOverlays = loadedOverlays.filter((o) => showContextOverlays && supplementalOn[o.layer]);
   const overlayNotes = visibleOverlays.map((o) => o.note);
   const viewNotes = [
     mapView.look === 'enhanced' ? 'Enhanced view' : null,
@@ -364,7 +363,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     inspector = (
       <SpaceInspector space={space} level={level} model={model} register={register} ledger={ledger} buildingId={feature.id} crumbs={crumbs}
         datum={ledger?.siteDatum ?? null} onSelectSpace={(id) => dispatch({ type: 'selectSpace', id })}
-        onAssign={() => setDialog('assign')} onCard={() => setDialog('card')} onFinding={(id) => dispatch({ type: 'openFindings', findingId: id })} />
+        onCard={() => setDialog('card')}
+        onFinding={(id) => dispatch({ type: 'openFindings', findingId: id })} />
     );
   } else if (feature) {
     inspector = (
@@ -536,19 +536,9 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
         <DeleteDialog target={{ kind: 'area', id: context.area.id, name: context.area.name, detail: `${context.area.name} and its ${buildings.length} buildings, parcels, roads and utilities are deleted, with every building register in it.` }}
           onClose={() => setDialog(null)} onDeleted={() => navigate('/studio/map', { replace: true })} />
       ) : null}
-      {dialog === 'assign' && space && register ? (
-        <AssignDialog space={space} register={register} onClose={() => setDialog(null)} onAssigned={(code) => { setDialog(null); setToast(code); }} />
-      ) : null}
       {dialog === 'card' && space && feature ? (
         <UnitCardDialog buildingId={feature.id} workflow={spaceWorkflow.data} space={space} level={level}
           buildingName={feature.name} onClose={() => setDialog(null)} />
-      ) : null}
-      {toast ? (
-        <Toast onDone={() => setToast(null)}>
-          <span className="ul-body-sm">{DRAFT_ON_THIS_DEVICE}</span>
-          <span className="ul-id">{toast.slice(0, 7)}…{toast.slice(-3)}</span>
-          <button type="button" className="ul-btn ul-btn--soft" onClick={() => { setToast(null); setDialog('card'); }}>Make Property Card</button>
-        </Toast>
       ) : null}
       {notice ? <Toast onDone={() => setNotice(null)}>{notice}</Toast> : null}
     </EvidenceProvider>

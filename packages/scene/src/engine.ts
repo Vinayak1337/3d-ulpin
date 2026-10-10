@@ -52,6 +52,8 @@ const SUN_DIR = new Vector3(-0.5, 0.95, 0.55).normalize();
 
 /** Illustrative kerb height of raised sidewalks, metres (enhanced view only). */
 const SIDEWALK_M = 0.15;
+const CONTEXT_FILL_ORDER = -4;
+const GROUND_PICTURE_ORDER = -3;
 
 const INITIAL_STATE: SceneState = { mode: 'area', buildingId: null, levelId: null, spaceId: null, tool: 'select' };
 
@@ -193,6 +195,7 @@ export class SceneEngine {
     this.lookName = options.look ?? 'enhanced';
     this.ground = new Mesh(new PlaneGeometry(1, 1), this.m.ground);
     this.ground.rotation.x = -Math.PI / 2;
+    this.ground.renderOrder = CONTEXT_FILL_ORDER;
     this.ground.receiveShadow = true;
     this.ground.scale.set(1400, 1400, 1);
     this.halo = new Mesh(new BufferGeometry(), this.m.halo);
@@ -296,7 +299,8 @@ export class SceneEngine {
       if (o.kind === 'image') {
         const [sw, se, ne, nw] = o.corners;
         const g = new BufferGeometry();
-        const y = 0.2;
+        const ground = o.role === 'ground';
+        const y = ground ? 0 : 0.2;
         g.setAttribute('position', new Float32BufferAttribute([sw[0], y, -sw[1], se[0], y, -se[1], ne[0], y, -ne[1], nw[0], y, -nw[1]], 3));
         g.setAttribute('uv', new Float32BufferAttribute([0, 0, 1, 0, 1, 1, 0, 1], 2));
         g.setIndex([0, 1, 2, 0, 2, 3]);
@@ -304,7 +308,16 @@ export class SceneEngine {
         const texture = new CanvasTexture(o.image);
         texture.colorSpace = SRGBColorSpace;
         texture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
-        const mesh = new Mesh(g, new MeshBasicMaterial({ map: texture, transparent: true, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }));
+        // Ground pictures use the opaque queue between fills and records, not depth bias: even far away they
+        // cannot flicker against fills or hide records. Alpha cutout keeps no-data pixels clear, without a
+        // late transparent pass over records. They neither test nor write depth and change no record height.
+        const material = ground
+          ? new MeshBasicMaterial({ map: texture, alphaTest: 0.01, depthTest: false, depthWrite: false })
+          : new MeshBasicMaterial({
+            map: texture, transparent: true, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4,
+          });
+        const mesh = new Mesh(g, material);
+        mesh.renderOrder = ground ? GROUND_PICTURE_ORDER : 0;
         mesh.raycast = () => {};
         mesh.userData.overlay = o.id;
         this.overlays.add(mesh);
@@ -434,6 +447,7 @@ export class SceneEngine {
       // Sidewalks are raised a kerb's height in the enhanced view (illustrative 15 cm); flat in plain view.
       const mesh = new Mesh(sidewalk ? prismGeometry(f.polygons, 0, SIDEWALK_M) : prismGeometry(f.polygons, lift[f.kind] ?? 0.02, 0.001), material);
       mesh.receiveShadow = true;
+      mesh.renderOrder = CONTEXT_FILL_ORDER;
       mesh.userData.layer = f.kind;
       if (sidewalk) this.raised.push(mesh);
       if (f.name) {
@@ -730,6 +744,7 @@ export class SceneEngine {
     const pads = padGeometry(footprints, 2.2, 0.004);
     if (pads) {
       const mesh = new Mesh(pads, this.m.pad);
+      mesh.renderOrder = CONTEXT_FILL_ORDER;
       mesh.receiveShadow = true;
       mesh.raycast = () => {};
       this.dressing.add(mesh);

@@ -74,6 +74,7 @@ describe('loadRetainedImages', () => {
     const images = await loadRetainedImages(listed, new AbortController().signal, read);
     expect(images.overlays.map((o) => o.id)).toEqual(['a', 'c']);
     expect(images.overlays[0]!.corners).toEqual([SW, SE, NE, NW]);
+    expect(images.overlays.every((image) => image.role === 'ground')).toBe(true);
     expect({ listed: images.listed, failed: images.failed }).toEqual({ listed: 3, failed: 1 });
   });
 
