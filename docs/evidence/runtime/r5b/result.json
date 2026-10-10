@@ -1,0 +1,101 @@
+{
+  "task": "R5b",
+  "title": "UNIT-3A's page region measured the way UNIT-3B's was, and the reference-area step as request bodies",
+  "gate": "GF5 (rehearsal), GF1",
+  "worktree": "E:/Projects/ulpin-wt/r5, branch task/r5b-unit3a-region-and-area-step, cut from staging 3a8f5df1",
+  "step0": {
+    "question": "How was the recorded page region of UNIT-3B obtained, and what does the record store?",
+    "answer": ["It was not computed and it was not read from a text layer. The four numbers [596, 390, 644, 409] are",
+      "the lead's estimate, read off the wide K4b crop and written into the K4c task file. The K4c worker",
+      "rendered that estimate at 4 times, measured how far the dark pixels of the boxed label lie from each",
+      "edge (5.0, 5.0, 6.0 and 4.25 pt: left, top, right, bottom), found all four inside the allowed 6 pt,",
+      "saw no other label in the crop, and kept the estimate unchanged. So the record's region is an",
+      "estimate that passed a measured test; no script, rule or formula produced it."],
+    "sheet": {
+      "path": "E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/haryana-2831-tower3-plan1.pdf",
+      "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429", "revision": 1,
+      "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865", "bytes": 1655334, "pages": 1,
+      "textLayer": ["none: PyMuPDF 1.25.5 returns 0 words and 0 vector drawings for page 1. The page is one embedded",
+        "image, 5388 x 3531 pixels, RGB, drawn over the whole page (about 2.08 pixels per point). Every label",
+        "on this sheet is pixels, so a label is read by a person; K4a already said so (\"manual visual",
+        "inspection of retained PDF raster pages; no OCR\", docs/evidence/gf1/k4a/unit-statements.json, key",
+        "methods)."],
+      "readAt": "2026-10-10T15:44Z, read-only, bytes hashed before opening"
+    },
+    "frame": {
+      "name": "pdf_display_page_top_left_points", "unit": "PDF point (1/72 inch)",
+      "origin": "top-left corner of the displayed page", "axes": "x to the right, y down",
+      "order": "[x0, y0, x1, y1]: left, top, right, bottom", "pageBox": [0, 0, 2586, 1695], "rotation": 0,
+      "from": ["docs/evidence/gf1/k4c/visual-evidence.json (frame, pageBox)",
+        "scripts/agent/r2-live.ts:56-57 (the demo answered frame 2586 x 1695 for this source)"]
+    },
+    "howObtained": [
+      {"step": 1,
+        "what": ["K4b cited a wide region [206.88, 254.25, 1241.28, 559.35] that holds both UNIT-3B and UNIT-3A, and",
+          "kept its crop."],
+        "from": ["docs/evidence/gf1/k4b/visual-evidence.json",
+          "E:/BhuAayam-data/task-data/k4b/unit-cited-region.png, SHA-256 94065f1d...8219b"]},
+      {"step": 2,
+        "what": [
+          "The lead read an estimate off that crop: \"The lead's estimate from your broad crop is about `[596,",
+          "390, 644, 409]` pt on page 1 (top-left origin, 2586 × 1695 pt). Render it, adjust so the whole boxed",
+          "label is inside with a margin of at most 6 pt, and confirm by eye that `UNIT-3A` and every other",
+          "label are outside.\""
+        ],
+        "from": ["E:/Projects/ulpin-wt/_tasks/k4c.md:20 (the task folder is not in Git)"]},
+      {"step": 3,
+        "what": [
+          "The K4c worker rendered the estimate at 4 times (192 x 76 pixels), reported the margins from the ink",
+          "to the region edge as 5.0 / 5.0 / 6.0 / 4.25 pt and kept the estimate. The region is a constant in",
+          "its script; nothing derives it."
+        ],
+        "from": ["docs/evidence/gf1/k4c/render-label.py:13 (REGION), :30 (the 4 times crop)",
+          "docs/evidence/gf1/k4c/REPORT.md:8-12",
+          "docs/evidence/gf1/k4c/visual-evidence.json",
+          "E:/BhuAayam-data/task-data/k4c/unit-3b-label.png, SHA-256 3c9e7914...b9923",
+          "commit 2465b5af docs(identity): label-only citation for UNIT-3B"]},
+      {"step": 4, "what": "R2 sent that body unchanged, with the canonical revision read at run time.",
+        "from": ["docs/evidence/gf1/k4c/source-space-request.json:20", "scripts/agent/r2-live.ts:88-92"]}
+    ],
+    "retainedReceipt": {
+      "request": "E:/BhuAayam-data/task-data/r2/step2/02-record-request.json",
+      "requestSha256": "b5d099b8bef8d996b0b9128dd0b1667edfdebe7bccccfa078abfe5b5cf2746ee",
+      "sentAt": "2026-10-10T12:29:48.234Z",
+      "spaceEvidenceSent": {
+        "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429", "sourceRevision": 1, "page": 1,
+        "region": [596, 390, 644, 409], "literal": "UNIT-3B"
+      },
+      "response": "E:/BhuAayam-data/task-data/r2/step2/02-record-response.json",
+      "responseSha256": "47132b94632f15570a3d0bd47eb9e864f02338ca6ce7b0ceed807a89a3bd7829", "status": 201,
+      "spaceId": "46b7265e-ca88-402d-83df-065cf7c45140", "floorId": "614ca200-1f3d-48ac-b7db-d1b893b352a1",
+      "spaceRevision": 1
+    },
+    "whatTheRecordStores": {
+      "readWith": "GET /api/v1/buildings/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/canonical",
+      "readAt": "2026-10-10T15:46:53Z", "status": 200,
+      "canonicalRevision": "906c2e9bbe7e24134dd7ec2bef2b5dba18046d626e5f3aed3b9ca50d16f21bdb",
+      "spaceLabel": {"value": "UNIT-3B", "state": "reviewed"},
+      "sourcePin": {
+        "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429", "sourceRevision": 1,
+        "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865"
+      },
+      "box": {"kind": "region", "page": 1, "x": 596, "y": 390, "width": 48, "height": 19, "unit": "pt"},
+      "boxAsSent": [596, 390, 644, 409], "locatorText": "page 1; region pt [596,390,644,409]; literal UNIT-3B",
+      "locatorTextFrom": ["packages/contracts/src/canonical/source-spaces.ts:54-56 (the function that writes it)",
+        "docs/evidence/runtime/r3/result.json:304 (the text the R3 review had to equal)"],
+      "alsoStored": ["the literal UNIT-3B with transcription \"officer_entered\", the actor, the reason and the time",
+        "(packages/contracts/src/canonical/source-spaces.ts:32-38). No boundary, geometry or area."],
+      "precision": ["Four whole numbers of points. The contract accepts any finite non-negative numbers",
+        "(source-spaces.ts:5-6), so a region on the quarter-point grid of a 4 times render can be recorded as",
+        "it is."]
+    },
+    "whatThisMeansForUnit3A": [
+      "There is no rule to reuse as written. What can be repeated from the retained sheet is the K4c",
+      "measurement: the same 4 times render and the same margins. The control in this task therefore has",
+      "two parts: the crop of the recorded region must be byte-identical to the K4c crop, and the label box",
+      "found from a point inside the label, widened by the four K4c margins, must give the recorded numbers",
+      "exactly. Only if both hold is the same code pointed at UNIT-3A, and its result is a candidate for an",
+      "officer, not a fact."
+    ]
+  }
+}
