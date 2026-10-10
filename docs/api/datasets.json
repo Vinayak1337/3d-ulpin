@@ -5269,7 +5269,7 @@
     },
     {
       "manifest": "fixtures/usp/D8-open-property-foreign/manifest.json",
-      "manifestSha256": "0ea691ae0c6c7a0713b84a26e9707ea40e46c0863fe3b978c9386109e124cc8e",
+      "manifestSha256": "8204a022de3da4666361677a078f77615d4d7a5b1d11864e9bb81965b7e6ff95",
       "packId": "D8-foreign",
       "profile": "open-property-foreign-development-d1f",
       "version": 1,
@@ -5314,6 +5314,171 @@
             "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d02/seattle-energy.csv",
             "sha256": "d1a8227bf9c7c82aea8279a67405add617271852a985d96bb6e4ac9070e8250f",
             "bytes": 13321421,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "nycha-addresses.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://data.cityofnewyork.us/api/views/3ub5-4ph8/rows.csv?accessType=DOWNLOAD"
+          },
+          "attribution": "New York City Housing Authority",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "not stated",
+            "reference": null,
+            "scope": "Public local development only"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "New York City Housing Authority",
+          "acquiredAt": "2026-10-10T12:11:03.936503+00:00",
+          "geography": "New York City, New York, United States",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d03/nycha-addresses.csv",
+            "sha256": "dfab1ad57770e8bd1642e4efd0c9766b0ba9db167f8a165ba29e49336f3c06a6",
+            "bytes": 551047,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "sf-existing.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://data.sf.gov/api/views/96ck-qcfe/rows.csv?accessType=DOWNLOAD"
+          },
+          "attribution": "City and County of San Francisco Environment Department",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "Open Data Commons Public Domain Dedication and License",
+            "reference": "http://opendatacommons.org/licenses/pddl/1.0/",
+            "scope": "Public local development only"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "City and County of San Francisco Environment Department",
+          "acquiredAt": "2026-10-10T12:11:07.253943+00:00",
+          "geography": "San Francisco, California, United States",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d04/sf-existing.csv",
+            "sha256": "f6120c2022ed3a5f137948549da52a5319b582a901836025def297eab6c2cf08",
+            "bytes": 11759632,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "sf-municipal.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://data.sf.gov/api/views/bfhx-j6n5/rows.csv?accessType=DOWNLOAD"
+          },
+          "attribution": "City and County of San Francisco Environment Department",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "Open Data Commons Public Domain Dedication and License",
+            "reference": "http://opendatacommons.org/licenses/pddl/1.0/",
+            "scope": "Public local development only"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "City and County of San Francisco Environment Department",
+          "acquiredAt": "2026-10-10T12:11:43.144801+00:00",
+          "geography": "San Francisco, California, United States",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d04/sf-municipal.csv",
+            "sha256": "a538cf8d9be7e225ae988838ad41121f6ea00e9b7869303491d56e3c9570e669",
+            "bytes": 1479735,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "kansas-municipal.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://data.kcmo.org/api/views/9xwa-2b59/rows.csv?accessType=DOWNLOAD"
+          },
+          "attribution": "City of Kansas City Office of Environmental Quality",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "not stated",
+            "reference": null,
+            "scope": "Public local development only"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "City of Kansas City Office of Environmental Quality",
+          "acquiredAt": "2026-10-10T12:11:48.415760+00:00",
+          "geography": "Kansas City, Missouri, United States",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d05/kansas-municipal.csv",
+            "sha256": "cafdb2980f56143aaa2f302c7a19d424a98a5ab6472572f4ee007cbdb511e2d4",
+            "bytes": 66513,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "edmonton-heritage.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://data.edmonton.ca/api/views/jgsn-dhai/rows.csv?accessType=DOWNLOAD"
+          },
+          "attribution": "City of Edmonton",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "See Terms of Use",
+            "reference": null,
+            "scope": "Public local development only"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "City of Edmonton",
+          "acquiredAt": "2026-10-10T12:11:51.712492+00:00",
+          "geography": "Edmonton, Alberta, Canada",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d06/edmonton-heritage.csv",
+            "sha256": "1caa0303fdbcb9c18409154a0529f511b75fd3eb785877990a9718175f97f146",
+            "bytes": 271421,
             "repositoryBytesVerified": false
           },
           "manifestVerification": {}
@@ -9101,11 +9266,11 @@
       "issuer": "Foreign municipal issuing authorities; exact publishers in manifest",
       "geography": "Foreign development only; exact per-source geography in manifest",
       "manifest": "fixtures/usp/D8-open-property-foreign/manifest.json",
-      "manifestSha256": "0ea691ae0c6c7a0713b84a26e9707ea40e46c0863fe3b978c9386109e124cc8e",
+      "manifestSha256": "8204a022de3da4666361677a078f77615d4d7a5b1d11864e9bb81965b7e6ff95",
       "guide": "docs/evidence/gf-agent/d1f/result.json",
-      "sourceCount": 1,
-      "sourceFamilies": 1,
-      "totalOriginalBytes": 13321421,
+      "sourceCount": 6,
+      "sourceFamilies": 5,
+      "totalOriginalBytes": 27449769,
       "content": {
         "externalRoot": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f",
         "itemsPointer": "/assets",
