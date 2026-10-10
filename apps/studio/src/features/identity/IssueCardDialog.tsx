@@ -4,7 +4,7 @@ import { useBuildingCanonical, useBuildingRegister, type ListedCard } from '../.
 import { sourceLabelGaps, type RecordedUnit } from '../review/recorded/model';
 import { assignSubject } from './assignment';
 import { expiryError, expiryInstant, inclusionError, type IssueTarget } from './issue';
-import { AnsweredFacts, IssueForm, PreviewFacts, TypedFacts, type IssueEntries } from './IssueParts';
+import { AnsweredFacts, IssueForm, PreviewFacts, TypedReason, type IssueEntries } from './IssueParts';
 import type { Typed } from './prepare';
 import { UnitDecided, UnitUnread } from './UnitDecided';
 import { useFieldFocus } from './useFieldFocus';
@@ -71,10 +71,11 @@ function Prepared({ flow, first, sent, form }: {
   flow: IssueFlow; first: boolean; sent: Typed | null; form: ReactNode;
 }) {
   const { prepared } = flow;
+  const reason = first && sent ? <TypedReason typed={sent} /> : null;
   return (
     <>
       <p>{first ? STORES : READS}</p>
-      {prepared && sent ? <TypedFacts typed={sent} withReason={first} /> : form}
+      {prepared ? reason : form}
       <AnsweredFacts answered={flow.answered} />
       {prepared ? <PreviewFacts preview={prepared.preview} /> : null}
       {prepared && first && !flow.issue.isSuccess && !flow.found ? <p className="ul-help">{NO_CARD_YET}</p> : null}
