@@ -12,6 +12,14 @@
   "resolvedCheckFailure": "Initial server/API typechecks exited 2 for an implicit-any history-right callback; explicit RegistryRight annotation fixed it.",
   "executionMetadata": {"requestedModel": "gpt-6-sol", "requestedEffort": "max", "requestedSpeed": "Fast", "configuredServiceTier": "priority", "observedPerTurnModelEffortTier": "not exposed", "hostSettingsChanged": false},
   "operations": [
+    {
+      "method": "POST", "path": "/api/v1/buildings/{buildingId}/source-spaces",
+      "operationId": "POST_api_v1_buildings_buildingId_source_spaces", "disposition": "added", "batch": "K4b",
+      "controller": "OfficerController", "httpStatus": 201, "requestValidator": "SourceSpaceRequestSchema",
+      "responseSchema": "SourceSpaceReceiptSchema", "maxBodyBytes": 1048576, "runtimeEvidence": [],
+      "access": "PrivateSpatialGuard; configured officer; current original/page/region; digest and matching key",
+      "limitations": "Source-stated geometry-absent records only; no unit boundary, height, rights or parcel inference"
+    },
     {"method":"POST","path":"/api/v1/buildings/{buildingId}/level-schedules","operationId":"POST_api_v1_buildings_buildingId_level_schedules","disposition":"added","batch":"K3b","controller":"OfficerController","httpStatus":201,"requestValidator":"LevelScheduleRequestSchema","responseSchema":"LevelScheduleReceiptSchema","maxBodyBytes":1048576,"runtimeEvidence":[],"access":"PrivateSpatialGuard; building original citations; canonical digest; matching Idempotency-Key; proposed then officer-reviewed schedule; append-only histories; no guessed levels or heights; analytical gate unchanged"},
     {"method":"POST","path":"/api/v1/buildings/{buildingId}/candidates","operationId":"POST_api_v1_buildings_buildingId_candidates","disposition":"added","batch":"K2c","controller":"OfficerController","httpStatus":201,"requestValidator":"BuildingPlanCandidateRequestSchema","responseSchema":"BuildingPlanCandidateReceiptSchema","maxBodyBytes":1048576,"runtimeEvidence":[],"access":"PrivateSpatialGuard; original source authority; canonical digest; matching Idempotency-Key; append-only registry/physical history; plan-local candidates only; reviewed existing level selection; no generated levels, rights or placed spaces"},
     {"method":"POST","path":"/api/v1/buildings/{buildingId}/conflict-decisions","operationId":"POST_api_v1_buildings_buildingId_conflict_decisions","disposition":"added","batch":"K2b","controller":"OfficerController","httpStatus":201,"requestValidator":"BuildingConflictDecisionRequestSchema","responseSchema":"BuildingConflictDecisionSchema","maxBodyBytes":1048576,"runtimeEvidence":[],"access":"PrivateSpatialGuard; original authority; canonical digest pin; immutable reviewed registry/physical revision; idempotent requestKey; checked page; unresolved allowed; no alternative deletion"},

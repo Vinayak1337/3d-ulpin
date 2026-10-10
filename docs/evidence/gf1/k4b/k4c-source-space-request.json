@@ -1,0 +1,25 @@
+{
+  "requestKey": "d8bff499-c8b3-4b72-993c-9942039961cb",
+  "expectedCanonicalRevision": "d42ba09ec8a11411d11ca2cff2a794304824509c80b926181990575d81555981",
+  "level": {
+    "label": "2ND FLOOR PLAN",
+    "evidence": {
+      "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429",
+      "sourceRevision": 1,
+      "page": 1,
+      "region": [850, 875, 1020, 910],
+      "literal": "2ND FLOOR PLAN"
+    }
+  },
+  "space": {
+    "label": "UNIT-3B",
+    "evidence": {
+      "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429",
+      "sourceRevision": 1,
+      "page": 1,
+      "region": [206.88, 254.25, 1241.28, 559.35],
+      "literal": "UNIT-3B"
+    }
+  },
+  "reason": "Officer-cited UNIT-3B / 2ND FLOOR PLAN; source labels only, no geometry or rights; keep G+41/G+42."
+}

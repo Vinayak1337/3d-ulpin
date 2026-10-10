@@ -13,6 +13,8 @@ import { settings } from '../../infrastructure/config';
 import { readObject, sha256 } from '../../infrastructure/storage';
 import { geometryProjection, withUspAnalyticalReader } from './geometry';
 import { localOperatorSubject } from './principal';
+import { captureSourceStatedOriginalTx, sourceStatedOriginalAuthorityTx,
+  sourceStatedSnapshotPinsTx } from './source-stated-snapshots';
 import {documentAuthorityTx,documentSnapshotView,captureDocumentSourceTx} from './ingestion/document-authority';
 import { declarationSnapshotRowsTx, declarationMembership, declarationSnapshotView } from './declarations/projection';
 
@@ -41,7 +43,8 @@ export function storedRevision(value: unknown): number {
   return revision;
 }
 
-async function snapshotRows(client: PoolClient, siteId: string): Promise<BodyRow[]> {
+async function snapshotRows(client: PoolClient, siteId: string,
+  selection: { kind: 'site' } | { kind: 'targets'; pins: readonly TargetPin[] }): Promise<BodyRow[]> {
   const site = (await client.query('SELECT * FROM registry_sites WHERE id=$1', [siteId])).rows[0] ?? notFound();
   const records = (await client.query(
     `SELECT r.*,c.code AS project_code,c.status AS project_status,s.location AS project_location
@@ -89,8 +92,13 @@ async function snapshotRows(client: PoolClient, siteId: string): Promise<BodyRow
       packageParts.set(part.sourceRevisionId, parts);
     }
   }
-  const sourceBodies=new Map<string,Record<string,any>>();
-  for(const source of sources)sourceBodies.set(source.id,await captureDocumentSourceTx(client,source,packageParts.get(source.id)??[]));
+  const originalPins = await sourceStatedSnapshotPinsTx(client, siteId, records, selection);
+  const sourceBodies = new Map<string, Record<string, any>>();
+  for (const source of sources) {
+    const pin = originalPins.get(source.id);
+    sourceBodies.set(source.id, pin ? await captureSourceStatedOriginalTx(client, siteId, source, pin)
+      : await captureDocumentSourceTx(client, source, packageParts.get(source.id) ?? []));
+  }
   const qualifications = (await client.query(`SELECT DISTINCT ON(q.namespace,q.record_id,q.record_revision) q.*
     FROM usp_geometry_qualifications q WHERE
       (q.namespace='registry_record' AND EXISTS(SELECT 1 FROM registry_records r WHERE r.id=q.record_id AND r.site_id=$1 AND r.revision=q.record_revision))
@@ -123,7 +131,7 @@ export async function captureRegistrySnapshot(ctx: RequestContext, siteId: strin
 
 export async function captureRegistrySnapshotTx(client: PoolClient, ctx: RequestContext, siteId: string, selection: { kind: 'site' } | { kind: 'targets'; pins: readonly TargetPin[] }) {
     assertLocalUsp(ctx);
-    const rows = await snapshotRows(client, siteId);
+    const rows = await snapshotRows(client, siteId, selection);
     // New authority names share a prefix (declaration/declaration_entry).
     // Contract ordering is code-point ordering, while the legacy locale sort
     // places '_' before ':'. Preserve zero-declaration digest ordering exactly.
@@ -182,7 +190,8 @@ export async function assertSnapshotDocumentsTx(client:PoolClient,ctx:RequestCon
   if(sources.length>2000)throw new AppError(413,'USP_SCOPE_LIMIT','Select a smaller source scope.');
   for(const source of sources){
     if(fingerprint(source.body)!==source.body_sha256)throw new AppError(409,'USP_REVISION_UNAVAILABLE','The exact captured source is unavailable.');
-    await documentAuthorityTx(client,source.body,'snapshot',new Set(),protect);
+    if (source.body.sourceStatedOriginal) await sourceStatedOriginalAuthorityTx(client, scope.scopeId, source.body);
+    else await documentAuthorityTx(client,source.body,'snapshot',new Set(),protect);
   }
   assertLocalUsp(ctx);
 }
@@ -218,7 +227,14 @@ export async function readSnapshotBody(ctx: RequestContext, scope: SnapshotScope
   if (!found || fingerprint(found.body) !== found.body_sha256) {
     throw new AppError(409, 'USP_REVISION_UNAVAILABLE', 'The exact captured revision is unavailable.');
   }
-  if(pin.ref.namespace==='source_revision')return transaction(async client=>{const view=documentSnapshotView(found.body,await documentAuthorityTx(client,found.body));assertLocalUsp(ctx);return view;});
+  if (pin.ref.namespace === 'source_revision') return transaction(async client => {
+    const document = found.body.sourceStatedOriginal
+      ? await sourceStatedOriginalAuthorityTx(client, scope.scopeId, found.body)
+      : await documentAuthorityTx(client, found.body);
+    const view = documentSnapshotView(found.body, document);
+    assertLocalUsp(ctx);
+    return view;
+  });
   if(pin.ref.namespace==='registry_record')return registryDocumentSnapshotView(found.body);
   if (['declaration', 'declaration_entry', 'applicability'].includes(pin.ref.namespace))
     return declarationSnapshotView(pin.ref.namespace, found.body);
@@ -239,7 +255,9 @@ export async function readSnapshotOriginal(ctx:RequestContext,scope:SnapshotScop
   if(bytes.length!==Number(source.bytes)||sha256(bytes)!==source.sha256)
     throw new AppError(422,'USP_ORIGINAL_INTEGRITY','The retained original no longer matches its source receipt.');
   await readManifest(ctx,scope);
-  await transaction(client=>documentAuthorityTx(client,source));
+  await transaction(client => source.sourceStatedOriginal
+    ? sourceStatedOriginalAuthorityTx(client, scope.scopeId, source)
+    : documentAuthorityTx(client, source));
   assertLocalUsp(ctx);
   return {body:source,bytes};
 }

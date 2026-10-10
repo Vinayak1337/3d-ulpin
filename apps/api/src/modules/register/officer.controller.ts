@@ -7,7 +7,7 @@ import { z } from 'zod';
 import {
   BuildingConflictDecisionRequestSchema, BuildingConflictDecisionSchema,
   BuildingPlanCandidateRequestSchema, BuildingPlanCandidateReceiptSchema,
-  LevelScheduleRequestSchema, LevelScheduleReceiptSchema,
+  LevelScheduleRequestSchema, LevelScheduleReceiptSchema, SourceSpaceRequestSchema, SourceSpaceReceiptSchema,
 } from '@ulpin/contracts';
 import { PrivateSpatialGuard } from '../spatial/private-spatial.guard';
 import { jsonBody, wireResponse } from '../intake/wire-schemas';
@@ -16,6 +16,7 @@ import { redactDocumentViews } from '@ulpin/server/modules/usp/ingest/redact';
 import { readJsonBody } from '../../common/body';
 import { jsonResponse, sendWebResponse } from '../../common/response';
 import { OfficerService } from './officer.service';
+import { commandSourceSpace } from '@ulpin/server/modules/officer/source-spaces';
 import {
   answerInvestigationInput, associationInput, blockGroupInput,
   createInvestigationInput, detailReviewInput, investigationRequestInput,
@@ -92,6 +93,25 @@ export class OfficerController {
       throw new AppError(422, 'LEVEL_SCHEDULE_KEY', 'Match Idempotency-Key to the schedule request key.');
     }
     return this.service.levelSchedule(uuid.parse(buildingId), input);
+  }
+
+  @Post('buildings/:buildingId/source-spaces')
+  @UseGuards(PrivateSpatialGuard)
+  @HttpCode(201)
+  @Header('Cache-Control', 'private, no-store')
+  @ApiOperation({ operationId: 'POST_api_v1_buildings_buildingId_source_spaces',
+    summary: 'Record an officer-cited literal floor and unit without geometry or inferred scope' })
+  @ApiParam({ name: 'buildingId', schema: { type: 'string', format: 'uuid' } })
+  @ApiHeader({ name: 'Idempotency-Key', required: true, schema: { type: 'string', format: 'uuid' } })
+  @jsonBody(SourceSpaceRequestSchema)
+  @wireResponse(201, SourceSpaceReceiptSchema)
+  async sourceSpace(@Param('buildingId') buildingId: string, @Req() req: Request) {
+    if (queryUrl(req).search) throw new AppError(422, 'SOURCE_SPACE_QUERY', 'This command accepts no query fields.');
+    const input = await body(req, SourceSpaceRequestSchema);
+    if (uuid.parse(req.header('idempotency-key')) !== input.requestKey) {
+      throw new AppError(422, 'SOURCE_SPACE_KEY', 'Match Idempotency-Key to the source-space request key.');
+    }
+    return commandSourceSpace(uuid.parse(buildingId), input);
   }
 
   @Get('work-queue')
