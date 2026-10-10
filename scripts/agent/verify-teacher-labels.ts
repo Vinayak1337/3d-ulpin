@@ -57,7 +57,8 @@ function materialize(entry: LinkedColumn): TeacherProfileEntry {
   const rows = table.rows.map(row => Object.fromEntries(entry.table.profile.columns.map((column, index) =>
     [column.name, row[index]])));
   return {
-    profile: entry.table.profile, rows, sourceRef: entry.table.asset.original.externalPath,
+    profile: entry.table.profile, rows,
+    sourceRef: `${entry.table.asset.original.externalPath}#sheet=${encodeURIComponent(entry.table.sheet)}`,
     dataPolicy: { dataClass: 'public', split: entry.column.split === 'dev' ? 'development' : 'unlabelled' },
   };
 }
@@ -75,8 +76,8 @@ function normalizeLabel(raw: unknown, linked: Map<string, LinkedColumn>, invento
   const profileHash = columnProfileHash(entry.table.profile);
   if (!inventory.has(profileHash)) inventory.set(profileHash, materialize(entry));
   // Duplicate content from a different source must not silently reuse another file's raw rows.
-  assert.equal(inventory.get(profileHash)!.sourceRef, entry.table.asset.original.externalPath,
-    'T1_PROFILE_HASH_AMBIGUOUS');
+  const sourceRef = `${entry.table.asset.original.externalPath}#sheet=${encodeURIComponent(entry.table.sheet)}`;
+  assert.equal(inventory.get(profileHash)!.sourceRef, sourceRef, 'T1_PROFILE_HASH_AMBIGUOUS');
   return { profileHash, method: DEVELOPMENT_TEACHER_METHOD, plan: {
     version: 'mapping-plan/2', sourceKind: 'tabular', layoutFingerprint: entry.table.profile.layoutFingerprint,
     method: DEVELOPMENT_TEACHER_METHOD, fields: [field.data],

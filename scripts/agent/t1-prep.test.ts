@@ -54,7 +54,10 @@ test('path-based label adapter links real profile IDs without fabricating accept
   const root = join(T1_ROOT, `verifier/reference-control-${Date.now()}`);
   const input = join(root, 'invalid-reference-controls.jsonl');
   // Deliberately incomplete transport controls, not guessed teacher target labels or training examples.
-  saveNew(input, [{ profileId: profiles[0].profileId }, { profileId: stableHash('no-such-profile') }], true);
+  saveNew(input, [
+    { profileId: profiles[0].profileId, field: {} },
+    { profileId: stableHash('no-such-profile'), field: {} },
+  ], true);
   const report = await ingestTeacherLabels(input, profilesPath, join(root, 'result'));
   assert.equal(report.linkedProfiles, profiles.length);
   assert.equal(report.accepted, 0);

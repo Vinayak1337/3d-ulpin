@@ -6,6 +6,7 @@ import { execFileSync } from 'node:child_process';
 import { profileColumns } from '../../packages/server/src/modules/usp/ingestion/column-profile';
 import { layoutFingerprint } from '../../packages/server/src/modules/usp/ingestion/mapping-plan-v2';
 import { ColumnProfileDocumentSchema, type ColumnProfileDocument } from '../../packages/contracts/src/index';
+import { assertTeacherOutputOutsideGit } from '../../packages/server/src/modules/model-gateway/recordings';
 import {
   developmentManifest, preparationAssets, sourceTables, digest, stableHash, T1_ROOT, D8_MANIFEST, POOL_MANIFEST,
   type SourceAsset, type SourceTable,
@@ -35,6 +36,7 @@ export type TableInventory = {
 };
 
 export function saveNew(path: string, value: unknown, jsonl = false) {
+  assertTeacherOutputOutsideGit(path);
   mkdirSync(dirname(path), { recursive: true });
   const text = jsonl
     ? (value as unknown[]).map(line => JSON.stringify(line)).join('\n')
