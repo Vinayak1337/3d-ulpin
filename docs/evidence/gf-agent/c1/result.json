@@ -1,0 +1,127 @@
+{
+  "task": "C1 — the chunked loop, once, end to end in route order on a real development table",
+  "gate": "M1 AG-C1, GF-AGENT",
+  "branch": "task/c1-loop-in-route-order",
+  "base": "63c986d5",
+  "step0": {
+    "routeOrder": [
+      {
+        "stage": "memory",
+        "code": [
+          "packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts:161-163 job-local validated reuse",
+          "packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts:201-203 accepted memory, tabular-header/2",
+          "packages/server/src/modules/usp/ingestion/mapping-teacher.ts:636-647 accepted memory, column-types/1"
+        ],
+        "observable": ["metrics.layout", "metrics.memoryHits", "proposal.memoryReasonCode", "fieldSources[].source"]
+      },
+      {
+        "stage": "student",
+        "code": ["packages/server/src/modules/usp/ingestion/mapping-teacher.ts:648-649 (callStudent 539, plan 560)"],
+        "observable": ["fieldSources[].source=student", "metrics.studentFields", "proposal.studentReasonCode",
+          "metrics.learnerVersion"],
+        "gap": "Per-field probability is not emitted; abstention is observable only as a field not sourced student."
+      },
+      {
+        "stage": "teacher",
+        "code": [
+          "packages/server/src/modules/usp/ingestion/mapping-teacher.ts:567-579 remaining fields only",
+          "packages/server/src/modules/usp/ingestion/mapping-teacher.ts:444-483 one call, one bounded repair",
+          "packages/server/src/modules/model-gateway/gateway.ts:54-69 replay: no reservation, dispatch or charge"
+        ],
+        "observable": ["fieldSources[].source=teacher|unanswered", "metrics.teacherCalls (attempts)",
+          "proposal.replayed", "proposal.validationCodes"],
+        "gap": "The set of fields sent to the teacher is not emitted; observed by a test-side spy on the injected",
+        "gapRemedy": "RoutingOptions.teacher dependency (wraps proposeMappingWithTeacher). No production change."
+      },
+      {
+        "stage": "verifier",
+        "code": [
+          "packages/server/src/modules/usp/ingestion/mapping-teacher.ts:475 validateTeacherOutput",
+          "packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts:167-173 plan check and dry-run",
+          "packages/server/src/modules/usp/ingestion/mapping-teacher.ts:660-680 executeTeacherMappingDryRun"
+        ],
+        "observable": ["proposal.issues[].code", "proposal.state", "dryRun.rows[].fields[].issueCode"]
+      },
+      {
+        "stage": "officer questions",
+        "code": ["packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts:61-76 mappingQuestions, 186-194"],
+        "observable": ["draft.questions", "metrics.needsInput"]
+      },
+      {
+        "stage": "officer answers and approval",
+        "code": [
+          "packages/server/src/modules/usp/ingestion/service.ts:192 author (officerTabularPlan, tabular-recipe.ts:53)",
+          "packages/server/src/modules/usp/ingestion/tabular-recipe.ts:28 validateTabularRecipe, whole-file dry-run",
+          "packages/server/src/modules/usp/ingestion/service.ts:225-268 decide approve, then queueApprovedTabular",
+          "packages/server/src/modules/usp/ingestion/chunk-mapping.ts:246 job route approved_recipe"
+        ],
+        "observable": ["usp_mapping_recipes body state/approval", "operations manual-author:, manual-approve:",
+          "outbox recipe.changed", "jobs payload route"]
+      },
+      {
+        "stage": "accepted memory and learning",
+        "code": [
+          "packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts:85-87 inside the approved job",
+          "packages/server/src/modules/usp/ingestion/chunk-mapping-learning.ts:140 learnApprovedTabularTx",
+          "packages/server/src/modules/usp/ingestion/chunk-mapping-learning.ts:111-121 examples and officer memory",
+          "packages/server/src/modules/usp/ingestion/chunk-mapping-learning.ts:89-109 one stage_a online fit"
+        ],
+        "observable": ["accepted-plans.jsonl lineage officer", "approvals/<id>-<rev>/learner/vN/metrics.json",
+          "operations manual-learn:"]
+      },
+      {
+        "stage": "deterministic executor",
+        "code": [
+          "packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts:107-120 approvedPlan on the approved job",
+          "packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts:123-138 officerProposal",
+          "packages/server/src/modules/usp/ingestion/mapping-executor.ts:347 executeMappingPlanV2"
+        ],
+        "observable": ["fieldSources[].source=officer", "plan.method reviewer:<hash>", "dryRun.rows (draft rows)"]
+      }
+    ],
+    "productOrderNote": "In the product, learning and the officer memory write run inside the approved job before its chunks are mapped with the approved plan; both follow approval.",
+    "networkObservable": "No product counter for provider network calls; a test-side spy on globalThis.fetch counts them.",
+    "productionChanges": "none",
+    "executed": {
+      "means": "After approval the approved_recipe job maps every chunk with the officer plan; executeMappingPlanV2 yields draft rows whose cells are candidate, unknown, null, absent or needs_input, published as mapping slots and mapping.chunk events. Nothing reaches the registry.",
+      "dryRunBeforeApproval": "The same executor also runs as the verifier's dry-run on a proposal; those rows carry teacher or student sources, never officer, and are not execution.",
+      "refusals": {
+        "TABULAR_REGISTRY_UNQUALIFIED": "decide execute on an approved manual-tabular recipe (service.ts:251-253)",
+        "RECIPE_STATE": "approve on a non-proposed recipe or execute on a non-approved one",
+        "RECIPE_APPROVAL": "execute without a current server-recorded approval",
+        "TABULAR_APPROVAL_REQUIRED": "learning from an unapproved receipt (chunk-mapping-learning.ts:126-131)",
+        "MAPPING_DRY_RUN": "an officer field above the ten-percent needs_input/conflicting bound"
+      }
+    },
+    "recordedControl": {
+      "replayKey": "teacherReplayKey(profileHash) = hash({template mapping-teacher/2.1, profileHash, model sarvam-105b}); profileHash is the column profile of the fields the student left to the teacher (mapping-teacher.ts:103-108, 407).",
+      "accepted": "recordings.ts:93-106: version teacher-recording/1, allowed adapterKind, replayKey recomputed, response hash-pinned, no semanticError, validation.success true, parsedPlan present; adapter.ts ReplayAdapter checks source hashes and response hash.",
+      "a2Labels": "A2 controls ran ControlAdapter/ControlLedger with replayed=true and replayPaidAdmissions=0; recordings carried adapterKind control.",
+      "thisControl": "Authored from T1b verified pseudo-labels; adapterKind control, labelled recorded_software_control; replayed through ReplayAdapter restricted to control recordings. The product runtime replays sarvam recordings only (runtime.ts:49), so this control cannot reach the demo.",
+      "labelFile": "E:/BhuAayam-data/task-data/t1b/labels/teacher-labels-v2.jsonl",
+      "labelFileSha256": "3679d316bee96fa860f7311e5ee6ed9985d9f465b2aaae341e44834695f3f0d6",
+      "labelLinesCopied": [181, 182, 183, 184, 185],
+      "verifierReceipt": "docs/evidence/gf-agent/t1b/verify.json (193 verified, 0 rejected; pseudo_label)",
+      "methodCaveat": "An accepted teacher plan always carries method model:sarvam-105b@2026-10-10 (mapping-teacher.ts:251). That string comes from production; the recording's adapterKind and this receipt say control."
+    },
+    "tables": {
+      "file1": {
+        "id": "mi-d23-pmc-library-inventory.xlsx",
+        "sha256": "c43f624104cf1e48f5dfb35e79b8ae4abb7ec692ff742c6b18555530b7f9087a",
+        "sheet": "LIBRARY",
+        "rows": 56,
+        "chunks": 4,
+        "chunkRows": "16, the product's tabularChunkRows for five columns (streaming-vector-worker.ts:19-21)"
+      },
+      "file2": {
+        "id": "mi-d23-pmc-office-inventory.xlsx",
+        "sha256": "2dd74f6e729f0c6dfbf092930e3ebbad7d8158cd6ea82b6fd4d4329ffbece38d",
+        "sheet": "PMC OFFICE",
+        "rows": 8,
+        "chunks": 1
+      },
+      "why": "Public PMC development family mi-d23 with the same five headers; address (label line 182) is a verified positive; four 16-row chunks; institution names and site addresses only. The sheet names differ, so the tabular layout fingerprints differ: file 2 is not expected to hit memory, and no match is arranged.",
+      "split": "development; held-out files and folders not opened"
+    }
+  }
+}
