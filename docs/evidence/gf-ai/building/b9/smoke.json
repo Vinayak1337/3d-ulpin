@@ -1,0 +1,134 @@
+{
+  "schema": "building-b9-smoke/2",
+  "status": "memory_and_time_fit; the_trainer_smoke_loss_check_failed; not_launched",
+  "git_sha": "ceb4d49d8db15956de4c98be7ba86e39959c2ff0",
+  "init_weights_sha256": "b6ef62646ed85d8102e37561324cee1dfc7e8c5e57e10c207a37927544ad5172",
+  "gpu_preflight": {
+    "tool": "nvidia-smi before each GPU step",
+    "training_or_inference_processes": 0,
+    "desktop_memory_mib": "1,679 to 1,744"
+  },
+  "memory_smoke": {
+    "run_id": "b9-smoke-memory-three-regions-20261010",
+    "result": "E:/BhuAayam-data/ml/runs/b9-smoke-memory-three-regions-20261010/result.json",
+    "result_sha256": "71a20c5e77aec3cc08c2183c0f848fd8ad89a6bc487a98f0dc4ffdd00bda4216",
+    "trainer_status": "failed_loss_not_falling",
+    "trainer_exit_code": 1,
+    "chips": 35,
+    "chips_by_root": [
+      {
+        "root": "Karnataka TRAIN",
+        "chips": 8
+      },
+      {
+        "root": "dhaka",
+        "chips": 9
+      },
+      {
+        "root": "barishal",
+        "chips": 9
+      },
+      {
+        "root": "jashore",
+        "chips": 9
+      }
+    ],
+    "chips_note": "Empty, dense and the densest kept chip of each extra region (143, 73 and 75 roofs)",
+    "augmentation": "flips off (smoke), colour jitter 0.2 and scale 0.75-1.33 on; see its run-config.json",
+    "optimizer_steps": 50,
+    "chip_passes": 195,
+    "finite": true,
+    "peak_reserved_bytes": 5165285376,
+    "budget_bytes": 6442450944,
+    "within_budget": true,
+    "first_20_mean_loss": 26.234,
+    "last_20_mean_loss": 27.638,
+    "loss_check": "Failed: the trainer wants the last 20 chip losses to average below the first 20"
+  },
+  "loss_check_diagnosis": {
+    "signature": [
+      "status failed_loss_not_falling: first 20 chip losses mean 26.23, last 20 mean 27.64.",
+      "The 35 chips are shuffled, so the two windows hold two different random sets of 20 chips,",
+      "each with five or six empty chips at loss 0 and roofs cropped differently each pass."
+    ],
+    "mean_loss_per_pass_over_the_35_chips": [
+      28.8,
+      29.59,
+      26.75,
+      24.88,
+      25.92
+    ],
+    "last_partial_pass": {
+      "chips": 20,
+      "mean_loss": 27.64
+    },
+    "hypothesis": "The check compared different chips; on the same chips the 50 steps lowered the loss.",
+    "one_bounded_comparison": {
+      "method": [
+        "Training loss of each of the same 35 TRAIN smoke chips, no augmentation, no gradient, the",
+        "same sampled points, with the epoch-4 starting weights and with the weights after the 50",
+        "smoke steps. TRAIN chips only; no DEV, holdout or transfer chip."
+      ],
+      "baseline": "epoch-4 starting weights",
+      "success_criterion": "mean loss after the 50 steps below the baseline on the same chips",
+      "stop_condition": "one measurement; if not lower, no launch",
+      "mean_loss_init_weights": 28.276,
+      "mean_loss_after_50_steps": 24.845,
+      "chips_with_roofs": 27,
+      "chips_with_roofs_and_lower_loss": 26,
+      "log": "E:/BhuAayam-data/ml/runs/b9-logs/smoke-like-for-like-three-regions.log",
+      "result": "lower"
+    },
+    "reading": [
+      "Training lowers the loss under the amended target rule. The failed check is the window",
+      "statistic, not the recipe. The first B9 smoke had 17 chips, so each window covered every chip."
+    ],
+    "decision": [
+      "The launch gate (launch_building_train.require_smoke) refuses a smoke with this status.",
+      "The worker did not change or bypass the gate and did not launch; the lead decides."
+    ]
+  },
+  "timing": {
+    "probe": {
+      "data": "Karnataka TRAIN + 3,000 chips each from Dhaka, Barishal and Jashore, both augmentations",
+      "launched": "interpreter pinned to cores 0-15",
+      "run_id": "b9-smoke-timing-three-regions-20261010",
+      "chips": 600,
+      "mean_seconds_per_chip": 0.1988,
+      "median_seconds_per_chip": 0.1777,
+      "optimizer_steps": 150,
+      "peak_reserved_bytes": 3676307456,
+      "first_20_mean_loss": 32.714,
+      "last_20_mean_loss": 29.677
+    },
+    "chips_per_epoch": 12581,
+    "dev_scoring_minutes": 6.0,
+    "dev_scoring_basis": "B4 took 290 to 297 s for the same three thresholds; size bins add a little",
+    "expected_minutes_per_epoch": 47.7,
+    "expected_minutes_8_epochs": 381.5,
+    "budget_minutes": 480,
+    "fits_budget": true,
+    "per_region_extra_chips": 3000,
+    "per_region_count_changed": false,
+    "trainer_deadline_minutes": 427,
+    "trainer_deadline_rule": "480 minus one expected epoch plus a tenth, rounded up; checked at epoch ends"
+  },
+  "augmentation_on_real_chips": {
+    "method": "400 chips sampled from the mixed TRAIN set on CPU with both augmentations; no model",
+    "chips": 400,
+    "instances_before": 4539,
+    "instances_after": 4108,
+    "instances_removed": 431,
+    "fraction_removed": 0.095,
+    "chips_with_instances": 327,
+    "chips_left_empty": 7,
+    "zero_pixel_instances_kept": 0,
+    "boxes_containing_their_mask": "4108 of 4108 (1.5-pixel slack)",
+    "cpu_seconds_per_chip": 0.03,
+    "policy": "Amendment 1: a roof left with no mask pixel leaves boxes, masks and class labels"
+  },
+  "scheduling_finding": "docs/evidence/gf-ai/building/b9/smoke-stopped-run.json (scheduling_finding)",
+  "discarded_weights": "Both smoke run directories hold a segment-final they wrote; neither is a candidate",
+  "holdout_calls": 0,
+  "transfer_calls": 0
+}
