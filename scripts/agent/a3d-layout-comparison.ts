@@ -59,17 +59,26 @@ function compare(tables: Table[], structural: boolean) {
     for (let right = left + 1; right < tables.length; right++) {
       const a = tables[left];
       const b = tables[right];
-      if (a.file === b.file || JSON.stringify(a.headers) !== JSON.stringify(b.headers)) continue;
+      if (a.file === b.file) continue;
       const pair = [`${a.file}/${a.sheet}`, `${b.file}/${b.sheet}`];
-      if (JSON.stringify(identity(a)) !== JSON.stringify(identity(b))) differing.push(pair);
+      if (JSON.stringify(a.headers) === JSON.stringify(b.headers) &&
+          JSON.stringify(identity(a)) !== JSON.stringify(identity(b))) differing.push(pair);
       if (!identity(a).some(hash => identity(b).includes(hash))) continue;
       mergedPairs++;
       if (a.labels.some((label, index) => label !== null && b.labels[index] !== null &&
         label !== b.labels[index])) conflicts.push(pair);
     }
   }
-  const multiple = [...new Set(tables.filter(table => new Set(identity(table)).size > 1).map(table => table.file))];
+  const fileHashes = new Map<string, Set<string>>();
+  for (const table of tables) {
+    if (!fileHashes.has(table.file)) fileHashes.set(table.file, new Set());
+    identity(table).forEach(hash => fileHashes.get(table.file)!.add(hash));
+  }
+  const multiple = [...fileHashes].filter(([, hashes]) => hashes.size > 1).map(([file]) => file);
+  const splitTables = tables.filter(table => new Set(identity(table)).size > 1);
   return { filesWithMultipleChunkFingerprints: multiple.length, multipleFiles: multiple,
+    tablesWithMultipleChunkFingerprints: splitTables.length,
+    definition: 'File counts include separately selected sheets; table counts isolate within-selection chunk drift.',
     identicalOrderedHeaderPairsDiffering: differing.length, differingPairs: differing,
     mergedPairs, conflictingVerifiedLabelPairs: conflicts.length, conflicts };
 }

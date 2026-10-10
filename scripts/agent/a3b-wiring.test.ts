@@ -165,7 +165,8 @@ async function controls<T>(run: () => Promise<T>) {
   const adapter = process.env.ULPIN_MAPPING_TEACHER_ADAPTER;
   process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'local-os:a3b-software-control';
   process.env.ULPIN_MAPPING_TEACHER_ADAPTER = 'manual';
-  process.env.ULPIN_TABULAR_LEARNING_DIR = `E:/BhuAayam-data/task-data/a3b/controls/${randomUUID()}`;
+  const artifactRoot = process.env.ULPIN_AGENT_TASK_ROOT ?? 'E:/BhuAayam-data/task-data/a3b';
+  process.env.ULPIN_TABULAR_LEARNING_DIR = `${artifactRoot}/controls/${randomUUID()}`;
   try { return await run(); }
   finally {
     globals.ulpinPool = old;

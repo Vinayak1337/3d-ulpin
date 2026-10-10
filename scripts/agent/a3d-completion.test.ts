@@ -29,7 +29,7 @@ async function completion(state: { quarantined: number; refused: boolean; unreso
   assert.equal(events[0].change.status, expected);
 }
 
-test('draft-only completion preserves unresolved counts; actual quarantines and zero-row refusal markers differ', async () => {
+test('draft completion keeps unresolved counts; quarantines and zero-row refusals differ', async () => {
   const prior = process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
   process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'a3d-completion-control';
   try {

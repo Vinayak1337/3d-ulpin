@@ -8,7 +8,7 @@ import { localRequestContext } from '../principal';
 import { assertUspJobAttemptTx, type UspJobAttempt } from '../jobs';
 import { appendCaseIngestionTx } from './events';
 import { assertChunkMappingInputTx } from './chunk-mapping';
-import { TabularChunkMapper, type TabularChunkDraft } from './chunk-mapping-agent';
+import { TabularChunkMapper, mappingQuestions, type TabularChunkDraft } from './chunk-mapping-agent';
 import { tabularLearningPaths, activeTabularLearner, learnApprovedTabularTx } from './chunk-mapping-learning';
 
 type Stored = { payload: ChunkMappingPayload; bytes: number; hash: string; key: string };
@@ -43,7 +43,9 @@ export async function publishTabularMappingTx(
 }
 
 /** Native unavailable cells remain unknown, regardless of a mechanically executable proposed operation. */
-function markUnavailableCells(draft: TabularChunkDraft, items: ReturnType<typeof TabularRawRowSchema.parse>[]) {
+export function markUnavailableCells(draft: TabularChunkDraft, items: ReturnType<typeof TabularRawRowSchema.parse>[]) {
+  const unresolved = new Set(mappingQuestions(draft.proposal, { headers: items[0].headers })
+    .map(question => question.sourceField));
   for (const [index, row] of draft.dryRun.rows.entries()) {
     for (const [column, cell] of row.fields.entries()) {
       if (items[index].cells[column].state !== 'unknown') continue;
@@ -51,12 +53,14 @@ function markUnavailableCells(draft: TabularChunkDraft, items: ReturnType<typeof
       cell.value = null;
       delete cell.literal;
       cell.issueCode = 'TABULAR_CELL_UNAVAILABLE';
+      unresolved.add(cell.sourceField);
       if (!draft.questions.some(question => question.sourceField === cell.sourceField)) {
         draft.questions.push({ sourceField: cell.sourceField, header: items[index].headers[column],
           reason: cell.issueCode, candidates: [] });
       }
     }
   }
+  draft.metrics.needsInput = unresolved.size;
 }
 
 function tabularPayload(input: ChunkMappingInput, raw: StreamingVectorPayload, rawHash: string,
@@ -115,6 +119,7 @@ export async function acceptTabularDataSlot(
       ? { approvedPlan: approved.mapping } : {}),
   });
   markUnavailableCells(draft, items);
+  mapper.deduplicateQuestions(draft);
   const payload = tabularPayload(input, raw, rawHash, draft, items);
   const stored = await store(payload);
   await transaction(client => publishTabularMappingTx(client, input, attempt, stored,
