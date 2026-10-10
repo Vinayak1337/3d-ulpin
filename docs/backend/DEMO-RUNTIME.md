@@ -103,24 +103,25 @@ Its `pyvenv.cfg` binds the full `base/cpython-3.12.14-windows-x86_64-none` direc
 The new environment/base deny ordinary writes; retain that ACL and rebuild deliberately after any owner change.
 
 K3b's `docs/evidence/gf-t16/k3b/activate-demo.mjs` created the demo-only `ocr-paths-profile.json` override.
-It is create-once and cannot update an existing override. **There is currently no platform CLI for switching
-its OCR interpreter:** the runtime owner must edit only `paths.ULPIN_DOCUMENT_OCR_PYTHON` in the existing
-`E:/BhuAayam-data/runtime/ulpin-demo/ocr-paths-profile.json`, setting it to the new `Scripts/python.exe`.
-Preserve `profile: "demo"` and the other four path values verbatim; retain the previous non-secret JSON for rollback.
+It is create-once and cannot update an existing override. **Never edit a runtime file by hand.** The scripted
+switch remains blocked in K9b: the read-only `readDemoOcrPaths()` has no directory/file argument, and its override
+path is private. A reviewed extension of that shared reader is needed before an offline switch can reuse its
+validation without touching the runtime folder or adding a second parser. See `docs/evidence/gf1/k9b/result.json`.
 Do not edit `demo.env`, the original OCR path file, model weights, tessdata or any existing environment.
-A minimal follow-up is an owner-only action on the existing document builder: copy the five validated OCR paths,
-change only the absolute interpreter, and atomically publish the override while retaining its previous version.
-K9 does not implement that shared configuration writer.
 
-After roll-out steps 2–4 (native processes stopped, reviewed checkout selected), perform that OCR path switch,
-then the existing step 5 from the demo checkout:
+The intended command is `node scripts/platform/demo-document-runtime.mjs switch-ocr-python --python "$PYTHON"`;
+**it is not implemented or runnable yet.** It must save the previous override, atomically change only the Python
+path and print one JSON line with previous/new interpreter paths, the backup filename and old/new file hashes.
+After that action is implemented and reviewed, run it after roll-out steps 2–4 (native processes stopped,
+reviewed checkout selected), then run the existing step 5 from the demo checkout:
 
 ```sh
 PYTHON='E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe'
 node scripts/platform/demo-document-runtime.mjs build --python "$PYTHON"
 ```
 
-The explicit builder option changes pages/regions, **not OCR**; omitting the override edit leaves OCR on the old base.
+The explicit builder option changes pages/regions, **not OCR**; omitting the scripted switch leaves OCR on the old base.
+The existing build prints configured key names, the profile hash and the document-runtime path-file hash.
 Continue steps 6–7: `pnpm platform:start --profile demo`, then `pnpm platform:doctor --profile demo`.
 Require PASS Document runtimes. Read the new profile's `repo`, `python`, `base` and pinned paths: its repo must be
 `E:/Projects/ulpin-wt/demo`, its interpreter/base must be the new environment, and every pin must be under that
@@ -131,8 +132,10 @@ it starts ten interpreters and repeats the same doctor profile check. Never reus
 Also check OCR once with the existing complete demo prefix; K9's no-runtime comparison used the retained split
 prefix plus an absolute, hash-checked TSV config, not a copy of or a read from the demo's tessdata.
 
-Rollback: stop the recorded native processes, restore the previous OCR interpreter path in that same override,
-rebuild at step 5 with the old interpreter, then start and doctor again. The old path is recorded in K9 Step 0.
-Rebuild rather than restoring a historical profile: its repo/base bytes may have changed. Rollback restores the
-external-application update risk. K9's image check accepts the new hook sources without changing the reviewed table,
+Intended rollback, once the action exists: stop the recorded native processes, run the same `switch-ocr-python`
+command with the saved previous interpreter path, rebuild at step 5 with that interpreter, then start and doctor.
+There is a prerequisite: K9's previous environment has an external Codex base, so the required private-base
+validation would refuse that rollback. The lead must approve a private-base rollback environment or explicitly
+define a reviewed rollback policy; K9b adds no bypass. Rebuild rather than restoring a historical profile: its
+repo/base bytes may have changed. K9's image check accepts the new hook sources without changing the reviewed table,
 but historical image bindings have different interpreter/decoder pins and require a separately reviewed binding.
