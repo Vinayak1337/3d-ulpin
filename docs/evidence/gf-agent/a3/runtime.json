@@ -1,0 +1,16 @@
+{
+  "output": "E:/BhuAayam-data/task-data/a3/runtime-3d2a82fb-aa45-466e-9170-eaeb370156fd",
+  "caseId": "6d183fef-bcaf-40f6-90dc-2694bc9873a5",
+  "sourceSha256": "9c20032a80044527b24decd365e20e321de029f80453d12e4232b7e2ec6e7111",
+  "httpStatus": 422,
+  "receiptSha256": "f3e9c8edd43212b209c00ee87129d31a4d1d900145012a06a6933a582ec301ca",
+  "sseStatus": 200,
+  "framesSha256": "19fc0e8cfa86558846dec67dd6c35c2f9b91dbc795aa19688207e10502486d89",
+  "validatedControlFrames": 1,
+  "mappingChunkFrames": 0,
+  "stopReason": "Manual intake accepts GeoJSON only; no generic small tabular receipt and v2 recipe route.",
+  "unavailableRoute": "POST /api/v1/ingestion/cases/{caseId}/sources (format csv)",
+  "registryWrites": 0,
+  "approvals": 0,
+  "providerCalls": 0
+}

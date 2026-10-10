@@ -38730,6 +38730,82 @@
                             "kind": {
                               "type": "string",
                               "enum": [
+                                "mapping.chunk"
+                              ]
+                            },
+                            "jobId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "chunkIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 4096
+                            },
+                            "layout": {
+                              "type": "string",
+                              "enum": [
+                                "new",
+                                "memory"
+                              ]
+                            },
+                            "teacherCalls": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 2
+                            },
+                            "memoryHits": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "studentFields": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 256
+                            },
+                            "teacherFields": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 256
+                            },
+                            "needsInput": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 256
+                            },
+                            "latencyMs": {
+                              "type": "number",
+                              "minimum": 0
+                            },
+                            "learnerVersion": {
+                              "nullable": true,
+                              "type": "string",
+                              "pattern": "^v[1-9]\\d*$"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "jobId",
+                            "chunkIndex",
+                            "layout",
+                            "teacherCalls",
+                            "memoryHits",
+                            "studentFields",
+                            "teacherFields",
+                            "needsInput",
+                            "latencyMs",
+                            "learnerVersion"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
                                 "streamed-profile.changed"
                               ]
                             },
