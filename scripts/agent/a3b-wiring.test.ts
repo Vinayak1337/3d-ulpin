@@ -195,7 +195,7 @@ function objectBytes(bytes: Buffer) {
   });
 }
 
-test('streaming enrollment accepts tabular and GIS pins but refuses a changed source pin', async () => {
+test('stream enrollment accepts tabular/GIS and rejects changed source pins', () => controls(async () => {
   const f = fixture();
   const { tabular: _tabular, ...common } = f.db.raw;
   const gis = StreamingVectorInputSchema.parse({ ...common, framing: 'feature-collection' });
@@ -217,7 +217,7 @@ test('streaming enrollment accepts tabular and GIS pins but refuses a changed so
     await assert.rejects(() => registerUspJobInputTx(client, input.jobId, scope, f.sourceId, fingerprint(input)),
       (error: any) => error.code === 'STREAMING_INPUT_SCOPE');
   }
-});
+}));
 
 test('CSV receipt accepts exact public dev bytes; no-header, oversize and non-dev sources are explicit refusals', () =>
   controls(async () => {
