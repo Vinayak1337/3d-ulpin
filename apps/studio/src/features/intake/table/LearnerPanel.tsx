@@ -1,9 +1,10 @@
 import { DataTable } from '@ulpin/ui';
-import { learnerTotals } from './model';
+import { learnerTotals, unansweredTotalText } from './model';
 import type { Metrics } from './types';
 import styles from './Table.module.css';
 
-export function LearnerPanel({ chunks }: { chunks: Metrics[] }) {
+/** `openQuestions` is the review's joined question count; undefined until the chunks that raise questions are read. */
+export function LearnerPanel({ chunks, openQuestions }: { chunks: Metrics[]; openQuestions?: number }) {
   const totals = learnerTotals(chunks);
   return (
     <section className="ul-panel" aria-label="Mapping learner">
@@ -11,9 +12,10 @@ export function LearnerPanel({ chunks }: { chunks: Metrics[] }) {
         <h2 className="ul-heading">Mapping learner</h2>
         <span className="ul-caption">Counts as published by the mapping job</span>
       </div>
-      {chunks.some((chunk) => chunk.teacherCalls === 0 && chunk.teacherFields > 0) ? (
+      {chunks.some(isOldFallbackChunk) ? (
         <p className="ul-pad ul-help">
-          The server labels fallback fields as teacher fields even with no call. They are not teacher responses.
+          Chunks without an unanswered count were recorded before the server counted unanswered fields. Their
+          teacher fields with no teacher call are fallback columns, not teacher responses.
         </p>
       ) : null}
       {chunks.length ? <LearnerChunks chunks={chunks} /> : (
@@ -23,11 +25,18 @@ export function LearnerPanel({ chunks }: { chunks: Metrics[] }) {
         <p className="ul-pad ul-caption">
           Totals · {totals.teacherCalls} teacher calls · {totals.memoryHits} memory hits ·
           {' '}{totals.studentFields} student fields · {totals.teacherFields} teacher fields ·
-          {' '}{totals.needsInput} questions · {Math.round(totals.latencyMs)} ms
+          {' '}Unanswered: {unansweredTotalText(totals)} ·
+          {' '}{openQuestions === undefined ? 'Open questions: not read yet' : `${openQuestions} open questions`} ·
+          {' '}{Math.round(totals.latencyMs)} ms
         </p>
       ) : null}
     </section>
   );
+}
+
+/** An older chunk: no unanswered count, and teacher fields although no teacher was called. */
+function isOldFallbackChunk(chunk: Metrics) {
+  return chunk.unansweredFields === undefined && chunk.teacherCalls === 0 && chunk.teacherFields > 0;
 }
 
 function LearnerChunks({ chunks }: { chunks: Metrics[] }) {
@@ -41,7 +50,8 @@ function LearnerChunks({ chunks }: { chunks: Metrics[] }) {
           { header: 'Memory hits', numeric: true, cell: (chunk) => chunk.memoryHits },
           { header: 'Student fields', numeric: true, cell: (chunk) => chunk.studentFields },
           { header: 'Teacher fields', numeric: true, cell: (chunk) => chunk.teacherFields },
-          { header: 'Questions', numeric: true, cell: (chunk) => chunk.needsInput },
+          { header: 'Unanswered', numeric: true, cell: (chunk) => chunk.unansweredFields ?? 'Not reported' },
+          { header: 'Columns needing input in this chunk', numeric: true, cell: (chunk) => chunk.needsInput },
           { header: 'Latency ms', numeric: true, cell: (chunk) => Math.round(chunk.latencyMs) },
           { header: 'Learner version', cell: (chunk) => chunk.learnerVersion ?? 'Unknown' },
         ]} />

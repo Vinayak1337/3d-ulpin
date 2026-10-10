@@ -3,6 +3,11 @@ import { columnRows, targetDefinition } from './model';
 import type { ChunkMapping, TableProfile } from './types';
 import styles from './Table.module.css';
 
+function NoConfidence() {
+  return <span><span aria-hidden="true">—</span>
+    <span className="ul-visually-hidden">No confidence: nobody answered</span></span>;
+}
+
 export function ColumnsTable({ profile, mapping }: { profile: TableProfile; mapping?: ChunkMapping }) {
   return (
     <section className="ul-panel" aria-label="Column mapping candidates">
@@ -26,9 +31,15 @@ export function ColumnsTable({ profile, mapping }: { profile: TableProfile; mapp
             ) },
             { header: 'Confidence', numeric: true, cell: (row) => {
               if (row.origin === 'officer') return 'Officer decision';
+              if (row.noAnswer !== null) return <NoConfidence />;
               return row.confidence === null ? 'Unknown' : `${Math.round(row.confidence * 100)}%`;
             } },
-            { header: 'From', cell: (row) => row.origin ?? 'Unknown' },
+            { header: 'From', cell: (row) => {
+              if (row.noAnswer === null) return row.origin ?? 'Unknown';
+              return <span className={styles.question}>
+                <Badge tone="warning">Needs review</Badge>No answer · {row.noAnswer}
+              </span>;
+            } },
             { header: 'Question', cell: (row) => {
               if (!mapping) return 'Unknown';
               if (!row.question) return 'None reported';

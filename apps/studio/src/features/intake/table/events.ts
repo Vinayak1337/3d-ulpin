@@ -19,12 +19,14 @@ function object(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
+const isCount = (value: unknown) => typeof value === 'number' && Number.isFinite(value) && value >= 0;
+
 function metricOf(change: Record<string, unknown>): Metrics {
   const numbers = ['chunkIndex', 'teacherCalls', 'memoryHits', 'studentFields', 'teacherFields',
     'needsInput', 'latencyMs'];
   if (typeof change.jobId !== 'string' || !['new', 'memory'].includes(String(change.layout)) ||
-      !numbers.every((key) => typeof change[key] === 'number' && Number.isFinite(change[key]) &&
-        (change[key] as number) >= 0) ||
+      !numbers.every((key) => isCount(change[key])) ||
+      !(change.unansweredFields === undefined || isCount(change.unansweredFields)) ||
       !(change.learnerVersion === null || typeof change.learnerVersion === 'string')) {
     throw new Error('The learner frame is incomplete.');
   }
