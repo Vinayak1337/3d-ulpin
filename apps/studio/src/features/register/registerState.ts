@@ -1,4 +1,4 @@
-import { ApiError } from '@ulpin/api-client';
+import { ApiError, type GetResponse } from '@ulpin/api-client';
 import { refusalOf } from '../review/candidates/commands';
 
 /** The server's error codes for a building whose register or ledger it will not read out, in words. */
@@ -18,4 +18,48 @@ export function absentReason(error: unknown): string | null {
   const { code } = refusalOf(error);
   if (!code) return NO_CODE;
   return ABSENT_REASONS[code] ?? code;
+}
+
+type RegisterRead = GetResponse<'/api/v1/buildings/{buildingId}/register'>;
+/** The facts-only profile of the register read: the one whose sources carry the server's `documentResult`. */
+type ConsolidatedRegister = Extract<RegisterRead, { schemaVersion: 'building-registry-summary/1' }>;
+type DocumentResult = NonNullable<ConsolidatedRegister['sources'][number]['documentResult']>;
+/** The statement as it arrives: a newer server may give a reason this build's types do not list yet. */
+type StatedReading = Pick<DocumentResult, 'current'> & { readonly reasons: readonly string[] };
+/** Source id to what the server states about the document reading retained beside it; only stated sources. */
+export type ReadingStatements = ReadonlyMap<string, string>;
+/** No source stated: before the read answers, when it fails, and for a building that is not asked. */
+export const NO_READING_STATEMENTS: ReadingStatements = new Map();
+
+/** The server's reasons for a document reading that is no longer current, in words. */
+const READING_REASONS: Record<string, string> = {
+  reader_changed: 'Read by an earlier version of the document reader',
+  case_advanced: 'The case has received newer sources since this reading',
+  policy_changed: 'The reading policy changed since this reading',
+  source_superseded: 'A newer version of this source exists',
+};
+
+const NO_REASON = 'No longer current; the server gave no reason';
+
+/**
+ * What the server states about the document reading retained beside a cited source: its reasons in words, in the
+ * server's order, an unknown reason as its literal code. Null when the server states nothing (the field is absent)
+ * or states that the reading is current: absence is not a statement, so neither prints anything.
+ */
+export function readingStatement(result: StatedReading | undefined): string | null {
+  if (!result || result.current) return null;
+  if (!result.reasons.length) return NO_REASON;
+  return result.reasons.map((reason) => READING_REASONS[reason] ?? reason).join(' · ');
+}
+
+/** The statements of every source of a consolidated register that carries one, by source id. */
+export function readingStatements(
+  sources: readonly { id: string; documentResult?: StatedReading }[],
+): ReadingStatements {
+  const statements = new Map<string, string>();
+  for (const source of sources) {
+    const statement = readingStatement(source.documentResult);
+    if (statement) statements.set(source.id, statement);
+  }
+  return statements;
 }

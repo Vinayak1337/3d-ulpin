@@ -2,6 +2,7 @@ import type { ConsolidatedRegistryReport } from '../../../../../packages/contrac
 import type { BuildingLedger, BuildingResidents } from '@ulpin/api-client/draft';
 import type { BuildingModel } from '../../model/building';
 import type { SpaceWorkflow } from '../../local/workflow';
+import { readingStatement } from './registerState';
 import { workbook, zip, type Cell } from './workbook';
 
 /**
@@ -60,6 +61,16 @@ export function registryDetail(model: BuildingModel, ledger: BuildingLedger | nu
 const esc = (v: unknown) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 const num = (v: number | null | undefined, d = 2) => (v === null || v === undefined ? null : Math.round(v * 10 ** d) / 10 ** d);
 const dateText = (v: string | null | undefined) => (v ? new Date(v).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : null);
+/** One source's line in the register, ending with what the server states about its document reading, if anything. */
+function sourceHtml(s: Report['sources'][number], i: number): string {
+  const reading = readingStatement(s.documentResult);
+  const facts = [
+    `<b>S${i + 1}</b>`, esc(s.profile), `revision ${s.revision}`, `received ${esc(dateText(s.receivedAt))}`,
+    `<span class="id">${esc(s.id)}</span>`, `SHA-256 <span class="id">${esc(s.sha256)}</span>`,
+    ...(reading ? [`document reading: ${esc(reading)}`] : []),
+  ];
+  return `<div class="src">${facts.join(' · ')}</div>`;
+}
 const isUnit = (use: string | null | undefined) => !use || /apartment|retail|shop|office|flat|unit/i.test(use);
 
 // ------------------------------------------------------------------ readable document
@@ -136,7 +147,7 @@ ${parcel ? `<h2>Parcel</h2><table><tbody><tr><td style="width:25%">Parcel</td><t
 <h2>Floors, units, owners and residents</h2>
 ${floorGroups.map(floorSection).join('')}
 <h2>Sources</h2>
-${report.sources.map((s, i) => `<div class="src"><b>S${i + 1}</b> · ${esc(s.profile)} · revision ${s.revision} · received ${esc(dateText(s.receivedAt))} · <span class="id">${esc(s.id)}</span> · SHA-256 <span class="id">${esc(s.sha256)}</span></div>`).join('')}
+${report.sources.map(sourceHtml).join('')}
 <h2>Notes</h2><div class="notes">${report.omissions.map((o) => `<p>${esc(o)}</p>`).join('')}</div>
 <footer>Technical record of the building, not a title document. ${detail?.registers ? `Owners and residents from: ${esc(detail.registers)}.` : ''} Personal details are for official use.</footer>
 </body></html>`;
@@ -150,7 +161,7 @@ export const TABLE_HEADERS = {
   units: ['unit_record_id', 'application_id', 'level', 'unit', 'use', 'proposed_3d_ulpin', 'rights', 'carpet_area_m2', 'declared_area_m2', 'undivided_share_pct', 'occupancy', 'owners', 'residents', 'status', 'address'],
   owners: ['unit_record_id', 'level', 'unit', 'owner', 'share_in_unit_pct', 'deed_registration_no', 'owner_since', 'source_ref'],
   residents: ['unit_record_id', 'level', 'unit', 'name', 'relation', 'role', 'living_here_since', 'registered_through', 'source_ref'],
-  sources: ['source_ref', 'source_id', 'profile', 'revision', 'received_at', 'sha256'],
+  sources: ['source_ref', 'source_id', 'profile', 'revision', 'received_at', 'sha256', 'document_reading'],
 } as const;
 
 export function registryTables(report: Report, detail: RegistryDetail): RegistryTables {
@@ -191,7 +202,9 @@ export function registryTables(report: Report, detail: RegistryDetail): Registry
       const o = detail.units.get(r.id)?.occupants[i];
       return [r.id, levelOf(r), v(r.name), v(p.name), o?.relation ?? null, p.role, o?.since ?? null, o?.registeredVia ?? null, r.occupancy.sources.map((s) => ref.get(s)).join(' ')];
     })),
-    sources: report.sources.map((s, i) => [`S${i + 1}`, s.id, s.profile, s.revision, s.receivedAt, s.sha256]),
+    sources: report.sources.map((s, i) => [
+      `S${i + 1}`, s.id, s.profile, s.revision, s.receivedAt, s.sha256, readingStatement(s.documentResult),
+    ]),
   };
 }
 

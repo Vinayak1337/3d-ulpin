@@ -293,9 +293,11 @@ export const featureCode = (feature: AreaFeature | null | undefined): string | n
 // ------------------------------------------------------------------ requests from the public (REQUEST-01)
 export type RequestFilter = 'open' | 'accepted' | 'rejected' | 'all';
 
-export function useRegisterRequests(filter: RequestFilter) {
+export function useRegisterRequests(filter: RequestFilter, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ['register-requests', filter],
+    // A caller on a build that does not serve the route passes `enabled: false`: it asks and refetches nothing.
+    enabled: options.enabled ?? true,
     queryFn: () => getDraft<RegisterRequest[]>(`/api/v1/register-requests?state=${filter}`),
     // New requests from the portal show up without a reload; a missing route is not asked again.
     refetchInterval: (query) => (query.state.data === null ? false : 3000),

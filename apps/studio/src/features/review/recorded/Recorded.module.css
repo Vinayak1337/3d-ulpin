@@ -7,6 +7,13 @@
   grid-template-rows: minmax(520px, 1fr) auto;
 }
 
+/* Narrow, or a desktop window at 200% zoom: the review takes the height of its content, so the page is the one
+   scroller and the recorded panel is reached by scrolling it. `max-content`, not `auto`: the review's own
+   `min-height: 0` would let an `auto` row shrink back to the window and scroll inside itself. */
+@media (max-width: 960px) {
+  .layout { grid-template-rows: max-content auto; }
+}
+
 .below { min-width: 0; padding: 0 var(--ui-space-4) var(--ui-space-4); }
 .body { display: grid; gap: var(--ui-space-4); }
 .list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--ui-space-4); }
@@ -24,6 +31,8 @@
 }
 
 .citations { display: flex; flex-wrap: wrap; gap: var(--ui-space-2); min-width: 0; }
+/* One citation: its chip, and beneath it what the server states about the cited document reading. */
+.citation { display: grid; gap: 4px; justify-items: start; min-width: 0; }
 
 /* A page-and-region locator is long: let the chip wrap instead of clipping at 200% zoom. */
 .citations :global(.ul-evid) {
