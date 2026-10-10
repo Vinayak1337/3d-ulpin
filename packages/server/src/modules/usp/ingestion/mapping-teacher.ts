@@ -197,9 +197,12 @@ export function mappingTeacherRequest(profile: ColumnProfileDocument, errors: st
   return { messages, schema: outputSchema(aliases.map((item) => item.alias)), aliases };
 }
 
-export function mappingContextFromColumnProfile(profile: ColumnProfileDocument) {
+export function mappingContextFromColumnProfile(
+  profile: ColumnProfileDocument, layoutSelection?: { sheet: string; headerRows: readonly number[] },
+) {
   return {
     sourceKind: profile.sourceKind,
+    ...(layoutSelection ? { layoutSelection } : {}),
     fields: profile.columns.map(({ name, inferredType, declaredUnit }) => ({
       name,
       inferredType,
@@ -270,6 +273,8 @@ export function manualTeacherPlan(profile: ColumnProfileDocument, code: string):
     plan: {
       version: 'mapping-plan/2',
       layoutFingerprint: profile.layoutFingerprint,
+      ...(profile.layoutFingerprint !== layoutFingerprint(profile.columns)
+        ? { layoutFingerprintVersion: 'tabular-header/2' as const } : {}),
       sourceKind: profile.sourceKind,
       method: MAPPING_TEACHER_METHOD,
       fields: profile.columns.map((column) => ({

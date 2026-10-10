@@ -2,54 +2,12 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
 import { normalizeProjectCode, verticalLocator } from '@ulpin/contracts/usp';
-import { commandSourceSpace } from '../officer/source-spaces';
-import { retainedTower, SourceSpaceControl, towerRequest } from '../officer/source-spaces.test-fixture';
+import { retainedTower, towerRequest } from '../officer/source-spaces.test-fixture';
 import { finishBuilding, projectSourceRecordedChildren } from '../registry/canonical-building';
 import { assertSourceChildRevisions, readSourceProjectCodes } from '../registry/canonical-source-identity';
-import { localRequestContext } from './principal';
 import { assignProjectCode, prepareProjectIdentityReview, resolveProjectIdentity } from './project-identity';
 import { captureRegistrySnapshot } from './snapshots';
-import { SourceIdentityControl } from './source-stated-identity.test-fixture';
-
-const globals = globalThis as unknown as { ulpinPool?: unknown };
-const location = { anchorState: 'not_supplied' as const, parcels: [], locator: {
-  structureKind: '?' as const, structureNumber: 1, levels: ['L?'], spaceKind: '?' as const, spaceNumber: 1 } };
-const errorCode = (code: string) => (error: any) => error.code === code;
-
-async function control(work: (f: Awaited<ReturnType<typeof fixture>>) => Promise<void>) {
-  const previous = process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
-  const pool = globals.ulpinPool;
-  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'k4b-offline-protocol-control';
-  try { const f = await fixture(); globals.ulpinPool = f.memory.pool; await work(f); }
-  finally {
-    globals.ulpinPool = pool;
-    if (previous === undefined) delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
-    else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = previous;
-  }
-}
-
-async function fixture() {
-  const db = new SourceSpaceControl();
-  const recorded = await commandSourceSpace(retainedTower.buildingId, towerRequest, db.deps);
-  const memory = new SourceIdentityControl(db);
-  const ctx = localRequestContext(randomUUID());
-  const capture = async () => captureRegistrySnapshot(ctx, retainedTower.areaId, { kind: 'targets', pins: [{
-    ref: { namespace: 'registry_record', id: recorded.spaceId },
-    revision: db.rows.find(row => row.id === recorded.spaceId).revision,
-  }] });
-  return { db, memory, ctx, recorded, capture };
-}
-
-async function prepare(f: Awaited<ReturnType<typeof fixture>>) {
-  const snapshot = await f.capture();
-  const review = { operation: 'assign' as const, scope: snapshot.scope, recordIds: [f.recorded.spaceId],
-    expectedVersions: { [f.recorded.spaceId]: 1 }, reason: towerRequest.reason,
-    evidence: [{ sourceId: towerRequest.space.evidence.sourceId, revision: 1,
-      locator: f.db.rows.find(row => row.id === f.recorded.spaceId).body.evidence[0].locator }], location };
-  const prepared = await prepareProjectIdentityReview(f.ctx, review as any);
-  return { review, snapshot, command: { scope: snapshot.scope, expectedManifestId: snapshot.id,
-    reviewId: prepared.reviewId, requestKey: randomUUID(), recordId: f.recorded.spaceId, expectedRecordVersion: 1 } };
-}
+import { control, errorCode, location, prepare } from './source-stated-identity.test-fixture';
 
 test('real Tower labels traverse source-record → exact snapshot → P3 review/assign → canonical read-back offline',
   async () => control(async f => {
@@ -135,6 +93,28 @@ test('exact source P3 stays unknown until assigned; corruption or later identity
     code.code = assigned;
     f.memory.identities.get(f.recorded.spaceId).version++;
     await assert.rejects(readSourceProjectCodes(current, retainedTower.areaId), errorCode('CANONICAL_CURRENT_ONLY'));
+  }));
+
+test('source-only singular location refuses a known level before recording an identity review',
+  async () => control(async f => {
+    const { review } = await prepare(f);
+    const before = f.memory.reviews.size;
+    await assert.rejects(prepareProjectIdentityReview(f.ctx, { ...review, location: {
+      ...location, locator: { ...location.locator, levels: ['F02'] },
+    } } as any), errorCode('USP_SOURCE_IDENTITY'));
+    assert.equal(f.memory.reviews.size, before);
+  }));
+
+test('source-only per-record locations cannot bypass the unknown-location guard with a valid singular location',
+  async () => control(async f => {
+    const { review } = await prepare(f);
+    const before = f.memory.reviews.size;
+    await assert.rejects(prepareProjectIdentityReview(f.ctx, { ...review, locations: {
+      [f.recorded.spaceId]: { ...location, locator: { ...location.locator, levels: ['F02'] } },
+    } } as any), errorCode('USP_SOURCE_IDENTITY'));
+    assert.equal(f.memory.reviews.size, before);
+    await prepareProjectIdentityReview(f.ctx, { ...review, locations: { [f.recorded.spaceId]: location } } as any);
+    assert.equal(f.memory.reviews.size, before + 1);
   }));
 
 test('literal 2ND caption never authorizes F02 or an anchor; generic snapshots remain extraction-gated',

@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import json
+from collections import Counter
 from pathlib import Path
 
 import numpy as np
+import pytest
 from sklearn.linear_model import SGDClassifier
 
 from geo.usp_learning.stage_a import (
@@ -16,7 +18,11 @@ from geo.usp_learning.stage_a import (
     load_examples,
     load_model,
     preferred_examples,
+    online_update,
+    resume_state,
+    sample_weights,
     save_model,
+    train_cross_fit,
     vectorizer,
     write_json,
 )
@@ -73,3 +79,40 @@ def test_npz_reload_preserves_probabilities_without_pickle(tmp_path: Path) -> No
     write_json(tmp_path / "manifest.json", manifest)
     restored, _ = load_model(tmp_path)
     np.testing.assert_allclose(model.predict_proba(matrix), restored.predict_proba(matrix), rtol=0, atol=0)
+    assert load_model(tmp_path)[1]["calibration"]["mode"] == "single_family"
+
+
+def test_cross_fit_seed_online_update_keeps_threshold_mode_and_class_balance(tmp_path: Path) -> None:
+    source = examples()
+    families = list(dict.fromkeys(row["family"] for row in source if row["split"] == "dev"))[:2]
+    rows = [row for family in families for row in [entry for entry in source if entry["family"] == family][:4]]
+    assert len({row["family"] for row in rows}) == 2
+    seed = train_cross_fit(rows, tmp_path / "seed", False)
+    _, before = load_model(Path(seed["model"]))
+    # A copied real field is a software authority control, not an actual officer label or training claim.
+    row = rows[0]
+    example = {"columnProfile": {"name": row["sourceField"]}, "profileHash": row["profileHash"],
+               "target": row["target"], "verified": True, "labelKind": "officer",
+               "method": "reviewer:test-only-control"}
+    batch = tmp_path / "batch"
+    batch.mkdir()
+    (batch / "examples.jsonl").write_text(json.dumps(example) + "\n", encoding="utf-8")
+    (batch / "profile-links.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
+    updated = online_update(batch / "examples.jsonl", tmp_path / "updated", Path(seed["model"]))
+    _, after = load_model(Path(updated["model"]))
+    assert after["threshold"] == before["threshold"]
+    assert after["calibration"]["mode"] == before["calibration"]["mode"] == "cross_fit"
+    assert after["classBalance"] == before["classBalance"]
+    assert after["parentModelSha256"] == before["modelSha256"]
+    assert after["calibrationIds"] == before["calibrationIds"]
+    assert after["calibrationFamily"] is None
+    with pytest.raises(ValueError, match="STAGE_A_RULE_LINEAGE_CHANGED"):
+        resume_state(Path(updated["model"]), rows, "single_family", False)
+    pooled = json.loads((tmp_path / "seed/cross-fit-metrics.json").read_text(encoding="utf-8"))
+    assert pooled["wrongCommitted"] == 0
+
+
+def test_class_balance_uses_fit_counts_only_and_exact_inverse_frequency() -> None:
+    rows = [{"target": "unknown"}, {"target": "unknown"}, {"target": "building.name"}]
+    counts = Counter(row["target"] for row in rows)
+    np.testing.assert_allclose(sample_weights(rows, counts), [0.75, 0.75, 1.5])

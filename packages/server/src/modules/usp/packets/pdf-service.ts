@@ -16,10 +16,14 @@ import {assertLocalUsp} from '../snapshots';
 import {requestReceiptTx} from '../commands';
 import {appendUspOutboxTx} from '../outbox';
 import {PacketRegionService} from './region-extract';
+import type {DocumentPagesService} from '../ingestion/document-pages';
 import {prepareRegistryRegion} from '../../registry/registry-region-evidence';
+import type {RegistryRegionCitation} from '@ulpin/contracts';
 import {registryRegionSourceTx} from '../../registry/registry-region-evidence';
 import {assemblePacketPdf,assemblePacketPdfRegions,assemblePacketPdfOriginals} from './pdf-render';
-import {protectPdfPlanTx,protectPdfPlanInputsTx,authorizePdfPlanTx,assessPdfPlanTx,assertPdfAssessment,assertPdfPlanActor} from './pdf-authority';
+import {protectPdfPlanTx,protectPdfPlanInputsTx,authorizePdfPlanTx,assessPdfPlanTx,assertPdfAssessment,assertPdfPlanActor,
+  plannedBindings} from './pdf-authority';
+import {prepareSourceStatementBindings} from './source-stated-binding';
 import {loadPdfPlanTx,validatePlan,validateConfirmation,validateExecution,livePlanTx,planHeadTx,savePlanReceiptTx} from './plan-store';
 import {PACKET_IMAGE_PDF_RECIPE,PACKET_IMAGE_PDF_LIMITS} from '../../../../../contracts/src/usp/packet-image-pdf';
 import {PacketImageRegionService} from './image-region';
@@ -34,6 +38,8 @@ import {assemblePacketMixedPdf} from './mixed-pdf-render';
 export type PdfPacketIo={extract:PacketRegionService['extract'];put:typeof putOriginal;
   imageExtract?:PacketImageRegionService['extract'];
   read:(key:string,bytes:number,hash:string,deadlineAt?:number)=>Promise<Uint8Array>;
+  /** Page metadata for a source-only citation; defaults to the document-pages service. */
+  pages?:DocumentPagesService['pages'];
   /** Internal current-recipe authority for queued accepted-crop reuse. */
   recipe?:(sourceId:string,deadlineAt:number)=>Promise<string>;
   /** File inspection of the current image worker and actual gated decoder. */
@@ -62,48 +68,52 @@ export const pdfPacketStorage:PdfPacketIo={extract:regionService.extract.bind(re
 const storage=pdfPacketStorage;
 const boundedTx=<T>(work:(client:PoolClient)=>Promise<T>,deadlineAt?:number)=>transaction(work,{deadlineAt:Math.min(Date.now()+30_000,deadlineAt??Infinity)});
 async function protectTx(client:PoolClient,ctx:RequestContext,plan:PdfPacketPlan){
-  assertPdfPlanActor(ctx,plan);await protectPdfPlanTx(client,ctx,plan.input);
+  assertPdfPlanActor(ctx,plan);await protectPdfPlanTx(client,ctx,plan.input,plannedBindings(plan));
   await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[`packet-plan:${plan.planId}`]);
   await authorizePdfPlanTx(client,ctx,plan);
 }
 export {protectTx as protectPdfExecutionPlanTx};
-async function versionTx(client:PoolClient,ctx:RequestContext,input:PdfPacketPlanInput,id:string,version:number){
+async function versionTx(client:PoolClient,ctx:RequestContext,input:PdfPacketPlanInput,id:string,version:number,
+  prepared:readonly RegistryRegionCitation[]){
   const expiry=Date.parse(input.expiresAt)-Date.now();
   if(expiry<=0||expiry>24*60*60*1000)throw new AppError(422,'PACKET_PLAN_EXPIRY','Use an expiry within the next 24 hours.');
-  const assessment=await assessPdfPlanTx(client,ctx,input),body={planId:id,version,previousVersion:version===1?null:version-1,
+  const assessment=await assessPdfPlanTx(client,ctx,input,prepared);
+  const body={planId:id,version,previousVersion:version===1?null:version-1,
     input,creator:ctx.principal,accessViewId:ctx.accessViewId,policyVersion:ctx.policyVersion,...assessment,createdAt:new Date().toISOString()};
   const plan=UspPdfPacketPlanSchema.parse({...body,planSha256:fingerprint(body)});
   await authorizePdfPlanTx(client,ctx,plan);await livePlanTx(client,input.expiresAt);
   await client.query(`INSERT INTO usp_packet_plans(id,version,site_id,manifest_id,subject,body)
     VALUES($1,$2,$3,$4,$5,$6)`,[id,version,input.scope.scopeId,input.scope.manifestId,ctx.principal.subject,plan]);return plan;
 }
-export async function createPdfPacketPlan(ctx:RequestContext,raw:unknown,_io?:PdfPacketIo){
+export async function createPdfPacketPlan(ctx:RequestContext,raw:unknown,io:PdfPacketIo=storage){
   assertLocalUsp(ctx);const command=UspCreatePacketPlanSchema.parse(raw),input=UspPdfPacketPlanInputSchema.parse(command.input),hash=fingerprint(command);
+  const prepared=await prepareSourceStatementBindings(ctx,input,io);
   return boundedTx(async client=>{
-    await protectPdfPlanTx(client,ctx,input);
+    await protectPdfPlanTx(client,ctx,input,prepared);
     const replay=await requestReceiptTx(client,ctx,input.scope.scopeId,'packet_plan_create',command.guard.requestKey,hash);
     if(replay){const plan=UspPdfPacketPlanSchema.parse(validatePlan(replay));await authorizePdfPlanTx(client,ctx,plan);return plan;}
-    const plan=await versionTx(client,ctx,input,randomUUID(),1);
+    const plan=await versionTx(client,ctx,input,randomUUID(),1,prepared);
     await savePlanReceiptTx(client,ctx,input.scope.scopeId,'packet_plan_create',command.guard.requestKey,hash,plan);
     await appendUspOutboxTx(client,`packet-plan:${plan.planId}`,{type:'packet.plan.created',scope:input.scope,
       planId:plan.planId,version:plan.version,planSha256:plan.planSha256,correlationId:ctx.requestId});return plan;
   });
 }
-export async function revisePdfPacketPlan(ctx:RequestContext,raw:unknown,_io?:PdfPacketIo){
+export async function revisePdfPacketPlan(ctx:RequestContext,raw:unknown,io:PdfPacketIo=storage){
   assertLocalUsp(ctx);const command=UspRevisePacketPlanSchema.parse(raw),input=UspPdfPacketPlanInputSchema.parse(command.input),hash=fingerprint(command);
+  const prepared=await prepareSourceStatementBindings(ctx,input,io);
   return boundedTx(async client=>{
     const old=await loadPdfPlanTx(client,command.planId,command.guard.expectedVersion);
     if(canonical(old.input.target)!==canonical(input.target)||old.input.scope.scopeId!==input.scope.scopeId)
       throw new AppError(422,'PACKET_PLAN_RETARGET','Create a separate plan for another exact target.');
     // Both versions can contribute distinct cases; protect the complete set
     // before either version takes destination or receipt locks.
-    await protectPdfPlanInputsTx(client,ctx,[old.input,input]);
+    await protectPdfPlanInputsTx(client,ctx,[old.input,input],[...plannedBindings(old),...prepared]);
     await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[`packet-plan:${old.planId}`]);
     const replay=await requestReceiptTx(client,ctx,input.scope.scopeId,'packet_plan_revise',command.guard.requestKey,hash);
     await authorizePdfPlanTx(client,ctx,old);
     if(replay){const plan=UspPdfPacketPlanSchema.parse(validatePlan(replay));await authorizePdfPlanTx(client,ctx,plan);return plan;}
     if(command.guard.expectedManifestId!==old.input.scope.manifestId)conflict('The revision guard names another snapshot.');
-    await planHeadTx(client,old);const plan=await versionTx(client,ctx,input,old.planId,old.version+1);
+    await planHeadTx(client,old);const plan=await versionTx(client,ctx,input,old.planId,old.version+1,prepared);
     await savePlanReceiptTx(client,ctx,input.scope.scopeId,'packet_plan_revise',command.guard.requestKey,hash,plan);
     await appendUspOutboxTx(client,`packet-plan:${plan.planId}`,{type:'packet.plan.revised',scope:input.scope,
       planId:plan.planId,version:plan.version,planSha256:plan.planSha256,correlationId:ctx.requestId});return plan;
@@ -132,7 +142,8 @@ export async function confirmPdfPacketPlan(ctx:RequestContext,raw:unknown){
     await planHeadTx(client,plan);
     if((await client.query('SELECT body FROM usp_packet_plan_confirmations WHERE plan_id=$1 AND version=$2',[plan.planId,plan.version])).rows[0])
       conflict('This exact version is already confirmed; reuse its request key.');
-    const assessment=await assessPdfPlanTx(client,ctx,plan.input);assertPdfAssessment(plan,assessment);
+    const assessment=await assessPdfPlanTx(client,ctx,plan.input,plannedBindings(plan));
+    assertPdfAssessment(plan,assessment);
     if(plan.requiredContext!=='available'||plan.entries.some(entry=>!entry.binding))throw new AppError(422,'PACKET_PLAN_BLOCKED','Every required committed region binding is needed.');
     await livePlanTx(client,plan.input.expiresAt);
     const confirmation=UspPacketPlanConfirmationSchema.parse({confirmationId:randomUUID(),planId:plan.planId,version:plan.version,
@@ -162,7 +173,8 @@ export async function preparePdfExecutionTx(client:PoolClient,ctx:RequestContext
     const confirmation=validateConfirmation(plan,row.body);
     if(confirmation.confirmationId!==command.confirmationId)conflict('The confirmation does not cover this plan.');
     await livePlanTx(client,plan.input.expiresAt);
-    const assessment=await assessPdfPlanTx(client,ctx,plan.input);assertPdfAssessment(plan,assessment);
+    const assessment=await assessPdfPlanTx(client,ctx,plan.input,plannedBindings(plan));
+    assertPdfAssessment(plan,assessment);
     if(plan.requiredContext!=='available'||plan.entries.some(entry=>!entry.binding))
       throw new AppError(422,'PACKET_PLAN_BLOCKED','Every required committed region binding is needed.');
     const bindings=plan.entries.map(entry=>entry.binding!);
