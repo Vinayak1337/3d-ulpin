@@ -112,7 +112,7 @@ training, selection and export helpers are typed and small. The code-quality
 refactor matches the previous eight TRAIN tensors exactly; real empty and dense
 chips still produce finite loss/gradients with no optimizer updates.
 
-A four-extra-epoch schedule is proposed in `b3/result.json`, not started. The lead
+A four-extra-epoch schedule was proposed in `b3/result.json`; the lead
 authorized B4 below instead. The GPU was released at B3 handoff; the exhausted
 Karnataka HOLDOUT stays closed even if a future candidate improves DEV. Per-chip journals and original
 executed result bytes live under `E:/BhuAayam-data/ml/runs/`; evidence links and
@@ -120,9 +120,11 @@ hashes preserve their lineage. Git contains compact JSON and <=200 KB WebP sheet
 
 ## B4 continuation and independent transfer
 
-The authorized continuation is detached under
-`E:/BhuAayam-data/ml/runs/b4-ka-continue-20261010/` (launch PID 38292).
-It resumes epoch 4 with optimizer/scheduler/RNG state and the unchanged recipe.
+The authorized continuation ran detached under
+`E:/BhuAayam-data/ml/runs/b4-ka-continue-20261010/` (former PID 38292).
+It completed normally after epochs 5–7, with three non-improving recall scores;
+no OOM/nonfinite stop and no restart. It resumed epoch 4 with
+optimizer/scheduler/RNG state and the unchanged recipe.
 Each epoch scores all 1,434 DEV chips at .5/.3/.7, offloading the parent model
 and optimizer before the CUDA evaluator runs. Stops at three non-improving
 DEV recall epochs at .5, nonfinite loss/gradients, >6 GiB reserved, or epoch 12.
@@ -151,17 +153,23 @@ The shard is `E:/BhuAayam-data/ml/datasets/b4-coxs-bazar-transfer-20261010/`.
 It is **transfer-only**, never TRAIN/DEV; source pretraining overlap remains
 unknown. The Karnataka preregistration section is unchanged.
 
-After training FINISHES successfully, freeze selection on DEV including epoch 4:
+Completed sequence below is a runbook, **not commands to repeat**. Final selection
+committed in `15efe0c2` retained epoch 4/.5. The sole transfer evaluation finished
+all 2,375 chips: precision .830, recall .355, 129 false buildings on 447 empties.
+The transfer slot is now consumed permanently; GPU ownership is released.
+
+Freeze selection on DEV including epoch 4 before any authorized transfer:
 
 ```bash
 E:/BhuAayam-data/ml/venv-vision/Scripts/python.exe -B scripts/ml/select_buildings.py --run-id b4-ka-continue-20261010 --selection-id b4-final-dev-selection-20261010 --compare-selection docs/evidence/gf-ai/building/b3-final-dev-selection-20261010/result.json --final
-# Commit that result BEFORE the sole transfer call. Do not repeat a started attempt:
+# Historical call only: slot is consumed; NEVER run this again:
 E:/BhuAayam-data/ml/venv-vision/Scripts/python.exe -B scripts/ml/eval_buildings.py --model SELECTED_CHECKPOINT --split transfer --provider cuda --score-threshold 0.5 --selection-result docs/evidence/gf-ai/building/b4-final-dev-selection-20261010/result.json --run-id b4-final-transfer-20261010 --artifacts-dir E:/BhuAayam-data/ml/runs/b4-final-transfer-20261010
 ```
 
 Transfer stays at the frozen .5 inference profile, even if DEV favours another
 threshold. One attempt only, reserved before model loading; interruption consumes
-it. Report cross-geography transfer, **not Indian accuracy**. B4 candidates carry
-DEV plus transfer claims only; B3 epoch 4 retains its original Karnataka result.
-Check `b4/result.json` for the latest task checkpoint, not a frozen promise that
-the detached process is still alive. No unchanged relaunch after spent patience.
+it. Report cross-geography transfer, **not Indian accuracy**. Only the selected,
+unchanged epoch4 has the new transfer claim. Epochs5–7 have DEV receipts only;
+B3 epoch4 alone retains its original Karnataka result.
+Check `b4/result.json` and `b4/HANDOFF.md` for final task evidence. The process is
+dead; no training or evaluation is pending. No unchanged relaunch after spent patience.
