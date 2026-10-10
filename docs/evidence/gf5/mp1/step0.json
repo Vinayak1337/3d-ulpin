@@ -65,7 +65,7 @@
       "chips": 22,
       "supplementalByLayerFormat": {},
       "gaps": [
-        "No qualified overlay/tileset supplied by the area context; presentation scene assets are not analytical tilesets.",
+  "No qualified overlay/tileset supplied by the area context; presentation scene assets are not analytical tilesets.",
         "RAMP imagery is test_only display context; native GeoTIFF display needs a decoder or ML RGB preview."
       ]
     }
@@ -124,8 +124,8 @@
     "sourceIndex": {
       "file": "docs/api/real-sources.md",
       "lines": [
-        183,
-        199
+        196,
+        216
       ],
       "state": "RAMP public research, CC-BY-NC4 with Maxar conditions; operational launch terms unconfirmed"
     },
