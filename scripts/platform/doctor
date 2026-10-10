@@ -5,6 +5,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { command, dockerRuntime, engine, inventory, storageProblems, migrationReady, root, services } from './runtime.mjs';
 import { readDemo, readDemoOcrPaths, demoProject } from './demo-config.mjs';
+import { gatewayReport, gatewayReportLines } from './demo-gateway.mjs';
 import { ownedProcess } from './processes.mjs';
 
 let failures = 0;
@@ -74,6 +75,11 @@ async function doctor() {
         console.log(`PASS Local document OCR paths available; ${languages} assets (runner uses eng).`);
       }
     } catch { console.log('INFO Local document OCR unavailable (invalid or missing local assets).'); }
+    // Five facts only: booleans, the resolved adapter name and the policy hash; never a configured value.
+    await attempt('Model gateway state', () => {
+      gatewayReportLines(gatewayReport(demoEnv)).forEach(line => console.log(`  ${line}`));
+      return true;
+    }, 'correct the owner policy and rerun demo-gateway.mjs enable --config, or run demo-gateway.mjs disable.');
   }
   let runtime;
   if (!await attempt('Docker local Linux engine and context/socket', () => {
