@@ -27,30 +27,33 @@ Reconciled 6 October 2026, 18:30 IST, from the live `staging` head, the Codex wo
   - **No model has been trained.**
 - **Release gates:** still 0 of 30 tests with any receipt or attempt, and no `targetDate`.
 
-## Live state right now (10 October, 10:30 IST)
+## Live state right now (10 October, 11:05 IST)
 
 | Item | State |
 | --- | --- |
-| `staging` | `94606761`, local; next push at M1 (14 Oct). Merged since 02:45 on 10 Oct: F1a/F1b (Studio on live canonical records, candidates ghosted), K2/K2b/K2c/K2d (demo buildings, claims, imagery area, roofprint and room candidates, pins), B3/B4/B5 (building fine-tune, transfer test, ONNX parity v2), B6/B6b/B6c (higher resolution, rejected on DEV), A2 (Sarvam teacher adapter), P1/P2 (vector and raster plan readers), T1-prep + A4 (teacher labels, memory, Stage A student, routing). |
-| Workers | pi codex-pool `gpt-6.1-sol`; all four accounts hit the 5-hour limit around 08:00. Queued: A3 (agentic tabular intake + held-out truth) on the codex-1 reset 10:31; K2e (geometry-qualification producer, OCR tessdata prefix, LF receipt pin) on the codex-2 reset 11:13. Claude Sonnet workers cover gaps (A5, B6b, B6c). |
-| Waiting on owner | A5 (storey/unit rules + Sarvam storey agent) is reviewed but not merged: its first commit, a refactor the lead requested, breaks P2's pinned inference-code continuity proof. Lead recommends integrating A5 without that commit. |
-| Runtime | `ulpin-demo` up from `E:/Projects/ulpin-wt/k1` (API 127.0.0.1:3194). Holds Tower 3 (storey conflict kept, officer decision "unresolved"), Bihar Magnolia (18 unplaced room candidates, level unknown), a Karnataka RAMP imagery area (22 chips, 80 model roofprint candidates, `test_only`), GMDA sectors, NYC `test_only` proposals. The building model is active in the demo profile only, on CPU. |
-| Building model | RF-DETR-Seg epoch 4 (`rfdetr-ramp-ka-seg-medium-b3-v1`): Karnataka holdout P 0.836 / R 0.649 (target R ≥ 0.70 missed); Cox's Bazar transfer P 0.830 / R 0.355. Small roofs are the gap (recall 0.40 at 128–256 px, 0.12 at 16–64 px). B6 at 672 px did not help (best DEV R 0.640 vs 0.662) and is rejected; Chittagong transfer-2 slots stay unspent. GPU is free. |
-| Plans | Magnolia CAD: 18 exact vector rooms. Tower 3 scans: 218 raster room candidates, `no_scale`, level unknown. CubiCasa on 100 foreign test plans: mIoU 0.52, room-count MAE 30.1. |
-| Mapping agent | Lead (development teacher) labelled 411 columns; 45/45 tables and 398/411 fields pass the verifier; agreement with publisher dictionaries 36 agree / 3 disagree / 5 not comparable. Memory cuts teacher calls to 0 on repeat layouts. Stage A student commits only `unknown` so far (too few positives). Held-out truth is being built in A3. |
-| Storeys | A5 (unmerged): rule baseline weak on garbled OCR (dev floor expressions 0/7, holdout 0/3); the Sarvam agent did not run (no gateway config in the worker shell). Tower 3's G+41 / G+42 conflict already exists in the canonical record from K2. |
-| Blockers | Reviewed roofprint admission needs a geometry-qualification producer (K2e). OCR fails with `KeyError: 'text'` (missing OSD/TSV tessdata assets; K2e). |
-| Contract check | `datasets.json` pin fixed by K2d; one remaining LF-only runtime-receipt pin (K2e step 0). |
+| `staging` | `a5f1d781`, local; next push at M1 (14 Oct). Merged since 10:30: A5 (without the refactor commit), K3a (prisms), K2f (admission deferred, OCR fixed), B7 (DEV operating point), F2a (Studio candidate review). Earlier on 10 Oct: F1a/F1b, K2–K2d, B3–B6c, A2, P1/P2, T1 + A4. |
+| Workers | Running: A3 (agentic tabular intake + held-out truth, codex), K3b (reviewed level schedules, room → level, prisms, demo OCR prefix; codex, runtime/DB owner), B8 (pipeline attrition on DEV, Claude Sonnet). Codex accounts are rate-limited in turn; Claude workers fill gaps without waiting. |
+| Waiting on owner | Re-pin of four runtime-receipt hashes in `docs/api/runtime-qualification.json` (CRLF-computed; LF hashes proposed). It is the only known `check.py` failure. |
+| Runtime | `ulpin-demo` up from `E:/Projects/ulpin-wt/k1` (API 127.0.0.1:3194). Holds Tower 3 (storey conflict kept), Bihar Magnolia (18 unplaced room candidates), a Karnataka RAMP imagery area (22 chips, 80 model roofprint candidates, `test_only`), GMDA sectors, NYC `test_only` proposals. The building model is active in the demo profile only, on CPU. |
+| Building model | RF-DETR-Seg epoch 4: Karnataka holdout P 0.836 / R 0.649 (target R ≥ 0.70 missed); Cox's Bazar transfer P 0.830 / R 0.355. B6 (672 px) rejected. B7: 87% of missed roofs have a raw instance under 0.5, but the pipeline recovers only about half; DEV rule picks 0.45 (R 0.708, P 0.816). **Lead decision:** keep serving at 0.5, the only point with held-out evidence. B8 now locates the post-model loss. |
+| Plans | Magnolia CAD: 18 exact vector rooms. Tower 3 scans: 218 raster room candidates, `no_scale`, level unknown. CubiCasa on 100 foreign test plans: mIoU 0.52. |
+| Mapping agent | 411 teacher labels; 45/45 tables, 398/411 fields verified; agreement 36/3/5. Memory, Stage A student, routing merged. Agent loop + held-out truth in A3. |
+| Storeys | A5 merged: quote verifier, rules baseline (weak on garbled OCR: dev 0/7, holdout 0/3), Sarvam storey agent (not yet run live). Tower 3 G+41 / G+42 conflict in the canonical record; K3b records it as a reviewed conflicting schedule. |
+| Geometry | K3a: exact prisms for holes, multipolygons and multi-level components (`prism/2`, 9 hand cases). Level schedules in K3b. |
+| Roofprint admission | **Deferred until after the demo** (`docs/evidence/gf-backend/k2f/admission-decision.md`). The demo shows model candidate → officer-reviewed source selection; the registry step shows the real `USP_GEOMETRY_PAYLOAD_UNQUALIFIED`. |
+| OCR | Fixed by the complete tessdata prefix (K2f): Tower 3 page 1 gives 64 lines. K3b activates it for the demo profile. |
+| Studio | F2a: candidate review queues for roofprints (area) and rooms (building), reasoned accept/reject, level picker (disabled until a reviewed level exists), real refusals shown. Requests: a reject-only roofprint command and a room reject command. |
 | Private data | `E:/BhuAayam-data/{datasets,ml,runtime,task-data}`; nothing deleted. |
 
 ## Gates
 
 | Gate | State | Last real evidence | Next |
 | --- | --- | --- | --- |
-| GF0 Data/contracts | Partial | Demo runtime with K2 imports; canonical routes; pins | K2e receipt pin |
+| GF0 Data/contracts | Partial | Demo runtime with K2 imports; canonical routes; pins | Owner: receipt re-pin |
 | GF1 Identity/exchange | Pending | D10 authority fix only | K4 |
-| GF-AI (building/plans) | Partial | Fine-tuned model with holdout + transfer numbers; plan candidates | K2e reviewed roofprint |
+| GF-AI (building/plans) | Partial | Fine-tuned model with holdout + transfer numbers; B7 DEV diagnosis; plan candidates | B8 attribution |
 | GF-AGENT | Partial | Teacher labels verified; memory + student + routing | A3 loop, held-out results |
+| GF-T16 Geometry | Partial | K3a prisms with hand cases | K3b schedules |
 | GF3 Govern | Pending | Officer conflict decisions (K2b) | P6 |
 | GF4 Card/QR | Pending | none | K5 |
 | GF5 Rehearsal | Pending | none | J1 |
@@ -60,13 +63,13 @@ Reconciled 6 October 2026, 18:30 IST, from the live `staging` head, the Codex wo
 | Area | State |
 | --- | --- |
 | Backend | Works: canonical area/building records, geometry-free imports, imagery area, candidate retention, append-only officer decisions. |
-| Readers | Works; plus vector (CAD) and raster plan readers. |
+| Readers | Works; plus vector (CAD) and raster plan readers; OCR repaired. |
 | Domain AI | Partial: building model trained and measured on held-out Indian data; plan readers produce candidates; storey extraction weak. |
 | Agent | Partial: teacher labels, memory, Stage A student and routing; agentic loop in A3. |
-| Geometry | Missing: level schedule and prisms (K3) not started; CityJSON still has empty vertices. |
+| Geometry | Partial: exact prisms (K3a); level schedules running (K3b); CityJSON still has empty vertices. |
 | Identity | Partial: P3 code exists; no input wired. |
 | Card | Missing: K5. |
-| Studio | Partial: live canonical records with ghosted candidates (F1a/F1b); review screens (F2) next. |
+| Studio | Partial: live canonical records (F1) and candidate review (F2a); live import UI (F2b) after A3. |
 | Data | Works for the sprint: RAMP Karnataka + Bangladesh labels, D8 messy-India pack, D2 storey truth. |
 
 ## Findings on 9–10 October that changed the plan
@@ -79,7 +82,7 @@ Reconciled 6 October 2026, 18:30 IST, from the live `staging` head, the Codex wo
 
 ## Assessment: what to do next
 
-1. Owner: decide A5's integration (lead recommends dropping the refactor commit).
-2. Codex-1 reset: A3. Codex-2 reset: K2e. Then K3 (level schedule + prisms) and F2 (Studio review screens for roofprint/room candidates and agent questions).
-3. Storeys need better OCR before more extraction work: K2e's tessdata repair first, then a dev-only A5 follow-up (native-text threshold, cropped tables) and a live agent run through the demo runtime's gateway.
+1. Owner: approve or refuse the runtime-receipt re-pin (four LF hashes).
+2. On return: A3 → F2b (live import UI); K3b → K4 (identity + CityJSON) and the two reject commands F2a needs; B8 → lead decides on a post-processing change and whether to spend a Chittagong transfer-2 slot.
+3. A dev-only A5 follow-up (repaired OCR, native-text threshold, cropped tables, a live agent run through the demo gateway).
 4. M1 on 14 Oct: push `staging`.
