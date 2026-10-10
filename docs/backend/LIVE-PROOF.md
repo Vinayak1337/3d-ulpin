@@ -13,7 +13,7 @@ The policy is one JSON file kept outside Git. Fields, units and rules are those 
 |---|---|---|
 | `projectId`, `policyVersion`, `fundingVersion` | labels | the owner's own labels |
 | `gatewayExclusiveFunding`, `indiaPrivateApproved` | `true` only if the owner confirms each | owner's confirmation |
-| `secretReference`, `model` | fixed names | `ULPIN_PROVIDER_KEY_SARVAM`, `sarvam-105b` |
+| `secretReference` or `secretReferences`, `model` | names | one key name or the printed list; `sarvam-105b` |
 | `projectCapMicroInr` | micro-INR, total | `"100000000"` (₹100) |
 | `projectDailyCapMicroInr` | micro-INR per day | `"25000000"` (₹25) |
 | `principalDailyCallCap` | calls per person per day | `150` |
@@ -47,7 +47,8 @@ node scripts/platform/demo-gateway.mjs enable --config <policy.json>
 node scripts/platform/demo-gateway.mjs status
 ```
 
-`status` must print exactly these five facts, with the hash the plan printed for the same file:
+`status` must print these five facts, with the hash the plan printed for the same file, and two key counts
+that must be equal (`1` and `1` for one key, `11` and `11` for a list of eleven):
 
 ```
 enabled: true
@@ -55,9 +56,11 @@ policyHash: <tariff.policyHash from the plan>
 providerKeyPresent: true
 mappingTeacherAdapter: sarvam
 dailyCapPresent: true
+providerKeysNamed: <count>
+providerKeysPresent: <the same count>
 ```
 
-Save those five lines to a text file. If any line differs, stop here.
+Save those seven lines to a text file. If any of the first five differs or the counts differ, stop here.
 
 ## 4. The one command the runtime owner runs
 
@@ -101,7 +104,8 @@ The ledger rows themselves are read from PostgreSQL by the runtime owner and mat
 
 ## 7. Stop rules
 
-- Every call is one attempt. There is no repair call, no retry and never another key.
+- Every call is one attempt. There is no repair call and no retry. With a list of keys the gateway, not this
+  run, moves to the next key, and only after the provider says the key in use is used up or rejected.
 - The run stops at the first refusal by the gateway, the first HTTP 402 or quota answer, the first rate limit,
   the first timeout or unknown outcome, and the first answer that could not be recorded.
 - It stops before a call that, held at its full reservation, would cross the total, daily, per-person or
