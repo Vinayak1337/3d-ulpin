@@ -22,6 +22,9 @@ export interface CandidateDecision {
   time: string;
 }
 
+/** A room's size exactly as the read states it, formatted for the card; the Studio computes nothing. */
+export type PlanEstimateView = { state: 'estimated'; extent: string; area: string } | { state: 'unknown' };
+
 export interface CandidateCitation {
   sourceId: string;
   /** The first characters of the source id, as the chip shows it; the record carries no file name. */
@@ -54,6 +57,8 @@ export interface CandidateCard {
   frame: string;
   /** Polygons in the candidate's own frame: area metres for a roofprint, plan metres for a room. */
   polygons: MultiPolygon;
+  /** Null when the read states no estimate (an older server, or not a room). */
+  planEstimate: PlanEstimateView | null;
 }
 
 const ITEM_REF = /\/spatial-ml\/items\/([0-9a-f-]{36})#/;
@@ -108,6 +113,21 @@ export function stateChip(state: CandidateState): StateChip {
   return { kind: 'status', word: state === 'reviewed' ? 'Reviewed' : 'Needs review' };
 }
 
+/** The read states hundredths; the card prints them as stated, so nothing is rounded a second time. */
+function hundredths(value: number): string {
+  return value.toFixed(2);
+}
+
+/** `2.42 × 2.71 m` and `6.55 m²` from the read's own numbers; an incomplete estimate is unknown. */
+export function planEstimateView(candidate: CanonicalCandidate): PlanEstimateView | null {
+  const estimate = candidate.planEstimate;
+  if (!estimate) return null;
+  const [width, height] = estimate.extentM ?? [];
+  if (estimate.areaM2 === null || width === undefined || height === undefined) return { state: 'unknown' };
+  const extent = `${hundredths(width)} × ${hundredths(height)} m`;
+  return { state: 'estimated', extent, area: `${hundredths(estimate.areaM2)} m²` };
+}
+
 function titleOf(candidate: CanonicalCandidate, kind: CandidateKind): string {
   if (kind === 'room') return candidate.labelLiteral ?? ROOM_FALLBACK;
   return `Roofprint ${candidate.candidateId.slice(0, 8)}`;
@@ -140,6 +160,7 @@ export function candidateCard(candidate: CanonicalCandidate): CandidateCard | nu
     levelLiteral: candidate.levelLabelLiteral ?? null,
     frame: candidate.coordinateFrame ?? 'Not recorded',
     polygons: candidate.polygons as MultiPolygon,
+    planEstimate: planEstimateView(candidate),
   };
 }
 
