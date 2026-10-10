@@ -3,10 +3,11 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import {
-  groupTeacherLabels, verifyLabelGroups, sourceCrsFromReference, type LinkedColumn,
+  groupTeacherLabels, verifyLabelGroups, ingestTeacherLabels, sourceCrsFromReference, type LinkedColumn,
 } from './verify-teacher-labels';
 import { developmentProfileAssets, sourceTables, T1_ROOT } from './t1-sources';
-import { prepareTable } from './t1-profiles';
+import { prepareTable, saveNew } from './t1-profiles';
+import { DEVELOPMENT_TEACHER_METHODS } from '../../packages/server/src/modules/usp/ingestion/teacher-labels';
 import type { PreparedColumn, TableInventory } from './t1-profiles';
 
 function fixture() {
@@ -33,7 +34,7 @@ test('complete table accepted once; incomplete table keeps canonical rejection a
   const remaining = lines.filter(line => line.value.profileId !== missing);
   const groups = groupTeacherLabels(remaining, linked);
   const output = join(T1_ROOT, `verifier/group-regression-${Date.now()}`);
-  const report = await verifyLabelGroups(groups, output);
+  const report = await verifyLabelGroups(groups, output, DEVELOPMENT_TEACHER_METHODS['claude-opus-5-5']);
   assert.equal(report.accepted, 1);
   assert.equal(report.examples, selected[0].profile.columns.length);
   assert.equal(report.rejected, 1);
@@ -47,7 +48,7 @@ test('complete table accepted once; incomplete table keeps canonical rejection a
     selected[0].profile.columns.map(column => column.name));
 });
 
-test('recorded GeoJSON CRS verifies the real footprint; missing and unknown references remain unverified', async () => {
+function footprintFixture() {
   const source = developmentProfileAssets().find(asset => asset.family === 'mi-d24')!;
   const table = sourceTables(source)[0];
   const prepared = prepareTable(source, table);
@@ -57,14 +58,45 @@ test('recorded GeoJSON CRS verifies the real footprint; missing and unknown refe
   prepared.profiles.forEach((column, index) => {
     linked.set(column.profileId, { column, table: prepared.inventory, index });
   });
-  const groups = groupTeacherLabels(labels.filter(line => linked.has(line.value.profileId)), linked);
+  const selectedLabels = labels.filter(line => linked.has(line.value.profileId));
+  const groups = groupTeacherLabels(selectedLabels, linked);
   const rows = table.rows.map(row => Object.fromEntries(prepared.inventory.profile.columns.map((column, index) =>
     [column.name, row[index]])));
+  return { source, prepared, groups, rows, labels: selectedLabels.map(line => line.value) };
+}
+
+test('script stamps the requested development teacher in plans, examples and report', async () => {
+  const { prepared, labels } = footprintFixture();
+  const root = join(T1_ROOT, `verifier/t2-stamp-${Date.now()}`);
+  const profilesPath = join(root, 'profiles/profiles.jsonl');
+  const labelsPath = join(root, 'labels.jsonl');
+  const output = join(root, 'result');
+  saveNew(profilesPath, prepared.profiles, true);
+  saveNew(join(root, 'verifier/inventory.json'), [prepared.inventory]);
+  // Attribution-only software control: replay transport fields, not a new teacher round or training input.
+  saveNew(labelsPath, labels, true);
+  const report = await ingestTeacherLabels('gpt-6.1-sol', labelsPath, profilesPath, output);
+  assert.equal(report.accepted, 1);
+  assert.equal(report.rejected, 0);
+  const method = DEVELOPMENT_TEACHER_METHODS['gpt-6.1-sol'];
+  const recordedReport = JSON.parse(readFileSync(join(output, 'report.json'), 'utf8'));
+  assert.equal(recordedReport.method, method);
+  const normalized = JSON.parse(readFileSync(join(output, 'normalized-labels.jsonl'), 'utf8').trim());
+  assert.equal(normalized.method, method);
+  assert.equal(normalized.plan.method, method);
+  const examples = readFileSync(join(output, 'pseudo-labels.jsonl'), 'utf8').trim().split('\n')
+    .map(line => JSON.parse(line));
+  assert.equal(examples.length, prepared.profiles.length);
+  assert(examples.every(example => example.method === method));
+});
+
+test('recorded GeoJSON CRS verifies the real footprint; missing and unknown references remain unverified', async () => {
+  const { source, prepared, groups, rows } = footprintFixture();
   const cases = [{ horizontalCrs: 'GeoJSON WGS84 longitude/latitude' }, undefined,
     { horizontalCrs: 'unrecorded literal' }];
   for (const [index, reference] of cases.entries()) {
     const output = join(T1_ROOT, `verifier/crs-regression-${Date.now()}-${index}`);
-    const report = await verifyLabelGroups(groups, output, () => ({
+    const report = await verifyLabelGroups(groups, output, DEVELOPMENT_TEACHER_METHODS['claude-opus-5-5'], () => ({
       profile: prepared.inventory.profile, rows, sourceRef: source.original.externalPath,
       sourceCrs: sourceCrsFromReference(reference), dataPolicy: { dataClass: 'public', split: 'development' },
     }));
@@ -81,7 +113,8 @@ test('recorded GeoJSON CRS verifies the real footprint; missing and unknown refe
 test('duplicate column label rejects its table without last-value-wins', async () => {
   const { linked, lines } = fixture();
   const groups = groupTeacherLabels([...lines, { ...lines[0], inputLine: 999 }], linked);
-  const report = await verifyLabelGroups(groups, join(T1_ROOT, `verifier/duplicate-regression-${Date.now()}`));
+  const report = await verifyLabelGroups(groups, join(T1_ROOT, `verifier/duplicate-regression-${Date.now()}`),
+    DEVELOPMENT_TEACHER_METHODS['claude-opus-5-5']);
   assert(report.rejections.some(rejection => rejection.codes.includes('TEACHER_LABEL_DUPLICATE')));
   assert(report.rejections.find(rejection => rejection.codes.includes('TEACHER_LABEL_DUPLICATE'))!
     .inputLines.includes(999));
