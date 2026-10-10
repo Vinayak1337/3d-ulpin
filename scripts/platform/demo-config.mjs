@@ -2,10 +2,11 @@ import {
   existsSync, mkdirSync, readFileSync, writeFileSync, chmodSync, realpathSync, statSync,
 } from 'node:fs';
 import { createHash, randomBytes } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { createServer } from 'node:net';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { command, dockerRuntime } from './runtime.mjs';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { command, dockerRuntime, root } from './runtime.mjs';
 
 export const demoDir = 'E:/BhuAayam-data/runtime/ulpin-demo';
 export const demoProject = 'ulpin-demo';
@@ -105,6 +106,69 @@ function validateTabularArtifacts(paths) {
   }
 }
 
+export const gatewayFlag = 'ULPIN_MODEL_GATEWAY_ENABLED';
+export const gatewayConfigKey = 'ULPIN_MODEL_GATEWAY_CONFIG';
+export const teacherAdapterKey = 'ULPIN_MAPPING_TEACHER_ADAPTER';
+export const providerKeyName = 'ULPIN_PROVIDER_KEY_SARVAM';
+const policyHashScript = 'import(process.argv[1]).then(gateway => console.log(gateway.modelGatewayPolicyHash()))';
+
+/**
+ * Runs the one ModelGatewayConfigSchema, in TypeScript, on the policy and returns modelGatewayPolicyHash().
+ * The child receives the policy only, never the provider key, and its output is never shown.
+ */
+export function gatewayPolicyHash(policyJson) {
+  const preload = join(root, 'scripts/platform/isolated-env.cjs');
+  const gatewayRuntime = pathToFileURL(join(root, 'packages/server/src/modules/model-gateway/runtime.ts')).href;
+  const env = safeEnvironment({ ULPIN_PROFILE: 'demo', [gatewayFlag]: '1', [gatewayConfigKey]: policyJson });
+  let output = '';
+  try {
+    output = execFileSync(
+      process.execPath,
+      ['--require', preload, '--import', 'tsx', '-e', policyHashScript, gatewayRuntime],
+      { cwd: root, env, encoding: 'utf8', timeout: 60000, windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] },
+    ).trim();
+  } catch {
+    // A schema refusal, a missing toolchain and a timeout all fail closed below.
+  }
+  if (!/^[a-f0-9]{64}$/.test(output)) {
+    throw new Error(`Demo setting ${gatewayConfigKey} was refused by the model gateway schema.`);
+  }
+  return output;
+}
+
+function assertGatewayDisabled(env) {
+  if (env[gatewayConfigKey] !== undefined) {
+    throw new Error(`Demo setting ${gatewayConfigKey} is not allowed while ${gatewayFlag} is 0.`);
+  }
+  if (env[teacherAdapterKey] === 'sarvam') {
+    throw new Error(`Demo setting ${teacherAdapterKey} cannot select the live teacher while ${gatewayFlag} is 0.`);
+  }
+}
+
+/** Only the fields this profile gates on; every other rule is the schema's, through gatewayPolicyHash(). */
+function assertGatewayEnabled(env) {
+  let policy;
+  try { policy = JSON.parse(env[gatewayConfigKey] ?? ''); }
+  catch { throw new Error(`Demo setting ${gatewayConfigKey} must be valid JSON while ${gatewayFlag} is 1.`); }
+  if (policy?.secretReference !== providerKeyName) {
+    throw new Error(`${gatewayConfigKey}.secretReference must be exactly ${providerKeyName}.`);
+  }
+  if (!env[providerKeyName]) {
+    throw new Error(`Demo setting ${providerKeyName} is required while ${gatewayFlag} is 1.`);
+  }
+  if (typeof policy.projectDailyCapMicroInr !== 'string' || !policy.projectDailyCapMicroInr) {
+    throw new Error(`${gatewayConfigKey}.projectDailyCapMicroInr is required while ${gatewayFlag} is 1.`);
+  }
+  gatewayPolicyHash(env[gatewayConfigKey]);
+}
+
+/** Exactly two gateway states pass. Messages name keys, never values. */
+function assertDemoGateway(env) {
+  if (env[gatewayFlag] === '0') assertGatewayDisabled(env);
+  else if (env[gatewayFlag] === '1') assertGatewayEnabled(env);
+  else throw new Error(`Demo setting ${gatewayFlag} must be 0 or 1.`);
+}
+
 const expectedPorts = { POSTGRES_PORT: '15434', S3_PORT: '19020', S3_CONSOLE_PORT: '19021', REDIS_PORT: '16381', GEO_PORT: '18002', API_PORT: '3194' };
 export function readDemo() {
   let tabular;
@@ -113,22 +177,27 @@ export function readDemo() {
     console.error(error.message); // Only path-validation messages, never demo.env values.
     throw error;
   }
-  if (!existsSync(demoFile)) throw new Error('Demo configuration missing; use --profile demo --create after inventory reconciliation.');
+  return { ...readDemoSettings(), ...readDemoOcrPaths(), ...tabular };
+}
+/** The demo.env part of readDemo(). Only tests and the gateway script's unrenamed copy pass another file. */
+export function readDemoSettings(file = demoFile) {
+  if (!existsSync(file)) throw new Error('Demo configuration missing; use --profile demo --create after inventory reconciliation.');
   // Only this explicitly authorized external file is read, never checkout .env.
-  const env = Object.fromEntries(readFileSync(demoFile, 'utf8').split(/\r?\n/).filter(Boolean).map(line => {
+  const env = Object.fromEntries(readFileSync(file, 'utf8').split(/\r?\n/).filter(Boolean).map(line => {
     const at = line.indexOf('=');
     if (at <= 0) throw new Error('Invalid demo configuration.');
     return [line.slice(0, at), line.slice(at + 1)];
   }));
   for (const [key, value] of Object.entries({ ...expectedPorts, ULPIN_PROFILE: 'demo', COMPOSE_PROJECT_NAME: demoProject,
-    POSTGRES_DB: 'ulpin_demo', POSTGRES_USER: 'ulpin_demo', S3_BUCKET: demoProject, REPO_DATA: 'false', ULPIN_MODEL_GATEWAY_ENABLED: '0' })) {
+    POSTGRES_DB: 'ulpin_demo', POSTGRES_USER: 'ulpin_demo', S3_BUCKET: demoProject, REPO_DATA: 'false' })) {
     if (env[key] !== value) throw new Error(`Unexpected demo setting ${key}; refusing profile mixing.`);
   }
+  assertDemoGateway(env);
   for (const key of ['POSTGRES_PASSWORD', 'S3_SECRET_KEY', 'GEO_SERVICE_TOKEN']) if (!/^[a-f0-9]{64}$/.test(env[key] || '')) throw new Error(`Missing demo secret ${key}; never regenerate credentials for populated volumes.`);
   if (env.DATABASE_URL !== `postgresql://${env.POSTGRES_USER}:${env.POSTGRES_PASSWORD}@127.0.0.1:${env.POSTGRES_PORT}/${env.POSTGRES_DB}`
     || env.S3_ENDPOINT !== `http://127.0.0.1:${env.S3_PORT}` || env.GEO_URL !== `http://127.0.0.1:${env.GEO_PORT}`
     || env.REDIS_URL !== `redis://127.0.0.1:${env.REDIS_PORT}/0`) throw new Error('Demo endpoint binding mismatch.');
-  return { ...env, ...readDemoOcrPaths(), ...tabular };
+  return env;
 }
 export async function freePort(port) {
   await new Promise((ok, fail) => {
@@ -173,6 +242,6 @@ export function safeEnvironment(env) {
   return { ...Object.fromEntries(keys.filter(key => process.env[key]).map(key => [key, process.env[key]])), ...env };
 }
 export function redact(text, env) {
-  for (const [key, value] of Object.entries(env)) if (/PASSWORD|SECRET|TOKEN|_KEY$|DATABASE_URL/.test(key)) text = text.replaceAll(value, '[redacted]');
+  for (const [key, value] of Object.entries(env)) if (value && /PASSWORD|SECRET|TOKEN|_KEY(?:_|$)|DATABASE_URL/.test(key)) text = text.replaceAll(value, '[redacted]');
   return text.replace(/(postgres(?:ql)?:\/\/[^:\s]+:)[^@\s]+@/g, '$1[redacted]@');
 }
