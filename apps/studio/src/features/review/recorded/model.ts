@@ -17,11 +17,17 @@ export interface RecordedCitation {
   locator: string;
 }
 
+/** A record value as text. `known` is false when the text is the state word of a value the record lacks. */
+export interface RecordedValue {
+  text: string;
+  known: boolean;
+}
+
 export interface RecordedUnit {
   id: string;
   label: string;
-  kind: string;
-  area: string;
+  kind: RecordedValue;
+  area: RecordedValue;
   citations: RecordedCitation[];
   /** The assigned application code exactly as recorded, or null when none is reviewed. */
   code: string | null;
@@ -33,32 +39,33 @@ export interface RecordedFloor {
   /** True for a floor recorded from a source label; false for a schedule row the server linked one to. */
   reviewed: boolean;
   origin: string;
-  lower: string;
-  upper: string;
+  lower: RecordedValue;
+  upper: RecordedValue;
   citations: RecordedCitation[];
   units: RecordedUnit[];
 }
 
-const NOT_REPORTED = 'Not reported';
+const NOT_REPORTED: RecordedValue = { text: 'Not reported', known: false };
 const UNIT_SYMBOLS = { m: 'm', m2: 'm²' } as const;
 // Gaps are plain sentences without a code, so the server's sentence is found by its opening words.
 const SOURCE_LABEL_GAP = /^Source-stated labels\b/;
 
 /** The state as a word, so unknown, absent, withheld and conflicting stay distinct and none becomes 0 or blank. */
-function stateWord(state: string): string {
-  return state.charAt(0).toUpperCase() + state.slice(1);
+function stateWord(state: string): RecordedValue {
+  return { text: state.charAt(0).toUpperCase() + state.slice(1), known: false };
 }
 
-function measureText(measure: Measure | undefined): string {
+function measureValue(measure: Measure | undefined): RecordedValue {
   if (!measure) return NOT_REPORTED;
   if (measure.value === null) return stateWord(measure.state);
   const symbol = UNIT_SYMBOLS[measure.unit as keyof typeof UNIT_SYMBOLS];
-  return symbol ? formatMeasure(measure.value, symbol) : `${measure.value} ${measure.unit ?? ''}`.trim();
+  const text = symbol ? formatMeasure(measure.value, symbol) : `${measure.value} ${measure.unit ?? ''}`.trim();
+  return { text, known: true };
 }
 
-function literalText(field: { value: string | null; state: string } | undefined): string {
+function literalValue(field: { value: string | null; state: string } | undefined): RecordedValue {
   if (!field) return NOT_REPORTED;
-  return field.value ?? stateWord(field.state);
+  return field.value === null ? stateWord(field.state) : { text: field.value, known: true };
 }
 
 function citationOf(citation: Citation, index: number): RecordedCitation {
@@ -79,9 +86,9 @@ function recordedUnit(space: Space): RecordedUnit {
   const code = space.proposedCode;
   return {
     id: space.spaceId,
-    label: literalText(space.label),
-    kind: literalText(space.kind),
-    area: measureText(space.areaM2),
+    label: literalValue(space.label).text,
+    kind: literalValue(space.kind),
+    area: measureValue(space.areaM2),
     citations: (space.label?.citations ?? []).map(citationOf),
     code: code.state === 'reviewed' ? code.value : null,
   };
@@ -90,11 +97,11 @@ function recordedUnit(space: Space): RecordedUnit {
 function recordedFloor(level: Level): RecordedFloor {
   return {
     id: level.levelId,
-    label: literalText(level.label),
+    label: literalValue(level.label).text,
     reviewed: level.recordState === 'reviewed',
     origin: originText(level),
-    lower: measureText(level.lowerM),
-    upper: measureText(level.upperM),
+    lower: measureValue(level.lowerM),
+    upper: measureValue(level.upperM),
     citations: level.label.citations.map(citationOf),
     units: level.spaces.filter((space) => space.recordState === 'reviewed' && space.label).map(recordedUnit),
   };
