@@ -17,8 +17,17 @@ async function ledgerStep([action, first = '', second = '']: string[]): Promise<
   throw new AppError(422, 'MODEL_CONFIGURATION', 'Unknown ledger step.');
 }
 
+/** A leading --runtime <name> (default ulpin-demo) must be the runtime whose settings this child was given. */
+function stepOfRuntime(args: string[]): string[] {
+  const named = args[0] === '--runtime';
+  if ((named ? args[1] : 'ulpin-demo') !== process.env.COMPOSE_PROJECT_NAME) {
+    throw new AppError(422, 'MODEL_CONFIGURATION', 'The ledger step was given another runtime\'s settings.');
+  }
+  return named ? args.slice(2) : args;
+}
+
 try {
-  (await ledgerStep(process.argv.slice(2))).forEach(line => console.log(line));
+  (await ledgerStep(stepOfRuntime(process.argv.slice(2)))).forEach(line => console.log(line));
 } catch (error) {
   // Only the gateway's own closed messages leave; a driver or parser error could carry a configured value.
   console.error(error instanceof AppError ? `${error.code}: ${error.message}` : 'The ledger step failed.');
