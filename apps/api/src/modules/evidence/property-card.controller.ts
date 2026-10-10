@@ -2,12 +2,20 @@ import { Controller, Get, HttpCode, Param, Post, Req, Res, UseFilters, UseGuards
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { UspGeneratePropertyCardSchema, UspReadPropertyCardSchema, UspPropertyCardSchema,
-  UspPropertyCardViewSchema } from '../../../../../packages/contracts/src/usp/property-card';
+  UspPropertyCardVerificationSchema, UspPropertyCardViewSchema } from '../../../../../packages/contracts/src/usp/property-card';
 import { generatePropertyCard, readPropertyCard, resolvePropertyCard } from '@ulpin/server/modules/usp/packets/card-service';
+import { verifyPropertyCard } from '@ulpin/server/modules/usp/packets/card-verification';
 import { localRequestContext } from '@ulpin/server/modules/usp/principal';
 import { requestId } from '../../common/request-context';
 import { PrivateSpatialGuard } from '../spatial/private-spatial.guard';
 import { EvidenceExceptionFilter, parseUspPath, readUspBody, UspJsonPost, uspEnvelope } from './evidence.http';
+import { envelopeSchema } from './evidence.schemas';
+
+/** One exact revision from the path; anything but a positive decimal revision is refused before domain I/O. */
+function exactRevision(cardId: string, revision: string) {
+  return parseUspPath(UspReadPropertyCardSchema, { cardId,
+    revision: /^[1-9]\d{0,9}$/.test(revision) ? Number(revision) : 0 });
+}
 
 @ApiTags('USP private exact-revision property cards')
 @UseFilters(EvidenceExceptionFilter)
@@ -40,8 +48,7 @@ export class PropertyCardController {
   @ApiResponse({ status: 404, description: 'Exact revision unavailable; no latest-revision fallback' })
   async resolve(@Req() req: Request, @Res() res: Response, @Param('cardId') cardId: string, @Param('revision') revision: string) {
     res.setHeader('Cache-Control', 'private, no-store');
-    const command = parseUspPath(UspReadPropertyCardSchema, { cardId,
-      revision: /^[1-9]\d{0,9}$/.test(revision) ? Number(revision) : 0 });
+    const command = exactRevision(cardId, revision);
     const result = await resolvePropertyCard(localRequestContext(requestId(req)), command);
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="property-card-${result.card.cardId}-r${result.card.revision}.pdf"`);
@@ -52,5 +59,20 @@ export class PropertyCardController {
     res.setHeader('X-Current-Target-Revision', String(result.currentTargetRevision));
     res.setHeader('X-Snapshot-State', result.snapshotState);
     res.send(Buffer.from(result.bytes));
+  }
+  @Get(':cardId/revisions/:revision/verification')
+  @ApiOperation({ operationId: 'GET_api_v1_usp_property_cards_cardId_revisions_revision_verification',
+    summary: 'Report whether one exact card revision is consistent with its stored hash chain, plan and packet; no signature is assessed' })
+  @ApiParam({ name: 'cardId', schema: { type: 'string', format: 'uuid' } })
+  @ApiParam({ name: 'revision', schema: { type: 'string', pattern: '^[1-9][0-9]*$' } })
+  @ApiResponse({ status: 200, schema: envelopeSchema(UspPropertyCardVerificationSchema),
+    description: 'Private consistency report. A failed check, an expired card and a later revision are reported here, not refused' })
+  @ApiResponse({ status: 403, description: 'Current operator/source access denied; the QR is not an access grant' })
+  @ApiResponse({ status: 404, description: 'Exact revision unavailable; no latest-revision fallback' })
+  async verification(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Param('cardId') cardId: string, @Param('revision') revision: string) {
+    res.setHeader('Cache-Control', 'private, no-store');
+    const command = exactRevision(cardId, revision);
+    const { report, scope } = await verifyPropertyCard(localRequestContext(requestId(req)), command);
+    return uspEnvelope(req, scope, report);
   }
 }

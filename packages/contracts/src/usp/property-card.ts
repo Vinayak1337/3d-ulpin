@@ -42,6 +42,52 @@ export const UspPropertyCardViewSchema = z.strictObject({
   card: UspPropertyCardSchema, currentTargetRevision: z.number().int().positive(),
   snapshotState: z.enum(['same_revision', 'changed_revision']),
 }).readonly();
+export const PROPERTY_CARD_CHECK_KEYS = ['card_body', 'stored_linkage', 'revision_chain', 'artifact_bytes',
+  'plan_link', 'packet_bytes'] as const;
+const UspPropertyCardCheckSchema = z.strictObject({
+  key: z.enum(PROPERTY_CARD_CHECK_KEYS), state: z.enum(['pass', 'fail', 'not_checked']),
+  reasonCode: coreText(128).nullable(),
+}).superRefine((check, ctx) => {
+  if ((check.state === 'pass') !== (check.reasonCode === null))
+    ctx.addIssue({ code: 'custom', message: 'A check carries a reason code exactly when it did not pass.' });
+}).readonly();
+/** Hash-chain consistency of one exact card revision. It repeats no card fact and makes no signature claim:
+ * no trusted key policy exists, so `consistent` never means more than "the stored chain agrees with itself". */
+export const UspPropertyCardVerificationSchema = z.strictObject({
+  cardId: z.uuid(), revision: z.number().int().positive().max(2147483647),
+  checkedAt: z.iso.datetime({ offset: true }), result: z.enum(['consistent', 'inconsistent']),
+  checks: z.array(UspPropertyCardCheckSchema).length(PROPERTY_CARD_CHECK_KEYS.length).readonly(),
+  // The expiry is read from the card body, so it is unknown (null) unless that body is this row's intact body.
+  lifecycle: z.strictObject({
+    latestRevision: z.number().int().positive().max(2147483647), superseded: z.boolean(),
+    expiresAt: z.iso.datetime({ offset: true }).nullable(), expired: z.boolean().nullable(),
+    revocation: z.strictObject({ revokedAt: z.iso.datetime({ offset: true }), reasonCode: coreText(128) })
+      .readonly().nullable(),
+  }).readonly(),
+  // Both revisions come from the executed plan the row names and the registry, never from the card body.
+  snapshot: z.strictObject({
+    cardTargetRevision: z.number().int().positive(), currentTargetRevision: z.number().int().positive(),
+    state: z.enum(['same_revision', 'changed_revision']),
+  }).readonly(),
+  signature: z.strictObject({
+    state: z.literal('not_assessed'), reasonCode: z.literal('NO_TRUSTED_KEY_POLICY'),
+  }).readonly(),
+}).superRefine((report, ctx) => {
+  const passed = (key: string) => report.checks.some(check => check.key === key && check.state === 'pass');
+  const issue = (message: string) => ctx.addIssue({ code: 'custom', message });
+  if (report.checks.some((check, index) => check.key !== PROPERTY_CARD_CHECK_KEYS[index]))
+    issue('Checks are reported once each, in their fixed order.');
+  if ((report.result === 'consistent') !== report.checks.every(check => check.state === 'pass'))
+    issue('A card is consistent exactly when every check passed.');
+  const { lifecycle, snapshot } = report, bodyKnown = passed('card_body') && passed('stored_linkage');
+  if (lifecycle.superseded !== lifecycle.latestRevision > report.revision || lifecycle.latestRevision < report.revision)
+    issue('A revision is superseded exactly when a later revision of the same card exists.');
+  if ((lifecycle.expiresAt !== null) !== bodyKnown || (lifecycle.expired !== null) !== bodyKnown)
+    issue('The expiry is reported exactly when the card body and its stored linkage passed.');
+  if ((snapshot.state === 'same_revision') !== (snapshot.cardTargetRevision === snapshot.currentTargetRevision))
+    issue('The snapshot state must follow from the two target revisions.');
+}).readonly();
 export type PropertyCard = z.infer<typeof UspPropertyCardSchema>;
+export type PropertyCardVerification = z.infer<typeof UspPropertyCardVerificationSchema>;
 export type PropertyCardFact = z.infer<typeof UspPropertyCardFactSchema>;
 export type PropertyCardView = z.infer<typeof UspPropertyCardViewSchema>;
