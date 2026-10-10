@@ -66,7 +66,7 @@ describe('private region body from the listing', () => {
 
 describe('cited viewer branch and server placement', () => {
   it('keeps a whole page URL, chooses a region or page-only state when absent, and names a refusal', () => {
-    expect(citedPageState({ ...page, url: '/raster' }, caption)).toBe('whole');
+    expect(citedPageState({ ...page, renderSupport: 'supported', url: '/raster' }, caption)).toBe('whole');
     expect(citedPageState(page, caption)).toBe('region');
     expect(citedPageState(page, pageOnly)).toBe('page-only');
     expect(citedPageState(page, caption, true)).toBe('refused');

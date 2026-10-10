@@ -63,7 +63,7 @@ export function citedWindow(page: CitedPage, place: Place): Place | null {
 /** Pure viewer branch, including a refusal without ever substituting a placeholder. */
 export function citedPageState(page: CitedPage, place: Place, refused = false) {
   if (refused) return 'refused';
-  if (page.url) return 'whole';
+  if (page.renderSupport !== 'unsupported') return 'whole';
   if (place.kind === 'page') return 'page-only';
   return 'region';
 }

@@ -26,7 +26,9 @@ export function EvidenceViewer({ evidence, still, onClose }: ViewerProps) {
     return <CitedPageViewer evidence={evidence} place={place} pin={pin} onClose={onClose}
       openFile={() => setFileView(true)} />;
   }
-  if (place && pin) return <FileViewer evidence={evidence} still={still} onClose={onClose} />;
+  if (place && (pin || evidence.sourceSha256)) {
+    return <FileViewer evidence={evidence} still={still} onClose={onClose} missingRevision={!pin} />;
+  }
   return <DraftPagesViewer evidence={evidence} still={still} onClose={onClose} />;
 }
 
@@ -129,7 +131,9 @@ function pageRegion([x, y, w, h]: [number, number, number, number]): [number, nu
 }
 
 /** Tables and feature files: the rows or node the locator names. */
-function FileViewer({ evidence, still, onClose }: { evidence: EvidenceRef; still: string | null; onClose: () => void }) {
+function FileViewer({ evidence, still, onClose, missingRevision = false }: ViewerProps & {
+  missingRevision?: boolean;
+}) {
   const file = useQuery({
     queryKey: ['source-file', evidence.sourceId],
     queryFn: async () => {
@@ -163,6 +167,9 @@ function FileViewer({ evidence, still, onClose }: { evidence: EvidenceRef; still
       )}
       footer={<Button onClick={onClose}>Close</Button>}
     >
+      {missingRevision ? <p className="ul-help" role="status">
+        The cited page is not shown because the source's revision is not stated by agreeing reads.
+      </p> : null}
       <div className={styles.grid}>
         <div className={styles.source}>
           {file.isPending ? <div className="ul-stack">{Array.from({ length: 8 }, (_, i) => <Skeleton key={i} />)}</div>

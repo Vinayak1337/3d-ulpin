@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { WarningCircle } from '@phosphor-icons/react';
 import { EmptyState, Skeleton } from '@ulpin/ui';
-import { useAreaCanonical, useAreaContext, useBuildingCanonical } from '../../../api/queries';
+import { useAreaCanonical, useAreaContext, useBuildingCanonical, useBuildingRegister } from '../../../api/queries';
 import { RecordedLayout } from '../recorded/RecordedLayout';
 import { levelChoices, type StagedDecision } from './decisions';
 import { candidateCards } from './model';
@@ -75,6 +75,8 @@ export function AreaCandidatesPage() {
 export function BuildingCandidatesPage() {
   const { buildingId } = useParams();
   const canonical = useBuildingCanonical(buildingId);
+  // The existing register read states retained source pins; the viewer reuses only agreeing loaded pins.
+  useBuildingRegister(buildingId);
   const [selectedId, select] = useSelectedCandidate();
   const candidates = canonical.data?.candidates;
   const levels = canonical.data?.levels;

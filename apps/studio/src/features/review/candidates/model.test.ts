@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { evidenceRef } from '../recorded/model';
+import { retainedSourcePin } from '../../evidence/citedPage';
+import type { BuildingRegister } from '../../../api/queries';
 import {
-  candidateCard, candidateCards, candidateGroups, candidateLevel, citationOpenLabel, countByState, decisionHistory,
+  candidateCard, candidateCards, candidateEvidenceRef, candidateGroups, candidateLevel,
+  citationOpenLabel, countByState, decisionHistory,
   itemIdOf, locatorText, planEstimateView, statedSizeView, type CanonicalCandidate,
 } from './model';
 
@@ -136,7 +138,7 @@ describe('candidateCard', () => {
 describe('the target a citation opens', () => {
   const target = (candidate: CanonicalCandidate) => {
     const card = candidateCard(candidate)!;
-    return evidenceRef(card.title, card.citations[0]!);
+    return candidateEvidenceRef(card.title, card.citations[0]!);
   };
 
   it('is the cited source at its page and region, with the numbers and unit the record carries', () => {
@@ -154,8 +156,31 @@ describe('the target a citation opens', () => {
 
   it('pins the original only when the citation records its revision; none is assumed', () => {
     expect(target(roofprint()).pin).toBeUndefined();
+    expect(target(roofprint()).sourceSha256).toBe(citation.sourceSha256);
     const pinned = roofprint({ citations: [{ ...citation, sourceRevision: 3 }] });
     expect(target(pinned).pin).toEqual({ revision: 3, sha256: citation.sourceSha256 });
+  });
+
+  const source = { id: citation.sourceId, revision: 7, sha256: citation.sourceSha256 } as
+    BuildingRegister['sources'][number];
+
+  it('opens the cited page with the revision and hash its retained source read states', () => {
+    expect(retainedSourcePin(target(room()), [source]))
+      .toEqual({ revision: 7, sha256: citation.sourceSha256 });
+  });
+
+  it('has no page pin when the read does not pin the candidate source', () => {
+    expect(retainedSourcePin(target(room()), [])).toBeUndefined();
+    expect(retainedSourcePin(target(room()), [{ ...source, id: 'another-source' }])).toBeUndefined();
+  });
+
+  it('has no page pin when two reads disagree about revision or hash', () => {
+    expect(retainedSourcePin(target(room()), [source, { ...source, revision: 8 }])).toBeUndefined();
+    expect(retainedSourcePin(target(room()), [source, { ...source, sha256: 'b'.repeat(64) }])).toBeUndefined();
+  });
+
+  it('does not replace the cited original with a different original named by a retained read', () => {
+    expect(retainedSourcePin(target(room()), [{ ...source, sha256: 'b'.repeat(64) }])).toBeUndefined();
   });
 
   it('names the control by what it opens', () => {
@@ -235,7 +260,7 @@ describe('statedSizeView', () => {
     const view = candidateCard(room({ statedSize }))!.statedSize!;
     expect(view.literal).toBe(literal);
     expect(view.citation).toMatchObject({ sourceId: citation.sourceId, place: line });
-    expect(evidenceRef('FIXTURE ROOM', view.citation).locator).toMatchObject({ kind: 'region', page: 2 });
+    expect(candidateEvidenceRef('FIXTURE ROOM', view.citation).locator).toMatchObject({ kind: 'region', page: 2 });
   });
 
   it('leaves the estimate in its own words beside it', () => {

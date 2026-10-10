@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { FileX, WarningCircle } from '@phosphor-icons/react';
 import { Button, Dialog, EmptyState, Skeleton } from '@ulpin/ui';
 import { usePageImage } from '../../api/queries';
-import { pageFailure, useCitedPage, type CitedPage } from './citedPage';
+import { pageFailure, pageViewState, useCitedPage, type CitedPage } from './citedPage';
 import { placeWords, regionOutline } from './pageGeometry';
 import { citedPageState, regionImageFrame, useCitedRegion, type RegionProvenance } from './citedRegion';
 import type { EvidenceRef, Locator, SourcePin } from './refs';
@@ -90,26 +90,38 @@ function PageRefusal({ error, retry, openFile, regionRead = false }: {
 
 function CitedPage({ page, place, openFile }: { page: CitedPage; place: Place; openFile: () => void }) {
   const image = usePageImage(page.url);
-  if (!page.url) {
-    return (
-      <LargeSheetRegion page={page} place={place} openFile={openFile} />
-    );
-  }
+  const state = pageViewState(page, place.kind === 'region');
+  if (state.kind === 'unsupported') return <SheetRegion page={page} place={place} openFile={openFile} />;
   if (image.isPending) return <Skeleton width="100%" height={320} />;
   if (image.error) return <PageRefusal error={image.error} retry={() => void image.refetch()} openFile={openFile} />;
-  return <PageWithRegion page={page} place={place} href={image.data} />;
+  return (
+    <div className="ul-stack">
+      <PageWithRegion page={page} place={place} href={image.data} />
+      {state.kind === 'reduced' ? <SheetRegion page={page} place={place} openFile={openFile}
+        reducedStatement={state.statement!} /> : null}
+    </div>
+  );
 }
 
-function LargeSheetRegion({ page, place, openFile }: { page: CitedPage; place: Place; openFile: () => void }) {
+function SheetRegion({ page, place, openFile, reducedStatement }: {
+  page: CitedPage; place: Place; openFile: () => void; reducedStatement?: string;
+}) {
   const [acknowledged, setAcknowledged] = useState(false);
   const read = useCitedRegion(page, place, acknowledged);
   const state = citedPageState(page, place, Boolean(read.error));
+  const view = pageViewState(page, place.kind === 'region');
   if (state === 'refused') {
     return <PageRefusal error={read.error!} retry={() => void read.refetch()} openFile={openFile} regionRead />;
   }
   return (
     <div className="ul-stack">
-      <section className={styles.largeSheet} aria-label="Large sheet preview">
+      {reducedStatement ? (
+        <section className="ul-row" aria-label="Reduced sheet preview">
+          <p className="ul-help" role="status">{reducedStatement}</p>
+          {view.offersRegion && read.canRequest ? <LargeSheetAction fileOnly={false}
+            acknowledged={acknowledged} openFile={openFile} acknowledge={() => setAcknowledged(true)} /> : null}
+        </section>
+      ) : <section className={styles.largeSheet} aria-label="Large sheet preview">
         <h3>This sheet is too large to show whole</h3>
         <p role="status">
           The sheet is {page.frame.width} × {page.frame.height} pt.{' '}
@@ -118,7 +130,7 @@ function LargeSheetRegion({ page, place, openFile }: { page: CitedPage; place: P
         </p>
         <LargeSheetAction fileOnly={state === 'page-only' || !read.canRequest} acknowledged={acknowledged}
           openFile={openFile} acknowledge={() => setAcknowledged(true)} />
-      </section>
+      </section>}
       {acknowledged && read.isPending ? <Skeleton width="100%" height={320} /> : null}
       {read.image ? <PageWithRegion page={page} place={place} href={read.image.href}
         provenance={read.image.result.provenance} sha256={read.image.result.sha256} /> : null}

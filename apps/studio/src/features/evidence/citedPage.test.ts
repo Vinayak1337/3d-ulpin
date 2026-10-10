@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@ulpin/api-client';
-import { citedPageOf, OriginalChangedError, pageFailure, retainedSourcePin } from './citedPage';
+import { citedPageOf, OriginalChangedError, pageFailure, pageViewState, retainedSourcePin } from './citedPage';
 import type { BuildingRegister } from '../../api/queries';
 import type { EvidenceRef } from './refs';
 import type { PagesResponse } from './pageGeometry';
 
 const pin = { revision: 1, sha256: 'a'.repeat(64) };
-const pageOne = { page: 1, frame: { kind: 'pdf_display_page_top_left_points', rotation: 0, width: 612, height: 792 } };
+const pageOne = { page: 1, renderSupport: 'supported',
+  frame: { kind: 'pdf_display_page_top_left_points', rotation: 0, width: 612, height: 792 } };
 const response = { sourceSha256: pin.sha256, sourceRevision: 1, name: 'plan.pdf', pages: [pageOne] } as PagesResponse;
 
 describe('cited page', () => {
@@ -18,6 +19,39 @@ describe('cited page', () => {
     expect(() => citedPageOf({ ...response, sourceSha256: 'b'.repeat(64) }, 1, pin)).toThrow(OriginalChangedError);
     expect(() => citedPageOf({ ...response, sourceRevision: 2 }, 1, pin)).toThrow(OriginalChangedError);
     expect(() => citedPageOf(response, 2, pin)).toThrow('no page 2');
+  });
+});
+
+describe('whole-sheet listing state', () => {
+  const supported = response.pages[0]!;
+  const reduced = { ...supported, renderSupport: 'reduced' as const, reducedScalePxPerPt: 0.5413766434648105 };
+
+  it('keeps supported pages as today without a reduced statement or region action', () => {
+    expect(pageViewState(supported, true)).toEqual({ kind: 'supported', statement: null, offersRegion: false });
+  });
+
+  it('states the reduced scale from the listing and offers a cited region', () => {
+    expect(pageViewState(reduced, true)).toEqual({ kind: 'reduced', offersRegion: true,
+      statement: 'This sheet is shown whole at a reduced scale of 0.54 px per pt. ' +
+        'Small text is not readable at this scale.' });
+  });
+
+  it('keeps unsupported sheets on the region path regardless of an image URL', () => {
+    expect(pageViewState({ ...supported, renderSupport: 'unsupported', url: '/unexpected' }, true))
+      .toEqual({ kind: 'unsupported', statement: null, offersRegion: true });
+  });
+
+  it('does not offer a region action for a reduced page-only citation', () => {
+    expect(pageViewState(reduced, false)).toMatchObject({ kind: 'reduced', offersRegion: false });
+  });
+
+  it('refuses a missing scale and a scale on any page that is not reduced before returning the page', () => {
+    const missing = { ...supported, renderSupport: 'reduced' as const };
+    const unexpected = { ...supported, reducedScalePxPerPt: reduced.reducedScalePxPerPt };
+    const unsupported = { ...unexpected, renderSupport: 'unsupported' as const };
+    for (const page of [missing, unexpected, unsupported]) {
+      expect(() => citedPageOf({ ...response, pages: [page] }, 1, pin)).toThrow('listing could not be read');
+    }
   });
 });
 
