@@ -18,9 +18,13 @@ export async function doctor(context: Context): Promise<Step> {
       assert(/^[a-f0-9]{40}$/.test(context.servedCommit), 'Invalid serving commit');
       const disabled = /^\s*enabled: false\s*$/m.test(output);
       const failedComponents = output.split(/\r?\n/).filter(line => line.startsWith('FAIL '));
+      const healthRead = await context.reader.get('/api/v1/health');
+      const health = object(ok(healthRead));
       const observed = { exitCode: result.status, gatewayDisabled: disabled, servedCommit: context.servedCommit,
+        servedCommitSource: 'git HEAD of doctor-checked serving checkout; health has no commit field',
+        health: { status: healthRead.status, ok: health.ok, readiness: object(health.databaseReadiness).status },
         failedComponents };
-      return { state: result.status === 0 && disabled ? 'pass' : 'fail', observed };
+      return { state: result.status === 0 && disabled && health.ok === true ? 'pass' : 'fail', observed };
     });
 }
 function doctorOptions() {
