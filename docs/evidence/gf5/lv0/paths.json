@@ -1,0 +1,336 @@
+{
+  "scope": {
+    "basis": "Code at b7657546, plus native.json in-process checks; no storing request to any shared runtime",
+    "runtimeQualification": false,
+    "routeTable": "Live area routes: routes.ts:105-107,120-145; building imports remain local:109-118.",
+    "where": "apps/studio/src/local/routes.ts:105-145",
+    "unlistedPublishedRoutes": "Table ingestion endpoints are called directly and bypass local handlers.",
+    "unlistedWhere": "apps/studio/src/features/intake/table/queries.ts:12-53",
+    "officerTerminology": "Original receipt records bytes before fact review; candidate/registry recording is separate."
+  },
+  "commonBounds": {
+    "http": {
+      "jsonBytes": 2097152,
+      "multipartBytes": 17825792,
+      "over": "413 FILE_SIZE for declared or actual excess; 415 UNSUPPORTED_MEDIA_TYPE for wrong multipart type",
+      "where": "apps/api/src/common/body.ts:4-58"
+    },
+    "gis": {
+      "originalBytes": 16777216,
+      "features": 2000,
+      "vertices": 100000,
+      "verticesPerFeature": 10000,
+      "partsPerGeometryList": 256,
+      "fields": 256,
+      "extentMetres": 50000,
+      "over": "Size/count excess refuses; geometry quarantine explicit; zero accepted refuses; 413 FILE_SIZE.",
+      "where": [
+        "packages/server/src/modules/cases/gis-inspection.ts:66-89",
+        "services/geo/geo/area.py:30-39,83-117,316-415",
+        "services/geo/geo/gis_inspection.py:16-18,76-78,108-110",
+        "packages/server/src/modules/areas/areas.ts:478-480"
+      ],
+      "areaDisplayFeatures": 2000,
+      "areaDisplayOver": "422 AREA_LIMIT, including proposals; package-sized ingestion does not lift area bound",
+      "displayWhere": "packages/server/src/modules/areas/areas.ts:240-242"
+    },
+    "caseEvents": {
+      "route": "GET /api/v1/ingestion/cases/:caseId/events",
+      "meaning": "Durable notifications require refreshing reads; no feature payload and no browser-render ack.",
+      "connections": 4,
+      "perOperator": 2,
+      "perCase": 1,
+      "pageEvents": 32,
+      "replayEvents": 256,
+      "retainedSources": 256,
+      "eventBytes": 1024,
+      "frameBytes": 2048,
+      "bufferBytes": 4096,
+      "pollMs": 500,
+      "heartbeatMs": 10000,
+      "durationMs": 60000,
+      "over": "429 INGESTION_STREAM_LIMIT; replay/gaps send resync; context change closes to refresh.",
+      "where": [
+        "packages/server/src/modules/usp/ingestion/events.ts:13-16,79-86,116-138",
+        "apps/api/src/modules/ingestion/events.controller.ts:31-41,78-102"
+      ]
+    },
+    "largeOpaqueReceipt": {
+      "create": "POST /api/v1/ingestion/cases/:caseId/uploads",
+      "part": "PUT /api/v1/ingestion/cases/:caseId/uploads/:uploadId/parts/:partNumber",
+      "finalize": "POST /api/v1/ingestion/cases/:caseId/uploads/:uploadId/finalize",
+      "poll": "GET /api/v1/ingestion/cases/:caseId/uploads/:uploadId",
+      "partBytes": 8388608,
+      "v1MaxBytes": 134217728,
+      "v1MaxParts": 16,
+      "v2MaxBytes": 7516192768,
+      "v2MaxParts": 896,
+      "minBytes": 16777217,
+      "conversion": "unsupported; caller provenance required, not automatic semantic ingestion",
+      "work": "v1 finalize inline; opt-in v2 queued verification; capacity is runtime-configured, not measured here",
+      "over": "Schema rejection above ceiling; 429 concurrency/capacity; 413 bounded request excess",
+      "where": [
+        "packages/contracts/src/usp/ingestion.ts:146-207",
+        "apps/api/src/modules/ingestion/large-original.controller.ts:14-66"
+      ]
+    }
+  },
+  "kinds": [
+    {
+      "kind": "Building footprints: GeoJSON, zipped shapefile, GeoPackage",
+      "route": "POST /api/v1/import-packages/inspect then POST /api/v1/import-packages",
+      "where": "apps/api/src/modules/intake/import-packages.controller.ts:80-119",
+      "decidesKind": "Bytes: SQLite signature, ZIP signature, JSON structure; name suggests title only.",
+      "importKind": "Explicit format and officer mapping; not a generic teacher-classified upload.",
+      "kindWhere": [
+        "services/geo/geo/gis_inspection.py:34-72",
+        "packages/server/src/modules/cases/gis-inspection.ts:90-101",
+        "packages/server/src/modules/areas/area-validation.ts:60-74"
+      ],
+      "bounds": "commonBounds.http and commonBounds.gis",
+      "shapefileBounds": "1000 ZIP members, 64 MiB expanded, 1-100 layers; four matching companions; 2D only",
+      "gpkgBounds": "1-100 feature layers; one selected materialized layer; 5 s SQLite read; 2D only",
+      "nativeWhere": "services/geo/geo/native_gis.py:26-39,79-151,165-210",
+      "work": "Synchronous inspect/normalize; 201 only after normalization and transaction.",
+      "workWhere": [
+        "packages/server/src/modules/areas/area-intake-service.ts:38-58",
+        "packages/server/src/modules/areas/areas.ts:370-480,863-909"
+      ],
+      "during": "No parts visible before this request finishes; area context/canonical and tray poll every 700 ms.",
+      "studio": "NewFiles shows inspection/mapping/refusal; ImportTray and MapWorkspace after navigation.",
+      "studioWhere": [
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:131-193,239-279",
+        "apps/studio/src/features/map/ImportTray.tsx:30-61",
+        "apps/studio/src/api/queries.ts:223-242"
+      ],
+      "layerSelectionGap": "Inspection can return layer choices, but NewFiles has no layer-selection control.",
+      "layerWhere": "apps/studio/src/features/intake/AddFilesDialog.tsx:131-158,170-171,186-193",
+      "review": "Mapping confirmed before import; package answers/review/commit gate registry facts afterward.",
+      "reviewWhere": "apps/api/src/modules/intake/import-packages.controller.ts:146-200",
+      "model": "No model in the area import; alternative retained GeoJSON streaming/mapping jobs are separate.",
+      "alternative": "Manual receipt -> streaming-vector -> chunk-mapping; published chunks readable before EOF.",
+      "alternativeWhere": [
+        "apps/api/src/modules/ingestion/ingestion.controller.ts:28-60",
+        "apps/api/src/modules/ingestion/streaming-vector.controller.ts:19-44",
+        "apps/api/src/modules/ingestion/chunk-mapping.controller.ts:18-44",
+        "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts:25-36"
+      ],
+      "alternativeBounds": "128 MiB source; 1 MiB feature; 100 records/512 KiB chunk; 4096 chunks; 10 min reader",
+      "alternativeBoundWhere": "packages/contracts/src/usp/streaming-vector.ts:4-10",
+      "mapGap": "No Studio bridge from raw/mapped private chunks to canonical area records; world not qualified.",
+      "mapGapWhere": [
+        "packages/contracts/src/usp/streaming-vector.ts:49-50",
+        "apps/studio/src/features/map/canonicalScene.ts:64-70"
+      ],
+      "realCheck": "native.json: 1662 building features inspected, 1 quarantined, 1661 accepted; 446 road features"
+    },
+    {
+      "kind": "Table: CSV, XLSX",
+      "route": "POST /api/v1/ingestion/cases/:caseId/sources with explicit format and selection",
+      "where": "apps/api/src/modules/ingestion/ingestion.controller.ts:28-60",
+      "decidesKind": "Studio extension button; server explicit selection plus exact hash/size and manifest media type.",
+      "kindWhere": [
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:239-242",
+        "packages/server/src/modules/usp/ingestion/tabular-source.ts:51-60,138-151"
+      ],
+      "bounds": "16 MiB, 2000 rows, 256 columns, 400-character headers; chunks of 16 rows",
+      "boundWhere": [
+        "packages/contracts/src/usp/ingestion.ts:71-94",
+        "packages/server/src/modules/usp/ingestion/tabular-source.ts:117-135"
+      ],
+      "xlsxExtraBounds": "512 ZIP members/20 MB expanded precheck; 16 sheets; 2000 cells/rows; 5 MiB XML",
+      "xlsxExtra": "10000 shared strings; 250000 text characters; 32767 characters/cell; 30 s process",
+      "xlsxWhere": [
+        "scripts/agent/read_workbook_cells.py:12-13,94-108",
+        "services/geo/geo/native_workbook.py:15-21",
+        "packages/server/src/modules/usp/ingestion/tabular-source.ts:65-76"
+      ],
+      "over": "413 TABULAR_SOURCE_BUDGET; 422 TABULAR_HEADER_REQUIRED/native reader refusal; no silent truncation",
+      "admission": "Unfamiliar judge table is refused TABULAR_DATA_DENIED unless exact public D8 dev bytes/derivative.",
+      "admissionWhere": "packages/server/src/modules/usp/ingestion/tabular-source.ts:51-60",
+      "work": "Retention and whole-table parsing are synchronous; raw and mapping jobs separately queue with 202.",
+      "workWhere": [
+        "packages/server/src/modules/usp/ingestion/service.ts:116-143",
+        "apps/api/src/modules/ingestion/streaming-vector.controller.ts:22-27",
+        "apps/api/src/modules/ingestion/chunk-mapping.controller.ts:21-26"
+      ],
+      "reads": "Case SSE; raw/mapping job GETs; each published mapped chunk GET before EOF; 2 s fallback poll",
+      "studio": "TableImportDialog, TablePage, ColumnsTable, LearnerPanel, AnswerForm and RecipeReview",
+      "studioWhere": [
+        "apps/studio/src/features/intake/table/TableImportDialog.tsx:9-53",
+        "apps/studio/src/features/intake/table/useTableData.ts:7-40",
+        "apps/studio/src/features/intake/table/queries.ts:25-53"
+      ],
+      "review": "Original retained first; questions/author/approve recipe before approved mapping/learning.",
+      "registry": "Execution refuses TABULAR_REGISTRY_UNQUALIFIED; mapped draft rows never create buildings.",
+      "reviewWhere": "packages/server/src/modules/usp/ingestion/service.ts:225-268",
+      "model": "Job routes through memory/student/teacher and verifier; candidate outputs and unanswered fallback.",
+      "modelWhere": [
+        "packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts:158-199",
+        "packages/server/src/modules/usp/ingestion/mapping-teacher.ts:692-723"
+      ]
+    },
+    {
+      "kind": "PDF plan",
+      "route": "POST /api/v1/ingestion/cases/:caseId/documents; explicit current case required",
+      "where": "apps/api/src/modules/ingestion/documents.controller.ts:15-32",
+      "decidesKind": "PDF magic bytes; no automatic plan-versus-document semantic classifier on this route.",
+      "kindWhere": "packages/server/src/modules/usp/ingestion/document-native.ts:25-39",
+      "bounds": "commonBounds.http; 16 MiB retained, 10 MiB native parse, 100 native pages, 8 MiB decoded/page",
+      "boundsExtra": "250000 text characters, 10000 parts, 4096 characters/part, 4 MiB result; 32 jobs/source",
+      "boundWhere": [
+        "packages/contracts/src/usp/document-ingestion.ts:5-12",
+        "services/geo/geo/area.py:36-39",
+        "packages/server/src/modules/usp/ingestion/documents.ts:41-42,87-89"
+      ],
+      "over": "413 DOCUMENT_SIZE at retention; retained original then tool_error NATIVE_READER_BYTE_LIMIT/reader error",
+      "overWhere": "packages/server/src/modules/usp/ingestion/document-native.ts:65-68,104-106",
+      "work": "201 original receipt and queued extraction; results withheld until whole job result accepted",
+      "reads": "Case SSE document.changed; document jobs GET with 25 parts/page, no progressive text publication",
+      "workWhere": "packages/server/src/modules/usp/ingestion/documents.ts:48-54,152-179",
+      "ocr": "No text -> needs_ocr; explicit page 1-8 retry; large OCR frames need regions",
+      "ocrWhere": [
+        "packages/server/src/modules/usp/ingestion/document-native.ts:98",
+        "packages/contracts/src/usp/document-ingestion.ts:10,135-146",
+        "packages/server/src/modules/usp/ingestion/document-worker.ts:53-54"
+      ],
+      "pageDisplay": "Separate read-only page service: 400 pages, 1400 px side, 1.6 MP, 8 MiB PNG, 30 s",
+      "pageWhere": "packages/contracts/src/document-pages.ts:3-4",
+      "studio": "NewFiles labels non-GIS not imported; building plan upload uses local draft routes.",
+      "studioWhere": [
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:62-77,222,239-250",
+        "apps/studio/src/local/routes.ts:109-118"
+      ],
+      "review": "Receipt is not fact approval; cited claim reviews/proposal decisions are separate commands.",
+      "reviewWhere": [
+        "packages/server/src/modules/usp/ingestion/document-worker.ts:70-76",
+        "apps/api/src/modules/ingestion/document-claims.controller.ts:12-25",
+        "apps/api/src/modules/ingestion/document-proposals.controller.ts:61-91"
+      ],
+      "model": "propose mode only, grounded native fields; no automatic room geometry from this generic upload.",
+      "modelWhere": "packages/server/src/modules/usp/ingestion/document-model.ts:52-85"
+    },
+    {
+      "kind": "PDF document",
+      "sameAs": "PDF plan receipt/native/page bounds and job/read behavior above; semantics not selected by filename",
+      "where": "packages/server/src/modules/usp/ingestion/document-native.ts:25-39,65-106",
+      "modelBounds": "12 parts, 12000 characters, selected serialized message <=18000 bytes, <=40 candidates",
+      "modelWhere": "packages/server/src/modules/usp/ingestion/document-model.ts:26-33,69-85",
+      "studio": "No generic document-upload UI on real route; evidence reads show retained citations.",
+      "studioWhere": "apps/studio/src/features/intake/AddFilesDialog.tsx:222,239-250",
+      "officer": "Bytes retained first; proposal/claim decisions separate; no automatic registry facts.",
+      "officerWhere": "apps/api/src/modules/ingestion/document-proposals.controller.ts:61-91"
+    },
+    {
+      "kind": "Image or imagery",
+      "pngJpeg": "Magic bytes; native result needs_ocr/OCR_TOOL_UNAVAILABLE, no pixel model.",
+      "where": "packages/server/src/modules/usp/ingestion/document-native.ts:28-30,65-67",
+      "rasterRoute": "POST /api/v1/ingestion/cases/:caseId/rasters; TIFF magic; worker checks GTiff",
+      "rasterWhere": [
+        "apps/api/src/modules/ingestion/raster-window.controller.ts:18-47",
+        "packages/server/src/modules/usp/ingestion/raster-window.ts:118-121",
+        "services/geo/geo/raster_window.py:87-101"
+      ],
+      "bounds": "16 MiB original, 100 MP raster, <=4 bands; 256x256 window; 2 MiB raw, 4 MiB artifact",
+      "boundsExtra": "64 sources/256 MiB per case; 32 jobs/source, 2 active workers; 32 KiB result",
+      "boundWhere": "packages/contracts/src/usp/raster-window.ts:4-7",
+      "pngJpegDisplayBounds": "25 MP source, 25000 px side; 1.6 MP/1400 px preview, 8 MiB PNG, 30 s",
+      "imageWhere": "packages/contracts/src/document-images.ts:3-5",
+      "over": "413 RASTER_ORIGINAL_SIZE; 415 RASTER_FORMAT; queued reader failure for excess pixels/bands/window",
+      "work": "201 receipt queues first window; POST raster-windows queues another with 202; result only after job",
+      "reads": "Case SSE raster-window.changed; job/artifact GET; no progressive map pixels",
+      "readWhere": [
+        "apps/api/src/modules/ingestion/raster-window.controller.ts:39-59",
+        "packages/server/src/modules/usp/ingestion/raster-window-worker.ts:99-101"
+      ],
+      "studio": "No generic raster/image intake with demo off; canonical overlays draw retained assets.",
+      "studioWhere": [
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:131-146,222-250",
+        "apps/studio/src/features/map/MapWorkspace.tsx:139-177"
+      ],
+      "specialAreaRoute": "import-packages imagery_area needs structured publisher-chip metadata, not any image.",
+      "specialWhere": "apps/api/src/modules/intake/import-packages.controller.ts:48-59,108",
+      "reviewAndModels": "Raster is observed evidence, global placement not qualified; no teacher in window reader.",
+      "reviewWhere": "packages/contracts/src/usp/raster-window.ts:13-16,40"
+    },
+    {
+      "kind": "Point cloud",
+      "route": "POST /api/v1/ingestion/cases/:caseId/points; then POST sources/:sourceId/point-batches",
+      "where": "apps/api/src/modules/ingestion/point-batch.controller.ts:18-47",
+      "decidesKind": "LASF bytes; worker allows compressed LAS 1.4 format 6, 30-byte records, no extras",
+      "kindWhere": [
+        "packages/server/src/modules/usp/ingestion/point-batch.ts:117-120",
+        "services/geo/geo/point_batch.py:65-73"
+      ],
+      "bounds": "16 MiB original, 5 million points, 8192 points/batch, 512 KiB artifact, 32 KiB result",
+      "boundsExtra": "64 sources/256 MiB per case, 32 jobs/source, 2 active workers",
+      "boundWhere": "packages/contracts/src/usp/point-batch.ts:4-6",
+      "over": "413 POINT_ORIGINAL_SIZE; 415 POINT_FORMAT; job failure for format/count/batch-range reader rejection",
+      "work": "201 receipt queues first batch; subsequent selection POST returns 202; no automatic whole-cloud loop",
+      "reads": "Case SSE point-batch.changed; job GET; artifact GET after accepted batch result",
+      "readWhere": [
+        "apps/api/src/modules/ingestion/point-batch.controller.ts:39-59",
+        "packages/server/src/modules/usp/ingestion/point-batch-worker.ts:108-110"
+      ],
+      "studio": "No live intake/list/draw path for arbitrary point clouds in NewFiles with demo off",
+      "studioWhere": "apps/studio/src/features/intake/AddFilesDialog.tsx:131-146,222-250",
+      "reviewAndModels": "Evidence batch; world placement not qualified; no registry building or model in reader",
+      "reviewWhere": "packages/contracts/src/usp/point-batch.ts:30-43"
+    },
+    {
+      "kind": "ZIP of several formats",
+      "studioRoute": "NewFiles ZIP -> GIS inspect: shapefile sets, not generic mixed ZIP",
+      "studioWhere": [
+        "apps/studio/src/features/intake/AddFilesDialog.tsx:38,131-146",
+        "services/geo/geo/gis_inspection.py:39-42",
+        "services/geo/geo/native_gis.py:190-192"
+      ],
+      "backendRoute": "Documents retain ZIP, detect OOXML/ODS or return inert archive inventory",
+      "where": [
+        "packages/server/src/modules/usp/ingestion/document-native.ts:31,70-80",
+        "services/geo/geo/area.py:620-653"
+      ],
+      "bounds": "16 MiB receipt; 10 MiB native parse; 256 members, 8 MiB/member, 30 MiB expanded",
+      "boundsExtra": "Ratio 1000; 15 s; unsafe/encrypted/nested/executable members not executed",
+      "boundWhere": "services/geo/geo/native_archive.py:14-29,66-100",
+      "over": "Retain 413 above 16 MiB; above 10 MiB tool_error; inventory returns incomplete with explicit issues",
+      "work": "Queued whole-result inventory, no fan-out pipeline; one explicitly selected GeoJSON member retry only",
+      "reads": "Document job status contains archiveInventory; original retained; no members shown before job result",
+      "readWhere": [
+        "packages/server/src/modules/usp/ingestion/documents.ts:164-179",
+        "packages/contracts/src/usp/document-ingestion.ts:11-12,69-90",
+        "services/geo/geo/archive_member_inspection.py:10-32"
+      ],
+      "studio": "Generic mixed ZIP refuses GIS inspection; no real archive-inventory intake component",
+      "studioEvidence": "apps/studio/src/features/intake/AddFilesDialog.tsx:239-250",
+      "officerAndModel": "Member selection is explicit; inventory is not model evidence; no mixed-bundle teacher.",
+      "officerWhere": "packages/server/src/modules/usp/ingestion/document-native.ts:79-80,98"
+    },
+    {
+      "kind": "Unknown extension",
+      "studio": "NewFiles lists Document or table / Not imported; it does not store unknown bytes as evidence",
+      "studioWhere": "apps/studio/src/features/intake/AddFilesDialog.tsx:134,239-250",
+      "backend": "Documents route ignores extension; recognized PDF/image/container/text bytes use the real reader",
+      "where": "packages/server/src/modules/usp/ingestion/document-native.ts:25-39",
+      "unrecognizedBytes": "Non-UTF8/NUL/JSON bytes retained as unsupported; job returns DOCUMENT_FORMAT_UNSUPPORTED",
+      "unsupportedWhere": [
+        "packages/server/src/modules/usp/ingestion/documents.ts:98-139",
+        "packages/server/src/modules/usp/ingestion/document-native.ts:33-39,67"
+      ],
+      "bounds": "Document receipt and native bounds above; large opaque receipt is separate and unsupported conversion",
+      "workAndReads": "201 queued receipt; case events/job GET, final result only; no unknown-layout mapper",
+      "officerAndModel": "Retention needs case pins; unsupported native evidence cannot ask model",
+      "officerWhere": "packages/server/src/modules/usp/ingestion/document-model.ts:55-59"
+    }
+  ],
+  "testLimits": {
+    "nativeResult": "native.json: real NYC inspection and 9 in-process native unit checks, no API persistence",
+    "attempts": [
+      "pytest collection refused missing PIL; installed Pillow/pypdf in task environment only",
+      "GIS pytest dependency tree then required FastAPI; did not install/start server stack",
+      "Switched to unittest for isolated native modules; initial MSYS PYTHONPATH failed import",
+      "Explicit sys.path gave passing unit checks; actual inspect_gis called directly on real originals"
+    ],
+    "excluded": "No tests accessed closed data folders; existing unit controls are not real property evidence"
+  }
+}
