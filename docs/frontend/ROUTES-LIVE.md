@@ -14,7 +14,8 @@ Status: `exists` = path, method and the shape the Studio reads are published; `p
 | `/api/v1/buildings/{buildingId}/residents` | GET | missing | Draft `BuildingResidents` (REGISTER-02) |
 | `/api/v1/buildings/{buildingId}/levels/{levelId}/review` | GET | missing, superseded for candidates | Draft `LevelReview` (EXTRACT-02). The candidate review screen (F2a) no longer reads it: roofprints come from `/areas/{id}/canonical` and rooms from `/buildings/{id}/canonical` (`candidates`). Only the old workspace's level question still calls it |
 | `/api/v1/import-batches/{batchId}` | GET | missing | Draft `ImportBatch` (INGEST-03) |
-| `/api/v1/sources/{sourceId}/pages` | GET | partial | Published as `document-pages/1`: requires `sha256` and `revision` query parameters (422 without them), pages carry `frame`, `mediaBox`, `renderSupport`, `url`, `locator`, `calibration`. The Studio calls it with neither parameter and reads the draft `DocumentPages`. Non-document sources answer an error and fall back to the file viewer |
+| `/api/v1/sources/{sourceId}/pages` | GET | partial | Published as `document-pages/1`: requires `sha256` and `revision` query parameters (422 without them), pages carry `frame`, `mediaBox`, `renderSupport`, `url`, `locator`, `calibration`. A citation that carries `sourceRevision` and `sourceSha256` reads it with both and `offset=<page-1>&limit=1` (F3b); every other reference still calls it with neither and reads the draft `DocumentPages`. Non-document sources answer an error and fall back to the file viewer |
+| `/api/v1/sources/{sourceId}/pages/{page}/raster` | GET | exists | **Read by the citation viewer** (F3b), through the `url` the page listing returns (pinned with the same `sha256` and `revision`). The demo runtime answers 503 `DOCUMENT_PAGES_RUNTIME_UNAVAILABLE` for this route and the listing until the private PDF runtime is configured |
 | `/api/v1/sources/{sourceId}/pages/{page}` | GET | missing | Page renders are published as `/pages/{page}/raster` |
 | `/api/v1/public/records` | GET | missing | Draft `PublicSearch` (PUBLIC-01) |
 | `/api/v1/public/records/{recordId}` | GET | missing | Draft `PublicRecord` (PUBLIC-01) |
@@ -138,6 +139,26 @@ Evidence: [F3a result](../evidence/gf1/ui/f3a/result.json),
 [browser checks](../evidence/gf1/ui/f3a/browser-result.json) and
 [UI design check](../evidence/gf1/ui/f3a/ui-design-check.md).
 
+## F3b table page against the live API, stale results, citations at their page — 10 October 2026
+
+Live read-only check of `/studio/work/cases/:caseId/tables/:sourceId` on the R1 tables (every non-GET blocked, 0 attempted):
+
+- **Defect found and fixed:** the chunk-mapping status lists only the latest 32 published slots (`maxItems: 32`,
+  newest first). The 90-column TNHB table has 51 chunks and raises its 90 questions in chunk 0, so the page
+  showed no question and learner totals from 35 chunks. It now reads each published chunk by index up to
+  `nextPublishIndex`: 90 questions, 51 chunk rows, 4,590 summed per-chunk needs-input fields, as the API returns.
+- **Stale results block every write:** a job or chunk with `current: false` also disables **Record the mapping**
+  and the approval replay; an open confirmation closes and focus moves to the one notice (one warning icon).
+- **Citation viewer:** a recorded citation opens at its page. It reads `GET /sources/{id}/pages` with the
+  citation's `sourceSha256` and `sourceRevision` (`offset` = page − 1, `limit` 1), then the page raster, and outlines
+  the region only for `normalized` (fractions of the returned frame) or `pt` (read in the returned frame, when
+  it fits inside it). A response for another hash or revision, or a 409, is refused: the page is not shown.
+  A 503 shows "Page preview is not available on this runtime" with the page, region and source in words and the
+  file view. The file view keeps a PDF as bytes and says it is not text.
+
+Evidence: [F3b result](../evidence/gf1/ui/f3b/result.json) and
+[UI design check](../evidence/gf1/ui/f3b/ui-design-check.md).
+
 ## Backend requests
 
 One line per route or field the Studio needs and the screen that needs it.
@@ -148,7 +169,7 @@ One line per route or field the Studio needs and the screen that needs it.
 - Line geometry in the canonical area record for roads that have no polygon (the scene has no line primitive either): Map of the Gurugram area.
 - `GET /buildings/{id}/residents` (REGISTER-02): Register, Residents tab.
 - `GET /buildings/{id}/levels/{levelId}/review` (EXTRACT-02): Review.
-- `GET /sources/{id}/pages` without `sha256` and `revision`, or those values carried on evidence references: Evidence viewer for plans and deeds.
+- `GET /sources/{id}/pages` without `sha256` and `revision`, or those values carried on evidence references: Evidence viewer for plans and deeds. Recorded-unit citations now carry them (F3b); the map inspector and register evidence still do not.
 - Evidence with a `jsonPointer` or `row` on area features: Evidence viewer, so it shows the feature and not the start of the file.
 - Line geometry drawn, or a `roads` polygon, for road proposals: Map of the Gurugram area (the 2 road lines are not drawn).
 - `GET /import-batches/{id}` (INGEST-03), `POST /buildings/{id}/imports/inspect`, `POST /buildings/{id}/imports`, `GET /building-imports/{id}` (INGEST-04): Add files for building documents.
@@ -163,5 +184,8 @@ One line per route or field the Studio needs and the screen that needs it.
 - A stable code or kind on each canonical `gaps` entry (F3a): the recorded panel finds the source-label sentence by its opening words.
 - The recorded floor's own label, citation and `recordState` when it is linked to a schedule row (F3a): the canonical level then carries only the schedule row's label and citations.
 - The source file name on canonical citations (F3a): the citation control names the source by a short id.
-- A page-and-region evidence read (F3a): canonical citations carry `sourceSha256`, `sourceRevision` and a page region, but the evidence viewer has no region locator and the demo runtime answers 503 `DOCUMENT_PAGES_RUNTIME_UNAVAILABLE` for `GET /sources/{id}/pages`.
+- The private PDF runtime on the demo API (F3b): `GET /sources/{id}/pages` and `/pages/{page}/raster` answer 503 `DOCUMENT_PAGES_RUNTIME_UNAVAILABLE`, so the citation viewer shows its unavailable state, not the page. The viewer was checked against contract-valid intercepted responses only.
+- The frame a citation's region is in (F3b): a canonical `region` names a unit (`normalized`, `pt` or `pixel`) but not its frame. The viewer reads `pt` in the page frame the server returns for that page (`pdf_display_page_top_left_points`) and says so; it never draws `pixel` regions.
+- Per-job question list and metric totals on the chunk-mapping status (F3b): the status lists only the latest 32 published slots, so the table page reads every chunk by index (51 reads for the TNHB table). A job of up to 4,097 chunks would need as many reads.
+- `unanswered` as a field source and an `unansweredFields` count in chunk metrics (A3e): the table page's source and learner labels follow it (see F3b below).
 - A recorded building with a source-recorded floor and unit in the demo database (F3a): the populated panel was checked with intercepted responses only.
