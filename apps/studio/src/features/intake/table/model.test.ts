@@ -3,6 +3,7 @@ import controls from '../../../../../../docs/evidence/gf-agent/ui/f2b/responses.
 import fresh from '../../../../../../docs/evidence/gf1/ui/f3a/table-responses.json';
 import {
   columnRows, learnerTotals, mergeMetrics, publishedChunkIndexes, reviewControls, reviewMapping, staleReasons,
+  unansweredTotalText,
 } from './model';
 import type { ChunkMapping, Freshness, MappingJob, Metrics, TableProfile } from './types';
 
@@ -99,6 +100,30 @@ describe('published chunks', () => {
   });
 });
 
+describe('columns nobody answered', () => {
+  function withSources(source: string, method: string) {
+    const copy = structuredClone(mapping);
+    copy.fieldSources = copy.fieldSources.map((field) => ({ ...field, source: source as never, method }));
+    return copy;
+  }
+
+  it('reads an unanswered source, and an old manual memory source, as no answer with no confidence', () => {
+    for (const source of ['unanswered', 'memory']) {
+      const [row] = columnRows(profile, withSources(source, 'manual:TEACHER_UNAVAILABLE'));
+      expect(row).toMatchObject({ noAnswer: 'teacher unavailable', confidence: null });
+    }
+  });
+
+  it('shows a code it does not know as it is, and leaves real answers alone', () => {
+    const [unknown] = columnRows(profile, withSources('unanswered', 'manual:SOMETHING_NEW'));
+    expect(unknown!.noAnswer).toBe('SOMETHING_NEW');
+    for (const source of ['teacher', 'student', 'memory', 'officer']) {
+      const [row] = columnRows(profile, withSources(source, source === 'memory' ? 'cache' : 'model'));
+      expect(row!.noAnswer).toBeNull();
+    }
+  });
+});
+
 describe('learner totals', () => {
   it('counts each published chunk once and preserves real zero teacher calls', () => {
     const first = mapping.metrics;
@@ -107,8 +132,18 @@ describe('learner totals', () => {
     expect(chunks).toHaveLength(2);
     expect(learnerTotals(chunks).teacherCalls).toBe(0);
     expect(learnerTotals(chunks).memoryHits).toBe(first.memoryHits + 1);
-    expect(learnerTotals(chunks).needsInput).toBe(first.needsInput * 2);
     const other: Metrics = { ...first, jobId: 'another-job' };
     expect(mergeMetrics([other], [], first.jobId)).toEqual([]);
+  });
+
+  it('sums the unanswered count only over chunks that report it and says how many do not', () => {
+    const first = { ...mapping.metrics, unansweredFields: 4 };
+    const second = { ...first, chunkIndex: 1, unansweredFields: 2 };
+    const old: Metrics = { ...mapping.metrics, chunkIndex: 2 };
+    delete old.unansweredFields;
+    expect(unansweredTotalText(learnerTotals([first, second]))).toBe('6');
+    expect(unansweredTotalText(learnerTotals([first, second, old]))).toBe('6 · Not reported for 1 of 3 chunks');
+    expect(unansweredTotalText(learnerTotals([old, { ...old, chunkIndex: 3 }]))).toBe('Not reported for 2 of 2 chunks');
+    expect(unansweredTotalText(learnerTotals([first, { ...first, unansweredFields: 0 }]))).toBe('4');
   });
 });
