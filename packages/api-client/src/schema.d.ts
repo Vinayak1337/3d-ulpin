@@ -65666,7 +65666,7 @@ export interface components {
                 /** @enum {string} */
                 status: "needs_review";
                 /** @enum {string} */
-                quotationVerification: "not_machine_verified";
+                quotationVerification: "not_machine_verified" | "locator_checks_recorded";
                 /** @enum {string} */
                 qualification: "not_assessed";
                 /** @enum {boolean} */
@@ -65701,6 +65701,7 @@ export interface components {
                     fieldRole: string;
                     quote: string | null;
                     lineQuote: string | null;
+                    valueLiteral?: string;
                     quoteCharacterSpan: (number)[] | null;
                     /** @enum {string} */
                     status: "needs_review" | "needs_input" | "rejected" | "unsupported";
@@ -65783,6 +65784,7 @@ export interface components {
                     fieldRole: string;
                     quote: string | null;
                     lineQuote: string | null;
+                    valueLiteral?: string;
                     quoteCharacterSpan: (number)[] | null;
                     /** @enum {string} */
                     status: "needs_review" | "needs_input" | "rejected" | "unsupported";
@@ -65856,6 +65858,189 @@ export interface components {
             status: "needs_review";
             /** @enum {string} */
             quotationVerification: "not_machine_verified";
+            /** @enum {string|null} */
+            canonicalTarget: null;
+            /** @enum {string} */
+            canonicalMatchState: "not_assessed";
+            /** @enum {string} */
+            qualification: "not_assessed";
+            /** @enum {boolean} */
+            learningLabel: false;
+            unresolved: ("quote_truth" | "producer_execution" | "approval_and_current_revision" | "canonical_building_floor" | "height_units_rights_and_placement")[];
+            review: {
+                actor: string;
+                /** Format: date-time */
+                time: string;
+                /** @enum {string} */
+                attribution: "local_process";
+                /** @enum {boolean} */
+                humanAuthenticated: false;
+                /** @enum {boolean} */
+                independentGroundTruth: false;
+            };
+            currentCaseRevision: number;
+            snapshotSha256: string;
+        } | {
+            /** @enum {string} */
+            version: "source-document-proposals/2";
+            /** Format: uuid */
+            snapshotId: string;
+            /** @enum {number} */
+            snapshotRevision: 1;
+            /** Format: uuid */
+            caseId: string;
+            caseRevision: number;
+            source: {
+                sourceRevision: number;
+                sourceSha256: string;
+                sourceBytes: number;
+                /** Format: uuid */
+                sourceId: string;
+            };
+            packet: {
+                declaredOrigin: {
+                    sha256: string;
+                    bytes: number;
+                } | null;
+                proposals: {
+                    proposalId: string;
+                    fieldRole: string;
+                    quote: string | null;
+                    lineQuote: string | null;
+                    valueLiteral?: string;
+                    quoteCharacterSpan: (number)[] | null;
+                    /** @enum {string} */
+                    status: "needs_review" | "needs_input" | "rejected" | "unsupported";
+                    reasons: string[];
+                    locator: {
+                        page: number;
+                        frame: {
+                            /** @enum {string} */
+                            kind: "pdf_display_page_top_left_points";
+                            rotation: number;
+                            width: number;
+                            height: number;
+                        };
+                        box: (number)[] | null;
+                        selectedRegion: (number)[] | null;
+                        declaredPrecision: string | null;
+                    };
+                    declaredMethod: string | null;
+                    declaredObservation: {
+                        sha256: string;
+                        bytes: number;
+                    } | null;
+                    quotationCheck: {
+                        /**
+                         * @description quote_at_locator: quoted characters occur in stored text of the cited region of this original. It does not say the text was read correctly from the page image, nor that the value is true.
+                         * @enum {string}
+                         */
+                        outcome: "quote_at_locator" | "quote_not_at_locator" | "not_checked";
+                        /** @enum {string|null} */
+                        reason: "quote_not_at_locator" | "value_not_in_quote" | "no_quote" | "no_region_text" | null;
+                        basis: {
+                            /** @enum {string} */
+                            kind: "text_layer" | "ocr_observations";
+                            productSha256: string | null;
+                        } | null;
+                    };
+                }[];
+                rejected: {
+                    entryId: string;
+                    lineQuote: string | null;
+                    reason: string;
+                    locator: {
+                        page: number;
+                        frame: {
+                            /** @enum {string} */
+                            kind: "pdf_display_page_top_left_points";
+                            rotation: number;
+                            width: number;
+                            height: number;
+                        };
+                        box: (number)[] | null;
+                        selectedRegion: (number)[] | null;
+                        declaredPrecision: string | null;
+                    };
+                    declaredMethod: string | null;
+                    declaredObservation: {
+                        sha256: string;
+                        bytes: number;
+                    } | null;
+                    originalProposal?: {
+                        proposalId: string;
+                        fieldRole: string;
+                        quote: string | null;
+                        lineQuote: string | null;
+                        valueLiteral?: string;
+                        quoteCharacterSpan: (number)[] | null;
+                        /** @enum {string} */
+                        status: "needs_review" | "needs_input" | "rejected" | "unsupported";
+                        reasons: string[];
+                        locator: {
+                            page: number;
+                            frame: {
+                                /** @enum {string} */
+                                kind: "pdf_display_page_top_left_points";
+                                rotation: number;
+                                width: number;
+                                height: number;
+                            };
+                            box: (number)[] | null;
+                            selectedRegion: (number)[] | null;
+                            declaredPrecision: string | null;
+                        };
+                        declaredMethod: string | null;
+                        declaredObservation: {
+                            sha256: string;
+                            bytes: number;
+                        } | null;
+                        quotationCheck: {
+                            /**
+                             * @description quote_at_locator: quoted characters occur in stored text of the cited region of this original. It does not say the text was read correctly from the page image, nor that the value is true.
+                             * @enum {string}
+                             */
+                            outcome: "quote_at_locator" | "quote_not_at_locator" | "not_checked";
+                            /** @enum {string|null} */
+                            reason: "quote_not_at_locator" | "value_not_in_quote" | "no_quote" | "no_region_text" | null;
+                            basis: {
+                                /** @enum {string} */
+                                kind: "text_layer" | "ocr_observations";
+                                productSha256: string | null;
+                            } | null;
+                        };
+                    };
+                }[];
+                conflicts: {
+                    proposalIds: string[];
+                    reason: string;
+                    /** @enum {string} */
+                    state: "unresolved";
+                }[];
+                unknowns: string[];
+            };
+            locatorWarnings: {
+                /** @enum {string} */
+                entryKind: "proposal" | "rejected";
+                entryId: string;
+                /** @enum {string} */
+                code: "citation_extends_declared_region";
+                /** @enum {string} */
+                basis: "caller_supplied_coordinates";
+            }[];
+            /** @enum {string} */
+            method: "caller_supplied_provisional";
+            /** @enum {string} */
+            provenanceAuthority: "caller_supplied_unverified";
+            /** @enum {string} */
+            population: "explicit_selection_only";
+            /** @enum {string} */
+            status: "needs_review";
+            /**
+             * @description Each proposal carries its presence check or explicit not_checked reason; quote_truth remains unresolved.
+             * @enum {string}
+             */
+            quotationVerification: "locator_checks_recorded";
             /** @enum {string|null} */
             canonicalTarget: null;
             /** @enum {string} */
@@ -65954,6 +66139,7 @@ export interface components {
                 fieldRole: string;
                 quote: string | null;
                 lineQuote: string | null;
+                valueLiteral?: string;
                 quoteCharacterSpan: (number)[] | null;
                 /** @enum {string} */
                 status: "needs_review" | "needs_input" | "rejected" | "unsupported";
@@ -65976,6 +66162,48 @@ export interface components {
                     sha256: string;
                     bytes: number;
                 } | null;
+            } | {
+                proposalId: string;
+                fieldRole: string;
+                quote: string | null;
+                lineQuote: string | null;
+                valueLiteral?: string;
+                quoteCharacterSpan: (number)[] | null;
+                /** @enum {string} */
+                status: "needs_review" | "needs_input" | "rejected" | "unsupported";
+                reasons: string[];
+                locator: {
+                    page: number;
+                    frame: {
+                        /** @enum {string} */
+                        kind: "pdf_display_page_top_left_points";
+                        rotation: number;
+                        width: number;
+                        height: number;
+                    };
+                    box: (number)[] | null;
+                    selectedRegion: (number)[] | null;
+                    declaredPrecision: string | null;
+                };
+                declaredMethod: string | null;
+                declaredObservation: {
+                    sha256: string;
+                    bytes: number;
+                } | null;
+                quotationCheck: {
+                    /**
+                     * @description quote_at_locator: quoted characters occur in stored text of the cited region of this original. It does not say the text was read correctly from the page image, nor that the value is true.
+                     * @enum {string}
+                     */
+                    outcome: "quote_at_locator" | "quote_not_at_locator" | "not_checked";
+                    /** @enum {string|null} */
+                    reason: "quote_not_at_locator" | "value_not_in_quote" | "no_quote" | "no_region_text" | null;
+                    basis: {
+                        /** @enum {string} */
+                        kind: "text_layer" | "ocr_observations";
+                        productSha256: string | null;
+                    } | null;
+                };
             };
             /** @enum {string} */
             decision: "reviewed" | "rejected" | "needs_input";
