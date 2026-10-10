@@ -1,6 +1,6 @@
 import type { GetResponse } from '@ulpin/api-client';
 import { formatMeasure } from '@ulpin/ui';
-import type { EvidenceRef } from '../../evidence/refs';
+import type { EvidenceRef, Locator } from '../../evidence/refs';
 import { locatorText } from '../candidates/model';
 
 export type BuildingCanonical = GetResponse<'/api/v1/buildings/{buildingId}/canonical'>;
@@ -15,6 +15,10 @@ export interface RecordedCitation {
   /** The short source id shown on the chip; the record carries no file name. */
   source: string;
   locator: string;
+  /** The place exactly as the citation records it, and the original it was recorded against. */
+  place: Citation['locator'];
+  sha256: string;
+  revision: number | null;
 }
 
 /** A record value as text. `known` is false when the text is the state word of a value the record lacks. */
@@ -71,7 +75,8 @@ function literalValue(field: { value: string | null; state: string } | undefined
 function citationOf(citation: Citation, index: number): RecordedCitation {
   const locator = locatorText(citation.locator);
   return { key: `${citation.sourceId}:${index}`, sourceId: citation.sourceId,
-    source: citation.sourceId.slice(0, 8), locator };
+    source: citation.sourceId.slice(0, 8), locator, place: citation.locator, sha256: citation.sourceSha256,
+    revision: citation.sourceRevision ?? null };
 }
 
 function originText(level: Level): string {
@@ -120,8 +125,18 @@ export function sourceLabelGaps(gaps: readonly string[]): string[] {
   return gaps.filter((gap) => SOURCE_LABEL_GAP.test(gap));
 }
 
-/** The pointer the evidence viewer opens: the cited source, with the page and region as its locator. */
+/** A page or region keeps its own numbers and unit for the viewer; any other place stays text. */
+function viewerLocator(citation: RecordedCitation): Locator {
+  const { place, locator: text } = citation;
+  if (place.kind === 'page') return { kind: 'page', page: place.page, text };
+  if (place.kind !== 'region') return { kind: 'text', text };
+  const { x, y, width, height, unit } = place;
+  return { kind: 'region', page: place.page, region: { x, y, width, height, unit }, text };
+}
+
+/** The pointer the evidence viewer opens: the cited source at its page and region, pinned to the cited original. */
 export function evidenceRef(label: string, citation: RecordedCitation): EvidenceRef {
-  return { sourceId: citation.sourceId, label, locator: { kind: 'text', text: citation.locator },
+  const pin = citation.revision === null ? undefined : { revision: citation.revision, sha256: citation.sha256 };
+  return { sourceId: citation.sourceId, label, locator: viewerLocator(citation), pin,
     supports: [{ source: citation.source, locator: citation.locator }] };
 }

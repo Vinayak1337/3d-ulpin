@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import controls from '../../../../../../docs/evidence/gf-agent/ui/f2b/responses.json';
 import fresh from '../../../../../../docs/evidence/gf1/ui/f3a/table-responses.json';
-import { columnRows, learnerTotals, mergeMetrics, reviewControls, reviewMapping, staleReasons } from './model';
-import type { ChunkMapping, Freshness, Metrics, TableProfile } from './types';
+import {
+  columnRows, learnerTotals, mergeMetrics, publishedChunkIndexes, reviewControls, reviewMapping, staleReasons,
+} from './model';
+import type { ChunkMapping, Freshness, MappingJob, Metrics, TableProfile } from './types';
 
 const profile = controls.files[0]!.profile as TableProfile;
 const mapping = controls.files[0]!.chunk.payload.mapping as ChunkMapping;
@@ -70,10 +72,12 @@ describe('result freshness', () => {
   it('a stale result names its reasons and hides approve; a current result shows it', () => {
     const stale = staleReasons(responsesOf(fresh.stale));
     expect(stale).toEqual(['case advanced']);
-    expect(reviewControls(Boolean(stale), 'proposed', false)).toEqual({ approve: false, sharedReason: false });
+    expect(reviewControls(Boolean(stale), 'proposed', false))
+      .toEqual({ approve: false, sharedReason: false, record: false, replay: false });
     const current = staleReasons([...responsesOf(fresh.files[0]!), undefined]);
     expect(current).toBeNull();
-    expect(reviewControls(Boolean(current), 'proposed', false)).toEqual({ approve: true, sharedReason: true });
+    expect(reviewControls(Boolean(current), 'proposed', false))
+      .toEqual({ approve: true, sharedReason: true, record: true, replay: true });
     expect(reviewControls(false, 'proposed', true).approve).toBe(false);
   });
 
@@ -81,6 +85,17 @@ describe('result freshness', () => {
     const chunk: Freshness = { current: false, reasons: ['reader_changed', 'source_superseded'] };
     expect(staleReasons([...responsesOf(fresh.files[0]!), chunk, chunk]))
       .toEqual(['reader changed', 'source superseded']);
+  });
+});
+
+describe('published chunks', () => {
+  it('reads every published chunk by index, not only the slots the job lists', () => {
+    const job = { nextPublishIndex: 51, slots: [{ chunkIndex: 50 }] } as MappingJob;
+    const indexes = publishedChunkIndexes(job);
+    expect(indexes).toHaveLength(51);
+    expect(indexes[0]).toBe(0);
+    expect(indexes.at(-1)).toBe(50);
+    expect(publishedChunkIndexes(undefined)).toEqual([]);
   });
 });
 

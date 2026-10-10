@@ -13,9 +13,10 @@ describe('recorded floors and units', () => {
     expect(floor).toMatchObject({ label: '2ND FLOOR PLAN', reviewed: true, lower: unknown, upper: unknown,
       origin: 'Recorded from a source label · geometry not recorded' });
     expect(Object.values(floor!).filter((value) => typeof value === 'number')).toEqual([]);
-    expect(floor!.citations).toEqual([{ key: `${floor!.citations[0]!.sourceId}:0`,
-      sourceId: withoutCode.levels[0]!.label.citations[0]!.sourceId, source: '5293cd72',
-      locator: 'p.1 · x 850.0, y 875.0 · 170.0 × 35.0 pt' }]);
+    const cited = withoutCode.levels[0]!.label.citations[0]!;
+    expect(floor!.citations).toEqual([{ key: `${cited.sourceId}:0`, sourceId: cited.sourceId, source: '5293cd72',
+      locator: 'p.1 · x 850.0, y 875.0 · 170.0 × 35.0 pt', place: cited.locator, sha256: cited.sourceSha256,
+      revision: cited.sourceRevision }]);
   });
 
   it('keeps a unit unknown where the record is, and only shows a reviewed code', () => {
@@ -50,10 +51,22 @@ describe('recorded floors and units', () => {
     expect(withoutCode.gaps).toContain(gaps[0]);
   });
 
-  it('opens the evidence viewer on the cited source with the page and region as the locator', () => {
+  it('opens the evidence viewer at the cited page and region, in the citation’s own units, pinned', () => {
     const unit = recordedFloors(withoutCode.levels)[0]!.units[0]!;
+    const cited = withoutCode.levels[0]!.spaces[0]!.label!.citations[0]!;
     const ref = evidenceRef(unit.label, unit.citations[0]!);
-    expect(ref).toMatchObject({ sourceId: unit.citations[0]!.sourceId, label: 'UNIT-3B',
-      locator: { kind: 'text', text: unit.citations[0]!.locator } });
+    expect(ref).toMatchObject({ sourceId: cited.sourceId, label: 'UNIT-3B', locator: { kind: 'region', page: 1,
+      region: { x: 206.88, y: 254.25, width: 1034.4, height: 305.1, unit: 'pt' }, text: unit.citations[0]!.locator },
+      pin: { revision: cited.sourceRevision, sha256: cited.sourceSha256 } });
+  });
+
+  it('carries no pin when the citation names no revision, and a page as a page', () => {
+    const [citation] = recordedFloors(withoutCode.levels)[0]!.citations;
+    const unpinned = evidenceRef('Floor', { ...citation!, revision: null });
+    expect(unpinned.pin).toBeUndefined();
+    const page = evidenceRef('Floor', { ...citation!, place: { kind: 'page', page: 3 } });
+    expect(page.locator).toMatchObject({ kind: 'page', page: 3 });
+    const row = evidenceRef('Floor', { ...citation!, place: { kind: 'row', row: 2 } });
+    expect(row.locator.kind).toBe('text');
   });
 });

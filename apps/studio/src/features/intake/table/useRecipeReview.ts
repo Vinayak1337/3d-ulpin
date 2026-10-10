@@ -1,14 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { authorRecipe, approveRecipe, readRecipe } from './recipe-api';
 import { fillUnknownAnswers, officerAnswers, recipeBody } from './recipe';
 import { tableKey } from './queries';
+import { focusStaleNotice } from './StaleNotice';
 import type { Confirmation } from './RecipeConfirmation';
 import type { OfficerAnswer, OfficerAnswers } from './recipe';
 import type { ChunkMapping, MappingJob, Recipe, TableProfile } from './types';
 
-export function useRecipeReview(profile: TableProfile, mapping: ChunkMapping, job: MappingJob,
+export function useRecipeReview(profile: TableProfile, mapping: ChunkMapping, job: MappingJob, stale: boolean,
   onApproved: () => void) {
   const [params, setParams] = useSearchParams();
   const { answers, change, markUnknown } = useOfficerAnswers(profile, mapping);
@@ -30,10 +31,21 @@ export function useRecipeReview(profile: TableProfile, mapping: ChunkMapping, jo
     setConfirmation({ kind: 'propose', sharedReasonCount, body: recipeBody(profile, mapping, answers,
       crypto.randomUUID(), current?.revision ?? 0) });
   };
+  useCloseOnStale(stale, confirmation, setConfirmation);
   const reading = Boolean(recipeId) && history.isPending;
   const replay = approvalReplay(params, recipeId);
   return { answers, confirmation, setConfirmation, open, setOpen, history, current,
     record, change, markUnknown, propose, reading, replay };
+}
+
+/** A dialog open when its result turns stale is dismissed, and the notice that says why takes focus. */
+function useCloseOnStale(stale: boolean, confirmation: Confirmation | null,
+  setConfirmation: (confirmation: Confirmation | null) => void) {
+  useEffect(() => {
+    if (!stale || !confirmation) return;
+    setConfirmation(null);
+    focusStaleNotice();
+  }, [stale, confirmation, setConfirmation]);
 }
 
 function useOfficerAnswers(profile: TableProfile, mapping: ChunkMapping) {
