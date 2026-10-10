@@ -1,0 +1,76 @@
+{
+ "version": "rc2-result/1",
+ "task": "RC2",
+ "gate": ["GF5:C11", "GF5:C15", "M2"],
+ "base": "39ed2dbb",
+ "outcome": "built",
+ "step0": "docs/evidence/gf5/rc2/step0.json",
+ "stopRule": "A stated size is held in no record the read projects (0 of 18), so the demo's 18 rooms show none. No re-proposal, write, job, upload or provider call was sent.",
+ "level": {
+  "magnoliaRooms": { "namedAndListed": 1, "namedAndNotListed": 0, "notNamed": 17 },
+  "seenLive": { "KITCHEN": "GROUND FLOOR PLAN", "STAIRCASE": "Not attached to a level" },
+  "testedOnly": ["listed and candidate", "listed and source_supported", "listed with no label", "not listed"]
+ },
+ "citation": {
+  "entry": "useOpenEvidence (features/evidence/EvidenceContext.tsx), through evidenceRef (features/review/recorded/model.ts)",
+  "room": { "tabReaches": true, "tabs": 38, "enterOpens": true, "controlsPerCitation": 1,
+   "name": "Open cited source 10946c4c at p.2 · x 443.8, y 1196.9 · 71.3 × 79.8 pt" },
+  "roofprint": { "tabReaches": true, "tabs": 97, "enterOpens": true, "controlsPerCitation": 1,
+   "name": "Open cited source d01b30d6 at p.1" },
+  "viewerSays": "For both the PDF and the TIFF: the file name, the cited place as text, 'Open original', and 'This original is not a text file, so no preview is shown. Open it to read it.' No page image and no region is drawn.",
+  "why": "A candidate citation carries sourceSha256 but no sourceRevision, so the card has no pin to pass and the viewer takes its file view. Not repaired: features/evidence/** is EV1's."
+ },
+ "statedSize": {
+  "contract": "BuildingCandidateRefSchema.statedSize { literal (1 to 200 characters, not blank), citation } optional, beside planEstimate",
+  "heldInARecordTheReadProjects": 0,
+  "heldOnlyInAJobOutput": 11,
+  "notHeldAnywhere": 7,
+  "seen": "mocked only (shots/mocked-stated-size.png): the demo's building read answered in the browser with statedSize from the vector run's retained output and planEstimate from RC1's result.json added to KITCHEN",
+  "cardSays": "Stated on the sheet: (8' X 8'11\") | 10946c4c | p.2 · x 472.2, y 1256.7 · 20.1 × 4.2 pt",
+  "aboveEstimate": true,
+  "deviation": "The task says a retain_rooms candidate never has one. No server module builds a room proposal from reader output; the retain_rooms caller is the only place the literal exists, so retain_rooms may carry statedSize (its citation checked like the room's own) and the read never adds one. The lead decides."
+ },
+ "browser": { "script": "docs/evidence/gf5/rc2/keyboard.mjs", "result": "docs/evidence/gf5/rc2/keyboard.json",
+  "refusedRequests": 0, "demoServesPlanEstimate": false },
+ "checks": {
+  "typecheckBackend": "exit 0",
+  "studioTypecheck": "exit 0",
+  "studioTest": { "before": 203, "after": 216, "files": 36, "failed": 0, "apiClient": 2, "ui": 4, "scene": 10 },
+  "serverTests": { "canonical-room-estimate": "9 of 9 (was 7)", "source-building-candidates": "5 of 5 (was 4)",
+   "canonical-source-spaces": "4 of 4", "candidate.controller": "3 of 3" },
+  "openapiCheck": "exit 0: Native API catalogue matches: 301 operations, 342 named schemas; no listener or domain operation opened.",
+  "checkPy": {
+   "worktree": "exit 1: API-DOC: runtime receipt changed",
+   "cause": "Line endings of receipts this branch does not touch. Of 24 pinned receipts, 3 match their pin only with LF (this worktree checks them out CRLF) and 4 match only with CRLF (Git stores them LF). So neither this worktree nor a plain LF export of HEAD passes.",
+   "exportWithPinnedEndings": "exit 0: API-DOC: 301 native operations (132 baseline + 169 added), 342 named schemas; pins, manifests, models, dataset link valid"
+  },
+  "gitDiffCheck": "exit 0",
+  "linesOver120": 0,
+  "uiDesignCheck": "docs/evidence/gf5/rc2/ui-design-check.md (scan exit 0; the scan covers apps/web only)"
+ },
+ "notRun": ["No write, proposal, job, upload, provider call or GPU.", "No PostgreSQL run of verifyCandidateSources with a stated size: its new path is covered by the pure roomCandidateCitations test only.", "The stated size was not seen on a live read.", "No level in a state other than reviewed was seen live (Magnolia's 3 labels are all reviewed)."],
+ "report": {
+  "TASK": "RC2 — A candidate card names its level, its citation opens the cited page, and a room states the size its sheet prints beside the estimate",
+  "GATE": "GF5 (C11, C15, RC1's open point), M2",
+  "WORKS": "A room card prints its level by the label the read states and its citation is a button that opens the evidence viewer; a stated size is carried and printed when a record holds one (none does yet)",
+  "SEE_IT": "node docs/evidence/gf5/rc2/keyboard.mjs http://127.0.0.1:5217 (Studio dev server with ULPIN_API_TARGET=http://127.0.0.1:3194)",
+  "INPUTS": "Demo reads, GET only: Magnolia e8777ffc (18 rooms: good KITCHEN on GROUND FLOOR PLAN; difficult STAIRCASE with no level) and Karnataka area cb24dc86 (roofprint aab03543, a TIFF source). Stated size: the vector run's retained line for KITCHEN, (8' X 8'11\"), mocked in the browser",
+  "GAPS": "The demo's 18 rooms show no stated size until an officer-reviewed re-proposal (none sent). The viewer opens but draws no page or region for either source: candidate citations carry no sourceRevision, so no pin. The demo build serves no planEstimate",
+  "DESIGN": [
+   "apps/studio candidates/model.ts: candidateLevel (label and its state from levels[].label; never from an id or order), citationOf now yields the recorded-citation shape so evidenceRef builds the target, statedSizeView, citationOpenLabel.",
+   "apps/studio candidates/CandidateCardView.tsx: CitationControl (button.ul-evid with an accessible name) used by Citations and by StatedSize; ReviewShell.tsx mounts EvidenceProvider once.",
+   "packages/contracts canonical/building.ts: RoomStatedSizeSchema, optional on BuildingCandidateRefSchema beside planEstimate; retain_rooms inherits it. source-building-candidates.ts: roomCandidateCitations, so verifyCandidateSources checks the stated size's citation too."
+  ],
+  "COMMITS": [
+   "f6dbf8e3 docs(candidates): RC2 where a card's level label, citation target and stated size come from",
+   "5906bc82 fix(studio): a candidate card names its level as the record does",
+   "e2801bb9 fix(studio): a candidate card's citation opens the cited page and region",
+   "e373314d feat(candidates): a room candidate states the size its sheet prints, as read, beside the estimate",
+   "98a529da fix(studio): a candidate card draws a level line that stands in for a missing label as not known",
+   "94248eaa refactor(contracts): the stated size keeps its schema only; no type nobody reads",
+   "docs(candidates): RC2 evidence (this commit)"
+  ],
+  "CHECKS": "typecheck:backend 0; studio:typecheck 0; studio:test 216 of 216 in 36 files (was 203); server tests 21 of 21 in 4 files; openapi --check 0; check.py exit 1 in the worktree on receipt line endings, exit 0 on an export with the pinned endings; git diff --check 0; 0 lines over 120",
+  "NEXT": "Lead: decide the retain_rooms deviation; regenerate openapi.json, source-pins.json and schema.d.ts at the merge (staging moved past 39ed2dbb). To show a stated size on the demo: an officer-reviewed retain_rooms re-proposal whose caller copies statedDimensions[0].literal and its box. To draw the cited page: candidate citations need sourceRevision (proposal side) and EV1's viewer needs a page image for these sources. EvidenceChip (packages/ui) could take a label so CitationControl folds back into it."
+ }
+}

@@ -1,12 +1,17 @@
 import type { ReactNode } from 'react';
 import { useParams } from 'react-router';
-import { DescriptionList, EvidenceChip, formatDateTime, type Fact } from '@ulpin/ui';
+import { FileText } from '@phosphor-icons/react';
+import { DescriptionList, Icon, formatDateTime, type Fact } from '@ulpin/ui';
 import { useBuildingCanonical, useSpatialMlBatch, useSpatialMlItem } from '../../../api/queries';
+import { useOpenEvidence } from '../../evidence/EvidenceContext';
 import { Cited, ReadingStatementsContext } from '../../register/ReadingNote';
 import { useReadingStatements } from '../../register/useReadingStatements';
+import { evidenceRef } from '../recorded/model';
 import { CandidateChip } from './CandidateQueue';
 import { modelCardSummary } from './modelCard';
-import type { CandidateCard, PlanEstimateView } from './model';
+import {
+  citationOpenLabel, type CandidateCard, type CandidateCitation, type PlanEstimateView, type StatedSizeView,
+} from './model';
 import styles from './CandidateReview.module.css';
 
 const DETERMINISTIC = 'Deterministic extraction; no model';
@@ -17,8 +22,8 @@ function Mono({ children }: { children: ReactNode }) {
   return <span className={styles.mono}>{children}</span>;
 }
 
-function Unknown() {
-  return <em className="ul-unknown">Unknown</em>;
+function Unknown({ children = 'Unknown' }: { children?: string }) {
+  return <em className="ul-unknown">{children}</em>;
 }
 
 function recordedFacts(card: CandidateCard): Fact[] {
@@ -28,7 +33,8 @@ function recordedFacts(card: CandidateCard): Fact[] {
     { label: 'Confidence', value: card.confidence },
   ];
   if (card.kind === 'room') {
-    facts.push({ label: 'Level', value: card.levelId ? <Mono>{card.levelId}</Mono> : <Unknown /> });
+    const { text, stated } = card.level;
+    facts.push({ label: 'Level', value: stated ? text : <Unknown>{text}</Unknown> });
     facts.push({ label: 'Floor title in the drawing', value: card.levelLiteral ?? <Unknown /> });
   }
   facts.push({ label: 'Frame', value: <Mono>{card.frame}</Mono> });
@@ -93,6 +99,34 @@ function Limitations({ items }: { items: string[] }) {
 }
 
 /**
+ * One citation as a control that opens the evidence viewer at the cited source, page and region. It is the
+ * evidence chip drawn as its own button, because the chip's button is named by its text alone and this one
+ * has to say what it opens.
+ */
+function CitationControl({ title, citation }: { title: string; citation: CandidateCitation }) {
+  const open = useOpenEvidence();
+  return (
+    <button type="button" className="ul-evid" aria-label={citationOpenLabel(citation)}
+      onClick={() => open(evidenceRef(title, citation))}>
+      <Icon icon={FileText} size={16} />
+      <b>{citation.source}</b>
+      <span>{citation.locator}</span>
+    </button>
+  );
+}
+
+/** What the sheet prints beside the room, as read, with where it is printed. It is never set against the estimate. */
+function StatedSize({ title, stated }: { title: string; stated: StatedSizeView | null }) {
+  if (!stated) return null;
+  return (
+    <section className={styles.section} aria-label="Stated size">
+      <p className={styles.stated}>Stated on the sheet: {stated.literal}</p>
+      <div className="ul-row"><CitationControl title={title} citation={stated.citation} /></div>
+    </section>
+  );
+}
+
+/**
  * The card does not carry its building, so the reading statements are those of the page's building (none
  * on an area's review page). A citation is joined to them by its source id.
  */
@@ -106,9 +140,9 @@ function Citations({ card }: { card: CandidateCard }) {
       {card.citations.length ? (
         <ReadingStatementsContext.Provider value={readings}>
           <div className="ul-row">
-            {card.citations.map((c) => (
-              <Cited key={`${c.source}${c.locator}`} sourceId={c.sourceId}>
-                <EvidenceChip source={c.source} locator={c.locator} />
+            {card.citations.map((citation) => (
+              <Cited key={citation.key} sourceId={citation.sourceId}>
+                <CitationControl title={card.title} citation={citation} />
               </Cited>
             ))}
           </div>
@@ -144,6 +178,7 @@ export function CandidateCardView({ card, children }: { card: CandidateCard; chi
       <DecisionRecord card={card} />
       {children}
       <DescriptionList items={recordedFacts(card)} />
+      <StatedSize title={card.title} stated={card.statedSize} />
       <PlanEstimate estimate={card.planEstimate} />
       {card.itemId ? <ModelSection itemId={card.itemId} /> : null}
       <Limitations items={card.limitations} />
