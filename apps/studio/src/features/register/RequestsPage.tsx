@@ -5,7 +5,8 @@ import { Check, FilePlus, MapPin, Tray, Trash, X } from '@phosphor-icons/react';
 import type { RegisterRequest, RequestState } from '@ulpin/api-client/draft';
 import { api, unwrap } from '@ulpin/api-client';
 import {
-  Badge, Button, DataTable, DescriptionList, EmptyState, Icon, SegmentedControl, Skeleton, Tabs, UlpinCode, formatCount, formatDateTime, formatRelative,
+  Badge, Button, DataTable, DescriptionList, EmptyState, Icon, SegmentedControl, Skeleton, Tabs, UlpinCode,
+  formatDateTime, formatRelative,
 } from '@ulpin/ui';
 import {
   decideRegisterRequest, featureCode, queryKeys, useAreas, useRegisterRequests, type AreaFeature, type RequestFilter,
@@ -13,9 +14,8 @@ import {
 import { DeleteDialog } from '../manage/DeleteDialog';
 import { REQUEST_KINDS } from '../../local/requestKinds';
 import { isServed } from '../../local/routes';
+import { buildingCount, indexView } from './indexView';
 import styles from './Requests.module.css';
-
-type View = 'requests' | 'buildings';
 
 const STATE_LABEL: Record<RequestState, string> = { submitted: 'New', in_review: 'In review', accepted: 'Accepted', rejected: 'Rejected' };
 const STATE_TONE: Record<RequestState, 'primary' | 'warning' | 'success' | 'danger'> = { submitted: 'primary', in_review: 'warning', accepted: 'success', rejected: 'danger' };
@@ -26,21 +26,21 @@ export const requestTitle = (r: Pick<RegisterRequest, 'kind' | 'buildingName' | 
 
 /**
  * Register: requests from the public portal for officers to review (a building's register, or a
- * correction to a released record), and every building on record with its 3D ULPIN.
+ * correction to a released record), and the buildings of every area, recorded in the registry or not.
  */
 export function RegistryIndex() {
   const [params, setParams] = useSearchParams();
-  const view: View = params.get('tab') === 'buildings' ? 'buildings' : 'requests';
   const open = useRegisterRequests('open');
+  const view = indexView(params.get('tab'), open.data);
   return (
     <div className={styles.page}>
       <header className={styles.head}>
         <div className={styles.titles}>
           <h1 className="ul-title">Register</h1>
-          <p>Requests from the public portal, and every building on record.</p>
+          <p>Requests from the public portal, and the buildings of every area, recorded or not.</p>
         </div>
         <div className={styles.tabs}>
-          <Tabs label="Register" value={view} onChange={(v) => setParams(v === 'requests' ? {} : { tab: v })}
+          <Tabs label="Register" value={view} onChange={(tab) => setParams({ tab })}
             tabs={[{ value: 'requests', label: 'Requests', count: open.data?.length }, { value: 'buildings', label: 'Buildings' }]} />
         </div>
       </header>
@@ -249,12 +249,15 @@ function BuildingsView() {
         return (
           <section key={area.id} className="ul-stack">
             <div className={styles.areaHead}>
-              <h2 className="ul-heading">{area.name} <span className="ul-caption">{formatCount(buildings.length)} buildings</span></h2>
+              <h2 className="ul-heading">
+                {area.name} <span className="ul-caption">{buildingCount(buildings.length)}</span>
+              </h2>
               <Link to={`/studio/areas/${area.id}`} className="ul-btn ul-btn--ghost"><Icon icon={MapPin} />Open map</Link>
               {canDeleteArea ? (
                 <Button variant="ghost" icon={Trash} onClick={() => setTarget({
                   kind: 'area', id: area.id, name: area.name,
-                  detail: `${area.name} and its ${buildings.length} buildings, parcels, roads and utilities are deleted, with every building register in it.`,
+                  detail: `${area.name} and its ${buildingCount(buildings.length)}, parcels, roads and utilities `
+                    + 'are deleted, with every building register in it.',
                 })}>Delete area</Button>
               ) : null}
             </div>

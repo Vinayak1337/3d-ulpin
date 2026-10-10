@@ -1,5 +1,5 @@
 import { Badge, DataTable } from '@ulpin/ui';
-import { columnRows, targetDefinition } from './model';
+import { columnRows, confidenceText, isUnmapped, questionWords, targetDefinition } from './model';
 import type { ChunkMapping, TableProfile } from './types';
 import styles from './Table.module.css';
 
@@ -23,17 +23,13 @@ export function ColumnsTable({ profile, mapping }: { profile: TableProfile; mapp
             { header: 'Literal header', cell: (row) => row.header || 'Empty header' },
             { header: 'Inferred type', cell: (row) => row.column.inferredType },
             { header: 'Declared unit', cell: (row) => row.column.declaredUnit ?? 'Unknown' },
-            { header: 'Proposed target', cell: (row) => (
+            { header: 'Proposed target', cell: (row) => (isUnmapped(row) ? 'Unmapped' : (
               <span title={targetDefinition(row.target).meaning}>
                 {targetDefinition(row.target).displayLabel}
                 <small className={styles.targetId}>{row.target}</small>
               </span>
-            ) },
-            { header: 'Confidence', numeric: true, cell: (row) => {
-              if (row.origin === 'officer') return 'Officer decision';
-              if (row.noAnswer !== null) return <NoConfidence />;
-              return row.confidence === null ? 'Unknown' : `${Math.round(row.confidence * 100)}%`;
-            } },
+            )) },
+            { header: 'Confidence', numeric: true, cell: (row) => confidenceText(row) ?? <NoConfidence /> },
             { header: 'From', cell: (row) => {
               if (row.noAnswer === null) return row.origin ?? 'Unknown';
               return <span className={styles.question}>
@@ -44,7 +40,7 @@ export function ColumnsTable({ profile, mapping }: { profile: TableProfile; mapp
               if (!mapping) return 'Unknown';
               if (!row.question) return 'None reported';
               return <span className={styles.question}>
-                <Badge tone="warning">Needs review</Badge>{row.question.reason}
+                <Badge tone="warning">Needs review</Badge>{questionWords(row.question.reason)}
               </span>;
             } },
           ]} />

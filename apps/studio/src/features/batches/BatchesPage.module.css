@@ -35,4 +35,7 @@ a.row:focus-visible { outline: none; box-shadow: inset var(--ui-focus-ring); }
 @media (prefers-reduced-motion: no-preference) { .spin { animation: spin 1.2s linear infinite; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 .skeletonRow { height: 44px; margin: var(--ui-space-2) var(--ui-space-3); }
+/* The page a case row leads to: one column, as wide as a readable table. */
+.casePage { max-width: 960px; padding: var(--ui-space-6); display: grid; gap: var(--ui-space-4); justify-items: start; }
+.casePage > section { justify-self: stretch; }
 @media (max-width: 1100px) { .page { grid-template-columns: minmax(0, 1fr); } .counts { padding-top: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); } }

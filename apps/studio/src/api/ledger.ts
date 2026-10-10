@@ -28,15 +28,35 @@ function sourceOf(source: PublishedLedger['sources'][number]): Source {
   };
 }
 
-/** The published history carries revision numbers and times only: no actor, no hashes. */
-function revisionsOf(history: PublishedLedger['history']): Revision[] {
-  const feature = history.feature.map((entry) => ({
-    kind: 'draft' as const, title: `Source feature, revision ${entry.revision}`, at: entry.recordedAt,
+/** A registry entry of the history keeps the id of the record it revises: the building, a floor or a space. */
+type RecordedRevision = Revision & { recordId: string };
+
+/** The id of the registry record a history entry revises; null for an entry that names none. */
+export function revisedRecordId(revision: Revision): string | null {
+  return 'recordId' in revision && typeof revision.recordId === 'string' ? revision.recordId : null;
+}
+
+/** Which record a registry entry revises, as far as this read names it: the building or one of its spaces. */
+function recordWords(published: PublishedLedger, recordId: string): string {
+  if (recordId === published.building.id) return 'Building record';
+  const space = published.spaces.records.find((record) => record.id === recordId);
+  return space ? `Space ${space.name}` : 'Registry record';
+}
+
+/**
+ * The published history carries revision numbers and times only: no actor, no hashes. Its registry entries are
+ * one per record and revision, so two records revised at the same time are two entries, each with its record id.
+ */
+function revisionsOf(published: PublishedLedger): Revision[] {
+  const unsigned = { actor: null, hash: null, previousHash: null };
+  const feature = published.history.feature.map((entry): Revision => ({
+    ...unsigned, kind: 'draft', title: `Source feature, revision ${entry.revision}`, at: entry.recordedAt,
   }));
-  const registry = history.registry.map((entry) => ({
-    kind: 'recorded' as const, title: `Registry record, revision ${entry.revision}`, at: entry.recordedAt,
+  const registry = published.history.registry.map((entry): RecordedRevision => ({
+    ...unsigned, kind: 'recorded', at: entry.recordedAt, recordId: entry.recordId,
+    title: `${recordWords(published, entry.recordId)}, revision ${entry.revision}`,
   }));
-  return [...feature, ...registry].map((entry) => ({ ...entry, actor: null, hash: null, previousHash: null }));
+  return [...feature, ...registry];
 }
 
 /**
@@ -62,7 +82,7 @@ export function ledgerFromPublished(published: PublishedLedger): BuildingLedger 
     checkMethod: published.assessment.reason,
     findingDetails: [],
     deviation: null,
-    revisions: revisionsOf(published.history),
+    revisions: revisionsOf(published),
     sources: published.sources.map(sourceOf),
   };
 }

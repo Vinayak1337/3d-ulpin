@@ -62,7 +62,10 @@ export const router = createBrowserRouter([
             lazy: async () => ({ Component: (await import('../features/review/WorkspacePage')).WorkspacePage }),
           },
           { path: 'datasets/*', element: <PlannedPage title="Dataset" milestone="M5" /> },
-          { path: 'cases/*', element: <PlannedPage title="Workspace review" milestone="M5" /> },
+          {
+            path: 'cases/*',
+            lazy: async () => ({ Component: (await import('../features/batches/CasePage')).CasePage }),
+          },
           { path: '*', element: <NotFoundPage /> },
         ],
       },

@@ -3,12 +3,12 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router';
 import { DownloadSimple, FilePlus, Intersect, MapTrifold, QrCode, WarningCircle } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { DeviationInput, MultiPolygon, Pick, SceneEngine, SceneState } from '@ulpin/scene';
-import { ApiError } from '@ulpin/api-client';
 import type { BuildingLedger, BuildingResidents } from '@ulpin/api-client/draft';
 import {
   Badge, Banner, Button, DataTable, DescriptionList, EmptyState, EvidenceChip, Icon, LevelRail, Menu, Panel, RevisionTimeline, Skeleton,
   StatusBadge, Tabs, formatDate, formatDateTime, type RailLevel, type StatusWord,
 } from '@ulpin/ui';
+import { revisedRecordId } from '../../api/ledger';
 import { useAreaContext, useBuildingLedger, useBuildingRegister, useBuildingResidents, type BuildingRegister } from '../../api/queries';
 import { shortHash, type SpaceWorkflow } from '../../local/workflow';
 import { buildingModel, type LevelModel, type SpaceModel } from '../../model/building';
@@ -28,7 +28,8 @@ import { NoGeometry } from './NoGeometry';
 import { ReadingStatementsContext } from './ReadingNote';
 import { RegisterAbsent } from './RegisterAbsent';
 import {
-  NO_READING_STATEMENTS, absentReason, conflictingStoreys, openCheckCount, unstatedReadings,
+  NO_READING_STATEMENTS, absentReason, conflictingStoreys, openCheckCount, registerNotFound, unreadRegister,
+  unstatedReadings,
 } from './registerState';
 import { SourceList } from './SourceList';
 import { FloorFilter, UnitsTab } from './UnitsTab';
@@ -42,6 +43,8 @@ import styles from './RegisterPage.module.css';
 
 type Tab = 'units' | 'residents' | 'shares' | 'documents' | 'checks' | 'history';
 const TABS: Tab[] = ['units', 'residents', 'shares', 'documents', 'checks', 'history'];
+// What the deviation check needs, said under the button while it is disabled and in its title.
+const DEVIATION_NEEDS = 'Needs a sanctioned plan and an observed survey of this building';
 
 /** S12/S13 Register: the building in 3D beside its units, shares, documents, checks and history. */
 export function RegisterPage() {
@@ -51,13 +54,15 @@ export function RegisterPage() {
     return <div className={styles.loading}><div className="ul-panel ul-pad ul-stack">{Array.from({ length: 7 }, (_, i) => <Skeleton key={i} width={i ? '100%' : '40%'} />)}</div></div>;
   }
   const absent = absentReason(register.error);
-  if (absent && buildingId) return <RegisterAbsent buildingId={buildingId} reason={absent} />;
+  if (buildingId && (absent || registerNotFound(register.error))) {
+    return <RegisterAbsent buildingId={buildingId} reason={absent} />;
+  }
   if (register.error || !register.data) {
-    const notRecorded = register.error instanceof ApiError && register.error.status === 404;
     return (
       <div className={styles.loading}>
-        <EmptyState icon={WarningCircle} title={notRecorded ? 'No register is recorded for this building' : 'This register could not be opened'} action={<Link to="/studio/registry">Back to Register</Link>}>
-          {register.error?.message ?? 'The building was not found.'}
+        <EmptyState icon={WarningCircle} title="This register could not be opened"
+          action={<Link to="/studio/registry">Back to Register</Link>}>
+          {unreadRegister(register.error)}
         </EmptyState>
       </div>
     );
@@ -202,11 +207,14 @@ function Register({ register }: { register: BuildingRegister }) {
             </p>
           </div>
           <Link to={mapHref} className="ul-btn ul-btn--ghost"><Icon icon={MapTrifold} />Back to map</Link>
-          <Button variant={compare ? 'soft' : 'secondary'} icon={Intersect} disabled={!ledger?.deviation}
-            title={ledger?.deviation ? undefined : 'Needs a sanctioned plan and an observed survey of this building'}
-            onClick={() => set({ mode: compare ? null : 'deviation' })}>
-            {compare ? 'Close compare' : 'Deviation check'}
-          </Button>
+          <div className={styles.primary}>
+            <Button variant={compare ? 'soft' : 'secondary'} icon={Intersect} disabled={!ledger?.deviation}
+              title={ledger?.deviation ? undefined : DEVIATION_NEEDS}
+              onClick={() => set({ mode: compare ? null : 'deviation' })}>
+              {compare ? 'Close compare' : 'Deviation check'}
+            </Button>
+            {ledger?.deviation ? null : <span className={`${styles.blocked} ${styles.needs}`}>{DEVIATION_NEEDS}</span>}
+          </div>
           <Menu label="Export" icon={DownloadSimple} items={[
             { label: 'Building register (PDF)', disabled: !model.levels.length, onSelect: () => void exportAs('pdf') },
             { label: 'Register data package (ZIP)', disabled: !model.levels.length, onSelect: () => void exportAs('zip') },
@@ -463,6 +471,16 @@ function Documents({ register, ledger }: { register: BuildingRegister; ledger: B
   );
 }
 
+/**
+ * A ledger revision as a History entry. The key holds the record it revises, because two records of a building
+ * can be revised at the same time; an actor the ledger does not state is said to be not recorded.
+ */
+function ledgerEntry(revision: BuildingLedger['revisions'][number]) {
+  const { title, kind, at, hash, previousHash } = revision;
+  const id = `${revisedRecordId(revision) ?? 'entry'}:${revisionKey(revision)}`;
+  return { id, title, kind, at, by: revision.actor ?? 'Actor not recorded', hash, previousHash };
+}
+
 function History({ register, ledger, workflow, actions }: {
   register: BuildingRegister; ledger: BuildingLedger | null | undefined; workflow: SpaceWorkflow[]; actions: { title: string; at: string; by: string; hash: string; previousHash: string | null; kind: string }[];
 }) {
@@ -470,7 +488,7 @@ function History({ register, ledger, workflow, actions }: {
     ...actions.map((a) => ({ id: a.hash, title: a.title, kind: a.kind === 'finding' ? 'evidence' as const : 'draft' as const, at: a.at, by: a.by, hash: a.hash, previousHash: a.previousHash })),
     ...workflow.flatMap((w) => w.events.map((e) => ({ id: `${w.spaceId}-${e.hash}`, title: `${w.spaceName}: ${e.title}`, kind: e.kind, at: e.at, by: e.by, hash: e.hash, previousHash: e.previousHash }))),
   ];
-  const recorded = ledger?.revisions.map((r) => ({ id: revisionKey(r), title: r.title, kind: r.kind, at: r.at, by: r.actor ?? 'Unknown', hash: r.hash, previousHash: r.previousHash }))
+  const recorded = ledger?.revisions.map(ledgerEntry)
     ?? register.sources.slice(0, 1).map((s) => ({ id: s.id, title: `r${register.property.revision} Imported from ${s.name}`, kind: 'draft' as const, at: s.createdAt, by: 'Import', hash: s.sha256, previousHash: null }));
   const revisions = [...own, ...recorded].sort((a, b) => b.at.localeCompare(a.at)).map((r) => ({
     id: r.id, title: r.title, kind: r.kind, byline: `${r.by} · ${formatDateTime(r.at)}`, hash: r.hash ? shortHash(r.hash) : null, previousHash: r.previousHash ? shortHash(r.previousHash) : null,
