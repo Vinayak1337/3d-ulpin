@@ -15,11 +15,12 @@ type Receipt = ReturnType<typeof BuildingPlanCandidateReceiptSchema.parse>;
 type Stored = { digest: string; receipt: Receipt };
 type Body = RegistryBody & { canonicalCandidates?: Candidate[]; candidateCommands?: Stored[] };
 type RecordRow = { id: string; site_id: string; revision: number; body: Body };
+export type BuildingMetadataRecord = { id: string; site_id: string; revision: number; body: RegistryBody };
 
 /** Explicit selection changes only the association; plan-local polygons never become placed registry spaces. */
 export function attachCandidateLevel(building: NormalizedBuilding, candidate: Candidate,
   levelId: string, reason: string, actor: string, time: string): Candidate {
-  if (!building.levels.some(level => level.levelId === levelId)) {
+  if (!building.levels.some(level => level.levelId === levelId && level.label.state === 'reviewed')) {
     throw new AppError(422, 'CANDIDATE_LEVEL', 'Choose an existing reviewed level of this building.');
   }
   return { ...candidate, levelId, review: { outcome: 'accepted', reason, actor, time }, state: 'reviewed',
@@ -42,8 +43,9 @@ async function verifyCandidateSources(client: PoolClient, record: RecordRow, can
   }
 }
 
-async function appendCandidateRevision(client: PoolClient, record: RecordRow,
-  candidates: Candidate[], stored: Stored): Promise<void> {
+/** Reuse immutable registry/physical histories for geometry-free officer metadata, preserving package lineage. */
+export async function appendBuildingMetadataRevisionTx(client: PoolClient, record: BuildingMetadataRecord,
+  patch: Record<string, unknown>): Promise<void> {
   const row = (await client.query('SELECT * FROM physical_features WHERE id=$1 FOR UPDATE', [record.id])).rows[0];
   if (!row) notFound();
   const lineage = (await client.query(
@@ -53,8 +55,7 @@ async function appendCandidateRevision(client: PoolClient, record: RecordRow,
     [record.site_id])).rows[0];
   const area = (await client.query('UPDATE map_areas SET revision=revision+1 WHERE id=$1 RETURNING revision',
     [row.area_id])).rows[0];
-  const body = { ...record.body, revision: stored.receipt.recordRevision, canonicalCandidates: candidates,
-    candidateCommands: [...(record.body.candidateCommands ?? []), stored] };
+  const body = { ...record.body, ...patch, revision: record.revision + 1 };
   await client.query('UPDATE registry_records SET revision=$2,body=$3 WHERE id=$1', [record.id, body.revision, body]);
   await client.query('INSERT INTO registry_revisions(record_id,revision,body,site_revision) VALUES($1,$2,$3,$4)',
     [record.id, body.revision, body, site.revision]);
@@ -82,8 +83,8 @@ function nextCandidates(building: NormalizedBuilding, input: BuildingPlanCandida
   return candidates.map(candidate => candidate.candidateId === updated.candidateId ? updated : candidate);
 }
 
-async function commandTx(client: PoolClient, buildingId: string,
-  input: BuildingPlanCandidateRequest, actor: string): Promise<Receipt> {
+/** Keep case → physical admission lock → area → site → record lock ordering shared across metadata commands. */
+export async function lockBuildingMetadataTx(client: PoolClient, buildingId: string): Promise<BuildingMetadataRecord> {
   await client.query('SELECT id FROM cases WHERE site_id=(SELECT site_id FROM registry_records WHERE id=$1)'
     + ' ORDER BY id FOR SHARE', [buildingId]);
   await client.query("SELECT pg_advisory_xact_lock(hashtextextended('physical-area-recording',0))");
@@ -91,9 +92,14 @@ async function commandTx(client: PoolClient, buildingId: string,
     + ' FOR UPDATE', [buildingId]);
   await client.query('SELECT id FROM registry_sites WHERE id=(SELECT site_id FROM registry_records WHERE id=$1)'
     + ' FOR UPDATE', [buildingId]);
-  const record: RecordRow = (await client.query(
-    'SELECT * FROM registry_records WHERE id=$1 AND revision>0 FOR UPDATE', [buildingId],
+  return (await client.query(
+    'SELECT * FROM registry_records WHERE id=$1 AND kind=\'building\' AND revision>0 FOR UPDATE', [buildingId],
   )).rows[0] ?? notFound();
+}
+
+async function commandTx(client: PoolClient, buildingId: string,
+  input: BuildingPlanCandidateRequest, actor: string): Promise<Receipt> {
+  const record: RecordRow = await lockBuildingMetadataTx(client, buildingId);
   const digest = fingerprint({ input, actor });
   const prior = record.body.candidateCommands?.find(entry => entry.receipt.requestKey === input.requestKey);
   if (prior) {
@@ -113,7 +119,8 @@ async function commandTx(client: PoolClient, buildingId: string,
     recordRevision: record.revision + 1, candidateIds: input.action === 'retain_rooms'
       ? input.candidates.map(candidate => candidate.candidateId) : [input.candidateId], actor, time,
     derivativeSha256: input.action === 'retain_rooms' ? input.derivativeSha256 : null });
-  await appendCandidateRevision(client, record, candidates, { digest, receipt });
+  await appendBuildingMetadataRevisionTx(client, record, { canonicalCandidates: candidates,
+    candidateCommands: [...(record.body.candidateCommands ?? []), { digest, receipt }] });
   return receipt;
 }
 

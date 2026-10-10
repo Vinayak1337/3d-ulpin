@@ -11,12 +11,20 @@ export const demoDir = 'E:/BhuAayam-data/runtime/ulpin-demo';
 export const demoProject = 'ulpin-demo';
 export const demoFile = join(demoDir, 'demo.env');
 export const demoOcrFile = join(demoDir, 'ocr-paths.json');
+const demoOcrProfileFile = join(demoDir, 'ocr-paths-profile.json');
 const ocrNames = ['PYTHON', 'MODELS', 'TESSERACT', 'TESSDATA', 'SCRATCH'];
 
 /** Optional non-secret paths only. Never derive or replace credentials. */
 export function readDemoOcrPaths() {
   if (!existsSync(demoOcrFile)) return {};
-  const paths = JSON.parse(readFileSync(demoOcrFile, 'utf8'));
+  let paths = JSON.parse(readFileSync(demoOcrFile, 'utf8'));
+  if (existsSync(demoOcrProfileFile)) {
+    const override = JSON.parse(readFileSync(demoOcrProfileFile, 'utf8'));
+    if (override.profile !== 'demo' || Object.keys(override).sort().join(',') !== 'paths,profile') {
+      throw new Error('OCR profile override must be explicitly demo-scoped.');
+    }
+    paths = override.paths;
+  }
   const expected = ocrNames.map(name => `ULPIN_DOCUMENT_OCR_${name}`);
   if (Object.keys(paths).length !== expected.length || Object.keys(paths).some(key => !expected.includes(key))) {
     throw new Error('OCR path configuration has unexpected keys.');
