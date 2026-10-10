@@ -17,7 +17,11 @@ import {
   type TeacherDataPolicy,
 } from './mapping-teacher';
 
-export const DEVELOPMENT_TEACHER_METHOD = 'model:claude-opus-5-5@dev-2026-10';
+export const DEVELOPMENT_TEACHER_METHODS = {
+  'claude-opus-5-5': 'model:claude-opus-5-5@dev-2026-10',
+  'gpt-6.1-sol': 'model:gpt-6.1-sol@dev-2026-10',
+} as const;
+export type DevelopmentTeacher = keyof typeof DEVELOPMENT_TEACHER_METHODS;
 export const MAX_FIELD_ISSUE_RATE = 0.1;
 type FieldDryRun = { cells: number; needsInput: number; conflicting: number };
 export type TeacherProfileEntry = {
@@ -43,7 +47,7 @@ type LabelCheck = { examples: PseudoLabelExample[] } | { codes: string[] };
 const labelSchema = z.strictObject({
   profileHash: z.string().regex(/^[a-f0-9]{64}$/),
   plan: z.unknown(),
-  method: z.literal(DEVELOPMENT_TEACHER_METHOD),
+  method: z.enum(Object.values(DEVELOPMENT_TEACHER_METHODS)),
 });
 
 function fieldDryRun(sourceField: string, execution?: MappingExecutionResult): FieldDryRun {

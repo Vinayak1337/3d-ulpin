@@ -10,7 +10,7 @@ import {
 } from '../../packages/server/src/modules/usp/ingestion/mapping-teacher';
 import { rememberMapping } from '../../packages/server/src/modules/usp/ingestion/mapping-memory';
 import {
-  ingestTeacherLabels, DEVELOPMENT_TEACHER_METHOD, type PseudoLabelExample,
+  ingestTeacherLabels, DEVELOPMENT_TEACHER_METHODS, type PseudoLabelExample,
 } from '../../packages/server/src/modules/usp/ingestion/teacher-labels';
 import { validateMappingPlanV2 } from '../../packages/server/src/modules/usp/ingestion/mapping-plan-v2';
 import {
@@ -78,7 +78,7 @@ async function verifiedBatch(
 ) {
   const profileHash = columnProfileHash(chunk.profile);
   const labels = join(output, 'lead-replay-label.jsonl');
-  saveNew(labels, [{ profileHash, plan, method: DEVELOPMENT_TEACHER_METHOD }], true);
+  saveNew(labels, [{ profileHash, plan, method: DEVELOPMENT_TEACHER_METHODS['claude-opus-5-5'] }], true);
   const examples = join(output, 'pseudo-labels.jsonl');
   const report = await ingestTeacherLabels(labels, new Map([[profileHash, {
     profile: chunk.profile, rows: chunk.rows, sourceRef: asset.original.externalPath,
