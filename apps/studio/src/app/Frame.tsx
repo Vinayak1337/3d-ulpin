@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useMatch, useNavigate, useSearchParams } from 'r
 import { CaretDown, FilePlus, MagnifyingGlass, UserCircle } from '@phosphor-icons/react';
 import { Icon } from '@ulpin/ui';
 import { useAreas, useCapabilities, useRegisterRequests, type Area } from '../api/queries';
+import { isServed } from '../local/routes';
 import { readLastArea, writeLastArea } from './lastArea';
 import styles from './Frame.module.css';
 
@@ -52,8 +53,15 @@ function MapNavLink() {
   );
 }
 
-/** Register, with the count of open requests from the public. */
+/** Requests from the public are a draft route: only a build that serves it is asked for them. */
+const REQUESTS_SERVED = isServed('GET', '/api/v1/register-requests');
+
+/** Register, with the count of open requests from the public where the build serves them. */
 function RegisterNavLink() {
+  return REQUESTS_SERVED ? <RegisterNavLinkWithCount /> : <NavLink to="/studio/registry">Register</NavLink>;
+}
+
+function RegisterNavLinkWithCount() {
   const open = useRegisterRequests('open').data?.length ?? 0;
   return (
     <NavLink to="/studio/registry" aria-label={open ? `Register, ${open} open requests` : 'Register'}>

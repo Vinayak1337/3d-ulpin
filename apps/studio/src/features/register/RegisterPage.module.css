@@ -1,5 +1,8 @@
 .frame { height: 100%; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); }
 .loading { padding: var(--ui-space-6); max-width: 960px; }
+/* The name lines up with the empty state below it, which carries its own inline padding. */
+.absentName { padding-inline: var(--ui-space-6); overflow-wrap: anywhere; }
+.absentLinks { display: flex; flex-wrap: wrap; gap: var(--ui-space-3); }
 .header { display: flex; align-items: center; flex-wrap: wrap; gap: var(--ui-space-3); padding: var(--ui-space-4) var(--ui-space-6); background: var(--ui-surface); border-bottom: 1px solid var(--ui-divider); }
 .identity { display: grid; gap: 2px; flex: 1; min-width: 280px; }
 .meta { margin: 0; font-size: 13px; line-height: 19px; color: var(--ui-muted); }
