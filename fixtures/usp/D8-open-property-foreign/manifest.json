@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "usp-data-pack/1",
+  "packId": "D8-foreign",
+  "version": 1,
+  "profile": "open-property-foreign-development-d1f",
+  "purpose": "test_only",
+  "description": "D1f foreign government property tables; development only, not Indian operational data.",
+  "styleQualification": "Acquisition metadata, not a strict application pack DTO or admission grant.",
+  "families": [
+    {
+      "id": "opf-d02",
+      "split": "dev",
+      "publisher": "City of Seattle Office of Sustainability and Environment",
+      "fileCount": 1,
+      "geography": "Seattle, Washington, United States",
+      "schemaIdentity": "Publisher table design: seattle-energy",
+      "familyRule": "Similar municipal/private templates and vintages grouped; no family per file."
+    }
+  ],
+  "assets": [
+    {
+      "id": "seattle-energy.csv",
+      "family": "opf-d02",
+      "split": "dev",
+      "mediaType": "text/csv",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://cos-data.seattle.gov/api/views/teqw-tu6e/rows.csv?accessType=DOWNLOAD"
+      },
+      "issuer": "City of Seattle Office of Sustainability and Environment",
+      "attribution": "City of Seattle Office of Sustainability and Environment",
+      "acquiredAt": "2026-10-10T12:10:22.542007+00:00",
+      "geography": "Seattle, Washington, United States",
+      "purpose": "test_only",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d02/seattle-energy.csv",
+        "sha256": "d1a8227bf9c7c82aea8279a67405add617271852a985d96bb6e4ac9070e8250f",
+        "bytes": 13321421
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "licence": "Public Domain",
+        "reference": null,
+        "scope": "Public local development only"
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null
+      },
+      "privacy": "Whole-file identity/contact screening; no redaction; excluded files never profiled",
+      "sourceSchema": {
+        "dataRows": 38309,
+        "columnCount": 46,
+        "canonicalTargets": null,
+        "evaluationEligible": false
+      },
+      "dictionary": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d02/seattle-energy-dictionary.json",
+        "sha256": "21e18de920aadaea8ad6e5b5370283426388545104fbbb89e8cd3795252eed74",
+        "bytes": 84951,
+        "url": "https://cos-data.seattle.gov/api/views/teqw-tu6e.json",
+        "acquiredAt": "2026-10-10T12:01:31.603019+00:00"
+      },
+      "profileInput": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d02/seattle-energy-prefix-128.csv",
+        "sha256": "8d27a78480c79fe5da82698b99397571cca16f7d04635b95dc0440b8a0fdc479",
+        "bytes": 43775,
+        "rows": 128,
+        "scriptSha256": "3421f8a89a4088172f593de6a1ff8dde1a2043b473536ee026441cbfdbe76dab",
+        "sourceLocator": "CSV header and first 128 native-order data records",
+        "recipe": "byte-exact CSV record prefix; no re-serialization",
+        "script": "scripts/agent/acquire-d1f.py",
+        "sourceSha256": "d1a8227bf9c7c82aea8279a67405add617271852a985d96bb6e4ac9070e8250f"
+      }
+    }
+  ],
+  "heldout": [],
+  "fileCounts": {
+    "development": 1,
+    "families": 1
+  },
+  "teacherPolicy": "No labels/models. Closed discovery and Indian evaluator material stay separate.",
+  "missingCapabilities": [
+    "ten_new_families",
+    "120_documented_target_matching_columns",
+    "12_columns_per_requested_target",
+    "additional_Indian_heldout_publisher",
+    "foreign_family_contract_and_manifest_registration",
+    "source_CRS_qualification"
+  ]
+}

@@ -1,5 +1,20 @@
 # Official source index and retained dataset catalogue
 
+## D1f documented property-table acquisition — 10 October 2026 UTC
+
+Foreign government CSV exports and publisher metadata are retained outside Git, `test_only` and development-only.
+The [sibling manifest](../../fixtures/usp/D8-open-property-foreign/manifest.json) keeps them out of Indian D8 geography.
+The maintained retained-source registry and generated catalogue record immutable originals and byte-exact prefixes.
+No original is edited, no dictionary definition is invented, and similar templates/vintages stay in one family.
+Licences are issuer statements; broader permission remains unconfirmed. Unknown CRS/vertical references remain null.
+
+Acquisition batches are additive. Final counts, closed-route decisions and the resumable checkpoint are in
+[the D1f receipt](../evidence/gf-agent/d1f/result.json). The task makes no labels, model/provider calls or runtime imports.
+Foreign family registration is **not** a one-line change: the current tabular contract requires `mi-d` family IDs,
+and the exact-source allowlist and derivative index are fenced to Indian D8. No backend/contract change is made here.
+No qualified Indian original was added; the existing Indian manifest and frozen evaluator material stay unchanged.
+The 120 matching-column goal is distinct from total profiled/documented columns and is not claimed as achieved.
+
 ## D1d inventory / building-attribute checkpoint — 10 October 2026 UTC
 
 Development now has three property-relevant publisher families, five immutable originals, no development labels:

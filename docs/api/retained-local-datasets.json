@@ -3596,5 +3596,39 @@
       "No fine-tuning, threshold search, Indian accuracy, canonical records, ownership, rights or deployment claim",
       "Interrupted-file original acquisition times remain unknown; resumed bytes verified by CRC and SHA"
     ]
+  },
+  {
+    "id": "d1f-open-property-foreign-development-20261010",
+    "classification": "test_only",
+    "split": "dev",
+    "originKind": "foreign_government_issuing_portal_native_CSV_exports",
+    "issuer": "Foreign municipal issuing authorities; exact publishers in manifest",
+    "geography": "Foreign development only; exact per-source geography in manifest",
+    "manifest": "fixtures/usp/D8-open-property-foreign/manifest.json",
+    "manifestSha256": "0ea691ae0c6c7a0713b84a26e9707ea40e46c0863fe3b978c9386109e124cc8e",
+    "guide": "docs/evidence/gf-agent/d1f/result.json",
+    "sourceCount": 1,
+    "sourceFamilies": 1,
+    "totalOriginalBytes": 13321421,
+    "content": {
+      "externalRoot": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f",
+      "itemsPointer": "/assets",
+      "formats": ["CSV"],
+      "repositoryBytesVerified": false
+    },
+    "terms": {
+      "state": "unconfirmed",
+      "reference": "Per-source issuing metadata",
+      "limitations": "Stated licences preserved; unconfirmed permission is local development only."
+    },
+    "apiInstallation": "not-installed",
+    "standingInstallation": false,
+    "runtimeVerified": false,
+    "limitations": [
+      "Native originals and byte-exact prefixes are distinct; prefixes are not extra families.",
+      "No labels, training, provider calls, measurements, rights or Indian operational qualification.",
+      "Dataset-scope geometry descriptions are weaker than expanded column dictionaries.",
+      "Whole-file screening and closed disposition precede profile dispatch."
+    ]
   }
 ]
