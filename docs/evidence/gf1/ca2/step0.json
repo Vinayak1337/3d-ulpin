@@ -1,0 +1,76 @@
+{
+  "task": "CA2",
+  "baseline": "944f7a22",
+  "decision": "proceed: issued artefact readers do not compare their digest with a new registry capture",
+  "search": "rg -n \"usp_snapshot_bodies|usp_snapshots|readSnapshotBody|readManifest|\\.members\" packages/server/src apps/api/src -g '!*.test.ts'",
+  "readers": [
+    {"file":"packages/server/src/modules/usp/snapshots.ts","lines":"208-256,294-348,355-376,400-430","needs":"Stored scope/access/policy, target bodies, evidence and rights sources, links of type within/floor/serves/crosses, geometry qualification of each record. Vertical resolution reads building, floor and space. Scope pagination enumerates captured records; it requires no unrelated record."},
+    {"file":"packages/server/src/modules/usp/commands.ts","lines":"18-26,56-65,114-132","needs":"Stored manifest and selected membership; recapture before new prepare/commit. No additional body dependency."},
+    {"file":"packages/server/src/modules/usp/project-identity.ts","lines":"32-36,52-76,366-405","needs":"Target evidence sources; captured project identity with code/status/location/successor ids and historicalAliases. Successor bodies are disclosed only if independently selected; do not add unselected successors."},
+    {"file":"packages/server/src/modules/usp/source-stated-identity.ts","lines":"26-45","needs":"SourceOnly evidence source at its original revision/hash."},
+    {"file":"packages/server/src/modules/usp/source-stated-snapshots.ts","lines":"14-63","needs":"Exact selected source-only spaces, recorded parent floors and buildings, then building-feature import-package document pins."},
+    {"file":"packages/server/src/modules/usp/exchange.ts","lines":"25-32,40-47,294-333,351-367","needs":"Selected records, site.frame, evidence/rights/geometry.bindings sources. No other site field."},
+    {"file":"packages/server/src/modules/usp/display-compiler.ts","lines":"27-48","needs":"Captured target identity status only. Feature/import-package/map-area input pins are checked against current tables, not snapshot members."},
+    {"file":"packages/server/src/modules/usp/packet0.ts","lines":"48-52,101-110,140-172","needs":"Target and exact linked evidence source bodies/referenceParts; retained manifest on packet disclosure, never a new capture."},
+    {"file":"packages/server/src/modules/usp/packets/plan-authority.ts","lines":"20-43,46-78,101-109,122-141,145-191,196-205","needs":"Target with aliases/identity/successor ids; selected sources with package referenceParts; shared declarations and all their contributing source evidence. Source ancestry is read from current sources for authorization, not from snapshot bodies."},
+    {"file":"packages/server/src/modules/usp/packets/plan-shared.ts","lines":"20-29","needs":"Captured declaration membership, delegates selected declaration dependencies to readSelectedDeclaration."},
+    {"file":"packages/server/src/modules/usp/packets/pdf-authority.ts","lines":"29-48,107-124,139-148,153-173","needs":"Selected target, its captured committed document/image citations, or source-statement original. Target history is checked in registry_revisions; no whole-manifest recapture."},
+    {"file":"packages/server/src/modules/usp/packets/source-stated-binding.ts","lines":"34-45,62-73,126-140","needs":"Captured source-only target and sourceOnly.evidence original, with original hash/body integrity."},
+    {"file":"packages/server/src/modules/usp/packets/card-projection.ts","lines":"18-28,75-90","needs":"Target, selected source bodies for parcel evidence, selected shared declarations, and source-only parent floor/building via card-source-facts."},
+    {"file":"packages/server/src/modules/usp/packets/card-source-facts.ts","lines":"15-20,30-40","needs":"Space.sourceOnly.parentId floor and Space.sourceOnly.buildingId building; floor identifier and source-only literals, building name."},
+    {"file":"packages/server/src/modules/usp/packets/card-listing.ts","lines":"111-126","needs":"Retained manifest authorization only; delegates plan/card checks. No additional members."},
+    {"file":"packages/server/src/modules/usp/declarations/authority.ts","lines":"34-53,63-84","needs":"Every contributing declaration source body; copied-source ancestry checked live, not as captured members."},
+    {"file":"packages/server/src/modules/usp/declarations/service.ts","lines":"89-93,118-120,182-186,293-350","needs":"Declaration covering a target, complete input population/entry pins for eligibility, all declaration entry bodies for integrity, target applicability/relationPath, instrument/population/denominator/entry/consent/applicability sources. Unselected population members make packetState not_assessed, not a false complete claim."},
+    {"file":"packages/server/src/modules/usp/ingestion/document-association-targets.ts","lines":"32-49,53-82,94-124,152-178","needs":"Target, evidence/rights/geometry.bindings/registryMetadata sources and asserted IFC/document citations. Snapshot sources seed live authorization lineage; no need to capture ancestry separately."},
+    {"file":"packages/server/src/modules/usp/building-snapshots.ts","lines":"36-65","needs":"Building area_feature member for listing and aggregate member/freshness counts; no unrelated features."},
+    {"file":"packages/server/src/modules/usp/identity-reviews.ts","lines":"40-50,58-84","needs":"Stored manifest access/policy and review linkage only; no additional body dependency."},
+    {"file":"apps/api/src/modules/evidence/evidence.services.ts","lines":"46","needs":"Delegates retained manifest read, no additional dependency."}
+  ],
+  "excluded_search_hits": [
+    "datasets/reference-import/display.ts and spatial/legacy/core-display.ts use spatial memberships, not USP snapshots",
+    "officer/officer.ts:537 reads collection members, not USP snapshots",
+    "ingestion/intake-* and source-fusion-kml.ts use archive inventories, not USP snapshots",
+    "API controllers and operation-manifest.json describe/delegate routes, not snapshot body dependencies",
+    "*.test-fixture.ts are protocol controls, not production readers"
+  ],
+  "site_revision": {
+    "moves_with_unrelated_records": true,
+    "writers": [
+      {"file":"packages/server/src/modules/registry/registry.ts","lines":"873-882,900-903","raises":"Any reviewed registry draft records a new site revision."},
+      {"file":"packages/server/src/modules/usp/project-identity.ts","lines":"192-201","raises":"Any identity assignment/mutation increments site revision."},
+      {"file":"packages/server/src/modules/usp/ingestion/source-building-review.ts","lines":"165-171","raises":"Building review."},
+      {"file":"packages/server/src/modules/usp/ingestion/source-building-candidates.ts","lines":"77","raises":"Building candidate decision."},
+      {"file":"packages/server/src/modules/officer/canonical-conflict-decisions.ts","lines":"77","raises":"Canonical conflict decision."},
+      {"file":"packages/server/src/modules/officer/source-spaces.test-fixture.ts","lines":"75","raises":"Protocol control of the source-space writer; real child writer reads the current site revision in ingestion/source-building-children.ts:43."}
+    ],
+    "fields_read": [
+      {"file":"packages/server/src/modules/usp/snapshots.ts","lines":"183-194","fields":"site.frame in digest; frame.id/benchmark/horizontalUnit in manifest"},
+      {"file":"packages/server/src/modules/usp/exchange.ts","lines":"40-47,301-303","fields":"frame.id, frame.benchmark, frame.horizontalUnit, frame.verticalUnit"},
+      {"file":"packages/server/src/modules/usp/snapshots.ts","lines":"243-261","fields":"Generic readSnapshotBody returns the captured site body, but no production semantic consumer uses its name/revision/seed fields."}
+    ],
+    "target_site_member": "body {id,identifier,frame}, pin revision 0; retain the entire frame. Site snapshots keep the whole row and real revision.",
+    "schema": {"file":"database/sql/10-registry/registry.sql","lines":"2-6","note":"No trigger: revision is raised explicitly by writers. Frame can also change without a revision bump (officer/officer-preparation.ts:369)."}
+  },
+  "artefacts": [
+    {"kind":"identity review","new_capture_after_stored":true,"issued":false,"file":"packages/server/src/modules/usp/project-identity.ts","lines":"32-36,135,254,302","comparison":"pinnedManifest current.digest !== manifest.digest before assignment/new mutation; an unconsumed review needs a new capture and review after rollout."},
+    {"kind":"assigned code","new_capture_after_complete":false,"file":"packages/server/src/modules/usp/project-identity.ts","lines":"241-246,288-294,366-405","comparison":"Replay and resolution retain stored manifests. A correction/retirement is a NEW reviewed operation (302), not verification of the earlier assignment."},
+    {"kind":"declaration","new_capture_after_complete":false,"file":"packages/server/src/modules/usp/declarations/service.ts","lines":"33-37,136-156,257,293-350","comparison":"fresh compares before new prepare/review/commit; accepted read/receipt replay use retained bodies. Uncommitted proposals/reviews need a new capture."},
+    {"kind":"proposal","new_capture_after_complete":false,"file":"packages/server/src/modules/usp/commands.ts","lines":"54-57,100-115,131-154","comparison":"New prepare/commit compares captures; cached successful commit returns before recapture. Uncommitted proposals need a new capture."},
+    {"kind":"packet plan","new_capture_after_complete":false,"file":"packages/server/src/modules/usp/packets/plan-service.ts","lines":"106-127,143-144,183-192","comparison":"Read/replay uses authorizePlanTx. New confirm/execute reassess only target/source/entry hashes, not a fresh registry snapshot digest; no rollout recapture required."},
+    {"kind":"packet","new_capture_after_complete":false,"file":"packages/server/src/modules/usp/packet0.ts","lines":"140-172","comparison":"Retained manifest/plan and byte hash only. PDF reader delegates retained PDF plan (packets/pdf-authority.ts:139-148)."},
+    {"kind":"property card","new_capture_after_complete":false,"file":"packages/server/src/modules/usp/packets/card-service.ts","lines":"135-168,174-199,291-323","comparison":"Stored card/plan/packet linkage and hashes, live access/lifecycle; current target revision is reported separately. Same-context new card revision can retain old manifest."},
+    {"kind":"card public verification","new_capture_after_complete":false,"file":"packages/server/src/modules/usp/packets/card-verification.ts","lines":"161-203","comparison":"Six retained integrity/linkage checks; snapshotTx reports current target revision. No capture. Verification remains private local-operator authority despite the QR/resolver route; no public-access expansion."}
+  ],
+  "stop_rule": {"triggered":false,"marker_required":false,"reason":"No issued artefact verification/replay compares a new registry capture digest. Never rewrite existing manifests, bodies or digests."},
+  "source_stated_rows": {"file":"packages/server/src/modules/usp/source-stated-snapshots.ts","lines":"14-63","needs":"Selected spaces at exact revisions, parent floors and buildings at current recorded revisions in the same site. Parent floor sourceOnly.buildingId must match the building. It queries feature-associated geometryFree import packages for all documentPins and checks conflicts. Keep function unchanged; feed it the closure records."},
+  "declaration_rows": {"file":"packages/server/src/modules/usp/declarations/projection.ts","lines":"11-26","today":"Latest revision of every declaration in site (max ten), then every entry and applicability child at that declaration revision (max 100 of each). Entries name body.entry.target; applicability names body.target; declarations name input.population.targets and input.entries[].target.","restriction":"Select only declarations whose population, entry or applicability target is a closure record. Keep all entries of that relevant declaration because service.ts:318-325 checks all; restrict applicability to closure targets. Include all contributing sources because service.ts:306-307 authorizes the entire declaration. This extends the initial sources/entries rule for demonstrated readers, not unrelated site data.","eligibility_caveat":"Do not silently add sibling population records to a one-target capture. Shared packet eligibility is honestly not_assessed unless all population/entry/path pins are already in the chosen closure; broad population selection still works."},
+  "closure": [
+    "Selected registry records and recursively named sourceOnly parent/building plus links within/floor/serves/crosses (snapshots.ts:317-321).",
+    "Associated recorded physical features; feature import-package document pins; sourceStatedOriginal pins unchanged.",
+    "Sources cited by record/feature evidence, rights evidence, geometry bindings, metadata and document/IFC citations; sources contributing to relevant declarations. Their existing package parts are restricted by source id.",
+    "Current qualifications of closure records/features; relevant declarations and their entry bodies, target applicability.",
+    "Aliases and split/merge successor ids only of closure records, inside existing record projection; no independent alias/lineage members or unselected successor bodies.",
+    "Stable site member. No case, map_area, import_package, job or copied-source ancestry members: readers authorize those against their existing live stores."
+  ],
+  "baseline_tests": {"command":"pnpm exec tsx --tsconfig apps/api/tsconfig.json --test $(rg -l 'captureRegistrySnapshot|usp_snapshot' packages/server/src apps/api scripts -g '*.test.ts')","files":5,"tests":46,"pass":46,"fail":0,"skipped":0,"exit":0}
+}
