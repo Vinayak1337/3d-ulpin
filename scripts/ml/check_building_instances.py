@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 from decimal import Decimal
 import hashlib
 import json
@@ -25,6 +26,23 @@ from export_buildings import dev_inputs
 PROTOCOL = EVIDENCE / "parity-protocol-v2.json"
 
 
+def production_contract(source: str) -> dict[str, str]:
+    """Bind postprocessing, not unrelated registration/readiness changes in the same module."""
+    functions = {"_building_tile", "_building_layout", "_resize_logits", "_components"}
+    constants = {"BUILDING_TILE", "BUILDING_STRIDE", "MAX_COMPONENTS", "MAX_VERTICES"}
+    bindings = {}
+    for node in ast.parse(source).body:
+        if isinstance(node, ast.FunctionDef) and node.name in functions:
+            bindings[node.name] = ast.dump(node, include_attributes=False)
+        elif isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id in constants:
+                    bindings[target.id] = ast.dump(node.value, include_attributes=False)
+    if set(bindings) != functions | constants:
+        raise ValueError("Incomplete production postprocessing contract")
+    return bindings
+
+
 def frozen_protocol() -> tuple[dict[str, Any], str, dict[str, Any]]:
     protocol_commit = committed(PROTOCOL)
     protocol = read_json(PROTOCOL)
@@ -43,9 +61,11 @@ def frozen_protocol() -> tuple[dict[str, Any], str, dict[str, Any]]:
         raise ValueError("Export opset differs")
     if [row["chip_id"] for row in old["per_chip"]] != protocol["chip_ids"]:
         raise ValueError("Fixed 20-chip identities differ from v1")
-    original_dev = read_json(EVIDENCE / "b3-ka-run1-20261010-epoch004-dev-t050/result.json")
-    if sha(Path(production().__file__)) != original_dev["production_source_sha256"]:
-        raise ValueError("Production polygon conversion changed since epoch4 scoring")
+    original_source = subprocess.check_output(
+        ["git", "show", f"{protocol_commit}:services/geo/geo/spatial_ml.py"], cwd=REPO, text=True
+    )
+    if production_contract(Path(production().__file__).read_text()) != production_contract(original_source):
+        raise ValueError("Production postprocessing changed since protocol commitment")
     return protocol, protocol_commit, old
 
 
