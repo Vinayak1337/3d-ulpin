@@ -1,0 +1,39 @@
+{
+ "version": "rc1-result/1",
+ "task": "RC1",
+ "gate": [
+  "GF5:B5",
+  "M2"
+ ],
+ "base": "e9dcebde",
+ "outcome": "stopped_at_step0",
+ "step0": "docs/evidence/gf5/rc1/step0.json",
+ "report": {
+  "TASK": "RC1 \u2014 A room candidate states its extent and area, as an estimate with its basis",
+  "GATE": "GF5:B5, M2",
+  "WORKS": "Nothing new to use: Step 0 stopped under its rule; the evidence shows why the written area rule is wrong for retained rooms",
+  "SEE_IT": "node docs/evidence/gf5/rc1/probe-room-units.mjs",
+  "INPUTS": "Magnolia canonical read (GET demo :3194, 18 rooms); good: GROUND KITCHEN; difficult: FIRST MASTER BEDROOM (stated size disagrees) and the unlabelled SECOND floor face",
+  "GAPS": "No planEstimate built; the rule needs the lead's decision (polygons are already metres, so area x scale^2 gives a 0.0076 m2 kitchen)",
+  "DESIGN": [
+   "Room candidates are copied verbatim from record.body.canonicalCandidates in projectBuilding (packages/server/src/modules/registry/canonical-building.ts:715-718); that is the one place to add planEstimate at read.",
+   "Their polygons are vector_plan.py polygonMetres: (pdf - originPdf) * metresPerPdfPoint with y flipped; planFrame is provenance, not a pending transform.",
+   "probe-room-units.mjs proves it on all 18 rooms (bbox equals the cited pt region mapped through planFrame to 1e-6 m)."
+  ],
+  "COMMITS": [
+   "d5e11659 docs(candidates): RC1 where a room candidate is built and what its polygon's units are"
+  ],
+  "CHECKS": [
+   "node docs/evidence/gf5/rc1/probe-room-units.mjs (0)",
+   "git diff --check staging...HEAD (0)",
+   "long lines: only JSON string values in step0.json; the .mjs has none",
+   "typecheck/tests/openapi/ui-design-check not run: no code or UI changed"
+  ],
+  "NEXT": [
+   "Lead decision: areaM2 = the polygon's own area and extentM = its bbox (both already metres); keep metresPerPdfPoint and scaleState in basis as provenance; rename the method (e.g. polygon_area_in_plan_metres@1); unknown when planFrame is absent.",
+   "If the helper should not grow canonical-building.ts (791 lines), allow a second module, e.g. registry/canonical-room-estimate.ts with its test.",
+   "Adding planEstimate at read changes Magnolia's canonical revisionId once (projectionDigest); the retain_rooms request must refuse it with z.never().optional().",
+   "MASTER BEDROOM (first floor) is 15.94 m2 against a stated 18.39 m2 with the same literal as the ground floor's DINING AND LIVING: a label-pairing finding for the vector reader's owner."
+  ]
+ }
+}
