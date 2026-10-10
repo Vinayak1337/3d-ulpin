@@ -8,6 +8,11 @@
   height: 100%;
 }
 
+.notice:focus {
+  outline: 2px solid var(--ui-focus);
+  outline-offset: 2px;
+}
+
 .source {
   display: grid;
   gap: var(--ui-space-2);
@@ -20,6 +25,15 @@
 .columns {
   max-height: 420px;
   overflow: auto;
+}
+
+/* The two tall regions keep their column headers in view while a long table scrolls. */
+.columns thead th,
+.answers thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  box-shadow: 0 1px 0 var(--ui-divider);
 }
 
 .scroll table {
