@@ -40,12 +40,12 @@ WORKERS = 12
 _PRODUCTION: Any = None
 
 
-def committed_plan_commit() -> str:
+def committed_plan_commit(plan: Path = PLAN) -> str:
     """The plan must be committed unchanged before any inference."""
-    relative = PLAN.relative_to(REPO).as_posix()
+    relative = plan.relative_to(REPO).as_posix()
     shown = subprocess.check_output(["git", "-C", str(REPO), "show", "HEAD:" + relative])
-    if shown != PLAN.read_bytes().replace(b"\r\n", b"\n"):
-        raise ValueError("B7 plan differs from the committed plan; preregister before running")
+    if shown != plan.read_bytes().replace(b"\r\n", b"\n"):
+        raise ValueError(f"{relative} differs from the committed plan; preregister before running")
     log = subprocess.check_output(["git", "-C", str(REPO), "log", "-1", "--format=%H", "--", relative])
     return log.decode().strip()
 
