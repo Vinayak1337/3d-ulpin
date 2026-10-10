@@ -5,13 +5,19 @@ import { isDemoId } from '../../api/demo-import';
 import { useAreaCanonical, useBuildingCanonical, type AreaFeature } from '../../api/queries';
 import { toFootprints } from './footprints';
 
-export interface CanonicalFootprints {
-  footprints: FootprintInput[];
-  /** Buildings of the area record that have no usable footprint and so are not drawn. */
-  undrawn: number;
+/** A building of the area record with no usable footprint: it is listed, never drawn or placed. */
+export interface UndrawnBuilding {
+  id: string;
+  name: string;
+  state: NormalizedBuilding['recordState'];
 }
 
-const NONE: CanonicalFootprints = { footprints: [], undrawn: 0 };
+export interface CanonicalFootprints {
+  footprints: FootprintInput[];
+  undrawn: UndrawnBuilding[];
+}
+
+const NONE: CanonicalFootprints = { footprints: [], undrawn: [] };
 
 /** The explored building's own record, only while it is the revision the area record lists. */
 function matchingBuildings(area: NormalizedArea, building: NormalizedBuilding | undefined): NormalizedBuilding[] {
@@ -26,13 +32,19 @@ export function canonicalFootprints(area: NormalizedArea, building?: NormalizedB
     ...footprint,
     candidate: inputs.styles[footprint.id]?.candidate === true,
   }));
-  return { footprints, undrawn: area.buildings.length - footprints.length };
+  return { footprints, undrawn: undrawnBuildings(area, footprints) };
 }
 
-export function undrawnBuildingsNote(count: number): string | null {
-  if (!count) return null;
-  const subject = count === 1 ? '1 building has' : `${count} buildings have`;
-  return `${subject} no usable footprint in the area record and ${count === 1 ? 'is' : 'are'} not drawn.`;
+/** The recorded name, or the building's id when the record has none. */
+export function undrawnBuildings(area: NormalizedArea, footprints: FootprintInput[]): UndrawnBuilding[] {
+  const drawnIds = new Set(footprints.map((footprint) => footprint.id));
+  return area.buildings
+    .filter((building) => !drawnIds.has(building.buildingId))
+    .map((building) => ({
+      id: building.buildingId,
+      name: building.name.value?.trim() || building.buildingId,
+      state: building.recordState,
+    }));
 }
 
 /**
@@ -52,5 +64,6 @@ export function useCanonicalFootprints(
     [area.data, building.data],
   );
   const uploaded = useMemo(() => (isDemoId(areaId) ? toFootprints(features) : null), [areaId, features]);
-  return { ...(uploaded ? { footprints: uploaded, undrawn: 0 } : canonical), error: area.error };
+  const drawn = uploaded ? { footprints: uploaded, undrawn: [] } : canonical;
+  return { ...drawn, pending: area.isLoading, error: area.error };
 }
