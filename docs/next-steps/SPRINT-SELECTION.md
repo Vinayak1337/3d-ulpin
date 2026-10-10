@@ -54,7 +54,7 @@ Every number on screen comes from a result JSON. Unknowns are shown as unknown.
   - Reviews returns and integrates into `staging`.
   - Updates STATUS.md and the claims, and pushes at milestones.
   - Doesn't do the build work itself.
-- **Workers.** Run as background jobs:
+- **Workers.** Spawner order, limits, timers and hand-over are in [WORKERS.md](WORKERS.md). The codex launch, as a background job:
 
   ```
   codex-subagent --model gpt-6.1-sol --effort xhigh --access edit \
