@@ -137,12 +137,15 @@ function harness(useSecond=false,textPages:QuotePage[]=[],useStoredText=false){
         boxConvention:'pymupdf_page_rectangles/1' as const,renderSupport:'unsupported' as const,url:null,locator:{kind:'pdf_page' as const,page:1},calibration:null}],
       anchors:[{locator:'page:1',page:1,region:null}]};state.onPage?.();return result as any;
   }});
-  function storeOcrProduct(proposal:any){
+  // `edge`: the OCR region starts that many points inside the cited box, as a render that ends on whole pixels
+  // leaves it; the stored result states its region edge only when given its render scale.
+  function storeOcrProduct(proposal:any,edge?:{overhangPt:number;renderScalePxPerPt?:number}){
+    const cited=proposal.locator.box,region=edge?[cited[0]+edge.overhangPt,...cited.slice(1)]:cited;
     const caseFrame={id:'UNASSIGNED',horizontalUnit:'m',verticalUnit:'m',benchmark:'UNASSIGNED'};
     const current={id:caseId,revision:2,archived:false,frame:caseFrame,context:[],site_id:null};
     const input=documentInput({current,source,binding:ingestionBinding(caseId),latest:true,
       context:fingerprint({frame:caseFrame,context:[],siteId:null})},randomUUID(),'native_only',
-      {page:proposal.locator.page,region:proposal.locator.box});
+      {page:proposal.locator.page,region});
     const result=DocumentResultSchema.parse({version:'source-document/1',input,
       native:{status:'needs_ocr',format:'pdf',readerSha256:input.readerSha256,
         code:'NATIVE_TEXT_UNAVAILABLE',warnings:[],parts:[]},
@@ -150,6 +153,8 @@ function harness(useSecond=false,textPages:QuotePage[]=[],useStoredText=false){
       ocr:{sourceSha256:input.sourceSha256,sourceRevision:1,sourcePage:1,requestedRegion:input.ocrSelection!.region,
         sourcePageFrame:proposal.locator.frame,method:'ocr:tesseract-cli-5.5.1:sparse-tsv-v1',
         toolStatus:'complete',outputStatus:'complete',textCompleteness:'unverified',issues:[],
+        ...(edge?.renderScalePxPerPt===undefined?{}:{regionEdge:{renderScalePxPerPt:edge.renderScalePxPerPt,
+          boxesBeyondRegion:1,largestOverhangPt:region[0]-cited[0]}}),
         items:[{text:proposal.lineQuote,label:'line',method:'ocr:tesseract-cli-sparse-tsv',
           sourcePageBoxes:[{pageNumber:1,frame:'pdf_display_page_top_left_points',box:proposal.locator.box,
             derivedFrom:'tesseract_tsv_pixels_via_mupdf_pixel_origin'}]}]},createdAt:new Date().toISOString()});
@@ -492,6 +497,22 @@ test('production stored-text reader checks accepted OCR bytes, product hash and 
     await assert.rejects(f.service.save(f.caseId,f.sourceId,{...input,requestKey:randomUUID()}),
       error(422,'DOCUMENT_RESULT_INTEGRITY'));
     assert.equal(f.operations.size,2);
+  }));
+test('stored OCR text is read for a cited box within the stated region edge of its own result, not otherwise',options,
+  ()=>withSubject(async()=>{
+    const {packet}=towerQuoteFixture();
+    const check=async(edge:{overhangPt:number;renderScalePxPerPt?:number})=>{
+      const f=harness(true,[],true),input=f.request();
+      input.packet={...packet,proposals:[packet.proposals[5]]};f.storeOcrProduct(input.packet.proposals[0],edge);
+      const p=(await f.service.save(f.caseId,f.sourceId,input)).packet.proposals[0];
+      assert('quotationCheck' in p);return p.quotationCheck;
+    };
+    // The scale and overhang of the retained site plan result (K9d): 1.114 pt, within its one rendered pixel.
+    const stated=await check({overhangPt:1.1142857142857,renderScalePxPerPt:0.813953488372093});
+    assert.deepEqual([stated.outcome,stated.reason],['quote_at_locator',null]);
+    // A result without the block keeps the exact region, as before: the same kind of citation is not read.
+    const silent=await check({overhangPt:0.5});
+    assert.deepEqual([silent.outcome,silent.reason],['not_checked','no_region_text']);
   }));
 test('accepted OCR authority drift during stored-object I/O refuses before any operation insert',options,
   ()=>withSubject(async()=>{
