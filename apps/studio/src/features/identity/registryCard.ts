@@ -16,6 +16,7 @@ const REFUSALS: Record<string, string> = {
 // The API answers a path it has no route for with 404 NOT_FOUND and this message, the code a missing record uses.
 const NO_ROUTE_MESSAGE = 'This operation is not available.';
 const NO_ROUTE = 'The running server does not serve this read (no such route).';
+const NO_ANSWER = 'The server gave no answer.';
 
 /** The registry's card PDF of one exact revision: the published route, on the Studio's own origin. */
 export function cardPdfPath(cardId: string, revision: number): string {
@@ -39,9 +40,11 @@ export function isNotFound(error: unknown): boolean {
 
 /**
  * Why a card read gave no answer, with the server's code: its mapped words, or its own message for a code that
- * is not mapped. A failure without a code (no connection, a gateway fault) keeps the message it came with.
+ * is not mapped. An answer without a code (a gateway fault) is stated by its status. No answer at all arrives as
+ * the TypeError fetch rejects with, and is said in fixed words, never in the browser's.
  */
 export function readFailure(error: unknown): string {
+  if (error instanceof TypeError) return NO_ANSWER;
   if (isRouteAbsent(error)) return NO_ROUTE;
   const { code, message } = refusalOf(error);
   if (!code) return message;

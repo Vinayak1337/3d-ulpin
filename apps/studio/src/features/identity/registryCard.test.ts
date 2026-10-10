@@ -36,9 +36,9 @@ describe('registry card reads', () => {
       .toBe('The record changed. (STALE_REVISION)');
   });
 
-  it('keeps the message of a failure that carries no code', () => {
+  it('states an answer without a code by its status, and no answer at all in fixed words', () => {
     expect(readFailure(new ApiError(502, '/api/v1/usp/property-cards/list', null))).toBe('The server answered 502.');
-    expect(readFailure(new TypeError('Failed to fetch'))).toBe('Failed to fetch');
+    expect(readFailure(new TypeError('Failed to fetch'))).toBe('The server gave no answer.');
   });
 });
 
