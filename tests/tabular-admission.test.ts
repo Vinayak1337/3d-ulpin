@@ -278,7 +278,9 @@ function approvedReceipt(profile: TabularSourceProfile) {
   const plan = { version: 'manual-tabular/1', mode: 'manual_mapping', source: profile.source,
     caseId: profile.caseId, workspaceRevision: profile.workspaceRevision,
     workspaceFingerprint: profile.workspaceFingerprint, tabular: profile.tabular, mapping,
-    decisions: mapping.fields.map(field => ({ sourceField: field.sourceField, reason: 'Leave the field unknown.' })) };
+    decisions: mapping.fields.map(field => ({ sourceField: field.sourceField,
+      reason: field.target === 'unknown' ? 'Leave the field unknown.' : 'Use the stated address without geocoding.',
+    })) };
   const planHash = fingerprint({ plan, destination: null });
   return TabularMappingReceiptSchema.parse({ id: randomUUID(), revision: 2, state: 'approved', plan,
     destination: null, planHash, authoredBy: 'tb6-protocol-control', authoredAt: new Date().toISOString(),
