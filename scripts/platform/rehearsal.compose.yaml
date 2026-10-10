@@ -1,0 +1,25 @@
+# The processors of a rehearsal runtime (ulpin-reh-NN), laid over compose.yaml by scripts/platform/demo.mjs.
+# They run the demo's reviewed image by its existing tag: never built (the build section is removed), never
+# pulled and never retagged. The environment is the one K3b gave the demo's processors.
+services:
+  geo:
+    image: ulpin-geo:demo-k3b
+    pull_policy: never
+    build: !reset null
+    environment:
+      ULPIN_PROFILE: demo
+    volumes:
+      - type: bind
+        source: ${ULPIN_DEMO_MODEL_DIR:?Runtime model directory missing}
+        target: /models
+        read_only: true
+  worker:
+    image: ulpin-geo:demo-k3b
+    pull_policy: never
+    environment:
+      ULPIN_PROFILE: demo
+    volumes:
+      - type: bind
+        source: ${ULPIN_DEMO_MODEL_DIR:?Runtime model directory missing}
+        target: /models
+        read_only: true

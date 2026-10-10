@@ -45,6 +45,11 @@ export function runtimeDefinition(name = demoRuntime, folder = runtimesFolder) {
     ocrFile: join(dir, 'ocr-paths.json'), ocrProfileFile: join(dir, 'ocr-paths-profile.json'),
     tabularFile: join(dir, 'tabular-paths.json'), documentFile: join(dir, 'document-runtime-paths.json'),
     modelDir: join(dir, 'models').replaceAll('\\', '/'),
+    // The checkout a runtime is served from, and the processors it runs. The demo builds the image its own
+    // compose file names; a rehearsal reuses the demo's reviewed image and has no build step at all.
+    servingCheckout: `E:/Projects/ulpin-wt/${rehearsal ? name : 'demo'}`,
+    composeFile: `scripts/platform/${rehearsal ? 'rehearsal.compose.yaml' : 'demo.compose.json'}`,
+    processorImage: rehearsal ? 'ulpin-geo:demo-k3b' : 'ulpin-geo:demo-s03', buildsProcessorImage: !rehearsal,
   });
   definitions.add(definition);
   return definition;
