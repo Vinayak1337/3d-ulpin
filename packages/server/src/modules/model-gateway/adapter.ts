@@ -36,15 +36,19 @@ export interface ProviderAdapter {
   propose(request: ProviderRequest): Promise<ProviderResult>;
 }
 
+const MESSAGE_CHARS = 32768;
+const inputLimit = () => new AppError(413, 'MODEL_INPUT_LIMIT', 'Select smaller source excerpts for extraction.');
+
 /** The same minimizer runs for live, injected controls, retry and replay. */
 export function minimizeMessages(value: unknown): Message[] {
   const parsed = z.array(z.strictObject({role:z.enum(['system','user','assistant']),
-    content:z.string().max(32768)})).min(1).max(4).safeParse(value);
+    content:z.string()})).min(1).max(4).safeParse(value);
   if (!parsed.success || parsed.data.some(m => /data:|image_url|base64/i.test(m.content)))
     throw new AppError(403, 'MODEL_PROMPT_PRIVACY', 'Only bounded minimized text messages may reach the provider.');
+  // Size alone is not a privacy refusal: a message that passed the two checks above and is only too long.
+  if (parsed.data.some(m => m.content.length > MESSAGE_CHARS)) throw inputLimit();
   const messages = parsed.data.map(m => ({role:m.role,content:minimizeStructuredText(m.content)}));
-  if (Buffer.byteLength(JSON.stringify(messages)) > 24 * 1024)
-    throw new AppError(413, 'MODEL_INPUT_LIMIT', 'Select smaller source excerpts for extraction.');
+  if (Buffer.byteLength(JSON.stringify(messages)) > 24 * 1024) throw inputLimit();
   return messages;
 }
 
