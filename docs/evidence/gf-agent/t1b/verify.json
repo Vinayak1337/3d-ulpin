@@ -15,12 +15,12 @@
     "building.footprint": 1
   },
   "pseudoLabelsSha256": "bbd100c6e2df2e192e4c00d4af4d550194c3fa49bddeeb4da754f150910d683f",
-  "sourceCrsPolicy": "Closed recorded-literal lookup to native GeoJSON inspection schema constant; no default or coordinate inference.",
+  "sourceCrsPolicy": "Closed lookup to native GeoJSON schema constant; no default or coordinate inference.",
   "t1Reproduction": {
     "byteIdentical": true,
     "sha256": "1c20faaf809d8fd9f98dfaa0a0d953900e133516ddb279a399505b4007b2d46f",
     "output": "E:/BhuAayam-data/task-data/a4b/t1-reverification-v1",
-    "qualification": "Original T1 inputs unchanged; output root overridden to owned a4b because T1 writes are out of scope."
+    "qualification": "T1 inputs unchanged; output root overridden to owned a4b because T1 writes are out of scope."
   },
   "supersededLabelsUsed": false,
   "labelsChanged": false,
