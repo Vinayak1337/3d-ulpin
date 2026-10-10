@@ -12,7 +12,9 @@ import { EvidenceProvider, useOpenEvidence } from '../evidence/EvidenceContext';
 import { parseLocator } from '../evidence/refs';
 import { levelSummary } from '../map/inspector/BuildingInspector';
 import { useCanonicalFootprints } from '../map/canonicalScene';
+import { hasGeometry } from '../map/sceneGeometry';
 import { findingVolume, useBuildingScene } from '../map/useBuildingScene';
+import { NoGeometry } from '../register/NoGeometry';
 import { RegisterAbsent } from '../register/RegisterAbsent';
 import { absentReason } from '../register/registerState';
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
@@ -269,8 +271,12 @@ function CheckStage({ register, model, ledger, actions }: { register: BuildingRe
   const context = useAreaContext(register.area.id).data;
   const features = context?.displayFeatures ?? context?.features ?? NONE;
   const feature = features.find((f) => f.id === register.property.id) ?? null;
-  const drawn = useCanonicalFootprints(register.area.id, register.property.id, features).footprints;
+  const canonicalScene = useCanonicalFootprints(register.area.id, register.property.id, features);
+  const drawn = canonicalScene.footprints;
   const { base, footprints, detail, groundM } = useBuildingScene(features, feature, model, ledger, 'none', drawn);
+  // Stated only once the scene's reads have answered and hold nothing to draw for this building.
+  const sceneRead = Boolean(context) && !canonicalScene.pending && !canonicalScene.error;
+  const noGeometry = sceneRead && !hasGeometry(register.property.id, { footprints, detail });
   const findings = register.findings;
   const [findingId, setFindingId] = useState<string | null>(findings.find((f) => f.category === 'blocking')?.id ?? findings[0]?.id ?? null);
   const finding = findings.find((f) => f.id === findingId) ?? null;
@@ -287,8 +293,10 @@ function CheckStage({ register, model, ledger, actions }: { register: BuildingRe
   return (
     <div className={styles.check}>
       <div className={styles.canvasWrap}>
+        {noGeometry ? <NoGeometry buildingId={register.property.id} /> : <>
         {context ? <SceneView look={mapLook} layers={mapLayers} className={styles.canvas} base={base} buildings={footprints} detail={detail} state={state} label={`3D view of ${register.property.name} with the open finding`} /> : null}
         {finding ? <span className={`ul-float ${styles.findingPill}`}>{finding.message}</span> : null}
+        </>}
       </div>
       <div className={styles.side}>
         <Panel title="Checks" aside={<span className="ul-caption">{ledger?.checkMethod ?? findings[0]?.method ?? ''}</span>}>

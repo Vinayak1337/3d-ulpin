@@ -26,7 +26,7 @@ export function levelSummary(model: BuildingModel): string {
   const ground = above.find((l) => /^g/i.test(l.label));
   const upper = above.filter((l) => l !== ground).length;
   const below = model.levels.filter((l) => l.belowGround).map((l) => l.label);
-  const parts = [ground ? `G + ${upper}` : `${upper} floors`];
+  const parts = [ground ? `G + ${upper}` : `${upper} ${upper === 1 ? 'floor' : 'floors'}`];
   if (ground?.record.use?.toLowerCase().includes('stilt')) parts.push('stilt');
   if (below.length) parts.push(below.join(', '));
   return parts.join(' · ');
