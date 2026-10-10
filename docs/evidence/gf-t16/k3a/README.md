@@ -5,7 +5,8 @@ Pure geometry: no DB, no API route, no defaults. P5.1 calls it once per reviewed
   `enclosure` is `closed`, `open` (stilt) or absent. Unreviewed or unknown limits are passed as `null`.
 - **Output:** `{spaceId, method, state, heightState, totalVolumeM3, totalVolumeM3Exact, components[]}`.
   Each component has `areaM2`/`areaM2Exact`, a normalised closed `footprint` and `prism` (`lowerM`, `upperM`,
-  `heightM`, `verticalReference`, `volumeM3`, `volumeM3Exact`). `*Exact` strings are exact decimals; floats are only for display.
+  `heightM`, `verticalReference`, `volumeM3`, `volumeM3Exact`).
+  `*Exact` strings are exact decimals; floats are only for display.
 - **Unknown limits:** `heightState: "unknown"`, `prism: null`, no volume; the 2D area stays; totals are `null`, never 0.
 - **Unsupported:** `state: "unsupported"` plus `reason` on the space and the failing component; no area or volume.
   Reasons: `ring_self_intersecting`, `ring_zero_area`, `level_limits_not_increasing`, `hole_outside_exterior`,
