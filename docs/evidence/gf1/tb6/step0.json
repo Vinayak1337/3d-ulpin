@@ -4,173 +4,669 @@
   "baseCommit": "f11ee8fe",
   "lineBasis": "Unchanged checkout at baseCommit; all locations below precede any implementation.",
   "searchScope": {
-    "roots": ["packages", "apps", "scripts", "tests"],
-    "symbols": ["tabularDevelopmentAsset", "inspectTabularSource", "assertTabularPin", "developmentAssetId", "developmentFamily", "derivativeOf"],
-    "excludedDirectories": ["heldout", "holdout", "evaluator", "provisional", "acquisitions"],
-    "qualification": "Executable callers/readers and contract declarations; evidence JSON occurrences are historical data, not callers. Only manifest.json was directly read in D8. No held-out input or publisher-meaning file was opened."
+    "roots": [
+      "packages",
+      "apps",
+      "scripts",
+      "tests"
+    ],
+    "symbols": [
+      "tabularDevelopmentAsset",
+      "inspectTabularSource",
+      "assertTabularPin",
+      "developmentAssetId",
+      "developmentFamily",
+      "derivativeOf"
+    ],
+    "excludedDirectories": [
+      "heldout",
+      "holdout",
+      "evaluator",
+      "provisional",
+      "acquisitions"
+    ],
+    "qualification": [
+      "Executable callers/readers and contract declarations; evidence JSON occurrences are",
+      "historical data,",
+      "not callers. Only manifest.json was directly read in D8. No held-out input or",
+      "publisher-meaning file",
+      "was opened."
+    ]
   },
   "callersAndReaders": [
     {
       "file": "packages/server/src/modules/usp/ingestion/tabular-source.ts",
       "locations": [
-        {"lines": "15-17,48", "use": "DevelopmentAsset type and recorded-derivative construction retain original hash/version lineage."},
-        {"lines": "138-150", "use": "inspectTabularSource calls tabularDevelopmentAsset at 139 for admission and media-type consistency, then constructs the development pin from id/family/optional derivativeOf."},
-        {"lines": "153-156", "use": "Development licence/test-only limitation and derivative-lineage display lines."},
-        {"lines": "159-164", "use": "assertTabularPin calls tabularDevelopmentAsset at 161; compares id, family, lineage and full stored pin fingerprint for immutable admission/selection integrity."}
+        {
+          "lines": "15-17,48",
+          "use": [
+            "DevelopmentAsset type and recorded-derivative construction retain original hash/version",
+            "lineage."
+          ]
+        },
+        {
+          "lines": "138-150",
+          "use": [
+            "inspectTabularSource calls tabularDevelopmentAsset at 139 for admission and media-type",
+            "consistency,",
+            "then constructs the development pin from id/family/optional derivativeOf."
+          ]
+        },
+        {
+          "lines": "153-156",
+          "use": "Development licence/test-only limitation and derivative-lineage display lines."
+        },
+        {
+          "lines": "159-164",
+          "use": [
+            "assertTabularPin calls tabularDevelopmentAsset at 161; compares id, family, lineage and",
+            "full stored",
+            "pin fingerprint for immutable admission/selection integrity."
+          ]
+        }
       ]
     },
     {
       "file": "packages/server/src/modules/usp/ingestion/service.ts",
       "locations": [
-        {"lines": "75", "use": "assertTabularPin validates the current locked-source profile for chunk mapping."},
-        {"lines": "93", "use": "assertTabularPin validates recipe pins before canonical recipe verification."},
-        {"lines": "123", "use": "inspectTabularSource gates retain before storage, replay or duplicate lookup."},
-        {"lines": "128-134", "use": "First replay returns its stored operation; duplicate checks the incoming pin against the retained source via assertTabularPin."},
-        {"lines": "148-154", "use": "Second transaction replay returns its stored operation; racing duplicate again checks assertTabularPin."}
+        {
+          "lines": "75",
+          "use": "assertTabularPin validates the current locked-source profile for chunk mapping."
+        },
+        {
+          "lines": "93",
+          "use": "assertTabularPin validates recipe pins before canonical recipe verification."
+        },
+        {
+          "lines": "123",
+          "use": "inspectTabularSource gates retain before storage, replay or duplicate lookup."
+        },
+        {
+          "lines": "128-134",
+          "use": [
+            "First replay returns its stored operation; duplicate checks the incoming pin against the",
+            "retained",
+            "source via assertTabularPin."
+          ]
+        },
+        {
+          "lines": "148-154",
+          "use": [
+            "Second transaction replay returns its stored operation; racing duplicate again checks",
+            "assertTabularPin."
+          ]
+        }
       ]
     },
     {
       "file": "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts",
-      "locations": [{"lines": "179-180", "use": "readStreamingTabular calls tabularDevelopmentAsset and compares id/family/byte count for original integrity before yielding rows."}]
+      "locations": [
+        {
+          "lines": "179-180",
+          "use": [
+            "readStreamingTabular calls tabularDevelopmentAsset and compares id/family/byte count for",
+            "original",
+            "integrity before yielding rows."
+          ]
+        }
+      ]
     },
     {
       "file": "packages/server/src/modules/usp/ingestion/streaming-vector.ts",
       "locations": [
-        {"lines": "64", "use": "assertTabularPin checks admitted source pins at each current job assertion."},
-        {"lines": "139", "use": "assertTabularPin checks enqueue admission."}
+        {
+          "lines": "64",
+          "use": "assertTabularPin checks admitted source pins at each current job assertion."
+        },
+        {
+          "lines": "139",
+          "use": "assertTabularPin checks enqueue admission."
+        }
       ]
     },
     {
       "file": "packages/server/src/modules/usp/ingestion/chunk-mapping-learning.ts",
       "locations": [
-        {"lines": "58-64", "use": "officerExamples writes developmentFamily as family with split dev in every profile-links.jsonl learning record."},
-        {"lines": "148", "use": "assertTabularPin rechecks source admission before approved learning."},
-        {"lines": "149-151", "use": "developmentFamily refuses fitting frozen calibration family mi-d03."}
+        {
+          "lines": "58-64",
+          "use": [
+            "officerExamples writes developmentFamily as family with split dev in every",
+            "profile-links.jsonl",
+            "learning record."
+          ]
+        },
+        {
+          "lines": "148",
+          "use": "assertTabularPin rechecks source admission before approved learning."
+        },
+        {
+          "lines": "149-151",
+          "use": "developmentFamily refuses fitting frozen calibration family mi-d03."
+        }
       ]
     },
     {
       "file": "packages/contracts/src/usp/ingestion.ts",
-      "locations": [{"lines": "84-88", "use": "Strict pin contract requires developmentAssetId and developmentFamily; derivativeOf is optional lineage. No case-original variant."}]
+      "locations": [
+        {
+          "lines": "84-88",
+          "use": [
+            "Strict pin contract requires developmentAssetId and developmentFamily; derivativeOf is",
+            "optional",
+            "lineage. No case-original variant."
+          ]
+        }
+      ]
     },
     {
       "file": "packages/api-client/src/schema.d.ts",
-      "locations": [{"lines": "64320-64322,64441-64443,64625-64627,64809-64811,68219-68221,68289-68291,68370-68372,68420-68422,68582-68584", "use": "Generated declarations repeat development-pin fields in route/schema shapes; no runtime read or split decision."}]
+      "locations": [
+        {
+          "lines": [
+            "64320-64322,64441-64443,64625-64627,64809-64811,68219-68221",
+            "68289-68291,68370-68372,68420-68422,68582-68584"
+          ],
+          "use": [
+            "Generated declarations repeat development-pin fields in route/schema shapes; no runtime",
+            "read or split",
+            "decision."
+          ]
+        }
+      ]
     },
     {
       "file": "scripts/agent/measure-c1.ts",
-      "locations": [{"lines": "60,87-97", "use": "Type declaration and inspectTabularSource call for manifest-selected development journey input; no new admission authority."}]
+      "locations": [
+        {
+          "lines": "60,87-97",
+          "use": [
+            "Type declaration and inspectTabularSource call for manifest-selected development journey",
+            "input; no new",
+            "admission authority."
+          ]
+        }
+      ]
     },
     {
       "file": "scripts/agent/a3b-wiring.test.ts",
-      "locations": [{"lines": "44,236,261", "use": "inspectTabularSource prepares real development fixtures, asserts unknown bytes denied, and exercises native XLSX admission. Line 236 asserts the defect TB6 would replace."}]
+      "locations": [
+        {
+          "lines": "44,236,261",
+          "use": [
+            "inspectTabularSource prepares real development fixtures, asserts unknown bytes denied, and",
+            "exercises",
+            "native XLSX admission. Line 236 asserts the defect TB6 would replace."
+          ]
+        }
+      ]
     },
     {
       "file": "scripts/agent/a3d-history.test.ts",
-      "locations": [{"lines": "27", "use": "inspectTabularSource prepares development table pins for history/freshness controls."}]
+      "locations": [
+        {
+          "lines": "27",
+          "use": "inspectTabularSource prepares development table pins for history/freshness controls."
+        }
+      ]
     },
     {
       "file": "scripts/agent/a3d-derivatives.test.ts",
       "locations": [
-        {"lines": "37-46", "use": "inspectTabularSource and assertTabularPin verify exact derivative admission and derivativeOf lineage; changed bytes denied."},
-        {"lines": "53-64", "use": "Direct tabularDevelopmentAsset call verifies generator/version, split and permission refusals with controlled metadata."}
+        {
+          "lines": "37-46",
+          "use": [
+            "inspectTabularSource and assertTabularPin verify exact derivative admission and",
+            "derivativeOf lineage;",
+            "changed bytes denied."
+          ]
+        },
+        {
+          "lines": "53-64",
+          "use": [
+            "Direct tabularDevelopmentAsset call verifies generator/version, split and permission",
+            "refusals with",
+            "controlled metadata."
+          ]
+        }
       ]
     },
     {
       "file": "apps/studio/scripts/f2b-fixtures.ts",
-      "locations": [{"lines": "48-57", "use": "inspectTabularSource prepares intercepted UI profiles from development tables. Studio application sources have no direct reader of these three pin fields."}]
+      "locations": [
+        {
+          "lines": "48-57",
+          "use": [
+            "inspectTabularSource prepares intercepted UI profiles from development tables. Studio",
+            "application",
+            "sources have no direct reader of these three pin fields."
+          ]
+        }
+      ]
     },
     {
       "file": "scripts/agent/a3c-officer-answers.ts",
-      "locations": [{"lines": "15-18", "use": "developmentAssetId restricts lead-entered development labels to one selected asset before reading label files; must explicitly reject a case original, not assign a default asset."}]
+      "locations": [
+        {
+          "lines": "15-18",
+          "use": [
+            "developmentAssetId restricts lead-entered development labels to one selected asset before",
+            "reading",
+            "label files; must explicitly reject a case original, not assign a default asset."
+          ]
+        }
+      ]
     },
     {
       "file": "scripts/agent/a3c-evidence.py",
-      "locations": [{"lines": "27-40", "use": "developmentAssetId names a historical development journey in evidence; not admission or evaluation truth."}]
+      "locations": [
+        {
+          "lines": "27-40",
+          "use": [
+            "developmentAssetId names a historical development journey in evidence; not admission or",
+            "evaluation",
+            "truth."
+          ]
+        }
+      ]
     },
     {
       "file": "scripts/agent/a3d-evidence.py",
-      "locations": [{"lines": "66-80", "use": "Writes derivativeOf lineage in historical exact development derivative evidence; not a source-pin reader."}]
+      "locations": [
+        {
+          "lines": "66-80",
+          "use": [
+            "Writes derivativeOf lineage in historical exact development derivative evidence; not a",
+            "source-pin",
+            "reader."
+          ]
+        }
+      ]
     },
     {
       "file": "scripts/golden-journey/inputs.ts",
-      "locations": [{"lines": "15-16", "use": "Historical runtime receipt type declares derivativeOf originalSha256 for fixed expected lineage."}]
+      "locations": [
+        {
+          "lines": "15-16",
+          "use": [
+            "Historical runtime receipt type declares derivativeOf originalSha256 for fixed expected",
+            "lineage."
+          ]
+        }
+      ]
     },
     {
       "file": "scripts/golden-journey/govern.ts",
-      "locations": [{"lines": "156-160", "use": "Reads derivativeOf from a returned profile and historical expected receipt to check selected derivative lineage; must narrow a future pin union."}]
+      "locations": [
+        {
+          "lines": "156-160",
+          "use": [
+            "Reads derivativeOf from a returned profile and historical expected receipt to check",
+            "selected",
+            "derivative lineage; must narrow a future pin union."
+          ]
+        }
+      ]
     },
     {
       "file": "scripts/agent/t1-profiles.ts",
-      "locations": [{"lines": "173-202", "use": "Search hits developmentFamilyCounts identifier only, not a pin-field read: development preparation reports publisher-family counts from inventory.asset.family and profile.family."}]
+      "locations": [
+        {
+          "lines": "173-202",
+          "use": [
+            "Search hits developmentFamilyCounts identifier only, not a pin-field read: development",
+            "preparation",
+            "reports publisher-family counts from inventory.asset.family and profile.family."
+          ]
+        }
+      ]
     }
   ],
   "gateProtection": {
     "code": [
-      {"file": "packages/server/src/modules/usp/ingestion/tabular-source.ts", "lines": "25-31", "statement": "Only asset split dev within a manifest dev family, outside manifest heldout family ids, permission not restricted, and privacy text without private/restricted is eligible."},
-      {"file": "packages/server/src/modules/usp/ingestion/tabular-source.ts", "lines": "34-48,52-62", "statement": "Exact hash plus byte count, or uniquely recorded derivative of an eligible original with approved generator hash, version and path. Unknown inputs denied TABULAR_DATA_DENIED."},
-      {"file": "packages/server/src/modules/usp/ingestion/tabular-source.ts", "lines": "153-156", "statement": "Licence limitation says test_only and permission unconfirmed unless publisher metadata states otherwise; derivative is explicitly not publisher-native CSV."}
+      {
+        "file": "packages/server/src/modules/usp/ingestion/tabular-source.ts",
+        "lines": "25-31",
+        "statement": [
+          "Only asset split dev within a manifest dev family, outside manifest heldout family ids,",
+          "permission not",
+          "restricted, and privacy text without private/restricted is eligible."
+        ]
+      },
+      {
+        "file": "packages/server/src/modules/usp/ingestion/tabular-source.ts",
+        "lines": "34-48,52-62",
+        "statement": [
+          "Exact hash plus byte count, or uniquely recorded derivative of an eligible original with",
+          "approved",
+          "generator hash, version and path. Unknown inputs denied TABULAR_DATA_DENIED."
+        ]
+      },
+      {
+        "file": "packages/server/src/modules/usp/ingestion/tabular-source.ts",
+        "lines": "153-156",
+        "statement": [
+          "Licence limitation says test_only and permission unconfirmed unless publisher metadata",
+          "states",
+          "otherwise; derivative is explicitly not publisher-native CSV."
+        ]
+      }
     ],
     "manifestHashRecognition": {
       "answer": "no",
       "file": "fixtures/usp/D8-messy-india/manifest.json",
       "lines": "607-640",
-      "fields": ["heldout[].id", "heldout[].publisher", "heldout[].fileCount", "heldout[].caseNames", "freeze.heldoutManifest", "freeze.sha256", "freeze.previousManifestSha256", "freeze.d1cCheckpointManifestSha256"],
-      "statement": "heldout entries contain family metadata, not individual original hashes. freeze hashes pin manifests, not original files. assets[].original.sha256/bytes pin development originals; no restricted/private original hash inventory is supplied. A previously unseen held-out original cannot be recognised from this manifest alone. The case-original rule can only exclude it from development/evaluation records, not identify its hidden family by hash."
+      "fields": [
+        "heldout[].id",
+        "heldout[].publisher",
+        "heldout[].fileCount",
+        "heldout[].caseNames",
+        "freeze.heldoutManifest",
+        "freeze.sha256",
+        "freeze.previousManifestSha256",
+        "freeze.d1cCheckpointManifestSha256"
+      ],
+      "statement": [
+        "heldout entries contain family metadata, not individual original hashes. freeze hashes pin",
+        "manifests,",
+        "not original files. assets[].original.sha256/bytes pin development originals; no",
+        "restricted/private",
+        "original hash inventory is supplied. A previously unseen held-out original cannot be",
+        "recognised from",
+        "this manifest alone. The case-original rule can only exclude it from",
+        "development/evaluation records,",
+        "not identify its hidden family by hash."
+      ]
     },
     "manifestLicence": {
       "file": "fixtures/usp/D8-messy-india/manifest.json",
-      "lines": "127-129,152-155,596,635-636",
-      "statement": "purpose test_only; permission.state unconfirmed is not a reuse/training grant; teacher sees development profiles only; held-out originals remain outside Git for evaluation only."
+      "lines": "7,95-105,145-155,596,635-636",
+      "statement": [
+        "purpose test_only; permission.state unconfirmed is not a reuse/training grant; teacher",
+        "sees",
+        "development profiles only; held-out originals remain outside Git for evaluation only."
+      ]
     }
   },
   "approvedMappingFlow": [
-    {"file": "packages/server/src/modules/usp/ingestion/service.ts", "lines": "111-113,244-266", "statement": "Approval updates usp_mapping_recipes and appends usp_mapping_recipe_revisions, an operations receipt and case event. Tabular execute remains TABULAR_REGISTRY_UNQUALIFIED. After approval calls queueApprovedTabular."},
-    {"file": "packages/server/src/modules/usp/ingestion/chunk-mapping-learning.ts", "lines": "164-183", "statement": "queueApprovedTabular reuses/enqueues a streaming-vector job, then enqueues the existing chunk-mapping job. No development family key is used for those job ids."},
-    {"file": "packages/server/src/modules/usp/ingestion/streaming-vector.ts", "lines": "134-160", "statement": "Writes jobs, job-authority input metadata, usp_streaming_vector_imports, operations and case event; sourceFamilyId is retained-source revision UUID lineage, not developmentFamily."},
-    {"file": "packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts", "lines": "80-90,100-125,18-43", "statement": "Approved route learns before mapping; mapper receives approved plan and bypasses teacher. Writes mapped payload, usp_chunk_mapping_slots, import watermark/counts and event. Proposal-only route can traverse memory/student/teacher."},
-    {"file": "packages/server/src/modules/usp/ingestion/chunk-mapping-learning.ts", "lines": "48-64,111-122,140-160", "statement": "Writes examples.jsonl, profile-links.jsonl, accepted-plans.jsonl, learner artifacts/completed.json and manual-learn operations record. profile-links uses developmentFamily as family and split dev; calibration guard prevents mi-d03 fit."},
-    {"file": "packages/server/src/modules/usp/ingestion/mapping-memory.ts", "lines": "9-19,54-81", "statement": "Memory key is exact layout fingerprint, with officer decision id for idempotency. No family is required. Closed entry/lineage schemas currently have no origin field, so recording origin officer_supplied requires a schema extension outside TB6 ownership."},
-    {"file": "services/geo/geo/usp_learning/stage_a.py", "lines": "153-178,257-270,337-365,432-460", "statement": "Online update invokes shared load_examples; split/family are required and checked against development membership; persisted trainingExamples requires family. Cross-fit splits and scores by family. Case originals without family cannot be loaded or persisted."}
+    {
+      "file": "packages/server/src/modules/usp/ingestion/service.ts",
+      "lines": "111-113,244-266",
+      "statement": [
+        "Approval updates usp_mapping_recipes and appends usp_mapping_recipe_revisions, an",
+        "operations receipt",
+        "and case event. Tabular execute remains TABULAR_REGISTRY_UNQUALIFIED. After approval calls",
+        "queueApprovedTabular."
+      ]
+    },
+    {
+      "file": "packages/server/src/modules/usp/ingestion/chunk-mapping-learning.ts",
+      "lines": "164-183",
+      "statement": [
+        "queueApprovedTabular reuses/enqueues a streaming-vector job, then enqueues the existing",
+        "chunk-mapping",
+        "job. No development family key is used for those job ids."
+      ]
+    },
+    {
+      "file": "packages/server/src/modules/usp/ingestion/streaming-vector.ts",
+      "lines": "134-160",
+      "statement": [
+        "Writes jobs, job-authority input metadata, usp_streaming_vector_imports, operations and",
+        "case event;",
+        "sourceFamilyId is retained-source revision UUID lineage, not developmentFamily."
+      ]
+    },
+    {
+      "file": "packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts",
+      "lines": "80-90,100-125,18-43",
+      "statement": [
+        "Approved route learns before mapping; mapper receives approved plan and bypasses teacher.",
+        "Writes",
+        "mapped payload, usp_chunk_mapping_slots, import watermark/counts and event. Proposal-only",
+        "route can",
+        "traverse memory/student/teacher."
+      ]
+    },
+    {
+      "file": "packages/server/src/modules/usp/ingestion/chunk-mapping-learning.ts",
+      "lines": "48-64,111-122,140-160",
+      "statement": [
+        "Writes examples.jsonl, profile-links.jsonl, accepted-plans.jsonl, learner",
+        "artifacts/completed.json and",
+        "manual-learn operations record. profile-links uses developmentFamily as family and split",
+        "dev;",
+        "calibration guard prevents mi-d03 fit."
+      ]
+    },
+    {
+      "file": "packages/server/src/modules/usp/ingestion/mapping-memory.ts",
+      "lines": "9-19,54-81",
+      "statement": [
+        "Memory key is exact layout fingerprint, with officer decision id for idempotency. No",
+        "family is",
+        "required. Closed entry/lineage schemas currently have no origin field, so recording origin",
+        "officer_supplied requires a schema extension outside TB6 ownership."
+      ]
+    },
+    {
+      "file": "services/geo/geo/usp_learning/stage_a.py",
+      "lines": "153-178,257-270,337-365,432-460",
+      "statement": [
+        "Online update invokes shared load_examples; split/family are required and checked against",
+        "development",
+        "membership; persisted trainingExamples requires family. Cross-fit splits and scores by",
+        "family. Case",
+        "originals without family cannot be loaded or persisted."
+      ]
+    }
   ],
   "teacherPath": {
     "separateDecisionExists": true,
     "admissionAloneCallsProvider": false,
     "locations": [
-      {"file": "packages/server/src/modules/usp/ingestion/service.ts", "lines": "118-184", "statement": "retain profiles locally and stores originals; does not call a provider."},
-      {"file": "packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts", "lines": "108-122", "statement": "Ingestion-side routing decision supplies hard-coded public/development policy; this is the seam to derive policy and inject a refusal callback for a case original before any teacher request is built."},
-      {"file": "packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts", "lines": "169-184,210-228", "statement": "Approved plan/cache/layout memory first; otherwise proposeMapping runs local learner before teacher. An ingestion teacher callback may return manualTeacherPlan with a refusal code while keeping local paths available."},
-      {"file": "packages/server/src/modules/usp/ingestion/mapping-teacher.ts", "lines": "760-772,816-852", "statement": "remainingTeacher rejects held_out or non-public policy after local memory/student; otherwise dispatches options.teacher or proposeMappingWithTeacher."},
-      {"file": "packages/server/src/modules/usp/ingestion/mapping-teacher.ts", "lines": "545-565,499-533", "statement": "Gateway decision: proposeMappingWithTeacher rejects non-public/held_out before mappingTeacherColumnGroups builds payload; runtime resolves gateway separately; callTeacherOnce invokes gateway.propose with current authorization, budget and profile hash."}
+      {
+        "file": "packages/server/src/modules/usp/ingestion/service.ts",
+        "lines": "118-184",
+        "statement": "retain profiles locally and stores originals; does not call a provider."
+      },
+      {
+        "file": "packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts",
+        "lines": "108-122",
+        "statement": [
+          "Ingestion-side routing decision supplies hard-coded public/development policy; this is the",
+          "seam to",
+          "derive policy and inject a refusal callback for a case original before any teacher request",
+          "is built."
+        ]
+      },
+      {
+        "file": "packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts",
+        "lines": "157-175,196-214",
+        "statement": [
+          "Approved plan/cache/layout memory first; otherwise proposeMapping runs local learner",
+          "before teacher.",
+          "An ingestion teacher callback may return manualTeacherPlan with a refusal code while",
+          "keeping local",
+          "paths available."
+        ]
+      },
+      {
+        "file": "packages/server/src/modules/usp/ingestion/mapping-teacher.ts",
+        "lines": "760-772,816-852",
+        "statement": [
+          "remainingTeacher rejects held_out or non-public policy after local memory/student;",
+          "otherwise",
+          "dispatches options.teacher or proposeMappingWithTeacher."
+        ]
+      },
+      {
+        "file": "packages/server/src/modules/usp/ingestion/mapping-teacher.ts",
+        "lines": "545-565,499-533",
+        "statement": [
+          "Gateway decision: proposeMappingWithTeacher rejects non-public/held_out before",
+          "mappingTeacherColumnGroups builds payload; runtime resolves gateway separately;",
+          "callTeacherOnce",
+          "invokes gateway.propose with current authorization, budget and profile hash."
+        ]
+      }
     ],
     "payload": [
-      {"file": "packages/server/src/modules/usp/ingestion/mapping-teacher.ts", "lines": "130-135,176-203,262-302", "statement": "Sends column-profile version/sourceKind/sampleShortfall; per column: header, sourceField alias, inferredType, optional declaredUnit, valueShapes rates, maskedSamples; plus canonical target vocabulary and optional validation error codes. No raw rows, issuer, filename, absolute counts or source original bytes are sent. Samples may be reduced to zero; wide tables grouped at 250-260."},
-      {"file": "packages/server/src/modules/usp/ingestion/column-profile.ts", "lines": "26-49,51-80,98-108,199-219,223-245", "statement": "Sample masking substitutes arbitrary free-text words and digits, detects personal headers, masks contact patterns, but deliberately preserves safe categorical/unit words. Shape rates include null/blank/absent/distinct ratios; sample count can be observed from array length."},
-      {"file": "packages/server/src/modules/model-gateway/adapter.ts", "lines": "45-54,120-129", "statement": "Shared minimizer reapplies structured privacy redaction before network payload construction."},
-      {"file": "packages/server/src/modules/model-gateway/redaction.ts", "lines": "22-35,55-81", "statement": "Structured strings are redacted by value patterns/personal field keys; header is not a personal key."},
-      {"file": "packages/server/src/modules/usp/ingest/redact.ts", "lines": "25,44-71", "statement": "Personal keys and numeric/email patterns protected; arbitrary names in prose explicitly require a qualified review route. Unlabelled firm/person text in a header may pass unchanged."}
+      {
+        "file": "packages/server/src/modules/usp/ingestion/mapping-teacher.ts",
+        "lines": "130-135,176-203,262-302",
+        "statement": [
+          "Sends column-profile version/sourceKind/sampleShortfall; per column: header, sourceField",
+          "alias,",
+          "inferredType, optional declaredUnit, valueShapes rates, maskedSamples; plus canonical",
+          "target",
+          "vocabulary and optional validation error codes. No raw rows, issuer, filename, absolute",
+          "counts or",
+          "source original bytes are sent. Samples may be reduced to zero; wide tables grouped at",
+          "250-260."
+        ]
+      },
+      {
+        "file": "packages/server/src/modules/usp/ingestion/column-profile.ts",
+        "lines": "26-49,51-80,98-108,199-219,223-245",
+        "statement": [
+          "Sample masking substitutes arbitrary free-text words and digits, detects personal headers,",
+          "masks",
+          "contact patterns, but deliberately preserves safe categorical/unit words. Shape rates",
+          "include",
+          "null/blank/absent/distinct ratios; sample count can be observed from array length."
+        ]
+      },
+      {
+        "file": "packages/server/src/modules/model-gateway/adapter.ts",
+        "lines": "45-54,120-129",
+        "statement": [
+          "Shared minimizer reapplies structured privacy redaction before network payload",
+          "construction."
+        ]
+      },
+      {
+        "file": "packages/server/src/modules/model-gateway/redaction.ts",
+        "lines": "22-35,55-81",
+        "statement": [
+          "Structured strings are redacted by value patterns/personal field keys; header is not a",
+          "personal key."
+        ]
+      },
+      {
+        "file": "packages/server/src/modules/usp/ingest/redact.ts",
+        "lines": "25,44-71",
+        "statement": [
+          "Personal keys and numeric/email patterns protected; arbitrary names in prose explicitly",
+          "require a",
+          "qualified review route. Unlabelled firm/person text in a header may pass unchanged."
+        ]
+      }
     ],
     "unmaskedEgressPossible": true,
-    "decisionForResume": "Refuse provider path for EVERY case_original, before request construction, with one stable ingestion refusal code. Do not change masking in TB6. Header masking only removes email/PAN/long digits; arbitrary firm/person names in headers can leave. Safe categorical cell tokens also intentionally survive sample masking. No actual provider call or payload was sent.",
-    "ownershipGap": "chunk-mapping-tabular.ts is the ingestion policy seam but is not among owned edit paths. mapping-teacher.ts and mapping-memory.ts are also outside owned paths; lead must explicitly assign the narrow refusal and memory-origin schema seams."
+    "decisionForResume": [
+      "Refuse provider path for EVERY case_original, before request construction, with one stable",
+      "ingestion",
+      "refusal code. Do not change masking in TB6. Header masking only removes email/PAN/long",
+      "digits;",
+      "arbitrary firm/person names in headers can leave. Safe categorical cell tokens also",
+      "intentionally",
+      "survive sample masking. No actual provider call or payload was sent."
+    ],
+    "ownershipGap": [
+      "chunk-mapping-tabular.ts is the ingestion policy seam but is not among owned edit paths.",
+      "mapping-teacher.ts and mapping-memory.ts are also outside owned paths; lead must",
+      "explicitly assign the",
+      "narrow refusal and memory-origin schema seams."
+    ]
   },
   "retainProvenanceToday": [
-    {"file": "packages/contracts/src/usp/ingestion.ts", "lines": "59-66,103-113", "statement": "AnyRetainSourceSchema permits requestKey, expectedWorkspaceRevision, format, optional familyId/expectedSourceRevision, and table selection. Strict table branch has no issuer, origin, licence or containsPersonalData."},
-    {"file": "packages/server/src/modules/usp/ingestion/service.ts", "lines": "118-126,159-176", "statement": "sources row keeps id/case/family/revision, filename, profile, MIME, size/hash, object key, status and inspection JSON. inspection contains actor and manualProfile with pin/profile/limitations; it cannot keep unstated retain provenance today. family_id is revision lineage, not a development family."}
+    {
+      "file": "packages/contracts/src/usp/ingestion.ts",
+      "lines": "59-66,103-113",
+      "statement": [
+        "AnyRetainSourceSchema permits requestKey, expectedWorkspaceRevision, format, optional",
+        "familyId/expectedSourceRevision, and table selection. Strict table branch has no issuer,",
+        "origin,",
+        "licence or containsPersonalData."
+      ]
+    },
+    {
+      "file": "packages/server/src/modules/usp/ingestion/service.ts",
+      "lines": "118-126,159-176",
+      "statement": [
+        "sources row keeps id/case/family/revision, filename, profile, MIME, size/hash, object key,",
+        "status and",
+        "inspection JSON. inspection contains actor and manualProfile with pin/profile/limitations;",
+        "it cannot",
+        "keep unstated retain provenance today. family_id is revision lineage, not a development",
+        "family."
+      ]
+    }
   ],
   "stopRule": {
     "triggered": true,
-    "reason": "A learning record cannot exist without a development/pool family under the current learner loader and persisted model manifest. Stop after Step 0 as requested; no pin/admission/contract changes.",
+    "reason": [
+      "A learning record cannot exist without a development/pool family under the current learner",
+      "loader and",
+      "persisted model manifest. Stop after Step 0 as requested; no pin/admission/contract",
+      "changes."
+    ],
     "proof": [
-      {"file": "packages/server/src/modules/usp/ingestion/chunk-mapping-learning.ts", "lines": "58-64,94-97,111-120,156-157", "statement": "Approved learning emits family/split links and passes them to stage_a online; omitting them cannot bypass that existing loader."},
-      {"file": "services/geo/geo/usp_learning/stage_a.py", "lines": "163-166", "statement": "Direct link[split] and link[family] subscripts require both; missing either raises KeyError before fitting. Fabricating dev/pool family would violate task data rules."},
-      {"file": "services/geo/geo/usp_learning/stage_a.py", "lines": "267-269,435,440,450", "statement": "version_manifest directly indexes family in every trainingExamples record; online_update shares load_examples and family-based calibration access."}
+      {
+        "file": "packages/server/src/modules/usp/ingestion/chunk-mapping-learning.ts",
+        "lines": "58-64,94-97,111-120,156-157",
+        "statement": [
+          "Approved learning emits family/split links and passes them to stage_a online; omitting",
+          "them cannot",
+          "bypass that existing loader."
+        ]
+      },
+      {
+        "file": "services/geo/geo/usp_learning/stage_a.py",
+        "lines": "163-166",
+        "statement": [
+          "Direct link[split] and link[family] subscripts require both; missing either raises",
+          "KeyError before",
+          "fitting. Fabricating dev/pool family would violate task data rules."
+        ]
+      },
+      {
+        "file": "services/geo/geo/usp_learning/stage_a.py",
+        "lines": "267-269,435,440,450",
+        "statement": [
+          "version_manifest directly indexes family in every trainingExamples record; online_update",
+          "shares",
+          "load_examples and family-based calibration access."
+        ]
+      }
     ],
     "requiredChanges": [
-      "Give approved operational examples an explicit origin officer_supplied variant with neither family nor split; extend stage_a online loader and persisted training-example schema to accept it only on officer-approved online updates.",
-      "Keep case originals excluded from development loading, cross-fit, calibration, family scoring and held-out evaluation; do not create a default family or silently tag pool.",
-      "Extend existing closed mapping-memory officer lineage/entry schema to preserve origin officer_supplied without family while keeping layout key and old records compatible.",
-      "Assign the ingestion routing seam in chunk-mapping-tabular.ts so every case original is refused before teacher payload construction; no masking changes in this task.",
-      "Assign explicit union narrowing for development-only scripts a3c-officer-answers.ts and golden-journey/govern.ts if included by backend typecheck."
+      [
+        "Give approved operational examples an explicit origin officer_supplied variant with",
+        "neither family nor",
+        "split; extend stage_a online loader and persisted training-example schema to accept it",
+        "only on",
+        "officer-approved online updates."
+      ],
+      [
+        "Keep case originals excluded from development loading, cross-fit, calibration, family",
+        "scoring and",
+        "held-out evaluation; do not create a default family or silently tag pool."
+      ],
+      [
+        "Extend existing closed mapping-memory officer lineage/entry schema to preserve origin",
+        "officer_supplied",
+        "without family while keeping layout key and old records compatible."
+      ],
+      [
+        "Assign the ingestion routing seam in chunk-mapping-tabular.ts so every case original is",
+        "refused before",
+        "teacher payload construction; no masking changes in this task."
+      ],
+      [
+        "Assign explicit union narrowing for development-only scripts a3c-officer-answers.ts and",
+        "golden-journey/govern.ts if included by backend typecheck."
+      ]
     ],
     "outsideOwnedPaths": [
       "services/geo/geo/usp_learning/stage_a.py",

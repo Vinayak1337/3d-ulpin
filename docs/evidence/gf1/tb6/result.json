@@ -1,0 +1,86 @@
+{
+  "task": "TB6",
+  "gate": "GF1",
+  "status": "blocked_at_step0",
+  "implementationChanged": false,
+  "report": {
+    "step02": "No: heldout entries omit original hashes; freeze.sha256 is a manifest hash.",
+    "developmentDoor": "Exact public development originals/recorded derivatives: unchanged.",
+    "caseOriginalDoor": "Not implemented: Step 0.5 stops on mandatory family-based learning records.",
+    "teacherPath": [
+      "Would send headers, types, optional units, shape rates and masked samples; no raw rows or absolute counts.",
+      "Arbitrary names in headers may leave unchanged; every case original must be refused on resume.",
+      "Policy refusal: mapping-teacher.ts:552-555, before payload grouping; no new case-original guard added.",
+      "Ingestion policy seam: chunk-mapping-tabular.ts:108-122. Retain alone makes no provider call."
+    ],
+    "realInputs": "Neither input run: stopped at Step 0.5 before implementation.",
+    "block": [
+      "TASK   TB6 — Table admission by stated provenance            GATE GF1",
+      "WORKS  Step 0 audit completed; admission remains unchanged under the stop rule.",
+      "SEE IT python -B -m json.tool docs/evidence/gf1/tb6/step0.json",
+      "INPUTS Good + difficult: not run; stopped at Step 0.5.",
+      "GAPS   Local learner requires family/split; memory-origin and privacy seams are outside ownership.",
+      "DESIGN step0.json traces admission callers, provenance storage, learning records and teacher masking.",
+      "       stage_a.py requires family; mapping-memory.ts uses layout keys but lacks an origin field.",
+      "COMMITS a2b8bb1d docs(ingestion): TB6 what the table gate protects and who reads its answer",
+      "        docs(ingestion): TB6 evidence (this commit)",
+      "CHECKS Source/manifest assertions: 0; JSON/120-character validation: 0; git diff --check: 0.",
+      "       Formatting attempts: 1, 1; default-encoding validation: 1; corrected as described below.",
+      "       Implementation checks skipped under Step 0.5; no code or generated types changed.",
+      "NEXT   Assign operational online-learning, memory-origin and ingestion-refusal seams; then resume TB6."
+    ]
+  },
+  "checks": [
+    {
+      "command": "python -B -c <source/manifest assertions from step0.json stopRule>",
+      "exitCode": 0,
+      "output": "Mandatory learner family and absent held-out original hashes confirmed; JSON valid.",
+      "qualification": "Static source assertions, not a learner execution or runtime gate."
+    },
+    {
+      "command": "Evidence line-length validation",
+      "initialExitCodes": [1, 1],
+      "diagnosis": "A single comma-separated line-reference token remained at 121 characters.",
+      "correction": "Split the reference into two entries; final validation passes."
+    },
+    {
+      "command": "Evidence JSON validation with default encoding",
+      "exitCode": 1,
+      "diagnosis": "Windows cp1252 cannot decode the UTF-8 report punctuation.",
+      "correction": "Use explicit UTF-8; rewrite report to preserve its punctuation and flat line block."
+    },
+    {"command": "Evidence JSON/line-length validation with explicit UTF-8", "exitCode": 0},
+    {"command": "git diff --check", "exitCode": 0},
+    {"command": "git diff staging...HEAD", "exitCode": 0, "qualification": "Self-review of evidence only."}
+  ],
+  "notRun": {
+    "reason": "Stopped at Step 0.5; no code, contracts or generated client changed.",
+    "commands": [
+      "pnpm typecheck:backend",
+      "table and mapping test suites (before/after counts not collected)",
+      "OpenAPI/client generation scripts",
+      "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "pnpm studio:typecheck",
+      "python -B scripts/api/check.py"
+    ],
+    "openApiBaseline": "Task states 301 operations/342 schemas; not independently executed in stopped audit.",
+    "apiCheckOutput": null
+  },
+  "safety": {
+    "heldOutFilesOpened": 0,
+    "providerCalls": 0,
+    "runtimeRequests": 0,
+    "runtimeChanges": 0,
+    "originalsChanged": 0,
+    "databaseAccess": false,
+    "gpuUsed": false,
+    "pushed": false
+  },
+  "prerequisites": [
+    "stage_a.py:153-178,257-270: support officer_supplied online records without family/split.",
+    "Keep operational records outside development, evaluation, calibration and family-scoring paths.",
+    "Extend mapping-memory.ts closed schema with origin; preserve old entries and layout keys.",
+    "Assign chunk-mapping-tabular.ts policy seam; deny every case original before teacher payload build.",
+    "Narrow unowned development-pin scripts if the contract union makes them fail typechecking."
+  ]
+}
