@@ -1,0 +1,109 @@
+{
+  "base": "f4ed6f46",
+  "baseline": { "requestedStudioTests": 322, "actualStudioTests": 336, "exit": 0, "reason": "EV2 merged" },
+  "scope": "No direct api.POST/PUT/PATCH in features/identity; its commands call api/queries wrappers.",
+  "imports": "Use relative imports of the original contracts source, as other Studio tests do; no schema copy.",
+  "routes": [
+    {
+      "route": "POST /api/v1/usp/snapshots", "strict": true,
+      "schema": "usp/ports.ts:15 UspCaptureSnapshotRequestSchema",
+      "calls": ["prepare.ts:38", "useAssignFlow.ts:32"],
+      "builder": "assignment.ts:82 captureBody: field by field", "boundary": "queries.ts:339 route-typed body"
+    },
+    {
+      "route": "POST /api/v1/usp/identity/reviews", "strict": true,
+      "schema": "usp/project-identity.ts:105 ProjectIdentityReviewSchema",
+      "calls": ["useAssignFlow.ts:36"],
+      "builder": "assignment.ts:92 reviewBody: field by field; scope/evidence exact nested route types",
+      "boundary": "queries.ts:344 route-typed body"
+    },
+    {
+      "route": "POST /api/v1/usp/identity/assign", "strict": true,
+      "schema": "usp/project-identity.ts:155 AssignProjectCodeSchema",
+      "calls": ["useAssignFlow.ts:51"],
+      "builder": "assignment.ts:118 assignBody: fields selected from wider ReviewedAssignment",
+      "boundary": "queries.ts:349 route-typed body"
+    },
+    {
+      "route": "POST /api/v1/usp/packets/plans/entries", "strict": true,
+      "schema": "usp/packet-pdf.ts:130 UspReadPacketPlanEntriesSchema",
+      "calls": ["prepare.ts:52"], "builder": "issue.ts:93 entriesBody: field by field",
+      "boundary": "queries.ts:354 route-typed body; accepts it unchanged today"
+    },
+    {
+      "route": "POST /api/v1/usp/packets/plans/create", "strict": true,
+      "schema": "usp/packets.ts:31 UspCreatePacketPlanSchema",
+      "calls": ["prepare.ts:57"], "builder": "issue.ts:98 planBody: field by field",
+      "boundary": "queries.ts:359 route-typed body; accepts it unchanged today"
+    },
+    {
+      "route": "POST /api/v1/usp/packets/plans/confirm", "strict": true,
+      "schema": "usp/packets.ts:38 UspConfirmPacketPlanSchema",
+      "calls": ["prepare.ts:59"], "builder": "issue.ts:116 confirmBody: selects fields from wider answered plan",
+      "boundary": "queries.ts:364 route-typed body; accepts it unchanged today"
+    },
+    {
+      "route": "POST /api/v1/usp/packets/plans/execute", "strict": true,
+      "schema": "usp/packets.ts:42 UspExecutePacketPlanSchema",
+      "calls": ["prepare.ts:61"], "builder": "issue.ts:126 executeBody: selects fields from wider answered plan",
+      "boundary": "queries.ts:369 route-typed body; accepts it unchanged today"
+    },
+    {
+      "route": "POST /api/v1/usp/property-cards/read", "strict": true,
+      "schema": "usp/property-card.ts:17 UspReadPropertyCardSchema",
+      "calls": ["prepare.ts:71"], "builder": "IssueTarget passed unchanged, mode/label are extra",
+      "boundary": "queries.ts:374 passes body unchanged; strict schema refuses it today"
+    },
+    {
+      "route": "POST /api/v1/usp/property-cards/preview", "strict": true,
+      "schema": "usp/property-card.ts:47 UspPreviewPropertyCardSchema",
+      "calls": ["prepare.ts:64", "prepare.ts:73"],
+      "builder": "issue.ts:131-142 firstCard/nextRevision: field by field; request variable is exact PreviewBody",
+      "boundary": "queries.ts:379 passes body unchanged; accepts it today"
+    },
+    {
+      "route": "POST /api/v1/usp/property-cards/generate", "strict": true,
+      "schema": "usp/property-card.ts:10 UspGeneratePropertyCardSchema",
+      "calls": ["useIssueFlow.ts:66"], "builder": "issue.ts:146 spreads request and request.guard",
+      "boundary": "queries.ts:384 passes body unchanged; accepts current exact preview request today"
+    },
+    {
+      "route": "POST /api/v1/usp/property-cards/list", "strict": true,
+      "schema": "usp/property-card.ts:154 UspListPropertyCardsSchema",
+      "calls": ["queries.ts:278-280"],
+      "builder": "field by field; scope is the exact nested snapshot scope, not the whole listing row",
+      "boundary": "literal body; accepts it today"
+    }
+  ],
+  "passThroughs": [
+    { "at": "prepare.ts:71", "wider": "IssueTarget", "refusedToday": true, "extra": ["mode", "label"] },
+    { "at": "issue.ts:146", "wider": "spread PreviewBody and guard into GenerateBody", "refusedToday": false },
+    { "at": "prepare.ts:64,73", "wider": "none: route-typed request variable", "refusedToday": false },
+    {
+      "at": "queries.ts:354,359,364,369,374,379,384", "wider": "none declared: route-typed body parameters",
+      "refusedToday": "Only readCard's actual IssueTarget is refused; other current callers build exact bodies.",
+      "risk": "Structural assignment admits wider objects at all seven boundaries; project fields at api.POST."
+    }
+  ],
+  "draftImporters": [
+    { "at": "features/identity/UnitCardDialog.tsx:6,30", "risk": true, "why": "draft fallback after none/error" },
+    { "at": "features/identity/CardDialog.tsx:6,14,44-58", "risk": false, "why": "draft label; QR stays local" },
+    { "at": "features/identity/cardFacts.tsx:4", "risk": false, "why": "draft facts helper" },
+    { "at": "features/identity/DraftCard.tsx:2", "risk": false, "why": "hash helper; explicit DraftCard" },
+    { "at": "features/identity/localChain.ts:2", "risk": false, "why": "explicit local chain" },
+    { "at": "features/workflow/useWorkflow.ts:2-5", "risk": false, "why": "local storage hooks; no display" },
+    { "at": "features/review/WorkspacePage.tsx:9", "risk": false, "why": "BuildingAction type only" },
+    { "at": "features/verify/VerifyPage.tsx:6,71", "risk": false, "why": "draft verification explicitly labelled" },
+    { "at": "features/register/RegisterPage.tsx:14,313", "risk": true, "why": "opens UnitCardDialog fallback" },
+    { "at": "features/register/exporters.ts:4,33,113", "risk": true, "why": "local proposedCode in exports" },
+    { "at": "features/register/registry.ts:4,54", "risk": true, "why": "workflow code feeds project code exports" },
+    { "at": "features/register/SourceList.tsx:4", "risk": false, "why": "hash helper only" },
+    { "at": "local/public.ts:3,56-57", "risk": true, "why": "local public projection code/status from browser" },
+    { "at": "local/workflow.test.ts:3", "risk": false, "why": "test only; no rendered code or card" },
+    { "at": "features/map/MapWorkspace.tsx:15,540", "risk": true, "why": "indirect UnitCardDialog importer" },
+    { "at": "portal/RecordPage.tsx:18", "risk": false, "why": "indirect local code explicitly marked draft" }
+  ],
+  "part2Scope": "Change only UnitCardDialog and its pure decision; report other consumers without changing them.",
+  "servedCheck": "local/routes.ts:155; same isServed method/path lookup as RegisterPage.tsx:50.",
+  "removal": "AssignDialog.tsx has no importer; no private style or test import. Prove again before removal."
+}
