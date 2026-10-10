@@ -59,7 +59,8 @@ async function childrenTx(client: PoolClient, caseId: string, parentId: string, 
   for (const member of members) {
     // Sheet byte size is unknown, not zero; no reservation or extraction is attempted here.
     const size = member.size;
-    const inserted = await client.query(`INSERT INTO usp_intake_items(item_id,case_id,parent_item_id,member_path,size_bytes,size_class,
+    const inserted = await client.query(`INSERT INTO usp_intake_items(
+      item_id,case_id,parent_item_id,member_path,size_bytes,size_class,
       family,format,wave,state,card,card_sha256,probe_version,limit_reason)
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
       ON CONFLICT(parent_item_id,member_path) DO NOTHING RETURNING item_id`,
@@ -96,9 +97,9 @@ export class IntakeService {
       const existing = (await client.query(
         'SELECT * FROM usp_intake_items WHERE source_id=$1 AND parent_item_id IS NULL', [ctx.source.id])).rows[0];
       const row = await registerIntakeItemTx(client, ctx.source);
-      if (!existing) await appendIntakeItemTx(client, caseId, row.item_id);
       const pin = intakeSourcePin(ctx.source, ctx.binding);
       if (prior?.sourcePin && prior.sourcePin !== pin) conflict('The retained intake source changed.');
+      if (!existing) await appendIntakeItemTx(client, caseId, row.item_id);
       if (!prior) {
         await rememberTx(client, caseId, key, digest, { itemId: row.item_id, sourcePin: pin, completed: false });
       }

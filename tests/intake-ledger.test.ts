@@ -283,7 +283,6 @@ test('request-key conflicts and retained byte changes on replay fail closed', as
   });
 });
 
-
 test('register, probe and pin append persisted intake fields once each; replay adds nothing', async () => {
   await configured(async () => {
     const f = fixture();

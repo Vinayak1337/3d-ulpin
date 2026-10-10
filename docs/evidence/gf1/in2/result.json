@@ -1,34 +1,92 @@
 {
-  "task": "IN2", "gate": "GF1", "status": "stopped_after_step0", "base": "2940b55c",
-  "evidence": "docs/evidence/gf1/in2/step0.json",
-  "stop": {
-    "reason": "First ledger creation locks existing referenced sources, cases and jobs tables for foreign keys.",
-    "sql": "database/sql/95-ingestion/intake-ledger.sql:4-5,52",
-    "lock": "SHARE ROW EXCLUSIVE; conflicts with writers; held until USP transaction ends.",
-    "repeatable": true, "repeatabilityRuntimeVerified": false, "existingRowsRewritten": false,
-    "populationAndDurationMeasured": false
+  "task": "IN2", "gate": "GF1", "status": "built_and_throwaway_runtime_verified", "base": "2940b55c",
+  "step0": {"file": "docs/evidence/gf1/in2/step0.json", "accepted": true, "originalStopCleared": true},
+  "leadDecision": {
+    "source": "RESUME IN2, decision 1; accepted rationale, not a measurement",
+    "lockAccepted": "SHARE ROW EXCLUSIVE on cases, sources and jobs until the USP transaction ends.",
+    "reasons": [
+      "New tables are empty: no foreign key validation reads or rewrites an existing row.",
+      "Second run creates nothing and installs no key.",
+      "Earlier ledgers referencing these authorities took the same lock on first creation.",
+      "Schema steps run at roll-out while the target runtime's API and dispatcher are stopped."
+    ],
+    "unmeasured": "How long the lock is held on the demo's real rows; no populated runtime was accessed."
   },
-  "findings": {
-    "verifierTaskToAdmit": "IN1 (the manifest source.task), not IN2 alone",
-    "extraVerifierInputs": "No separate table inventory, expected-objects file or runtime receipt is consumed.",
-    "studioUnknownKind": "Valid intake.item would advance cursor without drawing or closing the stream.",
-    "httpProvenance": "Three fields undeclared, rejected by allowed set and omitted from service forwarding."
+  "implementation": {
+    "migration": "migrateIntakeLedgerTx runs once after migrateStreamedProfileTx in the existing USP transaction.",
+    "verifier": "Admitted IN1 beside K4a/K5; no IN2 entry, SQL or manifest change.",
+    "events": "intake.item reads seven persisted tray fields in the registering/probing/pinning transaction.",
+    "failedProbes": "Both parser failure and budget expiry append the persisted state; neither invents a result.",
+    "replay": "Existing registration and same-key completed probes/pins append no duplicate intake event.",
+    "children": "A child inserted with its initial probe card emits one item event for that single write.",
+    "existingNotification": "source.retained append unchanged; no Studio reader edit.",
+    "upload": "Three optional fields forwarded unchanged; absent stays absent; origin refused; schema error kept.",
+    "contract": "Regenerated OpenAPI, source pins and client schema; 305 operations and 346 named schemas."
   },
-  "changes": "Evidence only; parts 1-4 not started under the explicit stop rule.",
   "runtime": {
-    "dockerAvailable": true, "dockerServerVersion": "29.8.0", "createdContainers": [],
-    "createdVolumes": [], "createdNetworks": [], "databaseConnections": 0, "migrationRuns": 0,
-    "realInputsUsed": [], "containerRunSkippedBecause": "Step 0 stop rule, not Docker unavailability."
+    "receipt": "docs/evidence/gf1/in2/runtime.json", "codeCommit": "fd0595c07e495aba9069dfed3ec2df2e6ac02ea8",
+    "container": "ulpin-in2-tmp-f1b3cfe1a1140eb7", "removed": true,
+    "storage": "Own tmpfs at /var/lib/postgresql/data; no Docker volume created; existing bridge network.",
+    "port": "127.0.0.1:63956 (allocated by Docker)",
+    "migrations": "bootstrap.postgis once, infrastructure/db.migrate() twice; full server migration succeeded.",
+    "firstAndSecond": {"tables": 98, "columns": 773, "constraints": 518, "indexes": 186},
+    "ledger": {"tables": 4, "statements": 9, "secondRunSkipNotices": 9, "rowsAfterBothRuns": 0},
+    "secondRun": "Catalogue hash and four ledger row counts identical; all nine ledger statements skipped.",
+    "verifierAfterMigrations": "Exit 0: 25 historical files, 31 authored additions, 55 named migration queries.",
+    "journeys": "Two separate test-only source cases; three parent intake events each; replay/refused pin add none.",
+    "integrity": "Both original SHA-256 values unchanged after the journey; both case revisions remain 0.",
+    "machine": "All container, volume and network names before and after are recorded and exactly equal.",
+    "machineCountsBeforeAndAfter": {"containers": 36, "volumes": 20, "networks": 9},
+    "limitations": [
+      "SQL source/receipt setup is protocol scaffolding; service reads real originals in place by injected ranges.",
+      "Not HTTP/object-store ingestion qualification; neither geometry nor registry records are created.",
+      "Runtime run preceded final SQL line wrapping and moving registration notification after its source-pin check.",
+      "Final focused tests passed after those review-only edits; no second container run."
+    ]
   },
+  "inputs": [
+    {"kind": "good", "path": "E:/BhuAayam-data/task-data/nyc-zcta-10013-context/layers/buildings-original.geojson",
+     "catalogue": "datasets.json retained NYC pack path + demo-import guide; SHA-256 from nyc-profile.json",
+     "bytes": 1103282, "state": "probed", "family": "vector", "format": "geojson", "wave": 1,
+     "honestUnknown": "Whole-file feature count remains null; no retained count was supplied."},
+    {"kind": "difficult", "path": "E:/BhuAayam-data/task-data/ulpin-data-10/District.zip",
+     "catalogue": "datasets.json karnataka-district-zip-inventory", "bytes": 3935596,
+     "state": "probed", "family": "archive", "format": "zip", "wave": 4,
+     "sidecars": ["District.shx", "District.dbf", "District.prj", "District.cpg"],
+     "honestUnknown": "District.sbn and District.sbx stay unknown; licence unconfirmed; no geometry extracted."}
+  ],
   "checks": [
-    {"command": "python -B scripts/db/verify_extraction.py", "exit": 1,
-     "result": "Existing refusal: Authored SQL provenance is invalid: ingestion.intake.schema"},
-    {"command": "python -B docs/evidence/gf1/in1/verify-static.py", "exit": 0,
-     "result": "4 tables, 9 statement hashes, 5 mirrored enums; new source lines <=120"},
-    {"command": "docker version --format '{{.Server.Version}}'", "exit": 0},
-    {"command": "python JSON validation of step0.json and result.json", "exit": 0},
+    {"command": "python -B scripts/db/verify_extraction.py", "exit": 0},
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "pnpm studio:typecheck", "exit": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test <focusedFiles>", "exit": 0,
+     "tests": 63, "pass": 63, "fail": 0, "skipped": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test <rgFiles> tests/tabular-admission.test.ts",
+     "before": {"exit": 1, "tests": 197, "pass": 185, "fail": 6, "skipped": 6},
+     "after": {"exit": 1, "tests": 200, "pass": 188, "fail": 6, "skipped": 6}},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts", "exit": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 0},
+    {"command": "pnpm studio:api-types", "exit": 0},
+    {"command": "python -B scripts/api/check.py", "exit": 1, "error": "API-DOC: runtime receipt changed"},
+    {"command": "node docs/evidence/gf1/in2/run-runtime.mjs docs/evidence/gf1/in2/runtime.json", "exit": 0},
     {"command": "git diff --check", "exit": 0}
   ],
-  "notRun": "Typechecks, event/route/migration tests, contract generation and real-file runtime journey.",
-  "next": "Lead must clear referenced-table locking explicitly or assign SQL redesign; then resume parts 1-4."
+  "focusedFiles": ["tests/intake-ledger.test.ts", "tests/intake-probe.test.ts", "tests/intake-api.test.ts",
+    "tests/intake-migration.test.ts", "tests/intake-upload-provenance.test.ts"],
+  "rgFiles": "rg -l 'intake|tabular-admission' tests packages/server/src -g '*.test.ts' (before and after)",
+  "unchangedFailures": [
+    "gltf-ingestion/obj-ingestion: explicit native bridge admission missing from environment",
+    "nest-spatial-api: old expected operation list omits already published source-review operations",
+    "registry-cityjson-validation: old SQL control does not admit SELECT operation FROM jobs WHERE id=$1",
+    "survey-report-controller: missing ULPIN_LOCAL_OPERATOR_SUBJECT attribution configuration",
+    "tabular-admission: local learner unavailable (STUDENT_UNAVAILABLE instead of null)"
+  ],
+  "apiCheckerGap": {
+    "at": "scripts/api/check.py:54", "historicalReceiptHashesRepinned": false,
+    "diagnostic": "Three mismatching historical receipts match their pins after CRLF-to-LF conversion in memory.",
+    "receipts": ["docs/evidence/usp/cityjson-validation-runtime.json",
+      "docs/evidence/usp/current-runtime-20261003.json",
+      "docs/evidence/usp/nest-migration/runtime-source/source-evidence-history-20261005.json"]
+  },
+  "next": "Lead reviews/integrates; runtime owner applies at stopped roll-out; tray drawing is a later task."
 }
