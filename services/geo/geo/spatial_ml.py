@@ -74,9 +74,14 @@ def _file_sha(path, size, modified_ns):
     return digest.hexdigest()
 
 
+def _model_active(model: dict[str, object]) -> bool:
+    profile = os.environ.get("ULPIN_PROFILE")
+    return model.get("active", True) is True or (profile == "demo" and profile in model.get("activeProfiles", []))
+
+
 def _verified_path(model):
-    if model.get("active", True) is not True:
-        _fail("MODEL_NOT_ACTIVE", "Candidate model is registered but inactive; activation needs lead review.")
+    if not _model_active(model):
+        _fail("MODEL_NOT_ACTIVE", "Candidate model is inactive outside its explicitly approved runtime profile.")
     path = _model_dir() / model["filename"]
     try:
         stat = path.stat()
@@ -141,8 +146,10 @@ def _validate_request(data):
         _fail("INVALID_INPUT", "The original source hash is required.")
     if isinstance(source["bytes"], bool) or not isinstance(source["bytes"], int) or not 1 <= source["bytes"] <= MAX_SOURCE_BYTES:
         _fail("RESOURCE_LIMIT", "Select an original source of at most 16 MiB.")
-    if source["mimeType"] not in ("image/png", "image/jpeg", "application/pdf"):
-        _fail("UNSUPPORTED_SOURCE", "Local segmentation supports PNG, JPEG or one selected PDF page.")
+    if source["mimeType"] not in ("image/png", "image/jpeg", "image/tiff", "application/pdf"):
+        _fail("UNSUPPORTED_SOURCE", "Local segmentation supports PNG, JPEG, building GeoTIFF or a PDF page.")
+    if source["mimeType"] == "image/tiff" and data["task"] != "building":
+        _fail("UNSUPPORTED_SOURCE", "GeoTIFF originals are restricted to building pixel candidates.")
     page = data.get("page", 1)
     if isinstance(page, bool) or not isinstance(page, int) or not 1 <= page <= 100:
         _fail("INVALID_INPUT", "Select a page between 1 and 100.")
@@ -209,9 +216,9 @@ def _source_raster(raw, mime, page, region, task):
             with warnings.catch_warnings():
                 warnings.simplefilter("error", Image.DecompressionBombWarning)
                 with Image.open(io.BytesIO(raw)) as original:
-                    expected = "PNG" if mime == "image/png" else "JPEG"
+                    expected = {"image/png": "PNG", "image/jpeg": "JPEG", "image/tiff": "TIFF"}[mime]
                     if original.format != expected or getattr(original, "n_frames", 1) != 1:
-                        _fail("UNSUPPORTED_SOURCE", "Source bytes must match the declared single-image PNG/JPEG format.")
+                        _fail("UNSUPPORTED_SOURCE", "Source bytes must match the declared single-image format.")
                     if original.width * original.height > MAX_SOURCE_PIXELS:
                         _fail("RESOURCE_LIMIT", "Source image exceeds 40 megapixels; select a bounded source image.")
                     original.load()

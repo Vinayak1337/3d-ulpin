@@ -554,7 +554,7 @@
     "packages/server/src/shared/urls/urls.ts": "3b6349b08201b0b382e891868e574a0b5828fb8f9885c7e26f16a0d2021a24a2",
     "packages/server/src/shared/work-queue.ts": "4b5467fc517cc3afd735862acabafab5ace921c9ac1a4ead293a7c45bdd53c7c",
     "packages/server/src/shared/workspace-capabilities.ts": "791e4b3eac411d4aae0f3c28e6fafcd7b5934b44f15ae77c6b3a9437af8af4cb",
-    "packages/server/src/modules/usp/ingestion/source-building-imagery.ts": "d5ec52ad564ea5e0fd229a54661092fba6e7fbdc234af618594361613761f641"
+    "packages/server/src/modules/usp/ingestion/source-building-imagery.ts": "387b4ab5f6a0a2b3f2725bb883012bcb1245c08fd3a9f61e00184f7f607ba52f"
   },
   "operations": [
     "GET /api",
