@@ -1,0 +1,282 @@
+import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
+import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { Readable } from 'node:stream';
+import { afterEach, beforeEach, mock, test } from 'node:test';
+import type { Pool, PoolClient } from 'pg';
+import {
+  AnyRetainSourceSchema, TabularMappingReceiptSchema, TabularPinSchema, TabularSourceProfileSchema,
+  type TabularSourceProfile,
+} from '../packages/contracts/src/usp/ingestion';
+import { settings } from '../packages/server/src/infrastructure/config';
+import { AppError } from '../packages/server/src/infrastructure/errors';
+import { sha256 } from '../packages/server/src/infrastructure/storage';
+import { fingerprint } from '../packages/server/src/modules/cases/domain';
+import {
+  admitTabularSource, assertTabularPin, inspectTabularSource, readTabularSource,
+} from '../packages/server/src/modules/usp/ingestion/tabular-source';
+import { ManualIngestionService } from '../packages/server/src/modules/usp/ingestion/service';
+import { readStreamingTabular } from '../packages/server/src/modules/usp/ingestion/streaming-vector-reader';
+import { createContractValidator } from '../apps/studio/src/local/contract';
+
+const selection = { format: 'csv' as const, sheet: 'csv', table: null, headerRows: [1] };
+const manifestPath = 'fixtures/usp/D8-messy-india/manifest.json';
+const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+const development = manifest.assets.find((asset: { id: string }) => asset.id === 'mi-d10-02.csv');
+const developmentBytes = readFileSync(development.original.externalPath);
+const originalPath = 'E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d06/edmonton-heritage.csv';
+const originalBytes = readFileSync(originalPath);
+const originalHash = '1caa0303fdbcb9c18409154a0529f511b75fd3eb785877990a9718175f97f146';
+const validateContract = createContractValidator(JSON.parse(readFileSync('docs/api/openapi.json', 'utf8')));
+const globals = globalThis as unknown as { ulpinPool?: Pool };
+const requireServer = createRequire(new URL('../packages/server/package.json', import.meta.url));
+const { S3Client } = requireServer('@aws-sdk/client-s3');
+const { z } = requireServer('zod');
+let directory: string;
+let savedPool: Pool | undefined;
+let savedEnvironment: Record<string, string | undefined>;
+
+beforeEach(() => {
+  directory = mkdtempSync(join(tmpdir(), 'tb6-'));
+  savedPool = globals.ulpinPool;
+  const names = ['ULPIN_LOCAL_OPERATOR_SUBJECT', 'ULPIN_TABULAR_LEARNING_DIR', 'ULPIN_TABULAR_LEARNER_SEED'];
+  savedEnvironment = Object.fromEntries(names.map(name => [name, process.env[name]]));
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'tb6-protocol-control';
+  process.env.ULPIN_TABULAR_LEARNING_DIR = join(directory, 'learning');
+  process.env.ULPIN_TABULAR_LEARNER_SEED = join(directory, 'seed-unavailable');
+});
+
+afterEach(() => {
+  globals.ulpinPool = savedPool;
+  for (const [name, value] of Object.entries(savedEnvironment)) {
+    if (value === undefined) delete process.env[name];
+    else process.env[name] = value;
+  }
+  mock.restoreAll();
+  rmSync(directory, { recursive: true, force: true });
+});
+
+function code(expected: string) {
+  return (error: unknown) => error instanceof AppError && error.code === expected;
+}
+
+function controlledManifest(change: (value: typeof manifest) => void) {
+  const value = structuredClone(manifest);
+  change(value);
+  const path = join(directory, manifestPath);
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, JSON.stringify(value));
+  const index = join(dirname(path), 'dev/d1c/derivatives.json');
+  mkdirSync(dirname(index), { recursive: true });
+  writeFileSync(index, JSON.stringify({ derivatives: [] }));
+  mock.getter(settings, 'repositoryRoot', () => directory);
+}
+
+type SourceRow = {
+  id: string; case_id: string; family_id: string; revision: number; name: string; profile: string;
+  bytes: number; sha256: string; object_key: string; inspection: {
+    actor: string; manualProfile: ReturnType<typeof inspectTabularSource>;
+    tabularProvenance?: unknown;
+  };
+};
+
+class ReceiptProtocol {
+  source?: SourceRow;
+  caseRevision = 0;
+  puts = 0;
+  hideNextDuplicate = false;
+  sequence = 0;
+  receipt: unknown;
+  operations = new Map<string, { payload_hash: unknown; result: unknown }>();
+  constructor(readonly caseId: string, readonly bytes: Buffer) {}
+
+  reads(sql: string): unknown[] {
+    if (sql.includes('pg_advisory_xact_lock')) return [];
+    if (sql.includes('FROM registry_case_feature_mappings') || sql.includes('FROM import_packages')) return [];
+    if (sql.includes('max(revision)')) return [{ revision: this.source?.revision ?? 0 }];
+    if (sql.startsWith('SELECT id,family_id,revision,sha256')) {
+      if (!this.source) return [];
+      const { id, family_id, revision, sha256: digest } = this.source;
+      return [{ id, family_id, revision, sha256: digest }];
+    }
+    if (sql.includes('FROM cases')) return [{ id: this.caseId, revision: this.caseRevision }];
+    if (sql.includes('FROM sources')) return this.source ? [this.source] : [];
+    if (sql.includes('FROM usp_mapping_recipes')) return [{ body: this.receipt }];
+    throw new Error(`Unexpected protocol read: ${sql}`);
+  }
+
+  async query(sql: string, args: unknown[] = []) {
+    let rows: unknown[] = [];
+    if (sql.includes('FROM sources') && sql.includes('sha256=$2') && this.hideNextDuplicate) {
+      this.hideNextDuplicate = false;
+      return { rows, rowCount: 0 };
+    }
+    if (sql.includes('FROM operations')) rows = this.operations.has(String(args[1]))
+      ? [this.operations.get(String(args[1]))] : [];
+    else if (sql.startsWith('INSERT INTO operations')) {
+      this.operations.set(String(args[1]), { payload_hash: args[2], result: structuredClone(args[3]) });
+    } else if (sql.startsWith('INSERT INTO sources(')) {
+      this.source = {
+        id: String(args[0]), case_id: String(args[1]), family_id: String(args[2]), revision: Number(args[3]),
+        name: String(args[4]), profile: String(args[5]), bytes: Number(args[7]), sha256: String(args[8]),
+        object_key: String(args[9]), inspection: args[10] as SourceRow['inspection'],
+      };
+    } else if (sql.startsWith('UPDATE cases SET revision=')) this.caseRevision++;
+    else if (sql.startsWith('UPDATE usp_outbox_streams')) rows = [{ sequence: String(++this.sequence) }];
+    else if (sql.startsWith('SELECT')) rows = this.reads(sql);
+    else assert(['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql) || sql.startsWith('INSERT INTO usp_outbox'), sql);
+    return { rows, rowCount: rows.length };
+  }
+
+  install() {
+    const query = this.query.bind(this);
+    globals.ulpinPool = { query, connect: async () => ({ query, release() {} }) } as unknown as Pool;
+    mock.getter(settings, 's3Endpoint', () => 'http://127.0.0.1:1');
+    mock.getter(settings, 's3Region', () => 'us-east-1');
+    mock.getter(settings, 's3Bucket', () => 'protocol-control');
+    mock.getter(settings, 's3AccessKey', () => 'protocol-control');
+    mock.getter(settings, 's3SecretKey', () => 'protocol-control');
+    mock.method(S3Client.prototype, 'send', async (command: { constructor: { name: string } }) => {
+      if (command.constructor.name === 'PutObjectCommand') {
+        this.puts++;
+        return {};
+      }
+      assert.equal(command.constructor.name, 'GetObjectCommand');
+      return { Body: { transformToByteArray: async () => this.bytes } };
+    });
+  }
+}
+
+async function retained(provenance = {}, bytes = originalBytes, name = 'edmonton-heritage.csv') {
+  assert.equal(sha256(originalBytes), originalHash);
+  const protocol = new ReceiptProtocol(randomUUID(), bytes);
+  protocol.install();
+  const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, format: 'csv', selection, ...provenance };
+  const service = new ManualIngestionService();
+  const result = await service.retain(protocol.caseId, request, { name, bytes });
+  const profile = TabularSourceProfileSchema.parse(result);
+  assert.deepEqual(validateContract('POST_ingestion_cases_caseId_sources_Response_201_application_json', profile), []);
+  return { protocol, request, service, profile };
+}
+
+test('development pin and old manual-tabular profile parse and fingerprint unchanged', () => {
+  const inventory = inspectTabularSource(developmentBytes, selection);
+  const oldPin = { selection, sourceBytes: developmentBytes.length,
+    developmentAssetId: development.id, developmentFamily: development.family };
+  assert.deepEqual(inventory.tabular, oldPin);
+  assert.equal(fingerprint(TabularPinSchema.parse(oldPin)), fingerprint(oldPin));
+  const oldProfile = { version: 'manual-tabular/1', ...inventory,
+    source: { sourceId: randomUUID(), familyId: randomUUID(), sourceRevision: 1,
+      sourceSha256: sha256(developmentBytes), schemaFingerprint: inventory.schemaFingerprint },
+    caseId: randomUUID(), workspaceRevision: 0, workspaceFingerprint: fingerprint('protocol-control') };
+  const { schemaFingerprint: _schemaFingerprint, ...stored } = oldProfile;
+  assert.deepEqual(TabularSourceProfileSchema.parse(stored), stored);
+});
+
+test('known hash with a wrong size cannot use officer provenance to bypass development checks', () => {
+  for (const provenance of [{}, { issuer: null, licence: 'open' as const }]) {
+    assert.throws(() => admitTabularSource(development.original.sha256, developmentBytes.length + 1, provenance),
+      code('TABULAR_DATA_DENIED'));
+  }
+});
+
+for (const classification of ['wrong_split', 'restricted', 'private', 'held_out']) {
+  test(`known ${classification} metadata refuses with and without stated provenance`, () => {
+    controlledManifest(value => {
+      const asset = value.assets.find((entry: { id: string }) => entry.id === development.id);
+      if (classification === 'wrong_split') asset.split = 'not-dev';
+      if (classification === 'restricted') asset.permission.state = 'restricted';
+      if (classification === 'private') asset.privacy = 'private';
+      if (classification === 'held_out') value.heldout.push({ id: asset.family });
+    });
+    for (const provenance of [{}, { issuer: null, licence: 'open' as const }]) {
+      assert.throws(() => admitTabularSource(development.original.sha256, developmentBytes.length, provenance),
+        code('TABULAR_DATA_DENIED'));
+    }
+  });
+}
+
+test('an unseen public original is retained without a question and keeps honest unknown provenance', async () => {
+  const { protocol, profile } = await retained();
+  assert('admission' in profile.tabular);
+  assert.deepEqual(profile.tabular.admission, { kind: 'case_original', issuer: null,
+    origin: 'officer_supplied', licence: 'unconfirmed', containsPersonalData: 'unknown' });
+  assert.deepEqual(protocol.source?.inspection.tabularProvenance, profile.tabular.admission);
+  assert.equal(protocol.puts, 1);
+  assert(profile.limitations.some(line => line.includes('not a development or evaluation asset')));
+  assert(profile.limitations.some(line => line.includes('cannot recognise those files by hash')));
+  assert.equal(profile.records, 1105);
+});
+
+test('stated provenance survives retention, both duplicate paths, replay and streaming rows', async () => {
+  const provenance = { issuer: 'City of Edmonton', origin: 'officer_supplied',
+    licence: 'restricted', containsPersonalData: 'yes' };
+  const { protocol, request, service, profile } = await retained(provenance);
+  assert('admission' in profile.tabular);
+  assert.deepEqual(profile.tabular.admission, { kind: 'case_original', ...provenance });
+  assert.equal(profile.tabular.admission.licence, 'restricted');
+  assert.equal(profile.tabular.admission.containsPersonalData, 'yes');
+  assert(profile.limitations.some(line => line.includes('licence restricted')));
+  const file = { name: 'edmonton-heritage.csv', bytes: originalBytes };
+  assert.deepEqual(await service.retain(protocol.caseId, request, file), profile);
+  const duplicate = await service.retain(protocol.caseId, { ...request, requestKey: randomUUID() }, file);
+  assert.deepEqual(duplicate, profile);
+  protocol.hideNextDuplicate = true;
+  assert.deepEqual(await service.retain(protocol.caseId, { ...request, requestKey: randomUUID() }, file), profile);
+  assert.equal(protocol.puts, 1);
+  assertTabularPin(profile.tabular, protocol.source!);
+  let rows = 0;
+  const streamed = await readStreamingTabular(Readable.from([originalBytes]), profile.tabular, async () => { rows++; });
+  assert.equal(rows, profile.records);
+  assert.equal(streamed.sha256, originalHash);
+  await assert.rejects(service.retain(protocol.caseId, { ...request, requestKey: randomUUID(), licence: 'open' }, file),
+    code('TABULAR_PIN_CHANGED'));
+});
+
+test('case provenance remains closed and a case pin cannot acquire development fields', async () => {
+  const { profile } = await retained();
+  assert(!TabularPinSchema.safeParse({ ...profile.tabular, developmentFamily: development.family }).success);
+  assert(!AnyRetainSourceSchema.safeParse({ requestKey: randomUUID(), expectedWorkspaceRevision: 0,
+    format: 'csv', selection, origin: 'guessed', issuer: null }).success);
+});
+
+function catalogueAsset(value: unknown, id: string): unknown {
+  if (!value || typeof value !== 'object') return undefined;
+  if (!Array.isArray(value) && 'id' in value && value.id === id) return value;
+  for (const child of Object.values(value)) {
+    const found = catalogueAsset(child, id);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+test('good and difficult unseen public tables retain and read in-process with their recorded licence state', async () => {
+  const catalogue = JSON.parse(readFileSync('docs/api/datasets.json', 'utf8'));
+  const assetSchema = z.object({ id: z.string(), permission: z.object({ state: z.literal('unconfirmed') }),
+    content: z.object({ externalPath: z.string(), sha256: z.string(), bytes: z.number() }) });
+  const outcomes = [];
+  for (const id of ['edmonton-heritage.csv', 'kansas-municipal.csv']) {
+    const asset = assetSchema.parse(catalogueAsset(catalogue, id));
+    const bytes = readFileSync(asset.content.externalPath);
+    assert.equal(sha256(bytes), asset.content.sha256);
+    assert.equal(bytes.length, asset.content.bytes);
+    const { profile, protocol } = await retained({ licence: asset.permission.state }, bytes, id);
+    assert('admission' in profile.tabular);
+    let rows = 0;
+    const read = await readStreamingTabular(Readable.from([bytes]), profile.tabular, async () => { rows++; });
+    assert.equal(read.sha256, asset.content.sha256);
+    assert.equal(rows, profile.records);
+    assert.equal(protocol.puts, 1);
+    outcomes.push({ name: id, sha256: read.sha256, bytes: bytes.length,
+      recordedLicenceState: asset.permission.state, requestedLicence: asset.permission.state,
+      admission: profile.tabular.admission.kind, issuer: null, containsPersonalData: 'unknown',
+      rows, columns: profile.headers.length, headers: profile.headers, outcome: 'retained_and_read',
+      teacherCode: 'CASE_ORIGINAL_TEACHER_REFUSED', runtimeRequests: 0, providerCalls: 0 });
+  }
+  if (process.env.ULPIN_TB6_WRITE_EVIDENCE === '1') {
+    writeFileSync('docs/evidence/gf1/tb6/real-inputs.json', JSON.stringify(outcomes, null, 2) + '\n');
+  }
+});

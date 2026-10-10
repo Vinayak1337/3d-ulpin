@@ -46,6 +46,10 @@ function immutableText(path: string, text: string) {
 }
 
 function officerExamples(receipt: TabularMappingReceipt, profile: TabularSourceProfile, source: any) {
+  const pin = profile.tabular;
+  if ('admission' in pin) {
+    throw new AppError(422, 'TABULAR_LEARNING_DENIED', 'Case originals never enter family-split learning records.');
+  }
   const { dry, table } = validateTabularRecipe(receipt.plan, profile, source.bytes);
   const profileHash = columnProfileHash(profile.profile);
   const examples = receipt.plan.mapping.fields.map(field => ({ layoutFingerprint: profile.profile.layoutFingerprint,
@@ -57,7 +61,7 @@ function officerExamples(receipt: TabularMappingReceipt, profile: TabularSourceP
         cell.sourceField === field.sourceField && cell.state === 'conflicting')).length } }));
   const links = profile.profile.columns.map((column, index) => ({ ...column, header: profile.headers[index],
     profileId: fingerprint([profileHash, column.name]), profileHash, sourceField: column.name,
-    family: profile.tabular.developmentFamily, split: 'dev', cellCount: Math.min(100, table.rows.length),
+    family: pin.developmentFamily, split: 'dev', cellCount: Math.min(100, table.rows.length),
     emptyCount: table.rows.slice(0, 100).filter(row => row[index] === undefined || row[index] === null ||
       typeof row[index] === 'string' && !(row[index] as string).trim()).length,
     neighbourHeaders: profile.headers.slice(Math.max(0, index - 2), index)
@@ -146,12 +150,15 @@ export async function learnApprovedTabularTx(client: PoolClient, value: unknown,
   if (prior) return prior.result;
   const current = TabularSourceProfileSchema.parse(profile);
   assertTabularPin(current.tabular, source);
-  if (receipt.plan.tabular.developmentFamily === 'mi-d03') {
+  if ('developmentFamily' in receipt.plan.tabular && receipt.plan.tabular.developmentFamily === 'mi-d03') {
     throw new AppError(422, 'TABULAR_CALIBRATION_DENIED', 'The frozen calibration family cannot be fitted online.');
   }
   const bytes = Buffer.from(await readObject(source.object_key));
   if (bytes.length !== Number(source.bytes) || sha256(bytes) !== source.sha256) {
     conflict('The original changed before learning.');
+  }
+  if ('admission' in current.tabular) {
+    throw new AppError(422, 'TABULAR_LEARNING_DENIED', 'Case originals never enter family-split learning records.');
   }
   const examples = persistOfficerBatch(receipt, current, bytes);
   const result = trainOfficerBatch(examples, await activeTabularLearner(client));
