@@ -315,6 +315,10 @@ export const BuildingPlanCandidateRequestSchema = z.discriminatedUnion('action',
     expectedCanonicalRevision: z.string().regex(/^[a-f0-9]{64}$/), candidateId: id,
     levelId: z.uuid(), reason: z.string().trim().min(3).max(2000),
   }),
+  z.strictObject({ action: z.literal('reject'), requestKey: z.uuid(),
+    expectedCanonicalRevision: z.string().regex(/^[a-f0-9]{64}$/), candidateId: id,
+    reason: z.string().trim().min(3).max(2000),
+  }),
 ]);
 export type BuildingPlanCandidateRequest = z.infer<typeof BuildingPlanCandidateRequestSchema>;
 export const BuildingPlanCandidateReceiptSchema = z.strictObject({ requestKey: z.uuid(),

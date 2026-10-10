@@ -25,6 +25,18 @@ test('published room candidate command and receipt exactly match executable vali
   checkPublishedContract();
 });
 
+test('room reject uses the existing digest-pinned command with the same reason validators as association', () => {
+  const key = 'f49b730d-311e-4d9f-91a7-cd93e1695506';
+  const input = { action: 'reject', requestKey: key, expectedCanonicalRevision: 'a'.repeat(64),
+    candidateId: 'retained-room-contract-fixture', reason: '  K3c contract check  ' };
+  const parsed = BuildingPlanCandidateRequestSchema.parse(input);
+  assert.equal(parsed.action, 'reject');
+  if (parsed.action !== 'reject') throw new Error('Unexpected command action.');
+  assert.equal(parsed.reason, 'K3c contract check');
+  assert(!BuildingPlanCandidateRequestSchema.safeParse({ ...input, reason: 'ab' }).success);
+  assert(!BuildingPlanCandidateRequestSchema.safeParse({ ...input, levelId: key }).success);
+});
+
 test('real Magnolia retention preserves unknown levels and rejects title-derived automatic attachment', () => {
   const input = JSON.parse(readFileSync('docs/evidence/gf-backend/k2c/rooms-request.json', 'utf8'));
   const parsed = BuildingPlanCandidateRequestSchema.parse(input);
