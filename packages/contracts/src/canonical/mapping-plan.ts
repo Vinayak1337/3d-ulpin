@@ -48,7 +48,7 @@ export const MappingV2OperationSchema = z.discriminatedUnion('kind', [
 export const MappingMethodSchema = z
   .string()
   .max(300)
-  .regex(/^(?:(?:model|learner):[^\s:@]+@[^\s:@]+|reviewer:[^\s:]+|memory:[^\s:]+)$/);
+  .regex(/^(?:(?:model|learner):[^\s:@]+@[^\s:@]+|reviewer:[^\s:]+|memory:[^\s:]+|manual:[A-Z][A-Z0-9_]{0,63})$/);
 /** Zero-based logical data-row/feature index; CSV headers are excluded. */
 export const MappingCellCitationSchema = z.strictObject({
   sourceRef: z.string().min(1).max(2048),

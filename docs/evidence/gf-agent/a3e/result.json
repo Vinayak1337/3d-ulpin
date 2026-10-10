@@ -1,0 +1,27 @@
+{
+  "task": "a3e",
+  "gate": "GF-AGENT",
+  "defect": "A fallback plan carried the teacher's method and fields were labelled source teacher although no model answered.",
+  "fix": {
+    "planMethod": "manualMappingMethod(code) = manual:<CODE>; MappingMethodSchema gains manual:[A-Z][A-Z0-9_]{0,63}",
+    "fieldSource": "unanswered (additive enum value)",
+    "metrics": "unansweredFields optional on mapping.chunk; teacherFields counts teacher-answered fields only",
+    "memory": "a reused field that was unanswered stays unanswered; officer keeps officer; others become memory as before"
+  },
+  "realInputs": {
+    "teacherUnavailable": {"file": "mi-d10-01.csv", "columns": 16, "teacherFields": 0, "unansweredFields": 16,
+      "questions": 16, "laterChunk": "unanswered, no teacher call, no repeated question"},
+    "teacherReplay": {"file": "mi-d10-01.csv", "source": "teacher", "method": "model:sarvam-105b@2026-10-10",
+      "teacherFields": 16, "unansweredFields": 0},
+    "studentPlusFailedTeacher": {"file": "mi-d11-01.csv", "columns": 9, "student": 5, "unanswered": 4,
+      "learner": "v43"},
+    "oldRecords": "chunk payload without unansweredFields and teacher-labelled fallback fields parses unchanged; "
+      "teacher-lineage memory entry still reads"
+  },
+  "assertionsChanged": ["scripts/agent/a3-chunk.test.ts: later chunk of a fallback layout is unanswered, not memory"],
+  "checks": {
+    "node": "a3e, a3d, a3-chunk, a3b-wiring, mapping-routing, mapping-teacher: 47 of 47 pass, including the manual-method memory refusal",
+    "studio": "typecheck and 93 tests pass without editing apps/studio",
+    "apiLf": "only the known runtime-receipt failure remains"
+  }
+}
