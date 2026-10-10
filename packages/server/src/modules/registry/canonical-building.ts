@@ -3,7 +3,7 @@ import {
   BuildingConflictDecisionSchema,
   ClaimTranscriptionSchema,
   type BuildingConflictDecision,
-  NormalizedBuildingSchema,
+  NormalizedBuildingSchema, SourceStatedRecordSchema, type SourceStatedRecord,
   type AreaContext,
   type AreaFrame,
   type BuildingCitation,
@@ -20,7 +20,7 @@ import {
   type SourceLocator,
   type Value,
 } from '@ulpin/contracts';
-import { buildingDossier } from '../officer/officer';
+import { buildingDossier, relatedRegistryRecordQuery } from '../officer/officer';
 import { registryDocumentSourceAccessTx } from './registry-metadata';
 import { areaFeatureContext, listAreas } from '../areas/areas';
 import { query, transaction } from '../../infrastructure/db';
@@ -30,6 +30,8 @@ import { rasterSourceTx } from '../usp/ingestion/raster-window';
 import { AppError, notFound } from '../../infrastructure/errors';
 import { localOperatorSubject } from '../usp/principal';
 import { applyLevelSchedules, UNREVIEWED_LEVEL_SCHEDULE_GAP } from './canonical-level-schedule';
+import { assertSourceChildRevisions, readSourceProjectCodes,
+  type SourceProjectCode } from './canonical-source-identity';
 
 export const ENU_METHOD = 'deterministic:wgs84-surface-to-enu@1';
 const WGS84_A = 6378137;
@@ -178,7 +180,7 @@ function citationLocator(entry: SourceLocator): BuildingCitation['locator'] {
   return { kind: 'entity', entityId: entry.partId ?? entry.jsonPointer ?? entry.sourceRevisionId };
 }
 
-async function readSourceSha256(sourceId: string, siteId: string): Promise<string> {
+async function readSourceSha256(sourceId: string, siteId: string, revision?: number): Promise<string> {
   const access = await transaction(async client => {
     const row = (await client.query('SELECT case_id,profile FROM sources WHERE id=$1', [sourceId])).rows[0];
     if (row?.profile === 'geotiff-raster-v1') {
@@ -195,6 +197,7 @@ async function readSourceSha256(sourceId: string, siteId: string): Promise<strin
     if (sourceOnly) return sourceBuildingOriginalAccessTx(client, siteId, sourceId);
     return registryDocumentSourceAccessTx(client, siteId, sourceId);
   });
+  if (revision !== undefined && Number(access.revision) !== revision) throw sourceChanged();
   return access.sha256;
 }
 
@@ -220,15 +223,20 @@ function sourceChanged(): AppError {
   return new AppError(409, 'CANONICAL_SOURCE_CHANGED', 'A source changed during projection.');
 }
 
-function visitCitationPins(value: unknown, pins: Map<string, string>): void {
+function visitCitationPins(value: unknown, pins: Map<string, string>, revisions?: Map<string, number>): void {
   if (!value || typeof value !== 'object') return;
   if ('sourceId' in value && 'sourceSha256' in value) {
     const citation = value as BuildingCitation;
     const previous = pins.get(citation.sourceId);
     if (previous && previous !== citation.sourceSha256) throw sourceChanged();
     pins.set(citation.sourceId, citation.sourceSha256);
+    if (citation.sourceRevision !== undefined && revisions) {
+      const previousRevision = revisions.get(citation.sourceId);
+      if (previousRevision !== undefined && previousRevision !== citation.sourceRevision) throw sourceChanged();
+      revisions.set(citation.sourceId, citation.sourceRevision);
+    }
   }
-  Object.values(value).forEach(child => visitCitationPins(child, pins));
+  Object.values(value).forEach(child => visitCitationPins(child, pins, revisions));
 }
 
 /** Every citation's source pin; throws when one source has two different hashes inside the projection. */
@@ -240,9 +248,12 @@ export function collectCanonicalCitationPins(projection: unknown): Map<string, s
 
 /** Recheck complete cited source access after assembly; one lookup per immutable original, no byte reads or writes. */
 export async function revalidateCanonicalSources(projection: unknown, siteId: string): Promise<void> {
-  const pins = collectCanonicalCitationPins(projection);
-  const current = await canonicalCitations([...pins.keys()].map(sourceRevisionId => ({ sourceRevisionId })), siteId);
-  if (current.some(citation => pins.get(citation.sourceId) !== citation.sourceSha256)) throw sourceChanged();
+  const pins = new Map<string, string>();
+  const revisions = new Map<string, number>();
+  visitCitationPins(projection, pins, revisions);
+  for (const [sourceId, sha256] of pins) {
+    if (await readSourceSha256(sourceId, siteId, revisions.get(sourceId)) !== sha256) throw sourceChanged();
+  }
 }
 
 function footprintKind(role: PhysicalFeature['geometryRole']): FootprintKind {
@@ -565,6 +576,72 @@ async function projectSpace(space: DetailedSceneRecord, frame: AreaFrame, siteId
   };
 }
 
+function sourceRecordCitations(record: SourceStatedRecord): BuildingCitation[] {
+  const evidence = record.sourceOnly.evidence;
+  const [x0, y0, x1, y1] = evidence.region;
+  return [{ sourceId: evidence.sourceId, sourceSha256: evidence.sourceSha256,
+    sourceRevision: evidence.sourceRevision,
+    locator: { kind: 'region', page: evidence.page, x: x0, y: y0, width: x1 - x0, height: y1 - y0, unit: 'pt' } }];
+}
+
+function sourceRecordSpace(record: SourceStatedRecord, assigned?: SourceProjectCode): CanonicalSpace {
+  const citations = sourceRecordCitations(record);
+  const method = `reviewer:${record.sourceOnly.decision.actor}`;
+  return { spaceId: record.id, recordState: 'reviewed',
+    label: canonicalValue(record.name, 'reviewed', citations, method),
+    kind: canonicalValue(null, 'unknown', citations, method),
+    polygons: canonicalValue(null, 'absent', citations, method, 'm'),
+    lowerM: canonicalValue(null, 'unknown', citations, method, 'm'),
+    upperM: canonicalValue(null, 'unknown', citations, method, 'm'),
+    areaM2: canonicalValue(null, 'unknown', citations, method, 'm2'),
+    proposedCode: assigned ? canonicalValue(assigned.code, 'reviewed', citations, `reviewer:${assigned.actor}`)
+      : canonicalValue(null) };
+}
+
+function assertSourceChildHierarchy(
+  building: NormalizedBuilding, records: RegistryRecord[], children: SourceStatedRecord[],
+): void {
+  const parent = records.find(record => record.id === building.buildingId);
+  const floors = new Set(children.filter(record => record.kind === 'floor').map(record => record.id));
+  if (children.some(child => child.siteId !== parent?.siteId || child.sourceOnly.buildingId !== building.buildingId
+    || (child.kind === 'floor' ? child.sourceOnly.parentId !== building.buildingId
+      : !floors.has(child.sourceOnly.parentId)))) {
+    throw new AppError(409, 'CANONICAL_SOURCE_PARENT',
+      'The source-stated hierarchy is not a same-site building child.');
+  }
+}
+
+/** Source-stated registry children are separate facts, never an inferred storey inventory or prism. */
+export function projectSourceRecordedChildren(building: NormalizedBuilding, records: RegistryRecord[],
+  codes = new Map<string, SourceProjectCode>()): void {
+  const children = records.filter(record => 'sourceOnly' in record)
+    .map(record => SourceStatedRecordSchema.parse(record));
+  assertSourceChildHierarchy(building, records, children);
+  if (children.length) building.gaps.push(
+    'Source-stated labels are not unit boundaries, measured dimensions, rights or current sanctioned status.',
+  );
+  for (const floor of children.filter(record => record.kind === 'floor')) {
+    const citations = sourceRecordCitations(floor);
+    const method = `reviewer:${floor.sourceOnly.decision.actor}`;
+    const scheduleId = floor.sourceOnly.scheduleLevelId;
+    const linked = scheduleId ? building.levels.find(level => level.levelId === scheduleId
+      && level.label.value === floor.name) : undefined;
+    const spaces = children.filter(record => record.kind === 'space'
+      && record.sourceOnly.parentId === floor.id)
+      .map(record => sourceRecordSpace(record, codes.get(record.id)));
+    if (linked) {
+      linked.registryFloorId = floor.id;
+      linked.spaces.push(...spaces);
+      continue;
+    }
+    building.levels.push({ levelId: floor.id, registryFloorId: floor.id, order: building.levels.length,
+      label: canonicalValue(floor.name, 'reviewed', citations, method), recordState: 'reviewed',
+      polygons: canonicalValue(null, 'absent', citations, method, 'm'),
+      lowerM: canonicalValue(null, 'unknown', citations, method, 'm'),
+      upperM: canonicalValue(null, 'unknown', citations, method, 'm'), heightState: 'unknown', spaces });
+  }
+}
+
 function spacesOnFloor(dossier: CanonicalBuildingSource, floorId: string): DetailedSceneRecord[] {
   return dossier.detailedScene.filter(scene => (
     scene.record.kind === 'space'
@@ -611,7 +688,8 @@ async function projectLevels(
   frame: AreaFrame,
 ): Promise<CanonicalStorey[]> {
   const storeys: CanonicalStorey[] = [];
-  const floors = dossier.detailedScene.filter(scene => scene.record.kind === 'floor');
+  const floors = dossier.detailedScene.filter(scene => scene.record.kind === 'floor'
+    && !('sourceOnly' in scene.record));
   for (const [order, detail] of floors.entries()) {
     storeys.push(await projectLevel(building, dossier, frame, detail, order));
   }
@@ -621,6 +699,7 @@ async function projectLevels(
 export async function projectBuilding(
   dossier: CanonicalBuildingSource,
   proposal = dossier.building.revision === 0,
+  codes = new Map<string, SourceProjectCode>(),
 ): Promise<NormalizedBuilding> {
   const feature = dossier.building;
   const frame = canonicalFrame(dossier.area);
@@ -644,6 +723,7 @@ export async function projectBuilding(
     building.storeys = canonicalValue(storeys, 'reviewed', [], 'deterministic:recorded-level-schedule-projection@1');
   }
   applyLevelSchedules(building, dossier.records);
+  projectSourceRecordedChildren(building, dossier.records, codes);
   return finishBuilding(building);
 }
 
@@ -668,10 +748,11 @@ async function sourceBuildingDossier(
     'Current sanction/as-built status and source-to-unit association remain unqualified.',
   ];
   if (feature.revision > 0) {
-    dossier.records = (await query(
-      'SELECT body FROM registry_records WHERE id=$1 AND site_id=$2 AND revision>0',
-      [buildingId, context.area.siteId],
-    )).rows.map(row => row.body);
+    const selection = relatedRegistryRecordQuery(buildingId, feature.revision, context.area.siteId, 1000);
+    const rows = (await query(selection.sql, selection.values)).rows;
+    if (rows.length > 1000) throw new AppError(422, 'CANONICAL_RECORD_LIMIT', 'Choose a smaller recorded hierarchy.');
+    dossier.records = rows.map(row => ({ ...row.body, id: row.id, siteId: row.site_id,
+      identifier: row.identifier, revision: Number(row.revision) }));
   }
   return dossier;
 }
@@ -695,11 +776,14 @@ export async function canonicalBuilding(
   if (dossier.area.revision !== context.area.revision || dossier.building.revision !== feature.revision) {
     throw new AppError(409, 'CANONICAL_INPUT_CHANGED', 'Area or building changed during projection; read again.');
   }
-  const result = await projectBuilding(dossier, proposal);
+  const codes = feature.geometry === null ? await readSourceProjectCodes(dossier.records, context.area.siteId)
+    : new Map<string, SourceProjectCode>();
+  const result = await projectBuilding(dossier, proposal, codes);
   await revalidateCanonicalSources(result, context.area.siteId);
   if ((await assertCanonicalAreaScope(context.area)).revision !== context.area.revision) {
     throw new AppError(409, 'CANONICAL_INPUT_CHANGED', 'The area changed during projection; read again.');
   }
+  if (feature.geometry === null) await assertSourceChildRevisions(dossier.records, context.area.siteId);
   if (revision !== 'current' && revision !== result.revisionId) {
     throw new AppError(404, 'CANONICAL_REVISION_NOT_FOUND', REVISION_NOT_CURRENT_MESSAGE);
   }
