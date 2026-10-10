@@ -1,0 +1,28 @@
+{
+  "profile": "demo",
+  "worktree": "E:/Projects/ulpin-wt/k1",
+  "api": "http://127.0.0.1:3194/api/v1",
+  "servedCheckoutCommit": "b37a4e5f",
+  "apiBackendCodeLastChanged": "da77a9d2",
+  "leftRunning": true,
+  "preservedContainersVolumesOriginals": true,
+  "apiDispatcherRestarts": [
+    {
+      "completedAt": null,
+      "reason": "candidate provenance and officer command"
+    },
+    {
+      "completedAt": null,
+      "reason": "physical revision package lineage fix"
+    },
+    {
+      "completedAt": "2026-10-10T05:49:33+05:30",
+      "reason": "isolated native OCR dependency closure and eng+hin paths"
+    },
+    {
+      "completedAt": "2026-10-10T06:16:30+05:30",
+      "reason": "final API idempotency header and single-claim method mapping after resume"
+    }
+  ],
+  "scope": "only identity-checked API/dispatcher restarted; no service activation outside loopback"
+}
