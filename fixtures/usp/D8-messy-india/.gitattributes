@@ -3,3 +3,5 @@
 *.md text eol=lf
 # Original CSV bytes are immutable; never normalize source line endings.
 dev/*.csv -text
+dev/d1b/*.csv -text
+dev/d1b/*.xlsx -text

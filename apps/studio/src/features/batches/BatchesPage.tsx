@@ -104,7 +104,8 @@ function BatchRow({ item, board }: { item: WorkItem; board: BoardItem | undefine
   const label = board?.nextAction.label ?? derived.label;
   const href = board ? targetHref(board.nextAction.target) : derived.href;
   const stage = board ? STAGES.find((s) => s.value === board.stage) : undefined;
-  const sub = [item.areaName, board?.detail].filter(Boolean).join(' · ');
+  const area = item.areaName === item.name ? null : item.areaName;
+  const sub = [area, board?.detail].filter(Boolean).join(' · ');
   const content = (
     <>
       <span role="cell" className={styles.what}><b>{item.name}</b>{sub ? <span>{sub}</span> : null}</span>

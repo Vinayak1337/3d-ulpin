@@ -1,5 +1,11 @@
 # Native NestJS API for frontend integration
 
+[Canonical building contract](canonical-building.md): private `normalized-building/1` projections reuse area context and building register internals.
+`GET /api/v1/areas/{areaId}/canonical` returns the retained frame, building summaries and context features in local ENU metres.
+`GET /api/v1/buildings/{buildingId}/canonical?revision=current` returns cited states; unknowns and source conflicts remain explicit.
+Both return private/no-store responses with `ETag = revisionId`; unavailable complete revisions return 404, access denial 403.
+K1/K2 [runtime evidence](../evidence/gf-backend/k2/result.json) includes unreviewed proposals and import blockers, not a backend/data gate pass.
+
 Health response update, 3 October: `GET /api/v1/health` adds `serviceObservations.redis` and `.worker`. `status: unobserved` explains when false compatibility booleans reflect an unavailable or malformed processor response; `observed` means the processor returned valid explicit dependency health. This is not an independent Redis/worker probe. Existing `services` and conservative `ok` fields remain. [Implementation evidence](../evidence/usp/health-observations-handoff.md) covers controlled interpretation; corrected live HTTP behavior is not yet qualified.
 
 [PDF-linked property cards](../evidence/usp/property-card-pdf-handoff.md) now use the existing generation, read and exact-revision QR routes with an executed one-region PDF plan. The dedicated PDF reader and final protected packet/card linkage checks preserve current access before and after object I/O; text/CSV remains compatible. Card facts come from the captured record, not inferred crop content: unsupported parcel assertions, shares, geometry, measurements and rights stay unavailable/not_assessed. No route/schema/render profile changes. Controlled PDF/card/QR-method checks pass; authenticated-browser QR, current HTTP/PostgreSQL/private storage and authentic property/GF4 qualification remain unrun.

@@ -1,0 +1,40 @@
+{
+  "framework": "Transformers Trainer / RF-DETR segmentation",
+  "base": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\original",
+  "base_sha256": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7",
+  "seed": 26011,
+  "batch_size": 1,
+  "gradient_accumulation_steps": 4,
+  "learning_rate_heads": 0.0001,
+  "learning_rate_backbone": 1e-05,
+  "amp": "bf16",
+  "max_epochs": 12,
+  "early_stopping": "DEV polygon F1, min_delta .001, patience 3",
+  "preprocessing": "production RGB Pillow bilinear 432; ImageNet; source tiles <=512; stride384",
+  "augmentation": "TRAIN horizontal/vertical flips only; smoke none",
+  "zero_pixel_masks": "Retained; box/class and zero mask supervised; no relabel/drop",
+  "loss_revision": "ulpin-rfdetr-empty-mask-scalar/1",
+  "data": {
+    "split": "train",
+    "coco_sha256": "a09c7021b80144baf73e862861840df3e2d1da2d8450b7ee864b59e528c468cc",
+    "chips": 8,
+    "publisher_features": 65,
+    "empty_chips": 2,
+    "chip_ids": [
+      "002715ff-bd11-40a4-bbf4-9e06bd31e26e",
+      "006caf56-027b-40fa-b2e9-88552f63df58",
+      "0141cae2-9ed8-4ec0-9d57-725d1bfeb323",
+      "01a07672-139a-47b1-a0c5-58673d409c28",
+      "00462902-1735-4ab0-a605-6c3cd36ab845",
+      "0047a014-4261-4fb8-88b7-e9bf39294bdf",
+      "00695734-4225-44c5-a9ca-a4751ab9cf22",
+      "007f19d4-f6cf-454c-9cbf-0506d59323d4"
+    ],
+    "split_chip_ids_sha256": "3063acddb6d017439f24b7a0f7461fa08407c03c000bc3e6ec09d9f3cc193a33"
+  },
+  "resume": null,
+  "git_sha": "cc4ea52a1e27e9358a587192fb2da67fd23e377a",
+  "smoke": true,
+  "holdout_calls": 0,
+  "duration_minutes": 85
+}
