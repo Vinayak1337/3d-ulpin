@@ -5,6 +5,7 @@ import { CanonicalMappedValueSchema, ColumnProfileDocumentSchema,
 import { CanonicalTargetSchema, MappingTargetSchema } from '../canonical/targets';
 import { TabularPinSchema } from './ingestion';
 import { MappingChunkMetricsSchema } from './ingestion-events';
+import { RetainedResultFreshnessSchema } from './streaming-vector';
 
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/);
 const issue=z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/);
@@ -92,7 +93,8 @@ export const ChunkMappingSlotSchema=z.strictObject({chunkIndex:z.number().int().
   bytes:z.number().int().nonnegative().max(CHUNK_MAPPING_LIMITS.chunkBytes),
   ref:z.strictObject({key:z.string().min(1).max(400),sha256:hash,bytes:z.number().int().positive().max(CHUNK_MAPPING_LIMITS.chunkBytes)}).nullable(),
   issueCode:issue.nullable(),resultSha256:hash,attempt:z.number().int().positive(),fence:z.number().int().positive()});
-export const ChunkMappingStatusSchema=z.strictObject({version:z.literal(CHUNK_MAPPING_LIMITS.version),jobId:id,rawJobId:id,
+export const ChunkMappingStatusSchema=z.strictObject({
+  ...RetainedResultFreshnessSchema.shape,version:z.literal(CHUNK_MAPPING_LIMITS.version),jobId:id,rawJobId:id,
   caseId:id,sourceId:id,sourceRevision:z.number().int().positive(),sourceSha256:hash,
   status:z.enum(['queued','running','needs_input','disabled','unavailable','completed','completed_with_rejections','failed','stale']),
   route:z.enum(['approved_recipe','proposal_only']),recipeId:id.nullable(),recipeRevision:z.number().int().positive().nullable(),
@@ -106,7 +108,8 @@ export const ChunkMappingStatusSchema=z.strictObject({version:z.literal(CHUNK_MA
   schemaDriftChunks:z.number().int().nonnegative(),
   issueCode:issue.nullable(),unknownRemainder:z.boolean(),sourceComplete:z.boolean(),identityComplete:z.boolean(),
   proposal:AdaptiveMappingResponseSchema.nullable(),proposalTrainingEligible:z.literal(false),slots:z.array(ChunkMappingSlotSchema).max(32)});
-export const ChunkMappingChunkResponseSchema=z.strictObject({slot:ChunkMappingSlotSchema,
+export const ChunkMappingChunkResponseSchema=z.strictObject({
+  ...RetainedResultFreshnessSchema.shape,slot:ChunkMappingSlotSchema,
   payload:ChunkMappingPayloadSchema.nullable(),sourceComplete:z.boolean(),identityComplete:z.boolean(),unknownRemainder:z.boolean()});
 export type ChunkMappingInput=z.infer<typeof ChunkMappingInputSchema>;
 export type ChunkMappingObservation=z.infer<typeof ChunkMappingObservationSchema>;

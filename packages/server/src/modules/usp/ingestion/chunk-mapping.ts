@@ -16,7 +16,7 @@ import {readObject,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,assertIngestionBinding,ingestionBinding} from './events';
-import {assertStreamingInputTx} from './streaming-vector';
+import {assertStreamingInputTx,streamingReadContextTx} from './streaming-vector';
 import {manualProfileForLockedSourceTx,tabularProfileForLockedSourceTx} from './service';
 import {validateMappingPlanV2} from './mapping-plan-v2';
 import {mappingContextFromColumnProfile} from './mapping-teacher';
@@ -137,6 +137,31 @@ export async function assertChunkMappingInputTx(client:PoolClient,input:ChunkMap
   return {raw,ctx,profile,approved};
 }
 
+/** Historical reads keep source/private/integrity pins; they do not inspect or relax current recipe authority. */
+export async function chunkMappingReadContextTx(
+  client:PoolClient,input:ChunkMappingInput,caseId:string,sourceId:string,jobId:string,storedHash:string,
+){
+  const {inputFingerprint,...base}=input;
+  if(input.caseId!==caseId||input.sourceId!==sourceId||input.jobId!==jobId)
+    throw new AppError(403,'MAPPING_READ_BINDING','The retained job belongs to another private source context.');
+  if(fingerprint(base)!==inputFingerprint||storedHash!==fingerprint(input))
+    throw new AppError(422,'MAPPING_INPUT_INTEGRITY','The mapped job differs from its immutable input receipt.');
+  const job=(await client.query("SELECT payload,input_fingerprint FROM jobs WHERE id=$1 AND case_id=$2 " +
+    "AND source_id=$3 AND operation='streaming-vector' FOR SHARE",[input.rawJobId,caseId,sourceId])).rows[0]
+    ??notFound('Source streaming job not found.');
+  const raw=AnyStreamingInputSchema.parse(job.payload);
+  const {ctx,freshness}=await streamingReadContextTx(client,raw,caseId,sourceId,input.rawJobId,job.input_fingerprint);
+  if(input.rawInputFingerprint!==job.input_fingerprint||input.readerSha256!==raw.readerSha256
+    ||input.caseRevision!==raw.caseRevision||input.sourceRevision!==raw.sourceRevision
+    ||input.sourceFamilyId!==raw.sourceFamilyId||input.sourceSha256!==raw.sourceSha256
+    ||input.subject!==raw.subject||input.accessBinding!==raw.accessBinding
+    ||fingerprint(input.tabular??null)!==fingerprint(raw.framing==='tabular'?raw.tabular:null))
+    throw new AppError(422,'MAPPING_INPUT_INTEGRITY','The mapped job differs from its retained raw source pins.');
+  if(input.converterSha256!==chunkMappingConverterSha())freshness.reasons.push('converter_changed');
+  freshness.current=freshness.reasons.length===0;
+  return {ctx,freshness};
+}
+
 export function chunkMappingSlot(row:any){return ChunkMappingSlotSchema.parse({chunkIndex:row.chunk_index,
   status:row.status,published:row.published,rawResultSha256:row.raw_result_sha256,
   schemaFingerprint:row.schema_fingerprint,schemaDrift:row.schema_drift,
@@ -144,8 +169,13 @@ export function chunkMappingSlot(row:any){return ChunkMappingSlotSchema.parse({c
   normalized:row.normalized,quarantined:row.quarantined,unresolved:row.unresolved,bytes:row.bytes,
   ref:row.object_key?{key:row.object_key,sha256:row.object_sha256,bytes:row.bytes}:null,
   issueCode:row.issue_code,resultSha256:row.result_sha256,attempt:row.attempt,fence:Number(row.fence)});}
-async function statusTx(client:PoolClient,input:ChunkMappingInput){
-  const {ctx}=await assertChunkMappingInputTx(client,input);
+async function statusTx(
+  client:PoolClient,input:ChunkMappingInput,
+  read?:{caseId:string;sourceId:string;jobId:string;storedHash:string},
+){
+  const {ctx,freshness}=read
+    ?await chunkMappingReadContextTx(client,input,read.caseId,read.sourceId,read.jobId,read.storedHash)
+    :{...(await assertChunkMappingInputTx(client,input)),freshness:{current:true,reasons:[]}};
   const row=(await client.query('SELECT * FROM usp_chunk_mapping_imports WHERE job_id=$1',[input.jobId])).rows[0]
     ??notFound('Chunk mapping state unavailable.');
   const raw=(await client.query('SELECT state,unknown_remainder,issue_code FROM usp_streaming_vector_imports WHERE job_id=$1',[input.rawJobId])).rows[0]
@@ -156,7 +186,7 @@ async function statusTx(client:PoolClient,input:ChunkMappingInput){
     &&['completed','completed_with_rejections'].includes(row.state)
     &&['completed','completed_with_rejections'].includes(raw.state)&&!raw.unknown_remainder;
   const gis=ctx.source.inspection?.gis;
-  return ChunkMappingStatusSchema.parse({version:limits.version,jobId:input.jobId,rawJobId:input.rawJobId,
+  return ChunkMappingStatusSchema.parse({...freshness,version:limits.version,jobId:input.jobId,rawJobId:input.rawJobId,
     caseId:input.caseId,sourceId:input.sourceId,sourceRevision:input.sourceRevision,sourceSha256:input.sourceSha256,
     ...(input.tabular?{tabular:input.tabular}:{}),status:row.state,route:input.route,
     recipeId:input.recipeId,recipeRevision:input.recipeRevision,
@@ -238,18 +268,22 @@ export class ChunkMappingService{
   async status(caseValue:string,sourceValue:string,jobValue:string){
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),jobId=uuid.parse(jobValue);
     return transaction(async client=>{
-      const job=(await client.query("SELECT payload FROM jobs WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='chunk-mapping'",
-        [jobId,caseId,sourceId])).rows[0]??notFound('Chunk mapping job not found.');
-      return statusTx(client,ChunkMappingInputSchema.parse(job.payload));
+      const job=(await client.query("SELECT payload,input_fingerprint FROM jobs WHERE id=$1 AND case_id=$2 " +
+        "AND source_id=$3 AND operation='chunk-mapping'",[jobId,caseId,sourceId])).rows[0]
+        ??notFound('Chunk mapping job not found.');
+      return statusTx(client,ChunkMappingInputSchema.parse(job.payload),
+        {caseId,sourceId,jobId,storedHash:job.input_fingerprint});
     });
   }
   async chunk(caseValue:string,sourceValue:string,jobValue:string,indexValue:number){
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),jobId=uuid.parse(jobValue);
     const index=z.number().int().min(0).max(limits.chunks).parse(indexValue),binding=ingestionBinding(caseId);
     const initial=await transaction(async client=>{
-      const job=(await client.query("SELECT payload FROM jobs WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='chunk-mapping'",
-        [jobId,caseId,sourceId])).rows[0]??notFound('Chunk mapping job not found.');
-      const input=ChunkMappingInputSchema.parse(job.payload);await assertChunkMappingInputTx(client,input);
+      const job=(await client.query("SELECT payload,input_fingerprint FROM jobs WHERE id=$1 AND case_id=$2 " +
+        "AND source_id=$3 AND operation='chunk-mapping'",[jobId,caseId,sourceId])).rows[0]
+        ??notFound('Chunk mapping job not found.');
+      const input=ChunkMappingInputSchema.parse(job.payload);
+      await chunkMappingReadContextTx(client,input,caseId,sourceId,jobId,job.input_fingerprint);
       const state=(await client.query('SELECT * FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR SHARE',[jobId])).rows[0]
         ??notFound('Chunk mapping state unavailable.');
       const raw=(await client.query('SELECT state,issue_code FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE',[input.rawJobId])).rows[0];
@@ -275,9 +309,11 @@ export class ChunkMappingService{
     }
     assertIngestionBinding(binding);
     const fresh=await transaction(async client=>{
-      await assertChunkMappingInputTx(client,initial.input);
-      (await client.query("SELECT id FROM jobs WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='chunk-mapping' FOR SHARE",
-        [jobId,caseId,sourceId])).rows[0]??notFound('Chunk mapping job not found.');
+      const job=(await client.query("SELECT payload,input_fingerprint FROM jobs WHERE id=$1 AND case_id=$2 " +
+        "AND source_id=$3 AND operation='chunk-mapping' FOR SHARE",[jobId,caseId,sourceId])).rows[0]
+        ??notFound('Chunk mapping job not found.');
+      if(fingerprint(job.payload)!==fingerprint(initial.input))conflict('The mapped job changed during payload read.');
+      const {freshness}=await chunkMappingReadContextTx(client,initial.input,caseId,sourceId,jobId,job.input_fingerprint);
       const state=(await client.query('SELECT * FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR SHARE',[jobId])).rows[0]
         ??notFound('Chunk mapping state unavailable.');
       const raw=(await client.query('SELECT state,unknown_remainder,issue_code FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE',
@@ -292,11 +328,12 @@ export class ChunkMappingService{
       const complete=state.sealed_chunks!==null&&!state.unknown_remainder
         &&['completed','completed_with_rejections'].includes(state.state)
         &&['completed','completed_with_rejections'].includes(raw.state)&&!raw.unknown_remainder;
-      return {complete,unknownRemainder:state.unknown_remainder,
+      return {freshness,complete,unknownRemainder:state.unknown_remainder,
         identityComplete:!initial.input.tabular&&complete&&state.normalized===state.records&&state.duplicate_keys===0
           &&state.schema_drift_chunks===0};
     });
-    return ChunkMappingChunkResponseSchema.parse({slot:initial.slot,payload,sourceComplete:fresh.complete,
+    return ChunkMappingChunkResponseSchema.parse({...fresh.freshness,slot:initial.slot,payload,
+      sourceComplete:fresh.complete,
       identityComplete:fresh.identityComplete,unknownRemainder:fresh.unknownRemainder});
   }
 }
