@@ -218,7 +218,9 @@ function NewFiles({ onClose }: { onClose: () => void }) {
           >
             <Icon icon={FileArrowUp} size={32} />
             <span className="ul-heading">Drop files here, or choose files</span>
-            <span className="ul-help">GIS layers are read now. Plans, tables and documents are kept as evidence for a case upload.</span>
+            <span className="ul-help">
+              GIS layers are read now. CSV and XLSX can be imported as tables; other files need a case upload.
+            </span>
             <input ref={input} type="file" multiple className="ul-visually-hidden" onChange={(event) => void add(event.target.files)} />
           </label>
         ) : null}

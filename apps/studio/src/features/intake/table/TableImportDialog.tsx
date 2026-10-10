@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { ApiError } from '@ulpin/api-client';
 import { Banner, Button, Dialog } from '@ulpin/ui';
 import { useWorkQueue } from '../../../api/queries';
 import { TableRefusal } from './Progress';
@@ -21,7 +20,10 @@ export function TableImportDialog({ file, onClose, onBack }: {
   return <ImportDialogBody file={file} onClose={onClose} onBack={onBack} pending={retain.isPending}
     blocked={blocked} submit={() => retain.mutate()} error={retain.error}>
     <SourceCaseFields cases={cases} caseId={caseId} setCaseId={setCaseId} name={name} setName={setName}
-      mode={mode} setMode={(value) => { clearCreated(); setMode(value); }} locked={created} />
+      mode={mode} setMode={(value) => {
+        clearCreated();
+        setMode(value);
+      }} locked={created} />
     <TableSelectionFields file={file} sheet={sheet} setSheet={setSheet} rows={rows} setRows={setRows} />
   </ImportDialogBody>;
 }
@@ -30,7 +32,6 @@ function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, err
   file: File; onClose: () => void; onBack: () => void; pending: boolean; blocked: boolean;
   submit: () => void; error: Error | null; children: React.ReactNode;
 }) {
-  const queued = error instanceof ApiError && error.status === 429;
   return (
     <Dialog title="Import as a table" onClose={onClose} footer={(
       <><Button variant="ghost" onClick={onBack} disabled={pending}>Back to files</Button>
@@ -45,7 +46,6 @@ function ImportDialogBody({ file, onClose, onBack, pending, blocked, submit, err
           Tables create mapped draft rows, not buildings; nothing enters the registry or appears on the map.
         </Banner>
         <fieldset className={styles.fieldset} disabled={pending}>{children}</fieldset>
-        {queued ? <p role="status">Queued behind another import. Retry to request admission again.</p> : null}
         {error ? <TableRefusal error={error} /> : null}
       </div>
     </Dialog>

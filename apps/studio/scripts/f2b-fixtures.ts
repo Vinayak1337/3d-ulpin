@@ -9,6 +9,7 @@ import { inspectTabularSource, readTabularSource }
 import { TabularChunkMapper } from '../../../packages/server/src/modules/usp/ingestion/chunk-mapping-agent';
 import type { TabularChunkDraft } from '../../../packages/server/src/modules/usp/ingestion/chunk-mapping-agent';
 import { options } from '../../../scripts/agent/control-runtime';
+import type { Selection } from '../src/features/intake/table/types';
 
 const out = resolve('docs/evidence/gf-agent/ui/f2b');
 const hash = (value: unknown) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -44,9 +45,9 @@ function mappingPayload(
     converterSha256: hash('intercepted-control-not-a-runtime-pin'), records: [] };
 }
 
-function makeProfile(name: string) {
+function makeProfile(name: string, selected: Selection = selection) {
   const bytes = readFileSync(resolve('fixtures/usp/D8-messy-india/dev/d1b', name));
-  const inventory = inspectTabularSource(bytes, selection);
+  const inventory = inspectTabularSource(bytes, selected);
   const sourceId = randomUUID();
   return { version: 'manual-tabular/1' as const, caseId, workspaceRevision: 1,
     workspaceFingerprint: hash({ caseId, sourceId }),
@@ -105,14 +106,16 @@ async function fileControl(name: string) {
   return { name, profile, raw, mapping: mapped.status, chunk: mapped.chunk };
 }
 
-function sourceCase(files: Awaited<ReturnType<typeof fileControl>>[]) {
+function sourceCase(files: Pick<Awaited<ReturnType<typeof fileControl>>, 'name' | 'profile'>[]) {
   const now = new Date().toISOString();
   const record = { id: caseId, siteId: null, archived: false, name: 'Intercepted table workflow control',
     description: 'No live case or property record', frame: { id: caseId, horizontalUnit: 'm', verticalUnit: 'm',
       benchmark: 'Unassigned source workspace' }, revision: 1, createdAt: now, updatedAt: now };
   const sources = files.map((file) => ({ id: file.profile.source.sourceId, caseId,
     familyId: file.profile.source.familyId, revision: 1, name: file.name, profile: 'tabular-manual-v1',
-    mimeType: 'text/csv', bytes: file.profile.tabular.sourceBytes, sha256: file.profile.source.sourceSha256,
+    mimeType: file.profile.tabular.selection.format === 'csv' ? 'text/csv' :
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    bytes: file.profile.tabular.sourceBytes, sha256: file.profile.source.sourceSha256,
     status: 'needs_input', createdAt: now, inspection: null }));
   return { case: record, identity: { rootId: caseId, status: 'prototype', scope: 'property-workspace',
     floors: [], spaces: [] }, sources, units: [], model: null, jobs: [], context: [], history: [] };
@@ -120,13 +123,21 @@ function sourceCase(files: Awaited<ReturnType<typeof fileControl>>[]) {
 
 async function main() {
   const files = [await fileControl('mi-d10-02.csv'), await fileControl('mi-d10-03.csv')];
-  const detail = sourceCase(files);
+  const duplicateProfile = makeProfile('mi-d11-01.csv');
+  const nativeProfile = makeProfile('mi-d19-01.xlsx', {
+    format: 'xlsx', sheet: 'T_18', table: null, headerRows: [4, 5],
+  });
+  checked('POST_ingestion_cases_caseId_sources_Response_201_application_json', duplicateProfile);
+  checked('POST_ingestion_cases_caseId_sources_Response_201_application_json', nativeProfile);
+  const detail = sourceCase([...files, { name: 'mi-d11-01.csv', profile: duplicateProfile },
+    { name: 'mi-d19-01.xlsx', profile: nativeProfile }]);
   checked('GET_cases_caseId_Response_200_application_json', detail);
   assert.equal(files[0]!.chunk.payload.mapping.metrics.layout, 'new');
   assert.equal(files[1]!.chunk.payload.mapping.metrics.layout, 'memory');
   mkdirSync(out, { recursive: true });
-  writeFileSync(resolve(out, 'responses.json'), JSON.stringify({ caseId, detail, files }));
-  writeFileSync(resolve(out, 'contract-check.json'), JSON.stringify({ schemas: 9, exit: 0,
+  const responses = { caseId, detail, files, duplicateProfile, nativeProfile };
+  writeFileSync(resolve(out, 'responses.json'), JSON.stringify(responses));
+  writeFileSync(resolve(out, 'contract-check.json'), JSON.stringify({ responses: 11, exit: 0,
     source: 'Real D8 dev bytes; offline student and job-local reuse; no teacher, learning or runtime writes' }));
 }
 

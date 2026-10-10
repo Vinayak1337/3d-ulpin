@@ -29,11 +29,13 @@ export function ColumnsTable({ profile, mapping }: { profile: TableProfile; mapp
               return row.confidence === null ? 'Unknown' : `${Math.round(row.confidence * 100)}%`;
             } },
             { header: 'From', cell: (row) => row.origin ?? 'Unknown' },
-            { header: 'Question', cell: (row) => row.question ? (
-              <span className={styles.question}>
+            { header: 'Question', cell: (row) => {
+              if (!mapping) return 'Unknown';
+              if (!row.question) return 'None reported';
+              return <span className={styles.question}>
                 <Badge tone="warning">Needs input</Badge>{row.question.reason}
-              </span>
-            ) : 'None reported' },
+              </span>;
+            } },
           ]} />
       </div>
     </section>

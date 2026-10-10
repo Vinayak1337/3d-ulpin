@@ -10,7 +10,7 @@ export function tableSelection(file: File, sheet: string, rows: string): Selecti
         index > 0 && row <= headerRows[index - 1]!)) {
     throw new Error('Enter the exact sheet name and 1–5 increasing header row numbers, separated by commas.');
   }
-  return { format: 'xlsx', sheet: sheet.trim(), table: null, headerRows };
+  return { format: 'xlsx', sheet, table: null, headerRows };
 }
 
 export function retainForm(file: File, selection: Selection, revision: number, requestKey: string) {
