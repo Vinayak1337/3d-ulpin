@@ -114,7 +114,7 @@ test('revision context, stale version and corrupt linked packet refuse without s
     const trace = traceQueries(store), before = structuredClone(store.cards);
     await assert.rejects(previewPropertyCard(ctx, { ...update,
       guard: { ...update.guard, expectedManifestId: 'different-snapshot' } }, store.io),
-    code('CARD_REVISION_CONTEXT'));
+      code('CARD_REVISION_CONTEXT'));
     await assert.rejects(previewPropertyCard(ctx, { ...update,
       guard: { ...update.guard, expectedVersion: 2 } }, store.io), code('NOT_FOUND'));
     store.objects.set('control-packet', Buffer.from('changed packet bytes'));

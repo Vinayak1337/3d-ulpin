@@ -2,63 +2,217 @@
  "task": "K12",
  "gates": ["GF4", "GF5"],
  "base": "e434ab64",
+ "state": "Services/controllers implemented offline; publication blocked on unowned manifest; not roll-out ready.",
  "step0": {
   "writtenBeforeCode": true,
+  "commit": "09cfd0ca",
   "entries": {
    "common": [
-    "PDF plan create parses a registry_record target and snapshot scope; assertLocalUsp requires the local operator.",
-    "protectPdfPlanTx calls targetTx: scopedManifestTx checks scope/access view/policy (NOT_FOUND or STALE_REVISION).",
-    "The manifest must select precisely one matching target (PACKET_PLAN_SELECTION); captured target/member hashes must agree (STALE_REVISION).",
-    "The target must be the same id, site and revision and a building/floor/space (PACKET_PLAN_TARGET).",
-    "assessPdfPlanTx checks current committed target, target history, full captured identity/aliases and original authority.",
-    "Retired/cancelled targets are PACKET_PLAN_TARGET_ACCESS; changed current/captured context is STALE_REVISION."
+    "assertLocalUsp requires the local operator; PDF input requires a registry_record target pin.",
+    "protectPdfPlanTx calls targetTx and scopedManifestTx: missing scope is NOT_FOUND; access/scope drift",
+    "is STALE_REVISION. Manifest selection must be exactly this one pin (PACKET_PLAN_SELECTION).",
+    "Captured target/member integrity failure is STALE_REVISION; wrong id/site/revision/kind is",
+    "PACKET_PLAN_TARGET. assessPdfPlanTx checks current committed target/history, identity and aliases.",
+    "Retired/cancelled targets are PACKET_PLAN_TARGET_ACCESS; changed context is STALE_REVISION."
    ],
    "sourceStatement": [
-    "A space with body.sourceOnly has exactly one entry under pack1-single-region-image/1; statementRecord validates SourceStatedRecordSchema.",
-    "Its selection bindingId is sourceStatementHandle(input.target), not a persisted citation id.",
-    "The recorded source revision/hash must be captured in the same manifest; missing member is STALE_REVISION, mismatched statement is PACKET_SOURCE_STATEMENT.",
-    "prepareSourceStatementBindings checks current canonical original, page metadata and bounded crop; region beyond the page is PACKET_SOURCE_STATEMENT.",
-    "IMPORTANT: changing one character of the handle does NOT throw from create today. It skips preparation, creates a blocked plan with committed_region_binding_unavailable, and confirm refuses PACKET_PLAN_BLOCKED. No existing behavior will be changed to turn that into a create refusal."
+    "A space with sourceOnly has one entry under pack1-single-region-image/1; statementRecord validates",
+    "SourceStatedRecordSchema. Its bindingId is sourceStatementHandle(input.target), not a citation id.",
+    "The captured original revision/hash must match the statement: missing member is STALE_REVISION;",
+    "mismatched statement is PACKET_SOURCE_STATEMENT. Native preparation checks source/page/crop authority",
+    "and page bounds (PACKET_SOURCE_STATEMENT). No browser derivation is required after this read.",
+    "Important discrepancy: changing one character does NOT make create throw today. Preparation is skipped",
+    "and create returns blocked_required_context / committed_region_binding_unavailable. Confirmation",
+    "refuses PACKET_PLAN_BLOCKED. K12 tests and preserves that behavior rather than changing plan create."
    ],
    "storedBindings": [
-    "Other targets load RegistryDocumentCitationsSchema from captured target.body.documentCitations (up to 25).",
-    "Region ids are the stored citation.id, derived at reviewed canonical commit by regionCitationId or imageRegionCitationId.",
-    "targetTx finds the id and citation version selected by recipe: PDF page region, original image region, or mixed entry kind.",
-    "Matching binding must name target, an earlier target revision and record_evidence purpose; mismatch or broken integrity is STALE_REVISION.",
-    "Missing/non-region/wrong-version id yields blocked_required_context with committed_region_binding_unavailable, not a create refusal.",
-    "Source access checks current operator, access digest, retained bytes, original case and validation; PACKET_PDF_SOURCE_ACCESS, REGISTRY_REGION_SOURCE_DENIED, REGISTRY_REGION_COPY_UNSUPPORTED and STALE_REVISION can refuse.",
-    "Image/mixed recipes support building/floor only (PACKET_IMAGE_PDF_TARGET); aggregate/original-set recipe limits add PACKET_PDF_ORIGINAL_BYTES and PACKET_PDF_ORIGINAL_SCOPE."
+    "Other targets load up to 25 RegistryDocumentCitationsSchema entries from body.documentCitations.",
+    "Region ids are persisted citation.id values from reviewed canonical commit: regionCitationId for PDF",
+    "page regions, imageRegionCitationId for original-image regions. Recipe/kind selects citation version.",
+    "Matching id must name the target, an earlier target revision and record_evidence purpose. A broken id",
+    "or uncommitted target/purpose is STALE_REVISION. Missing/non-region/wrong-version ids create blocked",
+    "entries with committed_region_binding_unavailable rather than causing create to throw.",
+    "Original access and validation can refuse with PACKET_PDF_SOURCE_ACCESS, REGISTRY_REGION_SOURCE_DENIED,",
+    "REGISTRY_REGION_COPY_UNSUPPORTED or STALE_REVISION. Image/mixed target mismatch is",
+    "PACKET_IMAGE_PDF_TARGET. Recipe bounds add PACKET_PDF_ORIGINAL_BYTES / PACKET_PDF_ORIGINAL_SCOPE."
    ]
   },
   "projection": {
    "order": [
-    "assertLocalUsp; parse generate command; fingerprint it; executed() calls readPacketPlan, requires confirmed/executed/complete view (CARD_EXECUTED_PLAN_REQUIRED).",
-    "prepare transaction: protectedTx protects plan disclosure, authorizePlanTx checks access, planLinkageTx reads exact stored plan/confirmation/execution and PDF packet linkage.",
-    "requestReceiptTx takes transaction advisory lock and reads receipt. Replay validates card, actor/link/protected plan/lifecycle and stored card linkage, returning before expiry/projection.",
-    "No replay: expiry must be future and <=24 hours (CARD_EXPIRY).",
-    "Update: storedTx exact old card; actor; same plan/version and expected manifest (CARD_REVISION_CONTEXT); link; latest revision (STALE_REVISION); transaction card lock; lifecycle revocation (CARD_REVISION_REVOKED); integer revision bound (CARD_REVISION_BOUND).",
-    "projectCardFactsTx reads scoped manifest and exact captured bodies including source-stated ancestors/citation, verifies hashes and projects facts without writes.",
-    "authorizePlanTx again; database liveTx on requested expiry (CARD_EXPIRED). Prepare commits.",
-    "linkedPacket reads protected private packet bytes, validates receipt and linkage; then id/resolver/profile selection, PDF rendering, object put (first persistent write).",
-    "Publication repeats prepare, compares projection/revision, reauthorizes and inserts card/receipt/outbox atomically."
+    "assertLocalUsp; parse/fingerprint command; executed() reads the plan through readPacketPlan and",
+    "requires confirmation, execution and complete required context (CARD_EXECUTED_PLAN_REQUIRED).",
+    "prepare: protectedTx protects disclosure; authorizePlanTx checks access; planLinkageTx reads and",
+    "compares stored plan, confirmation, execution and, for PDF, packet linkage on the same SQL client.",
+    "requestReceiptTx takes a transaction advisory lock and reads a receipt. Replay validates card, actor,",
+    "link, protected authority/lifecycle and stored card linkage; it returns before expiry/projection.",
+    "No replay: expiry must be future and within 24 hours (CARD_EXPIRY).",
+    "Update: storedTx old card; actor; plan/version/expected manifest (CARD_REVISION_CONTEXT); link;",
+    "latest revision (STALE_REVISION); card transaction lock; lifecycle (CARD_REVISION_REVOKED); integer",
+    "bound (CARD_REVISION_BOUND). Then revision is old revision plus one; create starts at one.",
+    "projectCardFactsTx checks manifest and exact captured bodies/hashes, including source-stated ancestors",
+    "and citation, and projects facts. authorizePlanTx repeats; liveTx checks expiry on the database clock",
+    "(CARD_EXPIRED). Prepare commits; linkedPacket then reads protected private bytes and compares receipt.",
+    "Then id/resolver/profile selection, PDF render, object put (first persistent write). Publication",
+    "repeats prepare, compares projection/revision, reauthorizes and inserts card/receipt/outbox atomically."
    ],
    "previewRepeats": [
-    "Same executed-view read and protectedTx; same expiry/revision/projection/authorization/database-clock checks via extracted shared helpers; same linkedPacket read after transaction.",
-    "No receipt lookup: a preview has no request key and predicts a new command, never a replay. It takes no receipt lock.",
-    "Executed view, planLinkageTx and linkedPacket require an existing executed packet; expiry/revision guards and projection itself do not inherently require execution, but this route deliberately requires it."
+    "The same executed-view reader, protectedTx, expiry/revision checks, projectCardFactsTx, authorizePlanTx",
+    "and liveTx, in the same order, followed by the same linkedPacket reader outside the transaction.",
+    "No replay receipt: preview has no key and predicts a new command, not the replay of an old command.",
+    "Executed-view/linkage/packet reads require an executed plan and existing packet. Expiry, revision guard",
+    "and projection themselves do not inherently need execution, but this route deliberately requires it."
    ]
   },
   "writes": [
-   "All preparation and linked-packet authority helpers issue SELECTs and transaction-scoped locks only; no receipt, lock row or access log is inserted.",
-   "requestReceiptTx only locks and SELECTs; preview skips it entirely. Row/advisory locks in shared protection expire at commit/rollback.",
-   "FOR SHARE helpers prohibit PostgreSQL READ ONLY transactions; use ordinary transactions with no DML, as K7 does, and assert no INSERT/UPDATE/DELETE in the protocol trace."
+   "Preparation and linked-packet helpers use SELECTs and transaction-scoped locks only: no receipt, lock",
+   "row or access-log insert. requestReceiptTx itself only SELECTs/locks; preview avoids it entirely.",
+   "Shared FOR SHARE helpers prohibit PostgreSQL READ ONLY transactions. Ordinary transactions, as in K7,",
+   "perform no DML; all row/advisory locks expire on commit/rollback. Tests assert the SQL write log is empty."
   ],
   "facts": [
-   "generate answer data.facts is UspPropertyCardSchema.facts: ordered array of UspPropertyCardFactSchema (PropertyCardFact).",
-   "Both ASCII and Unicode renderers iterate precisely these facts, labels and values; unavailable/not_assessed values get a state prefix.",
-   "They also print a title/private-revision/snapshot header, application-summary disclaimer, footer card/plan/packet ids, entry counts, capture time, expiry, packet hash, fixed-snapshot and separate-access notices, QR/resolver link and private-access captions.",
-   "Preview answers facts, not an entire PDF transcript; it invents no id and cannot answer future card-id/QR/footer lines or guarantee font/layout rendering."
+   "generate data.facts is UspPropertyCardSchema.facts, an ordered array of UspPropertyCardFactSchema",
+   "(PropertyCardFact). Both renderers iterate exactly those labels/values, prefixing missing states.",
+   "PDF also has title/private-revision/snapshot header, disclaimer, footer card/plan/packet ids, counts,",
+   "capture time, expiry, packet hash, fixed-snapshot/access notices, QR link and private-access captions.",
+   "Preview facts are not a complete PDF transcript. Future card-id/QR/footer lines and font/layout checks",
+   "are not previewed, and no id is invented. Projection/rendering files were not edited."
   ]
  },
- "state": "Step 0 complete; implementation pending."
+ "implementation": {
+  "entries": {
+   "route": "POST /api/v1/usp/packets/plans/entries",
+   "service": "readPacketPlanEntries in plan-entries.ts",
+   "contract": ["UspReadPacketPlanEntriesSchema", "UspPacketPlanEntriesSchema"],
+   "order": "The one source-statement entry, in record order.",
+   "checks": ["protectPdfPlanTx", "statementContextTx", "assessPdfPlanTx"],
+   "handle": "The same sourceStatementHandle call that plan create checks; no second hash derivation.",
+   "otherTargets": "422 PACKET_PLAN_ENTRIES_SOURCE_ONLY",
+   "qualification": "Recorded-entry eligibility only. Plan create still validates native page/crop bounds."
+  },
+  "preview": {
+   "route": "POST /api/v1/usp/property-cards/preview",
+   "service": "previewPropertyCard in card-service.ts",
+   "contract": ["UspPreviewPropertyCardSchema", "UspPropertyCardPreviewSchema"],
+   "shared": ["prepareCardFactsTx", "nextCardRevisionTx"],
+   "receiptBehavior": "Generate still checks replay first; preview never reads or stores a receipt.",
+   "answer": ["mode", "revision", "facts", "expiresAt", "scope"],
+   "description": [
+    "The rows a card made now from this executed plan would print.",
+    "A preview is not a card: nothing is stored and it has no id."
+   ]
+  }
+ },
+ "checks": {
+  "backendTypecheck": {"command": "pnpm typecheck:backend", "exit": 0},
+  "studioTypecheck": {"command": "pnpm studio:typecheck", "exit": 0},
+  "newTests": {"entriesPassed": 3, "previewPassed": 6, "writesDuringReads": 0},
+  "finalSuite": {
+   "commandPrefix": [
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json",
+    "--import ./packages/server/src/modules/usp/packets/pdf-service.ts --test"
+   ],
+   "serverDirectory": "packages/server/src/modules/usp/packets/",
+   "serverFiles": {
+    "card-listing.test.ts": 8,
+    "card-preview.test.ts": 6,
+    "card-revocation.test.ts": 9,
+    "card-verification.test.ts": 9,
+    "plan-entries.test.ts": 3,
+    "source-stated-binding.test.ts": 3
+   },
+   "testsDirectory": "tests/",
+   "rootFiles": {
+    "usp-property-card.test.ts": 2,
+    "usp-property-card-unicode.test.ts": 1,
+    "usp-property-card-image.test.ts": 2,
+    "usp-packet-plans.test.ts": 13,
+    "usp-packet-pdf.test.ts": 18,
+    "usp-packet-image-pdf.test.ts": 2,
+    "usp-packet-mixed-pdf.test.ts": 3,
+    "packet-pdf-render.test.ts": {"passed": 0, "skipped": 1},
+    "packet-pdf-bundle.test.ts": 2,
+    "packet-image-pdf-bundle.test.ts": 2,
+    "packet-pdf-job-compatibility.test.ts": 1,
+    "packet-image-region.test.ts": 3,
+    "packet-region-extract.test.ts": 8,
+    "packet-region-runtime.test.ts": {"passed": 0, "skipped": 2}
+   },
+   "total": 98,
+   "passed": 95,
+   "skipped": 3,
+   "failed": 0,
+   "exit": 0,
+   "existingCardTestsUntouched": true
+  },
+  "initialPacketSuite": {"total": 59, "passed": 54, "skipped": 3, "failed": 2, "exit": 1},
+  "knownImageCheckpointFailure": {
+   "file": "tests/usp-packet-image-pdf-recovery.test.ts",
+   "passed": 5,
+   "failed": 1,
+   "code": "PACKET_IMAGE_CHECKPOINT_RUNTIME_UNAVAILABLE",
+   "signature": "Retained current interpreter layout/pins cannot be resolved without execution.",
+   "action": "Known environment prerequisite per task; pin table untouched; not retried."
+  },
+  "importOrderComparison": {
+   "file": "tests/packet-image-region.test.ts",
+   "baseline": "ReferenceError: Cannot access PacketImageRegionService before initialization",
+   "hypothesis": "Existing module cycle depends on the entry module; preload the existing PDF service.",
+   "criterion": "Three tests pass without changing dependency files or executing native code.",
+   "comparison": "Same test file with --import ./packages/server/src/modules/usp/packets/pdf-service.ts",
+   "passed": 3,
+   "exit": 0,
+   "decision": "Use that entry order for the combined suite; leave the existing cycle to its owner."
+  },
+  "contractRefresh": {
+   "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts staging",
+   "exit": 1,
+   "signature": "Unreconciled operation: POST /api/v1/usp/packets/plans/entries",
+   "cause": "The evidence operation manifest is required by the generator but outside owned paths.",
+   "currentOperations": 298,
+   "expectedOperationsAfterManifestAddition": 300
+  },
+  "clientGenerate": {
+   "command": "pnpm studio:api-types",
+   "exit": 0,
+   "qualification": "Regenerated unchanged old catalogue; no semantic diff, no K12 client operations yet."
+  },
+  "openapiCheck": {
+   "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+   "exit": 1,
+   "signature": "Same unreconciled operation; no unowned manifest changed."
+  },
+  "apiCheck": {"command": "python -B scripts/api/check.py", "exit": 1,
+   "signature": "API-DOC: runtime receipt changed", "qualification": "Existing receipt pin prerequisite."},
+  "diffCheck": {"command": "git diff --check", "exit": 0},
+  "newLinesOver120": 0
+ },
+ "inputs": {
+  "good": [
+   "Retained Tower 3 PDF crop real-crop-02 and K4 source-stated UNIT-3B fixture; original hashes/bytes kept.",
+   "Controlled already-executed CSV plan from card-verification.test-fixture.ts for preview/generate equality."
+  ],
+  "difficult": [
+   "The real Tower 3 scan states a label but no geometry/height/area/use/parcel/rights; no unknown becomes zero.",
+   "Protocol variants: outside-scope pin, archived original, revoked card revision and changed packet bytes."
+  ],
+  "liveReadsOrWrites": 0,
+  "runtimeStartStopOrMigration": 0,
+  "restriction": "No .env, private runtime directory, held-out file, provider call or running database read."
+ },
+ "gaps": [
+  "Not roll-out ready: the lead must append operation-manifest-additions.json to the unowned manifest and",
+  "regenerate OpenAPI/client types. API docs/startup reconciliation currently fails; no published K12 schema.",
+  "Stored-binding discovery is deliberately not implemented. Its unexported target reader and per-recipe",
+  "qualification/source-validation traversals would require more than a small read of loaded bindings.",
+  "No PostgreSQL/live/new-preview-PDF qualification; equality proven on the protocol double, not the demo.",
+  "Preview requires execution, so a packet already exists. G7 expiry/inclusion reason remain owner choices.",
+  "Preview does not render or guarantee unsupported-font/layout acceptance; it repeats prepare checks only."
+ ],
+ "handoff": {
+  "requests": "docs/evidence/gf4/k12/REQUESTS.md",
+  "manifestAdditions": "docs/evidence/gf4/k12/operation-manifest-additions.json",
+  "entriesCommit": "33704c08",
+  "previewCommit": "1f54aa23",
+  "next": "Lead applies manifest additions, regenerates both contracts, then runtime owner sends the two reads."
+ }
 }

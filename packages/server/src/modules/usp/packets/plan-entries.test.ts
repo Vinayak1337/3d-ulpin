@@ -70,18 +70,19 @@ test('entries read answers the handle accepted by real plan create and writes no
       expectedVersion: 1, expectedManifestId: command.scope.manifestId } }), errorCode('PACKET_PLAN_BLOCKED'));
 }, request));
 
-test('outside-scope target, changed access and unavailable original answer no entry or write', () => control(async f => {
-  const command = await assigned(f);
-  const start = f.memory.queries.length;
-  await assert.rejects(readPacketPlanEntries(f.ctx, { ...command,
-    target: { ...command.target, ref: { ...command.target.ref, id: randomUUID() } } }),
-  errorCode('PACKET_PLAN_SELECTION'));
-  await assert.rejects(readPacketPlanEntries({ ...f.ctx, accessViewId: 'other' }, command),
-    errorCode('STALE_REVISION'));
-  f.memory.archived = true;
-  await assert.rejects(readPacketPlanEntries(f.ctx, command), errorCode('REGISTRY_REGION_SOURCE_DENIED'));
-  assert.deepEqual(writes(f.memory.queries.slice(start)), []);
-}, request));
+test('outside-scope target, changed access and unavailable original answer no entry or write',
+  () => control(async f => {
+    const command = await assigned(f);
+    const start = f.memory.queries.length;
+    await assert.rejects(readPacketPlanEntries(f.ctx, { ...command,
+      target: { ...command.target, ref: { ...command.target.ref, id: randomUUID() } } }),
+      errorCode('PACKET_PLAN_SELECTION'));
+    await assert.rejects(readPacketPlanEntries({ ...f.ctx, accessViewId: 'other' }, command),
+      errorCode('STALE_REVISION'));
+    f.memory.archived = true;
+    await assert.rejects(readPacketPlanEntries(f.ctx, command), errorCode('REGISTRY_REGION_SOURCE_DENIED'));
+    assert.deepEqual(writes(f.memory.queries.slice(start)), []);
+  }, request));
 
 test('other target profiles are explicitly refused without writes', () => control(async f => {
   const command = await assigned(f);
