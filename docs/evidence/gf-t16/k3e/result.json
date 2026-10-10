@@ -161,5 +161,99 @@
     "computed by hand"
    ]
   }
- }
+ },
+ "dryRun": {
+  "command": [
+   "NODE_OPTIONS='--require ./scripts/platform/isolated-env.cjs' pnpm exec tsx --tsconfig",
+   "scripts/agent/tsconfig.json scripts/agent/k3e-magnolia-levels.ts --dry-run >",
+   "docs/evidence/gf-t16/k3e/dry-run.json"
+  ],
+  "env": "ULPIN_PROFILE=demo REPO_DATA=false",
+  "exitCode": 0,
+  "sent": false,
+  "literalsVerified": 9,
+  "citationsArePinned": true,
+  "double": [
+   "docs/evidence/gf-t16/k3b/magnolia-after-current.json (recorded canonical, schedule",
+   "revision 4)"
+  ],
+  "levels": [
+   {
+    "label": "GROUND FLOOR PLAN",
+    "lowerM": {
+     "value": 0.4572,
+     "state": "reviewed"
+    },
+    "upperM": {
+     "value": 3.5052,
+     "state": "reviewed"
+    },
+    "heightSource": "stated",
+    "prism": "reviewed_footprint_unavailable",
+    "rooms": 1
+   },
+   {
+    "label": "FIRST FLOOR PLAN",
+    "lowerM": {
+     "value": 3.5052,
+     "state": "reviewed"
+    },
+    "upperM": {
+     "value": 6.731,
+     "state": "reviewed"
+    },
+    "heightSource": "stated",
+    "prism": "reviewed_footprint_unavailable",
+    "rooms": 0
+   },
+   {
+    "label": "SECOND FLOOR PLAN",
+    "lowerM": {
+     "value": null,
+     "state": "unknown"
+    },
+    "upperM": {
+     "value": null,
+     "state": "unknown"
+    },
+    "heightSource": "unknown",
+    "prism": "level_limits_unknown",
+    "rooms": 0
+   }
+  ],
+  "contractChanged": false
+ },
+ "checks": [
+  {
+   "command": "pnpm exec tsc -p scripts/agent/tsconfig.json",
+   "exitCode": 0
+  },
+  {
+   "command": "pnpm typecheck:backend",
+   "exitCode": 0
+  },
+  {
+   "command": "tsx --test scripts/agent/k3e-magnolia-levels.test.ts",
+   "exitCode": 0,
+   "passed": 4
+  },
+  {
+   "command": "tsx --test level-schedules.test.ts level-schedule.controller.test.ts (unchanged)",
+   "exitCode": 0,
+   "passed": 9,
+   "before": 9
+  },
+  {
+   "command": "git diff --check",
+   "exitCode": 0
+  }
+ ],
+ "notRun": [
+  "Contract checks (openapi --check, scripts/api/check.py, studio:typecheck): the contract",
+  "did not change."
+ ],
+ "longLines": [
+  "dry-run.json carries three JSON string values over 120 characters (two candidate ids, the",
+  "review reason)."
+ ]
 }
