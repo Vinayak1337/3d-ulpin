@@ -14,12 +14,24 @@ import { manifestId, planId, withCardStore, type CardStore } from './card-verifi
 type Values = readonly any[];
 type Query = (text: string, values?: Values) => Promise<{ rows: unknown[]; rowCount: number }>;
 const OTHER_TARGET = '00000000-0000-4000-8000-000000000099';
+// A second snapshot of the card's site. Its manifest holds the card's target at revision 2.
+const OTHER_SNAPSHOT = { manifestId: '00000000-0000-4000-8000-000000000098', snapshotDigest: 'd'.repeat(64) };
 const expiresAt = () => new Date(Date.now() + 3600000).toISOString();
 const keys = (list: PropertyCardList) => list.items.map(item => `${item.cardId}:${item.revision}`);
+
+/** The store's one manifest as the other snapshot of the same site would hold it. */
+function otherManifest(stored: any) {
+  const moved = (pin: any) => pin.ref.namespace === 'registry_record' ? { ...pin, revision: 2 } : pin;
+  return { ...stored, id: OTHER_SNAPSHOT.manifestId, digest: OTHER_SNAPSHOT.snapshotDigest,
+    scope: { ...stored.scope, ...OTHER_SNAPSHOT },
+    selection: { ...stored.selection, pins: stored.selection.pins.map(moved) },
+    members: stored.members.map((member: any) => ({ ...member, pin: moved(member.pin) })) };
+}
 
 /**
  * The store double with the page statement of card-listing.ts added. Rows are created one second apart in
  * insertion order, the plan's target stands for the plan join, and `plansHidden` makes the plan reader refuse.
+ * A read of the other snapshot's manifest is answered with the store's manifest restated for it.
  */
 function listingPool(store: CardStore, state: { plansHidden: boolean }) {
   const page = async (values: Values) => {
@@ -43,6 +55,10 @@ function listingPool(store: CardStore, state: { plansHidden: boolean }) {
       return { rows, rowCount: rows.length };
     }
     if (state.plansHidden && sql.startsWith('SELECT body FROM usp_packet_plans')) return { rows: [], rowCount: 0 };
+    if (sql.startsWith('SELECT body FROM usp_snapshots') && values[0] === OTHER_SNAPSHOT.manifestId) {
+      const stored = (await inner(text, values)).rows[0] as { body: unknown };
+      return { rows: [{ body: otherManifest(stored.body) }], rowCount: 1 };
+    }
     return inner(text, values);
   };
   return { query: through(store.pool.query.bind(store.pool) as Query), connect: async () => {
@@ -182,6 +198,29 @@ test('an unknown target is an empty list, and a scope that is not the stored sna
     assert.deepEqual(refused, { status: 409, code: 'USP_SCOPE_STALE' });
     observe('known scope, unknown target', 'empty list', { status: 200, items: 0 });
     observe('a scope that differs from the stored snapshot', '409, the house rule of scoped USP reads', refused);
+  }));
+
+// R4 sent a scope holding the unit at revision 1 while the card and the record were at 2. The store generates
+// cards at revision 1 only, so the numbers are mirrored here: the scope holds the target at 2.
+test('a scope of the same site that holds the target at another revision is answered with the same rows and states',
+  () => withListing(async (store, ctx) => {
+    const card = await generate(store, ctx, 'card-create');
+    const listIn = (scope: object) => listPropertyCards(ctx, { scope, target: card.target.ref });
+    const other = { ...card.scope, ...OTHER_SNAPSHOT };
+    const revisions = (listed: PropertyCardList) =>
+      listed.items.map(item => [item.targetRevision, item.currentTargetRevision, item.snapshotState]);
+
+    const unchanged = await listIn(other);
+    assert.deepEqual(unchanged, await listIn(card.scope));
+    assert.deepEqual(revisions(unchanged), [[1, 1, 'same_revision']]);
+    store.currentRevision = 2;
+    const moved = await listIn(other);
+    assert.deepEqual(moved, await listIn(card.scope));
+    assert.deepEqual(revisions(moved), [[1, 2, 'changed_revision']]);
+    observe('a scope of the same site that holds the target at revision 2; card at 1; record at 1, then at 2',
+      'the rows of the card\'s own scope: same_revision while card and record agree, then changed_revision, '
+      + 'although the scope passed then holds the revision the record has',
+      { status: 200, recordAt1: revisions(unchanged)[0], recordAt2: revisions(moved)[0] });
   }));
 
 test('the limit bounds the page and truncated says that more rows matched',

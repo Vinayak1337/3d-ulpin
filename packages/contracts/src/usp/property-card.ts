@@ -100,9 +100,13 @@ export const UspPropertyCardRevocationSchema = z.strictObject({
   reasonCode: UspPropertyCardRevocationReasonCodeSchema, reason: coreText(1024), scope: UspSnapshotScopeSchema,
   revokedAt: z.iso.datetime({ offset: true }),
 }).readonly();
-/** Lists the caller's own card revisions of one target in the site of a checked snapshot scope. */
+/** Lists the caller's own card revisions of one target in the site of a checked snapshot scope. The scope names
+ * that site and nothing more: it selects no row, and no field of a row is measured against it. */
 export const UspListPropertyCardsSchema = z.strictObject({
-  scope: UspSnapshotScopeSchema, target: CoreRefSchema, limit: z.number().int().min(1).max(50).default(20),
+  scope: UspSnapshotScopeSchema.describe('Names the site whose cards are listed and is checked as on every USP '
+    + 'read. It selects no row: the cards generated from every snapshot of that site are listed, and no field '
+    + 'of a row is measured against this scope.'),
+  target: CoreRefSchema, limit: z.number().int().min(1).max(50).default(20),
 }).readonly();
 /** One card revision without any card fact. A row whose body cannot be relied on carries its key only. */
 const UspPropertyCardListItemSchema = z.strictObject({
@@ -112,9 +116,15 @@ const UspPropertyCardListItemSchema = z.strictObject({
   createdAt: z.iso.datetime({ offset: true }).nullable(), expiresAt: z.iso.datetime({ offset: true }).nullable(),
   expired: z.boolean().nullable(), revoked: z.boolean().nullable(),
   revokedAt: z.iso.datetime({ offset: true }).nullable(),
-  targetRevision: z.number().int().positive().nullable(),
-  currentTargetRevision: z.number().int().positive().nullable(),
-  snapshotState: z.enum(['same_revision', 'changed_revision']).nullable(),
+  targetRevision: z.number().int().positive().nullable()
+    .describe('The revision of the target record that this card revision was generated from.'),
+  currentTargetRevision: z.number().int().positive().nullable()
+    .describe('The revision of the target record in the registry at the time of this read. It is not read from '
+      + 'the scope of the request.'),
+  snapshotState: z.enum(['same_revision', 'changed_revision']).nullable()
+    .describe('Whether the target record changed after the card was generated: same_revision exactly when '
+      + 'targetRevision equals currentTargetRevision. The scope of the request takes no part in it, so a scope '
+      + 'that holds the target at another revision is answered with the same state.'),
   profile: UspPropertyCardProfileSchema.nullable(),
   artifact: z.strictObject({ sha256: CoreSha256Schema, bytes: z.number().int().positive().max(524288) })
     .readonly().nullable(),
