@@ -1,8 +1,8 @@
 import type {PoolClient} from 'pg';
-import {DocumentInputSchema} from '@ulpin/contracts/usp';
+import {DocumentInputSchema,type RetainedDocumentFreshness} from '@ulpin/contracts/usp';
 import {AppError,conflict} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
-import {documentSourceTx,assertDocumentInputTx} from './document-context';
+import {documentSourceTx,assertDocumentInputTx,locateDocumentInputTx} from './document-context';
 import {isIFCProtectedSource} from './ifc';
 import {isDXFProtectedSource} from './dxf';
 import {isKMLProtectedSource} from './kml';
@@ -13,11 +13,15 @@ import {isGeoParquetProtectedSource} from './geoparquet';
 
 type SourceRow=Record<string,any>;
 type Mode='original'|'snapshot'|'copy';
+/** 'current' for anything that derives or writes under a document result; 'retained' for a read or a capture of
+ * what is already recorded, where a moved-on case, reader or policy is stated as freshness instead of refusing. */
+export type DocumentPins='current'|'retained';
 const denied=()=>{throw new AppError(403,'DOCUMENT_DENIED','This source context is unavailable.');};
 /** Legacy sources retain their existing authority. Marked originals and actual
  * copied-source lineage always use the canonical document authority, even when
  * a captured body predates the privacy correction. Never mutate stored history. */
-export async function documentAuthorityTx(client:PoolClient,captured:SourceRow,mode:Mode='snapshot',seen=new Set<string>(),protect=false):Promise<boolean>{
+export async function documentAuthorityTx(client:PoolClient,captured:SourceRow,mode:Mode='snapshot',
+  seen=new Set<string>(),protect=false,pins:DocumentPins='current'):Promise<boolean>{
   if(typeof captured.id!=='string')denied();
   if(seen.has(captured.id)||seen.size>=8)denied();seen.add(captured.id);
   const current=(await client.query('SELECT * FROM sources WHERE id=$1',[captured.id])).rows[0];
@@ -58,7 +62,8 @@ export async function documentAuthorityTx(client:PoolClient,captured:SourceRow,m
       const input=DocumentInputSchema.parse(job.payload);
       if(fingerprint(input)!==job.input_fingerprint||job.input_sha256!==job.input_fingerprint)
         throw new AppError(422,'DOCUMENT_INPUT_INTEGRITY','The canonical document input failed its hash check.');
-      await assertDocumentInputTx(client,input);
+      if(pins==='current')await assertDocumentInputTx(client,input);
+      else await locateDocumentInputTx(client,input);
     }
   }
   if(lineage?.sourceRevisionId){
@@ -69,7 +74,7 @@ export async function documentAuthorityTx(client:PoolClient,captured:SourceRow,m
     if(!parent)denied();
     if(parent.case_id!==lineage.caseId||parent.sha256!==lineage.sourceHash||parent.revision!==lineage.sourceRevision
       ||parent.sha256!==current.sha256||Number(parent.bytes)!==Number(current.bytes))conflict('The copied document lineage changed.');
-    document=await documentAuthorityTx(client,parent,mode,seen,protect)||document;
+    document=await documentAuthorityTx(client,parent,mode,seen,protect,pins)||document;
   }
   if(document){
     if(protect)await client.query('SELECT id FROM cases WHERE id=$1 FOR SHARE',[current.case_id]);
@@ -87,8 +92,27 @@ export function documentSnapshotView<T extends SourceRow>(body:T,document:boolea
   return {...body,inspection};
 }
 
-export async function captureDocumentSourceTx(client:PoolClient,source:SourceRow,packageParts:unknown[]=[]) {
-  const document=await documentAuthorityTx(client,source,'snapshot',new Set(),true);
+/** Freshness of the accepted result retained beside a marked original, or beside the original a copied source
+ * descends from; null when none is retained. Read-only: call it after the source's own authority has passed. */
+export async function documentResultFreshnessTx(client:PoolClient,source:SourceRow,
+  depth=0):Promise<RetainedDocumentFreshness|null>{
+  const parentId=source.inspection?.copiedFrom?.sourceRevisionId;
+  if(!source.inspection?.documentOriginal&&parentId&&depth<8){
+    const parent=(await client.query('SELECT * FROM sources WHERE id=$1',[parentId])).rows[0];
+    return parent?documentResultFreshnessTx(client,parent,depth+1):null;
+  }
+  const accepted=source.inspection?.documentAccepted;
+  if(!source.inspection?.documentOriginal||!accepted?.jobId)return null;
+  const job=(await client.query(`SELECT payload FROM jobs
+    WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='document-extraction'`,
+    [accepted.jobId,source.case_id,source.id])).rows[0];
+  if(!job)return null;
+  return (await locateDocumentInputTx(client,DocumentInputSchema.parse(job.payload))).freshness;
+}
+
+export async function captureDocumentSourceTx(client:PoolClient,source:SourceRow,packageParts:unknown[]=[],
+  pins:DocumentPins='current') {
+  const document=await documentAuthorityTx(client,source,'snapshot',new Set(),true,pins);
   return {...source,inspection:{...(source.inspection??{}),referenceParts:document?[]:[...(source.inspection?.referenceParts??[]),...packageParts]}};
 }
 

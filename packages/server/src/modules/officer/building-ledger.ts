@@ -1,7 +1,7 @@
 import type { BuildingLedger, RegistryRecord, SourceLocator } from '@ulpin/contracts';
 import { transaction } from '../../infrastructure/db';
 import { AppError, notFound } from '../../infrastructure/errors';
-import { registrySourceTx } from '../registry/registry-metadata';
+import { registryRecordedSourceTx, registrySourceTx } from '../registry/registry-metadata';
 import { assertPackageDocumentAuthority } from '../areas/package-authority';
 import { relatedRegistryRecords } from './officer';
 
@@ -38,7 +38,8 @@ export function parcelUlpinCoverage(parcels: Array<{ id: string }>, assertions: 
 type Edge = { evidence?: SourceLocator[] };
 type ParcelEvidence = { body: { sourceRevisionId: string; evidence?: SourceLocator[] }; association: Edge };
 type IdentifierEvidence = { source_id: string; evidence: { sourceRevisionId?: string; locator?: string } };
-/** Every source supporting a projected edge or assertion must pass registrySourceTx. */
+/** Every source supporting a projected edge or assertion must pass registryRecordedSourceTx,
+ * or registrySourceTx while the building is still an unrecorded proposal. */
 export function ledgerSourceLocators(root: { sourceRevisionId: string; sourceKey?: string; evidence?: SourceLocator[] },
   records: Array<Pick<RegistryRecord, 'evidence'>>, detailEdges: Edge[], parcels: ParcelEvidence[],
   identifiers: IdentifierEvidence[]): Map<string, Set<string>> {
@@ -70,6 +71,14 @@ export function ledgerSourceLocators(root: { sourceRevisionId: string; sourceKey
     cite(item.source_id, item.evidence.locator);
   }
   return locators;
+}
+
+/** The cited original and its locators are unchanged; only the document reading retained beside it moved on. */
+export function movedOnDocumentNotes(
+  sources: Array<{ id: string; source: { documentResult?: { reasons: readonly string[] } } }>): string[] {
+  return sources.filter(item => item.source.documentResult).map(item =>
+    `The document reading retained beside source ${item.id} is no longer current (${
+      item.source.documentResult!.reasons.join(', ')}); the recorded citation is unchanged.`);
 }
 
 export function boundedLedgerRows<T>(rows: T[], label: string): T[] {
@@ -134,7 +143,8 @@ export async function buildingLedger(buildingId: string): Promise<BuildingLedger
 
     const locatorMap = ledgerSourceLocators(root.body, records, detailEdges, parcelRows, identifiers);
     if (locatorMap.size > 1000) throw new AppError(422, 'BUILDING_LEDGER_LIMIT', 'Too many cited sources for one ledger read.');
-    const authorized = await authorizeLedgerSources(locatorMap.keys(), id => registrySourceTx(client, root.site_id, id));
+    const readSource = root.revision > 0 ? registryRecordedSourceTx : registrySourceTx;
+    const authorized = await authorizeLedgerSources(locatorMap.keys(), id => readSource(client, root.site_id, id));
     const sources: BuildingLedger['sources'] = authorized.map(({ id, source }) => ({
       id, revision: source.revision, name: source.name, sha256: source.sha256,
       fileUrl: `/api/v1/sources/${id}/file`, locators: [...locatorMap.get(id)!].sort(),
@@ -149,6 +159,7 @@ export async function buildingLedger(buildingId: string): Promise<BuildingLedger
       ...(coverage.missingParcelIds.length ? [`Current parcels without a validated official ULPIN: ${coverage.missingParcelIds.join(', ')}.`] : []),
       ...(!parcels.length ? ['No current confirmed parcel association is recorded.'] : []),
       ...(!root.reference ? ['Global placement is unavailable; local-frame records remain inspectable.'] : []),
+      ...movedOnDocumentNotes(authorized),
       'Technical readiness, rights and deviation are not assessed by this ledger.',
     ];
     return {
