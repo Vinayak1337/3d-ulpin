@@ -5,10 +5,10 @@ For a new chat that takes over as lead. It says what is done, what is half-done,
 ## 1. Start the new chat like this
 
 1. Open the session in `E:\Projects\3d-ulpin` (branch `staging`).
-2. Read, in this order: `AGENTS.md`, this file, [docs/next-steps/WORKERS.md](docs/next-steps/WORKERS.md), [docs/STATUS.md](docs/STATUS.md), [docs/next-steps/SPRINT-SELECTION.md](docs/next-steps/SPRINT-SELECTION.md) §3–§6.
+2. Read, in this order: `AGENTS.md`, this file (§8 has the exact spawn commands), [docs/next-steps/WORKERS.md](docs/next-steps/WORKERS.md), [docs/STATUS.md](docs/STATUS.md), [docs/next-steps/SPRINT-SELECTION.md](docs/next-steps/SPRINT-SELECTION.md) §3–§6.
 3. A first message that works:
 
-   > Read hand-off.md and docs/next-steps/WORKERS.md. You are the lead. Do §5 "First actions" in order, spawning codex workers first and Claude CLI workers when codex is limited.
+   > Read hand-off.md and docs/next-steps/WORKERS.md. You are the lead. Do §5 "First actions" in order. Spawn workers with the commands in §8: codex workers first, Claude CLI workers when codex is limited.
 
 **Worker rule in one line:** spawn **codex workers first**; when every codex account is limited, use the **Claude CLI worker** (it runs on the terminal's own login); the lead's own subagents are the last resort. Dispatch as background tasks, then stop; review each return before integrating. Full rules: WORKERS.md.
 
@@ -29,8 +29,8 @@ For a new chat that takes over as lead. It says what is done, what is half-done,
 | Task | Where | State | What to do |
 | --- | --- | --- | --- |
 | **K3b** reviewed level schedules | `E:/Projects/ulpin-wt/k1`, `task/k3b-level-schedule`, 4 commits (`61ec7ed3`, `34e2cb3e`, `40f077d0`, `1dd232cd`), clean | **Finished, not reviewed.** Report: `_tasks/logs/k3b.log` and `docs/evidence/gf-t16/k3b/REPORT.md` on the branch | Review line by line, then merge. It regenerates `openapi.json` and pins; expect a small conflict with A3's pins. |
-| **A3b** tabular sources through chunk mapping | `E:/Projects/ulpin-wt/a2`, `task/a3b-tabular-wiring`, 2 commits (`6ed8d704`, `03867558`) + **8 uncommitted files** | **Died mid-edit** (empty log, no report). Steps 1–3 look committed; step 4 (worker wiring) is in the uncommitted diff | Re-dispatch with a RESUME file: review the uncommitted diff first, then continue from step 4 of `_tasks/a3b.md`. Codex session `1608759b-ea95-4ac8-9c72-42572c9b13e8`. |
-| **D1c** property-relevant tables + new held-out set | `E:/Projects/ulpin-wt/d1`, `task/d1c-property-tables`, no commits | **Stopped on the Claude limit** while searching sources. Nothing saved | Re-dispatch `_tasks/d1c.full.md` from the start (swap the co-author line back to the codex one). |
+| **A3b** tabular sources through chunk mapping | `E:/Projects/ulpin-wt/a2`, `task/a3b-tabular-wiring`, 2 commits (`6ed8d704`, `03867558`) + **10 modified and 4 new uncommitted files** | **Died mid-edit** (empty log, no report). Steps 1 and 3 are committed; steps 2, 4 and 5 are in the uncommitted work | Dispatch the ready RESUME file `_tasks/a3b-resume.full.md` (§8.3). It tells the worker to review the uncommitted work first, then continue. |
+| **D1c** property-relevant tables + new held-out set | `E:/Projects/ulpin-wt/d1`, `task/d1c-property-tables`, no commits | **Stopped on the Claude limit** while searching sources. Nothing saved | Dispatch `_tasks/d1c.full.md` from the start (§8.3). The file is already rebuilt with the codex co-author line. |
 
 ## 3. ML work: what is done
 
@@ -113,7 +113,7 @@ Nothing to train without Indian plan labels. The demo uses the vector rooms (Mag
 
 1. **Refresh the codex pool** (command in WORKERS.md §6).
 2. **Review and merge K3b** (§2 table). Then run the LF-export `check.py`; only "runtime receipt changed" may fail.
-3. **Dispatch on codex,** at most two `xhigh` workers per fresh account:
+3. **Dispatch on codex** with the commands in §8, at most two `xhigh` workers per fresh account:
    - A3b resume (worktree `a2`);
    - D1c (worktree `d1`);
    - after K3b is merged: **K4** (identity + CityJSON with real vertices) and the two reject commands F2a asked for (a reject-only roofprint decision, a room reject), in worktree `k1`, which is the runtime/DB owner.
@@ -153,3 +153,109 @@ Nothing to train without Indian plan labels. The demo uses the vector rooms (Mag
 | `reference-document-enrollment/runtime.json` | `a0e21dd26cdc517ab2f340fcf4a9900a08a48ef642a8716b19b06440d42f8b8b` |
 | `cityjson-reference-runtime.json` | `9267ca2225907918eaeb32abca0c036ecb727964705fc4c02dd76cf6c283ba91` |
 | `cityjson-admission-readiness-runtime.json` | `dd637bcb5729524358cb54da7b99b80104a94b4f44272b104baacd436d30f886` |
+
+## 8. How to spawn workers, and which to spawn
+
+The full rules are in [docs/next-steps/WORKERS.md](docs/next-steps/WORKERS.md). This section is the short working copy.
+
+### 8.1 Which spawner
+
+| Order | Spawner | Use it when | Model and effort |
+| --- | --- | --- | --- |
+| 1 | **Codex worker** (`codex-subagent-win.mjs`) | any codex account is ready. **Always try this first.** | `gpt-6.1-sol`, `xhigh` for build tasks, `high` for small ones |
+| 2 | **Claude worker** (`claude-worker.sh`) | every codex account is limited | `sonnet` `high` for most tasks; `opus` `high` for hard backend or governance work; `haiku` `high` for mechanical work |
+| 3 | **The lead's own subagent** (Agent tool, background) | both of the above are limited | `sonnet` or `opus` |
+
+- Every launch is a **background Bash job** (`run_in_background: true`) started from `E:/Projects/ulpin-wt/_tasks`. After dispatching, end the turn. The job wakes the lead when it exits.
+- One task per worker, in its own worktree. Never two workers in one worktree.
+
+### 8.2 The commands
+
+**Codex worker** (add `--session <id>` to continue a lane's earlier session):
+
+```bash
+cd /e/Projects/ulpin-wt/_tasks && node codex-subagent-win.mjs --model gpt-6.1-sol --effort xhigh --access edit \
+  --cwd E:/Projects/ulpin-wt/<worktree> --timeout 110 --task-file <task>.full.md \
+  > logs/<task>.log 2>&1; echo "exit $?" >> logs/<task>.log; tail -30 logs/<task>.log
+```
+
+**Claude worker** (runs on the terminal CLI's own login; exit 75 means its limit was hit):
+
+```bash
+cd /e/Projects/ulpin-wt/_tasks && bash claude-worker.sh sonnet high E:/Projects/ulpin-wt/<worktree> <task>.full.md \
+  > logs/<task>.log 2>&1; echo "exit $?" >> logs/<task>.log; tail -30 logs/<task>.log
+```
+
+**Build a task file** before either launch:
+
+```bash
+cd /e/Projects/ulpin-wt/_tasks && cat <task>.md _common.md > <task>.full.md
+```
+
+- For a **Claude** worker, swap the co-author line in the built file: replace `Co-Authored-By: gpt-6.1-sol worker <noreply@openai.com>` with `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>` (or Opus, or Haiku).
+- Write `<task>.md` the way `a3b.md`, `k3b.md` and `b8.md` are written: worktree and branch, why, owned and read-only paths, exact steps, rules, checks, commit subjects.
+
+**When a worker stops on a limit:**
+
+1. Read the reset times. For codex, refresh the pool; for Claude, the reset time is in the worker's `LIMIT claude:` line.
+
+   ```bash
+   MSYS_NO_PATHCONV=1 node C:/Users/kvina/AppData/Roaming/npm/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js \
+     -p --no-session --provider codex-pool --model gpt-6-luna "/codex-accounts refresh"
+   ```
+
+2. Start a timer for the soonest reset, as a background job (2 hours at most per job; the times below are examples):
+
+   ```bash
+   bash /e/Projects/ulpin-wt/_tasks/pool-watch.sh "2026-10-10 19:03:00 +0530"
+   ```
+
+   ```bash
+   bash /e/Projects/ulpin-wt/_tasks/claude-watch.sh "2026-10-10 19:00:00 +0530"
+   ```
+
+3. Write a RESUME file (`<task>-resume-head.md` + `<task>.md` + `_common.md`, like `a3b-resume-head.md`) and dispatch it through the next spawner in §8.1.
+
+### 8.3 What to spawn now
+
+Both task files are built and ready. Run each as its own background job.
+
+**A3b resume** (codex, continuing the agent lane's session):
+
+```bash
+cd /e/Projects/ulpin-wt/_tasks && node codex-subagent-win.mjs --model gpt-6.1-sol --effort xhigh --access edit \
+  --cwd E:/Projects/ulpin-wt/a2 --timeout 110 --session 1608759b-ea95-4ac8-9c72-42572c9b13e8 \
+  --task-file a3b-resume.full.md > logs/a3b-r.log 2>&1; echo "exit $?" >> logs/a3b-r.log; tail -30 logs/a3b-r.log
+```
+
+**D1c** (codex, new session; it needs web access for public data portals):
+
+```bash
+cd /e/Projects/ulpin-wt/_tasks && node codex-subagent-win.mjs --model gpt-6.1-sol --effort xhigh --access edit \
+  --cwd E:/Projects/ulpin-wt/d1 --timeout 110 --task-file d1c.full.md \
+  > logs/d1c.log 2>&1; echo "exit $?" >> logs/d1c.log; tail -30 logs/d1c.log
+```
+
+**Next in the queue** (task files still to be written by the lead):
+
+| Task | Worktree | Depends on | Spawner and effort |
+| --- | --- | --- | --- |
+| K4 — identity + CityJSON with real vertices | `k1` | K3b merged | codex `xhigh`, session `d7f84cf1-d455-4e73-8576-63244cb37171` |
+| K-reject — reject-only roofprint decision + room reject command | `k1`, after K4 (one worker per worktree) | K3b merged | codex `xhigh`, same session |
+| A3b live run — two files through the runtime | `a2` | A3b returned; K lane not using the runtime | codex `high`, session `1608759b-ea95-4ac8-9c72-42572c9b13e8` |
+| F2b — live import UI in the Studio | `f1` | A3b merged | codex `xhigh`, new session |
+| A4b — retrain the Stage A student, one held-out run | `a2` | D1c merged, lead's T1b labels | codex `xhigh` |
+| B9 — multi-region building fine-tune (optional, §4.2) | `b3` (GPU owner) | lead's decision | codex `xhigh`, session `3f96d0e0-c458-4603-ba6c-d3a514ebe8f0` |
+
+### 8.4 Lanes, worktrees and codex sessions
+
+| Lane | Worktree | Codex session to continue | Owns |
+| --- | --- | --- | --- |
+| Runtime, registry, geometry (K) | `k1` | `d7f84cf1-d455-4e73-8576-63244cb37171` | the demo runtime and DB, registry and level code |
+| Mapping agent (A) | `a2` | `1608759b-ea95-4ac8-9c72-42572c9b13e8` | ingestion chunk mapping, `scripts/agent/`, the student |
+| Building model, GPU (B) | `b3` | `3f96d0e0-c458-4603-ba6c-d3a514ebe8f0` | `scripts/ml/`, the GPU |
+| Plans and storeys (P) | `p1` | `15e11ed8-7b4e-46fe-853d-03aa1eb72582` | `services/geo/geo/raster_plan.py`, `scripts/usp/learning/` |
+| Data (D) | `d1` | none; start a new session | `fixtures/usp/D8-messy-india/`, dataset docs |
+| Studio (F) | `f1` | none; earlier Studio work ran on Claude workers | `apps/studio` |
+
+A codex session only continues on codex. If a lane moves to a Claude worker, it starts a new session with a RESUME file.
