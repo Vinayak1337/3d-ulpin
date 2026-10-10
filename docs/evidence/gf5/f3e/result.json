@@ -674,5 +674,119 @@
     "step3.plan, step3.confirm, step3.execute, step3.card, step3.printed.card, step3.list"
    ]
   }
+ },
+ "report": {
+  "TASK": [
+   "F3e (P8.3; GF4, GF5): the Studio assigns a unit's code and issues its card through the registry. Only Step",
+   "0 is done. It found values the Studio cannot obtain and routes that do not exist, and the task rules that",
+   "the work stops there."
+  ],
+  "WORKS": [
+   ["Step 0 (step0 in this file): both sequences request by request, with the source of every body field, the",
+    "answer fields the next request needs, the manifest each write names, the refusals with the Studio's words,",
+    "and what a second request does."],
+   "Nothing in the Studio: no file under apps/ or packages/ is changed."
+  ],
+  "SEE IT": [
+   "This file: step0.sequenceA.requests, step0.sequenceB.requests, step0.answers (the five points the task",
+   "asks for) and step0.gaps (G1 to G8, each with what closes it). No screen changed, so there is no",
+   "screenshot."
+  ],
+  "INPUTS": [
+   "The files listed in step0.readFrom, at 2eb786f2.",
+   "Two GETs to the demo API (step0.requestsSent). No POST, no write of any kind."
+  ],
+  "requestTables": {
+   "columns": ["request", "what it sends", "manifest and replay"],
+   "A reviewAndAssign": [
+    ["A1 POST /api/v1/usp/snapshots", "the site and the unit pin, from the canonical read",
+     "stores a manifest; no key"],
+    ["A2 POST /api/v1/usp/identity/reviews",
+     "operation assign, A1's scope, the unit at its revision, a reason, the recorded citation, a location (G1)",
+     "carries A1's scope; no key; cannot be read back (G2)"],
+    ["A3 POST /api/v1/usp/identity/assign",
+     "A1's scope, expectedManifestId and reviewId as A2 answered them, a kept request key, the unit and its revision",
+     "names the manifest A2 answered; the same key answers the same receipt"]
+   ],
+   "B issueCard": [
+    ["B0 POST /api/v1/usp/snapshots", "as A1 at the revision that has the code (or A3 data.snapshot)",
+     "stores the manifest the card is bound to"],
+    ["B1 POST /api/v1/usp/packets/plans/create",
+     "the unit pin, B0's scope, three contract literals, an expiry (G7), one entry: bindingId (G5), a reason (G7)",
+     "carries B0's scope; keyed"],
+    ["B2 POST /api/v1/usp/packets/plans/confirm", "plan id, version and hash as B1 answered them",
+     "names B0's manifest; keyed"],
+    ["B3 POST /api/v1/usp/packets/plans/execute", "plan id, version, the confirmation id of B2", "names none; keyed"],
+    ["B4 POST /api/v1/usp/property-cards/generate", "plan id and version, cardId null, an expiry (G7)",
+     "names none; keyed; answers the rows for the first time (G6)"],
+    ["B4r the same route for a revision",
+     "the listed card's plan and manifest from property-cards/read, an expiry (G7)",
+     "names the card's own manifest; keyed"]
+   ],
+   "full": "step0.sequenceA.requests and step0.sequenceB.requests"
+  },
+  "GAPS": {
+   "stopPart1": [
+    "G1: the review needs structureNumber and spaceNumber; no read states them. R3 sent the constants 1 and 1.",
+    ["G2: no route reads a review, so the review cannot be shown as answered (no time, no decision) and a unit's",
+     "earlier review cannot be shown at all."],
+    "G3: the contract has no decision values; for a unit without a code the one operation is assign."
+   ],
+   "stopPart2": [
+    "G5: the plan entry needs a bindingId the server derives by a hash; no route answers it.",
+    "G6: no answer before the card exists holds the rows it will print.",
+    "G7: the two expiry times and the inclusion reason have no source. The server states no default."
+   ],
+   "findings": [
+    "G4: identity/resolve cannot come before the review; the Studio does not need it.",
+    "The card write is POST /api/v1/usp/property-cards/generate; the bare path has no route.",
+    "G8: a revision keeps the snapshot of its card; after the record changed the true action is a new card."
+   ],
+   "notVerified": [
+    "Every refusal and replay answer is read from code. None was provoked and no write was sent.",
+    "packets/pdf-authority.ts and packets/plan-authority.ts were not traced line by line.",
+    "POST /api/v1/usp/property-cards/read was not sent (the task allows the F3d reads only).",
+    "No capture script was run and no dev server was started: nothing was built to capture."
+   ]
+  },
+  "DESIGN": [
+   ["No UI changed, so $ui-design-check was not run. Decisions the dialogs need from the lead before they are",
+    "built:"],
+   "Part 1 without a radio group: what is decided, a required reason, Record review, then Assign code (G3).",
+   "After Record review the dialog can print the review id and its manifest only (G2).",
+   "Execute belongs to Issue card: it stores a file and reveals no row (G6).",
+   "The rows the card prints can be shown only after the card exists, unless a preview read is added (G6).",
+   "Issue new revision only for a valid card of an unchanged record; otherwise Issue card (G8)."
+  ],
+  "clickPathForTheRuntimeOwner": [
+   "None: no control was built, so there is nothing to click. Once the gaps are closed the API log of one run",
+   "should show A1, A2, A3 for Review and assign code and B0 (or none), B1, B2 on Prepare, then B3, B4 on",
+   "Issue card, in the order of the tables."
+  ],
+  "COMMITS": [
+   "f3425f48 docs(studio): F3e the review-and-assign and issue-card sequences as the registry defines them",
+   "docs(studio): F3e evidence (this report)",
+   ["Not made: the two feat commits. The trailer is Co-Authored-By: Claude Opus 5.5, as WORKERS.md section 7",
+    "and the session rule say."]
+  ],
+  "CHECKS": {
+   "pnpm studio:typecheck": "exit 0 (Studio unchanged)",
+   "pnpm studio:test": "139 passed in 28 files (Studio unchanged)",
+   "capture script": "not run: nothing built; no write was attempted by anything",
+   "git diff --check": "clean",
+   "lines over 120": 0
+  },
+  "NEXT": [
+   ["The lead decides G1 (the two numbers), G3 (no radio group), G7 (expiry rule and reason) and whether G2 and",
+    "G6 are closed by a route or by dropping the requirement. G5 needs a K-lane answer, or the lead's explicit",
+    "word that the Studio may derive the handle."],
+   ["K lane, smallest forms: a read of a record's reviews (G2); a read of the plan entries a target may",
+    "include, with handles (G5); a read that projects a card's rows from an executed plan (G6); an unqualified",
+    "location without the two numbers (G1)."],
+   ["With G1 and G3 decided, Part 1 can be built as specified apart from the two review requirements of G2.",
+    "Part 2 needs G5 and G7 at least."],
+   ["Part 3 was not started, to keep to the stop rule. It depends on no gap: the copy control on the card id of",
+    "the verification page, and the four F3d reads in apps/studio/src/local/routes.ts."]
+  ]
  }
 }
