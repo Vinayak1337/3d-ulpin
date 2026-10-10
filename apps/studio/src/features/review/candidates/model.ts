@@ -4,6 +4,7 @@ import type { StatusWord } from '@ulpin/ui';
 
 type AreaCanonical = GetResponse<'/api/v1/areas/{areaId}/canonical'>;
 type BuildingCanonical = GetResponse<'/api/v1/buildings/{buildingId}/canonical'>;
+type Level = BuildingCanonical['levels'][number];
 
 /** One entry of `candidates` in a canonical area or building record, exactly as the API publishes it. */
 export type CanonicalCandidate = NonNullable<AreaCanonical['candidates']>[number]
@@ -52,7 +53,8 @@ export interface CandidateCard {
   decision: CandidateDecision | null;
   /** The model inference item of a roofprint (from its output reference). */
   itemId: string | null;
-  levelId: string | null;
+  /** The level a room names, in the read's own words; see `levelText`. */
+  level: string;
   levelLiteral: string | null;
   frame: string;
   /** Polygons in the candidate's own frame: area metres for a roofprint, plan metres for a room. */
@@ -63,6 +65,7 @@ export interface CandidateCard {
 
 const ITEM_REF = /\/spatial-ml\/items\/([0-9a-f-]{36})#/;
 const ROOM_FALLBACK = 'Unlabelled region';
+const NO_LEVEL = 'Not attached to a level';
 
 export function itemIdOf(outputRef: string | null | undefined): string | null {
   return ITEM_REF.exec(outputRef ?? '')?.[1] ?? null;
@@ -128,6 +131,27 @@ export function planEstimateView(candidate: CanonicalCandidate): PlanEstimateVie
   return { state: 'estimated', extent, area: `${hundredths(estimate.areaM2)} m²` };
 }
 
+/** A state word of the read in plain words: `source_supported` reads `source supported`. */
+function stateWords(state: string): string {
+  return state.replaceAll('_', ' ');
+}
+
+function listedLevelText(level: Level): string {
+  const { value, state } = level.label;
+  if (value === null) return `Label ${stateWords(state)}`;
+  return state === 'reviewed' ? value : `${value} (${stateWords(state)})`;
+}
+
+/**
+ * The level a room names, as the read states it: the level's label, with the label's state when it is not
+ * reviewed. A label is never made up from an id or an order.
+ */
+export function levelText(levelId: string | null | undefined, levels: readonly Level[]): string {
+  if (!levelId) return NO_LEVEL;
+  const level = levels.find((item) => item.levelId === levelId);
+  return level ? listedLevelText(level) : `Level not listed in this record · ${levelId.slice(0, 8)}`;
+}
+
 function titleOf(candidate: CanonicalCandidate, kind: CandidateKind): string {
   if (kind === 'room') return candidate.labelLiteral ?? ROOM_FALLBACK;
   return `Roofprint ${candidate.candidateId.slice(0, 8)}`;
@@ -138,7 +162,7 @@ function citationOf(citation: Citation): CandidateCitation {
   return { sourceId, source: sourceId.slice(0, 8), locator: locatorText(citation.locator) };
 }
 
-export function candidateCard(candidate: CanonicalCandidate): CandidateCard | null {
+export function candidateCard(candidate: CanonicalCandidate, levels: readonly Level[] = []): CandidateCard | null {
   if (!candidate.kind || !candidate.polygons) return null;
   const state = candidateState(candidate);
   return {
@@ -156,7 +180,7 @@ export function candidateCard(candidate: CanonicalCandidate): CandidateCard | nu
     citations: (candidate.citations ?? []).map(citationOf),
     decision: candidate.review ?? null,
     itemId: itemIdOf(candidate.outputRef),
-    levelId: candidate.levelId ?? null,
+    level: levelText(candidate.levelId, levels),
     levelLiteral: candidate.levelLabelLiteral ?? null,
     frame: candidate.coordinateFrame ?? 'Not recorded',
     polygons: candidate.polygons as MultiPolygon,
@@ -164,10 +188,15 @@ export function candidateCard(candidate: CanonicalCandidate): CandidateCard | nu
   };
 }
 
-/** Cards for every drawable candidate of a canonical record, plus how many entries carry no geometry. */
-export function candidateCards(candidates: readonly CanonicalCandidate[] | undefined, kind: CandidateKind) {
+/**
+ * Cards for every drawable candidate of a canonical record, plus how many entries carry no geometry. `levels`
+ * are the building's, for the level a room names; an area has none.
+ */
+export function candidateCards(
+  candidates: readonly CanonicalCandidate[] | undefined, kind: CandidateKind, levels: readonly Level[] = [],
+) {
   const ofKind = (candidates ?? []).filter((candidate) => candidate.kind === kind);
-  const cards = ofKind.flatMap((candidate) => candidateCard(candidate) ?? []);
+  const cards = ofKind.flatMap((candidate) => candidateCard(candidate, levels) ?? []);
   return { cards, withoutGeometry: ofKind.length - cards.length };
 }
 

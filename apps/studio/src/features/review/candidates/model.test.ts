@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  candidateCard, candidateCards, candidateGroups, countByState, decisionHistory, itemIdOf, locatorText,
+  candidateCard, candidateCards, candidateGroups, countByState, decisionHistory, itemIdOf, levelText, locatorText,
   planEstimateView, type CanonicalCandidate,
 } from './model';
 
@@ -112,7 +112,7 @@ describe('candidateCard', () => {
   it('does not invent a score or a level for a room', () => {
     const roomCard = candidateCard(room())!;
     expect(roomCard.confidence).toBe('Not scored');
-    expect(roomCard.levelId).toBeNull();
+    expect(roomCard.level).toBe('Not attached to a level');
     expect(roomCard.title).toBe('FIXTURE ROOM');
     expect(roomCard.levelLiteral).toBe('FIXTURE FLOOR PLAN');
   });
@@ -129,6 +129,38 @@ describe('candidateCard', () => {
 
   it('counts only entries of the asked kind as without geometry', () => {
     expect(candidateCards([room(), roofprint()], 'room')).toMatchObject({ withoutGeometry: 0 });
+  });
+});
+
+describe('levelText', () => {
+  const LEVEL = '5a1d717b-0000-4000-8000-000000000000';
+  const level = (value: string | null, state: string) => ({ levelId: LEVEL, order: 7, label: { value, state } });
+  const text = (levelId: string | null, levels: unknown[]) => levelText(levelId, levels as never);
+
+  it('prints a reviewed level by the label the read states', () => {
+    expect(text(LEVEL, [level('FIXTURE FLOOR PLAN', 'reviewed')])).toBe('FIXTURE FLOOR PLAN');
+    const card = candidateCard(room({ levelId: LEVEL }), [level('FIXTURE FLOOR PLAN', 'reviewed')] as never)!;
+    expect(card.level).toBe('FIXTURE FLOOR PLAN');
+  });
+
+  it('says in words when the level label is not reviewed', () => {
+    expect(text(LEVEL, [level('FIXTURE FLOOR PLAN', 'candidate')])).toBe('FIXTURE FLOOR PLAN (candidate)');
+    expect(text(LEVEL, [level('FIXTURE FLOOR PLAN', 'source_supported')]))
+      .toBe('FIXTURE FLOOR PLAN (source supported)');
+  });
+
+  it('never makes a label from an id or an order when the read states none', () => {
+    expect(text(LEVEL, [level(null, 'unknown')])).toBe('Label unknown');
+  });
+
+  it('says a level the read does not list is not listed, with the start of its id', () => {
+    expect(text(LEVEL, [])).toBe('Level not listed in this record · 5a1d717b');
+    const other = { ...level('OTHER FLOOR', 'reviewed'), levelId: 'another-level' };
+    expect(text(LEVEL, [other])).toBe('Level not listed in this record · 5a1d717b');
+  });
+
+  it('says so when the candidate names no level', () => {
+    expect(text(null, [level('FIXTURE FLOOR PLAN', 'reviewed')])).toBe('Not attached to a level');
   });
 });
 
