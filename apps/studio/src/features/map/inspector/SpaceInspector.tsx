@@ -45,7 +45,8 @@ export function SpaceInspector({
   space, level, model, register, ledger, buildingId, crumbs, datum, onSelectSpace, onCard, onFinding,
 }: {
   space: SpaceModel; level: LevelModel | null; model: BuildingModel; register: BuildingRegister; ledger: BuildingLedger | null | undefined;
-  buildingId: string; crumbs: Crumb[]; datum: string | null; onSelectSpace: (id: string) => void; onAssign: () => void; onCard: () => void;
+  buildingId: string; crumbs: Crumb[]; datum: string | null;
+  onSelectSpace: (id: string) => void; onCard: () => void;
   onFinding: (findingId: string) => void;
 }) {
   const [tab, setTab] = useState<Tab>('overview');
