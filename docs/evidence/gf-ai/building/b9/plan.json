@@ -1,0 +1,265 @@
+{
+  "schema": "building-b9-plan/1",
+  "task": "b9-more-regions",
+  "status": "preregistered",
+  "preregistration": "docs/evidence/gf-ai/preregistration.json (building_mask_b9)",
+  "run_id": "b9-ka-more-regions-20261010",
+  "data_receipt": "docs/evidence/gf-ai/building/b9/data.json",
+  "hypothesis": [
+    "With publisher-labelled roofs from more South Asian RAMP regions and scale + colour",
+    "augmentation, DEV recall at the served threshold 0.5 rises."
+  ],
+  "comparison": [
+    "This recipe against the epoch-4 baseline. It changes two things at once (extra TRAIN",
+    "regions; scale and colour augmentation) and does not separate them. That is accepted and",
+    "must be stated in the result."
+  ],
+  "not_a_repeat_of": {
+    "B4": [
+      "Same recipe continued for epochs 5-7: three non-improving DEV epochs; an unchanged",
+      "continuation is closed."
+    ],
+    "B6": "Input resolution 672: rejected on DEV; small-roof recall did not improve.",
+    "B7_B8": [
+      "87% of roofs missed at 0.5 have a raw instance scoring under 0.5; post-processing is not the",
+      "cause."
+    ]
+  },
+  "baseline": {
+    "model": "rfdetr-ramp-ka-seg-medium-b3-v1 (B3 epoch 4)",
+    "weights_sha256": "b6ef62646ed85d8102e37561324cee1dfc7e8c5e57e10c207a37927544ad5172",
+    "split": "dev",
+    "threshold": 0.5,
+    "precision": 0.8544117647058823,
+    "recall": 0.6624353906962602,
+    "empty_chip_false_buildings": 20,
+    "size_recall": {
+      "[0,16)": 0.0,
+      "[16,64)": 0.1269,
+      "[64,128)": 0.2979,
+      "[128,256)": 0.3953,
+      "[256,512)": 0.6013,
+      "[512,1024)": 0.7591,
+      "[1024,inf)": 0.826
+    },
+    "sources": [
+      "docs/evidence/gf-ai/building/b3-ka-run1-20261010-epoch004-dev-t050/result.json",
+      "docs/evidence/gf-ai/building/b5-recall-diagnosis-20261010/result.json (size bins)",
+      "docs/evidence/gf-ai/building/b6/b6-decision.json (epoch4B3Reference)"
+    ],
+    "new_model_calls": 0
+  },
+  "training_data": {
+    "karnataka_train": {
+      "use": "The Karnataka TRAIN split exactly as B3 used it",
+      "root": "E:/BhuAayam-data/datasets/ramp/coco/train",
+      "chips": 3581,
+      "publisher_features": 28328,
+      "empty_chips": 880,
+      "coco_sha256": "a09c7021b80144baf73e862861840df3e2d1da2d8450b7ee864b59e528c468cc",
+      "split_chip_ids_sha256": "3063acddb6d017439f24b7a0f7461fa08407c03c000bc3e6ec09d9f3cc193a33"
+    },
+    "extra_region_order": [
+      "dhaka_bangladesh",
+      "barishal_bangladesh",
+      "jashore_bangladesh"
+    ],
+    "extra_use": "TRAIN only, test_only research data, CC-BY-NC-4.0",
+    "never": {
+      "coxs_bazar_bangladesh": "closed transfer set",
+      "chittagong_bangladesh": "closed transfer set",
+      "sylhet_bangladesh": "kept untouched for a later transfer test",
+      "karnataka_dev_or_holdout_cluster": "evaluation data"
+    },
+    "cap_extra_chips": 9000,
+    "cap_rule": [
+      "Regions in the listed order until the cap is reached. A region that must be cut keeps the",
+      "chip ids whose SHA-256 (of the UTF-8 id) is lowest after sorting the ids; never by images,",
+      "labels or predictions."
+    ],
+    "retention": [
+      "Every publisher feature of a kept chip is retained; empty chips are retained; nothing is",
+      "relabelled, dropped or padded."
+    ],
+    "extra": [
+      {
+        "region": "dhaka_bangladesh",
+        "doi": "10.34911/rdnt.848og9",
+        "source_pairs": 11905,
+        "source_publisher_features": 188284,
+        "source_empty_chips": 3059,
+        "kept_chips": 9000,
+        "kept_publisher_features": 140865,
+        "kept_empty_chips": 2323,
+        "cut_by_cap": 2905,
+        "root": "E:/BhuAayam-data/ml/datasets/b9-dhaka-train-20261010/coco/train",
+        "coco_sha256": "d8dfae7685ec815aa5e5def07a4410414d61f4f67b9c21c4d01e84dec499d95f",
+        "chip_ids_sha256": "e751074a73956839fd6c2fac42ccb6119ccdc6851d688aecc1b1898d91f6d8c3",
+        "source_index_sha256": "2985abfc5820f12f29c87c4d7aa429986a655967a8620c50761bf34e31283d52",
+        "zero_pixel_features": 12
+      }
+    ],
+    "regions_without_kept_chips": [
+      {
+        "region": "barishal_bangladesh",
+        "doi": "10.34911/rdnt.cmejc0",
+        "source_pairs": 3024,
+        "source_publisher_features": 39834,
+        "source_empty_chips": 252,
+        "kept_chips": 0,
+        "kept_publisher_features": 0,
+        "kept_empty_chips": 0,
+        "cut_by_cap": 3024
+      },
+      {
+        "region": "jashore_bangladesh",
+        "doi": "10.34911/rdnt.wn4jmp",
+        "source_pairs": 7310,
+        "source_publisher_features": 79058,
+        "source_empty_chips": 1735,
+        "kept_chips": 0,
+        "kept_publisher_features": 0,
+        "kept_empty_chips": 0,
+        "cut_by_cap": 7310
+      }
+    ],
+    "extra_total": {
+      "chips": 9000,
+      "publisher_features": 140865,
+      "empty_chips": 2323
+    },
+    "measured_consequence": [
+      "Dhaka alone has more source pairs than the cap, so the cap is reached inside the first",
+      "region. Barishal and Jashore contribute no chip under the rule as written; this run adds one",
+      "region."
+    ],
+    "exclusion_proof": [
+      "docs/evidence/gf-ai/building/b9/data.json (exclusion): no kept chip id is in the Karnataka",
+      "DEV/holdout, Cox's Bazar or Chittagong lists; no kept cluster is a Karnataka DEV/holdout",
+      "cell."
+    ]
+  },
+  "recipe": {
+    "init_weights": "E:/BhuAayam-data/ml/runs/b3-ka-run1-20261010/epoch-004",
+    "init_weights_sha256": "b6ef62646ed85d8102e37561324cee1dfc7e8c5e57e10c207a37927544ad5172",
+    "optimizer": "Fresh AdamW; no optimizer, scheduler or patience state carried over",
+    "learning_rate_heads": 0.0001,
+    "learning_rate_backbone": 1e-05,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 4,
+    "amp": "bf16",
+    "input_resolution": 432,
+    "loss_revision_in_b3_run1_config": "ulpin-rfdetr-empty-mask-scalar/1",
+    "seed": 26011,
+    "augmentation": {
+      "train_only": true,
+      "flips": "existing horizontal/vertical flips",
+      "scale_range": [
+        0.75,
+        1.33
+      ],
+      "scale": [
+        "Random factor, then crop or pad back to the tile; boxes and masks transformed with the",
+        "image; an instance left with no pixel is handled the way the existing zero-pixel policy",
+        "handles it"
+      ],
+      "colour_jitter": 0.2,
+      "colour": "Brightness, contrast and saturation jitter of at most +-0.2"
+    },
+    "dev_and_holdout_preprocessing": "byte-for-byte unchanged"
+  },
+  "budget": {
+    "runs": 1,
+    "max_epochs": 8,
+    "max_minutes": 480,
+    "reserved_memory_budget_bytes": 6442450944,
+    "early_stop": "Three epochs without an improvement of at least 0.001 in DEV recall at 0.5",
+    "early_stop_min_delta": 0.001,
+    "early_stop_patience": 3,
+    "relaunch": [
+      "One relaunch from the last saved epoch is allowed after a runtime fault (crash, driver,",
+      "disk), recorded in the ledger; never after a disappointing number."
+    ]
+  },
+  "selection": {
+    "split": "dev",
+    "filter": {
+      "precision_at_050_min": 0.8,
+      "empty_chip_false_buildings_max": 40
+    },
+    "rule": [
+      "Among epochs passing the filter, the highest DEV recall at 0.5; a tie goes to the earlier",
+      "epoch."
+    ],
+    "threshold": "0.5, not tuned",
+    "dev_thresholds": [
+      0.5,
+      0.3,
+      0.7
+    ],
+    "reported_only": [
+      0.3,
+      0.7
+    ]
+  },
+  "outcomes": {
+    "pass_dev": {
+      "condition": "selected DEV recall >= 0.70",
+      "action": [
+        "Exactly one Karnataka holdout run of that epoch at 0.5 with the frozen evaluator, entered in",
+        "holdout-runs.jsonl as attempt 3. The claim is whatever that run returns (target: recall >=",
+        "0.70 with precision >= 0.80)."
+      ]
+    },
+    "improved": {
+      "condition": "selected DEV recall >= 0.6724 and < 0.70",
+      "action": "No holdout run; the lead decides."
+    },
+    "rejected": {
+      "condition": "anything else, or no epoch satisfies the selection filter",
+      "action": "No holdout run, no further training; the failure ledger gets the signature."
+    },
+    "in_every_outcome": {
+      "transfer": [
+        "No transfer evaluation: Cox's Bazar has no attempt left; Chittagong's preregistration",
+        "belongs to the B6 comparison."
+      ],
+      "serving": "No registration in ml-models.json, no export, no change to what the demo serves."
+    }
+  },
+  "implementation_notes": {
+    "loss": [
+      "Staging holds one loss implementation, revision ulpin-rfdetr-empty-mask-scalar-chunked/2",
+      "(B6b). It is the B3 objective with the mask terms summed in chunks, CPU-proven equal to",
+      "upstream in values and gradients (scripts/ml/test_chunked_mask_loss.py). The /1 code of",
+      "b3/run1-config.json is no longer on staging and rfdetr_loss.py is read-only for this task,",
+      "so the run records revision /2. No loss change is made here."
+    ],
+    "fresh_optimizer": [
+      "The trainer loads the epoch-4 weights through --init-weights and does not resume; epochs are",
+      "numbered 1 to 8."
+    ],
+    "early_stop": [
+      "The existing trainer comparison, improved when DEV recall at 0.5 exceeds the best of this",
+      "run by more than 0.001; the first epoch sets the best. It stops only at a fully scored epoch",
+      "end."
+    ],
+    "minutes": [
+      "The trainer checks its deadline only at epoch ends, so its deadline flag is 480 minus the",
+      "measured minutes of one epoch (training plus DEV scoring); no epoch starts that cannot",
+      "finish in time."
+    ],
+    "scale": [
+      "Zoom of the 432-pixel tile tensor (image bilinear with antialiasing, masks nearest), then a",
+      "random crop or a randomly placed black pad. Boxes move with the image and are clipped to the",
+      "tile. An instance with no mask pixel left keeps its class with a zero mask and a zero box,",
+      "as publisher zero-pixel features do."
+    ],
+    "order": "On TRAIN: flips, colour jitter, scale. Python random seeded 26011, as the existing flips.",
+    "pass_dev_prerequisite": [
+      "The frozen evaluator's holdout reservation refuses a third attempt (two slots, both used).",
+      "Admitting attempt 3 is outside this task and needs the lead's decision; nothing is changed",
+      "here."
+    ]
+  }
+}
