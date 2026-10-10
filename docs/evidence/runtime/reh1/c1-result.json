@@ -1,0 +1,31 @@
+{ "part": "c1", "done": false, "attempts": 1, "before": { "snapshots": [ {
+"manifestId": "291ca42f-ab90-47ae-b17e-7d760607a03b", "createdAt": "2026-10-10T17:55:58.279Z",
+"capturedAt": "2026-10-10T17:55:58.337Z" }, { "manifestId": "123b4f1d-1770-4794-b8ee-f945414c820f",
+"createdAt": "2026-10-10T17:55:57.534Z", "capturedAt": "2026-10-10T17:55:57.685Z" }, {
+"manifestId": "5286d322-0ec3-48c8-bc1f-2346b983bf9d", "createdAt": "2026-10-10T17:55:57.534Z",
+"capturedAt": "2026-10-10T17:55:57.600Z" }, { "manifestId": "a92f05da-9a63-4003-8c1d-20f5a5a193c2",
+"createdAt": "2026-10-10T17:55:57.442Z", "capturedAt": "2026-10-10T17:55:57.504Z" }, {
+"manifestId": "3f85fca4-3fac-44c2-828b-0f00c5a26b9d", "createdAt": "2026-10-10T17:55:57.349Z",
+"capturedAt": "2026-10-10T17:55:57.409Z" } ], "cards": [ { "cardId": "cb44d4e3-7a45-47b8-9456-b0a11fb6e2fa",
+"revision": 1, "integrity": "consistent", "superseded": false } ] }, "verification": { "result": "consistent",
+"checks": [ { "key": "card_body", "state": "pass", "reasonCode": null }, { "key": "stored_linkage", "state": "pass",
+"reasonCode": null }, { "key": "revision_chain", "state": "pass", "reasonCode": null }, { "key": "artifact_bytes",
+"state": "pass", "reasonCode": null }, { "key": "plan_link", "state": "pass", "reasonCode": null }, {
+"key": "packet_bytes", "state": "pass", "reasonCode": null } ], "snapshot": { "cardTargetRevision": 2,
+"currentTargetRevision": 2, "state": "same_revision" }, "signature": { "state": "not_assessed",
+"reasonCode": "NO_TRUSTED_KEY_POLICY" } }, "reason": [
+"Prepare stopped at the listed card. This operation is unavailable. Check its input or serv",
+"ice state. (USP_REQUEST_FAILED)" ], "stopped": true, "exchanges": [ { "index": "c1-001", "method": "GET",
+"route": "/api/v1/buildings/7b524f20-079c-40cb-a6a1-1b3bce1e730c/snapshots", "status": 200, "seconds": 0.021,
+"requestKey": null, "idempotencyHeader": null, "ids": { "buildingId": "7b524f20-079c-40cb-a6a1-1b3bce1e730c",
+"siteId": "daf0c3e9-a952-4177-88a5-f90f15e39112" }, "code": null, "rawPrefix": "E:/BhuAayam-data/task-data/reh1/c1-001"
+}, { "index": "c1-002", "method": "POST", "route": "/api/v1/usp/property-cards/list", "status": 200, "seconds": 0.08,
+"requestKey": null, "idempotencyHeader": null, "ids": {}, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/c1-002" }, { "index": "c1-003", "method": "GET",
+"route": "/api/v1/usp/property-cards/cb44d4e3-7a45-47b8-9456-b0a11fb6e2fa/revisions/1/verification", "status": 200,
+"seconds": 0.19, "requestKey": null, "idempotencyHeader": null, "ids": {
+"cardId": "cb44d4e3-7a45-47b8-9456-b0a11fb6e2fa", "revision": 1 }, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/c1-003" }, { "index": "c1-004", "method": "POST",
+"route": "/api/v1/usp/property-cards/read", "status": 400, "seconds": 0.012, "requestKey": null,
+"idempotencyHeader": null, "ids": {}, "code": "USP_REQUEST_FAILED",
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/c1-004" } ] }

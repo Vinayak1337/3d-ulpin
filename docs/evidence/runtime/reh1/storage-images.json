@@ -1,0 +1,14 @@
+{
+  "purpose": "Before create: every compose storage image is already local, so no implicit pull is needed.",
+  "command": "docker image inspect <compose.yaml pinned image reference> --format {{.Id}}",
+  "images": [
+    { "composeLine": 15, "name": "postgis/postgis:17-3.5", "exit": 0, "seconds": 0.186 },
+    {
+      "composeLine": 33, "name": "quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z",
+      "exit": 0, "seconds": 0.178
+    },
+    { "composeLine": 52, "name": "quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z", "exit": 0, "seconds": 0.181 },
+    { "composeLine": 76, "name": "redis:7.4.2-alpine", "exit": 0, "seconds": 0.193 }
+  ],
+  "output": "Each returned an image ID; these unused storage-image digests are omitted from Git."
+}
