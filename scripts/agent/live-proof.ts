@@ -9,6 +9,7 @@ import { userInfo } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { TABULAR_LIMITS, type RequestContext } from '../../packages/contracts/src/usp/index';
+import type { ColumnProfileDocument } from '../../packages/contracts/src/index';
 import { AppError } from '../../packages/server/src/infrastructure/errors';
 import {
   extractStoreyFacts, storeyPartSelection, storeyPartsHash, storeyReplayKey, storeyRequest, STOREY_AGENT_TEMPLATE,
@@ -32,11 +33,12 @@ import {
 } from '../../packages/server/src/modules/usp/ingestion/chunk-mapping-agent';
 import { layoutFingerprint } from '../../packages/server/src/modules/usp/ingestion/mapping-plan-v2';
 import {
-  columnProfileHash, mappingTeacherRequest, teacherReplayKey, MAPPING_TEACHER_TEMPLATE, type GatewayRefusal,
+  columnProfileHash, mappingTeacherRequest, mappingTeacherColumnGroups, proposeMappingWithTeacher,
+  teacherReplayKey, MAPPING_TEACHER_TEMPLATE, type GatewayRefusal,
 } from '../../packages/server/src/modules/usp/ingestion/mapping-teacher';
 import { ControlLedger } from './control-runtime';
-import { saveNew } from './t1-profiles';
-import { developmentManifest, sourceTables, type SourceAsset } from './t1-sources';
+import { prepareTable, saveNew } from './t1-profiles';
+import { developmentManifest, developmentProfileAssets, sourceTables, type SourceAsset } from './t1-sources';
 
 const OUT_ROOT = 'E:/BhuAayam-data/task-data/s1';
 const STOREY_STORES = 'E:/BhuAayam-data/task-data/a5/stores';
@@ -106,6 +108,7 @@ type StepInput = {
   sampleForms?: { token: string; form: string; samples: number }[];
   /** Sample values the request carries for each column: fewer than the profile holds when it was over the bound. */
   samplesPerColumn?: number;
+  columnGroups?: number;
 };
 type Exec =
   | { kind: 'mapping'; chunk: TabularChunkInput; file: number }
@@ -128,7 +131,10 @@ type PlannedStep = {
 };
 
 /** The body the gateway measures, and the same refusals it would make before any admission. */
-function gatewayBody(spec: CallSpec, policy: GatewayConfig) {
+type RequestSpec = Pick<CallSpec, 'messages' | 'schema' | 'scopeHash' | 'taskKind' | 'template' |
+  'consumer' | 'replayKey'>;
+
+function gatewayBody(spec: RequestSpec, policy: GatewayConfig) {
   const messages = minimizeMessages(spec.messages);
   const body = { messages, outputSchema: spec.schema, model: policy.model, maxOutputTokens: policy.maxOutputTokens };
   const bytes = Buffer.byteLength(JSON.stringify(body));
@@ -138,7 +144,7 @@ function gatewayBody(spec: CallSpec, policy: GatewayConfig) {
   return { body, bytes };
 }
 
-function plannedRequest(spec: CallSpec, tariff: Tariff): NonNullable<PlannedStep['request']> {
+function plannedRequest(spec: RequestSpec, tariff: Tariff): NonNullable<PlannedStep['request']> {
   const { policy } = tariff;
   const { body, bytes } = gatewayBody(spec, policy);
   const inputEstimate = Number((BigInt(bytes) + BYTES_PER_TOKEN_ESTIMATE - 1n) / BYTES_PER_TOKEN_ESTIMATE);
@@ -228,6 +234,7 @@ function curveSpec(asset: SourceAsset, chunk: TabularChunkInput, file: number): 
     purpose: `Mapping teacher on a new header layout of ${asset.id}: one point of the two-file call curve`,
     input: {
       ...curveInput(asset, chunk), sampleForms: request.sampleForms, samplesPerColumn: request.samplesPerColumn,
+      columnGroups: 1,
     },
     exec: { kind: 'mapping', chunk, file }, consumer: 'INGEST',
     template: MAPPING_TEACHER_TEMPLATE, taskKind: 'mapping_v2', scopeHash: profileHash,
@@ -969,6 +976,57 @@ async function runLive(tariff: Tariff, outDir: string, state: unknown, learnerMo
   };
 }
 
+/** Development-only probes outside the approved sequence; no column text is printed or saved. */
+function wideDevelopmentProfiles() {
+  return developmentProfileAssets().filter(asset => asset.family === 'mi-d22').map(asset => {
+    const prepared = prepareTable(asset, sourceTables(asset)[0]);
+    const columns = prepared.inventory.profile.columns.map((column, index) => {
+      const header = prepared.profiles[index].header;
+      return { ...column, name: header.trim() ? header : column.name };
+    });
+    const profile = { ...prepared.inventory.profile, columns, layoutFingerprint: layoutFingerprint(columns) };
+    return { id: asset.id, profile };
+  });
+}
+
+function wideTablePlan(profile: ColumnProfileDocument, tariff: Tariff) {
+  const grouped = mappingTeacherColumnGroups(profile);
+  const groups = grouped.groups.map(group => {
+    const scopeHash = columnProfileHash(group.profile);
+    const request = plannedRequest({ ...group.request, scopeHash, replayKey: teacherReplayKey(scopeHash),
+      template: MAPPING_TEACHER_TEMPLATE, taskKind: 'mapping_v2', consumer: 'INGEST' }, tariff);
+    return { columns: group.profile.columns.length, samplesPerColumn: group.request.samplesPerColumn,
+      messagesBytes: Buffer.byteLength(JSON.stringify(group.request.messages)), profileHash: scopeHash, request };
+  });
+  return { columns: profile.columns.length, columnGroups: groups.length, overBound: grouped.overBound, groups };
+}
+
+async function wideTableDryRun(profile: ColumnProfileDocument, tariff: Tariff) {
+  const ledger = new ControlLedger();
+  let asks = 0;
+  const adapter = new ReplayAdapter(async () => { asks++; return undefined; });
+  const gateway = new ModelGateway(tariff.policy, ledger, adapter);
+  const walked = await withoutNetwork(() => proposeMappingWithTeacher(profile, {
+    context: proofContext('local-os:s6-wide-dry-run'), authorize: async () => {}, gateway, maxAttempts: 1,
+    dataPolicy: { dataClass: 'public', split: 'development' },
+  }));
+  const result = walked.value;
+  return { state: result.state, attempts: result.attempts, columnGroups: result.columnGroups,
+    samplesPerColumn: result.samplesPerColumn, gatewayRefusal: result.gatewayRefusal,
+    issueCodes: [...new Set(result.issues.map(issue => issue.code))], fallbackColumns: result.plan.fields.length,
+    mappedColumns: result.plan.fields.filter(field => field.target !== 'unknown').length, replayAsks: asks,
+    providerDispatches: ledger.dispatched, ledgerReservations: ledger.reserved, fetchAttempts: walked.fetchAttempts() };
+}
+
+async function wideTableProof(tariff: Tariff, dry: boolean) {
+  const tables = [];
+  for (const { id, profile } of wideDevelopmentProfiles()) {
+    tables.push({ id, ...wideTablePlan(profile, tariff),
+      ...(dry ? { dryRun: await wideTableDryRun(profile, tariff) } : {}) });
+  }
+  return { note: 'development probes only, outside the unchanged ten-call sequence; no live expansion', tables };
+}
+
 function option(flag: string): string | undefined {
   const index = process.argv.indexOf(flag);
   return index > 0 ? process.argv[index + 1] : undefined;
@@ -979,6 +1037,8 @@ async function main() {
   const stamp = new Date().toISOString().replace(/[-:.]/g, '');
   const mode = ['--plan', '--dry-run', '--live'].find(flag => process.argv.includes(flag));
   if (!mode) throw new Error('Usage: live-proof.ts --plan|--dry-run|--live [--tariff <policy.json>] [--out <dir>]');
+  const wide = process.argv.includes('--wide-tables');
+  if (wide && mode === '--live') throw new Error('LIVE_PROOF_REFUSED: wide-table probes are offline only');
   const outDir = resolve(option('--out') ?? join(OUT_ROOT, `${mode.slice(2)}-${stamp}`));
   let document: Record<string, unknown>;
   if (mode === '--plan') {
@@ -991,6 +1051,7 @@ async function main() {
     const state = statePath ? parseGatewayStatus(readFileSync(statePath, 'utf8')) : undefined;
     document = await runLive(tariff, outDir, state, option('--learner'));
   }
+  if (wide) document.developmentWideTables = await wideTableProof(tariff, mode === '--dry-run');
   const written = join(outDir, mode === '--plan' ? 'plan.json' : 'receipt.json');
   saveNew(written, document);
   console.log(JSON.stringify({ ...document, writtenTo: written }, null, 1));
