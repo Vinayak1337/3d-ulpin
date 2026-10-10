@@ -115,15 +115,14 @@ export function SpaceInspector({
   if (rooms.length) rows.push({ label: 'Rooms', value: <span className="ul-row">{rooms.map((r) => <button key={r.id} type="button" className="ul-evid" onClick={() => onSelectSpace(r.id)}><b>{r.shortName}</b></button>)}</span> });
   if (card.opens === 'registry') rows.push({ label: 'Cards', value: 'Listed by the registry' });
 
-  const primary = (
-    <>
-      {card.opens ? <Button variant="primary" icon={QrCode} onClick={onCard}>Property Card</Button> : null}
-      {unit ? <UnitLink buildingId={buildingId} unit={unit} primary={!card.opens} /> : null}
-    </>
-  );
+  const cardButton = card.opens
+    ? <Button variant="primary" icon={QrCode} onClick={onCard}>Property Card</Button> : null;
+  const unitLink = unit ? <UnitLink buildingId={buildingId} unit={unit} primary={!card.opens} /> : null;
   const unread = canonical.error ? `${UNREAD} ${readFailure(canonical.error)}` : null;
   const secondary = finding && status !== 'Assigned'
     ? <Button onClick={() => onFinding(finding.id)}>{finding.code === 'carpet_area_deviation' ? 'Review area' : 'Open finding'}</Button> : null;
+  // A space the registry holds no recorded unit, card or finding for has no action: the shell then has no footer.
+  const hasActions = Boolean(cardButton || unitLink || secondary);
 
   const rights = facts?.rights ?? 'unknown';
   return (
@@ -135,7 +134,7 @@ export function SpaceInspector({
       status={<StatusBadge status={status} />}
       subtitle={<span className="ul-mono">{space.record.identifier.replace(/\//g, ' / ')}</span>}
       tabs={<Tabs label="Space details" value={tab} onChange={setTab} tabs={[{ value: 'overview', label: 'Overview' }, { value: 'rights', label: 'Rights' }, { value: 'evidence', label: 'Evidence', count: refs.length }]} />}
-      actions={<>{primary}{secondary}</>}
+      actions={hasActions ? <>{cardButton}{unitLink}{secondary}</> : undefined}
     >
       {tab === 'overview' ? (
         <>
