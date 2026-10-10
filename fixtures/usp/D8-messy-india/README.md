@@ -1,4 +1,27 @@
-# D8 — source-native Indian tables and GIS (D1b, 10 October 2026 IST)
+# D8 — source-native Indian tables and GIS
+
+## D1c checkpoint — 10 October 2026 UTC
+
+**Partial acquisition, not a passed GF-AGENT data prerequisite.** Two unlabelled issuing-authority Tamil Nadu
+Housing Board JSON originals extend development by **one family**, with 108 and 102 scheme rows. Both have
+90 keys and the same ordered-key fingerprint; publication-state queries are not independent families.
+They contain property-scheme facts, rather than the statistical measures that dominate D1b. No canonical
+labels or unit conversions were added. Public unpublished-scheme rows do not establish offered/current status.
+
+Originals are external; small byte-identical copies are in `dev/d1c/`. These are **native JSON tables, not
+CSV/XLSX originals**. Their import/teacher profiling is unqualified; do not silently convert them and claim
+publisher-native CSV coverage. Issuing provenance does not confirm reuse/training permission (`unconfirmed`).
+
+New heldout: **0 families, 0 files, 0 columns, 0 scorable columns, 0 positive targets**. No unsafe register
+was redacted or admitted. The empty, explicitly blocked D1c receipt records the shortfall, not a useful
+property evaluation set. The historical A3 set and truth remain unchanged. All evaluator-only materials
+remain closed to teachers; an empty new selection does not reopen the historical set.
+
+Whole pack: **39 originals / 27 families; 34 dev files / 22 families and 5 historical heldout files / 5 families**.
+See `docs/evidence/gf-agent/d1c/result.json` for gaps and `verify-d1c.py` for read-only amendment checks.
+The earlier counts and qualification below describe the historical D1b acquisition.
+
+## D1b — 10 October 2026 IST
 
 `manifest.json` is the development-teacher-safe view. **D1b adds 29 unchanged CSV/XLSX files in 21 publisher/schema families: 26 development files / 18 families and 3 tabular holdout files / 3 families.** Whole pack: **37 originals, 26 families; 32 development files / 21 families and 5 heldout files / 5 families**. These are schema families, not 26 distinct publishers.
 

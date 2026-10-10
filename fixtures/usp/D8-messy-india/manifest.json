@@ -1,7 +1,7 @@
 {
   "schemaVersion": "usp-data-pack/1",
   "packId": "D8",
-  "version": 2,
+  "version": 3,
   "createdAt": "2026-10-09T19:15:23.794944+00:00",
   "profile": "messy-india-development-20261010",
   "purpose": "test_only",
@@ -48,7 +48,18 @@
     {"id": "mi-d18","split": "dev","publisher": "OpenCity / Oorvani Foundation","schemaIdentity": "ward-old-new-crosswalk","fileCount": 1,"dictionaryState": "not required for development; publisher-native headers and resource descriptions only, no invented expanded dictionary","familyRule": "publisher + broad semantic layout; different years/geographic scopes and cosmetic header variants grouped, not counted as independent families","originQualification": "OpenCity-published CSV, sometimes transcribed/derived from issuing-authority reports; test_only, not official operational records","observedLayoutFingerprints": ["6069bfa7639c3b91b53ee9e6865426d9f4168afafc26ee3f7de9191b573e1ff7"]},
     {"id": "mi-d19","split": "dev","publisher": "Reserve Bank of India","schemaIdentity": "Table 18 : Area Under Cultivation - Foodgrains 12 kb 198 kb","fileCount": 1,"dictionaryState": "optional publisher table/units/notes retained; no worker-expanded targets","familyRule": "publisher + distinct measure-column schema, not individual periods or download names","observedLayoutFingerprints": ["f55f42e560aa23864fac63d6a18deda1b60530e04d9c9a51f1b71e5cf421c612"]},
     {"id": "mi-d20","split": "dev","publisher": "Reserve Bank of India","schemaIdentity": "Table 19 : Area Under Cultivation - Major Commercial Crops 14 kb 201 kb","fileCount": 1,"dictionaryState": "optional publisher table/units/notes retained; no worker-expanded targets","familyRule": "publisher + distinct measure-column schema, not individual periods or download names","observedLayoutFingerprints": ["3cdf7ef1736b389eeca72e476df09e97d7afd9682af8725e874dd82552b614a1"]},
-    {"id": "mi-d21","split": "dev","publisher": "Reserve Bank of India","schemaIdentity": "Table 22 : Pattern of Land Use and Select Inputs for Agricultural Production 13 kb 199 kb","fileCount": 1,"dictionaryState": "optional publisher table/units/notes retained; no worker-expanded targets","familyRule": "publisher + distinct measure-column schema, not individual periods or download names","observedLayoutFingerprints": ["47b1f1252180e34491d48148463326ea29a2a2d5931d155a502a69c6339f9800"]}
+    {"id": "mi-d21","split": "dev","publisher": "Reserve Bank of India","schemaIdentity": "Table 22 : Pattern of Land Use and Select Inputs for Agricultural Production 13 kb 199 kb","fileCount": 1,"dictionaryState": "optional publisher table/units/notes retained; no worker-expanded targets","familyRule": "publisher + distinct measure-column schema, not individual periods or download names","observedLayoutFingerprints": ["47b1f1252180e34491d48148463326ea29a2a2d5931d155a502a69c6339f9800"]},
+    {
+      "id": "mi-d22",
+      "split": "dev",
+      "publisher": "Tamil Nadu Housing Board",
+      "schemaIdentity": "public scheme register responseObject JSON rows",
+      "fileCount": 2,
+      "dictionaryState": "not labelled; publisher-native keys only",
+      "familyRule": "Published and unpublished schemes share one issuing-publisher layout, not two families.",
+      "observedLayoutFingerprints": ["8f20fb71ec5fb9e870f0a83487c3b534bc1b1d073bc187332b690eaf102ff55e"],
+      "qualification": "Property-relevant source-native JSON tables; native CSV/XLSX import is not qualified."
+    }
   ],
   "assets": [
     {
@@ -424,10 +435,92 @@
     {"id": "mi-d18-01.csv","family": "mi-d18","split": "dev","mediaType": "text/csv","classification": "observed","issuer": "OpenCity / Oorvani Foundation","attribution": "OpenCity / Oorvani Foundation; upstream attribution retained in publisher metadata","origin": {"kind": "publisher_native_csv_possible_authority_transcription","url": "https://data.opencity.in/dataset/87b978d1-352e-4b90-aa2c-9991e55d3425/resource/ebf9c61c-338f-4f11-888a-914493100dc2/download/e08d0f26-d02b-4e0f-ad5b-4049048a9561.csv","publisherPage": "https://data.opencity.in/dataset/bbmp-ward-information","resourceTitle": "Constituencies to Wards Mapping for Old and New Wards"},"acquiredAt": "2026-10-09T19:56:01.047249+00:00","original": {"externalPath": "E:/BhuAayam-data/datasets/messy-india/pool-bbmp-ward-information/ebf9c61c-338f-4f11-888a-914493100dc2.csv","sha256": "5e246c9a5a1ff95357b5ed3d5797e9d6fc53de6706fa5beb1d191e6135191f87","bytes": 16714},"developmentCopy": "fixtures/usp/D8-messy-india/dev/d1b/mi-d18-01.csv","publisherMetadata": {"url": "https://data.opencity.in/api/3/action/package_show?id=bbmp-ward-information","externalPath": "E:/BhuAayam-data/datasets/messy-india/d1b-discovery/bbmp-ward-information.json","sha256": "f33e24e41ca53d7605da414b4f61e69d93bd221a08cf4924155b366b487afed3","bytes": 15531},"permission": {"state": "unconfirmed","publisherLicenseLabel": null,"reason": "Portal label observed only; no upstream/publication/ML grant independently established."},"reference": {"horizontalCrs": null,"horizontalUnit": null,"verticalReference": null,"sourceDate": null},"geography": "India, public aggregate/administrative statistics; scope as publisher resource title","purpose": "test_only","stage": "acquired","sourceSchema": {"csvHeader": ["AC num","AC Name","Parliamentary Constituency Name","Old Ward Num","Old Ward Name","New Ward Num","New Ward Name"],"headerRecord": 1,"dataRowInterpretation": "unqualified; numbered/total/hierarchy rows retained","publisherColumnMeanings": "undocumented beyond native labels/resource descriptions","canonicalTargets": null,"evaluationEligible": false},"cases": [{"name": "missing_or_dash_cells","locator": "CSV source records","evidence": "Empty and dash literals stay distinct from 0; no imputation."}],"privacy": "Non-personal public geography/aggregate statistics only; staff/contact, pseudocode and survey exports excluded without redaction."},
     {"id": "mi-d19-01.xlsx","family": "mi-d19","split": "dev","mediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","classification": "observed","issuer": "Reserve Bank of India","origin": {"kind": "official_publisher_original_xlsx","url": "https://rbidocs.rbi.org.in/rdocs/Publications/DOCs/18T_HBIE31072026F66166DD083C4F4AA4F2CDF71DBE801B.XLSX","publisherPage": "https://www.rbi.org.in/Scripts/PublicationsView.aspx?id=23843","resourceTitle": "Table 18 : Area Under Cultivation - Foodgrains 12 kb 198 kb"},"acquiredAt": "2026-10-09T19:58:21.214477+00:00","original": {"externalPath": "E:/BhuAayam-data/datasets/messy-india/rbi-development-table-18/original.xlsx","sha256": "fc3f75eafdb7b954348ac182d1db3c3a558fc08aecf072d6a3807735d15e38a2","bytes": 12398},"developmentCopy": "fixtures/usp/D8-messy-india/dev/d1b/mi-d19-01.xlsx","dictionary": {"url": "https://www.rbi.org.in/Scripts/PublicationsView.aspx?id=23843","externalPath": "E:/BhuAayam-data/datasets/messy-india/rbi-development-table-18/publisher-documentation.html","sha256": "02cba77d6d77b714b7abe6d7ce312e6d9c3c1a1517e4e21d67e79a96dbd8cc58","bytes": 74452},"permission": {"state": "unconfirmed","reason": "Public access is not a resource-specific redistribution/training grant."},"reference": {"horizontalCrs": null,"verticalReference": null,"sourceDate": null},"geography": "India; national aggregate statistics, not parcel/property inventories","purpose": "test_only","stage": "acquired","sourceSchema": {"worksheets": 1,"canonicalTargets": null,"evaluationEligible": false,"headerRows": [4,5],"headerCellLiterals": [{"locator": "B4","literal": "Year"},{"locator": "C4","literal": "Cereals"},{"locator": "G4","literal": "Pulses"},{"locator": "H4","literal": "Total Foodgrains (5+6)"},{"locator": "C5","literal": "Rice"},{"locator": "D5","literal": "Wheat"},{"locator": "E5","literal": "Coarse Cereals"},{"locator": "F5","literal": "Total (2+3+4)"}],"unitCaption": {"locator": "B3","literal": "(Lakh Hectares)"},"schemaFingerprint": "f55f42e560aa23864fac63d6a18deda1b60530e04d9c9a51f1b71e5cf421c612"},"cases": [{"name": "acre_or_hectare_areas","locator": "worksheet 1 cell B3","literal": "(Lakh Hectares)","evidence": "Exact publisher area-unit caption; never infer or silently convert scale."},{"name": "multi_row_headers","locator": "Publisher workbook leading rows","evidence": "Workbook title, unit captions and grouped column headings preserved."},{"name": "merged_header_cells","locator": "Publisher workbook merge ranges","evidence": "Publisher XLSX, not a synthetic flattening."}],"privacy": "Official national aggregate statistics, no person-level records."},
     {"id": "mi-d20-01.xlsx","family": "mi-d20","split": "dev","mediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","classification": "observed","issuer": "Reserve Bank of India","origin": {"kind": "official_publisher_original_xlsx","url": "https://rbidocs.rbi.org.in/rdocs/Publications/DOCs/19T_HBIE3107202629B99CB632CF4D45B187E8C67BE219D6.XLSX","publisherPage": "https://www.rbi.org.in/Scripts/PublicationsView.aspx?id=23844","resourceTitle": "Table 19 : Area Under Cultivation - Major Commercial Crops 14 kb 201 kb"},"acquiredAt": "2026-10-09T19:58:22.102339+00:00","original": {"externalPath": "E:/BhuAayam-data/datasets/messy-india/rbi-development-table-19/original.xlsx","sha256": "28dc781d07775eba77d32b9103c6cf3681ffe25f02c97f4437dd989095ec8c21","bytes": 14456},"developmentCopy": "fixtures/usp/D8-messy-india/dev/d1b/mi-d20-01.xlsx","dictionary": {"url": "https://www.rbi.org.in/Scripts/PublicationsView.aspx?id=23844","externalPath": "E:/BhuAayam-data/datasets/messy-india/rbi-development-table-19/publisher-documentation.html","sha256": "bee38e2f0bfd1d79d8325f41c5fead6129d225b0a708c615d0a4730d7978b3e7","bytes": 82635},"permission": {"state": "unconfirmed","reason": "Public access is not a resource-specific redistribution/training grant."},"reference": {"horizontalCrs": null,"verticalReference": null,"sourceDate": null},"geography": "India; national aggregate statistics, not parcel/property inventories","purpose": "test_only","stage": "acquired","sourceSchema": {"worksheets": 1,"canonicalTargets": null,"evaluationEligible": false,"headerRows": [4,5],"headerCellLiterals": [{"locator": "B4","literal": "Year"},{"locator": "C4","literal": "Oilseeds"},{"locator": "G4","literal": "Sugarcane"},{"locator": "H4","literal": "Tea"},{"locator": "I4","literal": "Coffee"},{"locator": "J4","literal": "Cotton (Lint)"},{"locator": "K4","literal": "Raw Jute & Mesta"},{"locator": "L4","literal": "Tobacco"},{"locator": "C5","literal": "Groundnut"},{"locator": "D5","literal": "Rapeseed & Mustard"},{"locator": "E5","literal": "Soyabean"},{"locator": "F5","literal": "Total Oilseeds"}],"unitCaption": {"locator": "B3","literal": "(Lakh Hectares)"},"schemaFingerprint": "3cdf7ef1736b389eeca72e476df09e97d7afd9682af8725e874dd82552b614a1"},"cases": [{"name": "acre_or_hectare_areas","locator": "worksheet 1 cell B3","literal": "(Lakh Hectares)","evidence": "Exact publisher area-unit caption; never infer or silently convert scale."},{"name": "multi_row_headers","locator": "Publisher workbook leading rows","evidence": "Workbook title, unit captions and grouped column headings preserved."},{"name": "merged_header_cells","locator": "Publisher workbook merge ranges","evidence": "Publisher XLSX, not a synthetic flattening."}],"privacy": "Official national aggregate statistics, no person-level records."},
-    {"id": "mi-d21-01.xlsx","family": "mi-d21","split": "dev","mediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","classification": "observed","issuer": "Reserve Bank of India","origin": {"kind": "official_publisher_original_xlsx","url": "https://rbidocs.rbi.org.in/rdocs/Publications/DOCs/22T_HBIE310720268357D2532C0D48E0B1903B23F39DF1B8.XLSX","publisherPage": "https://www.rbi.org.in/Scripts/PublicationsView.aspx?id=23847","resourceTitle": "Table 22 : Pattern of Land Use and Select Inputs for Agricultural Production 13 kb 199 kb"},"acquiredAt": "2026-10-09T19:58:22.835416+00:00","original": {"externalPath": "E:/BhuAayam-data/datasets/messy-india/rbi-development-table-22/original.xlsx","sha256": "fdaa51f7970249e550dae33185c57563505e2ce42238c94f6aa839ddfe2b9ecd","bytes": 13351},"developmentCopy": "fixtures/usp/D8-messy-india/dev/d1b/mi-d21-01.xlsx","dictionary": {"url": "https://www.rbi.org.in/Scripts/PublicationsView.aspx?id=23847","externalPath": "E:/BhuAayam-data/datasets/messy-india/rbi-development-table-22/publisher-documentation.html","sha256": "4b919ff8077b7a241bb5ad7eedcd2082157d489e126fa8eaf6b1d44f0a5288e5","bytes": 78251},"permission": {"state": "unconfirmed","reason": "Public access is not a resource-specific redistribution/training grant."},"reference": {"horizontalCrs": null,"verticalReference": null,"sourceDate": null},"geography": "India; national aggregate statistics, not parcel/property inventories","purpose": "test_only","stage": "acquired","sourceSchema": {"worksheets": 1,"canonicalTargets": null,"evaluationEligible": false,"headerRows": [4],"headerCellLiterals": [{"locator": "B4","literal": "Year"},{"locator": "C4","literal": "Net Sown Area"},{"locator": "D4","literal": "Gross Sown Area"},{"locator": "E4","literal": "Net Irrigated Area"},{"locator": "F4","literal": "Gross Irrigated Area"},{"locator": "G4","literal": "Area under High Yielding Varieties"},{"locator": "H4","literal": "Consumption of Fertilisers (N+P+K) (lakh tonnes)"},{"locator": "I4","literal": "Consumption of Pesticides (Technical Grade Material) (‘000 tonnes)"}],"unitCaption": {"locator": "B3","literal": "(Area in Lakh Hectares)"},"schemaFingerprint": "47b1f1252180e34491d48148463326ea29a2a2d5931d155a502a69c6339f9800"},"cases": [{"name": "acre_or_hectare_areas","locator": "worksheet 1 cell B3","literal": "(Area in Lakh Hectares)","evidence": "Exact publisher area-unit caption; never infer or silently convert scale."},{"name": "multi_row_headers","locator": "Publisher workbook leading rows","evidence": "Workbook title, unit captions and grouped column headings preserved."},{"name": "merged_header_cells","locator": "Publisher workbook merge ranges","evidence": "Publisher XLSX, not a synthetic flattening."}],"privacy": "Official national aggregate statistics, no person-level records."}
+    {"id": "mi-d21-01.xlsx","family": "mi-d21","split": "dev","mediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","classification": "observed","issuer": "Reserve Bank of India","origin": {"kind": "official_publisher_original_xlsx","url": "https://rbidocs.rbi.org.in/rdocs/Publications/DOCs/22T_HBIE310720268357D2532C0D48E0B1903B23F39DF1B8.XLSX","publisherPage": "https://www.rbi.org.in/Scripts/PublicationsView.aspx?id=23847","resourceTitle": "Table 22 : Pattern of Land Use and Select Inputs for Agricultural Production 13 kb 199 kb"},"acquiredAt": "2026-10-09T19:58:22.835416+00:00","original": {"externalPath": "E:/BhuAayam-data/datasets/messy-india/rbi-development-table-22/original.xlsx","sha256": "fdaa51f7970249e550dae33185c57563505e2ce42238c94f6aa839ddfe2b9ecd","bytes": 13351},"developmentCopy": "fixtures/usp/D8-messy-india/dev/d1b/mi-d21-01.xlsx","dictionary": {"url": "https://www.rbi.org.in/Scripts/PublicationsView.aspx?id=23847","externalPath": "E:/BhuAayam-data/datasets/messy-india/rbi-development-table-22/publisher-documentation.html","sha256": "4b919ff8077b7a241bb5ad7eedcd2082157d489e126fa8eaf6b1d44f0a5288e5","bytes": 78251},"permission": {"state": "unconfirmed","reason": "Public access is not a resource-specific redistribution/training grant."},"reference": {"horizontalCrs": null,"verticalReference": null,"sourceDate": null},"geography": "India; national aggregate statistics, not parcel/property inventories","purpose": "test_only","stage": "acquired","sourceSchema": {"worksheets": 1,"canonicalTargets": null,"evaluationEligible": false,"headerRows": [4],"headerCellLiterals": [{"locator": "B4","literal": "Year"},{"locator": "C4","literal": "Net Sown Area"},{"locator": "D4","literal": "Gross Sown Area"},{"locator": "E4","literal": "Net Irrigated Area"},{"locator": "F4","literal": "Gross Irrigated Area"},{"locator": "G4","literal": "Area under High Yielding Varieties"},{"locator": "H4","literal": "Consumption of Fertilisers (N+P+K) (lakh tonnes)"},{"locator": "I4","literal": "Consumption of Pesticides (Technical Grade Material) (‘000 tonnes)"}],"unitCaption": {"locator": "B3","literal": "(Area in Lakh Hectares)"},"schemaFingerprint": "47b1f1252180e34491d48148463326ea29a2a2d5931d155a502a69c6339f9800"},"cases": [{"name": "acre_or_hectare_areas","locator": "worksheet 1 cell B3","literal": "(Area in Lakh Hectares)","evidence": "Exact publisher area-unit caption; never infer or silently convert scale."},{"name": "multi_row_headers","locator": "Publisher workbook leading rows","evidence": "Workbook title, unit captions and grouped column headings preserved."},{"name": "merged_header_cells","locator": "Publisher workbook merge ranges","evidence": "Publisher XLSX, not a synthetic flattening."}],"privacy": "Official national aggregate statistics, no person-level records."},
+    {
+      "id": "mi-d22-schemes-yes.json",
+      "family": "mi-d22",
+      "split": "dev",
+      "mediaType": "application/json",
+      "classification": "observed",
+      "publisher": "Tamil Nadu Housing Board",
+      "issuer": "Tamil Nadu Housing Board",
+      "attribution": "Tamil Nadu Housing Board public property-sales catalogue",
+      "origin": {
+        "kind": "issuing_authority_public_json_table",
+        "url": "https://propertysalesapi.tnhb.org.in/api/getSchemeDataByPublishedStatus?publishedStatus=Yes",
+        "publisherPage": "https://propertysales.tnhb.tn.gov.in/all-schemes"
+      },
+      "acquiredAt": "2026-10-10T09:03:54.128858+00:00",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/d1c/dev/schemes-yes.json",
+        "sha256": "e7d69b4ade9e49d5f6b7c0574864284acf2032b60977f296f018e5957cd476b5",
+        "bytes": 243327
+      },
+      "developmentCopy": "fixtures/usp/D8-messy-india/dev/d1c/mi-d22-schemes-yes.json",
+      "permission": {"state": "unconfirmed", "licence": null, "reason": "Public GET; no explicit reuse/ML grant."},
+      "reference": {"horizontalCrs": null, "horizontalUnit": null, "verticalReference": null, "sourceDate": null},
+      "geography": "Tamil Nadu, India",
+      "purpose": "test_only",
+      "stage": "acquired",
+      "sourceSchema": {
+        "rowArrayPointer": "/responseObject",
+        "dataRows": 108,
+        "columnCount": 90,
+        "allRowsSameFields": true,
+        "layoutFingerprint": "8f20fb71ec5fb9e870f0a83487c3b534bc1b1d073bc187332b690eaf102ff55e",
+        "fingerprintMethod": "SHA-256 of ordered keys, ASCII JSON with comma/colon separators",
+        "publisherColumnMeanings": "undocumented beyond native keys; units are not inferred",
+        "canonicalTargets": null,
+        "evaluationEligible": false
+      },
+      "cases": [{"name": "property_scheme_register", "locator": "/responseObject", "evidence": "Native scheme rows."}],
+      "privacy": "Scheme-level property facts; no owner/customer/contact fields. Audit identities are empty.",
+      "qualification": "Not a CSV/XLSX original, labelled example, registry import or runtime GF-AGENT pass."
+    },
+    {
+      "id": "mi-d22-schemes-no.json",
+      "family": "mi-d22",
+      "split": "dev",
+      "mediaType": "application/json",
+      "classification": "observed",
+      "publisher": "Tamil Nadu Housing Board",
+      "issuer": "Tamil Nadu Housing Board",
+      "attribution": "Tamil Nadu Housing Board public property-sales catalogue",
+      "origin": {
+        "kind": "issuing_authority_public_json_table",
+        "url": "https://propertysalesapi.tnhb.org.in/api/getSchemeDataByPublishedStatus?publishedStatus=No",
+        "publisherPage": "https://propertysales.tnhb.tn.gov.in/all-schemes"
+      },
+      "acquiredAt": "2026-10-10T09:03:54.557115+00:00",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/d1c/dev/schemes-no.json",
+        "sha256": "010c71f25d114f63c65955738075a1c9c160fce4105b2b8ee43335e9b3eea33e",
+        "bytes": 229451
+      },
+      "developmentCopy": "fixtures/usp/D8-messy-india/dev/d1c/mi-d22-schemes-no.json",
+      "permission": {"state": "unconfirmed", "licence": null, "reason": "Public GET; no explicit reuse/ML grant."},
+      "reference": {"horizontalCrs": null, "horizontalUnit": null, "verticalReference": null, "sourceDate": null},
+      "geography": "Tamil Nadu, India",
+      "purpose": "test_only",
+      "stage": "acquired",
+      "sourceSchema": {
+        "rowArrayPointer": "/responseObject",
+        "dataRows": 102,
+        "columnCount": 90,
+        "allRowsSameFields": true,
+        "layoutFingerprint": "8f20fb71ec5fb9e870f0a83487c3b534bc1b1d073bc187332b690eaf102ff55e",
+        "fingerprintMethod": "SHA-256 of ordered keys, ASCII JSON with comma/colon separators",
+        "publisherColumnMeanings": "undocumented beyond native keys; units are not inferred",
+        "canonicalTargets": null,
+        "evaluationEligible": false
+      },
+      "cases": [{"name": "property_scheme_register", "locator": "/responseObject", "evidence": "Native scheme rows."}],
+      "privacy": "Scheme-level property facts; no owner/customer/contact fields. Audit identities are empty.",
+      "qualification": "Public but unpublished-scheme rows are not offered/current or approved property assertions."
+    }
   ],
   "teacherPolicy": "Development teacher may read dev profiles only. Never open heldout.json, holdout originals or schema documents; evaluators must not send them to teachers.",
-  "description": "37 unchanged original files in 26 families: 32 development and 5 evaluator-only; D1b adds 29 CSV/XLSX originals in 21 publisher/schema families. OpenCity transcriptions stay test_only, not authority exports.",
+  "description": "39 unchanged originals in 27 families: 34 development and 5 evaluator-only. D1c adds two unlabelled official property-scheme JSON tables in one family; no new qualifying holdout. OpenCity stays test_only.",
   "heldout": [
     {
       "id": "mi-h01",
@@ -463,12 +556,17 @@
     "amendment": "Add three independently publisher-documented tabular families; preserve all v1 assets and families unchanged."
   },
   "fileCounts": {
-    "development": 32,
+    "development": 34,
     "heldout": 5,
-    "total": 37,
-    "families": 26
+    "total": 39,
+    "families": 27
   },
   "missingCapabilities": [
+    "property_positive_heldout_truth",
+    "four_new_property_development_families",
+    "three_new_property_heldout_families",
+    "native_property_CSV_XLSX_originals",
+    "native_tabular_JSON_import_route_unqualified",
     "Devanagari_or_mixed_script_headers",
     "Kruti_Dev_headers",
     "Devanagari_digits",
