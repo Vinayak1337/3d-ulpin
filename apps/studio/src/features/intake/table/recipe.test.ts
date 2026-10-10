@@ -1,11 +1,57 @@
 import { describe, expect, it } from 'vitest';
 import controls from '../../../../../../docs/evidence/gf-agent/ui/f2b/responses.json';
-import { initialAnswers, recipeBody, targetOptions, unansweredColumns } from './recipe';
+import { fillUnknownAnswers, initialAnswers, officerAnswers, recipeBody, targetOptions,
+  unansweredColumns, unansweredUnknownColumns } from './recipe';
 import type { ChunkMapping, TableProfile } from './types';
 
 const profile = controls.files[0]!.profile as TableProfile;
 const mapping = controls.files[0]!.chunk.payload.mapping as ChunkMapping;
 const reason = 'Software protocol control only; preserve as unknown, not a property fact or learning truth.';
+
+describe('shared unknown reason', () => {
+  it('fills only unanswered empty or unknown targets, never another target', () => {
+    const answers = initialAnswers(profile, mapping);
+    const [first, second, third] = profile.profile.columns;
+    answers[first!.name] = { target: 'building.name', reason: '' };
+    answers[second!.name] = { target: 'unknown', reason: ' ' };
+    answers[third!.name] = { target: '', reason: 'An unfinished individual answer.' };
+    const eligible = unansweredUnknownColumns(profile, answers);
+    const next = fillUnknownAnswers(profile, answers, ` ${reason} `);
+    expect(next[first!.name]).toEqual(answers[first!.name]);
+    for (const name of eligible) {
+      expect(next[name]).toEqual({ target: 'unknown', reason, sharedReason: true });
+    }
+    expect(answers[second!.name]!.reason).toBe(' ');
+  });
+
+  it('leaves all answered columns and their individual reasons alone', () => {
+    const answers = initialAnswers(profile, mapping);
+    const first = profile.profile.columns[0]!.name;
+    answers[first] = { target: 'unknown', reason: 'Individually answered protocol control.' };
+    expect(unansweredUnknownColumns(profile, answers)).not.toContain(first);
+    expect(fillUnknownAnswers(profile, answers, reason)[first]).toEqual(answers[first]);
+  });
+
+  it('refuses an empty shared reason without changing any answer', () => {
+    const answers = initialAnswers(profile, mapping);
+    const before = structuredClone(answers);
+    expect(() => fillUnknownAnswers(profile, answers, ' \n ')).toThrow('Give a reason');
+    expect(answers).toEqual(before);
+  });
+});
+
+describe('officer answers over mapped chunks', () => {
+  it('clears an unedited target when its question arrives later and keeps the officer edits', () => {
+    const asked = mapping.questions[0]!.sourceField;
+    const edited = profile.profile.columns.find((column) => column.name !== asked)!.name;
+    const edits = { [edited]: { target: 'unknown' as const, reason } };
+    const proposed = mapping.plan.fields.find((field) => field.sourceField === asked)!.target;
+    expect(officerAnswers(profile, { ...mapping, questions: [] }, edits)[asked]!.target).toBe(proposed);
+    const answers = officerAnswers(profile, mapping, edits);
+    expect(answers[asked]).toEqual({ target: '', reason: '' });
+    expect(answers[edited]).toEqual(edits[edited]);
+  });
+});
 
 describe('officer recipe body', () => {
   it('requires an explicit target and a reason for every column, including unknown', () => {

@@ -13,6 +13,8 @@ export type MappedChunk = GetResponse<
 >;
 export type ChunkMapping = NonNullable<NonNullable<MappedChunk['payload']>['mapping']>;
 export type Metrics = ChunkMapping['metrics'];
+/** Whether a job or chunk response still describes the current state of the case, as the server says. */
+export type Freshness = Pick<MappingJob, 'current' | 'reasons'>;
 export type Target = ChunkMapping['plan']['fields'][number]['target'];
 export type Selection = RecipeBody['plan']['tabular']['selection'];
 export type RetainBody = Schemas['POST_ingestion_cases_caseId_sources_Request_multipart_form_data'];

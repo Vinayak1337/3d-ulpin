@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { expect, it } from 'vitest';
-import controls from '../../../../../../docs/evidence/gf-agent/ui/f2b/responses.json';
+import controls from '../../../../../../docs/evidence/gf1/ui/f3a/table-responses.json';
 import { createContractValidator } from '../../../local/contract';
 import { initialAnswers, recipeBody } from './recipe';
 import type { ChunkMapping, TableProfile } from './types';
@@ -26,7 +26,7 @@ it('intercepted table responses validate against the published route schemas', (
   for (const profile of [controls.duplicateProfile, controls.nativeProfile]) {
     expect(validate('POST_ingestion_cases_caseId_sources_Response_201_application_json', profile)).toEqual([]);
   }
-  for (const file of controls.files) {
+  for (const file of [...controls.files, controls.stale]) {
     expect(validate('POST_ingestion_cases_caseId_sources_Response_201_application_json', file.profile)).toEqual([]);
     expect(validate('POST_ingestion_cases_caseId_sources_sourceId_streaming_vector_Response_202_application_json',
       file.raw)).toEqual([]);

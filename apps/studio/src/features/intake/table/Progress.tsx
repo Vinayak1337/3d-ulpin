@@ -31,7 +31,8 @@ export function Progress({ raw, mapping, fallback, reconnect, rawReason, mapping
       </div>
       <DataTable caption="Job progress" rows={rows} rowKey={(row) => row.name} columns={[
         { header: 'Job', cell: (row) => row.name },
-        { header: 'Status', cell: (row) => row.job?.status.replaceAll('_', ' ') ?? 'Unknown · job status unavailable' },
+        { header: 'Status', cell: (row) =>
+          row.job?.status.replaceAll('_', ' ') ?? 'Unknown · job status unavailable' },
         { header: 'Chunks published', numeric: true, cell: (row) => row.job?.nextPublishIndex ?? 'Unknown' },
         { header: 'Records', numeric: true, cell: (row) => row.job?.records ?? 'Unknown' },
         { header: 'Issue', cell: (row) => {

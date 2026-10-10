@@ -1,5 +1,6 @@
 import { Banner, Button, StatusBadge, formatDateTime } from '@ulpin/ui';
 import { AnswerForm } from './AnswerForm';
+import { reviewControls } from './model';
 import { TableRefusal } from './Progress';
 import { RecipeConfirmation } from './RecipeConfirmation';
 import { RecipeHistory } from './RecipeHistory';
@@ -7,11 +8,12 @@ import { useRecipeReview } from './useRecipeReview';
 import type { ChunkMapping, MappingJob, Recipe, TableProfile } from './types';
 import styles from './Table.module.css';
 
-export function RecipeReview({ profile, mapping, job, onApproved }: {
-  profile: TableProfile; mapping: ChunkMapping; job: MappingJob; onApproved: () => void;
+export function RecipeReview({ profile, mapping, job, stale, onApproved }: {
+  profile: TableProfile; mapping: ChunkMapping; job: MappingJob; stale: boolean; onApproved: () => void;
 }) {
   const review = useRecipeReview(profile, mapping, job, onApproved);
   const { current, confirmation, history, record } = review;
+  const controls = reviewControls(stale, current?.state, review.open);
   const eligible = job.route === 'proposal_only' && mapping.questions.length > 0 &&
     current?.state !== 'approved' && !review.reading && !history.error;
   return (
@@ -27,8 +29,9 @@ export function RecipeReview({ profile, mapping, job, onApproved }: {
           Answer mapping questions
         </Button></div> : null}
         {eligible && review.open ? <AnswerForm profile={profile} mapping={mapping} answers={review.answers}
-          change={review.change} record={review.propose} pending={record.isPending} /> : null}
-        <RecipeActions review={review} job={job} />
+          change={review.change} markUnknown={controls.sharedReason ? review.markUnknown : null}
+          record={review.propose} pending={record.isPending} /> : null}
+        <RecipeActions review={review} job={job} approvable={controls.approve} />
         {record.error && !confirmation ? <TableRefusal error={record.error} /> : null}
         {history.data ? <RecipeHistory revisions={history.data} /> : null}
       </div>
@@ -38,7 +41,9 @@ export function RecipeReview({ profile, mapping, job, onApproved }: {
   );
 }
 
-function RecipeActions({ review, job }: { review: ReturnType<typeof useRecipeReview>; job: MappingJob }) {
+function RecipeActions({ review, job, approvable }: {
+  review: ReturnType<typeof useRecipeReview>; job: MappingJob; approvable: boolean;
+}) {
   const { current, record } = review;
   const approve = () => {
     if (!current) return;
@@ -47,7 +52,7 @@ function RecipeActions({ review, job }: { review: ReturnType<typeof useRecipeRev
       requestKey: crypto.randomUUID() });
   };
   return <>
-    {current?.state === 'proposed' && !review.open ? (
+    {approvable ? (
       <div><Button variant="primary" onClick={approve}>Approve mapping</Button></div>
     ) : null}
     {current?.state === 'approved' && job.route !== 'approved_recipe' && review.replay ? (

@@ -62,7 +62,7 @@
   min-width: 240px;
 }
 
-.answers textarea {
+.form textarea {
   resize: vertical;
   height: auto;
   min-height: calc(var(--ui-control-height) * 2);
