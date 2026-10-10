@@ -1,166 +1,178 @@
 {
   "task": "K13",
   "gate": "GF1",
-  "status": "blocked at mandatory Step 0 history-proof gate",
-  "design": "Neither design chosen: Step 0.6 requires stopping when intervening changes cannot be proved.",
+  "status": "Repair verified in-process; real four-original runtime qualification pending.",
+  "design": "Lead revised rule: compare every rebuilt input field except caseRevision; require now revision >= pinned.",
   "fourReadsBefore": ["stale","stale","stale","completed"],
-  "fourReadsAfter": ["stale","stale","stale","completed"],
-  "qualification": "Protocol controls only; last completed result is unsupported, not extracted text.",
+  "fourReadsAfter": ["completed","completed","completed","completed"],
+  "fourJobsBefore": ["stale","stale","stale","succeeded"],
+  "fourJobsAfter": ["succeeded","succeeded","succeeded","succeeded"],
+  "qualification": "In-process binary protocol controls; native status unsupported is not successful text extraction.",
   "report": [
     "TASK   K13 — Document read survives a later file            GATE GF1",
-    "WORKS  Step 0 reproduces the defect and proves the mandatory history-recording prerequisite.",
+    "WORKS  Revised source-pin rule: four sequentially retained jobs now succeed; before, the first three were stale.",
     "SEE IT pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/document-later-receipt.test.ts",
-    "INPUTS Real four-original read deferred by stop rule; in-process binary protocol controls only.",
-    "GAPS   No complete revision-change history; no repair or real batch qualification.",
-    "DESIGN Neither design authorised: missing history triggers Step 0.6; pins remain strict.",
-    "       step0.json maps pins, 20 revision writers, consumers and 15 other readers; no shared helper added.",
-    "       document-later-receipt.test.ts keeps reproduction and failing TODO regression; four reads unchanged.",
-    "COMMITS 4eee3a78 docs(documents): K13 what a document read pins and what advances a case revision",
-    "        77a575f7 test(documents): a read queued before another file was added ends stale today",
+    "INPUTS Binary protocol controls; four public RERA originals nominated, not read by this resume.",
+    "GAPS   Real PDF batch pending; baseline lock-order SQL double and one out-of-scope obsolete freshness assertion.",
+    "DESIGN source-pin.ts compares all non-counter fields; backwards revisions fail closed, no SQL/history.",
+    "       document-context.ts uses it for authorization and freshness; all other pins and lock order stay intact.",
+    "       Stored inputs/results keep queued revisions; proposal/association concurrency checks remain exact.",
+    "COMMITS 5912ead7 feat(ingestion): one shared rule for whether a reader's pins are still current",
+    "        0dcb897d fix(documents): a document read survives another file being added to its case",
     "        HEAD docs(documents): K13 evidence",
-    "CHECKS focused test 0 (2 pass, 1 failing TODO); full document suite 1 before and after (same baseline failure).",
-    "       pnpm typecheck:backend 0; OpenAPI --check 0; python -B scripts/api/check.py 1 (runtime receipt changed).",
-    "       git diff --check 0; JSON/reference/line-length/self-review checks 0.",
-    "NEXT   Lead: authorise complete transition recording or revise stop rule; repair baseline SQL double separately."
+    "CHECKS focused 0 (19 pass); named document suite 1 (91 pass, 1 unchanged failure, 3 skip).",
+    "       backend typecheck 0; regenerated OpenAPI --check 0; API checker 1 (runtime receipt changed).",
+    "       adjacent retained tests 1 (8 pass, 1 obsolete assertion); diff/JSON/refs/style/owner-command syntax 0.",
+    "NEXT   Lead updates the out-of-scope assertion; runtime owner runs the recorded batch command after rollout.",
+    "       next-readers.json maps 15 reader checks and 18 immutable enrollment checks; none changed here."
   ],
-  "stop": {
-    "reason": "Current case/context/source equality cannot distinguish receipts from intervening edits.",
-    "proof": "step0.json: events lack revision boundaries; outbox is incomplete; snapshots are optional.",
-    "otherPinsChangedByReceipt": ["caseRevision only; two-source test checks every existing input field"],
-    "productionFilesChanged": 0,
-    "prerequisites": [
-      [
-        "Atomic exhaustive structured case transitions: caseId, from/to revision, change kind and",
-        "affected source pins."
-      ],
-      "Cover every writer, including non-document receipts, source revisions, review/unit/frame/context changes.",
-      "Unique contiguous coverage, same transaction/case lock; unknown/legacy gaps remain stale, never inferred.",
-      "Security/data-policy epochs or history if change-and-revert must revoke jobs; retain all other strict pins.",
-      "Schema/migration/non-document writers are outside K13 ownership; lead must assign the foundation task."
+  "ruleAndSoundness": {
+    "decision": "Lead resume supersedes history proof, successor design and Step 0.6; Step 0 stays unchanged.",
+    "why": [
+      "caseRevision is the case writers' concurrency counter, not a digest of this source's read dependencies.",
+      "The 20 writers can add other sources or edit units/reviews without changing this read's bytes or policies.",
+      "When a writer also changes frame/context/site, the separate caseContextSha256 still moves and refuses.",
+      "Source id/family/revision/hash/bytes/object key and latest-family authority remain checked independently.",
+      "Subject/access, archive refusal, processing policy, reader, gateway/layout and OCR configuration still hold.",
+      "Mode and exact selections remain pinned; archive selection still compares against the registered job input.",
+      "Access, reader, policy, frame/site changes need not increment cases.revision today: their own pins catch them.",
+      "Only the redundant counter mismatch is removed; no source/context/access/policy mismatch gains authority.",
+      "Current-state equality is the rule: no history inference, ledger, successor or change-and-revert claim."
     ],
-    "successor": "Not implemented: fallback design does not override the explicit mandatory stop rule.",
-    "sharedRule": "Proposed ingestion/source-pin.ts with no document imports; details in step0.json designDecision."
+    "refs": [
+      "docs/evidence/gf1/k13/step0.json:caseRevisionWriters,changesWithoutCaseRevision,inputFields,directAssertCallers",
+      "packages/server/src/modules/cases/domain.ts:723-731",
+      "packages/server/src/modules/usp/ingestion/document-context.ts:20-43,47-56,72-83",
+      "packages/server/src/modules/usp/ingestion/events.ts:21-31"
+    ],
+    "sharedFunction": {
+      "path": "packages/server/src/modules/usp/ingestion/source-pin.ts:5-18 compareSourcePins",
+      "reason": "Pure reader-agnostic comparison, reusing fingerprint; no document imports or new lock/SQL edge.",
+      "fields": "Union of own keys; missing vs present, undefined vs null, and future fields stay distinct.",
+      "current": "No moved non-counter fields and now.caseRevision >= pinned.caseRevision.",
+      "result": ["current","moved (never caseRevision)","caseRevisionAdvancedBy"],
+      "callSites": ["document-context.ts:49 freshness","document-context.ts:74 authorization"],
+      "archiveGuard": "document-context.ts:77-82 unchanged registered-input fingerprint and selection comparison."
+    },
+    "stopRuleReview": {
+      "uncoveredCaseConsumerWithoutOwnPin": [],
+      "strictArgumentRequired": false,
+      "coverage": "Step 0 current-authority callers inherit the shared rule; case-level consumers keep their own pins.",
+      "proposal": "document-proposals.ts:63,303,354: current page authority and expectedCaseRevision remain strict.",
+      "association": "document-association-authority.ts:34-37 compares against the job's unchanged queued revision.",
+      "sufficiency": "sufficiency-context.ts:48,111-115 keeps context/revision; document evidence is source-only.",
+      "externalScene": "external-scene.ts:21-24,50-57 keeps feature revision/body and exact association checks.",
+      "siteAccess": "registry-metadata.ts:13-25 and declarations/authority.ts:57-83 keep site/archive/source authority."
+    },
+    "unchanged": [
+      "No contract fields or stored fingerprints rewritten; result.input.caseRevision stays its queued revision.",
+      "No schema description said later revisions alone invalidate results; OpenAPI schema unchanged.",
+      "Existing generator updated docs/api/source-pins.json for document-context.ts and the new source-pin.ts only.",
+      "No changes to worker, job authority, proposals, associations, non-document readers or transaction/lock order."
+    ]
   },
   "reproduction": {
     "test": "tests/document-later-receipt.test.ts",
-    "method": "Actual retain/enqueue/register/claim/failure/status/accept via in-memory pool and S3 transport doubles.",
-    "database": "None; no populated or throwaway database touched; no PostgreSQL durability/contention claim.",
-    "two": {"claim":"refused before attempt","status":"stale","code":"DOCUMENT_INPUT_STALE"},
-    "four": {"jobStatuses":["stale","stale","stale","succeeded"],"readStatuses":["stale","stale","stale","completed"]},
-    "immutablePins": "Stored payloads retain revisions 1,2,3,4; no existing result/contract rewritten.",
-    "regression": "Executable test.todo expects four succeeded jobs; currently fails for the actual defect.",
-    "focused": {"exit":0,"tests":3,"pass":2,"fail":0,"todo":1},
-    "fixtureCorrections": [
-      [
-        "Initial run: missing S3_ENDPOINT at client construction, before any network. Use temporary fake",
-        "getter values."
-      ],
-      "Second run: receipt putOriginal verifies bytes with a read; measure no additional I/O during refused claim.",
-      "Third run: two reproductions pass; pending regression fails specifically with three stale jobs."
-    ]
+    "beforeEvidence": "step0.json and accepted commit 77a575f7 retain the original two/four-file defect proof.",
+    "method": "Actual retain/enqueue/register/claim/accept/status through existing pool and S3 substitutions.",
+    "database": "No PostgreSQL or runtime; no durability/contention claim.",
+    "queuedRevisions": [1,2,3,4],
+    "afterCodes": [null,null,null,null],
+    "freshness": {"current":true,"reasons":[]},
+    "immutable": "Tests check unchanged job payload/input_fingerprint, result.input and accepted result pointer.",
+    "timing": ["later receipt before claim","receipt during extraction after claim","receipt after completion"],
+    "counterOnly": "Unit-edit-equivalent revision advance with no new source succeeds; no unit facts invented.",
+    "refusals": [
+      "Newer source-family revision: stale/DOCUMENT_INPUT_STALE; source_superseded freshness.",
+      "Archived case or different subject: DOCUMENT_DENIED (403).",
+      "Retained access mismatch: disclosure DOCUMENT_DENIED (403); current derivation stays conflict (409).",
+      "Frame/context changes: stale/DOCUMENT_INPUT_STALE; case_advanced freshness.",
+      "Reader hash, propose-mode gateway hash or OCR config changes: stale before claim/object I/O.",
+      "Archive selection differing from registered input: exact existing conflict (409), despite advanced revision.",
+      "Missing source: NOT_FOUND (404), no derivative or authority; no production removal route invented."
+    ],
+    "negativeControls": "Old reader/access/gateway pins seeded in test jobs; OCR configuration changes in-process.",
+    "sharedTests": "Equal inputs, forward/backward counters, named moved field, presence-only field both directions.",
+    "proposalConcurrencyRegression": {
+      "file": "tests/document-proposals.test.ts:187-201",
+      "test": ["same-key recovery after unrelated case advance returns the committed snapshot",
+        "without new operations or page inspection"],
+      "assertion": "Fresh key with old expectedCaseRevision conflicts after advance; exact committed replay recovers.",
+      "result": "Passed unchanged in the named document suite; no duplicate test."
+    }
   },
   "checks": {
     "focused": {
-      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/document-later-receipt.test.ts",
-      "exit": 0
+      "commandFragments": ["pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+        "tests/source-pin.test.ts tests/document-later-receipt.test.ts"],
+      "exit": 0, "tests": 19, "pass": 19, "fail": 0, "todo": 0
     },
     "documentSuite": {
-      "commandFragments": [
-        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/document-*.test.ts",
-        "tests/registry-document-*.test.ts",
-        "packages/server/src/modules/usp/ingestion/document-proposal-quotes.test.ts"
-      ],
-      "before": {"exit":1,"tests":81,"pass":77,"fail":1,"skipped":3,"todo":0},
-      "after": {"exit":1,"tests":84,"pass":79,"fail":1,"skipped":3,"todo":1},
-      "unchangedFailure": "registry-document-lock-order.test.ts:150 rejects SELECT from usp_declaration_revisions.",
-      "cause": "New declaration snapshot projection SQL is absent from the pre-existing test double.",
-      "refs": [
-        "tests/registry-document-lock-order.test.ts:150,153",
-        "packages/server/src/modules/usp/declarations/projection.ts:12",
-        "packages/server/src/modules/usp/snapshots.ts:127"
-      ],
-      "decision": "Observed at baseline and final suite only; no retry or change to the required unchanged test."
+      "commandFragments": ["pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/document-*.test.ts",
+        "tests/registry-document-*.test.ts packages/server/src/modules/usp/ingestion/document-proposal-quotes.test.ts"],
+      "originalBaseline": {"exit":1,"tests":81,"pass":77,"fail":1,"skipped":3,"todo":0},
+      "resumeBaseline": {"exit":1,"tests":84,"pass":79,"fail":1,"skipped":3,"todo":1},
+      "after": {"exit":1,"tests":95,"pass":91,"fail":1,"skipped":3,"todo":0},
+      "unchangedFailure": "tests/registry-document-lock-order.test.ts:150: Unexpected declaration snapshot SQL.",
+      "sql": "SELECT DISTINCT ON(id) id,revision,body FROM usp_declaration_revisions ... LIMIT 11",
+      "decision": "Baseline SQL double lacks declaration projection query; test unchanged, no weaker lock assertions."
     },
     "backend": {"command":"pnpm typecheck:backend","exit":0},
     "openapi": {
-      "commandFragments": ["pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check"],
-      "exit": 0,
-      "prints": [
-        "Native API catalogue matches: 301 operations, 342 named schemas;",
-        "no listener or domain operation opened."
-      ]
+      "script": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts",
+      "initialCheck": {"exit":1,"reason":"docs/api/source-pins.json stale after producer changes"},
+      "generateExit": 0, "finalCheckArgument": "--check", "finalCheckExit": 0,
+      "operations": 301, "namedSchemas": 342
     },
     "api": {"command":"python -B scripts/api/check.py","exit":1,"prints":"API-DOC: runtime receipt changed"},
-    "apiDecision": "Known line-ending receipt artefact; no qualification receipt or API schema changed.",
+    "apiDecision": "Known worker-checkout receipt line-ending artefact; no runtime receipt modified.",
+    "adjacentRetained": {
+      "commandFragments": ["pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+        "packages/server/src/modules/registry/registry-recorded-source.test.ts",
+        "packages/server/src/modules/usp/snapshot-retained-documents.test.ts"],
+      "exit": 1, "tests": 9, "pass": 8, "fail": 1,
+      "failure": "registry-recorded-source.test.ts:32 expects false/case_advanced for a later unrelated import.",
+      "actual": "undefined: registryRecordedSourceTx only exposes freshness when noncurrent; revised rule is current.",
+      "decision": "Outside owned paths: leave unchanged; lead updates this obsolete defect assertion separately."
+    },
     "diff": {"command":"git diff --check","exit":0},
-    "selfReview": "Read staging diff; owned paths only; long-line scan and evidence JSON/reference checks pass."
+    "selfReview": "Read full staging diff, owned paths only; JSON/references/new-file 120-column checks pass.",
+    "ownerCommandSyntax": "Program parsed with node --input-type=module --check; no imports or calls executed."
   },
   "realInputs": {
     "used": false,
-    "reason": "Mandatory stop after Step 0; do not proceed to repair/real-input qualification.",
-    "harnessLimit": [
-      "Document default PDF extractor calls areaGeo; current harness uses a transport double, not local",
-      "PDF execution."
-    ],
-    "databaseHarness": "Existing document tests have in-process SQL doubles, not a disposable PostgreSQL database.",
-    "refs": [
-      "packages/server/src/modules/usp/ingestion/document-native.ts:64-73",
-      "docs/evidence/runtime/reh1/plan-b.json",
-      "docs/evidence/gf-backend/k2/original-integrity.json"
-    ],
+    "reason": "Harness has SQL/S3 doubles, not disposable PostgreSQL; default PDF extractor calls areaGeo.",
+    "good": "Public section PDF nominated for native reading; not qualified by this resume.",
+    "difficult": "Public plan1 PDF was stale in REH1 and may honestly require OCR after native reading.",
+    "refs": ["packages/server/src/modules/usp/ingestion/document-native.ts:68-75",
+      "docs/evidence/runtime/reh1/plan-b.json","docs/evidence/gf-backend/k2/original-integrity.json"],
     "pathPrefix": "E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/",
     "nominated": [
-      {"file":"haryana-2831-site-plan.pdf","sha256":"26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9"},
-      {
-        "file": "haryana-2831-tower3-plan1.pdf",
-        "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865"
-      },
-      {
-        "file": "haryana-2831-tower3-section.pdf",
-        "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b"
-      },
-      {
-        "file": "haryana-2831-tower3-plan2.pdf",
-        "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1"
-      }
+      {"file":"haryana-2831-site-plan.pdf",
+        "sha256":"26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9"},
+      {"file":"haryana-2831-tower3-plan1.pdf",
+        "sha256":"2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865"},
+      {"file":"haryana-2831-tower3-section.pdf",
+        "sha256":"f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b"},
+      {"file":"haryana-2831-tower3-plan2.pdf",
+        "sha256":"2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1"}
     ],
-    "difficult": "Plan1 read was stale in REH1; cannot qualify its native extraction here.",
-    "runtimeOwnerReadCommandFragments": [
-      "curl --fail 'http://127.0.0.1:21016/api/v1/ingestion/cases/05de834a-859b-4bc0-bb4e-cfe7be0871cf/",
-      "sources/8f7e1ef9-ae44-445b-b238-815d497f5fe6/documents/jobs/eab47584-f3c3-498c-9489-c03c3eb38184'"
-    ],
-    "runtimeCommandJoining": "Concatenate URL fragments without spaces; command not run by worker.",
-    "runtimeCommandScope": "Owner-only: read preserved refusal after restart, not repair qualification.",
-    "nextQualification": "After repair, sequential intake of four real originals needs runtime-owner evidence."
+    "ownerCommand": "runtime-owner-command.json: join commandFragments; bounded native-only four-file batch, not run.",
+    "commandScope": "New workspace only after owner-authorized rollout; no reset/start/stop/registry/provider action."
   },
   "safety": {
-    "runtimeStartedStoppedChanged": false,
-    "demoOrRehearsalRequests": 0,
-    "providerCalls": 0,
-    "gpuUsed": false,
-    "originalsReadOrChanged": false,
-    "credentialsReadOrChanged": false,
-    "forbiddenFoldersOpened": false,
-    "storage": [
-      "Only memory objects; fake constructor getter constants; no provider key, environment file or",
-      "real S3 request."
-    ],
-    "existingTests": "Baseline tests reuse permitted retained task-data controls; not runtime/**.",
-    "pushes": 0
+    "runtimeStartedStoppedChanged": false, "demoOrRehearsalRequests": 0,
+    "providerCalls": 0, "gpuUsed": false, "originalsReadOrChanged": false,
+    "credentialsReadOrChanged": false, "forbiddenFoldersOpened": false, "pushes": 0,
+    "storage": "Memory objects and temporary fake constructor getters only; no S3 connection.",
+    "history": "Step 0 and its two accepted audit/test commits remain unchanged."
   },
   "next": [
-    [
-      "Lead reviews Step 0 and assigns revision-transition recording beyond K13 scope, or changes the",
-      "stop rule explicitly."
-    ],
-    "Once history is trustworthy, implement shared proof query plus document path under unchanged lock order.",
-    [
-      "Enable pending four-file regression; add source/access/policy/reader/history refusals against",
-      "the shared function."
-    ],
-    "Address baseline declaration SQL-double gap separately; do not weaken lock-order assertions.",
-    "Runtime owner qualifies four unchanged public originals after repair; no runtime actions were taken here."
+    "Lead reviews and integrates the two implementation commits; no gate claimed from offline checks alone.",
+    "Update registry-recorded-source.test.ts:32 outside K13 scope: no obsolete freshness for revision-only advance.",
+    "Address the pre-existing declaration SQL-double gap separately without changing lock-order expectations.",
+    "Runtime owner executes runtime-owner-command.json after authorized rollout and records all four native outcomes.",
+    "Assign next-reader repair from next-readers.json; preserve raw seals, recipe/workspace pins and enrollment checks."
   ],
-  "format": "Long prose arrays join with spaces; commandFragments join with spaces unless stated otherwise.",
-  "integrationBranchAdvancedReadOnly": "staging moved to f3e22076 (status-only); task still based on 113dfb8f."
+  "format": "Prose/command fragment arrays join with spaces; references use current task checkout lines."
 }
