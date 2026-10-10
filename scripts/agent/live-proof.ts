@@ -50,7 +50,7 @@ const GATEWAY_TOKEN_ALLOWANCE = 2048;
 const BYTES_PER_TOKEN_ESTIMATE = 3n;
 const STOP_CODES = new Set([
   'TEACHER_BUDGET_EXHAUSTED', 'TEACHER_RATE_LIMITED', 'TEACHER_AUTH_FAILED', 'TEACHER_UNAVAILABLE',
-  'TEACHER_RECORDING_UNAVAILABLE', 'TEACHER_REPLAY_UNAVAILABLE', 'TEACHER_DATA_DENIED',
+  'TEACHER_RECORDING_UNAVAILABLE', 'TEACHER_REPLAY_UNAVAILABLE', 'TEACHER_DATA_DENIED', 'TEACHER_INPUT_LIMIT',
 ]);
 /** gateway.ts answers a refused key of a list with one of these, retryable: the call is closed at zero. */
 const KEY_MOVED_CODES = new Set(['MODEL_QUOTA_EXHAUSTED', 'MODEL_CREDENTIAL_INVALID']);
@@ -104,6 +104,8 @@ type StepInput = {
   permission: string; permissionRecordedIn: string; sent: string; omitted?: StoreyOmittedLine[];
   /** Whole-sample tokens of the profile that the request carries in their plain-text form. */
   sampleForms?: { token: string; form: string; samples: number }[];
+  /** Sample values the request carries for each column: fewer than the profile holds when it was over the bound. */
+  samplesPerColumn?: number;
 };
 type Exec =
   | { kind: 'mapping'; chunk: TabularChunkInput; file: number }
@@ -224,7 +226,9 @@ function curveSpec(asset: SourceAsset, chunk: TabularChunkInput, file: number): 
   return {
     id: `curve-file${file + 1}-chunk${chunk.chunkIndex + 1}`, boxes: ['AG-S1', 'AG-S2', 'ML-L2', 'AG-E2'],
     purpose: `Mapping teacher on a new header layout of ${asset.id}: one point of the two-file call curve`,
-    input: { ...curveInput(asset, chunk), sampleForms: request.sampleForms },
+    input: {
+      ...curveInput(asset, chunk), sampleForms: request.sampleForms, samplesPerColumn: request.samplesPerColumn,
+    },
     exec: { kind: 'mapping', chunk, file }, consumer: 'INGEST',
     template: MAPPING_TEACHER_TEMPLATE, taskKind: 'mapping_v2', scopeHash: profileHash,
     replayKey: teacherReplayKey(profileHash), messages: request.messages, schema: request.schema,
@@ -279,6 +283,8 @@ function storeySpec(
 
 const OMISSION_REASONS: Record<StoreyOmittedLine['code'], string> = {
   MODEL_PROMPT_PRIVACY: "the gateway's text minimizer refuses this line",
+  MODEL_MESSAGE_CHECK: "the gateway's check on a whole message refuses a message that holds this line (data:, "
+    + 'image_url or base64)',
   NOT_SELECTED_UNIT_NUMBER: 'not selected: its only matching word is a numbered unit, as in an address, which '
     + 'states no level and no count of units',
 };
