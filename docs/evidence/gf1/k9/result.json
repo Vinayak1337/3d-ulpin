@@ -1,0 +1,169 @@
+{
+  "task": "K9",
+  "gates": ["GF1", "GF5"],
+  "base": "a330332fb5080a73ea5609611949f6c698323e99",
+  "scope": "offline environment ownership; no runtime/configuration/API/DB access",
+  "artifactsRoot": "E:/BhuAayam-data/task-data/k9",
+  "status": "step0_complete_before_build",
+  "step0": {
+    "environment": {
+      "locatedBy": "folder named in retained K4d/K2b evidence; direct directory listing outside runtime",
+      "folder": "E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/venv",
+      "pyvenvCfg": {
+        "home": "C:/Users/kvina/.cache/codex-runtimes/codex-primary-runtime/dependencies/python",
+        "implementation": "CPython",
+        "uv": "0.12.18",
+        "version_info": "3.12.14",
+        "include-system-site-packages": false,
+        "creationCommand": "not retained in pyvenv.cfg; uv version identifies its creator"
+      },
+      "freeze": {
+        "directCommand": "old Python -I -B -m pip freeze",
+        "directExit": 1,
+        "directFailure": "No module named pip; existing environment not seeded or changed",
+        "actualCommand": [
+          "old Python -I -B -c: import pip from C:/Python313/Lib/site-packages, then",
+          "pip._internal.cli.main.main(['freeze', '--all', '--path', '<old purelib>'])"
+        ],
+        "actualExit": 0,
+        "env": {"PYTHONDONTWRITEBYTECODE": "1", "CUDA_VISIBLE_DEVICES": ""},
+        "distributions": 77,
+        "requirements": "requirements-versions.txt",
+        "versionsAndRecordHashes": "distributions.json",
+        "privateRawInventory": "step0/inventory.json"
+      },
+      "nativeAssets": {
+        "resolution": [
+          "readDemoOcrPaths reads five path keys, optionally overridden by demo-scoped ocr-paths-profile.json.",
+          "K2b ocr-config.json records the executable; K3b activate-demo.mjs overrides tessdata only.",
+          "No live path file was opened; current paths are known from these retained repo receipts."
+        ],
+        "tesseract": "E:/BhuAayam-data/task-data/k2/tesseract-runtime-k2b/Library/bin/tesseract.exe",
+        "demoTessdata": "runtime-owned tessdata-complete; closed to this task",
+        "offlineTessdata": "E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/tesseract/share/tessdata",
+        "offlineEngSha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+        "offlineHinSha256": "4c73ffc59d497c186b19d1e90f5d721d678ea6b2e277b719bee4e2af12271825",
+        "offlinePrefixNote": "retained complete prefix; eng/hin equal K2f pins, OSD present; no copies required",
+        "models": "E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/models"
+      },
+      "regionPackageRootsFromBuildProfile": [
+        "pypdfium2", "pypdfium2_raw", "pypdfium2_cfg", "pymupdf", "fitz", "PIL", "psutil", "defusedxml"
+      ],
+      "regionDistributionMetadata": ["pypdfium2", "pymupdf", "pillow", "psutil", "defusedxml"],
+      "ocrPackages": [
+        "run_source_ocr also imports docling-slim/core/ibm-models/parse, torch and transformers;",
+        "these are outside the region profile, but all 77 distributions will be reproduced."
+      ]
+    },
+    "profile": {
+      "code": "packet_region_loader.py build_profile/inventory/activate; region-runtime.ts verifiedProfile",
+      "inventory": {
+        "files": 1292,
+        "bytes": 118047970,
+        "classes": {
+          "base_dlls": 37,
+          "stdlib_source": 595,
+          "stdlib_cache": 193,
+          "stdlib_support_and_launchers": 2,
+          "base_interpreter_and_support": 6,
+          "package_source": 177,
+          "package_cache": 83,
+          "package_metadata": 36,
+          "package_assets_and_native": 111,
+          "venv_config": 1,
+          "venv_interpreter_and_support": 42,
+          "repo": 9
+        }
+      },
+      "exactSelection": [
+        "Base Lib recursively selects .py/.pyc/.pyd/.dll/.exe/.zip/.pth/._pth/.cfg; excludes site-packages,",
+        "test/tests/idlelib/tkinter/turtledemo, but expressly does NOT exclude __pycache__.",
+        "Base DLLs recursively use those extensions; base and executable directory top-level use them too.",
+        "Eight package roots select ALL files recursively, including existing caches/assets/native code.",
+        "Five distribution metadata directories select every immediate file, including RECORD.",
+        "pyvenv.cfg, sys.executable, sys._base_executable and nine exact repo files complete the set.",
+        "verifiedProfile checks profile/hash/schema/closure, real paths, each length/hash and repo binding.",
+        "activate repeats byte checks, read-locks every pinned file, then compiles verified source snapshots."
+      ],
+      "changes": {
+        "ordinaryStart": [
+          "May create caches absent at profile build; those new paths are not retroactively pinned.",
+          "A later build inventories them; source mtime/size or cache invalidation can later replace bytes.",
+          "Warm import with unchanged valid source/cache does NOT rewrite it merely because Python starts.",
+          "Image-checkpoint checks ANY current hook caches, including new ones: absence is not permanently safe."
+        ],
+        "packageInstall": "can replace source/native/metadata/hooks/caches/launchers; requires deliberate rebuild",
+        "baseReplacement": "can replace interpreter/DLLs/stdlib/cache set independently of repo and venv"
+      },
+      "r3": {"drifted": 111, "replacedBinaries": 41, "missingStdlibCaches": 70},
+      "scratchExperiment": {
+        "file": "step0/cache-experiment.json",
+        "startup": "-I -B plus PYTHONDONTWRITEBYTECODE=1; enable writes only for one scratch source import",
+        "stdlibInventoryPinsCache": true,
+        "warmCacheUnchanged": true,
+        "sameSourceBytesMtimePlus2SecondsRewritesCache": true,
+        "firstSha256": "c049f4c02affa06933d3a955d65f9fc51e2fe16dd35cf6221a1705d97f3c9c20",
+        "rewrittenSha256": "f626fca77ae181fd7332e9c024db4bb77eaebafda40da8e4d4eaa82431d0c6dd"
+      }
+    },
+    "imageCheckpoint": {
+      "resolvedInterpreter": "same desktop-ai04f venv, hard-coded at recovery test line 272; NOT venv-vision",
+      "firstRefusal": "base site-packages/_distutils_hack/__pycache__/__init__.cpython-312.pyc",
+      "actualCacheSha256": "f0301f1966285c449ad167b1f5f11ed32c8a2a7e3aa6eda63fa035dc37d16686",
+      "acceptedCacheSha256": [
+        "ef0efceabde82c00c717fe459c0ecf3cda41e90ef158394dea2ae9dbe4d4245a",
+        "3ff497161e295f3a362309063c4163455bf6ecb1fc5672095ac512a81b303e44"
+      ],
+      "allHookSourcesAndPthMatch": true,
+      "oldVirtualenvCacheMatchesAccepted": true,
+      "comparisonDetail": "step0/hooks.json; base source is selected before venv source for setuptools hook",
+      "stagingImages": {"exit": 1, "passed": 7, "failed": 1, "log": "step0/image-tests-staging.log"},
+      "introducedCommit": "211f9bf2cd94db826d739ba55bb686abf3bdd4dc",
+      "introducedUnderCurrentEnvironment": {
+        "exit": 1,
+        "passed": 4,
+        "failed": 1,
+        "sameFirstRefusal": true,
+        "log": "step0/image-test-introduced-resolved.log"
+      },
+      "historical": [
+        "The introduction commit also fails NOW under the same current environment; it cannot restore old bytes.",
+        "The checked-in recovery handoff records a passing historical worker run, then line-ending issues",
+        "on integration. Historical success is a retained report, not a reproduction of the replaced base."
+      ],
+      "harnessFailure": "initial scratch test lacked package-level node_modules; added read-only junctions, ran once",
+      "scratchWorktree": "E:/BhuAayam-data/task-data/k9/introduced-test",
+      "scratchWorktreeBytesExcludingJunctionTargets": 193639228,
+      "retention": "nothing deleted; non-executable test fixtures retained under k9/test-temp"
+    },
+    "options": {
+      "a": {
+        "proposal": "uv-managed CPython 3.12.14 full versioned directory plus new date-scoped project venv",
+        "remainingWriters": "owner/admin or explicit uv uninstall/reinstall; alias upgrades do not retarget full path",
+        "outsideMl": "shared uv installation and its pinned stdlib/DLL files remain outside project data"
+      },
+      "b": {
+        "proposal": "private uv CPython 3.12.14 under the new ml environment folder; bind its full versioned path",
+        "remainingWriters": "project environment owner/admin or explicitly targeted uv/pip operation",
+        "ordinaryCachePolicy": "fresh cache-free install; deny writes to newly owned environment/base after installation",
+        "why": "no external application's updater or shared uv upgrade can replace this private base"
+      },
+      "c": {
+        "proposal": "leave external environment; loosen or omit pinned cache/base bytes",
+        "remainingWriters": "Codex updater, shared installers, account/admin and ordinary cache invalidation",
+        "decision": "description only; weakens deliberate integrity checks and is forbidden in this task"
+      },
+      "recommended": "b",
+      "decision": "proceed only with exact versions/public-index hashes; stop a failed or mismatching package"
+    }
+  },
+  "safety": {
+    "runtimeAccess": false,
+    "envOrCredentialsRead": false,
+    "gpuUse": false,
+    "providerCalls": 0,
+    "existingEnvironmentsModified": false,
+    "deletedFiles": 0,
+    "harness": "k9/safety.cjs blocks protected filesystem reads, retains fixtures and forces CPU/no-bytecode children"
+  }
+}
