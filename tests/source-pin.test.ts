@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { compareSourcePins } from '../packages/server/src/modules/usp/ingestion/source-pin';
+import { compareSourcePins, compareWorkspacePins } from '../packages/server/src/modules/usp/ingestion/source-pin';
 
 const input = { caseRevision: 2, source: { revision: 1, bytes: 8 }, policy: 'pinned-control' };
 
@@ -34,4 +34,22 @@ test('a field present on just one input moves in either direction, including an 
     { current: true, moved: [], caseRevisionAdvancedBy: 0 });
   assert.deepEqual(compareSourcePins({ ...input, futurePin: null }, extended),
     { current: false, moved: ['futurePin'], caseRevisionAdvancedBy: 0 });
+});
+
+const workspace = { workspaceRevision: 4, workspaceFingerprint: 'a'.repeat(64) };
+
+test('a later workspace revision is current whatever its fingerprint', () => {
+  assert.deepEqual(compareWorkspacePins({ workspaceRevision: 6, workspaceFingerprint: 'b'.repeat(64) }, workspace),
+    { current: true, advancedBy: 2 });
+});
+
+test('the same workspace revision is current only with the same fingerprint', () => {
+  assert.deepEqual(compareWorkspacePins({ ...workspace }, workspace), { current: true, advancedBy: 0 });
+  assert.deepEqual(compareWorkspacePins({ ...workspace, workspaceFingerprint: 'b'.repeat(64) }, workspace),
+    { current: false, advancedBy: 0 });
+});
+
+test('a workspace revision behind the pin fails closed', () => {
+  assert.deepEqual(compareWorkspacePins({ ...workspace, workspaceRevision: 3 }, workspace),
+    { current: false, advancedBy: -1 });
 });

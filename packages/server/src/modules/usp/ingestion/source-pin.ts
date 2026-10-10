@@ -16,3 +16,15 @@ export function compareSourcePins<Now extends { caseRevision: number }, Pinned e
     caseRevisionAdvancedBy: now.caseRevision - pinned.caseRevision,
   };
 }
+
+/** A plan pins its own source; the workspace it was written in is a statement, compared only at the same revision. */
+export function compareWorkspacePins(
+  now: { workspaceRevision: number; workspaceFingerprint: string },
+  pinned: { workspaceRevision: number; workspaceFingerprint: string },
+) {
+  const advancedBy = now.workspaceRevision - pinned.workspaceRevision;
+  return {
+    current: advancedBy > 0 || (advancedBy === 0 && now.workspaceFingerprint === pinned.workspaceFingerprint),
+    advancedBy,
+  };
+}
