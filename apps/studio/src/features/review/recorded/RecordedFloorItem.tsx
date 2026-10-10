@@ -6,7 +6,7 @@ import { ValueText } from './ValueText';
 import styles from './Recorded.module.css';
 
 /** One recorded floor with the units recorded under it. Heights are the record's values, Unknown included. */
-export function RecordedFloorItem({ floor }: { floor: RecordedFloor }) {
+export function RecordedFloorItem({ buildingId, floor }: { buildingId: string; floor: RecordedFloor }) {
   return (
     <li className={styles.floor}>
       <div className={styles.head}>
@@ -21,7 +21,7 @@ export function RecordedFloorItem({ floor }: { floor: RecordedFloor }) {
       ]} />
       {floor.units.length ? (
         <ul className={styles.list} aria-label={`Units recorded under ${floor.label}`}>
-          {floor.units.map((unit) => <RecordedUnitItem key={unit.id} unit={unit} />)}
+          {floor.units.map((unit) => <RecordedUnitItem key={unit.id} buildingId={buildingId} unit={unit} />)}
         </ul>
       ) : <p className="ul-help">No unit is recorded under this floor.</p>}
     </li>
