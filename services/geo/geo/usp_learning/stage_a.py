@@ -7,6 +7,7 @@ import hashlib
 import json
 import re
 import subprocess
+import sys
 import unicodedata
 from importlib.metadata import version
 from pathlib import Path
@@ -248,16 +249,28 @@ def training_batches(examples: list[Row]) -> list[list[Row]]:
     return list(batches.values())
 
 
-def train(examples_paths: list[Path], out: Path) -> Row:
+def resume_state(resume: Path | None, fitting: list[Row]) -> tuple[SGDClassifier, list[Row], int]:
+    if not resume:
+        return SGDClassifier(loss="log_loss", random_state=SEED), [], 0
+    model, previous = load_model(resume)
+    if previous["calibrationFamily"] != CALIBRATION_FAMILY:
+        raise ValueError("STAGE_A_CALIBRATION_CHANGED")
+    trained = previous["trainingExamples"]
+    fitted = {(row["profileHash"], row["sourceField"]): row for row in trained}
+    if any(row["labelKind"] == "officer" and (row["profileHash"], row["sourceField"]) in fitted for row in fitting):
+        raise ValueError("STAGE_A_OFFICER_OVERRIDE_REQUIRES_FRESH_REBUILD")
+    return model, trained, int(previous["version"].removeprefix("v"))
+
+
+def train(examples_paths: list[Path], out: Path, resume: Path | None = None) -> Row:
     external_output(out)
     rows = preferred_examples([example for path in examples_paths for example in load_examples(path)])
     calibration = [row for row in rows if row["family"] == CALIBRATION_FAMILY]
     fitting = [row for row in rows if row["family"] != CALIBRATION_FAMILY]
     if not fitting:
         raise ValueError("STAGE_A_NO_VERIFIED_FIT_EXAMPLES")
-    model = SGDClassifier(loss="log_loss", random_state=SEED)
-    trained: list[Row] = []
-    for index, batch in enumerate(training_batches(fitting), 1):
+    model, trained, start = resume_state(resume, fitting)
+    for index, batch in enumerate(training_batches(fitting), start + 1):
         destination = out / f"v{index}"
         destination.mkdir(parents=True, exist_ok=False)
         matrix = vectorizer().transform([feature_text(row) for row in batch])
@@ -294,14 +307,16 @@ def main() -> None:
     fitting = commands.add_parser("train")
     fitting.add_argument("--examples", type=Path, nargs="+", required=True)
     fitting.add_argument("--out", type=Path, required=True)
+    fitting.add_argument("--resume", type=Path)
     inference = commands.add_parser("predict")
     inference.add_argument("--model", type=Path, required=True)
     inference.add_argument("--profiles", type=Path, required=True)
     args = parser.parse_args()
     if args.command == "train":
-        print(json.dumps(train(args.examples, args.out)))
+        print(json.dumps(train(args.examples, args.out, args.resume)))
     else:
-        for prediction in predict(args.model, read_lines(args.profiles)):
+        profiles = json.load(sys.stdin) if str(args.profiles) == "-" else read_lines(args.profiles)
+        for prediction in predict(args.model, profiles):
             print(json.dumps(prediction))
 
 
