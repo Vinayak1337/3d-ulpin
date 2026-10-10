@@ -1,6 +1,7 @@
 import test from 'node:test';
 import fixtures from './mapping-teacher.fixtures.json';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { mkdtempSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -45,6 +46,8 @@ import {
 } from '../../packages/server/src/modules/model-gateway/adapter';
 import { TeacherRecordings } from '../../packages/server/src/modules/model-gateway/recordings';
 import { PgModelCallLedger, type Transact } from '../../packages/server/src/modules/model-gateway/ledger';
+import { prepareTable } from './t1-profiles';
+import { developmentProfileAssets, sourceTables, type SourceAsset } from './t1-sources';
 
 test('profile: evidence-only units, disagreement, shapes and conservative PII masks', () => {
   const rows = fixtures.profileRows;
@@ -134,6 +137,121 @@ test('request: the four whole-sample tokens go as plain-text forms the minimizer
   const stored = { ...profile, columns: profile.columns.map((column) => ({ ...column, maskedSamples: forms[0] })) };
   assert.deepEqual(sent(mappingTeacherRequest(stored).messages), Array(3).fill(['(blank xxxx)', '(absent xxxx)']));
   assert.deepEqual(mappingTeacherRequest(stored).sampleForms, []);
+});
+
+test('gateway: a message that is only too long is refused as size; shape and content refusals stay privacy', () => {
+  const long = 'x'.repeat(32769);
+  assert.equal(minimizeMessages([{ role: 'user', content: 'x'.repeat(20000) }]).length, 1);
+  assert.throws(() => minimizeMessages([{ role: 'user', content: long }]), { code: 'MODEL_INPUT_LIMIT', status: 413 });
+  assert.throws(() => minimizeMessages([{ role: 'user', content: `${long} data:` }]), { code: 'MODEL_PROMPT_PRIVACY' });
+  assert.throws(() => minimizeMessages([{ role: 'tool', content: long }]), { code: 'MODEL_PROMPT_PRIVACY' });
+});
+
+const requestHash = (request: ReturnType<typeof mappingTeacherRequest>) =>
+  createHash('sha256').update(JSON.stringify([request.messages, request.schema])).digest('hex');
+const sentColumns = (request: ReturnType<typeof mappingTeacherRequest>) =>
+  JSON.parse(request.messages[1].content).columnProfile.columns as
+    { header: string; sourceField: string; maskedSamples: string[] }[];
+
+/** Ten rows of made-up text under made-up headers: nothing here is read from a source. */
+function madeUpProfile(width: number) {
+  const names = Array.from({ length: width }, (_, index) => `Field ${index + 1}`);
+  const rows = Array.from({ length: 10 }, (_, row) =>
+    Object.fromEntries(names.map((name, column) => [name, `value ${row} of ${column}`])),
+  );
+  return profileColumns(rows, names.map((name) => ({ name })), 'tabular');
+}
+
+/** Asks the teacher through a gateway that counts; returns what the gateway and its ledger saw. */
+async function askCounted(profile: ReturnType<typeof madeUpProfile>) {
+  const ledger = new ControlLedger();
+  let asked = 0;
+  const adapter = new ControlAdapter(async (request) => {
+    asked++;
+    return unknownResponse(request);
+  });
+  const result = await proposeMappingWithTeacher(profile, options(new ModelGateway(controlConfig(), ledger, adapter)));
+  return { result, asked, reserved: ledger.reserved, dispatched: ledger.dispatched };
+}
+
+test('size: a request within the bound is built as before, with every sample', () => {
+  // Hashes of the messages and schema for the two retained inputs, measured on the base 39ed2dbb.
+  const before = [
+    '533f7722234e603bc3b07aef5c57bd0f0d72af716b801dfeda5931a518532d22',
+    '067a245bb3141442c9d94acd646ecf4609b989047012fbe2c6d50c939db4c1e9',
+  ];
+  for (const [index, file] of [goodFile, difficultFile].entries()) {
+    const { profile } = profileColumnFile(file);
+    const request = mappingTeacherRequest(profile);
+    assert.equal(requestHash(request), before[index], file);
+    const most = Math.max(...profile.columns.map((column) => column.maskedSamples.length));
+    assert.deepEqual([request.samplesPerColumn, request.overBound], [most, false], file);
+  }
+});
+
+test('size: a request over the bound carries fewer samples in every column; columns and order stay', async () => {
+  const profile = madeUpProfile(40);
+  const whole = { ...profile, columns: profile.columns.map((column) => ({ ...column, maskedSamples: [] })) };
+  const request = mappingTeacherRequest(profile);
+  assert.deepEqual([request.samplesPerColumn, request.overBound], [7, false]);
+  assert.equal(minimizeMessages(request.messages).length, 2);
+  const [sent, bare] = [sentColumns(request), sentColumns(mappingTeacherRequest(whole))];
+  assert.equal(sent.length, 40);
+  assert(sent.every((column) => column.maskedSamples.length === 7));
+  const named = (columns: typeof sent) => columns.map((column) => [column.header, column.sourceField]);
+  assert.deepEqual(named(sent), named(bare));
+  // One sample more in every column is over the bound: the step down stopped at the first number that fits.
+  const eight = sent.map((column) => ({ ...column, maskedSamples: [...column.maskedSamples, 'xxxxx D xx D'] }));
+  const user = JSON.parse(request.messages[1].content);
+  const longer = JSON.stringify({ ...user, columnProfile: { ...user.columnProfile, columns: eight } });
+  assert.throws(() => minimizeMessages([request.messages[0], { role: 'user', content: longer }]), {
+    code: 'MODEL_INPUT_LIMIT',
+  });
+
+  const asked = await askCounted(profile);
+  assert.deepEqual([asked.asked, asked.reserved, asked.dispatched, asked.result.attempts], [1, 1, 1, 1]);
+  assert(asked.result.issues.every((issue) => issue.code !== 'TEACHER_INPUT_LIMIT'));
+});
+
+test('size: a request over the bound with no samples is refused as size and the gateway is not asked', async () => {
+  const profile = madeUpProfile(60);
+  const request = mappingTeacherRequest(profile);
+  assert.deepEqual([request.samplesPerColumn, request.overBound, sentColumns(request).length], [0, true, 60]);
+  assert.throws(() => minimizeMessages(request.messages), { code: 'MODEL_INPUT_LIMIT' });
+  const { result, ...counts } = await askCounted(profile);
+  assert.deepEqual(counts, { asked: 0, reserved: 0, dispatched: 0 });
+  assert.deepEqual([result.state, result.attempts], ['needs_input', 0]);
+  assert.equal(result.plan.method, 'manual:TEACHER_INPUT_LIMIT');
+  assert(result.issues.length > 0 && result.issues.every((issue) => issue.code === 'TEACHER_INPUT_LIMIT'));
+  assert(validateMappingPlanV2({ ...result.plan, method: 'reviewer:control' },
+    mappingContextFromColumnProfile(profile)).success);
+});
+
+/** A recorded table prepared as the screen prepares it: the profile under its literal headers. */
+function screenedProfile(asset: SourceAsset) {
+  const prepared = prepareTable(asset, sourceTables(asset)[0]);
+  const columns = prepared.inventory.profile.columns.map((column, index) => {
+    const header = prepared.profiles[index].header;
+    return { ...column, name: header.trim() ? header : column.name };
+  });
+  return { ...prepared.inventory.profile, columns };
+}
+
+test('size: the two recorded mi-d22 tables are over the bound with no samples, so the rule refuses them', async () => {
+  const wide = developmentProfileAssets().filter((asset) => asset.family === 'mi-d22');
+  const measured: number[][] = [];
+  for (const asset of wide) {
+    const profile = screenedProfile(asset);
+    const request = mappingTeacherRequest(profile);
+    assert.deepEqual([request.samplesPerColumn, request.overBound, request.sampleForms], [0, true, []], asset.id);
+    measured.push([sentColumns(request).length, request.messages[1].content.length,
+      Buffer.byteLength(JSON.stringify(request.messages))]);
+    const { result, ...counts } = await askCounted(profile);
+    assert.deepEqual(counts, { asked: 0, reserved: 0, dispatched: 0 }, asset.id);
+    assert(result.issues.every((issue) => issue.code === 'TEACHER_INPUT_LIMIT'), asset.id);
+  }
+  // Columns, characters of the user message and bytes of both messages with no samples, as Step 0 measured them.
+  assert.deepEqual(measured.sort((a, b) => b[1] - a[1]), [[90, 33178, 37690], [90, 33054, 37566]]);
 });
 
 test('two retained Indian inputs: profile to control plan, validator and dry-run; source immutable', async () => {
