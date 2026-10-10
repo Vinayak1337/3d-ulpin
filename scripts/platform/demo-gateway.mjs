@@ -6,8 +6,8 @@ import { readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  demoFile, gatewayConfigKey, gatewayFlag, gatewayPolicyHash, providerKeyName, providerKeyNames, readDemo,
-  readDemoSettings, redact, safeEnvironment, teacherAdapterKey,
+  definedRuntime, demoRuntime, gatewayConfigKey, gatewayFlag, gatewayPolicyHash, providerKeyName, providerKeyNames,
+  readDemo, readDemoSettings, redact, runtimeDefinition, safeEnvironment, teacherAdapterKey,
 } from './demo-config.mjs';
 import { ownedProcess } from './processes.mjs';
 import { root } from './runtime.mjs';
@@ -15,7 +15,7 @@ import { root } from './runtime.mjs';
 const usage = [
   'Usage: demo-gateway.mjs status | enable --config <policy.json> | disable',
   '  | keys --from <file> [--dry-run --out <folder> --settings <file>]',
-  '  | key-marks | reconcile --reason <text> | restore-key <NAME> --reason <text>',
+  '  | key-marks | reconcile --reason <text> | restore-key <NAME> --reason <text>; --runtime <name> may end any',
 ].join('\n');
 const nativeLabels = ['api', 'dispatcher'];
 const rewrittenKeys = [gatewayFlag, gatewayConfigKey, teacherAdapterKey];
@@ -58,8 +58,15 @@ export function gatewayReportLines(report) {
   return Object.entries(report).map(([fact, value]) => `${fact}: ${value}`);
 }
 
-function runningDemoProcesses() {
-  return nativeLabels.filter(label => ownedProcess(label));
+/** The recorded processes of the named runtime only: another runtime being up or down changes nothing here. */
+function runningProcesses(runtime) {
+  return nativeLabels.filter(label => ownedProcess(label, runtime));
+}
+
+/** What a switch works on: the named runtime's own settings file and process records, unless a test names others. */
+function target({ runtime: name = demoRuntime, file, running }) {
+  const runtime = definedRuntime(name);
+  return { runtime, file: file ?? runtime.file, running: running ?? (() => runningProcesses(runtime)) };
 }
 
 function assertDemoStopped(running) {
@@ -129,11 +136,11 @@ function gatewayLine(text, key) {
 }
 
 /** The copy is checked by the reader the runtime uses, then renamed over the file; a refused copy is removed. */
-function replaceChecked(file, text) {
+function replaceChecked(file, text, runtime) {
   const copy = join(dirname(file), `${basename(file)}.${process.pid}.tmp`);
   try {
     writeFileSync(copy, text, { flag: 'wx', mode: 0o600 });
-    readDemoSettings(copy);
+    readDemoSettings(copy, runtime);
     renameSync(copy, file);
   } catch (error) {
     rmSync(copy, { force: true });
@@ -142,24 +149,24 @@ function replaceChecked(file, text) {
 }
 
 /** Shared by enable (policy JSON) and disable (null). Returns the names of the keys whose lines changed. */
-function switchGateway(file, policyJson, running) {
+function switchGateway({ runtime, file, running }, policyJson) {
   assertDemoStopped(running);
   const before = readText(file);
   const after = rewriteGatewayLines(before, policyJson);
   if (after === before) {
-    readDemoSettings(file);
+    readDemoSettings(file, runtime);
     return [];
   }
-  replaceChecked(file, after);
+  replaceChecked(file, after, runtime);
   return rewrittenKeys.filter(key => gatewayLine(before, key) !== gatewayLine(after, key));
 }
 
-export function enableGateway({ policyFile, file = demoFile, running = runningDemoProcesses }) {
-  return switchGateway(file, readPolicyFile(policyFile), running);
+export function enableGateway({ policyFile, ...where }) {
+  return switchGateway(target(where), readPolicyFile(policyFile));
 }
 
-export function disableGateway({ file = demoFile, running = runningDemoProcesses } = {}) {
-  return switchGateway(file, null, running);
+export function disableGateway(where = {}) {
+  return switchGateway(target(where), null);
 }
 
 /** One key per line in the order of use; blank lines are skipped. A refusal names a position, never the text. */
@@ -186,23 +193,39 @@ function rewriteKeyLines(text, keys) {
 /**
  * Owner step: the keys of the owner's file become numbered key lines of the demo settings. Returns names only.
  * With outFolder it is a rehearsal: the result is written there as a new file and the settings stay untouched.
+ * For a rehearsal runtime that is the only form: no real key ever goes into a rehearsal's settings.
  */
-export function writeKeyList({ keysFile, file = demoFile, outFolder, running = runningDemoProcesses }) {
+export function writeKeyList({ keysFile, outFolder, ...where }) {
+  const { runtime, file, running } = target(where);
+  if (runtime.rehearsal && !outFolder) {
+    throw new Error(`No real key goes into a rehearsal: keys for ${runtime.name} is refused without --dry-run.`);
+  }
   const keys = readKeyList(keysFile);
   const after = rewriteKeyLines(readText(file), keys);
   if (outFolder) writeFileSync(join(outFolder, 'demo-settings-after-keys.txt'), after, { flag: 'wx', mode: 0o600 });
   else {
     assertDemoStopped(running);
-    replaceChecked(file, after);
+    replaceChecked(file, after, runtime);
   }
   return keys.map((_key, index) => listedKeyName(index));
 }
 
-/** One owner step on the ledger, in a TypeScript child with the demo settings. Its lines name keys, never values. */
-function runLedgerStep(args, env = readDemo()) {
+/** The child's arguments: a rehearsal's name goes first, so that the child can refuse another runtime's settings. */
+export function ledgerChildArguments(args, name = demoRuntime) {
+  const runtime = definedRuntime(name);
+  return runtime.rehearsal ? ['--runtime', runtime.name, ...args] : args;
+}
+
+/**
+ * One owner step on the ledger, in a TypeScript child with the named runtime's settings and no other's.
+ * Its lines name keys, never values.
+ */
+function runLedgerStep(args, name = demoRuntime) {
+  const env = readDemo(name);
   const preload = join(root, 'scripts/platform/isolated-env.cjs');
   const entry = join(root, 'scripts/platform/demo-gateway-ledger.ts');
-  const result = spawnSync(process.execPath, ['--require', preload, '--import', 'tsx', entry, ...args],
+  const childArguments = ['--require', preload, '--import', 'tsx', entry, ...ledgerChildArguments(args, name)];
+  const result = spawnSync(process.execPath, childArguments,
     { cwd: root, env: safeEnvironment(env), encoding: 'utf8', timeout: 60000, windowsHide: true });
   const lines = redact(`${result.stdout ?? ''}\n${result.stderr ?? ''}`, env).split(/\r?\n/).filter(Boolean);
   if (result.status !== 0) throw new Error(lines.at(-1) ?? 'The ledger step did not run.');
@@ -210,7 +233,8 @@ function runLedgerStep(args, env = readDemo()) {
 }
 
 /** key-marks, reconcile and restore-key. The owner's reason is required where the ledger records one. */
-export function ledgerStep(action, options, step = runLedgerStep) {
+export function ledgerStep(action, options, chosenStep, name = demoRuntime) {
+  const step = chosenStep ?? (args => runLedgerStep(args, name));
   const reasonAt = action === 'restore-key' ? 1 : 0;
   const reasoned = options.length === reasonAt + 2 && options[reasonAt] === '--reason'
     && /^[^\x00-\x1f\x7f]{3,300}$/.test(options[reasonAt + 1].trim());
@@ -222,35 +246,44 @@ export function ledgerStep(action, options, step = runLedgerStep) {
   throw new Error(usage);
 }
 
-function printStatus() {
-  gatewayReportLines(gatewayReport(readDemoSettings())).forEach(line => console.log(line));
+function printStatus(runtime) {
+  gatewayReportLines(gatewayReport(readDemoSettings(runtime.file, runtime))).forEach(line => console.log(line));
 }
 
-function printKeys([from, keysFile, ...rest]) {
+function printKeys([from, keysFile, ...rest], runtime) {
   // A rehearsal writes the whole settings text with the keys in it, so it never starts from the demo settings.
   const rehearsal = rest.length === 5 && rest[0] === '--dry-run' && rest[1] === '--out' && rest[2]
     && rest[3] === '--settings' && rest[4];
   if (from !== '--from' || !keysFile || rest.length && !rehearsal) throw new Error(usage);
-  const names = writeKeyList({ keysFile, outFolder: rehearsal ? rest[2] : undefined,
-    file: rehearsal ? rest[4] : demoFile });
+  const names = writeKeyList({ keysFile, runtime, outFolder: rehearsal ? rest[2] : undefined,
+    file: rehearsal ? rest[4] : undefined });
   console.log(`${names.length} keys ${rehearsal ? 'would be ' : ''}written as ${names[0]} to ${names.at(-1)}`);
   console.log(`secretReferences for the policy file: ${JSON.stringify(names)}`);
   if (rehearsal) console.log('Rehearsal only: the demo settings were not changed.');
 }
 
-function printChange(changedKeys) {
+function printChange(changedKeys, runtime) {
   console.log(changedKeys.length ? `Changed: ${changedKeys.join(', ')}` : 'No line changed.');
-  printStatus();
+  printStatus(runtime);
 }
 
-function run([action, ...options]) {
-  if (action === 'status' && options.length === 0) return printStatus();
-  if (action === 'disable' && options.length === 0) return printChange(disableGateway());
+/** A trailing --runtime <name> is taken off and checked before anything is read; without it, ulpin-demo. */
+export function runtimeOption(args) {
+  const named = args.at(-2) === '--runtime';
+  if (!named && args.at(-1) === '--runtime') throw new Error(usage);
+  return { runtime: runtimeDefinition(named ? args.at(-1) : demoRuntime), rest: named ? args.slice(0, -2) : args };
+}
+
+function run(args) {
+  const { runtime, rest: [action, ...options] } = runtimeOption(args);
+  if (runtime.rehearsal) console.log(`Runtime ${runtime.name}: only its own settings file is read or written.`);
+  if (action === 'status' && options.length === 0) return printStatus(runtime);
+  if (action === 'disable' && options.length === 0) return printChange(disableGateway({ runtime }), runtime);
   if (action === 'enable' && options.length === 2 && options[0] === '--config') {
-    return printChange(enableGateway({ policyFile: options[1] }));
+    return printChange(enableGateway({ policyFile: options[1], runtime }), runtime);
   }
-  if (action === 'keys') return printKeys(options);
-  return ledgerStep(action, options).forEach(line => console.log(line));
+  if (action === 'keys') return printKeys(options, runtime);
+  return ledgerStep(action, options, undefined, runtime).forEach(line => console.log(line));
 }
 
 const entry = process.argv[1] ? resolve(process.argv[1]).toLowerCase() : '';
