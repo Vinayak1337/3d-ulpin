@@ -1,5 +1,10 @@
 import { CANONICAL_TARGETS } from '@ulpin/contracts';
-import type { ChunkMapping, Metrics, TableProfile, Target } from './types';
+import type { ChunkMapping, Freshness, Metrics, Recipe, TableProfile, Target } from './types';
+
+const STALE_REASON_WORDS: Record<Freshness['reasons'][number], string> = {
+  case_advanced: 'case advanced', reader_changed: 'reader changed',
+  converter_changed: 'converter changed', source_superseded: 'source superseded',
+};
 
 export function targetDefinition(target: Target) {
   if (target === 'building.geometry') return CANONICAL_TARGETS['building.footprint'];
@@ -33,6 +38,19 @@ export function reviewMapping(mappings: ChunkMapping[]): ChunkMapping | undefine
     if (!questions.has(question.sourceField)) questions.set(question.sourceField, question);
   }
   return { ...latest, questions: [...questions.values()] };
+}
+
+/** Why any of these responses is from an earlier case state, in words; null when all are current. */
+export function staleReasons(responses: (Freshness | undefined)[]): string[] | null {
+  const stale = responses.flatMap((response) => (response?.current === false ? [response] : []));
+  if (!stale.length) return null;
+  const reasons = new Set(stale.flatMap((response) => response.reasons));
+  return [...reasons].map((reason) => STALE_REASON_WORDS[reason]);
+}
+
+/** A result from an earlier case state stays readable; its answers get no shared reason and no approval. */
+export function reviewControls(stale: boolean, recipeState: Recipe['state'] | undefined, answering: boolean) {
+  return { approve: !stale && recipeState === 'proposed' && !answering, sharedReason: !stale };
 }
 
 export function learnerTotals(chunks: Metrics[]) {
