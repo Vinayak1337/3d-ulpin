@@ -1,0 +1,99 @@
+{
+  "task": "R5c",
+  "title": ["UNIT-3A's region as a candidate under the lead's decisions; the demo rolled to staging with the",
+    "project-owned document interpreter; the new reads live"],
+  "gate": "GF1, GF4, GF5",
+  "worktree": "E:/Projects/ulpin-wt/r5, branch task/r5c-roll-k9c-k11b-k12, cut from staging 18b5e74c",
+  "part0": {
+    "what": "UNIT-3A's page region as a candidate under the lead's decisions D1 to D3; nothing sent or recorded",
+    "control": {
+      "command": ["E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe -B",
+        "scripts/agent/r5b-unit-region.py control"],
+      "exit": 0, "matches": true, "recordedPt": [596, 390, 644, 409], "reproducedPt": [596, 390, 644, 409],
+      "differencePt": [0, 0, 0, 0], "cropSameAsK4c": true,
+      "unchanged": "The control passes no label size, so no decision applies to it; its output is the R5b output."
+    },
+    "candidate": {
+      "command": ["E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe -B",
+        "scripts/agent/r5b-unit-region.py measure UNIT-3A"],
+      "exit": 0, "state": "candidate", "label": "UNIT-3A", "decidedBy": "lead, 10 October 2026",
+      "confirmedByOfficer": false,
+      "unit": "PDF points, frame pdf_display_page_top_left_points (origin top left, y down), [x0, y0, x1, y1]",
+      "regionPt": [1077.5, 395.75, 1125.75, 414.75], "expectedByTheLeadPt": [1077.5, 395.75, 1125.75, 414.75],
+      "differencePt": [0, 0, 0, 0], "labelBoxPt": [1082.5, 400.75, 1119.75, 410.75], "marginsPt": [5, 5, 6, 4],
+      "k4cMarginsPt": [5, 5, 6, 4.25], "strayMarksPt": null, "inkBelow": 128, "seedPt": [1105, 405],
+      "source": {
+        "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429", "revision": 1,
+        "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865", "page": 1
+      },
+      "literal": ["UNIT-3A, read by eye from the saved crop. The sheet has no text layer and no OCR was run; the",
+        "reading is unreviewed."],
+      "decisions": [
+        {"id": "D1",
+          "rule": ["several frame groups at the seed are one label when their boxes overlap and the box around them",
+            "has the control label's size within 0.5 pt on each side"],
+          "appliedTo": "frame groups", "before": [[1082.5, 400.75, 1111.75, 410.75], [1091.75, 401, 1119.75, 410.5]],
+          "after": [1082.5, 400.75, 1119.75, 410.75]},
+        {"id": "D2", "rule": "ink is below grey 128, the level the control is run at; no per-label level",
+          "appliedTo": "ink level", "before": "108 to 144 all reproduce the control", "after": 128},
+        {"id": "D3",
+          "rule": ["each margin is K4c's, reduced to the clear paper where another mark is nearer, never below 3.0",
+            "pt"],
+          "appliedTo": "bottom margin", "before": 4.25, "after": 4}
+      ],
+      "pictures": [
+        {"path": "E:/BhuAayam-data/task-data/r5c/unit-3a-candidate-label.png",
+          "sha256": "62a142947adc6d0931b0e2313b262d2e405623de89ed049d50356caea5cf8539", "pixels": [193, 76],
+          "shows": "the region as a renderer would crop it"},
+        {"path": "E:/BhuAayam-data/task-data/r5c/unit-3a-candidate-outlined.png",
+          "sha256": "cea55e2b984e3637d844f80dad3f39b38029983789e1098acd670fdd9938b0f1", "pixels": [913, 556],
+          "shows": "surroundings, region outlined; not original"}
+      ],
+      "picturesNote": "Private, not in Git, new files only. The outline is drawn on an in-memory copy."
+    },
+    "rulesInCode": [
+      ["D1 scripts/agent/r5b-unit-region.py one_label(): every group's box overlaps another's and the box",
+        "around them is within 0.5 pt of the"],
+      "   control label box on each side; the size comes from the control run, not from a constant",
+      ["D2 scripts/agent/r5b-unit-region.py candidate() measures at INK_BELOW only; \"measure --ink-below",
+        "144\" is refused (exit 2)"],
+      ["D3 scripts/agent/r5b-unit-region.py clear_margins() and refusal(): a mark beyond one side reduces",
+        "that margin to the clear paper;"],
+      "   under 3.0 pt is MARGIN_UNDER_THE_FLOOR; a mark beyond two sides (a corner) reduces nothing and is",
+      "   refused as OTHER_INK_IN_REGION, because the decision does not say which side gives way"
+    ],
+    "locatorForm": {
+      "question": "Are fractional points accepted end to end?",
+      "answer": [
+        "Yes, by reading the code: every step takes any finite number, so the candidate is the measured box,",
+        "unrounded. No step parses the locator string back into numbers. This was read, not exercised: no",
+        "fractional region has been recorded on the demo, and this task sends no write."
+      ],
+      "stringItWouldStore": "page 1; region pt [1077.5,395.75,1125.75,414.75]; literal UNIT-3A",
+      "steps": [
+        {"step": "record request", "file": "packages/contracts/src/canonical/source-spaces.ts:5-6",
+          "says": "region is four finite numbers, x0 and y0 not negative, x0 < x1 and y0 < y1; no whole-number rule"},
+        {"step": "record command", "file": "packages/server/src/modules/officer/source-spaces.ts:69-74",
+          "says": "only checks the box lies inside the page frame"},
+        {"step": "locator string", "file": "packages/contracts/src/canonical/source-spaces.ts:54-56",
+          "says": "built with region.join(\",\"); the record schema rebuilds and compares it (:45), never parses it"},
+        {"step": "citation in the building read",
+          "file": "packages/server/src/modules/registry/canonical-building.ts:579-585",
+          "says": "x, y, width, height as numbers; packages/contracts/src/canonical/building.ts:10, 26-33 (finite)"},
+        {"step": "packet binding", "file": "packages/server/src/modules/usp/packets/source-stated-binding.ts:80-94",
+          "says": "divides by the page frame; a whole-point box is fractional here too"},
+        {"step": "crop renderer", "file": "packages/server/src/modules/usp/packets/region-extract.ts:34-47",
+          "says": ["renders at up to 3 times and rounds the box inward to complete pixels, so a packet crop",
+            "lies inside the candidate by under a third of a point on a side"]},
+        {"step": "card", "file": "packages/server/src/modules/usp/packets/card-source-facts.ts:45",
+          "says": "prints region.join(\", \")"},
+        {"step": "Studio", "file": "apps/studio/src/features/evidence/pageGeometry.ts:42-50, 63-67",
+          "says": "draws and words the numbers as recorded"}
+      ],
+      "roundedBox": "not needed; none is given"
+    },
+    "tests": ["E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe -B -m unittest",
+      "scripts/agent/test_r5b_unit_region.py: 12 tests OK (7 new: 6 synthetic, 1 sheet)"],
+    "nothingSent": "No request was sent for UNIT-3A. It is unrecorded on the demo."
+  }
+}
