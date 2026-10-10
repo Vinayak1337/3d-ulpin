@@ -32,3 +32,26 @@ test('private card boundary publishes strict schemas and rejects invalid body/ex
     assert.equal(headers.get('Cache-Control'), 'private, no-store');
   } finally { await app.close(); }
 });
+test('the card consistency report is published as a strict read-only route and refuses a bad revision before domain I/O', async () => {
+  const app = await NestFactory.create(CardControlModule, { logger: false, abortOnError: false });
+  try {
+    const doc = SwaggerModule.createDocument(app, new DocumentBuilder().setTitle('K5 leaf').build());
+    const operation = doc.paths['/api/v1/usp/property-cards/{cardId}/revisions/{revision}/verification']?.get as any;
+    assert.equal(operation.operationId, 'GET_api_v1_usp_property_cards_cardId_revisions_revision_verification');
+    assert.equal(operation.requestBody, undefined);
+    const report = operation.responses['200'].content['application/json'].schema.properties.data;
+    assert.equal(report.additionalProperties, false);
+    assert.deepEqual(report.properties.result.enum, ['consistent', 'inconsistent']);
+    assert.deepEqual(report.required.slice().sort(),
+      ['cardId', 'checkedAt', 'checks', 'lifecycle', 'result', 'revision', 'signature', 'snapshot']);
+    assert.deepEqual(report.properties.signature.properties.reasonCode.enum, ['NO_TRUSTED_KEY_POLICY']);
+    // A hash chain is reported as consistent only; the published route claims nothing stronger (H10 F14).
+    assert.doesNotMatch(JSON.stringify(operation), /authentic|verified|valid|genuine/i);
+    const headers = new Map<string, string>(), res = { setHeader: (k: string, v: string) => headers.set(k, v) };
+    const controller = app.get(PropertyCardController);
+    for (const revision of ['0', '1e0', '1/2', '2147483648'])
+      await assert.rejects(() => controller.verification({ headers: {} } as any, res as any,
+        '00000000-0000-4000-8000-000000000001', revision), (error: any) => error.status === 400);
+    assert.equal(headers.get('Cache-Control'), 'private, no-store');
+  } finally { await app.close(); }
+});
