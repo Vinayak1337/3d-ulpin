@@ -205,39 +205,66 @@ Originals immutable, every candidate cites original and locator. Unknown stays u
 
 **The rule: the system prepares everything, the officer decides once.** Every step that needs no judgement runs by itself, in order, as soon as its inputs exist. Every step that is a decision is prepared in full (the draft, the checks, the preview of what would be printed) and waits in one place, so that the officer's work for a whole batch is: answer the questions the files themselves cannot answer, then confirm what is ready in one action. Nothing is recorded and no card is made before that confirmation: section 11 stands (lead's reading; a run that issues with no officer at all would change a data rule of `AGENTS.md` and is an owner decision of its own, not built).
 
-### 13.1 The chain, and who moves each step
-The steps exist today as separate commands, each asked for by hand **(read: the published route list; the audit task AU1 checks every precondition)**. The run calls them in order through the scheduler's lane `prepare`, each with its own idempotency key, so a restart continues and nothing runs twice.
+### 13.1 The chain as the code has it (corrected from the AU1 audit, 11 October)
+The first version of this table was written from the published route list. AU1 then read every command with file and line (`docs/evidence/gf1/au1/{chain,breaks,design-check}.json`): eight of its nine rows did not match the code. What is true:
 
-| Step | Exists as | Moved by |
-|---|---|---|
-| 1 Candidate with geometry, keys and citations | part pipeline (section 6) | automatic |
-| 2 Links to registers, documents, plans | linking (section 7) | automatic; a single exact match is proposed, anything else is held |
-| 3 What is present and what is missing | `…/sources/:id/sufficiency` | automatic |
-| 4 Draft record | import package, registry draft, `usp/proposals` | automatic (prepared, not committed) |
-| 5 **The record** | `…/review`, `…/commit` | **officer: the one confirmation** |
-| 6 Identity | `usp/identity/reviews`, `assign` | automatic after 5, named on the confirmation screen before it is given |
-| 7 Rights and claims | `usp/rights/declarations/prepare`, `proposal`, `review`, `accept` | prepared automatically from linked register rows and document claims; accepted inside the confirmation only when one source supports it and nothing conflicts; otherwise held as a question |
-| 8 Evidence packet | `usp/packets/plans/create`, `confirm`, `execute` | created automatically from the citations; confirmed by the same confirmation; executed automatically |
-| 9 Property card | `usp/property-cards/preview`, `generate` | preview automatic and shown **in** the confirmation ("this is what the card will print"); generated automatically after it |
+- **The product has two layers.** A map file's feature becomes a **physical observation** (`physical_features`: geometry, the source's own identifiers) when an officer commits its import package. A **registry record** (`registry_records` at revision 1 or more) is the reviewed building, level or space. Snapshots, identities, declarations, packet plans and cards work on registry records only (`usp/snapshots.ts:77`).
+- **One chain reaches a card today: a building read from a document, with floors and spaces an officer typed** (the first rehearsal's path): document package, commit (the record goes to revision 1, `source-building-records.ts:79`), floor and space literals with page and region, snapshot, identity review and assignment per space, a second snapshot (assignment raises the revision), plan entries, create, confirm, execute, card preview, generate. One person, one role. Smallest count of officer actions: 1 per package, 1 per building, 3 per space.
+- **A building from a map file cannot reach a card.** The breaks, in the order the chain meets them:
 
-### 13.2 The target ledger and the readiness rule
-- One more additive table beside section 2's: `usp_intake_targets` — one row per thing that can receive a card (a building candidate, later a unit): `target_id`, `case_id`, `anchor_item_id` and locator, `stage` (1 to 9), `readiness` (`preparing | ready | needs_answer | held | confirmed | carded`), `blocked_by` (codes), and the id and version of each prepared artefact (draft, review, identity review, declaration, plan, preview hash).
-- **Ready is decided by rules, never by a model.** A target is `ready` when: its geometry is valid and its CRS is stated; every link it uses is a single exact match with no conflict; every fact the card would print cites a source and a locator; the sufficiency read says the required facts are present; the layout its values came through is approved (13.3); and each step up to the preview succeeded under current pins. Anything else is `needs_answer` (the officer can supply it) or `held` (the files disagree), with the reason in words.
-- A change to an input (a later file, a correction) moves only the targets that used it back to `preparing`, by the pins of section 2. The others keep their place.
-
-### 13.3 What is left for the officer, counted
-1. **One approval per new layout**, not per row: when the mapping plan of a file came from the learner or the teacher, the officer approves the plan once for the whole file. A layout the memory already holds as approved needs none.
-2. **Answers** only the officer can give: a missing CRS, two parcels matching one key, which of two conflicting registers stands. Each is one question with the evidence beside it; none has a default answer.
-3. **One confirmation** of everything `ready`, with the count, the exceptions and the card previews. It commits the records, gives the identities, accepts the supported declarations, confirms the packet plans; the run then executes the plans and makes the cards.
-The tray shows the three counts ("2 layouts to approve, 5 questions, 1,640 ready") from the first minute, so the officer starts on them while reading continues.
-
-### 13.4 What the run never does
-Resolve a conflict, choose among several matches, assume a CRS, a height, a floor count, a unit, an owner or a right, accept a teacher's mapping without 13.3.1, or make a card for a target that is not `confirmed`. An estimate stays labelled an estimate and never enters a measurement, a right, a packet or a card as fact.
-
-### 13.5 Build order (after tiers A to D of section 10; the same dates still hold for them)
-| Tier | By | What | Check |
+| # | Break (AU1 id) | Where | Fix |
 |---|---|---|---|
-| **AU1 audit** | 11 Oct | every step of 13.1 as the code has it: its command, what it requires, what it pins, which input only an officer can give, what the Studio does today, where the chain breaks for a building that came from a streamed part | a table per step with file and line; the list of breaks |
-| **E1 Prepare** | 17 Oct | `usp_intake_targets`, the readiness rule, the lane `prepare` calling steps 3, 4 and the previews of 7 to 9 | the NYC pack's buildings reach `ready` or a stated reason with no request from a person |
-| **E2 Confirm** | 19 Oct | the one confirmation (bulk, all or nothing per target), then steps 6, 8, 9 by themselves | from "confirm" to a card with a working verification link, no further request; a held target is untouched |
-| **E3 Screen** | 20 Oct | the three counts in the tray, the questions, the confirmation with card previews, the list of cards | `$ui-design-check`; nothing shown that a record does not hold |
+| 1 | A streamed or mapped part stays in slots. Only the bounded area import (2,000 features, one request) makes an import package (`B-stream-no-record`) | `streaming-vector.ts:154`, `chunk-mapping.ts:265`, `areas.ts:1072` | **CA0**: accepted parts become import packages through the existing package contract, each within the bound. This is also what puts a streamed building on the real map (section 10, step A2) |
+| 2 | The commit raises the physical observation and leaves the building's registry record reserved at revision 0. The only lift is per building and refuses a building with no detailed space (`B-area-commit-revision-zero`) | `areas.ts:737-759, 1386`; `officer/officer-preparation.ts:500` | **CA1**: the commit of an exterior records its registry record at revision 1 as a source-stated exterior, by the rule the document path already has. The record cites the feature it came from and holds no geometry of its own, no level, no unit and no right |
+| 3 | A snapshot of chosen targets still reads the whole site: it refuses a site over 1,000 records, 1,000 features or 2,000 sources, and its digest covers every source of every case of the site, so a later file anywhere stales every identity, declaration and proposal (`B-snapshot-site-limit`, `B-site-digest-b1`) | `usp/snapshots.ts:70-139` | **CA2**: a snapshot of targets holds the targets and what they stand on, nothing else |
+| 4 | Identity codes are for recorded spaces only (`B-identity-spaces-only`) | `usp/project-identity.ts:46` | **CA3**, an audit first: what the identity design says about a building's own code. If it gives a building one, it is built. If not, a building's card says in words that identities are given to units. No rule is invented |
+| 5 | A packet plan needs a text line, a table row or a page region. A map feature is none of them (`B-packet-citation-kind`) | `plan-authority.ts:197-215`, `registry-reference-policy.ts:16-24` | **CA4**: a feature of a retained map original as a citation: source, SHA-256, feature locator, the feature's attributes as written. It claims no geometry |
+| 6 | Links to registers and documents accept recorded targets only, and a table's rows cannot become a record (`B-links-after-record`, `B-table-no-record`) | `source-fusion-associations.ts:16`, `ingestion/service.ts:250` | No new code: linking runs **after** the record exists (step 4 below). A linked register row then gives the packet a table-row citation, which the plan already accepts |
+
+**The chain after the fixes, and who moves each step:**
+
+| Step | What | Moved by |
+|---|---|---|
+| 1 Read | parts read, normalised, mapped (section 6) | automatic |
+| 2 Draft | accepted parts as import packages: candidates on the map (CA0) | automatic |
+| 3 **Record** | package review, then commit with the acknowledgement; each exterior recorded at revision 1 (CA1) | **officer: the one confirmation**, for every ready package of the batch |
+| 4 Link | register rows and documents proposed against the recorded building; a single exact key match is attached, anything else is held as a question | automatic after 3 |
+| 5 Snapshot | of the confirmed targets only (CA2) | automatic |
+| 6 Identity | review and assignment where the design gives a code (CA3), then a second snapshot, because assignment raises the revision | automatic, under the confirmation |
+| 7 Packet | plan from the record's citations (CA4), confirm, execute | automatic, under the confirmation |
+| 8 Card | preview, generate | automatic |
+
+Rights and claims are not in the chain. A declaration is an officer's transcription of an instrument with an exact acknowledgement (`declarations/service.ts:39-66`), and no code prepares one from a register row. The card prints rights as not assessed. That stays.
+
+### 13.2 The confirmation is a list, and the run does only what is on it
+- **It cannot be one transaction.** Each command has its own transaction and receipt, assignment changes the revision the plan must pin, and a packet and a card write objects outside SQL. It is one screen, one press, and a **sequence**.
+- The press stores one **confirmation record**: the packages and their hashes, the targets, the acknowledgement in the officer's words, and the reason and the expiry the later steps will state (one policy rule for the expiry; one sentence naming this confirmation as the reason, never a made-up justification). Every later command the run sends cites that record and is sent as the officer who gave it. The run does nothing that is not on the list: when a pin has moved, that target stops and comes back to the officer.
+- **A stopped step stays stopped and visible.** A commit has no undo, an assigned code can only be changed, a card can only be revoked: the screen says so before the press. If step 6 fails for a target, steps 3 to 5 stay recorded, the target shows the step and its code, and a retry with the same keys continues.
+- **Cards at scale are made in order of need.** Steps 5 to 8 take seconds per target. After the press, records exist for every confirmed target at once (step 3 is one commit per package). The run then works through steps 5 to 8 in the background lane `prepare`, and a target the officer opens jumps the queue. The screen says "1,661 recorded, 240 carded, the rest in turn".
+
+### 13.3 The target ledger and the readiness rule
+- One additive table beside section 2's: `usp_intake_targets`, one row per thing that can receive a card: `target_id`, `case_id`, `anchor_item_id` and locator, `stage` (1 to 8), `readiness` (`preparing | ready | needs_answer | held | confirmed | recorded | carded | stopped`), `blocked_by` (codes), the confirmation it belongs to, and the id and version of each artefact made for it.
+- **Ready is decided by rules, never by a model**, and only steps 1 and 2 can be prepared before the press. A target is `ready` when its package passed its review checks, its geometry is valid and its CRS stated, the layout its values came through is approved, and nothing about it is a question. Anything else is `needs_answer` or `held`, with the reason in words.
+- A later file moves only the targets that cite it. This is true once CA2 is in; today it is false (break 3).
+
+### 13.4 What is left for the officer, counted
+1. **One approval per new layout**, not per row. Whether an approval carries to a second file of the same layout is shown by a run, not by reading (AU1 could not say).
+2. **Answers** only the officer can give: a missing CRS, two parcels for one key, which of two registers stands. None has a default.
+3. **One confirmation** of everything `ready`: its count, its exceptions, what each record will state with its citations, and the sentence that recording cannot be undone.
+The tray shows the three counts from the first minute.
+
+### 13.5 What the run never does
+Resolve a conflict, choose among several matches, assume a CRS, a height, a floor count, a unit, an owner or a right, accept a teacher's mapping without 13.4.1, put a geometry into a registry record (the observation holds it; a record's geometry has its own qualification), prepare or accept a declaration, or send a command that is not on a confirmation's list. An estimate stays labelled an estimate and never enters a measurement, a right, a packet or a card as fact.
+
+### 13.6 Build order
+| Task | By | What | Check |
+|---|---|---|---|
+| **AU1** | done 11 Oct | the audit above | merged |
+| **CA1** | 12 Oct | an exterior committed from a map file is a registry record at revision 1 that cites its feature | one NYC building: commit, then a snapshot lists its record |
+| **CA2** | 12 Oct | a snapshot of targets holds the targets and what they stand on | on a site of more than 1,000 records a target's snapshot is made, and a file added to another case does not stale it |
+| **CA3** | 12 Oct | the audit of a building's own code, then the build or the stated absence | the card of a building says which |
+| **CA4** | 13 Oct | a map feature as a citation, and a text plan from it | plan created, confirmed and executed for the CA1 building |
+| **CA0** | 14 Oct (with step A2) | accepted parts become import packages | the NYC pack's buildings are candidates on the real map with no request from a person |
+| **E1 Run** | 16 Oct | `usp_intake_targets`, the readiness rule, the confirmation record, the lane `prepare` sending steps 4 to 8 | from one press to a card with a working verification link for one target, no further request |
+| **E2 Scale** | 18 Oct | the queue by need, the stopped-step states, the batch of 1,661 | records for all at the press, cards arriving, an opened building carded next |
+| **E3 Screen** | 20 Oct | the three counts, the questions, the confirmation, the list of cards | `$ui-design-check`; nothing shown that a record does not hold |
