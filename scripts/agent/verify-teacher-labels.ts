@@ -5,13 +5,14 @@ import { pathToFileURL } from 'node:url';
 import {
   MappingV2FieldSchema, ColumnProfileDocumentSchema, type MappingPlanV2,
 } from '../../packages/contracts/src/index';
+import { DocumentArchiveInspectionSchema } from '../../packages/contracts/src/usp/document-ingestion';
 import {
   ingestTeacherLabels as ingestCanonicalLabels, DEVELOPMENT_TEACHER_METHOD, type TeacherProfileEntry,
 } from '../../packages/server/src/modules/usp/ingestion/teacher-labels';
 import { columnProfileHash } from '../../packages/server/src/modules/usp/ingestion/mapping-teacher';
 import { assertTeacherOutputOutsideGit } from '../../packages/server/src/modules/model-gateway/recordings';
 import { checkBoundary, prepareTable, saveNew, type PreparedColumn, type TableInventory } from './t1-profiles';
-import { sourceTables, stableHash, T1_ROOT } from './t1-sources';
+import { developmentManifest, sourceTables, stableHash, T1_ROOT, type SourceAsset } from './t1-sources';
 
 export type LinkedColumn = {
   column: PreparedColumn;
@@ -71,6 +72,24 @@ function sourceRef(entry: LinkedColumn) {
   return `${entry.table.asset.original.externalPath}#sheet=${encodeURIComponent(entry.table.sheet)}`;
 }
 
+type SourceReference = { horizontalCrs?: string | null };
+
+/** The native GeoJSON reader's inspection contract owns the identifier; unknown literals never get a default. */
+export function sourceCrsFromReference(reference?: SourceReference): string | undefined {
+  const recorded = new Map([
+    ['GeoJSON WGS84 longitude/latitude', DocumentArchiveInspectionSchema.shape.inspection.shape.sourceCrs.value],
+  ]);
+  return reference?.horizontalCrs ? recorded.get(reference.horizontalCrs) : undefined;
+}
+
+function recordedSourceCrs(asset: SourceAsset): string | undefined {
+  const id = asset.derivedFrom?.assetId ?? asset.id;
+  const original = asset.derivedFrom?.original ?? asset.original;
+  const source = developmentManifest().assets.find(row => row.family === asset.family && row.id === id);
+  if (!source || stableHash(source.original) !== stableHash(original)) return undefined;
+  return sourceCrsFromReference((source as SourceAsset & { reference?: SourceReference }).reference);
+}
+
 function materialize(entry: LinkedColumn): TeacherProfileEntry {
   const table = sourceTables(entry.table.asset).find(table => table.name === entry.table.sheet);
   assert(table, 'T1_PROFILE_SHEET_MISSING');
@@ -84,7 +103,7 @@ function materialize(entry: LinkedColumn): TeacherProfileEntry {
   const rows = table.rows.map(row => Object.fromEntries(entry.table.profile.columns.map((column, index) =>
     [column.name, row[index]])));
   return {
-    profile: entry.table.profile, rows, sourceRef: sourceRef(entry),
+    profile: entry.table.profile, rows, sourceRef: sourceRef(entry), sourceCrs: recordedSourceCrs(entry.table.asset),
     dataPolicy: { dataClass: 'public', split: entry.column.split === 'dev' ? 'development' : 'unlabelled' },
   };
 }
