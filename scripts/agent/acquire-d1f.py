@@ -24,7 +24,7 @@ CONTACT_RISK = re.compile(
     r"[\w.+%-]+@[\w.-]+\.[a-z]{2,}|\(?\d{3}\)?[- .]\d{3}[- .]\d{4}|\+\d{1,3}[ -]\d{4}",
     re.IGNORECASE,
 )
-OWNER_RISK = re.compile(r"\b(?:owned by|owner\s*:|owner is|owners are)\b", re.IGNORECASE)
+OWNER_RISK = re.compile(r"\b(?:owned by\b|owner\s*:|owner is\b|owners are\b)", re.IGNORECASE)
 Row = dict[str, Any]
 
 
@@ -147,7 +147,10 @@ def retained_download(spec: Row) -> Row:
         if previous[key] != spec[key]:
             raise ValueError("D1F_RECOVERY_LINEAGE_CHANGED")
     recorded = previous["download"]
-    if digest(Path(recorded["externalPath"])) != recorded["sha256"]:
+    source = Path(recorded["externalPath"])
+    if not source.resolve().is_relative_to((TASK_ROOT / "provisional").resolve()):
+        raise ValueError("D1F_RECOVERY_PATH_DENIED")
+    if digest(source) != recorded["sha256"]:
         raise ValueError("D1F_RECOVERY_BYTES_CHANGED")
     return recorded
 
