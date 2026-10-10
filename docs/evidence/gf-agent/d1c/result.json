@@ -1,0 +1,59 @@
+{
+  "task": "D1c", "gate": "GF-AGENT data prerequisite", "status": "blocked_checkpoint",
+  "baseline": "f5539916", "branch": "task/d1c-property-tables", "taskThresholdsMet": false,
+  "development": {"families": 1, "files": 2, "rows": 210, "columnsPerFile": 90, "bytes": 472778},
+  "developmentFormat": "publisher-native JSON tables; not CSV/XLSX originals",
+  "developmentLabels": 0, "developmentCopiesByteIdentical": true,
+  "newHeldout": {"families": 0, "files": 0, "columns": 0, "scorable": 0, "positiveTargets": 0},
+  "targetShortfalls": {"developmentFamilies": 3, "heldoutFamilies": 3, "positiveTargets": 25},
+  "historicalA3": {"columns": 97, "scorable": 55, "positiveTargets": 0},
+  "a3TruthBytesUnchanged": true, "a3ReceiptGitBytesUnchanged": true,
+  "a3ReceiptCheckout": "Unchanged CRLF checkout; reproduction matches exact frozen LF Git bytes.",
+  "emptyFreezeQualification": "An explicit blocked selection, not a useful positive-property evaluation set.",
+  "privacy": {"opencityRegistersExcluded": 7, "boundedBlindCandidatesRejected": 3, "redactions": 0},
+  "teacherCalls": 0, "trainingWrites": 0, "memoryWrites": 0, "runtimeImports": 0,
+  "inputs": {
+    "good": "mi-d22-schemes-yes.json: issuing-authority public scheme register, 108 rows",
+    "difficult": "mi-d22-schemes-no.json: public unpublished-scheme register, 102 rows; status unqualified"
+  },
+  "gaps": [
+    "No native property CSV/XLSX original qualified; source-native JSON reader/intake remains unqualified.",
+    "OpenCity occupancy CSV addresses contain personal names; files were screened transiently and not retained.",
+    "Blind candidates failed transaction/audit-identity privacy checks; originals were not retained.",
+    "Public property discovery encountered authentication, HTTP 403/406, TLS hostname and empty-table limits.",
+    "D8 acquisition metadata is not the strict application DTO expected by the catalogue builder.",
+    "The historical D1b verifier has fixed counts and a fixed previous seal; it cannot accept an additive D1c set.",
+    "Reuse/training/redistribution permission remains unconfirmed."
+  ],
+  "failureRecovery": [
+    {
+      "signature": "PERSONAL_TRANSACTION_EXCLUDED / AUDIT_IDENTITY_UNVERIFIED",
+      "comparison": "Public unallotted-property route instead of all published units; same strict privacy checks.",
+      "result": "Three candidates rejected; no redaction, inferred meanings or relaxed privacy threshold.",
+      "decision": "Stop this source route; preserve evaluator-only discovery/support and admit no new holdout."
+    },
+    {
+      "signature": "catalogue builder KeyError: content",
+      "baseline": "Read-only preview fails on the existing D8 acquisition-style assets.",
+      "comparison": "Final --check mode confirms the same pre-existing schema mismatch; no file regeneration.",
+      "decision": "No further identical retry. Unowned builder/retained-ledger adaptation belongs to the lead."
+    }
+  ],
+  "verification": {
+    "verifyD1c": {"exitCode": 0, "scope": "Amendment integrity and honest blocked counts, not task acceptance."},
+    "a3FreezeCheck": {"exitCode": 0, "interpreter": "existing venv-k3a-geo, read-only -B"},
+    "d1cFreezeCreate": {"exitCode": 0}, "d1cFreezeCheck": {"exitCode": 0},
+    "catalogueBuildPreview": {"exitCode": 1, "reason": "KeyError: content; existing D8 DTO mismatch"},
+    "catalogueBuildCheck": {"exitCode": 1, "reason": "KeyError: content; no catalogue replacement"},
+    "catalogueRegressionTest": {"exitCode": 0},
+    "historicalD1bVerifier": {"exitCode": 1, "reason": "Fixed previousManifestSha256 assumption"},
+    "diffCheck": {"exitCode": 0}
+  },
+  "next": [
+    "Acquire three more dev families and three privacy-safe heldout families with publisher dictionaries.",
+    "Freeze at least 25 genuinely publisher-supported positive columns before agent exposure.",
+    "Extend existing freeze truth logic for the actual qualifying property format; current D1c selection is empty.",
+    "Lead: adapt catalogue builder and sync retained-local-datasets without losing history.",
+    "Lead: choose native JSON tabular intake/profiling or obtain publisher-native property CSV/XLSX alternatives."
+  ]
+}
