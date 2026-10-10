@@ -109,7 +109,25 @@ const DocumentOcrBaseSchema=z.strictObject({sourceSha256:hash,sourceRevision:z.n
   method:z.enum(['ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned','ocr:tesseract-cli-5.5.1:sparse-tsv-v1']),
   toolStatus:z.enum(['complete','partial','failed','unavailable']),outputStatus:z.enum(['complete','partial','failed']),
   textCompleteness:z.literal('unverified'),issues:z.array(z.string().min(1).max(200)).max(32),
-  items:z.array(DocumentOcrItemSchema).max(64),execution:DocumentOcrExecutionSchema.optional()});
+  items:z.array(DocumentOcrItemSchema).max(64),execution:DocumentOcrExecutionSchema.optional(),
+  // Stated only when the worker stated its render scale. The 0.5 floor is the lead's bound (K9d), not a
+  // measured one: it keeps the allowance at or under 2 pt. The allowance is derived below, never stored.
+  regionEdge:z.strictObject({renderScalePxPerPt:z.number().finite().min(0.5),
+    boxesBeyondRegion:z.number().int().min(0).max(256),
+    largestOverhangPt:z.number().finite().nonnegative()}).optional()});
+type OcrBoxes=readonly {sourcePageBoxes:readonly {box:readonly number[]}[]}[];
+/** Measures the boxes as read against the selected region; it never moves or clips one. A render starts and
+ * ends on whole pixels, so a true box may pass the region by up to one rendered pixel. Without a stated
+ * scale the first rule's 1 pt applies. */
+export function measureOcrRegionEdge(region:readonly number[],items:OcrBoxes,renderScalePxPerPt?:number){
+  const allowedPt=renderScalePxPerPt===undefined?1:1/renderScalePxPerPt;
+  const boxes=items.flatMap(item=>item.sourcePageBoxes.map(cite=>cite.box));
+  const overhangs=boxes.map(box=>Math.max(region[0]-box[0],region[1]-box[1],box[2]-region[2],box[3]-region[3]))
+    .filter(overhang=>overhang>0);
+  return {boxesBeyondRegion:overhangs.length,largestOverhangPt:Math.max(0,...overhangs),
+    outside:boxes.some(box=>box[0]<region[0]-allowedPt||box[1]<region[1]-allowedPt||
+      box[2]>region[2]+allowedPt||box[3]>region[3]+allowedPt)};
+}
 function refineOcrFrame(value:Pick<z.infer<typeof DocumentOcrBaseSchema>,'sourcePageFrame'|'requestedRegion'>,ctx:z.RefinementCtx){
     const frame=value.sourcePageFrame,region=value.requestedRegion;
     // A missing frame remains useful for an unavailable/failed attempt. A
@@ -141,10 +159,16 @@ export const DocumentOcrSchema=DocumentOcrBaseSchema.superRefine((value,ctx)=>{
       ctx.addIssue({code:'custom',message:'Published OCR output needs its completed bounded execution receipt.'});
     if(value.items.length && value.sourcePageFrame===null)
       ctx.addIssue({code:'custom',message:'Cited OCR items need the source page frame.'});
-    if(value.items.some(item=>item.sourcePageBoxes.some(cite=>value.requestedRegion!==null &&
-      (cite.box[0]<value.requestedRegion[0]-1||cite.box[1]<value.requestedRegion[1]-1||
-        cite.box[2]>value.requestedRegion[2]+1||cite.box[3]>value.requestedRegion[3]+1))))
-      ctx.addIssue({code:'custom',message:'OCR boxes must stay in the selected source region.'});
+    const stated=value.regionEdge;
+    if(value.requestedRegion===null){
+      if(stated)ctx.addIssue({code:'custom',message:'Whole-page OCR has no region edge to state.'});
+    }else{
+      const edge=measureOcrRegionEdge(value.requestedRegion,value.items,stated?.renderScalePxPerPt);
+      if(edge.outside)ctx.addIssue({code:'custom',message:'OCR boxes must stay in the selected source region.'});
+      if(stated&&(stated.boxesBeyondRegion!==edge.boxesBeyondRegion||
+        Math.abs(stated.largestOverhangPt-edge.largestOverhangPt)>1e-6))
+        ctx.addIssue({code:'custom',message:'The stated region edge must equal what the boxes measure.'});
+    }
     if(value.items.some(item=>item.sourcePageBoxes.some(cite=>cite.pageNumber!==value.sourcePage ||
       (value.sourcePageFrame!==null&&(cite.box[2]>value.sourcePageFrame.width+0.01||cite.box[3]>value.sourcePageFrame.height+0.01)))))
       ctx.addIssue({code:'custom',message:'OCR boxes must cite the selected source page frame.'});
