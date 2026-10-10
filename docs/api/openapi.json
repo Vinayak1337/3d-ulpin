@@ -28508,8 +28508,16 @@
                 }
               }
             },
-            "description": "Canonical result",
             "headers": {
+              "X-Page-View": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "reduced"
+                  ]
+                },
+                "description": "Sent only when the page is over the whole-page limit and is drawn whole at a reduced scale, for viewing only. The scale is the first value of X-Page-Pixel-Affine."
+              },
               "X-Request-Id": {
                 "schema": {
                   "type": "string",
@@ -28517,7 +28525,8 @@
                 },
                 "description": "Server request identifier."
               }
-            }
+            },
+            "description": "Canonical result"
           }
         },
         "summary": "Render one explicitly selected private PDF page from its unchanged original",
@@ -299103,8 +299112,15 @@
                   "type": "string",
                   "enum": [
                     "supported",
+                    "reduced",
                     "unsupported"
                   ]
+                },
+                "reducedScalePxPerPt": {
+                  "type": "number",
+                  "minimum": 0,
+                  "exclusiveMinimum": true,
+                  "maximum": 3
                 },
                 "url": {
                   "nullable": true,

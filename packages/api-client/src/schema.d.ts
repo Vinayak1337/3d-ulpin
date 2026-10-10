@@ -51113,7 +51113,8 @@ export interface components {
                 /** @enum {string} */
                 boxConvention: "pymupdf_page_rectangles/1";
                 /** @enum {string} */
-                renderSupport: "supported" | "unsupported";
+                renderSupport: "supported" | "reduced" | "unsupported";
+                reducedScalePxPerPt?: number;
                 url: string | null;
                 locator: {
                     /** @enum {string} */
@@ -85453,6 +85454,8 @@ export interface operations {
             /** @description Canonical result */
             200: {
                 headers: {
+                    /** @description Sent only when the page is over the whole-page limit and is drawn whole at a reduced scale, for viewing only. The scale is the first value of X-Page-Pixel-Affine. */
+                    "X-Page-View"?: "reduced";
                     /** @description Server request identifier. */
                     "X-Request-Id"?: string;
                     [name: string]: unknown;
