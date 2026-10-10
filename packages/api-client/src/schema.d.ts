@@ -1703,7 +1703,7 @@ export interface paths {
         };
         /**
          * List the recorded snapshots that hold a building and that the local operator may read, newest first
-         * @description Each item carries the scope its manifest stores, to pass unchanged to the USP reads. Order is the only statement about recency. Cited documents are not checked here: a read that is given a listed scope applies its own document checks.
+         * @description Each item carries the scope its manifest stores, to pass unchanged to the USP reads. Order is the only statement about recency: the capture time the server wrote into the manifest (capturedAt), newest first. Two captures with the same capture time follow the store time of their rows (createdAt, shared by every snapshot one command stores) and then their ids, which says nothing about which is newer. Cited documents are not checked here: a read that is given a listed scope applies its own document checks.
          */
         get: operations["GET_api_v1_buildings_buildingId_snapshots"];
         put?: never;
@@ -35115,8 +35115,16 @@ export interface components {
                     /** @enum {string} */
                     stage: "draft" | "recorded" | "retained";
                 };
-                /** Format: date-time */
+                /**
+                 * Format: date-time
+                 * @description When the row was stored: the start of the storing transaction, so every snapshot stored by one command carries the same value.
+                 */
                 createdAt: string;
+                /**
+                 * Format: date-time
+                 * @description When the server captured the snapshot, as its stored manifest states. The list is ordered by this value, newest first.
+                 */
+                capturedAt: string;
                 readonly members: {
                     total: number;
                     documentResultNotCurrent: number;
@@ -50090,6 +50098,7 @@ export interface components {
             };
         };
         POST_usp_property_cards_list_Request_application_json: {
+            /** @description Names the site whose cards are listed and is checked as on every USP read. It selects no row: the cards generated from every snapshot of that site are listed, and no field of a row is measured against this scope. */
             scope: {
                 /** @enum {string} */
                 kind: "snapshot";
@@ -50128,9 +50137,14 @@ export interface components {
                     revoked: boolean | null;
                     /** Format: date-time */
                     revokedAt: string | null;
+                    /** @description The revision of the target record that this card revision was generated from. */
                     targetRevision: number | null;
+                    /** @description The revision of the target record in the registry at the time of this read. It is not read from the scope of the request. */
                     currentTargetRevision: number | null;
-                    /** @enum {string|null} */
+                    /**
+                     * @description Whether the target record changed after the card was generated: same_revision exactly when targetRevision equals currentTargetRevision. The scope of the request takes no part in it, so a scope that holds the target at another revision is answered with the same state.
+                     * @enum {string|null}
+                     */
                     snapshotState: "same_revision" | "changed_revision" | null;
                     /** @enum {string|null} */
                     profile: "property-card-summary-ascii/1" | "property-card-summary-latin-deva/1" | null;

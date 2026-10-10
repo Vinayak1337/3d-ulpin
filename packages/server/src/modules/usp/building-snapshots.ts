@@ -27,6 +27,11 @@ async function buildingSiteTx(client: PoolClient, buildingId: string): Promise<s
  * under the caller's access view and policy (the manifest checks of readManifest) and lists the building as a
  * member. A snapshot the caller may not read, or one that does not hold the building, therefore takes no slot
  * of the page and cannot move `truncated`.
+ *
+ * Newest first is the capture time the manifest states, because `created_at` is the start of the transaction
+ * and one command can store two snapshots in it. The time is compared as text in byte order, which is
+ * chronological for the UTC form the capture writes and, unlike a cast, cannot fail on a damaged value. A body
+ * without it is ordered last. Equal capture times fall back to `created_at` and then the id.
  */
 async function pageTx(client: PoolClient, ctx: RequestContext, siteId: string, buildingId: string, limit: number) {
   const member = JSON.stringify([{ pin: { ref: { namespace: 'area_feature', id: buildingId } } }]);
@@ -34,7 +39,7 @@ async function pageTx(client: PoolClient, ctx: RequestContext, siteId: string, b
     `SELECT id,digest,body,created_at FROM usp_snapshots
      WHERE scope_id=$1 AND body->>'accessViewId'=$2 AND body->>'policyVersion'=$3
        AND body->'members' @> $4::jsonb
-     ORDER BY created_at DESC,id DESC LIMIT $5`,
+     ORDER BY (body->>'capturedAt') COLLATE "C" DESC NULLS LAST,created_at DESC,id DESC LIMIT $5`,
     [siteId, ctx.accessViewId, ctx.policyVersion, member, limit + 1],
   )).rows as Row[];
 }
@@ -56,14 +61,15 @@ function listedItem(row: Row, manifest: SnapshotManifest): Item {
   return {
     scope: manifest.scope,
     createdAt: new Date(row.created_at).toISOString(),
+    capturedAt: manifest.capturedAt,
     members: { total: manifest.members.length, documentResultNotCurrent: notCurrent.length },
   };
 }
 
 /**
- * The recorded snapshots that hold one building and that this caller may read, newest first, each with the scope
- * its manifest stores, so a client can pass that scope unchanged to the other USP reads. It writes nothing and
- * makes no statement about recency beyond the order.
+ * The recorded snapshots that hold one building and that this caller may read, newest capture first, each with
+ * the scope its manifest stores, so a client can pass that scope unchanged to the other USP reads. It writes
+ * nothing and makes no statement about recency beyond the order.
  *
  * Only stored manifests are read. The cited documents of a snapshot are not checked here, so one document that
  * moved on or became unavailable cannot fail the list; a read that is given a listed scope still applies its own

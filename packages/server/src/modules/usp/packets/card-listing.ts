@@ -77,6 +77,8 @@ function intactCard(row: Row) {
   return storedLinkageHolds(row, parsed.data, row.id, Number(row.revision)) ? parsed.data : null;
 }
 
+/** The state compares the revision the card was generated from with the record now, as the card read and the
+ * consistency report do. The scope of the request names the site only and takes no part in it. */
 function consistentItem(row: Row, card: PropertyCard, currentTargetRevision: number): Item {
   const latestRevision = Number(row.latest_revision), revokedAt = row.revoked_at && new Date(row.revoked_at);
   return { cardId: card.cardId, revision: card.revision, integrity: 'consistent', latestRevision,
