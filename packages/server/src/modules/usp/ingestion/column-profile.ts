@@ -259,13 +259,13 @@ type WorkbookPart = {
 type WorkbookTable = { rows: MappingRow[]; names: string[] };
 type WorkbookCells = Map<number, Map<number, unknown>>;
 
-function readWorkbookParts(path: string): WorkbookPart[] {
+function readWorkbookParts(path: string, htmlTableId?: string): WorkbookPart[] {
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../../..');
   const scriptPath = resolve(root, 'scripts/agent/read_workbook_cells.py');
   const servicesGeoPath = resolve(root, 'services/geo');
   const run = spawnSync(
     process.env.ULPIN_PROFILE_PYTHON ?? 'python',
-    [scriptPath, servicesGeoPath, resolve(path)],
+    [scriptPath, servicesGeoPath, resolve(path), ...(htmlTableId ? [htmlTableId] : [])],
     {
       encoding: 'utf8',
       timeout: 30000,
@@ -332,8 +332,9 @@ function workbookRows(path: string, sheet?: string, headerRow?: number): Workboo
   if (headerRow !== undefined && (!Number.isSafeInteger(headerRow) || headerRow < 1 || headerRow > 1048576)) {
     throw new Error('COLUMN_HEADER_ROW_INVALID');
   }
-  const parts = readWorkbookParts(path);
-  const selected = sheet ?? parts[0]?.locator.sheet;
+  const htmlTableId = /\.html?$/i.test(path) ? sheet : undefined;
+  const parts = readWorkbookParts(path, htmlTableId);
+  const selected = htmlTableId ? parts[0]?.locator.sheet : (sheet ?? parts[0]?.locator.sheet);
   return workbookTable(collectWorkbookCells(parts, selected), headerRow);
 }
 
@@ -373,7 +374,7 @@ export function profileColumnFile(path: string, sheet?: string, headerRow?: numb
     throw new Error('COLUMN_PATH_FORBIDDEN');
   if (statSync(path).size > 20 * 1024 * 1024) throw new Error('COLUMN_FILE_LIMIT');
   const bytes = readFileSync(path);
-  if (bytes[0] === 80 && bytes[1] === 75) {
+  if ((bytes[0] === 80 && bytes[1] === 75) || /\.html?$/i.test(path)) {
     const table = workbookRows(path, sheet, headerRow);
     return {
       rows: table.rows,

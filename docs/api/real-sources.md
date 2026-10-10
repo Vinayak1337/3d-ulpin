@@ -1,5 +1,50 @@
 # Official source index and retained dataset catalogue
 
+## T1-prep public municipal pool — 10 October 2026 UTC
+
+Five additional **unlabelled `split: pool` schema families** from Surat Municipal Corporation's issuing portal
+are retained outside Git under `E:/BhuAayam-data/datasets/messy-india-pool/`. They are development `test_only`,
+not evaluation or installed registry records. Distinct topics/layouts count as families, not tables, years or
+independent publishers. Public access is verified; an explicit open licence/training grant is **unconfirmed**
+(`licence: null`). No teacher calls, labels, training, officer approvals or property-rights claims were made.
+
+The additive external `manifest-v2.json` pins URLs, issuer, UTC acquisition time, bytes, hashes, geography,
+permission and failed discovery decisions. Times use the retained HTTP-response file modification time.
+All six responses below returned HTTP 200 via normal HTTPS GET, without login or bypass. Original responses
+and the earlier manifest remain retained; the sixth original is excluded from profiling, not deleted.
+Full per-original details also appear in [datasets.json](datasets.json), `t1-municipal-unlabelled-pool-20261010`.
+
+- `smc-building-stock` — zone-wise high-rise/commercial building counts, acquired `2026-10-10T00:23:23Z`.
+  URL: https://www.suratmunicipal.gov.in/Departments/TownPlanningBuildingStatistics
+  SHA-256: `7ff83846b56b006026f921f6df1a2ca78a2f77d5cebf277da30286a2d91fe18f` (100,351 bytes).
+- `smc-tax-recovery` — tax demand/recovery by category/year, acquired `2026-10-10T00:20:32Z`.
+  URL: https://www.suratmunicipal.gov.in/Departments/PropertyTaxRecoveryStatistics
+  SHA-256: `6cb0a801d5811f42d1eb395b68d51a3d85c406eb457a35aa4ccd78e51aa69097` (92,570 bytes).
+- `smc-water-projects` — water-supply project histories, acquired `2026-10-10T00:20:32Z`.
+  URL: https://www.suratmunicipal.gov.in/Departments/HydraulicHome
+  SHA-256: `399bc57267f6584ce496bd55d0202390c64dbc411a732e6a8eb2ace012a585f7` (127,303 bytes).
+- `smc-sewage-plants` — plant names and design capacities, acquired `2026-10-10T00:23:23Z`.
+  URL: https://www.suratmunicipal.gov.in/Departments/DrainageTreatmentPlants
+  SHA-256: `ebf1dfee2b1f39a34412cb7650427398a2294f03fe79b6b37ab706abe399a5ac` (101,721 bytes).
+- `smc-water-charges` — tariffs by carpet area (sq. metres), size and use, acquired `2026-10-10T01:12:52Z`.
+  URL: https://www.suratmunicipal.gov.in/Departments/HydraulicUserCharges
+  SHA-256: `b6aecd61e639b0afd877ce63fb112ed155a075f131f273fed26433a60882e446` (126,192 bytes).
+- Excluded `smc-waste-collection` — waste collection modes, acquired `2026-10-10T00:24:18Z`.
+  URL: https://www.suratmunicipal.gov.in/Departments/SolidWasteManagementStatistics
+  SHA-256: `99345b491a5b8144bdf9b61b3f28205f8b0e50beba8430e14616765538984c5d` (1,003,719 bytes).
+  `NATIVE_HTML_LIMIT`: both whole-page and one selected table exceed the unchanged 2,000-cell reader limit.
+
+Pune required CAPTCHA/personal details and was skipped; Kerala RERA returned 503, Tamil Nadu RERA 403.
+No accounts, authentication, CAPTCHA solving or repeated failing-route retries. Guessed Surat routes returned
+404; public homepage links resolved. The failed one-table waste comparison is retained in the external ledger;
+water tariffs supplied the fifth profiled family without weakening reader bounds.
+
+[T1 preparation evidence](../evidence/gf-agent/t1/prep.json) covers all 32 D8 dev files and these five pool files.
+Only development manifest entries are dispatched to readers. The separate evaluator manifest, its originals
+and supporting files were never opened; zero blind family IDs appear in teacher profiles. Publisher meanings
+are isolated from teacher inputs and remain literal publisher observations, not worker-invented target truth.
+Catalogue regeneration still needs lead synchronization with the unowned `retained-local-datasets.json` ledger.
+
 ## D1b widening — 10 October 2026 IST
 
 [Current D8 development manifest](../../fixtures/usp/D8-messy-india/manifest.json): **29 additional unchanged CSV/XLSX files in 21 publisher/schema families** (26 dev files / 18 families; 3 new tabular heldout files / 3 families). Whole pack: **37 originals / 26 families, 32 dev files / 21 families and 5 heldout files / 5 families**. These are schemas, not distinct-publisher counts. The new wave has 23 OpenCity/Oorvani publisher-native CSVs and 6 issuing-authority XLSX originals; OpenCity files may be transcribed derivatives and are **test_only, not official operational records**. All 26 new dev originals have unchanged small copies in `fixtures/usp/D8-messy-india/dev/d1b/`.
