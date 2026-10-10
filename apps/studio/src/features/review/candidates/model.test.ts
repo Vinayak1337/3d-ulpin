@@ -70,8 +70,10 @@ describe('candidateCard', () => {
     expect(card.limitations).toEqual(limitations);
   });
 
-  it('names the citation source and locator', () => {
-    expect(card.citations).toEqual([{ source: 'abcdef12', locator: 'p.1' }]);
+  it('carries the full source id of a citation, and shows its first characters and locator', () => {
+    expect(card.citations).toEqual([
+      { sourceId: 'abcdef12-0000-4000-8000-000000000000', source: 'abcdef12', locator: 'p.1' },
+    ]);
   });
 
   it('never gives a candidate the reviewed chip', () => {

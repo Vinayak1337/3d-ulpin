@@ -3,7 +3,6 @@ import { useParams } from 'react-router';
 import { DescriptionList, EvidenceChip, formatDateTime, type Fact } from '@ulpin/ui';
 import { useBuildingCanonical, useSpatialMlBatch, useSpatialMlItem } from '../../../api/queries';
 import { Cited, ReadingStatementsContext } from '../../register/ReadingNote';
-import { statedSourceId } from '../../register/registerState';
 import { useReadingStatements } from '../../register/useReadingStatements';
 import { CandidateChip } from './CandidateQueue';
 import { modelCardSummary } from './modelCard';
@@ -70,8 +69,8 @@ function Limitations({ items }: { items: string[] }) {
 }
 
 /**
- * The card carries neither its building nor a full source id, so the reading statements are those of the
- * page's building (none on an area's review page) and a citation is joined to them by the short id it shows.
+ * The card does not carry its building, so the reading statements are those of the page's building (none
+ * on an area's review page). A citation is joined to them by its source id.
  */
 function Citations({ card }: { card: CandidateCard }) {
   const { buildingId } = useParams();
@@ -84,7 +83,7 @@ function Citations({ card }: { card: CandidateCard }) {
         <ReadingStatementsContext.Provider value={readings}>
           <div className="ul-row">
             {card.citations.map((c) => (
-              <Cited key={`${c.source}${c.locator}`} sourceId={statedSourceId(readings, c.source)}>
+              <Cited key={`${c.source}${c.locator}`} sourceId={c.sourceId}>
                 <EvidenceChip source={c.source} locator={c.locator} />
               </Cited>
             ))}

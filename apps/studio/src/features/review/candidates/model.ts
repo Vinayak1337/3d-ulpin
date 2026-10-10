@@ -23,6 +23,8 @@ export interface CandidateDecision {
 }
 
 export interface CandidateCitation {
+  sourceId: string;
+  /** The first characters of the source id, as the chip shows it; the record carries no file name. */
   source: string;
   locator: string;
 }
@@ -112,7 +114,8 @@ function titleOf(candidate: CanonicalCandidate, kind: CandidateKind): string {
 }
 
 function citationOf(citation: Citation): CandidateCitation {
-  return { source: citation.sourceId.slice(0, 8), locator: locatorText(citation.locator) };
+  const { sourceId } = citation;
+  return { sourceId, source: sourceId.slice(0, 8), locator: locatorText(citation.locator) };
 }
 
 export function candidateCard(candidate: CanonicalCandidate): CandidateCard | null {
