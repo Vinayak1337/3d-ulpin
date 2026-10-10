@@ -1,0 +1,5 @@
+{ "index": "c1-003", "method": "GET",
+"route": "/api/v1/usp/property-cards/cb44d4e3-7a45-47b8-9456-b0a11fb6e2fa/revisions/1/verification", "status": 200,
+"seconds": 0.19, "requestKey": null, "idempotencyHeader": null, "ids": {
+"cardId": "cb44d4e3-7a45-47b8-9456-b0a11fb6e2fa", "revision": 1 }, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/c1-003", "request": null }
