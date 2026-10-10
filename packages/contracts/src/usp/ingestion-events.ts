@@ -6,6 +6,12 @@ const revision = z.number().int().positive();
 export const CASE_INGESTION_VERSION = 'case-ingestion/1' as const;
 /** SSE IDs encode a case/access binding and the durable bigint sequence as canonical decimal. */
 export const CaseIngestionCursorSchema = z.string().max(97).regex(/^(0|[1-9]\d*)$/);
+export const MappingChunkMetricsSchema = z.strictObject({ kind: z.literal('mapping.chunk'), jobId: id,
+  chunkIndex: z.number().int().nonnegative().max(4096), layout: z.enum(['new', 'memory']),
+  teacherCalls: z.number().int().min(0).max(2), memoryHits: z.number().int().min(0).max(1),
+  studentFields: z.number().int().min(0).max(256), teacherFields: z.number().int().min(0).max(256),
+  needsInput: z.number().int().min(0).max(256), latencyMs: z.number().finite().nonnegative(),
+  learnerVersion: z.string().regex(/^v[1-9]\d*$/).nullable() });
 export const CaseIngestionChangeSchema = z.discriminatedUnion('kind', [
   z.strictObject({kind: z.literal('source.retained'), sourceId: id, sourceRevision: revision, status: z.literal('needs_input')}),
   z.strictObject({kind: z.literal('recipe.changed'), recipeId: id, recipeRevision: revision, sourceId: id,
@@ -51,12 +57,7 @@ export const CaseIngestionChangeSchema = z.discriminatedUnion('kind', [
   z.strictObject({kind:z.literal('chunk-mapping.chunk'),sourceId:id,sourceRevision:revision,jobId:id,rawJobId:id,
     chunkIndex:z.number().int().nonnegative().max(4096),status:z.enum(['ready','quarantined']),resultSha256:hash,
     records:z.number().int().nonnegative().max(100),sourceComplete:z.literal(false)}),
-  z.strictObject({ kind: z.literal('mapping.chunk'), jobId: id,
-    chunkIndex: z.number().int().nonnegative().max(4096), layout: z.enum(['new', 'memory']),
-    teacherCalls: z.number().int().min(0).max(2), memoryHits: z.number().int().min(0).max(1),
-    studentFields: z.number().int().min(0).max(256), teacherFields: z.number().int().min(0).max(256),
-    needsInput: z.number().int().min(0).max(256), latencyMs: z.number().finite().nonnegative(),
-    learnerVersion: z.string().regex(/^v[1-9]\d*$/).nullable() }),
+  MappingChunkMetricsSchema,
   z.strictObject({kind:z.literal('streamed-profile.changed'),sourceId:id,sourceRevision:revision,jobId:id,rawJobId:id,
     status:z.enum(['queued','running','sealed','failed','stale'])}),
   z.strictObject({kind:z.literal('streamed-profile.generation'),sourceId:id,sourceRevision:revision,jobId:id,rawJobId:id,

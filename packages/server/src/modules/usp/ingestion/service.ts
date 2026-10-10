@@ -45,14 +45,17 @@ async function source(client: PoolClient, caseId: string, sourceId: string) {
   if (!row) notFound('Retained source not found in this workspace.');
   if (!['geojson-manual-v1','tabular-manual-v1'].includes(row.profile) || !row.inspection?.manualProfile)
     throw new AppError(422,'UNSUPPORTED_PROFILE','Retain a supported original through the manual receipt operation.');
-  if(row.inspection.actor!==localOperatorSubject())throw new AppError(403,'SOURCE_OPERATOR','This source belongs to another local context.');
+  if(row.inspection.actor!==localOperatorSubject()){
+    throw new AppError(403,'SOURCE_OPERATOR','This source belongs to another local context.');
+  }
   const latest = (await client.query('SELECT max(revision)::int revision FROM sources WHERE case_id=$1 AND family_id=$2',[caseId,row.family_id])).rows[0].revision;
   if (latest !== row.revision) conflict('This source revision has been superseded; author a recipe for the current original.');
   return row;
 }
 function profile(row: any, scope: {revision: number; fingerprint: string}): AnySourceProfile {
   const {schemaFingerprint,...fields} = row.inspection.manualProfile;
-  return AnySourceProfileSchema.parse({...fields,source:{sourceId:row.id,familyId:row.family_id,sourceRevision:row.revision,sourceSha256:row.sha256,schemaFingerprint},
+  return AnySourceProfileSchema.parse({...fields,source:{sourceId:row.id,familyId:row.family_id,
+    sourceRevision:row.revision,sourceSha256:row.sha256,schemaFingerprint},
     caseId:row.case_id,workspaceRevision:scope.revision,workspaceFingerprint:scope.fingerprint});
 }
 /** Reuse the manual inventory contract after a caller has locked case then source. */
@@ -60,16 +63,25 @@ export async function manualProfileForLockedSourceTx(client:PoolClient,caseId:st
   if(row.case_id!==caseId||row.profile!=='geojson-manual-v1'||!row.inspection?.manualProfile)
     throw new AppError(422,'UNSUPPORTED_PROFILE','This source has no qualified manual GeoJSON inventory.');
   const sources=(await client.query('SELECT id,family_id,revision,sha256 FROM sources WHERE case_id=$1 ORDER BY id',[caseId])).rows;
-  return SourceProfileSchema.parse(profile(row,{revision:caseRevision,fingerprint:fingerprint({caseId,revision:caseRevision,sources})}));
+  const scope={revision:caseRevision,fingerprint:fingerprint({caseId,revision:caseRevision,sources})};
+  return SourceProfileSchema.parse(profile(row,scope));
 }
-export async function tabularProfileForLockedSourceTx(client:PoolClient,caseId:string,caseRevision:number,row:any){
-  if(row.case_id!==caseId||row.profile!=='tabular-manual-v1')throw new AppError(422,'UNSUPPORTED_PROFILE','No tabular receipt.');
-  assertTabularPin(row.inspection.manualProfile.tabular,row);
-  const sources=(await client.query('SELECT id,family_id,revision,sha256 FROM sources WHERE case_id=$1 ORDER BY id',[caseId])).rows;
-  return profile(row,{revision:caseRevision,fingerprint:fingerprint({caseId,revision:caseRevision,sources})}) as TabularSourceProfile;
+export async function tabularProfileForLockedSourceTx(
+  client: PoolClient, caseId: string, caseRevision: number, row: any,
+) {
+  if (row.case_id !== caseId || row.profile !== 'tabular-manual-v1') {
+    throw new AppError(422, 'UNSUPPORTED_PROFILE', 'No tabular receipt.');
+  }
+  assertTabularPin(row.inspection.manualProfile.tabular, row);
+  const sql = 'SELECT id,family_id,revision,sha256 FROM sources WHERE case_id=$1 ORDER BY id';
+  const sources = (await client.query(sql, [caseId])).rows;
+  const scope = { revision: caseRevision, fingerprint: fingerprint({ caseId, revision: caseRevision, sources }) };
+  return profile(row, scope) as TabularSourceProfile;
 }
 export {workspace as lockUnassignedSourceCase};
-async function validate(client: PoolClient, plan: z.infer<typeof MappingPlanSchema>|z.infer<typeof TabularMappingPlanSchema>, scope: {revision: number; fingerprint: string}) {
+async function validate(client: PoolClient,
+  plan: z.infer<typeof MappingPlanSchema>|z.infer<typeof TabularMappingPlanSchema>,
+  scope: {revision: number; fingerprint: string}) {
   const row = await source(client,plan.caseId,plan.source.sourceId), current = profile(row,scope);
   if (fingerprint(current.source) !== fingerprint(plan.source) || current.workspaceRevision !== plan.workspaceRevision || current.workspaceFingerprint !== plan.workspaceFingerprint)
     conflict('Source bytes, schema, revision or workspace changed; inspect and author a current recipe.');
@@ -101,18 +113,22 @@ async function save(client: PoolClient, receipt: AnyMappingReceipt) {
   await client.query('INSERT INTO usp_mapping_recipe_revisions(recipe_id,revision,body) VALUES($1,$2,$3)',[receipt.id,receipt.revision,receipt]);
 }
 export class ManualIngestionService {
-  async retain(caseIdValue: string, inputValue: unknown, file: {name:string;bytes:Uint8Array}): Promise<AnySourceProfile> {
+  async retain(caseIdValue: string, inputValue: unknown, file: {name:string;bytes:Uint8Array})
+    : Promise<AnySourceProfile> {
     const caseId=uuid.parse(caseIdValue), input=AnyRetainSourceSchema.parse(inputValue), actor=localOperatorSubject();
     const profileName=input.format==='geojson'?'geojson-manual-v1':'tabular-manual-v1';
     if (!file.bytes.length || file.bytes.length>16*1024*1024)
-      throw new AppError(413,'FILE_SIZE','Choose a nonempty original up to 16 MiB; larger sources require another qualified receipt.');
+      throw new AppError(413,'FILE_SIZE',
+        'Choose a nonempty original up to 16 MiB; larger sources require another qualified receipt.');
     const tabular=input.format==='geojson'?null:inspectTabularSource(file.bytes,input.selection);
     if(input.format==='geojson')geojsonInventory(file.bytes);
     const hash=sha256(file.bytes),digest=fingerprint({input,name:file.name,hash,actor}),key=`manual-gis:${input.requestKey}`;
     // Committed receipts/deduplication remain useful even while the processor is unavailable.
     const previous=await transaction(async client=>{
       const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);if(replay)return replay;
-      const duplicate=(await client.query('SELECT id FROM sources WHERE case_id=$1 AND sha256=$2 AND profile=$3 ORDER BY revision DESC LIMIT 1',[caseId,hash,profileName])).rows[0];
+      const duplicateSql='SELECT id FROM sources WHERE case_id=$1 AND sha256=$2 AND profile=$3 '+
+        'ORDER BY revision DESC LIMIT 1';
+      const duplicate=(await client.query(duplicateSql,[caseId,hash,profileName])).rows[0];
       if(!duplicate)return undefined;
       const retained=await source(client,caseId,duplicate.id);
       if(tabular)assertTabularPin(tabular.tabular,retained);
@@ -122,7 +138,8 @@ export class ManualIngestionService {
     if(previous)return previous;
     // Inspection is the existing bounded GIS reader; no model or new parser authority.
     const inspection=input.format==='geojson'
-      ?await inspectGisBytes(file,null,value=>areaGeo<Omit<GisInspection,'suggestedTitle'|'suggestedNamespace'>>('inspect-gis',value)):null;
+      ?await inspectGisBytes(file,null,
+        value=>areaGeo<Omit<GisInspection,'suggestedTitle'|'suggestedNamespace'>>('inspect-gis',value)):null;
     const inventory=tabular?{version:'manual-tabular/1',...tabular}:inspectedProfile(file.bytes,inspection!);
     const sourceId=randomUUID(), objectKey=`sources/${sourceId}/${hash}`;
     const mime=input.format==='geojson'?'application/geo+json':input.format==='csv'?'text/csv'
@@ -130,7 +147,9 @@ export class ManualIngestionService {
     return originalAttempt('sources',sourceId,async rememberOriginal=>transaction(async client=>{
       const scope=await workspace(client,caseId);
       const replay=await operation(client,caseId,key,digest); if(replay)return replay;
-      const duplicate=(await client.query('SELECT * FROM sources WHERE case_id=$1 AND sha256=$2 AND profile=$3 ORDER BY revision DESC LIMIT 1',[caseId,hash,profileName])).rows[0];
+      const duplicateSql='SELECT * FROM sources WHERE case_id=$1 AND sha256=$2 AND profile=$3 '+
+        'ORDER BY revision DESC LIMIT 1';
+      const duplicate=(await client.query(duplicateSql,[caseId,hash,profileName])).rows[0];
       if(duplicate) {
         if(tabular)assertTabularPin(tabular.tabular,duplicate);
         const result=profile(await source(client,caseId,duplicate.id),scope);
@@ -140,13 +159,18 @@ export class ManualIngestionService {
       let familyId:string=sourceId,revision=1;
       if(input.familyId){
         const prior=(await client.query('SELECT * FROM sources WHERE case_id=$1 AND family_id=$2 ORDER BY revision DESC LIMIT 1 FOR SHARE',[caseId,input.familyId])).rows[0];
-        if(!prior || prior.profile!==profileName || prior.revision!==input.expectedSourceRevision)conflict('The source family changed; refresh before retaining a revision.');
+        if(!prior || prior.profile!==profileName || prior.revision!==input.expectedSourceRevision){
+          conflict('The source family changed; refresh before retaining a revision.');
+        }
         familyId=input.familyId;revision=prior.revision+1;
       }
       rememberOriginal(objectKey);await putOriginal(objectKey,file.bytes,mime);
-      await client.query("INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,object_key,status,inspection) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'needs_input',$11)",
+      const insertSql='INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,'+
+        "object_key,status,inspection) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'needs_input',$11)";
+      await client.query(insertSql,
         [sourceId,caseId,familyId,revision,file.name,profileName,mime,file.bytes.length,hash,objectKey,
-          {profile:profileName,status:'needs_input',issues:[],summary:'Original retained; a pinned recipe requires review.',
+          {profile:profileName,status:'needs_input',issues:[],
+            summary:'Original retained; a pinned recipe requires review.',
             manualProfile:inventory,...(inspection?{gis:inspection}:{}),actor}]);
       await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);
       const fresh=await workspace(client,caseId),row=await source(client,caseId,sourceId),result=profile(row,fresh);
@@ -166,7 +190,8 @@ export class ManualIngestionService {
     });
   }
   async author(caseIdValue:string,sourceIdValue:string,value:unknown):Promise<AnyMappingReceipt> {
-    const caseId=uuid.parse(caseIdValue),sourceId=uuid.parse(sourceIdValue),input=AnyAuthorMappingSchema.parse(value),subject=localOperatorSubject();
+    const caseId=uuid.parse(caseIdValue),sourceId=uuid.parse(sourceIdValue);
+    const input=AnyAuthorMappingSchema.parse(value),subject=localOperatorSubject();
     if(input.plan.version==='manual-tabular/1')input.plan=officerTabularPlan(input.plan,subject);
     if(input.plan.caseId!==caseId || input.plan.source.sourceId!==sourceId)throw new AppError(422,'MAPPING_SCOPE','Recipe paths and source pins must name this retained source workspace.');
     const digest=fingerprint({input,subject}),key=`manual-author:${input.requestKey}`;
@@ -174,10 +199,14 @@ export class ManualIngestionService {
       await lockSourceCaseDestinationTx(client,caseId);
       const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);if(replay)return replay;
       await validate(client,input.plan,scope);if(input.destination)await destination(client,input.destination);
-      const prior=(await client.query('SELECT body FROM usp_mapping_recipes WHERE source_id=$1 FOR UPDATE',[sourceId])).rows[0]?.body as AnyMappingReceipt|undefined;
+      const priorRow=(await client.query('SELECT body FROM usp_mapping_recipes WHERE source_id=$1 FOR UPDATE',
+        [sourceId])).rows[0];
+      const prior=priorRow?.body as AnyMappingReceipt|undefined;
       if((prior?.revision||0)!==input.expectedRecipeRevision || prior?.state==='executed')conflict('The recipe changed or already executed; refresh before editing.');
-      const receipt=AnyMappingReceiptSchema.parse({id:prior?.id||randomUUID(),revision:(prior?.revision||0)+1,state:'proposed',plan:input.plan,destination:input.destination,
-        planHash:fingerprint({plan:input.plan,destination:input.destination}),authoredBy:subject,authoredAt:new Date().toISOString(),approval:null,execution:null});
+      const receipt=AnyMappingReceiptSchema.parse({id:prior?.id||randomUUID(),revision:(prior?.revision||0)+1,
+        state:'proposed',plan:input.plan,destination:input.destination,
+        planHash:fingerprint({plan:input.plan,destination:input.destination}),authoredBy:subject,
+        authoredAt:new Date().toISOString(),approval:null,execution:null});
       if(prior)await save(client,receipt);
       else {
         await client.query("INSERT INTO usp_mapping_recipes(id,case_id,source_id,revision,state,body) VALUES($1,$2,$3,$4,$5,$6)",[receipt.id,caseId,sourceId,receipt.revision,receipt.state,receipt]);
@@ -193,13 +222,16 @@ export class ManualIngestionService {
     const rows=(await query('SELECT body FROM usp_mapping_recipe_revisions WHERE recipe_id=$1 AND recipe_id IN(SELECT id FROM usp_mapping_recipes WHERE case_id=$2) ORDER BY revision',[recipeId,caseId])).rows;
     if(!rows.length)notFound('Manual recipe not found.');return rows.map(row=>row.body) as AnyMappingReceipt[];
   }
-  async decide(caseIdValue:string,recipeIdValue:string,value:unknown,action:'approve'|'execute'):Promise<AnyMappingReceipt> {
+  async decide(caseIdValue:string,recipeIdValue:string,value:unknown,action:'approve'|'execute')
+    :Promise<AnyMappingReceipt> {
     const caseId=uuid.parse(caseIdValue),recipeId=uuid.parse(recipeIdValue),input=MappingDecisionSchema.parse(value),subject=localOperatorSubject();
     const digest=fingerprint({recipeId,input,subject}),key=`manual-${action}:${input.requestKey}`;
     const receipt=await transaction(async client=>{
       await lockSourceCaseDestinationTx(client,caseId);
       const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);if(replay)return replay;
-      const receipt=(await client.query('SELECT body FROM usp_mapping_recipes WHERE id=$1 AND case_id=$2 FOR UPDATE',[recipeId,caseId])).rows[0]?.body as AnyMappingReceipt|undefined;
+      const receiptRow=(await client.query('SELECT body FROM usp_mapping_recipes WHERE id=$1 AND case_id=$2 FOR UPDATE',
+        [recipeId,caseId])).rows[0];
+      const receipt=receiptRow?.body as AnyMappingReceipt|undefined;
       if(!receipt)notFound('Manual recipe not found.');
       if(receipt.revision!==input.expectedRecipeRevision)conflict('The recipe changed; refresh before approval or execution.');
       if(receipt.state!==(action==='approve'?'proposed':'approved'))throw new AppError(409,'RECIPE_STATE','Only a current proposed recipe can be approved and only an approved manual recipe can execute once.');
@@ -217,7 +249,8 @@ export class ManualIngestionService {
         if(!receipt.approval || receipt.approval.planHash!==planHash || receipt.approval.provenance!=='server_configured_local_operator')
           throw new AppError(409,'RECIPE_APPROVAL','The recipe lacks a current server-recorded local approval.');
         if(plan.version==='manual-tabular/1'||!receipt.destination||!validated.mapping)
-          throw new AppError(422,'TABULAR_REGISTRY_UNQUALIFIED','Approval permits mapping and learning, not a GIS package or registry write.');
+          throw new AppError(422,'TABULAR_REGISTRY_UNQUALIFIED',
+            'Approval permits mapping and learning, not a GIS package or registry write.');
         const dest=receipt.destination;
         const pkg=await ingestArea({bytes:validated.bytes,filename:validated.row.name,format:'geojson',namespace:dest.namespace,name:dest.name,mapping:validated.mapping,
           ...(dest.kind==='existing_area'?{areaId:dest.areaId,expectedAreaRevision:dest.expectedAreaRevision}:{requireNewArea:true}),

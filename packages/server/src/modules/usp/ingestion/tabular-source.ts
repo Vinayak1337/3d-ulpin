@@ -21,7 +21,9 @@ export function tabularDevelopmentAsset(hash: string, bytes: number): Developmen
     'fixtures/usp/D8-messy-india/manifest.json'), 'utf8'));
   const dev = new Set(manifest.families.filter((family: { split: string }) => family.split === 'dev')
     .map((family: { id: string }) => family.id));
+  const blind = new Set(manifest.heldout.map((family: { id: string }) => family.id));
   const asset = manifest.assets.find((item: DevelopmentAsset) => item.split === 'dev' && dev.has(item.family) &&
+    !blind.has(item.family) &&
     item.original.sha256 === hash && item.original.bytes === bytes && item.permission.state !== 'restricted' &&
     !/private|restricted/i.test(item.privacy ?? '')) as DevelopmentAsset | undefined;
   if (!asset) throw new AppError(422, 'TABULAR_DATA_DENIED', 'Only exact public D8 development originals qualify.');
@@ -34,7 +36,9 @@ function workbookParts(bytes: Uint8Array): Part[] {
     join(settings.repositoryRoot, 'services/geo'), '-',
   ], { input: Buffer.from(bytes).toString('base64'), encoding: 'utf8', timeout: 30000,
     maxBuffer: 8 * 1024 * 1024, env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } });
-  if (run.status !== 0) throw new AppError(422, 'TABULAR_NATIVE_READER', 'The unchanged native workbook bounds refused it.');
+  if (run.status !== 0) {
+    throw new AppError(422, 'TABULAR_NATIVE_READER', 'The unchanged native workbook bounds refused it.');
+  }
   const output = JSON.parse(run.stdout);
   if (output.format !== 'xlsx') throw new AppError(422, 'TABULAR_FORMAT', 'Choose a native XLSX workbook.');
   return output.parts;
@@ -50,11 +54,18 @@ function workbookTable(bytes: Uint8Array, selection: TabularSelection): TabularT
   }
   const headers = Array.from({ length: width }, (_, index) => headerParts.filter(part =>
     part.locator.column === index + 1 && part.locator.cellState === 'literal').map(part => part.text).join(' / '));
+  const records = workbookRows(parts, selection, width);
+  return { headers, ...records };
+}
+
+function workbookRows(parts: Part[], selection: TabularSelection, width: number) {
   const records = new Map<number, unknown[]>();
   const states = new Map<number, ('literal' | 'absent' | 'unknown')[]>();
   for (const part of parts) {
     if (part.locator.row <= Math.max(...selection.headerRows)) continue;
-    if (part.locator.column > width) throw new AppError(422, 'TABULAR_SCHEMA_DRIFT', 'A cell exceeds the pinned headers.');
+    if (part.locator.column > width) {
+      throw new AppError(422, 'TABULAR_SCHEMA_DRIFT', 'A cell exceeds the pinned headers.');
+    }
     if (!records.has(part.locator.row)) {
       records.set(part.locator.row, []);
       states.set(part.locator.row, Array(width).fill('absent'));
@@ -65,7 +76,7 @@ function workbookTable(bytes: Uint8Array, selection: TabularSelection): TabularT
       part.locator.cellState === 'empty_string' ? '' : part.text;
   }
   const ordered = [...records].sort(([left], [right]) => left - right);
-  return { headers, rows: ordered.map(([, row]) => row), sourceRows: ordered.map(([row]) => row),
+  return { rows: ordered.map(([, row]) => row), sourceRows: ordered.map(([row]) => row),
     cellStates: ordered.map(([row]) => states.get(row)!) };
 }
 
@@ -79,7 +90,7 @@ export function readTabularSource(bytes: Uint8Array, selection: TabularSelection
     if (selection.format === 'xlsx') table = workbookTable(bytes, selection);
     else {
       const csv = readColumnCsv(decodeColumnText(bytes), TABULAR_LIMITS.rows);
-      table = { ...csv, sourceRows: csv.rows.map((_, index) => index + 2) };
+      table = csv;
     }
   } catch (error) {
     if (error instanceof AppError) throw error;
@@ -96,7 +107,9 @@ export function inspectTabularSource(bytes: Uint8Array, selection: TabularSelect
   const asset = tabularDevelopmentAsset(sha256(bytes), bytes.length);
   const expected = selection.format === 'csv' ? 'text/csv' :
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-  if (asset.mediaType !== expected) throw new AppError(422, 'TABULAR_FORMAT', 'The manifest and selected format differ.');
+  if (asset.mediaType !== expected) {
+    throw new AppError(422, 'TABULAR_FORMAT', 'The manifest and selected format differ.');
+  }
   const table = readTabularSource(bytes, selection);
   const profile = profileTabularChunk({ jobId: 'inventory', chunkIndex: 0, headers: table.headers,
     rows: table.rows.slice(0, 100), sourceRef: 'inventory' }).profile;

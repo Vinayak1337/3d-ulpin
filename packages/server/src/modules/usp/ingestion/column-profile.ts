@@ -205,22 +205,22 @@ function sampleCells(values: readonly unknown[]): unknown[] {
 
 export function profileColumns(
   rows: readonly MappingRow[],
-  fields: readonly Pick<MappingLayoutField, 'name'>[],
+  fields: readonly (Pick<MappingLayoutField, 'name'> & { literalHeader?: string })[],
   sourceKind: ColumnProfileDocument['sourceKind'],
 ): ColumnProfileDocument {
   const names = fields.map((field) => normalizeMappingHeader(field.name));
   if (!fields.length || fields.length > 256 || new Set(names).size !== fields.length) {
     throw new Error('COLUMN_LAYOUT_AMBIGUOUS');
   }
-  const columns = fields.map(({ name }): ColumnProfile => {
+  const columns = fields.map(({ name, literalHeader = name }): ColumnProfile => {
     const values = rows.map((row) => row[name]);
-    const declaredUnit = inferDeclaredUnit(name, values);
+    const declaredUnit = inferDeclaredUnit(literalHeader, values);
     return {
       name,
       inferredType: inferColumnType(values),
       ...(declaredUnit ? { declaredUnit } : {}),
       valueShapes: valueShapes(values),
-      maskedSamples: sampleCells(values).map((value) => maskColumnSample(value, name)),
+      maskedSamples: sampleCells(values).map((value) => maskColumnSample(value, literalHeader)),
     };
   });
   return ColumnProfileDocumentSchema.parse({
@@ -353,13 +353,16 @@ export function decodeColumnText(bytes: Uint8Array): string {
 
 /** Literal positional records, also reused by tabular source admission and the raw chunk reader. */
 export function readColumnCsv(text: string, maxRows = 2000) {
-  const parsed = Papa.parse<string[]>(text, { dynamicTyping: false, skipEmptyLines: 'greedy', preview: maxRows + 2 });
+  const parsed = Papa.parse<string[]>(text, { dynamicTyping: false, preview: maxRows + 2 });
   if (parsed.errors.length || parsed.data.length > maxRows + 1) throw new Error('COLUMN_CSV_LIMIT_OR_INVALID');
-  const [headers = [], ...rows] = parsed.data;
+  const [headers = [], ...records] = parsed.data;
+  const observed = records.map((row, index) => ({ row, sourceRow: index + 2 }))
+    .filter(record => record.row.some(cell => cell.trim()));
+  const rows = observed.map(record => record.row);
   if (!headers.length || !headers.some(header => header.trim()) || rows.some(row => row.length > headers.length)) {
     throw new Error('COLUMN_HEADER_NEEDS_INPUT');
   }
-  return { headers, rows };
+  return { headers, rows, sourceRows: observed.map(record => record.sourceRow) };
 }
 
 function csvColumns(text: string): ProfiledInput {

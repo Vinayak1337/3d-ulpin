@@ -5,7 +5,8 @@ import type {PoolClient} from 'pg';
 import {z} from 'zod';
 import {STREAMING_VECTOR_LIMITS as limits,StreamingVectorRequestSchema,StreamingVectorInputSchema,
   StreamingVectorSlotSchema,StreamingVectorPayloadSchema,StreamingVectorChunkResponseSchema,
-  AnyStreamingInputSchema,AnyStreamingRequestSchema,AnyStreamingStatusSchema,type AnyStreamingInput} from '@ulpin/contracts/usp';
+  AnyStreamingInputSchema,AnyStreamingRequestSchema,AnyStreamingStatusSchema,
+  type AnyStreamingInput} from '@ulpin/contracts/usp';
 import {transaction} from '../../../infrastructure/db';
 import {settings} from '../../../infrastructure/config';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
@@ -43,9 +44,13 @@ export async function streamingContextTx(client:PoolClient,caseId:string,sourceI
   const current=(await client.query(`SELECT id,revision,archived FROM cases WHERE id=$1${lock?' FOR SHARE':''}`,[caseId])).rows[0]??notFound('Source case not found.');
   if(current.archived)throw new AppError(403,'STREAMING_CASE_ARCHIVED','The source case is archived.');
   const source=(await client.query(`SELECT * FROM sources WHERE case_id=$1 AND id=$2${lock?' FOR SHARE':''}`,[caseId,sourceId])).rows[0]??notFound('Retained source not found.');
-  const owner=['geojson-manual-v1','tabular-manual-v1'].includes(source.profile)?source.inspection?.actor:source.profile==='large-original-v1'?source.inspection?.largeOriginal?.operatorSubject:null;
+  const manual=['geojson-manual-v1','tabular-manual-v1'].includes(source.profile);
+  const owner=manual?source.inspection?.actor:
+    source.profile==='large-original-v1'?source.inspection?.largeOriginal?.operatorSubject:null;
   if(owner!==subject)throw new AppError(403,'STREAMING_SOURCE_OPERATOR','This original belongs to another configured local context.');
-  if(!['geojson-manual-v1','tabular-manual-v1','large-original-v1'].includes(source.profile))throw new AppError(422,'STREAMING_PROFILE','This reader requires a retained GeoJSON original.');
+  if(!['geojson-manual-v1','tabular-manual-v1','large-original-v1'].includes(source.profile)){
+    throw new AppError(422,'STREAMING_PROFILE','This reader requires a qualified retained GIS or tabular original.');
+  }
   const latest=(await client.query('SELECT max(revision)::int revision FROM sources WHERE case_id=$1 AND family_id=$2',[caseId,source.family_id])).rows[0].revision;
   return {current,source,binding,latest:Number(latest)===Number(source.revision)};
 }
@@ -59,7 +64,9 @@ export async function assertStreamingInputTx(client:PoolClient,input:AnyStreamin
     ||input.readerSha256!==streamingReaderSha()||fingerprint(base)!==inputFingerprint)
     conflict('The retained original, reader, case or private access context changed.');
   if(input.framing==='tabular')assertTabularPin(input.tabular,ctx.source);
-  else if(ctx.source.profile==='tabular-manual-v1')conflict('A tabular original requires its explicit framing and pins.');
+  else if(ctx.source.profile==='tabular-manual-v1'){
+    conflict('A tabular original requires its explicit framing and pins.');
+  }
   return ctx;
 }
 
@@ -73,13 +80,16 @@ export function streamingSlot(row:any){return StreamingVectorSlotSchema.parse({
 async function statusTx(client:PoolClient,caseId:string,sourceId:string,jobId:string){
   const ctx=await streamingContextTx(client,caseId,sourceId,true);
   const job=(await client.query("SELECT * FROM jobs WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='streaming-vector'",[jobId,caseId,sourceId])).rows[0]??notFound('Streaming import not found.');
-  const input=AnyStreamingInputSchema.parse(job.payload),row=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1',[jobId])).rows[0]??notFound('Streaming import state unavailable.');
+  const input=AnyStreamingInputSchema.parse(job.payload);
+  const row=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1',[jobId])).rows[0]
+    ??notFound('Streaming import state unavailable.');
   if(input.sourceSha256!==ctx.source.sha256||input.sourceRevision!==ctx.source.revision||input.accessBinding!==ctx.binding.access)
     conflict('The pinned source or private access context changed.');
   const slots=(await client.query('SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1 AND published=true ORDER BY chunk_index DESC LIMIT 32',[jobId])).rows.reverse().map(streamingSlot);
   const crs=ctx.source.profile==='geojson-manual-v1'?ctx.source.inspection?.gis:null;
-  return AnyStreamingStatusSchema.parse({version:limits.version,jobId,caseId,sourceId,sourceRevision:input.sourceRevision,
-    sourceSha256:input.sourceSha256,framing:input.framing,...(input.framing==='tabular'?{tabular:input.tabular}:{}),status:row.state,nextPublishIndex:row.next_publish_index,
+  return AnyStreamingStatusSchema.parse({version:limits.version,jobId,caseId,sourceId,
+    sourceRevision:input.sourceRevision,sourceSha256:input.sourceSha256,framing:input.framing,
+    ...(input.framing==='tabular'?{tabular:input.tabular}:{}),status:row.state,nextPublishIndex:row.next_publish_index,
     sealedChunks:row.sealed_chunks,records:row.records,accepted:row.accepted,quarantined:row.quarantined,
     issueCode:row.issue_code,unknownRemainder:row.unknown_remainder,
     reference:{sourceCrs:typeof crs?.sourceCrs==='string'?crs.sourceCrs:null,
@@ -88,7 +98,8 @@ async function statusTx(client:PoolClient,caseId:string,sourceId:string,jobId:st
 
 export class StreamingVectorService{
   async enqueue(caseIdValue:string,sourceIdValue:string,value:unknown){
-    const caseId=uuid.parse(caseIdValue),sourceId=uuid.parse(sourceIdValue),request=AnyStreamingRequestSchema.parse(value);
+    const caseId=uuid.parse(caseIdValue),sourceId=uuid.parse(sourceIdValue);
+    const request=AnyStreamingRequestSchema.parse(value);
     const binding=ingestionBinding(caseId),readerSha256=streamingReaderSha();
     return transaction(async client=>{
       await client.query("SELECT pg_advisory_xact_lock(hashtextextended('streaming-vector-admission-v1',0))");
@@ -112,7 +123,8 @@ export class StreamingVectorService{
         sourceBytes:Number(ctx.source.bytes),objectKey:ctx.source.object_key,framing:request.framing,
         ...(request.framing==='tabular'?{tabular:request.tabular}:{}),
         subject:binding.subject,accessBinding:binding.access,readerSha256};
-      const input=AnyStreamingInputSchema.parse({...base,inputFingerprint:fingerprint(base)}),inputHash=fingerprint(input);
+      const input=AnyStreamingInputSchema.parse({...base,inputFingerprint:fingerprint(base)});
+      const inputHash=fingerprint(input);
       await client.query("INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload) VALUES($1,$2,$3,'streaming-vector',$4,$5,$6)",
         [jobId,caseId,sourceId,ctx.current.revision,inputHash,input]);
       await registerUspJobInputTx(client,jobId,{kind:'intake',workspaceId:caseId,version:ctx.current.revision+1},sourceId,inputHash);

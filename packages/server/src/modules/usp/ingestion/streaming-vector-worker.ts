@@ -1,6 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import type {PoolClient} from 'pg';
-import {STREAMING_VECTOR_LIMITS as limits,AnyStreamingInputSchema as StreamingVectorInputSchema,StreamingVectorPayloadSchema,
+import {STREAMING_VECTOR_LIMITS as limits,AnyStreamingInputSchema as StreamingVectorInputSchema,
+  StreamingVectorPayloadSchema,
   type AnyStreamingInput as StreamingVectorInput,type StreamingVectorRecord} from '@ulpin/contracts/usp';
 import {query,transaction} from '../../../infrastructure/db';
 import {AppError,conflict} from '../../../infrastructure/errors';
@@ -9,7 +10,8 @@ import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,type UspJobAttempt} from '../jobs';
 import {appendCaseIngestionTx} from './events';
 import {assertStreamingInputTx,lockStreamingRowsTx} from './streaming-vector';
-import {readStreamingFeatures,readStreamingTabular,sourceRecord,tabularSourceRecord,type SourceFeature} from './streaming-vector-reader';
+import {readStreamingFeatures,readStreamingTabular,sourceRecord,tabularSourceRecord,
+  type SourceFeature} from './streaming-vector-reader';
 import {validateStreamingTopology} from './streaming-vector-validation';
 
 type Slot={chunkIndex:number;firstFeatureIndex:number;lastFeatureIndex:number|null;records:number;accepted:number;quarantined:number;
