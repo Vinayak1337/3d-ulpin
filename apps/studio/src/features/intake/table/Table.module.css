@@ -1,0 +1,48 @@
+.page {
+  display: grid;
+  align-content: start;
+  gap: var(--ui-space-4);
+  padding: var(--ui-space-4);
+  overflow: auto;
+  height: 100%;
+}
+
+.source {
+  display: grid;
+  gap: var(--ui-space-2);
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+.scroll table {
+  min-width: 900px;
+}
+
+.scroll th {
+  white-space: nowrap;
+}
+
+.targetId {
+  display: block;
+  font-family: var(--ui-font-mono);
+  color: var(--ui-muted);
+}
+
+.question {
+  display: grid;
+  gap: var(--ui-space-1);
+  min-width: 200px;
+}
+
+.form {
+  display: grid;
+  gap: var(--ui-space-4);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--ui-space-4);
+}
