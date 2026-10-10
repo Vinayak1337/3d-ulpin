@@ -36,6 +36,8 @@ export interface ProviderAdapter {
   propose(request: ProviderRequest): Promise<ProviderResult>;
 }
 
+/** The check on a whole message: text that holds any of these forms never reaches the provider. */
+export const holdsRefusedForm = (content: string) => /data:|image_url|base64/i.test(content);
 const MESSAGE_CHARS = 32768;
 const inputLimit = () => new AppError(413, 'MODEL_INPUT_LIMIT', 'Select smaller source excerpts for extraction.');
 
@@ -43,7 +45,7 @@ const inputLimit = () => new AppError(413, 'MODEL_INPUT_LIMIT', 'Select smaller 
 export function minimizeMessages(value: unknown): Message[] {
   const parsed = z.array(z.strictObject({role:z.enum(['system','user','assistant']),
     content:z.string()})).min(1).max(4).safeParse(value);
-  if (!parsed.success || parsed.data.some(m => /data:|image_url|base64/i.test(m.content)))
+  if (!parsed.success || parsed.data.some(m => holdsRefusedForm(m.content)))
     throw new AppError(403, 'MODEL_PROMPT_PRIVACY', 'Only bounded minimized text messages may reach the provider.');
   // Size alone is not a privacy refusal: a message that passed the two checks above and is only too long.
   if (parsed.data.some(m => m.content.length > MESSAGE_CHARS)) throw inputLimit();

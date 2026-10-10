@@ -279,6 +279,8 @@ function storeySpec(
 
 const OMISSION_REASONS: Record<StoreyOmittedLine['code'], string> = {
   MODEL_PROMPT_PRIVACY: "the gateway's text minimizer refuses this line",
+  MODEL_MESSAGE_CHECK: "the gateway's check on a whole message refuses a message that holds this line (data:, "
+    + 'image_url or base64)',
   NOT_SELECTED_UNIT_NUMBER: 'not selected: its only matching word is a numbered unit, as in an address, which '
     + 'states no level and no count of units',
 };
