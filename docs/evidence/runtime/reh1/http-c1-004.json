@@ -1,0 +1,6 @@
+{ "index": "c1-004", "method": "POST", "route": "/api/v1/usp/property-cards/read", "status": 400, "seconds": 0.012,
+"requestKey": null, "idempotencyHeader": null, "ids": {}, "code": "USP_REQUEST_FAILED",
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/c1-004", "request": { "mode": "update", "label": "Issue new revision",
+"cardId": "cb44d4e3-7a45-47b8-9456-b0a11fb6e2fa", "revision": 1 }, "answer": { "error": { "code": "USP_REQUEST_FAILED",
+"message": "This operation is unavailable. Check its input or service state.", "retryable": false,
+"requestId": "d4d96c54-aaaa-46fa-af18-6e5d33345392" } } }

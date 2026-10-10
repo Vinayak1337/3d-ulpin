@@ -20,7 +20,7 @@ function scan(path) {
     }
     const text = readFileSync(file, 'utf8');
     files++;
-    assert(!/postgresql:\/\//i.test(text), `${file}: connection URI`);
+    assert(!/postgres(?:ql)?:\/\//i.test(text), `${file}: connection URI`);
     const assignments = /\b[A-Z0-9_]*(?:_PASSWORD|_SECRET\w*|_TOKEN|DATABASE_URL)\b\s*[=:]\s*["']?[^\s,}]+/g;
     assert(!assignments.test(text), `${file}: credential assignment`);
     for (const match of text.matchAll(/[a-f0-9]{64,}/gi)) {
