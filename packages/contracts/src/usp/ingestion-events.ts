@@ -6,6 +6,13 @@ const revision = z.number().int().positive();
 export const CASE_INGESTION_VERSION = 'case-ingestion/1' as const;
 /** SSE IDs encode a case/access binding and the durable bigint sequence as canonical decimal. */
 export const CaseIngestionCursorSchema = z.string().max(97).regex(/^(0|[1-9]\d*)$/);
+export const MappingChunkMetricsSchema = z.strictObject({ kind: z.literal('mapping.chunk'), jobId: id,
+  chunkIndex: z.number().int().nonnegative().max(4096), layout: z.enum(['new', 'memory']),
+  teacherCalls: z.number().int().min(0).max(2), memoryHits: z.number().int().min(0).max(1),
+  studentFields: z.number().int().min(0).max(256), teacherFields: z.number().int().min(0).max(256),
+  unansweredFields: z.number().int().min(0).max(256).optional(),
+  needsInput: z.number().int().min(0).max(256), latencyMs: z.number().finite().nonnegative(),
+  learnerVersion: z.string().regex(/^v[1-9]\d*$/).nullable() });
 export const CaseIngestionChangeSchema = z.discriminatedUnion('kind', [
   z.strictObject({kind: z.literal('source.retained'), sourceId: id, sourceRevision: revision, status: z.literal('needs_input')}),
   z.strictObject({kind: z.literal('recipe.changed'), recipeId: id, recipeRevision: revision, sourceId: id,
@@ -25,6 +32,18 @@ export const CaseIngestionChangeSchema = z.discriminatedUnion('kind', [
     status:z.enum(['queued','running','completed','failed','stale'])}),
   z.strictObject({kind:z.literal('ifc-native.changed'),sourceId:id,sourceRevision:revision,jobId:id,
     status:z.enum(['queued','running','completed','failed','stale'])}),
+  z.strictObject({kind:z.literal('dxf-native.changed'),sourceId:id,sourceRevision:revision,jobId:id,
+    status:z.enum(['queued','running','completed','failed','stale'])}),
+  z.strictObject({kind:z.literal('kml-native.changed'),sourceId:id,sourceRevision:revision,jobId:id,
+    status:z.enum(['queued','running','completed','failed','stale'])}),
+  z.strictObject({kind:z.literal('citygml-native.changed'),sourceId:id,sourceRevision:revision,jobId:id,
+    status:z.enum(['queued','running','completed','failed','stale'])}),
+  z.strictObject({kind:z.literal('obj-native.changed'),sourceId:id,sourceRevision:revision,jobId:id,
+    status:z.enum(['queued','running','completed','partial','failed','stale'])}),
+  z.strictObject({kind:z.literal('gltf-native.changed'),sourceId:id,sourceRevision:revision,jobId:id,
+    status:z.enum(['queued','running','completed','partial','failed','stale'])}),
+  z.strictObject({kind:z.literal('geoparquet-native.changed'),sourceId:id,sourceRevision:revision,jobId:id,
+    status:z.enum(['queued','running','completed','failed','stale'])}),
   z.strictObject({kind:z.literal('cityjson-native.changed'),sourceId:id,sourceRevision:revision,jobId:id,
     status:z.enum(['queued','running','completed','failed','stale'])}),
   z.strictObject({kind:z.literal('point-batch.changed'),sourceId:id,sourceRevision:revision,jobId:id,
@@ -39,6 +58,7 @@ export const CaseIngestionChangeSchema = z.discriminatedUnion('kind', [
   z.strictObject({kind:z.literal('chunk-mapping.chunk'),sourceId:id,sourceRevision:revision,jobId:id,rawJobId:id,
     chunkIndex:z.number().int().nonnegative().max(4096),status:z.enum(['ready','quarantined']),resultSha256:hash,
     records:z.number().int().nonnegative().max(100),sourceComplete:z.literal(false)}),
+  MappingChunkMetricsSchema,
   z.strictObject({kind:z.literal('streamed-profile.changed'),sourceId:id,sourceRevision:revision,jobId:id,rawJobId:id,
     status:z.enum(['queued','running','sealed','failed','stale'])}),
   z.strictObject({kind:z.literal('streamed-profile.generation'),sourceId:id,sourceRevision:revision,jobId:id,rawJobId:id,

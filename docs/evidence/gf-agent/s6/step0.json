@@ -1,0 +1,97 @@
+{
+  "task": "S6 step 0",
+  "base": "afd23f29",
+  "reviewedAt": "4483777a (line references below, before grouping code)",
+  "decision": "proceed: a column subset is a valid existing profile; recording identity remains exact",
+  "files": {
+    "teacher": "packages/server/src/modules/usp/ingestion/mapping-teacher.ts",
+    "validator": "packages/server/src/modules/usp/ingestion/mapping-plan-v2.ts",
+    "contract": "packages/contracts/src/canonical/mapping-plan.ts",
+    "profiler": "packages/server/src/modules/usp/ingestion/column-profile.ts",
+    "memory": "packages/server/src/modules/usp/ingestion/mapping-memory.ts",
+    "recordings": "packages/server/src/modules/model-gateway/recordings.ts"
+  },
+  "point1": {
+    "perColumn": [
+      "teacher:188-199 sends a masked header, local alias, inferred type, declared unit, shapes and samples",
+      "teacher:80-103 closes each answer to alias, target, operation, confidence and literal-free rationale",
+      "teacher:280-292 converts confidence tokens and aliases back to source names",
+      "validator:121-207 checks operations, identifier copy, unknown copy, parser kind, enum and unit evidence",
+      "validator:94-111 rejects executable literal parameters; contract:39-65 closes operations and field metadata"
+    ],
+    "crossColumn": [
+      "teacher:147-160 output schema restricts sourceField and parentField to request-local aliases",
+      "teacher:294-316 reconstructs the profile layout and passes the whole answer to validateMappingPlanV2",
+      "teacher:80-103 answer field count is between one and 256; contract:74 plan has the same count bound",
+      "validator:209-223 parent link needs a supplied parent inventory; teacher context supplies none",
+      "validator:225-242 citations check column membership, source and row count; teacher supplies no citations",
+      "validator:244-266 rejects unknown source columns and repeat claims on one source column",
+      "validator:268-282 rejects repeated canonical non-unknown targets as MAPPING_TARGET_DUPLICATE",
+      "validator:297-315 checks sourceKind and the ordered layout fingerprint, including structural layout selection",
+      "validator:318-327 checks each inventory field and unique normalized names",
+      "validator:330-367 validates every field and requires disposition for every inventory column",
+      "contract:39-45 has no composite operation: one source per field; parentField is the only other field reference",
+      "contract:67-75 imposes no answer ordering beyond the fingerprint; output is merged in original column order"
+    ],
+    "repairCaveat": "teacher:402-427 retains isolated valid fields on exhausted repair, choosing first within a group;",
+    "mergeDecision": "cross-group duplicate targets are both unknown with MAPPING_TARGET_DUPLICATE; no first-group wins"
+  },
+  "point2": {
+    "contract": "contract:126-133 permits any nonempty ordered subset of at most 256 columns without schema changes",
+    "wholeTableFields": [
+      "version and sourceKind are retained",
+      "layoutFingerprint is recomputed from the subset in order (validator:66-69)",
+      "sampleShortfall is recomputed from subset observed samples (profiler:247); prompt reduction is not truth",
+      "profileHash is not a document field: teacher:106-107 hashes the parsed subset with its full observed samples",
+      "no row counts or neighbours in ColumnProfileDocument; column shape rates keep original denominators",
+      "cellCount, emptyCount and neighbourHeaders are separate learner metadata, not sent to teacher (teacher:602-615)",
+      "no source rows are resampled and no neighbour is invented at a group boundary"
+    ]
+  },
+  "point3": {
+    "profileHash": "whole today; group profile hash for each call, whole hash for merged result metadata",
+    "replayKey": "teacher:108-113 hashes template/profile/model: group hash gives its key; whole keys unchanged",
+    "recording": "teacher:456-472 validates against call.profile; recordings:93-104 verifies replay identity",
+    "recordingMeaning": "unchanged: one recording describes exactly the columns of one profile and one answer",
+    "memory": "not keyed by profile hash: memory:41-51,84-99 uses accepted layoutFingerprint; merged whole plan only",
+    "invocationKey": "teacher:533 uses supplied key or UUID; group keys derive from invocation plus group hash",
+    "gatewayIdentity": "teacher:474-505 group hash for scopeHash/sourceHashes/replayKey; repair keeps group invocation",
+    "attemptMetadata": "teacher:535-536 whole hash today; group metadata is local; merged attempts sum calls",
+    "replayed": "true only if all groups were replayed; any failure returns whole fallback, never half plan"
+  },
+  "point4": {
+    "method": "prepareTable as the screen, equal consecutive groups tested from one to four; gateway minimizeMessages",
+    "measurements": [
+      { "table": "schemes-yes-v1.csv", "columns": 90, "fewestGroups": 2,
+        "groups": [
+          { "columns": 45, "samplesPerColumn": 3, "messageBytes": 24113, "bodyBytes": 27514 },
+          { "columns": 45, "samplesPerColumn": 3, "messageBytes": 24502, "bodyBytes": 27909 }
+        ] },
+      { "table": "schemes-no-v1.csv", "columns": 90, "fewestGroups": 2,
+        "groups": [
+          { "columns": 45, "samplesPerColumn": 3, "messageBytes": 24021, "bodyBytes": 27466 },
+          { "columns": 45, "samplesPerColumn": 3, "messageBytes": 24362, "bodyBytes": 27789 }
+        ] }
+    ],
+    "safety": "counts, bytes and hashes only; no header, sample or cell text stored in Git or evidence"
+  },
+  "point5": {
+    "plannedWideTable": false,
+    "plannedMappingWidths": [16, 16],
+    "tenHashesEqualS5": true,
+    "currentSequence": "unchanged; these two development tables are not in the ten-call sequence",
+    "secondCallCost": "one extra per table versus a hypothetical one-call table, against principalDailyCallCap",
+    "today": "S5 refuses these tables unasked; enabling both adds four calls, not two, to any run including them",
+    "estimateMicroInr": { "schemes-yes-v1.csv": ["199020", "200985"],
+      "schemes-no-v1.csv": ["198780", "200385"] },
+    "estimateBasis": "plan rule and readTariff proposal, not an approved quote; second calls are 200985 and 200385",
+    "repairs": "product permits one repair per group; live proof continues to set maxAttempts to one"
+  },
+  "point6": {
+    "stop": false,
+    "reason": "no published contract or stored recording meaning changes; new groups have new identities",
+    "offlineDevelopmentProbe": "opt-in --wide-tables under --plan/--dry-run, separate from unchanged ten-call sequence",
+    "noLiveExpansion": "the optional development probe is refused in --live; not approval to add paid calls"
+  },
+  "verification": "step0-measure.ts in E:/BhuAayam-data/task-data/s6, exit 0; dev assets and dev/demo pages only"
+}

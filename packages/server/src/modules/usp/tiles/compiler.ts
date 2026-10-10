@@ -39,12 +39,29 @@ const preDocumentCodeSha='3d060fda17b9cd542c4c8c2ffb29ad5fafb6cd28e34053235885ce
 const prePointCodeSha='20f90748a73f2051f3cabba45bc76432cdcae723381a497ddf81c4d7939ed339';
 const preIFCReadCodeSha=new Set(['37f9c493f48724bc8d9627718a5781d3a3514e91d2055ab57492041729dbcbfc',
   '9a9790012ba12ed203ecde3660406a307f59b178399f704e8e9d3e5246c83c76']);
+// DXF-02: reconstructed cfc679fd Git/LF and retained physical compiler bytes.
+const preDXFReadCodeSha=new Set(['64b5b4f8ae0a0366a15139e3bdd6692e1753c06590073c7c81a8dfa3df34079e',
+  'f44ff28bcf553f35e90950bc8729fde08eac62dee4033d4e86697f43f54df49a']);
+// KML-02: exact fd36a4b9 Git/LF and actual physical compiler constituents.
+const preKMLReadCodeSha=new Set(['3cf0b3859a113d4ba24f708d1fa8fa9aad124ac45fd0d21ec69f953e213fb358',
+  '41bcb3aae67bc7b3c88016a8053db7747f469fc8d1c570157f8d6adf7bd06019']);
+// CITYGML-02: exact assigned-base compiler constituents, unchanged non-code pins.
+const preCityGMLReadCodeSha=new Set(["8e50f24dff2f78fe6681b76667dc29ec727c9ac377329886fe29a4807aafd532", "b635803489804a2da5778a3dc3dbbfb31f3bab15dd8baf04c204d5e5f5034654"]);
+// GEOPARQUET-02: exact assigned-base code with unchanged runtime/access/policy.
+const preGeoParquetReadCodeSha=new Set(["4d59027d16b1bacc5a9145ae6b98d9ae4a1e343020aaab9db84cfc11b132dc0b", "5066ec961fdf3e56796fe581c1b8708e11d62b72488f711988b9d40f85b5b788"]);
+// PACK1-PDF-04: exact 1c024959 Git/LF and captured physical code aggregates.
+// Immutable reads only; current full inventory/non-code pins and strict writers remain mandatory.
+const prePacketPdfReadCodeSha=new Set(["5f1d1803ad9fdf8fee43a453e204723b91a3f987cd2832076eb4c36b99a5c3cc","79af89bcef0e32427eb341641673d895b9ef7c1c80d6436b36cdc321c293f6b4"]);
 export function mvtReadCompilerCompatible(stored:PrivateMvtInput['compiler'],current:PrivateMvtInput['compiler'],hasSourceChunk=false){
   const valid=(pin:PrivateMvtInput['compiler'])=>{const {sha256,...base}=pin;return fingerprint(base)===sha256;};
   if(!valid(stored)||!valid(current))return false;
   if(fingerprint(stored)===fingerprint(current))return true;
-  // Reviewed pre-IFC bytes only. Current writers never call this predicate.
-  if(preIFCReadCodeSha.has(stored.codeSha256)&&current.codeSha256===mvtCodeSha()){
+  if(prePacketPdfReadCodeSha.has(stored.codeSha256)&&current.codeSha256===mvtCodeSha()){
+    const {sha256:_s,codeSha256:_sc,...oldProfile}=stored,{sha256:_c,codeSha256:_cc,...newProfile}=current;
+    return fingerprint(oldProfile)===fingerprint(newProfile);
+  }
+  // Reviewed historical bytes only. Current writers never call this predicate.
+  if((preIFCReadCodeSha.has(stored.codeSha256)||preDXFReadCodeSha.has(stored.codeSha256)||(preKMLReadCodeSha.has(stored.codeSha256)||(preCityGMLReadCodeSha.has(stored.codeSha256)||preGeoParquetReadCodeSha.has(stored.codeSha256))))&&current.codeSha256===mvtCodeSha()){
     const {sha256:_s,codeSha256:_sc,...oldProfile}=stored,{sha256:_c,codeSha256:_cc,...newProfile}=current;
     if(fingerprint(oldProfile)===fingerprint(newProfile))return true;
   }

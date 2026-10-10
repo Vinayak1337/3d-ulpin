@@ -1,8 +1,10 @@
+import type { ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { ArrowRight, CircleNotch, FilePlus, MagnifyingGlass, Stack, WarningCircle } from '@phosphor-icons/react';
 import type { WorkBoard } from '@ulpin/api-client/draft';
 import { Badge, Button, EmptyState, FilterChip, Icon, formatDateTime, formatRelative } from '@ulpin/ui';
 import { useWorkBoard, useWorkQueue, type WorkItem } from '../../api/queries';
+import { COLUMN_HEADERS, batchColumns, type BatchColumn } from './columns';
 import { nextAction } from './nextAction';
 import { STAGES, targetHref, type Stage } from './targets';
 import styles from './BatchesPage.module.css';
@@ -12,7 +14,7 @@ type BoardItem = WorkBoard['items'][number];
 /**
  * S1 Batches: what, stage, next action, readiness and time in aligned columns, with count cards that
  * jump straight to the work. Stage and readiness come from the work board; without it, the next
- * action is derived from the work item alone and those columns stay empty.
+ * action is derived from the work item alone and those two columns are not drawn.
  */
 export function BatchesPage() {
   const [params, setParams] = useSearchParams();
@@ -46,7 +48,8 @@ export function BatchesPage() {
             {STAGES.map((s) => <FilterChip key={s.value} label={s.label} count={countFor(s.value)} pressed={stage === s.value} onToggle={() => update({ stage: stage === s.value ? null : s.value })} />)}
           </div>
         ) : null}
-        <BatchesBody items={items} board={byId} pending={queue.isPending} error={queue.error} retry={() => void queue.refetch()} filtered={Boolean(stage || q)} />
+        <BatchesBody items={items} board={byId} columns={batchColumns(board)} pending={queue.isPending}
+          error={queue.error} retry={() => void queue.refetch()} filtered={Boolean(stage || q)} />
       </section>
       {board?.counts.length ? (
         <aside className={styles.counts} aria-label="Work at a glance">
@@ -62,8 +65,9 @@ export function BatchesPage() {
   );
 }
 
-function BatchesBody({ items, board, pending, error, retry, filtered }: {
-  items: WorkItem[]; board: Map<string, BoardItem>; pending: boolean; error: Error | null; retry: () => void; filtered: boolean;
+function BatchesBody({ items, board, columns, pending, error, retry, filtered }: {
+  items: WorkItem[]; board: Map<string, BoardItem>; columns: readonly BatchColumn[]; pending: boolean;
+  error: Error | null; retry: () => void; filtered: boolean;
 }) {
   if (pending) {
     return (
@@ -89,37 +93,57 @@ function BatchesBody({ items, board, pending, error, retry, filtered }: {
     );
   }
   return (
-    <div className={`ul-panel ${styles.table}`} role="table" aria-label="Batches">
+    <div className={`ul-panel ${styles.table}`} role="table" aria-label="Batches" data-columns={columns.length}>
       <div className={styles.row} role="row" data-head>
-        <span role="columnheader">Batch</span><span role="columnheader">Stage</span><span role="columnheader">Next action</span>
-        <span role="columnheader">Readiness</span><span role="columnheader" className={styles.r}>Updated</span>
+        {columns.map((column) => (
+          <span key={column} role="columnheader" className={column === 'updated' ? styles.r : undefined}>
+            {COLUMN_HEADERS[column]}
+          </span>
+        ))}
       </div>
-      {items.map((item) => <BatchRow key={item.id} item={item} board={board.get(item.id)} />)}
+      {items.map((item) => <BatchRow key={item.id} item={item} board={board.get(item.id)} columns={columns} />)}
     </div>
   );
 }
 
-function BatchRow({ item, board }: { item: WorkItem; board: BoardItem | undefined }) {
+function BatchRow({ item, board, columns }: {
+  item: WorkItem; board: BoardItem | undefined; columns: readonly BatchColumn[];
+}) {
   const derived = nextAction(item);
   const label = board?.nextAction.label ?? derived.label;
   const href = board ? targetHref(board.nextAction.target) : derived.href;
   const stage = board ? STAGES.find((s) => s.value === board.stage) : undefined;
-  const sub = [item.areaName, board?.detail].filter(Boolean).join(' · ');
-  const content = (
-    <>
-      <span role="cell" className={styles.what}><b>{item.name}</b>{sub ? <span>{sub}</span> : null}</span>
-      <span role="cell">{stage ? <Badge tone={stage.tone} icon={null}>{stage.label}</Badge> : null}</span>
-      <span role="cell" className={styles.next}>
+  const area = item.areaName === item.name ? null : item.areaName;
+  const sub = [area, board?.detail].filter(Boolean).join(' · ');
+  const ready = board?.readiness;
+  const cells: Record<BatchColumn, ReactNode> = {
+    batch: (
+      <span key="batch" role="cell" className={styles.what}><b>{item.name}</b>{sub ? <span>{sub}</span> : null}</span>
+    ),
+    stage: (
+      <span key="stage" role="cell">
+        {stage ? <Badge tone={stage.tone} icon={null}>{stage.label}</Badge> : null}
+      </span>
+    ),
+    next: (
+      <span key="next" role="cell" className={styles.next}>
         {href ? <>{label}<Icon icon={ArrowRight} size={16} /></> : <span className={styles.waiting}><Icon icon={CircleNotch} size={16} className={styles.spin} />{label}</span>}
       </span>
-      <span role="cell">{board ? <Readiness met={board.readiness.met} unknown={board.readiness.unknown} of={board.readiness.of} /> : null}</span>
-      <span role="cell" className={`${styles.r} ${styles.time}`}>
+    ),
+    readiness: (
+      <span key="readiness" role="cell">
+        {ready ? <Readiness met={ready.met} unknown={ready.unknown} of={ready.of} /> : null}
+      </span>
+    ),
+    updated: (
+      <span key="updated" role="cell" className={`${styles.r} ${styles.time}`}>
         <time dateTime={item.updatedAt} title={formatDateTime(item.updatedAt)}>{timeOf(item.updatedAt)}</time>
       </span>
-    </>
-  );
+    ),
+  };
+  const content = columns.map((column) => cells[column]);
   return href
-    ? <Link to={href} className={styles.row} role="row">{content}</Link>
+    ? <Link to={href} state={{ caseRow: item }} className={styles.row} role="row">{content}</Link>
     : <div className={styles.row} role="row">{content}</div>;
 }
 

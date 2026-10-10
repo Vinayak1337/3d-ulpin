@@ -1,0 +1,1 @@
+{"hashScope": "crlf-to-lf", "reviewed": [{"producer": "packages/server/src/modules/registry/canonical-building.ts", "before": "80b6b423a0a6ef5c335035027cef280fcc4bcb03a9e32b6ef8b1cceae6390542", "after": "530dcf15e37bbbb1d5571d9adc2bc72c37f0fcbcdb440cd4ad75b2cd777a6321"}], "operationAdditions": []}

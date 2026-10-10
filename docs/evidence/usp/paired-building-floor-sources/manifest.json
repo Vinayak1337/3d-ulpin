@@ -1,0 +1,136 @@
+{
+  "schemaVersion": "paired-building-floor-source-acquisition/1",
+  "assignment": "PAIRED-SOURCES-01",
+  "date": "2026-10-04",
+  "baseCommit": "9dc50bdcad031646d87a9f7bed5845f0cc81a50a",
+  "branch": "task/desktop-paired-building-floor-sources",
+  "privateRoot": "E:/BhuAayam-data/task-data/paired-building-floor-sources-20261004-run01",
+  "state": "needs_input",
+  "qualification": "not_assessed",
+  "result": "One publisher-linked IFC retained; no complete pinned model/document floor pair acquired or qualified within the three-family bound.",
+  "bounds": {
+    "candidateFamilies": 3,
+    "candidateFamiliesInspected": 3,
+    "maximumNewOriginals": 2,
+    "validNewOriginalsRetained": 1,
+    "perOriginalBytes": 10485760,
+    "perRequestDeadlineMs": 30000,
+    "repositoryTreeBytes": 1048576,
+    "publisherPageBytes": 262144,
+    "nativeRuns": 0
+  },
+  "candidates": [
+    {
+      "id": "retained-haryana-project-2831-tower3",
+      "classification": "Indian issuing-portal planned drawings; source-specific terms/current approval unresolved",
+      "evidence": [
+        "docs/evidence/usp/association-crosswalk/manifest.json",
+        "docs/evidence/usp/association-crosswalk/observations.json",
+        "docs/evidence/usp/association-crosswalk/review.md",
+        "docs/evidence/usp/association-sources/independent-review.md"
+      ],
+      "outcome": "Reuse completed review. Publisher listing supports project/Tower-3 document grouping and Plan-2 supplies explicit planned typical-floor ranges. It does not supply a corresponding independently identified model/storey source or exact approved paired revision; G+41/G+42 conflict remains. No reacquisition, rendering or matching labels.",
+      "remainingGap": "Issuer-published model/geometry and named-storey identity/version evidence joining the planned drawings; do not substitute planned ranges for real canonical floor IDs."
+    },
+    {
+      "id": "retained-buildingsmart-simple-scene",
+      "publisher": "buildingSMART International Ltd.",
+      "classification": "test_only",
+      "version": "80d976a9b193a26a8e928c3e79bff67af1de68a8",
+      "evidence": [
+        "docs/evidence/usp/native-ifc/manifest.json",
+        "docs/evidence/usp/native-ifc/README.md",
+        "E:/BhuAayam-data/task-data/paired-building-floor-sources-20261004-run01/research/buildingsmart-tree.json"
+      ],
+      "treeSha256": "e88f05e7e81e34605a8458a0b0ffcbffcf1f165d7451f0ab7a41d7c698cae59f",
+      "treeTruncated": false,
+      "outcome": "Retained IFC2x3/IFC4 originals already name Single-family house and 00 groundfloor. Pinned upstream tree supplies IFC examples and generic README/import-certification documentation; no paired plan, schedule or named-floor table exists in that examined tree. No IFC reacquisition or reader rerun.",
+      "remainingGap": "Publisher-linked plan/table identifying this same building and named storey, not merely another IFC example or a generic hierarchy test description."
+    },
+    {
+      "id": "kit-iai-fzk-haus",
+      "publisherAttribution": "Institute for Automation and Applied Informatics (IAI) / Karlsruhe Institute of Technology (KIT), as attributed by IFC Wiki",
+      "classification": "test_only",
+      "publisherModelDescription": "Simple Phantasy Building",
+      "publisherPage": "https://www.ifcwiki.org/index.php?title=KIT_IFC_Examples&oldid=552",
+      "publisherPageSha256": "76f45a25078e5edd24615459f30a98a17aa73697dd132adedb86890f0aba5ebb",
+      "outcome": "Retained the directly linked IFC4 original and exact named building/storey/decomposition literals. Primary academic publications explicitly cite KIT's model family, but local document endpoints return an HTML challenge. No exact cross-input floor GUID/version relationship is qualified.",
+      "remainingGap": "A valid unchanged small publisher document/plan/table with its bytes/hash and explicit named-storey correspondence to this retained IFC revision. Published model-family attribution alone is insufficient."
+    }
+  ],
+  "sources": [
+    {
+      "sourceFamily": "kit-iai-fzk-haus-development",
+      "classification": "test_only",
+      "sourceRole": "model",
+      "originalUrl": "https://www.ifcwiki.org/images/e/e3/AC20-FZK-Haus.ifc",
+      "finalUrl": "https://www.ifcwiki.org/images/e/e3/AC20-FZK-Haus.ifc",
+      "externalPath": "E:/BhuAayam-data/task-data/paired-building-floor-sources-20261004-run01/originals/AC20-FZK-Haus.ifc",
+      "bytes": 2570803,
+      "sha256": "70cc8ff245fc0894201d96496c031005a5cbd7a96b22d8a1b87c5a883fb77994",
+      "mediaType": "application/p21",
+      "unchangedOriginal": true,
+      "acquiredAt": "2026-10-04T13:46:37.471Z",
+      "httpLastModified": "Mon, 15 Nov 2021 15:08:11 GMT",
+      "acquisitionReceipt": "E:/BhuAayam-data/task-data/paired-building-floor-sources-20261004-run01/originals/AC20-FZK-Haus.ifc.receipt.json",
+      "acquiredAtAuthority": "Exact started/acquired UTC times and response headers in receipt; acquisition is not a source revision date.",
+      "version": {
+        "schemaLiteral": "IFC4",
+        "fileNameTimestampLiteral": "2016-12-21T17:54:06",
+        "originatingSystem": "GRAPHISOFT ARCHICAD-64 20.0.0 GER FULL Windows version",
+        "publisherPageRevision": 552,
+        "publisherArtifactRevision": null,
+        "limitation": "FILE_NAME timestamp and page revision do not establish the paper authors' exact file hash or a later operational approval."
+      },
+      "attribution": "KIT/IAI FZK-Haus example, hosted by IFC Wiki; preserve institutional attribution requested by publisher. IFC metadata identifies KHH / IAI / FZK and generic author/organization strings, not a property owner.",
+      "permission": {
+        "state": "publisher_notice_observed",
+        "literal": "unrestricted use",
+        "source": "Pinned KIT_IFC_Examples page, direct retained bytes; attribution required for publications",
+        "spdxLicense": null,
+        "scope": "Public development research/inspection; no independent model-specific formal licence, operational permission or training qualification asserted."
+      },
+      "geography": null,
+      "reference": {
+        "sourceUnitLiteral": "#13= IFCSIUNIT(*,.LENGTHUNIT.,$,.METRE.);",
+        "horizontalCrs": null,
+        "verticalDatum": null,
+        "placement": "unknown",
+        "qualification": "not_assessed",
+        "limitation": "Source-local unit/elevation literals only; no geographic transform, measured storey heights, geometry accuracy or physical-location claim."
+      },
+      "sourceNativeObservations": {
+        "building": {"stepId": 434, "globalId": "2hQBAVPOr5VxhS3Jl0O47h", "nameLiteral": "FZK-Haus"},
+        "storeys": [
+          {"stepId": 479, "globalId": "2eyxpyOx95m90jmsXLOuR0", "nameLiteral": "Erdgeschoss", "elevationLiteral": "0."},
+          {"stepId": 35065, "globalId": "273g3wqLzDtfYIl7qqkgcO", "nameLiteral": "Dachgeschoss", "elevationLiteral": "2.7"}
+        ],
+        "decompositionStepId": 481,
+        "decompositionLiteral": "#481= IFCRELAGGREGATES('1Y0uyqfGvXQyvJl5QblObD',#12,$,$,#434,(#479,#35065));",
+        "basis": "Exact original line/byte slices only; no native parser, geometry execution, translated floor labels or canonical identity assignment.",
+        "receipt": "E:/BhuAayam-data/task-data/paired-building-floor-sources-20261004-run01/inspection/literals.json"
+      },
+      "pairedDocument": null,
+      "crossInputCorrespondence": "not_assessed",
+      "rights": "not_assessed",
+      "accuracy": "not_assessed",
+      "learningQualification": "not_assessed",
+      "launchClearance": "Separate later workstream: confirm intended use/attribution and model/version applicability; no current deployment approval."
+    }
+  ],
+  "documentAccess": {
+    "observations": "E:/BhuAayam-data/task-data/paired-building-floor-sources-20261004-run01/research/web-observations.json",
+    "article": "https://publications.rwth-aachen.de/record/973561/files/973561.pdf",
+    "articleDoi": "10.3390/app132212478",
+    "articleRawSha256": null,
+    "articleRetained": false,
+    "thesis": "https://publications.rwth-aachen.de/record/1013735/files/1013735.pdf",
+    "thesisRawSha256": null,
+    "thesisRetained": false,
+    "failure": "Both direct institutional PDF requests returned HTTP 200 text/html, 248 bytes, containing /fast-challenge/. The first was preserved/reclassified as research response; the subsequent format guard refused admission. No challenge bypass or unchanged retry. MDPI web open returned429; no repeated request there. Web indexed text is useful discovery, not a pinned original/citation or a qualified crosswalk."
+  },
+  "learningBoundary": {"labelsGenerated": false, "splitsAssigned": false, "closedEvaluationInspected": false, "teacherLearnerContacted": false},
+  "cleanup": {"servicesStarted": 0, "nativeProfilesJobsRuns": 0, "gpuProviders": 0, "applicationWrites": 0, "stagingEdited": false},
+  "settings": {"requestedModel": "gpt-6.1-sol", "requestedReasoning": "xhigh", "requestedSpeed": "default/standard 1x", "observedModelEffortTier": null, "suppliedApprovalPolicy": "never", "suppliedSandbox": "danger-full-access"},
+  "publication": "Lead owns source index and catalogue; only additive source acquisition/gap evidence is returned."
+}

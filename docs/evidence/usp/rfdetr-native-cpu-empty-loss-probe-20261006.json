@@ -1,0 +1,1379 @@
+{
+  "schemaVersion": "rfdetr-native-cpu-empty-loss-evidence/1",
+  "task": "D07-NATIVE-CPU-PID-CORRECTION-AND-PROBE",
+  "date": "2026-10-06",
+  "state": "stopped_before_backward_non_scalar_empty_loss",
+  "outcome": "Corrected retained Windows venv redirector identity and unique receipt path; one model experiment executed positive1 then empty13. Positive total scalar/finite; empty total and 12 mask terms zero-element [0,108,108]. No measured NaN/Inf. Stop before backward; writer set-serialization error recorded separately.",
+  "baseCommit": "fb687b2bdb103fe0f91032015c309d10f21b4383",
+  "branch": "task/d07-native-cpu-empty-loss-20261006",
+  "ownedRepositoryFiles": [
+    "docs/evidence/usp/rfdetr-native-cpu-empty-loss-probe-20261006.json"
+  ],
+  "existingLauncherAndTrainerEdited": false,
+  "scope": {
+    "task": "D07-NATIVE-CPU-EMPTY-LOSS-PROBE",
+    "maxForwardCalls": 2,
+    "selectedImageIds": [
+      1,
+      13
+    ],
+    "backward": 0,
+    "optimizer": 0,
+    "gpu": false,
+    "development": 0,
+    "final": 0
+  },
+  "bounds": {
+    "jobMemoryBytes": 5368709120,
+    "cpuAffinity": "0-1",
+    "threads": 2,
+    "interopThreads": 1,
+    "innerSeconds": 135,
+    "cleanupSeconds": 45,
+    "totalSeconds": 180,
+    "receiptBytesMax": 262144
+  },
+  "wheel": {
+    "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\pycocotools-2.0.11-cp312-abi3-win_amd64.whl",
+    "bytes": 77570,
+    "sha256": "ffe806ce535f5996445188f9a35643791dc54beabc61bd81e2b03367356d604f",
+    "url": "https://files.pythonhosted.org/packages/83/b4/f6708404ff494706b80e714b919f76dc4ec9845a4007affd6d6b0843f928/pycocotools-2.0.11-cp312-abi3-win_amd64.whl",
+    "tag": "cp312-abi3-win_amd64",
+    "metadataSha256": "7a7af3d05f82f26639e992637485b4ee9ce8c170d6a44b40b500be356c20d573",
+    "pypiMetadata": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\pypi-pycocotools-2.0.11.json",
+      "bytes": 39839,
+      "sha256": "06dda02edf9a496a31a2eab5601e5f64f1df205b65b47a66787b31fc1b775a4d"
+    },
+    "pypiUrl": "https://pypi.org/pypi/pycocotools/2.0.11/json",
+    "license": "FreeBSD",
+    "acquiredDate": "2026-10-06",
+    "acquisitionRequests": 2
+  },
+  "decoderCompatibility": {
+    "importExitCode": 0,
+    "observed": {
+      "version": "2.0.11",
+      "maskPath": "E:\\BhuAayam-data/task-data/d07-native-cpu-empty-loss-probe-20261006/dependencies\\pycocotools\\mask.py",
+      "binaryPath": "E:\\BhuAayam-data/task-data/d07-native-cpu-empty-loss-probe-20261006/dependencies\\pycocotools\\_mask.pyd",
+      "decodeCallable": true,
+      "numpyVersion": "2.5.3",
+      "imageOrRleDecoded": false
+    },
+    "tagAcceptedByExistingPackaging": true,
+    "downloadByteAndShaAndMetadataCheck": "passed",
+    "downloadRequests": 2,
+    "officialReleaseJsonSameBytesAsRetained": true,
+    "localInstallCommand": [
+      "C:/Users/kvina/AppData/Local/hermes/bin/uv.exe",
+      "pip",
+      "install",
+      "--python",
+      "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Scripts\\python.exe",
+      "--no-deps",
+      "--only-binary=:all:",
+      "--no-index",
+      "--no-cache",
+      "--target",
+      "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\dependencies",
+      "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\pycocotools-2.0.11-cp312-abi3-win_amd64.whl"
+    ],
+    "localInstallExitCode": 0,
+    "installerVersion": "uv0.12.18",
+    "installedPackages": 1,
+    "existingVenvOrSystemModified": false,
+    "newEnvironmentCreated": false,
+    "installerChoice": "Existing venv has no pip; existing uv targets that exact interpreter and new overlay. No pip/bootstrap/download/dependency addition beyond one wheel.",
+    "metadataCheckCorrection": "First tag checker imported absent pip vendor helper (exit1); used already installed packaging.tags instead (exit0). No model/ABI retry or alternate wheel/version.",
+    "copyWarning": "uv could not hardlink across filesystems and copied the files; no settings changed.",
+    "licenceAndLaunchGap": "Official PyPI pycocotools2.0.11 metadata declares FreeBSD; retain attribution. This research dependency acquisition grants no product/model launch or operational-data qualification."
+  },
+  "environment": {
+    "interpreter": "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Scripts\\python.exe",
+    "python": "3.12.14",
+    "platform": "WindowsAMD64",
+    "packageVersions": {
+      "torch": "2.14.0",
+      "torchvision": "0.29.0",
+      "transformers": "5.17.0",
+      "numpy": "2.5.3",
+      "Pillow": "12.3.0",
+      "scipy": "1.18.1",
+      "safetensors": "0.8.0",
+      "tokenizers": "0.23.2",
+      "huggingface-hub": "1.33.0",
+      "pycocotools": "2.0.11"
+    },
+    "torchRuntime": "2.14.0+cpu",
+    "torchvisionRuntime": "0.29.0+cpu",
+    "compiledCuda": null,
+    "priorFeasibility": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-nonfinite-diagnosis-20261006\\local-loss-diagnostic-feasibility.json",
+      "bytes": 9483,
+      "sha256": "982ba0283536276e5f67ed2752d26819508a79036fb5cc3a7d8579f0adab70ae"
+    },
+    "difference": "NativeWindows/Python3.12/Torch2.14CPU/NumPy2.5.3/Pillow12.3; separate from LinuxPython3.11/Torch2.8cu128/NumPy2.3.2/Pillow11. No numeric/CUDA/ONNX equivalence claim.",
+    "versionsOrLossSourceChanged": false
+  },
+  "sourceInputs": {
+    "runner": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-nonfinite-diagnosis-20261006\\train_building_ramp.py",
+      "bytes": 71184,
+      "sha256": "24afe260cb2c19fd6a56c5cfdd7b88d40a3df6af03b08f073fee20fb061deafd"
+    },
+    "coco": {
+      "path": "E:\\BhuAayam-data\\task-data\\d06-ramp-coco-20261005\\train\\_annotations.coco.json",
+      "bytes": 289622,
+      "sha256": "107e9ef9fe68e6f7d7c5a803188d44839cecf486a670fc0ff474761e0112b72c"
+    },
+    "selectedInputs": [
+      {
+        "imageId": 1,
+        "fileName": "0003d02a-6bf0-4790-ac29-eed4337fe430.png",
+        "sourceDimensions": [
+          256,
+          256
+        ],
+        "sourceAnnotationIds": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "sourceInstanceCount": 10,
+        "sourceCategoryIds": [
+          1
+        ],
+        "retainedImagePinNotReread": {
+          "path": "/inputs/coco/train/0003d02a-6bf0-4790-ac29-eed4337fe430.png",
+          "bytes": 101859,
+          "sha256": "7e146a4543c77da6ae092c971298948c4cd7e55f063422ee136d098ce7e8815c"
+        },
+        "hostPath": "E:\\BhuAayam-data\\task-data\\d06-ramp-coco-20261005\\train\\0003d02a-6bf0-4790-ac29-eed4337fe430.png"
+      },
+      {
+        "imageId": 13,
+        "fileName": "860ea202-9316-47fc-91f1-98b462951819.png",
+        "sourceDimensions": [
+          256,
+          256
+        ],
+        "sourceAnnotationIds": [],
+        "sourceInstanceCount": 0,
+        "sourceCategoryIds": [],
+        "retainedImagePinNotReread": {
+          "path": "/inputs/coco/train/860ea202-9316-47fc-91f1-98b462951819.png",
+          "bytes": 65726,
+          "sha256": "8f1a9420e374d75a947c819a4e38bbfdfd4bb9150b46e35183dfafd3379e167b"
+        },
+        "hostPath": "E:\\BhuAayam-data\\task-data\\d06-ramp-coco-20261005\\train\\860ea202-9316-47fc-91f1-98b462951819.png"
+      }
+    ],
+    "modelTrio": [
+      {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\original\\model.safetensors",
+        "bytes": 141551436,
+        "sha256": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7"
+      },
+      {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\original\\config.json",
+        "bytes": 2490,
+        "sha256": "41aeed5933ae681d700978ded204c67ec756c775bbaa466ae3b0b11122b5f5c7"
+      },
+      {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-train-prep-20261005\\original\\preprocessor_config.json",
+        "bytes": 442,
+        "sha256": "54287bdd487c98a439f9c8c8039b69544dce6fc1735dca50ca4de4d5bbf27382"
+      }
+    ],
+    "originalSourceModelLabelsSplitsPreserved": true,
+    "finalIntegrityPinsVerified": 39,
+    "initialRecipe": "Original oneclass/200query/group13 train mode, CPUeagerFP32, seed42,432bilinearRGB/nearestRLE/category1->0/normalizedboxes/pixelmask; at most one positive1 then empty13; no updates.",
+    "adapterObserverScope": "Only accepted CocoPool/collate/diagnostic_tensor/LossDiagnostics AST selected; no execute_trainer/Trainer call or loss/guard repair."
+  },
+  "actualAttempt": {
+    "supervisorCommand": [
+      "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Scripts\\python.exe",
+      "-I",
+      "-B",
+      "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\supervise.py",
+      "native-cpu-probe"
+    ],
+    "shellAndChildExitCode": 1,
+    "supervisorFailure": null,
+    "modelExperiments": 1,
+    "modelRetryExperiments": 0,
+    "forwardCalls": 2,
+    "positive": {
+      "forwardOrdinal": 1,
+      "imageIds": [
+        1
+      ],
+      "annotationIds": [
+        [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      ],
+      "targetShapes": {
+        "class_labels": [
+          10
+        ],
+        "boxes": [
+          10,
+          4
+        ],
+        "masks": [
+          10,
+          432,
+          432
+        ]
+      },
+      "total": {
+        "present": true,
+        "shape": [],
+        "numel": 1,
+        "dtype": "torch.float32",
+        "allFinite": true,
+        "nonfiniteValues": 0,
+        "minimum": 30.342233657836914,
+        "maximum": 30.342233657836914
+      },
+      "componentCount": 36,
+      "allComponentsFinite": true,
+      "guardReasons": [],
+      "baseComponents": {
+        "loss_bbox": {
+          "shape": [],
+          "numel": 1,
+          "allFinite": true,
+          "value": 0.03552725911140442
+        },
+        "loss_ce": {
+          "shape": [],
+          "numel": 1,
+          "allFinite": true,
+          "value": 0.6562827825546265
+        },
+        "loss_giou": {
+          "shape": [],
+          "numel": 1,
+          "allFinite": true,
+          "value": 0.1976083517074585
+        },
+        "loss_mask_ce": {
+          "shape": [],
+          "numel": 1,
+          "allFinite": true,
+          "value": 0.04451547935605049
+        },
+        "loss_mask_dice": {
+          "shape": [],
+          "numel": 1,
+          "allFinite": true,
+          "value": 0.11195994168519974
+        }
+      },
+      "nonScalarComponentNames": [],
+      "allOtherComponentsScalar": true,
+      "nonScalarComponentShape": null,
+      "fullVariantValues": "Pinned loss-diagnostics.json"
+    },
+    "empty": {
+      "forwardOrdinal": 2,
+      "imageIds": [
+        13
+      ],
+      "annotationIds": [
+        []
+      ],
+      "targetShapes": {
+        "class_labels": [
+          0
+        ],
+        "boxes": [
+          0,
+          4
+        ],
+        "masks": [
+          0,
+          432,
+          432
+        ]
+      },
+      "total": {
+        "present": true,
+        "shape": [
+          0,
+          108,
+          108
+        ],
+        "numel": 0,
+        "dtype": "torch.float32",
+        "allFinite": true,
+        "nonfiniteValues": 0,
+        "minimum": null,
+        "maximum": null
+      },
+      "componentCount": 36,
+      "allComponentsFinite": true,
+      "guardReasons": [
+        "non_scalar_total"
+      ],
+      "baseComponents": {
+        "loss_bbox": {
+          "shape": [],
+          "numel": 1,
+          "allFinite": true,
+          "value": 0.0
+        },
+        "loss_ce": {
+          "shape": [],
+          "numel": 1,
+          "allFinite": true,
+          "value": 2.3889636993408203
+        },
+        "loss_giou": {
+          "shape": [],
+          "numel": 1,
+          "allFinite": true,
+          "value": 0.0
+        },
+        "loss_mask_ce": {
+          "shape": [
+            0,
+            108,
+            108
+          ],
+          "numel": 0,
+          "allFinite": true,
+          "value": null
+        },
+        "loss_mask_dice": {
+          "shape": [
+            0,
+            108,
+            108
+          ],
+          "numel": 0,
+          "allFinite": true,
+          "value": null
+        }
+      },
+      "nonScalarComponentNames": [
+        "loss_mask_ce",
+        "loss_mask_ce_0",
+        "loss_mask_ce_1",
+        "loss_mask_ce_2",
+        "loss_mask_ce_3",
+        "loss_mask_ce_enc",
+        "loss_mask_dice",
+        "loss_mask_dice_0",
+        "loss_mask_dice_1",
+        "loss_mask_dice_2",
+        "loss_mask_dice_3",
+        "loss_mask_dice_enc"
+      ],
+      "allOtherComponentsScalar": true,
+      "nonScalarComponentShape": [
+        0,
+        108,
+        108
+      ],
+      "fullVariantValues": "Pinned loss-diagnostics.json"
+    },
+    "emptyPredictions": {
+      "logits": {
+        "present": true,
+        "shape": [
+          1,
+          2600,
+          1
+        ],
+        "numel": 2600,
+        "dtype": "torch.float32",
+        "allFinite": true,
+        "nonfiniteValues": 0,
+        "minimum": -5.573958873748779,
+        "maximum": 0.42015647888183594
+      },
+      "pred_boxes": {
+        "present": true,
+        "shape": [
+          1,
+          2600,
+          4
+        ],
+        "numel": 10400,
+        "dtype": "torch.float32",
+        "allFinite": true,
+        "nonfiniteValues": 0,
+        "minimum": -0.3203601539134979,
+        "maximum": 1.2081646919250488
+      },
+      "pred_masks": {
+        "present": true,
+        "shape": [
+          1,
+          2600,
+          108,
+          108
+        ],
+        "numel": 30326400,
+        "dtype": "torch.float32",
+        "allFinite": true,
+        "nonfiniteValues": 0,
+        "minimum": -167.03128051757812,
+        "maximum": 22.34480094909668
+      }
+    },
+    "initialParameters": {
+      "optimizerUpdates": 0,
+      "presentTensors": 592,
+      "absentTensors": 0,
+      "allFinite": true,
+      "nonfiniteTensors": 0,
+      "firstNonfiniteNames": [],
+      "phase": "initial_or_after_optimizer"
+    },
+    "modelLoaded": true,
+    "heavyImportsStarted": true,
+    "primaryFailure": {
+      "type": "ValueError",
+      "message": "Nonfinite built-in loss; stop before backward and retain the attempt",
+      "measuredCause": "non_scalar_total; no observed NaN/Inf; finite-all for zero-element tensors is vacuous"
+    },
+    "secondaryFailure": {
+      "type": "TypeError",
+      "message": "Object of type set is not JSON serializable",
+      "effect": "result.json absent. loss-diagnostics.json and process-proof.json retained. No receipt-writing repair or model rerun."
+    },
+    "backwardCalls": 0,
+    "optimizerUpdates": 0,
+    "trainerInvocations": 0,
+    "gpuUsed": false,
+    "checkpointSaved": false,
+    "developmentOrFinalOpened": false,
+    "kernelNetworkDenialClaim": false,
+    "exactGatedCommand": "Pinned correction-command-3.json"
+  },
+  "resources": {
+    "elapsedSeconds": 23.29700000002049,
+    "peakAssignedJobPrivateBytes": 1943740416,
+    "supervisorJobMemoryCapBytes": 5368709120,
+    "actualCpuAffinityMask": 3,
+    "threads": 2,
+    "interopThreads": 1,
+    "gatedRelease": true,
+    "workerBoundariesObserved": true,
+    "innerSeconds": 135,
+    "cleanupSeconds": 45,
+    "totalSeconds": 180,
+    "resourceLimit": "Only this two-forward Windows CPU process tree. No CUDA, Linux runtime, fit capacity or performance gate."
+  },
+  "cleanup": {
+    "ownedLauncherReaped": true,
+    "hostJobClosed": true,
+    "finalPythonProcessSnapshot": "Exact owned launcher/worker PIDs queried once with OpenProcess/GetExitCodeProcess; neither running.",
+    "ownedProcessesRemaining": false,
+    "containersTouched": false,
+    "gpuTaken": false,
+    "servicesChanged": false,
+    "DefenderOrFirewallChanged": false,
+    "securityBlockObserved": false,
+    "providerOrApplicationDataUsed": false,
+    "retainedWheelAndOverlayAndFailedAttempt": true,
+    "originalGpuProbePreservedUnrun": true,
+    "ownedProcessChecks": [
+      {
+        "pid": 30036,
+        "remainingRunning": false,
+        "OpenProcessError": 87
+      },
+      {
+        "pid": 34776,
+        "remainingRunning": false,
+        "OpenProcessError": 87
+      }
+    ]
+  },
+  "verification": {
+    "prepareCommand": [
+      "C:/Python313/python.exe",
+      "-I",
+      "-B",
+      "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\prepare.py"
+    ],
+    "prepareExitCode": 0,
+    "syntaxAndNoOptimizerBackwardSaveAndPreImportBoundaryReview": "Changed private handshake reviewed; model/loss/runner untouched; two forward telemetry hooks under no-grad; guard stops before backward.",
+    "decoderImport": "one newly required binary import passed; no image/RLE decode there",
+    "oldFakeObserverOrEnvironmentCampaignRepeated": false,
+    "sourcePinReview": "39 correction input pins plus entry/supervisor/root independently rehashed after process ended; all exact.",
+    "gitDiffCheck": {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0
+    },
+    "actualNativeDiagnostic": {
+      "exitCode": 1,
+      "expectedStop": "non_scalar_total on image13 after positive scalar; secondary JSON writer set error preserved"
+    },
+    "noAdditionalModelInvocations": true,
+    "commandPlanPinDiscrepancy": "commandReceipt top-level planSha256 hashes original plan.json (3da31539...), while releaseFields.sent.planSha256 correctly authenticates correction plan f8638f7d...; retain both unchanged.",
+    "receiptSerializationCorrection": {
+      "command": "stdlib-only AST extraction of deterministic_metadata plus retained summary JSON and tiny fixed set/frozenset metadata",
+      "exitCode": 0,
+      "modelCalls": 0,
+      "importsBeyondStdlib": 0,
+      "result": "passed; writer-correction.json retained"
+    }
+  },
+  "decision": {
+    "emptyShapeHypothesis": "Confirmed for Transformers5.17 pinned loss/source and original checkpoint, positive1 then empty13 in this Windows CPU route.",
+    "historicalCudaFailingInput": "UNKNOWN",
+    "graphPreservingScalarZeroRepairRecommendation": "Separately assign only RfDetrImageLoss.loss_masks empty-source branch to return source_masks.sum() for each mask term. Preserve nonempty branch, CE/box losses, auxiliary/encoder weighting and every source instance. Do not sum an already-empty total: scalar CE was already swallowed by broadcasting. Autograd/CPU corrected comparison requires a later bounded assignment; not measured here.",
+    "sourceBasis": {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Lib\\site-packages\\transformers\\loss\\loss_rf_detr.py",
+      "sha256": "db5a352ca7c9c0e0cfc2af7af29e6d348ec72391b5b82b38fedf23f0b4d32ece",
+      "lines": [
+        310,
+        313
+      ],
+      "priorProposal": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-nonfinite-diagnosis-20261006\\diagnosis-proposal.json",
+        "bytes": 14825,
+        "sha256": "6dc4ffde6a8b3b6e00ba67000d3c592c01848ae5953fee81fcf0b10a6ef98be2"
+      },
+      "upstreamAnalogy": "roboflow/rf-detr@e0c69e63a05f9404c53eac16bc94db23f617d265/src/rfdetr/models/criterion.py; retained research, no repeated acquisition/import"
+    },
+    "lossFixImplemented": false,
+    "modelRetryRun": false,
+    "nextStep": "Return scoped shape evidence; no further launch. Separate assignment needed for narrow scalar-zero loss repair and serializable loading-info receipt. Original Linux GPU probe remains unrun; no fit or quality promotion.",
+    "noModelQualityPromotionOrGeneralizationClaim": true
+  },
+  "settings": {
+    "requested": "GPT-6.1 Sol/xhigh/default-standard1x",
+    "actualModelEffortTier": null,
+    "liveSuppliedPermissions": "never/danger-full-access"
+  },
+  "artifacts": {
+    "root": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\root-assignment.txt",
+      "bytes": 6382,
+      "sha256": "30efccafa18d5250c9d6fe2ee218fa8b5231607bbb7e1242269e386182941ec0"
+    },
+    "wheel": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\pycocotools-2.0.11-cp312-abi3-win_amd64.whl",
+      "bytes": 77570,
+      "sha256": "ffe806ce535f5996445188f9a35643791dc54beabc61bd81e2b03367356d604f"
+    },
+    "releaseMetadata": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\pypi-pycocotools-2.0.11.json",
+      "bytes": 39839,
+      "sha256": "06dda02edf9a496a31a2eab5601e5f64f1df205b65b47a66787b31fc1b775a4d"
+    },
+    "decoderImport": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\decoder-import.json",
+      "bytes": 363,
+      "sha256": "6fbd0bcafc8e6fe9af770268103cfaffaa2431893759ddfb4045020cac2a8692"
+    },
+    "entry": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\native_entry.py",
+      "bytes": 10819,
+      "sha256": "bfa427cbfedc16fbd6b64fd2ed8b6cbd3aeac30d3f0a552ed87a273cf9907285"
+    },
+    "supervisor": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\supervise.py",
+      "bytes": 8061,
+      "sha256": "c720eaf3ee81f346f125909c9b53687d8d977e80062c7cd9473e3f68ec228330"
+    },
+    "plan": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\plan-correction.json",
+      "bytes": 15423,
+      "sha256": "f8638f7da693ec9aa4cdb60ade4418292c75a6fc6038e4ba0e25a5e06285baf9"
+    },
+    "prepareCode": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\prepare.py",
+      "bytes": 6145,
+      "sha256": "ae003b876505a4c0f4ef76133b3477b4d054a8ce9543e0919acd8f882b54d09a"
+    },
+    "prelaunch": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\prelaunch.json",
+      "bytes": 1596,
+      "sha256": "f190ca49d8afa8bb4f4af05f4ef4b58debccb99e443285b6a243e0137bc447d9"
+    },
+    "attempt": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\attempt.json",
+      "bytes": 389,
+      "sha256": "b485824db9f4916713effd7bc4c3b95b8e0251a456497136f01fef9086819bff"
+    },
+    "command": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\command.json",
+      "bytes": 2049,
+      "sha256": "d18b4cb5befcfbc71568b30a2f03d9eb392785de277dc77d6bab76eaf6ec5620"
+    },
+    "log": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\native-cpu.log",
+      "bytes": 700,
+      "sha256": "1b87d32168fadab8b666d37af97b928143d3674a7799976d121697a71d252f93"
+    },
+    "originalPlan": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\plan.json",
+      "bytes": 14895,
+      "sha256": "3da315390e7bc93c9d04737a6728e87f11e46e3c83b9475bffb0ba8d9f68a6df"
+    },
+    "correctionRoot": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\root-correction-assignment.txt",
+      "bytes": 6643,
+      "sha256": "9d3d69aff4252b57e89acb72682f6651bf50b79cd5604db9954f493f722acc56"
+    },
+    "identityCode": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\identity_check.py",
+      "bytes": 5565,
+      "sha256": "8c59761591fe8c89a403a93e7a2f31d896c2d3345aba3b5509e411d987790000"
+    },
+    "identityObservation": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\identity-check.json",
+      "bytes": 1281,
+      "sha256": "c13506088093a9fbd337a7eedc4a95cbe7ac167f1d60ffd276f2cf79b89ef70f"
+    },
+    "correctionAttempt": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\correction-attempt.json",
+      "bytes": 428,
+      "sha256": "0a3324e092a8927abc3520e4aab30f08b64a7773625c67ad391bc14cc80f26d3"
+    },
+    "collisionLog": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\native-cpu-correction.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "baseClaimCommand": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\correction-command.json",
+      "bytes": 2654,
+      "sha256": "c44684dd13f7bc204031fb156f4a3c988df52c2b348a85cbfe6cd5c8ca0e6f73"
+    },
+    "baseClaimLog": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\native-cpu-correction-2.log",
+      "bytes": 732,
+      "sha256": "230e5075c03d9f99039c24317e08918d0e0f209a83761011a3011ccd34295097"
+    },
+    "jobQueryCommand": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\correction-command-2.json",
+      "bytes": 3816,
+      "sha256": "c9258151178bbfce52bcd5f3917c8b9aba6ac41b4333dc5ded1fcec14231a9ab"
+    },
+    "jobQueryLog": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\native-cpu-correction-3.log",
+      "bytes": 695,
+      "sha256": "c0425a482847f5d3eb3850f33fafd143e20a98255d7597faebd58755d04a70df"
+    },
+    "modelCommand": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\correction-command-3.json",
+      "bytes": 4034,
+      "sha256": "923f4f2e1f0e9d2d6dcf8d20ee437a2ed31b4c0ad6cdd16536a2088026d8535b"
+    },
+    "modelLog": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\native-cpu-correction-4.log",
+      "bytes": 3596,
+      "sha256": "ab66a5f6e4aa77d1db1333f7c699b88d48145716354c49b98f0aabf580285a1e"
+    },
+    "processProof": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\output-correction\\process-proof.json",
+      "bytes": 967,
+      "sha256": "81ba365b1d96c2cd1fe9c8548e2ea0b56d80ccad5c92efc4b1e81b363e957114"
+    },
+    "lossTelemetry": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\output-correction\\loss-diagnostics.json",
+      "bytes": 24179,
+      "sha256": "3c4979ca5d2628440300adc02add7a7ba88464891383d2f3dd6de764c3570bb3"
+    },
+    "retainedResultSummary": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\output-correction\\retained-result-summary.json",
+      "bytes": 15617,
+      "sha256": "f1b010f0530ed2bb55f7ed4812a6f12a0c2467ae17b63f463a9f4f4d5539b5de"
+    },
+    "originalFinalization": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\finalization.json",
+      "bytes": 2573,
+      "sha256": "f3a13d4898bbf59e6ab0560509cda82e103fa88439753cabaad790b0243e2150"
+    },
+    "writerCorrection": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\writer-correction.json",
+      "bytes": 1437,
+      "sha256": "21c9bfbe9afee017ccc985bd1be4da2ec57f26858fb5bb42233570337328b6ab"
+    },
+    "writerEntry": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\native_entry.py",
+      "bytes": 12211,
+      "sha256": "f3eb2798b05c81fcaf8afa72d8b211cf661402d236865c57908880efe823245c"
+    },
+    "writerSupervisor": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\supervise.py",
+      "bytes": 8316,
+      "sha256": "c771615f9a9108128925d4b46b6fc0e59b386c00fd8da712631c21cfedadfdd9"
+    }
+  },
+  "privateFinalizationReceipt": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\correction-finalization.json",
+  "priorEvidenceCommit": "e2b20dd638e752700c4c6cfb9d3be6da02ae7d07",
+  "identityCorrection": {
+    "stdlibObservation": "identity-check.json confirms distinct venv Popen launcher/base-CPython child; sys.executable remains venv, sys._base_executable and QueryFullProcessImageNameW identify base. Paths compare after Windows normalization.",
+    "actualModelWorker": {
+      "pid": 34776,
+      "imagePath": "C:\\Users\\kvina\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "creationFiletime": 134357370714275893,
+      "inOwnedJob": true
+    },
+    "launcherPid": 30036,
+    "actualParentPid": 30036,
+    "claims": {
+      "readyPid": 34776,
+      "executable": "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Scripts\\python.exe",
+      "baseExecutable": "C:\\Users\\kvina\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "parentPid": 30036
+    },
+    "jobProof": {
+      "flags": 8704,
+      "jobMemoryLimit": 5368709120,
+      "killOnClose": true
+    },
+    "creationTimeSource": "GetProcessTimes on actual live child handle in supervisor before release.",
+    "limitsReadback": "Supervisor queries owned Job handle; child independently reads membership and CPU affinity. QueryInformationJobObject(NULL) in worker failed before imports and was replaced by authenticated supervisor readback.",
+    "deadlineAndPinsAuthenticated": true
+  },
+  "priorAttempt": {
+    "commit": "e2b20dd638e752700c4c6cfb9d3be6da02ae7d07",
+    "state": "stopped_same_pid_gate_before_heavy_imports",
+    "forwardCalls": 0,
+    "launcherPid": 29964,
+    "commandArtifact": "command.json",
+    "logArtifact": "native-cpu.log",
+    "historicalExecutablePins": {
+      "entry": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\native_entry.py",
+        "bytes": 10242,
+        "sha256": "0a676a6eaa7b2b687f272197018b416abccb05d10e80df46dcfbae1c77785cdc"
+      },
+      "supervisor": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\supervise.py",
+        "bytes": 4424,
+        "sha256": "058fcd0a9353f37b9209d0529d17b486b23db2f4c8bc4e2986c9b3e0fbf600da"
+      },
+      "plan": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\plan.json",
+        "bytes": 14895,
+        "sha256": "3da315390e7bc93c9d04737a6728e87f11e46e3c83b9475bffb0ba8d9f68a6df"
+      }
+    },
+    "fullRecord": "Unchanged prior committed leaf and original finalization.json; old executable pins are historical, not current private file claims."
+  },
+  "correctionPreImportStops": [
+    {
+      "artifacts": [
+        "correction-attempt.json",
+        "native-cpu-correction.log"
+      ],
+      "cause": "Existing command.json exclusive-create collision; empty log and absent output. Precise receipt/PID unavailable; retained no-model observation from interrupted checkpoint.",
+      "modelCalls": 0
+    },
+    {
+      "artifacts": [
+        "correction-command.json",
+        "native-cpu-correction-2.log"
+      ],
+      "cause": "Base executable string used Windows separators; plan used forward slashes. Direct equality rejected before heavy imports; normalized comparison replaced it.",
+      "modelCalls": 0
+    },
+    {
+      "artifacts": [
+        "correction-command-2.json",
+        "native-cpu-correction-3.log"
+      ],
+      "cause": "QueryInformationJobObject(NULL) failed exact child limit proof before heavy imports; owned supervisor handle readback replaced it.",
+      "modelCalls": 0
+    }
+  ],
+  "receiptSerializationCorrection": {
+    "schemaVersion": "rfdetr-native-cpu-writer-correction/1",
+    "scope": "Post-run result metadata only; no model import, forward, loss, optimizer, training or retry.",
+    "change": "deterministic_metadata explicitly handles bounded JSON scalars, dicts with string keys, lists/tuples, and sets/frozensets sorted by type and repr; unsupported types raise TypeError.",
+    "oldReceiptsRewritten": false,
+    "executedPlanSha256": "f8638f7da693ec9aa4cdb60ade4418292c75a6fc6038e4ba0e25a5e06285baf9",
+    "originalPlanSha256": "3da315390e7bc93c9d04737a6728e87f11e46e3c83b9475bffb0ba8d9f68a6df",
+    "correctionPlanSha256": "f8638f7da693ec9aa4cdb60ade4418292c75a6fc6038e4ba0e25a5e06285baf9",
+    "patchedEntry": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\native_entry.py",
+      "bytes": 12211,
+      "sha256": "f3eb2798b05c81fcaf8afa72d8b211cf661402d236865c57908880efe823245c"
+    },
+    "patchedSupervisor": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\supervise.py",
+      "bytes": 8316,
+      "sha256": "c771615f9a9108128925d4b46b6fc0e59b386c00fd8da712631c21cfedadfdd9"
+    },
+    "writerCheck": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\writer-correction.json",
+      "bytes": 1437,
+      "sha256": "21c9bfbe9afee017ccc985bd1be4da2ec57f26858fb5bb42233570337328b6ab"
+    },
+    "writerCheckResult": {
+      "retainedSummaryRoundTrip": true,
+      "setAndFrozensetSorted": true,
+      "jsonAllowNanFalse": true,
+      "modelCalls": 0,
+      "importsBeyondStdlib": 0
+    },
+    "futureReleaseFields": [
+      "originalPlanSha256",
+      "correctionPlanSha256",
+      "entrySha256",
+      "supervisorSha256",
+      "workerPid",
+      "workerImagePath",
+      "workerCreationFiletime"
+    ],
+    "repairedConfirmationPrerequisite": "Accepted staging repair callback still required; no repaired confirmation launched."
+  },
+  "latestAmendment": "repairedConfirmation",
+  "repairedConfirmation": {
+    "task": "D07-RFDETR-REPAIRED-EMPTY-CONFIRM",
+    "date": "2026-10-06",
+    "state": "repaired_cpu_contract_confirmed_no_training",
+    "acceptedStagingCommit": "549dcebd73549d74b750cef4c3a51d5663dfc92c",
+    "repairOwnerCommit": "1d4e9be761e72dc6a806aad66b5cc07608f53a90",
+    "lossImplementation": {
+      "revision": "ulpin-rfdetr-empty-mask-scalar/1",
+      "library": "transformers",
+      "version": "5.17.0",
+      "sourcesCanonicalLfSha256": {
+        "loss_rf_detr": "db5a352ca7c9c0e0cfc2af7af29e6d348ec72391b5b82b38fedf23f0b4d32ece",
+        "loss_lw_detr": "c7b271e3011dca508736fd8fec310a137e57da96b3dcdad2c60bc3d22ef5ce98"
+      },
+      "change": "Only empty matched mask CE/dice return source_masks.sum() scalar zeros",
+      "scope": "RF-DETR segmentation model instance during explicitly bound operation"
+    },
+    "scope": {
+      "task": "D07-RFDETR-REPAIRED-EMPTY-CONFIRM",
+      "maxForwardCalls": 2,
+      "selectedImageIds": [
+        1,
+        13
+      ],
+      "backward": 0,
+      "optimizer": 0,
+      "gpu": false,
+      "development": 0,
+      "final": 0,
+      "repairRevision": "ulpin-rfdetr-empty-mask-scalar/1"
+    },
+    "bounds": {
+      "jobMemoryBytes": 5368709120,
+      "cpuAffinity": "0-1",
+      "threads": 2,
+      "interopThreads": 1,
+      "innerSeconds": 135,
+      "cleanupSeconds": 45,
+      "totalSeconds": 180,
+      "receiptBytesMax": 262144
+    },
+    "originalCheckpointSha256": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7",
+    "command": [
+      "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Scripts\\python.exe",
+      "-I",
+      "-B",
+      "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\supervise_repaired.py",
+      "native-cpu-probe"
+    ],
+    "exitCode": 0,
+    "supervisorFailure": null,
+    "modelExperiments": 1,
+    "modelRetryExperiments": 0,
+    "forwardCalls": 2,
+    "positive": {
+      "forwardOrdinal": 1,
+      "imageId": 1,
+      "annotationIds": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "targetShapes": {
+        "class_labels": [
+          10
+        ],
+        "boxes": [
+          10,
+          4
+        ],
+        "masks": [
+          10,
+          432,
+          432
+        ]
+      },
+      "total": {
+        "present": true,
+        "shape": [],
+        "numel": 1,
+        "dtype": "torch.float32",
+        "allFinite": true,
+        "nonfiniteValues": 0,
+        "minimum": 30.342233657836914,
+        "maximum": 30.342233657836914
+      },
+      "namedComponentCount": 36,
+      "allNamedComponentsScalar": true,
+      "allNamedComponentsFinite": true,
+      "nonfiniteValues": 0,
+      "baseComponents": {
+        "loss_bbox": {
+          "shape": [],
+          "numel": 1,
+          "value": 0.03552725911140442
+        },
+        "loss_ce": {
+          "shape": [],
+          "numel": 1,
+          "value": 0.6562827825546265
+        },
+        "loss_giou": {
+          "shape": [],
+          "numel": 1,
+          "value": 0.1976083517074585
+        },
+        "loss_mask_ce": {
+          "shape": [],
+          "numel": 1,
+          "value": 0.04451547935605049
+        },
+        "loss_mask_dice": {
+          "shape": [],
+          "numel": 1,
+          "value": 0.11195994168519974
+        }
+      }
+    },
+    "empty": {
+      "forwardOrdinal": 2,
+      "imageId": 13,
+      "annotationIds": [],
+      "targetShapes": {
+        "class_labels": [
+          0
+        ],
+        "boxes": [
+          0,
+          4
+        ],
+        "masks": [
+          0,
+          432,
+          432
+        ]
+      },
+      "total": {
+        "present": true,
+        "shape": [],
+        "numel": 1,
+        "dtype": "torch.float32",
+        "allFinite": true,
+        "nonfiniteValues": 0,
+        "minimum": 44.639766693115234,
+        "maximum": 44.639766693115234
+      },
+      "namedComponentCount": 36,
+      "allNamedComponentsScalar": true,
+      "allNamedComponentsFinite": true,
+      "nonfiniteValues": 0,
+      "baseComponents": {
+        "loss_bbox": {
+          "shape": [],
+          "numel": 1,
+          "value": 0.0
+        },
+        "loss_ce": {
+          "shape": [],
+          "numel": 1,
+          "value": 2.3889636993408203
+        },
+        "loss_giou": {
+          "shape": [],
+          "numel": 1,
+          "value": 0.0
+        },
+        "loss_mask_ce": {
+          "shape": [],
+          "numel": 1,
+          "value": 0.0
+        },
+        "loss_mask_dice": {
+          "shape": [],
+          "numel": 1,
+          "value": 0.0
+        }
+      }
+    },
+    "emptyMaskTermNames": [
+      "loss_mask_ce",
+      "loss_mask_ce_0",
+      "loss_mask_ce_1",
+      "loss_mask_ce_2",
+      "loss_mask_ce_3",
+      "loss_mask_ce_enc",
+      "loss_mask_dice",
+      "loss_mask_dice_0",
+      "loss_mask_dice_1",
+      "loss_mask_dice_2",
+      "loss_mask_dice_3",
+      "loss_mask_dice_enc"
+    ],
+    "emptyMaskTerms": {
+      "shape": [],
+      "numel": 1,
+      "allFinite": true,
+      "eachValue": 0.0
+    },
+    "positiveExactTelemetryEquality": true,
+    "emptyOther24ExactTelemetryEquality": true,
+    "positiveComparisonOrigin": "Unchanged unpatched output-correction/loss-diagnostics.json",
+    "loadingInfo": {
+      "error_msgs": [],
+      "mismatched_keys": [],
+      "missing_keys": [],
+      "unexpected_keys": []
+    },
+    "modelLossRestored": true,
+    "gradientScope": {
+      "fullModelCallsNoGrad": true,
+      "observedAutogradEnabled": false,
+      "allMaskTermsRequiresGrad": false,
+      "allMaskTermsGradFn": null,
+      "graphConnectivityMeasuredInThisExperiment": false,
+      "acceptedIndependentTinyCriterionChecks": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-empty-mask-loss-fix-20261006\\checks.json",
+        "bytes": 2020,
+        "sha256": "47204892be125263d03ed59a3cbdec524355f3571ed8a839fea72eac0ca964c1"
+      },
+      "acceptedTinyCheckResult": "Previously accepted four tests show empty scalar zeros graph-connected with zero mask gradients and nonzero CE gradients; no tiny/autograd replay here."
+    },
+    "releaseIdentity": {
+      "launcherPid": 19796,
+      "workerPid": 33308,
+      "workerImagePath": "C:\\Users\\kvina\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "workerCreationFiletime": 134357392324481414,
+      "originalPlanPath": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\plan.json",
+      "originalPlanSha256": "3da315390e7bc93c9d04737a6728e87f11e46e3c83b9475bffb0ba8d9f68a6df",
+      "correctionPlanPath": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\plan-repaired.json",
+      "correctionPlanSha256": "33a54a7e8748e74a369ee1142d81cf68ddf79ec1a6747f59d2c9dd4a8b45c461",
+      "entrySha256": "c0a3927206cf252c1b9af9e75eeb5e37e585db817659dabed6b49e703c44bc41",
+      "supervisorSha256": "b96d4c1ed72caed4570c197eaafe8cc0eb9be5351c0e53e0c5edd7946c944b3d",
+      "repairRunnerPath": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\runner-repaired.py",
+      "repairRunnerSha256": "25d469eee1d06fe7bb97b63b857082b77df17eb8cc45ab04bfd62af5f62fbbd6",
+      "repairRevision": "ulpin-rfdetr-empty-mask-scalar/1"
+    },
+    "actualProcessProof": {
+      "pid": 33308,
+      "imagePath": "C:\\Users\\kvina\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "creationFiletime": 134357392324481414,
+      "inOwnedJob": true
+    },
+    "jobProof": {
+      "flags": 8704,
+      "jobMemoryLimit": 5368709120,
+      "killOnClose": true
+    },
+    "elapsedSeconds": 12.047000000020489,
+    "peakAssignedJobPrivateBytes": 1711845376,
+    "cpuAffinityMask": 3,
+    "threads": 2,
+    "interopThreads": 1,
+    "cleanup": {
+      "childReaped": true,
+      "jobClosed": true,
+      "ownedProcessesRemaining": false,
+      "ownedProcessChecks": [
+        {
+          "pid": 19796,
+          "remainingRunning": false,
+          "OpenProcessError": 87
+        },
+        {
+          "pid": 33308,
+          "remainingRunning": false,
+          "OpenProcessError": 87
+        }
+      ],
+      "DockerOrGpuOrServicesTouched": false,
+      "environmentOrSecurityChanged": false
+    },
+    "backwardCalls": 0,
+    "optimizerUpdates": 0,
+    "TrainerInvocations": 0,
+    "checkpointSaved": false,
+    "developmentOrFinalOpened": false,
+    "sourceOriginalsAndPriorAttemptsPreserved": true,
+    "sourcePinCountRehashed": 43,
+    "serialization": "Actual result.json written successfully with deterministic loading metadata and correctly labelled original/correction plan hashes.",
+    "artifacts": {
+      "root": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\root-repaired-assignment.txt",
+        "bytes": 2402,
+        "sha256": "628de21c6f806306f694e1616331b4139c7f24f413cba1e63667394cccfab7eb"
+      },
+      "sourceBinding": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\repaired-source-binding.json",
+        "bytes": 1456,
+        "sha256": "79c051ac49e6cc5f22bfd210848d55b8b2ac000fce7bffa842daa78af4b348d9"
+      },
+      "runner": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\runner-repaired.py",
+        "bytes": 76048,
+        "sha256": "25d469eee1d06fe7bb97b63b857082b77df17eb8cc45ab04bfd62af5f62fbbd6"
+      },
+      "entry": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\native_entry_repaired.py",
+        "bytes": 15643,
+        "sha256": "c0a3927206cf252c1b9af9e75eeb5e37e585db817659dabed6b49e703c44bc41"
+      },
+      "supervisor": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\supervise_repaired.py",
+        "bytes": 8416,
+        "sha256": "b96d4c1ed72caed4570c197eaafe8cc0eb9be5351c0e53e0c5edd7946c944b3d"
+      },
+      "plan": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\plan-repaired.json",
+        "bytes": 17656,
+        "sha256": "33a54a7e8748e74a369ee1142d81cf68ddf79ec1a6747f59d2c9dd4a8b45c461"
+      },
+      "attempt": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\repaired-attempt.json",
+        "bytes": 508,
+        "sha256": "5bb0993270e8fda1b133c96c8dcb433a45cdad974b40d0a3335ce4fb91d3a2d3"
+      },
+      "command": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\repaired-command.json",
+        "bytes": 4758,
+        "sha256": "df6087ad7f3dc399889c1e29f4edfa36b63e2c70182e930227a53511a34fbb96"
+      },
+      "log": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\native-cpu-repaired.log",
+        "bytes": 129,
+        "sha256": "3e38c7c8f416c17990822308b8177a1a46cb9a550d07bcda8ebb8ed9bdd3dde5"
+      },
+      "processProof": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\output-repaired\\process-proof.json",
+        "bytes": 1027,
+        "sha256": "7ae77db3c668741426113bf9baebdb24977d9c3cd188eb83ed60709d629b7e7f"
+      },
+      "result": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\output-repaired\\result.json",
+        "bytes": 31213,
+        "sha256": "dfe7edb80e765719ab85c413ca6adbc269d63a378ddacc64cbdc0aecb8597f65"
+      }
+    },
+    "decision": {
+      "emptyScalarRepairConfirmedOnCpu": true,
+      "unchangedPositiveControlConfirmed": true,
+      "classificationContributionRetained": "Empty total44.639766693115234 is nonzero classification loss; only mask terms are zero.",
+      "nextStep": "Return confirmation for separately authored future fit plan; no fit authorization or automatic retry.",
+      "historicalCudaFailingInput": "UNKNOWN",
+      "linuxGpuOrOnnxEquivalenceClaim": false,
+      "modelQualityOrPromotionClaim": false,
+      "kernelNetworkDenialClaim": false,
+      "fitCapacityOrPerformanceGateClaim": false
+    },
+    "verification": {
+      "bindingPreflightAndSyntaxExitCode": 0,
+      "actualCommandExitCode": 0,
+      "savedResultAndTelemetryComparisonExitCode": 0,
+      "final43InputPinsRehashExitCode": 0,
+      "changedCodeReview": "Adaptation uses exact accepted repair nodes/model-instance context; original CocoPool/collate/telemetry AST identical; no fit entry or backward/step/save calls."
+    },
+    "settings": {
+      "requested": "gpt-6.1-sol/xhigh/default-standard1x",
+      "actualModelEffortTier": null,
+      "permissions": "never/danger-full-access"
+    },
+    "privateFinalizationReceipt": "E:\\BhuAayam-data\\task-data\\d07-native-cpu-empty-loss-probe-20261006\\repaired-finalization.json"
+  },
+  "repairedPilotLauncherPreparation": {
+    "task": "D07-RFDETR-REPAIRED-PILOT-LAUNCHER-PREP",
+    "state": "prepared_only_execution_disabled",
+    "ownerThreadId": "01a0fbd5-4561-7692-b366-ebd123380593",
+    "returnThreadId": "01a0ed8a-4383-79c3-a0ae-35c1e969ef66",
+    "ownerBase": "ba81c4e798c555a7bbc1ee209619887bf68a45b0",
+    "observedReadOnlyStagingHead": "549dcebd73549d74b750cef4c3a51d5663dfc92c",
+    "backendPreparationCommit": "af23f24be0c06bed24a0e67c2416bf39c033453e",
+    "futureExecutionTask": "D07-RFDETR-REPAIRED-PILOT-FIT-EXECUTE",
+    "futureScope": "one_fixed_repaired_pilot_fit_no_evaluation",
+    "authority": {
+      "fitAuthorized": false,
+      "evaluationAuthorized": false,
+      "gpuAssigned": false,
+      "actualRootReleaseCreated": false,
+      "currentPidPreflightCreated": false,
+      "requires": "Later root acceptance/release JSON with externally supplied exact SHA and exclusive GPU/container window serialized against D08 live API; prepared templates and prior fit/CPU authorities are inert."
+    },
+    "pins": {
+      "plan": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\plan.json",
+        "bytes": 82606,
+        "sha256": "03d7ebad4b4b75643c2bca894a5472ad37a4e4277168a0730a4c4c6c123c4293"
+      },
+      "interface": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\interface.json",
+        "bytes": 42094,
+        "sha256": "e4da828972aac67aeffd0583077ad9609079d31b9273ec4c7c9c1e3f1ee64836"
+      },
+      "runner": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\train_building_ramp.py",
+        "bytes": 78902,
+        "sha256": "718740ff8b0fe5bbf403873c854c07d9811e1551a148aef1f5581d16e8a8eccd"
+      },
+      "source": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\execution-code.py",
+        "bytes": 112143,
+        "sha256": "5b64052de06140d7f230801b60758bff036178a5ac4e50cf77f0d808b3ff3e5a"
+      },
+      "nativeEntry": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\native-entry.py",
+        "bytes": 10155,
+        "sha256": "748a49353d99ac4b76780efcfd021e78965de665b81e86db93bf5913e304a7b1"
+      },
+      "supervisor": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\supervise.py",
+        "bytes": 5156,
+        "sha256": "3daddf9109216b40736b19959243cd393e1feb18ca8dcf03f7265813bf71f669"
+      },
+      "hostJobGuard": {
+        "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\document-models\\run_trial.py",
+        "bytes": 23948,
+        "sha256": "7b222f53865f49289fd67c81c0a2514bf5493c4469c9f45eabcfff0efa684c2f"
+      },
+      "inertReleaseTemplate": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\root-release.template.json",
+        "bytes": 3084,
+        "sha256": "2caf9c53c5a87fb295fcb455342c1d17f8e1ce30315620d45dab84d9de05f00c"
+      },
+      "procedure": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\PROCEDURE.md",
+        "bytes": 3565,
+        "sha256": "f17f2b987278279304bc5d58a88599259b8e2b6dcdc250aaa1fe0014601d405c"
+      },
+      "checks": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\preparation-checks.json",
+        "bytes": 2212,
+        "sha256": "6cfa4e57a426488b44922dc071b1f9282aa2cdacb971eb5606a1683c2380bad1"
+      },
+      "preparationScript": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\prepare_launcher.py",
+        "bytes": 10118,
+        "sha256": "34c4e860d4c43617befde45281ee90afa51ae3381016e9b4e2f6d6818850c912"
+      }
+    },
+    "canonicalPlanSha256": "c5fc1577fde353a92652d12913b54a4c0a9a838dd563c2a49965660c8246134d",
+    "lossImplementation": {
+      "revision": "ulpin-rfdetr-empty-mask-scalar/1",
+      "library": "transformers",
+      "version": "5.17.0",
+      "sourcesCanonicalLfSha256": {
+        "loss_rf_detr": "db5a352ca7c9c0e0cfc2af7af29e6d348ec72391b5b82b38fedf23f0b4d32ece",
+        "loss_lw_detr": "c7b271e3011dca508736fd8fec310a137e57da96b3dcdad2c60bc3d22ef5ce98"
+      },
+      "change": "Only empty matched mask CE/dice return source_masks.sum() scalar zeros",
+      "scope": "RF-DETR segmentation model instance during explicitly bound operation"
+    },
+    "implementation": "Explicit --repaired-pilot-fit retains existing host Job/Docker/readback/native/pause/release/runner/cleanup flow. New root JSON binds source/entry/supervisor/guard/plan/loss/GPU/window; lossImplementation enters both fit authorization and root-fit-assignment. Host avoids old development source hashing; container has no development RGB/annotations/metadata snapshot. Final output uses repaired-pilot-fit-v1.",
+    "recipe": {
+      "epochs": 6,
+      "optimizerUpdates": 36,
+      "trainExamples": 144,
+      "fp32": true,
+      "evaluationRun": false,
+      "checkpointSelection": "fixed_final_only",
+      "finalFiles": [
+        "model.safetensors",
+        "config.json",
+        "preprocessor_config.json"
+      ]
+    },
+    "bounds": {
+      "cpu": 2,
+      "computeThreads": 2,
+      "containerMemoryBytes": 5368709120,
+      "swapBytes": 0,
+      "pids": 32,
+      "hostJobMemoryBytes": 536870912,
+      "gpuAllocationBytes": 5368709120,
+      "fitAndCleanupSeconds": 900,
+      "cleanupReserveSeconds": 45,
+      "innerFitSeconds": 855
+    },
+    "verification": {
+      "preparationExit": 0,
+      "syntaxCompiled": [
+        "launcher",
+        "native entry",
+        "supervisor",
+        "PID gate"
+      ],
+      "readOnlyMounts": 23,
+      "futureGateMounts": 3,
+      "writableOutputMounts": 1,
+      "inventoryPinsDeclared": 40,
+      "metadataMappingChecks": {
+        "mapped": 49,
+        "realSourceReadsOrHashes": 0
+      },
+      "historicalCode": {
+        "unchangedDefinitions": 14,
+        "nativeControlLiteralUnchanged": true,
+        "referenceBridgeLiteralUnchanged": true,
+        "historicalPilotBridgeAssemblyUnchanged": true,
+        "historicalModesExecuted": false
+      },
+      "changedCodeReview": "Reviewed root refusal before attempt/output, pinned supervisory PID release, exact mounts/environment/image/resource/UUID before heavy imports, current-PID handoff, repaired runner/result schema and final trio, exact-ID cleanup and retained inventory. Historical evidence remains unchanged.",
+      "preparationCorrection": "Initial metadata checker exit1 exposed host evidence-pin list versus container evidence dict. Mapped retained identities explicitly; also adapted top-level plan pin and actual result identity fields before freezing. Corrected checks exit0; no runtime attempt.",
+      "dockerCalls": 0,
+      "modelsOrForwards": 0,
+      "backwardOrOptimizer": 0,
+      "fits": 0,
+      "hostJobsOrContainersCreated": 0,
+      "originalDatasetHashesOrModelWeightsRead": 0,
+      "supervisorExecuted": false,
+      "runtimeInventory": "UNOBSERVED",
+      "outputCreated": false
+    },
+    "resourcesAtReturn": "No task-owned persistent processes, Jobs, containers, services or GPU reservation created. Tool Python preparation exited. Existing runtime inventory and sources were not inspected/rehashed.",
+    "limitations": "Metadata/code preparation only. Fresh Docker availability/inventory, sole GPU/runtime ownership, native same-PID proof and actual fit finite losses/capacity/trio remain future execution prerequisites; fit completion will not qualify quality. Raw ONNX parity remains FAILED; saved-candidate comparison needs separate later authorization. No promotion or gate claim.",
+    "settings": {
+      "requested": "gpt-6.1-sol/xhigh/default-standard1x",
+      "observedModelEffortTier": null,
+      "suppliedPermissions": "never/danger-full-access"
+    },
+    "privateFinalizationReceipt": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\finalization.json"
+  }
+}

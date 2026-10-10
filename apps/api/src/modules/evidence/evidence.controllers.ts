@@ -1,8 +1,12 @@
 import { Controller, Get, HttpCode, Inject, Param, Post, Req, Res, UseFilters } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 import type { Request, Response as ExpressResponse } from 'express';
 import { UspReadEvidenceRequestSchema } from '@ulpin/contracts/usp';
+import { UspReadPacketPlanEntriesSchema, UspPacketPlanEntriesSchema }
+  from '../../../../../packages/contracts/src/usp/packet-pdf';
+import { readPacketPlanEntries } from '@ulpin/server/modules/usp/packets/plan-entries';
+import { localRequestContext } from '@ulpin/server/modules/usp/principal';
 import { sendWebResponse } from '../../common/response';
 import { requestId } from '../../common/request-context';
 import { EvidenceExceptionFilter, parseUspPath, readUspBody, UspBinaryPost,
@@ -123,6 +127,8 @@ export class DecisionEvidenceController {
   @HttpCode(200)
   @UspJsonPost('POST_api_v1_usp_identity_reviews', 'Record an exact project identity review',
     evidenceSchemas.identityReview.request, evidenceSchemas.identityReview.response)
+  @ApiOperation({ operationId: 'POST_api_v1_usp_identity_reviews', summary: 'Record an exact project identity review',
+    description: 'A source-stated review omits location; other assign reviews require it.' })
   async review(@Req() request: Request) {
     const input = await readUspBody(request, evidenceSchemas.identityReview.request);
     return uspEnvelope(request, input.scope, await this.service.review(requestId(request), input));
@@ -196,6 +202,18 @@ export class PacketEvidenceController {
   async create(@Req() request: Request) {
     const input = await readUspBody(request, evidenceSchemas.packetCreate.request);
     return uspEnvelope(request, input.scope, await this.service.create(requestId(request), input));
+  }
+
+  @Post('plans/entries')
+  @HttpCode(200)
+  @UspJsonPost('POST_api_v1_usp_packets_plans_entries',
+    'Read the recorded source-statement entry a target plan may include; stores nothing',
+    UspReadPacketPlanEntriesSchema, UspPacketPlanEntriesSchema)
+  async entries(@Req() request: Request, @Res({ passthrough: true }) response: ExpressResponse) {
+    response.setHeader('Cache-Control', 'private, no-store');
+    const input = await readUspBody(request, UspReadPacketPlanEntriesSchema);
+    const data = await readPacketPlanEntries(localRequestContext(requestId(request)), input);
+    return uspEnvelope(request, input.scope, data);
   }
 
   @Get(':packetId/receipt')

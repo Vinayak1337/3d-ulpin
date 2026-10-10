@@ -1,0 +1,124 @@
+{
+  "about": [
+    "The answers capture.mjs gives in place of the registry for every step the demo must not be asked for.",
+    "recorded: the body of a stored R3 exchange under E:/BhuAayam-data/task-data/r3/step3/ (read-only, not in",
+    "Git); `git` names the same exchange in docs/evidence/runtime/r3/result.json. shaped: built from the type",
+    "in packages/api-client/src/schema.d.ts and marked contract-shaped, not recorded."
+  ],
+  "recorded": {
+    "POST /api/v1/usp/snapshots": { "file": "02-snapshot-response.json", "path": "body", "git": "step3.snapshot" },
+    "POST /api/v1/usp/identity/reviews": { "file": "03-review-response.json", "path": "body", "git": "step3.review" },
+    "POST /api/v1/usp/identity/assign": { "file": "04-assign-response.json", "path": "body", "git": "step3.assign" },
+    "POST /api/v1/usp/packets/plans/create": { "file": "06-plan-response.json", "path": "body", "git": "step3.plan" },
+    "POST /api/v1/usp/packets/plans/confirm": {
+      "file": "07-confirm-response.json", "path": "body", "git": "step3.confirm"
+    },
+    "POST /api/v1/usp/packets/plans/execute": {
+      "file": "08-execute-response.json", "path": "body", "git": "step3.execute"
+    },
+    "POST /api/v1/usp/property-cards/generate": {
+      "file": "09-card-response.json", "path": "body", "git": "step3.card"
+    },
+    "POST /api/v1/usp/property-cards/read": {
+      "file": "10-card-read-response.json", "path": "body", "git": "step3.printed.card"
+    },
+    "typed reason of the review": { "file": "03-review-request.json", "path": "body.reason", "git": "step3.review" },
+    "typed inclusion reason": {
+      "file": "06-plan-request.json", "path": "body.input.entries[0].inclusionReason", "git": "step3.plan"
+    }
+  },
+  "derived": {
+    "GET /api/v1/buildings/{id}/canonical (before the assignment)": [
+      "The demo's live answer with UNIT-3B put back to the state R3 read before it assigned the code",
+      "(docs/evidence/runtime/r3/result.json step3.canonicalBefore: proposedCode null, state unknown) and its",
+      "pin in inputRevisions put back to revision 1 (step3.assign.spaceRevisionBefore). Not a recorded body:",
+      "R3 stored a summary of that read, not the answer."
+    ],
+    "GET /api/v1/usp/identity/records/{id}/reviews (one unused review)": [
+      "docs/evidence/gf1/k11b/result.json afterRollout.expected.item with used null: reviewId, operation, scope,",
+      "expectedManifestId and expectedRecordVersion as stated there; reason from 03-review-request.json",
+      "body.reason; commandSha256 from 03-review-response.json body.data.commandSha256. createdAt is contract-",
+      "shaped, not recorded: no Git evidence holds it, so the time R3 sent the review (03-review-request.json",
+      "at) stands in for it."
+    ],
+    "POST /api/v1/usp/packets/plans/entries": [
+      "docs/evidence/gf4/k12/REQUESTS.md, read 1: target as sent, one entry with the bindingId, label,",
+      "citation and includable it states. meta is contract-shaped, not recorded."
+    ],
+    "POST /api/v1/usp/property-cards/preview": [
+      "docs/evidence/gf4/k12/REQUESTS.md, read 2: mode and revision as it states (create and 1 for a first",
+      "card; update and 2 for a revision of card 6a997624), expiresAt as sent, scope of the plan. facts are the",
+      "rows of 09-card-response.json body.data.facts, which REQUESTS.md says a preview equals for the same",
+      "inputs. The answer as a whole is contract-shaped, not recorded: no preview was ever requested."
+    ],
+    "meta of the entries and preview answers": [
+      "09-card-response.json body.meta, the meta of R3's card answer. Contract-shaped, not recorded, for these",
+      "two reads."
+    ],
+    "POST /api/v1/usp/snapshots (in the card dialog)": [
+      "02-snapshot-response.json body: the snapshot R3 captured before the assignment. It stands in for the",
+      "capture a first card would make after it; R3's own plan was made under its later snapshot a9fd4c9d."
+    ],
+    "POST /api/v1/usp/property-cards/generate (revision 2)": [
+      "09-card-response.json body with data.revision 2, data.previousRevision 1 and data.expiresAt as the",
+      "Studio sent it. Contract-shaped, not recorded: no second revision was ever issued."
+    ],
+    "POST /api/v1/usp/property-cards/list (revision 2 listed)": [
+      "13-list-unit-response.json body (docs/evidence/runtime/r3/result.json step3.list): its one row twice,",
+      "first as revision 2 (latestRevision 2, the expiry sent, createdAt the time of the run), then as it is",
+      "with latestRevision 2 and superseded true. Contract-shaped, not recorded."
+    ]
+  },
+  "live": {
+    "POST /api/v1/usp/property-cards/list": [
+      "Not mocked unless a scene names cardsNone or the revision-2 list: live-21, mocked-20 (the cards read",
+      "after the first card request) and live-27, live-28 show the demo's own list for UNIT-3B."
+    ],
+    "GET /api/v1/usp/identity/records/{id}/reviews (mocked-30 only)": [
+      "The demo's own answer after its roll-out: one review of UNIT-3B, used by the assignment. Every other",
+      "scene mocks this read."
+    ]
+  },
+  "shaped": {
+    "reviewsNone": {
+      "marker": "contract-shaped, not recorded",
+      "body": { "items": [], "truncated": false, "unreadable": 0 }
+    },
+    "reviewsUnreadable": {
+      "marker": "contract-shaped, not recorded",
+      "body": { "items": [], "truncated": false, "unreadable": 1 }
+    },
+    "reviewRefused": {
+      "marker": "contract-shaped, not recorded: the code and sentence of Step 0, sequence A2 (USP_IDENTITY_EVIDENCE)",
+      "status": 422,
+      "body": {
+        "error": {
+          "code": "USP_IDENTITY_EVIDENCE",
+          "message": "Each identity target needs matching recorded source evidence.",
+          "retryable": false,
+          "requestId": "00000000-0000-4000-8000-000000000000"
+        }
+      }
+    },
+    "entryNotIncludable": {
+      "marker": "contract-shaped, not recorded: the reason code is a placeholder of the contract's string type",
+      "reasonCode": "contract_shaped_reason_code"
+    },
+    "generateRefused": {
+      "marker": "contract-shaped, not recorded: the code and sentence of Step 0, sequence B4 (CARD_EXPIRY)",
+      "status": 422,
+      "body": {
+        "error": {
+          "code": "CARD_EXPIRY",
+          "message": "Use a card expiry within the next 24 hours.",
+          "retryable": false,
+          "requestId": "00000000-0000-4000-8000-000000000000"
+        }
+      }
+    },
+    "cardsNone": {
+      "marker": "contract-shaped, not recorded: the card list of a unit with no card",
+      "body": { "data": { "items": [], "truncated": false } }
+    }
+  }
+}

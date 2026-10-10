@@ -1,0 +1,303 @@
+import { randomUUID } from 'node:crypto';
+import type { PoolClient } from 'pg';
+import type { RequestContext } from '@ulpin/contracts/usp';
+import { UspGeneratePropertyCardSchema, UspReadPropertyCardSchema, UspPropertyCardSchema,
+  UspPropertyCardViewSchema, UspPreviewPropertyCardSchema, UspPropertyCardPreviewSchema,
+  type PropertyCard } from '../../../../../contracts/src/usp/property-card';
+import { UspPacketPlanViewSchema, type AnyPacketPlan, type PacketPlanConfirmation,
+  type PacketPlanExecution } from '../../../../../contracts/src/usp/packets';
+import type { AnyPdfPacketPlanExecution as PdfPacketPlanExecution } from '../../../../../contracts/src/usp/packet-pdf';
+import { transaction } from '../../../infrastructure/db';
+import { AppError, conflict, notFound } from '../../../infrastructure/errors';
+import { readObject, openObjectStream, putOriginal, sha256 } from '../../../infrastructure/storage';
+import { canonical, fingerprint } from '../../cases/domain';
+import { assertLocalUsp } from '../snapshots';
+import { requestReceiptTx } from '../commands';
+import { appendUspOutboxTx } from '../outbox';
+import { readPacket0 } from '../packet0';
+import { readPacketPlan } from './plan-service';
+import { readPacketPdf, type PdfPacketIo } from './pdf-service';
+import { isPdfPlan } from './plan-store';
+import { authorizePlanTx, protectPlanDisclosureTx } from './plan-authority';
+import { projectCardFactsTx } from './card-projection';
+import { propertyCardResolverUrl } from './card-render';
+import { renderPropertyCardProfile, selectPropertyCardProfile } from './card-render-profile';
+
+const MAX_BYTES = 524288;
+type ArtifactRead = (key: string, bytes: number, hash: string) => Promise<Uint8Array>;
+/** Internal controlled transport, never accepted from an HTTP request. */
+export type PropertyCardIo = { readPacket: typeof readObject; readCard: ArtifactRead; put: typeof putOriginal; pdf?: PdfPacketIo };
+async function boundedCardRead(key: string, bytes: number, hash: string) {
+  const object = await openObjectStream(key, bytes, 30000), chunks: Buffer[] = []; let count = 0;
+  try {
+    for await (const value of object.body) {
+      const chunk = Buffer.from(value); count += chunk.length;
+      if (count > bytes || count > MAX_BYTES) throw new AppError(422, 'CARD_ARTIFACT_INTEGRITY', 'Stored card exceeds its byte receipt.');
+      chunks.push(chunk);
+    }
+    const result = Buffer.concat(chunks, count);
+    if (count !== bytes || sha256(result) !== hash) throw new AppError(422, 'CARD_ARTIFACT_INTEGRITY', 'Stored card does not match its receipt.');
+    return result;
+  } finally { object.body.destroy(); }
+}
+export const storage: PropertyCardIo = { readPacket: readObject, readCard: boundedCardRead,
+  put: (key, bytes, mediaType) => putOriginal(key, bytes, mediaType, AbortSignal.timeout(30000)) };
+/** Why a parsed card body disagrees with itself, or null. The throwing readers and the consistency report share it. */
+export function cardBodyDefect(card: PropertyCard) {
+  const { cardSha256, ...body } = card;
+  if (fingerprint(body) !== cardSha256) return 'CARD_FINGERPRINT' as const;
+  if (card.previousRevision !== (card.revision === 1 ? null : card.revision - 1)) return 'CARD_PREVIOUS_REVISION' as const;
+  // A saved local origin remains exact even if the configured port later changes.
+  if (!/^http:\/\/127\.0\.0\.1:[1-9]\d{0,4}\/api\/v1\/usp\/property-cards\/[a-f0-9-]{36}\/revisions\/[1-9]\d*$/.test(card.resolverUrl)
+    || Number(new URL(card.resolverUrl).port) > 65535
+    || new URL(card.resolverUrl).pathname !== `/api/v1/usp/property-cards/${card.cardId}/revisions/${card.revision}`)
+    return 'CARD_RESOLVER' as const;
+  return null;
+}
+function validateCard(raw: unknown) {
+  const card = UspPropertyCardSchema.parse(raw), defect = cardBodyDefect(card);
+  if (defect === 'CARD_RESOLVER') conflict('The saved resolver does not name this exact local card revision.');
+  if (defect) conflict('The immutable card failed its integrity check.');
+  return card;
+}
+export function cardAccessDenied() {
+  return new AppError(403, 'CARD_ACCESS', 'Current operator access does not authorize this private card.');
+}
+export function actor(ctx: RequestContext, card: PropertyCard) {
+  assertLocalUsp(ctx);
+  if (canonical(ctx.principal) !== canonical(card.creator) || ctx.accessViewId !== card.accessViewId || ctx.policyVersion !== card.policyVersion)
+    throw cardAccessDenied();
+}
+async function liveTx(client: PoolClient, expiresAt: string) {
+  if (!(await client.query('SELECT clock_timestamp() < $1::timestamptz AS live', [expiresAt])).rows[0]?.live)
+    throw new AppError(403, 'CARD_EXPIRED', 'This exact card revision expired.');
+}
+/** Expiry and revocation of one stored revision, read together on the database clock. An unknown expiry stays unknown. */
+export async function cardLifecycleTx(client: PoolClient, cardId: string, revision: number, expiresAt: string | null) {
+  const row = (await client.query(`SELECT clock_timestamp() < $1::timestamptz AS live,
+    (SELECT body FROM usp_property_card_revocations WHERE card_id=$2 AND revision=$3) AS revocation`, [expiresAt, cardId, revision])).rows[0];
+  return { expired: expiresAt === null ? null : !row?.live, revocation: (row?.revocation ?? null) as unknown };
+}
+/** A revoked revision is refused before an expired one: revocation is the permanent state. */
+async function liveCardTx(client: PoolClient, card: PropertyCard) {
+  const state = await cardLifecycleTx(client, card.cardId, card.revision, card.expiresAt);
+  if (state.revocation) throw new AppError(403, 'CARD_REVOKED', 'This exact card revision was revoked.');
+  if (state.expired) throw new AppError(403, 'CARD_EXPIRED', 'This exact card revision expired.');
+}
+/** Held to commit by a revocation and by a new revision of the same card, so neither misses the other. */
+export async function lockCardTx(client: PoolClient, cardId: string) {
+  await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`property-card:${cardId}`]);
+}
+/** Whether a row's own columns still name this body at this exact card revision. */
+export function storedLinkageHolds(row: { object_key: unknown; artifact_hash: unknown }, card: PropertyCard, cardId: string, revision: number) {
+  return card.cardId === cardId && card.revision === revision && row.artifact_hash === card.artifact.sha256
+    && row.object_key === `usp/property-cards/${cardId}/${revision}/${card.artifact.sha256}`;
+}
+export async function storedTx(client: PoolClient, cardId: string, revision: number) {
+  const row = (await client.query('SELECT body,object_key,artifact_hash FROM usp_property_cards WHERE id=$1 AND revision=$2', [cardId, revision])).rows[0]
+    ?? notFound('The exact property card revision is unavailable.');
+  const card = validateCard(row.body);
+  if (!storedLinkageHolds(row, card, cardId, revision)) conflict('The saved card linkage changed.');
+  return { card, objectKey: row.object_key as string };
+}
+export type Executed = { plan: AnyPacketPlan; confirmation: PacketPlanConfirmation; execution: PacketPlanExecution | PdfPacketPlanExecution };
+/** The executed, confirmed and complete form of a plan view, or null when no card can rest on it. */
+export function executedView(view: Awaited<ReturnType<typeof readPacketPlan>>): Executed | null {
+  if (!view.confirmation || !view.execution || view.plan.requiredContext !== 'available') return null;
+  return { plan: view.plan, confirmation: view.confirmation, execution: view.execution };
+}
+async function executed(ctx: RequestContext, planId: string, version: number): Promise<Executed> {
+  const view = executedView(await readPacketPlan(ctx, { planId, version }));
+  if (!view) throw new AppError(422, 'CARD_EXECUTED_PLAN_REQUIRED', 'Execute a confirmed complete packet plan before generating a card.');
+  return view;
+}
+export async function linkedPacket(ctx: RequestContext, view: Executed, io: PropertyCardIo) {
+  const packet = isPdfPlan(view.plan)
+    ? await readPacketPdf(ctx, view.execution.packet.packetId, io.pdf)
+    : await readPacket0(ctx, view.execution.packet.packetId, io.readPacket);
+  if (canonical(packet.receipt) !== canonical(view.execution.packet)) conflict('The exact linked packet is unavailable.');
+  return packet;
+}
+/** Compare the exact immutable linkage on this same protected transaction client. */
+async function protectedTx(client: PoolClient, ctx: RequestContext, view: Executed) {
+  await protectPlanDisclosureTx(client, ctx, view.plan);
+  await authorizePlanTx(client, ctx, view.plan, true);
+  await planLinkageTx(client, view);
+}
+/** The stored plan, confirmation, execution and PDF packet rows still equal the view. The caller holds protection. */
+export async function planLinkageTx(client: PoolClient, view: Executed) {
+  const { planId, version } = view.plan;
+  const plan = (await client.query('SELECT body FROM usp_packet_plans WHERE id=$1 AND version=$2', [planId, version])).rows[0]?.body;
+  const confirmation = (await client.query('SELECT body FROM usp_packet_plan_confirmations WHERE plan_id=$1 AND version=$2', [planId, version])).rows[0]?.body;
+  const execution = (await client.query('SELECT body FROM usp_packet_plan_executions WHERE plan_id=$1 AND version=$2', [planId, version])).rows[0]?.body;
+  if (canonical(UspPacketPlanViewSchema.parse({ plan, confirmation, execution })) !== canonical(view)) conflict('The exact executed plan linkage changed.');
+  if (isPdfPlan(view.plan)) {
+    const receipt = view.execution.packet;
+    const row = (await client.query('SELECT body,object_key,artifact_hash FROM usp_packets WHERE id=$1 FOR SHARE', [receipt.packetId])).rows[0];
+    if (!row || canonical(row.body) !== canonical(receipt) || row.artifact_hash !== receipt.artifact.sha256
+      || row.object_key !== `usp/packets/${receipt.packetId}/${receipt.artifact.sha256}`)
+      conflict('The exact linked PDF packet is unavailable.');
+  }
+}
+export function link(card: PropertyCard, view: Executed) {
+  const plan = view.plan;
+  if (card.planId !== plan.planId || card.planVersion !== plan.version || card.planSha256 !== plan.planSha256
+    || card.confirmationId !== view.confirmation.confirmationId || card.packetId !== view.execution.packet.packetId
+    || card.packetSha256 !== view.execution.packet.artifact.sha256 || card.targetBodySha256 !== plan.targetBodySha256
+    || canonical(card.target) !== canonical(plan.input.target) || canonical(card.scope) !== canonical(plan.input.scope)
+    || canonical(card.creator) !== canonical(plan.creator) || card.accessViewId !== plan.accessViewId || card.policyVersion !== plan.policyVersion
+    || canonical(card.evidenceEntrySha256) !== canonical(plan.entries.filter(e => e.state === 'included').map(e => e.entrySha256))
+    || canonical(card.omissions) !== canonical(view.execution.omissions)) conflict('The card does not match its immutable plan and packet.');
+}
+async function authorityTx(client: PoolClient, ctx: RequestContext, card: PropertyCard, view: Executed) {
+  actor(ctx, card); link(card, view); await protectedTx(client, ctx, view); await liveCardTx(client, card);
+}
+export async function currentRevisionTx(client: PoolClient, plan: AnyPacketPlan) {
+  const row = (await client.query('SELECT revision FROM registry_records WHERE id=$1 AND site_id=$2 FOR SHARE',
+    [plan.input.target.ref.id, plan.input.scope.scopeId])).rows[0] ?? notFound('The selected target is unavailable.');
+  const revision = Number(row.revision);
+  if (!Number.isSafeInteger(revision) || revision < 1) conflict('The current target revision is unavailable.');
+  return revision;
+}
+type CardPreviewCommand = ReturnType<typeof UspPreviewPropertyCardSchema.parse>;
+
+/** The existing revision guard, including transaction-scoped revocation protection. No row is written. */
+async function nextCardRevisionTx(client: PoolClient, ctx: RequestContext, command: CardPreviewCommand,
+  view: Executed) {
+  if (command.guard.mode === 'create') return 1;
+  const plan = view.plan;
+  const old = (await storedTx(client, command.cardId!, command.guard.expectedVersion)).card;
+  // A revision refreshes expiry for the same executed context; another snapshot gets a separate card.
+  actor(ctx, old);
+  if (old.planId !== plan.planId || old.planVersion !== plan.version
+    || command.guard.expectedManifestId !== old.scope.manifestId) {
+    throw new AppError(422, 'CARD_REVISION_CONTEXT',
+      'Create a separate card for a different executed plan or snapshot.');
+  }
+  link(old, view);
+  const latest = (await client.query('SELECT max(revision) AS revision FROM usp_property_cards WHERE id=$1',
+    [old.cardId])).rows[0];
+  if (Number(latest?.revision) !== old.revision) conflict('A newer immutable card revision exists.');
+  await lockCardTx(client, old.cardId);
+  if ((await cardLifecycleTx(client, old.cardId, old.revision, old.expiresAt)).revocation) {
+    throw new AppError(422, 'CARD_REVISION_REVOKED',
+      'The latest revision of this card was revoked. Create a separate card.');
+  }
+  if (old.revision === 2147483647) {
+    throw new AppError(422, 'CARD_REVISION_BOUND',
+      'This card has reached its revision bound. Create a separate card.');
+  }
+  return old.revision + 1;
+}
+
+/** Shared no-replay prepare path, called under protectedTx. SELECTs and transaction locks only. */
+async function prepareCardFactsTx(client: PoolClient, ctx: RequestContext, command: CardPreviewCommand,
+  view: Executed) {
+  const expiry = Date.parse(command.expiresAt) - Date.now();
+  if (expiry <= 0 || expiry > 24 * 60 * 60 * 1000) {
+    throw new AppError(422, 'CARD_EXPIRY', 'Use a card expiry within the next 24 hours.');
+  }
+  const revision = await nextCardRevisionTx(client, ctx, command, view);
+  const projection = await projectCardFactsTx(client, ctx, view.plan);
+  await authorizePlanTx(client, ctx, view.plan, true);
+  await liveTx(client, command.expiresAt);
+  return { revision, projection };
+}
+
+/** The rows a card made now from this executed plan would print. A preview is not a card:
+ * nothing is stored and it has no id. No PDF is rendered and no request receipt is read. */
+export async function previewPropertyCard(ctx: RequestContext, raw: unknown, io: PropertyCardIo = storage) {
+  assertLocalUsp(ctx);
+  const command = UspPreviewPropertyCardSchema.parse(raw);
+  const view = await executed(ctx, command.planId, command.planVersion);
+  const prepared = await transaction(async client => {
+    await protectedTx(client, ctx, view);
+    return prepareCardFactsTx(client, ctx, command, view);
+  });
+  await linkedPacket(ctx, view, io);
+  return UspPropertyCardPreviewSchema.parse({ mode: command.guard.mode, revision: prepared.revision,
+    facts: prepared.projection.facts, expiresAt: command.expiresAt, scope: view.plan.input.scope });
+}
+
+export async function generatePropertyCard(ctx: RequestContext, raw: unknown, io: PropertyCardIo = storage) {
+  assertLocalUsp(ctx);
+  const command = UspGeneratePropertyCardSchema.parse(raw), hash = fingerprint(command), operation = 'property_card_generate';
+  const view = await executed(ctx, command.planId, command.planVersion), plan = view.plan;
+  const prepare = async (client: PoolClient) => {
+    await protectedTx(client, ctx, view);
+    const replay = await requestReceiptTx(client, ctx, plan.input.scope.scopeId, operation, command.guard.requestKey, hash);
+    if (replay) {
+      const card = validateCard(replay); await authorityTx(client, ctx, card, view);
+      const saved = await storedTx(client, card.cardId, card.revision);
+      if (canonical(saved.card) !== canonical(card)) conflict('The replay card is unavailable.');
+      return { replay: card };
+    }
+    return prepareCardFactsTx(client, ctx, command, view);
+  };
+  const first = await transaction(prepare);
+  if ('replay' in first) return first.replay;
+  // The linked private packet is verified through its existing protected reader.
+  const packet = await linkedPacket(ctx, view, io);
+  const cardId = command.cardId ?? randomUUID(), revision = first.revision!;
+  const body = { cardId, revision, previousRevision: revision === 1 ? null : revision - 1,
+    profile: selectPropertyCardProfile(first.projection!.facts), mode: 'local_operator' as const,
+    planId: plan.planId, planVersion: plan.version, planSha256: plan.planSha256,
+    confirmationId: view.confirmation.confirmationId, packetId: packet.receipt.packetId, packetSha256: packet.receipt.artifact.sha256,
+    target: plan.input.target, scope: plan.input.scope, targetBodySha256: plan.targetBodySha256,
+    ...first.projection!, creator: ctx.principal, accessViewId: ctx.accessViewId, policyVersion: ctx.policyVersion,
+    evidenceEntrySha256: plan.entries.filter(e => e.state === 'included').map(e => e.entrySha256), omissions: view.execution.omissions,
+    resolverUrl: propertyCardResolverUrl(cardId, revision), createdAt: new Date().toISOString(), expiresAt: command.expiresAt };
+  const bytes = await renderPropertyCardProfile(body), artifact = { sha256: sha256(bytes), bytes: bytes.length, contentType: 'application/pdf' as const, pages: 1 as const };
+  const content = { ...body, artifact }, card = UspPropertyCardSchema.parse({ ...content, cardSha256: fingerprint(content) });
+  const key = `usp/property-cards/${cardId}/${revision}/${artifact.sha256}`;
+  // Object I/O holds no SQL transaction. A rejected final publication may leave
+  // an unreferenced immutable derivative, never an altered source or packet.
+  await io.put(key, bytes, 'application/pdf');
+  return transaction(async client => {
+    const final = await prepare(client);
+    if ('replay' in final) return final.replay;
+    if (final.revision !== revision || canonical(final.projection) !== canonical(first.projection)) conflict('The exact card projection changed.');
+    await authorityTx(client, ctx, card, view);
+    await client.query(`INSERT INTO usp_property_cards(id,revision,site_id,manifest_id,plan_id,plan_version,packet_id,subject,artifact_hash,object_key,body)
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`, [cardId, revision, plan.input.scope.scopeId, plan.input.scope.manifestId,
+      plan.planId, plan.version, packet.receipt.packetId, ctx.principal.subject, artifact.sha256, key, card]);
+    await client.query(`INSERT INTO usp_command_receipts(id,subject,scope_key,operation,request_key,command_sha256,body)
+      VALUES($1,$2,$3,$4,$5,$6,$7)`, [randomUUID(), ctx.principal.subject, plan.input.scope.scopeId, operation, command.guard.requestKey, hash, card]);
+    await appendUspOutboxTx(client, `property-card:${cardId}`, { type: 'property.card.created', scope: card.scope,
+      cardId, revision, cardSha256: card.cardSha256, artifactSha256: artifact.sha256, planId: plan.planId, version: plan.version, correlationId: ctx.requestId });
+    return card;
+  });
+}
+/** Exact immutable metadata, with current target revision reported separately. */
+export async function readPropertyCard(ctx: RequestContext, raw: unknown, io: PropertyCardIo = storage) {
+  assertLocalUsp(ctx);
+  const command = UspReadPropertyCardSchema.parse(raw);
+  const saved = await transaction(client => storedTx(client, command.cardId, command.revision));
+  actor(ctx, saved.card);
+  const view = await executed(ctx, saved.card.planId, saved.card.planVersion);
+  // PDF detail is checked by its dedicated bounded reader, outside card SQL.
+  // Its exact stored linkage is rechecked on the final protected card client.
+  if (isPdfPlan(view.plan)) await linkedPacket(ctx, view, io);
+  return transaction(async client => {
+    await authorityTx(client, ctx, saved.card, view);
+    const currentTargetRevision = await currentRevisionTx(client, view.plan);
+    await authorizePlanTx(client, ctx, view.plan, true); await liveCardTx(client, saved.card);
+    return UspPropertyCardViewSchema.parse({ card: saved.card, currentTargetRevision,
+      snapshotState: currentTargetRevision === saved.card.target.revision ? 'same_revision' : 'changed_revision' });
+  });
+}
+/** The stored PDF of one card, refused unless it has the receipt's exact length and SHA-256. */
+export async function cardArtifact(card: PropertyCard, io: PropertyCardIo) {
+  const key = `usp/property-cards/${card.cardId}/${card.revision}/${card.artifact.sha256}`;
+  const bytes = await io.readCard(key, card.artifact.bytes, card.artifact.sha256);
+  if (bytes.length !== card.artifact.bytes || bytes.length > MAX_BYTES || sha256(bytes) !== card.artifact.sha256)
+    throw new AppError(422, 'CARD_ARTIFACT_INTEGRITY', 'The saved PDF does not match this exact card revision.');
+  return bytes;
+}
+/** Resolver and download share one bounded, before/after protected read path. */
+export async function resolvePropertyCard(ctx: RequestContext, raw: unknown, io: PropertyCardIo = storage) {
+  const before = await readPropertyCard(ctx, raw, io);
+  const bytes = await cardArtifact(before.card, io);
+  const after = await readPropertyCard(ctx, raw, io);
+  return { ...after, bytes };
+}

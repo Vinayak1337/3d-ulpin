@@ -8,12 +8,30 @@ export interface EvidenceRef {
   subject?: { id: string; name: string; outline?: number[][] };
   /** Values this place in the source supports, shown under the viewer. */
   supports?: { source: string; locator: string }[];
+  /** The exact original the citation was recorded against; page reads carry it so a changed original is refused. */
+  pin?: SourcePin;
+}
+
+export interface SourcePin {
+  revision: number;
+  sha256: string;
+}
+
+/** A region of a page exactly as the record carries it: its own numbers and unit, never converted. */
+export interface PageRegion {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  unit: 'normalized' | 'pt' | 'pixel';
 }
 
 export type Locator =
   | { kind: 'row'; row: number; text: string }
   | { kind: 'pointer'; pointer: string; text: string }
-  | { kind: 'text'; text: string };
+  | { kind: 'text'; text: string }
+  | { kind: 'page'; page: number; text: string }
+  | { kind: 'region'; page: number; region: PageRegion; text: string };
 
 /** Parses the backend's locator forms: "<file> row N", a JSON pointer, or free text. */
 export function parseLocator(input: { locator?: string; jsonPointer?: string; row?: number }): Locator {

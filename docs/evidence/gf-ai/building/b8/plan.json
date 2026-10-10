@@ -1,0 +1,47 @@
+{
+  "schema": "building-pipeline-attrition-plan/1",
+  "task": "b8-pipeline-attrition",
+  "status": "preregistered",
+  "split": "dev",
+  "hypothesis": "About half of the truths that B7 found recoverable from the raw model output are lost after the model, in the production painting (mask & (labels == 0) in score order) and component code, and an instance-preserving alternative recovers them without losing precision.",
+  "data_boundary": "DEV only, replaying B7's score cache. The Karnataka holdout, Cox's Bazar and Chittagong transfer-2 are never loaded. No GPU, no forward pass, no served model or parameter changes. services/geo/geo/spatial_ml.py is read-only.",
+  "source_cache": "E:/BhuAayam-data/ml/runs/b7-dev-scores/b7-epoch004-dev-20261010",
+  "replay_parity_first": "At threshold 0.5 the production replay must reproduce B7's replay_parity_with_b3_at_050 exactly (tp 8715, predicted 10200, 20 false buildings on empty chips). If it does not, the run stops and reports.",
+  "thresholds": {
+    "primary": [0.5, 0.45],
+    "note": "0.45 is B7's DEV-selected point. A query is 'at score >= t' when production paints it, i.e. its sigmoid after the monotone threshold offset exceeds 0.5."
+  },
+  "attribution": {
+    "population": "Each DEV truth that has a raw match at threshold t (a painted-eligible query whose full, unpainted mask has IoU >= 0.5 with the truth) yet is not matched by the production pipeline at t (B7/B3 matcher: maximum cardinality one-to-one, mask IoU >= 0.5 on rasterised production components).",
+    "representative_query": "When several raw queries match a truth, the one with the highest mask IoU (ties: higher score) represents it. Its painted pixels are the pixels of its label after production painting.",
+    "categories_in_order": [
+      {"name": "claimed_by_higher_score", "rule": "painting left the representative query with fewer than 50% of its own full-mask pixels (including none)"},
+      {"name": "fragmented", "rule": "its painted pixels form more than one 4-connected piece and no single piece has pixel IoU >= 0.5 with the truth"},
+      {"name": "area_filter", "rule": "the piece with pixel IoU >= 0.5 with the truth is dropped by production _components as under 16 px2"},
+      {"name": "simplify_or_invalid", "rule": "that piece is dropped by _components as empty, invalid or over the vertex cap, or survives but its simplified rasterised component has IoU < 0.5 with the truth"},
+      {"name": "capacity", "rule": "that piece survives _components on its own but is cut by MAX_COMPONENTS (100) in the full chip"},
+      {"name": "other", "rule": "everything else; reported with the descriptive detail partial_claim_below_iou (one piece, painting kept >= 50% of the mask but the piece IoU is < 0.5), assignment_lost (a final component matches the truth at IoU >= 0.5 but the one-to-one assignment gave it to another truth) and unclassified"}
+    ],
+    "reported": "Counts per category and per COCO pixel-area truth bin ([0,16) [16,64) [64,128) [128,256) [256,512) [512,1024) [1024,inf)) at each primary threshold, with the denominator (truths missed at t) and the share with a raw match.",
+    "supplementary_descriptive": "The same cascade for every truth missed at 0.5 with a raw match at any cached score >= 0.05, evaluated at the largest grid threshold (0.05 steps) strictly below the representative query's score, so the attribution is taken where the pipeline could first have used that query. This explains B7's 'matched by the pipeline at a lower threshold' gap. It is descriptive and does not enter the comparison rule."
+  },
+  "alternative": {
+    "name": "score_ordered_mask_nms",
+    "steps": [
+      "take the queries production paints at threshold t, in production's score order",
+      "keep a query unless its full mask has IoU > 0.5 with an already-kept, higher-scored query's full mask",
+      "each kept query becomes one prediction from its full mask: its largest 4-connected piece, through the same _components filters (16 px2, 0.5 px simplify, validity, vertex cap), with no pixel claiming",
+      "overlap between kept predictions is allowed; the number of overlapping prediction pairs is counted",
+      "if more than MAX_COMPONENTS (100) predictions survive in a chip, the largest 100 by area are kept, as production does"
+    ],
+    "scope": "Lives only in diagnose_pipeline_attrition.py. No production change is made by this task."
+  },
+  "comparison_rule": {
+    "report": "DEV precision, recall and F1 at 0.5 and 0.45 for production versus the alternative; per size bin recall by truth-area bin and precision by prediction-area bin (a prediction is in the bin of its own rasterised area), with the bin F1 defined as the harmonic mean of those two; the empty-chip false buildings; the overlapping prediction pairs of the alternative.",
+    "helps_if": "At 0.45 or at 0.5 (reported separately), the alternative's DEV recall is at least the production recall plus 0.02, its DEV precision is at least 0.80, and its empty-chip false buildings are at most 2 x production's at the same threshold.",
+    "not_a_promotion": "A pass only tells the lead the idea is worth a later production decision and a Chittagong transfer-2 slot; it changes nothing served."
+  },
+  "contact_sheet": "12 PNGs of the largest attribution category at threshold 0.45 (all of them if fewer than 12), evenly spaced over the chip-sorted list, written under E:/BhuAayam-data/ml/runs/b8-attrition/contact-sheet/. Only their paths and SHA-256 are committed.",
+  "claim_scope": "DEV-selected diagnosis only. No held-out, transfer or cross-geography claim.",
+  "not_changed": ["registered model", "ml-models.json", "preregistration.json", "transfer-2-runs.jsonl", "services/geo/geo/spatial_ml.py", "B7 files"]
+}

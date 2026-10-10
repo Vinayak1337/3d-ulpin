@@ -8,12 +8,13 @@ import {registryCityJSONAuthorityTx,readRegistryCityJSONDraftTx} from './cityjso
 import {cityjsonValidationStatusTx,readCityJSONValidationStatus,assertCityJSONValidationAuthority,validationSelections} from './cityjson-validation';
 import {readRegistryCityJSONReferenceAuthorityTx} from './cityjson-reference';
 import {readRegistryCityJSONReferenceReviewForAuthorityTx,cityjsonReferenceReviewSummary} from './cityjson-reference-review';
+import {readRegistryCityJSONControlReviewForAuthorityTx,cityjsonControlReviewSummary} from './cityjson-control-review';
 
 type Authority=Awaited<ReturnType<typeof registryCityJSONAuthorityTx>>;
 type Validation=Awaited<ReturnType<typeof cityjsonValidationStatusTx>>;
 type Dependencies={transaction:typeof transaction;references:typeof readRegistryCityJSONReferenceAuthorityTx;
   validation:typeof cityjsonValidationStatusTx;native:typeof readRegistryCityJSONDraftTx;status:typeof readCityJSONValidationStatus;
-  review:typeof readRegistryCityJSONReferenceReviewForAuthorityTx};
+  review:typeof readRegistryCityJSONReferenceReviewForAuthorityTx;controlReview?:typeof readRegistryCityJSONControlReviewForAuthorityTx};
 const defaults:Dependencies={transaction,references:readRegistryCityJSONReferenceAuthorityTx,validation:cityjsonValidationStatusTx,
   native:readRegistryCityJSONDraftTx,status:readCityJSONValidationStatus,review:readRegistryCityJSONReferenceReviewForAuthorityTx};
 const uuid=z.uuid().transform(v=>v.toLowerCase());
@@ -50,6 +51,7 @@ async function currentAssessment(draftValue:string,raw:unknown,dependencies:Depe
     const {current,references}=await dependencies.references(client,draftId,request.expectedDraftRevision);
     if(current.draft.revision!==request.expectedDraftRevision)conflict('Pin the current native draft revision.');
     const review=request.referenceReviewId?await dependencies.review(client,{current,references},request.referenceReviewId):null;
+    const controlReview=request.controlReviewId?await (dependencies.controlReview??readRegistryCityJSONControlReviewForAuthorityTx)(client,{current,references},request.controlReviewId):null;
     let row:Validation|null=null;
     if(request.validationJobId){
       // Scope the supplied ID before resolving its private payload or result.
@@ -61,7 +63,7 @@ async function currentAssessment(draftValue:string,raw:unknown,dependencies:Depe
     }
     // The native reader reacquires only gates already held by reference authority.
     const native=readNative?await dependencies.native(client,draftId):null;
-    return {current,row,references,native,review};
+    return {current,row,references,native,review,controlReview};
   });
   const before=await resolve(true),native=before.native!;
   if(native.draftId!==draftId||native.draftRevision!==before.current.draft.revision||native.recordId!==before.current.record.id||
@@ -78,7 +80,8 @@ async function currentAssessment(draftValue:string,raw:unknown,dependencies:Depe
   }
   const after=await resolve();
   if(authorityPin(before.current,before.row)!==authorityPin(after.current,after.row)||
-    fingerprint(before.references)!==fingerprint(after.references)||fingerprint(before.review)!==fingerprint(after.review))
+    fingerprint(before.references)!==fingerprint(after.references)||fingerprint(before.review)!==fingerprint(after.review)||
+    fingerprint(before.controlReview)!==fingerprint(after.controlReview))
     conflict('Admission evidence changed during private object I/O; refresh the assessment.');
   const {current,row}=after,{candidate}=current,s=candidate.input;
   const geometry=z.object({type:z.enum(['Solid','MultiSurface']),lod:z.union([z.string().max(64),z.number().finite()]).nullable().optional()}).parse(native.native.geometry);
@@ -116,6 +119,7 @@ async function currentAssessment(draftValue:string,raw:unknown,dependencies:Depe
       reviewedReference:'not_assessed',accuracy:'not_assessed',accuracyMetres:null,globalPlacement:'not_assessed'},
     validation:row&&status?{inputSha256:row.job.input_sha256,acceptedFence:row.job.accepted_fence===null?null:Number(row.job.accepted_fence),validator:row.input.validator,status}:null,
     ...(after.review?{referenceReview:cityjsonReferenceReviewSummary(after.review)}:{}),
+    ...(after.controlReview?{controlReview:cityjsonControlReviewSummary(after.controlReview)}:{}),
     findings:{sourceIntegrity:{state:'current_authority',nativeArtifact:'verified',originalBytes:'not_reverified'},structuralValidity:structural,
       referenceAccuracy:'not_assessed',admission:'unavailable',qualification:'not_assessed'},
     sufficiency:{task:'native-exterior-admission',requirements,missing:missing.map(v=>v.requirement),outcome:'partial'},missing,
@@ -126,6 +130,8 @@ async function currentAssessment(draftValue:string,raw:unknown,dependencies:Depe
       {kind:'inspect_reference_selections',method:'GET',path:`/api/v1/registry-drafts/${draftId}/native-exterior/references`},
       {kind:'bind_reference_evidence',method:'POST',path:`/api/v1/registry-drafts/${draftId}/native-exterior/references`},
       {kind:'request_reference_review',method:'POST',path:`/api/v1/registry-drafts/${draftId}/native-exterior/references/reviews`},
+      {kind:'request_control_review',method:'POST',path:`/api/v1/registry-drafts/${draftId}/native-exterior/control-assessment/reviews`},
+      ...(after.controlReview?[{kind:'inspect_control_review',method:'GET',path:`/api/v1/registry-drafts/${draftId}/native-exterior/control-assessment/reviews/${after.controlReview.id}`}]:[]),
       ...(after.review?[{kind:'inspect_reference_review',method:'GET',path:`/api/v1/registry-drafts/${draftId}/native-exterior/references/reviews/${after.review.id}`}]:[])],
     capabilities:{inspect:true,requestValidation:'requires_configured_validator',bindReferenceEvidence:true,reviewAdmission:false,recordNativeExterior:false,
       qualifyGeometry:false,analyticalGeometry:false,exportQualifiedGeometry:false}};

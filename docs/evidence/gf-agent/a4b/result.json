@@ -1,0 +1,205 @@
+{
+  "task": "A4b",
+  "gates": ["GF-AGENT", "FP-LEARN-TEST"],
+  "qualification": "Pseudo-label agreement, not teacher-label accuracy.",
+  "model": "E:/BhuAayam-data/task-data/a4b/learner/v48",
+  "modelSha256": "4e34b2a5673c653f83ebf8cc9d5ec8a3bb5deb0c6489ae65ef7998594c083bcb",
+  "fitExamples": 585,
+  "fitFamilies": 28,
+  "fitTargetCounts": {
+    "unknown": 572,
+    "building.name": 3,
+    "building.storeyLabel": 3,
+    "document.registrationNo": 2,
+    "unit.type": 2,
+    "building.addressLiteral": 2,
+    "building.footprint": 1
+  },
+  "threshold": 0.9294836521148682,
+  "calibrationFamily": "mi-d03",
+  "calibration": {"n": 6, "positives": 2, "positiveCommitted": 0, "positiveCommittedCorrect": 0, "unknownCommitted": 4},
+  "inSamplePositiveAgreement": {
+    "building.name": {"n": 3, "columns": 3, "committed": 0, "committedCorrect": 0, "abstained": 3},
+    "building.storeyLabel": {"n": 3, "columns": 3, "committed": 0, "committedCorrect": 0, "abstained": 3},
+    "document.registrationNo": {"n": 2, "columns": 2, "committed": 2, "committedCorrect": 2, "abstained": 0},
+    "unit.type": {"n": 2, "columns": 2, "committed": 0, "committedCorrect": 0, "abstained": 2},
+    "building.addressLiteral": {"n": 2, "columns": 2, "committed": 0, "committedCorrect": 0, "abstained": 2},
+    "building.footprint": {"n": 1, "columns": 1, "committed": 0, "committedCorrect": 0, "abstained": 1}
+  },
+  "leaveOneFamilyOut": [
+    {
+      "family": "mi-d02",
+      "columns": 12,
+      "positives": 6,
+      "threshold": 0.9241116642951965,
+      "calibrationFields": 6,
+      "fitExamples": 573,
+      "modelSha256": "75f93a3490e3520aa0a99ebf93952d06219dea9ae00368627173a306e2b9a050",
+      "perTarget": {
+        "building.name": {"n": 3, "columns": 3, "committed": 0, "committedCorrect": 0, "abstained": 3},
+        "building.storeyLabel": {"n": 3, "columns": 3, "committed": 0, "committedCorrect": 0, "abstained": 3}
+      },
+      "qualification": "One fixed-config fresh fit; agreement with teacher pseudo_labels, never accuracy."
+    },
+    {
+      "family": "mi-d03",
+      "columns": 6,
+      "positives": 2,
+      "threshold": null,
+      "calibrationFields": 0,
+      "fitExamples": 585,
+      "modelSha256": "4e34b2a5673c653f83ebf8cc9d5ec8a3bb5deb0c6489ae65ef7998594c083bcb",
+      "perTarget": {
+        "document.registrationNo": {"n": 2, "columns": 2, "committed": 0, "committedCorrect": 0, "abstained": 2}
+      },
+      "qualification": "Calibration family left out; no threshold, therefore abstain."
+    },
+    {
+      "family": "mi-d22",
+      "columns": 180,
+      "positives": 4,
+      "threshold": 0.9347648024559021,
+      "calibrationFields": 6,
+      "fitExamples": 405,
+      "modelSha256": "1b7ddec40e39adc007ccec029e16c6b17be868ed244c962f5f53cc2efc7335d7",
+      "perTarget": {
+        "document.registrationNo": {"n": 2, "columns": 2, "committed": 2, "committedCorrect": 0, "abstained": 0},
+        "unit.type": {"n": 2, "columns": 2, "committed": 0, "committedCorrect": 0, "abstained": 2}
+      },
+      "qualification": "One fixed-config fresh fit; agreement with teacher pseudo_labels, never accuracy."
+    },
+    {
+      "family": "mi-d23",
+      "columns": 10,
+      "positives": 2,
+      "threshold": 0.9474599361419678,
+      "calibrationFields": 6,
+      "fitExamples": 575,
+      "modelSha256": "d2b4255913c0f057f5cd599853e226d3da4d7d5bd63eca9e6f75c37b53f1b4fd",
+      "perTarget": {
+        "building.addressLiteral": {"n": 2, "columns": 2, "committed": 2, "committedCorrect": 0, "abstained": 0}
+      },
+      "qualification": "One fixed-config fresh fit; agreement with teacher pseudo_labels, never accuracy."
+    },
+    {
+      "family": "mi-d24",
+      "columns": 3,
+      "positives": 1,
+      "threshold": 0.9306641817092896,
+      "calibrationFields": 6,
+      "fitExamples": 582,
+      "modelSha256": "5c1bd45cd2c451b43021047ba73d9084fbe528d7477789a57d6fcdc8fbc2fa68",
+      "perTarget": {
+        "building.footprint": {"n": 1, "columns": 1, "committed": 0, "committedCorrect": 0, "abstained": 1}
+      },
+      "qualification": "One fixed-config fresh fit; agreement with teacher pseudo_labels, never accuracy."
+    }
+  ],
+  "previous": {
+    "model": "E:\\BhuAayam-data\\task-data\\a4\\learner\\v43",
+    "fitExamples": 392,
+    "fitTargetCounts": {"unknown": 386, "building.name": 3, "building.storeyLabel": 3},
+    "positiveCalibrationCommits": 0,
+    "threshold": 0.9642972350120544
+  },
+  "heldOut": {
+    "n": 2,
+    "total": 2,
+    "committed": 0,
+    "committedCorrect": 0,
+    "abstained": 2,
+    "nonScorable": {"n": 2, "committed": 0},
+    "truthSha256": "4fd1049c5bff5fcde3b54237d2561502c2f06197bf01e65bd5862d90a9a7797d",
+    "manifestSha256": "c08d802fdd945f9530e91ab94db280858892de880e9a24d424d73c5027769249",
+    "profiles": 4,
+    "qualification": "Counts only; n=2 cannot support accuracy. Fixed weights/threshold; no tuning feedback."
+  },
+  "tuningAfterMeasurements": false,
+  "freshFit": true,
+  "receiptRecovery": {
+    "signature": "A4B_BLIND_TRUTH_PROFILE_LINK_INVALID",
+    "cause": "Evaluator truth uses literal header keys; measurement initially tried T1 positional aliases.",
+    "comparison": "Correct receipt key; recover existing fixed folds and identical saved feature inputs; never refit.",
+    "scoredPasses": 1,
+    "inferenceAttempts": 2,
+    "modelWeightsChanged": false,
+    "thresholdsChanged": false
+  },
+  "teacherCalls": 0,
+  "providerCalls": 0,
+  "labelsChanged": false,
+  "runtimeChanged": false,
+  "leaveOneFamilyOutTotals": {
+    "building.name": {"n": 3, "columns": 3, "committed": 0, "committedCorrect": 0, "abstained": 3},
+    "building.storeyLabel": {"n": 3, "columns": 3, "committed": 0, "committedCorrect": 0, "abstained": 3},
+    "document.registrationNo": {"n": 4, "columns": 4, "committed": 2, "committedCorrect": 0, "abstained": 2},
+    "unit.type": {"n": 2, "columns": 2, "committed": 0, "committedCorrect": 0, "abstained": 2},
+    "building.addressLiteral": {"n": 2, "columns": 2, "committed": 2, "committedCorrect": 0, "abstained": 0},
+    "building.footprint": {"n": 1, "columns": 1, "committed": 0, "committedCorrect": 0, "abstained": 1}
+  },
+  "baseCommit": "adc746c8",
+  "verificationCodeCommit": "e60b3224",
+  "trainingCodeCommit": "f4ce2fff",
+  "measurementScriptSha256": "efc0d32ac7acc7199c71bee1166a59504c310d1ab6296af2a80bd46a5197e9fd",
+  "t1bVerifiedExamples": 193,
+  "t1PseudoLabelsByteIdentical": true,
+  "startedAtUtc": "2026-10-10T10:57:25Z",
+  "gateStatus": "partial; no correct leave-one-family-out positive commits, no positive calibration commits",
+  "fitRuns": 1,
+  "lofoFitRuns": 5,
+  "hyperparametersChanged": false,
+  "thresholdRuleChanged": false,
+  "stageACodeChanged": false,
+  "calibrationThresholdRule": "precision 1.0 or abstain",
+  "python": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe",
+  "checks": [
+    {"command": "pnpm exec tsc -p scripts/agent/tsconfig.json", "exitCode": 2, "reason": "No local node_modules."},
+    {"command": "pnpm typecheck:backend", "exitCode": 2, "reason": "No local node_modules."},
+    {"command": "tsc with external resolution-only agent/server/API configs", "exitCode": 0},
+    {
+      "command": "tsx --test verifier + mapping-teacher-review + mapping-teacher focused tests",
+      "exitCode": 0,
+      "passed": 18
+    },
+    {"command": "pnpm test:ai", "exitCode": 0, "passed": 22},
+    {
+      "command": "pytest services/geo/tests/test_stage_a.py",
+      "exitCode": 4,
+      "reason": "Unrelated conftest requires pypdf."
+    },
+    {"command": "pytest --noconftest services/geo/tests/test_stage_a.py", "exitCode": 0, "passed": 5},
+    {"command": "ruff check stage_a.py test_stage_a.py (unchanged)", "exitCode": 0},
+    {"command": "fresh stage_a train T1 + T1b verified pseudo_labels", "exitCode": 0},
+    {"command": "measure-a4b.ts --resume-scoring (receipt repair; no refit)", "exitCode": 0},
+    {"command": "LF-export scripts/api/check.py", "exitCode": 1, "failure": "API-DOC: runtime receipt changed"},
+    {"command": "git diff --check", "exitCode": 0}
+  ],
+  "checkEnvironment": {
+    "externalConfigs": "E:/BhuAayam-data/task-data/a4b/checks",
+    "policy": "Same project strict compiler options/source; installed dependency resolution only; no checkout edits.",
+    "runtimeConfig": "E:/BhuAayam-data/task-data/t1b/runtime-resolution-v3.json",
+    "testsRoot": "E:/BhuAayam-data/task-data/a4b/test-fixtures",
+    "testPolicy": "T1 fixtures copied byte-exactly; test outputs and compiler logs additive under a4b."
+  },
+  "sourcePinsChanged": [],
+  "apiCheck": {
+    "qualification": "Only the allowed baseline runtime-receipt mismatch; no owned source producer is pinned.",
+    "exportMethod": "git -c core.autocrlf=false archive HEAD | tar -x -C <fresh owned external directory>",
+    "runtimeReceiptBytesUnchangedFromStaging": true
+  },
+  "heldoutArtifactsPolicy": "a4b/evaluator is closed to lead/teachers; public result exposes counts and hashes only.",
+  "gaps": [
+    "585 fit fields contain 572 unknowns and only 13 positives across six targets; no generalisation gate pass.",
+    "Calibration stays mi-d03: positive commits 0/2, unknown commits 4/4; no gain over the unknown-only baseline.",
+    "LOFO commits on four positive-labelled inputs are wrong; two in-sample registration commits are not accuracy.",
+    "Heldout n=2: both scorable columns abstain; prerequisite family/positive-column shortfall remains owner-decided.",
+    "Full prescribed typechecks need checkout dependencies; external strict-resolution checks pass.",
+    "Geo test conftest needs pypdf; isolated learner tests pass without touching service startup.",
+    "No demo learner rollout, provider call, label change, acquisition, heldout tuning or registry write."
+  ],
+  "next": [
+    "Lead reviews counts and sparse-family failure; no threshold reduction or claim of unseen property accuracy.",
+    "Owner decides additional independent data; keep heldout closed and never derive training from this measurement.",
+    "Runtime owner decides any later seed rollout; current demo learner and tabular-paths.json remain unchanged."
+  ]
+}

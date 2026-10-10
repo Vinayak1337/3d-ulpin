@@ -34,5 +34,25 @@ export async function migrateUsp() {
     await migrateStreamingVectorTx(client);
     await migrateChunkMappingTx(client);
     await migrateStreamedProfileTx(client);
+    const packetPlansName = 'usp_packet_plans_001';
+    if (!(await client.query(sql('usp.packet-plans.check'), [packetPlansName])).rowCount) {
+      await client.query(sql('usp.packet-plans.schema'));
+      await client.query(sql('usp.packet-plans.mark'), [packetPlansName]);
+    }
+    const propertyCardsName = 'usp_property_cards_001';
+    if (!(await client.query(sql('usp.property-cards.check'), [propertyCardsName])).rowCount) {
+      await client.query(sql('usp.property-cards.schema'));
+      await client.query(sql('usp.property-cards.mark'), [propertyCardsName]);
+    }
+    const packetPdfEntriesName = 'usp_packet_pdf_entry_checkpoints_001';
+    if (!(await client.query(sql('usp.packet-pdf-entries.check'), [packetPdfEntriesName])).rowCount) {
+      await client.query(sql('usp.packet-pdf-entries.schema'));
+      await client.query(sql('usp.packet-pdf-entries.mark'), [packetPdfEntriesName]);
+    }
+    const propertyCardRevocationsName = 'usp_property_card_revocations_001';
+    if (!(await client.query(sql('usp.property-card-revocations.check'), [propertyCardRevocationsName])).rowCount) {
+      await client.query(sql('usp.property-card-revocations.schema'));
+      await client.query(sql('usp.property-card-revocations.mark'), [propertyCardRevocationsName]);
+    }
   });
 }

@@ -1319,7 +1319,7 @@
       "guardedBy": null,
       "callMode": "one-query-call",
       "order": 25,
-      "sha256": "800e07948200bdd9cc97b44afa4a8d70a425b5005054d3ad1bb5bb8eb22d6bef",
+      "sha256": "db66379811b2c4c9d26d5d767b5527c02cb7877877e93ecafd42b3364635421c",
       "statements": [
         {
           "ordinal": 1,
@@ -1344,6 +1344,26 @@
         {
           "ordinal": 6,
           "sha256": "e9ebd4cd6510efcdcbd839f571a999ecc19b3587bc57e7d83c7c5d98d95485ed"
+        },
+        {
+          "ordinal": 7,
+          "sha256": "dd2f1991f133d9979ab6dc2dc42b4c46ed267cdf753c21728f6e30a25ae09aff"
+        },
+        {
+          "ordinal": 8,
+          "sha256": "81fcf8c4c83fa49e798b2992897fd583ec341e41993bbfb9f82eb170c1b9cda6"
+        },
+        {
+          "ordinal": 9,
+          "sha256": "23b6022f978b0665cf51451845543968a917f8b6f6021e9179f91cee427fd159"
+        },
+        {
+          "ordinal": 10,
+          "sha256": "5b711094f1d716d633c21b9974870f36aae2924c81aa1cba90489a8aa073ab0c"
+        },
+        {
+          "ordinal": 11,
+          "sha256": "1289737a812beb7f4cd8ace314dfbf34e3b50e26711b239f38a82a3c78245c4e"
         }
       ],
       "runtime": {
@@ -1439,9 +1459,18 @@
       "order": 28,
       "sha256": "db132a1de6bb59000006c02d2476aba0a103209d62989a2c918679e61da9e8a9",
       "statements": [
-        {"ordinal": 1, "sha256": "86d93a0bd4831ca68c2fc7fd4cf683f6764c5ed6baaa62ddafe9e64e579a2143"},
-        {"ordinal": 2, "sha256": "8391130d28025e61491605518caa93ebd8ecb48799de793bed17b5757784c452"},
-        {"ordinal": 3, "sha256": "8e0da2eed1374077a9bc59b9a5c2ad27b6c8f35ef1a23d69948f2c28bf2bc02e"}
+        {
+          "ordinal": 1,
+          "sha256": "86d93a0bd4831ca68c2fc7fd4cf683f6764c5ed6baaa62ddafe9e64e579a2143"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "8391130d28025e61491605518caa93ebd8ecb48799de793bed17b5757784c452"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "8e0da2eed1374077a9bc59b9a5c2ad27b6c8f35ef1a23d69948f2c28bf2bc02e"
+        }
       ],
       "runtime": {
         "path": "packages/server/src/modules/usp/ingestion/migration.ts",
@@ -1723,7 +1752,7 @@
         "function": "migrateSufficiencyTx"
       }
     },
-{
+    {
       "id": "ingestion.streaming-vector.schema",
       "source": {
         "path": "database/sql/95-ingestion/streaming-vector.sql",
@@ -1785,11 +1814,26 @@
       "order": 36,
       "sha256": "0d32a38dde4d894f42d520e1e2e5064adc912c683049b8b05e807e031224eb05",
       "statements": [
-        {"ordinal": 1, "sha256": "43e6f6de0a9197427232b6a28cc205906e8606590731c68d3a1b9828dcb27f4d"},
-        {"ordinal": 2, "sha256": "943da61158f1c6bb91e2b915c815986f4a28f88a9e4f836826c5a9c949bbef62"},
-        {"ordinal": 3, "sha256": "3aa8eb5821b70b83bcdafc1fcd9a72469521365201f11c4618a8d1a42c2be484"},
-        {"ordinal": 4, "sha256": "c1bf6c4478d3edd5af6cc6d9aa9bd85c71c4c16d985f0333c72bf8c7c83e9cea"},
-        {"ordinal": 5, "sha256": "afcabae874ffdd8cde80b71864a999b018e0a1490707a63a9dce1c7a943d9705"}
+        {
+          "ordinal": 1,
+          "sha256": "43e6f6de0a9197427232b6a28cc205906e8606590731c68d3a1b9828dcb27f4d"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "943da61158f1c6bb91e2b915c815986f4a28f88a9e4f836826c5a9c949bbef62"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "3aa8eb5821b70b83bcdafc1fcd9a72469521365201f11c4618a8d1a42c2be484"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "c1bf6c4478d3edd5af6cc6d9aa9bd85c71c4c16d985f0333c72bf8c7c83e9cea"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "afcabae874ffdd8cde80b71864a999b018e0a1490707a63a9dce1c7a943d9705"
+        }
       ],
       "runtime": {
         "path": "packages/server/src/modules/usp/ingestion/migration.ts",
@@ -1988,6 +2032,558 @@
       "guardedBy": "usp.declarations.check",
       "callMode": "one-query-call",
       "order": 40,
+      "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.packet-plans.check",
+      "source": {
+        "path": "database/sql/60-usp/14-packet-plans-check.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "PACK-PLAN-01",
+        "acceptedBase": "e218ff37d1536482fe195153b246dc12ebf8dd74"
+      },
+      "file": "sql/60-usp/14-packet-plans-check.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "always",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "packetPlansName",
+          "value": "usp_packet_plans_001"
+        }
+      ],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 41,
+      "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.packet-plans.schema",
+      "source": {
+        "path": "database/sql/60-usp/15-packet-plans-schema.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "PACK-PLAN-01",
+        "acceptedBase": "e218ff37d1536482fe195153b246dc12ebf8dd74"
+      },
+      "file": "sql/60-usp/15-packet-plans-schema.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "only when usp.packet-plans.check returns no row",
+      "parameters": [],
+      "guardedBy": "usp.packet-plans.check",
+      "callMode": "one-query-call",
+      "order": 42,
+      "sha256": "120343ee2f4d24f6c2df09d503ea9a517f319dd164c229dbfc2596d4de483b79",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "2e79edce724e7a39e6c1cc05178e0b8b6cbd763dd0fa68c1f6c9df41bd3d40cc"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "71bbd7561ecc3ce402fd90f999ab463b7705287c7cdea582816a621c597cb769"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "b0cc8c022519fa78eda9f2e472c61178d960d8b101d0c2f3097b7995f036f59b"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "9ae4dfdc1b70ff0ef6897177d607215a593716426f163a5ddf3ced4e33ea5fd6"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "6e65e8680bc2a179583d458e3c14c193ab71664602b4006da49a9dfa2b4e1255"
+        },
+        {
+          "ordinal": 6,
+          "sha256": "d230fa2a9af13c63eb2090103578e75e79dc764e1b2b2ce367043eff087ce95a"
+        },
+        {
+          "ordinal": 7,
+          "sha256": "b996997b866d07232c768e8d731c80c26415c366df9a420c4c8291b3164c7df9"
+        },
+        {
+          "ordinal": 8,
+          "sha256": "e6550f30e9a325ba8c24b6406816d156fa5129b07fcabf52d16a6fed14c47087"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.packet-plans.mark",
+      "source": {
+        "path": "database/sql/60-usp/16-packet-plans-mark.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "PACK-PLAN-01",
+        "acceptedBase": "e218ff37d1536482fe195153b246dc12ebf8dd74"
+      },
+      "file": "sql/60-usp/16-packet-plans-mark.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "after usp.packet-plans.schema succeeds",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "packetPlansName",
+          "value": "usp_packet_plans_001"
+        }
+      ],
+      "guardedBy": "usp.packet-plans.check",
+      "callMode": "one-query-call",
+      "order": 43,
+      "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.property-cards.check",
+      "source": {
+        "path": "database/sql/60-usp/17-property-cards-check.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "CARD-01",
+        "acceptedBase": "031696e35fc39583f91fffc05d2f556260bb22b1"
+      },
+      "file": "sql/60-usp/17-property-cards-check.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "always",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "propertyCardsName",
+          "value": "usp_property_cards_001"
+        }
+      ],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 44,
+      "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.property-cards.schema",
+      "source": {
+        "path": "database/sql/60-usp/18-property-cards-schema.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "CARD-01",
+        "acceptedBase": "031696e35fc39583f91fffc05d2f556260bb22b1"
+      },
+      "file": "sql/60-usp/18-property-cards-schema.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "only when usp.property-cards.check returns no row",
+      "parameters": [],
+      "guardedBy": "usp.property-cards.check",
+      "callMode": "one-query-call",
+      "order": 45,
+      "sha256": "528956a643a71dbbc03953f3daf75a140e384fd07280d02a11f3eb6439f495d6",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "bbe56e362715af7123cac326d51768692c7015e79c58ba8dcdf79c926ad7b341"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "38232f3dc135cb970abd3cad6764b5e4cc95326680360c811a09949d1d22f943"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "28276ebaf8cae6264d8f6f226becab6b653e1266886839d5e0df45de0b63fec1"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "d6e436288cc3eaac5326458f04731c64320ac87972d9a5195afea9c9a86f3aa1"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.property-cards.mark",
+      "source": {
+        "path": "database/sql/60-usp/19-property-cards-mark.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "CARD-01",
+        "acceptedBase": "031696e35fc39583f91fffc05d2f556260bb22b1"
+      },
+      "file": "sql/60-usp/19-property-cards-mark.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "after usp.property-cards.schema succeeds",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "propertyCardsName",
+          "value": "usp_property_cards_001"
+        }
+      ],
+      "guardedBy": "usp.property-cards.check",
+      "callMode": "one-query-call",
+      "order": 46,
+      "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.packet-pdf-entries.check",
+      "source": {
+        "path": "database/sql/60-usp/21-packet-pdf-entry-checkpoints-check.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "PACK1-PDF-05",
+        "acceptedBase": "2201f51f4d5c4e639f45eb288e235fa85bc2ad4d"
+      },
+      "file": "sql/60-usp/21-packet-pdf-entry-checkpoints-check.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "always",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "packetPdfEntriesName",
+          "value": "usp_packet_pdf_entry_checkpoints_001"
+        }
+      ],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 47,
+      "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.packet-pdf-entries.schema",
+      "source": {
+        "path": "database/sql/60-usp/20-packet-pdf-entry-checkpoints-schema.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "PACK1-PDF-05",
+        "acceptedBase": "2201f51f4d5c4e639f45eb288e235fa85bc2ad4d"
+      },
+      "file": "sql/60-usp/20-packet-pdf-entry-checkpoints-schema.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "only when usp.packet-pdf-entries.check returns no row",
+      "parameters": [],
+      "guardedBy": "usp.packet-pdf-entries.check",
+      "callMode": "one-query-call",
+      "order": 48,
+      "sha256": "c46863dcc975b2a7bafbca972fad7fb6bacd11baa483454b190a5f20c003d31a",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "459171e454686ddb3e836c6219d4664701b8cf3b5e2c68857d0ed7b9bb88106a"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "b29eee29ea474c3476bd599be777f65459475454a9fc46fb9d58a9c4f7bbbbe5"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "6410ebe314ed0ac5b7a67e67ea8d3128a7dcd8a61022a6f1f6aec5641f8f2341"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.packet-pdf-entries.mark",
+      "source": {
+        "path": "database/sql/60-usp/22-packet-pdf-entry-checkpoints-mark.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "PACK1-PDF-05",
+        "acceptedBase": "2201f51f4d5c4e639f45eb288e235fa85bc2ad4d"
+      },
+      "file": "sql/60-usp/22-packet-pdf-entry-checkpoints-mark.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "after usp.packet-pdf-entries.schema succeeds",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "packetPdfEntriesName",
+          "value": "usp_packet_pdf_entry_checkpoints_001"
+        }
+      ],
+      "guardedBy": "usp.packet-pdf-entries.check",
+      "callMode": "one-query-call",
+      "order": 49,
+      "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "spatial-ml.source-batches",
+      "source": {
+        "path": "database/sql/50-spatial-ml/source-batches.sql",
+        "function": "migrateSpatialMl",
+        "kind": "authored-sql",
+        "task": "D07-SOURCE-BATCH",
+        "acceptedBase": "e8a407ab0e73d97f13ccd040ca87e218aa470030"
+      },
+      "file": "sql/50-spatial-ml/source-batches.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "query-batch",
+      "advisoryLock": null,
+      "condition": "after spatial-ml.schema; existing cases/sources base tables already present",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 50,
+      "sha256": "e58f0d57877783e2a356f7295129b479e824566176104ca31ce2a3fee1ec8b47",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "5b6ce1f12726bf89e7e4b4de2e894ef1d7c7cf9b27fbdb8aaeb5bbc4a1fa2d95"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "ff7f12e89894e198bdc60dac18c718fa8ba2bf1de9f60bcdd51ac8f31c99a331"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "331caa25c3c9c9e92560430808dcd6fed5c6ba0469b23cc44b99031169d16fff"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "99e4e0abe4b3bc77bef6de273daaae604c76e8b7d5f23dd77460d874c8fb0bd9"
+        },
+        {
+          "ordinal": 5,
+          "sha256": "763413eb4639cd06de69a917c407d34232dd4ee9478e311fba6cdc6182bbc5dd"
+        },
+        {
+          "ordinal": 6,
+          "sha256": "831066b910260ccb76e6d77d922602f672b933ad715bca72273f3b08a0a78576"
+        },
+        {
+          "ordinal": 7,
+          "sha256": "820f2755a6231c70f376cba7d4fa1589d2af99d63b7df004afab223b5ce3a15b"
+        },
+        {
+          "ordinal": 8,
+          "sha256": "c0fc9ba38fbd2e2a34754b9c7b2876d0e2c3170d1fb55e7ccea8b758f2ad5456"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/spatial/spatial-ml-db.ts",
+        "function": "migrateSpatialMl"
+      }
+    },
+    {
+      "id": "spatial-ml.reject-only-footprints",
+      "source": {
+        "path": "database/sql/50-spatial-ml/01-reject-only-footprints.sql",
+        "function": "migrateSpatialMl",
+        "kind": "authored-sql",
+        "task": "K4a",
+        "acceptedBase": "db8c014d8dee96374b7b84677ce403bd7086dcfb"
+      },
+      "file": "sql/50-spatial-ml/01-reject-only-footprints.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "query-batch",
+      "advisoryLock": null,
+      "condition": "after spatial-ml.source-batches; spatial_ml_footprint_drafts already present",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 51,
+      "sha256": "446cf0df4644b887877d34b7f0dc95956f073fdaa2be4e43eb9e66ffc0d51958",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "f3f249457e180e90e3f06245a774cc7913a5cda00285156efcaa4e4d7b24595d"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/spatial/spatial-ml-db.ts",
+        "function": "migrateSpatialMl"
+      }
+    },
+    {
+      "id": "usp.property-card-revocations.check",
+      "source": {
+        "path": "database/sql/60-usp/23-property-card-revocations-check.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "K5",
+        "acceptedBase": "d95d7bb831bb8f42a686d04b6b0cc419f8041639"
+      },
+      "file": "sql/60-usp/23-property-card-revocations-check.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "always",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "propertyCardRevocationsName",
+          "value": "usp_property_card_revocations_001"
+        }
+      ],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 52,
+      "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.property-card-revocations.schema",
+      "source": {
+        "path": "database/sql/60-usp/24-property-card-revocations-schema.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "K5",
+        "acceptedBase": "d95d7bb831bb8f42a686d04b6b0cc419f8041639"
+      },
+      "file": "sql/60-usp/24-property-card-revocations-schema.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "only when usp.property-card-revocations.check returns no row",
+      "parameters": [],
+      "guardedBy": "usp.property-card-revocations.check",
+      "callMode": "one-query-call",
+      "order": 53,
+      "sha256": "078d7aa71068760d51ce0d9edf5e8375b0022668d73ba9fb1e0c9e5b8a067fd3",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "60ad08aef218ca8c9a8ed6eed5c0c0973ace1388a9f0ea7faa52a9fdf8b0c44d"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "e190d520146ea95c9d8ea93263da529cd3cad34d2294df13a845e19694b160e1"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "206a116e8c63f87d7bc701e2e3d5095fa4ce22ee108888e3204d06360dd0ba83"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.property-card-revocations.mark",
+      "source": {
+        "path": "database/sql/60-usp/25-property-card-revocations-mark.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "K5",
+        "acceptedBase": "d95d7bb831bb8f42a686d04b6b0cc419f8041639"
+      },
+      "file": "sql/60-usp/25-property-card-revocations-mark.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "after usp.property-card-revocations.schema succeeds",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "propertyCardRevocationsName",
+          "value": "usp_property_card_revocations_001"
+        }
+      ],
+      "guardedBy": "usp.property-card-revocations.check",
+      "callMode": "one-query-call",
+      "order": 54,
       "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
       "statements": [
         {

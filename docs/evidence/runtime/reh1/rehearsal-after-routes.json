@@ -1,0 +1,22 @@
+{ "doctor": { "command": [ "pnpm platform:doctor --profile demo --runtime ulpin-reh-01" ],
+"from": "E:/Projects/ulpin-wt/ulpin-reh-01", "exit": 0, "seconds": 6.166, "output": [
+"> 3d-ulpin@ platform:doctor E:\\Projects\\ulpin-wt\\ulpin-reh-01",
+"> node scripts/platform/doctor \"--profile\" \"demo\" \"--runtime\" \"ulpin-reh-01\"", "",
+"INFO Runtime ulpin-reh-01: only its own folder, project and ports are read.", "  documentPagesConfigured: true",
+"  packetRegionsConfigured: true", "  regionProfileSha256: [omitted non-source digest]", "  regionRepoMatches: true",
+"PASS Document runtimes", "PASS Demo external configuration",
+"PASS Local document OCR paths available; eng+hin assets (runner uses eng).", "  enabled: false", "  policyHash: null",
+"  providerKeyPresent: false", "  mappingTeacherAdapter: replay", "  dailyCapPresent: false", "  providerKeysNamed: 0",
+"  providerKeysPresent: 0", "PASS Model gateway state", "  Context: desktop-linux; engine: 29.8.0",
+"PASS Docker local Linux engine and context/socket", "  20 existing volumes; 6 ulpin-reh-01 containers",
+"PASS Docker inventory readable", "PASS Existing ulpin-reh-01 volume ownership and attachments",
+"PASS postgres container healthy", "PASS postgres restart policy", "PASS minio container healthy",
+"PASS minio restart policy", "PASS redis container healthy", "PASS redis restart policy", "PASS geo container healthy",
+"PASS geo restart policy", "PASS worker container healthy", "PASS worker restart policy", "PASS DB reachable / PostGIS",
+"PASS Object store reachable (read-only)", "PASS Redis reachable", "PASS Processor /health",
+"PASS Celery worker heartbeat", "PASS API native process ownership",
+"PASS Dispatcher process ownership (liveness only)", "PASS API /api/v1/health",
+"PASS DB migrations applied (API structural admission)", "PASS API bound to the inspected ulpin-reh-01 database",
+"Doctor: all checks passed (dispatcher liveness, not a job execution proof)." ], "error": null }, "checkout": {
+"command": [ "git status --short" ], "from": "E:/Projects/ulpin-wt/ulpin-reh-01", "exit": 0, "seconds": 0.326,
+"output": [ "" ], "error": null } }

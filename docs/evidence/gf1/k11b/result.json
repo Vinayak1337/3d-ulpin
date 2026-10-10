@@ -1,0 +1,405 @@
+{
+ "task": "K11b",
+ "gates": ["GF1", "GF4", "GF5"],
+ "base": "1b512e84",
+ "branch": "task/k11b-identity-reviews-read",
+ "mode": "offline: no request to the demo API, no runtime start or stop, no SQL against a database",
+ "report": {
+  "TASK": [
+   "K11b: GET /api/v1/usp/identity/records/{recordId}/reviews?limit= lists the identity reviews that name a",
+   "record, with what an assignment must name and whether the review was used."
+  ],
+  "WORKS": [
+   "The read, its contract, its route and its tests. A listed review, given back unchanged to the real",
+   "assignProjectCode, is accepted; used is null before and { at, operation: assign } after."
+  ],
+  "SEE IT": [
+   "GET",
+   "http://127.0.0.1:3194/api/v1/usp/identity/records/46b7265e-ca88-402d-83df-065cf7c45140/reviews?limit=5",
+   "after the next roll-out; see afterRollout for what UNIT-3B should answer."
+  ],
+  "INPUTS": [
+   "The identity protocol double of source-stated-identity.test-fixture.ts (Tower 3 source labels held in",
+   "Git); the R3 evidence in Git for the expected answer. No runtime, no database, no private file."
+  ],
+  "GAPS": [
+   "Not run against PostgreSQL: the two statements are proven on the protocol double and by their text.",
+   "Not requested from the demo API: the route is new and needs the next roll-out.",
+   "createdAt and commandSha256 of the stored UNIT-3B review are not in Git, so they are not predicted.",
+   [
+    "One neighbouring test fails, and not because of this task (it reads no file this task changed):",
+    "packages/server/src/modules/usp/packets/source-stated-binding.test.ts:123, test \"the card of a",
+    "source-stated unit states an unknown location, state and author in words\". Its file and the fixture are",
+    "the same on staging 3a8f5df1; it was not run there. It expects \"Structure 1 ... ?01 ... ?001\", and since",
+    "K11 part 1 the shared fixture sends no numbers, so the card says \"Structure number not recorded ...",
+    "(Locator: NO-ANCHOR / ? / L? / ?)\". packets/** is not mine to change."
+   ]
+  ],
+  "DESIGN": [
+   [
+    "A new controller file, not a route in DecisionEvidenceController: that class answers through the USP",
+    "error filter, which turns malformed input into 400 with the USP body."
+   ],
+   "The 404 is the default \"This record could not be found.\" of the record reads.",
+   "expectedRecordVersion instead of a number named expectedVersions; unreadable as on the snapshot list.",
+   "The consuming operation is a scalar subselect on the audit table, so one review cannot fill two rows.",
+   "A review is listed whoever reviewed it; the reviewer is not answered and not filtered on."
+  ],
+  "COMMITS": [
+   "f70c7eb8 feat(identity): a record's identity reviews can be read, with the scope an assignment must name",
+   "docs(identity): K11b evidence (this file)",
+   "Both end with the trailer Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Not pushed."
+  ],
+  "CHECKS": "See checks and tests: all pass but the receipt line of check.py and the one failure named above.",
+  "NEXT": [
+   "Lead: correct the expected string at source-stated-binding.test.ts:123 to the unqualified form.",
+   "Runtime owner: after the roll-out send the request above and compare with afterRollout.expected.",
+   "Studio: read the list for a unit before offering a review; continue from an unused assign review.",
+   "Lead decision, if wanted: filter the list to reviews the caller made, since only the reviewer can assign."
+  ]
+ },
+ "previousWorkerUncommittedWork": {
+  "contractDraft": [
+   "replaced. The uncommitted draft in packages/contracts/src/usp/project-identity.ts had the right fields",
+   "and the two request and list schema names, which are kept. Changed: the item field expectedVersions (one",
+   "number under a plural name) is expectedRecordVersion, the name the assignment takes it under; unreadable",
+   "is added as on the snapshot list; the item schema and its type are no longer exported (nothing imports",
+   "them); every field has a description; one line over 120 characters is gone."
+  ],
+  "part2Step0Note": [
+   "replaced by step0 below and not committed. docs/evidence/gf1/k11/part2-step0.json was untracked; its",
+   "facts were checked against the code and are restated here. Two of its wire decisions were not followed:",
+   "the numeric field name, and \"corrupt stored linkage fails closed\", which is now \"counted in unreadable",
+   "and not listed\" as the snapshot list does. The file was moved out of the worktree to the session scratch",
+   "directory, not deleted."
+  ],
+  "plannedOperation": [
+   "docs/evidence/gf1/k11/identity-reviews-operation.json is left as the record of the plan. It names",
+   "DecisionEvidenceController.reviews; the route is IdentityReviewsController.list in its own file, because",
+   "that controller answers through the USP error filter (400 with the USP body) and the task asks for the",
+   "422 and the plain body of the snapshot list."
+  ]
+ },
+ "step0": {
+  "readFrom": "the code at staging 1b512e84; nothing was requested from a runtime or a database",
+  "storedTime": [
+   "usp_project_identity_reviews.created_at timestamptz NOT NULL DEFAULT now()",
+   "(database/sql/60-usp/06-identity-schema.sql:2-8). The table has a stored time, so there was no reason to",
+   "stop and no migration."
+  ],
+  "whatMarksAReviewUsed": [
+   [
+    "finish() in usp/project-identity.ts inserts one usp_project_identity_audit row (review_id, operation)",
+    "and then sets usp_project_identity_reviews.consumed_at=now() in the same transaction."
+   ],
+   [
+    "checkedReview refuses a review whose consumed_at is set, whose hash is not the hash of its stored",
+    "command, or whose row names another scope, manifest, reviewer, operation, record ids or versions."
+   ],
+   "The audit operation is the operation checkedReview was asked for, so it equals the review operation."
+  ],
+  "whatABodyHolds": [
+   "The command as the client sent it and the schema parsed it: operation, scope, recordIds,",
+   "expectedVersions, reason, evidence and, when sent, location or locations, predecessors, successors and",
+   "transferredGeometry. row.manifest_id is body.scope.manifestId."
+  ],
+  "access": [
+   [
+    "The snapshot list rule applies unchanged: assertLocalUsp, then only rows whose bound manifest was",
+    "captured under the caller access view and policy (the manifest checks of readManifest)."
+   ],
+   "No published read answers a reviewer subject today, so this one does not either.",
+   [
+    "An assignment also requires the caller to be the reviewer. The list does not filter on it: the task",
+    "defines the listed set by site, record and manifest, and the local operator is the only subject."
+   ]
+  ],
+  "replay": [
+   [
+    "prepareProjectIdentityReview has no request key: sending an accepted body again stores a second review",
+    "(the two-review test does exactly that)."
+   ],
+   [
+    "No path in Git resends the one numbered R3 review. scripts/agent/r3-live.ts is the record of that run,",
+    "and the listing reads a stored review without running the source-stated write guards."
+   ]
+  ]
+ },
+ "operation": {
+  "method": "GET",
+  "path": "/api/v1/usp/identity/records/{recordId}/reviews",
+  "query": "limit, 1-20, default 5",
+  "operationId": "GET_api_v1_usp_identity_records_recordId_reviews",
+  "controller": "apps/api/src/modules/evidence/identity-reviews.controller.ts (IdentityReviewsController.list)",
+  "server": "packages/server/src/modules/usp/identity-reviews.ts (listIdentityReviews)",
+  "requestSchema": "UspListIdentityReviewsSchema",
+  "responseSchema": "UspIdentityReviewListSchema",
+  "guard": "PrivateSpatialGuard; Cache-Control private, no-store; global error body",
+  "operations": {"before": 298, "after": 299, "added": 1, "removedLinesInPublishedSchema": 0}
+ },
+ "statements": {
+  "site": [
+   "SELECT r.site_id FROM registry_records r JOIN map_areas a ON a.site_id=r.site_id WHERE r.id=$1 AND",
+   "r.revision>0 AND a.archived_at IS NULL"
+  ],
+  "page": [
+   "SELECT r.id,r.manifest_id,r.operation,r.command_hash,r.body,r.created_at,r.consumed_at, (SELECT",
+   "a.operation FROM usp_project_identity_audit a WHERE a.review_id=r.id ORDER BY a.created_at,a.id LIMIT 1)",
+   "AS used_operation FROM usp_project_identity_reviews r JOIN usp_snapshots s ON s.id=r.manifest_id WHERE",
+   "r.scope_id=$1 AND s.scope_id=$1 AND s.body->>'accessViewId'=$2 AND s.body->>'policyVersion'=$3 AND",
+   "r.body->'recordIds' @> $4::jsonb ORDER BY r.created_at DESC,r.id DESC LIMIT $5"
+  ],
+  "parameters": [
+   "$1 site id; $2, $3 the caller access view and policy; $4 a JSON array holding the record id; $5 limit +",
+   "1, so truncated is exact"
+  ],
+  "howProven": [
+   "On the identity protocol double, which answers the two statements from the rows the real",
+   "prepareProjectIdentityReview and assignProjectCode wrote, and by asserting the text with regular",
+   "expressions. Neither statement was run against PostgreSQL."
+  ]
+ },
+ "item": {
+  "reviewId": "row id",
+  "operation": "stored command",
+  "reason": "stored command, as stored",
+  "createdAt": "row created_at",
+  "scope": "stored command scope, unchanged: the scope to pass to the assignment",
+  "expectedManifestId": "row manifest_id, equal to scope.manifestId",
+  "expectedRecordVersion": "this record entry of the stored expectedVersions",
+  "used": "null, or { at: row consumed_at, operation: the audit row operation }",
+  "commandSha256": "row command_hash",
+  "notAnswered": "evidence, location, locations, predecessors, successors, transferredGeometry, reviewer subject",
+  "unreadable": [
+   "A row of the page is counted and not listed when its body is not a review command, its hash is not the",
+   "hash of that command, its command names another site, manifest or operation than its row, it holds no",
+   "revision for the record, or its consumed time and its audit row disagree. An assignment refuses such a",
+   "review."
+  ]
+ },
+ "afterRollout": {
+  "request": [
+   "GET",
+   "http://127.0.0.1:3194/api/v1/usp/identity/records/46b7265e-ca88-402d-83df-065cf7c45140/reviews?limit=5"
+  ],
+  "recordFrom": "docs/evidence/runtime/r3/result.json step3 (Tower 3, UNIT-3B, space record)",
+  "expected": {
+   "status": 200,
+   "recordId": "46b7265e-ca88-402d-83df-065cf7c45140",
+   "truncated": false,
+   "unreadable": 0,
+   "items": 1,
+   "item": {
+    "reviewId": "105e6dc7-f413-4bbb-9b0f-50bfd352cf04",
+    "operation": "assign",
+    "reason": "the R2 record reason, as stored",
+    "scope.manifestId": "d97e01c5-c5af-45de-971e-2bb1d355d810",
+    "scope.snapshotDigest": "62615138508a4d302b414b8ee2cbc3b1f818a394ed1f916c80faaa09aa5ec2f1",
+    "expectedManifestId": "d97e01c5-c5af-45de-971e-2bb1d355d810",
+    "expectedRecordVersion": 1,
+    "used": {"operation": "assign", "at": "the start of the assigning transaction"}
+   }
+  },
+  "notInGit": [
+   "createdAt and commandSha256 of that review are in no Git evidence, so no value is stated for them.",
+   "used.at is consumed_at, the start of the transaction whose receipt says committedAt",
+   "2026-10-10T13:48:45.439Z; the two snapshots that transaction stored carry createdAt",
+   "2026-10-10T13:48:45.076Z (the R4 pair quoted in building-snapshots.test.ts), and used.at should equal",
+   "that."
+  ],
+  "ifItDiffers": [
+   "unreadable 1 with no item means the stored row does not agree with itself by the rule above; an empty",
+   "list with unreadable 0 means the manifest is of another access view or policy."
+  ]
+ },
+ "studio": {
+  "from": "packages/api-client/src/schema.d.ts (generated)",
+  "path": "paths['/api/v1/usp/identity/records/{recordId}/reviews']['get']",
+  "operation": "operations['GET_api_v1_usp_identity_records_recordId_reviews']",
+  "response": "components['schemas']['GET_usp_identity_records_recordId_reviews_Response_200_application_json']",
+  "asInQueriesTs": [
+   "GetResponse<'/api/v1/usp/identity/records/{recordId}/reviews'>, beside BuildingSnapshots in",
+   "apps/studio/src/api/queries.ts"
+  ],
+  "toAssign": [
+   "Send POST /api/v1/usp/identity/assign with scope, expectedManifestId, reviewId and expectedRecordVersion",
+   "copied from the newest item whose used is null and whose operation is assign, plus recordId and a new",
+   "requestKey."
+  ]
+ },
+ "touchedOutsideTheK11OwnedList": [
+  "apps/api/src/modules/evidence/operation-manifest.json: the one entry, after the identity/resolve entry",
+  [
+   "apps/api/src/modules/evidence/evidence.module.ts: one import line and one line in the controllers list;",
+   "a new controller file answers nothing until its module lists it"
+  ],
+  [
+   "apps/api/src/modules/evidence/identity-reviews.controller.test.ts: the test of the new controller, where",
+   "the 404 and 422 bodies are produced"
+  ]
+ ],
+ "tests": {
+  "command": [
+   "pnpm exec tsx --tsconfig apps/api/tsconfig.json --import",
+   "./packages/server/src/modules/registry/registry-image-region-evidence.ts --test <file>"
+  ],
+  "own": {"files": 2, "passed": 11, "failed": 0},
+  "all": {"files": 36, "passed": 270, "failed": 1, "skipped": 5},
+  "failedNotFromThisTask": [
+   "packages/server/src/modules/usp/packets/source-stated-binding.test.ts:123, test \"the card of a",
+   "source-stated unit states an unknown location, state and author in words\""
+  ],
+  "perFileColumns": ["file", "passed", "failed", "skipped"],
+  "perFile": [
+   ["packages/server/src/modules/usp/identity-reviews.test.ts", 8, 0, 0],
+   ["apps/api/src/modules/evidence/identity-reviews.controller.test.ts", 3, 0, 0],
+   ["tests/core-identity.test.ts", 52, 0, 0],
+   ["tests/usp-project-identity-authority.test.ts", 4, 0, 0],
+   ["tests/usp-project-identity-code.test.ts", 4, 0, 0],
+   ["tests/core-snapshot.test.ts", 57, 0, 0],
+   ["tests/packet-image-pdf-bundle.test.ts", 2, 0, 0],
+   ["tests/packet-image-region.test.ts", 3, 0, 0],
+   ["tests/packet-pdf-bundle.test.ts", 2, 0, 0],
+   ["tests/packet-pdf-job-compatibility.test.ts", 1, 0, 0],
+   ["tests/packet-pdf-render.test.ts", 0, 0, 1],
+   ["tests/packet-region-extract.test.ts", 8, 0, 0],
+   ["tests/packet-region-runtime.test.ts", 0, 0, 2],
+   ["tests/usp-packet-image-pdf-recovery.test.ts", 5, 0, 2],
+   ["tests/usp-packet-image-pdf.test.ts", 2, 0, 0],
+   ["tests/usp-packet-mixed-pdf.test.ts", 3, 0, 0],
+   ["tests/usp-packet-pdf.test.ts", 18, 0, 0],
+   ["tests/usp-packet-plans.test.ts", 13, 0, 0],
+   ["tests/usp-property-card-image.test.ts", 2, 0, 0],
+   ["tests/usp-property-card-unicode.test.ts", 1, 0, 0],
+   ["tests/usp-property-card.test.ts", 2, 0, 0],
+   ["packages/server/src/modules/usp/source-stated-identity.test.ts", 14, 0, 0],
+   ["packages/server/src/modules/usp/building-snapshots.test.ts", 13, 0, 0],
+   ["packages/server/src/modules/usp/snapshot-retained-documents.test.ts", 3, 0, 0],
+   ["packages/server/src/modules/usp/packets/card-listing.test.ts", 8, 0, 0],
+   ["packages/server/src/modules/usp/packets/card-revocation.test.ts", 9, 0, 0],
+   ["packages/server/src/modules/usp/packets/card-verification.test.ts", 9, 0, 0],
+   ["packages/server/src/modules/usp/packets/card-wording.test.ts", 8, 0, 0],
+   ["packages/server/src/modules/usp/packets/source-stated-binding.test.ts", 3, 1, 0],
+   ["apps/api/src/modules/evidence/packet-bundle.controller.test.ts", 1, 0, 0],
+   ["apps/api/src/modules/evidence/packet-image-region.controller.test.ts", 1, 0, 0],
+   ["apps/api/src/modules/evidence/packet-plans.controller.test.ts", 1, 0, 0],
+   ["apps/api/src/modules/evidence/packet-region.controller.test.ts", 2, 0, 0],
+   ["apps/api/src/modules/evidence/property-card.controller.test.ts", 4, 0, 0],
+   ["apps/api/src/modules/evidence/evidence.di.test.ts", 1, 0, 0],
+   ["apps/api/src/modules/register/building-snapshots.controller.test.ts", 3, 0, 0]
+  ],
+  "observed": [
+   {
+    "condition": [
+     "one assign review of the tower unit, read before and after the real assignProjectCode that is given only",
+     "the listed scope, expectedManifestId, reviewId and expectedRecordVersion"
+    ],
+    "expected": [
+     "used null before; the assignment accepts the listed values; used { at, operation: assign } after; two",
+     "statements, no write"
+    ],
+    "observed": {
+     "status": 200,
+     "items": 1,
+     "statements": 2,
+     "usedBefore": null,
+     "usedAfter": {"at": "2026-10-10T12:00:00.128Z", "operation": "assign"},
+     "createdAt": "2026-10-10T12:00:00.060Z",
+     "expectedRecordVersion": 1,
+     "keys": [
+      "commandSha256",
+      "createdAt",
+      "expectedManifestId",
+      "expectedRecordVersion",
+      "operation",
+      "reason",
+      "reviewId",
+      "scope",
+      "used"
+     ]
+    }
+   },
+   {
+    "condition": "two newer reviews of the same unit on manifests of another access view and another policy",
+    "expected": "neither listed; the answer equals the one before them, also at limit 1 (truncated stays false)",
+    "observed": {"status": 200, "stored": 3, "items": 1, "truncated": false}
+   },
+   {
+    "condition": "two reviews of the unit; limit absent, 2 and 1; limit 0 / 21 / 1.5 and a malformed record id",
+    "expected": [
+     "newest first; truncated false, false and true with the newest one; malformed input refused before any",
+     "statement"
+    ],
+    "observed": {"items": 2, "truncatedAtOne": true, "refused": "ZodError"}
+   },
+   {
+    "condition": "an id the store does not hold; the unit at revision 0; the unit while its area is archived",
+    "expected": "the same 404 NOT_FOUND for each",
+    "observed": {"status": 404, "code": "NOT_FOUND", "message": "This record could not be found."}
+   },
+   {
+    "condition": "a record of another site; the building record of the same site, which the review does not name",
+    "expected": "no item for either",
+    "observed": {"status": 200, "otherSiteItems": 0, "unnamedItems": 0}
+   },
+   {
+    "condition": "another subject asks",
+    "expected": "403 USP_LOCAL_ONLY, no statement",
+    "observed": {"code": "USP_LOCAL_ONLY", "statements": 0}
+   },
+   {
+    "condition": [
+     "a consumed review whose stored command holds a location with structure and space numbers (the form of",
+     "the one review stored before K11)"
+    ],
+    "expected": "listed with used set; no location among its keys",
+    "observed": {
+     "status": 200,
+     "items": 1,
+     "used": {"at": "2026-10-10T12:30:00.000Z", "operation": "assign"},
+     "keys": [
+      "commandSha256",
+      "createdAt",
+      "expectedManifestId",
+      "expectedRecordVersion",
+      "operation",
+      "reason",
+      "reviewId",
+      "scope",
+      "used"
+     ]
+    }
+   },
+   {
+    "condition": [
+     "a hash that is not the stored command's; a consumed time without an audit row; a command of another",
+     "operation than its row"
+    ],
+    "expected": "each left out of items and counted in unreadable; truncated still counts stored rows",
+    "observed": {
+     "firstUnreadable": 1,
+     "thenUnreadable": 2,
+     "atLimitTwo": {"items": 0, "unreadable": 2, "truncated": true}
+    }
+   }
+  ]
+ },
+ "checks": {
+  "pnpm typecheck:backend": 0,
+  "pnpm studio:typecheck": 0,
+  "pnpm exec tsc -p scripts/agent/tsconfig.json": 0,
+  "refresh-contract.ts staging": 0,
+  "pnpm studio:api-types": 0,
+  "openapi.ts --check": "exit 0: 299 operations, 338 named schemas",
+  "python -B scripts/api/check.py": [
+   "exit 1 with one line, \"runtime receipt changed\": the receipts are checked out with CRLF in this",
+   "worktree, as the K11 evidence records for the base. With those receipts read past, the same script",
+   "reports 299 native operations and pins, manifests and models in order."
+  ],
+  "git diff --check": 0,
+  "addedLinesOver120": [
+   "none in source or tests; the manifest entry is one line in the form of its file, and generated files and",
+   "pins keep their own widths"
+  ]
+ }
+}

@@ -1,0 +1,24 @@
+{ "part": "c2", "done": true, "attempts": 1, "result": { "state": "COMMITTED",
+"packageId": "02936511-cf17-4100-bb9a-e89c718f60ac", "sourceId": "57a67953-0d60-4a08-b367-13948f82434c",
+"areaId": "daf0c3e9-a952-4177-88a5-f90f15e39112", "administrativeUnits": [ {
+"id": "00d4384e-d90f-4adf-a6ba-5c4a4dd7b5be", "name": "63 A" }, { "id": "65b571da-d522-44fb-8bb2-889064f2d88d",
+"name": "59" } ], "physicalFeaturesCreated": 0, "contextRows": 2, "sourceUnchanged": true }, "exchanges": [ {
+"index": "c2-001", "method": "GET", "route": "/api/v1/areas/daf0c3e9-a952-4177-88a5-f90f15e39112/context",
+"status": 200, "seconds": 0.273, "requestKey": null, "idempotencyHeader": null, "ids": {}, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/c2-001" }, { "index": "c2-002", "method": "POST",
+"route": "/api/v1/import-packages", "status": 201, "seconds": 0.663,
+"requestKey": "cc0e2f2e-f248-420d-8cc4-c15d3ba3ea04", "idempotencyHeader": null, "ids": {
+"id": "02936511-cf17-4100-bb9a-e89c718f60ac", "state": "READY_FOR_REVIEW",
+"areaId": "daf0c3e9-a952-4177-88a5-f90f15e39112", "revision": 2 }, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/c2-002" }, { "index": "c2-003", "method": "POST",
+"route": "/api/v1/import-packages/02936511-cf17-4100-bb9a-e89c718f60ac/prepare", "status": 200, "seconds": 0.041,
+"requestKey": null, "idempotencyHeader": null, "ids": { "id": "02936511-cf17-4100-bb9a-e89c718f60ac",
+"state": "REVIEWED", "areaId": "daf0c3e9-a952-4177-88a5-f90f15e39112", "revision": 3 }, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/c2-003" }, { "index": "c2-004", "method": "POST",
+"route": "/api/v1/import-packages/02936511-cf17-4100-bb9a-e89c718f60ac/commit", "status": 200, "seconds": 0.029,
+"requestKey": null, "idempotencyHeader": null, "ids": { "id": "02936511-cf17-4100-bb9a-e89c718f60ac",
+"state": "COMMITTED", "areaId": "daf0c3e9-a952-4177-88a5-f90f15e39112", "revision": 4 }, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/c2-004" }, { "index": "c2-005", "method": "GET",
+"route": "/api/v1/areas/daf0c3e9-a952-4177-88a5-f90f15e39112/canonical", "status": 200, "seconds": 0.308,
+"requestKey": null, "idempotencyHeader": null, "ids": { "revisionId": "[omitted non-source digest]" }, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/c2-005" } ] }

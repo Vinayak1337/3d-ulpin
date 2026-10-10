@@ -2,6 +2,8 @@ import type { ConsolidatedRegistryReport } from '../../../../../packages/contrac
 import type { BuildingLedger, BuildingResidents } from '@ulpin/api-client/draft';
 import type { BuildingModel } from '../../model/building';
 import type { SpaceWorkflow } from '../../local/workflow';
+import { readingStatement } from './registerState';
+import { IDENTIFIER_HEADERS, identifierColumns } from './buildingColumns';
 import { workbook, zip, type Cell } from './workbook';
 
 /**
@@ -60,6 +62,16 @@ export function registryDetail(model: BuildingModel, ledger: BuildingLedger | nu
 const esc = (v: unknown) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 const num = (v: number | null | undefined, d = 2) => (v === null || v === undefined ? null : Math.round(v * 10 ** d) / 10 ** d);
 const dateText = (v: string | null | undefined) => (v ? new Date(v).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : null);
+/** One source's line in the register, ending with what the server states about its document reading, if anything. */
+function sourceHtml(s: Report['sources'][number], i: number): string {
+  const reading = readingStatement(s.documentResult);
+  const facts = [
+    `<b>S${i + 1}</b>`, esc(s.profile), `revision ${s.revision}`, `received ${esc(dateText(s.receivedAt))}`,
+    `<span class="id">${esc(s.id)}</span>`, `SHA-256 <span class="id">${esc(s.sha256)}</span>`,
+    ...(reading ? [`document reading: ${esc(reading)}`] : []),
+  ];
+  return `<div class="src">${facts.join(' · ')}</div>`;
+}
 const isUnit = (use: string | null | undefined) => !use || /apartment|retail|shop|office|flat|unit/i.test(use);
 
 // ------------------------------------------------------------------ readable document
@@ -70,6 +82,7 @@ export function registryHtml(report: Report, detail?: RegistryDetail): string {
   const fact = (f: Field) => (f.state === 'recorded' ? `${esc(f.value)}${refs(f.sources)}` : `<i class="st">${esc(f.state === 'unknown' ? 'Unknown' : f.state)}</i>`);
   const blank = (v: unknown) => (v === null || v === undefined || v === '' ? '<i class="st">Unknown</i>' : esc(v));
   const b = report.building;
+  const hasBuildingCode = identifierColumns([detail?.buildingCode ?? null]).includes('projectCode');
   const byId = new Map(report.records.map((r) => [r.id, r]));
   const floorGroups = report.groups.filter((g) => g.kind === 'floor');
   const floorOrder = (id: string) => detail?.floors.get(id)?.bottom ?? 0;
@@ -86,14 +99,22 @@ export function registryHtml(report: Report, detail?: RegistryDetail): string {
     const members = g.recordIds.map((id) => byId.get(id)!).filter((r) => r && r.kind === 'space');
     const flats = members.filter((r) => isUnit(detail?.units.get(r.id)?.use));
     const common = members.filter((r) => !isUnit(detail?.units.get(r.id)?.use));
+    const hasUnitCode = identifierColumns(flats.map((r) => detail?.units.get(r.id)?.code ?? null))
+      .includes('projectCode');
+    const codeHeader = hasUnitCode ? `<th style="width:15%">${IDENTIFIER_HEADERS.projectCode}</th>` : '';
     const height = fd && fd.bottom !== null && fd.top !== null ? `${(fd.bottom - fd.ground).toFixed(1)} to ${(fd.top - fd.ground).toFixed(1)} m above ground` : '';
     return `<section class="floor"><h3>${floor ? fact(floor.name) : 'Floor'} <span class="sub">${esc(height)}${flats.length ? ` · ${flats.length} unit${flats.length > 1 ? 's' : ''}` : ''}</span></h3>
-      ${flats.length ? `<table><thead><tr><th style="width:9%">Unit</th><th style="width:15%">3D ULPIN (proposed)</th><th class="n" style="width:7%">Carpet m²</th><th class="n" style="width:7%">Share %</th><th style="width:22%">Registered owners</th><th style="width:28%">Residents</th><th style="width:12%">Occupancy</th></tr></thead><tbody>
+      ${flats.length ? `<table><thead><tr><th style="width:9%">Unit</th>${codeHeader}
+      <th class="n" style="width:7%">Carpet m²</th><th class="n" style="width:7%">Share %</th>
+      <th style="width:22%">Registered owners</th><th style="width:28%">Residents</th>
+      <th style="width:12%">Occupancy</th></tr></thead><tbody>
       ${flats.map((r) => {
         const d = detail?.units.get(r.id);
         const owners = r.ownershipClaims.length ? r.ownershipClaims.map((c, i) => `${fact(c.party)}${d?.holders[i] ? `<div class="meta">${esc(d.holders[i]!.deedNo)} · since ${esc(dateText(d.holders[i]!.since))}${d.holders.length > 1 ? ` · ${d.holders[i]!.sharePct} %` : ''}</div>` : ''}`).join('') : '<i class="st">Unknown</i>';
         const res = r.occupancy.state !== 'recorded' ? '<i class="st">Unknown</i>' : r.occupancy.people.length ? r.occupancy.people.map((p, i) => `<div>${fact(p.name)} <span class="meta">· ${esc(d?.occupants[i]?.relation ?? p.role)}${d?.occupants[i] ? `, since ${esc(dateText(d.occupants[i]!.since))}` : ''}</span></div>`).join('') : '<i class="st">No one registered</i>';
-        return `<tr><td><b>${fact(r.name)}</b><div class="id">${esc(r.applicationId)}</div></td><td class="id">${d?.code ? esc(d.code) : '<i class="st">After review</i>'}</td>
+        const codeCell = hasUnitCode ? `<td class="id">${d?.code ? esc(d.code) : 'Not stated'}</td>` : '';
+        return `<tr><td><b>${fact(r.name)}</b><div class="id">${esc(r.applicationId)}</div></td>
+          ${codeCell}
           <td class="n">${blank(num(d?.carpetM2))}</td><td class="n">${blank(num(d?.sharePct, 3))}</td><td>${owners}</td><td>${res}</td><td>${blank(d?.occupancy)}</td></tr>`;
       }).join('')}</tbody></table>` : ''}
       ${common.length ? `<p class="common">Common areas: ${common.map((r) => fact(r.name)).join(', ')}</p>` : ''}
@@ -117,7 +138,8 @@ thead{display:table-header-group}tr{break-inside:avoid}.floor{break-inside:auto}
 <div>${detail?.address ? esc(detail.address) : addr ? [addr.locality, addr.district, addr.region, addr.postalCode, addr.country].filter((f) => f.state === 'recorded').map((f) => esc(f.value)).join(', ') || '<i class="st">Address unknown</i>' : '<i class="st">Address unknown</i>'}</div></div>
 <div class="headright">Generated ${esc(new Date(report.generatedAt).toLocaleString('en-IN'))}<br>Building revision ${b.revision}${b.recordedAt ? ` · recorded ${esc(dateText(b.recordedAt))}` : ''}<br>Record state: ${esc(report.recordState)}</div></header>
 <div class="facts">
- <div><span>3D ULPIN (proposed)</span><b class="id">${blank(detail?.buildingCode)}</b></div>
+ ${hasBuildingCode ? `<div><span>${IDENTIFIER_HEADERS.projectCode}</span>
+   <b class="id">${blank(detail?.buildingCode)}</b></div>` : ''}
  <div><span>Application ID</span><b class="id">${esc(b.applicationId)}</b></div>
  <div><span>Parcel ULPIN / parcel</span><b class="id">${parcel ? esc(parcel.applicationId) : '<i class="st">Unknown</i>'}</b></div>
  <div><span>Area</span><b>${fact(b.areaName)}</b></div>
@@ -136,7 +158,7 @@ ${parcel ? `<h2>Parcel</h2><table><tbody><tr><td style="width:25%">Parcel</td><t
 <h2>Floors, units, owners and residents</h2>
 ${floorGroups.map(floorSection).join('')}
 <h2>Sources</h2>
-${report.sources.map((s, i) => `<div class="src"><b>S${i + 1}</b> · ${esc(s.profile)} · revision ${s.revision} · received ${esc(dateText(s.receivedAt))} · <span class="id">${esc(s.id)}</span> · SHA-256 <span class="id">${esc(s.sha256)}</span></div>`).join('')}
+${report.sources.map(sourceHtml).join('')}
 <h2>Notes</h2><div class="notes">${report.omissions.map((o) => `<p>${esc(o)}</p>`).join('')}</div>
 <footer>Technical record of the building, not a title document. ${detail?.registers ? `Owners and residents from: ${esc(detail.registers)}.` : ''} Personal details are for official use.</footer>
 </body></html>`;
@@ -150,8 +172,12 @@ export const TABLE_HEADERS = {
   units: ['unit_record_id', 'application_id', 'level', 'unit', 'use', 'proposed_3d_ulpin', 'rights', 'carpet_area_m2', 'declared_area_m2', 'undivided_share_pct', 'occupancy', 'owners', 'residents', 'status', 'address'],
   owners: ['unit_record_id', 'level', 'unit', 'owner', 'share_in_unit_pct', 'deed_registration_no', 'owner_since', 'source_ref'],
   residents: ['unit_record_id', 'level', 'unit', 'name', 'relation', 'role', 'living_here_since', 'registered_through', 'source_ref'],
-  sources: ['source_ref', 'source_id', 'profile', 'revision', 'received_at', 'sha256'],
+  sources: ['source_ref', 'source_id', 'profile', 'revision', 'received_at', 'sha256', 'document_reading'],
 } as const;
+
+function projectCodeFacts(code: string | null): [string, Cell][] {
+  return identifierColumns([code]).includes('projectCode') ? [[IDENTIFIER_HEADERS.projectCode, code]] : [];
+}
 
 export function registryTables(report: Report, detail: RegistryDetail): RegistryTables {
   const ref = new Map(report.sources.map((s, i) => [s.id, `S${i + 1}`]));
@@ -164,7 +190,8 @@ export function registryTables(report: Report, detail: RegistryDetail): Registry
   const units = report.records.filter((r) => r.kind === 'space');
   return {
     building: [
-      ['Building', v(b.name)], ['Building record ID', b.id], ['Application ID', b.applicationId], ['3D ULPIN (proposed)', detail.buildingCode],
+      ['Building', v(b.name)], ['Building record ID', b.id], ['Application ID', b.applicationId],
+      ...projectCodeFacts(detail.buildingCode),
       ['Address', detail.address], ['Parcel', report.parcels[0]?.applicationId ?? null],
       ['Official parcel number', report.parcels[0]?.officialAssertions[0]?.value.value ?? null], ['Issued by', report.parcels[0]?.officialAssertions[0]?.issuer.value ?? null],
       ['Area', v(b.areaName)], ['Building revision', b.revision], ['Recorded', b.recordedAt], ['Floors', report.records.filter((r) => r.kind === 'floor').length],
@@ -191,7 +218,9 @@ export function registryTables(report: Report, detail: RegistryDetail): Registry
       const o = detail.units.get(r.id)?.occupants[i];
       return [r.id, levelOf(r), v(r.name), v(p.name), o?.relation ?? null, p.role, o?.since ?? null, o?.registeredVia ?? null, r.occupancy.sources.map((s) => ref.get(s)).join(' ')];
     })),
-    sources: report.sources.map((s, i) => [`S${i + 1}`, s.id, s.profile, s.revision, s.receivedAt, s.sha256]),
+    sources: report.sources.map((s, i) => [
+      `S${i + 1}`, s.id, s.profile, s.revision, s.receivedAt, s.sha256, readingStatement(s.documentResult),
+    ]),
   };
 }
 

@@ -1,0 +1,97 @@
+.page {
+  display: grid;
+  align-content: start;
+  grid-auto-rows: max-content;
+  gap: var(--ui-space-4);
+  padding: var(--ui-space-4);
+  overflow: auto;
+  height: 100%;
+}
+
+.notice:focus {
+  outline: 2px solid var(--ui-focus);
+  outline-offset: 2px;
+}
+
+.source {
+  display: grid;
+  gap: var(--ui-space-2);
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+.columns {
+  max-height: 420px;
+  overflow: auto;
+}
+
+/* The two tall regions keep their column headers in view while a long table scrolls. */
+.columns thead th,
+.answers thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  box-shadow: 0 1px 0 var(--ui-divider);
+}
+
+.scroll table {
+  min-width: 900px;
+}
+
+.scroll th {
+  white-space: nowrap;
+}
+
+.targetId {
+  display: block;
+  font-family: var(--ui-font-mono);
+  color: var(--ui-muted);
+}
+
+.question {
+  display: grid;
+  gap: var(--ui-space-1);
+  min-width: 200px;
+}
+
+.fieldset {
+  display: grid;
+  gap: var(--ui-space-4);
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.answers {
+  max-height: 420px;
+  overflow: auto;
+}
+
+.answers td,
+.answers th {
+  vertical-align: top;
+  min-width: 240px;
+}
+
+.form textarea {
+  resize: vertical;
+  height: auto;
+  min-height: calc(var(--ui-control-height) * 2);
+  padding: var(--ui-space-2) var(--ui-space-3);
+  width: 100%;
+  line-height: 1.5;
+}
+
+.form {
+  display: grid;
+  gap: var(--ui-space-4);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--ui-space-4);
+}

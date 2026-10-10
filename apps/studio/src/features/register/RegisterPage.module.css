@@ -1,10 +1,15 @@
 .frame { height: 100%; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); }
 .loading { padding: var(--ui-space-6); max-width: 960px; }
+/* The name lines up with the empty state below it, which carries its own inline padding. */
+.absentName { padding-inline: var(--ui-space-6); overflow-wrap: anywhere; }
+.absentLinks { display: flex; flex-wrap: wrap; gap: var(--ui-space-3); }
 .header { display: flex; align-items: center; flex-wrap: wrap; gap: var(--ui-space-3); padding: var(--ui-space-4) var(--ui-space-6); background: var(--ui-surface); border-bottom: 1px solid var(--ui-divider); }
 .identity { display: grid; gap: 2px; flex: 1; min-width: 280px; }
 .meta { margin: 0; font-size: 13px; line-height: 19px; color: var(--ui-muted); }
 .primary { display: grid; justify-items: end; gap: 2px; }
 .blocked { font-size: 12px; line-height: 16px; color: var(--ui-muted); }
+/* What a disabled action needs, under it: held to the width of two short lines so the header keeps its row. */
+.needs { max-width: 216px; text-align: end; }
 
 .body { min-height: 0; display: grid; grid-template-columns: minmax(0, 55fr) minmax(0, 45fr); gap: var(--ui-space-4); padding: var(--ui-space-4); }
 .sceneColumn { min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: var(--ui-space-2); }
@@ -12,6 +17,17 @@
 .canvas { position: absolute; inset: 0; }
 .rail { position: absolute; top: var(--ui-space-4); right: var(--ui-space-4); bottom: var(--ui-space-4); overflow: auto; z-index: var(--ui-z-map-overlay); }
 .sceneLoading { position: absolute; inset: 0; display: grid; place-items: center; }
+/*
+ * Where the scene would be when there is nothing to draw: a plain surface filling the pane it is put in.
+ * The statement is centred in the room beside the controls that still apply, which keep the place they have
+ * over a drawn scene. It starts at the top when the pane is too low for it, so the pane scrolls to all of it.
+ */
+.noGeometry {
+  position: absolute; inset: 0; display: flex; align-items: flex-start; overflow: auto;
+  background: var(--ui-surface); border: 1px solid var(--ui-divider); border-radius: inherit;
+}
+.statement { flex: 1; min-width: 0; margin: auto; display: grid; justify-items: center; }
+.sceneControls { padding: var(--ui-space-4) var(--ui-space-4) var(--ui-space-4) 0; }
 .pill { position: absolute; top: var(--ui-space-4); z-index: var(--ui-z-map-overlay); padding: 5px 12px; border-radius: 999px; font: 500 12px/16px var(--ui-font-sans); color: var(--ui-ink); }
 .divider { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: var(--ui-border-strong); z-index: var(--ui-z-map-overlay); }
 .critical {
@@ -25,6 +41,8 @@
 @media (prefers-reduced-motion: no-preference) { .tabBody { animation: ul-fade 160ms ease-out; } }
 .stack { display: grid; gap: var(--ui-space-4); }
 .filterBar { display: flex; align-items: center; justify-content: space-between; gap: var(--ui-space-3); padding: 8px 8px 8px 16px; border-bottom: 1px solid var(--ui-divider); font-size: 13px; }
+/* Alone in its panel the bar closes it: no rule beneath. */
+.filterBar:last-child { border-bottom: 0; }
 .gaps { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 13px; line-height: 19px; color: var(--ui-ink-soft); }
 .sources { list-style: none; margin: 0; padding: 8px 16px 12px; display: grid; }
 .sources li { display: grid; gap: 4px; justify-items: start; padding: 10px 0; border-top: 1px solid var(--ui-divider); }
@@ -33,7 +51,10 @@
 .footRow { display: flex; align-items: center; gap: var(--ui-space-3); width: 100%; }
 .footRow > :first-child { flex: 1; }
 
+/* Narrow, or a desktop window at 200% zoom: the columns stack and the page takes the height of its content, so the
+   frame's main area is the one scroller. Held to the window's height, the stacked tabs were squeezed to nothing. */
 @media (max-width: 1100px) {
+  .frame { height: auto; }
   .body { grid-template-columns: minmax(0, 1fr); }
   .canvasWrap { min-height: 420px; }
 }

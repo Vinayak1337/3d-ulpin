@@ -10,8 +10,9 @@ import { transaction } from '../../infrastructure/db';
 import { canonical, fingerprint } from '../cases/domain';
 import { AppError, conflict, notFound } from '../../infrastructure/errors';
 import { appendUspOutboxTx, requestReceiptTx, scopedManifestTx } from './commands';
-import { assertLocalUsp, captureRegistrySnapshotTx } from './snapshots';
+import { assertLocalUsp, assertSnapshotDocumentsTx, captureRegistrySnapshotTx } from './snapshots';
 import { newProjectCode } from './project-code-generator';
+import { UNQUALIFIED_SOURCE_LOCATION, validateSourceStatedIdentityTx } from './source-stated-identity';
 
 type Review = z.infer<typeof ProjectIdentityReviewSchema>;
 type Assign = z.infer<typeof AssignProjectCodeSchema>;
@@ -93,6 +94,13 @@ function validateLocationEvidence(location: ProjectLocation, evidence: Review['e
   }
 }
 
+/** Derive write state without adding fields to the client's stored, hashed review. */
+function assignmentLocation(row: { body: any }, review: Review): ProjectLocation {
+  if (review.location) return validateLocation(review.location);
+  if (row.body?.sourceOnly) return UNQUALIFIED_SOURCE_LOCATION;
+  return unsupported();
+}
+
 export async function prepareProjectIdentityReview(ctx: RequestContext, raw: Review) {
   officer(ctx);
   const review = ProjectIdentityReviewSchema.parse(raw);
@@ -100,7 +108,7 @@ export async function prepareProjectIdentityReview(ctx: RequestContext, raw: Rev
     || Object.keys(review.expectedVersions).sort().join(',') !== [...review.recordIds].sort().join(',')) unsupported();
   if (review.location) validateLocation(review.location);
   if (review.locations) for (const location of Object.values(review.locations)) validateLocation(location);
-  if (review.operation === 'assign' && (review.recordIds.length !== 1 || !review.location)) unsupported();
+  if (review.operation === 'assign' && review.recordIds.length !== 1) unsupported();
   if (review.operation === 'correct' && (review.recordIds.length !== 1 || !review.location)) unsupported();
   if (['split', 'merge'].includes(review.operation) && (!review.successors || !review.locations || review.location
     || Object.keys(review.locations).sort().join(',') !== [...review.successors].sort().join(','))) unsupported();
@@ -123,8 +131,10 @@ export async function prepareProjectIdentityReview(ctx: RequestContext, raw: Rev
       if (!valid) throw new AppError(422, 'USP_BOUNDARY_GEOMETRY', 'The transferred geometry must be a valid area.');
     }
     const rows = await lockedRecords(client, review.scope.scopeId, review.recordIds);
+    if (review.operation === 'assign') assignmentLocation(rows[0], review);
     const manifest = await pinnedManifest(client, ctx, review.scope);
     validateMembers(manifest, rows, review.expectedVersions, review.evidence);
+    await validateSourceStatedIdentityTx(client, rows, review);
     if (review.location) validateLocationEvidence(review.location, review.evidence, rows);
     if (review.locations) for (const [id, location] of Object.entries(review.locations)) {
       const target = rows.find(row => row.id === id);
@@ -234,6 +244,7 @@ export async function assignProjectCode(ctx: RequestContext, raw: Assign,
     const previous = await requestReceiptTx(client, ctx, command.scope.scopeId, operation, command.requestKey, hash);
     if (previous) {
       await scopedManifestTx(client, ctx, command.scope);
+      await assertSnapshotDocumentsTx(client, ctx, command.scope, true);
       return UspCommitReceiptSchema.parse(previous);
     }
     const rows = await lockedRecords(client, command.scope.scopeId, [command.recordId]);
@@ -242,13 +253,15 @@ export async function assignProjectCode(ctx: RequestContext, raw: Assign,
       [command.recordId], versions);
     const manifest = await pinnedManifest(client, ctx, command.scope);
     validateMembers(manifest, rows, versions, review.evidence);
+    await validateSourceStatedIdentityTx(client, rows, review);
     if ((await client.query('SELECT 1 FROM usp_project_codes WHERE record_id=$1', [command.recordId])).rowCount) {
       conflict('This space already has a reserved project code.');
     }
     const code = await allocate(client, command.recordId, command.scope.scopeId, command.reviewId, codeFactory);
     if (afterCodeInsert) await afterCodeInsert();
     await client.query(`INSERT INTO usp_project_identity_state(record_id,location,review_id,version)
-      VALUES($1,$2,$3,$4)`, [command.recordId, validateLocation(review.location!), command.reviewId, rows[0].revision + 1]);
+      VALUES($1,$2,$3,$4)`, [command.recordId, assignmentLocation(rows[0], review),
+      command.reviewId, rows[0].revision + 1]);
     await bumpRevisions(client, command.scope.scopeId, rows);
     return finish(client, ctx, command.scope, 'assign', command.requestKey, hash,
       command.reviewId, rows, { [command.recordId]: code });
@@ -280,6 +293,7 @@ export async function mutateProjectIdentity(ctx: RequestContext, raw: Mutation,
     const previous = await requestReceiptTx(client, ctx, command.scope.scopeId, operation, command.requestKey, hash);
     if (previous) {
       await scopedManifestTx(client, ctx, command.scope);
+      await assertSnapshotDocumentsTx(client, ctx, command.scope, true);
       return UspCommitReceiptSchema.parse(previous);
     }
     const rows = await lockedRecords(client, command.scope.scopeId, ids);
@@ -287,6 +301,7 @@ export async function mutateProjectIdentity(ctx: RequestContext, raw: Mutation,
       ids, command.expectedVersions, command.predecessors, command.successors);
     const manifest = await pinnedManifest(client, ctx, command.scope);
     validateMembers(manifest, rows, command.expectedVersions, review.evidence);
+    await validateSourceStatedIdentityTx(client, rows, review);
     const statusRows = (await client.query('SELECT record_id,status FROM usp_project_codes WHERE record_id=ANY($1::uuid[])',
       [ids])).rows;
     const status = new Map(statusRows.map(row => [row.record_id as string, row.status as string]));
@@ -349,6 +364,9 @@ export async function resolveProjectIdentity(ctx: RequestContext, raw: z.infer<t
   }
   return transaction(async client => {
     const manifest = await scopedManifestTx(client, ctx, input.scope);
+    // Historical identity bodies and receipts retain their pins; current source
+    // authority still governs disclosure, as it does for ordinary snapshot reads.
+    await assertSnapshotDocumentsTx(client, ctx, input.scope, true);
     const captured = (await client.query(`SELECT object_id,revision,body,body_sha256 FROM usp_snapshot_bodies
       WHERE manifest_id=$1 AND namespace='registry_record' ORDER BY object_id`, [input.scope.manifestId])).rows;
     const selected = (id: string, revision: number) => manifest.selection.kind === 'site'

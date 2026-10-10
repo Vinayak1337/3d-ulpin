@@ -1,7 +1,8 @@
+import { ledgerFromPublished } from './ledger';
 import { demoAreas, isDemoId, useDemoAreaStream } from './demo-import';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { api, ApiError, unwrap, type GetResponse } from '@ulpin/api-client';
-import type { BuildingImport, BuildingLedger, DocumentPages, FileDetection, ImportBatch, LevelReview, RegisterRequest, RequestState, WorkBoard, BuildingResidents } from '@ulpin/api-client/draft';
+import { keepPreviousData, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { api, ApiError, unwrap, type GetResponse, type paths } from '@ulpin/api-client';
+import type { BuildingImport, DocumentPages, FileDetection, ImportBatch, LevelReview, RegisterRequest, RequestState, WorkBoard, BuildingResidents } from '@ulpin/api-client/draft';
 
 export type WorkQueue = GetResponse<'/api/v1/work-queue'>;
 export type WorkItem = WorkQueue['items'][number];
@@ -14,6 +15,76 @@ export type Capabilities = GetResponse<'/api/v1/workspace-capabilities'>;
 export type BuildingRegister = Extract<GetResponse<'/api/v1/buildings/{buildingId}/register'>, { register: unknown }>;
 export type RegisterRecord = BuildingRegister['register'][number];
 export type RegisterSource = BuildingRegister['sources'][number];
+export type SpatialMlBatch = GetResponse<'/api/v1/spatial-ml/batches/{batchId}'>;
+export type SpatialMlItem = GetResponse<'/api/v1/spatial-ml/items/{itemId}'>;
+export type ImportPackage = GetResponse<'/api/v1/import-packages/{packageId}'>;
+export type BuildingSnapshots = GetResponse<'/api/v1/buildings/{buildingId}/snapshots'>;
+type CardListResponse = paths['/api/v1/usp/property-cards/list']['post']['responses'][200];
+export type ListedCard = CardListResponse['content']['application/json']['data']['items'][number];
+const CARD_VERIFICATION_PATH = '/api/v1/usp/property-cards/{cardId}/revisions/{revision}/verification';
+export type CardVerification = GetResponse<typeof CARD_VERIFICATION_PATH>['data'];
+export type IdentityReviews = GetResponse<'/api/v1/usp/identity/records/{recordId}/reviews'>;
+export type IdentityReview = IdentityReviews['items'][number];
+type PostOf<P extends keyof paths> = paths[P] extends { post: infer Operation } ? Operation : never;
+type JsonOf<T> = T extends { content: { 'application/json': infer Body } } ? Body : never;
+/** The request body of a published POST route, straight from the OpenAPI document. */
+export type PostBody<P extends keyof paths> = PostOf<P> extends { requestBody: infer R } ? JsonOf<R> : never;
+/** The `data` a published POST route answers with 200, straight from the OpenAPI document. */
+export type PostData<P extends keyof paths> = PostOf<P> extends { responses: { 200: infer R } }
+  ? JsonOf<R> extends { data: infer Data } ? Data : never
+  : never;
+
+type CardPage = CardListResponse['content']['application/json']['data'];
+
+/** The card read of one listed snapshot: the page its scope answered, or null when that read failed. */
+export interface SnapshotCardRead {
+  createdAt: string;
+  page: Pick<CardPage, 'items' | 'truncated'> | null;
+}
+
+/** What the registry lists as the cards of one unit, and how far the search for them went. */
+export interface UnitCards {
+  /** When the newest snapshot whose scope lists a card was created; null when no scope read lists one. */
+  snapshotCreatedAt: string | null;
+  /** Every card revision the snapshots read list for the unit, once each, newest snapshot first. */
+  cards: ListedCard[];
+  /** The server holds more cards under one of those scopes than the page it returned. */
+  truncated: boolean;
+  /** False when the building has snapshots that were not read: `unlisted` ones, or ones whose card read failed. */
+  searchedAll: boolean;
+  /** The building has snapshots the listing did not return: older than its one page, or unreadable. */
+  unlisted: boolean;
+  /** How many snapshots the listing returned. */
+  snapshots: number;
+  /** How many of those snapshots' card reads failed. */
+  unread: number;
+}
+
+/**
+ * The card reads of the listed snapshots as one list. A scope lists every card of a unit it holds, so the same
+ * revision arrives under several snapshots: it is kept once, where the newest snapshot lists it. A failed read
+ * is counted, never dropped, and leaves the search short.
+ */
+export function mergeUnitCards(
+  reads: readonly SnapshotCardRead[], listing: Pick<BuildingSnapshots, 'truncated' | 'unreadable'>,
+): UnitCards {
+  const listed = new Map<string, ListedCard>();
+  for (const card of reads.flatMap((read) => read.page?.items ?? [])) {
+    const key = `${card.cardId}:${card.revision}`;
+    if (!listed.has(key)) listed.set(key, card);
+  }
+  const unread = reads.filter((read) => !read.page).length;
+  const unlisted = listing.truncated || listing.unreadable > 0;
+  return {
+    snapshotCreatedAt: reads.find((read) => read.page?.items.length)?.createdAt ?? null,
+    cards: [...listed.values()],
+    truncated: reads.some((read) => read.page?.truncated),
+    searchedAll: !unlisted && unread === 0,
+    unlisted,
+    snapshots: reads.length,
+    unread,
+  };
+}
 
 /** Published identifier resolver; keeps ULPIN and registry associations on the backend. */
 export function useMapIdentifierSearch(identifier: string) {
@@ -32,6 +103,12 @@ export const queryKeys = {
   workQueue: (status: WorkStatusFilter, q: string, page: number) => ['work-queue', status, q, page] as const,
   areas: ['areas'] as const,
   areaContext: (areaId: string) => ['areas', areaId, 'context'] as const,
+  areaCanonical: (areaId: string) => ['areas', areaId, 'canonical'] as const,
+  buildingCanonical: (buildingId: string) => ['buildings', buildingId, 'canonical'] as const,
+  buildingSnapshots: (buildingId: string) => ['buildings', buildingId, 'snapshots'] as const,
+  unitCards: (buildingId: string, spaceId: string) => ['buildings', buildingId, 'units', spaceId, 'cards'] as const,
+  cardVerification: (cardId: string, revision: number) => ['property-cards', cardId, revision, 'verification'] as const,
+  unitReviews: (recordId: string) => ['identity', 'records', recordId, 'reviews'] as const,
   capabilities: ['workspace-capabilities'] as const,
   register: (buildingId: string) => ['buildings', buildingId, 'register'] as const,
   ledger: (buildingId: string) => ['buildings', buildingId, 'ledger'] as const,
@@ -39,6 +116,9 @@ export const queryKeys = {
   workBoard: ['work-board'] as const,
   levelReview: (buildingId: string, levelId: string) => ['buildings', buildingId, 'levels', levelId, 'review'] as const,
   documentPages: (sourceId: string) => ['sources', sourceId, 'pages'] as const,
+  spatialMlBatch: (batchId: string) => ['spatial-ml', 'batches', batchId] as const,
+  spatialMlItem: (itemId: string) => ['spatial-ml', 'items', itemId] as const,
+  importPackage: (packageId: string) => ['import-packages', packageId] as const,
 };
 
 /** Draft routes (not in the OpenAPI document yet): same client conventions, typed by the draft contract. */
@@ -49,12 +129,15 @@ async function getDraft<T>(path: string): Promise<T | null> {
   return (await response.json()) as T;
 }
 
-/** Rights, areas, shares, readiness, checks and history of a building. Null when the backend has none. */
+/** The published ledger in the shape the screens read. Null when the backend has no such building. */
 export function useBuildingLedger(buildingId: string | null | undefined, live = false) {
   return useQuery({
     queryKey: queryKeys.ledger(buildingId ?? ''),
     enabled: Boolean(buildingId),
-    queryFn: () => getDraft<BuildingLedger>(`/api/v1/buildings/${buildingId}/ledger`),
+    queryFn: async ({ signal }) => {
+      const result = await api.GET('/api/v1/buildings/{buildingId}/ledger', { params: { path: { buildingId: buildingId! } }, signal });
+      return result.response.status === 404 ? null : ledgerFromPublished(unwrap(result));
+    },
     staleTime: 60_000,
     refetchInterval: live ? 700 : false,
   });
@@ -149,6 +232,207 @@ export function useAreaContext(areaId: string | undefined, live = false) {
   });
 }
 
+/** The canonical area record in local metres: what the scene draws. Locally uploaded areas have none. */
+export function useAreaCanonical(areaId: string | undefined, live = false) {
+  return useQuery({
+    queryKey: queryKeys.areaCanonical(areaId ?? ''),
+    enabled: Boolean(areaId) && !isDemoId(areaId),
+    queryFn: async ({ signal }) => unwrap(await api.GET('/api/v1/areas/{areaId}/canonical', { params: { path: { areaId: areaId! } }, signal })),
+    staleTime: 60_000,
+    refetchInterval: live ? 700 : false,
+  });
+}
+
+/** The canonical record of one building: state, gaps, levels and spaces. */
+export function useBuildingCanonical(buildingId: string | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.buildingCanonical(buildingId ?? ''),
+    enabled: Boolean(buildingId),
+    queryFn: async ({ signal }) => unwrap(await api.GET('/api/v1/buildings/{buildingId}/canonical', { params: { path: { buildingId: buildingId! } }, signal })),
+    staleTime: 60_000,
+  });
+}
+
+// A recorded unit is a registry record; the card list names it by that namespace and its id.
+const UNIT_NAMESPACE = 'registry_record';
+const CARD_PAGE_SIZE = 20;
+
+/** The recorded snapshots that hold a building, newest first: the server's default page of five. */
+const buildingSnapshotsQuery = (buildingId: string) => ({
+  queryKey: queryKeys.buildingSnapshots(buildingId),
+  queryFn: async () => unwrap(await api.GET('/api/v1/buildings/{buildingId}/snapshots', {
+    params: { path: { buildingId } },
+  })),
+  staleTime: 60_000,
+});
+
+/**
+ * Passes each scope of the listing's one page on unchanged, newest first and one read at a time. A read that
+ * fails is kept as failed; when every read fails the first failure is thrown, so nothing is answered as empty.
+ */
+async function listUnitCards(snapshots: BuildingSnapshots, spaceId: string, signal: AbortSignal): Promise<UnitCards> {
+  const reads: SnapshotCardRead[] = [];
+  let failure: unknown = null;
+  for (const { scope, createdAt } of snapshots.items) {
+    try {
+      const page = unwrap(await api.POST('/api/v1/usp/property-cards/list', {
+        body: { scope, target: { namespace: UNIT_NAMESPACE, id: spaceId }, limit: CARD_PAGE_SIZE }, signal,
+      })).data;
+      reads.push({ createdAt, page });
+    } catch (error) {
+      if (signal.aborted) throw error;
+      failure ??= error;
+      reads.push({ createdAt, page: null });
+    }
+  }
+  if (failure && reads.every((read) => !read.page)) throw failure;
+  return mergeUnitCards(reads, snapshots);
+}
+
+/**
+ * The property cards the registry lists for one recorded unit, across the snapshots the listing returns. The
+ * snapshots of a building are read once and shared by its units. A refusal of the listing, or of every card
+ * read, fails the query; a card read that fails beside one that answers is counted in the answer.
+ */
+export function useUnitCards(
+  buildingId: string | null | undefined, spaceId: string | null | undefined, enabled = true,
+) {
+  const client = useQueryClient();
+  return useQuery({
+    queryKey: queryKeys.unitCards(buildingId ?? '', spaceId ?? ''),
+    enabled: enabled && Boolean(buildingId && spaceId),
+    queryFn: async ({ signal }) => listUnitCards(
+      await client.fetchQuery(buildingSnapshotsQuery(buildingId!)), spaceId!, signal,
+    ),
+    staleTime: 60_000,
+  });
+}
+
+/** The server's verification report of one exact card revision. Asked again on every visit to its page. */
+export function useCardVerification(cardId: string | null, revision: number | null) {
+  return useQuery({
+    queryKey: queryKeys.cardVerification(cardId ?? '', revision ?? 0),
+    enabled: Boolean(cardId && revision),
+    queryFn: async ({ signal }) => unwrap(await api.GET(CARD_VERIFICATION_PATH, {
+      params: { path: { cardId: cardId!, revision: String(revision) } }, signal,
+    })).data,
+    staleTime: 0,
+  });
+}
+
+/** The identity reviews that name one recorded unit, newest first: the server's default page of five. */
+export const unitReviewsQuery = (recordId: string) => ({
+  queryKey: queryKeys.unitReviews(recordId),
+  queryFn: async () => unwrap(await api.GET('/api/v1/usp/identity/records/{recordId}/reviews', {
+    params: { path: { recordId } },
+  })),
+  staleTime: 0,
+});
+
+/** The reviews of one unit, asked again whenever its block is shown: an assignment must name the newest one. */
+export function useUnitReviews(recordId: string, enabled = true) {
+  return useQuery({ ...unitReviewsQuery(recordId), enabled });
+}
+
+/** Stores a snapshot of the site that pins the named records; its answered scope is passed on unchanged. */
+export async function captureSnapshot(body: PostBody<'/api/v1/usp/snapshots'>) {
+  return unwrap(await api.POST('/api/v1/usp/snapshots', { body })).data;
+}
+
+/** Stores an identity review under a captured scope. It changes no record until an assignment names it. */
+export async function recordIdentityReview(body: PostBody<'/api/v1/usp/identity/reviews'>) {
+  return unwrap(await api.POST('/api/v1/usp/identity/reviews', { body })).data;
+}
+
+/** Assigns the application code a stored review allows. The same key with the same body answers the same receipt. */
+export async function assignCode(body: PostBody<'/api/v1/usp/identity/assign'>) {
+  return unwrap(await api.POST('/api/v1/usp/identity/assign', { body })).data;
+}
+
+/** Reads the recorded citation a plan for this unit may include, with the handle the plan names. Stores nothing. */
+export async function readPlanEntries(body: PostBody<'/api/v1/usp/packets/plans/entries'>) {
+  return unwrap(await api.POST('/api/v1/usp/packets/plans/entries', { body })).data;
+}
+
+/** Stores a plan of the citations a packet of this unit will hold. */
+export async function createPlan(body: PostBody<'/api/v1/usp/packets/plans/create'>) {
+  return unwrap(await api.POST('/api/v1/usp/packets/plans/create', { body })).data;
+}
+
+/** Stores the confirmation that the plan was reviewed; a plan is executed under its confirmation only. */
+export async function confirmPlan(body: PostBody<'/api/v1/usp/packets/plans/confirm'>) {
+  return unwrap(await api.POST('/api/v1/usp/packets/plans/confirm', { body })).data;
+}
+
+/** Stores the packet of a confirmed plan. A card is issued from an executed plan only. */
+export async function executePlan(body: PostBody<'/api/v1/usp/packets/plans/execute'>) {
+  return unwrap(await api.POST('/api/v1/usp/packets/plans/execute', { body })).data;
+}
+
+/** Reads one stored card revision: its plan and the snapshot a further revision must name. Stores nothing. */
+export async function readCard(body: PostBody<'/api/v1/usp/property-cards/read'>) {
+  return unwrap(await api.POST('/api/v1/usp/property-cards/read', { body })).data;
+}
+
+/** Reads the rows a card of this executed plan would state, and the revision it would be. Stores nothing. */
+export async function previewCard(body: PostBody<'/api/v1/usp/property-cards/preview'>) {
+  return unwrap(await api.POST('/api/v1/usp/property-cards/preview', { body })).data;
+}
+
+/** Stores the card. The same key with the same body answers the same card. */
+export async function generateCard(body: PostBody<'/api/v1/usp/property-cards/generate'>) {
+  return unwrap(await api.POST('/api/v1/usp/property-cards/generate', { body })).data;
+}
+
+/** One retained inference batch with its items: model, state and the decisions already applied. */
+export function useSpatialMlBatch(batchId: string | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.spatialMlBatch(batchId ?? ''),
+    enabled: Boolean(batchId),
+    queryFn: async ({ signal }) => unwrap(await api.GET('/api/v1/spatial-ml/batches/{batchId}', {
+      params: { path: { batchId: batchId! } }, signal,
+    })),
+    staleTime: 30_000,
+  });
+}
+
+/** One inference item: its batch, the package it was run for, the model receipt and any footprint drafts. */
+export function useSpatialMlItem(itemId: string | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.spatialMlItem(itemId ?? ''),
+    enabled: Boolean(itemId),
+    queryFn: async ({ signal }) => unwrap(await api.GET('/api/v1/spatial-ml/items/{itemId}', {
+      params: { path: { itemId: itemId! } }, signal,
+    })),
+    staleTime: 30_000,
+  });
+}
+
+/** An import package: its revision is what a decision on its candidates must quote. */
+export function useImportPackage(packageId: string | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.importPackage(packageId ?? ''),
+    enabled: Boolean(packageId),
+    queryFn: async ({ signal }) => unwrap(await api.GET('/api/v1/import-packages/{packageId}', {
+      params: { path: { packageId: packageId! } }, signal,
+    })),
+    staleTime: 30_000,
+  });
+}
+
+/** Several import packages at once, for example every footprint draft an inference item has produced. */
+export function useImportPackages(packageIds: readonly string[]) {
+  return useQueries({
+    queries: packageIds.map((packageId) => ({
+      queryKey: queryKeys.importPackage(packageId),
+      queryFn: async ({ signal }: { signal: AbortSignal }) => unwrap(
+        await api.GET('/api/v1/import-packages/{packageId}', { params: { path: { packageId } }, signal }),
+      ),
+      staleTime: 30_000,
+    })),
+  });
+}
+
 export function useBuildingRegister(buildingId: string | null | undefined, live = false) {
   return useQuery({
     queryKey: queryKeys.register(buildingId ?? ''),
@@ -211,12 +495,14 @@ export const featureCode = (feature: AreaFeature | null | undefined): string | n
 // ------------------------------------------------------------------ requests from the public (REQUEST-01)
 export type RequestFilter = 'open' | 'accepted' | 'rejected' | 'all';
 
-export function useRegisterRequests(filter: RequestFilter) {
+export function useRegisterRequests(filter: RequestFilter, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ['register-requests', filter],
-    queryFn: async () => (await getDraft<RegisterRequest[]>(`/api/v1/register-requests?state=${filter}`)) ?? [],
-    // New requests from the portal show up without a reload.
-    refetchInterval: 3000,
+    // A caller on a build that does not serve the route passes `enabled: false`: it asks and refetches nothing.
+    enabled: options.enabled ?? true,
+    queryFn: () => getDraft<RegisterRequest[]>(`/api/v1/register-requests?state=${filter}`),
+    // New requests from the portal show up without a reload; a missing route is not asked again.
+    refetchInterval: (query) => (query.state.data === null ? false : 3000),
   });
 }
 

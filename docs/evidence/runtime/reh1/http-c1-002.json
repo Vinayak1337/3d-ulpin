@@ -1,0 +1,7 @@
+{ "index": "c1-002", "method": "POST", "route": "/api/v1/usp/property-cards/list", "status": 200, "seconds": 0.08,
+"requestKey": null, "idempotencyHeader": null, "ids": {}, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/c1-002", "request": { "scope": { "kind": "snapshot",
+"scopeId": "daf0c3e9-a952-4177-88a5-f90f15e39112", "world": { "namespace": "world",
+"id": "registry-site/daf0c3e9-a952-4177-88a5-f90f15e39112" }, "manifestId": "291ca42f-ab90-47ae-b17e-7d760607a03b",
+"snapshotDigest": "[omitted non-source digest]", "stage": "recorded" }, "target": { "namespace": "registry_record",
+"id": "f6bb6847-0116-48b9-8cd3-e16ed0cb85ce" }, "limit": 50 } }

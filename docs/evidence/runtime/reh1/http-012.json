@@ -1,0 +1,13 @@
+{ "index": "012", "method": "POST", "route": "/api/v1/buildings/7b524f20-079c-40cb-a6a1-1b3bce1e730c/source-spaces",
+"status": 201, "seconds": 5.286, "requestKey": "d9556737-1725-4155-9121-e17bf3095032",
+"idempotencyHeader": "d9556737-1725-4155-9121-e17bf3095032", "ids": {
+"buildingId": "7b524f20-079c-40cb-a6a1-1b3bce1e730c", "floorId": "651962f4-f6d7-49c1-8add-6052b609d506",
+"spaceId": "f6bb6847-0116-48b9-8cd3-e16ed0cb85ce" }, "code": null, "rawPrefix": "E:/BhuAayam-data/task-data/reh1/012",
+"request": { "requestKey": "d9556737-1725-4155-9121-e17bf3095032",
+"expectedCanonicalRevision": "[omitted non-source digest]", "level": { "label": "2ND FLOOR PLAN", "evidence": {
+"sourceId": "8f7e1ef9-ae44-445b-b238-815d497f5fe6", "sourceRevision": 1, "page": 1, "region": [ 850, 875, 1020, 910 ],
+"literal": "2ND FLOOR PLAN" } }, "space": { "label": "UNIT-3B", "evidence": {
+"sourceId": "8f7e1ef9-ae44-445b-b238-815d497f5fe6", "sourceRevision": 1, "page": 1, "region": [ 596, 390, 644, 409 ],
+"literal": "UNIT-3B" } }, "reason": [
+"REH1 local rehearsal replay of the cited R2 boxed label UNIT-3B on 2ND FLOOR PLAN. Label e",
+"vidence only: no boundary, area, use, geometry or rights. Not a field officer decision." ] } }

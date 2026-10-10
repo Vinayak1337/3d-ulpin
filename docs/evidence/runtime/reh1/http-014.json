@@ -1,0 +1,4 @@
+{ "index": "014", "method": "GET",
+"route": "/api/v1/buildings/7b524f20-079c-40cb-a6a1-1b3bce1e730c/register?format=json", "status": 200, "seconds": 0.263,
+"requestKey": null, "idempotencyHeader": null, "ids": {}, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/014", "request": null }

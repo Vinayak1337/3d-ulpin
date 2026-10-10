@@ -20,3 +20,21 @@
 .fit { justify-self: start; }
 .page { aspect-ratio: 842 / 595; }
 .pageSvg { height: 100%; }
+.words {
+  display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--ui-space-1) var(--ui-space-3);
+  margin: 0; font-size: 13px;
+}
+.words dt { color: var(--ui-muted); }
+.words dd { margin: 0; overflow-wrap: anywhere; }
+.cited { margin: 0; display: grid; gap: var(--ui-space-2); }
+.citedSvg {
+  display: block; width: 100%; height: auto; max-height: 60vh; background: var(--ui-surface);
+  border: 1px solid var(--ui-border-strong); border-radius: var(--ui-radius-12);
+}
+.largeSheet { display: grid; gap: var(--ui-space-2); }
+.largeSheet h3 { margin: 0; font-size: var(--ui-text-lg); }
+.largeSheet p { margin: 0; }
+.region {
+  fill: color-mix(in srgb, var(--ui-primary) 14%, transparent); stroke: var(--ui-primary); stroke-width: 3px;
+  vector-effect: non-scaling-stroke;
+}

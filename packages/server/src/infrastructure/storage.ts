@@ -61,6 +61,43 @@ export async function readObject(key: string): Promise<Uint8Array> {
     );
   return result.Body.transformToByteArray();
 }
+/** Bounded private derivative read when its receipt has a hash but no byte count. */
+export async function readObjectBounded(key:string,maxBytes:number,deadlineAt:number,signal:AbortSignal):Promise<Uint8Array>{
+  if(key.startsWith('large-originals/'))throw new AppError(413,'STREAMING_ORIGINAL_REQUIRED','This large original requires the bounded native streaming download.');
+  if(!Number.isSafeInteger(maxBytes)||maxBytes<1||!Number.isFinite(deadlineAt))
+    throw new AppError(500,'STORAGE_READ_BOUNDS','Finite positive private read bounds are required.');
+  const stopped=()=>new AppError(503,'STORAGE_TIMEOUT','The bounded object read was interrupted or timed out.');
+  if(signal.aborted||Date.now()>=deadlineAt)throw stopped();
+  const controller=new AbortController();let body:Readable|undefined;
+  const parentAbort=()=>controller.abort(),abort=()=>body?.destroy(stopped());
+  const timer=setTimeout(()=>controller.abort(),Math.min(2147483647,Math.max(1,deadlineAt-Date.now())));timer.unref();
+  signal.addEventListener('abort',parentAbort,{once:true});controller.signal.addEventListener('abort',abort,{once:true});
+  const check=()=>{if(signal.aborted||Date.now()>=deadlineAt)controller.abort();if(controller.signal.aborted)throw stopped();};
+  try{
+    check();
+    const result=await s3().send(new GetObjectCommand({Bucket:settings.s3Bucket,Key:key}),{abortSignal:controller.signal});
+    body=result.Body instanceof Readable?result.Body:undefined;check();
+    const advertised=result.ContentLength;
+    if(!body||typeof advertised!=='number'||!Number.isSafeInteger(advertised)||advertised<1||advertised>maxBytes)
+      throw new AppError(422,'SOURCE_INTEGRITY','Stored object size or streaming metadata exceeds its bounded read profile.');
+    const chunks:Buffer[]=[];let count=0;
+    for await(const chunk of body){
+      check();
+      if(typeof chunk!=='string'&&!(chunk instanceof Uint8Array))
+        throw new AppError(422,'SOURCE_INTEGRITY','Stored object returned an unsupported byte stream.');
+      count+=typeof chunk==='string'?Buffer.byteLength(chunk):chunk.byteLength;
+      if(count>maxBytes||count>advertised)
+        throw new AppError(422,'SOURCE_INTEGRITY','Stored object exceeds its advertised private read size.');
+      chunks.push(Buffer.from(chunk));
+    }
+    check();if(count!==advertised)throw new AppError(422,'SOURCE_INTEGRITY','Stored object length differs from its streaming metadata.');
+    return Buffer.concat(chunks,count);
+  }catch(error){if(controller.signal.aborted)throw stopped();throw error;}
+  finally{
+    clearTimeout(timer);signal.removeEventListener('abort',parentAbort);controller.signal.removeEventListener('abort',abort);
+    body?.destroy();controller.abort();
+  }
+}
 export async function putOriginal(
   key: string,
   bytes: Uint8Array,

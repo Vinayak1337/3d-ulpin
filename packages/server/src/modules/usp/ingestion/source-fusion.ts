@@ -7,6 +7,16 @@ import {AppError} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
 import {assertLocalUsp} from '../snapshots';
 import {fusionAuthorityBatch,readFusionResult,fusionLive,type FusionBudget} from './source-fusion-authority';
+import {fusionIFCSourceProjection} from './source-fusion-ifc';
+import {fusionDXFSourceProjection} from './source-fusion-dxf';
+import {fusionKMLSourceProjection} from './source-fusion-kml';
+import {fusionCityGMLSourceProjection} from './source-fusion-citygml';
+import {fusionGeoParquetSourceProjection} from './source-fusion-geoparquet';
+import {fusionRasterSourceProjection} from './source-fusion-raster';
+import {fusionPointSourceProjection} from './source-fusion-point';
+import {fusionSurveySourceProjection} from './source-fusion-survey';
+import {fusionObjSourceProjection} from './source-fusion-obj';
+import {fusionGltfSourceProjection} from './source-fusion-gltf';
 
 type Loaded=Awaited<ReturnType<typeof readFusionResult>>;
 export type SourceFusionDependencies={authority:typeof fusionAuthorityBatch;read:typeof readFusionResult};
@@ -71,6 +81,16 @@ export function fusionSourceProjection(selection:SourceFusionSelection,loaded:Lo
   if(fingerprint(loaded.result.input)!==selection.pin.inputSha256||loaded.result.input.readerSha256!==selection.pin.readerSha256)
     return fail();
   const ns=namespace(selection),base={pin:selection.pin,namespace:ns,sourceSetRole:'operator_selected_fragment' as const};
+  if(selection.kind==='ifc'&&loaded.kind==='ifc')return fusionIFCSourceProjection(selection,loaded);
+  if(selection.kind==='dxf'&&loaded.kind==='dxf')return fusionDXFSourceProjection(selection,loaded);
+  if(selection.kind==='kml'&&loaded.kind==='kml')return fusionKMLSourceProjection(selection,loaded);
+  if(selection.kind==='citygml'&&loaded.kind==='citygml')return fusionCityGMLSourceProjection(selection,loaded);
+  if(selection.kind==='obj'&&loaded.kind==='obj')return fusionObjSourceProjection(selection,loaded);
+  if(selection.kind==='gltf'&&loaded.kind==='gltf')return fusionGltfSourceProjection(selection,loaded);
+  if(selection.kind==='geoparquet'&&loaded.kind==='geoparquet')return fusionGeoParquetSourceProjection(selection,loaded);
+  if(selection.kind==='raster'&&loaded.kind==='raster')return fusionRasterSourceProjection(selection,loaded);
+  if(selection.kind==='point'&&loaded.kind==='point')return fusionPointSourceProjection(selection,loaded);
+  if(selection.kind==='survey_report'&&loaded.kind==='document')return fusionSurveySourceProjection(selection,loaded.result);
   if(selection.kind==='document_ocr'&&loaded.kind==='document')return fusionOcrSourceProjection(selection,loaded.result);
   if(selection.kind==='document'&&loaded.kind==='document'){
     const native=loaded.result.native;
@@ -155,6 +175,7 @@ export async function assembleSourceFusion(ctx:RequestContext,raw:unknown,deps:S
     fusionLive(budget);assertLocalUsp(ctx);return response;
   }catch(error){
     fusionLive(budget);
+    if(error instanceof AppError&&['SOURCE_FUSION_SURVEY_SELECTION','SURVEY_REPORT_LAYOUT','SOURCE_FUSION_KML_MEMBER_SELECTION_REQUIRED','SOURCE_FUSION_KML_NO_MEMBER','SOURCE_FUSION_GEOPARQUET_NO_ROWS','SOURCE_FUSION_GEOPARQUET_ROW_WINDOW'].includes(error.code))throw error;
     if(error instanceof AppError&&[403,404,409,422].includes(error.status))
       throw new AppError(error.status,error.status===409?'SOURCE_FUSION_STALE':'SOURCE_FUSION_UNAVAILABLE',
         'The requested accepted evidence context is unavailable.');

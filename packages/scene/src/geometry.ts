@@ -10,6 +10,14 @@ export function hasKnownHeight(input: FootprintInput): boolean {
   return input.heightM !== null && Number.isFinite(input.heightM) && input.heightM > 0 && input.heightState !== 'unknown' && input.heightState !== 'unresolved';
 }
 
+/** How a building is drawn at rest: a candidate stays a ghost; unknown or estimated heights are hatched. */
+export type BuildingLook = 'candidate' | 'hatch' | 'solid';
+
+export function buildingLook(input: FootprintInput): BuildingLook {
+  if (input.candidate) return 'candidate';
+  return !hasKnownHeight(input) || input.heightState === 'estimated' ? 'hatch' : 'solid';
+}
+
 /** Drops the closing vertex and orients rings for three.js shapes. */
 function ringPoints(ring: Ring): Vector2[] {
   const points = ring.map(([x, y]) => new Vector2(x, y));

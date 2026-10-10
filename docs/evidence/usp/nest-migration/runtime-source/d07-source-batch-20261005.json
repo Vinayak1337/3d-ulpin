@@ -1,0 +1,573 @@
+{
+  "schemaVersion": "ulpin-scoped-runtime-observation/1",
+  "task": "D07-SOURCE-BATCH-RUNTIME",
+  "attempt": 2,
+  "recordedAt": "2026-10-05T03:54:00.178Z",
+  "clientDate": "2026-10-05",
+  "servedCodeCommit": "85070c0f744e820f1f75645fb99504fd306cedd5",
+  "role": "PRIVATE_INSPECTION",
+  "privateProof": {
+    "path": "E:/BhuAayam-data/task-data/d07-source-only-spatial-runtime-20261005-run02/verification.json",
+    "bytes": 31376,
+    "sha256": "fbf0b388f05c250f750455053492fc334c1c4e6ccd6669c35ef4f3055be69674"
+  },
+  "publication": "Selected safe metadata only; credentials, full request/SQL rows, raw native/model assets and internal configuration are retained privately.",
+  "sources": {
+    "manifest": "docs/evidence/usp/association-crosswalk/manifest.json",
+    "testedAssetIds": [
+      "haryana-2831-tower3-plan2.pdf"
+    ],
+    "otherManifestAssetsQualified": false,
+    "caseId": "9a2618cf-0d63-45fa-a53b-18e80fc13b04",
+    "caseRevision": 2,
+    "sourceId": "a124fb03-6ee4-4ced-8450-c67eb68dc950",
+    "sourceRevision": 1,
+    "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+    "bytes": 1630108,
+    "page": 1,
+    "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "width": 2586,
+      "height": 1694,
+      "rotation": 0
+    },
+    "roiPoints": [
+      1340,
+      90,
+      2490,
+      755
+    ],
+    "scope": "Unchanged retained Haryana T3-2 PDF and actual private object-storage read; approved revision/property identity remains unresolved"
+  },
+  "migration": {
+    "step": "spatial-ml.source-batches",
+    "registeredSql": {
+      "path": "C:/Users/kvina/.codex/worktrees/desktop-gltf/3d-ulpin/database/sql/50-spatial-ml/source-batches.sql",
+      "bytes": 1673,
+      "sha256": "e58f0d57877783e2a356f7295129b479e824566176104ca31ce2a3fee1ec8b47"
+    },
+    "applied": true,
+    "priorSpatialRowsAndUspLedgerPreserved": true,
+    "observationScope": "Only registered source-batches step applied after existing prerequisites in this retained isolated run; not a claim about other deployments."
+  },
+  "protocol": {
+    "orderedPreflightPassed": true,
+    "startupStages": [
+      {
+        "name": "cold-preflight",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "canonical-environment-imports",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "fresh-profile",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "compiled-readiness",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "storage-start",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "database-before",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "scoped-migration",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "isolated-queue-empty",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "api-start",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "api-ready",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "processor-start",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "processor-ready",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "worker-start",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "worker-ready",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      }
+    ],
+    "journeyExit": 0,
+    "preservationExit": 0,
+    "shutdownStages": [
+      {
+        "name": "worker-stop",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "processor-stop",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "api-stop",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      },
+      {
+        "name": "storage-stop",
+        "actualExit": 0,
+        "signal": null,
+        "spawnError": null
+      }
+    ],
+    "coldAuditPassed": true,
+    "historicalRun01": {
+      "path": "E:/BhuAayam-data/task-data/d07-source-only-spatial-runtime-20261005-run01/verification.json",
+      "bytes": 5607,
+      "sha256": "29b4c5f251a97caf5d1d75e0dac877d9f63894642ad0de3363f7264fb395e6f5",
+      "status": "blocked-before-startup",
+      "storageMigrationApiHttpUnrun": true,
+      "inferenceCalls": 0,
+      "retrospectivePass": false
+    },
+    "environment": {
+      "manifest": {
+        "path": "E:/BhuAayam-data/task-data/d07-processor-environment-20261005/manifest.json",
+        "bytes": 16375,
+        "sha256": "b68b54f7736a543311435553941b2f465e1c7118047551178378427ac1751f8e"
+      },
+      "python": "E:\\BhuAayam-data\\task-data\\d07-processor-environment-20261005\\env\\Scripts\\python.exe",
+      "versions": {
+        "boto3": "1.38.23",
+        "redis": "5.2.1",
+        "fastapi": "0.115.12",
+        "uvicorn": "0.34.2",
+        "celery": "5.5.2",
+        "onnxruntime": "1.19.2",
+        "rasterio": "1.4.4",
+        "shapely": "2.0.7",
+        "pypdfium2": "4.30.0",
+        "fitz": "1.25.5",
+        "psutil": "7.0.0"
+      },
+      "readOnlySupervisorFallback": "E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/venv/Lib/site-packages",
+      "supervisorModules": {
+        "fitz": {
+          "version": "1.25.5",
+          "module": "E:\\BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/venv/Lib/site-packages\\fitz\\__init__.py"
+        },
+        "psutil": {
+          "version": "7.0.0",
+          "module": "E:\\BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/venv/Lib/site-packages\\psutil\\__init__.py"
+        }
+      },
+      "actualModulePaths": "All actual paths retained in private verification.json; pinned environment unchanged."
+    },
+    "profiles": {
+      "pageAndRegion": {
+        "path": "E:/BhuAayam-data/task-data/d07-source-only-spatial-runtime-20261005-run02/region-profile.json",
+        "bytes": 298173,
+        "sha256": "e3a8533b16825ffac4cb0f674e48271a4a4fee6c2198c1bc59e923e2572c62ba"
+      },
+      "taskConfig": {
+        "path": "E:/BhuAayam-data/task-data/d07-source-only-spatial-runtime-20261005-run02/region-runtime.json",
+        "bytes": 743,
+        "sha256": "0ccad08f8d323e287dff6bce59a329fe92909a30de9178523ecbf0cd8c4ad83c"
+      },
+      "model": {
+        "id": "cubicasa5k-rooms-onnx-v1",
+        "license": "CC-BY-NC-4.0; retain CubiCasa5K attribution; noncommercial scope",
+        "profileVersion": "cubicasa-rooms-768-bilinear-pad64-contours-v2",
+        "sha256": "6ecc5c0ef58271effe877832dca38833107b35d26fcf7b1254fc60834c890520"
+      }
+    },
+    "transport": {
+      "redisDatabase": 15,
+      "emptyBeforeStart": true,
+      "readOnlyEmptyChecks": [
+        "PING",
+        "CONFIG GET databases",
+        "DBSIZE"
+      ],
+      "queues": [
+        "celery"
+      ],
+      "workerPool": "celery.concurrency.solo:TaskPool",
+      "concurrency": 1,
+      "canonicalProcessor": true,
+      "genericDispatcherLoopRun": false,
+      "dispatchedAt": null
+    }
+  },
+  "ids": {
+    "caseId": "9a2618cf-0d63-45fa-a53b-18e80fc13b04",
+    "sourceId": "a124fb03-6ee4-4ced-8450-c67eb68dc950",
+    "batchId": "61e1ff09-1e2f-4b6a-81f7-f1ea3e5a6604",
+    "itemId": "e7738bac-7b19-4b58-b933-06774ac462e9",
+    "jobId": "6d0b75a1-c3a0-454c-8458-d1c5823c3469",
+    "inputFingerprint": "cc9a70b342846da58f656188543b1ca6a515dcb77567d94969d44fedd184e4e9"
+  },
+  "httpObservations": [
+    {
+      "path": "/sources/a124fb03-6ee4-4ced-8450-c67eb68dc950/pages?revision=1&sha256=2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1&offset=0&limit=1",
+      "method": "GET",
+      "status": 200,
+      "startedAt": "2026-10-05T03:50:32.073Z",
+      "completedAt": "2026-10-05T03:50:32.665Z"
+    },
+    {
+      "path": "/sources/a124fb03-6ee4-4ced-8450-c67eb68dc950/file",
+      "method": "GET",
+      "status": 200,
+      "startedAt": "2026-10-05T03:50:32.669Z",
+      "completedAt": "2026-10-05T03:50:32.697Z"
+    },
+    {
+      "path": "/spatial-ml/status",
+      "method": "GET",
+      "status": 200,
+      "startedAt": "2026-10-05T03:50:32.702Z",
+      "completedAt": "2026-10-05T03:50:32.720Z"
+    },
+    {
+      "path": "/spatial-ml/source-batches",
+      "method": "POST",
+      "status": 201,
+      "startedAt": "2026-10-05T03:50:32.721Z",
+      "completedAt": "2026-10-05T03:50:33.319Z"
+    },
+    {
+      "path": "/spatial-ml/items/e7738bac-7b19-4b58-b933-06774ac462e9",
+      "method": "GET",
+      "status": 200,
+      "startedAt": "2026-10-05T03:50:35.778Z",
+      "completedAt": "2026-10-05T03:50:35.833Z"
+    },
+    {
+      "path": "/spatial-ml/batches/61e1ff09-1e2f-4b6a-81f7-f1ea3e5a6604",
+      "method": "GET",
+      "status": 200,
+      "startedAt": "2026-10-05T03:50:35.855Z",
+      "completedAt": "2026-10-05T03:50:35.940Z"
+    },
+    {
+      "path": "/spatial-ml/items/e7738bac-7b19-4b58-b933-06774ac462e9/artifacts/raster?jobId=6d0b75a1-c3a0-454c-8458-d1c5823c3469&sha256=cc25404c5e95ee021f67066c4acbcaa760c33dfdf0f54d7fad8d111e302dbc37",
+      "method": "GET",
+      "status": 200,
+      "startedAt": "2026-10-05T03:50:35.950Z",
+      "completedAt": "2026-10-05T03:50:36.002Z"
+    },
+    {
+      "path": "/spatial-ml/items/e7738bac-7b19-4b58-b933-06774ac462e9/artifacts/mask?jobId=6d0b75a1-c3a0-454c-8458-d1c5823c3469&sha256=15866abc04afeb0ea60e91b647f91fa7ce9b8e2dfe7d983b642226887d9c291e",
+      "method": "GET",
+      "status": 200,
+      "startedAt": "2026-10-05T03:50:36.004Z",
+      "completedAt": "2026-10-05T03:50:36.058Z"
+    },
+    {
+      "path": "/spatial-ml/source-batches",
+      "method": "POST",
+      "status": 201,
+      "startedAt": "2026-10-05T03:50:36.060Z",
+      "completedAt": "2026-10-05T03:50:36.125Z"
+    },
+    {
+      "path": "/spatial-ml/source-batches",
+      "method": "POST",
+      "status": 409,
+      "startedAt": "2026-10-05T03:50:36.133Z",
+      "completedAt": "2026-10-05T03:50:36.145Z"
+    },
+    {
+      "path": "/spatial-ml/items/e7738bac-7b19-4b58-b933-06774ac462e9/artifacts/mask?jobId=6d0b75a1-c3a0-454c-8458-d1c5823c3469&sha256=15866abc04afeb0ea60e91b647f91fa7ce9b8e2dfe7d983b642226887d9c291e",
+      "method": "GET",
+      "status": 403,
+      "startedAt": "2026-10-05T03:50:36.146Z",
+      "completedAt": "2026-10-05T03:50:36.159Z"
+    },
+    {
+      "path": "/spatial-ml/items/e7738bac-7b19-4b58-b933-06774ac462e9/apply",
+      "method": "POST",
+      "status": 422,
+      "startedAt": "2026-10-05T03:50:36.159Z",
+      "completedAt": "2026-10-05T03:50:36.185Z"
+    }
+  ],
+  "replay": {
+    "sameBatch": true,
+    "sameItem": true,
+    "sameJob": true,
+    "additionalInferenceCalls": 0
+  },
+  "refusals": [
+    {
+      "name": "changed-key-body",
+      "status": 409,
+      "code": "ML_REQUEST_KEY"
+    },
+    {
+      "name": "foreign-origin",
+      "status": 403,
+      "code": "ORIGIN_DENIED"
+    },
+    {
+      "name": "source-only-apply",
+      "status": 422,
+      "code": "ML_SOURCE_ONLY",
+      "technicalControlOnly": true
+    }
+  ],
+  "native": {
+    "actualInferSpatialCalls": 1,
+    "actualOnnxSessionRunCalls": 1,
+    "providers": [
+      "CPUExecutionProvider"
+    ],
+    "events": {
+      "path": "E:/BhuAayam-data/task-data/d07-source-only-spatial-runtime-20261005-run02/native-call-events.jsonl",
+      "bytes": 966,
+      "sha256": "cd2335b6be2248eefcc7eb4a672bb253e082931437661ece15c5564bdb408726"
+    },
+    "method": "Read-only Python profile events; production methods and source transport not overridden",
+    "inferenceMs": 750.698,
+    "worker": {
+      "exitCode": 0,
+      "stopReason": null,
+      "elapsedSeconds": 9.797,
+      "peakObservedRssBytes": 489271296,
+      "peakJobPrivateBytes": 754688000,
+      "gatedStart": true,
+      "logPath": "E:\\BhuAayam-data\\task-data\\d07-source-only-spatial-runtime-20261005-run02\\worker.native.log",
+      "logSha256": "2af967f9ee28bfe5300c06bc016257480e135ee3354c14d0bc519989919ac0ee",
+      "logByteLimit": 2097152,
+      "logTruncated": false
+    },
+    "processor": {
+      "exitCode": 0,
+      "stopReason": null,
+      "elapsedSeconds": 15.734,
+      "peakObservedRssBytes": 119959552,
+      "peakJobPrivateBytes": 125063168,
+      "gatedStart": true,
+      "logPath": "E:\\BhuAayam-data\\task-data\\d07-source-only-spatial-runtime-20261005-run02\\processor.native.log",
+      "logSha256": "84ac67d30dd3d4962e5f4e75133f467742a677b0816c598fa4c0d388938b1f8c",
+      "logByteLimit": 2097152,
+      "logTruncated": false
+    }
+  },
+  "output": {
+    "components": 100,
+    "polygons": 92,
+    "multiPolygons": 8,
+    "omittedComponents": {
+      "small": 703,
+      "complex": 2,
+      "invalid": 0,
+      "capacity": 156
+    },
+    "sourceFrame": {
+      "kind": "pdf_display_page_top_left_points",
+      "width": 2586,
+      "height": 1694,
+      "rotation": 0
+    },
+    "region": {
+      "x": 0.5181747873163186,
+      "y": 0.053128689492325853,
+      "width": 0.44470224284609433,
+      "height": 0.3925619834710744
+    },
+    "transform": {
+      "page": 1,
+      "unit": "pixel",
+      "region": {
+        "x": 0.5181747873163186,
+        "y": 0.053128689492325853,
+        "width": 0.44470224284609433,
+        "height": 0.3925619834710744
+      },
+      "renderer": "pypdfium2",
+      "orientation": "PDF page rotation applied",
+      "pixelRegion": [
+        1036,
+        69,
+        1926,
+        585
+      ],
+      "sourceWidth": 2000,
+      "sourceHeight": 1311,
+      "pdfPagePoints": [
+        2586,
+        1694
+      ],
+      "pixelToSource": [
+        1.1588541666666667,
+        0,
+        1036,
+        0,
+        1.1595505617977528,
+        69
+      ],
+      "pdfRenderScale": 0.7733952049497294,
+      "coordinateConvention": "pixel-edge"
+    },
+    "qualifications": {
+      "calibration": null,
+      "applicability": "not_assessed",
+      "spatialAuthority": false,
+      "scoresCalibrated": false
+    },
+    "artifacts": [
+      {
+        "kind": "raster",
+        "status": 200,
+        "headers": {
+          "cache-control": "no-store",
+          "content-type": "image/png",
+          "x-content-sha256": "cc25404c5e95ee021f67066c4acbcaa760c33dfdf0f54d7fad8d111e302dbc37",
+          "x-content-type-options": "nosniff"
+        },
+        "artifact": {
+          "path": "E:/BhuAayam-data/task-data/d07-source-only-spatial-runtime-20261005-run02/raster.png",
+          "bytes": 347458,
+          "sha256": "cc25404c5e95ee021f67066c4acbcaa760c33dfdf0f54d7fad8d111e302dbc37"
+        },
+        "width": 768,
+        "height": 445
+      },
+      {
+        "kind": "mask",
+        "status": 200,
+        "headers": {
+          "cache-control": "no-store",
+          "content-type": "image/png",
+          "x-content-sha256": "15866abc04afeb0ea60e91b647f91fa7ce9b8e2dfe7d983b642226887d9c291e",
+          "x-content-type-options": "nosniff"
+        },
+        "artifact": {
+          "path": "E:/BhuAayam-data/task-data/d07-source-only-spatial-runtime-20261005-run02/mask.png",
+          "bytes": 14532,
+          "sha256": "15866abc04afeb0ea60e91b647f91fa7ce9b8e2dfe7d983b642226887d9c291e"
+        },
+        "width": 768,
+        "height": 445
+      }
+    ]
+  },
+  "preservation": {
+    "scope": "Bounded PostgreSQL before/after totals and selected old source/review/RERA/D05/spatial/ledger rows; exact intended new batch/item/job/two artifacts only.",
+    "beforeCounts": {
+      "cases": 46,
+      "sources": 45,
+      "jobs": 86,
+      "attempts": 84,
+      "recipes": 6,
+      "decisions": 17,
+      "packages": 1,
+      "model_calls": 0,
+      "operations": 160,
+      "registry_records": 2
+    },
+    "afterCounts": {
+      "cases": 46,
+      "sources": 45,
+      "jobs": 87,
+      "attempts": 84,
+      "recipes": 6,
+      "decisions": 17,
+      "packages": 1,
+      "model_calls": 0,
+      "operations": 160,
+      "registry_records": 2
+    },
+    "preserved": {
+      "case": true,
+      "sources": true,
+      "d04": true,
+      "d05": true,
+      "twoPriorReraJobs": true,
+      "priorSpatialRows": true,
+      "uspLedger": true,
+      "smallTotals": true
+    },
+    "intendedAdditions": {
+      "batch": 1,
+      "item": 1,
+      "job": 1,
+      "artifacts": 2
+    },
+    "ownedJobState": "succeeded",
+    "dispatchedAt": null,
+    "modelCallsMeaning": "model_calls remains0 for provider/gateway bookkeeping; actual native inference1 is recorded separately."
+  },
+  "cleanup": {
+    "observationScope": "Accepted run02 completion snapshot; no claim about later owners.",
+    "at": "2026-10-05T03:54:00.168Z",
+    "apiProcessorWorkerStorageStopped": true,
+    "portsAndOwnedPythonEmpty": true,
+    "scratchEmpty": true,
+    "originalContainerIdsPreserved": 24,
+    "runningContainers": 0,
+    "volumeNamesPreserved": 14,
+    "profileFilesUnchanged": 8,
+    "environmentManifestUnchanged": true,
+    "dockerAvailable": true,
+    "standingUrl": false
+  },
+  "qualification": "Bounded Windows solo CPU source-only pixel runtime on unchanged T3-2 page1 selected ROI only: one canonical processor/infer_spatial/ONNX call, new batch/item/job and raster/mask, current private read-back and same-key replay without extra inference. Source-only apply refusal is technical only. Calibration null/applicability not_assessed/spatialAuthority false/scores uncalibrated; no independent accuracy, metric/property/identity/rights/learning/frontend/release qualification. Generic dispatcher loop unrun.",
+  "limitations": [
+    "Bounded Windows solo development runtime; no production-platform or task-time-limit qualification.",
+    "Exact returned job submitted through actual canonical admission/processor and processing.ingestJob; generic dispatcher loop was intentionally not run, so dispatched_at remains null.",
+    "Pixel candidates and raw mask only: calibration null, applicability not_assessed, spatialAuthority false, scoresCalibrated false; omissions retained. No independent model accuracy, physical geometry/adoption, identity, ownership, rights, learning or release qualification.",
+    "No frontend, source acquisition, training/GPU, provider, remote push/deployment, reset/reseed, original/credential/model/environment edits or unrelated queued-job execution.",
+    "Loopback/configuration and process controls observed; no whole-OS network egress audit.",
+    "Only haryana-2831-tower3-plan2.pdf page1 selected ROI is covered; other originals/pages/regions/models are not qualified.",
+    "Historical D07 run01 remains blocked before startup with zero inference; no retrospective pass or artifact/profile alias."
+  ]
+}

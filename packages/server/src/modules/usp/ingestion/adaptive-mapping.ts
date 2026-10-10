@@ -1,4 +1,6 @@
 import {z} from 'zod';
+import type {MappingPlanV2} from '@ulpin/contracts';
+import {isMappingPlanV2,mappingContextFromGisProfile,validateMappingPlanV2,type MappingValidationContext} from './mapping-plan-v2';
 import {
   AdaptiveMappingModelOutputSchema,INGESTION_VERSION,MappingPlanSchema,SourceProfileSchema,
   type MappingPlan,type SourceProfile,
@@ -10,8 +12,20 @@ type Decision={status:'proposed'|'needs_input';code:string|null;plan:MappingPlan
 const invalid=(code:string,message:string):Decision=>({status:'needs_input',code,plan:null,validationErrors:[message]});
 const decodedField=(path:string)=>path.split('/properties/')[1]?.replaceAll('~1','/').replaceAll('~0','~') ?? '';
 
+type V2Decision={status:'proposed'|'needs_input';code:string|null;plan:MappingPlanV2|null;validationErrors:string[]};
 /** This checks source inventory and executable mechanics. Human/source-document review still decides meaning. */
-export function validateAdaptiveMapping(raw:unknown,sourceProfile:SourceProfile,visiblePaths?:readonly string[]):Decision{
+export function validateAdaptiveMapping(raw:MappingPlanV2,sourceProfile:SourceProfile|MappingValidationContext,visiblePaths?:readonly string[]):V2Decision;
+export function validateAdaptiveMapping(raw:unknown,sourceProfile:SourceProfile,visiblePaths?:readonly string[]):Decision;
+export function validateAdaptiveMapping(raw:unknown,sourceProfile:MappingValidationContext,visiblePaths?:readonly string[]):V2Decision;
+export function validateAdaptiveMapping(raw:unknown,sourceProfile:SourceProfile|MappingValidationContext,visiblePaths?:readonly string[]):Decision|V2Decision{
+  if(isMappingPlanV2(raw)||'sourceKind' in sourceProfile){
+    const context='sourceKind' in sourceProfile?sourceProfile:mappingContextFromGisProfile(sourceProfile);
+    const result=validateMappingPlanV2(raw,context);
+    if(!result.success)return {status:'needs_input',code:result.errors[0].code,plan:null,validationErrors:result.errors.map(error=>error.code)};
+    if(visiblePaths&&result.plan.fields.some(field=>!visiblePaths.includes(field.sourceField)))
+      return {status:'needs_input',code:'MAPPING_SOURCE_FIELD_UNKNOWN',plan:null,validationErrors:['MAPPING_SOURCE_FIELD_UNKNOWN']};
+    return {status:'proposed',code:null,plan:result.plan,validationErrors:[]};
+  }
   const profile=SourceProfileSchema.parse(sourceProfile),parsed=AdaptiveMappingModelOutputSchema.safeParse(raw);
   if(!parsed.success)return invalid('MODEL_OUTPUT_INVALID','The model output does not match the mapping proposal schema.');
   const output=parsed.data;
@@ -40,6 +54,15 @@ export function validateAdaptiveMapping(raw:unknown,sourceProfile:SourceProfile,
       return invalid('MODEL_FIELD_SEMANTICS','A personal or address field cannot be a building identity or name.');
     if(op.target==='building.sourceKey' && /(?:parcel|survey|lot|bbl|plot|tax|floor|unit)/i.test(field))
       return invalid('MODEL_FIELD_SEMANTICS','A parcel, tax or unit identifier cannot serve as a building source key.');
+    // Uniqueness on one row does not establish identifier meaning. Refuse clear
+    // measurement/date cues, without rejecting an explicitly identifier-named
+    // field solely because its name also contains a measurement word. Neither
+    // cue establishes source meaning: issuer evidence and officer review remain.
+    const words=field.replace(/([a-z0-9])([A-Z])/g,'$1_$2').toLowerCase().split(/[_ -]+/);
+    const identifierNamed=words.some(word=>['id','identifier','key','uuid','guid','objectid','globalid'].includes(word));
+    if(op.target==='building.sourceKey'&&!identifierNamed
+      &&words.some(word=>['height','elevation','area','length','volume','date','time','year'].includes(word)))
+      return invalid('MODEL_FIELD_SEMANTICS','A measurement or date does not establish building identity; review source identifier meaning or author a manual recipe.');
     if(op.target==='building.name' && /(?:^|[_ -])(?:id|bin|bbl|code|number|date|height|elevation|parcel|lot|tax|unit|floor)(?:$|[_ -])/i.test(field))
       return invalid('MODEL_FIELD_SEMANTICS','An identifier, measurement or date field cannot serve as a building name.');
   }

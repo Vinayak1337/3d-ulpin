@@ -1,0 +1,8 @@
+{ "index": "027", "method": "POST", "route": "/api/v1/usp/property-cards/generate", "status": 200, "seconds": 0.494,
+"requestKey": "d3c614e2-90cb-4ace-a99b-1df4f819129e", "idempotencyHeader": null, "ids": {
+"cardId": "cb44d4e3-7a45-47b8-9456-b0a11fb6e2fa", "revision": 1, "planId": "4a9e1fea-4ae9-4073-879f-6601952599cb",
+"confirmationId": "b381a9c4-2952-4779-8ed8-13e679ff0c73", "packetId": "4189efc8-b66a-4106-a62c-484f07651ac0",
+"accessViewId": "local-demo-view-1" }, "code": null, "rawPrefix": "E:/BhuAayam-data/task-data/reh1/027", "request": {
+"planId": "4a9e1fea-4ae9-4073-879f-6601952599cb", "planVersion": 1, "cardId": null,
+"expiresAt": "2026-10-11T16:55:58.268Z", "guard": { "mode": "create",
+"requestKey": "d3c614e2-90cb-4ace-a99b-1df4f819129e" } } }

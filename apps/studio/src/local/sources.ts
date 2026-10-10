@@ -4,18 +4,15 @@ import nycSource from './data/nyc-bronx-source.json';
 import swissArea from './data/swiss-floor-area.json';
 import swissContext from './data/swiss-floor-context.json';
 import swissRegister from './data/swiss-floor-register.json';
-import nycOriginal from '../../../../fixtures/real-area/original.geojson?raw';
 import lakeAreas from './data/lake-view/areas.json';
 import lakeContext from './data/lake-view/context.json';
 import lakeRegister from './data/lake-view/register.json';
 import lakeLedger from './data/lake-view/ledger.json';
-import lakeFiles from './data/lake-view/files.json';
 import lakeWorkQueue from './data/lake-view/work-queue.json';
 import lakeWorkBoard from './data/lake-view/work-board.json';
 import lakeDocuments from './data/lake-view/documents.json';
 import lakeLevelReviews from './data/lake-view/level-reviews.json';
 import lakeImportBatches from './data/lake-view/import-batches.json';
-import swissOriginal from '../../../../fixtures/usp/D5/gf0-multiunit-v1/swiss-floor-127-164-717.csv?raw';
 
 /**
  * Local records derived from retained official sources by the scripts in apps/studio/scripts.
@@ -37,15 +34,6 @@ export const derivedContexts: Record<string, Json> = {
   [swissContext.area.id]: swissContext as unknown as Json,
 };
 
-/** Original bytes behind each derived source, served exactly as retained. */
-export const derivedSourceFiles: Record<string, { body: string; type: string; name: string }> = {
-  ...Object.fromEntries(Object.entries(lakeFiles as Record<string, { body: string; type: string }>).map(([id, file]) => [
-    id, { ...file, name: lakeRegister.sources.find((s) => s.id === id)?.name ?? id },
-  ])),
-  [nycSource.id]: { body: nycOriginal, type: 'application/geo+json', name: nycSource.name },
-  [swissRegister.sources[0]!.id]: { body: swissOriginal, type: 'text/csv', name: swissRegister.sources[0]!.name },
-};
-
 /**
  * Building registers. The Swiss floor has its own derived register; an NYC footprint has no floors or
  * spaces in its source, so its register is the building alone with that gap stated.
@@ -62,7 +50,6 @@ export function derivedRegister(buildingId: string): { body: Json; source: keyof
 /** The Lake View records the public projection is built from. */
 export const lake = { context: lakeContext, register: lakeRegister, ledger: lakeLedger };
 
-export const ledgers: Record<string, Json> = { [lakeLedger.buildingId]: lakeLedger as unknown as Json };
 export const workQueue = lakeWorkQueue as unknown as Json & { items: Array<Record<string, unknown>> };
 export const workBoard = lakeWorkBoard as unknown as Json;
 export const importBatches = lakeImportBatches as unknown as Record<string, Json>;

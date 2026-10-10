@@ -1,7 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import type {PoolClient} from 'pg';
-import {STREAMING_VECTOR_LIMITS as limits,StreamingVectorInputSchema,StreamingVectorPayloadSchema,
-  type StreamingVectorInput,type StreamingVectorRecord} from '@ulpin/contracts/usp';
+import {STREAMING_VECTOR_LIMITS as limits,TABULAR_LIMITS,AnyStreamingInputSchema,
+  StreamingVectorPayloadSchema,type AnyStreamingInput,type StreamingVectorRecord} from '@ulpin/contracts/usp';
 import {query,transaction} from '../../../infrastructure/db';
 import {AppError,conflict} from '../../../infrastructure/errors';
 import {openObjectStream,putOriginal,readObject,sha256} from '../../../infrastructure/storage';
@@ -9,14 +9,19 @@ import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,type UspJobAttempt} from '../jobs';
 import {appendCaseIngestionTx} from './events';
 import {assertStreamingInputTx,lockStreamingRowsTx} from './streaming-vector';
-import {readStreamingFeatures,sourceRecord} from './streaming-vector-reader';
+import {readStreamingFeatures,readStreamingTabular,sourceRecord,tabularSourceRecord,
+  type SourceFeature} from './streaming-vector-reader';
 import {validateStreamingTopology} from './streaming-vector-validation';
 
 type Slot={chunkIndex:number;firstFeatureIndex:number;lastFeatureIndex:number|null;records:number;accepted:number;quarantined:number;
   status:'ready'|'quarantined';bytes:number;ref:{key:string;sha256:string;bytes:number}|null;issueCode:string|null;resultSha256:string};
 
+function tabularChunkRows(width:number){
+  return Math.max(1,Math.min(TABULAR_LIMITS.chunkRows,Math.floor(TABULAR_LIMITS.columns/width)));
+}
+
 /** A single SQL watermark is the ordered publication authority; SSE cursors stay per subscriber. */
-export async function publishStreamingPrefixTx(client:PoolClient,input:StreamingVectorInput){
+export async function publishStreamingPrefixTx(client:PoolClient,input:AnyStreamingInput){
   while(true){
     const state=(await client.query('SELECT next_publish_index FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
     const slot=(await client.query('SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1 AND source_revision=$2 AND chunk_index=$3 FOR UPDATE',
@@ -31,7 +36,7 @@ export async function publishStreamingPrefixTx(client:PoolClient,input:Streaming
   }
 }
 
-async function storeChunk(input:StreamingVectorInput,index:number,records:StreamingVectorRecord[]){
+async function storeChunk(input:AnyStreamingInput,index:number,records:StreamingVectorRecord[]){
   const payload=StreamingVectorPayloadSchema.parse({version:limits.version,jobId:input.jobId,sourceId:input.sourceId,
     sourceRevision:input.sourceRevision,sourceSha256:input.sourceSha256,chunkIndex:index,records});
   const bytes=Buffer.from(JSON.stringify(payload));
@@ -49,7 +54,7 @@ async function storeChunk(input:StreamingVectorInput,index:number,records:Stream
     bytes:bytes.length,ref:{key,sha256:hash,bytes:bytes.length},issueCode:null,resultSha256:hash} satisfies Slot;
 }
 
-async function acceptSlot(input:StreamingVectorInput,attempt:UspJobAttempt,slot:Slot){
+async function acceptSlot(input:AnyStreamingInput,attempt:UspJobAttempt,slot:Slot){
   await transaction(async client=>{
     await assertStreamingInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
     const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
@@ -77,7 +82,8 @@ async function acceptSlot(input:StreamingVectorInput,attempt:UspJobAttempt,slot:
   });
 }
 
-async function terminal(input:StreamingVectorInput,attempt:UspJobAttempt,code:string,nextIndex:number,nextFeatureIndex:number,stale=false){
+async function terminal(input:AnyStreamingInput,attempt:UspJobAttempt,code:string,
+  nextIndex:number,nextFeatureIndex:number,stale=false){
   await transaction(async client=>{
     if(stale)await lockStreamingRowsTx(client,input.caseId,input.sourceId);
     else await assertStreamingInputTx(client,input);
@@ -103,7 +109,7 @@ async function terminal(input:StreamingVectorInput,attempt:UspJobAttempt,code:st
   });
 }
 
-async function retry(input:StreamingVectorInput,attempt:UspJobAttempt,code:string){
+async function retry(input:AnyStreamingInput,attempt:UspJobAttempt,code:string){
   await transaction(async client=>{
     await assertStreamingInputTx(client,input);
     await assertUspJobAttemptTx(client,attempt);
@@ -124,7 +130,7 @@ async function retry(input:StreamingVectorInput,attempt:UspJobAttempt,code:strin
 export async function runStreamingVectorJob(jobId:string){
   const job=(await query("SELECT * FROM jobs WHERE id=$1 AND operation='streaming-vector'",[jobId])).rows[0];
   if(!job||!['queued','running'].includes(job.status))return;
-  const input=StreamingVectorInputSchema.parse(job.payload);
+  const input=AnyStreamingInputSchema.parse(job.payload);
   let attempt:UspJobAttempt;
   try{attempt=await claimUspJobAttempt(jobId,`streaming-vector:${randomUUID()}`,client=>assertStreamingInputTx(client,input).then(()=>{}));}
   catch(error){
@@ -182,18 +188,23 @@ export async function runStreamingVectorJob(jobId:string){
     const object=await openObjectStream(input.objectKey,input.sourceBytes,limits.readMs,etag);
     let result;
     try{
-      result=await readStreamingFeatures(object.body,input.framing,async item=>{
-        await pulse();const record=sourceRecord(item);nextFeatureIndex=item.index+1;
-        if(record.disposition==='accepted'){
+      const consume=async(item:SourceFeature)=>{
+        await pulse();const record=input.framing==='tabular'?tabularSourceRecord(item):sourceRecord(item);
+        nextFeatureIndex=item.index+1;
+        if(record.disposition==='accepted'&&input.framing!=='tabular'){
           const issue=await validateStreamingTopology((record.feature as {geometry:unknown}).geometry);
           if(issue){record.disposition='quarantined';record.issueCode=issue;record.feature=null;}
         }
+        const width=input.framing==='tabular'?(item.feature as {headers:string[]}).headers.length:1;
+        const countLimit=input.framing==='tabular'?tabularChunkRows(width):limits.chunkFeatures;
         let recordBytes=Buffer.byteLength(JSON.stringify(record));
         if(recordBytes>limits.chunkBytes-2048){record.feature=null;record.disposition='quarantined';record.issueCode='DRAFT_UNIT_BUDGET';recordBytes=Buffer.byteLength(JSON.stringify(record));}
-        if(pending.length&&(pending.length>=limits.chunkFeatures||pendingBytes+recordBytes+2048>limits.chunkBytes))await flush();
+        if(pending.length&&(pending.length>=countLimit||pendingBytes+recordBytes+2048>limits.chunkBytes))await flush();
         pending.push(record);pendingBytes+=recordBytes;
-        if(pending.length>=limits.chunkFeatures)await flush();
-      });
+        if(pending.length>=countLimit)await flush();
+      };
+      result=input.framing==='tabular'?await readStreamingTabular(object.body,input.tabular,consume)
+        :await readStreamingFeatures(object.body,input.framing,consume);
     }finally{object.body.destroy();}
     if(result.bytes!==input.sourceBytes||result.sha256!==input.sourceSha256)
       throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The retained original differs from its pinned hash or byte count.');

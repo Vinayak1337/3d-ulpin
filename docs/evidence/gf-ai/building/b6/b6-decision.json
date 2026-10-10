@@ -1,0 +1,213 @@
+{
+  "schema": "building-b6-decision/1",
+  "status": "rejected_on_dev",
+  "task": "building_mask_transfer_2",
+  "decidedBy": "preregistered DEV rule, before any transfer-2 evaluation",
+  "rule": {
+    "selection": "Highest .5 DEV recall among precision>=.75;ties:precision then earlier epoch",
+    "win": [
+      "DEV recall strictly higher than epoch 4;",
+      "transfer-2 recall strictly higher than paired epoch 4;",
+      "candidate precision >= 0.75 on both"
+    ],
+    "winFlags": {
+      "dev_recall_strictly_higher_than_epoch4": true,
+      "transfer_2_recall_strictly_higher_than_paired_epoch4": true,
+      "candidate_precision_min_on_both": 0.75,
+      "no_karnataka_holdout_claim": true,
+      "registration_only_after_new_hash_bound_parity_v2": "candidate/inactive/test_only/uncalibrated"
+    },
+    "source": "docs/evidence/gf-ai/preregistration.json (building_mask_transfer_2.candidate_selection, .win)"
+  },
+  "bestEpochByRule": {
+    "epoch": 3,
+    "recall": 0.6397841289145637,
+    "precision": 0.8663921770458054,
+    "reason": "highest .5 DEV recall among epochs with precision >= .75"
+  },
+  "epoch4B3Reference": {
+    "model": "rfdetr-ramp-ka-seg-medium-b3-v1",
+    "resolution": 432,
+    "weightsSha256": "b6ef62646ed85d8102e37561324cee1dfc7e8c5e57e10c207a37927544ad5172",
+    "recall": 0.6624353906962602,
+    "precision": 0.8544117647058823,
+    "emptyChipFalseBuildings": 20,
+    "emptyChipsWithFalseBuildings": 13,
+    "emptyChips": 305,
+    "sizeRecall": {
+      "[0,16)": 0.0,
+      "[16,64)": 0.1269,
+      "[64,128)": 0.2979,
+      "[128,256)": 0.3953,
+      "[256,512)": 0.6013,
+      "[512,1024)": 0.7591,
+      "[1024,inf)": 0.826
+    },
+    "sources": [
+      "docs/evidence/gf-ai/building/b3-ka-run1-20261010-epoch004-dev-t050/result.json (precision, recall, empty chips)",
+      "docs/evidence/gf-ai/building/b5-recall-diagnosis-20261010/result.json (size bins, same weights hash)"
+    ]
+  },
+  "verdict": {
+    "devRecallStrictlyHigherThanEpoch4": false,
+    "bestRecallGap": -0.0227,
+    "smallRoofBins": [
+      "Not improved, epoch-3 B6 vs epoch-4 B3 recall:",
+      "128-256 px 0.352 vs 0.395; 64-128 px 0.257 vs 0.298; 16-64 px 0.106 vs 0.127"
+    ],
+    "hypothesis": "Higher input resolution raises small-roof recall: refuted for this recipe"
+  },
+  "b6Run": {
+    "runId": "b6b-train-r672",
+    "resolution": 672,
+    "backboneRecomputation": true,
+    "stoppedAtEpoch": 6,
+    "stopReason": "recall patience 3",
+    "runConfigSha256": "1899467576c5634630c54c5b94702bd55f591222d2609c9774e895f1aed852e5",
+    "resultSha256": "9e81e620bb84419810bc6a910f8ad7ece6fc3b831213f96b1ceda701bc4ed093",
+    "devSelectionSha256": "fb014278747a7c1992e7976b704be9684e18674a313d14f946494e923ccd431f",
+    "lossRevision": "ulpin-rfdetr-empty-mask-scalar-chunked/2",
+    "checkpoints": "E:/BhuAayam-data/ml/runs/b6b-train-r672 (outside Git; not registered, not exported)"
+  },
+  "devEpochs": [
+    {
+      "epoch": 1,
+      "precision": 0.8789605653065876,
+      "recall": 0.5861964122833688,
+      "f1": 0.703328773369813,
+      "emptyChipFalseBuildings": 12,
+      "emptyChipsWithFalseBuildings": 10,
+      "emptyChips": 305,
+      "sizeRecall": {
+        "[0,16)": 0.0,
+        "[16,64)": 0.0544,
+        "[64,128)": 0.183,
+        "[128,256)": 0.2896,
+        "[256,512)": 0.5049,
+        "[512,1024)": 0.6839,
+        "[1024,inf)": 0.7789
+      },
+      "devRunId": "b6b-train-r672-epoch001-dev-t050",
+      "peakReservedBytes": 5179965440
+    },
+    {
+      "epoch": 2,
+      "precision": 0.8728767716109488,
+      "recall": 0.6132563089084828,
+      "f1": 0.7203893030938882,
+      "emptyChipFalseBuildings": 11,
+      "emptyChipsWithFalseBuildings": 8,
+      "emptyChips": 305,
+      "sizeRecall": {
+        "[0,16)": 0.0,
+        "[16,64)": 0.0876,
+        "[64,128)": 0.2326,
+        "[128,256)": 0.3329,
+        "[256,512)": 0.5463,
+        "[512,1024)": 0.7029,
+        "[1024,inf)": 0.7937
+      },
+      "devRunId": "b6b-train-r672-epoch002-dev-t050",
+      "peakReservedBytes": 5354029056
+    },
+    {
+      "epoch": 3,
+      "precision": 0.8663921770458054,
+      "recall": 0.6397841289145637,
+      "f1": 0.7360412749770452,
+      "emptyChipFalseBuildings": 10,
+      "emptyChipsWithFalseBuildings": 8,
+      "emptyChips": 305,
+      "sizeRecall": {
+        "[0,16)": 0.0,
+        "[16,64)": 0.1057,
+        "[64,128)": 0.2567,
+        "[128,256)": 0.352,
+        "[256,512)": 0.5787,
+        "[512,1024)": 0.7383,
+        "[1024,inf)": 0.8124
+      },
+      "devRunId": "b6b-train-r672-epoch003-dev-t050",
+      "peakReservedBytes": 5354029056
+    },
+    {
+      "epoch": 4,
+      "precision": 0.8637751342246552,
+      "recall": 0.6236698084524172,
+      "f1": 0.72434341205032,
+      "emptyChipFalseBuildings": 10,
+      "emptyChipsWithFalseBuildings": 8,
+      "emptyChips": 305,
+      "sizeRecall": {
+        "[0,16)": 0.0,
+        "[16,64)": 0.1088,
+        "[64,128)": 0.2695,
+        "[128,256)": 0.3533,
+        "[256,512)": 0.561,
+        "[512,1024)": 0.717,
+        "[1024,inf)": 0.7888
+      },
+      "devRunId": "b6b-train-r672-epoch004-dev-t050",
+      "peakReservedBytes": 5354029056
+    },
+    {
+      "epoch": 5,
+      "precision": 0.8775328434647072,
+      "recall": 0.5991182730313165,
+      "f1": 0.7120787785707833,
+      "emptyChipFalseBuildings": 19,
+      "emptyChipsWithFalseBuildings": 13,
+      "emptyChips": 305,
+      "sizeRecall": {
+        "[0,16)": 0.0,
+        "[16,64)": 0.0665,
+        "[64,128)": 0.2057,
+        "[128,256)": 0.289,
+        "[256,512)": 0.5041,
+        "[512,1024)": 0.6895,
+        "[1024,inf)": 0.8109
+      },
+      "devRunId": "b6b-train-r672-epoch005-dev-t050",
+      "peakReservedBytes": 5387583488
+    },
+    {
+      "epoch": 6,
+      "precision": 0.8764260582151615,
+      "recall": 0.6248099726360596,
+      "f1": 0.729531839360994,
+      "emptyChipFalseBuildings": 15,
+      "emptyChipsWithFalseBuildings": 12,
+      "emptyChips": 305,
+      "sizeRecall": {
+        "[0,16)": 0.0,
+        "[16,64)": 0.0785,
+        "[64,128)": 0.2184,
+        "[128,256)": 0.3234,
+        "[256,512)": 0.5467,
+        "[512,1024)": 0.7199,
+        "[1024,inf)": 0.8216
+      },
+      "devRunId": "b6b-train-r672-epoch006-dev-t050",
+      "peakReservedBytes": 5387583488
+    }
+  ],
+  "transferEvaluations": 0,
+  "transfer2SlotsRemaining": [
+    "epoch4",
+    "b6"
+  ],
+  "transfer2Note": [
+    "Both slots unspent and still reserved for a future paired comparison;",
+    "transfer-2-runs.jsonl untouched."
+  ],
+  "demoCandidate": "epoch 4 (B3, 432 px), inactive, test-only, uncalibrated",
+  "revisitOnlyWith": {
+    "rule": "A different principal factor, not another resolution bump; chosen only after a fresh diagnosis.",
+    "candidates": [
+      "target masks at the input resolution instead of 432",
+      "tile-zoom training (2x crops) with matching tiled serving",
+      "small-object-weighted matching cost"
+    ]
+  },
+  "closedSets": "Karnataka HOLDOUT, Coxs Bazar and Chittagong untouched; DEV only."
+}

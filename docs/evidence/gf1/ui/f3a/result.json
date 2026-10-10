@@ -1,0 +1,77 @@
+{
+  "task": "F3a",
+  "gates": ["GF1 (UI side)", "GF-AGENT (UI side)"],
+  "status": "recorded floors and units shown read-only; table review fixes verified; no complete release-gate claim",
+  "branch": "task/f3a-recorded-units",
+  "base": "staging 4d03be3f, merged once on the lead's instruction",
+  "api": "http://127.0.0.1:3194",
+  "viewport": [1440, 900],
+  "writes": { "live": 0, "blockedByCapture": 0, "runtimeStartedOrStopped": false },
+  "liveReads": {
+    "6f95d04e-2067-4ac8-a3c2-6cc21ea46325": { "name": "TOWER 3", "levels": 0, "recordedFloors": 0, "shown": "empty state" },
+    "e8777ffc-9409-4129-bacf-f680160d8795": { "name": "Magnolia Residency", "levels": 3, "recordedFloors": 0, "shown": "empty state" }
+  },
+  "interceptedControls": {
+    "responses.json": "canonical building without and with a code, from the K4b offline protocol double and the K4c request literals; contract-valid; the code is a test value, not an issued identity",
+    "table-responses.json": "F2b table controls with current: true, reasons: [], plus one stale control (current: false, case_advanced); contract-valid",
+    "generator": "pnpm exec tsx apps/studio/scripts/f3a-fixtures.ts"
+  },
+  "panel": {
+    "floor": "label literal, Reviewed, origin line, lower and upper height Unknown, citation control",
+    "unit": "label literal, kind Unknown, area Unknown, citation control, code or No code assigned",
+    "gapSentence": "the server's sentence, shown once; found by its opening words because gaps carry no code",
+    "linkedFloor": "listed once under its schedule row (model test; no control response holds one)",
+    "notShown": ["floor number or order", "use", "rights", "parcel", "ULPIN", "any shape"]
+  },
+  "evidenceViewer": {
+    "opened": "existing viewer, cited source haryana-2831-tower3-plan1.pdf, page-and-region locator as text",
+    "showsPage": false,
+    "observed": "file view with the start of the PDF bytes; GET /sources/{id}/pages answers 503 DOCUMENT_PAGES_RUNTIME_UNAVAILABLE on the demo runtime and the viewer has no region locator",
+    "changed": false
+  },
+  "zoom": { "method": "CSS zoom 200%", "clippedLabels": 0, "focusOutline": "2px", "certification": false },
+  "tableReview": {
+    "chunks": 3, "chunksWithQuestions": 1, "questionBadges": 16, "columns": 16, "sharedReasonColumns": 15,
+    "stale": { "reasons": ["case_advanced"], "notice": true, "approveShown": false, "sharedReasonShown": false },
+    "current": { "approveShown": true }
+  },
+  "identityFiles": {
+    "AssignDialog.tsx": "local data: the code is generated in the browser by local/workflow.ts and kept in IndexedDB",
+    "CardDialog.tsx": "local data: reads the local workflow; its facts come through cardFacts.tsx",
+    "Qr.tsx": "neither: draws the string it is given",
+    "cardFacts.tsx": "mixed: live register and ledger reads, with the code and assigned date from the local workflow"
+  },
+  "screenshots": {
+    "01-live-tower-empty.png": "live, empty state",
+    "02-live-magnolia-empty.png": "live, empty state",
+    "03-recorded-without-code.png": "intercepted, labelled; no code",
+    "04-recorded-with-code.png": "intercepted, labelled; the code is a test value",
+    "05-citation-evidence-viewer.png": "intercepted canonical, live source reads; viewer file view",
+    "06-zoom-200-percent.png": "intercepted, labelled; CSS 200% zoom",
+    "07-table-shared-reason.png": "intercepted, labelled; three chunks, questions in the first only",
+    "08-table-shared-reason-confirmation.png": "intercepted, labelled; proposal not sent",
+    "09-table-stale-notice.png": "intercepted, labelled; stale result"
+  },
+  "checks": {
+    "studioTypecheck": 0,
+    "studioTest": 0,
+    "studioTestsPassed": 93,
+    "unusedSymbols": 0,
+    "fixtureGenerator": 0,
+    "browserCapture": 0,
+    "browserPageErrors": 0,
+    "uiDesignScanWeb": 0,
+    "uiDesignScanStudio": 0,
+    "gitDiffCheck": 0,
+    "linesOver120InCreatedFiles": 0
+  },
+  "gaps": [
+    "no live building holds a source-recorded floor or unit, so the populated panel is intercepted only",
+    "canonical gaps carry no code or kind",
+    "a floor linked to a schedule row loses its own label, citation and recordState in the canonical record",
+    "canonical citations carry no source file name",
+    "the evidence viewer cannot show the cited page region (not owned; document pages unavailable on the demo runtime)",
+    "the review columns above the panel still collapse at 200% zoom (not owned)",
+    "an approval dialog that is already open is not closed when a result turns stale"
+  ]
+}

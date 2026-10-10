@@ -1,0 +1,353 @@
+{ "servedCommit": "83965a21078fede5a4f740ced05de40836e68a30", "startedAt": "2026-10-10T14:22:42.345Z", "totalMs": 12966,
+"mode": "reads only (GET, and 2 named POST reads)", "namedPostReads": [ { "name": "identityResolve",
+"route": "/api/v1/usp/identity/resolve", "writes": false,
+"code": "packages/server/src/modules/usp/project-identity.ts:346-397" }, { "name": "cardList",
+"route": "/api/v1/usp/property-cards/list", "writes": false,
+"code": "packages/server/src/modules/usp/packets/card-listing.ts:109-128" } ], "steps": [ { "id": "doctor",
+"title": "Live stack doctor", "state": "pass", "ms": 6530, "expected": "Doctor 0; gateway disabled; served HEAD read",
+"observed": { "exitCode": 0, "gatewayDisabled": true, "servedCommit": "83965a21078fede5a4f740ced05de40836e68a30",
+"servedCommitSource": "git HEAD of doctor-checked serving checkout; health has no commit field", "health": {
+"status": 200, "ok": true, "readiness": "structurally_ready" }, "failedComponents": [] }, "evidence": [ {
+"method": "GET", "route": [ "api", "v1", "health" ], "params": {}, "query": {}, "reads": [ { "params": {},
+"status": 200, "code": null, "bodySha256": "c73cb6a71c7ad3d8c444e0bcc6f93044fe472f2e51dfbb8b2aae6a21062e3e55" } ] } ],
+"promptId": "P0.3" }, { "id": "installed", "title": "Story inputs installed", "state": "pass", "ms": 35,
+"expected": "Pinned areas/buildings/cases exist", "observed": { "counts": { "areas": 4, "registry": 4, "sites": 4,
+"cases": 11 }, "missing": [] }, "evidence": [ { "method": "GET", "route": [ "api", "v1", "areas" ], "params": {},
+"query": {}, "reads": [ { "params": {}, "status": 200, "code": null,
+"bodySha256": "0eb4d3893b8920b7b95445627b51c8590d90a3923a3bc40c300608047a750650" } ] }, { "method": "GET", "route": [
+"api", "v1", "registry" ], "params": {}, "query": {}, "reads": [ { "params": {}, "status": 200, "code": null,
+"bodySha256": "e76a3472b50b350b5434d3957a025a0bd24c07cfd22bc5257b1263c5749a2ed7" } ] }, { "method": "GET", "route": [
+"api", "v1", "sites" ], "params": {}, "query": {}, "reads": [ { "params": {}, "status": 200, "code": null,
+"bodySha256": "169265af1981500cb764ec111416cd6388a2e2bd51e24ddc045d1fee0bf7b1ef" } ] }, { "method": "GET", "route": [
+"api", "v1", "cases" ], "params": {}, "query": {}, "reads": [ { "params": {}, "status": 200, "code": null,
+"bodySha256": "da025f967ae1b7ee6482f460df0044ff7c2ab715f207127835ccb49c4a613597" } ] } ], "promptId": "P3.1" }, {
+"id": "canonical", "title": "Canonical values and citations", "state": "pass", "ms": 2056,
+"expected": "200; frames; supported/reviewed values cited; unknown is null", "observed": { "areas": [ {
+"areaId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b", "frameAreaId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b", "buildings": 1,
+"valuesPerState": { "source_supported": 5, "unknown": 10, "candidate": 2 } }, {
+"areaId": "e5742536-cedd-455b-b59d-c8172875c6f2", "frameAreaId": "e5742536-cedd-455b-b59d-c8172875c6f2", "buildings": 1,
+"valuesPerState": { "source_supported": 1, "unknown": 2 } }, { "areaId": "cb24dc86-2b91-4793-9586-24e8a443b8d8",
+"frameAreaId": "cb24dc86-2b91-4793-9586-24e8a443b8d8", "buildings": 1, "valuesPerState": { "candidate": 2, "unknown": 1
+} } ], "buildings": [ { "buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+"frameAreaId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b", "recordState": "reviewed", "valuesPerState": {
+"source_supported": 1, "unknown": 10, "conflicting": 3, "reviewed": 3, "absent": 2, "candidate": 6 } }, {
+"buildingId": "e8777ffc-9409-4129-bacf-f680160d8795", "frameAreaId": "e5742536-cedd-455b-b59d-c8172875c6f2",
+"recordState": "reviewed", "valuesPerState": { "source_supported": 1, "unknown": 30, "reviewed": 7 } } ] },
+"evidence": [ { "method": "GET", "route": [ "api", "v1", "areas", "{areaId}", "canonical" ], "params": {}, "query": {},
+"reads": [ { "params": { "areaId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b" }, "status": 200, "code": null,
+"bodySha256": "cec493042145ce318b8522cb73e13ad22c656b2598d81f856b551936ff7c3e52" }, { "params": {
+"areaId": "e5742536-cedd-455b-b59d-c8172875c6f2" }, "status": 200, "code": null,
+"bodySha256": "817088943f83f6ce3ce328aae97f3f2376ea96e2b504ba02a98ea2df82ccfae6" }, { "params": {
+"areaId": "cb24dc86-2b91-4793-9586-24e8a443b8d8" }, "status": 200, "code": null,
+"bodySha256": "10a59b01cd5d076c4d531d363e22baf67f2895ed0ecae57335fecdd760b129b3" } ] }, { "method": "GET", "route": [
+"api", "v1", "buildings", "{buildingId}", "canonical" ], "params": {}, "query": {}, "reads": [ { "params": {
+"buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325" }, "status": 200, "code": null,
+"bodySha256": "5a32dbce07e1356b19999b49ac331969b140fc2a5ab27d3f4072be6fce613584" }, { "params": {
+"buildingId": "e8777ffc-9409-4129-bacf-f680160d8795" }, "status": 200, "code": null,
+"bodySha256": "2250c9617a4d80495a45911a752d188a5c13b7672c4cdf1909929633c4c21d09" } ] } ], "promptId": "P1.1" }, {
+"id": "roofprints", "title": "Retained roof candidates, not registry truth", "state": "pass", "ms": 16,
+"expected": "Model and test_only original lineage; decided candidates reviewed; no unreviewed registry admission",
+"observed": { "candidates": 80, "decided": 4, "accepted": 1, "rejected": 3, "modelIds": [
+"rfdetr-ramp-ka-seg-medium-b3-v1" ], "testOnlyChips": 22, "registryRecords": 0, "unreviewedRegistryFacts": 0 },
+"evidence": [ { "method": "GET", "route": [ "api", "v1", "areas", "{areaId}", "canonical" ], "params": {
+"areaId": "cb24dc86-2b91-4793-9586-24e8a443b8d8" }, "query": {}, "reads": [ { "params": {}, "status": 200, "code": null,
+"bodySha256": "10a59b01cd5d076c4d531d363e22baf67f2895ed0ecae57335fecdd760b129b3" } ] }, { "method": "GET", "route": [
+"api", "v1", "sites", "{siteId}" ], "params": { "siteId": "cb24dc86-2b91-4793-9586-24e8a443b8d8" }, "query": {},
+"reads": [ { "params": {}, "status": 200, "code": null,
+"bodySha256": "debfc0bbff0c0af1c2f026f6299d5302d52f9b50ee83d4a89ffbe1b500c0e5b8" } ] } ], "promptId": "P4.5" }, {
+"id": "storeys", "title": "Cited schedule conflict and reviewed inventory", "state": "pass", "ms": 1, "expected": {
+"towerAlternatives": [ "G+41", "G+42" ], "magnoliaLabels": [ "GROUND FLOOR PLAN", "FIRST FLOOR PLAN",
+"SECOND FLOOR PLAN" ] }, "observed": { "tower": "conflicting", "alternatives": [ { "label": "G+41", "citations": 1 }, {
+"label": "G+42", "citations": 1 } ], "magnolia": "reviewed", "reviewedLevels": 3 }, "evidence": [ { "method": "GET",
+"route": [ "api", "v1", "buildings", "{buildingId}", "canonical" ], "params": {}, "query": {}, "reads": [ { "params": {
+"buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325" }, "status": 200, "code": null,
+"bodySha256": "5a32dbce07e1356b19999b49ac331969b140fc2a5ab27d3f4072be6fce613584" }, { "params": {
+"buildingId": "e8777ffc-9409-4129-bacf-f680160d8795" }, "status": 200, "code": null,
+"bodySha256": "2250c9617a4d80495a45911a752d188a5c13b7672c4cdf1909929633c4c21d09" } ] } ], "promptId": "P5.1" }, {
+"id": "recorded", "title": "Source-stated floor and space", "state": "pass", "ms": 12,
+"expected": "One reviewed floor/space; pinned regions; no geometry, heights, area, use, parcels or rights",
+"observed": { "floorId": "614ca200-1f3d-48ac-b7db-d1b893b352a1", "spaceId": "46b7265e-ca88-402d-83df-065cf7c45140",
+"codeState": "reviewed", "recordedFloors": 1, "recordedSpaces": 1, "rights": 0, "parcels": 0, "geometry": "absent",
+"heights": "unknown", "area": "unknown", "use": "unknown" }, "evidence": [ { "method": "GET", "route": [ "api", "v1",
+"buildings", "{buildingId}", "canonical" ], "params": { "buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325" },
+"query": {}, "reads": [ { "params": {}, "status": 200, "code": null,
+"bodySha256": "5a32dbce07e1356b19999b49ac331969b140fc2a5ab27d3f4072be6fce613584" } ] }, { "method": "GET", "route": [
+"api", "v1", "sites", "{siteId}" ], "params": { "siteId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b" }, "query": {},
+"reads": [ { "params": {}, "status": 200, "code": null,
+"bodySha256": "1ea2ab44f4b6285ca0d6620c3730b06c0eba5ad80fb696fd9cb12720f8a695ba" } ] } ], "promptId": "K4b/R2" }, {
+"id": "tables", "title": "Retained TNHB mapping, freshness and questions", "state": "pass", "ms": 3376,
+"expected": "200; freshness fields; counts and learner lineage read, not inferred", "observed": { "http": 200,
+"current": false, "reasons": [ "converter_changed" ], "status": "completed", "columns": 90, "rows": 102, "chunks": 51,
+"askedColumns": 90, "openQuestions": 90, "questionScope": "retained unanswered column questions", "learnerVersions": [
+"v44" ], "learnerScope": "retained chunks, not the global learner head", "proposalOnly": true }, "evidence": [ {
+"method": "GET", "route": [ "api", "v1", "ingestion", "cases", "{caseId}", "sources", "{sourceId}", "profile" ],
+"params": { "caseId": "1ada7796-4e8f-4a19-9b7f-4414e80114c4", "sourceId": "d6dffbcc-7ee0-4467-9ddf-4952bd23c33c",
+"jobId": "4b48f457-2671-4937-a973-f040b5fc20d5" }, "query": {}, "reads": [ { "params": {}, "status": 200, "code": null,
+"bodySha256": "660b46b98f7f3bffeb6ea93d38bb300b9216478907046fd4fcce4f56221a85ca" } ] }, { "method": "GET", "route": [
+"api", "v1", "ingestion", "cases", "{caseId}", "sources", "{sourceId}", "chunk-mapping", "jobs", "{jobId}" ],
+"params": { "caseId": "1ada7796-4e8f-4a19-9b7f-4414e80114c4", "sourceId": "d6dffbcc-7ee0-4467-9ddf-4952bd23c33c",
+"jobId": "4b48f457-2671-4937-a973-f040b5fc20d5" }, "query": {}, "reads": [ { "params": {}, "status": 200, "code": null,
+"bodySha256": "391fee55a058e1abedf255f1c71cb65d47d54947de9a95d97ecbea72b13c2907" } ] }, { "method": "GET", "route": [
+"api", "v1", "ingestion", "cases", "{caseId}", "sources", "{sourceId}", "chunk-mapping", "jobs", "{jobId}", "chunks",
+"{chunkIndex}" ], "params": { "caseId": "1ada7796-4e8f-4a19-9b7f-4414e80114c4",
+"sourceId": "d6dffbcc-7ee0-4467-9ddf-4952bd23c33c", "jobId": "4b48f457-2671-4937-a973-f040b5fc20d5" }, "query": {},
+"reads": [ { "params": { "chunkIndex": 0 }, "status": 200, "code": null,
+"bodySha256": "1c90c6755dbb185c54e24a903ea2dfb195597ac2aa1097cf4216a8f15e7b7d06" }, { "params": { "chunkIndex": 1 },
+"status": 200, "code": null, "bodySha256": "d906ceaecb6d7e2770755c8aa674deea9b764ea0a026d4c06f5f4cabd288ae1e" }, {
+"params": { "chunkIndex": 2 }, "status": 200, "code": null,
+"bodySha256": "558899f6ad7b2a2f76ae7f55ff9f2e1e097affe8e0dca4ed235836131d43653c" }, { "params": { "chunkIndex": 3 },
+"status": 200, "code": null, "bodySha256": "cf6cbafcf99069556e73cc7ea9ef9d12a10891fc9c2a7ddf34aef6489c66de8b" }, {
+"params": { "chunkIndex": 4 }, "status": 200, "code": null,
+"bodySha256": "60574dcd7784cd94c4da192c741eaefb0423cdde6734b0b093b1790c658bd63a" }, { "params": { "chunkIndex": 5 },
+"status": 200, "code": null, "bodySha256": "3be317959e161c29acc020883ae63541059bfa2954d1f3d1a54754a0917651b9" }, {
+"params": { "chunkIndex": 6 }, "status": 200, "code": null,
+"bodySha256": "693d2ba2e695596655805772c84c679a53f1c5986ced501ea071b4530aa16481" }, { "params": { "chunkIndex": 7 },
+"status": 200, "code": null, "bodySha256": "eaefc443bcba02a99ae94e7eafdc16d8077837a03b6cc36f8bdb258b0afd469e" }, {
+"params": { "chunkIndex": 8 }, "status": 200, "code": null,
+"bodySha256": "e5610bec4ffcac52840004aeca3e0e093f9f1c21c91f9f2cb06fbc2636d7b36d" }, { "params": { "chunkIndex": 9 },
+"status": 200, "code": null, "bodySha256": "9c69a0b71ea1d6cacadd244e10e0ff1a61e8f548a9598dced46252df98d36b3b" }, {
+"params": { "chunkIndex": 10 }, "status": 200, "code": null,
+"bodySha256": "41e638224e59f4fddeabdff969e77c8010b8cdb22505f6ff3541fa7a5faec3bd" }, { "params": { "chunkIndex": 11 },
+"status": 200, "code": null, "bodySha256": "b4f458cff31f082aed505baa59ec54718c6d50af390857a6d825af38366e7675" }, {
+"params": { "chunkIndex": 12 }, "status": 200, "code": null,
+"bodySha256": "1db32e0317cee81033895178da45cc601fd459ea87dc7d83822723c1e76b6d73" }, { "params": { "chunkIndex": 13 },
+"status": 200, "code": null, "bodySha256": "7f92646cd2ae05c50edf66b7fe1271387069dafd239627f54b6905723b303a30" }, {
+"params": { "chunkIndex": 14 }, "status": 200, "code": null,
+"bodySha256": "303328a7134ff04bb7e63047699efeb411113e7313b502a71b43c9bc0189789e" }, { "params": { "chunkIndex": 15 },
+"status": 200, "code": null, "bodySha256": "9ef9818beb2a24fa6edcc1b8ffeab4c071123c5b52fd58089b70bb9189f34951" }, {
+"params": { "chunkIndex": 16 }, "status": 200, "code": null,
+"bodySha256": "3a922608033aabebf203187ece009450a7ec2ff8d955d9814add69ea7b3cb00d" }, { "params": { "chunkIndex": 17 },
+"status": 200, "code": null, "bodySha256": "26a42cb519f9ea5972ff99b8bc9db3a0942abbb8365bd489146af3ae49d9cb53" }, {
+"params": { "chunkIndex": 18 }, "status": 200, "code": null,
+"bodySha256": "790f7b22d60c3b6f08b56c271781e8351c1dd0f4203235e5fe1fba614d3b1b23" }, { "params": { "chunkIndex": 19 },
+"status": 200, "code": null, "bodySha256": "2d5aaf234208504a60cde3aa2ef5473a964b91fbc27f162c0f7129f3e41fb98d" }, {
+"params": { "chunkIndex": 20 }, "status": 200, "code": null,
+"bodySha256": "640eae08989bfc137043b1f30f9088f847ce0b77ca4ec8f597432d0795f1d645" }, { "params": { "chunkIndex": 21 },
+"status": 200, "code": null, "bodySha256": "b32f5b9ce3c65f8d744ba700df5eebe8bf36f928b80da1d31c2ab39ffb61d095" }, {
+"params": { "chunkIndex": 22 }, "status": 200, "code": null,
+"bodySha256": "09ab478200d16c4004ccc988e03004723e52e4c7bee6498d429cff68ed2e0389" }, { "params": { "chunkIndex": 23 },
+"status": 200, "code": null, "bodySha256": "81f95d93a987ea9e5e1fa918c404d4935f64b2f3e1733636fda467d6e570ad4c" }, {
+"params": { "chunkIndex": 24 }, "status": 200, "code": null,
+"bodySha256": "b4ffd4df4c6aa33140cbcbb1d7251a4544c1f22d8b4241ad1c28fbfea8926018" }, { "params": { "chunkIndex": 25 },
+"status": 200, "code": null, "bodySha256": "2847055630038768ea6b3198be39e25bf2ebeaba54880b1cb672719e67b6bd61" }, {
+"params": { "chunkIndex": 26 }, "status": 200, "code": null,
+"bodySha256": "d8678d35ea158f230371902a34278691d5089841ca10dca21ed6e555ab34f8cc" }, { "params": { "chunkIndex": 27 },
+"status": 200, "code": null, "bodySha256": "8c0811f694f5275107c690d9e7d86613fce7966d69ee0eb1b28225ec0ccbf226" }, {
+"params": { "chunkIndex": 28 }, "status": 200, "code": null,
+"bodySha256": "555631e1ffac6ef880e269d8643cc336ffc0192bd9ae3754f6a5f4d9f9eb3740" }, { "params": { "chunkIndex": 29 },
+"status": 200, "code": null, "bodySha256": "68c838c3cccfa47bde575f279981ce1d5ace230427ca269a0fa6a33113691326" }, {
+"params": { "chunkIndex": 30 }, "status": 200, "code": null,
+"bodySha256": "2eb259dbe779620956bd67fb9883b03e2b820245796b173ffc2d23f075699ae4" }, { "params": { "chunkIndex": 31 },
+"status": 200, "code": null, "bodySha256": "100fa5c67c7fdbf531ae5db8d1accc5e93cbc2fba90eecdfe5ff075580370674" }, {
+"params": { "chunkIndex": 32 }, "status": 200, "code": null,
+"bodySha256": "80d470d57831a52232666d595e44a57a85fe542d1ae665581783254dce1697f5" }, { "params": { "chunkIndex": 33 },
+"status": 200, "code": null, "bodySha256": "e94e194a776c264e1d9a35f7e92b897a02180ecd4a53d229987f7a9cb4bb8723" }, {
+"params": { "chunkIndex": 34 }, "status": 200, "code": null,
+"bodySha256": "e13a3f79b0fd0053967f8b135df54f83bf119cac404cea286827e7d3ef5a31d9" }, { "params": { "chunkIndex": 35 },
+"status": 200, "code": null, "bodySha256": "2eaafbf9f9280b4bbb430771d9e3f9296ac15a7341271904b448bf695355a032" }, {
+"params": { "chunkIndex": 36 }, "status": 200, "code": null,
+"bodySha256": "4d2bb844c0b186b1e9abf46ad1ac91d7333bf7998bb04d681af78a2b16ff8d09" }, { "params": { "chunkIndex": 37 },
+"status": 200, "code": null, "bodySha256": "06b2c0df7c07352063c455fb33484bf7defa5ee0f028c13e12626b175e52fa35" }, {
+"params": { "chunkIndex": 38 }, "status": 200, "code": null,
+"bodySha256": "09e4ee17f929620c7aeeeb67cc3e97632b4b493a676f23d6d622c2812cad844e" }, { "params": { "chunkIndex": 39 },
+"status": 200, "code": null, "bodySha256": "3e1c59e216abd0678677e270f8db58ee47e8810fd4fa2f375e44c4b214f5460c" }, {
+"params": { "chunkIndex": 40 }, "status": 200, "code": null,
+"bodySha256": "d2ec21599991d70eab325a9b3cfa9ebc03649c72cc1191cddbd1c71fba6228ca" }, { "params": { "chunkIndex": 41 },
+"status": 200, "code": null, "bodySha256": "b9d799a3c48588c0c084a5e32b23098121effac8ac0ef3b381fd4a3e22ae1fa1" }, {
+"params": { "chunkIndex": 42 }, "status": 200, "code": null,
+"bodySha256": "aad0fbeb9f4648591b495a7c29dfcf56121d064202a64889d192f523c8d66d51" }, { "params": { "chunkIndex": 43 },
+"status": 200, "code": null, "bodySha256": "0e919ed5093613a6a3dd4e4741d315987c3c12aac02b1aa81a170366e0c0c44d" }, {
+"params": { "chunkIndex": 44 }, "status": 200, "code": null,
+"bodySha256": "ad4560b2580e1405171091c54b563e147af07454f9b2761cd0e4f66e878dce56" }, { "params": { "chunkIndex": 45 },
+"status": 200, "code": null, "bodySha256": "7398442a55a57cd4560042f6fbffa2fbe2d2c9cbdf2f4ef32bcf291005377de9" }, {
+"params": { "chunkIndex": 46 }, "status": 200, "code": null,
+"bodySha256": "b9d2bf51331f27e87538a4577679b20eb562dc528e9399128c3380f00845e5ea" }, { "params": { "chunkIndex": 47 },
+"status": 200, "code": null, "bodySha256": "3fc106af2af5c85d6715336e6c59cddb4310b0102491368eed8cd38e7628eef5" }, {
+"params": { "chunkIndex": 48 }, "status": 200, "code": null,
+"bodySha256": "96b239c20cb38473e9b5806f12012b19c63456603b9f3638e785a76672a1d046" }, { "params": { "chunkIndex": 49 },
+"status": 200, "code": null, "bodySha256": "bec25e27faf454ef67ea57e8d0c8927b16181d4f8e331b3ae918b6e97e836409" }, {
+"params": { "chunkIndex": 50 }, "status": 200, "code": null,
+"bodySha256": "162901666151ec84ef84bf8d79fa45ac8b12dd9d3033bc4f57cc3c389233ddcf" } ] } ], "promptId": "P3.4/A3d" }, {
+"id": "register", "title": "Both building registers and ledgers", "state": "pass", "ms": 506,
+"expected": "200 with cited facts, or the exact known K6 source refusal", "observed": [ {
+"buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325", "kind": "register", "status": 200, "citedRecords": 3 }, {
+"buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325", "kind": "ledger", "status": 200, "citedRecords": 1 }, {
+"buildingId": "e8777ffc-9409-4129-bacf-f680160d8795", "kind": "register", "status": 200, "citedRecords": 1 }, {
+"buildingId": "e8777ffc-9409-4129-bacf-f680160d8795", "kind": "ledger", "status": 200, "citedRecords": 0 } ],
+"evidence": [ { "method": "GET", "route": [ "api", "v1", "buildings", "{buildingId}", "register" ], "params": {},
+"query": { "format": "json" }, "reads": [ { "params": { "buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325" },
+"status": 200, "code": null, "bodySha256": "bb4956391dc35f126705d15292f46f4e678445fbb685978e13d637f1b86786b3" }, {
+"params": { "buildingId": "e8777ffc-9409-4129-bacf-f680160d8795" }, "status": 200, "code": null,
+"bodySha256": "b5e923ab0c66e18cbbc6e65b59e222fb4a604076685e638270fe65986c0f5952" } ] }, { "method": "GET", "route": [
+"api", "v1", "buildings", "{buildingId}", "ledger" ], "params": {}, "query": {}, "reads": [ { "params": {
+"buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325" }, "status": 200, "code": null,
+"bodySha256": "5808beb834f53ae1b5b5875883815e6a0d301d5207cd6f71ee6a3a5a1abb0226" }, { "params": {
+"buildingId": "e8777ffc-9409-4129-bacf-f680160d8795" }, "status": 200, "code": null,
+"bodySha256": "3e58e20feb3584b778bfcdc75f6f60e5b65b152716dfff524264cc243700c14c" } ] } ], "promptId": "K6" }, {
+"id": "identity", "title": "Exact snapshot identity matches canonical unit", "state": "pass", "ms": 72,
+"expected": "Newest answering scope resolves the reviewed code, record and canonical version", "observed": {
+"canonical": { "recordId": "46b7265e-ca88-402d-83df-065cf7c45140", "code": "P3-YBF8MA4FYHGFRA0CERYJ-T3",
+"state": "reviewed", "version": 2 }, "resolved": { "recordId": "46b7265e-ca88-402d-83df-065cf7c45140",
+"projectCode": "P3-YBF8MA4FYHGFRA0CERYJ-T3", "profile": "P3/1", "status": "assigned", "recordVersion": 2,
+"registryIdentifier": "3DU-7D9F1TW6R284QABK02NK7PJEGV:B001:F001:S001", "location": "NO-ANCHOR / ?01 / L? / ?001",
+"successors": [] }, "answeringScope": { "kind": "snapshot", "scopeId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b",
+"world": { "namespace": "world", "id": "registry-site/ed4bc3ae-1b02-412e-a5cc-02accf693a1b" },
+"manifestId": "a9fd4c9d-0a5a-4f4d-9032-527ab7857b78",
+"snapshotDigest": "b7bfa9d7c8f51583d80b985551161bdd758c47315b256267caf62e1d119ff7e0", "stage": "recorded" },
+"scopeIndex": 0, "fallbackToOlderScope": false, "attempts": [ { "scope": { "kind": "snapshot",
+"scopeId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b", "world": { "namespace": "world",
+"id": "registry-site/ed4bc3ae-1b02-412e-a5cc-02accf693a1b" }, "manifestId": "a9fd4c9d-0a5a-4f4d-9032-527ab7857b78",
+"snapshotDigest": "b7bfa9d7c8f51583d80b985551161bdd758c47315b256267caf62e1d119ff7e0", "stage": "recorded" },
+"status": 200, "code": null } ], "truncated": false, "unreadable": 0 }, "evidence": [ { "method": "GET", "route": [
+"api", "v1", "buildings", "{buildingId}", "snapshots" ], "params": {
+"buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325" }, "query": { "limit": 20 }, "reads": [ { "params": {},
+"status": 200, "code": null, "bodySha256": "22db8254b06152a54e32ff0fac5ebe8aef4b18ea8d1edb3fa9c39e68627c80fe" } ] }, {
+"method": "GET", "route": [ "api", "v1", "buildings", "{buildingId}", "canonical" ], "params": {
+"buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325" }, "query": {}, "reads": [ { "params": {}, "status": 200,
+"code": null, "bodySha256": "5a32dbce07e1356b19999b49ac331969b140fc2a5ab27d3f4072be6fce613584" } ] }, {
+"method": "POST", "route": [ "api", "v1", "usp", "identity", "resolve" ], "params": {}, "query": {}, "reads": [ {
+"params": {}, "status": 200, "code": null,
+"bodySha256": "c9e7bc93bc4223f1dd63e5eab1e85ec1d70d948336a8e562616e0001666b4df8",
+"requestSha256": "11d0fb832879421bac5e356f09cee2aa388273aa67679b5a28b800331b1fe38c" } ] } ], "promptId": "J1b/P5.5" }, {
+"id": "geometry", "title": "Real reviewed prism prerequisites", "state": "skipped", "ms": 1,
+"expected": "Placed reviewed geometry, cited heights and nonempty prisms; otherwise skipped", "observed": { "prisms": 0,
+"buildings": [ { "buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325", "prisms": 0, "footprint": "unknown",
+"height": "unknown", "reasons": [], "canonicalGapLines": [ [
+"Geometry-free building: footprint, placement, elevation and spatial analysis are not asses", "sed." ], [
+"Current sanction/as-built status and source-to-unit association remain unqualified." ], [
+"Footprint or geographic placement unavailable; no replacement geometry." ], [
+"Source outline role is unknown; it is not asserted as a ground footprint or roofprint." ], [
+"Measured base elevation unknown; scene uses building-relative bases, not surveyed terrain." ], [
+"Level schedule review does not create registry spaces, rights, parcel links or surveyed el", "evations." ], [
+"Source-stated labels are not unit boundaries, measured dimensions, rights or current sanct", "ioned status." ] ] }, {
+"buildingId": "e8777ffc-9409-4129-bacf-f680160d8795", "prisms": 0, "footprint": "unknown", "height": "unknown",
+"reasons": [ "level_limits_unknown", "level_limits_unknown", "level_limits_unknown" ], "canonicalGapLines": [ [
+"Geometry-free building: footprint, placement, elevation and spatial analysis are not asses", "sed." ], [
+"Current sanction/as-built status and source-to-unit association remain unqualified." ], [
+"Footprint or geographic placement unavailable; no replacement geometry." ], [
+"Source outline role is unknown; it is not asserted as a ground footprint or roofprint." ], [
+"Measured base elevation unknown; scene uses building-relative bases, not surveyed terrain." ], [
+"Level schedule review does not create registry spaces, rights, parcel links or surveyed el", "evations." ] ] } ],
+"missing": [ "Placed reviewed footprint and stated heights; no real prism inputs" ] }, "evidence": [ { "method": "GET",
+"route": [ "api", "v1", "buildings", "{buildingId}", "canonical" ], "params": {}, "query": {}, "reads": [ { "params": {
+"buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325" }, "status": 200, "code": null,
+"bodySha256": "5a32dbce07e1356b19999b49ac331969b140fc2a5ab27d3f4072be6fce613584" }, { "params": {
+"buildingId": "e8777ffc-9409-4129-bacf-f680160d8795" }, "status": 200, "code": null,
+"bodySha256": "2250c9617a4d80495a45911a752d188a5c13b7672c4cdf1909929633c4c21d09" } ] } ], "promptId": "P5.2/K4" }, {
+"id": "exchange", "title": "CityJSON export availability", "state": "skipped", "ms": 14,
+"expected": "Nonempty export only; no POST export in check mode", "observed": { "status": 404, "code": "NOT_FOUND",
+"missing": "No GET CityJSON export; POST export needs a snapshot and reviewed exchange frame" }, "evidence": [ {
+"method": "GET", "route": [ "api", "v1", "usp", "exchange", "cityjson", "export" ], "params": {}, "query": {},
+"reads": [ { "params": {}, "status": 404, "code": "NOT_FOUND",
+"bodySha256": "ab2f48d44a93b0ca23e9d9b3782d75b24f35b35adc61f5697f0be3ee71fb0c1d" } ] } ], "promptId": "P5.3" }, {
+"id": "card", "title": "Discover and verify every listed unit card", "state": "pass", "ms": 318,
+"expected": "Cards present; list and exact verification consistent; all checks pass; no revoked or expired revision",
+"observed": { "cards": [ { "cardId": "6a997624-6c8d-40a9-8215-8a671a74dc1c", "revision": 1, "integrity": "consistent",
+"result": "consistent", "checks": [ { "key": "card_body", "state": "pass", "reasonCode": null }, {
+"key": "stored_linkage", "state": "pass", "reasonCode": null }, { "key": "revision_chain", "state": "pass",
+"reasonCode": null }, { "key": "artifact_bytes", "state": "pass", "reasonCode": null }, { "key": "plan_link",
+"state": "pass", "reasonCode": null }, { "key": "packet_bytes", "state": "pass", "reasonCode": null } ], "snapshot": {
+"cardTargetRevision": 2, "currentTargetRevision": 2, "state": "same_revision" }, "lifecycle": { "latestRevision": 1,
+"superseded": false, "expiresAt": "2026-10-11T13:39:30.390Z", "expired": false, "revocation": null }, "expired": false,
+"expiresAt": "2026-10-11T13:39:30.390Z", "revoked": false, "signature": { "state": "not_assessed",
+"reasonCode": "NO_TRUSTED_KEY_POLICY" } } ], "truncated": false, "expectedCardPresent": true, "expired": false,
+"expiresAt": [ "2026-10-11T13:39:30.390Z" ], "answeringScope": { "kind": "snapshot",
+"scopeId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b", "world": { "namespace": "world",
+"id": "registry-site/ed4bc3ae-1b02-412e-a5cc-02accf693a1b" }, "manifestId": "a9fd4c9d-0a5a-4f4d-9032-527ab7857b78",
+"snapshotDigest": "b7bfa9d7c8f51583d80b985551161bdd758c47315b256267caf62e1d119ff7e0", "stage": "recorded" },
+"scopeIndex": 0, "fallbackToOlderScope": false, "attempts": [ { "scope": { "kind": "snapshot",
+"scopeId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b", "world": { "namespace": "world",
+"id": "registry-site/ed4bc3ae-1b02-412e-a5cc-02accf693a1b" }, "manifestId": "a9fd4c9d-0a5a-4f4d-9032-527ab7857b78",
+"snapshotDigest": "b7bfa9d7c8f51583d80b985551161bdd758c47315b256267caf62e1d119ff7e0", "stage": "recorded" },
+"status": 200, "code": null } ], "snapshotListTruncated": false, "unreadable": 0 }, "evidence": [ { "method": "GET",
+"route": [ "api", "v1", "buildings", "{buildingId}", "snapshots" ], "params": {
+"buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325" }, "query": { "limit": 20 }, "reads": [ { "params": {},
+"status": 200, "code": null, "bodySha256": "22db8254b06152a54e32ff0fac5ebe8aef4b18ea8d1edb3fa9c39e68627c80fe" } ] }, {
+"method": "POST", "route": [ "api", "v1", "usp", "property-cards", "list" ], "params": {}, "query": {}, "reads": [ {
+"params": {}, "status": 200, "code": null,
+"bodySha256": "ffe50570367318809bcd45e2014637c895ddfbf5bc1df0ff9c1a687fa710524f",
+"requestSha256": "d1a8c010f956b30437f14e1079818a012d4e16b47861fae54ef198b051f88822" } ] }, { "method": "GET", "route": [
+"api", "v1", "buildings", "{buildingId}", "canonical" ], "params": {
+"buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325" }, "query": {}, "reads": [ { "params": {}, "status": 200,
+"code": null, "bodySha256": "5a32dbce07e1356b19999b49ac331969b140fc2a5ab27d3f4072be6fce613584" } ] }, { "method": "GET",
+"route": [ "api", "v1", "usp", "property-cards", "{cardId}", "revisions", "{revision}", "verification" ], "params": {
+"cardId": "6a997624-6c8d-40a9-8215-8a671a74dc1c", "revision": 1 }, "query": {}, "reads": [ { "params": {},
+"status": 200, "code": null, "bodySha256": "eb24d5d2e937f4d1aa5af05b253e254d32a97bdc3c63a8efa766a42c3e33f4cc" } ] } ],
+"promptId": "J1b/K7/K8" }, { "id": "invariants", "title": "Original hashes and review-only registry facts",
+"state": "pass", "ms": 28, "expected": "API-reported originals match committed hashes; no unreviewed model facts",
+"observed": { "apiReportedHashesChecked": 29, "pins": [ { "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+"sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9" }, {
+"sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429",
+"sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865" }, {
+"sourceId": "357b6258-4f19-4a81-83b6-6da93874dd31",
+"sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b" }, {
+"sourceId": "25a8fbcb-2607-4a88-81e2-f2a247deb56f",
+"sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1" }, {
+"sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+"sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3" }, {
+"sourceId": "5f999570-e9f9-4b87-ac8f-8cd0d5f6be6e",
+"sha256": "9f68a24b166c50a49a840f1a3c945beabeb8f253ff3c7ee77cb69c46dbf379fa" }, {
+"sourceId": "05c28198-9cde-42ea-b5fa-a8a665f15d40",
+"sha256": "7ce930dad8894afd268ec4a4cca9cb532d403a477b74d079821d3819f19f3796" }, {
+"sourceId": "91bd4ba8-918f-49f9-8a46-a9519fe8d783",
+"sha256": "9b29dee8167c07226f8c3c9f4e052c037361d52e44942aef40b68499377f8078" }, {
+"sourceId": "2ec79647-8dc6-43ff-be66-18a84c003558",
+"sha256": "7bf3589f0f37ee233d2ef427a119140ce3d302fe76db0c934e81db298791a68d" }, {
+"sourceId": "ae4cd218-c477-4b1f-8892-d1d93982b202",
+"sha256": "f7fe19eade03512f498db7695065ce27959a2876371bbd877f52d15f38d9c3d2" }, {
+"sourceId": "d01b30d6-fc33-47b0-bc32-c6154bbc9edc",
+"sha256": "5bd8d352925533fad525e17552772c88d4b2b6b44679eb2a48f52e0510a2b79e" }, {
+"sourceId": "8b4de48f-0fbf-4928-8004-e6929137edd7",
+"sha256": "0009537f6792628a85f88ca201bc49e0aca52061703c622e1b5cf596fbc533df" }, {
+"sourceId": "37b2e74e-813c-4eb0-890d-683a211d8dac",
+"sha256": "734332b9dc374fdb117783f31bb146eadb2d7a716582eb0d51377690f7d70247" }, {
+"sourceId": "42152589-b6ba-4221-90c5-f0b86edd9355",
+"sha256": "6d9d1b735f36f6aa75b9bc87d0b678c70302ac555a5dfd439c339e465e40d382" }, {
+"sourceId": "f9dc8a7a-ebfd-422c-a3b4-9df286ab9c74",
+"sha256": "70ce1481a725d408dd37b0607449ed6ad69efa8b115086a7c0845d1d19b41cdc" }, {
+"sourceId": "c173551f-0f1f-41c1-bd10-213fc214acf1",
+"sha256": "b5590b670ea0a89a257f370d46b2f87170e7bd9c49544df040a4a988bafaed2e" }, {
+"sourceId": "c62e319e-408a-4a69-8950-df1510db0910",
+"sha256": "5c629126a66b7e7fe9e13f985ebdf290b8319493b318b34bbbc69349a455a30d" }, {
+"sourceId": "b401e6d3-af35-47d8-9a98-3925cbddeb84",
+"sha256": "ca6fcc0dcf63e654f43be7854ff17333964cb2f8d44d82fd6e27bd3ea5a592fa" }, {
+"sourceId": "9cd3cefb-a23d-4bfa-869c-947a7fe09c73",
+"sha256": "91798bec22e835a4a7ffe5770abf84f266dc504e93c4c49a4742566dc2063b9e" }, {
+"sourceId": "8806bcdb-bf08-48fb-aec5-7a20d1e614c1",
+"sha256": "0406b32ca996629eba93e24d2d210cf2151598e83da40150ef4c9883aaa5b16b" }, {
+"sourceId": "9bbfd37d-a1e9-439d-aca5-f90cfaa8356a",
+"sha256": "ab58f4e503dafe426c59de265576008c41bd19d6c8dbe18d907546a4ff7bc782" }, {
+"sourceId": "8dba16b4-e9ab-44a7-a260-0e61e1b0cef7",
+"sha256": "9595d689783f7c594828151fda1138c2870918667ca6de81471a034547a91f8d" }, {
+"sourceId": "fd50cd32-48b2-47ea-b7cd-117364438fe2",
+"sha256": "e88b7a663001e44c118ab8f21cbc1e593b02288692c205e3564914ad9baaf761" }, {
+"sourceId": "1917c8b2-c120-46e3-a36f-d19e95e7df09",
+"sha256": "f2d3a3e55bc70982fb85724c01b2c1dffab18e8690ceaceffed0ff2837570464" }, {
+"sourceId": "6b38f1bd-33ea-402c-ae37-d08328e6fdfe",
+"sha256": "b78621524ad37aa4430bbf04758a3d81d57fcec99316b136a19567896b0d67bd" }, {
+"sourceId": "294db25a-b95a-439e-af09-5eac01a38fa3",
+"sha256": "fc4ba2c9862d178aa8ba1a83b6cccdd3bbf36e2ea4d9bd3c08f9e32a364d2d56" }, {
+"sourceId": "d97500f5-3868-49e7-a77f-0c5f179eb997",
+"sha256": "d1dc06661144ae1951cea7886b1a4dd9ebfec9eaa94d53c012fa8a162ca082d4" }, {
+"sourceId": "333d5cdd-9778-4fb0-a89a-61794a532497",
+"sha256": "ceb36ecb3d456ff100964a87cde33ec13fead27e48feed7356716700d23eac60" }, {
+"sourceId": "d6dffbcc-7ee0-4467-9ddf-4952bd23c33c",
+"sha256": "bb035c56c345051b9e15d0d5ace46ba2847f6780ecc3d5b67c8f0ee3c783cc85" } ],
+"statement": "Roof candidate/registry and recorded label reads found no unreviewed model/agent registry facts",
+"reviewChecksReused": [ "roofprints", "recorded" ], "byteDownloadOrRehashClaimed": false }, "evidence": [ {
+"method": "GET", "route": [ "api", "v1", "sites", "{siteId}" ], "params": {}, "query": {}, "reads": [ { "params": {
+"siteId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b" }, "status": 200, "code": null,
+"bodySha256": "1ea2ab44f4b6285ca0d6620c3730b06c0eba5ad80fb696fd9cb12720f8a695ba" }, { "params": {
+"siteId": "e5742536-cedd-455b-b59d-c8172875c6f2" }, "status": 200, "code": null,
+"bodySha256": "d00a3fa3aa27c97aa0bf074b063eb5310499d40380f586ad89ba5d6b743185b4" }, { "params": {
+"siteId": "cb24dc86-2b91-4793-9586-24e8a443b8d8" }, "status": 200, "code": null,
+"bodySha256": "debfc0bbff0c0af1c2f026f6299d5302d52f9b50ee83d4a89ffbe1b500c0e5b8" } ] }, { "method": "GET", "route": [
+"api", "v1", "ingestion", "cases", "{caseId}", "sources", "{sourceId}", "profile" ], "params": {}, "query": {},
+"reads": [ { "params": { "caseId": "4ad9cb6d-56c0-445e-a9b6-357d1dc1d452",
+"sourceId": "333d5cdd-9778-4fb0-a89a-61794a532497",
+"sha256": "ceb36ecb3d456ff100964a87cde33ec13fead27e48feed7356716700d23eac60" }, "status": 200, "code": null,
+"bodySha256": "505dfaa94f9d4238907188b86229f9c83cc4c244a9b563df5a360c4a039f9ac2" }, { "params": {
+"caseId": "1ada7796-4e8f-4a19-9b7f-4414e80114c4", "sourceId": "d6dffbcc-7ee0-4467-9ddf-4952bd23c33c",
+"jobId": "4b48f457-2671-4937-a973-f040b5fc20d5" }, "status": 200, "code": null,
+"bodySha256": "660b46b98f7f3bffeb6ea93d38bb300b9216478907046fd4fcce4f56221a85ca" } ] } ], "promptId": "P9.1" } ],
+"summary": { "pass": 11, "fail": 0, "blocked": 0, "skipped": 2 } }

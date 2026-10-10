@@ -10,7 +10,7 @@ const ocrBox=z.tuple([z.number().finite(),z.number().finite(),z.number().finite(
 export const DocumentOcrSelectionSchema=z.strictObject({page:z.number().int().min(1).max(8),region:ocrBox.optional()});
 export const DocumentArchiveSelectionSchema=z.strictObject({ordinal:z.number().int().min(0).max(255),
   memberSha256:hash,memberBytes:z.number().int().min(1).max(8*1024*1024)});
-export const DocumentFormatSchema=z.enum(['pdf','text','csv','docx','xlsx','png','jpeg','archive','unsupported']);
+export const DocumentFormatSchema=z.enum(['pdf','text','csv','docx','xlsx','ods','html','png','jpeg','archive','unsupported']);
 export const DocumentOriginalSchema=z.strictObject({version:z.literal(DOCUMENT_VERSION),subject:z.string().min(1).max(256),
   format:DocumentFormatSchema,sha256:hash,bytes:z.number().int().positive(),receivedAt:z.iso.datetime()});
 export const DocumentInputSchema=z.strictObject({version:z.literal(DOCUMENT_VERSION),jobId:id,caseId:id,caseRevision:rev,
@@ -30,6 +30,11 @@ export const DocumentLocatorSchema=z.strictObject({label:z.string().min(1).max(5
   cell:z.string().regex(/^[A-Z]{1,3}[1-9][0-9]{0,6}$/).optional(),
   cellState:z.enum(['literal','empty','empty_string','whitespace','formula_cached','formula_uncached','error','unsupported']).optional(),
   cellType:z.string().min(1).max(20).optional(),
+  // ODF has source table ordinals, not OOXML sheet IDs. Repeats are unexpanded source ranges.
+  ods:z.strictObject({rowElement:z.number().int().min(1).max(2000),cellElement:z.number().int().min(1).max(2000),
+    rowRepeat:z.number().int().min(1).max(1048576),columnRepeat:z.number().int().min(1).max(16384),
+    valueSource:z.enum(['value','boolean-value','date-value','time-value','string-value','text','none']),
+    formula:z.string().min(1).max(4096).optional()}).optional(),
   // Present on newly partitioned parts. Older native receipts remain readable.
   unitId:id.optional(),unitSha256:hash.optional(),segmentIndex:rev.optional(),segmentCount:z.number().int().positive().optional(),
   characterStart:rev,characterEnd:rev}).superRefine((value,ctx)=>{
@@ -41,11 +46,17 @@ export const DocumentLocatorSchema=z.strictObject({label:z.string().min(1).max(5
       ctx.addIssue({code:'custom',message:'A continuation needs its complete native-unit pin.'});
     if(value.segmentIndex!==undefined && value.segmentCount!==undefined && value.segmentIndex>=value.segmentCount)
       ctx.addIssue({code:'custom',message:'Continuation index exceeds its native unit.'});
-    const workbook=[value.sheet,value.sheetIndex,value.sheetId,value.cell,value.cellState];
-    if(workbook.some(item=>item!==undefined) && workbook.some(item=>item===undefined))
+    const workbook=[value.sheet,value.sheetIndex,value.cell,value.cellState];
+    if((workbook.some(item=>item!==undefined) || value.sheetId!==undefined || value.ods!==undefined) &&
+      (workbook.some(item=>item===undefined) || (value.ods===undefined && value.sheetId===undefined)))
       ctx.addIssue({code:'custom',message:'A workbook citation needs its sheet, index, cell and value state.'});
     if(value.sheet!==undefined && (value.row===undefined || value.column===undefined))
       ctx.addIssue({code:'custom',message:'A workbook citation needs its source row and column.'});
+    if(value.ods && (value.sheetId!==undefined || value.row===undefined || value.column===undefined ||
+      value.row+value.ods.rowRepeat-1>1048576 || value.column+value.ods.columnRepeat-1>16384 ||
+      (value.ods.formula!==undefined && value.cellState==='literal') ||
+      ((value.cellState==='formula_cached' || value.cellState==='formula_uncached') && value.ods.formula===undefined)))
+      ctx.addIssue({code:'custom',message:'An ODS citation needs bounded source ranges, no OOXML ID, and explicit formula state.'});
   });
 export const DocumentPartSchema=z.strictObject({id,sourceId:id,sourceRevision:z.number().int().positive(),sourceSha256:hash,
   text:z.string().min(1).max(DOCUMENT_LIMITS.partCharacters),sha256:hash,locator:DocumentLocatorSchema,method:z.literal('native_text')})
@@ -82,6 +93,12 @@ export const DocumentOcrItemSchema=z.strictObject({text:z.string().min(1).max(20
       'tesseract_tsv_pixels_via_mupdf_pixel_origin'])})).min(1).max(4)});
 export const DocumentOcrExecutionSchema=z.strictObject({maxSeconds:z.number().int().min(1).max(90),
   exitCode:z.number().int().nullable(),receiptSha256:hash.nullable(),candidateSha256:hash.nullable(),
+  failure:z.strictObject({attemptId:z.uuid(),class:z.enum(['RuntimeError','ValueError','TypeError','AttributeError',
+    'ModuleNotFoundError','ImportError','OSError','CalledProcessError','SourceOcrError','ValidationError',
+    'KeyError','AssertionError','UnknownWorkerFailure']),
+    message:z.enum(['Native dependency unavailable','Python dependency unavailable','Invalid worker result',
+      'Worker exception; sensitive detail withheld','Worker terminated by resource bound',
+      'Worker failed before producing diagnostics'])}).optional(),
   worker:z.strictObject({exitCode:z.number().int(),stopReason:z.string().max(120).nullable(),
     elapsedSeconds:z.number().finite().nonnegative(),peakObservedRssBytes:rev,peakJobPrivateBytes:rev.nullable(),
     gatedStart:z.literal(true),logSha256:hash}).nullable()});
@@ -92,7 +109,25 @@ const DocumentOcrBaseSchema=z.strictObject({sourceSha256:hash,sourceRevision:z.n
   method:z.enum(['ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned','ocr:tesseract-cli-5.5.1:sparse-tsv-v1']),
   toolStatus:z.enum(['complete','partial','failed','unavailable']),outputStatus:z.enum(['complete','partial','failed']),
   textCompleteness:z.literal('unverified'),issues:z.array(z.string().min(1).max(200)).max(32),
-  items:z.array(DocumentOcrItemSchema).max(64),execution:DocumentOcrExecutionSchema.optional()});
+  items:z.array(DocumentOcrItemSchema).max(64),execution:DocumentOcrExecutionSchema.optional(),
+  // Stated only when the worker stated its render scale. The 0.5 floor is the lead's bound (K9d), not a
+  // measured one: it keeps the allowance at or under 2 pt. The allowance is derived below, never stored.
+  regionEdge:z.strictObject({renderScalePxPerPt:z.number().finite().min(0.5),
+    boxesBeyondRegion:z.number().int().min(0).max(256),
+    largestOverhangPt:z.number().finite().nonnegative()}).optional()});
+type OcrBoxes=readonly {sourcePageBoxes:readonly {box:readonly number[]}[]}[];
+/** Measures the boxes as read against the selected region; it never moves or clips one. A render starts and
+ * ends on whole pixels, so a true box may pass the region by up to one rendered pixel. Without a stated
+ * scale the first rule's 1 pt applies. */
+export function measureOcrRegionEdge(region:readonly number[],items:OcrBoxes,renderScalePxPerPt?:number){
+  const allowedPt=renderScalePxPerPt===undefined?1:1/renderScalePxPerPt;
+  const boxes=items.flatMap(item=>item.sourcePageBoxes.map(cite=>cite.box));
+  const overhangs=boxes.map(box=>Math.max(region[0]-box[0],region[1]-box[1],box[2]-region[2],box[3]-region[3]))
+    .filter(overhang=>overhang>0);
+  return {boxesBeyondRegion:overhangs.length,largestOverhangPt:Math.max(0,...overhangs),
+    outside:boxes.some(box=>box[0]<region[0]-allowedPt||box[1]<region[1]-allowedPt||
+      box[2]>region[2]+allowedPt||box[3]>region[3]+allowedPt)};
+}
 function refineOcrFrame(value:Pick<z.infer<typeof DocumentOcrBaseSchema>,'sourcePageFrame'|'requestedRegion'>,ctx:z.RefinementCtx){
     const frame=value.sourcePageFrame,region=value.requestedRegion;
     // A missing frame remains useful for an unavailable/failed attempt. A
@@ -124,10 +159,16 @@ export const DocumentOcrSchema=DocumentOcrBaseSchema.superRefine((value,ctx)=>{
       ctx.addIssue({code:'custom',message:'Published OCR output needs its completed bounded execution receipt.'});
     if(value.items.length && value.sourcePageFrame===null)
       ctx.addIssue({code:'custom',message:'Cited OCR items need the source page frame.'});
-    if(value.items.some(item=>item.sourcePageBoxes.some(cite=>value.requestedRegion!==null &&
-      (cite.box[0]<value.requestedRegion[0]-1||cite.box[1]<value.requestedRegion[1]-1||
-        cite.box[2]>value.requestedRegion[2]+1||cite.box[3]>value.requestedRegion[3]+1))))
-      ctx.addIssue({code:'custom',message:'OCR boxes must stay in the selected source region.'});
+    const stated=value.regionEdge;
+    if(value.requestedRegion===null){
+      if(stated)ctx.addIssue({code:'custom',message:'Whole-page OCR has no region edge to state.'});
+    }else{
+      const edge=measureOcrRegionEdge(value.requestedRegion,value.items,stated?.renderScalePxPerPt);
+      if(edge.outside)ctx.addIssue({code:'custom',message:'OCR boxes must stay in the selected source region.'});
+      if(stated&&(stated.boxesBeyondRegion!==edge.boxesBeyondRegion||
+        Math.abs(stated.largestOverhangPt-edge.largestOverhangPt)>1e-6))
+        ctx.addIssue({code:'custom',message:'The stated region edge must equal what the boxes measure.'});
+    }
     if(value.items.some(item=>item.sourcePageBoxes.some(cite=>cite.pageNumber!==value.sourcePage ||
       (value.sourcePageFrame!==null&&(cite.box[2]>value.sourcePageFrame.width+0.01||cite.box[3]>value.sourcePageFrame.height+0.01)))))
       ctx.addIssue({code:'custom',message:'OCR boxes must cite the selected source page frame.'});
@@ -186,7 +227,8 @@ export const DocumentResultSchema=z.strictObject({version:z.literal(DOCUMENT_VER
       (value.native.archiveInventory!==undefined && (value.native.archiveInventory.sourceSha256!==value.input.sourceSha256 ||
         value.native.format!=='archive' || value.native.parts.length!==0 || value.native.status!=='unsupported' || value.model.candidates.length!==0)) ||
       value.native.parts.some(p=>p.sourceId!==value.input.sourceId ||
-      p.sourceRevision!==value.input.sourceRevision || p.sourceSha256!==value.input.sourceSha256) ||
+      p.sourceRevision!==value.input.sourceRevision || p.sourceSha256!==value.input.sourceSha256 ||
+      ((value.native.format==='ods') !== (p.locator.ods!==undefined))) ||
       new Set(value.native.parts.map(p=>p.id)).size!==value.native.parts.length ||
       value.model.candidates.some(c=>{const p=value.native.parts.find(p=>p.id===c.partId);return !p ||
         (p.locator.cellState!==undefined && p.locator.cellState!=='literal') ||

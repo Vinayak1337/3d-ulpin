@@ -1,0 +1,138 @@
+{
+  "run": "before",
+  "refused": [],
+  "captures": [
+    {
+      "view": "1440",
+      "failedPicture": false,
+      "samples": [
+        {
+          "distance": 30,
+          "pick": {
+            "kind": "ground",
+            "point": [
+              -93.38568472913649,
+              -0.010000000000007217,
+              -31.232986121274287
+            ]
+          }
+        },
+        {
+          "distance": 120,
+          "pick": {
+            "kind": "building",
+            "id": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4"
+          }
+        },
+        {
+          "distance": 500,
+          "pick": {
+            "kind": "building",
+            "id": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4"
+          }
+        }
+      ],
+      "clicked": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4",
+      "off": "false",
+      "sideways": false,
+      "scene": {
+        "records": [
+          {
+            "kind": "building",
+            "id": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4",
+            "known": false,
+            "bottomM": 2.5252015156505955e-15,
+            "topM": 0.05000000074505806,
+            "renderOrder": 0,
+            "depthTest": true,
+            "depthWrite": false,
+            "transparent": true,
+            "polygonOffset": false,
+            "factor": 0,
+            "units": 0
+          }
+        ],
+        "pictureCount": 22,
+        "pictureStyles": [
+          {
+            "bottomM": 0.20000000298023224,
+            "topM": 0.20000000298023224,
+            "renderOrder": 0,
+            "depthTest": true,
+            "depthWrite": true,
+            "transparent": true,
+            "polygonOffset": true,
+            "factor": -4,
+            "units": -4
+          }
+        ]
+      }
+    },
+    {
+      "view": "200pct",
+      "failedPicture": false,
+      "samples": [
+        {
+          "distance": 30,
+          "pick": {
+            "kind": "ground",
+            "point": [
+              -93.38568472913651,
+              -0.010000000000007217,
+              -31.23298612127428
+            ]
+          }
+        },
+        {
+          "distance": 120,
+          "pick": {
+            "kind": "building",
+            "id": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4"
+          }
+        },
+        {
+          "distance": 500,
+          "pick": {
+            "kind": "building",
+            "id": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4"
+          }
+        }
+      ],
+      "clicked": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4",
+      "off": "false",
+      "sideways": false,
+      "scene": {
+        "records": [
+          {
+            "kind": "building",
+            "id": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4",
+            "known": false,
+            "bottomM": 2.5252015156505955e-15,
+            "topM": 0.05000000074505806,
+            "renderOrder": 0,
+            "depthTest": true,
+            "depthWrite": false,
+            "transparent": true,
+            "polygonOffset": false,
+            "factor": 0,
+            "units": 0
+          }
+        ],
+        "pictureCount": 22,
+        "pictureStyles": [
+          {
+            "bottomM": 0.20000000298023224,
+            "topM": 0.20000000298023224,
+            "renderOrder": 0,
+            "depthTest": true,
+            "depthWrite": true,
+            "transparent": true,
+            "polygonOffset": true,
+            "factor": -4,
+            "units": -4
+          }
+        ]
+      }
+    }
+  ]
+}

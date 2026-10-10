@@ -1,14 +1,20 @@
 import type { PoolClient } from 'pg';
+import {PacketPdfJobInputSchema} from '../../../../contracts/src/usp/packet-pdf-jobs';
 import {RegistryCityJSONValidationInputSchema} from '@ulpin/contracts';
 import {fingerprint} from '../cases/domain';
 import {ingestionBinding,assertIngestionBinding} from './ingestion/events';
 import { UspJobProjectionSchema, UspAssetRefSchema, UspScopeSchema,
   type AssetRef, type UspScope } from '@ulpin/contracts/usp';
 import { transaction,type DbDeadline } from '../../infrastructure/db';
+import {GeoParquetInputSchema} from '../../../../contracts/src/usp/geoparquet-ingestion';
+import {CityGMLInputSchema} from '../../../../contracts/src/usp/citygml-ingestion';
+import {ObjInputSchema} from '../../../../contracts/src/usp/obj-ingestion';
+import {GltfInputSchema} from '../../../../contracts/src/usp/gltf-ingestion';
+import {KMLInputSchema} from '../../../../contracts/src/usp/kml-ingestion';
 import { AppError, conflict, notFound } from '../../infrastructure/errors';
 import { appendUspOutboxTx } from './commands';
-import { ProjectedVectorInputSchema, PrivateMvtInputSchema, DocumentInputSchema, StreamingVectorInputSchema,
-  StreamedProfileInputSchema, ChunkMappingInputSchema, RasterWindowInputSchema, PointBatchInputSchema, CityJSONInputSchema, IFCInputSchema } from '@ulpin/contracts/usp';
+import { ProjectedVectorInputSchema, PrivateMvtInputSchema, DocumentInputSchema, AnyStreamingInputSchema,
+  StreamedProfileInputSchema, ChunkMappingInputSchema, RasterWindowInputSchema, PointBatchInputSchema, CityJSONInputSchema, IFCInputSchema, DXFInputSchema } from '@ulpin/contracts/usp';
 
 const LEASE_SECONDS = 180;
 const MAX_ATTEMPTS = 3;
@@ -56,6 +62,42 @@ export async function registerUspJobInputTx(client: PoolClient, jobId: string,
       ||input.caseId!==job.case_id||input.sourceId!==job.source_id||input.caseRevision!==job.case_revision
       ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint||fingerprint(input)!==inputSha256)
       throw new AppError(422,'IFC_INPUT_SCOPE','IFC jobs must pin their unchanged source and exact intake context.');
+  } else if(job.operation==='dxf-native'){
+    const input=DXFInputSchema.parse(job.payload);
+    if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1||input.jobId!==job.id
+      ||input.caseId!==job.case_id||input.sourceId!==job.source_id||input.caseRevision!==job.case_revision
+      ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint||fingerprint(input)!==inputSha256)
+      throw new AppError(422,'DXF_INPUT_SCOPE','DXF jobs must pin their unchanged source and exact intake context.');
+  } else if(job.operation==='kml-native'){
+    const input=KMLInputSchema.parse(job.payload);
+    if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1||input.jobId!==job.id
+      ||input.caseId!==job.case_id||input.sourceId!==job.source_id||input.caseRevision!==job.case_revision
+      ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint||fingerprint(input)!==inputSha256)
+      throw new AppError(422,'KML_INPUT_SCOPE','KML jobs must pin their unchanged original, member selection and intake context.');
+  } else if(job.operation==='citygml-native'){
+    const input=CityGMLInputSchema.parse(job.payload);
+    if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1||input.jobId!==job.id
+      ||input.caseId!==job.case_id||input.sourceId!==job.source_id||input.caseRevision!==job.case_revision
+      ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint||fingerprint(input)!==inputSha256)
+      throw new AppError(422,'CITYGML_INPUT_SCOPE','CityGML jobs must pin their unchanged original, private access and intake context.');
+  } else if(job.operation==='obj-native'){
+    const input=ObjInputSchema.parse(job.payload);
+    if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1||input.jobId!==job.id
+      ||input.caseId!==job.case_id||input.sourceId!==job.source_id||input.caseRevision!==job.case_revision
+      ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint||fingerprint(input)!==inputSha256)
+      throw new AppError(422,'OBJ_INPUT_SCOPE','OBJ jobs must pin their unchanged original, private access and intake context.');
+  } else if(job.operation==='gltf-native'){
+    const input=GltfInputSchema.parse(job.payload);
+    if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1||input.jobId!==job.id
+      ||input.caseId!==job.case_id||input.sourceId!==job.source_id||input.caseRevision!==job.case_revision
+      ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint||fingerprint(input)!==inputSha256)
+      throw new AppError(422,'GLTF_INPUT_SCOPE','glTF jobs must pin their unchanged original, scene selection, private access and intake context.');
+  } else if(job.operation==='geoparquet-native'){
+    const input=GeoParquetInputSchema.parse(job.payload);
+    if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1||input.jobId!==job.id
+      ||input.caseId!==job.case_id||input.sourceId!==job.source_id||input.caseRevision!==job.case_revision
+      ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint||fingerprint(input)!==inputSha256)
+      throw new AppError(422,'GEOPARQUET_INPUT_SCOPE','GeoParquet jobs must pin their unchanged original, private access and intake context.');
   } else if(job.operation==='cityjson-validation'){
     const input=RegistryCityJSONValidationInputSchema.parse(job.payload),source=input.candidate.input,
       binding=ingestionBinding(source.caseId),digest=fingerprint(input);
@@ -72,7 +114,7 @@ export async function registerUspJobInputTx(client: PoolClient, jobId: string,
       ||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint)
       throw new AppError(422,'POINT_INPUT_SCOPE','Point jobs must pin their retained source and exact intake context.');
   } else if(job.operation==='streaming-vector'){
-    const input=StreamingVectorInputSchema.parse(job.payload);
+    const input=AnyStreamingInputSchema.parse(job.payload);
     if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1
       ||input.jobId!==job.id||input.caseId!==job.case_id||input.sourceId!==job.source_id
       ||input.caseRevision!==job.case_revision||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint)
@@ -89,6 +131,12 @@ export async function registerUspJobInputTx(client: PoolClient, jobId: string,
       ||input.jobId!==job.id||input.caseId!==job.case_id||input.sourceId!==job.source_id
       ||input.caseRevision!==job.case_revision||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint)
       throw new AppError(422,'MAPPING_INPUT_SCOPE','Mapped draft jobs must pin an existing retained source and intake revision.');
+  } else if(job.operation==='packet-pdf'){
+    const input=PacketPdfJobInputSchema.parse(job.payload);
+    if(scope.kind!=='snapshot'||fingerprint(scope)!==fingerprint(input.scope)||input.jobId!==job.id||
+      job.case_id!==input.anchor.caseId||job.source_id!==input.anchor.sourceId||job.case_revision!==input.anchor.caseRevision||
+      inputManifestId!==input.scope.manifestId||inputSha256!==job.input_fingerprint||inputSha256!==fingerprint(input))
+      throw new AppError(422,'PACKET_PDF_JOB_SCOPE','PDF jobs must enroll the exact confirmed snapshot and real selected-source anchor.');
   } else if (job.operation !== 'usp:packet0') {
     throw new AppError(422, 'USP_JOB_OPERATION', 'Only registered USP jobs can use fenced attempts.');
   }
@@ -148,7 +196,7 @@ export async function heartbeatUspJobAttempt(attempt: Attempt,beforeLocks?:(clie
 
 /** Completion is accepted only through a registered operation's result validator. */
 export async function acceptUspJobAttempt(attempt: Attempt, result: AssetRef,
-  validateResult: (client: PoolClient, job: Record<string, unknown>, result: AssetRef) => Promise<void>,
+  validateResult: (client: PoolClient, job: Record<string, unknown>, result: AssetRef) => Promise<void|AssetRef>,
   beforeLocks?: (client:PoolClient)=>Promise<void>,beforeCommit?:(client:PoolClient)=>void|Promise<void>,deadline?:DbDeadline) {
   const asset = UspAssetRefSchema.parse(result);
   return transaction(async client => {
@@ -163,21 +211,25 @@ export async function acceptUspJobAttempt(attempt: Attempt, result: AssetRef,
       || row.input_sha256 !== meta.input_sha256 || new Date(row.lease_until).getTime() <= Date.now()) {
       conflict('This completion was superseded or its lease expired.');
     }
-    await validateResult(client, job, asset);
+    // A registered validator may link an already accepted canonical packet
+    // when concurrent synchronous execution won. Existing validators return void.
+    const validated=await validateResult(client, job, asset),accepted=validated?UspAssetRefSchema.parse(validated):asset;
     await client.query(`UPDATE usp_job_attempts SET state='accepted',completion_sha256=$2 WHERE job_id=$1 AND number=$3`,
-      [attempt.jobId, asset.sha256, attempt.number]);
+      [attempt.jobId, accepted.sha256, attempt.number]);
     await client.query(`UPDATE usp_job_metadata SET logical_state='succeeded',result_ref=$2,
-      accepted_fence=$3,version=version+1 WHERE job_id=$1`, [attempt.jobId, asset, attempt.fence]);
+      accepted_fence=$3,version=version+1 WHERE job_id=$1`, [attempt.jobId, accepted, attempt.fence]);
     await client.query(`UPDATE jobs SET status='succeeded',completed_at=now(),error=NULL WHERE id=$1`, [attempt.jobId]);
     await appendUspOutboxTx(client, `job:${attempt.jobId}`, { type: 'job.succeeded', jobId: attempt.jobId,
-      fence: attempt.fence, result: asset, inputManifestId: meta.input_manifest_id });
+      fence: attempt.fence, result: accepted, inputManifestId: meta.input_manifest_id });
     if(beforeCommit)await beforeCommit(client);
-    return asset;
+    return accepted;
   },deadline);
 }
 
 export async function cancelUspJob(jobId: string, expectedVersion: number) {
   return transaction(async client => {
+    const operation=(await client.query('SELECT operation FROM jobs WHERE id=$1',[jobId])).rows[0]?.operation;
+    if(operation==='packet-pdf')throw new AppError(422,'PACKET_PDF_CONTROL_REQUIRED','Use the exact authorized PDF job control operation.');
     await client.query('SELECT id FROM jobs WHERE id=$1 FOR UPDATE', [jobId]);
     const meta = (await client.query('SELECT * FROM usp_job_metadata WHERE job_id=$1 FOR UPDATE', [jobId])).rows[0] ?? notFound();
     if (meta.version !== expectedVersion) conflict('The job changed.');
@@ -192,6 +244,7 @@ export async function cancelUspJob(jobId: string, expectedVersion: number) {
 export async function readUspJob(jobId: string) {
   const rows = await transaction(async client => {
     const job = (await client.query('SELECT * FROM jobs WHERE id=$1', [jobId])).rows[0] ?? notFound();
+    if(job.operation==='packet-pdf')throw new AppError(422,'PACKET_PDF_READER_REQUIRED','Use the exact authorized PDF job status operation.');
     const meta = (await client.query('SELECT * FROM usp_job_metadata WHERE job_id=$1', [jobId])).rows[0] ?? notFound();
     const attempt = (await client.query('SELECT * FROM usp_job_attempts WHERE job_id=$1 ORDER BY number DESC LIMIT 1', [jobId])).rows[0];
     return { job, meta, attempt };

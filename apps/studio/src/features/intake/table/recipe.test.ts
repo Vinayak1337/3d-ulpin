@@ -1,0 +1,86 @@
+import { describe, expect, it } from 'vitest';
+import controls from '../../../../../../docs/evidence/gf-agent/ui/f2b/responses.json';
+import { fillUnknownAnswers, initialAnswers, officerAnswers, recipeBody, targetOptions,
+  unansweredColumns, unansweredUnknownColumns } from './recipe';
+import type { ChunkMapping, TableProfile } from './types';
+
+const profile = controls.files[0]!.profile as TableProfile;
+const mapping = controls.files[0]!.chunk.payload.mapping as ChunkMapping;
+const reason = 'Software protocol control only; preserve as unknown, not a property fact or learning truth.';
+
+describe('shared unknown reason', () => {
+  it('fills only unanswered empty or unknown targets, never another target', () => {
+    const answers = initialAnswers(profile, mapping);
+    const [first, second, third] = profile.profile.columns;
+    answers[first!.name] = { target: 'building.name', reason: '' };
+    answers[second!.name] = { target: 'unknown', reason: ' ' };
+    answers[third!.name] = { target: '', reason: 'An unfinished individual answer.' };
+    const eligible = unansweredUnknownColumns(profile, answers);
+    const next = fillUnknownAnswers(profile, answers, ` ${reason} `);
+    expect(next[first!.name]).toEqual(answers[first!.name]);
+    for (const name of eligible) {
+      expect(next[name]).toEqual({ target: 'unknown', reason, sharedReason: true });
+    }
+    expect(answers[second!.name]!.reason).toBe(' ');
+  });
+
+  it('leaves all answered columns and their individual reasons alone', () => {
+    const answers = initialAnswers(profile, mapping);
+    const first = profile.profile.columns[0]!.name;
+    answers[first] = { target: 'unknown', reason: 'Individually answered protocol control.' };
+    expect(unansweredUnknownColumns(profile, answers)).not.toContain(first);
+    expect(fillUnknownAnswers(profile, answers, reason)[first]).toEqual(answers[first]);
+  });
+
+  it('refuses an empty shared reason without changing any answer', () => {
+    const answers = initialAnswers(profile, mapping);
+    const before = structuredClone(answers);
+    expect(() => fillUnknownAnswers(profile, answers, ' \n ')).toThrow('Give a reason');
+    expect(answers).toEqual(before);
+  });
+});
+
+describe('officer answers over mapped chunks', () => {
+  it('clears an unedited target when its question arrives later and keeps the officer edits', () => {
+    const asked = mapping.questions[0]!.sourceField;
+    const edited = profile.profile.columns.find((column) => column.name !== asked)!.name;
+    const edits = { [edited]: { target: 'unknown' as const, reason } };
+    const proposed = mapping.plan.fields.find((field) => field.sourceField === asked)!.target;
+    expect(officerAnswers(profile, { ...mapping, questions: [] }, edits)[asked]!.target).toBe(proposed);
+    const answers = officerAnswers(profile, mapping, edits);
+    expect(answers[asked]).toEqual({ target: '', reason: '' });
+    expect(answers[edited]).toEqual(edits[edited]);
+  });
+});
+
+describe('officer recipe body', () => {
+  it('requires an explicit target and a reason for every column, including unknown', () => {
+    const answers = initialAnswers(profile, mapping);
+    expect(unansweredColumns(profile, answers)).toHaveLength(profile.headers.length);
+    expect(() => recipeBody(profile, mapping, answers, 'request-key', 0)).toThrow('every column');
+    for (const column of profile.profile.columns) answers[column.name] = { target: 'unknown', reason: ' ' };
+    expect(unansweredColumns(profile, answers)).toHaveLength(profile.headers.length);
+  });
+
+  it('authors all decisions in source-column order with no registry destination', () => {
+    const answers = initialAnswers(profile, mapping);
+    for (const column of [...profile.profile.columns].reverse()) {
+      answers[column.name] = { target: 'unknown', reason };
+    }
+    const body = recipeBody(profile, mapping, answers, controls.caseId, 0);
+    expect(body.destination).toBeNull();
+    expect(body.plan.version).toBe('manual-tabular/1');
+    expect(body.plan.mapping.fields.map((field) => field.sourceField))
+      .toEqual(profile.profile.columns.map((column) => column.name));
+    expect(body.plan.decisions.map((decision) => decision.reason)).toEqual(profile.headers.map(() => reason));
+    expect(body.plan.source).toEqual(profile.source);
+    expect(body.plan.tabular.selection.table).toBeNull();
+  });
+
+  it('lists candidate targets first and always offers unknown without duplicating targets', () => {
+    const options = targetOptions(['building.name', 'building.name']);
+    expect(options.first).toEqual(['building.name']);
+    expect(options.all).toContain('unknown');
+    expect(options.all).not.toContain('building.name');
+  });
+});

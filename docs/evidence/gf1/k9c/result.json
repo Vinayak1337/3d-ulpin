@@ -1,0 +1,211 @@
+{
+  "task": "K9c",
+  "gates": ["GF1", "GF5"],
+  "base": "de6b3167",
+  "status": "complete_dry_run_only_owner_run_pending",
+  "runtimeAccess": false,
+  "liveSwitchPerformed": false,
+  "report": [
+    "TASK   K9c — the interpreter switch and its restore            GATE GF1 / GF5",
+    "WORKS  The owner switches the demo's OCR interpreter by one validated command and rolls back by a saved file.",
+    "SEE IT node --test scripts/platform/demo-document-runtime.test.mjs (14 of 17 run without an interpreter).",
+    "INPUTS Good: project-owned venv-demo-documents-20261010 interpreter, real pyvenv.cfg and real preflight.",
+    "       Difficult: the previous desktop-ai04f interpreter, whose base lies in another application's folder.",
+    "GAPS   No real run (owner's); preflight proves imports, not the OCR step's pinned package versions.",
+    "DESIGN demo-document-runtime.mjs: switchOcrPython -> readOverride (shared reader) -> forwardOverride",
+    "       (availableInterpreter, interpreterBase, withInterpreter, preflightImports) or savedOverride ->",
+    "       publishOverride (pending file read back by the reader, saved copy, one rename).",
+    "       demo-config.mjs: readDemoOcrPaths(file = demoOcrFile); demoOcrProfileFile exported. Build also preflights.",
+    "COMMITS 39f25008 feat(runtime): the document interpreter of the demo is switched by one validated action",
+    "        and rolled back by restoring the saved file",
+    "        (this commit) docs(runtime): K9c the switch and the restore in the roll-out, and evidence",
+    "CHECKS builder tests under guard: exit 0 (14 pass, 3 skip); with project interpreter: exit 0 (16 pass, 1 skip)",
+    "       platform subset under guard: exit 0 (22 pass, 3 skip, 5 deselected); pnpm typecheck:backend: exit 0",
+    "       rehearsal.mjs: exit 0; git diff --check: exit 0; new lines over 120: 0",
+    "NEXT   Owner runs the switch then the build at the next roll-out. Lead: decide whether the preflight should",
+    "       also check the OCR step's version pin (docling-slim 2.131.0), which today fails only at run time."
+  ],
+  "previousWorker": {
+    "kept": [
+      "demo-config.mjs: optional file argument, exported override path, scratch bound to the file's own folder",
+      "the action's outline: shared reader, in-place replacement of the one literal, exclusive saved and pending files",
+      "the import list of the preflight, checked against the sources below",
+      "safety.cjs (K9 guard, K9c scratch, guard passed to Node children)"
+    ],
+    "replaced": [
+      "buildProfile's environment was changed without being asked: restored to the original line",
+      "assertBuildLocation's new boolean flag: the build-only fresh-folder check moved into the build instead",
+      "preflight timeout 60 s was below the measured cold start (40.7 s): now 180 s; thread and bytecode keys dropped",
+      "selectedPython in the switch could fall back to the runtime's own reader: replaced by availableInterpreter",
+      "a missing pyvenv.cfg threw a private error: now a named refusal forward and null on restore",
+      "added: post-condition on the replacement, pending file read back through the reader, key-named refusals",
+      "tests, the DEMO-RUNTIME section and this evidence did not exist; the previous worker ran nothing"
+    ]
+  },
+  "decision1": {
+    "file": "scripts/platform/demo-config.mjs",
+    "signature": "readDemoOcrPaths(file = demoOcrFile)",
+    "exported": "demoOcrProfileFile",
+    "default": "unchanged: today's path file, replaced by the demo-scoped override beside it when that exists",
+    "otherFile": "read as a demo-scoped override itself; scratch must lie in that file's own folder",
+    "whyFolder": "realpathSync(dirname(file)) equals realpathSync(demoDir) by default; a dry run cannot open demoDir",
+    "existingTestsOfThisReader": "none in the repository; one new test pins the default folder and the new argument",
+    "notRun": "scripts/agent/a3c-demo-paths.test.ts calls readDemoTabularPaths() on the real runtime file"
+  },
+  "decision2": {
+    "forward": "switch-ocr-python --python <absolute file>",
+    "restore": "switch-ocr-python --restore <ocr-paths-profile.previous-<UTC>.json>",
+    "jsonLineKeys": [
+      "restored", "previousPython", "newPython", "baseInsideEnvironment", "savedPreviousFile",
+      "previousSha256", "newSha256"
+    ],
+    "baseInsideEnvironment": "forward: always true; restore: true, false, or null when no pyvenv.cfg home can be read",
+    "restoreRunsPreflight": false,
+    "deletes": "nothing; saved files accumulate; a failed rename leaves an inert pending file",
+    "nonDryRun": "same location rule as build: demo serving checkout only, recorded native processes stopped",
+    "notTested": "the non-dry-run refusal of the switch (shared with build, tested there): never run without --dry-run"
+  },
+  "decision3": {
+    "command": "<python> -I -B -c <imports>; CUDA_VISIBLE_DEVICES empty; HF and transformers offline; 180 s",
+    "usedBy": ["switch-ocr-python --python, before anything is written", "build, before a profile directory is made"],
+    "measuredSeconds": {"cold": 40.7, "warm": 9.5},
+    "imports": [
+      {"module": "fitz", "at": [
+        "services/geo/geo/usp_document_candidates/docling_tesseract.py:19",
+        "scripts/usp/document-models/run_trial.py:22", "services/geo/geo/usp_packet_regions.py:57",
+        "scripts/usp/document-models/run_pdf_pages.py:69", "services/geo/geo/usp_document_candidates/granite.py:13"
+      ]},
+      {"module": "psutil", "at": [
+        "scripts/usp/document-models/run_trial.py:23", "services/geo/geo/usp_document_candidates/granite.py:14"
+      ]},
+      {"module": "pypdfium2", "at": ["services/geo/geo/usp_packet_regions.py:58"]},
+      {"module": "pypdfium2_raw", "at": ["services/geo/geo/usp_packet_regions.py:59"]},
+      {"module": "PIL.Image", "at": [
+        "services/geo/geo/usp_document_candidates/docling_tesseract.py:20",
+        "services/geo/geo/usp_packet_regions.py:60", "services/geo/geo/usp_document_candidates/granite.py:15"
+      ]},
+      {"module": "docling.datamodel.accelerator_options",
+        "at": ["services/geo/geo/usp_document_candidates/docling_tesseract.py:425"]},
+      {"module": "docling.datamodel.base_models",
+        "at": ["services/geo/geo/usp_document_candidates/docling_tesseract.py:426"]},
+      {"module": "docling.datamodel.pipeline_options",
+        "at": ["services/geo/geo/usp_document_candidates/docling_tesseract.py:427"]},
+      {"module": "docling.document_converter",
+        "at": ["services/geo/geo/usp_document_candidates/docling_tesseract.py:428"]}
+    ],
+    "entryPoints": {
+      "ocr": "scripts/usp/document-models/run_source_ocr.py:21,26 (docling_tesseract, run_trial -> granite)",
+      "region": "scripts/usp/document-models/run_packet_region.py:15 (usp_packet_regions -> run_pdf_pages:62)"
+    },
+    "notImported": [
+      "granite.py:106,122,123,150,151 (torch, transformers, docling_core) are inside functions the two steps do not",
+      "call directly; docling's own imports load torch and transformers transitively.",
+      "Version pins are not imports and are not checked here: run_source_ocr.py:109-113 (docling-slim 2.131.0),",
+      "usp_packet_regions.py:67-70 (pypdfium2, PyMuPDF, Pillow; these files are pinned by the frozen profile)."
+    ]
+  },
+  "ownerCommands": {
+    "where": "E:/Projects/ulpin-wt/demo, after roll-out steps 2-4 (native processes stopped), before start",
+    "rollOut": [
+      {
+        "run": "node scripts/platform/demo-document-runtime.mjs switch-ocr-python --python \"$PYTHON\"",
+        "python": "E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe",
+        "mustPrint": [
+          "exit 0 and one JSON line: restored false; previousPython (the old interpreter); newPython = $PYTHON;",
+          "baseInsideEnvironment true; savedPreviousFile ocr-paths-profile.previous-<UTC>.json;",
+          "previousSha256 and newSha256 (64 hex each, different). Keep the line: the file name is the rollback."
+        ]
+      },
+      {
+        "run": "node scripts/platform/demo-document-runtime.mjs build --python \"$PYTHON\"",
+        "mustPrint": [
+          "exit 0 and three lines: Configured keys: (six key names); ULPIN_PACKET_REGIONS_PROFILE_SHA256: <64 hex>;",
+          "document-runtime-paths.json SHA256: <64 hex>. Then steps 6-7: start, doctor, PASS Document runtimes."
+        ]
+      }
+    ],
+    "rollback": [
+      {
+        "run": "node scripts/platform/demo-document-runtime.mjs switch-ocr-python --restore \"$SAVED_PREVIOUS_FILE\"",
+        "savedPreviousFile": "the file name the switch printed; a name only, never a path",
+        "mustPrint": [
+          "exit 0 and one JSON line: restored true; previousPython = $PYTHON; newPython (the old interpreter);",
+          "baseInsideEnvironment false for K9's previous environment; savedPreviousFile (a second saved file);",
+          "newSha256 equal to the previousSha256 the switch printed."
+        ]
+      },
+      {
+        "run": "node scripts/platform/demo-document-runtime.mjs build",
+        "mustPrint": [
+          "exit 0 and the same three lines; without --python the build takes the restored override's interpreter.",
+          "It refuses if that interpreter no longer imports the OCR and region packages. Then start and doctor."
+        ]
+      }
+    ],
+    "refusals": "exit 1, one line on stderr, nothing written; an outside base is named in that line"
+  },
+  "rehearsal": {
+    "script": "docs/evidence/gf1/k9c/rehearsal.mjs <fresh folder> <receipt>",
+    "scope": "a synthetic override in a fresh task folder; values name retained assets outside the runtime folder",
+    "receipt": "E:/BhuAayam-data/task-data/k9c/rehearsal-1.json",
+    "good": {
+      "python": "E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe",
+      "switchExit": 0, "baseInsideEnvironment": true, "realPreflight": true,
+      "previousSha256": "add4e793119ef993cfb0942644d05be3fde7155536641d89c7b78d119e4d0810",
+      "newSha256": "6dce26c4d2e9405f2751de8a7c92a92e68209eeada737c22be612a7622aff076",
+      "buildExit": 0,
+      "buildProfileSha256": "d7898442d86640268b9c5dba6d9dfd1ddd7158b6f11b9310456a67a4b1dc9489",
+      "buildProfileNote": "equals K9's dry-run profile for this worktree; never a demo profile"
+    },
+    "difficult": {
+      "python": "E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/venv/Scripts/python.exe",
+      "base": "C:/Users/kvina/.cache/codex-runtimes/codex-primary-runtime/dependencies/python",
+      "restoreExit": 0, "restoredBaseInsideEnvironment": false,
+      "restoredSha256": "add4e793119ef993cfb0942644d05be3fde7155536641d89c7b78d119e4d0810",
+      "restoredEqualsOriginalBytes": true,
+      "forwardSwitchExit": 1,
+      "forwardRefusal": "Document runtime interpreter base lies outside its environment: <that base>"
+    }
+  },
+  "checks": {
+    "preload": "docs/evidence/gf1/k9c/safety.cjs, as --require and in NODE_OPTIONS for every command",
+    "builderCommand": "node --require <preload> --test scripts/platform/demo-document-runtime.test.mjs",
+    "builder": {"exit": 0, "tests": 17, "passed": 14, "skipped": 3},
+    "builderWithProjectPython": {"exit": 0, "tests": 17, "passed": 16, "skipped": 1},
+    "builderPythonKey": "ULPIN_DOCUMENT_RUNTIME_TEST_PYTHON",
+    "builderSkip": "the shared-runtime junction test is skipped by the guard, as in K9 and K9b",
+    "platformCommand": "node --require <preload> --test --test-skip-pattern=<K9 pattern> <four platform test files>",
+    "platformSkipPattern": [
+      "a disabled gateway passes", "an enabled gateway needs", "a flag other than",
+      "enable then disable", "a refused change"
+    ],
+    "platformSubset": {"exit": 0, "passed": 22, "skipped": 3, "deselectedForbiddenFixtures": 5},
+    "platformCountsNote": "K9b had 14 passed and 2 skipped; the difference is the 9 new tests (8 pass, 1 needs Python)",
+    "demoConfigTests": "no dedicated file exists; the platform subset is every permitted test that imports it",
+    "backendTypecheck": {"command": "pnpm typecheck:backend", "exit": 0},
+    "rehearsalExit": 0,
+    "syntax": {"command": "node --check on the builder, its tests, safety.cjs and rehearsal.mjs", "exit": 0},
+    "diffCheckExit": 0,
+    "newLinesOver120": 0
+  },
+  "temporaryRoot": "E:/BhuAayam-data/task-data/k9c",
+  "temporaryFolders": [
+    {"folder": "test-temp", "note": "synthetic fixtures of every test run, retained by the guard"},
+    {"folder": "rehearsal-1", "files": 5, "bytes": 259731}
+  ],
+  "logs": ["builder-tests.log", "builder-native-tests.log", "platform-subset.log", "backend-typecheck.log"],
+  "safety": {
+    "runtimeFolderReadWrittenOrListed": false,
+    "actionsRunWithoutDryRun": 0,
+    "envFilesReadOrWritten": false,
+    "syntheticEnvFixturesCreated": 0,
+    "existingEnvironmentsModified": false,
+    "interpretersStarted": "project-owned one with -I -B and no GPU (preflight, build); the old one was never started",
+    "explicitDeletionCommands": 0,
+    "gpuUse": false,
+    "providerOrNetworkCalls": 0,
+    "runtimeStartsOrStops": 0,
+    "demoApiRequests": 0,
+    "pushed": false
+  }
+}

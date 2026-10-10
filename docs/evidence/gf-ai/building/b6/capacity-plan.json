@@ -1,0 +1,130 @@
+{
+  "schema": "building-b6-capacity-plan/1",
+  "hypothesis": "Higher RGB resolution improves detection below 256 source-mask pixels; Dice stays 5.",
+  "gpu_budget_bytes": 6442450944,
+  "capacity_bracket": [
+    672,
+    624,
+    576
+  ],
+  "resolution_selection": "Largest passing bracket member, not an unrestricted maximum of all multiples of 24.",
+  "effective_batch": 4,
+  "batch_size": 1,
+  "accumulation": 4,
+  "max_epochs": 8,
+  "target_mask_resolution": 432,
+  "lr_scheduler": "constant",
+  "coupled_changes": [
+    "Dynamic bicubic publisher positional-embedding interpolation; retain original 432 parameter grid.",
+    "HF non-reentrant backbone/decoder recomputation, preserved RNG; no parameter/objective/label changes.",
+    "Prediction-mask grid and criterion sampled-point count automatically follow input resolution.",
+    "Retain epoch 4's 432 nearest-neighbour targets; normalized point sampling permits unequal grids.",
+    "Trainer keeps 12-epoch default; callback caps B6 at 8. The original constant LR is unchanged."
+  ],
+  "qualification": [
+    "50 optimizer steps, finite scalar losses/gradients, falling first/last 20 mean loss, reserved <= 6 GiB.",
+    "Include empty, dense and maximum-label TRAIN chip; do not hide the worst-label memory case."
+  ],
+  "stop": [
+    "No unbounded resolution sweep, allocator/precision/objective tuning. Preserve every failed run.",
+    "Full-training micro-steps and optimizer steps retain nonfinite and memory guards."
+  ],
+  "attempts": [
+    {
+      "run_id": "b6-smoke-r672-20261010",
+      "status": "failed",
+      "signature": "CUDA OOM, target-mask cat requested 1.66 GiB, optimizer_step 0, micro_steps 3",
+      "cause": "Initial implementation unnecessarily upscaled target masks with RGB, differing from epoch 4.",
+      "decision": "Preserve 432 supervision. One bounded 672 comparison with other capacity settings unchanged."
+    },
+    {
+      "run_id": "b6-smoke-r672-label432-20261010",
+      "status": "failed",
+      "signature": "CUDA OOM, target-mask cat requested 704 MiB, optimizer_step 0, micro_steps 3",
+      "cause": [
+        "Maximum-label TRAIN chip has 76 features; 13 matched groups repeat 432 masks.",
+        "Previous graphs plus the 988-mask concatenation exceed 6 GiB even with backbone recomputation."
+      ],
+      "hypothesis": "624 lowers image-dependent activations while preserving 432 targets and learned parameters.",
+      "baseline": "672 fixed-target run; reserved 5792333824 bytes before failed 704 MiB allocation.",
+      "success": "50 finite/falling optimizer steps, including maximum labels; reserved <= 6442450944 bytes.",
+      "stop": "One bounded 624 comparison. If failed, stop the resolution sweep; no 576 or allocator trials."
+    },
+    {
+      "run_id": "b6-smoke-r624-label432-20261010",
+      "status": "failed",
+      "signature": "CUDA OOM, target-mask cat requested 704 MiB after 4 optimizer steps/16 microsteps",
+      "peak_reserved_bytes": 6253707264,
+      "cause": "Resident optimizer plus dense 13-group targets still limit memory. Shrinking inputs did not qualify.",
+      "decision": [
+        "Stop the resolution sweep. One materially different memory comparison: decoder plus backbone recomputation.",
+        "Retain 432 targets and 672 RGB. No objective, LR, allocator or precision changes."
+      ],
+      "hypothesis": "Recompute decoder attention to free stored activations without changing loss or parameters.",
+      "research": [
+        "Pinned HF _set_gradient_checkpointing implements gradient_checkpointing_enable.",
+        "RF-DETR decoder inherits GradientCheckpointingLayer, but enclosing model omits the support flag.",
+        "Use the pinned implementation, non-reentrant, preserve_rng_state=true."
+      ],
+      "success": "Same 50-step finite/falling/maximum-label criteria at 672, reserved <= 6 GiB.",
+      "stop": "If failed, no further capacity attempt; report blocker and preserve immutable records."
+    },
+    {
+      "run_id": "b6-smoke-r672-recompute-20261010",
+      "status": "failed",
+      "signature": "CUDA OOM, target-mask cat requested 704 MiB, optimizer_step 0, micro_steps 3",
+      "peak_reserved_bytes": 5945425920,
+      "result": "Decoder recomputation did not remove the fixed dense-target peak; no 50-step qualification.",
+      "decision": "Stop. No more capacity trials, full training, DEV inference, transfer, export or registration.",
+      "next_prerequisite": [
+        "Lead approves a materially different bounded memory solution or smaller-resolution capacity plan.",
+        "576 was not tested; the hardware maximum is not established. No new accuracy result exists."
+      ],
+      "note": "Superseded by the B6b lossless chunked mask loss; see b6b_attempts."
+    }
+  ],
+  "research": [
+    "HF 5.17.0 loss_rf_detr.py samples source/target masks at normalized coordinates; dimensions may differ.",
+    "modeling_rf_detr.py interpolates original position embeddings; patch 12 * windows 2 requires multiples of 24.",
+    "HF DINOv2 exposes gradient_checkpointing_enable(use_reentrant=false); decoder has supported layer classes."
+  ],
+  "closed_sets": "Karnataka HOLDOUT and Coxs Bazar remain permanently closed; capacity inputs are TRAIN only.",
+  "b6b_attempts": [
+    {
+      "run_id": "b6b-s672-plain",
+      "status": "failed",
+      "input_resolution": 672,
+      "checkpoint_backbone": false,
+      "signature": "CUDA OOM, forward activations (segmentation_bias add, 280 MiB), optimizer_step 0, micro_steps 1",
+      "peak_reserved_bytes": 6402605056,
+      "decision": "Mask loss no longer concatenates 13 groups; 672 needs backbone recomputation."
+    },
+    {
+      "run_id": "b6b-s672-bb",
+      "status": "passed",
+      "input_resolution": 672,
+      "checkpoint_backbone": true,
+      "checkpoint_decoder": false,
+      "optimizer_steps": 50,
+      "micro_steps": 152,
+      "first_20_mean_loss": 31.073902106285097,
+      "last_20_mean_loss": 16.54782365458086,
+      "peak_allocated_bytes": 5181433344,
+      "peak_reserved_bytes": 5375000576,
+      "budget_bytes": 6442450944,
+      "decision": "672 qualifies with backbone recomputation; 576 not tried (stop rule); train at 672."
+    }
+  ],
+  "b6b": {
+    "hypothesis": [
+      "The same mask loss over matched pairs in fixed 64-pair chunks,",
+      "with uint8 targets cast per chunk, brings 672 under the cap."
+    ],
+    "loss_equality": [
+      "scripts/ml/test_chunked_mask_loss.py: values and gradients equal upstream,",
+      "atol 1e-6, chunk sizes 1, 7 and 64."
+    ],
+    "loss_revision": "ulpin-rfdetr-empty-mask-scalar-chunked/2",
+    "result": "672 with backbone recomputation qualifies; 576 untried."
+  }
+}

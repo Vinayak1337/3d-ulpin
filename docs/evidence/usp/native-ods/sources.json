@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "native-ods-sources/1",
+  "sources": [
+    {
+      "id": "home-office-hospitality-2021-q3-ods-20261004",
+      "classification": "test_only",
+      "issuer": "UK Home Office",
+      "originalUrl": "https://assets.publishing.service.gov.uk/media/61ee7e4dd3bf7f0550c0c55a/Home_Office_Senior_Officials_hospitality_-_July_2021_to_September_2021.ods",
+      "publicationUrl": "https://www.gov.uk/government/publications/home-office-senior-officials-business-expenses-and-meetings-july-2021-to-september-2021",
+      "acquiredAt": "2026-10-04T13:47:14.621575+00:00",
+      "version": null,
+      "geography": "United Kingdom; administrative transparency, no physical property reference",
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "units": null,
+      "terms": {
+        "state": "publisher_notice_observed",
+        "license": "OGL-3.0 except where otherwise stated",
+        "attribution": "Home Office / Crown copyright; preserve source publication attribution",
+        "reference": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+      },
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/native-ods-20261004-run01/originals/home-office-hospitality-2021-q3.ods",
+        "bytes": 5168,
+        "sha256": "1c6a364fd20ff769835451a075de4654fc21e1499dfaf159081d3db089e591f6",
+        "format": "ods",
+        "repositoryBytesVerified": false
+      },
+      "acquisitionReceipt": "E:/BhuAayam-data/task-data/native-ods-20261004-run01/acquisition.json",
+      "limitations": [
+        "Source-native cells/ranges only; no formulas/links executed or headers/units/joins inferred.",
+        "No official Indian property, matching, geometry, accuracy, rights or learning qualification."
+      ]
+    },
+    {
+      "id": "libreoffice-fdo43534-ods-20261004",
+      "classification": "test_only",
+      "issuer": "LibreOffice / The Document Foundation",
+      "originalUrl": "https://raw.githubusercontent.com/LibreOffice/core/ec079b9fc5938d548b082278dbb4f02f9569660e/sc/qa/unit/data/ods/fdo43534test.ods",
+      "publicationUrl": "https://github.com/LibreOffice/core/commit/ec079b9fc5938d548b082278dbb4f02f9569660e",
+      "acquiredAt": "2026-10-04T13:47:50.165162+00:00",
+      "version": "ec079b9fc5938d548b082278dbb4f02f9569660e",
+      "geography": "Development regression input; physical geography unknown",
+      "horizontalCrs": null,
+      "verticalReference": null,
+      "units": null,
+      "terms": {
+        "state": "publisher_licence_files_observed",
+        "license": null,
+        "attribution": "LibreOffice core regression corpus, ec079b9fc5938d548b082278dbb4f02f9569660e, sc/qa/unit/data/ods/fdo43534test.ods",
+        "reference": "https://github.com/LibreOffice/core/tree/ec079b9fc5938d548b082278dbb4f02f9569660e",
+        "limitations": "Revision contains GPLv3/MPL2 texts; input-specific redistribution/ML clearance not independently established."
+      },
+      "content": {
+        "externalPath": "E:/BhuAayam-data/task-data/native-ods-20261004-run01/originals/libreoffice-fdo43534test.ods",
+        "bytes": 18047,
+        "sha256": "576998ac8d4283964c329a4979579e81959d60ca5b4aecb7d673575b9007b288",
+        "format": "ods",
+        "repositoryBytesVerified": false
+      },
+      "acquisitionReceipt": "E:/BhuAayam-data/task-data/native-ods-20261004-run01/acquisition-formula.json",
+      "limitations": [
+        "Source-native cells/ranges only; no formulas/links executed or headers/units/joins inferred.",
+        "No official Indian property, matching, geometry, accuracy, rights or learning qualification."
+      ]
+    }
+  ],
+  "handoff": "docs/evidence/usp/native-ods-handoff.md",
+  "proof": {
+    "path": "E:/BhuAayam-data/task-data/native-ods-20261004-run01/verification.json",
+    "bytes": 5394,
+    "sha256": "079e21018595aeadad3c1867e09a3761fc0c46bec99592d1f77fd984e71eb7ba"
+  },
+  "qualification": "Actual document parser/isolated HTTP bridge with disclosed input/auth/byte-reader controls and removal of unused pyproj imports; full geo-service startup/live enrollment unverified."
+}

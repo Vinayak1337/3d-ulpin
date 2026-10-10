@@ -1,0 +1,2420 @@
+{
+  "task": "A4d",
+  "gates": [
+    "GF-AGENT",
+    "FP-LEARN-TEST"
+  ],
+  "status": "completed_one_arm_no_accuracy_claim",
+  "rounds": [
+    {
+      "round": "t1c",
+      "labelsSha256": "7ecd2721a4183a1a689782258d6690449cb5640cda2280659e3f82723754fa45",
+      "profilesSha256": "3a22f11297e292c9f2132defe9f3037fc16e0f0eac53b341b21efd55e9695bf6",
+      "reportSha256": "6b52ec0ac8d71e0e24d1c3da5e2a3efdbed3bda3521489618f1aaf0e9af08b78",
+      "tablesAccepted": 6,
+      "tablesRejected": 0,
+      "fieldsSubmitted": 198,
+      "fieldsVerified": 196,
+      "fieldsRefused": 2,
+      "refusalCodes": {
+        "MAPPING_ENUM_UNRECOGNISED": 2
+      },
+      "refused": [
+        {
+          "profileId": "408c5020f273ad005950ba78a621f8977312bf8e44a38c8d417a703b243a1599",
+          "reasonCode": "MAPPING_ENUM_UNRECOGNISED"
+        },
+        {
+          "profileId": "23349ff304df5f1acecce0f7c69752333c0197ceea38764f83653363de757ee2",
+          "reasonCode": "MAPPING_ENUM_UNRECOGNISED"
+        }
+      ],
+      "verifiedPositives": {
+        "building.sourceKey": {
+          "columns": 3,
+          "distinctFamilies": 3,
+          "families": [
+            "opf-d02",
+            "opf-d03",
+            "opf-d05"
+          ]
+        },
+        "building.name": {
+          "columns": 5,
+          "distinctFamilies": 4,
+          "families": [
+            "opf-d02",
+            "opf-d04",
+            "opf-d05",
+            "opf-d06"
+          ]
+        },
+        "building.addressLiteral": {
+          "columns": 6,
+          "distinctFamilies": 5,
+          "families": [
+            "opf-d02",
+            "opf-d03",
+            "opf-d04",
+            "opf-d05",
+            "opf-d06"
+          ]
+        },
+        "building.storeyCount": {
+          "columns": 1,
+          "distinctFamilies": 1,
+          "families": [
+            "opf-d02"
+          ]
+        },
+        "building.use": {
+          "columns": 0,
+          "distinctFamilies": 0,
+          "families": []
+        }
+      },
+      "expectedComparison": null
+    },
+    {
+      "round": "t1d",
+      "labelsSha256": "d267de96326cab764d09e08dd53418f422e6d47bd05a8c25c42ca219efa6f0e0",
+      "profilesSha256": "6078691a13d5d4794b217d6744d10c44119fbac11bde0f3b6017191f9b11d1db",
+      "reportSha256": "7fb2ee836352b3a3a1e15201a2f4783bbf34c47ca0535d703c096181a187f29e",
+      "tablesAccepted": 3,
+      "tablesRejected": 0,
+      "fieldsSubmitted": 21,
+      "fieldsVerified": 18,
+      "fieldsRefused": 3,
+      "refusalCodes": {
+        "MAPPING_CRS_UNVERIFIED": 3
+      },
+      "refused": [
+        {
+          "profileId": "72fa66c715b73459a2f8ef68f841ad6af19b131b4afd11b4be3f77174424c5ab",
+          "reasonCode": "MAPPING_CRS_UNVERIFIED"
+        },
+        {
+          "profileId": "d1943ab145a1bad2daa8ab4c37eaac587f1b0b13be5229e6c0c7a1f02fde11f8",
+          "reasonCode": "MAPPING_CRS_UNVERIFIED"
+        },
+        {
+          "profileId": "b298bee9ecf4045f56e23b8166677455dfc99aadc3d4b756f79f2cb7f05b2821",
+          "reasonCode": "MAPPING_CRS_UNVERIFIED"
+        }
+      ],
+      "verifiedPositives": {
+        "building.storeyCount": {
+          "columns": 1,
+          "distinctFamilies": 1,
+          "families": [
+            "opf-d07"
+          ]
+        },
+        "building.heightM": {
+          "columns": 1,
+          "distinctFamilies": 1,
+          "families": [
+            "opf-d07"
+          ]
+        },
+        "building.footprint": {
+          "columns": 0,
+          "distinctFamilies": 0,
+          "families": []
+        },
+        "building.sourceKey": {
+          "columns": 1,
+          "distinctFamilies": 1,
+          "families": [
+            "opf-d08"
+          ]
+        }
+      },
+      "expectedComparison": {
+        "expectedRefusalIds": [
+          "72fa66c715b73459a2f8ef68f841ad6af19b131b4afd11b4be3f77174424c5ab",
+          "b298bee9ecf4045f56e23b8166677455dfc99aadc3d4b756f79f2cb7f05b2821",
+          "d1943ab145a1bad2daa8ab4c37eaac587f1b0b13be5229e6c0c7a1f02fde11f8"
+        ],
+        "actualRefusalIds": [
+          "72fa66c715b73459a2f8ef68f841ad6af19b131b4afd11b4be3f77174424c5ab",
+          "b298bee9ecf4045f56e23b8166677455dfc99aadc3d4b756f79f2cb7f05b2821",
+          "d1943ab145a1bad2daa8ab4c37eaac587f1b0b13be5229e6c0c7a1f02fde11f8"
+        ],
+        "expectedVerifiedFields": 18,
+        "actualVerifiedFields": 18,
+        "differences": {
+          "unexpected": [],
+          "missing": [],
+          "tablePlansRejected": 0,
+          "verifiedFields": 0,
+          "reasonCodes": []
+        }
+      }
+    }
+  ],
+  "baseline": {
+    "name": "A4c arm B",
+    "arm": "B",
+    "model": "E:/BhuAayam-data/task-data/a4c/arm-B/v1",
+    "threshold": 0.9497545957565308,
+    "pooledFields": 527,
+    "wrongCommitted": 0,
+    "correctPositiveCommitted": 0,
+    "perTargetPositives": {
+      "building.addressLiteral": {
+        "n": 2,
+        "committed": 0,
+        "committedCorrect": 0,
+        "wrongCommitted": 0,
+        "abstained": 2
+      },
+      "building.footprint": {
+        "n": 1,
+        "committed": 0,
+        "committedCorrect": 0,
+        "wrongCommitted": 0,
+        "abstained": 1
+      },
+      "building.name": {
+        "n": 3,
+        "committed": 0,
+        "committedCorrect": 0,
+        "wrongCommitted": 0,
+        "abstained": 3
+      },
+      "building.storeyLabel": {
+        "n": 3,
+        "committed": 0,
+        "committedCorrect": 0,
+        "wrongCommitted": 0,
+        "abstained": 3
+      },
+      "document.registrationNo": {
+        "n": 4,
+        "committed": 0,
+        "committedCorrect": 0,
+        "wrongCommitted": 0,
+        "abstained": 4
+      },
+      "unit.type": {
+        "n": 2,
+        "committed": 0,
+        "committedCorrect": 0,
+        "wrongCommitted": 0,
+        "abstained": 2
+      }
+    },
+    "unknownCommitted": 53,
+    "abstained": 474,
+    "fitExamples": 591,
+    "fitTargetCounts": {
+      "unknown": 576,
+      "building.name": 3,
+      "building.storeyLabel": 3,
+      "document.registrationNo": 4,
+      "unit.type": 2,
+      "building.addressLiteral": 2,
+      "building.footprint": 1
+    },
+    "byFamilyGroup": {
+      "Indian": {
+        "n": 527,
+        "perTarget": {
+          "building.addressLiteral": {
+            "n": 2,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 2
+          },
+          "building.footprint": {
+            "n": 1,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 1
+          },
+          "building.name": {
+            "n": 3,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 3
+          },
+          "building.storeyLabel": {
+            "n": 3,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 3
+          },
+          "document.registrationNo": {
+            "n": 4,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 4
+          },
+          "unit.type": {
+            "n": 2,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 2
+          },
+          "unknown": {
+            "n": 512,
+            "committed": 53,
+            "committedCorrect": 53,
+            "wrongCommitted": 0,
+            "abstained": 459
+          }
+        },
+        "wrongCommitted": 0,
+        "correctPositiveCommitted": 0,
+        "unknownCommitted": 53,
+        "unknownCommittedCorrect": 53,
+        "abstained": 474
+      },
+      "foreign": {
+        "n": 0,
+        "perTarget": {},
+        "wrongCommitted": 0,
+        "correctPositiveCommitted": 0,
+        "unknownCommitted": 0,
+        "unknownCommittedCorrect": 0,
+        "abstained": 0
+      }
+    },
+    "baselineEvidenceSha256": "5c372436fddf34a20206a8ee442c6467b16cca0526c8b36bebb4f354c489a540"
+  },
+  "a4d": {
+    "name": "A4d one arm",
+    "model": "E:\\BhuAayam-data\\task-data\\a4d\\learner\\one-arm-v1\\v1",
+    "modelSha256": "87c9c7764d50fd7a96b4e6e3e32e6512857625d05e6282d4f0d7e309bbad4231",
+    "fitExamples": 805,
+    "fitTargetCounts": {
+      "unknown": 772,
+      "building.name": 8,
+      "building.storeyLabel": 3,
+      "document.registrationNo": 4,
+      "unit.type": 2,
+      "building.addressLiteral": 8,
+      "building.footprint": 1,
+      "building.sourceKey": 4,
+      "building.storeyCount": 2,
+      "building.heightM": 1
+    },
+    "threshold": 0.9866563081741333,
+    "pooledFields": 741,
+    "wrongCommitted": 0,
+    "correctPositiveCommitted": 0,
+    "perTargetPositives": {
+      "building.addressLiteral": {
+        "n": 8,
+        "committed": 0,
+        "committedCorrect": 0,
+        "wrongCommitted": 0,
+        "abstained": 8
+      },
+      "building.footprint": {
+        "n": 1,
+        "committed": 0,
+        "committedCorrect": 0,
+        "wrongCommitted": 0,
+        "abstained": 1
+      },
+      "building.heightM": {
+        "n": 1,
+        "committed": 0,
+        "committedCorrect": 0,
+        "wrongCommitted": 0,
+        "abstained": 1
+      },
+      "building.name": {
+        "n": 8,
+        "committed": 0,
+        "committedCorrect": 0,
+        "wrongCommitted": 0,
+        "abstained": 8
+      },
+      "building.sourceKey": {
+        "n": 4,
+        "committed": 0,
+        "committedCorrect": 0,
+        "wrongCommitted": 0,
+        "abstained": 4
+      },
+      "building.storeyCount": {
+        "n": 2,
+        "committed": 0,
+        "committedCorrect": 0,
+        "wrongCommitted": 0,
+        "abstained": 2
+      },
+      "building.storeyLabel": {
+        "n": 3,
+        "committed": 0,
+        "committedCorrect": 0,
+        "wrongCommitted": 0,
+        "abstained": 3
+      },
+      "document.registrationNo": {
+        "n": 4,
+        "committed": 0,
+        "committedCorrect": 0,
+        "wrongCommitted": 0,
+        "abstained": 4
+      },
+      "unit.type": {
+        "n": 2,
+        "committed": 0,
+        "committedCorrect": 0,
+        "wrongCommitted": 0,
+        "abstained": 2
+      }
+    },
+    "unknownCommitted": 2,
+    "abstained": 739,
+    "byFamilyGroup": {
+      "Indian": {
+        "n": 527,
+        "perTarget": {
+          "building.addressLiteral": {
+            "n": 2,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 2
+          },
+          "building.footprint": {
+            "n": 1,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 1
+          },
+          "building.name": {
+            "n": 3,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 3
+          },
+          "building.storeyLabel": {
+            "n": 3,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 3
+          },
+          "document.registrationNo": {
+            "n": 4,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 4
+          },
+          "unit.type": {
+            "n": 2,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 2
+          },
+          "unknown": {
+            "n": 512,
+            "committed": 2,
+            "committedCorrect": 2,
+            "wrongCommitted": 0,
+            "abstained": 510
+          }
+        },
+        "wrongCommitted": 0,
+        "correctPositiveCommitted": 0,
+        "unknownCommitted": 2,
+        "unknownCommittedCorrect": 2,
+        "abstained": 525
+      },
+      "foreign": {
+        "n": 214,
+        "perTarget": {
+          "building.addressLiteral": {
+            "n": 6,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 6
+          },
+          "building.heightM": {
+            "n": 1,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 1
+          },
+          "building.name": {
+            "n": 5,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 5
+          },
+          "building.sourceKey": {
+            "n": 4,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 4
+          },
+          "building.storeyCount": {
+            "n": 2,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 2
+          },
+          "unknown": {
+            "n": 196,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 196
+          }
+        },
+        "wrongCommitted": 0,
+        "correctPositiveCommitted": 0,
+        "unknownCommitted": 0,
+        "unknownCommittedCorrect": 0,
+        "abstained": 214
+      }
+    }
+  },
+  "families": {
+    "dev": [
+      "mi-d01",
+      "mi-d02",
+      "mi-d03",
+      "mi-d04",
+      "mi-d05",
+      "mi-d06",
+      "mi-d07",
+      "mi-d08",
+      "mi-d09",
+      "mi-d10",
+      "mi-d11",
+      "mi-d12",
+      "mi-d13",
+      "mi-d14",
+      "mi-d15",
+      "mi-d16",
+      "mi-d17",
+      "mi-d18",
+      "mi-d19",
+      "mi-d20",
+      "mi-d21",
+      "mi-d22",
+      "mi-d23",
+      "mi-d24",
+      "opf-d02",
+      "opf-d03",
+      "opf-d04",
+      "opf-d05",
+      "opf-d06",
+      "opf-d07",
+      "opf-d08",
+      "opf-d09"
+    ],
+    "pool": [
+      "smc-building-stock",
+      "smc-sewage-plants",
+      "smc-tax-recovery",
+      "smc-water-charges",
+      "smc-water-projects"
+    ],
+    "foldCount": 32,
+    "poolPolicy": "Remain in every fit; never folded."
+  },
+  "verifiedPositiveCounts": {
+    "building.name": {
+      "columns": 8,
+      "distinctFamilies": 5,
+      "families": [
+        "mi-d02",
+        "opf-d02",
+        "opf-d04",
+        "opf-d05",
+        "opf-d06"
+      ]
+    },
+    "building.storeyLabel": {
+      "columns": 3,
+      "distinctFamilies": 1,
+      "families": [
+        "mi-d02"
+      ]
+    },
+    "document.registrationNo": {
+      "columns": 4,
+      "distinctFamilies": 2,
+      "families": [
+        "mi-d03",
+        "mi-d22"
+      ]
+    },
+    "unit.type": {
+      "columns": 2,
+      "distinctFamilies": 1,
+      "families": [
+        "mi-d22"
+      ]
+    },
+    "building.addressLiteral": {
+      "columns": 8,
+      "distinctFamilies": 6,
+      "families": [
+        "mi-d23",
+        "opf-d02",
+        "opf-d03",
+        "opf-d04",
+        "opf-d05",
+        "opf-d06"
+      ]
+    },
+    "building.footprint": {
+      "columns": 1,
+      "distinctFamilies": 1,
+      "families": [
+        "mi-d24"
+      ]
+    },
+    "building.sourceKey": {
+      "columns": 4,
+      "distinctFamilies": 4,
+      "families": [
+        "opf-d02",
+        "opf-d03",
+        "opf-d05",
+        "opf-d08"
+      ]
+    },
+    "building.storeyCount": {
+      "columns": 2,
+      "distinctFamilies": 2,
+      "families": [
+        "opf-d02",
+        "opf-d07"
+      ]
+    },
+    "building.heightM": {
+      "columns": 1,
+      "distinctFamilies": 1,
+      "families": [
+        "opf-d07"
+      ]
+    }
+  },
+  "fallbackTriggers": {
+    "sixA4cTargets": {
+      "document.registrationNo": {
+        "columns": 4,
+        "distinctFamilies": 2,
+        "families": [
+          "mi-d03",
+          "mi-d22"
+        ]
+      },
+      "building.name": {
+        "columns": 8,
+        "distinctFamilies": 5,
+        "families": [
+          "mi-d02",
+          "opf-d02",
+          "opf-d04",
+          "opf-d05",
+          "opf-d06"
+        ]
+      },
+      "building.storeyLabel": {
+        "columns": 3,
+        "distinctFamilies": 1,
+        "families": [
+          "mi-d02"
+        ]
+      },
+      "unit.type": {
+        "columns": 2,
+        "distinctFamilies": 1,
+        "families": [
+          "mi-d22"
+        ]
+      },
+      "building.addressLiteral": {
+        "columns": 8,
+        "distinctFamilies": 6,
+        "families": [
+          "mi-d23",
+          "opf-d02",
+          "opf-d03",
+          "opf-d04",
+          "opf-d05",
+          "opf-d06"
+        ]
+      },
+      "building.footprint": {
+        "columns": 1,
+        "distinctFamilies": 1,
+        "families": [
+          "mi-d24"
+        ]
+      }
+    },
+    "everyVerifiedPositiveTarget": {
+      "building.name": {
+        "columns": 8,
+        "distinctFamilies": 5,
+        "families": [
+          "mi-d02",
+          "opf-d02",
+          "opf-d04",
+          "opf-d05",
+          "opf-d06"
+        ]
+      },
+      "building.storeyLabel": {
+        "columns": 3,
+        "distinctFamilies": 1,
+        "families": [
+          "mi-d02"
+        ]
+      },
+      "document.registrationNo": {
+        "columns": 4,
+        "distinctFamilies": 2,
+        "families": [
+          "mi-d03",
+          "mi-d22"
+        ]
+      },
+      "unit.type": {
+        "columns": 2,
+        "distinctFamilies": 1,
+        "families": [
+          "mi-d22"
+        ]
+      },
+      "building.addressLiteral": {
+        "columns": 8,
+        "distinctFamilies": 6,
+        "families": [
+          "mi-d23",
+          "opf-d02",
+          "opf-d03",
+          "opf-d04",
+          "opf-d05",
+          "opf-d06"
+        ]
+      },
+      "building.footprint": {
+        "columns": 1,
+        "distinctFamilies": 1,
+        "families": [
+          "mi-d24"
+        ]
+      },
+      "building.sourceKey": {
+        "columns": 4,
+        "distinctFamilies": 4,
+        "families": [
+          "opf-d02",
+          "opf-d03",
+          "opf-d05",
+          "opf-d08"
+        ]
+      },
+      "building.storeyCount": {
+        "columns": 2,
+        "distinctFamilies": 2,
+        "families": [
+          "opf-d02",
+          "opf-d07"
+        ]
+      },
+      "building.heightM": {
+        "columns": 1,
+        "distinctFamilies": 1,
+        "families": [
+          "opf-d07"
+        ]
+      }
+    },
+    "sixTargetsReaching12": 0,
+    "sixTargetsBelow12": 6,
+    "tData": true,
+    "tMethod": null,
+    "tMethodStatus": "not_evaluated_T_data_true",
+    "stageB": {
+      "verifiedPositiveExamples": 33,
+      "required": 300,
+      "shortfall": 267
+    },
+    "fallbackWorkStarted": false
+  },
+  "heldOut": {
+    "scorable": {
+      "n": 2,
+      "total": {
+        "count": 2,
+        "n": 2
+      },
+      "committed": {
+        "count": 0,
+        "n": 2
+      },
+      "correct": {
+        "count": 0,
+        "n": 2
+      },
+      "abstained": {
+        "count": 2,
+        "n": 2
+      }
+    },
+    "nonScorable": {
+      "n": 2,
+      "committed": {
+        "count": 0,
+        "n": 2
+      }
+    },
+    "profiles": {
+      "count": 4,
+      "n": 4
+    },
+    "truthSha256": "4fd1049c5bff5fcde3b54237d2561502c2f06197bf01e65bd5862d90a9a7797d",
+    "manifestSha256": "c08d802fdd945f9530e91ab94db280858892de880e9a24d424d73c5027769249",
+    "qualification": "One frozen model/threshold; counts only, no accuracy claim and no tuning feedback."
+  },
+  "freshFits": 1,
+  "heldOutRuns": 1,
+  "tuningAfterMeasurements": false,
+  "rule": {
+    "calibrationMode": "cross_fit",
+    "classBalance": false,
+    "variants": 0,
+    "featuresChanged": false
+  },
+  "inputsSha256": "41b23f35f9f4ea101353fb9930aa22e35167d6bb9e8ea9b596c6676cda7da15d",
+  "linksSha256": "7b6f5e651e7e7276af77596f8d431727d54fbd95e763e173e71dd230d63a32d2",
+  "labelsChanged": false,
+  "labelsProduced": 0,
+  "providerCalls": 0,
+  "runtimeChanged": false,
+  "gpuUsed": false,
+  "qualification": "Pseudo-label agreement only. Zero pooled wrong commits is by threshold construction.",
+  "attempts": [
+    {
+      "task": "A4d",
+      "gates": [
+        "GF-AGENT",
+        "FP-LEARN-TEST"
+      ],
+      "status": "blocked_verifier_foreign_development_boundary",
+      "rounds": [
+        {
+          "round": "t1c",
+          "labelsSha256": "7ecd2721a4183a1a689782258d6690449cb5640cda2280659e3f82723754fa45",
+          "profilesSha256": "3a22f11297e292c9f2132defe9f3037fc16e0f0eac53b341b21efd55e9695bf6",
+          "tablesSubmitted": 6,
+          "fieldsSubmitted": 198,
+          "tablesAccepted": 0,
+          "tablePlansEvaluated": 0,
+          "fieldsVerified": 0,
+          "fieldsDryRunEvaluated": 0,
+          "fieldsBoundaryBlocked": 198,
+          "refusalCodes": {
+            "ERR_ASSERTION": 198
+          },
+          "labelledPositives": {
+            "building.sourceKey": 3,
+            "building.name": 5,
+            "building.addressLiteral": 6,
+            "building.storeyCount": 1,
+            "building.use": 2
+          },
+          "verifiedPositives": {
+            "building.sourceKey": {
+              "columns": 0,
+              "distinctFamilies": 0,
+              "families": []
+            },
+            "building.name": {
+              "columns": 0,
+              "distinctFamilies": 0,
+              "families": []
+            },
+            "building.addressLiteral": {
+              "columns": 0,
+              "distinctFamilies": 0,
+              "families": []
+            },
+            "building.storeyCount": {
+              "columns": 0,
+              "distinctFamilies": 0,
+              "families": []
+            },
+            "building.use": {
+              "columns": 0,
+              "distinctFamilies": 0,
+              "families": []
+            }
+          },
+          "expectedComparison": null,
+          "refusedLabels": {
+            "path": "E:/BhuAayam-data/task-data/a4d/verified/t1c-v1/refusals.jsonl",
+            "sha256": "d3bfe5bd6e65145096e5cfe74508a4b256fd03560a89515c85b60ee949ded0e5",
+            "shape": [
+              "profileId",
+              "reasonCode"
+            ]
+          },
+          "receipt": {
+            "path": "E:/BhuAayam-data/task-data/a4d/verified/t1c-v1/verification-receipt.json",
+            "sha256": "41f4a90848f28d41bc3fc59c40d4cd86c51c04450c22f167138ba989a1b86f26"
+          },
+          "verifierExitCode": 1
+        },
+        {
+          "round": "t1d",
+          "labelsSha256": "d267de96326cab764d09e08dd53418f422e6d47bd05a8c25c42ca219efa6f0e0",
+          "profilesSha256": "6078691a13d5d4794b217d6744d10c44119fbac11bde0f3b6017191f9b11d1db",
+          "tablesSubmitted": 3,
+          "fieldsSubmitted": 21,
+          "tablesAccepted": 0,
+          "tablePlansEvaluated": 0,
+          "fieldsVerified": 0,
+          "fieldsDryRunEvaluated": 0,
+          "fieldsBoundaryBlocked": 21,
+          "refusalCodes": {
+            "ERR_ASSERTION": 21
+          },
+          "labelledPositives": {
+            "building.storeyCount": 1,
+            "building.heightM": 1,
+            "building.footprint": 3,
+            "building.sourceKey": 1
+          },
+          "verifiedPositives": {
+            "building.storeyCount": {
+              "columns": 0,
+              "distinctFamilies": 0,
+              "families": []
+            },
+            "building.heightM": {
+              "columns": 0,
+              "distinctFamilies": 0,
+              "families": []
+            },
+            "building.footprint": {
+              "columns": 0,
+              "distinctFamilies": 0,
+              "families": []
+            },
+            "building.sourceKey": {
+              "columns": 0,
+              "distinctFamilies": 0,
+              "families": []
+            }
+          },
+          "expectedComparison": {
+            "expectedTablePlansRejected": 0,
+            "expectedFieldRefusals": 3,
+            "actual": "Entire round blocked before table validation; no MAPPING_CRS_UNVERIFIED result exists."
+          },
+          "refusedLabels": {
+            "path": "E:/BhuAayam-data/task-data/a4d/verified/t1d-v1/refusals.jsonl",
+            "sha256": "67b54a9b98b61a2bd6069c91015615a2a45b8213a387f23d6815910bf5b584e8",
+            "shape": [
+              "profileId",
+              "reasonCode"
+            ]
+          },
+          "receipt": {
+            "path": "E:/BhuAayam-data/task-data/a4d/verified/t1d-v1/verification-receipt.json",
+            "sha256": "7491bb51d4c4eb86ca9e77f948cd827e7ae32c9ccd9835f6b7aad2ef437dab76"
+          },
+          "verifierExitCode": 1
+        }
+      ],
+      "verifiedPositiveCounts": {
+        "building.name": {
+          "columns": 3,
+          "distinctFamilies": 1,
+          "families": [
+            "mi-d02"
+          ]
+        },
+        "building.storeyLabel": {
+          "columns": 3,
+          "distinctFamilies": 1,
+          "families": [
+            "mi-d02"
+          ]
+        },
+        "document.registrationNo": {
+          "columns": 4,
+          "distinctFamilies": 2,
+          "families": [
+            "mi-d03",
+            "mi-d22"
+          ]
+        },
+        "unit.type": {
+          "columns": 2,
+          "distinctFamilies": 1,
+          "families": [
+            "mi-d22"
+          ]
+        },
+        "building.addressLiteral": {
+          "columns": 2,
+          "distinctFamilies": 1,
+          "families": [
+            "mi-d23"
+          ]
+        },
+        "building.footprint": {
+          "columns": 1,
+          "distinctFamilies": 1,
+          "families": [
+            "mi-d24"
+          ]
+        }
+      },
+      "baseline": {
+        "name": "A4c arm B",
+        "arm": "B",
+        "model": "E:/BhuAayam-data/task-data/a4c/arm-B/v1",
+        "threshold": 0.9497545957565308,
+        "pooledFields": 527,
+        "wrongCommitted": 0,
+        "correctPositiveCommitted": 0,
+        "perTargetPositives": {
+          "building.addressLiteral": {
+            "n": 2,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 2
+          },
+          "building.footprint": {
+            "n": 1,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 1
+          },
+          "building.name": {
+            "n": 3,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 3
+          },
+          "building.storeyLabel": {
+            "n": 3,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 3
+          },
+          "document.registrationNo": {
+            "n": 4,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 4
+          },
+          "unit.type": {
+            "n": 2,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 2
+          }
+        },
+        "unknownCommitted": 53,
+        "abstained": 474,
+        "fitExamples": 591,
+        "fitTargetCounts": {
+          "unknown": 576,
+          "building.name": 3,
+          "building.storeyLabel": 3,
+          "document.registrationNo": 4,
+          "unit.type": 2,
+          "building.addressLiteral": 2,
+          "building.footprint": 1
+        },
+        "byFamilyGroup": {
+          "Indian": {
+            "n": 527,
+            "perTarget": {
+              "building.addressLiteral": {
+                "n": 2,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 2
+              },
+              "building.footprint": {
+                "n": 1,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 1
+              },
+              "building.name": {
+                "n": 3,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 3
+              },
+              "building.storeyLabel": {
+                "n": 3,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 3
+              },
+              "document.registrationNo": {
+                "n": 4,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 4
+              },
+              "unit.type": {
+                "n": 2,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 2
+              },
+              "unknown": {
+                "n": 512,
+                "committed": 53,
+                "committedCorrect": 53,
+                "wrongCommitted": 0,
+                "abstained": 459
+              }
+            },
+            "wrongCommitted": 0,
+            "correctPositiveCommitted": 0,
+            "unknownCommitted": 53,
+            "unknownCommittedCorrect": 53,
+            "abstained": 474
+          },
+          "foreign": {
+            "n": 0,
+            "perTarget": {},
+            "wrongCommitted": 0,
+            "correctPositiveCommitted": 0,
+            "unknownCommitted": 0,
+            "unknownCommittedCorrect": 0,
+            "abstained": 0
+          }
+        },
+        "baselineEvidenceSha256": "5c372436fddf34a20206a8ee442c6467b16cca0526c8b36bebb4f354c489a540"
+      },
+      "a4d": {
+        "fitExamples": null,
+        "threshold": null,
+        "wrongCommitted": null,
+        "correctPositiveCommitted": null,
+        "unknownCommitted": null,
+        "abstained": null,
+        "byFamilyGroup": null,
+        "reason": "No new labels reached verification."
+      },
+      "families": {
+        "currentlyAdmittedDev": [
+          "mi-d01",
+          "mi-d02",
+          "mi-d03",
+          "mi-d04",
+          "mi-d05",
+          "mi-d06",
+          "mi-d07",
+          "mi-d08",
+          "mi-d09",
+          "mi-d10",
+          "mi-d11",
+          "mi-d12",
+          "mi-d13",
+          "mi-d14",
+          "mi-d15",
+          "mi-d16",
+          "mi-d17",
+          "mi-d18",
+          "mi-d19",
+          "mi-d20",
+          "mi-d21",
+          "mi-d22",
+          "mi-d23",
+          "mi-d24"
+        ],
+        "pool": [
+          "smc-building-stock",
+          "smc-sewage-plants",
+          "smc-tax-recovery",
+          "smc-water-charges",
+          "smc-water-projects"
+        ],
+        "currentFoldCount": 24,
+        "proposedForeignDev": [
+          "opf-d02",
+          "opf-d03",
+          "opf-d04",
+          "opf-d05",
+          "opf-d06",
+          "opf-d07",
+          "opf-d08",
+          "opf-d09"
+        ],
+        "proposedFoldCount": 32,
+        "poolPolicy": "Pool remains in fitting for every fold, as in A4c."
+      },
+      "heldOut": {
+        "status": "not_run_no_new_frozen_model",
+        "counts": null,
+        "heldOutFilesOpened": 0,
+        "n": null
+      },
+      "fallbackTriggers": {
+        "scope": [
+          "Admitted verified set only; both new rounds are blocked mechanically, not",
+          "semantically refused."
+        ],
+        "sixA4cTargets": {
+          "document.registrationNo": {
+            "columns": 4,
+            "distinctFamilies": 2,
+            "families": [
+              "mi-d03",
+              "mi-d22"
+            ]
+          },
+          "building.name": {
+            "columns": 3,
+            "distinctFamilies": 1,
+            "families": [
+              "mi-d02"
+            ]
+          },
+          "building.storeyLabel": {
+            "columns": 3,
+            "distinctFamilies": 1,
+            "families": [
+              "mi-d02"
+            ]
+          },
+          "unit.type": {
+            "columns": 2,
+            "distinctFamilies": 1,
+            "families": [
+              "mi-d22"
+            ]
+          },
+          "building.addressLiteral": {
+            "columns": 2,
+            "distinctFamilies": 1,
+            "families": [
+              "mi-d23"
+            ]
+          },
+          "building.footprint": {
+            "columns": 1,
+            "distinctFamilies": 1,
+            "families": [
+              "mi-d24"
+            ]
+          }
+        },
+        "everyVerifiedPositiveTarget": {
+          "building.name": {
+            "columns": 3,
+            "distinctFamilies": 1,
+            "families": [
+              "mi-d02"
+            ]
+          },
+          "building.storeyLabel": {
+            "columns": 3,
+            "distinctFamilies": 1,
+            "families": [
+              "mi-d02"
+            ]
+          },
+          "document.registrationNo": {
+            "columns": 4,
+            "distinctFamilies": 2,
+            "families": [
+              "mi-d03",
+              "mi-d22"
+            ]
+          },
+          "unit.type": {
+            "columns": 2,
+            "distinctFamilies": 1,
+            "families": [
+              "mi-d22"
+            ]
+          },
+          "building.addressLiteral": {
+            "columns": 2,
+            "distinctFamilies": 1,
+            "families": [
+              "mi-d23"
+            ]
+          },
+          "building.footprint": {
+            "columns": 1,
+            "distinctFamilies": 1,
+            "families": [
+              "mi-d24"
+            ]
+          }
+        },
+        "sixTargetsReaching12": 0,
+        "sixTargetsBelow12": 6,
+        "tData": true,
+        "tMethod": null,
+        "tMethodStatus": "not_evaluated_tData_true_and_retrain_blocked",
+        "stageB": {
+          "verifiedPositiveExamples": 15,
+          "required": 300,
+          "shortfall": 285
+        },
+        "decision": "No fallback work dispatched. Admission repair is a prerequisite to assessing the new data."
+      },
+      "freshFits": 0,
+      "heldOutRuns": 0,
+      "labelsChanged": false,
+      "labelsProduced": 0,
+      "providerCalls": 0,
+      "runtimeChanged": false,
+      "gpuUsed": false,
+      "qualification": [
+        "Boundary failure is not a judgment on teacher labels; zero pooled wrong is by",
+        "construction."
+      ],
+      "next": [
+        [
+          "Admit exact pinned foreign development profiles in checkBoundary; retain blind and",
+          "privacy exclusions."
+        ],
+        [
+          "Reuse the pinned D1f prefix reader in materialize/sourceTables; current",
+          "T1_SOURCE_DENIED is the next guard."
+        ],
+        [
+          "Extend stage_a.development_families with the pinned foreign manifest; never mark",
+          "foreign dev as pool."
+        ],
+        "Verifier output uses ULPIN_T1_ROOT=a4d. No output-root change is needed.",
+        [
+          "Resume unchanged labels, verify first, then one cross_fit/no-class-balance fit and",
+          "one held-out receipt."
+        ]
+      ],
+      "baselineCommit": "5dc0c23c",
+      "codeCommit": "c618b034",
+      "availableVerifiedFitExamples": 591,
+      "run": {
+        "command": "pnpm exec tsx scripts/agent/measure-a4d.ts",
+        "exitCode": 0,
+        "statusMeaning": "Blocked checkpoint recorded, not a successful verifier or retrain.",
+        "checkCommand": "pnpm exec tsx scripts/agent/measure-a4d.ts --check",
+        "checkExitCode": 0
+      },
+      "baselineQualification": [
+        "A4c arm B is recorded, not refitted. Its Indian/foreign split uses saved scores and",
+        "the unchanged scorer."
+      ],
+      "gateStatus": "partial_blocked_no_gate_pass",
+      "failureRecovery": {
+        "signature": "ERR_ASSERTION at checkBoundary: foreign dev family absent from Indian D8 development set.",
+        "attempts": [
+          "One unchanged verifier invocation per round; same signature, no retries or alternate",
+          "verifier."
+        ],
+        "stopDecision": "No newly verified labels, so no repetition of the identical failed A4c arm B experiment.",
+        "fitsExecutedByMeasurement": 0,
+        "heldOutRuns": 0,
+        "boundedNext": [
+          "Repair exact-source admission under another assignment; then resume verification and",
+          "the one requested arm."
+        ],
+        "fallbackExperimentStarted": false
+      },
+      "trainerPrerequisite": {
+        "status": "not_invoked_read_only_diagnosis",
+        "file": "services/geo/geo/usp_learning/stage_a.py",
+        "functions": [
+          "development_families",
+          "load_examples"
+        ],
+        "nextGuard": "STAGE_A_TRAINING_SPLIT_DENIED",
+        "reason": [
+          "Only Indian D8 dev family ids are accepted for split dev; new canonical classes are",
+          "already included."
+        ],
+        "forbiddenWorkaround": "Do not change foreign dev to pool; doing so would remove its folds."
+      },
+      "expectedT1dComparison": {
+        "expectedTablePlanRejections": 0,
+        "expectedUnverifiedFootprints": 3,
+        "expectedVerifiedFields": 18,
+        "actualBoundaryBlockedFields": 21,
+        "actualTablePlansEvaluated": 0,
+        "actualDryRunEvaluatedFields": 0,
+        "difference": [
+          "None of the teacher-predicted field outcomes was reached; all 21 blocked at profile",
+          "admission."
+        ]
+      },
+      "safety": {
+        "labelsEdited": 0,
+        "newTeacherLabels": 0,
+        "acquisitionRequests": 0,
+        "providerCalls": 0,
+        "runtimeReads": 0,
+        "gpuUsed": false,
+        "heldOutMaterialOpened": false,
+        "existingExternalFilesModified": 0,
+        "deleted": 0,
+        "pushes": 0
+      },
+      "checks": [
+        {
+          "command": [
+            "pnpm exec tsx scripts/agent/verify-teacher-labels.ts",
+            "E:/BhuAayam-data/task-data/t1c/labels/teacher-labels-v1.jsonl",
+            "E:/BhuAayam-data/task-data/d1f/profiles/profiles.jsonl",
+            "E:/BhuAayam-data/task-data/a4d/verified/t1c-v1"
+          ],
+          "exitCode": 1,
+          "signature": "ERR_ASSERTION at checkBoundary"
+        },
+        {
+          "command": [
+            "pnpm exec tsx scripts/agent/verify-teacher-labels.ts",
+            "E:/BhuAayam-data/task-data/t1d/labels/teacher-labels-v1.jsonl",
+            "E:/BhuAayam-data/task-data/a5a/profiles/profiles.jsonl",
+            "E:/BhuAayam-data/task-data/a4d/verified/t1d-v1"
+          ],
+          "exitCode": 1,
+          "signature": "ERR_ASSERTION at checkBoundary"
+        },
+        {
+          "command": "pnpm exec tsc -p scripts/agent/tsconfig.json",
+          "exitCode": 0
+        },
+        {
+          "command": "python -B -m pytest --noconftest -p no:cacheprovider services/geo/tests/test_stage_a.py",
+          "exitCode": 0,
+          "passed": 7
+        },
+        {
+          "command": "pnpm exec tsx --tsconfig scripts/agent/tsconfig.json --test scripts/agent/a3-chunk.test.ts",
+          "exitCode": 0,
+          "passed": 4
+        },
+        {
+          "command": [
+            "pnpm exec tsx --tsconfig scripts/agent/tsconfig.json --test",
+            "scripts/agent/verify-teacher-labels.test.ts"
+          ],
+          "exitCode": 0,
+          "passed": 3
+        },
+        {
+          "command": "pnpm exec tsx scripts/agent/measure-a4d.ts --check",
+          "exitCode": 0
+        },
+        {
+          "command": "pnpm exec tsx scripts/agent/measure-a4d.ts (overwrite control)",
+          "exitCode": 1,
+          "expected": true
+        },
+        {
+          "command": "git diff --check",
+          "exitCode": 0
+        },
+        {
+          "command": "git diff staging...HEAD --check",
+          "exitCode": 0
+        },
+        {
+          "command": "New-file and added-line width audit",
+          "exitCode": 0
+        }
+      ],
+      "environment": {
+        "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe",
+        "ULPIN_T1_ROOTForVerification": "E:/BhuAayam-data/task-data/a4d",
+        "ULPIN_T1_ROOTForTests": "E:/BhuAayam-data/task-data/a4d/checks/t1-compatibility",
+        "pythonFlags": [
+          "-B",
+          "PYTHONDONTWRITEBYTECODE=1"
+        ],
+        "testsPolicy": "Unchanged tests; byte-identical T1 fixture snapshots; all new outputs beneath A4d.",
+        "pytestTemp": "E:/BhuAayam-data/task-data/a4d/checks/pytest/run-v1",
+        "pytestConftest": "Disabled; shared conftest imports geo.inspection, unrelated to Stage A."
+      },
+      "artifact": {
+        "path": "E:/BhuAayam-data/task-data/a4d/measurements/result.json",
+        "sha256": "1e850568c0b63c2044a5c1dd65800b5feb2b6040f3fb5cd82ac0eede3475538a"
+      }
+    },
+    {
+      "task": "A4d",
+      "gates": [
+        "GF-AGENT",
+        "FP-LEARN-TEST"
+      ],
+      "status": "completed_one_arm_no_accuracy_claim",
+      "rounds": [
+        {
+          "round": "t1c",
+          "labelsSha256": "7ecd2721a4183a1a689782258d6690449cb5640cda2280659e3f82723754fa45",
+          "profilesSha256": "3a22f11297e292c9f2132defe9f3037fc16e0f0eac53b341b21efd55e9695bf6",
+          "reportSha256": "6b52ec0ac8d71e0e24d1c3da5e2a3efdbed3bda3521489618f1aaf0e9af08b78",
+          "tablesAccepted": 6,
+          "tablesRejected": 0,
+          "fieldsSubmitted": 198,
+          "fieldsVerified": 196,
+          "fieldsRefused": 2,
+          "refusalCodes": {
+            "MAPPING_ENUM_UNRECOGNISED": 2
+          },
+          "refused": [
+            {
+              "profileId": "408c5020f273ad005950ba78a621f8977312bf8e44a38c8d417a703b243a1599",
+              "reasonCode": "MAPPING_ENUM_UNRECOGNISED"
+            },
+            {
+              "profileId": "23349ff304df5f1acecce0f7c69752333c0197ceea38764f83653363de757ee2",
+              "reasonCode": "MAPPING_ENUM_UNRECOGNISED"
+            }
+          ],
+          "verifiedPositives": {
+            "building.sourceKey": {
+              "columns": 3,
+              "distinctFamilies": 3,
+              "families": [
+                "opf-d02",
+                "opf-d03",
+                "opf-d05"
+              ]
+            },
+            "building.name": {
+              "columns": 5,
+              "distinctFamilies": 4,
+              "families": [
+                "opf-d02",
+                "opf-d04",
+                "opf-d05",
+                "opf-d06"
+              ]
+            },
+            "building.addressLiteral": {
+              "columns": 6,
+              "distinctFamilies": 5,
+              "families": [
+                "opf-d02",
+                "opf-d03",
+                "opf-d04",
+                "opf-d05",
+                "opf-d06"
+              ]
+            },
+            "building.storeyCount": {
+              "columns": 1,
+              "distinctFamilies": 1,
+              "families": [
+                "opf-d02"
+              ]
+            },
+            "building.use": {
+              "columns": 0,
+              "distinctFamilies": 0,
+              "families": []
+            }
+          },
+          "expectedComparison": null
+        },
+        {
+          "round": "t1d",
+          "labelsSha256": "d267de96326cab764d09e08dd53418f422e6d47bd05a8c25c42ca219efa6f0e0",
+          "profilesSha256": "6078691a13d5d4794b217d6744d10c44119fbac11bde0f3b6017191f9b11d1db",
+          "reportSha256": "7fb2ee836352b3a3a1e15201a2f4783bbf34c47ca0535d703c096181a187f29e",
+          "tablesAccepted": 3,
+          "tablesRejected": 0,
+          "fieldsSubmitted": 21,
+          "fieldsVerified": 18,
+          "fieldsRefused": 3,
+          "refusalCodes": {
+            "MAPPING_CRS_UNVERIFIED": 3
+          },
+          "refused": [
+            {
+              "profileId": "72fa66c715b73459a2f8ef68f841ad6af19b131b4afd11b4be3f77174424c5ab",
+              "reasonCode": "MAPPING_CRS_UNVERIFIED"
+            },
+            {
+              "profileId": "d1943ab145a1bad2daa8ab4c37eaac587f1b0b13be5229e6c0c7a1f02fde11f8",
+              "reasonCode": "MAPPING_CRS_UNVERIFIED"
+            },
+            {
+              "profileId": "b298bee9ecf4045f56e23b8166677455dfc99aadc3d4b756f79f2cb7f05b2821",
+              "reasonCode": "MAPPING_CRS_UNVERIFIED"
+            }
+          ],
+          "verifiedPositives": {
+            "building.storeyCount": {
+              "columns": 1,
+              "distinctFamilies": 1,
+              "families": [
+                "opf-d07"
+              ]
+            },
+            "building.heightM": {
+              "columns": 1,
+              "distinctFamilies": 1,
+              "families": [
+                "opf-d07"
+              ]
+            },
+            "building.footprint": {
+              "columns": 0,
+              "distinctFamilies": 0,
+              "families": []
+            },
+            "building.sourceKey": {
+              "columns": 1,
+              "distinctFamilies": 1,
+              "families": [
+                "opf-d08"
+              ]
+            }
+          },
+          "expectedComparison": {
+            "expectedRefusalIds": [
+              "72fa66c715b73459a2f8ef68f841ad6af19b131b4afd11b4be3f77174424c5ab",
+              "b298bee9ecf4045f56e23b8166677455dfc99aadc3d4b756f79f2cb7f05b2821",
+              "d1943ab145a1bad2daa8ab4c37eaac587f1b0b13be5229e6c0c7a1f02fde11f8"
+            ],
+            "actualRefusalIds": [
+              "72fa66c715b73459a2f8ef68f841ad6af19b131b4afd11b4be3f77174424c5ab",
+              "b298bee9ecf4045f56e23b8166677455dfc99aadc3d4b756f79f2cb7f05b2821",
+              "d1943ab145a1bad2daa8ab4c37eaac587f1b0b13be5229e6c0c7a1f02fde11f8"
+            ],
+            "expectedVerifiedFields": 18,
+            "actualVerifiedFields": 18,
+            "differences": {
+              "unexpected": [],
+              "missing": [],
+              "tablePlansRejected": 0,
+              "verifiedFields": 0,
+              "reasonCodes": []
+            }
+          }
+        }
+      ],
+      "baseline": {
+        "name": "A4c arm B",
+        "arm": "B",
+        "model": "E:/BhuAayam-data/task-data/a4c/arm-B/v1",
+        "threshold": 0.9497545957565308,
+        "pooledFields": 527,
+        "wrongCommitted": 0,
+        "correctPositiveCommitted": 0,
+        "perTargetPositives": {
+          "building.addressLiteral": {
+            "n": 2,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 2
+          },
+          "building.footprint": {
+            "n": 1,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 1
+          },
+          "building.name": {
+            "n": 3,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 3
+          },
+          "building.storeyLabel": {
+            "n": 3,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 3
+          },
+          "document.registrationNo": {
+            "n": 4,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 4
+          },
+          "unit.type": {
+            "n": 2,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 2
+          }
+        },
+        "unknownCommitted": 53,
+        "abstained": 474,
+        "fitExamples": 591,
+        "fitTargetCounts": {
+          "unknown": 576,
+          "building.name": 3,
+          "building.storeyLabel": 3,
+          "document.registrationNo": 4,
+          "unit.type": 2,
+          "building.addressLiteral": 2,
+          "building.footprint": 1
+        },
+        "byFamilyGroup": {
+          "Indian": {
+            "n": 527,
+            "perTarget": {
+              "building.addressLiteral": {
+                "n": 2,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 2
+              },
+              "building.footprint": {
+                "n": 1,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 1
+              },
+              "building.name": {
+                "n": 3,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 3
+              },
+              "building.storeyLabel": {
+                "n": 3,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 3
+              },
+              "document.registrationNo": {
+                "n": 4,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 4
+              },
+              "unit.type": {
+                "n": 2,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 2
+              },
+              "unknown": {
+                "n": 512,
+                "committed": 53,
+                "committedCorrect": 53,
+                "wrongCommitted": 0,
+                "abstained": 459
+              }
+            },
+            "wrongCommitted": 0,
+            "correctPositiveCommitted": 0,
+            "unknownCommitted": 53,
+            "unknownCommittedCorrect": 53,
+            "abstained": 474
+          },
+          "foreign": {
+            "n": 0,
+            "perTarget": {},
+            "wrongCommitted": 0,
+            "correctPositiveCommitted": 0,
+            "unknownCommitted": 0,
+            "unknownCommittedCorrect": 0,
+            "abstained": 0
+          }
+        },
+        "baselineEvidenceSha256": "5c372436fddf34a20206a8ee442c6467b16cca0526c8b36bebb4f354c489a540"
+      },
+      "a4d": {
+        "name": "A4d one arm",
+        "model": "E:\\BhuAayam-data\\task-data\\a4d\\learner\\one-arm-v1\\v1",
+        "modelSha256": "87c9c7764d50fd7a96b4e6e3e32e6512857625d05e6282d4f0d7e309bbad4231",
+        "fitExamples": 805,
+        "fitTargetCounts": {
+          "unknown": 772,
+          "building.name": 8,
+          "building.storeyLabel": 3,
+          "document.registrationNo": 4,
+          "unit.type": 2,
+          "building.addressLiteral": 8,
+          "building.footprint": 1,
+          "building.sourceKey": 4,
+          "building.storeyCount": 2,
+          "building.heightM": 1
+        },
+        "threshold": 0.9866563081741333,
+        "pooledFields": 741,
+        "wrongCommitted": 0,
+        "correctPositiveCommitted": 0,
+        "perTargetPositives": {
+          "building.addressLiteral": {
+            "n": 8,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 8
+          },
+          "building.footprint": {
+            "n": 1,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 1
+          },
+          "building.heightM": {
+            "n": 1,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 1
+          },
+          "building.name": {
+            "n": 8,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 8
+          },
+          "building.sourceKey": {
+            "n": 4,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 4
+          },
+          "building.storeyCount": {
+            "n": 2,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 2
+          },
+          "building.storeyLabel": {
+            "n": 3,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 3
+          },
+          "document.registrationNo": {
+            "n": 4,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 4
+          },
+          "unit.type": {
+            "n": 2,
+            "committed": 0,
+            "committedCorrect": 0,
+            "wrongCommitted": 0,
+            "abstained": 2
+          }
+        },
+        "unknownCommitted": 2,
+        "abstained": 739,
+        "byFamilyGroup": {
+          "Indian": {
+            "n": 527,
+            "perTarget": {
+              "building.addressLiteral": {
+                "n": 2,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 2
+              },
+              "building.footprint": {
+                "n": 1,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 1
+              },
+              "building.name": {
+                "n": 3,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 3
+              },
+              "building.storeyLabel": {
+                "n": 3,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 3
+              },
+              "document.registrationNo": {
+                "n": 4,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 4
+              },
+              "unit.type": {
+                "n": 2,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 2
+              },
+              "unknown": {
+                "n": 512,
+                "committed": 2,
+                "committedCorrect": 2,
+                "wrongCommitted": 0,
+                "abstained": 510
+              }
+            },
+            "wrongCommitted": 0,
+            "correctPositiveCommitted": 0,
+            "unknownCommitted": 2,
+            "unknownCommittedCorrect": 2,
+            "abstained": 525
+          },
+          "foreign": {
+            "n": 214,
+            "perTarget": {
+              "building.addressLiteral": {
+                "n": 6,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 6
+              },
+              "building.heightM": {
+                "n": 1,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 1
+              },
+              "building.name": {
+                "n": 5,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 5
+              },
+              "building.sourceKey": {
+                "n": 4,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 4
+              },
+              "building.storeyCount": {
+                "n": 2,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 2
+              },
+              "unknown": {
+                "n": 196,
+                "committed": 0,
+                "committedCorrect": 0,
+                "wrongCommitted": 0,
+                "abstained": 196
+              }
+            },
+            "wrongCommitted": 0,
+            "correctPositiveCommitted": 0,
+            "unknownCommitted": 0,
+            "unknownCommittedCorrect": 0,
+            "abstained": 214
+          }
+        }
+      },
+      "families": {
+        "dev": [
+          "mi-d01",
+          "mi-d02",
+          "mi-d03",
+          "mi-d04",
+          "mi-d05",
+          "mi-d06",
+          "mi-d07",
+          "mi-d08",
+          "mi-d09",
+          "mi-d10",
+          "mi-d11",
+          "mi-d12",
+          "mi-d13",
+          "mi-d14",
+          "mi-d15",
+          "mi-d16",
+          "mi-d17",
+          "mi-d18",
+          "mi-d19",
+          "mi-d20",
+          "mi-d21",
+          "mi-d22",
+          "mi-d23",
+          "mi-d24",
+          "opf-d02",
+          "opf-d03",
+          "opf-d04",
+          "opf-d05",
+          "opf-d06",
+          "opf-d07",
+          "opf-d08",
+          "opf-d09"
+        ],
+        "pool": [
+          "smc-building-stock",
+          "smc-sewage-plants",
+          "smc-tax-recovery",
+          "smc-water-charges",
+          "smc-water-projects"
+        ],
+        "foldCount": 32,
+        "poolPolicy": "Remain in every fit; never folded."
+      },
+      "verifiedPositiveCounts": {
+        "building.name": {
+          "columns": 8,
+          "distinctFamilies": 5,
+          "families": [
+            "mi-d02",
+            "opf-d02",
+            "opf-d04",
+            "opf-d05",
+            "opf-d06"
+          ]
+        },
+        "building.storeyLabel": {
+          "columns": 3,
+          "distinctFamilies": 1,
+          "families": [
+            "mi-d02"
+          ]
+        },
+        "document.registrationNo": {
+          "columns": 4,
+          "distinctFamilies": 2,
+          "families": [
+            "mi-d03",
+            "mi-d22"
+          ]
+        },
+        "unit.type": {
+          "columns": 2,
+          "distinctFamilies": 1,
+          "families": [
+            "mi-d22"
+          ]
+        },
+        "building.addressLiteral": {
+          "columns": 8,
+          "distinctFamilies": 6,
+          "families": [
+            "mi-d23",
+            "opf-d02",
+            "opf-d03",
+            "opf-d04",
+            "opf-d05",
+            "opf-d06"
+          ]
+        },
+        "building.footprint": {
+          "columns": 1,
+          "distinctFamilies": 1,
+          "families": [
+            "mi-d24"
+          ]
+        },
+        "building.sourceKey": {
+          "columns": 4,
+          "distinctFamilies": 4,
+          "families": [
+            "opf-d02",
+            "opf-d03",
+            "opf-d05",
+            "opf-d08"
+          ]
+        },
+        "building.storeyCount": {
+          "columns": 2,
+          "distinctFamilies": 2,
+          "families": [
+            "opf-d02",
+            "opf-d07"
+          ]
+        },
+        "building.heightM": {
+          "columns": 1,
+          "distinctFamilies": 1,
+          "families": [
+            "opf-d07"
+          ]
+        }
+      },
+      "fallbackTriggers": {
+        "sixA4cTargets": {
+          "document.registrationNo": {
+            "columns": 4,
+            "distinctFamilies": 2,
+            "families": [
+              "mi-d03",
+              "mi-d22"
+            ]
+          },
+          "building.name": {
+            "columns": 8,
+            "distinctFamilies": 5,
+            "families": [
+              "mi-d02",
+              "opf-d02",
+              "opf-d04",
+              "opf-d05",
+              "opf-d06"
+            ]
+          },
+          "building.storeyLabel": {
+            "columns": 3,
+            "distinctFamilies": 1,
+            "families": [
+              "mi-d02"
+            ]
+          },
+          "unit.type": {
+            "columns": 2,
+            "distinctFamilies": 1,
+            "families": [
+              "mi-d22"
+            ]
+          },
+          "building.addressLiteral": {
+            "columns": 8,
+            "distinctFamilies": 6,
+            "families": [
+              "mi-d23",
+              "opf-d02",
+              "opf-d03",
+              "opf-d04",
+              "opf-d05",
+              "opf-d06"
+            ]
+          },
+          "building.footprint": {
+            "columns": 1,
+            "distinctFamilies": 1,
+            "families": [
+              "mi-d24"
+            ]
+          }
+        },
+        "everyVerifiedPositiveTarget": {
+          "building.name": {
+            "columns": 8,
+            "distinctFamilies": 5,
+            "families": [
+              "mi-d02",
+              "opf-d02",
+              "opf-d04",
+              "opf-d05",
+              "opf-d06"
+            ]
+          },
+          "building.storeyLabel": {
+            "columns": 3,
+            "distinctFamilies": 1,
+            "families": [
+              "mi-d02"
+            ]
+          },
+          "document.registrationNo": {
+            "columns": 4,
+            "distinctFamilies": 2,
+            "families": [
+              "mi-d03",
+              "mi-d22"
+            ]
+          },
+          "unit.type": {
+            "columns": 2,
+            "distinctFamilies": 1,
+            "families": [
+              "mi-d22"
+            ]
+          },
+          "building.addressLiteral": {
+            "columns": 8,
+            "distinctFamilies": 6,
+            "families": [
+              "mi-d23",
+              "opf-d02",
+              "opf-d03",
+              "opf-d04",
+              "opf-d05",
+              "opf-d06"
+            ]
+          },
+          "building.footprint": {
+            "columns": 1,
+            "distinctFamilies": 1,
+            "families": [
+              "mi-d24"
+            ]
+          },
+          "building.sourceKey": {
+            "columns": 4,
+            "distinctFamilies": 4,
+            "families": [
+              "opf-d02",
+              "opf-d03",
+              "opf-d05",
+              "opf-d08"
+            ]
+          },
+          "building.storeyCount": {
+            "columns": 2,
+            "distinctFamilies": 2,
+            "families": [
+              "opf-d02",
+              "opf-d07"
+            ]
+          },
+          "building.heightM": {
+            "columns": 1,
+            "distinctFamilies": 1,
+            "families": [
+              "opf-d07"
+            ]
+          }
+        },
+        "sixTargetsReaching12": 0,
+        "sixTargetsBelow12": 6,
+        "tData": true,
+        "tMethod": null,
+        "tMethodStatus": "not_evaluated_T_data_true",
+        "stageB": {
+          "verifiedPositiveExamples": 33,
+          "required": 300,
+          "shortfall": 267
+        },
+        "fallbackWorkStarted": false
+      },
+      "heldOut": {
+        "scorable": {
+          "n": 2,
+          "total": {
+            "count": 2,
+            "n": 2
+          },
+          "committed": {
+            "count": 0,
+            "n": 2
+          },
+          "correct": {
+            "count": 0,
+            "n": 2
+          },
+          "abstained": {
+            "count": 2,
+            "n": 2
+          }
+        },
+        "nonScorable": {
+          "n": 2,
+          "committed": {
+            "count": 0,
+            "n": 2
+          }
+        },
+        "profiles": {
+          "count": 4,
+          "n": 4
+        },
+        "truthSha256": "4fd1049c5bff5fcde3b54237d2561502c2f06197bf01e65bd5862d90a9a7797d",
+        "manifestSha256": "c08d802fdd945f9530e91ab94db280858892de880e9a24d424d73c5027769249",
+        "qualification": "One frozen model/threshold; counts only, no accuracy claim and no tuning feedback."
+      },
+      "freshFits": 1,
+      "heldOutRuns": 1,
+      "tuningAfterMeasurements": false,
+      "rule": {
+        "calibrationMode": "cross_fit",
+        "classBalance": false,
+        "variants": 0,
+        "featuresChanged": false
+      },
+      "inputsSha256": "41b23f35f9f4ea101353fb9930aa22e35167d6bb9e8ea9b596c6676cda7da15d",
+      "linksSha256": "7b6f5e651e7e7276af77596f8d431727d54fbd95e763e173e71dd230d63a32d2",
+      "labelsChanged": false,
+      "labelsProduced": 0,
+      "providerCalls": 0,
+      "runtimeChanged": false,
+      "gpuUsed": false,
+      "qualification": "Pseudo-label agreement only. Zero pooled wrong commits is by threshold construction."
+    }
+  ],
+  "admissionTask": "A4e",
+  "admissionCodeCommit": "cae053e7",
+  "admissionEvidenceCommit": "cb6b69a6",
+  "codeCommit": "8dc02516",
+  "gateStatus": "measurement_completed_learning_gate_not_passed",
+  "artifact": {
+    "path": "E:/BhuAayam-data/task-data/a4d/measurements/completed-v1/result.json",
+    "sha256": "2d7125a700d1892bcfc4ce6bb83869a8d9cb2a82aae3d5b1c83d2877fd94dc83"
+  },
+  "receipts": {
+    "fit-receipt.json": {
+      "path": "E:/BhuAayam-data/task-data/a4d/measurements/completed-v1/fit-receipt.json",
+      "sha256": "ed44233c5991d2645c4fe49ace31d8358255bc974675abe6ded2f0ed61a1a03f"
+    },
+    "heldout-counts.json": {
+      "path": "E:/BhuAayam-data/task-data/a4d/measurements/completed-v1/heldout-counts.json",
+      "sha256": "c498d31ab4e092bb30e761e35c22c1b67012de1aadb601c0a174b119aefeb659"
+    },
+    "t1c-refusals.jsonl": {
+      "path": "E:/BhuAayam-data/task-data/a4d/measurements/completed-v1/t1c-refusals.jsonl",
+      "sha256": "d1a177c83a0443ec1e29486885a04cca4fc7af93765d6534455e72ddc5096fdb"
+    },
+    "t1d-refusals.jsonl": {
+      "path": "E:/BhuAayam-data/task-data/a4d/measurements/completed-v1/t1d-refusals.jsonl",
+      "sha256": "946c0dff58ab293d192ae114212cccacb6b153eb9f71975289152411efbdb1ba"
+    }
+  },
+  "checks": [
+    {
+      "command": "pnpm exec tsc -p scripts/agent/tsconfig.json",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm typecheck:backend",
+      "exitCode": 0
+    },
+    {
+      "command": "tsx agent suite: t1-prep, verify-teacher-labels, a3-chunk, foreign-development",
+      "exitCode": 0,
+      "passed": 18
+    },
+    {
+      "command": "python -B pytest --noconftest, no cacheprovider: Stage A + foreign development",
+      "exitCode": 0,
+      "passed": 12
+    },
+    {
+      "command": "python -B -m ruff check: stage_a.py and both Stage A test files",
+      "exitCode": 0
+    },
+    {
+      "command": "a5a/verify-profiles.ts: T1 and T1b reproduction, D1f immutable products",
+      "exitCode": 0
+    },
+    {
+      "command": "Canonical verifier once per round, t1c-v2 and t1d-v2",
+      "exitCode": 0
+    },
+    {
+      "command": "measure-a4d.ts --check",
+      "exitCode": 0,
+      "fits": 0,
+      "heldOutRuns": 0
+    },
+    {
+      "command": "measure-a4d.ts --blocked-check",
+      "exitCode": 0
+    },
+    {
+      "command": "Stage A load_model on retained v43 and v48",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check; git diff staging...HEAD --check",
+      "exitCode": 0
+    }
+  ],
+  "environment": {
+    "python": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe",
+    "testRoot": "E:/BhuAayam-data/task-data/a4e/checks/t1-compatibility",
+    "pytestTemp": "E:/BhuAayam-data/task-data/a4e/checks/pytest/run-v3",
+    "fitDevice": "CPU",
+    "pythonBytecode": "PYTHONDONTWRITEBYTECODE=1; explicit worker calls use -B"
+  },
+  "resume": {
+    "receiptCheckedBeforeExecution": true,
+    "additionalFits": 0,
+    "additionalHeldOutRuns": 0,
+    "heldOutPayloadOpenedOnResume": false,
+    "receiptAgreementChecked": true,
+    "completedBeforeUsageLimit": true
+  },
+  "failureRecovery": {
+    "signature": "Foreign dev admission absent at three guards; repaired by exact pinned manifest admission.",
+    "boundedComparison": "A4c arm B versus one unchanged cross_fit/no-class-balance fit with 214 new verified fields.",
+    "hypothesis": "More real verified positive columns yield correct positive cross-fit commits.",
+    "baselineCorrectPositiveCommits": 0,
+    "successCriterion": "Above baseline correct positives with zero wrong commits.",
+    "result": "No positive-commit gain; 33 positive examples still all abstain across development folds.",
+    "stopDecision": "No refit, threshold change, variant generation or second held-out run.",
+    "nextDecision": "T-data fires; owner decides whether to authorize fallback Step 1."
+  },
+  "safety": {
+    "labelsEdited": 0,
+    "newTeacherLabels": 0,
+    "providerCalls": 0,
+    "acquisitionRequests": 0,
+    "runtimeReads": 0,
+    "gpuUsed": false,
+    "existingExternalFilesModified": 0,
+    "deleted": 0,
+    "pushes": 0,
+    "heldOutAccess": "One authorized count-only evaluator after frozen model; no payload in Git or report.",
+    "heldOutUsedForFitCalibrationOrTuning": false
+  },
+  "next": [
+    "Lead reviews and integrates; never deploy this model on the strength of these counts.",
+    "T-data=true: owner decision required for training-only variants; no fallback work started.",
+    "Stage B remains below gate: 33 verified positive-target examples of 300; shortfall 267.",
+    "T-method is not evaluated because the positives-are-there prerequisite is false."
+  ]
+}

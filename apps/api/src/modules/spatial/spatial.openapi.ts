@@ -93,10 +93,20 @@ export const mlResult = {type:'object',required:['model','raster','mask','compon
   raster:image,mask:image,components:{type:'array',items:component},
   receipt:{type:'object',additionalProperties:true,description:'Processor-specific retained model and raster receipt fields'},
 }};
+const mlScope = {oneOf:[
+  {type:'object',required:['kind','packageId'],properties:{kind:{const:'package'},packageId:{type:'string',format:'uuid'}}},
+  {type:'object',required:['kind','caseId','caseRevision','sourceId','sourceRevision','sourceSha256','sourceBytes','page','frame','region','locator','calibration','applicability'],properties:{
+    kind:{const:'source'},caseId:{type:'string',format:'uuid'},caseRevision:{type:'integer'},sourceId:{type:'string',format:'uuid'},
+    sourceRevision:{type:'integer'},sourceSha256:{type:'string',pattern:'^[a-f0-9]{64}$'},sourceBytes:{type:'integer'},page:{type:'integer'},
+    frame:{type:'object',required:['kind','width','height','rotation'],properties:{kind:{const:'pdf_display_page_top_left_points'},width:{type:'number'},height:{type:'number'},rotation:{type:'integer'}}},
+    region:{type:'object',required:['x','y','width','height'],properties:{x:{type:'number'},y:{type:'number'},width:{type:'number'},height:{type:'number'}}},
+    locator:{type:'object',required:['kind','page'],properties:{kind:{const:'pdf_page'},page:{type:'integer'}}},calibration:{type:'null'},applicability:{const:'not_assessed'},
+  }},
+]};
 export const mlItem = {type:'object',required:['id','batchId','packageId','sourceRevisionId','sourceSha256','partId','page','task','modelId','modelSha256','inputFingerprint','state','currentJobId','attempts','applications','createdAt','updatedAt'],properties:{
-  id:{type:'string',format:'uuid'},batchId:{type:'string',format:'uuid'},packageId:{type:'string',format:'uuid'},
+  id:{type:'string',format:'uuid'},batchId:{type:'string',format:'uuid'},packageId:{type:['string','null'],format:'uuid'},scope:mlScope,
   sourceRevisionId:{type:'string',format:'uuid'},sourceSha256:{type:'string',pattern:'^[a-f0-9]{64}$'},
-  partId:{type:'string',format:'uuid'},page:{type:'integer'},task:{type:'string',enum:['floor-plan','building']},
+  partId:{type:['string','null'],format:'uuid'},page:{type:'integer'},task:{type:'string',enum:['floor-plan','building']},
   modelId:{type:'string'},modelSha256:{type:'string',pattern:'^[a-f0-9]{64}$'},inputFingerprint:{type:'string'},
   state:{type:'string',enum:['queued','running','succeeded','empty','failed','blocked','cancelled']},
   currentJobId:{type:'string',format:'uuid'},attempts:{type:'array',items:{type:'object',required:['jobId','state','createdAt'],
@@ -110,7 +120,7 @@ export const mlItem = {type:'object',required:['id','batchId','packageId','sourc
   createdAt:{type:'string',format:'date-time'},updatedAt:{type:'string',format:'date-time'},
 }};
 export const mlBatch = {type:'object',required:['id','packageId','requestKey','createdAt','items'],properties:{
-  id:{type:'string',format:'uuid'},packageId:{type:'string',format:'uuid'},requestKey:{type:'string',format:'uuid'},
+  id:{type:'string',format:'uuid'},packageId:{type:['string','null'],format:'uuid'},scope:mlScope,requestKey:{type:'string',format:'uuid'},
   createdAt:{type:'string',format:'date-time'},items:{type:'array',items:mlItem},
 }};
 export const review = {type:'object',required:['id','decision','componentIds','note','createdAt'],properties:{
@@ -220,6 +230,32 @@ export const packageProjection = {type:'object',required:['id','schemaVersion','
     areaRevision:{type:'integer'},packageRevision:{type:'integer'},inputFingerprint:{type:'string'},
     findings:{type:'array',items:finding},coverage:{type:'array',items:{type:'string'}}}},
 }};
+
+export const footprintDraftResult = {
+  type: 'object', required: ['package', 'receipt'], properties: {
+    package: { ...packageProjection, nullable: true },
+    receipt: { type: 'object', required: [
+      'schemaVersion', 'itemId', 'jobId', 'inputFingerprint', 'originalSourceRevisionId', 'originalSha256',
+      'worldStatus', 'rasterSha256', 'calibration', 'selections', 'target', 'method', 'authority',
+    ], properties: {
+      schemaVersion: { type: 'string', enum: ['spatial-footprint-derivation/1'] },
+      itemId: { type: 'string', format: 'uuid' }, jobId: { type: 'string', format: 'uuid' },
+      inputFingerprint: { type: 'string' }, originalSourceRevisionId: { type: 'string', format: 'uuid' },
+      originalSha256: { type: 'string', pattern: '^[a-f0-9]{64}$' }, worldStatus: { type: 'string' },
+      rasterSha256: { type: 'string', pattern: '^[a-f0-9]{64}$' },
+      calibration: { type: 'object', nullable: true },
+      georeference: { type: 'string', nullable: true, enum: ['source_geotiff'] },
+      decisions: { type: 'array', items: { type: 'object' } },
+      selections: { type: 'array', items: { type: 'object' } },
+      target: { type: 'object', required: ['areaId', 'frame', 'analysisCrs', 'origin', 'expectedRevision'],
+        properties: {
+          areaId: { type: 'string', format: 'uuid' }, frame: { type: 'string' }, analysisCrs: { type: 'string' },
+          origin: { type: 'array', items: { type: 'number' } }, expectedRevision: { type: 'integer' },
+        } },
+      method: { type: 'string' }, authority: { type: 'string' },
+    }, additionalProperties: true },
+  },
+};
 
 const xy = { type:'array', minItems:2, maxItems:2, items:{type:'number'} };
 const geometry = {type:'object',required:['type','coordinates'],properties:{

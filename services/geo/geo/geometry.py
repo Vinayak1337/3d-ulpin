@@ -1,15 +1,21 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from decimal import Decimal, InvalidOperation
+from fractions import Fraction
+from typing import NamedTuple
 import uuid
 
 import shapely
-from shapely.geometry import Polygon
+from shapely.geometry import LinearRing, Polygon
 from shapely.ops import unary_union
+from shapely.validation import explain_validity
 
-from .validation import EPSILON, MAX_FEATURES, InputError, clean_number, frame, number, polygon, source_ids, text
+from .validation import EPSILON, MAX_FEATURES, MAX_VERTICES, InputError, clean_number, frame, number, polygon, source_ids, text
 
 METHOD = f"polygon-prism-v1/shapely-{shapely.__version__}"
+PRISM_METHOD = "prism/2"
+ENCLOSURES = ("closed", "open")
 
 
 def _bindings(unit: dict, prefix: str) -> None:
@@ -162,3 +168,273 @@ def build_model(data: dict, *, allow_duplicate_aliases: bool = False) -> dict:
 
     findings.sort(key=lambda item: ({"error": 0, "warning": 1, "info": 2}[item["severity"]], item["code"], item["title"]))
     return {"frame": reference, "units": units, "context": context, "findings": findings, "inputFingerprint": fingerprint, "method": METHOD}
+
+
+Point = tuple[Fraction, Fraction]
+
+
+class _Unsupported(Exception):
+    """An input the prism engine refuses to turn into geometry; carries the reason code."""
+
+    def __init__(self, reason: str) -> None:
+        super().__init__(reason)
+        self.reason = reason
+
+
+class _ExactPolygon(NamedTuple):
+    """Normalised rings (exterior counter-clockwise, holes clockwise), their exact area and a validity witness."""
+
+    exterior: list[Point]
+    holes: list[list[Point]]
+    area: Fraction
+    witness: Polygon
+
+
+def _exact_number(value: object, reason: str) -> Fraction:
+    if isinstance(value, bool) or not isinstance(value, (str, int, float)):
+        raise _Unsupported(reason)
+    try:
+        parsed = Decimal(str(value).strip())
+    except InvalidOperation:
+        raise _Unsupported(reason) from None
+    if not parsed.is_finite():
+        raise _Unsupported(reason)
+    return Fraction(parsed)
+
+
+def _exact_text(value: Fraction) -> str:
+    """Write a rational whose denominator has only the factors 2 and 5 as a plain decimal string."""
+    scaled, digits = value, 0
+    while scaled.denominator != 1:
+        scaled *= 10
+        digits += 1
+    if digits == 0:
+        return str(scaled.numerator)
+    sign = "-" if scaled < 0 else ""
+    padded = str(abs(scaled.numerator)).rjust(digits + 1, "0")
+    return f"{sign}{padded[:-digits]}.{padded[-digits:]}"
+
+
+def _ring_points(raw: object) -> list[Point]:
+    if not isinstance(raw, list) or len(raw) > MAX_VERTICES:
+        raise _Unsupported("ring_invalid")
+    points = []
+    for pair in raw:
+        if not isinstance(pair, (list, tuple)) or len(pair) != 2:
+            raise _Unsupported("coordinate_invalid")
+        points.append((_exact_number(pair[0], "coordinate_invalid"), _exact_number(pair[1], "coordinate_invalid")))
+    if len(points) > 1 and points[0] == points[-1]:
+        points.pop()
+    if len(set(points)) < 3:
+        raise _Unsupported("ring_too_few_vertices")
+    return points
+
+
+def _signed_area(points: list[Point]) -> Fraction:
+    twice_area = Fraction(0)
+    for (x1, y1), (x2, y2) in zip(points, points[1:] + points[:1]):
+        twice_area += x1 * y2 - x2 * y1
+    return twice_area / 2
+
+
+def _is_collinear(points: list[Point]) -> bool:
+    origin_x, origin_y = points[0]
+    anchor_x, anchor_y = next(point for point in points if point != points[0])
+    run, rise = anchor_x - origin_x, anchor_y - origin_y
+    return all(run * (y - origin_y) - rise * (x - origin_x) == 0 for x, y in points)
+
+
+def _oriented(points: list[Point], counter_clockwise: bool) -> list[Point]:
+    if (_signed_area(points) > 0) == counter_clockwise:
+        return points
+    return [points[0]] + points[:0:-1]
+
+
+def _floats(points: list[Point]) -> list[tuple[float, float]]:
+    try:
+        return [(float(x), float(y)) for x, y in points]
+    except OverflowError:
+        raise _Unsupported("coordinate_invalid") from None
+
+
+def _check_ring(points: list[Point]) -> None:
+    if _is_collinear(points):
+        raise _Unsupported("ring_zero_area")
+    if not LinearRing(_floats(points)).is_simple:
+        raise _Unsupported("ring_self_intersecting")
+
+
+def _check_polygon(witness: Polygon) -> None:
+    if witness.is_valid:
+        return
+    reason = explain_validity(witness)
+    if "Hole lies outside" in reason:
+        raise _Unsupported("hole_outside_exterior")
+    raise _Unsupported("rings_intersect" if "Self-intersection" in reason else "polygon_invalid")
+
+
+def _parse_polygon(rings: object) -> _ExactPolygon:
+    if not isinstance(rings, list) or not rings:
+        raise _Unsupported("footprint_invalid")
+    parsed = [_ring_points(raw) for raw in rings]
+    for ring in parsed:
+        _check_ring(ring)
+    witness = Polygon(_floats(parsed[0]), [_floats(ring) for ring in parsed[1:]])
+    _check_polygon(witness)
+    exterior = _oriented(parsed[0], True)
+    holes = [_oriented(ring, False) for ring in parsed[1:]]
+    area = _signed_area(exterior) + sum((_signed_area(hole) for hole in holes), Fraction(0))
+    return _ExactPolygon(exterior, holes, area, witness)
+
+
+def _check_disjoint(polygons: list[_ExactPolygon]) -> None:
+    for index, first in enumerate(polygons):
+        for second in polygons[index + 1:]:
+            if first.witness.relate_pattern(second.witness, "2********"):
+                raise _Unsupported("polygons_overlap")
+
+
+def _parse_footprint(raw: object) -> list[_ExactPolygon]:
+    if not isinstance(raw, dict):
+        raise _Unsupported("footprint_invalid")
+    kind, coordinates = raw.get("type"), raw.get("coordinates")
+    if kind == "Polygon":
+        members = [coordinates]
+    elif kind == "MultiPolygon" and isinstance(coordinates, list) and coordinates:
+        members = coordinates
+    else:
+        raise _Unsupported("footprint_invalid")
+    polygons = [_parse_polygon(rings) for rings in members]
+    _check_disjoint(polygons)
+    return polygons
+
+
+def _parse_limits(component: dict) -> tuple[Fraction, Fraction] | None:
+    """Return the exact level limits, or None when a limit is unknown; never substitute a typical height."""
+    raw_lower, raw_upper = component.get("lowerM"), component.get("upperM")
+    if raw_lower is None or raw_upper is None:
+        return None
+    lower = _exact_number(raw_lower, "level_limit_invalid")
+    upper = _exact_number(raw_upper, "level_limit_invalid")
+    if lower >= upper:
+        raise _Unsupported("level_limits_not_increasing")
+    return lower, upper
+
+
+def _required_text(value: object, reason: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise _Unsupported(reason)
+    return value
+
+
+def _parse_enclosure(component: dict) -> str | None:
+    enclosure = component.get("enclosure")
+    if enclosure is not None and enclosure not in ENCLOSURES:
+        raise _Unsupported("enclosure_invalid")
+    return enclosure
+
+
+def _ring_json(points: list[Point]) -> list[list[str]]:
+    return [[_exact_text(x), _exact_text(y)] for x, y in points + points[:1]]
+
+
+def _footprint_json(polygons: list[_ExactPolygon]) -> list[list[list[list[str]]]]:
+    return [[_ring_json(polygon.exterior)] + [_ring_json(hole) for hole in polygon.holes] for polygon in polygons]
+
+
+def _prism_json(limits: tuple[Fraction, Fraction], area: Fraction, reference: str) -> tuple[dict, Fraction]:
+    lower, upper = limits
+    volume = area * (upper - lower)
+    prism = {
+        "lowerM": _exact_text(lower),
+        "upperM": _exact_text(upper),
+        "heightM": _exact_text(upper - lower),
+        "verticalReference": reference,
+        "volumeM3": float(volume),
+        "volumeM3Exact": _exact_text(volume),
+    }
+    return prism, volume
+
+
+def _prism_component(component: dict) -> tuple[dict, Fraction | None]:
+    identity = {
+        "componentId": _required_text(component.get("componentId"), "identifier_missing"),
+        "levelId": _required_text(component.get("levelId"), "identifier_missing"),
+    }
+    polygons = _parse_footprint(component.get("footprint"))
+    limits = _parse_limits(component)
+    area = sum((polygon.area for polygon in polygons), Fraction(0))
+    result = {
+        **identity,
+        "state": "ok",
+        "enclosure": _parse_enclosure(component),
+        "footprint": _footprint_json(polygons),
+        "areaM2": float(area),
+        "areaM2Exact": _exact_text(area),
+    }
+    if limits is None:
+        return {**result, "heightState": "unknown", "reason": "level_limit_unknown", "prism": None}, None
+    reference = _required_text(component.get("verticalReference"), "vertical_reference_missing")
+    prism, volume = _prism_json(limits, area, reference)
+    return {**result, "heightState": "known", "prism": prism}, volume
+
+
+def _build_component(component: object) -> tuple[dict, Fraction | None]:
+    try:
+        if not isinstance(component, dict):
+            raise _Unsupported("component_invalid")
+        return _prism_component(component)
+    except _Unsupported as problem:
+        named = component if isinstance(component, dict) else {}
+        failure = {
+            "componentId": named.get("componentId"),
+            "levelId": named.get("levelId"),
+            "state": "unsupported",
+            "reason": problem.reason,
+        }
+        return failure, None
+
+
+def _summarise(built: list[tuple[dict, Fraction | None]]) -> dict:
+    failures = [component for component, _ in built if component["state"] == "unsupported"]
+    if failures:
+        return {"state": "unsupported", "reason": failures[0]["reason"]}
+    volumes = [volume for _, volume in built]
+    if any(volume is None for volume in volumes):
+        return {"state": "ok", "heightState": "unknown", "totalVolumeM3": None, "totalVolumeM3Exact": None}
+    total = sum(volumes, Fraction(0))
+    return {
+        "state": "ok",
+        "heightState": "known",
+        "totalVolumeM3": float(total),
+        "totalVolumeM3Exact": _exact_text(total),
+    }
+
+
+def _space_problem(space: object) -> str | None:
+    if not isinstance(space, dict):
+        return "space_invalid"
+    if not isinstance(space.get("spaceId"), str) or not space["spaceId"].strip():
+        return "identifier_missing"
+    components = space.get("components")
+    if not isinstance(components, list) or not components:
+        return "components_missing"
+    return None
+
+
+def build_prisms(space: dict) -> dict:
+    """Build one prism per level component of a reviewed space, with exact area and volume.
+
+    Components are GeoJSON polygons or multipolygons (holes allowed) with decimal-string metres. Unknown level
+    limits give heightState "unknown" with no prism and no volume; invalid input gives state "unsupported".
+    """
+    problem = _space_problem(space)
+    if problem:
+        return {"spaceId": None, "method": PRISM_METHOD, "state": "unsupported", "reason": problem}
+    built = [_build_component(component) for component in space["components"]]
+    return {
+        "spaceId": space["spaceId"],
+        "method": PRISM_METHOD,
+        **_summarise(built),
+        "components": [component for component, _ in built],
+    }

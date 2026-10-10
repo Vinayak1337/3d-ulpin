@@ -54,3 +54,21 @@ docs/evidence/usp/cityjson-draft-runtime.json -text
 # Exact source-native CityJSON reader bytes are pinned by accepted jobs.
 services/geo/geo/native_cityjson.py text eol=lf
 services/geo/geo/cityjson_processing.py text eol=lf
+
+# Exact bytes of the scoped D04 metadata receipt survive Windows checkouts.
+docs/evidence/usp/nest-migration/runtime-source/d04-source-claims-20261005.json -text
+
+# Exact bytes of the scoped D05 metadata receipt survive Windows checkouts.
+docs/evidence/usp/nest-migration/runtime-source/d05-manual-mapping-20261005.json -text
+
+# Exact bytes of the scoped private ROI runtime receipt survive Windows checkouts.
+docs/evidence/usp/nest-migration/runtime-source/d04-private-roi-20261005.json -text
+
+# Exact bytes of the scoped source-only batch runtime receipt survive Windows checkouts.
+docs/evidence/usp/nest-migration/runtime-source/d07-source-batch-20261005.json -text
+
+# Exact bytes of the scoped source-review runtime receipt survive Windows checkouts.
+docs/evidence/usp/nest-migration/runtime-source/d07-source-review-20261005.json -text
+
+# Exact bytes of the scoped document-proposal runtime receipt survive Windows checkouts.
+docs/evidence/usp/nest-migration/runtime-source/d08-document-proposals-20261005.json -text

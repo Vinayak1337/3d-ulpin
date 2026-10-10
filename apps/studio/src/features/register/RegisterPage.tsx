@@ -6,29 +6,48 @@ import type { DeviationInput, MultiPolygon, Pick, SceneEngine, SceneState } from
 import type { BuildingLedger, BuildingResidents } from '@ulpin/api-client/draft';
 import {
   Badge, Banner, Button, DataTable, DescriptionList, EmptyState, EvidenceChip, Icon, LevelRail, Menu, Panel, RevisionTimeline, Skeleton,
-  StatusBadge, Tabs, formatDate, formatDateTime, type StatusWord,
+  StatusBadge, Tabs, formatDate, formatDateTime, type RailLevel, type StatusWord,
 } from '@ulpin/ui';
+import { historyActor, revisedRecordId } from '../../api/ledger';
 import { useAreaContext, useBuildingLedger, useBuildingRegister, useBuildingResidents, type BuildingRegister } from '../../api/queries';
+import { isServed } from '../../local/routes';
 import { shortHash, type SpaceWorkflow } from '../../local/workflow';
-import { buildingModel, type SpaceModel } from '../../model/building';
+import { buildingModel, type LevelModel, type SpaceModel } from '../../model/building';
 import { EvidenceProvider, useOpenEvidence } from '../evidence/EvidenceContext';
 import { parseLocator } from '../evidence/refs';
-import { CardDialog } from '../identity/CardDialog';
+import { UnitCardDialog } from '../identity/UnitCardDialog';
 import { levelSummary } from '../map/inspector/BuildingInspector';
-import { ledgerSpace, ledgerStatus } from '../map/ledger';
+import { ledgerSpace, ledgerStatus, revisionChain, revisionKey } from '../map/ledger';
 import { polygonsOf } from '../map/footprints';
+import { useCanonicalFootprints } from '../map/canonicalScene';
+import { hasGeometry } from '../map/sceneGeometry';
 import { useBuildingScene } from '../map/useBuildingScene';
 import { CheckGroups } from '../review/CheckGroups';
 import { useBuildingActions, useBuildingWorkflow, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import { cityJson, download, fileStem } from './exporters';
+import { NoGeometry } from './NoGeometry';
+import { ReadingStatementsContext } from './ReadingNote';
+import { RegisterAbsent } from './RegisterAbsent';
+import {
+  NO_READING_STATEMENTS, absentReason, conflictingStoreys, openCheckCount, registerNotFound, residentsStatement,
+  unreadRegister, unstatedReadings, type ResidentsStatement,
+} from './registerState';
+import { SourceList } from './SourceList';
+import { FloorFilter, UnitsTab } from './UnitsTab';
+import { unitsTabView } from './unitsTabView';
+import { useReadingStatementsRead } from './useReadingStatements';
 import { printRegistry, registryDetail, registryHtml, registryPackage, registryTables, registryWorkbook } from './registry';
-import { featureCode } from '../../api/queries';
+import { featureCode, useBuildingCanonical, useUnitCards } from '../../api/queries';
 import type { ConsolidatedRegistryReport } from '../../../../../packages/contracts/src/building-registry-report';
 import { useMapView } from '../map/useMapView';
 import styles from './RegisterPage.module.css';
 
 type Tab = 'units' | 'residents' | 'shares' | 'documents' | 'checks' | 'history';
 const TABS: Tab[] = ['units', 'residents', 'shares', 'documents', 'checks', 'history'];
+// What the deviation check needs, said under the button while it is disabled and in its title.
+const DEVIATION_NEEDS = 'Needs a sanctioned plan and an observed survey of this building';
+// Whether this build has the residents read at all: a 404 from a server that does not serve it says nothing.
+const RESIDENTS_SERVED = isServed('GET', '/api/v1/buildings/:buildingId/residents');
 
 /** S12/S13 Register: the building in 3D beside its units, shares, documents, checks and history. */
 export function RegisterPage() {
@@ -37,11 +56,16 @@ export function RegisterPage() {
   if (register.isPending) {
     return <div className={styles.loading}><div className="ul-panel ul-pad ul-stack">{Array.from({ length: 7 }, (_, i) => <Skeleton key={i} width={i ? '100%' : '40%'} />)}</div></div>;
   }
+  const absent = absentReason(register.error);
+  if (buildingId && (absent || registerNotFound(register.error))) {
+    return <RegisterAbsent buildingId={buildingId} reason={absent} />;
+  }
   if (register.error || !register.data) {
     return (
       <div className={styles.loading}>
-        <EmptyState icon={WarningCircle} title="This register could not be opened" action={<Link to="/studio/registry">Back to Register</Link>}>
-          {register.error?.message ?? 'The building was not found.'}
+        <EmptyState icon={WarningCircle} title="This register could not be opened"
+          action={<Link to="/studio/registry">Back to Register</Link>}>
+          {unreadRegister(register.error)}
         </EmptyState>
       </div>
     );
@@ -71,7 +95,8 @@ function Register({ register }: { register: BuildingRegister }) {
   const property = register.property;
   const context = useAreaContext(register.area.id).data;
   const ledger = useBuildingLedger(property.id).data;
-  const residents = useBuildingResidents(property.id).data;
+  const residentsRead = useBuildingResidents(property.id);
+  const residents = residentsRead.data;
   const workflow = useBuildingWorkflow(property.id).data;
   const actions = useBuildingActions(property.id).data ?? [];
   const model = useMemo(() => buildingModel(register), [register]);
@@ -79,7 +104,12 @@ function Register({ register }: { register: BuildingRegister }) {
   // Streamed areas carry their map layers as display features.
   const features = context?.displayFeatures ?? context?.features ?? NO_FEATURES;
   const feature = features.find((f) => f.id === property.id) ?? null;
-  const { base, footprints, detail, groundM } = useBuildingScene(features, feature, model, ledger, levelId ? 'rights' : 'none');
+  const canonicalScene = useCanonicalFootprints(register.area.id, property.id, features);
+  const drawn = canonicalScene.footprints;
+  const { base, footprints, detail, groundM } = useBuildingScene(features, feature, model, ledger, levelId ? 'rights' : 'none', drawn);
+  // Stated only once the scene's reads have answered and hold nothing to draw for this building.
+  const sceneRead = Boolean(context) && !canonicalScene.pending && !canonicalScene.error;
+  const noGeometry = sceneRead && !hasGeometry(property.id, { footprints, detail });
   const level = model.levels.find((l) => l.id === levelId) ?? null;
   const record = recordId ? model.spaceById.get(recordId) ?? null : null;
   const recordWorkflow = record ? byId.get(record.id) : undefined;
@@ -114,11 +144,21 @@ function Register({ register }: { register: BuildingRegister }) {
     const top = model.spaces.filter((s) => !s.parentId);
     return level ? top.filter((s) => s.levelId === level.id) : top.filter((s) => s.use === 'apartment');
   }, [model, level]);
+  const canonical = useBuildingCanonical(property.id);
+  const unitsView = useMemo(
+    () => unitsTabView(units, { data: canonical.data, error: canonical.error, isPending: canonical.isPending },
+      level?.id ?? null),
+    [units, canonical.data, canonical.error, canonical.isPending, level],
+  );
+  const storeys = useMemo(() => conflictingStoreys(canonical.data).join(' / '), [canonical.data]);
+  const clearLevel = useCallback(() => set({ level: null, record: null }), [set]);
   const workflowMap = useMemo(() => byId, [byId]);
   const snapshot = useCallback(() => engine?.snapshot() ?? null, [engine]);
 
+  // A card the registry lists for the selected unit opens whether or not this browser holds a draft code.
+  const registryCard = Boolean(useUnitCards(property.id, record?.id).data?.snapshotCreatedAt);
   const cardBlocked = !record ? 'Blocked: select a unit with an assigned proposed code'
-    : !recordWorkflow?.code ? 'Blocked: assign a proposed code first' : null;
+    : !recordWorkflow?.code && !registryCard ? 'Blocked: assign a proposed code first' : null;
   const stem = fileStem(register);
   const [exportError, setExportError] = useState<string | null>(null);
   /** Every export starts from the API's consolidated registry report, then adds the register's measurements. */
@@ -143,6 +183,13 @@ function Register({ register }: { register: BuildingRegister }) {
     }
   };
 
+  // The rail filters the tables by floor, so it stays when there is no scene to draw.
+  const rail = model.levels.length ? (
+    <LevelRail levels={model.levels.map(railLevel)} reference={ledger?.siteDatum ?? null} ground={groundM}
+      selected={level?.id ?? null}
+      onSelect={(id) => set({ level: id === level?.id ? null : id, record: null })} />
+  ) : null;
+
   return (
     <EvidenceProvider snapshot={snapshot}>
       <div className={styles.frame}>
@@ -157,15 +204,21 @@ function Register({ register }: { register: BuildingRegister }) {
               Parcel ULPIN{' '}
               {register.parcelIdentifiers.length ? <span className="ul-mono">{register.parcelIdentifiers.map((p) => p.value).join(', ')}</span> : <span className="ul-unknown">not supplied</span>}
               {ledger?.declaration ? <> · {ledger.declaration}</> : null}
-              {model.levels.length ? <> · {levelSummary(model)}</> : null}
+              {model.levels.length ? <> · {levelSummary(model)}{storeys ? ' recorded' : ''}</> : null}
+              {storeys ? (
+                <> · <Badge tone="warning" icon={null}>{`Storeys conflict between sources: ${storeys}`}</Badge></>
+              ) : null}
             </p>
           </div>
           <Link to={mapHref} className="ul-btn ul-btn--ghost"><Icon icon={MapTrifold} />Back to map</Link>
-          <Button variant={compare ? 'soft' : 'secondary'} icon={Intersect} disabled={!ledger?.deviation}
-            title={ledger?.deviation ? undefined : 'Needs a sanctioned plan and an observed survey of this building'}
-            onClick={() => set({ mode: compare ? null : 'deviation' })}>
-            {compare ? 'Close compare' : 'Deviation check'}
-          </Button>
+          <div className={styles.primary}>
+            <Button variant={compare ? 'soft' : 'secondary'} icon={Intersect} disabled={!ledger?.deviation}
+              title={ledger?.deviation ? undefined : DEVIATION_NEEDS}
+              onClick={() => set({ mode: compare ? null : 'deviation' })}>
+              {compare ? 'Close compare' : 'Deviation check'}
+            </Button>
+            {ledger?.deviation ? null : <span className={`${styles.blocked} ${styles.needs}`}>{DEVIATION_NEEDS}</span>}
+          </div>
           <Menu label="Export" icon={DownloadSimple} items={[
             { label: 'Building register (PDF)', disabled: !model.levels.length, onSelect: () => void exportAs('pdf') },
             { label: 'Register data package (ZIP)', disabled: !model.levels.length, onSelect: () => void exportAs('zip') },
@@ -183,6 +236,7 @@ function Register({ register }: { register: BuildingRegister }) {
         <div className={styles.body}>
           <div className={styles.sceneColumn}>
             <div className={styles.canvasWrap}>
+              {noGeometry ? <NoGeometry buildingId={property.id}>{rail}</NoGeometry> : <>
               {context ? <SceneView look={mapLook} layers={mapLayers} className={styles.canvas} base={base} buildings={footprints} detail={detail} state={sceneState}
                 onPick={onPick} onView={() => setTick((t) => (t + 1) % 1_000_000)} onReady={setEngine}
                 label={`3D view of ${property.name}. The tables beside it list the same levels and units.`} /> : null}
@@ -193,15 +247,9 @@ function Register({ register }: { register: BuildingRegister }) {
                   <span className={styles.divider} />
                   <DeviationLabel engine={engine} tick={tick} text={deviationLabel(ledger.deviation)} />
                 </>
-              ) : model.levels.length ? (
-                <div className={styles.rail}>
-                  <LevelRail
-                    levels={model.levels.map((l) => ({ id: l.id, label: l.label, lower: l.lower, estimated: l.estimated, belowGround: l.belowGround }))}
-                    reference={ledger?.siteDatum ?? null} ground={groundM} selected={level?.id ?? null}
-                    onSelect={(id) => set({ level: id === level?.id ? null : id, record: null })} />
-                </div>
-              ) : null}
+              ) : rail && <div className={styles.rail}>{rail}</div>}
               {!context ? <div className={styles.sceneLoading}><Skeleton width={160} /></div> : null}
+              </>}
             </div>
             {compare && ledger?.deviation ? <p className={styles.caption}>{ledger.deviation.note}</p> : null}
           </div>
@@ -213,20 +261,26 @@ function Register({ register }: { register: BuildingRegister }) {
               <>
                 <Tabs label="Register sections" value={tab} onChange={(value) => set({ tab: value === 'units' ? null : value })}
                   tabs={[
-                    { value: 'units', label: 'Units', count: units.length },
+                    { value: 'units', label: 'Units', count: unitsView.count },
                     { value: 'residents', label: 'Residents', count: residents ? residents.units.reduce((n, u) => n + u.occupants.length, 0) : undefined },
                     { value: 'shares', label: 'Shares' },
                     { value: 'documents', label: 'Documents', count: ledger?.sources.length ?? register.sources.length },
-                    { value: 'checks', label: 'Checks', count: ledger?.checks.filter((c) => c.state === 'blocking' || c.state === 'needs_review').length },
+                    { value: 'checks', label: 'Checks', count: openCheckCount(ledger?.checks) },
                     { value: 'history', label: 'History' },
                   ]} />
                 <div key={tab} className={styles.tabBody}>
                   {tab === 'units' ? (
-                    <UnitsTable register={register} units={units} levelLabel={level?.label ?? null} levels={new Map(model.levels.map((l) => [l.id, l.label]))}
-                      ledger={ledger} workflow={workflowMap} selectedId={record?.id ?? null}
-                      onSelect={(s) => set({ record: s.id === record?.id ? null : s.id, level: s.levelId })} onClearLevel={() => set({ level: null, record: null })} />
+                    <UnitsTab view={unitsView} buildingId={property.id} floorLabel={level?.label ?? null}
+                      onClearFloor={clearLevel} table={(
+                      <UnitsTable register={register} units={unitsView.rows} levelLabel={level?.label ?? null}
+                        levels={new Map(model.levels.map((l) => [l.id, l.label]))}
+                        ledger={ledger} workflow={workflowMap} selectedId={record?.id ?? null}
+                        onSelect={(s) => set({ record: s.id === record?.id ? null : s.id, level: s.levelId })}
+                        onClearLevel={clearLevel} />
+                    )} />
                   ) : tab === 'residents' ? (
-                    <Residents residents={residents} levelLabel={level?.label ?? null} selectedId={record?.id ?? null}
+                    <Residents residents={residents} statement={residentsStatement(residentsRead, RESIDENTS_SERVED)}
+                      levelLabel={level?.label ?? null} selectedId={record?.id ?? null}
                       onSelect={(spaceId) => { const s = model.spaceById.get(spaceId); if (s) set({ record: s.id === record?.id ? null : s.id, level: s.levelId }); }}
                       onClearLevel={() => set({ level: null, record: null })} />
                   ) : tab === 'shares' ? (
@@ -238,8 +292,9 @@ function Register({ register }: { register: BuildingRegister }) {
                       <Panel title="Checks" aside={<span className="ul-caption">{ledger.checkMethod}</span>}>
                         <CheckGroups checks={ledger.checks} action={(c) => (c.findingId && c.state !== 'passed' ? 'Open in 3D' : null)}
                           onOpen={(c) => navigate(`/studio/areas/${register.area.id}?feature=${property.id}&mode=findings&finding=${c.findingId}`)} />
+                        {ledger.checks.length ? null : <p className="ul-help">{NO_CHECKS}</p>}
                       </Panel>
-                    ) : <Panel title="Checks"><p className="ul-help">Not assessed: no checks have run on this building's records.</p></Panel>
+                    ) : <Panel title="Checks"><p className="ul-help">{NO_CHECKS}</p></Panel>
                   ) : (
                     <History register={register} ledger={ledger} workflow={workflow ?? []} actions={actions} />
                   )}
@@ -254,8 +309,9 @@ function Register({ register }: { register: BuildingRegister }) {
           </div>
         </div>
 
-        {cardOpen && record && recordWorkflow?.code ? (
-          <CardDialog workflow={recordWorkflow} space={record} buildingName={property.name}
+        {cardOpen && record ? (
+          <UnitCardDialog buildingId={property.id} workflow={recordWorkflow} space={record}
+            buildingName={property.name}
             level={model.levels.find((l) => l.id === record.levelId) ?? null} onClose={() => setCardOpen(false)} />
         ) : null}
       </div>
@@ -264,6 +320,11 @@ function Register({ register }: { register: BuildingRegister }) {
 }
 
 const NO_FEATURES: never[] = [];
+const NO_CHECKS = 'Not assessed: no checks have run on this building\'s records.';
+
+function railLevel({ id, label, lower, estimated, belowGround }: LevelModel): RailLevel {
+  return { id, label, lower, estimated, belowGround };
+}
 
 function deviationLabel(d: NonNullable<BuildingLedger['deviation']>) {
   const storeys = d.observed.storeys - d.sanctioned.storeys;
@@ -294,12 +355,7 @@ function UnitsTable({ register, units, levelLabel, levels, ledger, workflow, sel
   const unknown = <em className="ul-unknown">Unknown</em>;
   return (
     <div className="ul-panel">
-      {levelLabel ? (
-        <div className={styles.filterBar}>
-          <span>Spaces on <b>{levelLabel}</b></span>
-          <button type="button" className="ul-btn ul-btn--ghost" onClick={onClearLevel}>All units</button>
-        </div>
-      ) : null}
+      {levelLabel ? <FloorFilter label={levelLabel} onClear={onClearLevel} /> : null}
       <DataTable
         caption={levelLabel ? `Spaces on ${levelLabel}` : 'Units in this building'}
         rows={units}
@@ -319,16 +375,18 @@ function UnitsTable({ register, units, levelLabel, levels, ledger, workflow, sel
   );
 }
 
-function Residents({ residents, levelLabel, selectedId, onSelect, onClearLevel }: {
-  residents: BuildingResidents | null | undefined; levelLabel: string | null; selectedId: string | null; onSelect: (spaceId: string) => void; onClearLevel: () => void;
+function Residents({ residents, statement, levelLabel, selectedId, onSelect, onClearLevel }: {
+  residents: BuildingResidents | null | undefined; statement: ResidentsStatement | null; levelLabel: string | null;
+  selectedId: string | null; onSelect: (spaceId: string) => void; onClearLevel: () => void;
 }) {
-  if (!residents) {
+  if (statement) {
     return (
-      <Panel title="Residents" aside={<StatusBadge status="Not assessed" />}>
-        <p className="ul-help">No register extract is linked to this building yet. Holders come from the deed index; residents from the society or tenant register.</p>
+      <Panel title="Residents" aside={statement.kind === 'none' ? <StatusBadge status="Not assessed" /> : undefined}>
+        <p className="ul-help">{statement.text}</p>
       </Panel>
     );
   }
+  if (!residents) return <Panel title="Residents"><Skeleton width="60%" /></Panel>;
   const rows = levelLabel ? residents.units.filter((u) => u.level === levelLabel) : residents.units;
   const people = rows.reduce((n, u) => n + u.occupants.length, 0);
   const tone = { owner_occupied: 'success', rented: 'info', vacant: 'neutral' } as const;
@@ -401,24 +459,33 @@ function Shares({ ledger, model, workflow }: { ledger: BuildingLedger | null | u
 
 function Documents({ register, ledger }: { register: BuildingRegister; ledger: BuildingLedger | null | undefined }) {
   const openEvidence = useOpenEvidence();
+  // The consolidated read answers only for a recorded building (revision above 0).
+  const reading = useReadingStatementsRead(register.property.id, register.property.revision > 0);
+  const readings = reading.data ?? NO_READING_STATEMENTS;
+  const unstated = unstatedReadings(reading.error);
   const sources = ledger?.sources ?? register.sources.map((s) => ({ sourceId: s.id, kind: 'table' as const, name: s.name, file: s.name, summary: `r${s.revision}` }));
   const bySource = new Map(register.sources.map((s) => [s.id, s]));
   return (
     <Panel title="Sources" aside={<span className="ul-caption">{sources.length}</span>} flush={(
-      <ul className={styles.sources}>
-        {sources.map((s) => {
-          const retained = bySource.get(s.sourceId);
-          return (
-            <li key={s.sourceId}>
-              <EvidenceChip kind={s.kind} source={s.name} locator={s.summary}
-                onOpen={() => openEvidence({ sourceId: s.sourceId, label: s.name, locator: parseLocator({ locator: s.summary }) })} />
-              <span className="ul-caption">{s.file}{retained ? <> · r{retained.revision} · {formatDate(retained.createdAt)} · <span className="ul-mono">{shortHash(retained.sha256)}</span></> : null}</span>
-            </li>
-          );
-        })}
-      </ul>
-    )} />
+      <ReadingStatementsContext.Provider value={readings}>
+        <SourceList sources={sources} retained={bySource} onOpen={(s) => openEvidence({
+          sourceId: s.sourceId, label: s.name, locator: parseLocator({ locator: s.summary }),
+        })} />
+      </ReadingStatementsContext.Provider>
+    )}>
+      {unstated ? <span className="ul-caption">{unstated}</span> : null}
+    </Panel>
   );
+}
+
+/**
+ * A ledger revision as a History entry. The key holds the record it revises, because two records of a building
+ * can be revised at the same time; only an explicitly null actor is said to be not recorded.
+ */
+function ledgerEntry(revision: BuildingLedger['revisions'][number]) {
+  const { title, kind, at, hash, previousHash } = revision;
+  const id = `${revisedRecordId(revision) ?? 'entry'}:${revisionKey(revision)}`;
+  return { id, title, kind, at, by: historyActor(revision), hash, previousHash };
 }
 
 function History({ register, ledger, workflow, actions }: {
@@ -428,12 +495,14 @@ function History({ register, ledger, workflow, actions }: {
     ...actions.map((a) => ({ id: a.hash, title: a.title, kind: a.kind === 'finding' ? 'evidence' as const : 'draft' as const, at: a.at, by: a.by, hash: a.hash, previousHash: a.previousHash })),
     ...workflow.flatMap((w) => w.events.map((e) => ({ id: `${w.spaceId}-${e.hash}`, title: `${w.spaceName}: ${e.title}`, kind: e.kind, at: e.at, by: e.by, hash: e.hash, previousHash: e.previousHash }))),
   ];
-  const recorded = ledger?.revisions.map((r) => ({ id: r.hash, title: r.title, kind: r.kind, at: r.at, by: r.actor, hash: r.hash, previousHash: r.previousHash }))
+  const recorded = ledger?.revisions.map(ledgerEntry)
     ?? register.sources.slice(0, 1).map((s) => ({ id: s.id, title: `r${register.property.revision} Imported from ${s.name}`, kind: 'draft' as const, at: s.createdAt, by: 'Import', hash: s.sha256, previousHash: null }));
   const revisions = [...own, ...recorded].sort((a, b) => b.at.localeCompare(a.at)).map((r) => ({
-    id: r.id, title: r.title, kind: r.kind, byline: `${r.by} · ${formatDateTime(r.at)}`, hash: shortHash(r.hash), previousHash: r.previousHash ? shortHash(r.previousHash) : null,
+    id: r.id, title: r.title, kind: r.kind,
+    byline: [r.by, formatDateTime(r.at)].filter(Boolean).join(' · '),
+    hash: r.hash ? shortHash(r.hash) : null, previousHash: r.previousHash ? shortHash(r.previousHash) : null,
   }));
-  return <RevisionTimeline revisions={revisions} chain={ledger ? 'consistent' : 'unknown'} />;
+  return <RevisionTimeline revisions={revisions} chain={ledger ? revisionChain(ledger.revisions) : 'unknown'} />;
 }
 
 function DeviationPanel({ ledger, buildingId, created }: {

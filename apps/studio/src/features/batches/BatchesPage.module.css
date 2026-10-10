@@ -13,6 +13,8 @@
   padding: 14px var(--ui-space-4); border-top: 1px solid var(--ui-divider); color: var(--ui-ink); text-decoration: none; transition: background 120ms;
 }
 .row[data-head] { border-top: 0; padding-top: 10px; padding-bottom: 10px; background: var(--ui-surface-subtle); font: 500 12px/16px var(--ui-font-sans); color: var(--ui-muted); }
+/* The work queue alone: batch, next action and time. Stage and readiness have no column without the work board. */
+.table[data-columns="3"] .row { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr) 72px; }
 a.row:hover { background: var(--ui-surface-tint); }
 a.row:focus-visible { outline: none; box-shadow: inset var(--ui-focus-ring); }
 .what { display: grid; min-width: 0; }
@@ -35,4 +37,7 @@ a.row:focus-visible { outline: none; box-shadow: inset var(--ui-focus-ring); }
 @media (prefers-reduced-motion: no-preference) { .spin { animation: spin 1.2s linear infinite; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 .skeletonRow { height: 44px; margin: var(--ui-space-2) var(--ui-space-3); }
+/* The page a case row leads to: one column, as wide as a readable table. */
+.casePage { max-width: 960px; padding: var(--ui-space-6); display: grid; gap: var(--ui-space-4); justify-items: start; }
+.casePage > section { justify-self: stretch; }
 @media (max-width: 1100px) { .page { grid-template-columns: minmax(0, 1fr); } .counts { padding-top: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); } }

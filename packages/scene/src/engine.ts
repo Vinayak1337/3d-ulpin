@@ -7,7 +7,7 @@ import {
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TilesRenderer } from '3d-tiles-renderer';
 import { presetFor } from './camera';
-import { FLAT_THICKNESS_M, hasKnownHeight, prismGeometry, shapesFor } from './geometry';
+import { FLAT_THICKNESS_M, buildingLook, hasKnownHeight, prismGeometry, shapesFor, type BuildingLook } from './geometry';
 import { enhanceFacade, enhanceSurface, facadeStyle, labelPoint, laneDashes, lookUniforms, padGeometry, paintGeometry, skyTexture, treeMeshes, type SceneLook } from './look';
 import type {
   BaseFeatureInput, Bounds2D, BuildingDetailInput, FindingInput, FootprintInput, Measurement, MultiPolygon, Pick, SceneMode,
@@ -41,6 +41,8 @@ interface Entry {
   grow?: number;
   /** Drawn with a thematic colour (Colour by). */
   themed?: boolean;
+  /** Buildings only: ghost for a candidate, hatch for an unknown or estimated height. */
+  look?: BuildingLook;
 }
 
 const CAMERA_MS = 600;
@@ -50,6 +52,8 @@ const SUN_DIR = new Vector3(-0.5, 0.95, 0.55).normalize();
 
 /** Illustrative kerb height of raised sidewalks, metres (enhanced view only). */
 const SIDEWALK_M = 0.15;
+const CONTEXT_FILL_ORDER = -4;
+const GROUND_PICTURE_ORDER = -3;
 
 const INITIAL_STATE: SceneState = { mode: 'area', buildingId: null, levelId: null, spaceId: null, tool: 'select' };
 
@@ -191,6 +195,7 @@ export class SceneEngine {
     this.lookName = options.look ?? 'enhanced';
     this.ground = new Mesh(new PlaneGeometry(1, 1), this.m.ground);
     this.ground.rotation.x = -Math.PI / 2;
+    this.ground.renderOrder = CONTEXT_FILL_ORDER;
     this.ground.receiveShadow = true;
     this.ground.scale.set(1400, 1400, 1);
     this.halo = new Mesh(new BufferGeometry(), this.m.halo);
@@ -294,7 +299,8 @@ export class SceneEngine {
       if (o.kind === 'image') {
         const [sw, se, ne, nw] = o.corners;
         const g = new BufferGeometry();
-        const y = 0.2;
+        const ground = o.role === 'ground';
+        const y = ground ? 0 : 0.2;
         g.setAttribute('position', new Float32BufferAttribute([sw[0], y, -sw[1], se[0], y, -se[1], ne[0], y, -ne[1], nw[0], y, -nw[1]], 3));
         g.setAttribute('uv', new Float32BufferAttribute([0, 0, 1, 0, 1, 1, 0, 1], 2));
         g.setIndex([0, 1, 2, 0, 2, 3]);
@@ -302,7 +308,16 @@ export class SceneEngine {
         const texture = new CanvasTexture(o.image);
         texture.colorSpace = SRGBColorSpace;
         texture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
-        const mesh = new Mesh(g, new MeshBasicMaterial({ map: texture, transparent: true, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }));
+        // Ground pictures use the opaque queue between fills and records, not depth bias: even far away they
+        // cannot flicker against fills or hide records. Alpha cutout keeps no-data pixels clear, without a
+        // late transparent pass over records. They neither test nor write depth and change no record height.
+        const material = ground
+          ? new MeshBasicMaterial({ map: texture, alphaTest: 0.01, depthTest: false, depthWrite: false })
+          : new MeshBasicMaterial({
+            map: texture, transparent: true, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4,
+          });
+        const mesh = new Mesh(g, material);
+        mesh.renderOrder = ground ? GROUND_PICTURE_ORDER : 0;
         mesh.raycast = () => {};
         mesh.userData.overlay = o.id;
         this.overlays.add(mesh);
@@ -432,6 +447,7 @@ export class SceneEngine {
       // Sidewalks are raised a kerb's height in the enhanced view (illustrative 15 cm); flat in plain view.
       const mesh = new Mesh(sidewalk ? prismGeometry(f.polygons, 0, SIDEWALK_M) : prismGeometry(f.polygons, lift[f.kind] ?? 0.02, 0.001), material);
       mesh.receiveShadow = true;
+      mesh.renderOrder = CONTEXT_FILL_ORDER;
       mesh.userData.layer = f.kind;
       if (sidewalk) this.raised.push(mesh);
       if (f.name) {
@@ -660,17 +676,20 @@ export class SceneEngine {
 
   private addFootprintBuilding(input: FootprintInput, grow?: number) {
     const known = hasKnownHeight(input);
+    const look = buildingLook(input);
     const geometry = prismGeometry(input.polygons, input.baseM ?? 0, known ? input.heightM! : FLAT_THICKNESS_M);
-    if (!known) applyPlanarUV(geometry);
+    if (look === 'hatch') applyPlanarUV(geometry);
     const themed = Boolean(input.color) && known;
     const style = facadeStyle(input.id, known ? input.heightM : null);
     paintGeometry(geometry, themed ? new Color(input.color) : style.color, style.seed);
-    const mesh = new Mesh(geometry, themed ? this.m.themed : known ? this.m.bldg : this.m.unknown);
-    mesh.castShadow = known;
+    const entry: Entry = { kind: 'building', id: input.id, buildingId: input.id, meshes: [], edges: [], known, bounds: geometry.boundingBox!.clone(), grow, themed, look };
+    const mesh = new Mesh(geometry, this.restMaterial(entry));
+    mesh.castShadow = known && look !== 'candidate';
     mesh.receiveShadow = true;
     const edge = new LineSegments(edgeGeometry(geometry, input), this.m.edge);
     edge.raycast = () => {};
-    const entry: Entry = { kind: 'building', id: input.id, buildingId: input.id, meshes: [mesh], edges: [edge], known, bounds: geometry.boundingBox!.clone(), grow, themed };
+    entry.meshes.push(mesh);
+    entry.edges.push(edge);
     mesh.userData.entry = entry;
     this.buildings.add(mesh, edge);
     this.entries.set(input.id, entry);
@@ -725,6 +744,7 @@ export class SceneEngine {
     const pads = padGeometry(footprints, 2.2, 0.004);
     if (pads) {
       const mesh = new Mesh(pads, this.m.pad);
+      mesh.renderOrder = CONTEXT_FILL_ORDER;
       mesh.receiveShadow = true;
       mesh.raycast = () => {};
       this.dressing.add(mesh);
@@ -822,16 +842,19 @@ export class SceneEngine {
       if (entry.kind === 'building') {
         const selected = entry.id === buildingId;
         if (hides(entry.id)) { this.setEntry(entry, m.occluder, m.occluderEdge, true, false); continue; }
-        let material: Material = entry.themed ? m.themed : entry.known ? m.bldg : m.unknown;
+        let material: Material = this.restMaterial(entry);
         let edge: Material = m.edge;
         if (mode === 'findings') { material = selected ? m.ghost : m.bldgContext; edge = selected ? m.inkEdge : m.edgeContext; }
         else if (mode === 'underground') { material = selected ? m.ghost : m.faint; edge = selected ? m.inkEdge : m.ghostEdge; if (!selected) { this.setEntry(entry, material, edge, false, false); continue; } }
         else if (selected && exploring) { material = m.ghost; edge = m.ghostEdge; }
-        else if (selected) { material = m.selected; edge = m.haloEdge; }
-        else if (selectedSomething) { material = entry.themed ? m.themed : entry.known ? m.bldgContext : m.unknownContext; edge = m.edgeContext; }
+        else if (selected) { material = entry.look === 'candidate' ? m.ghostDark : m.selected; edge = m.haloEdge; }
+        else if (selectedSomething) { material = this.contextMaterial(entry); edge = m.edgeContext; }
         // Hover (area and building views): a lighter facade and a dark outline, never on the selection.
-        if (!selected && entry.known && !entry.themed && entry.id === this.hovered && (mode === 'area' || mode === 'building')) { material = m.hover; edge = m.inkEdge; }
-        this.setEntry(entry, material, edge, true, entry.known && material !== m.ghost && material !== m.faint);
+        if (!selected && entry.id === this.hovered && (mode === 'area' || mode === 'building')) {
+          if (entry.look === 'candidate') edge = m.inkEdge;
+          else if (entry.known && !entry.themed && entry.look !== 'hatch') { material = m.hover; edge = m.inkEdge; }
+        }
+        this.setEntry(entry, material, edge, true, entry.known && entry.look !== 'candidate' && material !== m.ghost && material !== m.faint);
       } else if (entry.kind === 'storey') {
         const selected = entry.buildingId === buildingId;
         if (hides(entry.buildingId)) { this.setEntry(entry, m.occluder, m.occluderEdge, !entry.storey!.belowGround, false); continue; }
@@ -922,6 +945,21 @@ export class SceneEngine {
     point.project(this.camera);
     this.camera.aspect = w / h; this.camera.updateProjectionMatrix();
     return { x: half + ((point.x + 1) / 2) * (w - half), y: ((1 - point.y) / 2) * h, visible: point.z < 1 && Math.abs(point.x) < 1.1 };
+  }
+
+  /** A building's material at rest: thematic colour, candidate ghost, hatch (unknown or estimated height), else solid. */
+  private restMaterial(entry: Entry): Material {
+    if (entry.themed) return this.m.themed;
+    if (entry.look === 'candidate') return this.m.ghostDark;
+    if (entry.look !== 'hatch') return this.m.bldg;
+    return entry.known ? this.m.estimated : this.m.unknown;
+  }
+
+  /** The same, once something else is selected: neighbours fade back. */
+  private contextMaterial(entry: Entry): Material {
+    if (entry.themed) return this.m.themed;
+    if (entry.look === 'candidate') return this.m.ghost;
+    return entry.known ? this.m.bldgContext : this.m.unknownContext;
   }
 
   private setEntry(entry: Entry, material: Material, edge: Material, visible: boolean, shadow: boolean) {
@@ -1206,7 +1244,9 @@ export class SceneEngine {
     const targets: Object3D[] = [];
     const m = this.m;
     for (const entry of this.entries.values()) {
-      for (const mesh of entry.meshes) if (mesh.visible && mesh.material !== m.ghost && mesh.material !== m.faint && mesh.material !== m.ghostDark) targets.push(mesh);
+      // Ghosted levels are see-through to picks; a candidate building is a ghost that must stay selectable.
+      const seeThrough = (mesh: Mesh) => entry.look !== 'candidate' && (mesh.material === m.ghost || mesh.material === m.faint || mesh.material === m.ghostDark);
+      for (const mesh of entry.meshes) if (mesh.visible && !seeThrough(mesh)) targets.push(mesh);
     }
     targets.push(this.ground);
     const hits = this.raycaster.intersectObjects(targets, false);

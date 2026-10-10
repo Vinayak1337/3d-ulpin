@@ -1,0 +1,70 @@
+{
+  "origin": "GET-only demo reads on 18b5e74c, 2026-10-10T17:10Z; these are baseline observations, not changed reads",
+  "tower3": {
+    "id": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325", "registerStatus": 200, "ledgerStatus": 200,
+    "registryHistoryEntries": 8, "recordedFloorCount": 1, "recordedSpaceCount": 1,
+    "missing": [
+      "Spatial analysis not assessed: canonical geometry qualification is unavailable. ",
+      "Retained geometry is available for source inspection only.",
+      "No evidenced parcel association has been confirmed."
+    ],
+    "missingNote": "The first two strings above are one sentence-list entry, split here only for line length."
+  },
+  "magnolia": {
+    "id": "e8777ffc-9409-4129-bacf-f680160d8795", "registerStatus": 200, "recordedSpaceCount": 0,
+    "linkedPdf": {
+      "id": "10946c4c-0cae-41f7-8303-41f2512e630d",
+      "name": "bihar-magnolia-sanctioned-layout-original.pdf", "profile": "pdf-reference-v2"
+    },
+    "oldDetailedSpaceStatement": [
+      "No source-linked detailed spaces have been recorded for this property.", "Add its plans and sections."
+    ],
+    "newPureStatement": "No source-linked detailed spaces have been recorded for this property."
+  },
+  "cases": [
+    {
+      "id": "1ada7796-4e8f-4a19-9b7f-4414e80114c4", "status": 200,
+      "sources": [
+        {
+          "id": "d6dffbcc-7ee0-4467-9ddf-4952bd23c33c", "profile": "tabular-manual-v1",
+          "createdAt": "2026-10-10T11:45:00.610Z"
+        }
+      ]
+    },
+    {
+      "id": "4ad9cb6d-56c0-445e-a9b6-357d1dc1d452", "status": 200,
+      "sources": [
+        {
+          "id": "9354378d-1cf2-4ffd-aec6-1d87ce233b28", "profile": "tabular-manual-v1",
+          "createdAt": "2026-10-10T10:08:40.939Z"
+        },
+        {
+          "id": "ab997af8-c280-41f5-a30a-a2d6a64e8843", "profile": "tabular-manual-v1",
+          "createdAt": "2026-10-10T10:10:37.095Z"
+        },
+        {
+          "id": "39d29b89-1b90-46d8-91cb-3339fc6bd773", "profile": "tabular-manual-v1",
+          "createdAt": "2026-10-10T10:12:40.871Z"
+        },
+        {
+          "id": "ac36d0c4-74ca-4173-a954-4431e81d299d", "profile": "tabular-manual-v1",
+          "createdAt": "2026-10-10T10:32:53.008Z"
+        },
+        {
+          "id": "333d5cdd-9778-4fb0-a89a-61794a532497", "profile": "tabular-manual-v1",
+          "createdAt": "2026-10-10T11:43:06.132Z"
+        }
+      ]
+    },
+    { "id": "6d183fef-bcaf-40f6-90dc-2694bc9873a5", "status": 200, "sources": [] }
+  ],
+  "workQueue": { "status": 200, "total": 11, "tableSourceIdsPublished": false },
+  "C8": { "GET": "/api/v1/work-board", "status": 404, "code": "NOT_FOUND", "published": false },
+  "K2": {
+    "GET": "/api/v1/buildings/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/residents",
+    "status": 404, "code": "NOT_FOUND", "published": false
+  },
+  "changedQueriesExecutedOnPostgreSQL": false,
+  "demoWrites": 0,
+  "databaseConnections": 0
+}

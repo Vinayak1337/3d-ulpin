@@ -152,6 +152,18 @@
       "status": 201
     },
     {
+      "operationId": "POST_api_v1_spatial_ml_source_batches",
+      "method": "POST",
+      "path": "/api/v1/spatial-ml/source-batches",
+      "disposition": "added",
+      "batch": "D07-SOURCE-BATCH",
+      "canonicalService": "createSpatialMlSourceBatch",
+      "runtimeEvidence": [],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 201,
+      "maxBodyBytes": 100000
+    },
+    {
       "operationId": "GET_api_v1_spatial_ml_batches_batchId",
       "method": "GET",
       "path": "/api/v1/spatial-ml/batches/{batchId}",
@@ -293,7 +305,42 @@
         "native-routing-openapi"
       ],
       "status": 410
-    }
+    },
+    {
+      "operationId": "GET_api_v1_spatial_ml_items_itemId_source_reviews_context",
+      "method": "GET",
+      "path": "/api/v1/spatial-ml/items/{itemId}/source-reviews/context",
+      "disposition": "added",
+      "batch": "D07-SOURCE-REVIEW",
+      "canonicalService": "SpatialSourceReviewsService.context",
+      "runtimeEvidence": [],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {
+      "operationId": "POST_api_v1_spatial_ml_items_itemId_source_reviews",
+      "method": "POST",
+      "path": "/api/v1/spatial-ml/items/{itemId}/source-reviews",
+      "disposition": "added",
+      "batch": "D07-SOURCE-REVIEW",
+      "canonicalService": "SpatialSourceReviewsService.review",
+      "runtimeEvidence": [],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 201,
+      "maxBodyBytes": 262144
+    },
+    {
+      "operationId": "GET_api_v1_spatial_ml_items_itemId_source_reviews_reviewId",
+      "method": "GET",
+      "path": "/api/v1/spatial-ml/items/{itemId}/source-reviews/{reviewId}",
+      "disposition": "added",
+      "batch": "D07-SOURCE-REVIEW",
+      "canonicalService": "SpatialSourceReviewsService.read",
+      "runtimeEvidence": [],
+      "statefulRuntimeEvidence": "stateful-acceptance",
+      "status": 200
+    },
+    {"operationId":"GET_api_v1_spatial_ml_items_itemId_source_reviews","method":"GET","path":"/api/v1/spatial-ml/items/{itemId}/source-reviews","disposition":"added","batch":"D08-D07-REOPEN","canonicalService":"SpatialSourceReviewsService.history","runtimeEvidence":[],"statefulRuntimeEvidence":"pending","status":200}
   ],
   "exactPathReview": {
     "retiredNextCompatibilityRoute": "apps/web/app/api/v1/spatial/calibration/[kind]/[...asset]/route.ts",

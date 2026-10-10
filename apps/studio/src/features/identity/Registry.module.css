@@ -1,0 +1,36 @@
+/* The two registry dialogs of a recorded unit: review and assign a code, issue a card. */
+.body { display: grid; gap: var(--ui-space-4); min-width: 0; }
+.field { display: grid; gap: 6px; min-width: 0; }
+
+.text {
+  width: 100%;
+  min-height: 96px;
+  padding: var(--ui-space-3);
+  border: 1px solid var(--ui-line-control);
+  border-radius: var(--ui-radius-8);
+  background: var(--ui-surface);
+  color: var(--ui-ink);
+  font: 400 var(--ui-text-md)/22px var(--ui-font-sans);
+  resize: vertical;
+}
+.text[aria-invalid="true"] { border-color: var(--ui-danger); }
+
+/* An id or a hash as the registry answered it: small, and broken anywhere so it never widens the dialog. */
+.answered {
+  margin: 0;
+  font: 400 var(--ui-text-xs)/18px var(--ui-font-mono);
+  color: var(--ui-ink-soft);
+  overflow-wrap: anywhere;
+}
+/* An answered id with its copy control sits in the line of its label. */
+.answered :global(.ul-code) { vertical-align: middle; margin: 0 var(--ui-space-1); }
+.reason { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.answeredList { display: grid; gap: var(--ui-space-1); min-width: 0; }
+/* The state and the reason code of a card row that is not available, under its value. */
+.fact { display: grid; min-width: 0; }
+.note { font: 400 var(--ui-text-xs)/18px var(--ui-font-mono); color: var(--ui-ink-soft); overflow-wrap: anywhere; }
+.heading { margin: 0; font: 600 var(--ui-text-sm)/20px var(--ui-font-sans); }
+.until { width: 100%; max-width: 280px; }
+
+/* The footer wraps at 200% zoom instead of pushing its last action out of the dialog. */
+.actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--ui-space-2); }

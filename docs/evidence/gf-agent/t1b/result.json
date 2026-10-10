@@ -1,0 +1,139 @@
+{
+  "task": "D1e",
+  "gate": "GF-AGENT T1b preparation",
+  "status": "profiles_ready_disposition_pending_owner",
+  "baseline": "d640be74",
+  "codeCommit": "dacc7f52",
+  "startedAtUtc": "2026-10-10T10:22:44Z",
+  "families": 3,
+  "files": 5,
+  "tables": 5,
+  "columns": 193,
+  "perFamily": [
+    {
+      "family": "mi-d22",
+      "files": 2,
+      "tables": 2,
+      "columns": 180,
+      "distinctLayouts": 1,
+      "declaredUnitColumns": 0
+    },
+    {
+      "family": "mi-d23",
+      "files": 2,
+      "tables": 2,
+      "columns": 10,
+      "distinctLayouts": 1,
+      "declaredUnitColumns": 0
+    },
+    {
+      "family": "mi-d24",
+      "files": 1,
+      "tables": 1,
+      "columns": 3,
+      "distinctLayouts": 1,
+      "declaredUnitColumns": 0
+    }
+  ],
+  "profilesPath": "E:\\BhuAayam-data\\task-data\\t1b\\profiles\\profiles.jsonl",
+  "summaryPath": "E:\\BhuAayam-data\\task-data\\t1b\\profiles\\summary.json",
+  "profilesSha256": "502f6658dfcb0b19316a5df2a5142b32f97154f8550a875bbc02759310cbee1b",
+  "summarySha256": "afe287ae1cb827db6eedcac1c23a1e679cacca18395bfaf449772671119d69aa",
+  "inventorySha256": "1b742d260e10916556117809e2df9f3da8f8a26439d1a53c6582da0694b7b94d",
+  "manifestSha256": "a4d7be15b399012fcb9877382dcb3e5de3880cbfc1634fac57213c791afa07a7",
+  "derivativeIndexSha256": "9c62121823e8a465dfc905365697eb4713d4eef84fce11b432f4897f2b5b102a",
+  "boundary": {
+    "heldOutMatches": 0,
+    "sourceAuthorizationBeforeRead": true,
+    "heldOutOriginalDictionaryTruthOpened": false
+  },
+  "layoutPolicy": "Ordered literal-header fingerprints match; profile fingerprints also vary with inferred types.",
+  "compoundPolicy": "Only pinned dev JSONL compound cells restored and verified; unchanged T1 masker emits [object].",
+  "publisherMeaningsProduced": 0,
+  "readStepsSeparated": "Profiles run opens development only; disposition audit separately reads evaluator metadata.",
+  "labelsProduced": 0,
+  "teacherCalls": 0,
+  "providerCalls": 0,
+  "acquisitionRequests": 0,
+  "trainingWrites": 0,
+  "registryWrites": 0,
+  "existingExternalFilesModified": 0,
+  "deleted": 0,
+  "moved": 0,
+  "dispositionReceipt": "docs/evidence/gf-agent/d1c/discovery-disposition.json",
+  "dispositionFiles": 78,
+  "unsafeReferences": 0,
+  "unknownAcquisitionTimes": 71,
+  "timestampQualification": "Missing acquisition metadata stays null; file creation time is retained separately.",
+  "checks": [
+    {
+      "command": "pnpm exec tsc -p scripts/agent/tsconfig.json",
+      "exitCode": 1,
+      "reason": "No local dependencies."
+    },
+    {
+      "command": "pnpm exec tsc -p <external typecheck-resolution-v4.json>",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm exec tsx --test scripts/agent/t1-prep.test.ts",
+      "exitCode": 0,
+      "tests": 5
+    },
+    {
+      "command": "pnpm exec tsx scripts/agent/t1-profiles.ts --t1b",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm exec tsx scripts/agent/t1-profiles.ts --check <T1b profiles.jsonl>",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm exec tsx <external verify-profiles.mts>",
+      "exitCode": 0,
+      "reproducedColumns": 193
+    },
+    {
+      "command": "project Python -B fixtures/usp/D8-messy-india/verify-d1c.py",
+      "exitCode": 0
+    },
+    {
+      "command": "project Python -B scripts/agent/freeze-a3-truth.py --family-set a3 --check",
+      "exitCode": 0
+    },
+    {
+      "command": "project Python -B scripts/agent/freeze-a3-truth.py --family-set d1c --check",
+      "exitCode": 0
+    },
+    {
+      "command": "Disposition exact-path hashes/counts and scoped reference audit",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "checkEnvironment": {
+    "python": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe",
+    "dependencies": "Read-only installed packages; external resolution retains local source and contracts.",
+    "config": "E:/BhuAayam-data/task-data/t1b/typecheck-resolution-v4.json",
+    "runtimeConfig": "E:/BhuAayam-data/task-data/t1b/runtime-resolution-v3.json",
+    "t1RootOverride": "E:/BhuAayam-data/task-data/t1b/t1-compatibility",
+    "t1Compatibility": "Byte-identical readonly profiles/inventory snapshots; all test writes confined to t1b."
+  },
+  "gaps": [
+    "A: anonymous queries expired/403; PDFs/contact-bearing lists. Owner: safe native export and permission.",
+    "B: public RERA routes returned 403/404/application shells. Owner: authorised anonymous bulk table and dictionary.",
+    "C: municipal facilities lack building/unit identity and definitions. Owner: authority dictionary and asset table.",
+    "D: partition >200 MB; community API 406/500. Owner: approve size/access or supply small documented native data.",
+    "Heldout shortfall remains 1 family and 23 positives. No third acquisition attempt; owner decides next route.",
+    "Lead label adapter currently confines writes to T1_ROOT; set ULPIN_T1_ROOT=t1b for subsequent verification.",
+    "71 discovery file acquisition timestamps unknown; owner disposition must not treat creation time as acquisition."
+  ],
+  "next": [
+    "Lead labels the 193 masked development profiles; outputs remain pseudo_label, not evaluation truth.",
+    "Owner reviews exact-path evaluator disposition; do not dispatch the unsafe or unscreened discovery files.",
+    "Lead reruns the prescribed compiler check in its dependency-equipped checkout."
+  ]
+}

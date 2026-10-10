@@ -1,0 +1,25 @@
+{
+  "gate": "GF-AI",
+  "task": "F2a",
+  "viewport": "1440x900, headless Chromium (SwiftShader), Vite proxy to the live demo API",
+  "liveWrites": {
+    "recorded": 0,
+    "note": "A pure roofprint rejection cannot be sent: footprint-drafts requires at least one accepted selection. A probe with selections [] was refused by the server with a validation 422. The canonical area record cb24dc86 was byte-identical before and after (sha256 prefix c945afb7109e0f3750ea). The accept route needs K2e's qualification step, which is not published, so the Studio shows the real USP_GEOMETRY_PAYLOAD_UNQUALIFIED refusal as a blocked state (08)."
+  },
+  "decisionsShownInHistory": "The accept (ea0bb06e) and reject (abe4321d) already recorded by K2c; they are read from the record, not made by F2a.",
+  "levelPicker": {
+    "magnolia": "disabled with 'No reviewed levels yet — a level schedule is needed first' (03)",
+    "enabledPath": "tested by a unit fixture and shown with a route-intercepted fixture level (09); no live write"
+  },
+  "screens": {
+    "01": "queue, 80 roofprint candidates, filters by state",
+    "02": "roofprint card with uncalibrated confidence, model card summary and the selected roofprint highlighted, still ghosted",
+    "03": "room candidates in the plan-local SVG panel, not on the map",
+    "04": "reject dialog with the required reason",
+    "05": "rejection staged, awaiting recording together with the image's other decisions",
+    "06": "history of decisions on record",
+    "07": "an accepted candidate shown as Reviewed from its record",
+    "08": "registry review refused with USP_GEOMETRY_PAYLOAD_UNQUALIFIED",
+    "09": "level picker enabled with a fixture level"
+  }
+}

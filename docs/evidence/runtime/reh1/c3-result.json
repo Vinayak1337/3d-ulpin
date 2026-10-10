@@ -1,0 +1,21 @@
+{
+  "part": "C3",
+  "done": false,
+  "attempted": false,
+  "route": "POST /api/v1/buildings/{buildingId}/candidates",
+  "commands": "retain_rooms then review_level/reject on the existing candidate command, not a new registry route",
+  "reason": [
+    "The task's docs/evidence/gf1/k3e/result.json does not exist at the pinned serving commit.",
+    "The actual K3e is docs/evidence/gf-t16/k3e/result.json: Magnolia level heights, not scanned Tower 3 rooms.",
+    "Raster inference uses the installed floor-plan model; rehearsal models/ has no entries.",
+    "No model was copied from the demo, no weight or GPU was loaded, and no unsupported room was invented."
+  ],
+  "cpu": {
+    "possibleInCode": true,
+    "evidence": "services/geo/geo/spatial_ml.py:260 selects CPUExecutionProvider",
+    "prerequisite": "raster_plan.py:140-145 installed_model validates the local installed model before segmentation",
+    "presentInRehearsal": false,
+    "proof": "models-by-name.json: [] (directory names only, no runtime file opened)"
+  },
+  "next": "Lead must correct the brief and approve a scripted model provisioning step or retained-candidate admission."
+}

@@ -8,6 +8,7 @@ import {
   UspProposalSelectionSchema, UspScopeSchema, UspSnapshotScopeSchema, UspTargetPinSchema,
   UspCreateGuardSchema, UspPinnedUpdateGuardSchema,
 } from './common';
+import { RetainedDocumentFreshnessSchema } from '../document-freshness';
 import { UspGeometryProjectionSchema } from './geometry';
 import { UspDeclarationInputSchema, DECLARATION_ACKNOWLEDGEMENT } from './declarations';
 export * from './declarations';
@@ -48,6 +49,8 @@ export const UspAuthorizedAssetSchema = z.strictObject({
 export const UspSnapshotMemberSchema = z.strictObject({
   pin, bodySha256: CoreSha256Schema, bodyRef: CoreIdSchema,
   authority: z.enum(['registry', 'area_feature', 'source', 'source_part', 'relationship', 'review', 'geometry', 'declaration', 'declaration_entry', 'applicability']),
+  /** Source members only: stated when the document result retained beside this original is no longer current. */
+  documentResult: RetainedDocumentFreshnessSchema.optional(),
 }).readonly();
 export const UspSnapshotManifestSchema = z.strictObject({
   schemaVersion: z.literal('usp/1'), id: CoreIdSchema, digest: CoreSha256Schema,
@@ -88,6 +91,32 @@ export const UspSnapshotManifestSchema = z.strictObject({
   if (keys.some((key, index) => index > 0 && key <= keys[index - 1])) {
     ctx.addIssue({ code: 'custom', path: ['members'], message: 'Members must be sorted and unique' });
   }
+}).readonly();
+/** Names one building and bounds the page of its snapshots. */
+export const UspListBuildingSnapshotsSchema = z.strictObject({
+  buildingId: z.uuid(), limit: z.number().int().min(1).max(20).default(5),
+}).readonly();
+/** One recorded snapshot: its stored scope, to pass on unchanged, its two times and counts read from its
+ * stored members. */
+const UspBuildingSnapshotItemSchema = z.strictObject({
+  scope: UspSnapshotScopeSchema,
+  createdAt: timestamp.describe('When the row was stored: the start of the storing transaction, so every '
+    + 'snapshot stored by one command carries the same value.'),
+  capturedAt: timestamp.describe('When the server captured the snapshot, as its stored manifest states. '
+    + 'The list is ordered by this value, newest first.'),
+  members: z.strictObject({
+    total: z.number().int().nonnegative().max(20000),
+    documentResultNotCurrent: z.number().int().nonnegative().max(20000),
+  }).readonly(),
+}).readonly();
+/** The snapshots of a building's site that list the building and that the caller may read, newest first by
+ * capture time. Two captures with one capture time follow the store time of their rows and then their ids,
+ * which says nothing about recency. `unreadable` counts rows of the page whose stored body is not the manifest
+ * of its own row; none is listed. */
+export const UspBuildingSnapshotListSchema = z.strictObject({
+  buildingId: z.uuid(), siteId: z.uuid(),
+  items: z.array(UspBuildingSnapshotItemSchema).max(20).readonly(),
+  truncated: z.boolean(), unreadable: z.number().int().nonnegative().max(20),
 }).readonly();
 export const UspScopePageSchema = z.strictObject({
   items: z.array(UspResolvedTargetSchema).max(100).readonly(), nextCursor: coreText(4096).nullable(),
@@ -205,6 +234,7 @@ export const UspMeasuredQuantitySchema = z.strictObject({
 export type ResolvedTarget = z.infer<typeof UspResolvedTargetSchema>;
 export type AuthorizedAsset = z.infer<typeof UspAuthorizedAssetSchema>;
 export type SnapshotManifest = z.infer<typeof UspSnapshotManifestSchema>;
+export type BuildingSnapshotList = z.infer<typeof UspBuildingSnapshotListSchema>;
 export type ScopePage = z.infer<typeof UspScopePageSchema>;
 export type PrepareProposal = z.infer<typeof UspPrepareProposalSchema>;
 export type CommitProposal = z.infer<typeof UspCommitProposalSchema>;

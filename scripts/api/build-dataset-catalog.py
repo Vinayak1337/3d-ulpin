@@ -1,12 +1,100 @@
 #!/usr/bin/env python3
 """Build documentation metadata from retained source manifests; never import data."""
 import argparse
+from copy import deepcopy
+from difflib import unified_diff
 import hashlib
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = ROOT / "docs/api/datasets.json"
+
+ASSET_SOURCE_FIELDS = (
+    "id", "mediaType", "classification", "origin", "sourceVersion",
+    "attribution", "permission", "reference", "dependencies", "provenance",
+    "issuer", "acquiredAt", "geography", "split", "purpose", "licenceCitation",
+)
+# The pin a manifest records for original bytes retained outside Git.
+EXTERNAL_PIN_FIELDS = ("externalPath", "sha256", "bytes")
+ASSET_GENERATED_FIELDS = {*ASSET_SOURCE_FIELDS, "content", "manifestVerification"}
+# These reviewed annotations are authored in the published catalogue, not in
+# issuing manifests. Delete a field there explicitly to retire it; a missing
+# source/asset must not silently discard its reviewed history during generation.
+# Their receipt-bound scopes stay historical, not qualification of updated bytes.
+CURATED_ASSET_FIELDS = {
+    "privateControlReviewEvidence", "currentPrivateReadEvidence",
+    "privatePdfPacketEvidence", "privateRegionPreviewEvidence",
+    "privateMultiRegionPdfPacketEvidence", "privateMultiRegionPdfNativeEvidence",
+    "privateMultipleOriginalPdfPacketEvidence", "privateQueuedPdfPacketEvidence",
+    "privatePdfEntryRecoveryEvidence", "privatePdfEntryProgressEvidence",
+    "privatePdfBundleEvidence", "privateMixedPdfPacketEvidence",
+}
+
+
+def curated_assets(manifest, generated, published):
+    current = {asset["id"]: asset for asset in generated}
+    if len(current) != len(generated) or len({asset["id"] for asset in published}) != len(published):
+        raise ValueError(f"Duplicate catalogue asset identity: {manifest}")
+    for previous in published:
+        unknown = previous.keys() - ASSET_GENERATED_FIELDS - CURATED_ASSET_FIELDS
+        if unknown:
+            raise ValueError(f"Unclassified catalogue fields: {manifest}/{previous['id']}: {sorted(unknown)}")
+        annotations = previous.keys() & CURATED_ASSET_FIELDS
+        if annotations and previous["id"] not in current:
+            raise ValueError(f"Curated asset removed from manifest: {manifest}/{previous['id']}; review its history explicitly")
+        for key in annotations:
+            current[previous["id"]][key] = deepcopy(previous[key])
+    return generated
+
+
+def qualification(runtime, manifest, published):
+    supported = {}
+    for run in [runtime, *runtime.get("additionalRuns", [])]:
+        observed = {key: entry["scope"] for key, entry in run["operations"].items()
+                    if manifest in entry["sourceManifests"]}
+        if observed:
+            if run["receipt"] in supported:
+                raise ValueError(f"Duplicate runtime receipt authority: {run['receipt']}")
+            supported[run["receipt"]] = {
+                "receipt": run["receipt"], "servedCodeCommit": run["servedCodeCommit"],
+                "operations": observed, "environment": run["environment"],
+                "qualification": run["qualification"], "unqualified": run["unqualified"],
+            }
+    # Published receipt references select accepted history. Runtime authority
+    # supplies its current details, but newly appended observations do not
+    # automatically qualify an existing source or expand its published scope.
+    if published is None:
+        selected = [runtime["receipt"]] if runtime["receipt"] in supported else []
+    else:
+        evidence = published.get("runtimeEvidence")
+        selected = ([evidence["receipt"], *[item["receipt"] for item in evidence.get("additionalReceipts", [])]]
+                    if evidence else [])
+        if published.get("runtimeVerified") and not selected:
+            raise ValueError(f"Published runtime qualification lacks receipt authority: {manifest}")
+    if len(set(selected)) != len(selected):
+        raise ValueError(f"Duplicate published runtime receipt: {manifest}")
+    missing = set(selected) - supported.keys()
+    if missing:
+        raise ValueError(f"Published runtime receipt no longer supports {manifest}: {sorted(missing)}")
+    evidence = [supported[receipt] for receipt in selected]
+    if not evidence:
+        return {"apiInstallation": "not-verified", "runtimeVerified": False}
+    return {
+        "apiInstallation": "verified-in-stopped-isolated-run", "runtimeVerified": True,
+        "runtimeEvidence": {**evidence[0], **({"additionalReceipts": evidence[1:]} if len(evidence) > 1 else {})},
+    }
+
+
+def published_order(value, previous):
+    """Keep review-friendly key order without retaining any previous values."""
+    if isinstance(value, dict) and isinstance(previous, dict):
+        keys = [key for key in previous if key in value] + [key for key in value if key not in previous]
+        return {key: published_order(value[key], previous.get(key)) for key in keys}
+    if isinstance(value, list) and isinstance(previous, list):
+        return [published_order(item, previous[index] if index < len(previous) else None)
+                for index, item in enumerate(value)]
+    return value
 
 
 def sha(data):
@@ -29,22 +117,48 @@ def checked_content(manifest_path, content):
     return result
 
 
+def external_content(manifest_path, asset):
+    """Repeat the manifest's pin for bytes kept outside Git; that file is never opened or hashed here."""
+    pin = asset.get("original")
+    if not isinstance(pin, dict) or "externalPath" not in pin:
+        raise ValueError("Asset states neither repository content nor an external pin: "
+                         f"{manifest_path.relative_to(ROOT).as_posix()}/{asset.get('id')}")
+    return {"state": "external", **{key: pin[key] for key in EXTERNAL_PIN_FIELDS if key in pin},
+            "repositoryBytesVerified": False}
+
+
+def asset_entry(manifest_path, asset):
+    # These remain statements from the linked manifest, not new permissions
+    # or assertions that the API has installed the dataset.
+    entry = {key: asset[key] for key in ASSET_SOURCE_FIELDS if key in asset}
+    if "content" in asset:
+        entry["content"] = checked_content(manifest_path, asset["content"])
+    else:
+        entry["content"] = external_content(manifest_path, asset)
+    entry["manifestVerification"] = asset.get("verification", {})
+    return entry
+
+
+def retained_external_sources(local_sources, published):
+    """List the separately maintained sources; a published source is never kept or dropped silently."""
+    maintained = {source["id"] for source in local_sources if "id" in source}
+    unmaintained = [entry["id"] for entry in published if "id" in entry and entry["id"] not in maintained]
+    if unmaintained:
+        raise ValueError("Published retained source is missing from docs/api/retained-local-datasets.json: "
+                         f"{unmaintained}; retire it explicitly or restore its maintained entry")
+    return [source for source in local_sources if source.get("apiInstallation") != "local-opt-in-demo-only"]
+
+
 def catalogue():
     runtime = json.loads((ROOT / 'docs/api/runtime-qualification.json').read_text(encoding="utf-8"))
+    published = json.loads(OUTPUT.read_text(encoding="utf-8")) if OUTPUT.is_file() else {}
+    previous_entries = [*published.get("packs", []), *published.get("retainedOfficialTestSources", [])]
+    by_manifest = {entry["manifest"]: entry for entry in previous_entries}
+    if len(by_manifest) != len(previous_entries):
+        raise ValueError("Duplicate published source manifest identity")
 
-    def qualification(manifest):
-        evidence = []
-        for run in [runtime, *runtime.get('additionalRuns', [])]:
-            observed = {key: entry['scope'] for key, entry in run['operations'].items()
-                        if manifest in entry['sourceManifests']}
-            if observed:
-                evidence.append({"receipt": run['receipt'], "servedCodeCommit": run['servedCodeCommit'],
-                                 "operations": observed, "environment": run['environment'],
-                                 "qualification": run['qualification'], "unqualified": run['unqualified']})
-        if not evidence:
-            return {"apiInstallation": "not-verified", "runtimeVerified": False}
-        return {"apiInstallation": "verified-in-stopped-isolated-run", "runtimeVerified": True,
-                "runtimeEvidence": {**evidence[0], **({"additionalReceipts": evidence[1:]} if len(evidence) > 1 else {})}}
+    def source_qualification(manifest):
+        return qualification(runtime, manifest, by_manifest.get(manifest))
 
     packs = []
     offline_reports = {
@@ -59,22 +173,13 @@ def catalogue():
     for file in sorted((ROOT / "fixtures/usp").glob("**/manifest.json")):
         raw = file.read_bytes()
         manifest = json.loads(raw)
-        assets = []
-        for asset in manifest["assets"]:
-            # These remain statements from the linked manifest, not new permissions
-            # or assertions that the API has installed the dataset.
-            entry = {key: asset[key] for key in (
-                "id", "mediaType", "classification", "origin", "sourceVersion",
-                "attribution", "permission", "reference", "dependencies", "provenance"
-            ) if key in asset}
-            entry["content"] = checked_content(file, asset["content"])
-            entry["manifestVerification"] = asset.get("verification", {})
-            assets.append(entry)
+        relative = file.relative_to(ROOT).as_posix()
+        assets = [asset_entry(file, asset) for asset in manifest["assets"]]
         packs.append({
             "manifest": file.relative_to(ROOT).as_posix(), "manifestSha256": sha(raw),
             "packId": manifest["packId"], "profile": manifest["profile"],
             "version": manifest["version"], "description": manifest["description"],
-            **qualification(file.relative_to(ROOT).as_posix()),
+            **source_qualification(relative),
             **({"offlineValidationEvidence": {
                 "report": offline_reports[file.relative_to(ROOT).as_posix()],
                 "reportSha256": sha((ROOT / offline_reports[file.relative_to(ROOT).as_posix()]).read_bytes().replace(b'\r\n', b'\n')),
@@ -93,7 +198,7 @@ def catalogue():
                 }} if file.relative_to(ROOT).as_posix() in reference_enrollments else {}),
             }} if file.relative_to(ROOT).as_posix() in reference_reports else {}),
             "missingCapabilities": manifest.get("missingCapabilities", []),
-            "assets": assets,
+            "assets": curated_assets(relative, assets, by_manifest.get(relative, {}).get("assets", [])),
         })
     retained = []
     for relative, source_key, hash_key in (
@@ -115,7 +220,7 @@ def catalogue():
             "acquiredAt": manifest.get("retrievedAt", manifest.get("retrievedOn")),
             "content": checked_content(file, content),
             "geography": "New York City, United States",
-            **qualification(relative),
+            **source_qualification(relative),
             "limitations": manifest.get("limitations", [manifest.get("snapshotNote")]),
         })
         # Publish the retained official text used by document intake, not just
@@ -135,11 +240,11 @@ def catalogue():
     learning_raw = learning_path.read_bytes()
     learning = json.loads(learning_raw)
     local_sources = json.loads((ROOT / "docs/api/retained-local-datasets.json").read_text(encoding="utf-8"))
-    return {
+    document = {
         "schemaVersion": "ulpin-api-dataset-catalog/1",
         "purpose": "Source metadata for API integration; not installed records or permission grants.",
         "guide": "docs/api/real-sources.md",
-        "availabilityMeaning": "available refers to checked repository bytes; unavailable may mean retained outside Git. Neither proves an API import.",
+        "availabilityMeaning": "available refers to checked repository bytes; unavailable may mean retained outside Git; external repeats a manifest's recorded path, size and hash outside Git, not opened or verified here. None proves an API import.",
         "qualification": "Official provenance, permitted use, reference quality and runtime support are separate. Community OSM and research samples are not Indian official property records.",
         "servingObservation": json.loads((ROOT / "docs/api/serving-observation.json").read_text(encoding="utf-8")),
         "packs": packs, "retainedOfficialTestSources": retained,
@@ -147,8 +252,8 @@ def catalogue():
         # their separately maintained acquisition metadata on every regeneration.
         "localDemoSources": [source for source in local_sources
                              if source.get("apiInstallation") == "local-opt-in-demo-only"],
-        "retainedExternalSources": [source for source in local_sources
-                                    if source.get("apiInstallation") != "local-opt-in-demo-only"],
+        "retainedExternalSources": retained_external_sources(
+            local_sources, published.get("retainedExternalSources", [])),
         "offlineLearningCorpus": {
             "manifest": "docs/api/learning-corpus.json", "manifestSha256": sha(learning_raw.decode('utf-8').replace('\r\n', '\n').encode('utf-8')),
             "manifestHashScope": "UTF-8 metadata with LF line endings; retained source originals use exact-byte hashes.",
@@ -161,15 +266,38 @@ def catalogue():
                 for source in learning["sources"]],
         },
     }
+    current_entries = {entry["manifest"]: entry for entry in [*packs, *retained]}
+    for previous in previous_entries:
+        if previous["manifest"] not in current_entries:
+            if previous.get("runtimeEvidence") or any(asset.keys() & CURATED_ASSET_FIELDS for asset in previous.get("assets", [])):
+                raise ValueError(f"Reviewed source removed: {previous['manifest']}; review its history explicitly")
+            continue
+        unknown = previous.keys() - current_entries[previous["manifest"]].keys()
+        # Optional generated evidence belongs to the declared generator/source
+        # mappings; every other unsupported extension needs an explicit owner.
+        unknown -= {"offlineValidationEvidence", "referenceInterpretationEvidence", "documents"}
+        if unknown:
+            raise ValueError(f"Unclassified source metadata: {previous['manifest']}: {sorted(unknown)}")
+    unknown = published.keys() - document.keys()
+    if unknown:
+        raise ValueError(f"Unclassified catalogue metadata: {sorted(unknown)}")
+    return published_order(document, published)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--check", action="store_true")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--check", action="store_true")
+    mode.add_argument("--preview", action="store_true", help="Show the complete candidate diff without replacing the published catalogue")
     args = parser.parse_args()
     document = catalogue()
     rendered = json.dumps(document, ensure_ascii=False, indent=2) + "\n"
-    if args.check:
+    if args.preview:
+        previous = OUTPUT.read_text(encoding="utf-8") if OUTPUT.is_file() else ""
+        print("".join(unified_diff(previous.splitlines(keepends=True), rendered.splitlines(keepends=True),
+                                  fromfile="published datasets.json", tofile="candidate datasets.json")), end="")
+        print("Dataset catalogue preview: " + ("unchanged" if previous == rendered else "changes above; published file untouched"))
+    elif args.check:
         if not OUTPUT.is_file() or OUTPUT.read_text(encoding="utf-8") != rendered:
             raise SystemExit("Dataset catalogue changed; regenerate and review source metadata")
     else:

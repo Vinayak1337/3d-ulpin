@@ -1,0 +1,187 @@
+{
+  "task": "K13",
+  "scope": "Code-only handoff; none of these readers or jobs.ts changed.",
+  "referenceConvention": {
+    "ingestion": "packages/server/src/modules/usp/ingestion/",
+    "contracts": "packages/contracts/src/usp/",
+    "tiles": "packages/server/src/modules/usp/tiles/",
+    "check": "Alias + file:line; the named function is the single suggested rule application point.",
+    "pins": "Concatenate named fieldSets and extraPins; caseRevision is deliberately excluded."
+  },
+  "fieldSets": {
+    "source": ["version","jobId","caseId","caseContextSha256","sourceId","sourceFamilyId","sourceRevision",
+      "sourceSha256","sourceBytes","objectKey","subject","accessSha256","readerSha256"],
+    "stream": ["version","jobId","caseId","sourceId","sourceRevision","sourceFamilyId","sourceSha256",
+      "sourceBytes","objectKey","framing","subject","accessBinding","readerSha256","inputFingerprint"],
+    "rawDependent": ["version","jobId","caseId","sourceId","sourceRevision","sourceFamilyId","sourceSha256",
+      "rawJobId","rawInputFingerprint","readerSha256","subject","accessBinding","inputFingerprint"]
+  },
+  "caseStateOutsideInputs": {
+    "archived": "Every reader explicitly denies an archived case; preserve that independent guard.",
+    "sourceContext": "Case id is pinned; frame/context/site_id are covered by caseContextSha256 where read.",
+    "noContextRead": "Streaming, profiling, projected vector and MVT read id/revision/archived, not frame/context.",
+    "uncoveredUnguardedDependencies": []
+  },
+  "integrationCautions": [
+    "Keep latest-family, archive refusal, source integrity, owner/access checks, tool compatibility and lock order.",
+    "inputFingerprint is a self-integrity seal over the original input, including its queued revision.",
+    "Validate that seal separately, then compare rebuilt semantic fields without regenerating the seal as a moved pin.",
+    "rawInputFingerprint and admissionInputFingerprint identify immutable upstream jobs: keep them exact.",
+    "MVT has caseRevision inside source: compare ctx.source against input.source, not the entire top-level input.",
+    "Raw-dependent readers need the streaming rule first; never rewrite their raw job or profile generation.",
+    "A changed workspaceFingerprint, approved recipe, profile hash or source dependency still refuses."
+  ],
+  "readers": [
+    {
+      "reader": "streaming-vector",
+      "check": "ingestion+streaming-vector.ts:58 assertStreamingInputTx",
+      "pins": ["stream"], "extraPins": ["tabular (tabular variant only)"],
+      "refs": ["contracts+streaming-vector.ts:17-22","contracts+ingestion.ts:124-127",
+        "ingestion+streaming-vector.ts:43-70"],
+      "caseReads": ["id","revision","archived"], "unguardedUnpinnedCaseState": [],
+      "followup": "Read freshness also lives at streamingReadContextTx:75-90; use the same rule there."
+    },
+    {
+      "reader": "chunk-mapping",
+      "check": "ingestion+chunk-mapping.ts:111 assertChunkMappingInputTx",
+      "pins": ["rawDependent"],
+      "extraPins": ["route","recipeId","recipeRevision","planHash","schemaFingerprint","workspaceFingerprint",
+        "profileJobId","profileGeneration","profileHash","prefixAdmissionVersion","tabular","converterSha256"],
+      "refs": ["contracts+chunk-mapping.ts:51-58","ingestion+chunk-mapping.ts:111-137",
+        "ingestion+service.ts:62-79"],
+      "caseReads": ["raw case id/revision/archived","manual workspace source set"],
+      "unguardedUnpinnedCaseState": [],
+      "stayStrict": "Manual source membership is pinned by workspaceFingerprint; recipes keep that exact pin.",
+      "followup": "The raw pin at :54 must be fixed first; profile/recipe authority and retained reads stay separate."
+    },
+    {
+      "reader": "streamed-profile",
+      "check": "ingestion+streamed-profile.ts:41 assertStreamedProfileInputTx",
+      "pins": ["rawDependent"], "extraPins": ["profilerSha256"],
+      "refs": ["contracts+streamed-profile.ts:10-13","ingestion+streamed-profile.ts:32-51"],
+      "caseReads": ["raw case id/revision/archived"], "unguardedUnpinnedCaseState": [],
+      "followup": "Fix raw streaming authority first; keep the original raw fingerprint and generation chain exact."
+    },
+    {
+      "reader": "projected-vector",
+      "check": "ingestion+projected-vector.ts:39 projectedInput",
+      "pins": [],
+      "extraPins": ["kind","version","jobId","caseId","sourceId","sourceRevision","sourceFamilyId","sha256",
+        "bytes","objectKey","parserSha256","accessBinding","inputFingerprint","semanticChunks"],
+      "refs": ["contracts+projected-vector.ts:26-30","ingestion+projected-vector.ts:21-46"],
+      "caseReads": ["id","revision","archived"], "unguardedUnpinnedCaseState": [],
+      "followup": "Both current and immutable-read wrappers use projectedInput; preserve publisher-read compatibility."
+    },
+    {
+      "reader": "private-mvt",
+      "check": "tiles+service.ts:44 assertMvtSourceInputTx",
+      "pins": [],
+      "extraPins": ["source.caseId","source.sourceId","source.sourceRevision","source.sourceFamilyId","source.sha256",
+        "source.admissionJobId","source.admissionIndexSha256","source.admissionInputFingerprint",
+        "source.sourceDependencySha256","source.accessBinding","source.namespace","source.chunk",
+        "kind","version","jobId","compiler","base","window","catalog","plan","invalidation",
+        "inputFingerprint","publicationMs"],
+      "refs": ["contracts+private-mvt.ts:23-33","tiles+service.ts:28-64"],
+      "caseReads": ["upstream case id/revision/archived"], "unguardedUnpinnedCaseState": [],
+      "followup": "Compare nested source pins; upstream projected authority must be fixed first; compiler stays strict."
+    },
+    {
+      "reader": "raster-window", "check": "ingestion+raster-window.ts:45 assertRasterInputTx",
+      "pins": ["source"], "extraPins": ["window"],
+      "refs": ["ingestion+raster-window.ts:24-48","contracts+raster-window.ts:24-28"],
+      "caseReads": ["id","revision","archived","frame","context","site_id"],
+      "unguardedUnpinnedCaseState": []
+    },
+    {
+      "reader": "point-batch", "check": "ingestion+point-batch.ts:45 assertPointInputTx",
+      "pins": ["source"], "extraPins": ["batch"],
+      "refs": ["ingestion+point-batch.ts:24-48","contracts+point-batch.ts:25-29"],
+      "caseReads": ["id","revision","archived","frame","context","site_id"],
+      "unguardedUnpinnedCaseState": []
+    },
+    {
+      "reader": "KML", "check": "ingestion+kml.ts:79 assertKMLInputTx",
+      "pins": ["source"], "extraPins": ["tools","selection"],
+      "refs": ["ingestion+kml.ts:57-82","contracts+kml-ingestion.ts:24-28"],
+      "caseReads": ["id","revision","archived","frame","context","site_id"],
+      "unguardedUnpinnedCaseState": []
+    },
+    {
+      "reader": "DXF", "check": "ingestion+dxf.ts:79 assertDXFInputTx",
+      "pins": ["source"], "extraPins": ["tools","selection"],
+      "refs": ["ingestion+dxf.ts:57-82","contracts+dxf-ingestion.ts:20-24"],
+      "caseReads": ["id","revision","archived","frame","context","site_id"],
+      "unguardedUnpinnedCaseState": []
+    },
+    {
+      "reader": "IFC", "check": "ingestion+ifc.ts:79 assertIFCInputTx",
+      "pins": ["source"], "extraPins": ["tools","selection"],
+      "refs": ["ingestion+ifc.ts:57-82","contracts+ifc-ingestion.ts:20-24"],
+      "caseReads": ["id","revision","archived","frame","context","site_id"],
+      "unguardedUnpinnedCaseState": []
+    },
+    {
+      "reader": "CityGML", "check": "ingestion+citygml.ts:79 assertCityGMLInputTx",
+      "pins": ["source"], "extraPins": ["tools"],
+      "refs": ["ingestion+citygml.ts:57-82","contracts+citygml-ingestion.ts:20-24"],
+      "caseReads": ["id","revision","archived","frame","context","site_id"],
+      "unguardedUnpinnedCaseState": []
+    },
+    {
+      "reader": "CityJSON", "check": "ingestion+cityjson.ts:75 assertCityJSONInputTx",
+      "pins": ["source"], "extraPins": ["selection"],
+      "refs": ["ingestion+cityjson.ts:54-78","contracts+cityjson-ingestion.ts:17-21"],
+      "caseReads": ["id","revision","archived","frame","context","site_id"],
+      "unguardedUnpinnedCaseState": []
+    },
+    {
+      "reader": "glTF", "check": "ingestion+gltf.ts:79 assertGltfInputTx",
+      "pins": ["source"], "extraPins": ["tools","sceneIndex"],
+      "refs": ["ingestion+gltf.ts:57-82","contracts+gltf-ingestion.ts:21-25"],
+      "caseReads": ["id","revision","archived","frame","context","site_id"],
+      "unguardedUnpinnedCaseState": []
+    },
+    {
+      "reader": "OBJ", "check": "ingestion+obj.ts:79 assertObjInputTx",
+      "pins": ["source"], "extraPins": ["tools"],
+      "refs": ["ingestion+obj.ts:57-82","contracts+obj-ingestion.ts:20-24"],
+      "caseReads": ["id","revision","archived","frame","context","site_id"],
+      "unguardedUnpinnedCaseState": []
+    },
+    {
+      "reader": "GeoParquet", "check": "ingestion+geoparquet.ts:79 currentGeoParquetInput",
+      "pins": ["source"], "extraPins": ["tools","selection","continuation"],
+      "refs": ["ingestion+geoparquet.ts:56-96","contracts+geoparquet-ingestion.ts:23-27"],
+      "caseReads": ["id","revision","archived","frame","context","site_id"],
+      "unguardedUnpinnedCaseState": [],
+      "followup": "assertGeoParquetInputTx:90 calls this predicate; preserve continuation and accepted-job integrity."
+    }
+  ],
+  "jobScopeChecks": {
+    "file": "packages/server/src/modules/usp/jobs.ts",
+    "function": "registerUspJobInputTx:25",
+    "meaning": "Immutable enrollment against job.case_revision and scope.version, NOT current cases.revision.",
+    "decision": "Keep all exact: no use of compareSourcePins here, no rescoping or rewriting persisted inputs.",
+    "common": "scope.workspaceId=job.case_id; scope.version=job.case_revision+1; input revision=job.case_revision.",
+    "perOperation": [
+      {"operation":"projected-vector","lines":"29-34","revision":"input.caseRevision"},
+      {"operation":"private-mvt","lines":"35-40","revision":"input.source.caseRevision"},
+      {"operation":"document-extraction","lines":"41-46","revision":"input.caseRevision"},
+      {"operation":"raster-window","lines":"47-52","revision":"input.caseRevision"},
+      {"operation":"cityjson-native","lines":"53-58","revision":"input.caseRevision"},
+      {"operation":"ifc-native","lines":"59-64","revision":"input.caseRevision"},
+      {"operation":"dxf-native","lines":"65-70","revision":"input.caseRevision"},
+      {"operation":"kml-native","lines":"71-76","revision":"input.caseRevision"},
+      {"operation":"citygml-native","lines":"77-82","revision":"input.caseRevision"},
+      {"operation":"obj-native","lines":"83-88","revision":"input.caseRevision"},
+      {"operation":"gltf-native","lines":"89-94","revision":"input.caseRevision"},
+      {"operation":"geoparquet-native","lines":"95-100","revision":"input.caseRevision"},
+      {"operation":"cityjson-validation","lines":"101-109","revision":"input.candidate.input.caseRevision"},
+      {"operation":"point-batch","lines":"110-115","revision":"input.caseRevision"},
+      {"operation":"streaming-vector","lines":"116-121","revision":"input.caseRevision"},
+      {"operation":"streamed-profile","lines":"122-127","revision":"input.caseRevision"},
+      {"operation":"chunk-mapping","lines":"128-133","revision":"input.caseRevision"},
+      {"operation":"packet-pdf","lines":"134-139","revision":"input.anchor.caseRevision; exact snapshot scope"}
+    ]
+  }
+}

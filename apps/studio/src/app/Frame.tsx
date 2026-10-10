@@ -3,12 +3,14 @@ import { Link, NavLink, Outlet, useMatch, useNavigate, useSearchParams } from 'r
 import { CaretDown, FilePlus, MagnifyingGlass, UserCircle } from '@phosphor-icons/react';
 import { Icon } from '@ulpin/ui';
 import { useAreas, useCapabilities, useRegisterRequests, type Area } from '../api/queries';
+import { isServed } from '../local/routes';
 import { readLastArea, writeLastArea } from './lastArea';
 import styles from './Frame.module.css';
 
 /**
  * One 56 px header with fixed-width slots, so nothing shifts between pages: wordmark · Batches / Map /
  * Register · search · Add files · area · operator. No theme or language menus (light, English only).
+ * When one row cannot hold the slots (browser zoom), they wrap in this same order; nothing is hidden.
  */
 export function Frame() {
   return (
@@ -23,9 +25,13 @@ export function Frame() {
         </nav>
         <HeaderSearch />
         <span className={styles.spacer} />
-        <Link to="/studio/add-files" className={`ul-btn ul-btn--ghost ${styles.addFiles}`}><Icon icon={FilePlus} />Add files</Link>
-        <AreaSwitcher />
-        <OperatorMenu />
+        <div className={styles.actions}>
+          <Link to="/studio/add-files" className={`ul-btn ul-btn--ghost ${styles.addFiles}`}>
+            <Icon icon={FilePlus} />Add files
+          </Link>
+          <AreaSwitcher />
+          <OperatorMenu />
+        </div>
       </header>
       <main id="main" className={styles.main}>
         <Outlet />
@@ -47,9 +53,12 @@ function MapNavLink() {
   );
 }
 
-/** Register, with the count of open requests from the public. */
+/** Requests from the public are a draft route: only a build that serves it is asked for them. */
+const REQUESTS_SERVED = isServed('GET', '/api/v1/register-requests');
+
+/** Register, with the count of open requests from the public where the build serves them. */
 function RegisterNavLink() {
-  const open = useRegisterRequests('open').data?.length ?? 0;
+  const open = useRegisterRequests('open', { enabled: REQUESTS_SERVED }).data?.length ?? 0;
   return (
     <NavLink to="/studio/registry" aria-label={open ? `Register, ${open} open requests` : 'Register'}>
       Register{open ? <span className={styles.navCount}>{open}</span> : null}

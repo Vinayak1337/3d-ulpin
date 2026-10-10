@@ -1,33 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ULPIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-bash "$ULPIN_ROOT/scripts/platform-env.sh"
-if ! command -v docker >/dev/null 2>&1; then
-  echo 'Install the runtime first: brew install colima docker docker-compose' >&2
-  exit 1
+# After --profile demo, --runtime <name> (default ulpin-demo) reaches the Node entry with the other arguments.
+if [[ "${1:-}" = '--profile' ]]; then
+  [[ "${2:-}" = 'demo' ]] || { echo 'Only --profile demo is supported.' >&2; exit 2; }
+  shift 2; export ULPIN_PROFILE=demo
 fi
-if [[ -z "${ULPIN_DOCKER_CONTEXT:-}" ]] && command -v colima >/dev/null 2>&1; then
-  if ! colima status --profile ulpin >/dev/null 2>&1; then
-    colima start --profile ulpin --vm-type vz --vz-rosetta --cpu 4 --memory 6 --disk 20 --mount-type virtiofs
-  fi
+if [[ "${ULPIN_PROFILE:-}" = 'demo' ]]; then
+  exec node "$ULPIN_ROOT/scripts/platform/demo.mjs" start "$@"
 fi
+case "${1:-}" in ''|'--infra-only') ;; *) echo 'Use --profile demo --create for the explicitly new demo profile.' >&2; exit 2 ;; esac
 source "$ULPIN_ROOT/scripts/platform-lib.sh"
-docker info >/dev/null
-ULPIN_PROJECT="$(node "$ULPIN_ROOT/scripts/platform-mode.mjs" project)"
-if [[ "${1:-}" = '--infra-only' ]]; then
-  ulpin_compose up -d --wait postgres minio redis
-  ulpin_compose run --rm minio-init
-else
-  if [[ ! -f "$ULPIN_ROOT/services/geo/Dockerfile" ]]; then
-    echo 'Geo Dockerfile is not present. Use --infra-only during initial development.' >&2
-    exit 1
-  fi
-  if [[ "$ULPIN_PROJECT" = 'ulpin-repo' ]]; then
-    ulpin_compose up -d --wait postgres minio redis
-    ulpin_compose run --rm minio-init
-    cd "$ULPIN_ROOT"
-    pnpm db:migrate
-  fi
+# Restore existing linked/repository behaviour, but require the original config
+# and existing storage bindings before any up. No environment/password generation.
+ULPIN_PROJECT="$(node "$ULPIN_ROOT/scripts/platform/legacy-mode.mjs" project)"
+node "$ULPIN_ROOT/scripts/platform/runtime.mjs" --project "$ULPIN_PROJECT" --infra-only
+ulpin_compose up -d --no-recreate --wait postgres minio redis
+ulpin_compose run --rm minio-init
+if [[ "${1:-}" != '--infra-only' ]]; then
+  if [[ "$ULPIN_PROJECT" = 'ulpin-repo' ]]; then pnpm db:migrate; fi
   ulpin_compose --profile app up -d --build --wait
 fi
 bash "$ULPIN_ROOT/scripts/platform-health.sh" "${1:-}"

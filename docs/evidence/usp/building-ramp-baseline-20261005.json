@@ -1,0 +1,420 @@
+{
+  "schemaVersion": 1,
+  "task": "D07-KARNATAKA-BASELINE",
+  "status": "completed_development_diagnostic_no_promotion",
+  "baseCommit": "62d9d11d67be2a12f2d11d3f0ae923e064a7421e",
+  "branch": "task/d07-karnataka-baseline-20261005",
+  "privateRoot": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005",
+  "acceptedSource": {
+    "ownerCommit": "addbf2399255a864d45f275ce57f6ad9c0687b1c",
+    "integrationCommit": "bed4fd615e9b2f0cec6a4bf81ac10309e2e1bd38",
+    "reservationPublicationHead": "2f33940fa503e38ec3ef77dfbfe0f25725fc68bb",
+    "inventory": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\accepted-input-inventory.json",
+      "bytes": 162561,
+      "sha256": "4cb9eea381ba7c900de8fc17c3ff821276e3c9997cfd8abc29f92159f638509d"
+    },
+    "reservation": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\published-development-reservation.json",
+      "bytes": 165850,
+      "sha256": "05b10b5d8025ad97ff3e122bbf0ab686ce8f050ed5f8cf192a2c19913766fadc"
+    },
+    "onlyItemPoolSplitChanged": true,
+    "ownerIntegrity": {
+      "path": "E:\\BhuAayam-data\\task-data\\data-building-shard-20261005\\verification.json",
+      "bytes": 12300,
+      "sha256": "2d45390a3b58bf69b616e7a4e2369499b6a0ba71afa9ddab772fe390a4326bb7"
+    },
+    "ownerPublication": {
+      "path": "E:\\BhuAayam-data\\task-data\\data-building-shard-20261005\\publication-verification.json",
+      "bytes": 2777,
+      "sha256": "afe84e4bad6a539bfa44bccfd208c045408031b3c8ed081b0d2c34bd0b032ba4"
+    }
+  },
+  "allocation": {
+    "groupId": "ramp-MaxarODP-104001002CA32300",
+    "sourceScene": "104001002CA32300",
+    "openDevelopmentItems": 24,
+    "sourceProjects": 1,
+    "groups": 1,
+    "trainingItems": 0,
+    "finalEvaluationItems": 0,
+    "closedEvaluationReopened": false,
+    "sharedAdmissionPublicationOwner": "integrator"
+  },
+  "source": {
+    "dataset": "DevGlobal RAMP Karnataka India v1.0 (2022), DOI10.34911/rdnt.5y2w17",
+    "publisherPage": "https://source.coop/ramp/ramp/ramp_karnataka_india",
+    "attribution": "DevGlobal (2022), ramp Building Footprint Training Dataset - Karnataka, India, v1.0; DOI10.34911/rdnt.5y2w17; imagery Maxar ODP104001002CA32300; annotations TaQadam/B.O.T and DevGlobal review",
+    "license": "CC-BY-NC-4.0; noncommercial and upstream imagery conditions retained; operational/commercial launch not qualified",
+    "labelStatus": "independent_published_human_annotation",
+    "localIndependentAudit": false,
+    "applicationGroundTruth": false,
+    "scoringPolicy": "Full-frame scoringMask==1 (all256x256 pixels). Analysis policy, not publisher ignore truth; publisher ignore/per-feature ambiguity metadata absent. Raw masks and originals unchanged.",
+    "frame": "Original EPSG:4326 pixel-edge affines, longitude/latitude; no nominal30cm/40cm or metric substitution",
+    "originalsLabelsMasksUnchanged": true,
+    "registrationPreflight": "Reused accepted owner hash/decoded-RGB/affine/raster parity/Tier1 annotation-policy/inspection receipts, plus bounded task metadata and execution input pins; no repeated222-pin campaign"
+  },
+  "model": {
+    "id": "rfdetr-satellite-buildings-onnx-v1",
+    "sha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf",
+    "bytes": 135364538,
+    "profileVersion": "rfdetr-rgb432-tile512-stride384-threshold050-mask000-v2",
+    "source": "https://huggingface.co/merve/rf-detr-seg-satellite-buildings/tree/05b80dce9a57701724ad6a0fc052827c8b724257",
+    "license": "Apache-2.0 model card; retain RF-DETR and checkpoint attribution"
+  },
+  "freeze": {
+    "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\frozen-config.json",
+    "bytes": 155083,
+    "sha256": "9b580000468c6db12e9d74a2ff25e68fa44eed289204e9fd73dd4461acbffe2c"
+  },
+  "coverage": {
+    "requestedItems": 24,
+    "completedItems": 24,
+    "positiveItems": 19,
+    "emptyItems": 5,
+    "nativeCalls": 24,
+    "totalSourcePixels": 1572864,
+    "publisherFeatures": 178,
+    "outsideScoringDomain": 0,
+    "failedItems": 0,
+    "ignoredPixels": 0
+  },
+  "metrics": {
+    "maskForeground": {
+      "id": 1,
+      "name": "building",
+      "truthPixels": 181259,
+      "predictedPixels": 104477,
+      "tp": 88456,
+      "fp": 16021,
+      "fn": 92803,
+      "iou": 0.4483779399837794,
+      "precision": 0.8466552446950046,
+      "recall": 0.4880088712836328
+    },
+    "polygonForeground": {
+      "id": 1,
+      "name": "building",
+      "truthPixels": 181259,
+      "predictedPixels": 104476,
+      "tp": 88455,
+      "fp": 16021,
+      "fn": 92804,
+      "iou": 0.4483728710462287,
+      "precision": 0.8466537769439871,
+      "recall": 0.48800335431619946
+    },
+    "objects": {
+      "mask": {
+        "tp": 62,
+        "fp": 37,
+        "fn": 116,
+        "iou": 0.28837209302325584,
+        "precision": 0.6262626262626263,
+        "recall": 0.34831460674157305,
+        "mergeCandidates": 11
+      },
+      "polygons": {
+        "tp": 67,
+        "fp": 43,
+        "fn": 111,
+        "iou": 0.3031674208144796,
+        "precision": 0.6090909090909091,
+        "recall": 0.37640449438202245,
+        "mergeCandidates": 8
+      }
+    },
+    "objectMatchPolicy": "existing evaluator: maximum-cardinality one-to-one IoU>=0.5, totalIoU tie-break; raw publisher features clipped to full source domain; raw mask connected regions and final polygons scored separately",
+    "emptyLabelledScenes": {
+      "items": 5,
+      "itemsWithForegroundFalsePositives": 1,
+      "falsePositivePixels": 1106,
+      "falsePositiveMaskObjects": 1,
+      "falsePositivePolygonObjects": 1,
+      "idsWithForegroundFalsePositives": [
+        "ramp-karnataka/f58cf24e-0da4-4612-812a-d54bf65a17c9"
+      ]
+    },
+    "polygonization": {
+      "changedPixels": 1,
+      "removedForegroundPixels": 1,
+      "addedForegroundPixels": 0,
+      "omissions": {
+        "small": 1,
+        "complex": 0,
+        "invalid": 0,
+        "capacity": 0
+      }
+    },
+    "successThreshold": null,
+    "thresholdOrResolutionTuning": false
+  },
+  "inspection": {
+    "cachedOnly": true,
+    "sheet": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\selected-errors.png",
+      "bytes": 328732,
+      "sha256": "4c92b419499a178443aee0f5d978d6ef92e43e86d9788744ac2286af2d612d57"
+    },
+    "observations": [
+      {
+        "id": "ramp-karnataka/ffea4031-74eb-48bb-ae91-3144127f892f",
+        "maskIoU": 0.0,
+        "observation": "One tiny published rooftop feature (152 label pixels) receives no foreground prediction; unchanged human-publisher label retained."
+      },
+      {
+        "id": "ramp-karnataka/0020b409-a333-4eb4-89c8-531b8110312a",
+        "maskIoU": 0.08225883476599809,
+        "observation": "11 publisher features; 2 matched and 9 missed. Visible roof coverage is substantially absent, including edge-truncated roofs. No relabeling or cause claim."
+      },
+      {
+        "id": "ramp-karnataka/f58cf24e-0da4-4612-812a-d54bf65a17c9",
+        "maskIoU": 0.0,
+        "observation": "Empty publisher mask but 1106 predicted pixels/one candidate. Candidate overlaps a visible roof-like structure; counted FP against publisher truth, annotation completeness unresolved. No independent negative-truth claim."
+      }
+    ]
+  },
+  "runtime": {
+    "commandReceipt": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\run-command.json",
+      "bytes": 858,
+      "sha256": "10b89dc8348323ecf05462b86df075167de036b22417c43922cc0c18cc6aeb3e"
+    },
+    "workerElapsedSeconds": 35.438,
+    "bodySeconds": 34.77984849998029,
+    "maxItemSeconds": 1.7287491000024602,
+    "peakObservedRssBytes": 519913472,
+    "peakJobPrivateBytes": 617201664,
+    "bounds": {
+      "cpuThreads": 2,
+      "jobMemoryBytes": 6442450944,
+      "totalSeconds": 1200,
+      "perItemSeconds": 120,
+      "gpu": false
+    },
+    "cpuAffinity": [
+      0,
+      1
+    ],
+    "environment": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-vision-baseline-20261005\\env",
+      "dependencies": {
+        "numpy": "2.0.2",
+        "Pillow": "11.2.1",
+        "onnxruntime": "1.19.2",
+        "rasterio": "1.4.4",
+        "Shapely": "2.0.7",
+        "scipy": "1.14.1",
+        "psutil": "7.0.0"
+      },
+      "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+      "lock": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-vision-baseline-20261005\\environment-lock.txt",
+        "bytes": 384,
+        "sha256": "9c7fbd47b57e07fbb4fc18ff7a6f92dee060983defe69669bb8c69a9ed9ffb1b"
+      },
+      "packageOrigins": {
+        "numpy": "E:\\BhuAayam-data\\task-data\\d07-vision-baseline-20261005\\env\\Lib\\site-packages\\numpy\\__init__.py",
+        "onnxruntime": "E:\\BhuAayam-data\\task-data\\d07-vision-baseline-20261005\\env\\Lib\\site-packages\\onnxruntime\\__init__.py"
+      },
+      "basePrefix": "C:\\Users\\kvina\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python",
+      "executable": "C:\\Users\\kvina\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe",
+      "provider": "CPUExecutionProvider",
+      "intraOpThreads": 2,
+      "interOpThreads": 1
+    },
+    "gatedWindowsJob": true,
+    "networkSubprocessDenialControls": [
+      "socket.getaddrinfo",
+      "socket.connect",
+      "socket.sendto",
+      "subprocess.Popen"
+    ],
+    "allAuditDenials": [
+      "socket.getaddrinfo",
+      "socket.connect",
+      "socket.sendto",
+      "subprocess.Popen",
+      "subprocess.Popen"
+    ],
+    "allowedSubprocesses": 0,
+    "osEgressAudit": false,
+    "resourcesReleased": {
+      "workerExited": true,
+      "jobsClosed": true,
+      "ownedChildrenSurvived": false,
+      "gpuUsed": false
+    }
+  },
+  "artifacts": {
+    "results": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\results.json",
+      "bytes": 173113,
+      "sha256": "57becbda6d0058e1e07cca834a29965c193ec60c598d040ef2531172980b0dc1"
+    },
+    "verification": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\verification.json",
+      "bytes": 1426,
+      "sha256": "e7ed9f26305185e589462b1865e927b0e46ee85c5e27b92b8d87771014172a84"
+    },
+    "nativeOutputs": 24,
+    "perItemResultFiles": 24,
+    "outputPinsChecked": 168,
+    "rawDirectory": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\raw",
+    "retained": "Native ONNX NPZ, confidence, instance masks, binary source masks, polygon masks, processing RGB, polygons/transforms/omissions and per-item metrics; all partial/start/failure evidence preserved."
+  },
+  "code": {
+    "finalAdapter": {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\learning\\compare_building_ramp.py",
+      "bytes": 17032,
+      "sha256": "52e54d23052984c18adf5ba97c0da9a0c8f178a1df2c6c9ea726fd7725e21f68",
+      "canonicalLfSha256": "52e54d23052984c18adf5ba97c0da9a0c8f178a1df2c6c9ea726fd7725e21f68"
+    },
+    "executedAdapter": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\executed-compare_building_ramp.py",
+      "bytes": 16856,
+      "sha256": "9826ff69b28ba79729d432d7c8dac0823ea2943b7a39b39442d1db6a0c7d5369"
+    },
+    "unchangedExecutionPins": [
+      {
+        "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\learning\\evaluate_vision_cohort.py",
+        "bytes": 23032,
+        "sha256": "9c19754772eef11596ddf648c036029636f7ad0ddbd36f70faf1c4454e8f3c10"
+      },
+      {
+        "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\services\\geo\\geo\\spatial_ml.py",
+        "bytes": 32261,
+        "sha256": "c3838b5b591a144fd96c8afba7b6fb70b5f6ae787960722cfe796461f362af2b"
+      },
+      {
+        "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\services\\geo\\geo\\validation.py",
+        "bytes": 3130,
+        "sha256": "8794e42308b52eabbaf31f707cec33d586210cee5f397b320e2e34c24bba5163"
+      },
+      {
+        "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\services\\geo\\ml-models.json",
+        "bytes": 6273,
+        "sha256": "5416350ac78ac22c3665d7ce7b417789e6fcf9fae9fdba5c9f730dcf309780a3"
+      },
+      {
+        "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\document-models\\run_trial.py",
+        "bytes": 23948,
+        "sha256": "7b222f53865f49289fd67c81c0a2514bf5493c4469c9f45eabcfff0efa684c2f"
+      },
+      {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\supervise.py",
+        "bytes": 965,
+        "sha256": "d5b9f5229c799234937d6c9128c1a10d0cde319ce0be823c3c5bd7111ae46675"
+      }
+    ],
+    "postRunCorrection": "Final adapter adds sys.dont_write_bytecode=True before dependency imports. Gated child -I ignores the parent -B/environment flag; import-generated .pyc caches were observed and preserved. No dependency package/model/config modification or inference replay. Frozen execution code is retained byte-for-byte privately; frozen config/results are unchanged."
+  },
+  "prePredictionFailures": [
+    {
+      "phase": "freeze-import-failure",
+      "receipt": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\freeze-import-failure-command.json",
+        "bytes": 861,
+        "sha256": "0e1794bfaa1c3aa03bfd83a6a1ada6d5eb827d4adcd43807d1e4bd8fe37d235e"
+      },
+      "log": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\freeze-import-failure.log",
+        "bytes": 3990,
+        "sha256": "739d5b7829e7a7e87749949db4b04ffb436b4bbb856e21065cef235ded07d0f6"
+      },
+      "exit": 1,
+      "reasonAndCorrection": "NumPy optional lscpu subprocess was denied before launch; RuntimeError bypassed its OSError fallback. Changed denial to PermissionError, preserving zero subprocess allowances.",
+      "predictions": 0
+    },
+    {
+      "phase": "freeze-inventory-advance",
+      "receipt": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\freeze-inventory-advance-command.json",
+        "bytes": 862,
+        "sha256": "bea90efdd47f5597d2a8ff313d3bf5f36a8d54ca6a35a36a3591a2d636b4f68f"
+      },
+      "log": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\freeze-inventory-advance.log",
+        "bytes": 862,
+        "sha256": "e085f017af20f80c02d1514e043bb5fc438adaf09d9f383213954451405d97d8"
+      },
+      "exit": 1,
+      "reasonAndCorrection": "Mutable staging metadata had advanced to authorized development reservation; source/labels/frames unchanged. Captured accepted exact Git blob and reservation snapshot, checking only pool/split changes per item before freeze.",
+      "predictions": 0
+    }
+  ],
+  "verificationCommands": [
+    {
+      "phase": "freeze",
+      "command": [
+        "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Scripts\\python.exe",
+        "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\learning\\compare_building_ramp.py",
+        "freeze",
+        "--root",
+        "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005",
+        "--worker"
+      ],
+      "exit": 0,
+      "receipt": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\freeze-command.json",
+        "bytes": 863,
+        "sha256": "d6e6875d87feb37bf9b391477b9dd562fcf32c2f6c615e26e12b4651e4057c4a"
+      }
+    },
+    {
+      "phase": "run",
+      "command": [
+        "E:\\BhuAayam-data\\task-data\\desktop-ai04f-docling-tesseract\\venv\\Scripts\\python.exe",
+        "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\learning\\compare_building_ramp.py",
+        "run",
+        "--root",
+        "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005",
+        "--worker"
+      ],
+      "exit": 0,
+      "receipt": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\run-command.json",
+        "bytes": 858,
+        "sha256": "10b89dc8348323ecf05462b86df075167de036b22417c43922cc0c18cc6aeb3e"
+      }
+    },
+    {
+      "phase": "artifactVerification",
+      "command": [
+        "C:/Python313/python.exe",
+        "-B",
+        "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\verify_results.py"
+      ],
+      "exit": 0,
+      "receipt": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-karnataka-baseline-20261005\\verification.json",
+        "bytes": 1426,
+        "sha256": "e7ed9f26305185e589462b1865e927b0e46ee85c5e27b92b8d87771014172a84"
+      }
+    },
+    {
+      "phase": "finalAdapterSyntax",
+      "command": "C:/Python313/python.exe -B - (AST compile and assert sys.dont_write_bytecode=True before dependency imports)",
+      "exit": 0,
+      "modelCalls": 0
+    }
+  ],
+  "decision": "Keep RF-DETR outputs as source-pixel review proposals. Low rooftop recall and object misses remain; final polygon mask differs by only one pixel, so a contour fix cannot repair absent predictions. Baseline alone does not authorize fitting, tuning or promotion. Any later data/adaptation task must resolve label completeness/ambiguity and preserve independent grouped development/final comparisons.",
+  "limitations": [
+    "One scene/group; 24 chips and178 publisher features are not independent projects or proven distinct structures.",
+    "RF-DETR pretraining overlap unknown; publisher deposit was upstream training data.",
+    "Publisher ignore mask/per-feature ambiguity/pair-specific reviewer metadata absent; full-frame scoring is an explicit analysis policy.",
+    "Empty-label false positive may be an annotation gap; scored relative to frozen publisher labels without relabeling.",
+    "23 publisher rings cross chip boundaries; partial roofs retained.",
+    "Publisher30cm/40cm metadata conflict retained; exact angular affine used.",
+    "Rooftop/cut polygons do not establish ground footprints, physical building identity, occupancy, cadastral rights or release/generalization accuracy.",
+    "Python audit denial and existing Windows Job are tested controls; native/OS egress audit unrun."
+  ],
+  "settings": {
+    "requested": "gpt-6.1-sol/xhigh/default-standard1x",
+    "observed": "unexposed",
+    "permissions": "never/danger-full-access"
+  },
+  "scope": "Only owned adapter and new result leaves. No production/evaluator/model manifest/catalogue/API/frontend/shared split change, fit, GPU/provider/DB/service work, new dependency/download, push or deployment."
+}

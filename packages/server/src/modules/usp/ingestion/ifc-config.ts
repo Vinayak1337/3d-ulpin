@@ -82,3 +82,42 @@ export function assertIFCTools(pins:IFCToolPins|null,deadlineAt?:number){
   if(!pins)ifcUnavailable();const config=ifcConfig(deadlineAt);
   if(fingerprint(config.pins)!==fingerprint(pins))ifcUnavailable('IFC_TOOL_CHANGED');return config;
 }
+// DXF-02 immutable reads only: exact cfc679fd Git/LF and physical aggregates.
+// No unknown aggregate, changed non-code pin or missing current runtime qualifies.
+const preDXFReadCodeSha=new Set(['c7d6d9b23fd9334079868b046907cd9bc3d0c3efb2f298552b409e113279aa1a',
+  '16ccbbfd5ece82bf8f5fff15799e7cc448df371ed4de67a3cb1e7934c6aa8db8']);
+// KML-02: fd36a4b9 exact Git/LF and captured physical pre-KML constituents.
+const preKMLReadCodeSha=new Set(['a441e6ac5d3947e4f267e63494685fada870384c6850c8c205dc8870ea0b68c8',
+  '3bd4f09e8a4bdfd2963e2e6c0ff735cdb423c3405e06694755f1f017bb585ac0']);
+// CITYGML-02: exact 0b209ca3 Git/LF and captured physical code; immutable reads only.
+const preCityGMLReadCodeSha=new Set(["18a0bc3c1f01fffd338e122b3d028f438dd2f7459377e228a9ae1a94c33e93ed", "06bc6b13fcaae405d4d1390a8a13703f716d05ac3aa2f152679f8047927ae519"]);
+// GEOPARQUET-02: exact 409d2641 Git/LF and physical immutable-read code only.
+const preGeoParquetReadCodeSha=new Set(["2d1ec8e223c7124196237b7d33c84be37d5a202cb9b11515f3d510962ba8ff79", "9e5771204c653c37598ac52e3d2e555b1875a7e9bf7ad565c959bde8d0233c6e"]);
+// PACK1-PDF-04: exact 1c024959 Git/LF and captured physical code aggregates.
+// Immutable reads only; current full inventory/non-code pins and strict writers remain mandatory.
+const prePacketPdfReadCodeSha=new Set(["08d97a9d01afcca16ad651dd2d854544e5ab97b128cc49521247992178a18ec8","7cef4287ab8cd2c50a4f44e47e07fd115038ff3c2526a38306474d1165828a82"]);
+// GLTF-02: exact 0311fa08 Git/LF and observed pre-glTF staging physical code.
+// Immutable reads only; full current inventory/non-code pins and strict writers remain.
+const preGltfReadCodeSha=new Set(["1a539bf0cfb49cd6f509a80c7275449472913ff9a3c4fdae0a5af842e1d1cc8c","4572b5ce43aa23c41f3db16744e1f93e7eb1c247f09a03fd880f508b22500a5d"]);
+// OBJ-02 immutable reads only: exact assigned-base Git/LF and observed pre-OBJ
+// physical CODEFILES in both worker checkouts/staging. Current code/non-code
+// inventory remains mandatory; writers never use these aliases.
+const preObjReadCodeSha=new Set(["3f8e872b66b74886e9850d99bb13b12877e15fcc39db7508d1acf10eeb079247", "b5db10a0e2b01c8d9941e99bb1a74d872185c0e80c7138ce8d023eb3d019a742", "3a34e3c2fbcfd34c78c50fab59f17c1ca8850453e056ae45b93699cee665d33b"]);
+export function ifcReadToolsCompatible(stored:IFCToolPins,current:IFCToolPins){
+  const old=IFCToolPinsSchema.safeParse(stored),live=IFCToolPinsSchema.safeParse(current);
+  if(!old.success||!live.success)return false;
+  if(fingerprint(old.data)===fingerprint(live.data))return true;
+  const {codeSha256:oldCode,...oldTools}=old.data,{codeSha256:_currentCode,...currentTools}=live.data;
+  if(prePacketPdfReadCodeSha.has(oldCode)||preGltfReadCodeSha.has(oldCode)||preObjReadCodeSha.has(oldCode)){
+    const actualCode=fingerprint(IFC_CODE_FILES.map(path=>({path,sha256:sha256(bytes(join(settings.repositoryRoot,path),1024*1024))})));
+    return live.data.codeSha256===actualCode&&fingerprint(oldTools)===fingerprint(currentTools);
+  }
+
+  return (preDXFReadCodeSha.has(oldCode)||(preKMLReadCodeSha.has(oldCode)||(preCityGMLReadCodeSha.has(oldCode)||preGeoParquetReadCodeSha.has(oldCode))))&&fingerprint(oldTools)===fingerprint(currentTools);
+}
+/** Verify the complete current inventory before immutable-result read comparison.
+ * Returns no process configuration: writers must continue using assertIFCTools. */
+export function assertIFCReadTools(pins:IFCToolPins|null,deadlineAt?:number):void{
+  if(!pins)ifcUnavailable();const current=ifcConfig(deadlineAt);
+  if(!ifcReadToolsCompatible(pins,current.pins))ifcUnavailable('IFC_TOOL_CHANGED');
+}

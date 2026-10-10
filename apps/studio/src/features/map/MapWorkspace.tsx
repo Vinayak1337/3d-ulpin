@@ -4,27 +4,34 @@ import { useQueryClient } from '@tanstack/react-query';
 import { FilePlus, SlidersHorizontal, Trash, X } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { OverlayInput, FindingInput, Pick, SceneEngine, SceneState, Trench } from '@ulpin/scene';
-import { Badge, Banner, Button, Icon, LevelRail, SeverityBadge, Toast, type LegendSection } from '@ulpin/ui';
-import { useBuildingImport, useBuildingLedger, useBuildingRegister, type AreaContext } from '../../api/queries';
+import { Banner, Button, Icon, LevelRail, SeverityBadge, Toast, type LegendSection } from '@ulpin/ui';
+import { useBuildingCanonical, useBuildingImport, useBuildingLedger, useBuildingRegister, type AreaContext } from '../../api/queries';
 import { buildingModel } from '../../model/building';
 import { effectiveColour } from '../../state/selection';
 import { useSelection } from '../../state/useSelection';
 import { EvidenceProvider } from '../evidence/EvidenceContext';
-import { AssignDialog } from '../identity/AssignDialog';
 import { AddFilesDialog } from '../intake/AddFilesDialog';
 import { DeleteDialog } from '../manage/DeleteDialog';
-import { CardDialog } from '../identity/CardDialog';
+import { UnitCardDialog } from '../identity/UnitCardDialog';
 import { useSpaceWorkflow } from '../workflow/useWorkflow';
-import { polygonsOf } from './footprints';
+import { polygonsOf, undrawnNote } from './footprints';
+import { useCanonicalFootprints } from './canonicalScene';
 import { findingVolume, useBuildingScene } from './useBuildingScene';
 import { PlanCheck, type MapPlanCheck } from './PlanCheck';
 import { isDemoId } from '../../api/demo-import';
+import { isServed } from '../../local/routes';
 import { MapSidebar, type ViewKey } from './MapSidebar';
 import { BuildingImportTray, ImportTray } from './ImportTray';
 import { ScaleAndNorth } from './ScaleAndNorth';
+import { UndrawnBuildings } from './UndrawnBuildings';
 import { BuildingSearch } from './BuildingSearch';
-import { useMapView } from './useMapView';
-import { useOverlays, type AreaReference, type SupplementalDataset, type LoadedOverlay } from './overlays';
+import { CandidateBanner } from '../review/candidates/CandidateBanner';
+import { imageryVisibility, useMapView } from './useMapView';
+import {
+  imageryAttribution, imageryFailureNote, listedImages, useOverlays, useRetainedImagery,
+  type AreaReference, type SupplementalDataset, type LoadedOverlay, type RetainedImages,
+} from './overlays';
+import { noFloorsState } from './floorState';
 import { HEIGHT_BANDS, heightCounts } from './heightBands';
 import { SceneLabels } from './SceneLabels';
 import type { SceneLabel } from './labels';
@@ -41,12 +48,16 @@ const ATTRIBUTION: Record<string, string> = {
   'swiss-dwellings': 'Swiss Dwellings (Zenodo 7070952), CC BY 4.0',
 };
 const shownQuarantine = new Set<string>();
+const WIDE_WINDOW = '(min-width: 1000px)';
 
 /**
  * S4–S6, S8: one canvas whose modes (area, building, level, findings, underground) share one selection,
  * one inspector and one left navigation. The URL holds the selection.
  */
 const NO_LOADED_OVERLAYS: LoadedOverlay[] = [];
+const NO_IMAGES: RetainedImages['overlays'] = [];
+const canDeleteBuilding = isServed('DELETE', '/api/v1/buildings/:buildingId');
+const canDeleteArea = isServed('DELETE', '/api/v1/areas/:areaId');
 
 export function MapWorkspace({ context }: { context: AreaContext }) {
   context = { ...context, features: context.displayFeatures ?? context.features };
@@ -64,9 +75,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const [engine, setEngine] = useState<SceneEngine | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
-  const [dialog, setDialog] = useState<'assign' | 'card' | 'files' | 'delete-building' | 'delete-area' | null>(null);
+  const [dialog, setDialog] = useState<'card' | 'files' | 'delete-building' | 'delete-area' | null>(null);
   const navigate = useNavigate();
-  const [toast, setToast] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [trench, setTrench] = useState<Trench | null>(null);
   const [focusSearch, setFocusSearch] = useState(false);
@@ -94,6 +104,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const registerQuery = useBuildingRegister(feature?.id, floorsLive);
   const register = registerQuery.data;
   const ledger = useBuildingLedger(feature?.id, floorsLive).data;
+  const canonical = useBuildingCanonical(feature?.id).data;
   const model = useMemo(() => (register ? buildingModel(register) : null), [register]);
   const level = model?.levels.find((l) => l.id === selection.levelId) ?? null;
   const space = selection.spaceId ? model?.spaceById.get(selection.spaceId) ?? null : null;
@@ -104,23 +115,53 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const findings = register?.findings ?? [];
   const finding = selection.mode === 'findings' ? findings.find((f) => f.id === selection.findingId) ?? findings[0] ?? null : null;
 
-  const { base, footprints, detail } = useBuildingScene(context.features, feature, model, ledger, colour);
+  const drawn = useCanonicalFootprints(context.area.id, feature?.id, context.features, Boolean(packageId));
+  const { base, footprints, detail } = useBuildingScene(context.features, feature, model, ledger, colour, drawn.footprints);
   const [mapView, setMapView] = useMapView();
+  const drawnIds = useMemo(() => new Set(footprints.map((f) => f.id)), [footprints]);
   const baseKinds = useMemo(() => new Set(base.map((f) => f.kind)), [base]);
   const supplemental = (context as unknown as { supplementalDatasets?: SupplementalDataset[] }).supplementalDatasets;
   const overlayQuery = useOverlays(context.area.id, supplemental, context.area.reference as AreaReference | null);
   const loadedOverlays = overlayQuery.data?.overlays ?? NO_LOADED_OVERLAYS;
+  // The pictures the area's canonical read lists: on until the viewer turns imagery off.
+  const listedPictures = useMemo(() => listedImages(drawn.area), [drawn.area]);
+  const retained = useRetainedImagery(context.area.id, listedPictures);
+  const retainedImages = retained.data?.overlays ?? NO_IMAGES;
+  const imagery = imageryVisibility(mapView.overlays.imagery, listedPictures.length > 0);
+  const overlaysOn = { imagery: imagery.retained, lidar: mapView.overlays.lidar };
+  const supplementalOn = { imagery: imagery.aerial, lidar: mapView.overlays.lidar };
+  // Nothing to scale or fit: no footprint, base feature or overlay, and every read has settled.
+  const nothingToDraw = !footprints.length && !base.length && !loadedOverlays.length && !retainedImages.length
+    && !drawn.pending && !drawn.error && !overlayQuery.isLoading && !retained.isLoading && !packageId
+    && !buildingImportId;
+  // On a wide window the tools open on the list of buildings without geometry, so a record that is not drawn is
+  // still seen; a narrow one keeps the canvas clear and names the list instead.
+  const [toolsOpen, setToolsOpen] = useState(false);
+  useEffect(() => {
+    if (drawn.undrawn.length && window.matchMedia(WIDE_WINDOW).matches) setToolsOpen(true);
+  }, [drawn.undrawn.length]);
   const showContextOverlays = (selection.mode === 'area' || selection.mode === 'building');
+  const retainedShown = showContextOverlays && overlaysOn.imagery && retainedImages.length > 0;
   const overlayInputs = useMemo<OverlayInput[]>(() => [
-    ...loadedOverlays.filter((o) => showContextOverlays && mapView.overlays[o.layer]).map((o) => o.input),
+    ...(retainedShown ? retainedImages : []),
+    ...loadedOverlays.filter((o) => showContextOverlays && supplementalOn[o.layer]).map((o) => o.input),
     ...(activePlan && showContextOverlays ? [
       { id: 'simulated-area-plan', kind: 'comparison' as const, role: 'plan' as const, polygons: activePlan.plan, heightM: 0 },
       ...activePlan.findings.map(f => ({ id: `simulated-difference:${f.buildingId}`, kind: 'comparison' as const, role: 'conflict' as const, polygons: f.outside, heightM: f.heightM })),
     ] : []),
-  ], [loadedOverlays, mapView.overlays, showContextOverlays, activePlan]);
-  const visibleOverlays = loadedOverlays.filter((o) => showContextOverlays && mapView.overlays[o.layer]);
+  ], [retainedShown, retainedImages, loadedOverlays, supplementalOn.imagery, supplementalOn.lidar,
+    showContextOverlays, activePlan]);
+  const visibleOverlays = loadedOverlays.filter((o) => showContextOverlays && supplementalOn[o.layer]);
   const overlayNotes = visibleOverlays.map((o) => o.note);
-  const viewNotes = [mapView.look === 'enhanced' ? 'Enhanced view' : null, ...visibleOverlays.map((o) => o.caption), ...(overlayQuery.data?.warnings ?? [])].filter(Boolean);
+  const viewNotes = [
+    mapView.look === 'enhanced' ? 'Enhanced view' : null,
+    ...visibleOverlays.map((o) => o.caption),
+    ...(retainedShown ? imageryAttribution(drawn.area?.imagery ?? []) : []),
+    undrawnNote(context.features),
+    ...(overlayQuery.data?.warnings ?? []),
+  ].filter(Boolean);
+  // A listed picture that did not load is named by count beside the switch, never silently missing.
+  const picturesNotLoaded = (retained.data ? imageryFailureNote(retained.data) : null) ?? undefined;
   const layerSwitches = [
     { key: 'look', label: 'Enhanced view', checked: mapView.look === 'enhanced' },
     ...(baseKinds.has('road') ? [{ key: 'roads', label: 'Roads', checked: mapView.layers.roads }] : []),
@@ -128,7 +169,13 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     ...(baseKinds.has('public_land') ? [{ key: 'trees', label: 'Trees', checked: mapView.layers.trees, disabled: mapView.look !== 'enhanced' || !mapView.layers.publicLand }] : []),
     ...(baseKinds.has('parcel') ? [{ key: 'parcels', label: 'Parcels', checked: mapView.layers.parcels }] : []),
     ...(base.some((f) => f.name) ? [{ key: 'labels', label: 'Names', checked: mapView.labels }] : []),
-    ...loadedOverlays.map((o) => ({ key: `overlay:${o.layer}`, label: o.label, checked: mapView.overlays[o.layer] })),
+    ...loadedOverlays.map((o) => ({
+      key: `overlay:${o.layer}`, label: o.label, checked: overlaysOn[o.layer],
+      hint: o.layer === 'imagery' ? picturesNotLoaded : undefined,
+    })),
+    ...(listedPictures.length && !loadedOverlays.some((o) => o.layer === 'imagery') ? [{
+      key: 'overlay:imagery', label: 'Imagery', checked: overlaysOn.imagery, hint: picturesNotLoaded,
+    }] : []),
   ];
   useEffect(() => {
     if (!engine || !focusOverlay || !overlayInputs.some((o) => o.id === focusOverlay)) return;
@@ -260,7 +307,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   // Legend: only the active Colour by, plus the evidence key on a floor.
   const legend: LegendSection[] = [];
   if (colour === 'height') {
-    const { counts, unknown } = heightCounts(buildings);
+    const { counts, unknown } = heightCounts(buildings.filter((b) => drawnIds.has(b.id)));
     legend.push({ title: 'Roof height', items: [
       ...HEIGHT_BANDS.map((b, i) => ({ label: b.label, count: counts[i], color: b.color })).filter((item) => item.count),
       ...(unknown ? [{ label: 'Unknown', count: unknown, color: 'var(--ui-map-building)', hatch: true }] : []),
@@ -295,7 +342,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   }
 
   const showRail = (selection.mode === 'building' || selection.mode === 'level') && Boolean(model?.levels.length);
-  const noFloors = selection.mode === 'building' && register && !model?.levels.length;
+  const noFloors = selection.mode === 'building' && register && !model?.levels.length
+    ? noFloorsState(register, canonical) : null;
   const namespaces = [...new Set(context.features.map((f) => f.datasetNamespace))].filter((ns) => ATTRIBUTION[ns]);
   const readout = [reference?.sourceCrs, groundM !== null ? `${groundM.toFixed(2)} m` : null, ledger?.siteDatum].filter(Boolean).join(' · ');
   const readoutTitle = reference
@@ -315,12 +363,13 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     inspector = (
       <SpaceInspector space={space} level={level} model={model} register={register} ledger={ledger} buildingId={feature.id} crumbs={crumbs}
         datum={ledger?.siteDatum ?? null} onSelectSpace={(id) => dispatch({ type: 'selectSpace', id })}
-        onAssign={() => setDialog('assign')} onCard={() => setDialog('card')} onFinding={(id) => dispatch({ type: 'openFindings', findingId: id })} />
+        onCard={() => setDialog('card')}
+        onFinding={(id) => dispatch({ type: 'openFindings', findingId: id })} />
     );
   } else if (feature) {
     inspector = (
-      <BuildingInspector feature={feature} register={register} model={model} ledger={ledger} registerPending={registerQuery.isPending} crumbs={crumbs}
-        exploring={selection.mode === 'level'} onAddFiles={() => setDialog('files')} onDelete={() => setDialog('delete-building')}
+      <BuildingInspector feature={feature} canonical={canonical} register={register} model={model} ledger={ledger} registerPending={registerQuery.isPending} crumbs={crumbs}
+        exploring={selection.mode === 'level'} onAddFiles={() => setDialog('files')} onDelete={canDeleteBuilding ? () => setDialog('delete-building') : undefined}
         onExplore={() => { const f = typicalFloor(); if (f) dispatch({ type: 'selectLevel', id: f.id }); }}
         onFindings={(findingId) => dispatch({ type: 'openFindings', findingId: findingId ?? null })} />
     );
@@ -367,6 +416,12 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                 <Banner tone="info">This area stays in its source’s local frame: the source states no coordinate reference system, so it is not placed on the map.</Banner>
               </div>
             ) : null}
+            <CandidateBanner className={styles.banner} areaId={context.area.id} buildingId={feature?.id ?? null} />
+            {drawn.error ? (
+              <div className={styles.banner}>
+                <Banner tone="danger">The canonical record of this area could not be read, so its buildings are not drawn. {drawn.error.message}</Banner>
+              </div>
+            ) : null}
             {showRail && model ? (
               <div className={styles.rail}>
                 <LevelRail
@@ -378,49 +433,71 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                 />
               </div>
             ) : null}
+            {nothingToDraw ? (
+              <div className={styles.noGeometry}>
+                <div className={`ul-float ${styles.emptyCard}`}>
+                  <span>No geometry is recorded for this area yet</span>
+                  {drawn.undrawn.length && !toolsOpen ? (
+                    <span>Buildings recorded without geometry are listed under Tools.</span>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
             {noFloors ? (
               <div className={styles.emptyOverlay}>
                 <div className={`ul-float ${styles.emptyCard}`}>
-                  <span>No floors recorded. Add a plan.</span>
-                  <Button variant="primary" icon={FilePlus} onClick={() => setDialog('files')}>Add files</Button>
+                  {noFloors.lines.map((line) => <span key={line}>{line}</span>)}
+                  {noFloors.advise ? (
+                    <Button variant="primary" icon={FilePlus} onClick={() => setDialog('files')}>Add files</Button>
+                  ) : null}
                 </div>
               </div>
             ) : null}
             <SceneLabels engine={engine} labels={labels} tick={tick} />
-            <details className={styles.mapTools}>
-              <summary><Icon icon={SlidersHorizontal} size={20} />Tools</summary>
-              <MapSidebar
-                planCheck={isDemoId(context.area.id) ? <PlanCheck key={context.area.id} areaId={context.area.id} result={activePlan} onResult={(result) => { setPlanResult(result); if (result) dispatch({ type: 'selectBuilding', id: null }); }} /> : undefined}
-                views={[
-                  { key: 'area', label: 'Area' },
-                  { key: 'building', label: 'Building', disabled: !feature },
-                  { key: 'level', label: 'Floors', disabled: !model?.levels.length },
-                  { key: 'findings', label: 'Findings', disabled: !feature, badge: findings.length ? <span className={`ul-badge ${findings.some((f) => f.category === 'blocking') ? 'ul-badge--danger' : 'ul-badge--warning'}`}>{findings.length}</span> : null },
-                  { key: 'underground', label: 'Underground', detail: feature && !utilities.length ? 'No survey' : null, disabled: !feature },
-                ]}
-                active={selection.mode === 'area' ? (feature ? 'building' : 'area') : selection.mode}
-                onView={chooseView}
-                keySections={legend}
-                layers={layerSwitches} onLayer={onLayer}
-                layersNote={[mapView.look === 'enhanced' ? 'Illustrative styling. Geometry and records unchanged.' : null, ...overlayNotes].filter(Boolean).join(' ') || null}
-                colour={colour} onColour={chooseColour}
-                colourOptions={[
-                  { value: 'none', label: 'None' },
-                  { value: 'rights', label: 'Rights', disabled: !model?.levels.length },
-                  { value: 'utilities', label: 'Utilities', disabled: !utilities.length || !feature },
-                  { value: 'height', label: 'Height', disabled: !buildings.length },
-                ]}
-                floor={selection.mode === 'level' && level ? level.label : null}
-                spaces={selection.mode === 'level' && model ? model.spaces.filter((s) => s.levelId === selection.levelId && !s.parentId) : []}
-                rightsColour={(id) => (colour === 'rights' ? `var(${RIGHTS_TOKEN[ledgerSpace(ledger, id)?.rights ?? 'unknown']})` : null)}
-                selectedSpaceId={selection.spaceId}
-                onSelectSpace={(s) => s.levelId && dispatch({ type: 'pickSpace', id: s.id, levelId: s.levelId })}
-                viewFooter={<>
-                  <p className={styles.gestures}>Drag to move. Two-finger swipe or right-drag to rotate. Pinch or scroll to zoom.</p>
-                  {!feature ? <Button variant="ghost" icon={Trash} className={styles.deleteArea} onClick={() => setDialog('delete-area')}>Delete area</Button> : null}
-                </>}
-              />
-            </details>
+            <div className={styles.leftStack}>
+              <details
+                className={styles.mapTools}
+                open={toolsOpen}
+                onToggle={(event) => setToolsOpen(event.currentTarget.open)}
+              >
+                <summary><Icon icon={SlidersHorizontal} size={20} />Tools</summary>
+                <MapSidebar
+                  undrawn={<UndrawnBuildings buildings={drawn.undrawn} />}
+                  planCheck={isDemoId(context.area.id) ? <PlanCheck key={context.area.id} areaId={context.area.id} result={activePlan} onResult={(result) => { setPlanResult(result); if (result) dispatch({ type: 'selectBuilding', id: null }); }} /> : undefined}
+                  views={[
+                    { key: 'area', label: 'Area' },
+                    { key: 'building', label: 'Building', disabled: !feature },
+                    { key: 'level', label: 'Floors', disabled: !model?.levels.length },
+                    { key: 'findings', label: 'Findings', disabled: !feature, badge: findings.length ? <span className={`ul-badge ${findings.some((f) => f.category === 'blocking') ? 'ul-badge--danger' : 'ul-badge--warning'}`}>{findings.length}</span> : null },
+                    { key: 'underground', label: 'Underground', detail: feature && !utilities.length ? 'No survey' : null, disabled: !feature },
+                  ]}
+                  active={selection.mode === 'area' ? (feature ? 'building' : 'area') : selection.mode}
+                  onView={chooseView}
+                  keySections={legend}
+                  layers={layerSwitches} onLayer={onLayer}
+                  layersNote={[mapView.look === 'enhanced' ? 'Illustrative styling. Geometry and records unchanged.' : null, ...overlayNotes].filter(Boolean).join(' ') || null}
+                  colour={colour} onColour={chooseColour}
+                  colourOptions={[
+                    { value: 'none', label: 'None' },
+                    { value: 'rights', label: 'Rights', disabled: !model?.levels.length },
+                    { value: 'utilities', label: 'Utilities', disabled: !utilities.length || !feature },
+                    { value: 'height', label: 'Height', disabled: !footprints.length },
+                  ]}
+                  floor={selection.mode === 'level' && level ? level.label : null}
+                  spaces={selection.mode === 'level' && model ? model.spaces.filter((s) => s.levelId === selection.levelId && !s.parentId) : []}
+                  rightsColour={(id) => (colour === 'rights' ? `var(${RIGHTS_TOKEN[ledgerSpace(ledger, id)?.rights ?? 'unknown']})` : null)}
+                  selectedSpaceId={selection.spaceId}
+                  onSelectSpace={(s) => s.levelId && dispatch({ type: 'pickSpace', id: s.id, levelId: s.levelId })}
+                  viewFooter={<>
+                    <p className={styles.gestures}>Drag to move. Two-finger swipe or right-drag to rotate. Pinch or scroll to zoom.</p>
+                    {!feature && canDeleteArea ? <Button variant="ghost" icon={Trash} className={styles.deleteArea} onClick={() => setDialog('delete-area')}>Delete area</Button> : null}
+                  </>}
+                />
+              </details>
+              {viewNotes.length ? (
+                <p className={styles.viewNote}>{viewNotes.map((note, i) => <span key={i}>{note}</span>)}</p>
+              ) : null}
+            </div>
             {feature ? (
               <div className={styles.inspectorColumn} key={feature.id}>
                 <button type="button" className={styles.closeInspector} aria-label="Close building details" onClick={() => {
@@ -438,8 +515,11 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
               </div>
             )}
             {hint ? <div className={styles.hint} key={hint}>{hint}</div> : null}
-            {viewNotes.length ? <p className={styles.viewNote}>{viewNotes.map((note, i) => <span key={i}>{note}</span>)}</p> : null}
-            <div className={styles.readout}><ScaleAndNorth engine={engine} tick={tick} title={readoutTitle} prefix={readout} /></div>
+            {nothingToDraw ? null : (
+              <div className={styles.readout}>
+                <ScaleAndNorth engine={engine} tick={tick} title={readoutTitle} prefix={readout} />
+              </div>
+            )}
             {namespaces.length ? <p className={styles.attribution}>{namespaces.map((ns) => ATTRIBUTION[ns]).join(' · ')}</p> : null}
           </div>
           {tray ? <div className={styles.tray}>{tray}</div> : null}
@@ -456,18 +536,9 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
         <DeleteDialog target={{ kind: 'area', id: context.area.id, name: context.area.name, detail: `${context.area.name} and its ${buildings.length} buildings, parcels, roads and utilities are deleted, with every building register in it.` }}
           onClose={() => setDialog(null)} onDeleted={() => navigate('/studio/map', { replace: true })} />
       ) : null}
-      {dialog === 'assign' && space && register ? (
-        <AssignDialog space={space} register={register} onClose={() => setDialog(null)} onAssigned={(code) => { setDialog(null); setToast(code); }} />
-      ) : null}
-      {dialog === 'card' && space && spaceWorkflow.data?.code && feature ? (
-        <CardDialog workflow={spaceWorkflow.data} space={space} level={level} buildingName={feature.name} onClose={() => setDialog(null)} />
-      ) : null}
-      {toast ? (
-        <Toast onDone={() => setToast(null)}>
-          <Badge tone="primary">Assigned</Badge>
-          <span className="ul-id">{toast.slice(0, 7)}…{toast.slice(-3)}</span>
-          <button type="button" className="ul-btn ul-btn--soft" onClick={() => { setToast(null); setDialog('card'); }}>Make Property Card</button>
-        </Toast>
+      {dialog === 'card' && space && feature ? (
+        <UnitCardDialog buildingId={feature.id} workflow={spaceWorkflow.data} space={space} level={level}
+          buildingName={feature.name} onClose={() => setDialog(null)} />
       ) : null}
       {notice ? <Toast onDone={() => setNotice(null)}>{notice}</Toast> : null}
     </EvidenceProvider>

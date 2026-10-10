@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "d1d-derivative-index/1",
+  "method": "Keep first-seen headers and row order; no renaming, column dropping, unit conversion or scalar rounding.",
+  "script": "scripts/agent/flatten-json-table.py",
+  "version": "json-table-csv/1",
+  "derivatives": [
+    {
+      "family": "mi-d22",
+      "originalSha256": "e7d69b4ade9e49d5f6b7c0574864284acf2032b60977f296f018e5957cd476b5",
+      "sourcePath": "E:/BhuAayam-data/datasets/messy-india/d1c/dev/schemes-yes.json",
+      "sourceSha256": "e7d69b4ade9e49d5f6b7c0574864284acf2032b60977f296f018e5957cd476b5",
+      "rowArrayPointer": "/responseObject",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/d1c/dev/schemes-yes-v1.csv",
+      "developmentCopy": "fixtures/usp/D8-messy-india/dev/d1c/mi-d22-schemes-yes-v1.csv",
+      "sha256": "dd376e307d121b8be35644e7b1c366dddb920e6bb25e0faa27316930b76de0f4",
+      "bytes": 64451, "rows": 108, "columns": 90,
+      "scriptSha256": "63821f68526c441aa10a1614f5f92febee05a2536a3b6f13ff470c478eeee263",
+      "scriptCommit": "2a26b558"
+    },
+    {
+      "family": "mi-d22",
+      "originalSha256": "010c71f25d114f63c65955738075a1c9c160fce4105b2b8ee43335e9b3eea33e",
+      "sourcePath": "E:/BhuAayam-data/datasets/messy-india/d1c/dev/schemes-no.json",
+      "sourceSha256": "010c71f25d114f63c65955738075a1c9c160fce4105b2b8ee43335e9b3eea33e",
+      "rowArrayPointer": "/responseObject",
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/d1c/dev/schemes-no-v1.csv",
+      "developmentCopy": "fixtures/usp/D8-messy-india/dev/d1c/mi-d22-schemes-no-v1.csv",
+      "sha256": "bb035c56c345051b9e15d0d5ace46ba2847f6780ecc3d5b67c8f0ee3c783cc85",
+      "bytes": 60921, "rows": 102, "columns": 90,
+      "scriptSha256": "63821f68526c441aa10a1614f5f92febee05a2536a3b6f13ff470c478eeee263",
+      "scriptCommit": "2a26b558"
+    },
+    {
+      "family": "mi-d24",
+      "originalSha256": "e4a19ea244729c3967c0d47ab3e6b93a3d9ec167971ce73b4e52e1b53ba38256",
+      "sourcePath": "E:/BhuAayam-data/datasets/messy-india/d1c/dev/ms-india-demo-prefix-128.jsonl",
+      "sourceSha256": "1127e93138934627c279a314c4d9c61e94a90bbdaf0942cc1552e814acff7c22",
+      "jsonl": true,
+      "externalPath": "E:/BhuAayam-data/datasets/messy-india/d1c/dev/ms-india-demo-prefix-128-v1.csv",
+      "developmentCopy": "fixtures/usp/D8-messy-india/dev/d1c/mi-d24-ms-india-demo-prefix-128-v1.csv",
+      "sha256": "7f4962f6612d7aa915abfbdb59eac03c4a2bfa654b531dde4c476676197c1903",
+      "bytes": 49863, "rows": 128, "columns": 3,
+      "scriptSha256": "62d8248ccd5b45e705d21984bbce5926a62e0a4e80fd69502ff3a81b2d8b50ea",
+      "prefix": {
+        "externalPath": "E:/BhuAayam-data/datasets/messy-india/d1c/dev/ms-india-demo-prefix-128.jsonl",
+        "developmentCopy": "fixtures/usp/D8-messy-india/dev/d1c/mi-d24-ms-india-demo-prefix-128.jsonl",
+        "sha256": "1127e93138934627c279a314c4d9c61e94a90bbdaf0942cc1552e814acff7c22",
+        "bytes": 55576, "rows": 128,
+        "operation": "Gzip decompression, then byte-exact first 128 complete lines; no geographic filtering.",
+        "sourceLocator": "decompressed source records 1..128",
+        "rowBoundary": true
+      }
+    }
+  ],
+  "nullCell": "null", "missingCell": "", "nestedCell": "compact JSON text",
+  "qualification": "CSV derivatives are not publisher-native CSV originals or established runtime intake coverage."
+}

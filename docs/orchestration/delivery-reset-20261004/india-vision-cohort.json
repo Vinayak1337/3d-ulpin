@@ -1,0 +1,328 @@
+{
+  "schemaVersion": "d06-india-vision-cohort/1",
+  "task": "D06-INDIA",
+  "status": "blocked_data",
+  "preparedAtUtc": "2026-10-04T20:44:20.184396+00:00",
+  "baseCommit": "f196cd28a7f54471f2d2bdd5a194061dbcf5075c",
+  "branch": "task/d06-indian-vision-cohort-20261005",
+  "scope": "Bounded Indian development-only vision cohort preparation",
+  "counts": {
+    "familiesChecked": 3,
+    "annotationProbes": 27,
+    "originalImageAnnotationPairs": 0,
+    "eligibleBuildingPairs": 0,
+    "eligibleFloorPairs": 0,
+    "independentIndianGroups": 0,
+    "initialAnnotationProbes": 2,
+    "newSouthAsiaCoordinateProbes": 24,
+    "newGorakhpurTrainLabels": 1,
+    "unqualifiedLabelOnlyLocationCandidates": 1
+  },
+  "tasks": {
+    "building": {
+      "status": "needs_permitted_exact_original_rgb_access_then_pair_review",
+      "items": []
+    },
+    "floor_plan": {
+      "status": "needs_independent_indian_room_annotations",
+      "items": []
+    }
+  },
+  "allocations": {
+    "training": [],
+    "development": [],
+    "finalEvaluation": []
+  },
+  "sourceChecks": [
+    {
+      "id": "openearthmap",
+      "version": "OpenEarthMap v1, Zenodo 7223446, published 2022-10-20",
+      "urls": [
+        "https://zenodo.org/records/7223446",
+        "https://open-earth-map.org/attribution.html",
+        "https://arxiv.org/html/2210.10732v1"
+      ],
+      "labelProvenance": "Paper reports manual annotation and separate QA; regional imagery/label terms apply",
+      "terms": "Gorakhpur/xBD attribution: CC BY-NC-SA 4.0. Preserve Maxar/xBD/OEM lineage, noncommercial/share-alike terms and source-tag conflict; no production/commercial clearance.",
+      "disposition": "coordinate_candidate_unqualified_missing_original_rgb",
+      "reason": "Initial country-table ambiguity retained in parent/source receipt. One publisher-train label has EPSG:4326 bounds in Gorakhpur India vicinity; archive omits matching xBD RGB. Selected mapping and registered publisher acquisition route retained; no complete pair or scoring admission."
+    },
+    {
+      "id": "whu-mix-vector",
+      "version": "Publisher WHU-Mix (Vector) page/table checked; release version unspecified",
+      "urls": [
+        "https://gpcv.whu.edu.cn/data/whu-mix%20%28vector%29/whu_mix%28vector%29.html",
+        "https://gpcv.whu.edu.cn/data/whu-mix%20%28vector%29/1.png"
+      ],
+      "labelProvenance": "Publisher describes vector annotation/correction; source table retained and visually inspected",
+      "terms": "Upstream source terms vary; Indian slice and its terms not established",
+      "disposition": "not_selected_geography_unproved",
+      "reason": "Published table does not identify an Indian region; CrowdAI unknown region and WHU East Asia cannot establish India. No dataset archive acquired."
+    },
+    {
+      "id": "south-asia-buildings",
+      "version": {
+        "repositoryCommit": "b952dbeac69f002870f812400774d3eea3af2392",
+        "repositoryTree": "5653cc855ab902817756de579ebcad2a3e230bf9",
+        "paperDoi": "10.1109/JSTARS.2025.3601039"
+      },
+      "urls": [
+        "https://github.com/CVLABLUMS/HouseBoundaryPrediction",
+        "https://drive.google.com/drive/folders/10vQM0Jr1M6HTO3RMKCtdjL6q-NXJD92G",
+        "https://drive.google.com/drive/folders/13B152eacWEMrRfj5IGEju0eOCAAuR1gi",
+        "https://doi.org/10.1109/JSTARS.2025.3601039",
+        "https://www.researchgate.net/publication/394796647_Structural-Constrained_Corner_Point_Prediction_for_Building_Footprint_Extraction"
+      ],
+      "geographyClaim": "Paper/README name New Delhi and Mumbai among six cities; this is dataset-level provenance, not selected-file geography",
+      "labelProvenance": "Paper section IV.A reports OSM vectors, real-estate maps and manual verification using local field reports, plus imagery cross-validation. This was read through the public full-text web tool, not inferred from affiliation.",
+      "terms": "README claims MIT but LICENSE absent from pinned repository tree and linked LICENSE returned 404. Paper CC BY 4.0 does not license dataset imagery or third-party vectors. Dataset/imagery reuse and redistribution terms remain unspecified; record as launch-clearance gap.",
+      "disposition": "not_admitted_pair_geography_and_annotation_contract_unresolved",
+      "listingScope": "Initial attempt retained one 50-entry public page each for train images, masks and georeferenced images. New strategy observed 750 unique train-mask IDs by ordinary public UI pagination, still a partial inventory. Publisher test contents not opened.",
+      "pairFormatFinding": "Public train layout uses numeric PNG/TIFF and mask_<id>.geojson, unlike repository city/images + city/masks PNG loader; source mask values, buffer fields and roof/base footprint semantics need a pinned transfer policy.",
+      "reason": "Initial attempt acquired two small train GeoJSON probes. Both near Lahore, not India. No file-to-Indian-city index found in checked metadata; no eligible image downloaded, no complete pair or alignment claim. New coordinate strategy sampled 24 additional train IDs from 750 publicly observed entries; all near Lahore. Public source preview is a SpaceNet Khartoum recipe, not a South Asia buffer/review policy."
+    }
+  ],
+  "sourceCheckReceipt": {
+    "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/source-check.json",
+    "bytes": 39496,
+    "sha256": "28e197925348e36611b72535358123ae31faa0a760c596363d86b96c8c44e896"
+  },
+  "recordingHelper": {
+    "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/record_source_check.py",
+    "bytes": 13403,
+    "sha256": "c5ddfc72f9a0a911ad612c405888c02c53564f0f3f0c49973f70004c1e256d75"
+  },
+  "evaluatorContract": {
+    "building": "Existing RF-DETR development evaluator requires image and truth/scoring masks in the exact image pixel frame; raw affine, CRS, source polygons, holes/partials and ignore policy must be pinned before admission",
+    "floor_plan": "Existing CubiCasa evaluator uses 12 room/wall classes; native room SVG/vector annotations need exact source pixel frame and justified class mapping. A building polygon or document caption is not a floor-region target",
+    "alignmentCheck": "not_run_no_eligible_pair",
+    "normalAndDifficultImageInspection": "not_run_no_eligible_image"
+  },
+  "minimumRecoveryInputs": [
+    "Obtain the permitted original xBD nepal-flooding_00000070_pre_disaster.png matching retained OEM publisher-train label gorakhpur_10.tif through the publisher registration/data route or a reviewed existing acquisition, then verify source pixel registration, eight-class-to-building mapping and ambiguity/ignore policy before development admission",
+    "Publisher index mapping at least two small New Delhi or Mumbai development image/annotation pairs to exact filenames and coordinates, with originals and crop/affine/CRS",
+    "Publisher annotation policy/review lineage for those pairs, resolving OSM/real-estate-derived boundaries, buffer fields, roof/base definition, missing/ambiguous buildings and ignore regions; otherwise independent human boundary review",
+    "For floor route separately: Indian original plans and independent reviewed room/wall vectors with source pixel axes and class mapping"
+  ],
+  "launchClearanceGaps": [
+    "Dataset imagery/vector terms and third-party attribution; repository MIT claim has no LICENSE file; paper licence alone is insufficient"
+  ],
+  "preservation": "Existing 19 foreign D06 development pairs/groups and all training/final/closed holdouts untouched; no pair promoted or resplit",
+  "catalogueUpdateRequests": [],
+  "runtime": {
+    "modelsOrGpuUsed": false,
+    "servicesStarted": false,
+    "dependenciesInstalled": false,
+    "ownedProcessesRemaining": 0,
+    "permissionsObserved": {
+      "approval_policy": "never",
+      "sandbox_mode": "danger-full-access"
+    },
+    "settingsRequested": {
+      "model": "gpt-6.1-sol",
+      "reasoning": "high",
+      "speed": "default/standard 1x"
+    },
+    "settingsObserved": "Actual per-turn model/reasoning/tier metadata unexposed"
+  },
+  "verification": {
+    "sourceCheckCommandExit": 0,
+    "jsonAndPinCheckExit": 0,
+    "receipt": {
+      "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/validation.json",
+      "bytes": 604,
+      "sha256": "d491e4315153bc73fd243f7aa26ed02046d237262dfdb2ffdb8f4d7886c29f92"
+    }
+  },
+  "attempts": [
+    {
+      "id": "D06-INDIA",
+      "commit": "ad43f7f9cc972bcad3ebfb78a7d5dee73005c377",
+      "outcome": "zero_qualified_pairs_initial_search"
+    },
+    {
+      "id": "D06-INDIA-INDEX",
+      "outcome": "blocked_matching_original_rgb",
+      "receipt": {
+        "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/index-attempt/attempt.json",
+        "bytes": 20245,
+        "sha256": "1d33c288aab9ec97a9f90978cf81c3b2431148d9c4c4877311e7b08f7e081741"
+      }
+    },
+    {
+      "id": "D06-INDIA-RGB",
+      "outcome": "blocked_exact_original_rgb_access",
+      "receipt": {
+        "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/rgb-attempt/attempt.json",
+        "bytes": 10196,
+        "sha256": "b087a1e741796a6942ded2533595045c66d457fe150cdfd6935d2af8c01b962b"
+      }
+    },
+    {
+      "id": "D06-RGB-PARQUET",
+      "outcome": "exact_target_not_found_in_declared_train_subset",
+      "receipt": {
+        "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/parquet-attempt/attempt.json",
+        "bytes": 24492,
+        "sha256": "cfb7b2924646ea779452bde6ea1e4114ac5419e0c9a748e6808e54476ff9c096"
+      }
+    },
+    {
+      "id": "D06-RGB-LAST-SHARD",
+      "outcome": "exact_target_absent_from_final_known_train_shard",
+      "receipt": {
+        "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/last-shard-attempt/attempt.json",
+        "bytes": 6638,
+        "sha256": "9529bbe7422a981efd89d398afce31a44d0879a3bb884beeae2c806c37094cca"
+      }
+    }
+  ],
+  "labelOnlyCandidates": [
+    {
+      "result": "Coordinate-based India candidate near Gorakhpur; incomplete source pair",
+      "label": {
+        "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/index-attempt/gorakhpur/originals/gorakhpur_10.tif",
+        "bytes": 1049710,
+        "sha256": "a8262140bdbe5cdf215fb0c7b2335a89294cdead98932a295c1dd2cac8aaa3bf",
+        "archiveMember": "OpenEarthMap_wo_xBD/gorakhpur/labels/gorakhpur_10.tif",
+        "crc32": "87a33818"
+      },
+      "frame": {
+        "width": 1024,
+        "height": 1024,
+        "bands": 1,
+        "dtypes": [
+          "uint8"
+        ],
+        "crs": "EPSG:4326",
+        "affine": [
+          4.505152669887054e-06,
+          0.0,
+          83.31428030590375,
+          0.0,
+          -4.505152669887054e-06,
+          26.76743116396544
+        ],
+        "bounds": [
+          83.31428030590375,
+          26.762817887631478,
+          83.31889358223772,
+          26.76743116396544
+        ],
+        "nodata": null,
+        "tags": {
+          "AREA_OR_POINT": "Area"
+        },
+        "wgs84Bounds": [
+          83.31428030590375,
+          26.762817887631478,
+          83.31889358223772,
+          26.76743116396544
+        ]
+      },
+      "publisherCountryTag": "Nepal, preserved as conflicting source metadata",
+      "geographyReasoning": "EPSG:4326 source bounds around longitude 83.316 and latitude 26.765 place the label in the vicinity of Gorakhpur, Uttar Pradesh, India. This is a coordinate-based geography inference, not a surveyed administrative/property association.",
+      "districtContextUrl": "https://gorakhpur.nic.in/about-district/",
+      "originalRgbMapping": {
+        "originalXbdRgb": "nepal-flooding_00000070_pre_disaster.png",
+        "openearthmapTiff": "gorakhpur_10.tif"
+      },
+      "rgbAcquisitionRoute": {
+        "observedAtUtc": "2026-10-04T21:09:03.754926+00:00",
+        "url": "https://xview2.org/dataset",
+        "access": "Ordinary public browser page; no signup/login or download-warning bypass",
+        "finding": "Page exposes Register to Download Data leading to /signup. OpenEarthMap record explicitly omits xBD RGB and directs users to this route.",
+        "datasetTerms": "Public page states CC BY-NC-SA 4.0; no agreement accepted and no account created",
+        "scope": "Agent public-UI observation note, not raw source or access grant"
+      },
+      "targetMeaning": "Publisher eight-class human-annotated land cover; no binary building scoring mask derived or qualified without matched RGB and transfer review",
+      "eligibility": "unqualified_label_only_missing_original_rgb",
+      "noAssociatedImageInPublisherArchive": true
+    }
+  ],
+  "indexAttemptVerification": {
+    "receipt": {
+      "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/index-attempt/validation.json",
+      "bytes": 1082,
+      "sha256": "25920fea4424413d46419742bb90a54bf43654f4af116ceb3fc3c55d8c47b75b"
+    },
+    "exit": 0
+  },
+  "rgbAcquisitionStatus": {
+    "target": "nepal-flooding_00000070_pre_disaster.png",
+    "localCopyFound": false,
+    "distributionLocationsChecked": 3,
+    "imageAcquired": false,
+    "sourceOriginalIdentity": "No PNG acquired; filename/mirror card alone does not establish same bytes or pixels",
+    "accessPrerequisite": "Supply permitted publisher-route acquisition of nepal-flooding_00000070_pre_disaster.png, or a traceable exact single-file training-copy distribution/index. Then establish image-byte/copy lineage, source pixel registration, OEM class mapping and ambiguity/ignore policy before development admission."
+  },
+  "rgbAttemptVerification": {
+    "receipt": {
+      "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/rgb-attempt/validation.json",
+      "bytes": 712,
+      "sha256": "cc432551018befdb3ff59650b1db839cffe4f4f1d9a836962dad318b1b93e632"
+    },
+    "exit": 0
+  },
+  "rgbParquetRecovery": {
+    "target": "nepal-flooding_00000070_pre_disaster.png",
+    "pinnedMirrorRevision": "079adbab22aa09633dfd50ece0dd0137431a9780",
+    "datasetBytesRead": 152829,
+    "trainShardsRead": 16,
+    "filenameRowsRead": 2635,
+    "imageAcquired": false,
+    "exactTargetMatches": 0,
+    "coverage": "Seventeenth train shard and all other splits were not opened. This does not prove dataset-wide absence or justify changing the target, using another event/image, or weakening pair identity.",
+    "prerequisite": "Permitted publisher acquisition of nepal-flooding_00000070_pre_disaster.png, or an authoritative exact training-shard/row/blob index or traceable single-file original copy. No RGB obtained, so registration, class/ambiguity policy and source-copy identity remain unchecked.",
+    "privateReaderDependency": {
+      "name": "pyarrow",
+      "version": "21.0.0",
+      "scope": "private attempt packages only",
+      "wheel": {
+        "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/parquet-attempt/pyarrow-21.0.0-cp312-cp312-win_amd64.whl",
+        "bytes": 26203175,
+        "sha256": "cf56ec8b0a5c8c9d7021d6fd754e688104f9ebebf1bf4449613c9531f5346a18",
+        "url": "https://files.pythonhosted.org/packages/71/30/f3795b6e192c3ab881325ffe172e526499eb3780e306a15103a2764916a2/pyarrow-21.0.0-cp312-cp312-win_amd64.whl"
+      }
+    }
+  },
+  "parquetAttemptVerification": {
+    "receipt": {
+      "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/parquet-attempt/validation.json",
+      "bytes": 1717,
+      "sha256": "b01653f9ef71d470693ce227befbc0734fdcc9d0f687f3f0464b38a1c237ba26"
+    },
+    "exit": 0
+  },
+  "rgbLastShardRecovery": {
+    "target": "nepal-flooding_00000070_pre_disaster.png",
+    "pinnedMirrorRevision": "079adbab22aa09633dfd50ece0dd0137431a9780",
+    "actual": {
+      "newTrainShards": 1,
+      "filenameRows": 164,
+      "httpRangeResponses": 4,
+      "metadataBytes": 9502,
+      "elapsedSeconds": 5.64100000000326,
+      "peakWorkingSetBytes": 55705600,
+      "exactSceneMatches": 0,
+      "imageBytesRead": 0,
+      "labelBytesRead": 0,
+      "eligiblePairs": 0
+    },
+    "knownTrainIndex": {
+      "shards": 17,
+      "filenameRows": 2799
+    },
+    "imageAcquired": false,
+    "coverage": "Known mirror train index completed: prior preserved 16-shard/2635-name result plus this 164-name shard = 17 shards/2799 names. Other splits remain uninspected; this is not dataset-wide absence or evidence that the publisher original is unavailable.",
+    "prerequisite": "Permitted publisher acquisition of nepal-flooding_00000070_pre_disaster.png, or an authoritative exact original/pre-disaster training-copy row/blob index or traceable single-file original copy. Then verify source-copy/encoding lineage, pixel registration and OEM class/ambiguity/ignore policy before admission."
+  },
+  "lastShardAttemptVerification": {
+    "receipt": {
+      "path": "E:/BhuAayam-data/task-data/d06-indian-vision-cohort-20261005/last-shard-attempt/validation.json",
+      "bytes": 1153,
+      "sha256": "793adf50e6a21f402da3e2f1c991826833b38ade575b8543601d9e3a20b343ad"
+    },
+    "exit": 0
+  }
+}

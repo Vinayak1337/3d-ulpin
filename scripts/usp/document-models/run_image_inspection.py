@@ -130,7 +130,21 @@ class _BoundedPng(io.BytesIO):
         return super().write(data)
 
 
-def inspect_image(source: Path, expected_hash: str, expected_format: str, raster: bool, output: Path) -> dict:
+def _write_clean_png(converted, size: tuple[int, int], output: Path) -> dict:
+    from PIL import Image
+    # Fresh pixels exclude inherited EXIF/GPS, ICC, comments and text.
+    clean = Image.frombytes(converted.mode, converted.size, converted.tobytes())
+    if clean.size != size:
+        clean = clean.resize(size, Image.Resampling.LANCZOS)
+    png = _BoundedPng()
+    clean.save(png, format='PNG')
+    data = png.getvalue()
+    (output / 'image.png').write_bytes(data)
+    return {'sha256': hashlib.sha256(data).hexdigest(), 'bytes': len(data)}
+
+
+def inspect_image(source: Path, expected_hash: str, expected_format: str, raster: bool, output: Path,
+                  *, render_region=None) -> dict:
     from PIL import Image, ImageFile, PngImagePlugin
     Image.MAX_IMAGE_PIXELS = MAX_PIXELS
     ImageFile.LOAD_TRUNCATED_IMAGES = False
@@ -184,18 +198,15 @@ def inspect_image(source: Path, expected_hash: str, expected_format: str, raster
                          6: Image.Transpose.ROTATE_270, 7: Image.Transpose.TRANSVERSE,
                          8: Image.Transpose.ROTATE_90}
             oriented = image.transpose(transpose[applied]) if applied in transpose else image
+            if render_region is not None:
+                # Only the selected original-region entry supplies this callback.
+                # Decode, color refusal and orientation stay the same as inspection.
+                return render_region(oriented, info, expected_hash, len(original), output)
             converted = oriented.convert(display_mode)
             # Create fresh pixels so EXIF/GPS, comments, ICC, text and URLs cannot
             # leak into the display PNG through Pillow's inherited info dictionary.
-            clean = Image.frombytes(display_mode, converted.size, converted.tobytes())
             size = (plan['frame']['width'], plan['frame']['height'])
-            if clean.size != size:
-                clean = clean.resize(size, Image.Resampling.LANCZOS)
-            png = _BoundedPng()
-            clean.save(png, format='PNG')
-            data = png.getvalue()
-            (output / 'image.png').write_bytes(data)
-            render = {'sha256': hashlib.sha256(data).hexdigest(), 'bytes': len(data)}
+            render = _write_clean_png(converted, size, output)
     return {'version': 'document-image-local/1', 'sourceSha256': expected_hash,
             'sourceBytes': len(original), 'image': info, 'render': render}
 

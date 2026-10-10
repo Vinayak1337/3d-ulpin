@@ -11,9 +11,17 @@ import { buildingModel, type BuildingModel, type LevelModel } from '../../model/
 import { EvidenceProvider, useOpenEvidence } from '../evidence/EvidenceContext';
 import { parseLocator } from '../evidence/refs';
 import { levelSummary } from '../map/inspector/BuildingInspector';
+import { useCanonicalFootprints } from '../map/canonicalScene';
+import { hasGeometry } from '../map/sceneGeometry';
 import { findingVolume, useBuildingScene } from '../map/useBuildingScene';
+import { NoGeometry } from '../register/NoGeometry';
+import { RegisterAbsent } from '../register/RegisterAbsent';
+import { absentReason, registerNotFound, unreadRegister } from '../register/registerState';
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
+import { refusalOf } from './candidates/commands';
 import { CheckGroups } from './CheckGroups';
+import { RECORDED_TITLE, provisionalTitle } from './recordTitle';
+import { registerCounts } from './registerCounts';
 import { useMapView } from '../map/useMapView';
 import styles from './Workspace.module.css';
 
@@ -27,11 +35,16 @@ export function WorkspacePage() {
   const { buildingId } = useParams();
   const register = useBuildingRegister(buildingId);
   if (register.isPending) return <div className={styles.loading}><Skeleton width="40%" /><Skeleton /><Skeleton /></div>;
+  // A register the server refuses to read out (409) or does not hold (404) is worded as on the register page.
+  const absent = absentReason(register.error);
+  if (buildingId && (absent || registerNotFound(register.error))) {
+    return <RegisterAbsent buildingId={buildingId} reason={absent} />;
+  }
   if (register.error || !register.data) {
     return (
       <div className={styles.loading}>
         <EmptyState icon={WarningCircle} title="This workspace could not be opened" action={<Link to="/studio/work">Back to Batches</Link>}>
-          {register.error?.message ?? 'The building was not found.'}
+          {unreadRegister(register.error)}
         </EmptyState>
       </div>
     );
@@ -52,7 +65,14 @@ function Workspace({ register }: { register: BuildingRegister }) {
     if (next === 'add') { navigate(`/studio/add-files?feature=${register.property.id}`); return; }
     setParams((p) => { const n = new URLSearchParams(p); if (next === 'check') n.set('stage', 'check'); else n.delete('stage'); return n; });
   };
-  const context = stage === 'review' ? `${register.property.name}${level ? ` · ${level.label}` : ''}` : `${register.property.name} · draft r${(ledger?.revision ?? register.property.revision) + 1}`;
+  const selectLevel = (id: string) => setParams((p) => {
+    const next = new URLSearchParams(p);
+    next.set('level', id);
+    return next;
+  });
+  // The revision as the reads state it: a next number is never worked out here.
+  const place = stage === 'review' ? level?.label : `r${ledger?.revision ?? register.property.revision}`;
+  const context = place ? `${register.property.name} · ${place}` : register.property.name;
 
   return (
     <div className={styles.frame}>
@@ -67,7 +87,10 @@ function Workspace({ register }: { register: BuildingRegister }) {
         <Link className="ul-btn ul-btn--ghost" to={`/studio/properties/${register.property.id}/register`}>Open register</Link>
       </div>
       {stage === 'review'
-        ? <ReviewStage register={register} model={model} level={level} actions={actions} onLevel={(id) => setParams((p) => { const n = new URLSearchParams(p); n.set('level', id); return n; })} onContinue={() => go('check')} />
+        ? (
+          <ReviewStage register={register} model={model} level={level} datum={ledger?.siteDatum ?? null}
+            actions={actions} onLevel={selectLevel} onContinue={() => go('check')} />
+        )
         : <CheckStage register={register} model={model} ledger={ledger} actions={actions} />}
     </div>
   );
@@ -75,23 +98,69 @@ function Workspace({ register }: { register: BuildingRegister }) {
 
 // ------------------------------------------------------------------ Review details
 
-function ReviewStage({ register, model, level, actions, onLevel, onContinue }: {
-  register: BuildingRegister; model: BuildingModel; level: LevelModel | null; actions: BuildingAction[]; onLevel: (id: string) => void; onContinue: () => void;
+function ReviewStage({ register, model, level, datum, actions, onLevel, onContinue }: {
+  register: BuildingRegister; model: BuildingModel; level: LevelModel | null; datum: string | null;
+  actions: BuildingAction[]; onLevel: (id: string) => void; onContinue: () => void;
 }) {
-  const review = useLevelReview(register.property.id, level?.id);
-  const levels = <LevelRegister model={model} selected={level?.id ?? null} onSelect={onLevel} datum="m · SD-1" />;
+  const buildingId = register.property.id;
+  const review = useLevelReview(buildingId, level?.id);
+  const levels = <LevelRegister model={model} selected={level?.id ?? null} onSelect={onLevel} datum={datum} />;
+  // The review is read for a selected level only: with none selected nothing is asked, so nothing is awaited.
+  if (level && review.isPending) return <div className={styles.review}><Skeleton width="100%" height={420} /></div>;
+  if (level && review.data?.sheet) {
+    return (
+      <div className={styles.review}>
+        <CandidateSheet review={review.data} actions={actions} buildingId={buildingId} onContinue={onContinue}
+          levels={levels} />
+      </div>
+    );
+  }
   return (
     <div className={styles.review}>
-      {review.isPending ? <Skeleton width="100%" height={420} />
-        : review.data?.sheet ? <CandidateSheet review={review.data} actions={actions} buildingId={register.property.id} onContinue={onContinue} levels={levels} />
-          : (
-            <div className={styles.questionLayout}>
-              <LevelQuestion register={register} level={level} review={review.data ?? null} actions={actions} />
-              <div className={styles.side}>{levels}</div>
-            </div>
-          )}
+      <div className={styles.questionLayout}>
+        <LevelStatement register={register} level={level} levelCount={model.levels.length} review={review}
+          actions={actions} />
+        <div className={styles.side}>{levels}</div>
+      </div>
     </div>
   );
+}
+
+const NO_LEVEL = 'Choose a level in the level register to read what waits for review on it.';
+const NO_LEVELS = 'The register of this building holds no level, so there is no level to review.';
+const NO_REVIEW = 'The server holds no review of this level, so what waits for review on it is not known here.';
+const UNREAD_REVIEW = 'The server did not read the review of this level out';
+
+/** A level review that failed: the fixed words, then the server's code. Never the server's message. */
+function unreadReview(error: unknown): string {
+  const { code } = refusalOf(error);
+  return code ? `${UNREAD_REVIEW} · ${code}` : `${UNREAD_REVIEW}.`;
+}
+
+/**
+ * What the Review stage shows when there is no sheet: no level chosen, a review the server does not hold (the
+ * read answers null for its 404), a review that failed, or the level's question.
+ */
+function LevelStatement({ register, level, levelCount, review, actions }: {
+  register: BuildingRegister; level: LevelModel | null; levelCount: number;
+  review: Pick<ReturnType<typeof useLevelReview>, 'data' | 'error'>; actions: BuildingAction[];
+}) {
+  if (!level) {
+    return (
+      <EmptyState icon={WarningCircle} title="No level is selected">{levelCount ? NO_LEVEL : NO_LEVELS}</EmptyState>
+    );
+  }
+  if (review.error) {
+    return (
+      <EmptyState icon={WarningCircle} title={`The review of ${level.label} could not be read`}>
+        {unreadReview(review.error)}
+      </EmptyState>
+    );
+  }
+  if (!review.data) {
+    return <EmptyState icon={WarningCircle} title={`No review of ${level.label} is held`}>{NO_REVIEW}</EmptyState>;
+  }
+  return <LevelQuestion register={register} level={level} review={review.data} actions={actions} />;
 }
 
 const CONFIDENCE: Record<LevelReview['candidates'][number]['confidence'], { label: string; tone: string }> = {
@@ -212,11 +281,12 @@ function DecisionBadge({ value }: { value: string }) {
   return <span className="ul-badge ul-badge--info">Adjusted</span>;
 }
 
-function LevelQuestion({ register, level, review, actions }: { register: BuildingRegister; level: LevelModel | null; review: LevelReview | null; actions: BuildingAction[] }) {
+function LevelQuestion({ register, level, review, actions }: {
+  register: BuildingRegister; level: LevelModel; review: LevelReview | null; actions: BuildingAction[];
+}) {
   const record = useRecordAction();
   const clear = useClearAction();
-  const done = level ? actions.find((a) => a.kind === 'record' && a.subjectId === level.id) : undefined;
-  if (!level) return <EmptyState icon={WarningCircle} title="No level selected">Choose a level in the level register.</EmptyState>;
+  const done = actions.find((a) => a.kind === 'record' && a.subjectId === level.id);
   return (
     <div className={styles.question}>
       <Panel title={`${level.label} · ${level.lower?.toFixed(1) ?? '?'} to ${level.upper?.toFixed(1) ?? '?'} m`} aside={done ? <StatusBadge status="Reviewed" /> : level.estimated ? <StatusBadge status="Estimated" /> : <StatusBadge status="Reviewed" />}
@@ -225,7 +295,10 @@ function LevelQuestion({ register, level, review, actions }: { register: Buildin
         ) : review?.question ? (
           <>
             <Link className="ul-btn ul-btn--primary" to={`/studio/add-files?feature=${register.property.id}`}><Icon icon={FilePlus} />Add level evidence</Link>
-            <Button onClick={() => record.mutate({ buildingId: register.property.id, kind: 'record', subjectId: level.id, value: 'provisional', title: `${level.label} kept provisional: estimate stays flagged` })}>Keep as provisional</Button>
+            <Button onClick={() => record.mutate({
+              buildingId: register.property.id, kind: 'record', subjectId: level.id, value: 'provisional',
+              title: provisionalTitle(level.label),
+            })}>Keep as provisional</Button>
           </>
         ) : null}>
         <p className={styles.questionText}>{review?.question ?? (level.estimated ? 'The limits of this level are estimated.' : 'Nothing on this level is waiting for review.')}</p>
@@ -241,10 +314,13 @@ function levelState(level: LevelModel): StatusWord {
   return Object.keys(bindings).length ? 'Reviewed' : 'Needs evidence';
 }
 
-function LevelRegister({ model, selected, onSelect, datum }: { model: BuildingModel; selected: string | null; onSelect: (id: string) => void; datum: string }) {
+/** The level table. Heights are metres; the datum is named only when the ledger states the site's. */
+function LevelRegister({ model, selected, onSelect, datum }: {
+  model: BuildingModel; selected: string | null; onSelect: (id: string) => void; datum: string | null;
+}) {
   return (
     <aside>
-      <Panel title="Level register" aside={<span className="ul-caption">{datum}</span>} flush={(
+      <Panel title="Level register" aside={<span className="ul-caption">{datum ? `m · ${datum}` : 'm'}</span>} flush={(
         <DataTable caption="Levels" rows={model.levels} rowKey={(l) => l.id} selectedKey={selected} onRowClick={(l) => onSelect(l.id)} columns={[
           { header: 'Level', cell: (l) => l.label + (l.record.use?.includes('stilt') ? ' · stilt' : '') },
           { header: 'Lower', numeric: true, cell: (l) => (l.lower === null ? <em className="ul-unknown">Unknown</em> : `${l.lower.toFixed(1)}${l.estimated ? ' est.' : ''}`) },
@@ -263,7 +339,12 @@ function CheckStage({ register, model, ledger, actions }: { register: BuildingRe
   const context = useAreaContext(register.area.id).data;
   const features = context?.displayFeatures ?? context?.features ?? NONE;
   const feature = features.find((f) => f.id === register.property.id) ?? null;
-  const { base, footprints, detail, groundM } = useBuildingScene(features, feature, model, ledger, 'none');
+  const canonicalScene = useCanonicalFootprints(register.area.id, register.property.id, features);
+  const drawn = canonicalScene.footprints;
+  const { base, footprints, detail, groundM } = useBuildingScene(features, feature, model, ledger, 'none', drawn);
+  // Stated only once the scene's reads have answered and hold nothing to draw for this building.
+  const sceneRead = Boolean(context) && !canonicalScene.pending && !canonicalScene.error;
+  const noGeometry = sceneRead && !hasGeometry(register.property.id, { footprints, detail });
   const findings = register.findings;
   const [findingId, setFindingId] = useState<string | null>(findings.find((f) => f.category === 'blocking')?.id ?? findings[0]?.id ?? null);
   const finding = findings.find((f) => f.id === findingId) ?? null;
@@ -274,14 +355,15 @@ function CheckStage({ register, model, ledger, actions }: { register: BuildingRe
     finding: finding ? findingVolume(finding, groundM) : null,
   }), [finding, groundM, register.property.id]);
   const blocking = ledger?.checks.filter((c) => c.state === 'blocking').length ?? findings.filter((f) => f.category === 'blocking').length;
-  const units = model.spaces.filter((s) => s.use === 'apartment').length;
-  const shared = new Set(model.spaces.filter((s) => s.use !== 'apartment').map((s) => s.name)).size;
+  const counts = useMemo(() => registerCounts(model), [model]);
 
   return (
     <div className={styles.check}>
       <div className={styles.canvasWrap}>
+        {noGeometry ? <NoGeometry buildingId={register.property.id} /> : <>
         {context ? <SceneView look={mapLook} layers={mapLayers} className={styles.canvas} base={base} buildings={footprints} detail={detail} state={state} label={`3D view of ${register.property.name} with the open finding`} /> : null}
         {finding ? <span className={`ul-float ${styles.findingPill}`}>{finding.message}</span> : null}
+        </>}
       </div>
       <div className={styles.side}>
         <Panel title="Checks" aside={<span className="ul-caption">{ledger?.checkMethod ?? findings[0]?.method ?? ''}</span>}>
@@ -290,13 +372,16 @@ function CheckStage({ register, model, ledger, actions }: { register: BuildingRe
               onOpen={(c) => setFindingId(c.findingId)} />
           ) : <p className="ul-help">Not assessed: no checks have run on this building's records.</p>}
         </Panel>
-        <Panel title={`Changes since r${ledger?.revision ?? register.property.revision}`}
+        <Panel title={`In the register at r${ledger?.revision ?? register.property.revision}`}
           footer={(
             <div className={styles.recordFoot}>
               {recorded ? <><StatusBadge status="Recorded" /><span className="ul-help">{formatDateTime(recorded.at)} · {recorded.by}</span></> : (
                 <>
                   <Button variant="primary" disabled={blocking > 0 || record.isPending}
-                    onClick={() => record.mutate({ buildingId: register.property.id, kind: 'record', subjectId: register.property.id, value: 'recorded', title: `r${(ledger?.revision ?? register.property.revision) + 1} Recorded` })}>
+                    onClick={() => record.mutate({
+                      buildingId: register.property.id, kind: 'record', subjectId: register.property.id,
+                      value: 'recorded', title: RECORDED_TITLE,
+                    })}>
                     Record reviewed details
                   </Button>
                   {blocking > 0 ? <span className="ul-help">Blocked: {blocking} blocking finding{blocking > 1 ? 's' : ''} open</span> : null}
@@ -305,8 +390,8 @@ function CheckStage({ register, model, ledger, actions }: { register: BuildingRe
             </div>
           )}>
           <div className={styles.counts}>
-            {[[units, 'units'], [model.levels.length, 'levels'], [shared, 'shared spaces']].map(([n, l]) => (
-              <span key={l}><b className="ul-num">{n}</b><span className="ul-muted">{l}</span></span>
+            {counts.map(({ count, of }) => (
+              <span key={of}><b className="ul-num">{count}</b><span className="ul-muted">{of}</span></span>
             ))}
           </div>
           <p className="ul-help">{levelSummary(model)}</p>

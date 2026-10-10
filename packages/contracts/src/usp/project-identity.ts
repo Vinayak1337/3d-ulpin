@@ -48,11 +48,20 @@ export const ProjectParcelAssociationSchema = z.strictObject({
   reviewState: z.enum(['supplied_unreviewed', 'reviewed', 'disputed', 'withdrawn']),
 });
 export const ProjectLocatorPartsSchema = z.strictObject({
-  structureKind: z.enum(['S', 'U', 'A']),
-  structureNumber: z.number().int().min(1).max(99),
+  // '?' preserves unassessed source-only structure classification; it is never an identity token.
+  structureKind: z.enum(['S', 'U', 'A', '?']),
+  structureNumber: z.number().int().min(1).max(99).optional().describe('Required unless structureKind is ?.'),
   levels: z.array(z.union([z.enum(['B2', 'B1', 'LG', 'UG', 'G', 'ST', 'M1', 'P1', 'T', 'R', 'L?']), z.string().regex(/^F(?:0[1-9]|[1-9][0-9])$/)])).min(1).max(2),
-  spaceKind: z.enum(['R', 'C', 'P', 'X', 'U', 'V']),
-  spaceNumber: z.number().int().min(1).max(999),
+  // U means utility and V means volume/corridor, not unknown use.
+  spaceKind: z.enum(['R', 'C', 'P', 'X', 'U', 'V', '?']),
+  spaceNumber: z.number().int().min(1).max(999).optional().describe('Required unless spaceKind is ?.'),
+}).superRefine((locator, ctx) => {
+  if (locator.structureKind !== '?' && locator.structureNumber === undefined) {
+    ctx.addIssue({ code: 'custom', path: ['structureNumber'], message: 'A known structure kind needs its number' });
+  }
+  if (locator.spaceKind !== '?' && locator.spaceNumber === undefined) {
+    ctx.addIssue({ code: 'custom', path: ['spaceNumber'], message: 'A known space kind needs its number' });
+  }
 });
 export const ProjectLocationSchema = z.strictObject({
   anchorState: ProjectAnchorStateSchema,
@@ -81,7 +90,10 @@ export function verticalLocator(location: ProjectLocation): string {
     : ['reviewed_complete', 'reviewed_partial'].includes(location.anchorState) && reviewed.length > 1 && primary.length === 0
       ? `MULTI(${reviewed.length})` : 'NO-ANCHOR';
   const part = location.locator;
-  return `${anchor} / ${part.structureKind}${String(part.structureNumber).padStart(2, '0')} / ${part.levels.join('-')} / ${part.spaceKind}${String(part.spaceNumber).padStart(3, '0')}`;
+  const structure = part.structureKind
+    + (part.structureNumber === undefined ? '' : String(part.structureNumber).padStart(2, '0'));
+  const space = part.spaceKind + (part.spaceNumber === undefined ? '' : String(part.spaceNumber).padStart(3, '0'));
+  return `${anchor} / ${structure} / ${part.levels.join('-')} / ${space}`;
 }
 
 const common = {
@@ -100,10 +112,46 @@ export const ProjectIdentityReviewSchema = z.strictObject({
   reason: z.string().trim().min(1).max(2000),
   evidence: z.array(z.strictObject({ sourceId: z.uuid(), revision: z.number().int().positive(),
     locator: z.string().min(1).max(500) })).min(1).max(30),
-  location: ProjectLocationSchema.optional(),
+  location: ProjectLocationSchema.optional()
+    .describe('Omit for source-stated reviews; required for other assign reviews.'),
   locations: z.record(z.uuid(), ProjectLocationSchema).optional(),
   transferredGeometry: z.unknown().optional(),
 });
+/** Names one registry record and bounds the page of its identity reviews. */
+export const UspListIdentityReviewsSchema = z.strictObject({
+  recordId: z.uuid(), limit: z.number().int().min(1).max(20).default(5),
+}).readonly();
+const reviewOperation = ProjectIdentityReviewSchema.shape.operation;
+const storedTime = z.iso.datetime({ offset: true });
+/** One stored identity review as a reader is shown it: no evidence list, no location and no reviewer. */
+const UspIdentityReviewItemSchema = z.strictObject({
+  reviewId: z.uuid().describe('The reviewId the assignment or mutation names.'),
+  operation: reviewOperation.describe('The one operation this review allows.'),
+  reason: z.string().min(1).max(2000).describe('The reason as the review stores it.'),
+  createdAt: storedTime.describe('When the review was stored. The list is ordered by this value, newest first.'),
+  scope: UspSnapshotScopeSchema.describe('The scope the review is bound to, as its stored command states it: '
+    + 'the scope to pass unchanged to the assignment.'),
+  expectedManifestId: z.uuid().describe('The expectedManifestId the assignment must name: the manifest of scope.'),
+  expectedRecordVersion: z.number().int().positive().describe('The revision of this record the review was made '
+    + 'at, read from the expectedVersions of its stored command: the expectedRecordVersion the assignment must name.'),
+  used: z.strictObject({
+    at: storedTime.describe('When the review was consumed.'),
+    operation: reviewOperation.describe('The operation the audit row of the consuming command records.'),
+  }).readonly().nullable().describe('used: the assignment or mutation that consumed this review; a used review '
+    + 'cannot be used again. null while no command has consumed it.'),
+  commandSha256: z.string().regex(/^[a-f0-9]{64}$/).describe('The hash the review answered when it was stored.'),
+}).readonly();
+/** The identity reviews of a record's site that name the record and whose manifest the caller may read, newest
+ * first by the time they were stored and then by id. `unreadable` counts rows of the page whose stored columns
+ * and command do not agree with each other; none is listed. */
+export const UspIdentityReviewListSchema = z.strictObject({
+  recordId: z.uuid(), siteId: z.uuid(),
+  items: z.array(UspIdentityReviewItemSchema).max(20).readonly(),
+  truncated: z.boolean().describe('More reviews that the caller may read name this record than this page holds.'),
+  unreadable: z.number().int().nonnegative().max(20),
+}).readonly();
+export type IdentityReviewList = z.infer<typeof UspIdentityReviewListSchema>;
+
 export const AssignProjectCodeSchema = z.strictObject({ ...common,
   recordId: z.uuid(), expectedRecordVersion: z.number().int().positive(),
 });

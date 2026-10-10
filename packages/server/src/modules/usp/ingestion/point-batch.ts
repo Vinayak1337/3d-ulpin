@@ -6,14 +6,15 @@ import {z} from 'zod';
 import {POINT_BATCH_VERSION,POINT_BATCH_LIMITS,PointRetainSchema,PointBatchRequestSchema,
   PointOriginalSchema,PointBatchInputSchema,PointBatchResultSchema,PointBatchStatusSchema,PointRetainReceiptSchema,
   type PointBatchInput,type PointBatchResult} from '@ulpin/contracts/usp';
-import {transaction} from '../../../infrastructure/db';
+import {transaction,type DbDeadline} from '../../../infrastructure/db';
 import {settings} from '../../../infrastructure/config';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
-import {putOriginal,readObject,sha256} from '../../../infrastructure/storage';
+import {putOriginal,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {originalAttempt} from '../../cases/original-attempt';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
+import {readPointObject,pointReadDeadline,pointReadLive} from './point-batch-object';
 
 const uuid=z.uuid();
 export const pointReaderSha=()=>sha256(readFileSync(join(settings.repositoryRoot,'services/geo/geo/point_batch.py')));
@@ -61,24 +62,54 @@ async function enqueueTx(client:PoolClient,ctx:Awaited<ReturnType<typeof pointSo
     sourceRevision:ctx.source.revision,jobId,status:'queued'},ctx.binding.subject);
   return jobId;
 }
-export async function readPointResult(input:PointBatchInput,hash:string):Promise<PointBatchResult>{
-  const bytes=Buffer.from(await readObject(pointResultKey(input.jobId,hash)));
+export async function readPointResult(input:PointBatchInput,hash:string,bounds:DbDeadline=pointReadDeadline(),read:typeof readPointObject=readPointObject):Promise<PointBatchResult>{
+  const bytes=await read(pointResultKey(input.jobId,hash),hash,null,bounds);
   if(bytes.length>POINT_BATCH_LIMITS.resultBytes||sha256(bytes)!==hash)
     throw new AppError(422,'POINT_RESULT_INTEGRITY','The private batch receipt failed its hash or size check.');
   const result=PointBatchResultSchema.parse(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)));
   if(fingerprint(result.input)!==fingerprint(input)||result.artifact.key!==pointArtifactKey(input.jobId,result.artifact.sha256))
     throw new AppError(422,'POINT_RESULT_SCOPE','The batch receipt belongs to another original or job.');
+  const batch=input.batch??{start:0,count:Math.min(POINT_BATCH_LIMITS.batchPoints,result.metadata.sourcePointCount)};
+  if(fingerprint(result.metadata.batch)!==fingerprint(batch))
+    throw new AppError(422,'POINT_RESULT_SCOPE','The receipt describes another point batch.');
+  pointReadLive(bounds);
   return result;
 }
-async function statusTx(client:PoolClient,caseId:string,sourceId:string,jobId:string){
-  const ctx=await pointSourceTx(client,caseId,sourceId);
-  const job=(await client.query(`SELECT j.*,m.result_ref FROM jobs j JOIN usp_job_metadata m ON m.job_id=j.id
-    WHERE j.id=$1 AND j.case_id=$2 AND j.source_id=$3 AND j.operation='point-batch'`,[jobId,caseId,sourceId])).rows[0]??notFound('Point batch job not found.');
-  const input=PointBatchInputSchema.parse(job.payload);
-  let stale=false;try{await assertPointInputTx(client,input);}catch(error){if(error instanceof AppError&&error.status===409)stale=true;else throw error;}
-  return {ctx,job,input,stale};
+/** Require exact input enrollment and accepted attempt rather than status alone. */
+export function assertPointJobRow(job:Record<string,any>,input:PointBatchInput,accepted=false){
+  const digest=fingerprint(input);
+  if(job.id!==input.jobId||job.operation!=='point-batch'||job.case_id!==input.caseId||job.source_id!==input.sourceId||
+    job.case_revision!==input.caseRevision||job.input_fingerprint!==digest||job.input_sha256!==digest||
+    job.input_manifest_id!==input.sourceId||job.scope?.kind!=='intake'||job.scope.workspaceId!==input.caseId||
+    job.scope.version!==input.caseRevision+1||fingerprint(job.payload)!==digest)
+    throw new AppError(422,'POINT_JOB_INTEGRITY','The point job differs from its source-bound input enrollment.');
+  const fence=Number(job.accepted_fence),ref=job.result_ref;
+  if(accepted&&(job.status!=='succeeded'||job.logical_state!=='succeeded'||!ref||ref.assetId!==`point:${input.jobId}`||
+    ref.version!==1||typeof ref.sha256!=='string'||!/^[a-f0-9]{64}$/.test(ref.sha256)||!Number.isSafeInteger(fence)||fence<1||
+    job.attempt_state!=='accepted'||Number(job.attempt_fence)!==fence||job.attempt_input_sha256!==digest||job.completion_sha256!==ref.sha256))
+    throw new AppError(409,'POINT_NOT_ACCEPTED','This point batch has no exact accepted attempt.');
 }
+async function statusTx(client:PoolClient,caseId:string,sourceId:string,jobId:string){
+  const ctx=await pointSourceTx(client,caseId,sourceId,true);
+  const job=(await client.query(`SELECT j.*,m.result_ref,m.input_manifest_id,m.input_sha256,m.scope,m.logical_state,m.accepted_fence,
+    a.state attempt_state,a.fence attempt_fence,a.input_sha256 attempt_input_sha256,a.completion_sha256
+    FROM jobs j JOIN usp_job_metadata m ON m.job_id=j.id
+    LEFT JOIN usp_job_attempts a ON a.job_id=j.id AND a.fence=m.accepted_fence
+    WHERE j.id=$1 AND j.case_id=$2 AND j.source_id=$3 AND j.operation='point-batch' FOR SHARE OF j,m`,[jobId,caseId,sourceId])).rows[0]??notFound('Point batch job not found.');
+  const input=PointBatchInputSchema.parse(job.payload);
+  assertPointJobRow(job,input,job.status==='succeeded');
+  const stale=!ctx.latest||fingerprint(pointInput(ctx,input.jobId,input.batch))!==fingerprint(input),
+    capture=fingerprint({input,status:job.status,error:job.error??null,inputManifestId:job.input_manifest_id,inputSha256:job.input_sha256,
+      scope:job.scope,logicalState:job.logical_state,acceptedFence:job.accepted_fence,resultRef:job.result_ref,
+      attemptState:job.attempt_state,attemptFence:job.attempt_fence,attemptInputSha256:job.attempt_input_sha256,
+      completionSha256:job.completion_sha256,currentCaseRevision:ctx.current.revision,sourceRevision:ctx.source.revision,
+      sourceSha256:ctx.source.sha256,stale});
+  return {ctx,job,input,stale,capture};
+}
+export {statusTx as pointBatchCaptureTx};
+type ReadDependencies={transaction:typeof transaction;object:typeof readPointObject};
 export class PointBatchService{
+  constructor(private readonly reads:ReadDependencies={transaction,object:readPointObject}){}
   async retain(caseValue:string,raw:unknown,file:{name:string;bytes:Uint8Array}){
     const caseId=uuid.parse(caseValue),request=PointRetainSchema.parse(raw),hash=sha256(file.bytes);
     if(!z.string().min(1).max(150).regex(/^[^\\/\u0000-\u001f]+$/).safeParse(file.name).success)
@@ -132,10 +163,12 @@ export class PointBatchService{
   }
   async status(caseValue:string,sourceValue:string,jobValue:string){
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),jobId=uuid.parse(jobValue);
-    const row=await transaction(client=>statusTx(client,caseId,sourceId,jobId));
+    const bounds=pointReadDeadline(),row=await this.reads.transaction(client=>statusTx(client,caseId,sourceId,jobId),bounds);
     const result=!row.stale&&row.job.status==='succeeded'&&row.job.result_ref
-      ?await readPointResult(row.input,row.job.result_ref.sha256):null;
-    await transaction(client=>result?assertPointInputTx(client,row.input).then(()=>{}):pointSourceTx(client,caseId,sourceId).then(()=>{}));
+      ?await readPointResult(row.input,row.job.result_ref.sha256,bounds,this.reads.object):null;
+    await this.reads.transaction(async client=>{const current=await statusTx(client,caseId,sourceId,jobId);
+      if(current.capture!==row.capture)throw new AppError(409,'POINT_READ_CHANGED','The accepted point status changed during its read.');},bounds);
+    pointReadLive(bounds);
     return PointBatchStatusSchema.parse({version:POINT_BATCH_VERSION,caseId,sourceId,jobId,
       currentCaseRevision:row.ctx.current.revision,sourceRevision:row.ctx.source.revision,sourceSha256:row.ctx.source.sha256,
       status:row.stale?'stale':row.job.status==='succeeded'?'completed':row.job.status,
@@ -144,15 +177,16 @@ export class PointBatchService{
   }
   async artifact(caseValue:string,sourceValue:string,jobValue:string){
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),jobId=uuid.parse(jobValue);
-    const row=await transaction(client=>statusTx(client,caseId,sourceId,jobId));
+    const bounds=pointReadDeadline(),row=await this.reads.transaction(client=>statusTx(client,caseId,sourceId,jobId),bounds);
     if(row.stale||row.job.status!=='succeeded'||!row.job.result_ref)
       throw new AppError(409,'POINT_NOT_ACCEPTED','This batch has no current accepted artifact.');
-    const result=await readPointResult(row.input,row.job.result_ref.sha256);
-    const bytes=Buffer.from(await readObject(result.artifact.key));
+    const result=await readPointResult(row.input,row.job.result_ref.sha256,bounds,this.reads.object);
+    const bytes=await this.reads.object(result.artifact.key,result.artifact.sha256,result.artifact.bytes,bounds);
     if(bytes.length!==result.artifact.bytes||sha256(bytes)!==result.artifact.sha256)
       throw new AppError(422,'POINT_ARTIFACT_INTEGRITY','The private native point records differ from their accepted receipt.');
-    await transaction(async client=>{await assertPointInputTx(client,row.input);const current=(await client.query('SELECT status FROM jobs WHERE id=$1',[jobId])).rows[0];
-      if(current?.status!=='succeeded')conflict('The accepted point batch changed during artifact read.');});
+    await this.reads.transaction(async client=>{const current=await statusTx(client,caseId,sourceId,jobId);
+      if(current.stale||current.capture!==row.capture)throw new AppError(409,'POINT_READ_CHANGED','The accepted point batch changed during artifact read.');},bounds);
+    pointReadLive(bounds);
     return {bytes,sha256:result.artifact.sha256};
   }
 }

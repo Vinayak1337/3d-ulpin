@@ -1,0 +1,365 @@
+{
+  "schemaVersion": 1,
+  "task": "D07-RFDETR-ACTUAL-RUNTIME",
+  "status": "actual_native_cpu_processor_and_tiny_gpu_controls_passed_model_unrun",
+  "branch": "task/d07-rfdetr-runtime-profile-20261005",
+  "baseCommit": "f2ac9074f27cc3c32fa789228b680f44a764ba69",
+  "metadataPreparationCommit": "0cf00f152a3b9285459573cfc286463cbd506a1a",
+  "acceptedStagingHead": "5362534e6645eb7d278ec09b084c0a7c354fba0d",
+  "privateRoot": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005",
+  "code": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\learning\\rfdetr_runtime_profile.py",
+    "bytes": 34939,
+    "sha256": "6b29741c45166ef8991dbd40bee21bce7452437f2936586a244946eedf258c08"
+  },
+  "executedCode": {
+    "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\actual-executed-code.py",
+    "bytes": 34817,
+    "sha256": "7e0fe94361db657a4e4de1a4db98fe054849f3465b0aa52c1a734e1819659818"
+  },
+  "postRunMetadataCorrection": "Only serialized GPU policy deviceRequests now agrees with validated actual UUID scope; executable behavior unchanged. Original execution code/profile retained.",
+  "sourceOwners": {
+    "mountedPlanCommit": "20d2905ed6f9faa269b59e394315ac702ab99155",
+    "environmentCommit": "c92b28776635f98405c860953e6f581e6488f188",
+    "rootAmendment": "Exact18RO/67 files plus config accepted; plan/refusal review only; separate actual-runtime dispatch required"
+  },
+  "inputs": {
+    "interfacePin": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-mounted-plan-20261005\\launch-interface-runtime-v1.json",
+      "bytes": 51011,
+      "sha256": "eaeb7e13580fb3a43f7079e11626e815e8dde60b537bcd6b6cd6225aa0f3194c"
+    },
+    "mountedConfigPin": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-mounted-plan-20261005\\mounted-config-runtime-v1.json",
+      "bytes": 52751,
+      "sha256": "14d3936c88b983a5838f027bc411c9a656804de6b301f8e5be6d1aa6a87cf367"
+    },
+    "mountedPlanPin": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-mounted-plan-20261005\\mounted-plan-runtime-v1.json",
+      "bytes": 26107,
+      "sha256": "14343270b4511007b6d0bdbcfb6b4f473f4f60b20d5ee49f95b971af7fcdb9ac"
+    },
+    "runtimeBindingPin": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-gpu-base-20261005\\runtime-binding.json",
+      "bytes": 6417,
+      "sha256": "6f801e596890067be2bf61b673958645c378480db6203dba277243f4427ef615"
+    }
+  },
+  "runtime": {
+    "dockerContext": "desktop-linux",
+    "imageDigest": "sha256:47ee371d032ff6f5b18a92f0e531956eac7bad654d74b83d6065018688ba9316",
+    "imageConfigDigest": "sha256:35a594b1962dcced21366ade1ef5ab02949dfe0dc059c16145d6ffd2d699b57b",
+    "pythonVersion": "3.11.13",
+    "pythonEntrypoint": "/opt/conda/bin/python",
+    "packageVersionCount": 134,
+    "completeLockSha256": "0a049c8f7e893df7a8a6a579a81dcca2f2554c700883dbe1a4be661a5d2fa7d8",
+    "bindingQualification": "Installation/metadata only; no actual runtime qualification",
+    "qualification": "Actual imports/local processor and tiny CUDA operation passed; original model loading/parity/inference/fit remain unrun",
+    "actualImportedVersions": {
+      "torch": "2.8.0+cu128",
+      "torchvision": "0.23.0+cu128",
+      "transformers": "5.17.0",
+      "pycocotools": "2.0.11"
+    },
+    "compiledCuda": "12.8",
+    "gpuUuid": "GPU-3989f368-bd26-bd52-9daf-037a9862f82f",
+    "gpuModel": "NVIDIA GeForce RTX 3070",
+    "gpuCapability": [
+      8,
+      6
+    ]
+  },
+  "interfaces": {
+    "historicalMetadataOnlyProfile": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\control-profile-final.json",
+      "bytes": 23045,
+      "sha256": "1157a3b34a66585a273a08a33f2e09ecc2557cf539fbc27dec3d8a7b06bf7369"
+    },
+    "executedCpuProfile": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\cpu-actual-profile.json",
+      "bytes": 26936,
+      "sha256": "d447bdde1690e25f52abebe25e94722744352f4561025d4cb1f99a7efcd271d4"
+    },
+    "executedGpuProfile": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\gpu-actual-profile.json",
+      "bytes": 24990,
+      "sha256": "b50332c10e7d955f2f6fcc4cfa1cd0f11567d2c496df5d9b7437a6aa52bd8fbb"
+    },
+    "effectiveGpuProfileMetadataAmendment": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\gpu-effective-profile.json",
+      "bytes": 25535,
+      "sha256": "d817dd99bea6e00ded7e010ae53aef73656ed7bc85a5f4ce8f5cfb353bdb92d8"
+    },
+    "cpuWorkerCodeSha256": "77baea659098c89e2727d360a14caddef35096868a09522091325790388893b0",
+    "gpuWorkerCodeSha256": "3da45d904b6e46eb28293eea1bc7125687fc1b2c96c80c0de133ea4627521741",
+    "original18RO67FilesPlusConfig": true,
+    "writableDestination": "/outputs/rfdetr",
+    "authorization": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\actual-authorization.json",
+      "bytes": 982,
+      "sha256": "f5b7f021b993025911b0f581114c3334f144dd49c76a7deadba60c402a773816"
+    }
+  },
+  "actualNativeControls": {
+    "boundaries": 2,
+    "directTcpUdpAttempts": 4,
+    "everyResult": "-1 / errno101 ENETUNREACH",
+    "inputPinsCheckedPerBoundary": 68,
+    "readOnlyInputAndRootWriteErrno": 30,
+    "unmountedHostAndDockerSocketErrno": 2,
+    "rootCredentialReachErrno": 13,
+    "uid": 10001,
+    "capabilities": 0,
+    "noNewPrivileges": true,
+    "rootReadOnly": true,
+    "onlyTaskOutputWritable": true,
+    "ownedChildReapedPerBoundary": true,
+    "cpuGpuRequest": "none / NVIDIA_VISIBLE_DEVICES=void",
+    "gpuRequest": "one exact UUID / CUDA_VISIBLE_DEVICES=0",
+    "nativeResultsBeforeLibraryImports": true
+  },
+  "cpuProcessor": {
+    "status": "cpu_processor_controls_passed",
+    "processor": "RfDetrImageProcessor",
+    "localFilesOnly": true,
+    "reusedLoaderAstSha256": "87a59cb4d252eaae7b62521f67248061d6946c23cf886f6214dc491ef272bd62",
+    "cases": [
+      {
+        "kind": "positive",
+        "imageId": 1,
+        "fileName": "0003d02a-6bf0-4790-ac29-eed4337fe430.png",
+        "sourceInstances": 10,
+        "sourceCategory": 1,
+        "modelCategory": 0,
+        "pixelShape": [
+          3,
+          432,
+          432
+        ],
+        "boxShape": [
+          10,
+          4
+        ],
+        "classShape": [
+          10
+        ],
+        "maskShape": [
+          10,
+          432,
+          432
+        ],
+        "maskForegroundPixels": 41504,
+        "emptyTargetsPreserved": false,
+        "inputTargetTensorsOnly": true
+      },
+      {
+        "kind": "publisher_empty",
+        "imageId": 13,
+        "fileName": "860ea202-9316-47fc-91f1-98b462951819.png",
+        "sourceInstances": 0,
+        "sourceCategory": null,
+        "modelCategory": null,
+        "pixelShape": [
+          3,
+          432,
+          432
+        ],
+        "boxShape": [
+          0,
+          4
+        ],
+        "classShape": [
+          0
+        ],
+        "maskShape": [
+          0,
+          432,
+          432
+        ],
+        "maskForegroundPixels": 0,
+        "emptyTargetsPreserved": true,
+        "inputTargetTensorsOnly": true
+      }
+    ],
+    "elapsedSeconds": 4.239281438000001,
+    "cgroupMemoryPeakBytes": 1052024832,
+    "pidsPeak": 6,
+    "modelParametersCreated": 0,
+    "qualification": "Input/target preprocessing mechanics only; publisher research roof category1 maps to existing model0. No inference or independent accuracy."
+  },
+  "gpuSmoke": {
+    "status": "tiny_gpu_control_passed",
+    "torch": "2.8.0+cu128",
+    "compiledCuda": "12.8",
+    "visibleDeviceCount": 1,
+    "gpuName": "NVIDIA GeForce RTX 3070",
+    "deviceUuid": "3989f368-bd26-bd52-9daf-037a9862f82f",
+    "totalMemoryBytes": 8589410304,
+    "capability": [
+      8,
+      6
+    ],
+    "operation": "ones256x256_float32_times2_sum",
+    "result": 131072.0,
+    "peakAllocatedBytes": 524800,
+    "peakReservedBytes": 2097152,
+    "finalAllocatedBytes": 0,
+    "elapsedSeconds": 0.7985015359999998,
+    "cgroupMemoryPeakBytes": 444116992,
+    "modelsLoaded": 0,
+    "inferenceCalls": 0,
+    "trainingAuthorized": false
+  },
+  "bounds": {
+    "containerMemoryCapBytes": 5368709120,
+    "hostJobMemoryCapBytes": 536870912,
+    "combinedHardTaskMemoryBytes": 5905580032,
+    "memorySwapMaxBytes": 0,
+    "cpus": 2,
+    "cpuAffinity": "0-1",
+    "pidsMax": 32,
+    "cpuDeadlineSeconds": 300,
+    "gpuDeadlineSeconds": 120,
+    "totalActualElapsedSeconds": 13.796,
+    "hostPeakJobPrivateBytes": 70529024
+  },
+  "checks": {
+    "actualCommand": [
+      "C:\\Python313\\python.exe",
+      "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\learning\\rfdetr_runtime_profile.py",
+      "--execute",
+      "--root-authorization",
+      "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\actual-authorization.json",
+      "--runtime-binding",
+      "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/runtime-binding.json"
+    ],
+    "actualExit": 0,
+    "stageResults": [
+      {
+        "phase": "cpu",
+        "containerId": "c8747e7b65d84f4bcbc47f2ae4a17823dde0c207bfef0a718372f95b0e60538b",
+        "removed": true,
+        "elapsedSeconds": 9.926188900019042,
+        "deadlineSeconds": 300,
+        "failure": null
+      },
+      {
+        "phase": "gpu",
+        "containerId": "1ef3eebac816df9561fdfb9884c76513b746ae12f24c1a7e30ee751c13c7fdc5",
+        "removed": true,
+        "elapsedSeconds": 2.808791999996174,
+        "deadlineSeconds": 120,
+        "failure": null
+      }
+    ],
+    "prelaunchPlanAndWrongAuthorizationAndWrongBinding": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\actual-prelaunch-checks.json",
+      "bytes": 5558,
+      "sha256": "6775b145f58d31dcf8583492a958d0e855a7a66edbdf395f3183357cd8cc3436"
+    },
+    "metadataWrongMountAndMissingAuthorizationRefusals": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\checks.json",
+      "bytes": 7482,
+      "sha256": "67bdb34d5ced9501cfb7d522026520fca9cc89784c26737fe325c5e776e49850"
+    },
+    "postrunSyntaxAndPayloadReview": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\postrun-review.json",
+      "bytes": 646,
+      "sha256": "7d57643e1b1548996974ac32228bbecb033e8d07b59e8c7b690f59860e1550b7"
+    },
+    "noPayloadChangeAfterExecution": true,
+    "oneCpuAndOneGpuContainerOnly": true
+  },
+  "receipts": {
+    "host": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\actual-host-receipt.json",
+      "bytes": 204824,
+      "sha256": "205d8690deeecd2ce1e5bed6bbe219a5a98e720db40e972752ecacf0fb7451f5"
+    },
+    "supervisedCommand": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\actual-command.json",
+      "bytes": 1810,
+      "sha256": "edf67740414380cf8650c71b5378c199fc6341c5598dd6397fb3a30c5cd99b34"
+    },
+    "supervisor": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\actual-supervise.py",
+      "bytes": 3368,
+      "sha256": "d83d1b772c6a221efe0c54ec9de16b6c78288b5e61fbd9ca7eeb5df3ea07bb78"
+    },
+    "log": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\actual-runtime.log",
+      "bytes": 588,
+      "sha256": "d263e4be016e62bcd3e58723288788a3afe4d94b6cc511393de60b0d23b6263f"
+    },
+    "preflight": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\actual-preflight.json",
+      "bytes": 2818,
+      "sha256": "dddaae96d2bfb2e7a922b3cbf99c0157ebcb8d280b5adc6c87ead40db13a80de"
+    },
+    "cpuReadback": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\cpu-container-readback.json",
+      "bytes": 33855,
+      "sha256": "339d055dcfeeabc908666f80dd6b810e4041da70d10255021a454022b7398910"
+    },
+    "gpuReadback": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-runtime-profile-20261005\\gpu-container-readback.json",
+      "bytes": 29891,
+      "sha256": "f574f5ecbdc8a7a48aac7e0acc9e332615114d300fbe8bc3cb6bff660938ddd6"
+    },
+    "cpuNative": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-mounted-plan-20261005\\output-runtime-v1\\native-control.json",
+      "bytes": 5341,
+      "sha256": "93dca64d091233ae5435eac51a1cb6ec34fffa7d55660393d36843781001829c"
+    },
+    "cpuProcessor": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-mounted-plan-20261005\\output-runtime-v1\\processor-control.json",
+      "bytes": 1728,
+      "sha256": "76aec77591629f870a84cbd2e1c3c9e94b1326d1b3fb8e07e1aa01e5c0173234"
+    },
+    "gpuNative": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-mounted-plan-20261005\\output-runtime-v1\\gpu-native-control.json",
+      "bytes": 5340,
+      "sha256": "59cb34cc49b39040ef42fa8d35702f236d1bc6ee6ac74e1fed71c922bd091578"
+    },
+    "gpuSmoke": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-mounted-plan-20261005\\output-runtime-v1\\gpu-smoke.json",
+      "bytes": 603,
+      "sha256": "57adb545f3d87d8f493f1fcdd8a5115bd4ff7ec68b1bf610e5eea4f44c571ac0"
+    }
+  },
+  "cleanup": {
+    "ownedContainersRemoved": 2,
+    "hostJobClosed": true,
+    "ownedResourcesRemaining": 0,
+    "originalContainerIdsPreserved": 24,
+    "originalVolumeNamesPreserved": 14,
+    "beforeAfterExactlyEqual": true,
+    "gpuTensorFinalAllocatedBytes": 0,
+    "historicalProfilesAndOriginals": "Untouched; all input mounts RO; no old control rerun"
+  },
+  "historicalControl": {
+    "codeSha256": "a0fc7045192c76f138c05c9b16fddfc8dd0b8afe2ab3b02637a0ebb026f2ec06",
+    "resultSha256": "9f92bf38333ee4284e8d74d3156b4363e8cdc0d6aca8daf33625969f93a17dcf",
+    "image": "sha256:e71d87961be773c18685622eb570c034cf664bfa206e21f6fa3691d629b440c9",
+    "qualification": "Only historical three-mount e71d primitive; not this actual-base profile"
+  },
+  "remaining": [
+    "Separately assigned unchanged original checkpoint/model load and comparable open-development baseline",
+    "Torch/ONNX preprocessing/numerical parity and grouped-label eligibility",
+    "Measured full-model capacity/loss and separate fit authorization; no promotion inferred from this smoke"
+  ],
+  "scope": {
+    "modelWeightsLoadedAsTensors": false,
+    "modelParametersCreated": 0,
+    "modelInferenceCalls": 0,
+    "lossTrainerOptimizerOrFitCalls": 0,
+    "repullRebuildInstall": false,
+    "driversWslDockerGlobalConfigurationChanged": false,
+    "appRuntimePgProvidersFrontendPushMain": false
+  },
+  "settings": {
+    "requested": "gpt-6.1-sol/xhigh/default-standard1x",
+    "observed": "model/effort/tier unexposed",
+    "permissions": "never/danger-full-access"
+  }
+}

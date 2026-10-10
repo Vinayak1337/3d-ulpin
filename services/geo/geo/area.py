@@ -74,8 +74,9 @@ def _crs(value, label):
 def _analysis_crs(value):
     result = _crs(value, "analysisCrs")
     code = result.to_epsg()
-    if code is None or not (32601 <= code <= 32660 or 32701 <= code <= 32760):
-        raise InputError("analysisCrs must be a WGS84 UTM EPSG:32601–32660 or EPSG:32701–32760 frame in metres.")
+    if code is None or not (code == 6933 or 32601 <= code <= 32660 or 32701 <= code <= 32760):
+        raise InputError("analysisCrs requires WGS84 UTM or EPSG:6933 in metres; "
+                         "display placement is not qualification.")
     return result
 
 
@@ -528,8 +529,8 @@ def check_area(data):
 
 def extract_document(data):
     """Extract native text with locators, without interpreting document instructions."""
-    if not isinstance(data, dict) or data.get("format") not in ("pdf", "docx", "archive", "text", "csv", "csv_reference"):
-        raise InputError("Native document format must be pdf, an OOXML archive, text, a CSV reference table or the strict CSV level schedule.")
+    if not isinstance(data, dict) or data.get("format") not in ("pdf", "docx", "archive", "text", "csv", "csv_reference", "html"):
+        raise InputError("Native document format must be pdf, an OOXML archive, text, HTML tables, a CSV reference table or the strict CSV level schedule.")
     encoded = data.get("base64")
     if not isinstance(encoded, str) or len(encoded) > (MAX_DOCUMENT_BYTES + 2) // 3 * 4:
         raise InputError("Document must be base64 with at most 10 MiB of decoded bytes.")
@@ -545,6 +546,11 @@ def extract_document(data):
     if data["format"] == "csv_reference":
         from .native_schedule import extract_reference_table
         return {"format": "csv_reference", "method": "native_reference", "sourceSha256": hashlib.sha256(raw).hexdigest(), **extract_reference_table(raw)}
+    if data["format"] == "html":
+        from .native_html_table import extract_native_html_tables
+        result = extract_native_html_tables(raw)
+        result["sourceSha256"] = hashlib.sha256(raw).hexdigest()
+        return result
     parts, warnings, total_text = [], [], 0
     native_format = data["format"]
 
@@ -620,11 +626,18 @@ def extract_document(data):
                     if data["format"] == "archive":
                         return archive_inventory()
                     raise InputError("NATIVE_ARCHIVE_LIMIT")
+                from .native_ods import is_ods_archive, extract_native_ods
+                ods_candidate = is_ods_archive(archive)
                 if any(info.flag_bits & 1 for info in entries):
                     ooxml_candidate = ("xl/workbook.xml" in names) != ("word/document.xml" in names)
-                    if data["format"] == "archive" and not ooxml_candidate:
+                    if data["format"] == "archive" and not (ooxml_candidate or ods_candidate):
                         return archive_inventory()
                     raise InputError("Encrypted document archive is unsupported.")
+                if ods_candidate:
+                    native_format = "ods"
+                    result = extract_native_ods(archive)
+                    result["sourceSha256"] = hashlib.sha256(raw).hexdigest()
+                    return result
                 if data["format"] == "archive" and not (
                         ("xl/workbook.xml" in names) != ("word/document.xml" in names)):
                     return archive_inventory()
@@ -700,7 +713,7 @@ def extract_document(data):
         except (zipfile.BadZipFile, ElementTree.ParseError, KeyError, RuntimeError):
             if data["format"] == "archive" and native_format == "archive":
                 return archive_inventory()
-            raise InputError("NATIVE_WORKBOOK_INVALID" if native_format == "xlsx" else "DOCX native text could not be parsed.") from None
+            raise InputError("NATIVE_ODS_INVALID" if native_format == "ods" else "NATIVE_WORKBOOK_INVALID" if native_format == "xlsx" else "DOCX native text could not be parsed.") from None
     warnings.append("Native text is a source reference only. Facts, entity associations, coordinates and legal claims require explicit review; document instructions were not executed.")
     return {"format": native_format, "method": "native_parse", "status": "ready" if parts else "needs_input",
             "sourceSha256": hashlib.sha256(raw).hexdigest(), "parts": parts, "warnings": warnings, "characterCount": total_text}

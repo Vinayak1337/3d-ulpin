@@ -1,0 +1,16 @@
+{
+  "requestKey": "1ed31190-20f8-4819-b050-0ab31d3b339d",
+  "expectedCaseRevision": 4,
+  "expectedSourceRevision": 1,
+  "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+  "mode": "native_only",
+  "ocrSelection": {
+    "page": 1,
+    "region": [
+      280,
+      860,
+      960,
+      2580
+    ]
+  }
+}

@@ -1,0 +1,235 @@
+{
+  "input": {
+    "path": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+    "sha256": "9214ba1e83683e2735379dd8b17df3269218efde6f6491299b49a1d14a036bce",
+    "bytes": 239,
+    "permission": "unconfirmed",
+    "purpose": "test_only",
+    "sourceCrs": null
+  },
+  "validation": {
+    "success": true,
+    "plan": {
+      "version": "mapping-plan/2",
+      "layoutFingerprint": "a96709aad07282dcdce22ed3daf92cc6e6d2eeab12d227fa394e128bd05c9e5b",
+      "sourceKind": "tabular",
+      "method": "reviewer:a1-worker",
+      "fields": [
+        {
+          "sourceField": "state_code",
+          "target": "unknown",
+          "operation": {
+            "kind": "copy"
+          },
+          "confidence": 1,
+          "rationale": "LGD state administrative code, not a building key or official parcel anchor."
+        },
+        {
+          "sourceField": "state_name_english",
+          "target": "unknown",
+          "operation": {
+            "kind": "copy"
+          },
+          "confidence": 1,
+          "rationale": "State name, not a building name or address literal."
+        },
+        {
+          "sourceField": "state_name_local",
+          "target": "unknown",
+          "operation": {
+            "kind": "copy"
+          },
+          "confidence": 1,
+          "rationale": "Local administrative name; retain the exact source text including whitespace."
+        },
+        {
+          "sourceField": "state_census2011_code",
+          "target": "unknown",
+          "operation": {
+            "kind": "copy"
+          },
+          "confidence": 1,
+          "rationale": "Census administrative code; preserve leading zeroes, do not allocate cadastral identity."
+        },
+        {
+          "sourceField": "district_code",
+          "target": "unknown",
+          "operation": {
+            "kind": "copy"
+          },
+          "confidence": 1,
+          "rationale": "District administrative code, not a building, unit or parcel identifier."
+        },
+        {
+          "sourceField": "district_name_english",
+          "target": "unknown",
+          "operation": {
+            "kind": "copy"
+          },
+          "confidence": 1,
+          "rationale": "District name, not a building name."
+        },
+        {
+          "sourceField": "district_name_local",
+          "target": "unknown",
+          "operation": {
+            "kind": "copy"
+          },
+          "confidence": 1,
+          "rationale": "Local district name, not a canonical building fact."
+        },
+        {
+          "sourceField": "district_census2011_code",
+          "target": "unknown",
+          "operation": {
+            "kind": "copy"
+          },
+          "confidence": 1,
+          "rationale": "Census district code; retain the literal independently of application identities."
+        }
+      ]
+    },
+    "errors": []
+  },
+  "execution": {
+    "version": "mapping-executor/1",
+    "method": "reviewer:a1-worker",
+    "layoutFingerprint": "a96709aad07282dcdce22ed3daf92cc6e6d2eeab12d227fa394e128bd05c9e5b",
+    "rows": [
+      {
+        "row": 0,
+        "fields": [
+          {
+            "sourceField": "state_code",
+            "target": "unknown",
+            "value": null,
+            "state": "unknown",
+            "citations": [
+              {
+                "sourceRef": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+                "row": 0,
+                "column": "state_code"
+              }
+            ],
+            "method": "reviewer:a1-worker",
+            "literal": "6"
+          },
+          {
+            "sourceField": "state_name_english",
+            "target": "unknown",
+            "value": null,
+            "state": "unknown",
+            "citations": [
+              {
+                "sourceRef": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+                "row": 0,
+                "column": "state_name_english"
+              }
+            ],
+            "method": "reviewer:a1-worker",
+            "literal": "Haryana"
+          },
+          {
+            "sourceField": "state_name_local",
+            "target": "unknown",
+            "value": null,
+            "state": "unknown",
+            "citations": [
+              {
+                "sourceRef": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+                "row": 0,
+                "column": "state_name_local"
+              }
+            ],
+            "method": "reviewer:a1-worker",
+            "literal": "HARYANA                                           "
+          },
+          {
+            "sourceField": "state_census2011_code",
+            "target": "unknown",
+            "value": null,
+            "state": "unknown",
+            "citations": [
+              {
+                "sourceRef": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+                "row": 0,
+                "column": "state_census2011_code"
+              }
+            ],
+            "method": "reviewer:a1-worker",
+            "literal": "06"
+          },
+          {
+            "sourceField": "district_code",
+            "target": "unknown",
+            "value": null,
+            "state": "unknown",
+            "citations": [
+              {
+                "sourceRef": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+                "row": 0,
+                "column": "district_code"
+              }
+            ],
+            "method": "reviewer:a1-worker",
+            "literal": "62"
+          },
+          {
+            "sourceField": "district_name_english",
+            "target": "unknown",
+            "value": null,
+            "state": "unknown",
+            "citations": [
+              {
+                "sourceRef": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+                "row": 0,
+                "column": "district_name_english"
+              }
+            ],
+            "method": "reviewer:a1-worker",
+            "literal": "Gurugram"
+          },
+          {
+            "sourceField": "district_name_local",
+            "target": "unknown",
+            "value": null,
+            "state": "unknown",
+            "citations": [
+              {
+                "sourceRef": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+                "row": 0,
+                "column": "district_name_local"
+              }
+            ],
+            "method": "reviewer:a1-worker",
+            "literal": "GURUGRAM"
+          },
+          {
+            "sourceField": "district_census2011_code",
+            "target": "unknown",
+            "value": null,
+            "state": "unknown",
+            "citations": [
+              {
+                "sourceRef": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+                "row": 0,
+                "column": "district_census2011_code"
+              }
+            ],
+            "method": "reviewer:a1-worker",
+            "literal": "086"
+          }
+        ]
+      }
+    ],
+    "counts": {
+      "cells": 8,
+      "candidate": 0,
+      "needsInput": 0,
+      "unknown": 8,
+      "absent": 0,
+      "null": 0,
+      "conflicting": 0
+    }
+  }
+}

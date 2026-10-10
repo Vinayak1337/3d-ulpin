@@ -2,6 +2,8 @@
 import hashlib
 import importlib.util
 import io
+import os
+from pathlib import Path
 from copy import deepcopy
 from types import SimpleNamespace
 
@@ -140,6 +142,37 @@ def test_component_cap_reports_omissions_without_truncating_raster():
     assert (labels > 0).sum() == 110 * 16
 
 
+@pytest.mark.skipif(not os.environ.get("ULPIN_FLOOR_MASK_FIXTURE"), reason="retained D07 real-mask regression fixture")
+def test_floor_contours_retain_real_complex_wall_and_holes_without_partial_rooms():
+    from rasterio.features import shapes
+    from shapely.ops import unary_union
+    labels = np.asarray(Image.open(Path(os.environ["ULPIN_FLOOR_MASK_FIXTURE"]))).copy()
+    original = labels.copy()
+    wall = max((shape(g) for g, _ in shapes(labels, mask=labels == 2, connectivity=4)), key=lambda p: p.area)
+    assert sum(len(r.coords) for r in [wall.exterior, *wall.interiors]) > 500
+    scores = np.ones(labels.shape, np.float32)
+    components, omissions, details = ml._floor_components(labels, scores, dict(enumerate(ml.ROOMS)), "c" * 64)
+    parent = next(g for g in details["groups"] if g["className"] == "wall" and g["sourceMaskPixels"] == wall.area)
+    assert parent["representation"] == "partition-context"
+    pieces = [shape(c["geometry"]) for c in components if c["id"] in parent["componentIds"]]
+    recovered = unary_union(pieces)
+    assert recovered.symmetric_difference(wall).area == 0
+    assert len(recovered.interiors) == len(wall.interiors)
+    assert len(components) <= 100 and all(ml._floor_geometry_fits(shape(c["geometry"])) for c in components)
+    assert all(shape(c["geometry"]).is_valid for c in components)
+    assert np.array_equal(labels, original)
+    assert (components, omissions, details) == ml._floor_components(labels, scores, dict(enumerate(ml.ROOMS)), "c" * 64)
+    # The observed high-hole room cannot become independently selectable fragments.
+    room = np.full((90, 90), 7, np.uint8)
+    for y in range(5, 76, 10):
+        for x in range(5, 76, 10):
+            room[y:y + 2, x:x + 2] = 0
+    candidates, _, diagnostic = ml._floor_components(room, np.ones(room.shape, np.float32), dict(enumerate(ml.ROOMS)), "d" * 64)
+    assert candidates == []
+    assert diagnostic["maskOnlyComponents"][0]["className"] == "hallway"
+    assert diagnostic["maskOnlyComponents"][0]["inspection"] == "retained-class-mask"
+
+
 def test_model_readiness_refuses_missing_or_changed_artifacts(tmp_path, monkeypatch):
     monkeypatch.setenv("ML_MODEL_DIR", str(tmp_path))
     result = ml.spatial_ml_readiness()
@@ -150,6 +183,43 @@ def test_model_readiness_refuses_missing_or_changed_artifacts(tmp_path, monkeypa
     with pytest.raises(ml.SpatialInferenceError) as error:
         ml._verified_path(model)
     assert error.value.code == "MODEL_MISMATCH"
+
+
+def test_demo_profile_activation_does_not_change_the_default_registry(monkeypatch: pytest.MonkeyPatch) -> None:
+    model = next(row for row in ml._manifest()["models"] if row["id"] == "rfdetr-ramp-ka-seg-medium-b3-v1")
+    assert model["active"] is False
+    monkeypatch.delenv("ULPIN_PROFILE", raising=False)
+    assert ml._model_active(model) is False
+    monkeypatch.setenv("ULPIN_PROFILE", "demo")
+    assert ml._model_active(model) is True
+    monkeypatch.setenv("ULPIN_PROFILE", "production")
+    assert ml._model_active(model) is False
+    assert model["active"] is False
+    configured = {"active": False, "activeProfiles": ["fixture-only-authorised-profile"]}
+    monkeypatch.setenv("ULPIN_PROFILE", "fixture-only-authorised-profile")
+    assert ml._model_active(configured) is True
+    monkeypatch.delenv("ULPIN_PROFILE", raising=False)
+    assert ml._model_active(configured) is False
+
+
+def test_registered_inactive_candidate_is_not_ready_or_allowed_to_read_sources(monkeypatch: pytest.MonkeyPatch) -> None:
+    model = next(row for row in ml._manifest()["models"] if row["id"] == "rfdetr-ramp-ka-seg-medium-b3-v1")
+    assert model["state"] == "candidate" and model["active"] is False and model["use"] == "test_only"
+    monkeypatch.setattr(ml, "_manifest", lambda: {"models": [model]})
+    monkeypatch.setattr(ml, "_runtime_dependency_error", lambda: None)
+
+    def forbidden_access(*args: object, **kwargs: object) -> None:
+        raise AssertionError("Inactive registration must not read sources or installed weights")
+
+    monkeypatch.setattr(ml, "_model_dir", forbidden_access)
+    monkeypatch.setattr(ml, "_read_source", forbidden_access)
+    readiness = ml.spatial_ml_readiness()
+    assert readiness["available"] is False
+    assert readiness["models"][0]["ready"] is False
+    assert "inactive" in readiness["models"][0]["reason"]
+    with pytest.raises(ml.SpatialInferenceError) as error:
+        ml.infer_spatial({**request(), "task": "building"})
+    assert error.value.code == "MODEL_NOT_ACTIVE"
 
 
 def test_missing_native_library_blocks_readiness_and_inference_before_storage(monkeypatch):
@@ -185,8 +255,12 @@ def test_empty_output_still_retains_exact_raster_and_mask_receipts(monkeypatch):
 
 
 @pytest.mark.skipif(importlib.util.find_spec("rasterio") is None, reason="optional pixel polygonizer")
-def test_tiled_buildings_union_seams_in_source_coordinates_with_max_confidence(monkeypatch):
-    model = ml._manifest()["models"][1]
+@pytest.mark.parametrize("resolution", [432, 624])
+def test_tiled_buildings_union_seams_in_source_coordinates_with_max_confidence(
+    monkeypatch: pytest.MonkeyPatch, resolution: int
+) -> None:
+    model = dict(ml._manifest()["models"][1])
+    model["preprocessing"] = {**model["preprocessing"], "inputShape": [1, 3, resolution, resolution]}
     monkeypatch.setattr(ml, "_verified_path", lambda model: ("unused", SimpleNamespace(st_size=1, st_mtime_ns=1)))
     monkeypatch.setattr(ml, "_session", lambda *args: None)
     pixels = np.zeros((32, 1024, 3), np.uint8)
@@ -195,7 +269,8 @@ def test_tiled_buildings_union_seams_in_source_coordinates_with_max_confidence(m
     image = Image.fromarray(pixels)
     seen = []
 
-    def tile_inference(session, tile):
+    def tile_inference(session: object, tile: Image.Image, input_resolution: int = 432) -> tuple:
+        assert input_resolution == resolution
         pixel = tile.getpixel((0, 0))
         origin = pixel[0] + pixel[1] * 256
         seen.append(origin)
@@ -233,7 +308,12 @@ def test_empty_tiled_receipt_retains_all_tile_transforms_and_same_size_masks(mon
     data.update(task="building", modelId=model["id"], expectedModelSha256=model["sha256"], expectedProfileVersion=model["profileVersion"])
     monkeypatch.setattr(ml, "_verified_path", lambda model: ("unused", SimpleNamespace(st_size=1, st_mtime_ns=1)))
     monkeypatch.setattr(ml, "_session", lambda *args: None)
-    monkeypatch.setattr(ml, "_building_tile", lambda session, image: (np.zeros((image.height, image.width), np.uint8), np.zeros((image.height, image.width), np.float32), {0: "background"}, "instance_sigmoid"))
+    def empty_tile(session: object, image: Image.Image, input_resolution: int = 432) -> tuple:
+        assert input_resolution == 432
+        labels = np.zeros((image.height, image.width), np.uint8)
+        return labels, np.zeros_like(labels, np.float32), {0: "background"}, "instance_sigmoid"
+
+    monkeypatch.setattr(ml, "_building_tile", empty_tile)
     result = ml.infer_spatial(data, Storage(raw))
     assert result["status"] == "empty"
     assert result["raster"]["width"] == result["mask"]["width"] == 768

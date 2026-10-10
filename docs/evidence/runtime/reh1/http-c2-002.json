@@ -1,0 +1,15 @@
+{ "index": "c2-002", "method": "POST", "route": "/api/v1/import-packages", "status": 201, "seconds": 0.663,
+"requestKey": "cc0e2f2e-f248-420d-8cc4-c15d3ba3ea04", "idempotencyHeader": null, "ids": {
+"id": "02936511-cf17-4100-bb9a-e89c718f60ac", "state": "READY_FOR_REVIEW",
+"areaId": "daf0c3e9-a952-4177-88a5-f90f15e39112", "revision": 2 }, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/c2-002", "request": { "format": "administrative_context", "metadata": {
+"format": "administrative_context", "requestKey": "cc0e2f2e-f248-420d-8cc4-c15d3ba3ea04",
+"namespace": "gmda-sector-boundary-context", "name": "GMDA sector 59 / 63 A administrative boundaries (test_only)",
+"areaId": "daf0c3e9-a952-4177-88a5-f90f15e39112", "expectedAreaRevision": 2, "documents": [ { "key": "sectors",
+"filename": "gmda-sectors-59-63a.json", "sourceSha256": "[omitted non-source digest]", "originalUrl": [
+"https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/18/query?where=Name",
+"+IN+%28%2759%27%2C%2763+A%27%29&outFields=FID%2CName%2CArea&returnGeometry=true&outSR=3264", "3&f=json" ],
+"issuer": "Gurugram Metropolitan Development Authority", "acquiredAt": "2026-09-25T15:47:11.790714+00:00",
+"permission": "unconfirmed", "classification": "test_only" } ], "buildings": [], "administrativeContext": {
+"kind": "sector", "idField": "FID", "nameField": "Name" } }, "sectors": { "filename": "gmda-sectors-59-63a.json",
+"bytes": 1728, "sourceSha256": "[omitted non-source digest]" } } }

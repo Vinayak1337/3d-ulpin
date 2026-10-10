@@ -21,7 +21,9 @@ import { getArea, getPackage, currentAreaCheckFingerprint } from "../areas/areas
 import { AppError, conflict, notFound } from "../../infrastructure/errors";
 import { fingerprint } from "../cases/domain";
 import { assertPackageDocumentAuthority } from "../areas/package-authority";
+import { assertRecordedPackageTx } from "../registry/registry-metadata";
 import { publicRegistryBody } from "../registry/registry-document-evidence";
+import { registerMissing } from './register-missing';
 
 export async function physicalFeature(
   id: string,
@@ -392,7 +394,7 @@ export async function buildingDossier(id: string): Promise<BuildingDossier & {
         `SELECT body FROM import_packages WHERE body->'features' @> $1::jsonb ORDER BY created_at DESC LIMIT 30`,
         [JSON.stringify([{ id }])],
       );
-      for (const row of rows.rows) await assertPackageDocumentAuthority(client, row.body);
+      for (const row of rows.rows) await assertRecordedPackageTx(client, row.body);
       return rows;
     })
   ).rows
@@ -578,21 +580,12 @@ export async function buildingDossier(id: string): Promise<BuildingDossier & {
         [id],
       )
     ).rows.map((r) => projectFindingHistory('READY', r.body))),
-    missing: [
-      ...(!geometryAvailable ? ['Spatial analysis not assessed: canonical geometry qualification is unavailable. Retained geometry is available for source inspection only.'] : []),
-      ...staleDetailLinks.map(
-        () =>
-          "A linked detailed representation changed. Review its source association before using it for this property.",
-      ),
-      ...(!records.some((r) => r.kind === "space")
-        ? [
-            "No source-linked detailed spaces have been recorded for this property. Add its plans and sections.",
-          ]
-        : []),
-      ...(!parcels.some((p) => p.status === "confirmed")
-        ? ["No evidenced parcel association has been confirmed."]
-        : []),
-    ],
+    missing: registerMissing({
+      geometryAvailable,
+      staleDetailLinkCount: staleDetailLinks.length,
+      hasSpaces: records.some((r) => r.kind === "space"),
+      hasConfirmedParcel: parcels.some((p) => p.status === "confirmed"),
+    }),
     revisions: {
       feature: building.revision,
       area: area.revision,

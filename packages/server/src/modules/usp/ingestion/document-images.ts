@@ -43,14 +43,12 @@ export async function documentImageAuthorityTx(client:PoolClient,sourceId:string
     authoritySha256:fingerprint({case:ctx.current,context:ctx.context,
       binding:{subject:ctx.binding.subject,access:ctx.binding.access},source:ctx.source,latest:ctx.latest})} satisfies DocumentImageAuthority;
 }
-async function authorize(sourceId:string,pin:DocumentImagePin,deadline:number){
+export async function authorizePrivateDocumentImage(sourceId:string,pin:DocumentImagePin,deadline:number){
   live(deadline);
-  return transaction(async client=>{
-    await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');
-    return documentImageAuthorityTx(client,sourceId,pin);
-  },{deadlineAt:deadline});
+  return transaction(client=>documentImageAuthorityTx(client,sourceId,pin),
+    {deadlineAt:deadline},'repeatable_read_only');
 }
-async function original(authority:DocumentImageAuthority,deadline:number){
+export async function readPrivateDocumentImageOriginal(authority:DocumentImageAuthority,deadline:number){
   live(deadline);
   const {body}=await openObjectStream(authority.objectKey,authority.sourceBytes,Math.max(1,deadline-Date.now()));
   const chunks:Buffer[]=[];let bytes=0;
@@ -88,8 +86,11 @@ const executionSchema=z.object({version:z.literal('document-image-execution/1'),
     peakJobPrivateBytes:z.number().int().nonnegative().max(limits.memoryBytes)})});
 
 /** Native decoding is performed only by the gated worker, never in Node. */
-export async function inspectPrivateDocumentImage(authority:DocumentImageAuthority,bytes:Uint8Array,
-  raster:boolean,deadline:number):Promise<DocumentImageInspection>{
+export type DocumentImageExecution=z.infer<typeof executionSchema>&{receiptSha256:string};
+/** Shared bounded transport and cleanup state for full inspection and original-region rendering. */
+export async function runPrivateDocumentImageWorker<T>(authority:DocumentImageAuthority,bytes:Uint8Array,
+  raster:boolean,deadline:number,task:{script:'run_image_inspection.py'|'run_image_region.py';schema:z.ZodType<T>;selection?:unknown})
+  :Promise<{result:T;png?:Buffer;execution:DocumentImageExecution}>{
   if(process.platform!=='win32')fail(503,'DOCUMENT_IMAGE_RUNTIME_UNAVAILABLE','This image profile requires the configured Windows runtime.');
   const configured=process.env.ULPIN_DOCUMENT_IMAGES_PYTHON??process.env.ULPIN_DOCUMENT_OCR_PYTHON;
   const scratch=process.env.ULPIN_DOCUMENT_IMAGES_SCRATCH;
@@ -103,11 +104,17 @@ export async function inspectPrivateDocumentImage(authority:DocumentImageAuthori
     catch{fail(503,'DOCUMENT_IMAGE_SCRATCH_UNAVAILABLE','Configure an available private image scratch directory outside the repository.');}
     const source=join(dir,'original.image'),output=join(dir,'output');
     await writeFile(source,bytes,{flag:'wx',mode:0o600});
+    if(task.selection!==undefined){
+      const selection=Buffer.from(JSON.stringify(task.selection));
+      if(selection.length>4096)fail(422,'DOCUMENT_IMAGE_SELECTION_LIMIT','The image selection exceeds its bounded profile.');
+      await writeFile(join(dir,'selection.json'),selection,{flag:'wx',mode:0o600});
+    }
     const seconds=Math.min(25,Math.floor((deadline-Date.now()-6000)/1000));
     if(seconds<1)fail(504,'DOCUMENT_IMAGE_DEADLINE','Not enough time remains for bounded image inspection.');
-    const args=[join(settings.repositoryRoot,'scripts/usp/document-models/run_image_inspection.py'),
+    const args=[join(settings.repositoryRoot,'scripts/usp/document-models',task.script),
       '--source',source,'--sha256',authority.sourceSha256,'--format',authority.format,'--output',output,'--seconds',String(seconds)];
-    if(raster)args.push('--raster');
+    if(task.selection!==undefined)args.push('--selection',join(dir,'selection.json'));
+    else if(raster)args.push('--raster');
     let exit:number|null;
     try{exit=await execute(python!,args,Math.min((seconds+3)*1000,deadline-Date.now()));}
     catch{keepDirectory=true;runtimeBlocked=true;fail(503,'DOCUMENT_IMAGE_CLEANUP_UNRESOLVED','Image process cleanup could not be confirmed; its private attempt was retained.');}
@@ -126,11 +133,17 @@ export async function inspectPrivateDocumentImage(authority:DocumentImageAuthori
       if(failure.success)fail(422,failure.data.code,'This image is unavailable under the bounded display profile. Its original remains retained.');
       fail(503,'DOCUMENT_IMAGE_RUNTIME_FAILED','Image inspection failed or exceeded its process bounds.');
     }
-    const parsed=DocumentImageWorkerSchema.safeParse(outputValue);
+    const parsed=task.schema.safeParse(outputValue);
     if(!parsed.success)fail(503,'DOCUMENT_IMAGE_RUNTIME_FAILED','The image runtime returned invalid bounded metadata.');
     const png=raster?await readBoundedOcrArtifact(join(output,'image.png'),limits.pngBytes):undefined;
     return {result:parsed.data,png,execution:{...execution!,receiptSha256:sha256(receiptBytes!)}};
   }finally{if(dir&&!keepDirectory)await rm(dir,{recursive:true,force:true});}
+}
+
+export async function inspectPrivateDocumentImage(authority:DocumentImageAuthority,bytes:Uint8Array,
+  raster:boolean,deadline:number):Promise<DocumentImageInspection>{
+  return runPrivateDocumentImageWorker(authority,bytes,raster,deadline,
+    {script:'run_image_inspection.py',schema:DocumentImageWorkerSchema});
 }
 
 function assertImage(info:DocumentImageInfo){
@@ -153,16 +166,21 @@ function assertImage(info:DocumentImageInfo){
     display.resampling!==((rw===ow&&rh===oh)?'none':'lanczos'))
     fail(503,'DOCUMENT_IMAGE_RESULT_INTEGRITY','The display transform differs from the source pixel/orientation frame.');
 }
-const defaults:Dependencies={authorize,original,inspect:inspectPrivateDocumentImage};
+const defaults:Dependencies={authorize:authorizePrivateDocumentImage,original:readPrivateDocumentImageOriginal,inspect:inspectPrivateDocumentImage};
 let busy=false,runtimeBlocked=false;
+/** One image operation per API process, including selected-region excerpts. */
+export async function withPrivateDocumentImageOperation<T>(operation:()=>Promise<T>):Promise<T>{
+  if(runtimeBlocked)fail(503,'DOCUMENT_IMAGE_CLEANUP_UNRESOLVED','Earlier image process cleanup is unresolved. Restore the owned runtime before retrying.');
+  if(busy)fail(429,'DOCUMENT_IMAGE_BUSY','An image inspection is running. Retry when it finishes.');
+  busy=true;
+  try{return await operation();}finally{busy=false;}
+}
 export class DocumentImagesService{
   constructor(private readonly dependencies:Dependencies=defaults){}
   private async inspect(sourceValue:string,raw:unknown,raster:boolean){
     const sourceId=z.uuid().transform(value=>value.toLowerCase()).parse(sourceValue),pin=DocumentImagePinSchema.parse(raw);
-    if(runtimeBlocked)fail(503,'DOCUMENT_IMAGE_CLEANUP_UNRESOLVED','Earlier image process cleanup is unresolved. Restore the owned runtime before retrying.');
-    if(busy)fail(429,'DOCUMENT_IMAGE_BUSY','An image inspection is running. Retry when it finishes.');
-    busy=true;const deadline=Date.now()+limits.seconds*1000;
-    try{
+    return withPrivateDocumentImageOperation(async()=>{
+      const deadline=Date.now()+limits.seconds*1000;
       const authority=await this.dependencies.authorize(sourceId,pin,deadline);
       const same=(after:DocumentImageAuthority)=>{if(fingerprint(authority)!==fingerprint(after))
         conflict('The private image source or access context changed during inspection.');};
@@ -186,7 +204,7 @@ export class DocumentImagesService{
         fail(503,'DOCUMENT_IMAGE_RESULT_INTEGRITY','A metadata request cannot publish a raster.');
       same(await this.dependencies.authorize(sourceId,pin,deadline));live(deadline);
       return {authority,result,png:inspected.png};
-    }finally{busy=false;}
+    });
   }
   async image(sourceId:string,raw:unknown){
     const {authority,result}=await this.inspect(sourceId,raw,false);

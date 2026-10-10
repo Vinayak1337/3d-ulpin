@@ -1,0 +1,14 @@
+{
+  "task": "K2d",
+  "backendTypecheck": {"exitCode": 0, "log": "E:/BhuAayam-data/task-data/k2d/backend-check.log"},
+  "focusedTypeScript": {"exitCode": 0, "tests": 23, "passed": 23, "failed": 0, "skipped": 0, "log": "E:/BhuAayam-data/task-data/k2d/focused-check.log"},
+  "canonicalVerifier": {"exitCode": 0, "receipt": "canonical-check-final.json", "originalHashesVerified": 22, "readOnly": true, "log": "E:/BhuAayam-data/task-data/k2d/canonical-final.log"},
+  "profileRegression": {"exitCode": 0, "tests": 1, "method": "Execute exact AST-extracted activation predicate without importing model assets", "log": "E:/BhuAayam-data/task-data/k2d/profile-check.log"},
+  "servedProfileChecks": {"exitCode": 0, "assertions": 3, "actualServedModule": true, "roofprintInference": false, "receipt": "runtime-final.json"},
+  "doctor": {"exitCode": 0, "log": "E:/BhuAayam-data/task-data/k2d/doctor-check.log", "interpretation": "Availability/ownership only, not extraction accuracy"},
+  "apiLfExport": {"exitCode": 0, "operations": 292, "schemas": 327, "export": "E:/BhuAayam-data/task-data/k2d/api-check-fxqv9uc7", "log": "E:/BhuAayam-data/task-data/k2d/api-final-check.log", "checkedCodeCommit": "6693790b", "checkerChanged": false, "receiptPinsChanged": false, "historicalReceiptEncodingsRecoveredOnlyWhenHashMatches": true},
+  "newCodeAudit": {"exitCode": 0, "maxLineColumns": 120, "maxPythonFunctionLines": 40, "pythonSyntax": true, "bytecodeWritten": false},
+  "diffCheck": {"workingExitCode": 0, "stagedExitCode": 0},
+  "expectedFailures": {"ordinaryReview": {"httpStatus": 422, "code": "USP_GEOMETRY_PAYLOAD_UNQUALIFIED"}, "ordinaryCommit": {"httpStatus": 409, "code": "STALE_REVISION"}, "ocrSupervisorExitCode": 1, "ocrWorkerExitCode": 1},
+  "completeGatePass": false
+}

@@ -1,0 +1,520 @@
+{
+  "schemaVersion": "data-document-shard/1",
+  "task": "D08-PAR-DOCUMENTS",
+  "preparedAt": "2026-10-05",
+  "baseCommit": "6c173b0e357b1f968b204bb9e6eb8ac2ab9f805b",
+  "state": "prepared_verified_annotation_needed",
+  "privateRoot": "E:\\BhuAayam-data\\task-data\\data-document-shard-20261005",
+  "counts": {
+    "uniqueOriginalsUsed": 10,
+    "drawingOriginals": 6,
+    "uniqueDrawingPages": 7,
+    "publicPortalOriginalParts": 2,
+    "nativeExampleOriginals": 2,
+    "nativeExampleSourceParts": 6,
+    "totalUniqueInputSelections": 15,
+    "realProjectInputSelections": 9,
+    "actualRealProjects": 2,
+    "realProjectGroupKeys": [
+      "rera-bihar-RERAP2311201700019-3",
+      "rera-haryana-2831"
+    ],
+    "exampleControlFamilies": 2,
+    "allGroupKeys": 4,
+    "fieldClaims": 72,
+    "associationCandidates": 5,
+    "annotationStatusCounts": {
+      "provisional": 53,
+      "exact_source_derived": 24
+    },
+    "annotationOriginCounts": {
+      "retained_visual_observation": 34,
+      "retained_ocr": 11,
+      "retained_model": 5,
+      "exact_original_byte_slice": 4,
+      "retained_native_deterministic": 18,
+      "retained_source_relationship": 5
+    },
+    "retainedRejectedOutputLines": 137,
+    "annotationNeededCases": 6,
+    "blankIndependentReviewEntries": 77,
+    "qualifiedIndependentLabels": 0,
+    "canonicalPositiveLabels": 0,
+    "canonicalNegativeLabels": 0,
+    "splitAssignments": 0,
+    "newOriginalDownloads": 0,
+    "newOriginalCopies": 0,
+    "newRenders": 0,
+    "newOcrRuns": 0,
+    "newModelRuns": 0,
+    "repeatedBaselineProposals": 16,
+    "baselineSourcePages": 2,
+    "retainedMappedCropViewsNotAdditionalPages": 2,
+    "retainedBaselineCaptionMethodGroups": 2,
+    "distinctCaptionOccurrenceLiterals": 4
+  },
+  "sourceGroups": [
+    {
+      "groupKey": "buildingsmart-simple-scene",
+      "sourceKeys": [
+        "buildingsmart-ifc4-building-architecture"
+      ],
+      "cohort": "native_example_control"
+    },
+    {
+      "groupKey": "ogc-citygml-building-garage-example",
+      "sourceKeys": [
+        "ogc-citygml-2-building-garage-lod2"
+      ],
+      "cohort": "native_example_control"
+    },
+    {
+      "groupKey": "rera-bihar-RERAP2311201700019-3",
+      "sourceKeys": [
+        "bihar-magnolia-sanctioned-layout.pdf",
+        "bihar-project.html"
+      ],
+      "cohort": "real_project_preparation"
+    },
+    {
+      "groupKey": "rera-haryana-2831",
+      "sourceKeys": [
+        "haryana-2831-basement-01.pdf",
+        "haryana-2831-tower3-plan1.pdf",
+        "haryana-2831-tower3-section.pdf",
+        "haryana-2831-tower3-plan2.pdf",
+        "haryana-2831-site-plan.pdf",
+        "haryana-2831-project.html"
+      ],
+      "cohort": "real_project_preparation"
+    }
+  ],
+  "sourcePins": [
+    {
+      "sourceKey": "bihar-magnolia-sanctioned-layout.pdf",
+      "original": {
+        "path": "E:/BhuAayam-data/task-data/association-sources-20260929/bihar-magnolia-sanctioned-layout-original.pdf",
+        "bytes": 2455183,
+        "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3"
+      },
+      "originalUrl": "https://rera.bihar.gov.in/All_Document/RERAP2311201700019RERAP2311201700019-3SanctionedLayoutPlan.pdf",
+      "acquiredAt": "2026-09-25T00:38:59.574536Z",
+      "sourceVersion": "drawings V5-01 and V5-02 dated 08.06.21",
+      "issuer": "Bihar RERA / project submitter",
+      "geography": "Bihar, India",
+      "sourceKind": "public_submitted_planned_drawing",
+      "groupKey": "rera-bihar-RERAP2311201700019-3",
+      "terms": {
+        "state": "unconfirmed",
+        "reason": "Source-specific redistribution and reuse licence not verified; original outside Git"
+      }
+    },
+    {
+      "sourceKey": "haryana-2831-basement-01.pdf",
+      "original": {
+        "path": "E:/BhuAayam-data/task-data/ulpin-data-05/haryana-2831-basement-01.pdf",
+        "bytes": 1711314,
+        "sha256": "0fb59d983553fa4bbd4c5050383fe77622a6c509bcade67ba071ee8917ab8f49"
+      },
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/c59456d263NDg2NTE=",
+      "acquiredAt": "2026-09-25T00:41:11.020005Z",
+      "sourceVersion": "portal upload 29-08-2024",
+      "issuer": "Haryana RERA / project submitter",
+      "geography": "Haryana, India",
+      "sourceKind": "public_submitted_planned_drawing",
+      "groupKey": "rera-haryana-2831",
+      "terms": {
+        "state": "unconfirmed",
+        "reason": "Source-specific redistribution and reuse licence not verified; original outside Git"
+      }
+    },
+    {
+      "sourceKey": "haryana-2831-tower3-plan1.pdf",
+      "original": {
+        "path": "E:/BhuAayam-data/task-data/association-sources-20260929/haryana-2831-tower3-plan1.pdf",
+        "bytes": 1655334,
+        "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865"
+      },
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/781dca7f03NDg2NTc=",
+      "acquiredAt": "2026-09-25T00:41:16.696207Z",
+      "sourceVersion": "portal upload 29-08-2024",
+      "issuer": "Haryana RERA / project submitter",
+      "geography": "Haryana, India",
+      "sourceKind": "public_submitted_planned_drawing",
+      "groupKey": "rera-haryana-2831",
+      "terms": {
+        "state": "unconfirmed",
+        "reason": "Source-specific redistribution and reuse licence not verified; original outside Git"
+      }
+    },
+    {
+      "sourceKey": "haryana-2831-tower3-section.pdf",
+      "original": {
+        "path": "E:/BhuAayam-data/task-data/association-sources-20260929/haryana-2831-tower3-section.pdf",
+        "bytes": 2448909,
+        "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b"
+      },
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/c313c18c7bNDg2NjA=",
+      "acquiredAt": "2026-09-25T00:43:08.042067Z",
+      "sourceVersion": "sheet Jan-2024; portal upload 29-08-2024",
+      "issuer": "Haryana RERA / project submitter",
+      "geography": "Haryana, India",
+      "sourceKind": "public_submitted_planned_drawing",
+      "groupKey": "rera-haryana-2831",
+      "terms": {
+        "state": "unconfirmed",
+        "reason": "Source-specific redistribution and reuse licence not verified; original outside Git"
+      }
+    },
+    {
+      "sourceKey": "haryana-2831-tower3-plan2.pdf",
+      "original": {
+        "path": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-tower3-plan2.pdf",
+        "bytes": 1630108,
+        "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1"
+      },
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/b76ed9cb4dNDg2NTg=",
+      "acquiredAt": "2026-09-30T12:56:26.681798+00:00",
+      "sourceVersion": "not_assessed; acquisition date is not a revision date",
+      "issuer": "Haryana RERA / project submitter",
+      "geography": "Haryana, India; project 2831",
+      "sourceKind": "public_submitted_planned_drawing",
+      "groupKey": "rera-haryana-2831",
+      "terms": {
+        "state": "unconfirmed",
+        "scope": "Source-specific reuse/redistribution/training terms not established; public local-development inspection is user-authorized."
+      }
+    },
+    {
+      "sourceKey": "haryana-2831-site-plan.pdf",
+      "original": {
+        "path": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-site-plan.pdf",
+        "bytes": 3782332,
+        "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9"
+      },
+      "originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/0cb8f93289NDg2NTA=",
+      "acquiredAt": "2026-09-30T12:56:26.540725+00:00",
+      "sourceVersion": "not_assessed; acquisition date is not a revision date",
+      "issuer": "Haryana RERA / project submitter",
+      "geography": "Haryana, India; project 2831",
+      "sourceKind": "public_submitted_planned_drawing",
+      "groupKey": "rera-haryana-2831",
+      "terms": {
+        "state": "unconfirmed",
+        "scope": "Source-specific reuse/redistribution/training terms not established; public local-development inspection is user-authorized."
+      }
+    },
+    {
+      "sourceKey": "haryana-2831-project.html",
+      "original": {
+        "path": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/haryana-2831-project.html",
+        "bytes": 108086,
+        "sha256": "ab2eecce106b47aeea784fb34bd1853f0501c0c70ad582ad0976ff6e8b773ea8"
+      },
+      "originalUrl": "https://haryanarera.gov.in/view_project/project_preview_open/2831",
+      "acquiredAt": "2026-09-30T12:55:17.366887+00:00",
+      "sourceVersion": "not_assessed; acquisition date is not a revision date",
+      "issuer": "Haryana RERA / project submitter",
+      "geography": "Haryana, India; project 2831",
+      "sourceKind": "public_project_listing",
+      "groupKey": "rera-haryana-2831",
+      "terms": {
+        "state": "unconfirmed",
+        "scope": "Source-specific reuse/redistribution/training terms not established; public local-development inspection is user-authorized."
+      }
+    },
+    {
+      "sourceKey": "bihar-project.html",
+      "original": {
+        "path": "E:/BhuAayam-data/task-data/association-crosswalk-20260930/bihar-project.html",
+        "bytes": 132607,
+        "sha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e"
+      },
+      "originalUrl": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP2311201700019-3",
+      "acquiredAt": "2026-09-30T12:55:36.807272+00:00",
+      "sourceVersion": "not_assessed; acquisition date is not a revision date",
+      "issuer": "Bihar RERA / project submitter",
+      "geography": "Begusarai, Bihar, India",
+      "sourceKind": "public_project_listing",
+      "groupKey": "rera-bihar-RERAP2311201700019-3",
+      "terms": {
+        "state": "unconfirmed",
+        "scope": "Source-specific reuse/redistribution/training terms not established; public local-development inspection is user-authorized."
+      }
+    },
+    {
+      "sourceKey": "buildingsmart-ifc4-building-architecture",
+      "original": {
+        "path": "E:/BhuAayam-data/task-data/desktop-ifc-native/originals/ifc4-building-architecture.ifc",
+        "bytes": 142325,
+        "sha256": "8790a1e193e82b8e7e7f337ec2633cd40f2120590317a1443503a25b079e2e80"
+      },
+      "originalUrl": "https://raw.githubusercontent.com/buildingSMART/Certification-datasets/80d976a9b193a26a8e928c3e79bff67af1de68a8/IFC%204.0.2.1%20%28IFC%204%20ADD2%20TC1%29/Simple-Scene/Building-Architecture.ifc",
+      "acquiredAt": "2026-10-01T14:48:54.447521+00:00",
+      "sourceVersion": "IFC4; upstream revision 80d976a9b193a26a8e928c3e79bff67af1de68a8",
+      "issuer": "buildingSMART International Ltd.",
+      "geography": "educational/certification model; physical geography unknown; IFC4 source declares EPSG:32760, not transformed",
+      "sourceKind": "published_certification_example",
+      "groupKey": "buildingsmart-simple-scene",
+      "terms": "CC-BY-4.0"
+    },
+    {
+      "sourceKey": "ogc-citygml-2-building-garage-lod2",
+      "original": {
+        "path": "E:/BhuAayam-data/task-data/desktop-citygml-native/originals/Building_and_garage_LOD2-EPSG25832.gml",
+        "bytes": 19499,
+        "sha256": "2c7e9c228ecc2b6549c7dd655289b7239fdb15e1e95ad49db6a757742e271f0a"
+      },
+      "originalUrl": "https://schemas.opengis.net/citygml/examples/2.0/building/Building_and_garage_LOD2-EPSG25832.gml",
+      "acquiredAt": "2026-10-01T16:21:11.913896+00:00",
+      "sourceVersion": "CityGML 2.0, February 2012 (literal source comment); repository Last-Modified 2025-04-09",
+      "issuer": "Open Geospatial Consortium official schema repository; CityGML example contributors SIG 3D/GDI-DE acknowledged in original XML",
+      "geography": "Source example refers to Germany; unchanged original coordinates retained; no Indian relocation or global qualification",
+      "sourceKind": "published_standards_example",
+      "groupKey": "ogc-citygml-building-garage-example",
+      "terms": {
+        "status": "specific_example_licence_not_verified",
+        "notice": "Directory footer identifies OGC copyright and Terms and Conditions; original XML attributes contributors but contains no explicit example redistribution grant. Development research use is user-authorized; no release/legal clearance asserted.",
+        "termsUrl": "https://www.ogc.org/about-ogc/legal-notices-term-and-conditions/",
+        "attribution": "Open Geospatial Consortium CityGML 2.0 examples; SIG 3D/GDI-DE acknowledgement retained",
+        "launchGaps": [
+          "Specific example redistribution/licence clearance",
+          "No permission or qualified labels for model training is asserted"
+        ]
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/task-inputs.jsonl",
+      "bytes": 28587,
+      "sha256": "b38ce4c7e329dc85e881f2d44d02564dc5652dc3b9a7186e5e542914731f0e6a"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/provisional-annotations.jsonl",
+      "bytes": 74851,
+      "sha256": "8240a12dd3b8bba8075e7ed3bbf430bdd72ed0d88fb4c62816da15781bb80bae"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/annotation-needed.jsonl",
+      "bytes": 2507,
+      "sha256": "88227e0a4fce58f4ea6bc6cdc0738f95f20e80333a3b2db4690036f74e94249c"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/rejected-cases.jsonl",
+      "bytes": 188482,
+      "sha256": "6241db76e4cb58a71350d54308d55d3f77b4a343178eab7545fe49a68437fa4f"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/independent-review.jsonl",
+      "bytes": 23531,
+      "sha256": "8e67e78be9f1338ff23f81f0bedc146f865b420f8f7fb1de50dd07eef1186af5"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/sources.json",
+      "bytes": 12091,
+      "sha256": "7dce2c31c084b2a9750d10d81c2aa6011205aff6c68e03532c84659a3862354b"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/exclusions.json",
+      "bytes": 1715,
+      "sha256": "4f287bab499d79f93a9b24d9cd023c58cec0fd91842d18a090b9470b12696058"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/checks.json",
+      "bytes": 5963,
+      "sha256": "291c91be2590153e98e25da84916353212d2e57a7bf303118cc4b594e0431f5b"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/manifest.json",
+      "bytes": 16701,
+      "sha256": "6b10ea7d4a6349886d73becc5adb3017abf4e046d981b12e0bc8bdfe5d55d585"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/prepare.py",
+      "bytes": 32603,
+      "sha256": "28e395a690a6232518665d96a9c2ef897585c6016fabef9ddd84ab80f95c3392"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/execution.json",
+      "bytes": 886,
+      "sha256": "253ce88077bb2646b945e9d5d26a5beb29d73f9fb783ddf0c60919fec53401c4"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/worker.log",
+      "bytes": 1546,
+      "sha256": "8fb0b348e3fc17da5e95dfc0e8812da2bdfd41cc1b08fb07a5b6f62004df5c8e"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/prepared-provisional-annotations.jsonl",
+      "bytes": 73765,
+      "sha256": "decca4770e77ad48474f11b270ab1a6249709e856c60bfb2af5d518dfd581927"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/verify.py",
+      "bytes": 10047,
+      "sha256": "3984301024534f9319ffd16447e5b13837dcc2b32657562d96f69dabd261c239"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/verification.json",
+      "bytes": 4372,
+      "sha256": "6fddad92745b84081af18ac7c2e82337fd40a5ba0444d6740da02dbd27069e9e"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/verification-execution.json",
+      "bytes": 864,
+      "sha256": "0dfb260c940d245ebcdfb7b38ed4c1906578289f8c5d673717a5c05f7aad07e2"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/verification-worker.log",
+      "bytes": 88,
+      "sha256": "93753adfe6da5fd4128931117c131fc47a98171c058835bd6f7f6caf11324df3"
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/publish.py",
+      "bytes": 4819,
+      "sha256": "62ad57a08c90f2165fcb1885654e80e647e0e9aa34236d2405c02784f1ce9d6c"
+    }
+  ],
+  "inputContract": {
+    "version": "source-document-task-input/1",
+    "unit": "one original drawing page or exact bounded original/native-record selection",
+    "text": "Unchanged original text only; prior OCR/model outputs are separate provisional annotations, never input truth.",
+    "fullPageImageAffines": "Unknown unless explicitly retained mapped crop; page/pixel frames and null affine preserved.",
+    "unitReferences": "IFC .MILLI./.METRE. project declaration and CityGML #m remain source declarations; no physical qualification.",
+    "repetition": "Crops/method proposals/related representations stay grouped and do not increase unique page/project counts."
+  },
+  "learningBoundary": {
+    "trainingEligible": false,
+    "split": "unallocated",
+    "independentReview": "blank_not_started",
+    "teacherCalls": 0,
+    "fitRuns": 0,
+    "closedEvaluationOpened": false,
+    "oldFragmentReuse": false,
+    "prerequisites": "D08D applicable rights/provider route, independently labelled development baseline/teacher comparison, grouped split and audit before any later fit."
+  },
+  "gaps": [
+    "Only two actual retained Indian projects; native examples are separate syntax controls, not additional real projects or property truth.",
+    "Canonical crosswalk/current registry absent; no positive/negative canonical labels.",
+    "Source-specific RERA redistribution/training permissions unconfirmed; development preparation authorized, launch clearance deferred.",
+    "Independent human review absent; prior visual/OCR/model observations remain provisional, exact native targets qualify source syntax only.",
+    "Villa Type 5 unit blank; planned multi-floor scopes and G+41/G+42 disagreement unresolved; current approval memo/revisions unresolved.",
+    "Legacy full-page image affines unqualified; verified mapped selected crops retained separately; source geometry/datum/rights not established."
+  ],
+  "settings": {
+    "requestedModel": "gpt-6.1-sol",
+    "requestedSpeed": "default/standard1x",
+    "observedModelEffortTier": null,
+    "suppliedApprovalPolicy": "never",
+    "suppliedSandbox": "danger-full-access"
+  },
+  "cleanup": {
+    "newServices": 0,
+    "databaseWrites": 0,
+    "gpuUse": 0,
+    "originalsChanged": false,
+    "stagingEdited": false
+  },
+  "verification": {
+    "preparationExitCode": 0,
+    "finalVerificationExitCode": 0,
+    "verifiedPins": 37,
+    "originalsMatched": 10,
+    "byteQuoteChecks": 22,
+    "characterSpanChecks": 16,
+    "mappedCropChecks": 2,
+    "blankReviewEntries": 77,
+    "ifcUnitContext": "Exact records13/14/15 added to the existing elevation annotation; no new input selection or qualified physical unit/height claim.",
+    "semanticScope": "Finite JSON, required field/type/reference and retained provenance/frame checks. Three prior agent visual spot checks remain provisional; no independent human review or accuracy claim.",
+    "commandPreparation": "E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/venv/Scripts/python.exe -B -I E:/BhuAayam-data/task-data/data-document-shard-20261005/prepare.py",
+    "commandFinalCheck": "E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/venv/Scripts/python.exe -B -I E:/BhuAayam-data/task-data/data-document-shard-20261005/verify.py",
+    "computeThreads": 1,
+    "cpuAffinity": [
+      0,
+      1
+    ],
+    "workerMemoryCapBytes": 1879048192,
+    "preparationPeakSampledRssBytes": 51363840,
+    "preparationPeakJobPrivateBytes": 39542784,
+    "preparationElapsedSeconds": 0.515,
+    "verificationElapsedSeconds": 0.25,
+    "osHelperThreads": "Observed four including runtime helpers; no two-total-OS-thread guarantee claimed.",
+    "versions": {
+      "pypdf": "6.10.0",
+      "psutil": "7.0.0",
+      "Pillow": "12.3.0",
+      "executionInterpreter": "Existing D08 isolated environment; retained interpreter, no installation."
+    },
+    "reusedSupervisor": "scripts/usp/document-models/run_trial.py::_run_worker; Windows Job gated start; no model loaded",
+    "sourceReadScope": "Selected originals and retained projections/receipts only; no acquisition/OCR/native rendering/model inference.",
+    "finalEnrichment": "Initial annotations retained in prepared-provisional-annotations.jsonl; final annotation pins supersede preparation pins only for added exact unit-context evidence."
+  },
+  "failureRecovery": [
+    {
+      "attempt": 1,
+      "exitCode": 1,
+      "failure": "Supervisor expected script path, received interpreter flag; failed before source reads.",
+      "changedCondition": "Use executable + script path, with bytecode disabled in script/environment.",
+      "execution": {
+        "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/attempt-01-execution.json",
+        "bytes": 914,
+        "sha256": "521042e071a7431cb62b458b4c553a03008180d2a39b0e1fb25bb83c0ad636a2"
+      },
+      "log": {
+        "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/attempt-01-worker.log",
+        "bytes": 318,
+        "sha256": "b83e0d652c05c35fb268aeb07feffe457f1c9a78ed2494024ac71b7f9e075ff5"
+      },
+      "code": {
+        "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/attempt-01-prepare.py",
+        "bytes": 32585,
+        "sha256": "b49a9f29c9b7d7706c34a77861ce9bb268c610c0731be98b59f6dad9a2d1cd6e"
+      }
+    },
+    {
+      "attempt": 2,
+      "exitCode": 1,
+      "failure": "D5 content was unavailable without a hash; metadata lookup failed original pin check. Original bytes/hash matched retained authority.",
+      "changedCondition": "Use content only when hash exists, otherwise provenance.original.",
+      "execution": {
+        "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/attempt-02-execution.json",
+        "bytes": 885,
+        "sha256": "e09624842b1adcb75b287c8dbad6a51e7a2d8ea168109211a98df4585eefb0bf"
+      },
+      "log": {
+        "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/attempt-02-worker.log",
+        "bytes": 1239,
+        "sha256": "6ef69d7a8809c57b45fcc0b8bcab3dab280c2ed3484da4a837f1e3167183b556"
+      },
+      "code": {
+        "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/attempt-02-prepare.py",
+        "bytes": 32555,
+        "sha256": "0b3479910c25eca51556d26c78e10b0201118111b1b141b1f99e79acf7d8e9ec"
+      }
+    },
+    {
+      "attempt": 3,
+      "exitCode": 0,
+      "decision": "Corrected preparation succeeded once; retained shard verified without extraction rerun."
+    },
+    {
+      "stage": "publication",
+      "attempt": 1,
+      "exitCode": 1,
+      "failure": "Isolated Python excludes script directory from module lookup; importing the private verification helper failed before output writes.",
+      "changedCondition": "Add only the resolved owned private script directory to module lookup.",
+      "code": {
+        "path": "E:/BhuAayam-data/task-data/data-document-shard-20261005/publication-attempt-01.py",
+        "bytes": 4483,
+        "sha256": "3ea4b72cf4cedda6256749a4cfb757907c15899b9600809a4699c456b363500d"
+      }
+    }
+  ],
+  "coverage": {
+    "targetMaximum": 24,
+    "actualSelections": 15,
+    "remainingCapacityNotPadded": 9,
+    "reason": "Retained eligible coverage only; additional representations/crops/proposals and administrative or uninspected pages do not count as new real project evidence."
+  }
+}
