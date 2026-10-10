@@ -154,5 +154,6 @@ test('a request the gateway would refuse is screened as built and listed with th
   assert(refusal.bodyBytes > 32768);
   const counted = tables.tallies.get('mi-d22')!.n;
   assert.deepEqual([counted.promptRequests, counted.promptsRefusedByGateway, counted.columns], [1, 1, 90]);
-  assert(counted.promptSamples > 0);
+  // Over the bound, the builder stepped the samples down to none before the gateway refused what was left.
+  assert.equal(counted.promptSamples ?? 0, 0);
 });

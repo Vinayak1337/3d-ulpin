@@ -61,6 +61,7 @@ test('plan: a line left out of a storey call is named under its own reason; a ma
   }
   for (const step of calls.filter(entry => entry.exec.kind === 'mapping')) {
     assert(Array.isArray(step.input.sampleForms));
+    assert.equal(step.input.samplesPerColumn, 10);
   }
 });
 
