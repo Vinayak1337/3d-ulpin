@@ -32,7 +32,7 @@ import {
 } from '../../packages/server/src/modules/usp/ingestion/chunk-mapping-agent';
 import { layoutFingerprint } from '../../packages/server/src/modules/usp/ingestion/mapping-plan-v2';
 import {
-  columnProfileHash, mappingTeacherRequest, teacherReplayKey, MAPPING_TEACHER_TEMPLATE,
+  columnProfileHash, mappingTeacherRequest, teacherReplayKey, MAPPING_TEACHER_TEMPLATE, type GatewayRefusal,
 } from '../../packages/server/src/modules/usp/ingestion/mapping-teacher';
 import { ControlLedger } from './control-runtime';
 import { saveNew } from './t1-profiles';
@@ -558,34 +558,17 @@ export function buildPlan(tariff: Tariff) {
 const printable = (steps: PlannedStep[]) => steps.map(({ exec, ...step }) => ({ ...step, kind: exec.kind }));
 
 type Ask = { inputHash: string; replayKey: string | null };
-type GatewayRefusal = { code: string; retryable: boolean };
 type Supply = () => Promise<ModelGateway | undefined>;
 type Drivers = {
   mode: 'dry_run' | 'live'; subject: string; outDir: string; learnerModelPath?: string;
   teacher: Supply; replay: Supply;
   asks: Ask[]; replayedKinds: Map<string, string>; recordings: TeacherRecordings | null;
-  /** The gateway's own refusals, in order: the callers fold them into teacher codes that hide a key move. */
-  refusals: GatewayRefusal[];
   /** The report of key states: one entry per key of the policy, with its mark. */
   keyStates: () => Promise<{ state: string }[]>;
   /** Waited before a step is attempted again, so that the gateway's pace does not refuse the new call. */
   paceMs: number;
   extraAttemptsAtMost: number;
 };
-
-/** The same gateway, with each refusal of a request noted under the code the gateway threw. */
-function observed(supply: Supply, seen: GatewayRefusal[]): Supply {
-  return async () => {
-    const gateway = await supply();
-    if (!gateway) return gateway;
-    const propose: ModelGateway['propose'] = (...call) => gateway.propose(...call).catch((error: unknown) => {
-      const retryable = error instanceof AppError && (error.details as { retryable?: unknown })?.retryable === true;
-      if (error instanceof AppError) seen.push({ code: error.code, retryable });
-      throw error;
-    });
-    return Object.assign(Object.create(gateway) as ModelGateway, { propose });
-  };
-}
 
 /** A gateway whose only adapter is the replay store: it has no key, no transport and no paid ledger. */
 function dryRunDrivers(
@@ -608,9 +591,8 @@ function dryRunDrivers(
   const ledger = new ControlLedger();
   const gateway = new ModelGateway(tariff.policy, ledger, adapter);
   const supply = async () => gateway;
-  const refusals: GatewayRefusal[] = [];
-  return { mode: 'dry_run', subject: 'local-os:s1-dry-run', outDir, teacher: observed(supply, refusals),
-    replay: supply, asks, replayedKinds, recordings: null, ledger, refusals, keyStates: async () => [], paceMs: 0,
+  return { mode: 'dry_run', subject: 'local-os:s1-dry-run', outDir, teacher: supply,
+    replay: supply, asks, replayedKinds, recordings: null, ledger, keyStates: async () => [], paceMs: 0,
     extraAttemptsAtMost: extraAttemptsAtMost(tariff.policy) };
 }
 
@@ -621,7 +603,10 @@ function proofContext(subject: string): RequestContext {
   };
 }
 
-type Outcome = { state: string; code: string | null; attempts: number; replayed: boolean; detail: unknown };
+type Outcome = {
+  state: string; code: string | null; attempts: number; replayed: boolean; detail: unknown;
+  gatewayRefusal?: GatewayRefusal;
+};
 type StepAnswer = StoreyAgentResult & { step: string; partIds: string[] };
 type RunState = {
   mappers: Map<number, TabularChunkMapper>; stopped: string | null;
@@ -644,7 +629,7 @@ async function runMapping(exec: Extract<Exec, { kind: 'mapping' }>, drivers: Dri
   const { layout, memoryHits, studentFields, teacherFields, unansweredFields, needsInput } = draft.metrics;
   return {
     state: draft.proposal.state, code: draft.proposal.issues[0]?.code ?? null, attempts: draft.proposal.attempts,
-    replayed: draft.proposal.replayed,
+    replayed: draft.proposal.replayed, gatewayRefusal: draft.proposal.gatewayRefusal,
     detail: { layout, memoryHits, studentFields, teacherFields, unansweredFields, needsInput,
       candidateCells: draft.dryRun.counts.candidate },
   };
@@ -663,7 +648,7 @@ async function runStorey(exec: Extract<Exec, { kind: 'storey' }>, drivers: Drive
   state.storey.set(exec.source.sha256, kept);
   const { state: endState, code, attempts, replayed } = result;
   const detail = { abstain: result.output?.abstain ?? null };
-  return { state: endState, code: code ?? null, attempts, replayed, detail };
+  return { state: endState, code: code ?? null, attempts, replayed, detail, gatewayRefusal: result.gatewayRefusal };
 }
 
 function runExec(step: PlannedStep, exec: Exec, drivers: Drivers, state: RunState, gateway: Drivers['teacher']) {
@@ -723,10 +708,9 @@ async function attemptStep(
 ): Promise<Attempted> {
   const keyMoves: KeyMove[] = [];
   for (let attempts = 1; ; attempts++) {
-    const seen = drivers.refusals.length;
     const outcome = step.exec.kind === 'replay'
       ? await runReplay(step, steps, drivers, state) : await runExec(step, step.exec, drivers, state, gateway);
-    const refusal = drivers.refusals.slice(seen).at(-1);
+    const refusal = outcome.gatewayRefusal;
     const attempted = { outcome, attempts, keyMoves, gatewayCode: refusal?.code ?? null };
     if (refusal?.code === KEYS_EXHAUSTED) {
       stopRun(state, step, `${EVERY_KEY_MARKED} (${KEYS_EXHAUSTED}); nothing was sent`, true);
@@ -846,7 +830,7 @@ function keyScenarioDrivers(tariff: Tariff, outDir: string, scenario: KeyScenari
   const keyList = new ModelGateway(policy, keyLedger, refusing);
   const everyKeyMarked = () => keyLedger.marked >= names.length;
   const supply: Supply = async () => (toRefuse > 0 || everyKeyMarked() ? keyList : base.replay());
-  return { ...base, teacher: observed(supply, base.refusals), keyStates: async () => keyLedger.keyStates(),
+  return { ...base, teacher: supply, keyStates: async () => keyLedger.keyStates(),
     extraAttemptsAtMost: extraAttemptsAtMost(policy), keyLedger };
 }
 
@@ -965,11 +949,10 @@ function liveDrivers(tariff: Tariff, outDir: string, learnerModelPath?: string):
     return gateway;
   };
   const os = userInfo();
-  const refusals: GatewayRefusal[] = [];
   return {
     mode: 'live', subject: `local-os:${os.uid}:${os.username}`, outDir, learnerModelPath,
-    teacher: observed(teacher, refusals), replay: () => mappingTeacherGatewayRuntime('replay'), asks: [],
-    replayedKinds: new Map(), recordings: new TeacherRecordings(), refusals,
+    teacher, replay: () => mappingTeacherGatewayRuntime('replay'), asks: [],
+    replayedKinds: new Map(), recordings: new TeacherRecordings(),
     keyStates: async () => (await ownerKeyLedger()).keyStates(), paceMs: tariff.policy.paceMs,
     extraAttemptsAtMost: extraAttemptsAtMost(tariff.policy),
   };

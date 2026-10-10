@@ -1,7 +1,7 @@
 import test from 'node:test';
 import fixtures from './mapping-teacher.fixtures.json';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { mkdtempSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -21,6 +21,8 @@ import {
 } from '../../packages/server/src/modules/usp/ingestion/column-profile';
 import {
   proposeMappingWithTeacher,
+  proposeMapping,
+  manualTeacherPlan,
   mappingTeacherRequest,
   executeTeacherMappingDryRun,
   columnProfileHash,
@@ -34,6 +36,8 @@ import {
 } from '../../packages/server/src/modules/usp/ingestion/teacher-labels';
 import { validateMappingPlanV2 } from '../../packages/server/src/modules/usp/ingestion/mapping-plan-v2';
 import { ModelGateway } from '../../packages/server/src/modules/model-gateway/gateway';
+import { AppError } from '../../packages/server/src/infrastructure/errors';
+import { TabularChunkMapper } from '../../packages/server/src/modules/usp/ingestion/chunk-mapping-agent';
 import { hash } from '../../packages/server/src/modules/model-gateway/config';
 import {
   ControlAdapter,
@@ -222,6 +226,7 @@ test('size: a request over the bound with no samples is refused as size and the 
   assert.deepEqual(counts, { asked: 0, reserved: 0, dispatched: 0 });
   assert.deepEqual([result.state, result.attempts], ['needs_input', 0]);
   assert.equal(result.plan.method, 'manual:TEACHER_INPUT_LIMIT');
+  assert.equal(result.gatewayRefusal, undefined);
   assert(result.issues.length > 0 && result.issues.every((issue) => issue.code === 'TEACHER_INPUT_LIMIT'));
   assert(validateMappingPlanV2({ ...result.plan, method: 'reviewer:control' },
     mappingContextFromColumnProfile(profile)).success);
@@ -252,6 +257,33 @@ test('size: the two recorded mi-d22 tables are over the bound with no samples, s
   }
   // Columns, characters of the user message and bytes of both messages with no samples, as Step 0 measured them.
   assert.deepEqual(measured.sort((a, b) => b[1] - a[1]), [[90, 33178, 37690], [90, 33054, 37566]]);
+});
+
+test('refusal: failed and routed results preserve the asked gateway code and retryable flag', async () => {
+  const { profile } = profileColumnFile(goodFile);
+  for (const retryable of [true, false]) {
+    const adapter = new ControlAdapter(async request => unknownResponse(request));
+    const gateway = new ModelGateway(controlConfig(), new ControlLedger(), adapter);
+    gateway.propose = async () => {
+      throw new AppError(503, 'MODEL_QUOTA_EXHAUSTED', 'Software refusal', { retryable });
+    };
+    const direct = await proposeMappingWithTeacher(profile, options(gateway));
+    const routed = await proposeMapping(profile, { ...options(gateway), memoryPath: join(tmpdir(), 's6-no-memory') });
+    for (const result of [direct, routed]) {
+      assert.deepEqual(result.gatewayRefusal, { code: 'MODEL_QUOTA_EXHAUSTED', retryable });
+      assert(result.issues.some(issue => issue.code === 'TEACHER_BUDGET_EXHAUSTED'));
+    }
+    const mapper = new TabularChunkMapper();
+    const draft = await mapper.map({ jobId: randomUUID(), chunkIndex: 0, headers: ['Field'], rows: [['value']],
+      sourceRef: 'software-control' }, { ...options(gateway), memoryPath: join(tmpdir(), 's6-no-memory') });
+    assert.deepEqual(draft.proposal.gatewayRefusal, direct.gatewayRefusal);
+  }
+  // Even when routing rejects a supplied plan and builds a fresh fallback, the refusal is kept.
+  const fallback = manualTeacherPlan(profile, 'TEACHER_BUDGET_EXHAUSTED');
+  const refusal = { code: 'MODEL_QUOTA_EXHAUSTED', retryable: true };
+  const rejected = await proposeMapping(profile, { ...options(), memoryPath: join(tmpdir(), 's6-no-memory'),
+    teacher: async () => ({ ...fallback, plan: { ...fallback.plan, fields: [] }, gatewayRefusal: refusal }) });
+  assert.deepEqual(rejected.gatewayRefusal, refusal);
 });
 
 test('two retained Indian inputs: profile to control plan, validator and dry-run; source immutable', async () => {

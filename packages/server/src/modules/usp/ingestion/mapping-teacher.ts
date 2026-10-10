@@ -43,6 +43,7 @@ export type TeacherDataPolicy = {
   split: 'development' | 'unlabelled' | 'held_out';
 };
 export type TeacherIssue = { sourceField: string; state: 'needs_input'; code: string };
+export type GatewayRefusal = { code: string; retryable: boolean };
 export type MappingTeacherResult = {
   plan: MappingPlanV2;
   issues: TeacherIssue[];
@@ -51,6 +52,7 @@ export type MappingTeacherResult = {
   attempts: number;
   replayed: boolean;
   validationCodes: string[];
+  gatewayRefusal?: GatewayRefusal;
 };
 
 type TeacherOptions = {
@@ -65,7 +67,7 @@ type TeacherOptions = {
 };
 type AttemptMetadata = Pick<
   MappingTeacherResult,
-  'profileHash' | 'attempts' | 'replayed' | 'validationCodes'
+  'profileHash' | 'attempts' | 'replayed' | 'validationCodes' | 'gatewayRefusal'
 >;
 type TeacherCallContext = {
   profile: ColumnProfileDocument;
@@ -314,6 +316,13 @@ export function validateTeacherOutput(raw: unknown, profile: ColumnProfileDocume
   return validateMappingPlanV2(plan, mappingContextFromColumnProfile(profile));
 }
 
+/** Preserve a refusal thrown by the asked gateway; an omitted retryable flag means false, as at the gateway. */
+export function gatewayRefusal(error: unknown): GatewayRefusal | undefined {
+  if (!(error instanceof AppError) || !error.code.startsWith('MODEL_')) return undefined;
+  const details = error.details as { retryable?: boolean } | undefined;
+  return { code: error.code, retryable: details?.retryable === true };
+}
+
 export function teacherFailureCode(error: unknown): string {
   const code = error instanceof AppError ? error.code : '';
   const budgetCodes = [
@@ -543,7 +552,10 @@ export async function proposeMappingWithTeacher(
       if (checked.success) return acceptedResult(checked.plan, metadata);
       metadata.validationCodes = checked.errors.map((error) => error.code);
     } catch (error) {
-      return failedResult(fallback, teacherFailureCode(error), { ...metadata, attempts: attempt });
+      const refusal = gatewayRefusal(error);
+      return failedResult(fallback, teacherFailureCode(error), {
+        ...metadata, attempts: attempt, ...(refusal ? { gatewayRefusal: refusal } : {}),
+      });
     }
   }
   return { ...fallback, ...retainValidFields(lastRaw, profile), ...metadata };
@@ -685,6 +697,7 @@ function routedResult(
   const fieldSources = checked.success ? routedSources(profile, student, method, teacher, fallback.plan.method)
     : routedSources(profile, new Map(), method, fallback, fallback.plan.method);
   return { ...accepted, issues, state: issues.length ? 'needs_input' : 'candidate', activeLearnerVersion: version,
+    ...(teacher?.gatewayRefusal ? { gatewayRefusal: teacher.gatewayRefusal } : {}),
     memoryReasonCode, studentReasonCode, fieldSources };
 }
 
