@@ -185,6 +185,18 @@ def test_model_readiness_refuses_missing_or_changed_artifacts(tmp_path, monkeypa
     assert error.value.code == "MODEL_MISMATCH"
 
 
+def test_demo_profile_activation_does_not_change_the_default_registry(monkeypatch: pytest.MonkeyPatch) -> None:
+    model = next(row for row in ml._manifest()["models"] if row["id"] == "rfdetr-ramp-ka-seg-medium-b3-v1")
+    assert model["active"] is False
+    monkeypatch.delenv("ULPIN_PROFILE", raising=False)
+    assert ml._model_active(model) is False
+    monkeypatch.setenv("ULPIN_PROFILE", "demo")
+    assert ml._model_active(model) is True
+    monkeypatch.setenv("ULPIN_PROFILE", "production")
+    assert ml._model_active(model) is False
+    assert model["active"] is False
+
+
 def test_registered_inactive_candidate_is_not_ready_or_allowed_to_read_sources(monkeypatch: pytest.MonkeyPatch) -> None:
     model = next(row for row in ml._manifest()["models"] if row["id"] == "rfdetr-ramp-ka-seg-medium-b3-v1")
     assert model["state"] == "candidate" and model["active"] is False and model["use"] == "test_only"

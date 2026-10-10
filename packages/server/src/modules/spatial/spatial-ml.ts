@@ -268,10 +268,14 @@ export async function createSpatialMlBatch(value: unknown): Promise<SpatialMlBat
         page: selected.page, ...(selected.region ? { region: selected.region } : {}),
       };
       const payload: InferencePayload = { ...spec, inputFingerprint: fingerprint(spec) };
-      const supported = ["image/png", "image/jpeg", "application/pdf"].includes(source.mime_type) && (source.mime_type === "application/pdf" || selected.page === 1);
+      const supported = ["image/png", "image/jpeg", "application/pdf", "image/tiff"].includes(source.mime_type)
+        && (source.mime_type !== "image/tiff" || selected.task === "building")
+        && (source.mime_type === "application/pdf" || selected.page === 1);
       const state: SpatialMlState = !supported ? "failed" : !model.ready ? "blocked" : "queued";
       const errorCode = !supported ? "UNSUPPORTED_SOURCE" : !model.ready ? "MODEL_UNAVAILABLE" : undefined;
-      const error = !supported ? "Choose a PNG/JPEG original or a PDF page; an image has only page 1." : !model.ready ? model.reason ?? "The pinned local model is unavailable." : undefined;
+      const error = !supported
+        ? "Choose a PNG/JPEG original, building GeoTIFF or PDF page; an image has only page 1."
+        : !model.ready ? model.reason ?? "The pinned local model is unavailable." : undefined;
       const itemId = randomUUID(), jobId = randomUUID(), now = new Date().toISOString();
       await client.query("INSERT INTO jobs(id,case_id,source_id,operation,status,input_fingerprint,payload,error,completed_at) VALUES($1,$2,$3,'spatial-inference',$4,$5,$6,$7,$8)", [jobId, row.case_id, source.id, state === "queued" ? "queued" : "failed", payload.inputFingerprint, payload, error ?? null, state === "queued" ? null : now]);
       const item: SpatialMlItem = { id: itemId, batchId: id, packageId: pkg.id, sourceRevisionId: source.id, sourceSha256: source.sha256, partId: part.id, page: selected.page, task: selected.task, modelId: model.id, modelSha256: model.sha256, inputFingerprint: payload.inputFingerprint, state, currentJobId: jobId, attempts: [{ jobId, state, createdAt: now, ...(error ? { completedAt: now, error, errorCode } : {}) }], applications: [], createdAt: now, updatedAt: now };

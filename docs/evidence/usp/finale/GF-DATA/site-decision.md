@@ -4,7 +4,16 @@
 
 **B — Bihar Magnolia Residency.** Use the retained **CAD-vector sanctioned layout** for literal room/dimension work. The registry states **“Deva Nagar, Singhaul”**, Begusarai; this supports an address, not coordinates. Display the drawing in its local frame with geographic placement **`unknown`**. Do not geocode-and-claim; no keyed villa/unit placement is established.
 
-**C — Karnataka RAMP imagery area:** **pending — chosen from the frozen holdout clusters by task B1**. Imagery is Maxar via RAMP; CC BY-NC 4.0 applies to the RAMP release, with upstream imagery conditions retained. No area or coordinates selected by D2.
+**C — Karnataka RAMP imagery area (K2c):** choose frozen cluster **`6933:7322:1640`**, using only B1's
+split/chip-count metadata: the first qualifying mixed-density cluster in sorted order, with 22 retained chips,
+9 publisher-empty and 13 nonempty; the densest chip has 24 publisher features. This gives dense rows and empty
+context without looking at truth polygons or model performance. The preregistered approximately 1 km grid is
+EPSG:6933; each original chip keeps its declared EPSG:4326 TIFF affine. Imagery and candidate generation are
+**display-only `test_only`**, not a new holdout score, training signal or reopened evaluation slot. No RAMP
+truth polygon is installed as a building. CC BY-NC 4.0, publisher attribution and Maxar upstream conditions stay
+with every chip. Operational/legal clearance, measured terrain and surveyed ground footprints remain unknown.
+API installation and exact source pins are recorded in `docs/evidence/gf-backend/k2c/`; this decision alone
+is not an installation or accuracy claim.
 
 | Anchor / layer | Source and URL | Permission | CRS / vertical reference | Stage |
 | --- | --- | --- | --- | --- |

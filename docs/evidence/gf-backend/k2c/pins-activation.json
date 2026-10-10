@@ -1,0 +1,1 @@
+{"hashScope": "crlf-to-lf", "reviewed": [{"producer": "packages/server/src/modules/usp/ingestion/source-building-imagery.ts", "before": "d5ec52ad564ea5e0fd229a54661092fba6e7fbdc234af618594361613761f641", "after": "387b4ab5f6a0a2b3f2725bb883012bcb1245c08fd3a9f61e00184f7f607ba52f"}]}
