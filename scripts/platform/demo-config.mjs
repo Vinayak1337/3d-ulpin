@@ -13,6 +13,12 @@ export const demoProject = 'ulpin-demo';
 export const demoFile = join(demoDir, 'demo.env');
 export const demoOcrFile = join(demoDir, 'ocr-paths.json');
 export const demoTabularFile = join(demoDir, 'tabular-paths.json');
+export const demoDocumentFile = join(demoDir, 'document-runtime-paths.json');
+const documentRuntimeGroups = [
+  ['ULPIN_DOCUMENT_PAGES_PYTHON', 'ULPIN_DOCUMENT_PAGES_SCRATCH'],
+  ['ULPIN_PACKET_REGIONS_PYTHON', 'ULPIN_PACKET_REGIONS_PROFILE',
+    'ULPIN_PACKET_REGIONS_PROFILE_SHA256', 'ULPIN_PACKET_REGIONS_SCRATCH'],
+];
 const demoOcrProfileFile = join(demoDir, 'ocr-paths-profile.json');
 const ocrNames = ['PYTHON', 'MODELS', 'TESSERACT', 'TESSDATA', 'SCRATCH'];
 
@@ -106,6 +112,83 @@ function validateTabularArtifacts(paths) {
   }
 }
 
+/** Registered worktrees plus ancestor .git checks cover other checkouts and resolved directory junctions. */
+function documentCheckouts() {
+  try {
+    const output = execFileSync('git', ['worktree', 'list', '--porcelain'], {
+      cwd: root, encoding: 'utf8', timeout: 10000, windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    return [root, ...output.split(/\r?\n/).filter(line => line.startsWith('worktree ')).map(line => line.slice(9))];
+  } catch {
+    throw new Error('Document runtime scratch keys require checkout inventory.');
+  }
+}
+
+function insideDirectory(parent, path) {
+  const location = relative(parent, path);
+  return location !== '..' && !location.startsWith(`..${process.platform === 'win32' ? '\\' : '/'}`)
+    && !isAbsolute(location);
+}
+
+function assertDocumentScratch(path, key, checkouts) {
+  const actual = realpathSync(path);
+  if (checkouts.some(checkout => insideDirectory(realpathSync(checkout), actual))) {
+    throw new Error(`Document runtime scratch must be outside every checkout: ${key}.`);
+  }
+  for (let parent = actual; ; parent = dirname(parent)) {
+    if (existsSync(join(parent, '.git'))) {
+      throw new Error(`Document runtime scratch must be outside every checkout: ${key}.`);
+    }
+    if (dirname(parent) === parent) break;
+  }
+}
+
+function validateDocumentRuntimePath(paths, key, checkouts) {
+  const value = paths[key];
+  if (key.endsWith('_SHA256')) {
+    if (typeof value !== 'string' || !/^[a-f0-9]{64}$/.test(value)) {
+      throw new Error(`Document runtime hash is invalid: ${key}.`);
+    }
+    return;
+  }
+  if (typeof value !== 'string' || !isAbsolute(value) || !existsSync(value)) {
+    throw new Error(`Document runtime path unavailable: ${key}.`);
+  }
+  const entry = statSync(value);
+  const directory = key.endsWith('_SCRATCH');
+  if (directory ? !entry.isDirectory() : !entry.isFile()) {
+    throw new Error(`Document runtime path has the wrong kind: ${key}.`);
+  }
+  if (directory) assertDocumentScratch(value, key, checkouts);
+}
+
+/** Optional non-secret paths. Each runtime is either wholly configured or absent; never read demo.env here. */
+export function readDemoDocumentRuntime(file = demoDocumentFile) {
+  if (!existsSync(file)) return {};
+  let paths;
+  try { paths = JSON.parse(readFileSync(file, 'utf8')); }
+  catch { throw new Error('Document runtime path keys require readable valid JSON.'); }
+  const keys = documentRuntimeGroups.flat();
+  if (!paths || Array.isArray(paths) || typeof paths !== 'object'
+    || Object.keys(paths).some(key => !keys.includes(key))) {
+    throw new Error('Document runtime path configuration has unexpected keys.');
+  }
+  for (const group of documentRuntimeGroups) {
+    if (group.some(key => Object.hasOwn(paths, key)) && group.some(key => !Object.hasOwn(paths, key))) {
+      throw new Error(`Document runtime requires keys: ${group.join(', ')}.`);
+    }
+  }
+  try {
+    const checkouts = documentCheckouts();
+    for (const key of Object.keys(paths)) validateDocumentRuntimePath(paths, key, checkouts);
+  } catch (error) {
+    // Filesystem exceptions contain configured values. Only our closed validation messages may escape.
+    if (error.message.startsWith('Document runtime')) throw error;
+    throw new Error('Document runtime path keys could not be validated.');
+  }
+  return paths;
+}
+
 export const gatewayFlag = 'ULPIN_MODEL_GATEWAY_ENABLED';
 export const gatewayConfigKey = 'ULPIN_MODEL_GATEWAY_CONFIG';
 export const teacherAdapterKey = 'ULPIN_MAPPING_TEACHER_ADAPTER';
@@ -177,7 +260,7 @@ export function readDemo() {
     console.error(error.message); // Only path-validation messages, never demo.env values.
     throw error;
   }
-  return { ...readDemoSettings(), ...readDemoOcrPaths(), ...tabular };
+  return { ...readDemoSettings(), ...readDemoOcrPaths(), ...tabular, ...readDemoDocumentRuntime() };
 }
 /** The demo.env part of readDemo(). Only tests and the gateway script's unrenamed copy pass another file. */
 export function readDemoSettings(file = demoFile) {
