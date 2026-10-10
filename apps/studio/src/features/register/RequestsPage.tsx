@@ -26,7 +26,7 @@ export const requestTitle = (r: Pick<RegisterRequest, 'kind' | 'buildingName' | 
 
 /**
  * Register: requests from the public portal for officers to review (a building's register, or a
- * correction to a released record), and every building on record with its 3D ULPIN.
+ * correction to a released record), and the buildings of every area, recorded in the registry or not.
  */
 export function RegistryIndex() {
   const [params, setParams] = useSearchParams();
@@ -37,7 +37,7 @@ export function RegistryIndex() {
       <header className={styles.head}>
         <div className={styles.titles}>
           <h1 className="ul-title">Register</h1>
-          <p>Requests from the public portal, and every building on record.</p>
+          <p>Requests from the public portal, and the buildings of every area, recorded or not.</p>
         </div>
         <div className={styles.tabs}>
           <Tabs label="Register" value={view} onChange={(v) => setParams(v === 'requests' ? {} : { tab: v })}
