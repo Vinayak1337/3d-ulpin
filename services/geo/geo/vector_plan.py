@@ -32,6 +32,45 @@ Parameters = Mapping[str, Any]
 Coordinate = tuple[float, float]
 Segment = tuple[Coordinate, Coordinate]
 Axis = Literal[0, 1]
+LayerMatcher = re.Pattern[str] | frozenset[str]
+
+
+@dataclass(frozen=True)
+class LayerProfile:
+    """Explicit source-family layer semantics; no layerless geometry guessing."""
+
+    name: str
+    wall_hatch: LayerMatcher
+    floor_slab: LayerMatcher
+    built_outline: LayerMatcher
+    column_window_quads: LayerMatcher
+    diagnostic_wall_layers: tuple[str, ...] = ()
+
+    def matches_architecture(self, layer: str) -> bool:
+        return (
+            matches_layer(self.built_outline, layer)
+            or matches_layer(self.column_window_quads, layer)
+            or layer in self.diagnostic_wall_layers
+        )
+
+    def matches_wall_layer(self, layer: str) -> bool:
+        return matches_layer(self.wall_hatch, layer) or self.matches_architecture(layer)
+
+
+def matches_layer(matcher: LayerMatcher, layer: str) -> bool:
+    if isinstance(matcher, re.Pattern):
+        return matcher.fullmatch(layer) is not None
+    return layer in matcher
+
+
+MAGNOLIA_CAD_LAYERS = LayerProfile(
+    name="magnolia-cad/1",
+    wall_hatch=re.compile(r"A- wall hatch", re.I),
+    floor_slab=frozenset({"A- floor slab"}),
+    built_outline=frozenset({"A- built"}),
+    column_window_quads=frozenset({"A- Columns", "A- windows"}),
+    diagnostic_wall_layers=("Wall", "A- built", "A- windows", "A- Columns"),
+)
 
 METHOD = "deterministic:vector-plan@1"
 DEFAULTS: JsonDict = {
@@ -44,7 +83,7 @@ DEFAULTS: JsonDict = {
     "scaleInlierRelativeTolerance": 0.02,
     "minimumScaleSupports": 4,
     "minimumScaleInlierFraction": 0.8,
-    "wallLayers": ["Wall", "A- built", "A- windows", "A- Columns"],
+    "wallLayers": list(MAGNOLIA_CAD_LAYERS.diagnostic_wall_layers),
     "curvePolicy": "exclude: door swings are not walls",
     "gapPolicy": "bounded collinear wall-end/junction closure; every bridge is a candidate",
     "maximumOpeningWidthM": 1.85,
@@ -59,7 +98,8 @@ DEFAULTS: JsonDict = {
 LIMITATIONS = [
     "All regions are candidates, including unlabelled closed faces; not a reviewed room inventory.",
     "Opening closures are bounded source-aligned hypotheses; every bridge requires officer review.",
-    "Floor titles are literal panel associations only, not a reviewed level/unit/building association or surveyed frame.",
+    "Floor titles are literal panel associations only, "
+    "not a reviewed level/unit/building association or surveyed frame.",
     "Metric geometry is drawing-derived, not an authorised measurement; written dimensions take precedence.",
     "Layer semantics and the closed-face size filter may omit spaces or retain non-room faces.",
 ]
@@ -131,6 +171,7 @@ class PageWork:
     assigned: set[tuple[int, int]] = field(default_factory=set)
     linework: JsonDict = field(default_factory=dict)
     scale: JsonDict = field(default_factory=lambda: unknown_scale())
+    layer_profile_gap: bool = False
 
 
 @dataclass(frozen=True)
@@ -342,29 +383,22 @@ def _invisible_path(path: JsonDict) -> str | None:
     return None
 
 
-def _architectural_rejection(path: JsonDict, params: Parameters, named: bool) -> str | None:
+def _architectural_rejection(path: JsonDict, profile: LayerProfile) -> str | None:
     layer = path.get("layer", "")
     if re.search(r"hatch|text|dim|grid|furn|tree|rein|ele[v ]|schedule|tag", layer, re.I):
         return "annotation_hatch_or_nonplan_layer"
-    if named and layer not in params["wallLayers"]:
+    if not profile.matches_architecture(layer):
         return "not_in_architectural_layer_allowlist"
-    if not named and (path["width"] < 0.3 or path.get("dashes") != "[] 0" or max(path["color"]) > 0.5):
-        return "fallback_thin_dashed_or_pale_stroke"
     return None
 
 
-def _retain_source_segments(
-    path: JsonDict, texts: list[JsonDict], params: Parameters, named: bool, counts: Counter[str]
-) -> list[LineString]:
+def _retain_source_segments(path: JsonDict, params: Parameters, counts: Counter[str]) -> list[LineString]:
     segments = []
     for start, end in item_segments(path):
         if math.dist(start, end) <= params["snapTolerancePdf"]:
             counts["short_segment"] += 1
             continue
         segment = LineString([start, end])
-        if not named and any(box(*text["bbox"]).covers(segment) for text in texts):
-            counts["stroke_inside_native_text_bbox"] += 1
-            continue
         segments.append(segment)
     counts["retained_paths" if segments else "no_retained_straight_segments"] += 1
     counts["excluded_curves"] += sum(item[0] == "c" for item in path["items"])
@@ -377,11 +411,14 @@ def _linework_diagnostics(
     counts: Counter[str],
     layers: Counter[str],
     params: Parameters,
-    named: bool,
+    profile: LayerProfile,
 ) -> JsonDict:
+    wall_layers = list(profile.diagnostic_wall_layers)
+    if not wall_layers:
+        wall_layers = sorted(layer for layer in layers if profile.matches_architecture(layer))
     return {
-        "profile": "named_architectural_layers" if named else "conservative_layerless_strokes",
-        "wallLayers": params["wallLayers"] if named else [],
+        "profile": "named_architectural_layers",
+        "wallLayers": wall_layers,
         "pathsByLayer": dict(layers),
         "filters": dict(counts),
         "sourceSegments": len(walls),
@@ -393,14 +430,13 @@ def _linework_diagnostics(
 
 def extract_linework(
     drawings: list[JsonDict],
-    texts: list[JsonDict],
     params: Parameters,
+    profile: LayerProfile,
 ) -> tuple[list[LineString], list[JsonDict], JsonDict]:
     walls: list[LineString] = []
     dimensions: list[JsonDict] = []
     counts: Counter[str] = Counter()
     layers: Counter[str] = Counter()
-    named = any(drawing.get("layer") in params["wallLayers"] for drawing in drawings)
     for path in drawings:
         layer = path.get("layer", "")
         layers[layer] += 1
@@ -414,12 +450,12 @@ def extract_linework(
                 for start, end in item_segments(path)
                 if math.dist(start, end) > 0.01
             )
-        rejection = _architectural_rejection(path, params, named)
+        rejection = _architectural_rejection(path, profile)
         if rejection:
             counts[rejection] += 1
             continue
-        walls.extend(_retain_source_segments(path, texts, params, named, counts))
-    return walls, dimensions, _linework_diagnostics(walls, dimensions, counts, layers, params, named)
+        walls.extend(_retain_source_segments(path, params, counts))
+    return walls, dimensions, _linework_diagnostics(walls, dimensions, counts, layers, params, profile)
 
 
 def _dimension_axes(segments: list[JsonDict]) -> list[JsonDict]:
@@ -793,7 +829,7 @@ def _column_window_quads(path: JsonDict, evidence: WallEvidence, factor: float, 
 
 
 def collect_wall_evidence(
-    paths: list[JsonDict], panel: JsonDict, factor: float, params: Parameters, extent: Polygon
+    paths: list[JsonDict], panel: JsonDict, factor: float, params: Parameters, extent: Polygon, profile: LayerProfile
 ) -> WallEvidence:
     evidence = WallEvidence()
     tolerance = params["snapTolerancePdf"]
@@ -802,15 +838,15 @@ def collect_wall_evidence(
         if not in_scope(list(path["rect"]), [panel["panelBboxPdf"]]):
             continue
         layer = path.get("layer", "")
-        if layer == "A- floor slab":
+        if matches_layer(profile.floor_slab, layer):
             _slab_contour_segments(path, evidence, tolerance)
             continue
         if not in_scope(list(path["rect"]), [band]):
             evidence.rejected["outside_hatch_building_band"] += 1
             continue
-        if layer == "A- built":
+        if matches_layer(profile.built_outline, layer):
             _built_segments_and_outline(path, evidence, tolerance, factor)
-        elif layer in {"A- Columns", "A- windows"} and path.get("color") and max(path["color"]) < 0.95:
+        elif matches_layer(profile.column_window_quads, layer) and path.get("color") and max(path["color"]) < 0.95:
             _column_window_quads(path, evidence, factor, params)
         else:
             evidence.rejected["nonarchitectural_or_hatch_support_only"] += 1
@@ -1016,14 +1052,19 @@ def mask_diagnostics(
 
 
 def mask_regions(
-    drawings: list[JsonDict], panel: JsonDict, factor: float | None, params: Parameters, groups: list[JsonDict]
+    drawings: list[JsonDict],
+    panel: JsonDict,
+    factor: float | None,
+    params: Parameters,
+    groups: list[JsonDict],
+    profile: LayerProfile = MAGNOLIA_CAD_LAYERS,
 ) -> tuple[list[Polygon], Polygon | None, JsonDict]:
     """Compose source wall evidence; hatch strokes support occupancy, not room edges."""
     paths = [path for path in drawings if in_scope(list(path["rect"]), [panel["panelBboxPdf"]])]
     hatch = [
         LineString([start, end])
         for path in paths
-        if re.fullmatch(r"A- wall hatch", path.get("layer", ""), re.I)
+        if matches_layer(profile.wall_hatch, path.get("layer", ""))
         for start, end in item_segments(path)
         if math.dist(start, end) > 0.1
     ]
@@ -1031,7 +1072,7 @@ def mask_regions(
         gap = "no_scale" if factor is None else "no_hatch_supported_wall_mask"
         return [], None, {"gap": gap, "bridges": []}
     extent = unary_union(hatch).envelope
-    evidence = collect_wall_evidence(paths, panel, factor, params, extent)
+    evidence = collect_wall_evidence(paths, panel, factor, params, extent, profile)
     strips = pair_wall_strips(evidence, STRtree(hatch), factor, params)
     wall_parts = [*evidence.wall_parts, *(strip.polygon for strip in strips)]
     bridges = opening_bridges(strips, factor, params)
@@ -1101,11 +1142,17 @@ def _prepare_page(
     classification: JsonDict,
     regions: Sequence[Sequence[float]],
     params: Parameters,
+    profile: LayerProfile,
 ) -> tuple[PageWork, list[JsonDict], list[JsonDict]]:
     work = PageWork()
     dimensions: list[JsonDict] = []
+    if classification["kind"] != "not_vector" and not any(
+        profile.matches_wall_layer(drawing.get("layer", "")) for drawing in drawings
+    ):
+        work.layer_profile_gap = True
+        return work, selected, dimensions
     if classification["kind"] == "vector_plan":
-        _, dimensions, work.linework = extract_linework(drawings, texts, params)
+        _, dimensions, work.linework = extract_linework(drawings, params, profile)
         work.panels = detect_panels(page, texts, regions)
         if params.get("panelTitleSelection"):
             work.panels = [panel for panel in work.panels if panel["floorLabel"] in params["panelTitleSelection"]]
@@ -1292,11 +1339,14 @@ def _process_panel(
     source: JsonDict,
     parameter_hash: str,
     params: Parameters,
+    profile: LayerProfile,
 ) -> None:
     texts = [text for text in selected if in_scope(text["bbox"], [panel["panelBboxPdf"]])]
     _fit_panel_scale(panel, texts, dimensions, params)
     groups = group_room_labels(texts)
-    polygons, outline, topology = mask_regions(drawings, panel, panel["scale"]["metresPerPdfPoint"], params, groups)
+    polygons, outline, topology = mask_regions(
+        drawings, panel, panel["scale"]["metresPerPdfPoint"], params, groups, profile
+    )
     panel["topology"] = topology
     panel["originPdf"] = [outline.bounds[0], outline.bounds[3]] if outline is not None else None
     panel["originMethod"] = "building_outline_bbox_lower_left; panel_local_not_georeferenced"
@@ -1315,7 +1365,9 @@ def _process_panel(
     )
 
 
-def _page_gaps(classification: JsonDict, panels: list[JsonDict]) -> list[str]:
+def _page_gaps(classification: JsonDict, panels: list[JsonDict], layer_profile_gap: bool) -> list[str]:
+    if layer_profile_gap:
+        return ["no_matching_layer_profile"]
     if classification["kind"] != "vector_plan":
         return [classification["kind"]]
     if not panels:
@@ -1364,7 +1416,7 @@ def _page_result(
         "candidates": work.candidates,
         "unattachedText": unattached,
         "sourceMeasurementRestrictions": _measurement_restrictions(texts),
-        "gaps": _page_gaps(classification, work.panels),
+        "gaps": _page_gaps(classification, work.panels, work.layer_profile_gap),
         "summary": summary,
         "runtimeSeconds": time.perf_counter() - start,
     }
@@ -1376,15 +1428,20 @@ def read_page(
     parameter_hash: str,
     params: Parameters,
     regions: Sequence[Sequence[float]] | None = None,
+    layer_profile: LayerProfile = MAGNOLIA_CAD_LAYERS,
 ) -> JsonDict:
     start = time.perf_counter()
     regions = regions or []
     drawings, texts = page.get_drawings(), text_lines(page)
     selected = [text for text in texts if in_scope(text["bbox"], regions)]
     classification = classify(drawings, texts, page)
-    work, selected, dimensions = _prepare_page(page, drawings, texts, selected, classification, regions, params)
+    work, selected, dimensions = _prepare_page(
+        page, drawings, texts, selected, classification, regions, params, layer_profile
+    )
     for panel in work.panels:
-        _process_panel(page, drawings, selected, dimensions, panel, work, source_manifest, parameter_hash, params)
+        _process_panel(
+            page, drawings, selected, dimensions, panel, work, source_manifest, parameter_hash, params, layer_profile
+        )
     return _page_result(page, texts, selected, classification, work, regions, start)
 
 
