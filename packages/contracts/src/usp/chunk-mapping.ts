@@ -16,7 +16,8 @@ export const MappingQuestionSchema = z.strictObject({ sourceField: z.string().mi
 export const TabularChunkResultSchema = z.strictObject({
   profile: ColumnProfileDocumentSchema, plan: MappingPlanV2Schema,
   fieldSources: z.array(z.strictObject({ sourceField: z.string().min(1).max(512),
-    source: z.enum(['memory', 'student', 'teacher', 'officer']), method: z.string().min(1).max(300) })).max(256),
+    source: z.enum(['memory', 'student', 'teacher', 'officer', 'unanswered']),
+    method: z.string().min(1).max(300) })).max(256),
   questions: z.array(MappingQuestionSchema).max(256), metrics: MappingChunkMetricsSchema,
   sourceRows: z.array(z.number().int().positive()).max(100),
   rows: z.array(z.strictObject({ row: z.number().int().nonnegative(),

@@ -6,8 +6,8 @@ import { profileColumns } from './column-profile';
 import { layoutFingerprint, tabularLayoutFingerprint, validateMappingPlanV2 } from './mapping-plan-v2';
 import { lookupMappingMemory } from './mapping-memory';
 import {
-  columnProfileHash, executeTeacherMappingDryRun, manualTeacherPlan, mappingContextFromColumnProfile, proposeMapping,
-  learnerVersion, type MappingRoutingResult,
+  columnProfileHash, executeTeacherMappingDryRun, manualMappingMethod, manualTeacherPlan,
+  mappingContextFromColumnProfile, proposeMapping, learnerVersion, type MappingRoutingResult,
 } from './mapping-teacher';
 
 const MAX_JOB_LAYOUTS = 32;
@@ -83,13 +83,13 @@ function reuseProposal(
     return { ...manualTeacherPlan(profile, 'MAPPING_CACHED_PLAN_STALE'),
       activeLearnerVersion: prior.activeLearnerVersion, memoryReasonCode: checked.errors[0].code,
       studentReasonCode: null, fieldSources: profile.columns.map(column => ({
-        sourceField: column.name, source: 'memory', method: prior.plan.method,
+        sourceField: column.name, source: 'unanswered', method: manualMappingMethod('MAPPING_CACHED_PLAN_STALE'),
       })) };
   }
   return { ...prior, plan: checked.plan, profileHash: columnProfileHash(profile), attempts: 0,
     activeLearnerVersion: prior.activeLearnerVersion,
     fieldSources: prior.fieldSources.map(field => ({ ...field,
-      source: field.source === 'officer' ? 'officer' : 'memory' })) };
+      source: field.source === 'officer' || field.source === 'unanswered' ? field.source : 'memory' })) };
 }
 
 function chunkMetrics(
@@ -102,7 +102,7 @@ function chunkMetrics(
   const event = CaseIngestionChangeSchema.parse({ kind: 'mapping.chunk', jobId: input.jobId,
     chunkIndex: input.chunkIndex, layout: memory ? 'memory' : 'new', teacherCalls: proposal.attempts,
     memoryHits: Number(memory), studentFields: count('student'), teacherFields: count('teacher'),
-    needsInput: questions.length, latencyMs,
+    unansweredFields: count('unanswered'), needsInput: questions.length, latencyMs,
     learnerVersion: proposal.activeLearnerVersion });
   if (event.kind !== 'mapping.chunk') throw new Error('MAPPING_CHUNK_EVENT_INVALID');
   return event;
