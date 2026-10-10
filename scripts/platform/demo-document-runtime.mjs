@@ -1,8 +1,8 @@
 // Owner-run frozen runtime builder. Dry runs use task-private output and never read demo.env.
 import { execFileSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, isAbsolute, join, resolve } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, realpathSync, renameSync, statSync, writeFileSync } from 'node:fs';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { demoDir, readDemoDocumentRuntime, readDemoOcrPaths, safeEnvironment } from './demo-config.mjs';
 import { ownedProcess } from './processes.mjs';
@@ -78,7 +78,9 @@ function assertBuildLocation(dryRun, output) {
     return demoDir;
   }
   if (!output || !isAbsolute(output)) throw new Error('--dry-run requires --out with an absolute temporary folder.');
-  const destination = resolve(output).toLowerCase();
+  let parent = resolve(output);
+  while (!existsSync(parent) && dirname(parent) !== parent) parent = dirname(parent);
+  const destination = resolve(realpathSync(parent), relative(parent, resolve(output))).toLowerCase();
   const protectedRuntime = resolve('E:/BhuAayam-data/runtime').toLowerCase();
   if (destination === protectedRuntime || destination.startsWith(protectedRuntime + '/')) {
     throw new Error('--out must be a temporary folder, not the shared runtime.');
@@ -89,8 +91,6 @@ function assertBuildLocation(dryRun, output) {
   if (existsSync(join(output, 'document-runtime-paths.json'))) {
     throw new Error('--out already contains document runtime keys; choose a fresh folder.');
   }
-  let parent = resolve(output);
-  while (!existsSync(parent) && dirname(parent) !== parent) parent = dirname(parent);
   let insideCheckout = false;
   try {
     insideCheckout = execFileSync('git', ['-C', parent, 'rev-parse', '--is-inside-work-tree'], {

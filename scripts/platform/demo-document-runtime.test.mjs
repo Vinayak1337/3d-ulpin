@@ -110,12 +110,23 @@ test('scratch cannot live in a registered checkout, another clone, or a junction
 });
 
 test('normal build is refused in a worker checkout, and a dry run needs an external absolute folder', () => {
-  assert.throws(() => buildDocumentRuntime(), /requires the demo serving checkout/);
+  // Supplying --out makes this refusal safe even if tests are run from the real, stopped demo checkout.
+  assert.throws(() => buildDocumentRuntime({ out: marker }), /requires the demo serving checkout/);
   assert.throws(() => buildDocumentRuntime({ dryRun: true }), /--out/);
   assert.throws(() => buildDocumentRuntime({ dryRun: true, out: marker }), /absolute temporary folder/);
   assert.throws(() => buildDocumentRuntime({ dryRun: true, out: root }), /outside every checkout/);
   assert.throws(() => buildDocumentRuntime({ dryRun: true, out: 'E:/BhuAayam-data/runtime/ulpin-demo' }),
     /not the shared runtime/);
+});
+
+test('dry-run output junctions cannot point into the shared runtime', {
+  skip: process.platform !== 'win32' || !existsSync('E:/BhuAayam-data/runtime'),
+}, context => {
+  const folder = temporaryFolder(context);
+  const junction = join(folder, 'runtime-junction');
+  symlinkSync('E:/BhuAayam-data/runtime', junction, 'junction');
+  // An invalid interpreter prevents any build writes even if the destination guard regresses.
+  assert.throws(() => buildDocumentRuntime({ dryRun: true, out: junction, python: marker }), /not the shared runtime/);
 });
 
 test('CLI refusals print key names, never a configured interpreter value or native exception', context => {
