@@ -169,7 +169,7 @@ similarity alone. Use document-association(-targets/-authority).ts. Report preci
 ## P4.7 Superseded: distillation is now part of P3.5
 
 As of 10 October, distillation into a local student is the core of the translate-and-learn learner (P3.5):
-- the development teacher is Claude (Opus 5.5, the lead);
+- the development teacher is the provider that has limit: Opus 5.5 on Claude, `gpt-6.1-sol` on the codex pool ([WORKERS.md §8](WORKERS.md#8-teacher-and-learner-work-the-model-follows-the-provider));
 - the runtime teacher is Sarvam;
 - the owner allows learning from Sarvam outputs.
 

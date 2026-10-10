@@ -3,8 +3,8 @@
 Goal: any reasonable Indian input is accepted automatically. Deterministic readers handle file formats. A **translate-and-learn** pipeline handles meaning: a teacher model translates unfamiliar layouts, code verifies the translation, an officer reviews only what is uncertain, and a local learner absorbs every verified translation, so later chunks and similar files go through without the teacher.
 
 **Updated 10 October.** Decided by the owner:
-- **Claude (Opus 5.5, the lead) is the development teacher and model designer.** It labels public development files to bootstrap the learner.
-- `gpt-6.1-sol` workers build, verify, train and evaluate.
+- **A development teacher labels public development files to bootstrap the learner; learner work verifies, builds, trains and evaluates the student.** Neither role belongs to a model by name (changed 10 October evening). Each goes to the provider that has limit, and the model follows the provider: Claude Code CLI or a Claude desktop background task → Opus 5.5; pi codex-pool → `gpt-6.1-sol` ([WORKERS.md §8](WORKERS.md#8-teacher-and-learner-work-the-model-follows-the-provider)).
+- The lead designs the method and reviews.
 - **Sarvam is the runtime teacher** inside the product.
 - The learner may train on teacher outputs: our mapping model doesn't compete with any provider.
 - This was full_product (P10.1) and is now part of the selection sprint.
@@ -126,11 +126,13 @@ from verified teacher outputs and officer decisions (distillation: teacher answe
 trains on them; the test is unseen layouts).
 
 Training sources, all recorded with lineage (method model:<teacher>@<version> | reviewer:<id>):
-a. Development teacher (bootstrap, before the demo): Claude (Opus 5.5, the lead) labels compact column
+a. Development teacher (bootstrap, before the demo): a teacher worker labels compact column
    profiles (header, inferred type, <= 10 masked sample values, neighbouring headers) of the P2.2 DEVELOPMENT
    families and an extra unlabelled pool of public files (data.gov.in and portal downloads, >= 5 more families)
-   into MappingPlan v2 JSON (target, operation, confidence, rationale). A worker prepares
-   profiles.jsonl; the lead returns teacher-labels.jsonl; the worker's deterministic verifier filters it.
+   into MappingPlan v2 JSON (target, operation, confidence, rationale). The teacher is the provider that has
+   limit (WORKERS.md §8): Opus 5.5 on Claude, gpt-6.1-sol on the codex pool, in a new session that opens
+   nothing else. A worker prepares profiles.jsonl; the teacher returns teacher-labels.jsonl, recorded under
+   its own model id; a separate session's deterministic verifier filters it.
    The held-out families stay in a separate folder that the teacher never opens. Only public files reach
    the teacher.
 b. Runtime teacher: Sarvam outputs that pass the verifier.
@@ -152,9 +154,12 @@ Build, smallest first:
    the active version is recorded with each proposal.
 5. Stage B (optional, GPU only after the building fine-tune frees it): distil the accumulated verified examples
    into a small local model (LoRA on a 0.5–1.5B instruct model, or a cross-encoder ranker) only when >= 300
-   verified examples from >= 5 families exist; keep it only if it beats Stage A on held-out families.
+   verified positive-target examples (unknown labels don't count) from >= 5 families exist; keep it only if
+   it beats Stage A on held-out families.
 RL is not a label source. If later justified, the routing decision (trust student / ask teacher / ask officer)
 can become a contextual bandit with reward = verified-correct minus call cost.
+If the student still commits no real field after the D1f labels and one retrain, the parked fallback is
+FALLBACK-LEARNER.md (multiply the real positives; then a fine-tuned student with GRPO). Don't start it otherwise.
 
 Measure on the held-out families: teacher calls and latency per chunk over a multi-chunk file and across a
 second similar file (the curve must fall), precision on committed fields, recall, abstention, and

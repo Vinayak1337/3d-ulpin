@@ -40,6 +40,7 @@ Always use the first spawner in this list that isn't limited.
 | Mechanical: renames, regeneration, evidence formatting, small doc edits | `haiku` | `high` or `xhigh` |
 | Most build tasks: features with tests, data acquisition, diagnosis scripts, UI | `sonnet` | `high` |
 | Hard backend, governance or cross-module design; work that failed once on Sonnet | `opus` | `high` or `xhigh` |
+| Teacher labelling and learner work (§8) | `opus` | `high` or `xhigh` |
 
 Pick the cheapest row that can do the task properly. Don't use `max`.
 
@@ -134,3 +135,36 @@ Each worker ends its commit messages with its own line:
 | Claude CLI or own subagent | `Co-Authored-By: Claude <Haiku\|Sonnet\|Opus> 5.5 <noreply@anthropic.com>` |
 
 `_common.md` carries the codex line. For a Claude worker, swap it when building the `.full.md` file.
+
+## 8. Teacher and learner work: the model follows the provider
+
+Owner decision, 10 October 2026 (evening). It replaces "Claude, the lead, is the development teacher, and `gpt-6.1-sol` workers build the student". No model holds either role by name.
+
+**The two development roles**
+- **Teacher:** labels public development material (column profiles, publisher dictionary extracts, public document pages) into `pseudo_label` lines.
+- **Learner work:** verifies those labels, and builds, trains and evaluates the local student.
+
+**Who takes a role:** a provider that has limit when the task is dispatched (§2 and §4 say how to tell). The provider fixes the model:
+
+| Provider | Model for teacher or learner work |
+| --- | --- |
+| Claude Code CLI worker, or a Claude desktop background task (the lead's own subagent) | Opus 5.5 (`opus`) |
+| pi codex-pool | `gpt-6.1-sol` |
+
+| Limit state | Teacher | Learner work |
+| --- | --- | --- |
+| Only one provider has limit | that provider | that provider, in a separate session |
+| Both have limit | Claude | codex |
+| Neither has limit | wait for the first timer (§4) | wait for the first timer (§4) |
+
+- Availability always decides first. The split when both have limit is the lead's tie-break: a different model checks the labels than wrote them.
+- A role moves to the other provider at a limit like any other task (§5): the next worker continues from the files, with a RESUME header.
+
+**Rules that hold whichever provider teaches**
+- **A teacher session is new and narrow.** It opens only the profiles and extracts its task file names. A session that has opened held-out material (an acquisition or evaluation session) is never used or resumed as a teacher, and a teacher session never evaluates.
+- **Each label line names the model that wrote it:** `model:claude-opus-5-5@dev-2026-10` or `model:gpt-6.1-sol@dev-2026-10`. A round by one provider is never recorded under the other's id.
+- **Rounds stay small and task-shaped.** A labelling round is a normal worker task over that round's profiles, never a bulk harvest of model outputs. The learners stay narrow classifiers and mappers for our own records. They compete with no provider, which is the basis of the owner's permission.
+- **00-STANDARDS §7 still applies in full:** the deterministic verifier runs before learning, a `pseudo_label` is never truth, held-out families are closed to every teacher, officer corrections come first, and only public material goes to an external provider.
+- **Sarvam stays the runtime teacher** inside the product, through the model gateway. This section covers development only.
+
+**Open on 10 October:** the label verifier accepts only the Claude id (`DEVELOPMENT_TEACHER_METHOD` in `packages/server/src/modules/usp/ingestion/teacher-labels.ts`). Until task T2 widens it, a `gpt-6.1-sol` teacher's labels are refused, so a codex teacher round waits for T2.

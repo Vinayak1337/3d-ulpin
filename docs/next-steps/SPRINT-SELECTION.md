@@ -37,9 +37,9 @@ Every number on screen comes from a result JSON. Unknowns are shown as unknown.
 | Workers | **pi codex-pool**, `gpt-6.1-sol`, effort high or xhigh ("max" isn't offered) | Protocol in §3. |
 | Labels | **No team labelling.** Public, human-reviewed data plus source literals | Buildings: RAMP. Storeys: official RERA registry fields. Plans: vector literals plus public sets. Mapping: publisher data dictionaries. |
 | Agent provider (runtime teacher) | **Sarvam** (`sarvam-105b`, JSON-schema output), for testing | Uses the existing gateway. Every response is recorded so the demo can replay. |
-| Development teacher and model designer | **Claude (Opus 5.5, the lead).** `gpt-6.1-sol` workers build, verify, train and evaluate the student | Claude labels public development files to bootstrap the learner (task T1). Anthropic's usage policy permits non-competing specialised classifiers. |
-| Learning from teacher output | **Allowed** for Claude's and Sarvam's outputs. The owner removed the restriction: our mapping learner doesn't compete (Sarvam's terms ban only competing models) | Record the date and the reason in AGENTS.md. Teacher outputs stay `pseudo_label`, never evaluation truth. No teacher sees the held-out families. |
-| Learner method | Distillation (teacher → verified outputs → student), as in the reference video | Design in §5. RL comes only later, as a routing policy. |
+| Development teacher and learner work | **The provider that has limit; the model follows the provider** (changed 10 October evening). Claude Code CLI or a Claude desktop background task → Opus 5.5; pi codex-pool → `gpt-6.1-sol`. Either may teach, do the learner work (verify, build, train, evaluate the student), or both. The lead designs the method and reviews | Rules in [WORKERS.md §8](WORKERS.md#8-teacher-and-learner-work-the-model-follows-the-provider). T1 and T1b were labelled by the lead (Opus 5.5) before this change. Anthropic's usage policy permits non-competing specialised classifiers; OpenAI's terms bar using output to develop models that compete with OpenAI. Ours are narrow classifiers and mappers for land records. |
+| Learning from teacher output | **Allowed** for the development teacher's outputs (Opus 5.5 or `gpt-6.1-sol`) and Sarvam's. The owner removed the restriction: our mapping learner doesn't compete (Sarvam's terms ban only competing models) | Record the date and the reason in AGENTS.md. Teacher outputs stay `pseudo_label`, never evaluation truth. No teacher sees the held-out families. |
+| Learner method | Distillation (teacher → verified outputs → student), as in the reference video | Design in §5. RL comes only later, as a routing policy. If this approach fails, the parked fallback is [FALLBACK-LEARNER.md](FALLBACK-LEARNER.md). |
 | Several Sarvam keys | **One configured key at a time. No automatic rotation across accounts to stretch free credits** (AGENTS.md H20: no farming or quota evasion) | When credits run out, calls fail closed to replay/manual mode. Switching the configured key is the owner's call. |
 | Downloads | Approved | RAMP Karnataka plus 6 Bangladesh regions (~9.7 GiB), CUDA PyTorch and rfdetr (~4 GiB), weights, and small public files. Everything goes under `E:/BhuAayam-data/`. |
 | Git | Push `staging` now, then at milestones only | Never `main`, never force. |
@@ -50,7 +50,7 @@ Every number on screen comes from a result JSON. Unknowns are shown as unknown.
 
 - **Lead (Claude, Opus 5.5).**
   - Plans, designs the models and writes task files.
-  - Is the **development teacher** for the learner (T1).
+  - Designs the teacher and learner method. Labelling and learner work are dispatched like any task ([WORKERS.md §8](WORKERS.md#8-teacher-and-learner-work-the-model-follows-the-provider)).
   - Reviews returns and integrates into `staging`.
   - Updates STATUS.md and the claims, and pushes at milestones.
   - Doesn't do the build work itself.
@@ -146,7 +146,7 @@ chunk ─► memory (accepted plan for this layout fingerprint) ──hit──�
 ```
 
 - **Two teachers, one student:**
-  - **Before the demo:** Claude (the lead) labels public development files (T1) to bootstrap the student. The student exists before Sarvam runs once.
+  - **Before the demo:** the development teacher labels public development files (T1) to bootstrap the student. The teacher is the provider that has limit: Opus 5.5 on Claude, `gpt-6.1-sol` on the codex pool ([WORKERS.md §8](WORKERS.md#8-teacher-and-learner-work-the-model-follows-the-provider)). The student exists before Sarvam runs once.
   - **At runtime:** Sarvam translates layouts the student can't handle.
   - Both teachers' outputs pass the same verifier, and officer corrections outrank both.
   - The held-out families never reach any teacher. Evaluation truth is the publisher's documented column meaning.
@@ -155,7 +155,7 @@ chunk ─► memory (accepted plan for this layout fingerprint) ──hit──�
   - Features: header text (including Devanagari), value shapes (dates, lakh grouping, area units, khasra patterns), types and neighbouring columns.
   - The confidence threshold is set on a calibration family, so committed fields keep precision 1.0.
 - **Student, Stage B (GPU, optional, after the building fine-tune frees the GPU).** Distil the verified Sarvam outputs into a small local model (LoRA on a 0.5–1.5B instruct model, or a cross-encoder) for layouts it hasn't seen.
-  - Start only with ≥ 300 verified examples from ≥ 5 layout families.
+  - Start only with ≥ 300 verified **positive-target** examples from ≥ 5 layout families. `unknown` labels don't count: A4c had 591 examples and only 15 positives.
   - Keep it only if it beats Stage A on held-out families.
 - **Where RL fits.** Not as a label source. Later, the routing choice (trust the student / ask Sarvam / ask the officer) can be a contextual bandit, with reward = verified-correct minus call cost. That needs a few hundred reviewed decisions first.
 - **What we measure:**
@@ -183,7 +183,7 @@ Workers keep their session across tasks. G1 is the only GPU owner. R1 owns the r
 | A1 | Canonical mapping vocabulary + MappingPlan v2 + executor (P1.1, P3.4) | A1 / xhigh | — | Contracts, executor, validator with literal rejection |
 | A2 | Sarvam teacher adapter, budget ledger, record/replay, fail-closed (P3.4) | A1 / xhigh | A1 | One live call recorded and replayed |
 | A3 | Chunked agent loop with questions and SSE progress (P3.4) | A1 / xhigh | A2, D1 | Real messy file through the loop, via API |
-| T1 | Teacher bootstrap: the lead labels column profiles of development families + public pool; the worker verifies (P3.5a) | lead + A2 / xhigh | A1, D1 | `teacher-labels.jsonl` verified; agreement with publisher dictionaries on dev reported |
+| T1 | Teacher bootstrap: the development teacher (provider by limit, WORKERS.md §8) labels column profiles of development families + public pool; a separate worker session verifies (P3.5a) | teacher + A2 / xhigh | A1, D1 | `teacher-labels.jsonl` verified; agreement with publisher dictionaries on dev reported |
 | A4 | Learner Stage A: memory + online student + routing + metrics (P3.5) | A2 / xhigh | A1, D1, T1 | Teacher-call curve falls; held-out precision 1.0 or abstain |
 | A5 | Document agent: storeys/units with verified quotes → proposals (P4.4) | A3 / xhigh | A2, D2 | Scored against registry truth; Tower 3 `conflicting` |
 | A6 | Learner Stage B: distilled local student (optional) (P3.5) | A2 / xhigh | A4, B3 | Beats Stage A on held-out families, or "no gain" |
@@ -247,6 +247,7 @@ Cut from the top of this list first:
 | Sarvam credits run out | Replay recordings and memory/student reuse cut calls. Calls fail closed. The owner decides on the key. |
 | Sarvam structured output is unreliable | The verifier rejects bad output. One bounded retry per chunk, then `needs_input`. Manual mapping always works. |
 | Fine-tune misses the threshold | Report honestly and keep whichever model is better on dev. The claim is scoped to its holdout. |
+| The student still commits no real field after the D1f labels and one retrain | Layout memory still gives the falling teacher-call curve. The parked fallback is [FALLBACK-LEARNER.md](FALLBACK-LEARNER.md): multiply the real positives first (an owner decision); a fine-tuned student with reinforcement learning only after selection. |
 
 ## 10. Owner actions
 

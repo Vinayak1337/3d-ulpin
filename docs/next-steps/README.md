@@ -6,7 +6,8 @@ Every prompt assumes the agent first reads **[00-STANDARDS.md](00-STANDARDS.md)*
 
 > **Current plan (10 October 2026):** [SPRINT-SELECTION.md](SPRINT-SELECTION.md) sets out the selection sprint, which ends 22 October; selection is around 24 October.
 > - Claude leads all lanes and delegates to `gpt-6.1-sol` workers through the pi codex-pool.
-> - Priority one is the model that accepts heterogeneous data automatically: the agent, with Claude as development teacher, Sarvam as runtime teacher, and a background learner. Building extraction, plan reading and document extraction run in parallel.
+> - Priority one is the model that accepts heterogeneous data automatically: the agent, with a development teacher chosen by provider limit (Opus 5.5 on Claude, `gpt-6.1-sol` on the codex pool; [WORKERS.md §8](WORKERS.md#8-teacher-and-learner-work-the-model-follows-the-provider)), Sarvam as runtime teacher, and a background learner. Building extraction, plan reading and document extraction run in parallel.
+> - Parked, only if that approach fails: [FALLBACK-LEARNER.md](FALLBACK-LEARNER.md).
 > - Live state: [docs/STATUS.md](../STATUS.md).
 
 ## How I would build this from the problem statement
