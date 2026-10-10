@@ -35,7 +35,8 @@ export const ROUTES: RouteEntry[] = [
   },
   {
     method: 'GET', path: '/api/v1/buildings/:buildingId/levels/:levelId/review', mode: 'local', draft: true,
-    reason: 'EXTRACT-02: room candidates from a plan page, or the level question to confirm.',
+    reason: 'EXTRACT-02: superseded for candidates by the canonical records (F2a); '
+      + 'only the level question of the old workspace still reads it.',
   },
   {
     method: 'GET', path: '/api/v1/import-batches/:batchId', mode: 'local', draft: true,
@@ -122,6 +123,8 @@ export const ROUTES: RouteEntry[] = [
   { method: 'GET', path: '/api/v1/areas/:areaId/canonical', mode: 'live' },
   { method: 'GET', path: '/api/v1/buildings/:buildingId/canonical', mode: 'live' },
   { method: 'GET', path: '/api/v1/sources/:sourceId/file', mode: 'live' },
+  { method: 'GET', path: '/api/v1/spatial-ml/batches/:batchId', mode: 'live' },
+  { method: 'GET', path: '/api/v1/spatial-ml/items/:itemId', mode: 'live' },
 ];
 
 export const localRoutes = () => ROUTES.filter((route) => route.mode === 'local');

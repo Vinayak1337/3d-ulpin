@@ -25,6 +25,7 @@ import { MapSidebar, type ViewKey } from './MapSidebar';
 import { BuildingImportTray, ImportTray } from './ImportTray';
 import { ScaleAndNorth } from './ScaleAndNorth';
 import { BuildingSearch } from './BuildingSearch';
+import { CandidateBanner } from '../review/candidates/CandidateBanner';
 import { useMapView } from './useMapView';
 import { useOverlays, type AreaReference, type SupplementalDataset, type LoadedOverlay } from './overlays';
 import { HEIGHT_BANDS, heightCounts } from './heightBands';
@@ -373,6 +374,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                 <Banner tone="info">This area stays in its source’s local frame: the source states no coordinate reference system, so it is not placed on the map.</Banner>
               </div>
             ) : null}
+            <CandidateBanner className={styles.banner} areaId={context.area.id} buildingId={feature?.id ?? null} />
             {drawn.error ? (
               <div className={styles.banner}>
                 <Banner tone="danger">The canonical record of this area could not be read, so its buildings are not drawn. {drawn.error.message}</Banner>
