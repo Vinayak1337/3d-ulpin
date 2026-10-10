@@ -483,6 +483,7 @@ type RoutingOptions = TeacherOptions & {
 };
 export type MappingRoutingResult = MappingTeacherResult & {
   activeLearnerVersion: string | null;
+  memoryMatched?: boolean;
   fieldSources: { sourceField: string; source: 'memory' | 'student' | 'teacher' | 'officer'; method: string }[];
   memoryReasonCode: string | null;
   studentReasonCode: string | null;
@@ -494,7 +495,7 @@ const StudentPredictionSchema = z.strictObject({
 });
 type StudentPrediction = z.infer<typeof StudentPredictionSchema>;
 
-function learnerVersion(path?: string): string | null {
+export function learnerVersion(path?: string): string | null {
   if (!path) return null;
   try {
     const manifest = JSON.parse(readFileSync(resolve(path, 'manifest.json'), 'utf8'));
@@ -603,8 +604,10 @@ export async function proposeMapping(
   const memory = lookupMappingMemory(profile.layoutFingerprint, mappingContextFromColumnProfile(profile),
     options.memoryPath);
   if (memory.plan) {
-    return { ...acceptedResult(memory.plan, { profileHash: columnProfileHash(profile), attempts: 0,
-      replayed: false, validationCodes: [] }), activeLearnerVersion: version,
+    const accepted = acceptedResult(memory.plan, { profileHash: columnProfileHash(profile), attempts: 0,
+      replayed: false, validationCodes: [] });
+    if (memory.lineage?.source === 'officer') { accepted.issues = []; accepted.state = 'candidate'; }
+    return { ...accepted, activeLearnerVersion: version, memoryMatched: true,
       memoryReasonCode: null, studentReasonCode: null, fieldSources: profile.columns.map(column => ({
         sourceField: column.name, source: memory.lineage?.source === 'officer' ? 'officer' : 'memory',
         method: memory.plan!.method,

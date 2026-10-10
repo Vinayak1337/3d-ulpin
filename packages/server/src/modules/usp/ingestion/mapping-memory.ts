@@ -54,6 +54,16 @@ export function rememberMapping(
   if (!checked.success) throw new Error(checked.errors[0]?.code ?? 'MAPPING_MEMORY_PLAN_INVALID');
   const authority = lineageSchema.parse(lineage);
   if (authority.method !== checked.plan.method) throw new Error('MAPPING_MEMORY_METHOD_MISMATCH');
+  if (authority.source === 'officer') {
+    const prior = readEntries(path).find(entry => entry.lineage.source === 'officer' &&
+      entry.lineage.officerDecisionId === authority.officerDecisionId);
+    if (prior) {
+      if (JSON.stringify(prior.plan) !== JSON.stringify(checked.plan)) {
+        throw new Error('MAPPING_MEMORY_DECISION_CHANGED');
+      }
+      return prior;
+    }
+  }
   const entry = entrySchema.parse({ version: 'mapping-memory/1', plan: checked.plan, lineage: authority,
     acceptedAt: new Date().toISOString() });
   mkdirSync(dirname(path), { recursive: true });
