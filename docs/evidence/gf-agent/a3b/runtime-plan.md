@@ -1,5 +1,5 @@
 # A3b runtime handover plan — not run
-Prerequisites: lead patches `jobs.ts` to `AnyStreamingInputSchema`; runtime owner configures the existing Python/learner.
+Prerequisites: lead patches `jobs.ts` to `AnyStreamingInputSchema`; runtime owner configures Python and learner.
 Data gap: no distinct current D8 original exactly matches `mi-d10-01.csv`; 02 and 03 match each other, not 01.
 Offline preflight (01/02 fails closed; 02/03 passes; neither command makes HTTP requests):
 ```sh
