@@ -1,0 +1,285 @@
+{
+  "task": "EV1",
+  "base": "ea040eac",
+  "demo": "http://127.0.0.1:3194 (R5d reports served 18b5e74c)",
+  "schema": {
+    "route": "POST /api/v1/usp/packets/sources/{sourceId}/pages/{page}/region",
+    "controller": "apps/api/src/modules/evidence/packet-region.controller.ts:13-30",
+    "contract": "packages/contracts/src/packet-region.ts:5-24; document-pages.ts:6-16",
+    "sourceId": "UUID path; page is an integer path string from 1 to 8",
+    "revision": "Decimal STRING, 1 through Number.MAX_SAFE_INTEGER; R5d bodies wrongly use a number.",
+    "sha256": "64 lowercase hexadecimal characters",
+    "purpose": "literal private_source_preview: private source crop, not property applicability",
+    "selection": {
+      "frame": "Listed pdf_display_page_top_left_points; finite positive width/height; rotation 0/90/180/270.",
+      "mediaBox": "Four finite coordinates in [-10000000,10000000], copied from listing.",
+      "cropBox": "Same tuple bounds; copied from listing.",
+      "boxConvention": "literal pymupdf_page_rectangles/1, copied from listing",
+      "coordinates": "literal displayed_cropbox_normalized_top_left/1",
+      "region": "Four finite fractions [x0,y0,x1,y1] in [0,1], x0<x1 and y0<y1.",
+      "selectionAcknowledged": "literal true; an act of the operator, not an automatic request property"
+    },
+    "limits": {
+      "sourceBytes": 16777216,
+      "sourcePages": 8,
+      "sourceSidePt": 14400,
+      "selectedSidePt": [
+        1,
+        2000
+      ],
+      "outputSidePx": 1400,
+      "outputPixels": 1600000,
+      "outputPngBytes": 8388608,
+      "metadataBytes": 16384,
+      "memoryBytes": 536870912,
+      "workerSeconds": 25,
+      "requestSeconds": 35
+    },
+    "output": "image/png, private no-store; X-Region-Sha256; X-Region-Provenance base64url JSON",
+    "outputProfile": "region-extract.ts:34-48: at most 3x; inward complete pixels; only the region bitmap.",
+    "strict": "No extra selection fields, URL, path, object key, caller image or arbitrary padding."
+  },
+  "acknowledgement": {
+    "authority": "docs/evidence/usp/packet-region-extract-handoff.md:65",
+    "quote": "Acknowledgement records the operator's explicit source selection, not reviewed property applicability.",
+    "decision": "Offer Show the cited region. Only pressing it sends the read. It stores nothing."
+  },
+  "live": {
+    "firstExactR5dBody": {
+      "status": 422,
+      "contentType": "application/json; charset=utf-8",
+      "bytes": 155,
+      "sha256": null,
+      "provenance": null,
+      "refusal": {
+        "error": {
+          "code": "INVALID_INPUT",
+          "message": "revision: Invalid input: expected string, received number",
+          "requestId": "52f99dd1-59f9-4dc2-8af0-0c12789c5b2d"
+        }
+      }
+    },
+    "correction": [
+      "One initial exact R5d POST refused only its numeric revision, before evaluating the citation.",
+      "GET listing supplied revision STRING 1. A materially different, schema-correct caption POST succeeded.",
+      "No value invented; the stop rule is not triggered: the route accepts the judges citation with correct input."
+    ],
+    "captionAnswer": {
+      "body": {
+        "revision": "1",
+        "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+        "purpose": "private_source_preview",
+        "selection": {
+          "frame": {
+            "kind": "pdf_display_page_top_left_points",
+            "rotation": 0,
+            "width": 2586,
+            "height": 1695
+          },
+          "mediaBox": [
+            0,
+            0,
+            2586,
+            1695
+          ],
+          "cropBox": [
+            0,
+            0,
+            2586,
+            1695
+          ],
+          "boxConvention": "pymupdf_page_rectangles/1",
+          "coordinates": "displayed_cropbox_normalized_top_left/1",
+          "region": [
+            0.32869296210363497,
+            0.5162241887905604,
+            0.39443155452436196,
+            0.5368731563421829
+          ],
+          "selectionAcknowledged": true
+        }
+      },
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 14730,
+      "sha256": "9a0640b670d4106700e40eb1f7c7937219af7ff5dc502cc417beb7d659720ea2",
+      "provenance": {
+        "version": "packet-region/1",
+        "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+        "sourceBytes": 1655334,
+        "page": 1,
+        "selection": {
+          "frame": {
+            "kind": "pdf_display_page_top_left_points",
+            "rotation": 0,
+            "width": 2586,
+            "height": 1695
+          },
+          "mediaBox": [
+            0,
+            0,
+            2586,
+            1695
+          ],
+          "cropBox": [
+            0,
+            0,
+            2586,
+            1695
+          ],
+          "boxConvention": "pymupdf_page_rectangles/1",
+          "coordinates": "displayed_cropbox_normalized_top_left/1",
+          "region": [
+            0.32869296210363497,
+            0.5162241887905604,
+            0.39443155452436196,
+            0.5368731563421829
+          ],
+          "selectionAcknowledged": true
+        },
+        "recipeSha256": "bebc234cadcc25609468353c1f5a4e848762c276afad084bdd222bcf86fdee9f",
+        "renderer": {
+          "pypdfium2": "5.13.0",
+          "pdfium": "153.0.7999.0",
+          "pymupdf": "1.25.5",
+          "pillow": "12.3.0",
+          "pdfiumSha256": "fb898a1f5ace57805834f390407500bdb6ef93eff326a252ad334a8aae809d8e"
+        },
+        "transform": {
+          "canvasPixels": [
+            7758,
+            5085
+          ],
+          "pixelRegion": [
+            2550,
+            2625,
+            3060,
+            2730
+          ],
+          "pixelToDisplay": [
+            0.3333333333333333,
+            0,
+            0,
+            0.3333333333333333,
+            850,
+            875
+          ],
+          "includedNormalizedRegion": [
+            0.32869296210363497,
+            0.5162241887905604,
+            0.39443155452436196,
+            0.5368731563421829
+          ],
+          "rounding": "inward_complete_pixels/1"
+        },
+        "output": {
+          "sha256": "9a0640b670d4106700e40eb1f7c7937219af7ff5dc502cc417beb7d659720ea2",
+          "bytes": 14730,
+          "pixels": [
+            510,
+            105
+          ],
+          "format": "png",
+          "metadataPolicy": "fresh_rgb_pixels_only/1",
+          "annotations": "excluded",
+          "applicability": "not_assessed"
+        },
+        "caseId": "fef196d1-351e-41d7-a31e-aba54424f93f",
+        "caseRevision": 4,
+        "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429",
+        "sourceRevision": 1,
+        "purpose": "private_source_preview"
+      },
+      "refusal": null
+    },
+    "transformEnough": [
+      "Yes: output.pixels [510,105] and pixelToDisplay [1/3,0,0,1/3,850,875].",
+      "An SVG image in pixel coordinates uses that affine matrix inside the page coordinate frame.",
+      "The existing regionOutline places the citation at [850,875,170,35] in page points.",
+      "includedNormalizedRegion names the actual inward-rounded extent, not a guessed crop."
+    ]
+  },
+  "viewer": {
+    "whenPinned": "CitedPageViewer.tsx:23-32; citedPage.ts:17-35 read exact page at citation pins.",
+    "listing": {
+      "version": "document-pages/1",
+      "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429",
+      "caseId": "fef196d1-351e-41d7-a31e-aba54424f93f",
+      "caseRevision": 4,
+      "sourceRevision": 1,
+      "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "sourceBytes": 1655334,
+      "name": "haryana-2831-tower3-plan1.pdf",
+      "revision": "1",
+      "pageCount": 1,
+      "offset": 0,
+      "limit": 1,
+      "hasMore": false,
+      "pages": [
+        {
+          "page": 1,
+          "label": "Page 1",
+          "sourceLabel": null,
+          "frame": {
+            "kind": "pdf_display_page_top_left_points",
+            "rotation": 0,
+            "width": 2586,
+            "height": 1695
+          },
+          "mediaBox": [
+            0,
+            0,
+            2586,
+            1695
+          ],
+          "cropBox": [
+            0,
+            0,
+            2586,
+            1695
+          ],
+          "boxConvention": "pymupdf_page_rectangles/1",
+          "renderSupport": "unsupported",
+          "url": null,
+          "locator": {
+            "kind": "pdf_page",
+            "page": 1
+          },
+          "calibration": null
+        }
+      ],
+      "anchors": [
+        {
+          "locator": "page:1",
+          "page": 1,
+          "region": null
+        }
+      ]
+    },
+    "currentlyCarried": "CitedPage contains name, frame, mediaBox, cropBox, boxConvention, page and url.",
+    "missingFromCitedPage": [
+      "sourceId, sourceRevision, sourceSha256 and revision are held by the listing, not copied onto CitedPage.",
+      "Retain these response fields in citedPageOf; no extra read or invented pin is needed."
+    ],
+    "citation": "Place holds page plus x/y/width/height/unit for a region, or kind page without a region.",
+    "noRevisionToday": [
+      "review/recorded/model.ts:139 drops pin when citation.revision is null.",
+      "EvidenceViewer.tsx:23-28 bypasses CitedPageViewer without pin.",
+      "useDocumentPages sends GET /sources/{sourceId}/pages without revision or sha256 (queries.ts:115-120).",
+      "No revision 1 default is sent. Legacy draft/local viewer or file view follows; no region POST.",
+      "Changing the recorded citation producer is outside EV1 owned paths; record this qualification gap."
+    ],
+    "sizeLimitInListing": "Absent. Do not print 2000 on screen."
+  },
+  "stopRule": {
+    "triggered": false,
+    "reason": "Every correctly typed body field is available from listing/citation."
+  },
+  "checks": {
+    "listingGet": 200,
+    "exactNumericPost": 422,
+    "correctedStringPost": 200,
+    "writes": 0,
+    "providerCalls": 0
+  }
+}
