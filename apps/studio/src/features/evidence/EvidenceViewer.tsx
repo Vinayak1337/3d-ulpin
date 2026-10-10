@@ -6,6 +6,7 @@ import { Badge, Button, Dialog, EmptyState, EvidenceChip, Icon, Skeleton } from 
 import { useDocumentPages, usePageImage } from '../../api/queries';
 import { SourceReadingNote } from '../register/SourceReadingNote';
 import { CitedPageViewer, type Place } from './CitedPageViewer';
+import { useEvidencePin } from './citedPage';
 import { resolvePointer, type EvidenceRef } from './refs';
 import styles from './EvidenceViewer.module.css';
 
@@ -18,7 +19,8 @@ interface ViewerProps {
 /** A citation that names a page of a pinned original opens at that page; any other reference as before. */
 export function EvidenceViewer({ evidence, still, onClose }: ViewerProps) {
   const [fileView, setFileView] = useState(false);
-  const { locator, pin } = evidence;
+  const { locator } = evidence;
+  const pin = useEvidencePin(evidence);
   const place: Place | null = locator.kind === 'page' || locator.kind === 'region' ? locator : null;
   if (place && pin && !fileView) {
     return <CitedPageViewer evidence={evidence} place={place} pin={pin} onClose={onClose}
