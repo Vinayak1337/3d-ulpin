@@ -121,12 +121,16 @@ export class ManualIngestionService {
     if (!file.bytes.length || file.bytes.length>16*1024*1024)
       throw new AppError(413,'FILE_SIZE',
         'Choose a nonempty original up to 16 MiB; larger sources require another qualified receipt.');
-    const tabular=input.format==='geojson'?null:inspectTabularSource(file.bytes,input.selection);
+    const tabular=input.format==='geojson'?null:inspectTabularSource(file.bytes,input.selection,input);
     if(input.format==='geojson')geojsonInventory(file.bytes);
     const hash=sha256(file.bytes),digest=fingerprint({input,name:file.name,hash,actor}),key=`manual-gis:${input.requestKey}`;
     // Committed receipts/deduplication remain useful even while the processor is unavailable.
     const previous=await transaction(async client=>{
-      const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);if(replay)return replay;
+      const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);
+      if(replay){
+        if(tabular)assertTabularPin(tabular.tabular,await source(client,caseId,replay.source.sourceId));
+        return replay;
+      }
       const duplicateSql='SELECT id FROM sources WHERE case_id=$1 AND sha256=$2 AND profile=$3 '+
         'ORDER BY revision DESC LIMIT 1';
       const duplicate=(await client.query(duplicateSql,[caseId,hash,profileName])).rows[0];
@@ -147,7 +151,11 @@ export class ManualIngestionService {
       :'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
     return originalAttempt('sources',sourceId,async rememberOriginal=>transaction(async client=>{
       const scope=await workspace(client,caseId);
-      const replay=await operation(client,caseId,key,digest); if(replay)return replay;
+      const replay=await operation(client,caseId,key,digest);
+      if(replay){
+        if(tabular)assertTabularPin(tabular.tabular,await source(client,caseId,replay.source.sourceId));
+        return replay;
+      }
       const duplicateSql='SELECT * FROM sources WHERE case_id=$1 AND sha256=$2 AND profile=$3 '+
         'ORDER BY revision DESC LIMIT 1';
       const duplicate=(await client.query(duplicateSql,[caseId,hash,profileName])).rows[0];
@@ -172,7 +180,8 @@ export class ManualIngestionService {
         [sourceId,caseId,familyId,revision,file.name,profileName,mime,file.bytes.length,hash,objectKey,
           {profile:profileName,status:'needs_input',issues:[],
             summary:'Original retained; a pinned recipe requires review.',
-            manualProfile:inventory,...(inspection?{gis:inspection}:{}),actor}]);
+            manualProfile:inventory,...(inspection?{gis:inspection}:{}),
+            ...(tabular&&'admission' in tabular.tabular?{tabularProvenance:tabular.tabular.admission}:{}),actor}]);
       await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);
       const fresh=await workspace(client,caseId),row=await source(client,caseId,sourceId),result=profile(row,fresh);
       await remember(client,caseId,key,digest,result);

@@ -213,8 +213,8 @@ test('a table recipe authored at revision n is approved at n+1 and the source pi
         expectedRecipeRevision: authored.revision }, 'approve');
       assert.equal(approved.state, 'approved');
       assert.equal(approved.plan.workspaceRevision, 1);
-      // queueApprovedTabular still asks for revision 1 and swallows the 409: reported, not changed here.
-      assert.equal([...c.jobs.values()].some(job => job.operation === 'chunk-mapping'), false);
+      // The approval asks both enqueues with the case revision of now, so the later file does not lose the job.
+      assert.equal([...c.jobs.values()].some(job => job.operation === 'chunk-mapping'), true);
       c.receive(true);
       await assert.rejects(() => service.author(c.caseId, c.source.id, { requestKey: randomUUID(),
         expectedRecipeRevision: approved.revision, destination: null, plan }), stale);

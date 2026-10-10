@@ -363652,92 +363652,201 @@
                 "additionalProperties": false
               },
               "tabular": {
-                "type": "object",
-                "properties": {
-                  "selection": {
+                "anyOf": [
+                  {
                     "type": "object",
                     "properties": {
-                      "format": {
-                        "type": "string",
-                        "enum": [
-                          "csv",
-                          "xlsx"
-                        ]
+                      "selection": {
+                        "type": "object",
+                        "properties": {
+                          "format": {
+                            "type": "string",
+                            "enum": [
+                              "csv",
+                              "xlsx"
+                            ]
+                          },
+                          "sheet": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 150
+                          },
+                          "table": {
+                            "type": "string",
+                            "nullable": true,
+                            "enum": [
+                              null
+                            ]
+                          },
+                          "headerRows": {
+                            "minItems": 1,
+                            "maxItems": 5,
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 2000
+                            }
+                          }
+                        },
+                        "required": [
+                          "format",
+                          "sheet",
+                          "table",
+                          "headerRows"
+                        ],
+                        "additionalProperties": false
                       },
-                      "sheet": {
+                      "sourceBytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 16777216
+                      },
+                      "developmentAssetId": {
                         "type": "string",
                         "minLength": 1,
                         "maxLength": 150
                       },
-                      "table": {
+                      "developmentFamily": {
                         "type": "string",
-                        "nullable": true,
-                        "enum": [
-                          null
-                        ]
+                        "pattern": "^mi-d\\d+$"
                       },
-                      "headerRows": {
-                        "minItems": 1,
-                        "maxItems": 5,
-                        "type": "array",
-                        "items": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "maximum": 2000
-                        }
+                      "derivativeOf": {
+                        "type": "object",
+                        "properties": {
+                          "originalSha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "version": {
+                            "type": "string",
+                            "enum": [
+                              "json-table-csv/1"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "originalSha256",
+                          "version"
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "required": [
-                      "format",
-                      "sheet",
-                      "table",
-                      "headerRows"
+                      "selection",
+                      "sourceBytes",
+                      "developmentAssetId",
+                      "developmentFamily"
                     ],
                     "additionalProperties": false
                   },
-                  "sourceBytes": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "exclusiveMinimum": true,
-                    "maximum": 16777216
-                  },
-                  "developmentAssetId": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 150
-                  },
-                  "developmentFamily": {
-                    "type": "string",
-                    "pattern": "^mi-d\\d+$"
-                  },
-                  "derivativeOf": {
+                  {
                     "type": "object",
                     "properties": {
-                      "originalSha256": {
-                        "type": "string",
-                        "pattern": "^[a-f0-9]{64}$"
+                      "selection": {
+                        "type": "object",
+                        "properties": {
+                          "format": {
+                            "type": "string",
+                            "enum": [
+                              "csv",
+                              "xlsx"
+                            ]
+                          },
+                          "sheet": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 150
+                          },
+                          "table": {
+                            "type": "string",
+                            "nullable": true,
+                            "enum": [
+                              null
+                            ]
+                          },
+                          "headerRows": {
+                            "minItems": 1,
+                            "maxItems": 5,
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 2000
+                            }
+                          }
+                        },
+                        "required": [
+                          "format",
+                          "sheet",
+                          "table",
+                          "headerRows"
+                        ],
+                        "additionalProperties": false
                       },
-                      "version": {
-                        "type": "string",
-                        "enum": [
-                          "json-table-csv/1"
-                        ]
+                      "sourceBytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 16777216
+                      },
+                      "admission": {
+                        "type": "object",
+                        "properties": {
+                          "issuer": {
+                            "nullable": true,
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 500
+                          },
+                          "origin": {
+                            "type": "string",
+                            "enum": [
+                              "officer_supplied"
+                            ]
+                          },
+                          "licence": {
+                            "type": "string",
+                            "enum": [
+                              "unconfirmed",
+                              "open",
+                              "restricted"
+                            ]
+                          },
+                          "containsPersonalData": {
+                            "type": "string",
+                            "enum": [
+                              "unknown",
+                              "yes",
+                              "no"
+                            ]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "case_original"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "issuer",
+                          "origin",
+                          "licence",
+                          "containsPersonalData",
+                          "kind"
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "required": [
-                      "originalSha256",
-                      "version"
+                      "selection",
+                      "sourceBytes",
+                      "admission"
                     ],
                     "additionalProperties": false
                   }
-                },
-                "required": [
-                  "selection",
-                  "sourceBytes",
-                  "developmentAssetId",
-                  "developmentFamily"
-                ],
-                "additionalProperties": false
+                ]
               },
               "caseId": {
                 "type": "string",
@@ -364257,92 +364366,201 @@
                     "pattern": "^[a-f0-9]{64}$"
                   },
                   "tabular": {
-                    "type": "object",
-                    "properties": {
-                      "selection": {
+                    "anyOf": [
+                      {
                         "type": "object",
                         "properties": {
-                          "format": {
-                            "type": "string",
-                            "enum": [
-                              "csv",
-                              "xlsx"
-                            ]
+                          "selection": {
+                            "type": "object",
+                            "properties": {
+                              "format": {
+                                "type": "string",
+                                "enum": [
+                                  "csv",
+                                  "xlsx"
+                                ]
+                              },
+                              "sheet": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 150
+                              },
+                              "table": {
+                                "type": "string",
+                                "nullable": true,
+                                "enum": [
+                                  null
+                                ]
+                              },
+                              "headerRows": {
+                                "minItems": 1,
+                                "maxItems": 5,
+                                "type": "array",
+                                "items": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 2000
+                                }
+                              }
+                            },
+                            "required": [
+                              "format",
+                              "sheet",
+                              "table",
+                              "headerRows"
+                            ],
+                            "additionalProperties": false
                           },
-                          "sheet": {
+                          "sourceBytes": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 16777216
+                          },
+                          "developmentAssetId": {
                             "type": "string",
                             "minLength": 1,
                             "maxLength": 150
                           },
-                          "table": {
+                          "developmentFamily": {
                             "type": "string",
-                            "nullable": true,
-                            "enum": [
-                              null
-                            ]
+                            "pattern": "^mi-d\\d+$"
                           },
-                          "headerRows": {
-                            "minItems": 1,
-                            "maxItems": 5,
-                            "type": "array",
-                            "items": {
-                              "type": "integer",
-                              "minimum": 1,
-                              "maximum": 2000
-                            }
+                          "derivativeOf": {
+                            "type": "object",
+                            "properties": {
+                              "originalSha256": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "version": {
+                                "type": "string",
+                                "enum": [
+                                  "json-table-csv/1"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "originalSha256",
+                              "version"
+                            ],
+                            "additionalProperties": false
                           }
                         },
                         "required": [
-                          "format",
-                          "sheet",
-                          "table",
-                          "headerRows"
+                          "selection",
+                          "sourceBytes",
+                          "developmentAssetId",
+                          "developmentFamily"
                         ],
                         "additionalProperties": false
                       },
-                      "sourceBytes": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "exclusiveMinimum": true,
-                        "maximum": 16777216
-                      },
-                      "developmentAssetId": {
-                        "type": "string",
-                        "minLength": 1,
-                        "maxLength": 150
-                      },
-                      "developmentFamily": {
-                        "type": "string",
-                        "pattern": "^mi-d\\d+$"
-                      },
-                      "derivativeOf": {
+                      {
                         "type": "object",
                         "properties": {
-                          "originalSha256": {
-                            "type": "string",
-                            "pattern": "^[a-f0-9]{64}$"
+                          "selection": {
+                            "type": "object",
+                            "properties": {
+                              "format": {
+                                "type": "string",
+                                "enum": [
+                                  "csv",
+                                  "xlsx"
+                                ]
+                              },
+                              "sheet": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 150
+                              },
+                              "table": {
+                                "type": "string",
+                                "nullable": true,
+                                "enum": [
+                                  null
+                                ]
+                              },
+                              "headerRows": {
+                                "minItems": 1,
+                                "maxItems": 5,
+                                "type": "array",
+                                "items": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 2000
+                                }
+                              }
+                            },
+                            "required": [
+                              "format",
+                              "sheet",
+                              "table",
+                              "headerRows"
+                            ],
+                            "additionalProperties": false
                           },
-                          "version": {
-                            "type": "string",
-                            "enum": [
-                              "json-table-csv/1"
-                            ]
+                          "sourceBytes": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 16777216
+                          },
+                          "admission": {
+                            "type": "object",
+                            "properties": {
+                              "issuer": {
+                                "nullable": true,
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 500
+                              },
+                              "origin": {
+                                "type": "string",
+                                "enum": [
+                                  "officer_supplied"
+                                ]
+                              },
+                              "licence": {
+                                "type": "string",
+                                "enum": [
+                                  "unconfirmed",
+                                  "open",
+                                  "restricted"
+                                ]
+                              },
+                              "containsPersonalData": {
+                                "type": "string",
+                                "enum": [
+                                  "unknown",
+                                  "yes",
+                                  "no"
+                                ]
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "case_original"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "issuer",
+                              "origin",
+                              "licence",
+                              "containsPersonalData",
+                              "kind"
+                            ],
+                            "additionalProperties": false
                           }
                         },
                         "required": [
-                          "originalSha256",
-                          "version"
+                          "selection",
+                          "sourceBytes",
+                          "admission"
                         ],
                         "additionalProperties": false
                       }
-                    },
-                    "required": [
-                      "selection",
-                      "sourceBytes",
-                      "developmentAssetId",
-                      "developmentFamily"
-                    ],
-                    "additionalProperties": false
+                    ]
                   },
                   "mapping": {
                     "type": "object",
@@ -365138,92 +365356,201 @@
                     "pattern": "^[a-f0-9]{64}$"
                   },
                   "tabular": {
-                    "type": "object",
-                    "properties": {
-                      "selection": {
+                    "anyOf": [
+                      {
                         "type": "object",
                         "properties": {
-                          "format": {
-                            "type": "string",
-                            "enum": [
-                              "csv",
-                              "xlsx"
-                            ]
+                          "selection": {
+                            "type": "object",
+                            "properties": {
+                              "format": {
+                                "type": "string",
+                                "enum": [
+                                  "csv",
+                                  "xlsx"
+                                ]
+                              },
+                              "sheet": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 150
+                              },
+                              "table": {
+                                "type": "string",
+                                "nullable": true,
+                                "enum": [
+                                  null
+                                ]
+                              },
+                              "headerRows": {
+                                "minItems": 1,
+                                "maxItems": 5,
+                                "type": "array",
+                                "items": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 2000
+                                }
+                              }
+                            },
+                            "required": [
+                              "format",
+                              "sheet",
+                              "table",
+                              "headerRows"
+                            ],
+                            "additionalProperties": false
                           },
-                          "sheet": {
+                          "sourceBytes": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 16777216
+                          },
+                          "developmentAssetId": {
                             "type": "string",
                             "minLength": 1,
                             "maxLength": 150
                           },
-                          "table": {
+                          "developmentFamily": {
                             "type": "string",
-                            "nullable": true,
-                            "enum": [
-                              null
-                            ]
+                            "pattern": "^mi-d\\d+$"
                           },
-                          "headerRows": {
-                            "minItems": 1,
-                            "maxItems": 5,
-                            "type": "array",
-                            "items": {
-                              "type": "integer",
-                              "minimum": 1,
-                              "maximum": 2000
-                            }
+                          "derivativeOf": {
+                            "type": "object",
+                            "properties": {
+                              "originalSha256": {
+                                "type": "string",
+                                "pattern": "^[a-f0-9]{64}$"
+                              },
+                              "version": {
+                                "type": "string",
+                                "enum": [
+                                  "json-table-csv/1"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "originalSha256",
+                              "version"
+                            ],
+                            "additionalProperties": false
                           }
                         },
                         "required": [
-                          "format",
-                          "sheet",
-                          "table",
-                          "headerRows"
+                          "selection",
+                          "sourceBytes",
+                          "developmentAssetId",
+                          "developmentFamily"
                         ],
                         "additionalProperties": false
                       },
-                      "sourceBytes": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "exclusiveMinimum": true,
-                        "maximum": 16777216
-                      },
-                      "developmentAssetId": {
-                        "type": "string",
-                        "minLength": 1,
-                        "maxLength": 150
-                      },
-                      "developmentFamily": {
-                        "type": "string",
-                        "pattern": "^mi-d\\d+$"
-                      },
-                      "derivativeOf": {
+                      {
                         "type": "object",
                         "properties": {
-                          "originalSha256": {
-                            "type": "string",
-                            "pattern": "^[a-f0-9]{64}$"
+                          "selection": {
+                            "type": "object",
+                            "properties": {
+                              "format": {
+                                "type": "string",
+                                "enum": [
+                                  "csv",
+                                  "xlsx"
+                                ]
+                              },
+                              "sheet": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 150
+                              },
+                              "table": {
+                                "type": "string",
+                                "nullable": true,
+                                "enum": [
+                                  null
+                                ]
+                              },
+                              "headerRows": {
+                                "minItems": 1,
+                                "maxItems": 5,
+                                "type": "array",
+                                "items": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 2000
+                                }
+                              }
+                            },
+                            "required": [
+                              "format",
+                              "sheet",
+                              "table",
+                              "headerRows"
+                            ],
+                            "additionalProperties": false
                           },
-                          "version": {
-                            "type": "string",
-                            "enum": [
-                              "json-table-csv/1"
-                            ]
+                          "sourceBytes": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 16777216
+                          },
+                          "admission": {
+                            "type": "object",
+                            "properties": {
+                              "issuer": {
+                                "nullable": true,
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 500
+                              },
+                              "origin": {
+                                "type": "string",
+                                "enum": [
+                                  "officer_supplied"
+                                ]
+                              },
+                              "licence": {
+                                "type": "string",
+                                "enum": [
+                                  "unconfirmed",
+                                  "open",
+                                  "restricted"
+                                ]
+                              },
+                              "containsPersonalData": {
+                                "type": "string",
+                                "enum": [
+                                  "unknown",
+                                  "yes",
+                                  "no"
+                                ]
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "case_original"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "issuer",
+                              "origin",
+                              "licence",
+                              "containsPersonalData",
+                              "kind"
+                            ],
+                            "additionalProperties": false
                           }
                         },
                         "required": [
-                          "originalSha256",
-                          "version"
+                          "selection",
+                          "sourceBytes",
+                          "admission"
                         ],
                         "additionalProperties": false
                       }
-                    },
-                    "required": [
-                      "selection",
-                      "sourceBytes",
-                      "developmentAssetId",
-                      "developmentFamily"
-                    ],
-                    "additionalProperties": false
+                    ]
                   },
                   "mapping": {
                     "type": "object",
@@ -366027,92 +366354,201 @@
                       "pattern": "^[a-f0-9]{64}$"
                     },
                     "tabular": {
-                      "type": "object",
-                      "properties": {
-                        "selection": {
+                      "anyOf": [
+                        {
                           "type": "object",
                           "properties": {
-                            "format": {
-                              "type": "string",
-                              "enum": [
-                                "csv",
-                                "xlsx"
-                              ]
+                            "selection": {
+                              "type": "object",
+                              "properties": {
+                                "format": {
+                                  "type": "string",
+                                  "enum": [
+                                    "csv",
+                                    "xlsx"
+                                  ]
+                                },
+                                "sheet": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 150
+                                },
+                                "table": {
+                                  "type": "string",
+                                  "nullable": true,
+                                  "enum": [
+                                    null
+                                  ]
+                                },
+                                "headerRows": {
+                                  "minItems": 1,
+                                  "maxItems": 5,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 2000
+                                  }
+                                }
+                              },
+                              "required": [
+                                "format",
+                                "sheet",
+                                "table",
+                                "headerRows"
+                              ],
+                              "additionalProperties": false
                             },
-                            "sheet": {
+                            "sourceBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            },
+                            "developmentAssetId": {
                               "type": "string",
                               "minLength": 1,
                               "maxLength": 150
                             },
-                            "table": {
+                            "developmentFamily": {
                               "type": "string",
-                              "nullable": true,
-                              "enum": [
-                                null
-                              ]
+                              "pattern": "^mi-d\\d+$"
                             },
-                            "headerRows": {
-                              "minItems": 1,
-                              "maxItems": 5,
-                              "type": "array",
-                              "items": {
-                                "type": "integer",
-                                "minimum": 1,
-                                "maximum": 2000
-                              }
+                            "derivativeOf": {
+                              "type": "object",
+                              "properties": {
+                                "originalSha256": {
+                                  "type": "string",
+                                  "pattern": "^[a-f0-9]{64}$"
+                                },
+                                "version": {
+                                  "type": "string",
+                                  "enum": [
+                                    "json-table-csv/1"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "originalSha256",
+                                "version"
+                              ],
+                              "additionalProperties": false
                             }
                           },
                           "required": [
-                            "format",
-                            "sheet",
-                            "table",
-                            "headerRows"
+                            "selection",
+                            "sourceBytes",
+                            "developmentAssetId",
+                            "developmentFamily"
                           ],
                           "additionalProperties": false
                         },
-                        "sourceBytes": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "exclusiveMinimum": true,
-                          "maximum": 16777216
-                        },
-                        "developmentAssetId": {
-                          "type": "string",
-                          "minLength": 1,
-                          "maxLength": 150
-                        },
-                        "developmentFamily": {
-                          "type": "string",
-                          "pattern": "^mi-d\\d+$"
-                        },
-                        "derivativeOf": {
+                        {
                           "type": "object",
                           "properties": {
-                            "originalSha256": {
-                              "type": "string",
-                              "pattern": "^[a-f0-9]{64}$"
+                            "selection": {
+                              "type": "object",
+                              "properties": {
+                                "format": {
+                                  "type": "string",
+                                  "enum": [
+                                    "csv",
+                                    "xlsx"
+                                  ]
+                                },
+                                "sheet": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 150
+                                },
+                                "table": {
+                                  "type": "string",
+                                  "nullable": true,
+                                  "enum": [
+                                    null
+                                  ]
+                                },
+                                "headerRows": {
+                                  "minItems": 1,
+                                  "maxItems": 5,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 2000
+                                  }
+                                }
+                              },
+                              "required": [
+                                "format",
+                                "sheet",
+                                "table",
+                                "headerRows"
+                              ],
+                              "additionalProperties": false
                             },
-                            "version": {
-                              "type": "string",
-                              "enum": [
-                                "json-table-csv/1"
-                              ]
+                            "sourceBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 16777216
+                            },
+                            "admission": {
+                              "type": "object",
+                              "properties": {
+                                "issuer": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 500
+                                },
+                                "origin": {
+                                  "type": "string",
+                                  "enum": [
+                                    "officer_supplied"
+                                  ]
+                                },
+                                "licence": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unconfirmed",
+                                    "open",
+                                    "restricted"
+                                  ]
+                                },
+                                "containsPersonalData": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unknown",
+                                    "yes",
+                                    "no"
+                                  ]
+                                },
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "case_original"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "issuer",
+                                "origin",
+                                "licence",
+                                "containsPersonalData",
+                                "kind"
+                              ],
+                              "additionalProperties": false
                             }
                           },
                           "required": [
-                            "originalSha256",
-                            "version"
+                            "selection",
+                            "sourceBytes",
+                            "admission"
                           ],
                           "additionalProperties": false
                         }
-                      },
-                      "required": [
-                        "selection",
-                        "sourceBytes",
-                        "developmentAssetId",
-                        "developmentFamily"
-                      ],
-                      "additionalProperties": false
+                      ]
                     },
                     "mapping": {
                       "type": "object",
@@ -383864,92 +384300,201 @@
                 ]
               },
               "tabular": {
-                "type": "object",
-                "properties": {
-                  "selection": {
+                "anyOf": [
+                  {
                     "type": "object",
                     "properties": {
-                      "format": {
-                        "type": "string",
-                        "enum": [
-                          "csv",
-                          "xlsx"
-                        ]
+                      "selection": {
+                        "type": "object",
+                        "properties": {
+                          "format": {
+                            "type": "string",
+                            "enum": [
+                              "csv",
+                              "xlsx"
+                            ]
+                          },
+                          "sheet": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 150
+                          },
+                          "table": {
+                            "type": "string",
+                            "nullable": true,
+                            "enum": [
+                              null
+                            ]
+                          },
+                          "headerRows": {
+                            "minItems": 1,
+                            "maxItems": 5,
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 2000
+                            }
+                          }
+                        },
+                        "required": [
+                          "format",
+                          "sheet",
+                          "table",
+                          "headerRows"
+                        ],
+                        "additionalProperties": false
                       },
-                      "sheet": {
+                      "sourceBytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 16777216
+                      },
+                      "developmentAssetId": {
                         "type": "string",
                         "minLength": 1,
                         "maxLength": 150
                       },
-                      "table": {
+                      "developmentFamily": {
                         "type": "string",
-                        "nullable": true,
-                        "enum": [
-                          null
-                        ]
+                        "pattern": "^mi-d\\d+$"
                       },
-                      "headerRows": {
-                        "minItems": 1,
-                        "maxItems": 5,
-                        "type": "array",
-                        "items": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "maximum": 2000
-                        }
+                      "derivativeOf": {
+                        "type": "object",
+                        "properties": {
+                          "originalSha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "version": {
+                            "type": "string",
+                            "enum": [
+                              "json-table-csv/1"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "originalSha256",
+                          "version"
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "required": [
-                      "format",
-                      "sheet",
-                      "table",
-                      "headerRows"
+                      "selection",
+                      "sourceBytes",
+                      "developmentAssetId",
+                      "developmentFamily"
                     ],
                     "additionalProperties": false
                   },
-                  "sourceBytes": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "exclusiveMinimum": true,
-                    "maximum": 16777216
-                  },
-                  "developmentAssetId": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 150
-                  },
-                  "developmentFamily": {
-                    "type": "string",
-                    "pattern": "^mi-d\\d+$"
-                  },
-                  "derivativeOf": {
+                  {
                     "type": "object",
                     "properties": {
-                      "originalSha256": {
-                        "type": "string",
-                        "pattern": "^[a-f0-9]{64}$"
+                      "selection": {
+                        "type": "object",
+                        "properties": {
+                          "format": {
+                            "type": "string",
+                            "enum": [
+                              "csv",
+                              "xlsx"
+                            ]
+                          },
+                          "sheet": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 150
+                          },
+                          "table": {
+                            "type": "string",
+                            "nullable": true,
+                            "enum": [
+                              null
+                            ]
+                          },
+                          "headerRows": {
+                            "minItems": 1,
+                            "maxItems": 5,
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 2000
+                            }
+                          }
+                        },
+                        "required": [
+                          "format",
+                          "sheet",
+                          "table",
+                          "headerRows"
+                        ],
+                        "additionalProperties": false
                       },
-                      "version": {
-                        "type": "string",
-                        "enum": [
-                          "json-table-csv/1"
-                        ]
+                      "sourceBytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 16777216
+                      },
+                      "admission": {
+                        "type": "object",
+                        "properties": {
+                          "issuer": {
+                            "nullable": true,
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 500
+                          },
+                          "origin": {
+                            "type": "string",
+                            "enum": [
+                              "officer_supplied"
+                            ]
+                          },
+                          "licence": {
+                            "type": "string",
+                            "enum": [
+                              "unconfirmed",
+                              "open",
+                              "restricted"
+                            ]
+                          },
+                          "containsPersonalData": {
+                            "type": "string",
+                            "enum": [
+                              "unknown",
+                              "yes",
+                              "no"
+                            ]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "case_original"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "issuer",
+                          "origin",
+                          "licence",
+                          "containsPersonalData",
+                          "kind"
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "required": [
-                      "originalSha256",
-                      "version"
+                      "selection",
+                      "sourceBytes",
+                      "admission"
                     ],
                     "additionalProperties": false
                   }
-                },
-                "required": [
-                  "selection",
-                  "sourceBytes",
-                  "developmentAssetId",
-                  "developmentFamily"
-                ],
-                "additionalProperties": false
+                ]
               }
             },
             "required": [
@@ -384215,92 +384760,201 @@
             ]
           },
           "tabular": {
-            "type": "object",
-            "properties": {
-              "selection": {
+            "anyOf": [
+              {
                 "type": "object",
                 "properties": {
-                  "format": {
-                    "type": "string",
-                    "enum": [
-                      "csv",
-                      "xlsx"
-                    ]
+                  "selection": {
+                    "type": "object",
+                    "properties": {
+                      "format": {
+                        "type": "string",
+                        "enum": [
+                          "csv",
+                          "xlsx"
+                        ]
+                      },
+                      "sheet": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 150
+                      },
+                      "table": {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      },
+                      "headerRows": {
+                        "minItems": 1,
+                        "maxItems": 5,
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2000
+                        }
+                      }
+                    },
+                    "required": [
+                      "format",
+                      "sheet",
+                      "table",
+                      "headerRows"
+                    ],
+                    "additionalProperties": false
                   },
-                  "sheet": {
+                  "sourceBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 16777216
+                  },
+                  "developmentAssetId": {
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 150
                   },
-                  "table": {
+                  "developmentFamily": {
                     "type": "string",
-                    "nullable": true,
-                    "enum": [
-                      null
-                    ]
+                    "pattern": "^mi-d\\d+$"
                   },
-                  "headerRows": {
-                    "minItems": 1,
-                    "maxItems": 5,
-                    "type": "array",
-                    "items": {
-                      "type": "integer",
-                      "minimum": 1,
-                      "maximum": 2000
-                    }
+                  "derivativeOf": {
+                    "type": "object",
+                    "properties": {
+                      "originalSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "version": {
+                        "type": "string",
+                        "enum": [
+                          "json-table-csv/1"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "originalSha256",
+                      "version"
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "required": [
-                  "format",
-                  "sheet",
-                  "table",
-                  "headerRows"
+                  "selection",
+                  "sourceBytes",
+                  "developmentAssetId",
+                  "developmentFamily"
                 ],
                 "additionalProperties": false
               },
-              "sourceBytes": {
-                "type": "integer",
-                "minimum": 0,
-                "exclusiveMinimum": true,
-                "maximum": 16777216
-              },
-              "developmentAssetId": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 150
-              },
-              "developmentFamily": {
-                "type": "string",
-                "pattern": "^mi-d\\d+$"
-              },
-              "derivativeOf": {
+              {
                 "type": "object",
                 "properties": {
-                  "originalSha256": {
-                    "type": "string",
-                    "pattern": "^[a-f0-9]{64}$"
+                  "selection": {
+                    "type": "object",
+                    "properties": {
+                      "format": {
+                        "type": "string",
+                        "enum": [
+                          "csv",
+                          "xlsx"
+                        ]
+                      },
+                      "sheet": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 150
+                      },
+                      "table": {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      },
+                      "headerRows": {
+                        "minItems": 1,
+                        "maxItems": 5,
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2000
+                        }
+                      }
+                    },
+                    "required": [
+                      "format",
+                      "sheet",
+                      "table",
+                      "headerRows"
+                    ],
+                    "additionalProperties": false
                   },
-                  "version": {
-                    "type": "string",
-                    "enum": [
-                      "json-table-csv/1"
-                    ]
+                  "sourceBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 16777216
+                  },
+                  "admission": {
+                    "type": "object",
+                    "properties": {
+                      "issuer": {
+                        "nullable": true,
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "origin": {
+                        "type": "string",
+                        "enum": [
+                          "officer_supplied"
+                        ]
+                      },
+                      "licence": {
+                        "type": "string",
+                        "enum": [
+                          "unconfirmed",
+                          "open",
+                          "restricted"
+                        ]
+                      },
+                      "containsPersonalData": {
+                        "type": "string",
+                        "enum": [
+                          "unknown",
+                          "yes",
+                          "no"
+                        ]
+                      },
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "case_original"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "issuer",
+                      "origin",
+                      "licence",
+                      "containsPersonalData",
+                      "kind"
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "required": [
-                  "originalSha256",
-                  "version"
+                  "selection",
+                  "sourceBytes",
+                  "admission"
                 ],
                 "additionalProperties": false
               }
-            },
-            "required": [
-              "selection",
-              "sourceBytes",
-              "developmentAssetId",
-              "developmentFamily"
-            ],
-            "additionalProperties": false
+            ]
           }
         },
         "required": [
@@ -384626,92 +385280,201 @@
             ]
           },
           "tabular": {
-            "type": "object",
-            "properties": {
-              "selection": {
+            "anyOf": [
+              {
                 "type": "object",
                 "properties": {
-                  "format": {
-                    "type": "string",
-                    "enum": [
-                      "csv",
-                      "xlsx"
-                    ]
+                  "selection": {
+                    "type": "object",
+                    "properties": {
+                      "format": {
+                        "type": "string",
+                        "enum": [
+                          "csv",
+                          "xlsx"
+                        ]
+                      },
+                      "sheet": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 150
+                      },
+                      "table": {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      },
+                      "headerRows": {
+                        "minItems": 1,
+                        "maxItems": 5,
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2000
+                        }
+                      }
+                    },
+                    "required": [
+                      "format",
+                      "sheet",
+                      "table",
+                      "headerRows"
+                    ],
+                    "additionalProperties": false
                   },
-                  "sheet": {
+                  "sourceBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 16777216
+                  },
+                  "developmentAssetId": {
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 150
                   },
-                  "table": {
+                  "developmentFamily": {
                     "type": "string",
-                    "nullable": true,
-                    "enum": [
-                      null
-                    ]
+                    "pattern": "^mi-d\\d+$"
                   },
-                  "headerRows": {
-                    "minItems": 1,
-                    "maxItems": 5,
-                    "type": "array",
-                    "items": {
-                      "type": "integer",
-                      "minimum": 1,
-                      "maximum": 2000
-                    }
+                  "derivativeOf": {
+                    "type": "object",
+                    "properties": {
+                      "originalSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "version": {
+                        "type": "string",
+                        "enum": [
+                          "json-table-csv/1"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "originalSha256",
+                      "version"
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "required": [
-                  "format",
-                  "sheet",
-                  "table",
-                  "headerRows"
+                  "selection",
+                  "sourceBytes",
+                  "developmentAssetId",
+                  "developmentFamily"
                 ],
                 "additionalProperties": false
               },
-              "sourceBytes": {
-                "type": "integer",
-                "minimum": 0,
-                "exclusiveMinimum": true,
-                "maximum": 16777216
-              },
-              "developmentAssetId": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 150
-              },
-              "developmentFamily": {
-                "type": "string",
-                "pattern": "^mi-d\\d+$"
-              },
-              "derivativeOf": {
+              {
                 "type": "object",
                 "properties": {
-                  "originalSha256": {
-                    "type": "string",
-                    "pattern": "^[a-f0-9]{64}$"
+                  "selection": {
+                    "type": "object",
+                    "properties": {
+                      "format": {
+                        "type": "string",
+                        "enum": [
+                          "csv",
+                          "xlsx"
+                        ]
+                      },
+                      "sheet": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 150
+                      },
+                      "table": {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      },
+                      "headerRows": {
+                        "minItems": 1,
+                        "maxItems": 5,
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2000
+                        }
+                      }
+                    },
+                    "required": [
+                      "format",
+                      "sheet",
+                      "table",
+                      "headerRows"
+                    ],
+                    "additionalProperties": false
                   },
-                  "version": {
-                    "type": "string",
-                    "enum": [
-                      "json-table-csv/1"
-                    ]
+                  "sourceBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 16777216
+                  },
+                  "admission": {
+                    "type": "object",
+                    "properties": {
+                      "issuer": {
+                        "nullable": true,
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "origin": {
+                        "type": "string",
+                        "enum": [
+                          "officer_supplied"
+                        ]
+                      },
+                      "licence": {
+                        "type": "string",
+                        "enum": [
+                          "unconfirmed",
+                          "open",
+                          "restricted"
+                        ]
+                      },
+                      "containsPersonalData": {
+                        "type": "string",
+                        "enum": [
+                          "unknown",
+                          "yes",
+                          "no"
+                        ]
+                      },
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "case_original"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "issuer",
+                      "origin",
+                      "licence",
+                      "containsPersonalData",
+                      "kind"
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "required": [
-                  "originalSha256",
-                  "version"
+                  "selection",
+                  "sourceBytes",
+                  "admission"
                 ],
                 "additionalProperties": false
               }
-            },
-            "required": [
-              "selection",
-              "sourceBytes",
-              "developmentAssetId",
-              "developmentFamily"
-            ],
-            "additionalProperties": false
+            ]
           }
         },
         "required": [
@@ -384847,92 +385610,201 @@
             ]
           },
           "tabular": {
-            "type": "object",
-            "properties": {
-              "selection": {
+            "anyOf": [
+              {
                 "type": "object",
                 "properties": {
-                  "format": {
-                    "type": "string",
-                    "enum": [
-                      "csv",
-                      "xlsx"
-                    ]
+                  "selection": {
+                    "type": "object",
+                    "properties": {
+                      "format": {
+                        "type": "string",
+                        "enum": [
+                          "csv",
+                          "xlsx"
+                        ]
+                      },
+                      "sheet": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 150
+                      },
+                      "table": {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      },
+                      "headerRows": {
+                        "minItems": 1,
+                        "maxItems": 5,
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2000
+                        }
+                      }
+                    },
+                    "required": [
+                      "format",
+                      "sheet",
+                      "table",
+                      "headerRows"
+                    ],
+                    "additionalProperties": false
                   },
-                  "sheet": {
+                  "sourceBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 16777216
+                  },
+                  "developmentAssetId": {
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 150
                   },
-                  "table": {
+                  "developmentFamily": {
                     "type": "string",
-                    "nullable": true,
-                    "enum": [
-                      null
-                    ]
+                    "pattern": "^mi-d\\d+$"
                   },
-                  "headerRows": {
-                    "minItems": 1,
-                    "maxItems": 5,
-                    "type": "array",
-                    "items": {
-                      "type": "integer",
-                      "minimum": 1,
-                      "maximum": 2000
-                    }
+                  "derivativeOf": {
+                    "type": "object",
+                    "properties": {
+                      "originalSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "version": {
+                        "type": "string",
+                        "enum": [
+                          "json-table-csv/1"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "originalSha256",
+                      "version"
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "required": [
-                  "format",
-                  "sheet",
-                  "table",
-                  "headerRows"
+                  "selection",
+                  "sourceBytes",
+                  "developmentAssetId",
+                  "developmentFamily"
                 ],
                 "additionalProperties": false
               },
-              "sourceBytes": {
-                "type": "integer",
-                "minimum": 0,
-                "exclusiveMinimum": true,
-                "maximum": 16777216
-              },
-              "developmentAssetId": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 150
-              },
-              "developmentFamily": {
-                "type": "string",
-                "pattern": "^mi-d\\d+$"
-              },
-              "derivativeOf": {
+              {
                 "type": "object",
                 "properties": {
-                  "originalSha256": {
-                    "type": "string",
-                    "pattern": "^[a-f0-9]{64}$"
+                  "selection": {
+                    "type": "object",
+                    "properties": {
+                      "format": {
+                        "type": "string",
+                        "enum": [
+                          "csv",
+                          "xlsx"
+                        ]
+                      },
+                      "sheet": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 150
+                      },
+                      "table": {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      },
+                      "headerRows": {
+                        "minItems": 1,
+                        "maxItems": 5,
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2000
+                        }
+                      }
+                    },
+                    "required": [
+                      "format",
+                      "sheet",
+                      "table",
+                      "headerRows"
+                    ],
+                    "additionalProperties": false
                   },
-                  "version": {
-                    "type": "string",
-                    "enum": [
-                      "json-table-csv/1"
-                    ]
+                  "sourceBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 16777216
+                  },
+                  "admission": {
+                    "type": "object",
+                    "properties": {
+                      "issuer": {
+                        "nullable": true,
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "origin": {
+                        "type": "string",
+                        "enum": [
+                          "officer_supplied"
+                        ]
+                      },
+                      "licence": {
+                        "type": "string",
+                        "enum": [
+                          "unconfirmed",
+                          "open",
+                          "restricted"
+                        ]
+                      },
+                      "containsPersonalData": {
+                        "type": "string",
+                        "enum": [
+                          "unknown",
+                          "yes",
+                          "no"
+                        ]
+                      },
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "case_original"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "issuer",
+                      "origin",
+                      "licence",
+                      "containsPersonalData",
+                      "kind"
+                    ],
+                    "additionalProperties": false
                   }
                 },
                 "required": [
-                  "originalSha256",
-                  "version"
+                  "selection",
+                  "sourceBytes",
+                  "admission"
                 ],
                 "additionalProperties": false
               }
-            },
-            "required": [
-              "selection",
-              "sourceBytes",
-              "developmentAssetId",
-              "developmentFamily"
-            ],
-            "additionalProperties": false
+            ]
           },
           "referenceEvidence": {
             "nullable": true,
@@ -385659,92 +386531,201 @@
                 "maximum": 9007199254740991
               },
               "tabular": {
-                "type": "object",
-                "properties": {
-                  "selection": {
+                "anyOf": [
+                  {
                     "type": "object",
                     "properties": {
-                      "format": {
-                        "type": "string",
-                        "enum": [
-                          "csv",
-                          "xlsx"
-                        ]
+                      "selection": {
+                        "type": "object",
+                        "properties": {
+                          "format": {
+                            "type": "string",
+                            "enum": [
+                              "csv",
+                              "xlsx"
+                            ]
+                          },
+                          "sheet": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 150
+                          },
+                          "table": {
+                            "type": "string",
+                            "nullable": true,
+                            "enum": [
+                              null
+                            ]
+                          },
+                          "headerRows": {
+                            "minItems": 1,
+                            "maxItems": 5,
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 2000
+                            }
+                          }
+                        },
+                        "required": [
+                          "format",
+                          "sheet",
+                          "table",
+                          "headerRows"
+                        ],
+                        "additionalProperties": false
                       },
-                      "sheet": {
+                      "sourceBytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 16777216
+                      },
+                      "developmentAssetId": {
                         "type": "string",
                         "minLength": 1,
                         "maxLength": 150
                       },
-                      "table": {
+                      "developmentFamily": {
                         "type": "string",
-                        "nullable": true,
-                        "enum": [
-                          null
-                        ]
+                        "pattern": "^mi-d\\d+$"
                       },
-                      "headerRows": {
-                        "minItems": 1,
-                        "maxItems": 5,
-                        "type": "array",
-                        "items": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "maximum": 2000
-                        }
+                      "derivativeOf": {
+                        "type": "object",
+                        "properties": {
+                          "originalSha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "version": {
+                            "type": "string",
+                            "enum": [
+                              "json-table-csv/1"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "originalSha256",
+                          "version"
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "required": [
-                      "format",
-                      "sheet",
-                      "table",
-                      "headerRows"
+                      "selection",
+                      "sourceBytes",
+                      "developmentAssetId",
+                      "developmentFamily"
                     ],
                     "additionalProperties": false
                   },
-                  "sourceBytes": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "exclusiveMinimum": true,
-                    "maximum": 16777216
-                  },
-                  "developmentAssetId": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 150
-                  },
-                  "developmentFamily": {
-                    "type": "string",
-                    "pattern": "^mi-d\\d+$"
-                  },
-                  "derivativeOf": {
+                  {
                     "type": "object",
                     "properties": {
-                      "originalSha256": {
-                        "type": "string",
-                        "pattern": "^[a-f0-9]{64}$"
+                      "selection": {
+                        "type": "object",
+                        "properties": {
+                          "format": {
+                            "type": "string",
+                            "enum": [
+                              "csv",
+                              "xlsx"
+                            ]
+                          },
+                          "sheet": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 150
+                          },
+                          "table": {
+                            "type": "string",
+                            "nullable": true,
+                            "enum": [
+                              null
+                            ]
+                          },
+                          "headerRows": {
+                            "minItems": 1,
+                            "maxItems": 5,
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 2000
+                            }
+                          }
+                        },
+                        "required": [
+                          "format",
+                          "sheet",
+                          "table",
+                          "headerRows"
+                        ],
+                        "additionalProperties": false
                       },
-                      "version": {
-                        "type": "string",
-                        "enum": [
-                          "json-table-csv/1"
-                        ]
+                      "sourceBytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 16777216
+                      },
+                      "admission": {
+                        "type": "object",
+                        "properties": {
+                          "issuer": {
+                            "nullable": true,
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 500
+                          },
+                          "origin": {
+                            "type": "string",
+                            "enum": [
+                              "officer_supplied"
+                            ]
+                          },
+                          "licence": {
+                            "type": "string",
+                            "enum": [
+                              "unconfirmed",
+                              "open",
+                              "restricted"
+                            ]
+                          },
+                          "containsPersonalData": {
+                            "type": "string",
+                            "enum": [
+                              "unknown",
+                              "yes",
+                              "no"
+                            ]
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "case_original"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "issuer",
+                          "origin",
+                          "licence",
+                          "containsPersonalData",
+                          "kind"
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "required": [
-                      "originalSha256",
-                      "version"
+                      "selection",
+                      "sourceBytes",
+                      "admission"
                     ],
                     "additionalProperties": false
                   }
-                },
-                "required": [
-                  "selection",
-                  "sourceBytes",
-                  "developmentAssetId",
-                  "developmentFamily"
-                ],
-                "additionalProperties": false
+                ]
               },
               "mapping": {
                 "type": "object",

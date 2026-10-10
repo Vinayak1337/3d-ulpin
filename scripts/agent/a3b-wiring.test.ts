@@ -233,7 +233,9 @@ test('CSV receipt accepts exact public dev bytes; no-header, oversize and non-de
     assert.equal(receipt.workspaceRevision, 1);
     assert(f.db.sourceExists);
     assert.throws(() => readTabularSource(Buffer.from('\n'), selection), /header|reader/i);
-    assert.throws(() => inspectTabularSource(Buffer.from('not a dev original'), selection), /exact public/i);
+    const unseen = inspectTabularSource(Buffer.concat([f.bytes, Buffer.from('\n')]), selection);
+    assert('admission' in unseen.tabular);
+    assert.equal(unseen.tabular.admission.kind, 'case_original');
     await assert.rejects(() => new ManualIngestionService().retain(f.caseId, { requestKey: randomUUID(),
       expectedWorkspaceRevision: 0, format: 'csv', selection }, {
       name: f.asset.id, bytes: new Uint8Array(16 * 1024 ** 2 + 1) }),

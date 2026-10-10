@@ -81,11 +81,20 @@ export const TabularSelectionSchema = z.strictObject({
     ctx.addIssue({ code: 'custom', message: 'CSV admission requires the first logical record as its header.' });
   }
 });
-export const TabularPinSchema = z.strictObject({
+const DevelopmentTabularPinSchema = z.strictObject({
   selection: TabularSelectionSchema, sourceBytes: z.number().int().positive().max(TABULAR_LIMITS.bytes),
   developmentAssetId: z.string().min(1).max(150), developmentFamily: z.string().regex(/^mi-d\d+$/),
   derivativeOf: z.strictObject({ originalSha256: hash, version: z.literal('json-table-csv/1') }).optional(),
 });
+const TabularProvenanceSchema = z.strictObject({
+  issuer: z.string().min(1).max(500).refine(value => Boolean(value.trim())).nullable(),
+  origin: z.literal('officer_supplied'), licence: z.enum(['unconfirmed', 'open', 'restricted']),
+  containsPersonalData: z.enum(['unknown', 'yes', 'no']),
+});
+export const TabularPinSchema = z.union([DevelopmentTabularPinSchema, z.strictObject({
+  selection: TabularSelectionSchema, sourceBytes: z.number().int().positive().max(TABULAR_LIMITS.bytes),
+  admission: TabularProvenanceSchema.extend({ kind: z.literal('case_original') }),
+})]);
 export const TabularSourceProfileSchema = z.strictObject({
   version: z.literal('manual-tabular/1'), source: SourcePinSchema, tabular: TabularPinSchema,
   caseId: id, workspaceRevision: z.number().int().nonnegative(), workspaceFingerprint: hash,
@@ -96,6 +105,7 @@ export const TabularSourceProfileSchema = z.strictObject({
 export const AnySourceProfileSchema = z.union([SourceProfileSchema, TabularSourceProfileSchema]);
 export const AnyRetainSourceSchema = z.union([RetainGisSchema, z.strictObject({ ...RetainGisSchema.shape,
   format: z.enum(['csv', 'xlsx']), selection: TabularSelectionSchema,
+  ...TabularProvenanceSchema.partial().shape,
 }).superRefine((value, ctx) => {
   if (value.format !== value.selection.format) {
     ctx.addIssue({ code: 'custom', message: 'Format and selection differ.' });

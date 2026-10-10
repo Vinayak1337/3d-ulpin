@@ -2,7 +2,8 @@ import {createHash} from 'node:crypto';
 import type {Readable} from 'node:stream';
 import {STREAMING_VECTOR_LIMITS as limits,TABULAR_LIMITS,type TabularPin,
   type StreamingVectorRecord} from '@ulpin/contracts/usp';
-import {readTabularSource,tabularDevelopmentAsset} from './tabular-source';
+import {readTabularSource,admitTabularSource} from './tabular-source';
+import {fingerprint} from '../../cases/domain';
 import {AppError} from '../../../infrastructure/errors';
 
 const whitespace=(byte:number)=>byte===32||byte===9||byte===10||byte===13;
@@ -176,8 +177,12 @@ export async function readStreamingTabular(body:Readable,pin:TabularPin,onFeatur
     chunks.push(chunk);
   }
   const raw=Buffer.concat(chunks),hash=createHash('sha256').update(raw).digest('hex');
-  const asset=tabularDevelopmentAsset(hash,raw.length);
-  if(asset.id!==pin.developmentAssetId||asset.family!==pin.developmentFamily||raw.length!==pin.sourceBytes)
+  const admitted=admitTabularSource(hash,raw.length,'admission' in pin?pin.admission:{});
+  const sameAdmission=admitted.kind==='case_original'
+    ?'admission' in pin&&fingerprint(admitted.admission)===fingerprint(pin.admission)
+    :'developmentAssetId' in pin&&admitted.asset.id===pin.developmentAssetId&&
+      admitted.asset.family===pin.developmentFamily;
+  if(!sameAdmission||raw.length!==pin.sourceBytes)
     throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The original differs from its tabular pin.');
   const table=readTabularSource(raw,pin.selection);
   for(const [index,row] of table.rows.entries()){

@@ -64763,6 +64763,27 @@ export interface components {
                     /** @enum {string} */
                     version: "json-table-csv/1";
                 };
+            } | {
+                selection: {
+                    /** @enum {string} */
+                    format: "csv" | "xlsx";
+                    sheet: string;
+                    /** @enum {string|null} */
+                    table: null;
+                    headerRows: number[];
+                };
+                sourceBytes: number;
+                admission: {
+                    issuer: string | null;
+                    /** @enum {string} */
+                    origin: "officer_supplied";
+                    /** @enum {string} */
+                    licence: "unconfirmed" | "open" | "restricted";
+                    /** @enum {string} */
+                    containsPersonalData: "unknown" | "yes" | "no";
+                    /** @enum {string} */
+                    kind: "case_original";
+                };
             };
             /** Format: uuid */
             caseId: string;
@@ -64883,6 +64904,27 @@ export interface components {
                         originalSha256: string;
                         /** @enum {string} */
                         version: "json-table-csv/1";
+                    };
+                } | {
+                    selection: {
+                        /** @enum {string} */
+                        format: "csv" | "xlsx";
+                        sheet: string;
+                        /** @enum {string|null} */
+                        table: null;
+                        headerRows: number[];
+                    };
+                    sourceBytes: number;
+                    admission: {
+                        issuer: string | null;
+                        /** @enum {string} */
+                        origin: "officer_supplied";
+                        /** @enum {string} */
+                        licence: "unconfirmed" | "open" | "restricted";
+                        /** @enum {string} */
+                        containsPersonalData: "unknown" | "yes" | "no";
+                        /** @enum {string} */
+                        kind: "case_original";
                     };
                 };
                 mapping: {
@@ -65068,6 +65110,27 @@ export interface components {
                         /** @enum {string} */
                         version: "json-table-csv/1";
                     };
+                } | {
+                    selection: {
+                        /** @enum {string} */
+                        format: "csv" | "xlsx";
+                        sheet: string;
+                        /** @enum {string|null} */
+                        table: null;
+                        headerRows: number[];
+                    };
+                    sourceBytes: number;
+                    admission: {
+                        issuer: string | null;
+                        /** @enum {string} */
+                        origin: "officer_supplied";
+                        /** @enum {string} */
+                        licence: "unconfirmed" | "open" | "restricted";
+                        /** @enum {string} */
+                        containsPersonalData: "unknown" | "yes" | "no";
+                        /** @enum {string} */
+                        kind: "case_original";
+                    };
                 };
                 mapping: {
                     /** @enum {string} */
@@ -65251,6 +65314,27 @@ export interface components {
                         originalSha256: string;
                         /** @enum {string} */
                         version: "json-table-csv/1";
+                    };
+                } | {
+                    selection: {
+                        /** @enum {string} */
+                        format: "csv" | "xlsx";
+                        sheet: string;
+                        /** @enum {string|null} */
+                        table: null;
+                        headerRows: number[];
+                    };
+                    sourceBytes: number;
+                    admission: {
+                        issuer: string | null;
+                        /** @enum {string} */
+                        origin: "officer_supplied";
+                        /** @enum {string} */
+                        licence: "unconfirmed" | "open" | "restricted";
+                        /** @enum {string} */
+                        containsPersonalData: "unknown" | "yes" | "no";
+                        /** @enum {string} */
+                        kind: "case_original";
                     };
                 };
                 mapping: {
@@ -68662,6 +68746,27 @@ export interface components {
                     /** @enum {string} */
                     version: "json-table-csv/1";
                 };
+            } | {
+                selection: {
+                    /** @enum {string} */
+                    format: "csv" | "xlsx";
+                    sheet: string;
+                    /** @enum {string|null} */
+                    table: null;
+                    headerRows: number[];
+                };
+                sourceBytes: number;
+                admission: {
+                    issuer: string | null;
+                    /** @enum {string} */
+                    origin: "officer_supplied";
+                    /** @enum {string} */
+                    licence: "unconfirmed" | "open" | "restricted";
+                    /** @enum {string} */
+                    containsPersonalData: "unknown" | "yes" | "no";
+                    /** @enum {string} */
+                    kind: "case_original";
+                };
             };
         };
         POST_ingestion_cases_caseId_sources_sourceId_streaming_vector_Response_202_application_json: {
@@ -68731,6 +68836,27 @@ export interface components {
                     originalSha256: string;
                     /** @enum {string} */
                     version: "json-table-csv/1";
+                };
+            } | {
+                selection: {
+                    /** @enum {string} */
+                    format: "csv" | "xlsx";
+                    sheet: string;
+                    /** @enum {string|null} */
+                    table: null;
+                    headerRows: number[];
+                };
+                sourceBytes: number;
+                admission: {
+                    issuer: string | null;
+                    /** @enum {string} */
+                    origin: "officer_supplied";
+                    /** @enum {string} */
+                    licence: "unconfirmed" | "open" | "restricted";
+                    /** @enum {string} */
+                    containsPersonalData: "unknown" | "yes" | "no";
+                    /** @enum {string} */
+                    kind: "case_original";
                 };
             };
         };
@@ -68813,6 +68939,27 @@ export interface components {
                     /** @enum {string} */
                     version: "json-table-csv/1";
                 };
+            } | {
+                selection: {
+                    /** @enum {string} */
+                    format: "csv" | "xlsx";
+                    sheet: string;
+                    /** @enum {string|null} */
+                    table: null;
+                    headerRows: number[];
+                };
+                sourceBytes: number;
+                admission: {
+                    issuer: string | null;
+                    /** @enum {string} */
+                    origin: "officer_supplied";
+                    /** @enum {string} */
+                    licence: "unconfirmed" | "open" | "restricted";
+                    /** @enum {string} */
+                    containsPersonalData: "unknown" | "yes" | "no";
+                    /** @enum {string} */
+                    kind: "case_original";
+                };
             };
         };
         POST_ingestion_cases_caseId_sources_sourceId_chunk_mapping_Response_202_application_json: {
@@ -68862,6 +69009,27 @@ export interface components {
                     originalSha256: string;
                     /** @enum {string} */
                     version: "json-table-csv/1";
+                };
+            } | {
+                selection: {
+                    /** @enum {string} */
+                    format: "csv" | "xlsx";
+                    sheet: string;
+                    /** @enum {string|null} */
+                    table: null;
+                    headerRows: number[];
+                };
+                sourceBytes: number;
+                admission: {
+                    issuer: string | null;
+                    /** @enum {string} */
+                    origin: "officer_supplied";
+                    /** @enum {string} */
+                    licence: "unconfirmed" | "open" | "restricted";
+                    /** @enum {string} */
+                    containsPersonalData: "unknown" | "yes" | "no";
+                    /** @enum {string} */
+                    kind: "case_original";
                 };
             };
             referenceEvidence: string | null;
@@ -69024,6 +69192,27 @@ export interface components {
                         originalSha256: string;
                         /** @enum {string} */
                         version: "json-table-csv/1";
+                    };
+                } | {
+                    selection: {
+                        /** @enum {string} */
+                        format: "csv" | "xlsx";
+                        sheet: string;
+                        /** @enum {string|null} */
+                        table: null;
+                        headerRows: number[];
+                    };
+                    sourceBytes: number;
+                    admission: {
+                        issuer: string | null;
+                        /** @enum {string} */
+                        origin: "officer_supplied";
+                        /** @enum {string} */
+                        licence: "unconfirmed" | "open" | "restricted";
+                        /** @enum {string} */
+                        containsPersonalData: "unknown" | "yes" | "no";
+                        /** @enum {string} */
+                        kind: "case_original";
                     };
                 };
                 mapping?: {

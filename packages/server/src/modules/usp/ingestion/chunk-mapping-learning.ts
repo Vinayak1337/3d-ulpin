@@ -46,6 +46,10 @@ function immutableText(path: string, text: string) {
 }
 
 function officerExamples(receipt: TabularMappingReceipt, profile: TabularSourceProfile, source: any) {
+  const pin = profile.tabular;
+  if ('admission' in pin) {
+    throw new AppError(422, 'TABULAR_LEARNING_DENIED', 'Case originals never enter family-split learning records.');
+  }
   const { dry, table } = validateTabularRecipe(receipt.plan, profile, source.bytes);
   const profileHash = columnProfileHash(profile.profile);
   const examples = receipt.plan.mapping.fields.map(field => ({ layoutFingerprint: profile.profile.layoutFingerprint,
@@ -57,7 +61,7 @@ function officerExamples(receipt: TabularMappingReceipt, profile: TabularSourceP
         cell.sourceField === field.sourceField && cell.state === 'conflicting')).length } }));
   const links = profile.profile.columns.map((column, index) => ({ ...column, header: profile.headers[index],
     profileId: fingerprint([profileHash, column.name]), profileHash, sourceField: column.name,
-    family: profile.tabular.developmentFamily, split: 'dev', cellCount: Math.min(100, table.rows.length),
+    family: pin.developmentFamily, split: 'dev', cellCount: Math.min(100, table.rows.length),
     emptyCount: table.rows.slice(0, 100).filter(row => row[index] === undefined || row[index] === null ||
       typeof row[index] === 'string' && !(row[index] as string).trim()).length,
     neighbourHeaders: profile.headers.slice(Math.max(0, index - 2), index)
@@ -136,6 +140,19 @@ async function assertRecordedApprovalTx(client: PoolClient, value: unknown) {
   return receipt;
 }
 
+async function rememberCaseOriginalTx(
+  client: PoolClient, key: string, receipt: TabularMappingReceipt, profile: TabularSourceProfile, bytes: Uint8Array,
+) {
+  validateTabularRecipe(receipt.plan, profile, bytes);
+  rememberMapping(receipt.plan.mapping, mappingContextFromColumnProfile(profile.profile, profile.tabular.selection), {
+    source: 'officer', method: receipt.plan.mapping.method, officerDecisionId: `${receipt.id}:${receipt.revision}`,
+  }, tabularLearningPaths().memory);
+  const result = { learner: 'not_updated', reason: 'case_original_has_no_family' };
+  await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) " +
+    "VALUES($1,$2,'manual-mapping',$3,$4)", [receipt.plan.caseId, key, receipt.planHash, result]);
+  return result;
+}
+
 /** The existing fenced chunk job is the background learner; a transaction lock serializes all CPU updates. */
 export async function learnApprovedTabularTx(client: PoolClient, value: unknown, profile: unknown, source: any) {
   const receipt = await assertRecordedApprovalTx(client, value);
@@ -146,13 +163,14 @@ export async function learnApprovedTabularTx(client: PoolClient, value: unknown,
   if (prior) return prior.result;
   const current = TabularSourceProfileSchema.parse(profile);
   assertTabularPin(current.tabular, source);
-  if (receipt.plan.tabular.developmentFamily === 'mi-d03') {
+  if ('developmentFamily' in receipt.plan.tabular && receipt.plan.tabular.developmentFamily === 'mi-d03') {
     throw new AppError(422, 'TABULAR_CALIBRATION_DENIED', 'The frozen calibration family cannot be fitted online.');
   }
   const bytes = Buffer.from(await readObject(source.object_key));
   if (bytes.length !== Number(source.bytes) || sha256(bytes) !== source.sha256) {
     conflict('The original changed before learning.');
   }
+  if ('admission' in current.tabular) return rememberCaseOriginalTx(client, key, receipt, current, bytes);
   const examples = persistOfficerBatch(receipt, current, bytes);
   const result = trainOfficerBatch(examples, await activeTabularLearner(client));
   await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) " +
@@ -166,13 +184,16 @@ export async function queueApprovedTabular(receipt: TabularMappingReceipt, reque
     'ORDER BY created_at DESC,id DESC LIMIT 1', [receipt.plan.caseId, receipt.plan.source.sourceId])).rows[0];
   const { ChunkMappingService } = await import('./chunk-mapping');
   const { StreamingVectorService } = await import('./streaming-vector');
+  const current = (await query('SELECT revision FROM cases WHERE id=$1', [receipt.plan.caseId])).rows[0];
+  if (!current) conflict('The approved table case no longer exists.');
+  const expectedCaseRevision = current.revision;
   try {
     const rawId = raw?.id ?? (await new StreamingVectorService().enqueue(receipt.plan.caseId,
-      receipt.plan.source.sourceId, { requestKey, expectedCaseRevision: receipt.plan.workspaceRevision,
+      receipt.plan.source.sourceId, { requestKey, expectedCaseRevision,
         expectedSourceRevision: receipt.plan.source.sourceRevision, sourceSha256: receipt.plan.source.sourceSha256,
         framing: 'tabular', tabular: receipt.plan.tabular })).jobId;
     await new ChunkMappingService().enqueue(receipt.plan.caseId, receipt.plan.source.sourceId, {
-      requestKey, rawJobId: rawId, expectedCaseRevision: receipt.plan.workspaceRevision,
+      requestKey, rawJobId: rawId, expectedCaseRevision,
       expectedSourceRevision: receipt.plan.source.sourceRevision, sourceSha256: receipt.plan.source.sourceSha256,
       tabular: receipt.plan.tabular,
     });
