@@ -4,7 +4,7 @@
  "gates": ["GF1","GF4"],
  "artifactsRoot": "E:/BhuAayam-data/task-data/r3",
  "api": "http://127.0.0.1:3194/api/v1",
- "overall": "steps 0 to 3 done; step 4, the final runtime state and the report follow in the next commit",
+ "overall": "all five steps done; the Tower 3 unit has an assigned code, an executed packet and one verified card",
  "step0": {
   "result": "done: cause located; nothing rebuilt, restarted or repaired in this step",
   "doctorBefore": {
@@ -476,6 +476,42 @@
    "The card expires at 2026-10-11T13:39:30Z (19:09 IST), within 24 hours by design."
   ]
  },
+ "step4": {
+  "result": "done as reads; no Studio server was started and none answers on port 5188; no page was seen in a browser",
+  "studioUrls": {
+   "tower3": "http://127.0.0.1:5188/studio/review/6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+   "register": "http://127.0.0.1:5188/studio/properties/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/register"
+  },
+  "studioProbe": {"reviewPage":"no connection","registerPage":"no connection","serverStarted":false},
+  "reads": [
+   {
+    "route": "GET /buildings/{id}/canonical",
+    "http": 200,
+    "floorLabel": true,
+    "unitLabel": true,
+    "assignedCode": true,
+    "citations": 2
+   },
+   {"route":"GET /sources/5293cd72.../pages","http":200,"framePt":[2586,1695]},
+   {"route":"GET /buildings/{id}/ledger","http":200,"floorLabel":true,"unitLabel":true,"assignedCode":false},
+   {
+    "route": "GET /buildings/{id}/register?profile=consolidated&format=json",
+    "http": 200,
+    "floorLabel": true,
+    "unitLabel": true,
+    "assignedCode": false
+   }
+  ],
+  "citations": [
+   {"literal":"2ND FLOOR PLAN","page":1,"regionPt":[850,875,1020,910]},
+   {"literal":"UNIT-3B","page":1,"regionPt":[596,390,644,409]}
+  ],
+  "finding": [
+   "The assigned code P3-YBF8MA4FYHGFRA0CERYJ-T3 is in the canonical read (the review page). The ledger and the",
+   "consolidated register, which the register page reads, show the unit and floor labels and the 3DU identifier",
+   "but not the assigned code."
+  ]
+ },
  "invariants": {
   "before": {
    "registry": 4,
@@ -510,6 +546,18 @@
   ],
   "notCreated": ["floor","unit","parcel","ULPIN","area","use","owner","right","source","case","package"]
  },
+ "finalRuntime": {
+  "servedCommit": "fbe525f7e63d9a8fae801da5a061d7be1f7bfecb",
+  "servedCheckoutClean": true,
+  "apiPid": 6308,
+  "dispatcherPid": 32148,
+  "nativeProcessesRunning": true,
+  "documentRuntimesPass": true,
+  "gatewayEnabled": false,
+  "containersPreserved": true,
+  "doctorExit": 0,
+  "doctorAt": "2026-10-10T13:59:38Z"
+ },
  "processNotes": [
   "No provider call; no SQL by hand; no second floor or unit; no source-spaces request; the card was not revoked.",
   "Commit trailer: Claude Opus 5.5, as docs/next-steps/WORKERS.md section 7 gives for a Claude subagent.",
@@ -519,5 +567,22 @@
    "no .pyc was written under either installation since the task began."
   ],
   "This environment does not create REPORT.md files, so the one-screen report is kept here."
+ ],
+ "checks": {"doctorFinal":0,"driverTypecheck":0,"diffCheck":0,"newFiles120Columns":0},
+ "report": [
+  "TASK   R3 - demo rolled to staging with K5 and K6; refused reads confirmed; Tower 3 identity resumed to the card",
+  "       GATE GF1, GF4",
+  "WORKS  Step 0 Done: FAIL Document runtimes was a replaced interpreter base (Codex runtime), not a worker edit.",
+  "       Step 1 Done: K5 table applied once (exit 0), demo serves fbe525f7, doctor 0, PASS Document runtimes.",
+  "       Step 2 Done: all eight reads 200; two differences from K6 recorded.",
+  "       Step 3 Done: snapshot 200, code assigned, packet executed, card generated, verification consistent.",
+  "       Step 4 Done as reads: labels, code and both citations in the canonical read; no Studio server running.",
+  "SEE IT http://127.0.0.1:5188/studio/review/6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+  "       http://127.0.0.1:5188/studio/properties/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/register",
+  "       E:/BhuAayam-data/task-data/r3/step3/08-packet.pdf, 08-packet.png, 11-card.pdf, 11-card.png",
+  "INPUTS Tower 3 plan1 (5293cd72, revision 1), boxed label UNIT-3B [596,390,644,409] on 2ND FLOOR PLAN.",
+  "       Difficult: a site whose other document readings went stale, and an original that was never read.",
+  "GAPS   No browser view; the register page reads do not carry the assigned code; the card expires in 24 hours.",
+  "NEXT   See the worker reply: interpreter base owned by the Codex application; DEMO-RUNTIME paragraph now stale."
  ]
 }
