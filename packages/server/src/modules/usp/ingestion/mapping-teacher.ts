@@ -156,6 +156,30 @@ function outputSchema(sourceAliases: string[]): Record<string, unknown> {
   return schema;
 }
 
+/**
+ * The masker's four whole-sample tokens start with "[" and are not JSON, which the shared minimizer refuses.
+ * A request carries these forms instead; the profile, its hash and its replay key keep the masker's spelling.
+ * The masker cannot write a form from cell text: it masks the word "cell".
+ */
+const PROMPT_SAMPLE_FORMS = new Map([
+  ['[absent]', '(absent cell)'],
+  ['[blank]', '(blank cell)'],
+  ['[array]', '(array cell)'],
+  ['[object]', '(object cell)'],
+]);
+
+const promptSample = (sample: string, name: string) =>
+  PROMPT_SAMPLE_FORMS.get(sample) ?? maskColumnSample(sample, name);
+
+/** What one request translated, for its evidence: each token present, its form and the number of samples. */
+function promptSampleForms(profile: ColumnProfileDocument) {
+  const samples = profile.columns.flatMap((column) => column.maskedSamples);
+  return [...PROMPT_SAMPLE_FORMS].flatMap(([token, form]) => {
+    const count = samples.filter((sample) => sample === token).length;
+    return count ? [{ token, form, samples: count }] : [];
+  });
+}
+
 function promptColumns(profile: ColumnProfileDocument) {
   return profile.columns.map((column, index) => ({
     // The shared minimizer treats the JSON key "name" as personal information.
@@ -164,7 +188,7 @@ function promptColumns(profile: ColumnProfileDocument) {
     inferredType: column.inferredType,
     ...(column.declaredUnit ? { declaredUnit: column.declaredUnit } : {}),
     valueShapes: column.valueShapes,
-    maskedSamples: column.maskedSamples.map((value) => maskColumnSample(value, column.name)),
+    maskedSamples: column.maskedSamples.map((value) => promptSample(value, column.name)),
   }));
 }
 
@@ -198,7 +222,8 @@ export function mappingTeacherRequest(profile: ColumnProfileDocument, errors: st
     },
     { role: 'user' as const, content: JSON.stringify(input) },
   ];
-  return { messages, schema: outputSchema(aliases.map((item) => item.alias)), aliases };
+  const schema = outputSchema(aliases.map((item) => item.alias));
+  return { messages, schema, aliases, sampleForms: promptSampleForms(inspected) };
 }
 
 export function mappingContextFromColumnProfile(

@@ -3,8 +3,9 @@
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { userInfo } from 'node:os';
+import { pathToFileURL } from 'node:url';
 import {
-  extractStoreyFacts, storeyPartBatches, type StoreyAgentResult, type StoreyPageStore,
+  extractStoreyFacts, storeyPartBatches, storeyPartSelection, type StoreyAgentResult, type StoreyPageStore,
 } from '../../../../../packages/server/src/modules/ai/document-storey-agent';
 import { mappingTeacherGatewayRuntime } from '../../../../../packages/server/src/modules/model-gateway/runtime';
 
@@ -45,10 +46,12 @@ const requestContext = {
   policyVersion: 'usp-local-1',
 };
 
+type BatchResult = StoreyAgentResult & { batch: number; partIds: string[] };
+
 async function runSource(
   store: StoreyPageStore, split: 'development' | 'demo', mode: string, budget: { left: number },
 ) {
-  const results: (StoreyAgentResult & { batch: number; partIds: string[] })[] = [];
+  const results: BatchResult[] = [];
   for (const [batch, parts] of storeyPartBatches(store).entries()) {
     if (budget.left <= 0) break;
     const result = await extractStoreyFacts(parts, {
@@ -60,6 +63,11 @@ async function runSource(
     if (result.state === 'teacher_unavailable') break;
   }
   return results;
+}
+
+/** One document's agent file: its answers and, by position and code only, the lines its requests left out. */
+export function agentDocument(store: StoreyPageStore, mode: string, results: BatchResult[]) {
+  return { source: store.source, mode, omitted: storeyPartSelection(store).omitted, results };
 }
 
 async function main() {
@@ -78,15 +86,15 @@ async function main() {
     }
     const before = budget.left;
     const results = await runSource(store, split, mode, budget);
-    const document = { source: store.source, mode, results };
+    const document = agentDocument(store, mode, results);
     writeFileSync(join(out, `${store.source.sha256}.agent.json`), JSON.stringify(document));
     const states = results.map((item) => item.state);
     const codes = results.map((item) => item.code ?? null);
     const calls = before - budget.left;
-    receipt.push({ source: store.source.sha256, split, calls, states, codes });
+    receipt.push({ source: store.source.sha256, split, calls, states, codes, omitted: document.omitted.length });
   }
   writeFileSync(join(out, 'receipt.json'), JSON.stringify({ mode, callsLeft: budget.left, sources: receipt }, null, 1));
   console.log(JSON.stringify({ mode, callsLeft: budget.left, sources: receipt }, null, 1));
 }
 
-await main();
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) await main();
