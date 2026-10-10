@@ -148,7 +148,7 @@ test('a request the gateway would refuse is screened as built and listed with th
   const tables = newScreen();
   screenTables(tables, [wide]);
   const [refusal] = tables.refusals;
-  assert.deepEqual([tables.refusals.length, refusal.family, refusal.code], [1, 'mi-d22', 'MODEL_PROMPT_PRIVACY']);
+  assert.deepEqual([tables.refusals.length, refusal.family, refusal.code], [1, 'mi-d22', 'MODEL_INPUT_LIMIT']);
   assert(refusal.bodyBytes > 32768);
   const counted = tables.tallies.get('mi-d22')!.n;
   assert.deepEqual([counted.promptRequests, counted.promptsRefusedByGateway, counted.columns], [1, 1, 90]);

@@ -136,6 +136,14 @@ test('request: the four whole-sample tokens go as plain-text forms the minimizer
   assert.deepEqual(mappingTeacherRequest(stored).sampleForms, []);
 });
 
+test('gateway: a message that is only too long is refused as size; shape and content refusals stay privacy', () => {
+  const long = 'x'.repeat(32769);
+  assert.equal(minimizeMessages([{ role: 'user', content: 'x'.repeat(20000) }]).length, 1);
+  assert.throws(() => minimizeMessages([{ role: 'user', content: long }]), { code: 'MODEL_INPUT_LIMIT', status: 413 });
+  assert.throws(() => minimizeMessages([{ role: 'user', content: `${long} data:` }]), { code: 'MODEL_PROMPT_PRIVACY' });
+  assert.throws(() => minimizeMessages([{ role: 'tool', content: long }]), { code: 'MODEL_PROMPT_PRIVACY' });
+});
+
 test('two retained Indian inputs: profile to control plan, validator and dry-run; source immutable', async () => {
   for (const path of [goodFile, difficultFile]) {
     const before = hash(readFileSync(path).toString('base64')),
