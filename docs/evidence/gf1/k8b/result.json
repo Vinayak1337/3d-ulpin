@@ -114,5 +114,274 @@
     "id. An additive field could state it; it is not added here."
    ]
   }
- }
+ },
+ "order": {
+  "commit": "e41505f5",
+  "statement": "ORDER BY (body->>'capturedAt') COLLATE \"C\" DESC NULLS LAST,created_at DESC,id DESC LIMIT $5",
+  "item": "gains capturedAt, read from the stored manifest: the value the order uses. createdAt is unchanged.",
+  "truncated": [
+   "still exact: the selection is unchanged and the page still reads limit + 1 rows of it, now in the new",
+   "order."
+  ],
+  "routeDescription": [
+   "says that the order is the capture time, and that two captures with one capture time follow createdAt",
+   "and then their ids, which says nothing about which is newer."
+  ],
+  "theDouble": [
+   "building-snapshots.test.ts now gives every row of one transaction the time that transaction began (as",
+   "now() does) on a clock of its own that moves one millisecond a statement, and sorts as the statement",
+   "does. An assignment through assignProjectCode therefore stores two rows with one createdAt, as R4 saw."
+  ],
+  "producer": [
+   "K8_EVIDENCE_FILE=<file> pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+   "packages/server/src/modules/usp/building-snapshots.test.ts"
+  ],
+  "observations": [
+   {
+    "condition": "the R4 pair (one createdAt, capturedAt .255Z and .428Z), with its ids as stored and exchanged",
+    "expected": "the .428Z capture first in both, also at limit 1",
+    "observed": {
+     "firstAsStored": "2026-10-10T13:48:45.428Z",
+     "firstExchanged": "2026-10-10T13:48:45.428Z",
+     "limitOneTruncated": true
+    }
+   },
+   {
+    "condition": "two rows with one capture time: store times a millisecond apart, then equal",
+    "expected": "the later store time first; with equal store times the higher id first, which states no recency",
+    "observed": {
+     "firstByStoreTime": "109e73b3-4759-48de-a852-0f0a3308ccac",
+     "firstById": "a9fd4c9d-0a5a-4f4d-9032-527ab7857b78"
+    }
+   },
+   {
+    "condition": "the later of two stored bodies has no capturedAt",
+    "expected": [
+     "it follows the other row: limit 1 answers the other row alone;",
+     "the full page counts it in unreadable"
+    ],
+    "observed": {
+     "limitOne": {"items": 1, "truncated": true, "unreadable": 0},
+     "all": {"items": 1, "truncated": false, "unreadable": 1}
+    }
+   },
+   {
+    "condition": "an assignment through assignProjectCode on the double: its two snapshots share createdAt",
+    "expected": [
+     "the first item is the scope of the receipt; the identity resolve read answers the code and the card list",
+     "an empty page (no card in the double)"
+    ],
+    "observed": {"sameCreatedAt": true, "firstIsReceiptScope": true, "resolve": 200, "cardList": 200, "cardItems": 0}
+   }
+  ]
+ },
+ "cardState": {
+  "commit": "1b61dce4",
+  "decision": "The words were the ambiguous part (step0.cardState). No behaviour changes.",
+  "readingTheCodeImplements": [
+   "snapshotState compares the revision the card was generated from with the record at the time of the read.",
+   "The scope of the request names the site and is checked; it selects no row and enters no field."
+  ],
+  "published": [
+   "Descriptions on the request scope and on targetRevision, currentTargetRevision and snapshotState of a",
+   "row (packages/contracts/src/usp/property-card.ts). The two published schemas of the route equal those of",
+   "staging once descriptions are left out."
+  ],
+  "producer": [
+   "K7_EVIDENCE_FILE=<file> pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+   "packages/server/src/modules/usp/packets/card-listing.test.ts"
+  ],
+  "observations": [
+   {
+    "condition": "a scope of the same site that holds the target at revision 2; card at 1; record at 1, then at 2",
+    "expected": [
+     "the rows of the card's own scope: same_revision while card and record agree, then changed_revision,",
+     "although the scope passed then holds the revision the record has"
+    ],
+    "observed": {"status": 200, "recordAt1": [1, 1, "same_revision"], "recordAt2": [1, 2, "changed_revision"]}
+   }
+  ],
+  "mirrored": [
+   "R4: scope at revision 1, card and record at 2. The card store generates cards at revision 1 only, so the",
+   "test holds the same relation with the numbers exchanged."
+  ],
+  "notChanged": [
+   "The card read (UspPropertyCardViewSchema) and the consistency report carry the same pair with the same",
+   "meaning and still without words; they are not K7 entries."
+  ]
+ },
+ "duplicateSnapshots": {
+  "change": "none (report only)",
+  "tower3AsR4ListedIt": [
+   {
+    "manifestId": "a9fd4c9d-0a5a-4f4d-9032-527ab7857b78",
+    "capturedAt": "2026-10-10T13:48:45.428Z",
+    "createdAt": "2026-10-10T13:48:45.076Z",
+    "storedBy": "the assignment, after its write (finish, :213)"
+   },
+   {
+    "manifestId": "109e73b3-4759-48de-a852-0f0a3308ccac",
+    "capturedAt": "2026-10-10T13:48:45.255Z",
+    "createdAt": "2026-10-10T13:48:45.076Z",
+    "storedBy": "the assignment, before its write (pinnedManifest, :246)"
+   },
+   {
+    "manifestId": "e53c4653-af3a-4fca-a9ed-9b1b50d98bc4",
+    "capturedAt": "2026-10-10T13:48:39.444Z",
+    "createdAt": "2026-10-10T13:48:39.282Z",
+    "storedBy": "the review (pinnedManifest, :127)"
+   },
+   {
+    "manifestId": "d97e01c5-c5af-45de-971e-2bb1d355d810",
+    "capturedAt": "2026-10-10T13:48:32.412Z",
+    "createdAt": "2026-10-10T13:48:32.230Z",
+    "storedBy": "the snapshot request of the client"
+   }
+  ],
+  "where": [
+   [
+    "pinnedManifest (packages/server/src/modules/usp/project-identity.ts:32-37) reads the manifest the",
+    "command names and, at :34, calls captureRegistrySnapshotTx for the same selection. That function is the",
+    "one writer of usp_snapshots (usp/snapshots.ts:198) and always inserts the manifest and one",
+    "usp_snapshot_bodies row for each member (:199)."
+   ],
+   [
+    "The review calls it at :127 (prepareProjectIdentityReview), the assignment at :246 (assignProjectCode);",
+    "the other identity command at :293. usp/commands.ts:56 and :114 do the same for their commands."
+   ],
+   "The assignment stores a second snapshot at :213 (finish): the state after its write."
+  ],
+  "why": [
+   [
+    "Review and assignment must act on the registry as the manifest holds it. The capture is the only code",
+    "that computes the digest of the current state, so it is run and its digest compared with the manifest",
+    "(:35); a difference is a 409 and the transaction, with the row just stored, is rolled back."
+   ],
+   "So every twin that persists has, by construction, the digest of the manifest the command named.",
+   [
+    "The capture at :213 is different: the receipt returns its scope (:217) so the client holds a snapshot",
+    "that contains the new code."
+   ]
+  ],
+  "whoReadsTheTwin": [
+   "Nobody. pinnedManifest returns the manifest the command named, not the capture. The review row stores",
+   "the scope of the command (:139). The receipt names the capture of :213. before and after in the receipt",
+   "are record pins, not manifests (:198, :204)."
+  ],
+  "reuseAtTheTwoPlaces": [
+   [
+    "Sound, if reuse means the manifest the command already names: it is checked by scopedManifestTx and is",
+    "what every later step uses. Not storing the twin breaks no receipt, no replay and no before/after pair."
+   ],
+   [
+    "Replay: a repeated assignment returns the stored receipt at :236-241, before pinnedManifest, so it",
+    "stores nothing today and would store nothing then."
+   ],
+   [
+    "Not sound as a lookup of any row with that digest: the digest covers site, selection, members, frame and",
+    "policy version (snapshots.ts:183-184) but not the access view, so such a row could be one the caller may",
+    "not read."
+   ],
+   [
+    "The capture at :213 cannot be reused: the write moved a revision, so its digest is new, and the receipt",
+    "needs a stored manifest."
+   ]
+  ],
+  "whatItNeeds": [
+   "A way to compute the digest of the current state without the inserts, in usp/snapshots.ts. That file is",
+   "read-only in this task."
+  ],
+  "whatTheTwinsCost": [
+   "One manifest and all its member bodies again for every review and every assignment.",
+   [
+    "After a review the first listed scope is the twin of the review, while the review is bound to the scope",
+    "its command carried (:139, checked at :151 and :153). An assignment sent with the first listed scope and",
+    "that review is refused with 409. Read from the code; not run. The review answer names the manifest to",
+    "use (expectedManifestId)."
+   ]
+  ]
+ },
+ "contract": {
+  "operations": {"before": 298, "after": 298, "added": [], "removed": []},
+  "changed": [
+   [
+    "GET /api/v1/buildings/{buildingId}/snapshots: description; each item gains capturedAt (required) and two",
+    "field descriptions"
+   ],
+   "POST /api/v1/usp/property-cards/list: four descriptions, no shape change"
+  ],
+  "renamedOrRemovedFields": 0,
+  "comparedWith": "docs/api/openapi.json at staging 7602ef58"
+ },
+ "tests": {
+  "added": {
+   "packages/server/src/modules/usp/building-snapshots.test.ts": 3,
+   "packages/server/src/modules/usp/packets/card-listing.test.ts": 1
+  },
+  "rewritten": [
+   "the composed test of the listing now asserts that the first",
+   "item is the scope of the assignment receipt"
+  ],
+  "run": {"tests": 176, "pass": 176, "fail": 0},
+  "files": [
+   "usp/building-snapshots.test.ts",
+   "usp/snapshot-retained-documents.test.ts",
+   "usp/source-stated-identity.test.ts",
+   "usp/packets/card-listing.test.ts",
+   "usp/packets/card-revocation.test.ts",
+   "usp/packets/card-verification.test.ts",
+   "evidence/property-card.controller.test.ts",
+   "register/building-snapshots.controller.test.ts",
+   "tests/core-snapshot.test.ts",
+   "tests/core-identity.test.ts",
+   "tests/usp-project-identity-authority.test.ts",
+   "tests/usp-project-identity-code.test.ts",
+   "tests/usp-property-card.test.ts"
+  ]
+ },
+ "afterTheNextRollOut": {
+  "request": {
+   "method": "GET",
+   "headers": "none",
+   "url": "http://127.0.0.1:3194/api/v1/buildings/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/snapshots?limit=20"
+  },
+  "notSentHere": "This task sent no request to the demo API.",
+  "tower3": [
+   "Every item carries capturedAt, and capturedAt does not rise from one item to the next.",
+   "The four manifests R4 listed keep this order, each with the capturedAt R4 read from its stored body:",
+   [
+    "a9fd4c9d-0a5a-4f4d-9032-527ab7857b78 2026-10-10T13:48:45.428Z",
+    "109e73b3-4759-48de-a852-0f0a3308ccac 2026-10-10T13:48:45.255Z",
+    "e53c4653-af3a-4fca-a9ed-9b1b50d98bc4 2026-10-10T13:48:39.444Z",
+    "d97e01c5-c5af-45de-971e-2bb1d355d810 2026-10-10T13:48:32.412Z"
+   ],
+   [
+    "Snapshots stored after R4 come before them. limit=20 keeps the four on the page if no more than 16 such",
+    "snapshots list Tower 3."
+   ]
+  ],
+  "whatShowsTheChange": [
+   "R4 already saw these four in this order: there the ids happened to agree. What the old order could not",
+   "give is capturedAt on each item and, among items with one createdAt, the later capturedAt first whatever",
+   "the ids are."
+  ]
+ },
+ "gaps": [
+  [
+   "Not run live. The new ORDER BY was never executed against PostgreSQL: its text is asserted and its order",
+   "is implemented in TypeScript by the double. COLLATE \"C\" on the parenthesised text and NULLS LAST are",
+   "checked by reading only."
+  ],
+  "The order no longer follows an index (step0.captureTime.cost). An expression index needs a migration.",
+  [
+   "Two captures of one transaction within one millisecond are still ordered by a random id. The route",
+   "description says so; a capture sequence would need a column."
+  ],
+  "A client built against the K8 shape that constructs an item itself (a fixture) must add capturedAt.",
+  [
+   "python scripts/api/check.py exits 1 in this worktree before and after the change, on three runtime",
+   "receipts whose checked-out line endings differ from their pinned form. No receipt is touched here; with",
+   "that one check set aside the script passes (298 operations, 337 named schemas)."
+  ]
+ ]
 }
