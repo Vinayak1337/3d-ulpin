@@ -29,7 +29,7 @@ import {
 } from '../../packages/server/src/modules/usp/ingestion/mapping-teacher';
 import {
   ingestTeacherLabels,
-  DEVELOPMENT_TEACHER_METHOD,
+  DEVELOPMENT_TEACHER_METHODS,
 } from '../../packages/server/src/modules/usp/ingestion/teacher-labels';
 import { validateMappingPlanV2 } from '../../packages/server/src/modules/usp/ingestion/mapping-plan-v2';
 import { ModelGateway } from '../../packages/server/src/modules/model-gateway/gateway';
@@ -389,19 +389,19 @@ test('development labels: strict validator, pseudo-labels, held-out exclusion an
       ),
     ),
   );
-  const plan = { ...result.plan, method: DEVELOPMENT_TEACHER_METHOD },
+  const plan = { ...result.plan, method: DEVELOPMENT_TEACHER_METHODS['claude-opus-5-5'] },
     labels = join(directory, 'teacher-labels.jsonl');
   writeFileSync(
     labels,
     [
-      { profileHash, plan, method: DEVELOPMENT_TEACHER_METHOD },
+      { profileHash, plan, method: DEVELOPMENT_TEACHER_METHODS['claude-opus-5-5'] },
       {
         profileHash,
         plan: {
           ...plan,
           fields: plan.fields.map((f) => ({ ...f, operation: { kind: 'copy', epsg: 'EPSG:4326' } })),
         },
-        method: DEVELOPMENT_TEACHER_METHOD,
+        method: DEVELOPMENT_TEACHER_METHODS['claude-opus-5-5'],
       },
     ]
       .map((v) => JSON.stringify(v))
@@ -429,7 +429,8 @@ test('development labels: strict validator, pseudo-labels, held-out exclusion an
     .map((line) => JSON.parse(line));
   assert(
     examples.every(
-      (e) => e.labelKind === 'pseudo_label' && e.verified === true && e.method === DEVELOPMENT_TEACHER_METHOD,
+      (e) => e.labelKind === 'pseudo_label' && e.verified === true &&
+        e.method === DEVELOPMENT_TEACHER_METHODS['claude-opus-5-5'],
     ),
   );
   const denied = await ingestTeacherLabels(
@@ -443,6 +444,52 @@ test('development labels: strict validator, pseudo-labels, held-out exclusion an
     join(directory, 'denied.jsonl'),
   );
   assert.equal(denied.accepted, 0);
+});
+
+function developmentLabelFixture(method: string) {
+  const input = profileColumnFile(goodFile);
+  const profileHash = columnProfileHash(input.profile);
+  const directory = mkdtempSync(join(tmpdir(), 't2-labels-'));
+  const plan = {
+    version: 'mapping-plan/2', sourceKind: input.profile.sourceKind,
+    layoutFingerprint: input.profile.layoutFingerprint, method,
+    fields: input.profile.columns.map(column => ({
+      sourceField: column.name, target: 'unknown', operation: { kind: 'copy' }, confidence: 0,
+      rationale: 'Software-control schema check; no interpretation supplied.',
+    })),
+  };
+  const labels = join(directory, 'labels.jsonl');
+  writeFileSync(labels, JSON.stringify({ profileHash, plan, method }) + '\n');
+  const profiles = new Map([[profileHash, {
+    profile: input.profile, rows: input.rows, sourceRef: goodFile,
+    dataPolicy: { dataClass: 'public' as const, split: 'development' as const },
+  }]]);
+  return { labels, profiles, output: join(directory, 'pseudo-labels.jsonl'), profileHash, plan };
+}
+
+test('development labels accept gpt-6.1-sol and preserve its method on every example', async () => {
+  const method = DEVELOPMENT_TEACHER_METHODS['gpt-6.1-sol'];
+  const { labels, profiles, output, profileHash, plan } = developmentLabelFixture(method);
+  writeFileSync(labels, [
+    { profileHash, plan, method },
+    { profileHash, plan, method: DEVELOPMENT_TEACHER_METHODS['claude-opus-5-5'] },
+  ].map(label => JSON.stringify(label)).join('\n'));
+  const report = await ingestTeacherLabels(labels, profiles, output);
+  assert.equal(report.accepted, 1);
+  assert.equal(report.rejected, 1);
+  assert.deepEqual(report.rejections[0].codes, ['TEACHER_LABEL_METHOD_MISMATCH']);
+  const examples = readFileSync(output, 'utf8').trim().split('\n').map(line => JSON.parse(line));
+  assert.equal(examples.length, plan.fields.length);
+  assert(examples.every(example => example.method === 'model:gpt-6.1-sol@dev-2026-10'));
+});
+
+test('development labels refuse a third model id before accepting any examples', async () => {
+  const { labels, profiles, output } = developmentLabelFixture('model:other@dev-2026-10');
+  const report = await ingestTeacherLabels(labels, profiles, output);
+  assert.equal(report.accepted, 0);
+  assert.equal(report.rejected, 1);
+  assert.deepEqual(report.rejections[0].codes, ['TEACHER_LABEL_SCHEMA_INVALID']);
+  assert.equal(readFileSync(output, 'utf8'), '');
 });
 
 test('actual existing Pg ledger enforces optional daily money cap before dispatch', async () => {

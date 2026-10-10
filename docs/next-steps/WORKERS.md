@@ -167,4 +167,4 @@ Owner decision, 10 October 2026 (evening). It replaces "Claude, the lead, is the
 - **00-STANDARDS §7 still applies in full:** the deterministic verifier runs before learning, a `pseudo_label` is never truth, held-out families are closed to every teacher, officer corrections come first, and only public material goes to an external provider.
 - **Sarvam stays the runtime teacher** inside the product, through the model gateway. This section covers development only.
 
-**Open on 10 October:** the label verifier accepts only the Claude id (`DEVELOPMENT_TEACHER_METHOD` in `packages/server/src/modules/usp/ingestion/teacher-labels.ts`). Until task T2 widens it, a `gpt-6.1-sol` teacher's labels are refused, so a codex teacher round waits for T2.
+**Settled on 10 October (task T2):** the label verifier accepts either teacher (`DEVELOPMENT_TEACHER_METHODS` in `packages/server/src/modules/usp/ingestion/teacher-labels.ts`). `scripts/agent/verify-teacher-labels.ts` takes the teacher's id as its first argument and writes that teacher's method into every label, so a round always states who taught it.
