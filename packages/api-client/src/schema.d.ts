@@ -35169,6 +35169,10 @@ export interface components {
                     recordId: string;
                     revision: number;
                     recordedAt: string;
+                    /** @enum {string|null} */
+                    recordKind?: "parcel" | "building" | "floor" | "space" | null;
+                    recordName?: string | null;
+                    actor?: string | null;
                 }[];
                 featureHasMore: boolean;
                 registryHasMore: boolean;

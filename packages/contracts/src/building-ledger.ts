@@ -1,3 +1,5 @@
+import type { RegistryKind } from './registry';
+
 /** Private, current-record projection. Absence here does not imply a legal or technical finding. */
 export interface BuildingLedger {
   schemaVersion: 'building-ledger/1';
@@ -37,7 +39,14 @@ export interface BuildingLedger {
   }>;
   history: {
     feature: Array<{ revision: number; recordedAt: string }>;
-    registry: Array<{ recordId: string; revision: number; recordedAt: string }>;
+    registry: Array<{
+      recordId: string;
+      revision: number;
+      recordedAt: string;
+      recordKind?: RegistryKind | null;
+      recordName?: string | null;
+      actor?: string | null;
+    }>;
     featureHasMore: boolean;
     registryHasMore: boolean;
   };

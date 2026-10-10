@@ -4,6 +4,7 @@ import { AppError, notFound } from '../../infrastructure/errors';
 import { registryRecordedSourceTx, registrySourceTx } from '../registry/registry-metadata';
 import { assertPackageDocumentAuthority } from '../areas/package-authority';
 import { relatedRegistryRecords } from './officer';
+import { ledgerRegistryHistoryEntry, ledgerRegistryHistorySql } from './building-ledger-history';
 
 const iso = (value: Date | string) => new Date(value).toISOString();
 
@@ -134,8 +135,7 @@ export async function buildingLedger(buildingId: string): Promise<BuildingLedger
       ORDER BY feature_id,normalized_value LIMIT 201`, [parcelIds])).rows, 'official parcel assertions') : [];
     const featureRevisions = (await client.query(`SELECT revision,created_at FROM physical_feature_revisions
       WHERE feature_id=$1 AND revision<=$2 ORDER BY revision DESC LIMIT 101`, [buildingId, root.revision])).rows;
-    const registryRevisions = records.length ? (await client.query(`SELECT record_id,revision,created_at
-      FROM registry_revisions WHERE record_id=ANY($1::uuid[]) ORDER BY created_at DESC LIMIT 201`,
+    const registryRevisions = records.length ? (await client.query(ledgerRegistryHistorySql,
       [records.map(record => record.id)])).rows : [];
     const lastCheck = root.revision > 0 ? (await client.query(`SELECT id FROM area_check_runs WHERE area_id=$1
       AND status='completed' ORDER BY created_at DESC LIMIT 1`, [root.area_id])).rows[0]
@@ -175,8 +175,8 @@ export async function buildingLedger(buildingId: string): Promise<BuildingLedger
       })) },
       sources,
       history: { feature: featureRevisions.slice(0, 100).map(row => ({ revision: row.revision, recordedAt: iso(row.created_at) })),
-        registry: registryRevisions.slice(0, 200).map(row => ({ recordId: row.record_id, revision: row.revision,
-          recordedAt: iso(row.created_at) })), featureHasMore: featureRevisions.length > 100,
+        registry: registryRevisions.slice(0, 200).map(ledgerRegistryHistoryEntry),
+        featureHasMore: featureRevisions.length > 100,
         registryHasMore: registryRevisions.length > 200 },
       assessment: { state: 'not_assessed', latestCheck: lastCheck ? 'historical' : 'absent',
         reason: 'This projection does not qualify current checks or technical readiness.' },
