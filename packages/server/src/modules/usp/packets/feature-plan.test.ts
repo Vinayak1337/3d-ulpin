@@ -64,7 +64,11 @@ const refused: [string, (store: FeaturePlanStore) => void][] = [
     store.pointer.legacyLocator = store.pointer.locator.locator;
     store.record.body.evidence[0].locator = store.pointer.locator.locator;
   }],
-  ['floor target with its building feature in the closure', store => { store.record.kind = 'floor'; }],
+  ['floor target with its building feature in the closure', store => {
+    store.record.kind = 'floor';
+    store.record.id = uuid(10);
+    store.target.ref.id = uuid(10);
+  }],
 ];
 
 for (const [name, change] of refused) {
