@@ -111,7 +111,7 @@ test('glTF canonical producer/consumer keeps exact originals and partial compani
       // refuse disclosure without adding or replacing any object/result.
       mutate=()=>{process.env.ULPIN_LOCAL_OPERATOR_SUBJECT='other';};await assert.rejects(()=>service.artifact(f.caseId,f.source.id,job.id),(e:any)=>e.status===403);
       process.env.ULPIN_LOCAL_OPERATOR_SUBJECT='gltf-protocol-control';mutate=()=>{};
-      f.current.revision++;assert.equal((await service.status(f.caseId,f.source.id,job.id)).status,'stale');await assert.rejects(()=>service.artifact(f.caseId,f.source.id,job.id),(e:any)=>e.status===409);f.current.revision--;
+      f.current.context={changed:true} as any;assert.equal((await service.status(f.caseId,f.source.id,job.id)).status,'stale');await assert.rejects(()=>service.artifact(f.caseId,f.source.id,job.id),(e:any)=>e.status===409);f.current.context=null;
       job.accepted_fence++;await assert.rejects(()=>service.artifact(f.caseId,f.source.id,job.id),(e:any)=>e.status===409);job.accepted_fence--;
       const artifactBytes=stored.get(status.result!.artifact.key)!;stored.set(status.result!.artifact.key,Buffer.from(artifactBytes).fill(0));
       await assert.rejects(()=>service.artifact(f.caseId,f.source.id,job.id),(e:any)=>e.code==='GLTF_ARTIFACT_INTEGRITY');stored.set(status.result!.artifact.key,artifactBytes);

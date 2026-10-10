@@ -86,7 +86,7 @@ test('CityGML input/accepted attempts bind exact case, access, source, hash and 
     if(patch.result_ref)assert.throws(()=>citygmlResultBytes(patch.result_ref!,input.jobId));else assert.throws(()=>assertCityGMLJobRow({...row,...patch},input,true));
   }
   await assertCityGMLInputTx(f.client as any,input);
-  f.current.revision++;await assert.rejects(()=>assertCityGMLInputTx(f.client as any,input),(e:any)=>e.status===409);f.current.revision--;
+  f.current.revision++;await assertCityGMLInputTx(f.client as any,input);f.current.revision--;
   f.current.context={changed:true} as any;await assert.rejects(()=>assertCityGMLInputTx(f.client as any,input),(e:any)=>e.status===409);f.current.context=null;
   f.setLatest(2);await assert.rejects(()=>assertCityGMLInputTx(f.client as any,input),(e:any)=>e.status===409);f.setLatest(1);
   process.env.ULPIN_LOCAL_OPERATOR_SUBJECT='other';await assert.rejects(()=>citygmlSourceTx(f.client as any,f.caseId,f.sourceId),(e:any)=>e.status===403);
@@ -101,7 +101,7 @@ test('canonical original and general original paths recheck after I/O; snapshots
     assert.equal(await service.streamedSourceFile(f.sourceId,new AbortController().signal),null);
     const projected=sourceFrom(f.source as any);assert.equal(JSON.stringify(projected).includes('citygmlOriginal'),false);assert.equal(JSON.stringify(projected).includes('retained'),false);
     assert.deepEqual(f.source,saved);
-    mutate=()=>{f.current.revision++;};await assert.rejects(()=>service.sourceFile(f.sourceId),(e:any)=>e.status===409);
+    mutate=()=>{f.current.revision++;};assert.deepEqual((await service.sourceFile(f.sourceId)).bytes,f.raw);
     mutate=()=>{f.current.archived=true;};await assert.rejects(()=>new CityGMLIngestionService().original(f.caseId,f.sourceId),(e:any)=>e.status===403);
     f.current.archived=false;mutate=()=>{process.env.ULPIN_LOCAL_OPERATOR_SUBJECT='other';};await assert.rejects(()=>service.sourceFile(f.sourceId),(e:any)=>e.status===403);
     process.env.ULPIN_LOCAL_OPERATOR_SUBJECT='citygml-protocol-control';mutate=()=>{};
@@ -152,7 +152,8 @@ test('unchanged receipt survives an outage and replays without another object wr
     assert.deepEqual(await service.retain(f.caseId,request,file),receipt);assert.equal(puts,1);
     assert.equal(f.jobs.get(receipt.jobId).payload.tools,null);await runCityGMLJob(receipt.jobId);assert.equal(f.jobs.get(receipt.jobId).error,'CITYGML_UNAVAILABLE');
     assert.deepEqual((await service.original(f.caseId,receipt.sourceId)).bytes,f.raw);assert.equal(stored.size,1);
-    f.current.revision++;await assert.rejects(()=>service.retain(f.caseId,request,file),(e:any)=>e.status===409);assert.equal(puts,1);
+    f.current.revision++;assert.deepEqual(await service.retain(f.caseId,request,file),receipt);assert.equal(puts,1);
+    await assert.rejects(()=>service.retain(f.caseId,{...request,requestKey:randomUUID()},file),(e:any)=>e.status===409);
   }finally{S3Client.prototype.send=send;}
 }));
 
@@ -200,8 +201,8 @@ test('two unchanged OGC examples pass canonical native intake, partial status an
       console.log(JSON.stringify({sourceName,sourceSha256:f.hash,status:status.status,artifactBytes:artifact.bytes.length,artifactSha256:sha256(artifact.bytes),summary:accepted.summary,supervision:accepted.supervision}));
       mutate=()=>{f.current.archived=true;};await assert.rejects(()=>service.artifact(f.caseId,f.source.id,job.id),(e:any)=>e.status===403);
       f.current.archived=false;mutate=()=>{};job.attempt.state='fenced';await assert.rejects(()=>service.artifact(f.caseId,f.source.id,job.id),(e:any)=>e.status===409);job.attempt.state='accepted';
-      f.current.revision++;assert.equal((await service.status(f.caseId,f.source.id,job.id)).status,'stale');
-      await assert.rejects(()=>service.artifact(f.caseId,f.source.id,job.id),(e:any)=>e.status===409);
+      f.current.revision++;assert.equal((await service.status(f.caseId,f.source.id,job.id)).status,status.status);
+      assert.deepEqual((await service.artifact(f.caseId,f.source.id,job.id)).bytes,artifact.bytes);
       const retry=await service.enqueue(f.caseId,f.source.id,{requestKey:randomUUID(),expectedCaseRevision:3,expectedSourceRevision:1,sourceSha256:f.hash});
       mutate=()=>{f.current.archived=true;};await runCityGMLJob(retry.jobId);
       assert.equal(f.jobs.get(retry.jobId).error,'CITYGML_DENIED');assert.equal(f.jobs.get(retry.jobId).result_ref,null);

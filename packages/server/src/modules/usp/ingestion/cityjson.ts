@@ -11,6 +11,7 @@ import {settings} from '../../../infrastructure/config';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,readObject,openObjectStream,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
+import {compareSourcePins} from './source-pin';
 import {originalAttempt} from '../../cases/original-attempt';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
@@ -74,7 +75,7 @@ export function cityjsonInput(ctx:Awaited<ReturnType<typeof cityjsonSourceTx>>,j
 }
 export async function assertCityJSONInputTx(client:PoolClient,input:CityJSONInput,lock=false){
   const ctx=await cityjsonSourceTx(client,input.caseId,input.sourceId,lock);
-  if(!ctx.latest||fingerprint(cityjsonInput(ctx,input.jobId,input.selection))!==fingerprint(input))
+  if(!ctx.latest||!compareSourcePins(cityjsonInput(ctx,input.jobId,input.selection),input).current)
     conflict('The CityJSON original, case, reader or private access context changed. Retry under current pins.');
   return ctx;
 }

@@ -44,7 +44,7 @@ export function readerFixture(reader: ReaderControl) {
   return { caseId, sourceId, binding, current, source, state, client };
 }
 
-function acceptedJob(reader: ReaderControl, input: any) {
+export function acceptedReaderJob(reader: ReaderControl, input: any) {
   const digest = fingerprint(input);
   const resultHash = fingerprint({ protocolResult: input.jobId });
   return { id: input.jobId, operation: reader.operation, case_id: input.caseId, source_id: input.sourceId,
@@ -60,7 +60,7 @@ export async function readerLifecycle(reader: ReaderControl) {
   const f = readerFixture(reader);
   const ctx = await reader.source(f.client, f.caseId, f.sourceId);
   const input = reader.input(ctx, randomUUID());
-  f.state.job = acceptedJob(reader, input);
+  f.state.job = acceptedReaderJob(reader, input);
   const enrolled = fingerprint(f.state.job);
   for (const phase of ['before_claim', 'heartbeat_or_execution', 'after_completion']) {
     f.current.revision++;
