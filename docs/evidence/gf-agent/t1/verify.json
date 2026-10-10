@@ -16,6 +16,9 @@
   "reportSha256": "b34c9c638b92fc38f31746b66b8ef2eec6ad4a700ed1a787ab0eb3196e06fddb",
   "trace": "report.json labels[].inputLines and rejections[].inputLines preserve original labels file line numbers",
   "qualification": "pseudo_label; deterministic verified flag does not mean semantic truth or officer approval",
+  "finalVerificationCodeCommit": "610426a7",
+  "finalVerificationOutput": "E:/BhuAayam-data/task-data/t1/verifier/labels-1791597780905",
+  "finalPseudoLabelBytesIdentical": true,
   "checks": {
     "agentTypecheck": 0,
     "twoTableAndDuplicateRegression": 0,
