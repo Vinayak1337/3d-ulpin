@@ -7,9 +7,12 @@ import { CaseIngestionEventSchema, ChunkMappingChunkResponseSchema, ChunkMapping
   type TabularSourceProfile } from '../../packages/contracts/src/usp';
 import { developmentManifest, sourceTables } from './t1-sources';
 import { profileTabularChunk } from '../../packages/server/src/modules/usp/ingestion/chunk-mapping-agent';
+import { t1OfficerAnswers } from './a3c-officer-answers';
 
 const base = 'http://127.0.0.1:3194';
-const root = 'E:/BhuAayam-data/task-data/a3b';
+const a3c = process.argv.includes('--a3c');
+const enqueueOnly = process.argv.includes('--enqueue-only');
+const root = `E:/BhuAayam-data/task-data/${a3c ? 'a3c' : 'a3b'}`;
 type Receipt = { directory: string; caseId: string; profile: TabularSourceProfile; jobId: string };
 
 async function request(path: string, input?: unknown, form?: FormData) {
@@ -40,11 +43,14 @@ function artifact(directory: string, name: string, value: unknown) {
 
 function realAsset(id: string) {
   const asset = developmentManifest().assets.find(item => item.id === id);
-  assert(asset?.mediaType === 'text/csv', 'A3B_PUBLIC_CSV_REQUIRED');
+  assert(asset && ['text/csv', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
+    .includes(asset.mediaType), 'A3C_PUBLIC_TABULAR_REQUIRED');
   const table = sourceTables(asset)[0]; // Authorization and source hash are checked before file access.
   const profile = profileTabularChunk({ jobId: 'preflight', chunkIndex: 0, headers: table.headers,
     rows: table.rows.slice(0, 100), sourceRef: 'preflight' }).profile;
-  return { asset, table, profile, bytes: readFileSync(asset.original.externalPath) };
+  const format = asset.mediaType === 'text/csv' ? 'csv' as const : 'xlsx' as const;
+  const selection = { format, sheet: table.name, table: null, headerRows: table.headerRows };
+  return { asset, table, profile, selection, bytes: readFileSync(asset.original.externalPath) };
 }
 
 function retained(directory: string): Receipt {
@@ -64,16 +70,17 @@ async function completed(caseId: string, sourceId: string, jobId: string) {
   throw new Error('A3B_RUNTIME_DEADLINE: preserve retained receipts; do not repeat mutations.');
 }
 
-async function upload(id: string): Promise<Receipt> {
+async function upload(id: string, prior?: Receipt): Promise<Receipt> {
   const input = realAsset(id);
   const directory = join(root, `runtime-${randomUUID()}`);
-  const created = await request('/api/v1/cases', { name: 'A3b public tabular development intake',
+  const created = prior ? (await request(`/api/v1/cases/${prior.caseId}`)).case : await request('/api/v1/cases', {
+    name: `${a3c ? 'A3c live check' : 'A3b'} — public tabular development intake`,
     description: 'test_only; immutable publisher CSV; permission unconfirmed; no registry execution.' });
   artifact(directory, 'case.json', created);
   const form = new FormData();
   form.set('file', new Blob([input.bytes]), id);
-  form.set('format', 'csv');
-  form.set('selection', JSON.stringify({ format: 'csv', sheet: 'csv', table: null, headerRows: [1] }));
+  form.set('format', input.selection.format);
+  form.set('selection', JSON.stringify(input.selection));
   form.set('requestKey', randomUUID());
   form.set('expectedWorkspaceRevision', String(created.revision));
   const profile = TabularSourceProfileSchema.parse(AnySourceProfileSchema.parse(
@@ -135,6 +142,8 @@ async function inspectJourney(receipt: Receipt, requireMemory: boolean) {
     if (requireMemory) {
       assert.equal(chunk.payload.mapping.metrics.layout, 'memory', 'A3B_SECOND_LAYOUT_MISS');
       assert.equal(chunk.payload.mapping.metrics.teacherCalls, 0, 'A3B_SECOND_TEACHER_CALL');
+      assert.equal(chunk.payload.mapping.metrics.memoryHits, 1, 'A3C_SECOND_MEMORY_HIT');
+      assert.equal(chunk.payload.mapping.questions.length, 0, 'A3C_SECOND_QUESTIONS');
     }
     chunks.push(chunk);
   }
@@ -163,6 +172,8 @@ async function approve(directory: string, path: string) {
     requestKey, expectedRecipeRevision: authored.revision,
   });
   artifact(directory, 'approved.json', approved);
+  artifact(directory, 'recipe-revisions.json', await request(`/api/v1/ingestion/cases/${receipt.caseId}` +
+    `/recipes/${authored.id}`));
   await approvedJob(receipt, profile, requestKey);
 }
 
@@ -174,13 +185,49 @@ async function approvedJob(receipt: Receipt, profile: TabularSourceProfile, requ
       expectedCaseRevision: profile.workspaceRevision, expectedSourceRevision: profile.source.sourceRevision,
       sourceSha256: profile.source.sourceSha256, tabular: profile.tabular });
   artifact(receipt.directory, 'approval-job.json', mapped);
+  if (enqueueOnly) {
+    console.log(JSON.stringify({ directory: receipt.directory, jobId: mapped.jobId }));
+    return;
+  }
   artifact(receipt.directory, 'approval-status.json',
     await completed(receipt.caseId, profile.source.sourceId, mapped.jobId));
   console.log('Approval background job completed; second original may now test accepted memory.');
 }
 
+async function readback(directory: string, stage: string) {
+  assertArtifactPath(directory);
+  const receipt = retained(directory);
+  const sourcePath = `/api/v1/ingestion/cases/${receipt.caseId}/sources/${receipt.profile.source.sourceId}`;
+  const raw = JSON.parse(readFileSync(join(directory, 'raw.json'), 'utf8'));
+  const result: Record<string, unknown> = { case: await request(`/api/v1/cases/${receipt.caseId}`),
+    profile: await request(`${sourcePath}/profile`) };
+  const reads = { rawStatus: `${sourcePath}/streaming-vector/jobs/${raw.jobId}`,
+    mappingStatus: `${sourcePath}/chunk-mapping/jobs/${receipt.jobId}`,
+    mappedChunk: `${sourcePath}/chunk-mapping/jobs/${receipt.jobId}/chunks/0` };
+  for (const [name, path] of Object.entries(reads)) {
+    try { result[name] = await request(path); }
+    catch (error) { result[name] = { unavailable: error instanceof Error ? error.message : String(error) }; }
+  }
+  artifact(directory, `readback-${stage}.json`, result);
+}
+
+async function counts(directory: string, stage: string) {
+  assert(['before', 'after'].includes(stage), 'A3C_COUNT_STAGE_REQUIRED');
+  const areas = await request('/api/v1/areas');
+  const registry = await request('/api/v1/registry');
+  const sites = await request('/api/v1/sites');
+  const health = await request('/api/v1/health');
+  const result = { areas, registry, sites, importPackages: health.databaseReadiness.data.importPackageCount,
+    physicalFeatures: health.databaseReadiness.data.physicalFeatureCount,
+    sources: health.databaseReadiness.data.sourceCount };
+  artifact(directory, `${stage}-counts.json`, result);
+  console.log(JSON.stringify({ stage, areas: areas.length, registry: registry.length,
+    importPackages: result.importPackages, physicalFeatures: result.physicalFeatures }));
+}
+
 async function main() {
-  const [action, first, second] = process.argv.slice(2).filter(value => value !== '--run-after-handover');
+  const [action, first, second] = process.argv.slice(2)
+    .filter(value => !['--run-after-handover', '--a3c', '--enqueue-only'].includes(value));
   if (action === 'layout') {
     const left = realAsset(first), right = realAsset(second);
     assert.equal(left.profile.layoutFingerprint, right.profile.layoutFingerprint, 'A3B_LAYOUT_MISMATCH');
@@ -188,14 +235,38 @@ async function main() {
     return;
   }
   assert(process.argv.includes('--run-after-handover'), 'A3B_RUNTIME_HANDOVER_REQUIRED');
+  if (action === 'counts') return counts(first, second);
+  if (action === 'readback') return readback(first, second);
+  if (action === 'answers') {
+    const receipt = retained(first);
+    return artifact(first, 'officer-answers.json', t1OfficerAnswers(receipt.profile));
+  }
+  if (action === 'inspect') return inspectJourney(retained(first), Boolean(second));
+  if (action === 'inspect-approved') {
+    const prior = retained(first);
+    const mapped = JSON.parse(readFileSync(join(first, 'approval-job.json'), 'utf8'));
+    return inspectJourney({ ...prior, jobId: mapped.jobId, directory: join(first, 'approval-readback') }, false);
+  }
   if (action === 'approve') return approve(first, second);
+  if (action === 'propose-into') {
+    const receipt = await upload(second, retained(first));
+    if (enqueueOnly) return console.log(JSON.stringify(receipt));
+    return inspectJourney(receipt, false);
+  }
   if (action === 'second') {
     const prior = retained(first), candidate = realAsset(second);
     assert.equal(prior.profile.profile.layoutFingerprint, candidate.profile.layoutFingerprint, 'A3B_LAYOUT_MISMATCH');
-    return inspectJourney(await upload(second), true);
+    const receipt = await upload(second, a3c ? prior : undefined);
+    if (enqueueOnly) return console.log(JSON.stringify(receipt));
+    return inspectJourney(receipt, true);
   }
   assert.equal(action, 'propose', 'Use layout, propose, approve or second.');
-  return inspectJourney(await upload(first), false);
+  const receipt = await upload(first);
+  if (enqueueOnly) return console.log(JSON.stringify(receipt));
+  return inspectJourney(receipt, false);
 }
 
-main();
+main().catch(error => {
+  console.error(error.message);
+  process.exitCode = 1;
+});
