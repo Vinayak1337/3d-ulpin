@@ -1,16 +1,16 @@
 import { performance } from 'node:perf_hooks';
 import { CHUNK_MAPPING_LIMITS, CaseIngestionChangeSchema, type CaseIngestionChange } from '@ulpin/contracts/usp';
-import type { ColumnProfileDocument } from '@ulpin/contracts';
+import type { ColumnProfileDocument, MappingPlanV2 } from '@ulpin/contracts';
 import { AppError } from '../../../infrastructure/errors';
 import { profileColumns } from './column-profile';
 import { validateMappingPlanV2 } from './mapping-plan-v2';
 import {
   columnProfileHash, executeTeacherMappingDryRun, manualTeacherPlan, mappingContextFromColumnProfile, proposeMapping,
-  type MappingRoutingResult,
+  learnerVersion, type MappingRoutingResult,
 } from './mapping-teacher';
 
 const MAX_JOB_LAYOUTS = 32;
-type RoutingOptions = Parameters<typeof proposeMapping>[1];
+type RoutingOptions = Parameters<typeof proposeMapping>[1] & { approvedPlan?: MappingPlanV2 };
 type FieldSource = MappingRoutingResult['fieldSources'][number];
 export type MappingQuestion = { sourceField: string; header: string; reason: string; candidates: string[] };
 export type TabularChunkInput = {
@@ -19,6 +19,7 @@ export type TabularChunkInput = {
   headers: readonly string[];
   rows: readonly (readonly unknown[])[];
   sourceRef: string;
+  rowOffset?: number;
 };
 export type TabularChunkDraft = {
   profile: ColumnProfileDocument;
@@ -32,14 +33,14 @@ export type TabularChunkDraft = {
 export function profileTabularChunk(input: TabularChunkInput) {
   if (!input.rows.length || input.rows.length > CHUNK_MAPPING_LIMITS.chunkFeatures ||
       !input.headers.length || input.rows.some(row => row.length > input.headers.length)) {
-    throw new AppError(422, 'MAPPING_TABULAR_SHAPE', 'Use a nonempty bounded complete-row chunk.');
+    throw new AppError(422, 'MAPPING_TABULAR_SHAPE', 'Use bounded nonempty rows no wider than the headers.');
   }
   if (Buffer.byteLength(JSON.stringify({ headers: input.headers, rows: input.rows })) >
       CHUNK_MAPPING_LIMITS.chunkBytes) {
     throw new AppError(413, 'MAPPING_CHUNK_BUDGET', 'The tabular chunk exceeds the existing mapping budget.');
   }
   // Positional prefixes retain duplicate/blank literal headers without collapsing their identities.
-  const fields = input.headers.map((header, index) => ({ name: `${index + 1}|${header}` }));
+  const fields = input.headers.map((header, index) => ({ name: `${index + 1}|${header}`, literalHeader: header }));
   const rows = input.rows.map(row => Object.fromEntries(fields.map((field, index) => [field.name, row[index]])));
   const profile = profileColumns(rows, fields, 'tabular');
   const learnerColumns = input.headers.map((header, index) => ({
@@ -57,6 +58,9 @@ export function mappingQuestions(proposal: MappingRoutingResult, input: TabularC
   const reasons = new Map(proposal.issues.map(issue => [issue.sourceField, issue.code]));
   return proposal.plan.fields.flatMap(field => {
     const reason = reasons.get(field.sourceField);
+    const provenance = proposal.fieldSources.find(source => source.sourceField === field.sourceField);
+    const officer = provenance?.source === 'officer';
+    if (!reason && officer) return [];
     if (!reason && field.target !== 'unknown' && field.confidence >= 0.5) return [];
     const position = input.headers.findIndex((header, index) => field.sourceField === `${index + 1}|${header}`);
     if (position < 0) throw new Error('MAPPING_QUESTION_FIELD_INVALID');
@@ -81,18 +85,46 @@ function reuseProposal(prior: MappingRoutingResult, profile: ColumnProfileDocume
 }
 
 function chunkMetrics(
-  input: TabularChunkInput, proposal: MappingRoutingResult, cached: boolean, latencyMs: number,
+  input: TabularChunkInput, proposal: MappingRoutingResult, questions: MappingQuestion[],
+  cached: boolean, latencyMs: number,
 ): TabularChunkDraft['metrics'] {
   const count = (source: FieldSource['source']) =>
     proposal.fieldSources.filter(field => field.source === source).length;
-  const memory = cached || count('memory') + count('officer') === input.headers.length;
+  const memory = cached || proposal.memoryMatched === true || count('memory') === input.headers.length;
   const event = CaseIngestionChangeSchema.parse({ kind: 'mapping.chunk', jobId: input.jobId,
     chunkIndex: input.chunkIndex, layout: memory ? 'memory' : 'new', teacherCalls: proposal.attempts,
     memoryHits: Number(memory), studentFields: count('student'), teacherFields: count('teacher'),
-    needsInput: mappingQuestions(proposal, input).length, latencyMs,
+    needsInput: questions.length, latencyMs,
     learnerVersion: proposal.activeLearnerVersion });
   if (event.kind !== 'mapping.chunk') throw new Error('MAPPING_CHUNK_EVENT_INVALID');
   return event;
+}
+
+function verifiedProposal(proposal: MappingRoutingResult, dryRun: TabularChunkDraft['dryRun']): MappingRoutingResult {
+  const issues = new Map(proposal.issues.map(issue => [issue.sourceField, issue]));
+  for (const row of dryRun.rows) {
+    for (const cell of row.fields) {
+      if (cell.issueCode) issues.set(cell.sourceField, {
+        sourceField: cell.sourceField, state: 'needs_input', code: cell.issueCode,
+      });
+    }
+  }
+  return { ...proposal, issues: [...issues.values()], state: issues.size ? 'needs_input' : 'candidate' };
+}
+
+function officerProposal(
+  plan: MappingPlanV2, profile: ColumnProfileDocument, modelPath?: string,
+): MappingRoutingResult {
+  const checked = validateMappingPlanV2({ ...plan, layoutFingerprint: profile.layoutFingerprint },
+    mappingContextFromColumnProfile(profile));
+  if (!checked.success) {
+    throw new AppError(422, 'MAPPING_APPROVED_PLAN_INVALID', 'The approved plan failed chunk revalidation.');
+  }
+  return { ...manualTeacherPlan(profile, 'MAPPING_REVIEW_REQUIRED'), plan: checked.plan, issues: [], state: 'candidate',
+    activeLearnerVersion: learnerVersion(modelPath), memoryReasonCode: null, studentReasonCode: null,
+    fieldSources: profile.columns.map(column => ({
+      sourceField: column.name, source: 'officer', method: plan.method,
+    })) };
 }
 
 /** Job-local validated proposal reuse does not create shared accepted memory or learning examples. */
@@ -103,30 +135,25 @@ export class TabularChunkMapper {
     const started = performance.now();
     await options.authorize(); // Every cached chunk must still pass the current source/fence authorization.
     const prepared = profileTabularChunk(input);
-    const prior = options.dataPolicy.split === 'held_out'
-      ? undefined : this.layouts.get(prepared.profile.layoutFingerprint);
-    const cached = prior ? reuseProposal(prior, prepared.profile) : null;
-    const proposal = cached ?? await this.routeLayout(prepared, options);
+    const layoutKey = `${prepared.profile.layoutFingerprint}/${options.learnerModelPath ?? 'none'}`;
+    const prior = options.dataPolicy.split === 'held_out' ? undefined : this.layouts.get(layoutKey);
+    const cached = prior && !options.approvedPlan ? reuseProposal(prior, prepared.profile) : null;
+    const proposal = options.approvedPlan
+      ? officerProposal(options.approvedPlan, prepared.profile, options.learnerModelPath)
+      : cached ?? await this.routeLayout(prepared, options);
     const checked = validateMappingPlanV2(proposal.plan, mappingContextFromColumnProfile(prepared.profile));
     if (!checked.success) throw new AppError(422, 'MAPPING_PLAN_INVALID', 'The routed plan failed verification.');
     const dryRun = executeTeacherMappingDryRun(proposal, prepared.rows, {
-      ...mappingContextFromColumnProfile(prepared.profile), sourceRef: input.sourceRef,
+      ...mappingContextFromColumnProfile(prepared.profile), sourceRef: input.sourceRef, rowOffset: input.rowOffset,
     });
-    const issues = new Map(proposal.issues.map(issue => [issue.sourceField, issue]));
-    for (const row of dryRun.rows) {
-      for (const cell of row.fields) {
-        if (cell.issueCode) issues.set(cell.sourceField, {
-          sourceField: cell.sourceField, state: 'needs_input', code: cell.issueCode,
-        });
-      }
-    }
-    const verified: MappingRoutingResult = { ...proposal, issues: [...issues.values()],
-      state: issues.size ? 'needs_input' : 'candidate' };
+    const verified = verifiedProposal(proposal, dryRun);
     if (options.dataPolicy.split !== 'held_out' && this.layouts.size < MAX_JOB_LAYOUTS) {
-      this.layouts.set(prepared.profile.layoutFingerprint, verified);
+      this.layouts.set(layoutKey, verified);
     }
-    return { profile: prepared.profile, proposal: verified, dryRun, questions: mappingQuestions(verified, input),
-      metrics: chunkMetrics(input, verified, Boolean(cached), Math.round((performance.now() - started) * 100) / 100) };
+    const questions = mappingQuestions(verified, input);
+    return { profile: prepared.profile, proposal: verified, dryRun, questions,
+      metrics: chunkMetrics(input, verified, questions, Boolean(cached),
+        Math.round((performance.now() - started) * 100) / 100) };
   }
 
   private async routeLayout(prepared: ReturnType<typeof profileTabularChunk>, options: RoutingOptions) {

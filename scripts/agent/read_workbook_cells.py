@@ -1,5 +1,7 @@
 """Return bounded native spreadsheet/HTML cells without evaluating source code."""
 
+import base64
+import io
 import json
 from html.parser import HTMLParser
 from pathlib import Path
@@ -95,7 +97,8 @@ def read_workbook_cells(services_geo_path: Path, file_path: Path) -> dict[str, A
     from geo.native_ods import extract_native_ods, is_ods_archive
     from geo.native_workbook import extract_native_workbook
 
-    with zipfile.ZipFile(file_path) as archive:
+    source = file_path if str(file_path) != "-" else io.BytesIO(base64.b64decode(sys.stdin.read()))
+    with zipfile.ZipFile(source) as archive:
         members = archive.infolist()
         if len(members) > MAX_ARCHIVE_MEMBERS:
             raise ValueError("COLUMN_WORKBOOK_LIMIT")
