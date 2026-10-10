@@ -28,7 +28,7 @@ import { ScaleAndNorth } from './ScaleAndNorth';
 import { UndrawnBuildings } from './UndrawnBuildings';
 import { BuildingSearch } from './BuildingSearch';
 import { CandidateBanner } from '../review/candidates/CandidateBanner';
-import { useMapView } from './useMapView';
+import { imageryVisibility, useMapView } from './useMapView';
 import {
   imageryAttribution, imageryFailureNote, listedImages, useOverlays, useRetainedImagery,
   type AreaReference, type SupplementalDataset, type LoadedOverlay, type RetainedImages,
@@ -130,7 +130,9 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const listedPictures = useMemo(() => listedImages(drawn.area), [drawn.area]);
   const retained = useRetainedImagery(context.area.id, listedPictures);
   const retainedImages = retained.data?.overlays ?? NO_IMAGES;
-  const overlaysOn = { imagery: mapView.overlays.imagery ?? listedPictures.length > 0, lidar: mapView.overlays.lidar };
+  const imagery = imageryVisibility(mapView.overlays.imagery, listedPictures.length > 0);
+  const overlaysOn = { imagery: imagery.retained, lidar: mapView.overlays.lidar };
+  const supplementalOn = { imagery: imagery.aerial, lidar: mapView.overlays.lidar };
   // Nothing to scale or fit: no footprint, base feature or overlay, and every read has settled.
   const nothingToDraw = !footprints.length && !base.length && !loadedOverlays.length && !retainedImages.length
     && !drawn.pending && !drawn.error && !overlayQuery.isLoading && !retained.isLoading && !packageId
@@ -145,14 +147,14 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const retainedShown = showContextOverlays && overlaysOn.imagery && retainedImages.length > 0;
   const overlayInputs = useMemo<OverlayInput[]>(() => [
     ...(retainedShown ? retainedImages : []),
-    ...loadedOverlays.filter((o) => showContextOverlays && overlaysOn[o.layer]).map((o) => o.input),
+    ...loadedOverlays.filter((o) => showContextOverlays && supplementalOn[o.layer]).map((o) => o.input),
     ...(activePlan && showContextOverlays ? [
       { id: 'simulated-area-plan', kind: 'comparison' as const, role: 'plan' as const, polygons: activePlan.plan, heightM: 0 },
       ...activePlan.findings.map(f => ({ id: `simulated-difference:${f.buildingId}`, kind: 'comparison' as const, role: 'conflict' as const, polygons: f.outside, heightM: f.heightM })),
     ] : []),
-  ], [retainedShown, retainedImages, loadedOverlays, overlaysOn.imagery, overlaysOn.lidar, showContextOverlays,
-    activePlan]);
-  const visibleOverlays = loadedOverlays.filter((o) => showContextOverlays && overlaysOn[o.layer]);
+  ], [retainedShown, retainedImages, loadedOverlays, supplementalOn.imagery, supplementalOn.lidar,
+    showContextOverlays, activePlan]);
+  const visibleOverlays = loadedOverlays.filter((o) => showContextOverlays && supplementalOn[o.layer]);
   const overlayNotes = visibleOverlays.map((o) => o.note);
   const viewNotes = [
     mapView.look === 'enhanced' ? 'Enhanced view' : null,
