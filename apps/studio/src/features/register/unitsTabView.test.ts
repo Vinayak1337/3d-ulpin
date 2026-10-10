@@ -10,6 +10,20 @@ const floorId = tower.levels[0]!.registryFloorId!;
 const unitId = tower.levels[0]!.spaces[0]!.spaceId;
 const bare: BuildingCanonical = { ...tower, levels: [] };
 
+type Schedule = NonNullable<BuildingCanonical['levelSchedule']>;
+// A level schedule in the shape of the read, on the tower's own: Magnolia's is reviewed, with no registry floor.
+const schedule = (state: Schedule['state'], levelIds: string[], labels: string[] = []): Schedule => ({
+  ...tower.levelSchedule!,
+  state,
+  levels: levelIds.map((levelId, order) => ({
+    levelId, order, labelLiteral: labels[order] ?? levelId, kind: 'floor', lowerM: null, upperM: null,
+    heightSource: 'unknown', verticalReference: null, citations: [],
+  })),
+});
+const scheduleOnly: BuildingCanonical = {
+  ...bare, levelSchedule: schedule('reviewed', ['g', 'f'], ['GROUND FLOOR PLAN', 'FIRST FLOOR PLAN']),
+};
+
 const answered = (data: BuildingCanonical): CanonicalRead => ({ data, error: null, isPending: false });
 const failed = (status: number, code?: string): CanonicalRead => ({
   error: new ApiError(status, '/api/v1/buildings/b/canonical', { error: { code, message: 'Never shown.' } }),
@@ -21,7 +35,7 @@ describe('unitsTabView', () => {
   it('waits for the canonical read: nothing is listed, counted or denied', () => {
     const view = unitsTabView([row('a')], { error: null, isPending: true }, null);
     expect(view).toEqual({
-      state: 'pending', rows: [], recorded: null, count: undefined, unread: false, code: null,
+      state: 'pending', rows: [], recorded: null, count: undefined, scheduled: [], unread: false, code: null,
     });
   });
 
@@ -40,6 +54,19 @@ describe('unitsTabView', () => {
   it('says nothing is recorded only when neither read holds a unit or a recorded floor', () => {
     expect(unitsTabView([], answered(bare), null)).toMatchObject({ state: 'nothing', recorded: null, count: 0 });
     expect(unitsTabView([], failed(404, 'NOT_FOUND'), null)).toMatchObject({ state: 'nothing', count: 0 });
+  });
+
+  it('names the levels of a reviewed schedule that no registry floor carries, in schedule order', () => {
+    const view = unitsTabView([], answered(scheduleOnly), null);
+    expect(view).toMatchObject({ state: 'nothing', count: 0, scheduled: ['GROUND FLOOR PLAN', 'FIRST FLOOR PLAN'] });
+  });
+
+  it('names no scheduled level that a registry floor carries, and none of a conflicting schedule', () => {
+    const carried: BuildingCanonical = { ...tower, levelSchedule: schedule('reviewed', [tower.levels[0]!.levelId]) };
+    expect(unitsTabView([], answered(carried), null)).toMatchObject({ state: 'recorded', scheduled: [] });
+    const conflicting: BuildingCanonical = { ...bare, levelSchedule: schedule('conflicting', ['a']) };
+    expect(unitsTabView([], answered(conflicting), null)).toMatchObject({ state: 'nothing', scheduled: [] });
+    expect(unitsTabView([], answered(bare), null).scheduled).toEqual([]);
   });
 
   it('never makes a table row of a unit recorded from a source label', () => {
