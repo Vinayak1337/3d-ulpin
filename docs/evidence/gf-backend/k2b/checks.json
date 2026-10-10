@@ -1,0 +1,35 @@
+{
+  "backendTypecheck": {
+    "command": "pnpm typecheck:backend",
+    "exitCode": 0
+  },
+  "focusedTests": {
+    "command": "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS='--require ./scripts/platform/isolated-env.cjs' pnpm exec tsx --tsconfig apps/api/tsconfig.json --test apps/api/src/modules/register/conflict-decision.controller.test.ts packages/server/src/modules/usp/ingestion/source-building-admission.test.ts apps/api/src/modules/register/canonical.controller.test.ts tests/manual-ingestion.test.ts",
+    "exitCode": 0,
+    "passed": 12,
+    "skipped": 0
+  },
+  "apiContract": {
+    "command": "python docs/evidence/gf-backend/k2b/check-lf-export.py (unchanged scripts/api/check.py on fresh LF archive)",
+    "exitCode": 0,
+    "operations": 291,
+    "namedSchemas": 325,
+    "reviewedK2bProducers": 11
+  },
+  "doctor": {
+    "command": "pnpm platform:doctor --profile demo",
+    "exitCode": 0,
+    "qualification": "health, ownership, eng+hin asset paths; not successful OCR or Hindi execution"
+  },
+  "styleAudit": {
+    "exitCode": 0,
+    "scope": "new code lines <=120; new core/test/verifier/dependency helpers <=40 lines; Python syntax"
+  },
+  "diffReview": {
+    "command": "git diff staging...HEAD",
+    "mergeBase": "84544578b01ddb5012484dc74c5f0e90b3582a46",
+    "unownedPathsTouched": [],
+    "diffCheckExitCode": 0
+  },
+  "externalLogs": "E:/BhuAayam-data/task-data/k2/k2b-*-resume-final.log"
+}

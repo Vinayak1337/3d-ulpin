@@ -1,7 +1,13 @@
-import { Controller, Get, HttpCode, Inject, Param, Patch, Post, Query, Req, Res } from '@nestjs/common';
-import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Controller, Get, Header, HttpCode, Inject, Param, Patch, Post, Query, Req, Res, UseGuards,
+} from '@nestjs/common';
+import { ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
+import { BuildingConflictDecisionRequestSchema, BuildingConflictDecisionSchema } from '@ulpin/contracts';
+import { PrivateSpatialGuard } from '../spatial/private-spatial.guard';
+import { jsonBody, wireResponse } from '../intake/wire-schemas';
+import { AppError } from '@ulpin/server/infrastructure/errors';
 import { redactDocumentViews } from '@ulpin/server/modules/usp/ingest/redact';
 import { readJsonBody } from '../../common/body';
 import { jsonResponse, sendWebResponse } from '../../common/response';
@@ -24,6 +30,27 @@ const queryUrl = (request: Request) => new URL(request.originalUrl ?? request.ur
 @Controller('api/v1')
 export class OfficerController {
   constructor(@Inject(OfficerService) private readonly service: OfficerService) {}
+
+  @Post('buildings/:buildingId/conflict-decisions')
+  @UseGuards(PrivateSpatialGuard)
+  @HttpCode(201)
+  @Header('Cache-Control', 'private, no-store')
+  @ApiOperation({ operationId: 'POST_api_v1_buildings_buildingId_conflict_decisions',
+    summary: 'Append a checked-page officer conflict decision without deleting source alternatives' })
+  @ApiParam({ name: 'buildingId', schema: { type: 'string', format: 'uuid' } })
+  @ApiHeader({ name: 'Idempotency-Key', required: true, schema: { type: 'string', format: 'uuid' } })
+  @jsonBody(BuildingConflictDecisionRequestSchema)
+  @wireResponse(201, BuildingConflictDecisionSchema)
+  async conflictDecision(@Param('buildingId') buildingId: string, @Req() req: Request) {
+    if (queryUrl(req).search) {
+      throw new AppError(422, 'CONFLICT_DECISION_QUERY', 'This command accepts no query fields.');
+    }
+    const input = await body(req, BuildingConflictDecisionRequestSchema);
+    if (uuid.parse(req.header('idempotency-key')) !== input.requestKey) {
+      throw new AppError(422, 'CONFLICT_DECISION_KEY', 'Match Idempotency-Key to the decision request key.');
+    }
+    return this.service.conflictDecision(uuid.parse(buildingId), input);
+  }
 
   @Get('work-queue')
   @ApiOperation({ operationId: 'GET_api_v1_work_queue', summary: 'Read the current officer work queue' })

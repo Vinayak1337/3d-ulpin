@@ -1,0 +1,56 @@
+{
+  "directRunner": {
+    "exitCode": 1,
+    "worker": {
+      "exitCode": 1,
+      "stopReason": null,
+      "elapsedSeconds": 5.141,
+      "peakObservedRssBytes": 357310464,
+      "peakJobPrivateBytes": 461651968,
+      "gatedStart": true,
+      "logPath": "E:\\BhuAayam-data\\task-data\\k2\\ocr-debug\\attempt-k2b-1\\worker.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logByteLimit": 2097152,
+      "logTruncated": false
+    },
+    "code": {
+      "runnerSha256": "9dfcf8d736eb7d812ca69fe8a8aa23999125c2bd9ba854cc448e1e7a4ecc52eb",
+      "adapterSha256": "b839511fe0feed1d7eb941327f34b128d7b1a0357cadfe27ab79418b917b1dee"
+    },
+    "limits": {
+      "sourceBytes": 16777216,
+      "sourcePages": 8,
+      "renderPixels": 1600000,
+      "renderSide": 1400,
+      "items": 64,
+      "resultBytes": 131072,
+      "logBytes": 2097152,
+      "workerSeconds": 90,
+      "memoryBytes": 6442450944,
+      "cpuThreads": 2
+    }
+  },
+  "exceptionCapture": {
+    "exitCode": 1,
+    "stopReason": null,
+    "elapsedSeconds": 5.891,
+    "peakObservedRssBytes": 376463360,
+    "peakJobPrivateBytes": 461295616,
+    "gatedStart": true,
+    "logPath": "E:\\BhuAayam-data\\task-data\\k2\\ocr-debug\\capture-k2b\\worker.log",
+    "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "logByteLimit": 2097152,
+    "logTruncated": false
+  },
+  "traceback": {
+    "path": "E:\\BhuAayam-data\\task-data\\k2\\ocr-debug\\capture-k2b\\traceback.txt",
+    "bytes": 5226,
+    "sha256": "0b10f6c6fa4716a301b405efc4c46f8ce4a6c26f1b0cdb91489ef3876771048a"
+  },
+  "diagnosedFailure": {
+    "nativeExitCode": 3221225781,
+    "windowsStatus": "0xC0000135 STATUS_DLL_NOT_FOUND",
+    "missingDependency": "libcurl.dll"
+  },
+  "exceptionDetailCommitted": false
+}
