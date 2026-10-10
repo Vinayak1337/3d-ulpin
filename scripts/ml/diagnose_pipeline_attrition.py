@@ -465,14 +465,14 @@ def conclusion(tables: dict, compared: dict) -> str:
     table = tables["primary"]["0.45"]["all"]
     own = tables["supplementary_at_own_score"]["all"]
     gains = "; ".join(f"at {key} {value['recall_gain']:+.4f}" for key, value in compared.items())
-    verdicts = " and ".join(f"{key} ({verdict(value['helps'])})" for key, value in compared.items())
+    verdicts = "; ".join(f"at {key} it {verdict(value['helps'])}" for key, value in compared.items())
     return (
         f"Of {own['with_raw_match']} DEV truths missed at 0.5 that have a raw match, "
         f"{own['categories'][RECOVERED]} are matched once the threshold sits just below the match's score and "
         f"{own['categories']['claimed_by_higher_score']} are still lost to painting claimed by a higher-scored mask; "
         f"at 0.45 itself only {table['with_raw_match']} truths are lost after the model, "
         f"{table['categories']['claimed_by_higher_score']} of them to claiming. "
-        f"Score-ordered mask NMS changes DEV recall {gains}; by the preregistered rule it {verdicts}."
+        f"Score-ordered mask NMS changes DEV recall {gains}; by the preregistered rule, {verdicts}."
     )
 
 
