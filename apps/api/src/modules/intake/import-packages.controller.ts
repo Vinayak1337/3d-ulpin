@@ -5,7 +5,8 @@ import { z } from 'zod';
 import { AppError } from '@ulpin/server/infrastructure/errors';
 import { redactDocumentViews } from '@ulpin/server/modules/usp/ingest/redact';
 import { AreaIntakeService } from '@ulpin/server/modules/areas/area-intake-service';
-import { SourceBuildingImportSchema } from '@ulpin/contracts';
+import { ImageryAreaImportSchema, SourceBuildingImportSchema } from '@ulpin/contracts';
+import { importSourceImagery } from '@ulpin/server/modules/usp/ingestion/source-building-imagery';
 import { importSourceBuildings } from '@ulpin/server/modules/usp/ingestion/source-building-import';
 import {
   acquisitionImportSchema, areaCheckSchema, areaIdSchema, areaImportMetadataSchema,
@@ -43,6 +44,20 @@ async function sourceBuildingInput(form: FormData) {
     files.push({ key: document.key, name: file.name, bytes: new Uint8Array(await file.arrayBuffer()) });
   }
   return importSourceBuildings(input, files);
+}
+
+async function sourceImageryInput(form: FormData) {
+  const input = ImageryAreaImportSchema.parse(structured(form.get('metadata')));
+  const files = [];
+  for (const [key, value] of form.entries()) {
+    if (form.getAll(key).length !== 1) throw new AppError(422, 'IMAGERY_FIELDS', 'Use each image field once.');
+    if (key === 'format' || key === 'metadata') continue;
+    if (!(value instanceof File) || !z.string().uuid().safeParse(key).success) {
+      throw new AppError(422, 'IMAGERY_FIELDS', 'Attach each original under its publisher chip ID.');
+    }
+    files.push({ key, name: value.name, bytes: new Uint8Array(await value.arrayBuffer()) });
+  }
+  return importSourceImagery(input, files);
 }
 
 function formMetadata(form: FormData) {
@@ -85,11 +100,12 @@ export class ImportPackagesController {
     areaId: {type: 'string', format: 'uuid'}, sourceCrs: {type: 'string', pattern: '^EPSG:[0-9]+$'},
     expectedAreaRevision: {type: 'integer', minimum: 0},
     worldStatus: {type: 'string', enum: ['observed', 'planned', 'hypothetical', 'synthetic']},
-  }, SourceBuildingImportSchema)
+  }, z.union([SourceBuildingImportSchema, ImageryAreaImportSchema]))
   @wireResponse(201, importPackage)
   async create(@Req() request: Request) {
     if (request.headers['content-type']?.includes('multipart/form-data')) {
       const form = await readMultipartBody(request, MULTIPART_BODY_LIMIT);
+      if (form.get('format') === 'imagery_area') return this.output(sourceImageryInput(form));
       if (['document_buildings', 'administrative_context'].includes(String(form.get('format')))) {
         return this.output(sourceBuildingInput(form));
       }

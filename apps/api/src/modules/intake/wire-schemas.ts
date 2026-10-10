@@ -1,7 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiResponse } from '@nestjs/swagger';
 import { z } from 'zod';
-import { ClaimTranscriptionSchema } from '@ulpin/contracts';
+import { ClaimTranscriptionSchema, RetainedImagerySchema } from '@ulpin/contracts';
 import {GisQuarantineSchema} from '@ulpin/contracts';
 import { LargeOriginalEvidenceSchema } from '@ulpin/contracts/usp';
 
@@ -176,6 +176,7 @@ const factCandidate = z.object({
   transcription: ClaimTranscriptionSchema.optional(),
 });
 export const importPackage = z.object({
+  imagery: RetainedImagerySchema.optional(),
   geometryFree: z.literal(true).optional(),
   administrativeContext: z.object({sourceId: uuid, sourceCrs: z.string(), units: z.array(z.object({
     id: uuid, sourceKey: z.string(), kind: z.literal('sector'), name: z.string(), rings: z.array(z.array(point)),
@@ -330,9 +331,9 @@ export function gisImportBody(
   if (sourceBuildings) variants.push({
     type: 'object', required: ['format', 'metadata'], additionalProperties: binary,
     properties: {
-      format: {type: 'string', enum: ['document_buildings', 'administrative_context']},
+      format: {type: 'string', enum: ['document_buildings', 'administrative_context', 'imagery_area']},
       metadata: {
-        type: 'string', description: 'JSON declarations; attach each unchanged original under its document key.',
+        type: 'string', description: 'JSON declarations; attach originals under document keys or publisher chip IDs.',
         'x-sourceBuildingSchema': requestSchema(sourceBuildings),
       },
     },
@@ -340,7 +341,7 @@ export function gisImportBody(
   return applyDecorators(
     ApiConsumes('application/json', 'multipart/form-data'),
     ApiBody({
-      description: 'JSON retains an acquisition; multipart retains GIS or document-backed geometry-free buildings.',
+      description: 'JSON retains an acquisition; multipart retains GIS, source-only buildings or original-only imagery.',
       schema: {oneOf: variants},
     }),
   );
