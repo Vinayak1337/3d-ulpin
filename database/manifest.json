@@ -2435,6 +2435,36 @@
         "path": "packages/server/src/modules/spatial/spatial-ml-db.ts",
         "function": "migrateSpatialMl"
       }
+    },
+    {
+      "id": "spatial-ml.reject-only-footprints",
+      "source": {
+        "path": "database/sql/50-spatial-ml/01-reject-only-footprints.sql",
+        "function": "migrateSpatialMl",
+        "kind": "authored-sql",
+        "task": "K4a",
+        "acceptedBase": "db8c014d8dee96374b7b84677ce403bd7086dcfb"
+      },
+      "file": "sql/50-spatial-ml/01-reject-only-footprints.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "query-batch",
+      "advisoryLock": null,
+      "condition": "after spatial-ml.source-batches; spatial_ml_footprint_drafts already present",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 51,
+      "sha256": "446cf0df4644b887877d34b7f0dc95956f073fdaa2be4e43eb9e66ffc0d51958",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "f3f249457e180e90e3f06245a774cc7913a5cda00285156efcaa4e4d7b24595d"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/spatial/spatial-ml-db.ts",
+        "function": "migrateSpatialMl"
+      }
     }
   ],
   "plannedButAbsent": []
