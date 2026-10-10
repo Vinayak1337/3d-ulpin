@@ -7,7 +7,8 @@ import {
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TilesRenderer } from '3d-tiles-renderer';
 import { presetFor } from './camera';
-import { FLAT_THICKNESS_M, buildingLook, hasKnownHeight, prismGeometry, shapesFor, type BuildingLook } from './geometry';
+import { FLAT_THICKNESS_M, boundsOf, buildingLook, hasKnownHeight, prismGeometry, shapesFor } from './geometry';
+import type { BuildingLook } from './geometry';
 import { enhanceFacade, enhanceSurface, facadeStyle, labelPoint, laneDashes, lookUniforms, padGeometry, paintGeometry, skyTexture, treeMeshes, type SceneLook } from './look';
 import type {
   BaseFeatureInput, Bounds2D, BuildingDetailInput, FindingInput, FootprintInput, Measurement, MultiPolygon, Pick, SceneMode,
@@ -124,6 +125,12 @@ export class SceneEngine {
   private state: SceneState = INITIAL_STATE;
   private findingKey = '';
   private cameraKey = '';
+  private readonly baseBox = new Box3();
+  private readonly arrivedBox = new Box3();
+  private readonly arrivalBounds = new Map<string, Box3>();
+  private framedBox: Box3 | null = null;
+  private importStreaming = false;
+  private followImport = false;
   private hovered: string | null = null;
   private frameRequested = false;
   private disposed = false;
@@ -442,6 +449,11 @@ export class SceneEngine {
     if (sameInputs(this.baseInputs, features)) return;
     this.baseInputs = [...features];
     this.baseNeedsDraw = true;
+    this.baseBox.makeEmpty();
+    const bounds = boundsOf(features.filter((feature) => feature.kind !== 'utility'));
+    if (bounds) this.baseBox.set(
+      new Vector3(bounds.minX, 0, -bounds.maxY), new Vector3(bounds.maxX, 0, -bounds.minY),
+    );
     disposeGroup(this.base);
     disposeGroup(this.kerbs);
     this.base.add(this.kerbs);
@@ -500,6 +512,7 @@ export class SceneEngine {
     this.utilityInputs = features.filter((f) => f.kind === 'utility');
     this.buildUtilities();
     this.apply();
+    this.followArrivedContent();
   }
 
   /** Whole-list truth: retain unchanged meshes, remove missing ids, rebuild changed ids, queue new ids. */
@@ -512,6 +525,7 @@ export class SceneEngine {
       this.removeBuilding(id);
       removed = true;
     }
+    this.updateArrivalBounds(wanted);
     const queue = new Map<string, { input: FootprintInput; growNew: boolean }>();
     for (const input of wanted.values()) {
       const previous = this.buildingInputs.get(input.id);
@@ -532,6 +546,57 @@ export class SceneEngine {
     }
     if (queue.size) this.notifyDrain = true;
     if (queue.size || removed || this.notifyDrain) this.requestRender();
+  }
+
+  /** Studio owns the import lifecycle; an interaction or selection stops following until the next import. */
+  setImportStreaming(active: boolean): void {
+    if (active === this.importStreaming) return;
+    this.importStreaming = active;
+    this.followImport = active && this.state.mode === 'area' && !this.state.buildingId;
+    this.followArrivedContent();
+  }
+
+  private updateArrivalBounds(wanted: Map<string, FootprintInput>) {
+    let contracted = false;
+    for (const id of this.arrivalBounds.keys()) {
+      if (wanted.has(id)) continue;
+      this.arrivalBounds.delete(id);
+      contracted = true;
+    }
+    for (const input of wanted.values()) {
+      const previous = this.buildingInputs.get(input.id) ?? this.buildingQueue.get(input.id)?.input;
+      if (previous && sameInput(previous, input)) continue;
+      const bounds = boundsOf([input]);
+      if (!bounds) continue;
+      const box = new Box3(
+        new Vector3(bounds.minX, input.baseM ?? 0, -bounds.maxY),
+        new Vector3(bounds.maxX, (input.baseM ?? 0) + (input.heightM ?? 0), -bounds.minY),
+      );
+      contracted ||= this.arrivalBounds.has(input.id);
+      this.arrivalBounds.set(input.id, box);
+      this.arrivedBox.union(box);
+    }
+    if (contracted) {
+      this.arrivedBox.makeEmpty();
+      for (const box of this.arrivalBounds.values()) this.arrivedBox.union(box);
+    }
+  }
+
+  private stopFollowingImport() {
+    this.followImport = false;
+  }
+
+  private followArrivedContent() {
+    if (this.state.mode !== 'area' || this.state.buildingId || this.flight) return;
+    const box = this.baseBox.clone().union(this.arrivedBox);
+    if (box.isEmpty()) return;
+    if (!this.cameraKey) {
+      this.applyCamera(true);
+      return;
+    }
+    if (!this.followImport || this.framedBox && containsPlanBox(this.framedBox, box)) return;
+    this.cameraKey = '';
+    this.applyCamera(false);
   }
 
   /** Only ids that have reached a rendered frame; queued inputs have no pick or label. */
@@ -648,6 +713,7 @@ export class SceneEngine {
   setState(next: SceneState): void {
     const toolChanged = next.tool !== this.state.tool;
     this.state = next;
+    if (next.mode !== 'area' || next.buildingId) this.stopFollowingImport();
     if (toolChanged && next.tool !== 'measure') this.clearMeasure();
     this.apply();
     this.applyCamera(false);
@@ -835,8 +901,7 @@ export class SceneEngine {
       const selectedArrived = added.some((entry) => entry.buildingId === this.state.buildingId);
       if (selectedArrived) this.apply();
       else this.apply(added);
-      if (!this.cameraKey) this.applyCamera(true);
-      else if (selectedArrived && this.state.mode !== 'area') this.applyCamera(false);
+      if (selectedArrived) this.applyCamera(false);
     }
     if (!this.buildingQueue.size || performance.now() - this.dressingAt >= DRESSING_INTERVAL_MS) {
       this.buildDressing();
@@ -1325,6 +1390,7 @@ export class SceneEngine {
     const target = this.cameraTarget(mode, buildingId, levelId, finding);
     if (!target) return;
     this.cameraKey = key;
+    if (mode === 'area') this.framedBox = this.baseBox.clone().union(this.arrivedBox);
     // Fit to the narrower of the vertical and horizontal fields of view, so a narrow canvas still shows the whole target.
     const aspect = this.container.clientWidth / Math.max(1, this.container.clientHeight);
     const hFov = (2 * Math.atan(Math.tan((this.camera.fov * Math.PI) / 360) * aspect) * 180) / Math.PI;
@@ -1379,7 +1445,7 @@ export class SceneEngine {
     const box = new Box3();
     let focusY: number;
     if (mode === 'area') {
-      box.copy(this.areaBox);
+      box.copy(this.baseBox).union(this.arrivedBox);
       focusY = 4;
     } else if (mode === 'level') {
       for (const e of this.entries.values()) if (e.kind === 'space' && e.levelId === levelId) box.union(e.bounds);
@@ -1455,7 +1521,9 @@ export class SceneEngine {
     this.drainBuildingQueue();
     let animating = false;
     if (this.flight) animating = this.stepFlight(performance.now());
-    animating = this.stepGrow(now) || animating;
+    this.followArrivedContent();
+    const growing = this.stepGrow(now);
+    animating = Boolean(this.flight) || growing || animating;
     for (const tiles of this.tilesets) tiles.update();
     this.followSun();
     if (this.state.mode === 'deviation') this.renderSplit();
@@ -1573,6 +1641,7 @@ export class SceneEngine {
   }
 
   private readonly onPointerDown = (event: PointerEvent) => {
+    this.stopFollowingImport();
     this.flight = null;
     this.downAt = { x: event.clientX, y: event.clientY };
   };
@@ -1615,6 +1684,8 @@ export class SceneEngine {
    * (reported with Ctrl) fall through to the controls and zoom.
    */
   private readonly onWheel = (event: WheelEvent) => {
+    this.stopFollowingImport();
+    this.flight = null;
     if (event.ctrlKey || !this.controls.enabled) return;
     const mouseWheel = event.deltaMode !== 0 || (event.deltaX === 0 && Math.abs(event.deltaY) >= 40 && Number.isInteger(event.deltaY));
     if (mouseWheel) return;
@@ -1644,6 +1715,11 @@ export class SceneEngine {
     this.apply();
     this.options.onHover?.({ kind: 'ground' });
   };
+}
+
+function containsPlanBox(outer: Box3, inner: Box3): boolean {
+  return outer.min.x <= inner.min.x && outer.max.x >= inner.max.x
+    && outer.min.z <= inner.min.z && outer.max.z >= inner.max.z;
 }
 
 function sameInput(left: object, right: object): boolean {

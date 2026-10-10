@@ -64,6 +64,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const { selection, dispatch, patch } = useSelection();
   const [searchParams, setSearchParams] = useSearchParams();
   const packageId = searchParams.get('package');
+  const streamingPackage = packageId ? context.packages.find((pkg) => pkg.id === packageId) : null;
+  const importStreaming = Boolean(packageId) && (!streamingPackage || streamingPackage.state === 'RECEIVED');
   const buildingImportId = searchParams.get('building-import');
   const buildingImport = useBuildingImport(buildingImportId);
   const floorsLive = Boolean(buildingImportId) && buildingImport.data?.state !== 'done';
@@ -239,6 +241,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   useEffect(() => {
     if (engine && isDemoId(context.area.id)) return attachDemoScene(context.area.id, engine);
   }, [engine, context.area.id]);
+
+  useEffect(() => { engine?.setImportStreaming(importStreaming); }, [engine, importStreaming]);
 
   const onView = useCallback(() => setTick((t) => (t + 1) % 1_000_000), []);
   const snapshot = useCallback(() => engine?.snapshot() ?? null, [engine]);

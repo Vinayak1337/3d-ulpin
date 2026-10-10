@@ -11,7 +11,8 @@ function engineFixture() {
     buildingQueue: new Map(), renderedBuildings: new Set(), renderChanges: new Map(), drawWaiters: new Set(),
     storeyBuildings: new Map(), footprintPolygons: new Map(), pads: new Map(), buildings: new Group(),
     dressing: new Group(), trees: new Group(), detail: new Group(), anchors: new Map(),
-    baseInputs: [], renderedBase: new Set(),
+    baseInputs: [], renderedBase: new Set(), baseBox: new Box3(), arrivedBox: new Box3(),
+    arrivalBounds: new Map(),
     areaBox: new Box3(), options: {}, state: { mode: 'area' }, cameraKey: '', dressingAt: -Infinity,
     m: { bldg: material, edge: material, pad: material }, requestRender: vi.fn(), apply: vi.fn(),
     fitGroundAndShadow: vi.fn(), buildDressing: vi.fn(), applyCamera: vi.fn(function () {
@@ -31,6 +32,7 @@ function building(id: string): FootprintInput {
 function draw(engine: ReturnType<typeof engineFixture>) {
   // The starting engine builds synchronously; identity tests must reach their assertions there too.
   engine.drainBuildingQueue?.();
+  engine.followArrivedContent?.();
   engine.finishDraw?.();
 }
 
