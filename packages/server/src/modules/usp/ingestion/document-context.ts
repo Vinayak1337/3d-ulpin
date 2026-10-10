@@ -7,6 +7,7 @@ import {ingestionBinding,assertIngestionBinding} from './events';
 import {documentReaderSha} from './document-native';
 import {modelGatewayPolicyHash} from '../../model-gateway/runtime';
 import {documentOcrConfigSha} from './document-ocr';
+import {compareSourcePins} from './source-pin';
 
 export function documentLayoutCap(){
   const value=process.env.ULPIN_DOCUMENT_MODEL_LAYOUT_CAP;
@@ -45,14 +46,14 @@ type DocumentSourceContext=Awaited<ReturnType<typeof documentSourceTx>>;
 /** What moved on since a retained input was pinned. Private scope and the immutable original are checked elsewhere. */
 export function documentInputFreshness(ctx:DocumentSourceContext,input:DocumentInput):RetainedDocumentFreshness{
   const now=documentInput(ctx,input.jobId,input.mode,input.ocrSelection,input.archiveSelection);
-  const moved=(...fields:(keyof DocumentInput)[])=>
-    fields.some(field=>fingerprint(now[field]??null)!==fingerprint(input[field]??null));
+  const pins=compareSourcePins(now,input);
+  const moved=(...fields:(keyof DocumentInput)[])=>fields.some(field=>pins.moved.includes(field));
   const reasons:RetainedDocumentFreshness['reasons'][number][]=[];
-  if(moved('caseRevision','caseContextSha256'))reasons.push('case_advanced');
+  if(moved('caseContextSha256'))reasons.push('case_advanced');
   if(moved('readerSha256'))reasons.push('reader_changed');
   if(moved('policyVersion','gatewayPolicySha256','layoutCap','ocrConfigSha256'))reasons.push('policy_changed');
   if(!ctx.latest)reasons.push('source_superseded');
-  return RetainedDocumentFreshnessSchema.parse({current:reasons.length===0,reasons});
+  return RetainedDocumentFreshnessSchema.parse({current:pins.current&&ctx.latest,reasons});
 }
 /** Authorize and locate a retained input for a read or a capture of what is already recorded. An archived case,
  * another operator's context or a changed original still refuses; a moved-on case, reader or policy is reported
@@ -70,8 +71,9 @@ export async function locateDocumentInputTx(client:PoolClient,input:DocumentInpu
 /** Require current pins: every path that derives or writes something new under this input. */
 export async function assertDocumentInputTx(client:PoolClient,input:DocumentInput,lock=false){
   const ctx=await documentSourceTx(client,input.caseId,input.sourceId,lock);
-  if(!ctx.latest || fingerprint(documentInput(ctx,input.jobId,input.mode,input.ocrSelection,input.archiveSelection))!==fingerprint(input))
-    conflict('The document source, case, reader, access or model policy changed. Retry under current pins.');
+  const pins=compareSourcePins(documentInput(ctx,input.jobId,input.mode,input.ocrSelection,input.archiveSelection),input);
+  if(!ctx.latest || !pins.current)
+    conflict('The document source, case context, reader, access or model policy changed; retry under current pins.');
   const job=(await client.query(`SELECT payload,input_fingerprint FROM jobs
     WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='document-extraction'`,[input.jobId,input.caseId,input.sourceId])).rows[0];
   if((input.archiveSelection || job?.payload?.archiveSelection) &&
