@@ -43,9 +43,24 @@ Status: `exists` = path, method and the shape the Studio reads are published; `p
 | `/api/v1/buildings/{buildingId}/canonical` | GET | exists | **Live**: the inspector shows its `recordState` and `gaps`; the scene adds its storeys and levels when it has them |
 | `/api/v1/spatial-ml/batches/{batchId}` | GET | exists | **Live** (F2a): batch id, items and image count, shown beside a roofprint candidate |
 | `/api/v1/spatial-ml/items/{itemId}` | GET | exists | **Live** (F2a): the inference receipt (model card summary) and the footprint drafts already made from the image |
-| `/api/v1/spatial-ml/items/{itemId}/footprint-drafts` | POST | exists | **Live** (F2a): records the accepted and rejected roofprints of one image together, each with a reason. It needs at least one accepted selection, so a reject-only decision cannot be sent. Only the demo's K2c decisions are recorded so far |
-| `/api/v1/buildings/{buildingId}/candidates` | POST | exists | **Live** (F2a): `attach_level` puts a room candidate on an existing reviewed level, with an `Idempotency-Key` equal to `requestKey`. Magnolia has no reviewed level, so the picker is disabled there |
+| `/api/v1/spatial-ml/items/{itemId}/footprint-drafts` | POST | exists | **Live**: F2c below |
+| `/api/v1/buildings/{buildingId}/candidates` | POST | exists | **Live**: F2c below |
 | `/api/v1/import-packages/{packageId}/review` | POST | exists | **Live** (F2a): answers 422 `USP_GEOMETRY_PAYLOAD_UNQUALIFIED` for every roofprint draft; the Studio shows it as a blocked state |
+
+## F2c candidate decisions — live, 10 October 2026
+
+- `POST /api/v1/spatial-ml/items/{itemId}/footprint-drafts`: accepts rejections alone with `selections: []`,
+  per-component reasons and no top-level `reason`; returns `package: null` without creating a draft package.
+  Accept-plus-reject requests are unchanged. Studio recorded one reject-only Karnataka decision through this route.
+- `POST /api/v1/buildings/{buildingId}/candidates`: Studio now sends `action: 'reject'` with `candidateId`,
+  `reason`, `requestKey` and `expectedCanonicalRevision`; `Idempotency-Key` equals `requestKey`, as for `attach_level`.
+  Room rejection success was route-intercepted for this UI check; no live room write was made.
+- A record with a `review` has no accept, reject or attach controls; its outcome, reason, actor and time remain visible.
+  Concurrent decisions still return the server's message: 409 `CANDIDATE_DECIDED` or 422 `ML_REVIEW_SELECTION`.
+- Magnolia has three reviewed levels; its level picker was checked live without attaching a room.
+
+Evidence: [F2c result](../evidence/gf-ai/ui/f2c/result.json) and
+[UI design check](../evidence/gf-ai/ui/f2c/ui-design-check.md).
 
 ## Backend requests
 
@@ -62,7 +77,5 @@ One line per route or field the Studio needs and the screen that needs it.
 - Line geometry drawn, or a `roads` polygon, for road proposals: Map of the Gurugram area (the 2 road lines are not drawn).
 - `GET /import-batches/{id}` (INGEST-03), `POST /buildings/{id}/imports/inspect`, `POST /buildings/{id}/imports`, `GET /building-imports/{id}` (INGEST-04): Add files for building documents.
 - `GET /public/*`, `POST /public/requests`, `POST /public/requests/track`, `GET` and `PATCH /register-requests` (PUBLIC-01, REQUEST-01): the public portal and the Registry requests screen.
-- A reject-only roofprint decision (F2a): `footprint-drafts` needs one accepted selection, so a reviewer cannot reject a lone roofprint.
-- A room reject command (F2a): `POST /buildings/{id}/candidates` only attaches a level, so a room candidate cannot be rejected or kept with a reason.
 - The officer geometry-qualification route (K2e) (F2a): not in `docs/api/openapi.json` yet. Until it is, every accepted roofprint stops at the blocked state; the typed TODO is `reviewDraftForRegistry` in `apps/studio/src/features/review/candidates/commands.ts`.
 - A committed, recorded building in the demo database: no register exists to check S12 and S5 levels against the live API.
