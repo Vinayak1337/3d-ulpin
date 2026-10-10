@@ -215263,6 +215263,24 @@
                     },
                     "recordedAt": {
                       "type": "string"
+                    },
+                    "recordKind": {
+                      "type": "string",
+                      "enum": [
+                        "parcel",
+                        "building",
+                        "floor",
+                        "space"
+                      ],
+                      "nullable": true
+                    },
+                    "recordName": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "actor": {
+                      "type": "string",
+                      "nullable": true
                     }
                   },
                   "required": [

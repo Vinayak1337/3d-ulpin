@@ -1,0 +1,90 @@
+{
+  "origin": "GET /api/v1/registry/{recordId} on demo 18b5e74c, 2026-10-10T17:10Z; selected body fields only",
+  "rows": [
+    {
+      "record_id": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325", "revision": 5,
+      "created_at": "2026-10-10T12:29:49.438Z",
+      "body": {
+        "kind": "building", "name": "TOWER 3",
+        "canonicalConflictDecisions": [{ "recordRevision": 2, "actor": "selection-demo-runtime" }],
+        "sourceSpaceCommands": [{ "receipt": { "recordRevision": 5, "actor": "selection-demo-runtime" } }],
+        "levelScheduleCommands": [
+          { "receipt": {
+            "recordRevision": 3, "action": "propose",
+            "proposal": { "actor": "selection-demo-runtime" }, "schedule": null
+          } },
+          { "receipt": {
+            "recordRevision": 4, "action": "review", "proposal": { "actor": "selection-demo-runtime" },
+            "schedule": { "decision": { "actor": "selection-demo-runtime" } }
+          } }
+        ]
+      }
+    },
+    {
+      "record_id": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325", "revision": 4,
+      "created_at": "2026-10-10T05:33:17.810Z",
+      "body": {
+        "kind": "building", "name": "TOWER 3",
+        "canonicalConflictDecisions": [{ "recordRevision": 2, "actor": "selection-demo-runtime" }],
+        "levelScheduleCommands": [
+          { "receipt": {
+            "recordRevision": 3, "action": "propose",
+            "proposal": { "actor": "selection-demo-runtime" }, "schedule": null
+          } },
+          { "receipt": {
+            "recordRevision": 4, "action": "review", "proposal": { "actor": "selection-demo-runtime" },
+            "schedule": { "decision": { "actor": "selection-demo-runtime" } }
+          } }
+        ]
+      }
+    },
+    {
+      "record_id": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325", "revision": 3,
+      "created_at": "2026-10-10T05:33:17.240Z",
+      "body": {
+        "kind": "building", "name": "TOWER 3",
+        "canonicalConflictDecisions": [{ "recordRevision": 2, "actor": "selection-demo-runtime" }],
+        "levelScheduleCommands": [{ "receipt": {
+          "recordRevision": 3, "action": "propose",
+          "proposal": { "actor": "selection-demo-runtime" }, "schedule": null
+        } }]
+      }
+    },
+    {
+      "record_id": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325", "revision": 2,
+      "created_at": "2026-10-10T00:10:34.102Z",
+      "body": {
+        "kind": "building", "name": "TOWER 3",
+        "canonicalConflictDecisions": [{ "recordRevision": 2, "actor": "selection-demo-runtime" }]
+      }
+    },
+    {
+      "record_id": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325", "revision": 1,
+      "created_at": "2026-10-09T22:52:28.151Z", "body": { "kind": "building", "name": "TOWER 3" }
+    },
+    {
+      "record_id": "614ca200-1f3d-48ac-b7db-d1b893b352a1", "revision": 1,
+      "created_at": "2026-10-10T12:29:49.438Z",
+      "body": {
+        "kind": "floor", "name": "2ND FLOOR PLAN",
+        "sourceOnly": { "decision": { "actor": "selection-demo-runtime" } }
+      }
+    },
+    {
+      "record_id": "46b7265e-ca88-402d-83df-065cf7c45140", "revision": 2,
+      "created_at": "2026-10-10T13:48:45.076Z",
+      "body": {
+        "kind": "space", "name": "UNIT-3B",
+        "sourceOnly": { "decision": { "actor": "selection-demo-runtime" } }
+      }
+    },
+    {
+      "record_id": "46b7265e-ca88-402d-83df-065cf7c45140", "revision": 1,
+      "created_at": "2026-10-10T12:29:49.438Z",
+      "body": {
+        "kind": "space", "name": "UNIT-3B",
+        "sourceOnly": { "decision": { "actor": "selection-demo-runtime" } }
+      }
+    }
+  ]
+}
