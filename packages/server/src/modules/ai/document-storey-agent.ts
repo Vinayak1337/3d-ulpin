@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { RequestContext } from '@ulpin/contracts/usp';
 import { AppError } from '../../infrastructure/errors';
+import { holdsRefusedForm } from '../model-gateway/adapter';
 import { hash } from '../model-gateway/config';
 import type { ModelGateway, TrustedCall } from '../model-gateway/gateway';
 import { TeacherRecordings } from '../model-gateway/recordings';
@@ -33,7 +34,8 @@ export type StoreyPageStore = {
   pages: Record<string, { lines: { id: string; text: string }[] }>;
 };
 export type StoreyOmittedLine = {
-  partId: string; page: number; line: number; code: 'MODEL_PROMPT_PRIVACY' | 'NOT_SELECTED_UNIT_NUMBER';
+  partId: string; page: number; line: number;
+  code: 'MODEL_PROMPT_PRIVACY' | 'MODEL_MESSAGE_CHECK' | 'NOT_SELECTED_UNIT_NUMBER';
 };
 export type StoreyPartSelection = { batches: StoreyPart[][]; omitted: StoreyOmittedLine[] };
 
@@ -118,8 +120,17 @@ function refusedByMinimizer(text: string): boolean {
 }
 
 /**
+ * Why a relevant line cannot be in a request, by the gateway's own two checks; null when it can.
+ * The second is the check on a whole message: one line holding such a form would refuse every line sent with it.
+ */
+function refusalOf(text: string): StoreyOmittedLine['code'] | null {
+  if (refusedByMinimizer(text)) return 'MODEL_PROMPT_PRIVACY';
+  return holdsRefusedForm(text) ? 'MODEL_MESSAGE_CHECK' : null;
+}
+
+/**
  * Keep lines that mention storeys, floors, units or heights, then split into calls under the prompt bound.
- * A line the minimizer refuses is left out and named in `omitted`: it is in no part, so no citation can name it.
+ * A line the gateway would refuse is left out and named in `omitted`: it is in no part, so no citation can name it.
  * A line whose only matching word is a numbered unit is not selected, and is named there under its own code.
  */
 export function storeyPartSelection(store: StoreyPageStore): StoreyPartSelection {
@@ -136,8 +147,9 @@ export function storeyPartSelection(store: StoreyPageStore): StoreyPartSelection
         continue;
       }
       const text = line.text.slice(0, 240);
-      if (refusedByMinimizer(text)) {
-        omit('MODEL_PROMPT_PRIVACY');
+      const refusal = refusalOf(text);
+      if (refusal) {
+        omit(refusal);
         continue;
       }
       if (size + text.length > MAX_PROMPT_CHARS && current.length) {

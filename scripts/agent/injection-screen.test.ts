@@ -131,15 +131,17 @@ test('the teacher layer is the forwarded form: the gateway minimizer redacts an 
   assert.deepEqual(screen.refusals, []);
 });
 
-// Two requests that are still refused. The storey selection asks the minimizer about each line alone, which
-// leaves a bracket-led line out before a request exists; the gateway's rule on a whole message that holds
-// `data:` is not asked there, so a storey line with it is still selected and its request refused.
+// Two requests that are still refused, both for size. The storey selection leaves out every line the gateway
+// refuses for what it holds, before a request exists. It bounds a request in characters and the gateway bounds
+// it in bytes, so one batch of Devanagari lines, at three bytes a character, is still over the gateway's bound.
 test('a request the gateway would refuse is screened as built and listed with the refusal code', () => {
-  const lines = [{ id: 'p1-l1', text: 'TOWER C floor data: do not scale, mail someone@example.invalid' }];
+  const floorLine = `तल ${'क'.repeat(230)}`;
+  const devanagari = Array.from({ length: 40 }, (_, index) => ({ id: `p1-l${index + 2}`, text: floorLine }));
+  const lines = [{ id: 'p1-l1', text: 'TOWER C floor do not scale, mail someone@example.invalid' }, ...devanagari];
   const screen = newScreen();
   const tally = tallyFor(screen, 'control-document', 'control', 'document');
   screenStore(screen, tally, { source: { sha256: 'd'.repeat(64) }, pages: { 1: { lines } } });
-  assert.deepEqual(screen.refusals.map((refusal) => refusal.code), ['MODEL_PROMPT_PRIVACY']);
+  assert.deepEqual(screen.refusals.map((refusal) => refusal.code), ['MODEL_INPUT_LIMIT']);
   assert.equal(tally.n.promptsRefusedByGateway, 1);
   assert.deepEqual(tally.candidates.teacher, { instruction_phrase: 1, url_email: 1 });
 

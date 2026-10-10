@@ -148,6 +148,41 @@ test('selection: a line the minimizer refuses is left out, named, and cannot be 
   assert.deepEqual([result.state, result.code, result.output], ['teacher_unavailable', 'TEACHER_INVALID_OUTPUT', null]);
 });
 
+test('selection: a line the check on a whole message refuses is left out and named; the rest is sent', async () => {
+  const kept = ['GROUND FLOOR PLAN', 'T-3 G+41'];
+  const refused = ['FLOOR DATA: G+4', 'tower image_url 2', 'BLOCK A base64 FLOOR 3'];
+  const lines = [kept[0], ...refused, kept[1]].map((text, index) => ({ id: `p1-l${index}`, text }));
+  const store: StoreyPageStore = { source: { sha256: 'd'.repeat(64) }, pages: { '1': { lines } } };
+  for (const [index, text] of refused.entries()) {
+    const alone = [{ partId: `p1-l${index + 1}`, page: 1, text }];
+    assert.throws(() => minimizeMessages(storeyRequest(alone).messages), { code: 'MODEL_PROMPT_PRIVACY' });
+  }
+  const selection = storeyPartSelection(store);
+  assert.deepEqual(selection.omitted, [1, 2, 3].map((line) => (
+    { partId: `p1-l${line}`, page: 1, line, code: 'MODEL_MESSAGE_CHECK' })));
+  const parts = selection.batches.flat();
+  assert.deepEqual(parts.map((part) => part.text), kept);
+
+  let sent = '';
+  const adapter = new ControlAdapter(async (request: ProviderRequest) => {
+    sent = request.messages[1].content;
+    const output = answer({ floorExpressions: [], unitCounts: [], conflicts: [], abstain: true });
+    return { output, responseHash: hash(output), httpStatus: 200, usage: { promptTokens: 9, completionTokens: 3 } };
+  });
+  const gateway = new ModelGateway(controlConfig(), new ControlLedger(), adapter);
+  const result = await extractStoreyFacts(parts, optionsFor(gateway));
+  assert.equal(result.state, 'abstained');
+  assert.deepEqual(JSON.parse(sent).parts.map((part: StoreyPart) => part.partId), ['p1-l0', 'p1-l4']);
+
+  // With no such line the selection, and so the request, is what it was.
+  const plain = { ...store, pages: { '1': { lines: lines.filter((line) => kept.includes(line.text)) } } };
+  const same = storeyPartSelection(plain);
+  assert.deepEqual([same.omitted, same.batches.flat().map((part) => part.text)], [[], kept]);
+  assert.equal(storeyRequest(same.batches[0]).messages[1].content, JSON.stringify({ parts: [
+    { partId: 'p1-l0', page: 1, text: kept[0] }, { partId: 'p1-l4', page: 1, text: kept[1] },
+  ] }));
+});
+
 test('selection: a numbered unit in a contact line selects nothing; a stated unit count does', () => {
   const lines = [
     'Unit.No.12, Example Chambers, Sector-9, Sampleville O :- 011-5550100',
