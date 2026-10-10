@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@ulpin/api-client';
-import { citedPageOf, OriginalChangedError, pageFailure } from './citedPage';
+import { citedPageOf, OriginalChangedError, pageFailure, retainedSourcePin } from './citedPage';
+import type { BuildingRegister } from '../../api/queries';
+import type { EvidenceRef } from './refs';
 import type { PagesResponse } from './pageGeometry';
 
 const pin = { revision: 1, sha256: 'a'.repeat(64) };
@@ -16,6 +18,25 @@ describe('cited page', () => {
     expect(() => citedPageOf({ ...response, sourceSha256: 'b'.repeat(64) }, 1, pin)).toThrow(OriginalChangedError);
     expect(() => citedPageOf({ ...response, sourceRevision: 2 }, 1, pin)).toThrow(OriginalChangedError);
     expect(() => citedPageOf(response, 2, pin)).toThrow('no page 2');
+  });
+});
+
+describe('retained source pins', () => {
+  const evidence: EvidenceRef = { sourceId: 'source', label: 'Source', locator: { kind: 'page', page: 1, text: '' } };
+  const source = { id: 'source', revision: 7, sha256: pin.sha256 } as BuildingRegister['sources'][number];
+
+  it('uses the source revision the loaded register states, never a revision-1 default', () => {
+    expect(retainedSourcePin(evidence, [source])).toEqual({ revision: 7, sha256: pin.sha256 });
+    expect(retainedSourcePin(evidence, [])).toBeUndefined();
+  });
+
+  it('does not choose between conflicting loaded pins', () => {
+    expect(retainedSourcePin(evidence, [source, { ...source, revision: 8 }])).toBeUndefined();
+    expect(retainedSourcePin(evidence, [source, { ...source, sha256: 'b'.repeat(64) }])).toBeUndefined();
+  });
+
+  it('keeps an explicit citation pin even when the retained revision moved on', () => {
+    expect(retainedSourcePin({ ...evidence, pin }, [source])).toEqual(pin);
   });
 });
 

@@ -1,9 +1,36 @@
-import { useQuery } from '@tanstack/react-query';
+import { useIsFetching, useQuery, useQueryClient, type Query } from '@tanstack/react-query';
 import { api, ApiError, unwrap } from '@ulpin/api-client';
 import type { PagesResponse } from './pageGeometry';
-import type { SourcePin } from './refs';
+import type { EvidenceRef, SourcePin } from './refs';
+import type { BuildingRegister } from '../../api/queries';
 
-export type CitedPage = PagesResponse['pages'][number] & { name: string };
+const SOURCE_READS = {
+  predicate: ({ queryKey }: Query) => queryKey[0] === 'buildings' &&
+    queryKey[2] === 'register' && queryKey.length === 3,
+};
+
+/** An unpinned citation can use the retained source's pins only when the loaded register reads agree. */
+export function retainedSourcePin(evidence: EvidenceRef, sources: BuildingRegister['sources']): SourcePin | undefined {
+  if (evidence.pin) return evidence.pin;
+  const matching = sources.filter((source) => source.id === evidence.sourceId);
+  const first = matching[0];
+  if (!first || matching.some((source) => source.revision !== first.revision || source.sha256 !== first.sha256)) {
+    return undefined;
+  }
+  return { revision: first.revision, sha256: first.sha256 };
+}
+
+/** Reuses source metadata already read by the opening register; no revision-1 fallback or new read. */
+export function useEvidencePin(evidence: EvidenceRef): SourcePin | undefined {
+  const client = useQueryClient();
+  // Subscribes only: the cache read below is not reactive, so this draws again when a register read settles.
+  useIsFetching(SOURCE_READS);
+  const sources = client.getQueriesData<BuildingRegister>(SOURCE_READS).flatMap(([, read]) => read?.sources ?? []);
+  return retainedSourcePin(evidence, sources);
+}
+
+export type CitedPage = PagesResponse['pages'][number] & Pick<PagesResponse,
+  'name' | 'sourceId' | 'sourceRevision' | 'sourceSha256' | 'revision'>;
 
 /** The server holds another revision or hash of the original than the citation was recorded against. */
 export class OriginalChangedError extends Error {
@@ -20,7 +47,8 @@ export function citedPageOf(response: PagesResponse, page: number, pin: SourcePi
   }
   const found = response.pages.find((item) => item.page === page);
   if (!found) throw new Error(`The server returned no page ${page} for this source.`);
-  return { ...found, name: response.name };
+  const { name, sourceId, sourceRevision, sourceSha256, revision } = response;
+  return { ...found, name, sourceId, sourceRevision, sourceSha256, revision };
 }
 
 /** Reads one page's frame and raster URL with the citation's own pins; the server refuses a changed original. */
