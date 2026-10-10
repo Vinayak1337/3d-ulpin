@@ -22,6 +22,12 @@ export const r2 = committed<{
     readBack: { floorLabel: string; spaceLabel: string } };
   step3: { citations: { literal: string; page: number; regionPt: number[] }[] };
 }>('docs/evidence/runtime/r2/result.json');
+// R3 step3 is the expected live identity/card receipt, not a substitute for this run's reads.
+export const live = committed<{
+  step3: { target: { spaceId: string; buildingId: string }; resolve: { recordVersion: number };
+    assign: { code: string };
+    card: { cardId: string; revision: number; expiresAt: string } };
+}>('docs/evidence/runtime/r3/result.json').step3;
 // R1/R2 do not contain Magnolia/RAMP area ids; use the original committed installation receipts.
 export const installed = committed<{
   canonical: { tower: { areaId: string }; magnolia: { areaId: string; buildingId: string } };
