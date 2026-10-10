@@ -130,12 +130,11 @@ export class TabularChunkMapper {
   }
 
   private async routeLayout(prepared: ReturnType<typeof profileTabularChunk>, options: RoutingOptions) {
+    const routing = { ...options, learnerColumns: prepared.learnerColumns };
     if (this.layouts.size >= MAX_JOB_LAYOUTS) {
-      const fallback = manualTeacherPlan(prepared.profile, 'MAPPING_LAYOUT_CAP');
-      return { ...fallback, activeLearnerVersion: null, fieldSources: prepared.profile.columns.map(column => ({
-        sourceField: column.name, source: 'teacher' as const, method: fallback.plan.method,
-      })), memoryReasonCode: 'MAPPING_LAYOUT_CAP', studentReasonCode: null };
+      // The layout cap limits teacher dispatch, not already accepted memory or local student inference.
+      routing.teacher = async profile => manualTeacherPlan(profile, 'MAPPING_LAYOUT_CAP');
     }
-    return proposeMapping(prepared.profile, { ...options, learnerColumns: prepared.learnerColumns });
+    return proposeMapping(prepared.profile, routing);
   }
 }

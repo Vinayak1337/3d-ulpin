@@ -73,7 +73,7 @@ def truth_line(asset: Row, sheet: str, source_field: str, header: str, column: R
         supported = False
     # These documented statistical schemas describe non-property aggregates, not canonical building facts.
     # Undifferentiated years remain non-comparable, as in the development literal-only agreement method.
-    year = bool(meaning and re.fullmatch(r"year(?: \(july-june\))?", meaning.strip(), re.IGNORECASE))
+    year = bool(meaning and re.match(r"^year\b", meaning.strip(), re.IGNORECASE))
     target = "unknown" if supported and not year else "truth_absent"
     return {"family": asset["family"], "file": asset["id"], "sheet": sheet,
             "sourceField": source_field, "header": header, "expectedTarget": target,
