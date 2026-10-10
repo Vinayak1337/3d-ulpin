@@ -1,0 +1,75 @@
+{
+  "schema": "building-b6b-result/1",
+  "status": "training_launched_detached_not_evaluated",
+  "gate": "GF-AI/building_mask",
+  "loss": {
+    "revision": "ulpin-rfdetr-empty-mask-scalar-chunked/2",
+    "mask_loss_chunk": 64,
+    "equality_test": "scripts/ml/test_chunked_mask_loss.py",
+    "tolerance": 1e-06,
+    "observed_max_abs_diff": {
+      "values": 2.4e-07,
+      "gradients": 0.0
+    },
+    "chunk_sizes_tested": [
+      1,
+      7,
+      64
+    ],
+    "targets": "uint8 until point-sampled; full 13-group concatenation no longer built"
+  },
+  "ladder": [
+    {
+      "run_id": "b6b-s672-plain",
+      "resolution": 672,
+      "checkpoint_backbone": false,
+      "status": "failed_oom_forward",
+      "optimizer_steps": 0,
+      "peak_reserved_bytes": 6402605056
+    },
+    {
+      "run_id": "b6b-s672-bb",
+      "resolution": 672,
+      "checkpoint_backbone": true,
+      "status": "passed",
+      "optimizer_steps": 50,
+      "finite": true,
+      "peak_reserved_bytes": 5375000576,
+      "cap_bytes": 6442450944
+    },
+    {
+      "resolution": 576,
+      "status": "not_tried",
+      "reason": "672 qualified"
+    }
+  ],
+  "training": {
+    "run_id": "b6b-train-r672",
+    "resolution": 672,
+    "checkpoint_backbone": true,
+    "max_epochs": 8,
+    "recall_patience": 3,
+    "dev_size_bins": true,
+    "base": "publisher",
+    "effective_batch": 4,
+    "launcher_pid": 35512,
+    "worker_pid": 6488,
+    "log": "E:/BhuAayam-data/ml/runs/b6b-train-r672/training.log",
+    "first_optimizer_steps_checked": 156,
+    "all_micro_losses_finite": true,
+    "peak_reserved_bytes_so_far": 4825546752,
+    "expected_epoch_minutes": "about 20 training plus DEV scoring (0.74 optimizer steps per second)",
+    "comparison_note": [
+      "Resolution and the loss-identical chunked loss both differ from epoch 4;",
+      "resolution is the principal factor."
+    ]
+  },
+  "transfer2_runner": {
+    "command": "eval_buildings.py --split transfer2 --transfer2-slot epoch4|b6",
+    "log": "docs/evidence/gf-ai/building/transfer-2-runs.jsonl",
+    "slots_consumed": 0,
+    "evaluations_run": 0,
+    "tests": "scripts/ml/test_transfer2_runner.py"
+  },
+  "closed_sets": "Karnataka HOLDOUT, Coxs Bazar and Chittagong untouched; DEV only inside training."
+}
