@@ -7,11 +7,11 @@ import { ApiError } from '@ulpin/api-client';
 import type { BuildingLedger, BuildingResidents } from '@ulpin/api-client/draft';
 import {
   Badge, Banner, Button, DataTable, DescriptionList, EmptyState, EvidenceChip, Icon, LevelRail, Menu, Panel, RevisionTimeline, Skeleton,
-  StatusBadge, Tabs, formatDate, formatDateTime, type StatusWord,
+  StatusBadge, Tabs, formatDate, formatDateTime, type RailLevel, type StatusWord,
 } from '@ulpin/ui';
 import { useAreaContext, useBuildingLedger, useBuildingRegister, useBuildingResidents, type BuildingRegister } from '../../api/queries';
 import { shortHash, type SpaceWorkflow } from '../../local/workflow';
-import { buildingModel, type SpaceModel } from '../../model/building';
+import { buildingModel, type LevelModel, type SpaceModel } from '../../model/building';
 import { EvidenceProvider, useOpenEvidence } from '../evidence/EvidenceContext';
 import { parseLocator } from '../evidence/refs';
 import { UnitCardDialog } from '../identity/UnitCardDialog';
@@ -171,6 +171,13 @@ function Register({ register }: { register: BuildingRegister }) {
     }
   };
 
+  // The rail filters the tables by floor, so it stays when there is no scene to draw.
+  const rail = model.levels.length ? (
+    <LevelRail levels={model.levels.map(railLevel)} reference={ledger?.siteDatum ?? null} ground={groundM}
+      selected={level?.id ?? null}
+      onSelect={(id) => set({ level: id === level?.id ? null : id, record: null })} />
+  ) : null;
+
   return (
     <EvidenceProvider snapshot={snapshot}>
       <div className={styles.frame}>
@@ -211,7 +218,7 @@ function Register({ register }: { register: BuildingRegister }) {
         <div className={styles.body}>
           <div className={styles.sceneColumn}>
             <div className={styles.canvasWrap}>
-              {noGeometry ? <NoGeometry buildingId={property.id} /> : <>
+              {noGeometry ? <NoGeometry buildingId={property.id}>{rail}</NoGeometry> : <>
               {context ? <SceneView look={mapLook} layers={mapLayers} className={styles.canvas} base={base} buildings={footprints} detail={detail} state={sceneState}
                 onPick={onPick} onView={() => setTick((t) => (t + 1) % 1_000_000)} onReady={setEngine}
                 label={`3D view of ${property.name}. The tables beside it list the same levels and units.`} /> : null}
@@ -222,14 +229,7 @@ function Register({ register }: { register: BuildingRegister }) {
                   <span className={styles.divider} />
                   <DeviationLabel engine={engine} tick={tick} text={deviationLabel(ledger.deviation)} />
                 </>
-              ) : model.levels.length ? (
-                <div className={styles.rail}>
-                  <LevelRail
-                    levels={model.levels.map((l) => ({ id: l.id, label: l.label, lower: l.lower, estimated: l.estimated, belowGround: l.belowGround }))}
-                    reference={ledger?.siteDatum ?? null} ground={groundM} selected={level?.id ?? null}
-                    onSelect={(id) => set({ level: id === level?.id ? null : id, record: null })} />
-                </div>
-              ) : null}
+              ) : rail && <div className={styles.rail}>{rail}</div>}
               {!context ? <div className={styles.sceneLoading}><Skeleton width={160} /></div> : null}
               </>}
             </div>
@@ -299,6 +299,10 @@ function Register({ register }: { register: BuildingRegister }) {
 }
 
 const NO_FEATURES: never[] = [];
+
+function railLevel({ id, label, lower, estimated, belowGround }: LevelModel): RailLevel {
+  return { id, label, lower, estimated, belowGround };
+}
 
 function deviationLabel(d: NonNullable<BuildingLedger['deviation']>) {
   const storeys = d.observed.storeys - d.sanctioned.storeys;
