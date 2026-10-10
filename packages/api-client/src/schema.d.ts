@@ -64697,6 +64697,11 @@ export interface components {
             /** Format: uuid */
             familyId?: string;
             expectedSourceRevision?: number;
+            issuer?: string;
+            /** @enum {string} */
+            licence?: "unconfirmed" | "open" | "restricted";
+            /** @enum {string} */
+            containsPersonalData?: "unknown" | "yes" | "no";
         };
         POST_ingestion_cases_caseId_sources_Response_201_application_json: {
             /** @enum {string} */

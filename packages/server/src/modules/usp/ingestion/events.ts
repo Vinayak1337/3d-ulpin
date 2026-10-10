@@ -63,6 +63,16 @@ export async function appendCaseIngestionTx(client: PoolClient, caseId: string, 
   return appendUspOutboxTx(client, binding.streamId, body);
 }
 
+/** Publish only the persisted tray fields, inside the transaction that wrote them. */
+export async function appendIntakeItemTx(client: PoolClient, caseId: string, itemId: string) {
+  type ItemChange = Omit<Extract<CaseIngestionChange, {kind: 'intake.item'}>, 'kind'>;
+  const row = (await client.query<ItemChange>(`SELECT item_id AS "itemId",state,family,format,
+    size_class AS "sizeClass",wave,pinned_by_officer AS "pinnedByOfficer"
+    FROM usp_intake_items WHERE case_id=$1 AND item_id=$2`, [caseId, itemId])).rows[0]
+    ?? notFound('Intake item not found in this case.');
+  return appendCaseIngestionTx(client, caseId, {kind: 'intake.item', ...row});
+}
+
 type EventPage = {head: bigint; context: string; caseRevision: number; events: CaseIngestionEvent[]};
 type ResyncReason = Exclude<CaseIngestionControl['reason'], 'connected' | 'context_changed' | 'duration_limit'>;
 export class IngestionResync extends AppError {

@@ -42,6 +42,11 @@ class LedgerControl {
     if (sql.includes('usp_outbox')) return this.outbox(sql, values);
     if (sql.startsWith('INSERT INTO usp_intake_items')) return this.insert(sql, values);
     if (sql.startsWith('UPDATE usp_intake_items')) return this.update(sql, values);
+    if (sql.startsWith('SELECT item_id AS')) {
+      const row = this.rows.get(values[1]);
+      return { rows: row ? [{ itemId: row.item_id, state: row.state, family: row.family, format: row.format,
+        sizeClass: row.size_class, wave: row.wave, pinnedByOfficer: row.pinned_by_officer }] : [] };
+    }
     if (sql.startsWith('SELECT * FROM usp_intake_items')) return { rows: [this.rows.get(this.sourceId)] };
     if (sql.startsWith('SELECT source_id FROM usp_intake_items')) return { rows: [this.rows.get(values[0])] };
     if (sql.startsWith('SELECT i.*')) {
@@ -181,6 +186,7 @@ test('archived, cross-case and cross-operator sources are refused before any ran
     f.source.inspection.actor = 'different-protocol-control';
     await assert.rejects(f.service.register(f.caseId, input), (error: any) => error.code === 'INTAKE_SOURCE_DENIED');
     assert.equal(f.probes(), 0);
+    assert.equal(f.events.length, 0);
   });
 });
 
@@ -201,11 +207,12 @@ test('existing source notifications contain no source payload and publish only a
   await configured(async () => {
     const f = fixture();
     await f.service.register(f.caseId, { sourceId: f.sourceId, requestKey: randomUUID() });
-    assert.equal(f.events.length, 0);
+    assert.equal(f.events.filter((event: any) => event.change.kind === 'source.retained').length, 0);
     f.source.status = 'needs_input';
     await f.service.register(f.caseId, { sourceId: f.sourceId, requestKey: randomUUID() });
-    assert.equal(f.events.length, 1);
-    const event = f.events[0] as any;
+    const retained = f.events.filter((event: any) => event.change.kind === 'source.retained');
+    assert.equal(retained.length, 1);
+    const event = retained[0] as any;
     assert.deepEqual(event.change, { kind: 'source.retained', sourceId: f.sourceId,
       sourceRevision: 1, status: 'needs_input' });
     assert.ok(!JSON.stringify(event).includes('control.csv'));
@@ -273,5 +280,49 @@ test('request-key conflicts and retained byte changes on replay fail closed', as
     const pinned = randomUUID();
     await f.service.pin(f.caseId, f.sourceId, { wave: 1, requestKey: pinned });
     await assert.rejects(f.service.pin(f.caseId, f.sourceId, { wave: 2, requestKey: pinned }), /different inputs/);
+  });
+});
+
+test('register, probe and pin append persisted intake fields once each; replay adds nothing', async () => {
+  await configured(async () => {
+    const f = fixture();
+    f.duringProbe(() => { f.rows.get(f.sourceId).size_class = 'M'; });
+    const request = { sourceId: f.sourceId, requestKey: randomUUID() };
+    await f.service.register(f.caseId, request);
+    const pin = { wave: 1, requestKey: randomUUID() };
+    await f.service.pin(f.caseId, f.sourceId, pin);
+    await f.service.register(f.caseId, request);
+    await f.service.pin(f.caseId, f.sourceId, pin);
+    const changes = f.events.map((event: any) => event.change);
+    assert.deepEqual(changes, [
+      { kind: 'intake.item', itemId: f.sourceId, state: 'received', family: 'unknown', format: null,
+        sizeClass: 'S', wave: 4, pinnedByOfficer: false },
+      { kind: 'intake.item', itemId: f.sourceId, state: 'probed', family: 'table', format: 'csv',
+        sizeClass: 'M', wave: 3, pinnedByOfficer: false },
+      { kind: 'intake.item', itemId: f.sourceId, state: 'probed', family: 'table', format: 'csv',
+        sizeClass: 'M', wave: 1, pinnedByOfficer: true },
+    ]);
+    const before = f.events.length;
+    await assert.rejects(f.service.pin(f.caseId, f.sourceId, { ...pin, wave: 2 }));
+    await assert.rejects(f.service.register(f.caseId, { ...request, unexpected: true }));
+    assert.equal(f.events.length, before);
+  });
+});
+
+test('a failed or budget-limited probe publishes the state stored in its write transaction', async () => {
+  await configured(async () => {
+    for (const budget of [false, true]) {
+      const f = fixture();
+      if (budget) f.exhaustOnce();
+      else f.duringProbe(() => { throw new Error('Protocol parser refusal'); });
+      await f.service.register(f.caseId, { sourceId: f.sourceId, requestKey: randomUUID() });
+      assert.equal(f.events.length, 2);
+      const event = f.events[1] as any;
+      assert.equal(event.change.kind, 'intake.item');
+      assert.equal(event.change.state, budget ? 'received' : 'probe_failed');
+      assert.equal(event.change.sizeClass, f.rows.get(f.sourceId).size_class);
+      assert.equal(event.change.wave, f.rows.get(f.sourceId).wave);
+      assert.ok(!JSON.stringify(event).includes('Protocol parser refusal'));
+    }
   });
 });

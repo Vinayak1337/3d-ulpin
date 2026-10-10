@@ -10,7 +10,7 @@ import { fingerprint } from '../../cases/domain';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { registerIntakeItemTx, intakeItem, saveIntakeCardTx, citeIntakeReceipt } from './intake-ledger';
 import { probeOriginal, IntakeProbeBudget, intakeSizeClass, intakeWave } from './intake-probe';
-import { assertIngestionBinding, appendCaseIngestionTx } from './events';
+import { assertIngestionBinding, appendCaseIngestionTx, appendIntakeItemTx } from './events';
 
 const uuid = z.string().uuid();
 const itemSelect = `SELECT i.*,coalesce(s.name,i.member_path) name FROM usp_intake_items i
@@ -59,14 +59,16 @@ async function childrenTx(client: PoolClient, caseId: string, parentId: string, 
   for (const member of members) {
     // Sheet byte size is unknown, not zero; no reservation or extraction is attempted here.
     const size = member.size;
-    await client.query(`INSERT INTO usp_intake_items(item_id,case_id,parent_item_id,member_path,size_bytes,size_class,
+    const inserted = await client.query(`INSERT INTO usp_intake_items(
+      item_id,case_id,parent_item_id,member_path,size_bytes,size_class,
       family,format,wave,state,card,card_sha256,probe_version,limit_reason)
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
-      ON CONFLICT(parent_item_id,member_path) DO NOTHING`,
+      ON CONFLICT(parent_item_id,member_path) DO NOTHING RETURNING item_id`,
     [randomUUID(), caseId, parentId, member.path, size, size === null ? null : intakeSizeClass(size),
       member.card?.family ?? 'unknown', member.card?.format ?? 'unknown', member.card ? intakeWave(member.card) : 4,
       member.refusal ? 'probe_failed' : 'probed', member.card, member.card ? fingerprint(member.card) : null,
       card.version, member.refusal]);
+    for (const row of inserted.rows) await appendIntakeItemTx(client, caseId, row.item_id);
   }
 }
 
@@ -92,9 +94,12 @@ export class IntakeService {
       const ctx = await intakeSourceTx(client, caseId, request.sourceId);
       const digest = fingerprint({ request, access: scope.binding.access });
       const prior = await priorTx(client, caseId, key, digest);
+      const existing = (await client.query(
+        'SELECT * FROM usp_intake_items WHERE source_id=$1 AND parent_item_id IS NULL', [ctx.source.id])).rows[0];
       const row = await registerIntakeItemTx(client, ctx.source);
       const pin = intakeSourcePin(ctx.source, ctx.binding);
       if (prior?.sourcePin && prior.sourcePin !== pin) conflict('The retained intake source changed.');
+      if (!existing) await appendIntakeItemTx(client, caseId, row.item_id);
       if (!prior) {
         await rememberTx(client, caseId, key, digest, { itemId: row.item_id, sourcePin: pin, completed: false });
       }
@@ -121,6 +126,7 @@ export class IntakeService {
           limit_reason=CASE WHEN card IS NULL THEN $3 ELSE limit_reason END,updated_at=now() WHERE item_id=$1`,
         [initial.itemId, probed.budget ? 'received' : 'probe_failed', probed.code]);
       }
+      await appendIntakeItemTx(client, caseId, initial.itemId);
       await rememberTx(client, caseId, key, initial.digest,
         { itemId: initial.itemId, sourcePin: initial.pin, completed: !probed.budget });
     });
@@ -179,6 +185,7 @@ export class IntakeService {
       if (await priorTx(client, caseId, key, digest)) return;
       await client.query(`UPDATE usp_intake_items SET wave=$3,pinned_by_officer=true,updated_at=now()
         WHERE case_id=$1 AND item_id=$2`, [caseId, itemId, request.wave]);
+      await appendIntakeItemTx(client, caseId, itemId);
       await rememberTx(client, caseId, key, digest, { itemId });
       await notifyTx(client, source);
       assertIngestionBinding(scope.binding);
