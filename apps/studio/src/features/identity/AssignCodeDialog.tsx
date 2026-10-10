@@ -1,35 +1,18 @@
 import { useId, useState, type ReactNode } from 'react';
-import { Banner, Button, DescriptionList, Dialog, Skeleton, formatDateTime } from '@ulpin/ui';
+import { Banner, Button, DescriptionList, Dialog, formatDateTime } from '@ulpin/ui';
 import { useBuildingCanonical, useBuildingRegister, type IdentityReview } from '../../api/queries';
 import { sourceLabelGaps, type RecordedUnit } from '../review/recorded/model';
 import { assignSubject, reasonError, type AssignSubject, type ReviewedAssignment } from './assignment';
 import { CopyableId } from './CopyableId';
-import { readFailure } from './registryCard';
+import { UnitDecided, UnitUnread } from './UnitDecided';
 import { useAssignFlow, type AssignFlow } from './useAssignFlow';
+import { useFieldFocus } from './useFieldFocus';
 import styles from './Registry.module.css';
 
 const ALLOWS = 'Recording this review allows one assignment of an application code to this unit at this record '
   + 'revision. The review changes no record by itself.';
 const NO_TIME = 'Stored from this dialog; the answer of the review states no time.';
 const REASON_HELP = 'Required, at most 2,000 characters. The registry keeps the reason with the review.';
-
-/** What is being decided, read from the record: the unit, its floor, its citation and its revision. */
-function Decided({ unit, floorLabel, subject, gaps }: {
-  unit: RecordedUnit; floorLabel: string; subject: AssignSubject | string; gaps: string[];
-}) {
-  const cited = unit.citations.map((citation) => `${citation.source} · ${citation.locator}`).join('; ');
-  return (
-    <>
-      <DescriptionList items={[
-        { label: 'Unit', value: unit.label },
-        { label: 'Floor', value: floorLabel },
-        { label: 'Citation', value: cited || 'No citation recorded' },
-        { label: 'Record revision', value: typeof subject === 'string' ? 'Not stated' : subject.revision },
-      ]} />
-      {gaps.map((gap) => <p key={gap} className="ul-help">{gap}</p>)}
-    </>
-  );
-}
 
 /** The review an assignment will name: its reason, when the registry stored it and the snapshot it is bound to. */
 export function ReviewFacts({ review }: { review: ReviewedAssignment }) {
@@ -51,8 +34,7 @@ function ReasonField({ reason, onChange }: { reason: string; onChange: (value: s
   return (
     <div className={styles.field}>
       <label className="ul-label" htmlFor={id}>Reason for this review (required)</label>
-      {/* The form can arrive after the dialog (the register is read first), so the field takes focus itself. */}
-      <textarea id={id} autoFocus className={styles.text} value={reason} aria-invalid={Boolean(error)}
+      <textarea id={id} className={styles.text} value={reason} aria-invalid={Boolean(error)}
         aria-describedby={`${id}-help`} onChange={(event) => onChange(event.target.value)}
         onBlur={() => setTouched(true)} />
       <span id={`${id}-help`} className="ul-help">{error ?? REASON_HELP}</span>
@@ -89,11 +71,6 @@ function Notices({ flow, subject }: { flow: AssignFlow; subject: AssignSubject |
       {flow.readError ? <Banner tone="warning">{flow.readError}</Banner> : null}
     </>
   );
-}
-
-function Unread({ error }: { error: unknown }) {
-  if (!error) return <Skeleton />;
-  return <Banner tone="warning">The record of this unit could not be read. {readFailure(error)}</Banner>;
 }
 
 function footer(flow: AssignFlow, done: boolean, primary: ReactNode, onClose: () => void) {
@@ -137,18 +114,19 @@ export function AssignCodeDialog({ buildingId, unit, floorLabel, listed, onClose
     </Button>
   );
   const done = Boolean(unit.code);
+  const body = useFieldFocus(Boolean(subject) && !review && !done);
   return (
     <Dialog size="md" title={`${review || done ? 'Assign code' : 'Review and assign code'} · ${unit.label}`}
       onClose={onClose} footer={footer(flow, done, primary, onClose)}>
       {subject ? (
-        <div className={styles.body}>
-          <Decided unit={unit} floorLabel={floorLabel} subject={subject} gaps={sourceLabelGaps(building!.gaps)} />
+        <div ref={body} className={styles.body}>
+          <UnitDecided unit={unit} floorLabel={floorLabel} subject={subject} gaps={sourceLabelGaps(building!.gaps)} />
           {done || flow.assign.isSuccess ? <Assigned code={unit.code} flow={flow} /> : null}
           {!done && !flow.assign.isSuccess && review ? <ReviewFacts review={review} /> : null}
           {!done && !review ? <><p>{ALLOWS}</p><ReasonField reason={reason} onChange={setReason} /></> : null}
           <Notices flow={flow} subject={subject} />
         </div>
-      ) : <Unread error={unread} />}
+      ) : <UnitUnread error={unread} />}
     </Dialog>
   );
 }

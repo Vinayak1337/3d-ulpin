@@ -10,8 +10,9 @@ export interface CommandFailure {
 }
 
 /**
- * The registry's refusal codes of the identity commands, in words. A code that is not listed is printed with
- * the server's own sentence; so are STALE_REVISION and NOT_FOUND, which the server answers for many reasons.
+ * The registry's refusal codes of the identity, plan and card commands, in words. A code that is not listed is
+ * printed with the server's own sentence; so are STALE_REVISION, NOT_FOUND and the expiry codes, which the
+ * server answers with the reason.
  */
 const REFUSALS: Record<string, string> = {
   USP_REQUEST_FAILED: 'The registry did not accept the form of this request. Nothing was written.',
@@ -29,6 +30,14 @@ const REFUSALS: Record<string, string> = {
   USP_IDENTITY_EVIDENCE: 'The citation sent is not the one the registry recorded for this unit.',
   USP_IDENTITY_SELECTION: 'The snapshot does not select this unit.',
   USP_SOURCE_IDENTITY: 'A unit stated by a source takes its own citation and an unqualified location only.',
+  PACKET_SOURCE_STATEMENT: "The entry is not this unit's own recorded citation. Nothing was written.",
+  PACKET_PLAN_ACCESS: "The registry's operator may not plan for this unit.",
+  PACKET_PLAN_TARGET_ACCESS: "The registry's operator may not plan for this unit.",
+  PACKET_PLAN_BLOCKED: "The plan does not hold the unit's citation, so it cannot be confirmed.",
+  CARD_EXECUTED_PLAN_REQUIRED: 'The plan was not executed. Prepare starts again.',
+  CARD_ACCESS: 'The server answers for this card to the operator who created it only.',
+  CARD_ARTIFACT_INTEGRITY: 'The stored card file does not match its receipt.',
+  CARD_REVISION_CONTEXT: 'A revision keeps the plan and snapshot of its card. Issue a new card instead.',
 };
 
 // A server fault that is answered before anything is written: it is a refusal, not an unknown outcome.
