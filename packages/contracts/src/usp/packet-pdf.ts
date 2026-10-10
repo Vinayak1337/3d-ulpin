@@ -125,3 +125,21 @@ export type AnyPdfPacketPlanInput=z.infer<typeof UspAnyPdfPacketPlanInputSchema>
 export type AnyPdfPacketPlan=z.infer<typeof UspAnyPdfPacketPlanSchema>;
 export type AnyPdfPacketPlanExecution=z.infer<typeof UspAnyPdfPacketPlanExecutionSchema>;
 export type PacketPdfMultiAssembly=z.infer<typeof PacketPdfMultiAssemblySchema>;
+
+/** Discovery of the recorded source-statement entry only; other target profiles are explicitly refused. */
+export const UspReadPacketPlanEntriesSchema = z.strictObject({
+  scope: UspSnapshotScopeSchema, target,
+}).readonly();
+export const UspPacketPlanEntriesSchema = z.strictObject({
+  target,
+  entries: z.array(z.strictObject({
+    bindingId: CoreSha256Schema, kind: z.literal('source_statement'), label: coreText(120),
+    citation: z.strictObject({
+      sourceId: z.uuid(), revision: z.number().int().positive(), locator: coreText(500),
+      page: z.number().int().positive(),
+      region: z.tuple([z.number().finite(), z.number().finite(), z.number().finite(), z.number().finite()])
+        .describe('The recorded page-point box [left, top, right, bottom], not normalized coordinates.'),
+    }).readonly().nullable(),
+    includable: z.boolean(), reasonCode: CoreIdSchema.nullable(),
+  }).readonly()).length(1).readonly(),
+}).readonly();
