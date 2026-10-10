@@ -27,7 +27,9 @@ import { cityJson, download, fileStem } from './exporters';
 import { NoGeometry } from './NoGeometry';
 import { ReadingStatementsContext } from './ReadingNote';
 import { RegisterAbsent } from './RegisterAbsent';
-import { NO_READING_STATEMENTS, absentReason, unstatedReadings } from './registerState';
+import {
+  NO_READING_STATEMENTS, absentReason, conflictingStoreys, openCheckCount, unstatedReadings,
+} from './registerState';
 import { SourceList } from './SourceList';
 import { FloorFilter, UnitsTab } from './UnitsTab';
 import { unitsTabView } from './unitsTabView';
@@ -139,6 +141,7 @@ function Register({ register }: { register: BuildingRegister }) {
       level?.id ?? null),
     [units, canonical.data, canonical.error, canonical.isPending, level],
   );
+  const storeys = useMemo(() => conflictingStoreys(canonical.data).join(' / '), [canonical.data]);
   const clearLevel = useCallback(() => set({ level: null, record: null }), [set]);
   const workflowMap = useMemo(() => byId, [byId]);
   const snapshot = useCallback(() => engine?.snapshot() ?? null, [engine]);
@@ -192,7 +195,10 @@ function Register({ register }: { register: BuildingRegister }) {
               Parcel ULPIN{' '}
               {register.parcelIdentifiers.length ? <span className="ul-mono">{register.parcelIdentifiers.map((p) => p.value).join(', ')}</span> : <span className="ul-unknown">not supplied</span>}
               {ledger?.declaration ? <> · {ledger.declaration}</> : null}
-              {model.levels.length ? <> · {levelSummary(model)}</> : null}
+              {model.levels.length ? <> · {levelSummary(model)}{storeys ? ' recorded' : ''}</> : null}
+              {storeys ? (
+                <> · <Badge tone="warning" icon={null}>{`Storeys conflict between sources: ${storeys}`}</Badge></>
+              ) : null}
             </p>
           </div>
           <Link to={mapHref} className="ul-btn ul-btn--ghost"><Icon icon={MapTrifold} />Back to map</Link>
@@ -247,12 +253,13 @@ function Register({ register }: { register: BuildingRegister }) {
                     { value: 'residents', label: 'Residents', count: residents ? residents.units.reduce((n, u) => n + u.occupants.length, 0) : undefined },
                     { value: 'shares', label: 'Shares' },
                     { value: 'documents', label: 'Documents', count: ledger?.sources.length ?? register.sources.length },
-                    { value: 'checks', label: 'Checks', count: ledger?.checks.filter((c) => c.state === 'blocking' || c.state === 'needs_review').length },
+                    { value: 'checks', label: 'Checks', count: openCheckCount(ledger?.checks) },
                     { value: 'history', label: 'History' },
                   ]} />
                 <div key={tab} className={styles.tabBody}>
                   {tab === 'units' ? (
-                    <UnitsTab view={unitsView} floorLabel={level?.label ?? null} onClearFloor={clearLevel} table={(
+                    <UnitsTab view={unitsView} buildingId={property.id} floorLabel={level?.label ?? null}
+                      onClearFloor={clearLevel} table={(
                       <UnitsTable register={register} units={unitsView.rows} levelLabel={level?.label ?? null}
                         levels={new Map(model.levels.map((l) => [l.id, l.label]))}
                         ledger={ledger} workflow={workflowMap} selectedId={record?.id ?? null}
@@ -272,8 +279,9 @@ function Register({ register }: { register: BuildingRegister }) {
                       <Panel title="Checks" aside={<span className="ul-caption">{ledger.checkMethod}</span>}>
                         <CheckGroups checks={ledger.checks} action={(c) => (c.findingId && c.state !== 'passed' ? 'Open in 3D' : null)}
                           onOpen={(c) => navigate(`/studio/areas/${register.area.id}?feature=${property.id}&mode=findings&finding=${c.findingId}`)} />
+                        {ledger.checks.length ? null : <p className="ul-help">{NO_CHECKS}</p>}
                       </Panel>
-                    ) : <Panel title="Checks"><p className="ul-help">Not assessed: no checks have run on this building's records.</p></Panel>
+                    ) : <Panel title="Checks"><p className="ul-help">{NO_CHECKS}</p></Panel>
                   ) : (
                     <History register={register} ledger={ledger} workflow={workflow ?? []} actions={actions} />
                   )}
@@ -299,6 +307,7 @@ function Register({ register }: { register: BuildingRegister }) {
 }
 
 const NO_FEATURES: never[] = [];
+const NO_CHECKS = 'Not assessed: no checks have run on this building\'s records.';
 
 function railLevel({ id, label, lower, estimated, belowGround }: LevelModel): RailLevel {
   return { id, label, lower, estimated, belowGround };

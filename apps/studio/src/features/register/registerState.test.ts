@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@ulpin/api-client';
-import { absentReason, readingStatement, readingStatements, unstatedReadings } from './registerState';
+import controls from '../../../../../docs/evidence/gf1/ui/f3a/responses.json';
+import type { BuildingCanonical } from '../review/recorded/model';
+import {
+  absentReason, conflictingStoreys, openCheckCount, readingStatement, readingStatements, unstatedReadings,
+} from './registerState';
 
 const SERVER_TEXT = 'Server text that is never shown.';
 const failure = (status: number, code?: string) => new ApiError(status, '/api/v1/buildings/b/register', {
@@ -26,6 +30,36 @@ describe('absentReason', () => {
     expect(absentReason(failure(500, 'STALE_REVISION'))).toBeNull();
     expect(absentReason(new Error('offline'))).toBeNull();
     expect(absentReason(null)).toBeNull();
+  });
+});
+
+describe('conflictingStoreys', () => {
+  // The canonical read of Tower 3 as retained in the F3a evidence: its sources state G+41 and G+42.
+  const tower = controls.withCode as BuildingCanonical;
+
+  it('gives the literals the sources state against each other, in the record\'s order', () => {
+    expect(tower.storeyLabel.state).toBe('conflicting');
+    expect(conflictingStoreys(tower)).toEqual(['G+41', 'G+42']);
+  });
+
+  it('gives none when the storey label is not conflicting, or the read has not answered', () => {
+    const reviewed = { ...tower, storeyLabel: { ...tower.storeyLabel, state: 'reviewed' as const } };
+    expect(conflictingStoreys(reviewed)).toEqual([]);
+    expect(conflictingStoreys({ ...tower, conflicts: [] })).toEqual([]);
+    expect(conflictingStoreys(undefined)).toEqual([]);
+  });
+});
+
+describe('openCheckCount', () => {
+  it('gives no number when the ledger holds no check: not assessed is not 0', () => {
+    expect(openCheckCount([])).toBeUndefined();
+    expect(openCheckCount(undefined)).toBeUndefined();
+  });
+
+  it('counts the checks that block or need review, and 0 when every check passed', () => {
+    const checks = [{ state: 'blocking' }, { state: 'needs_review' }, { state: 'passed' }, { state: 'not_assessed' }];
+    expect(openCheckCount(checks)).toBe(2);
+    expect(openCheckCount([{ state: 'passed' }])).toBe(0);
   });
 });
 
