@@ -1,0 +1,106 @@
+{
+  "task": "EV1",
+  "gates": ["GF5/B2","M2"],
+  "branch": "task/ev1-cited-region-on-large-sheet",
+  "base": "ea040eac",
+  "decision": {
+    "acknowledgement": "Operator act: show one button; do not POST on open.",
+    "authority": "docs/evidence/usp/packet-region-extract-handoff.md:65",
+    "revision": "R5d's numeric revision is invalid. The body sends the listing's decimal-string revision.",
+    "missingRevision": [
+      "Explicit citation pins outrank retained pins. No revision-1 fallback exists.",
+      "Without a citation pin, use only agreeing source metadata already read by the loaded register.",
+      "The viewer says that this is the retained revision, not a revision named by the citation.",
+      "Without such source metadata, keep the existing file/draft path; invent no pin."
+    ],
+    "window": "Pad every side by the citation's larger side; clip to page and contract selected-side limit.",
+    "placement": "Server pixelToDisplay affine, server output dimensions, existing page-point outline.",
+    "limitOnScreen": "None: the listing does not publish a whole-page size limit."
+  },
+  "runtime": {
+    "api": "http://127.0.0.1:3194",
+    "writes": 0,
+    "providerCalls": 0,
+    "step0": "step0.json: exact R5d numeric body 422; listing-derived string body 200 image/png.",
+    "expandedCaption": {
+      "source": "5293cd72-2377-4deb-a51c-c76d11ccb429",
+      "page": 1,
+      "regionPt": [680,705,1190,1080],
+      "status": 200,
+      "bytes": 819065,
+      "pixels": [1397,1027],
+      "sha256": "249c0548c37bf336bd3e6a2d7ff4a721c76c44e0362c5ef3b5cac64644ab7207"
+    },
+    "expandedLabel": {
+      "source": "5293cd72-2377-4deb-a51c-c76d11ccb429",
+      "page": 1,
+      "regionPt": [548,342,692,457],
+      "status": 200,
+      "bytes": 32597,
+      "pixels": [432,345],
+      "sha256": "fe985bf302cbd0c7faec244f4f5596d847279c52d2d38eeb119a55597e6f7a3a"
+    },
+    "pageOnly": {
+      "source": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+      "page": 1,
+      "framePt": [2585,3390],
+      "regionRequests": 0,
+      "capture": "Viewer boundary; canonical name citation and loaded register source pins, not a click journey."
+    },
+    "images": "In-memory blobs and revoked object URLs only; no stored derivative, job or registry change."
+  },
+  "captures": {
+    "before": 6,
+    "after": 8,
+    "views": "1440x1000 physical pixels; 720x500 CSS pixels at DPR 2 emulates 200% on the same display.",
+    "journeys": "Caption and UNIT-3B opened by actual register citation buttons; page-only at viewer boundary.",
+    "postReadsPerAfterRun": 4,
+    "otherPostRequestsSent": 0,
+    "cardListAttempts": "Prevented by the guard before dispatch; unrelated existing card-list read.",
+    "keyboard": "Tab reaches Show the cited region; Enter requests; Escape closes.",
+    "cleanup": "Each successful region creates one URL; the same URL is revoked on close.",
+    "layout": "All dialogs inside viewport, no horizontal dialog scrolling; vertical detail shots at 200%.",
+    "answers": "after.json records status, content type, bytes, SHA, output pixels and server affine."
+  },
+  "checks": {
+    "pnpm studio:typecheck": {"exit":0},
+    "pnpm studio:test": {"exit":0,"studio":194,"stagingStudio":182,"added":12},
+    "node docs/evidence/gf5/ev1/capture.mjs before": {"exit":0},
+    "node docs/evidence/gf5/ev1/capture.mjs after": {"exit":0},
+    "node --check docs/evidence/gf5/ev1/capture.mjs": {"exit":0},
+    "ui-design-check scan": {"exit":0,"target":"apps/web; no changed lines"},
+    "Studio-specific scan": {"exit":0,"candidates":0},
+    "git diff --check": {"exit":0},
+    "added-lines-120 scan": {"exit":0,"violations":0},
+    "devServer": {"pid":9016,"stopped":true,"port5199FreeCheckExit":0}
+  },
+  "recovered": [
+    "Initial Step 0 URL construction included POST in the URL; failed before sending; corrected route parsing.",
+    "R5d numeric revision refused before citation evaluation; listing-derived string body succeeded.",
+    "Initial typecheck lacked a direct zod dependency; infer provenance from the imported contract parse method.",
+    "Normalized-region equality differed by floating-point roundoff; test uses numerical closeness.",
+    "First baseline capture used a named createRoot import; Vite exposes it through the CJS default export.",
+    "Stop command's regex emitted a warning; the previously identified own PID stopped; port-free check passed."
+  ],
+  "gaps": [
+    "No screen-reader, contrast-tool or formal cumulative-layout-shift measurement.",
+    "AbortSignal is wired, but in-flight worker cancellation was not exercised.",
+    "The page-only citation has no claimed end-to-end navigation path; its viewer branch is proven directly.",
+    "No new server rollout, provider call, write, push or qualification of unrelated release gates."
+  ],
+  "report": [
+    "TASK   EV1 — Server-drawn cited region on a large sheet            GATE GF5/B2, M2",
+    "WORKS  Open Tower 3's citation and choose Show the cited region to see its server-drawn, outlined evidence.",
+    "SEE IT node docs/evidence/gf5/ev1/capture.mjs after (Studio 5199 against demo 3194)",
+    "INPUTS Tower 3 caption + UNIT-3B label; difficult: site-plan page-only citation, no region or cited revision.",
+    "GAPS   Page-only captured at viewer boundary; screen reader and in-flight cancellation not exercised.",
+    "DESIGN citedPage.ts retains listing pins and reuses agreeing loaded register pins without defaults.",
+    "       citedRegion.ts builds bounded reads; CitedPageViewer shares the outline and uses the server affine.",
+    "COMMITS 471ed5d3 docs(studio): EV1 what the region read needs, what it means to send it, and what it returns",
+    "      b3fbd7f1 feat(studio): a citation on a sheet too large to draw whole shows its cited region from the server",
+    "        docs(studio): EV1 evidence (this commit)",
+    "CHECKS studio:typecheck 0; studio:test 0 (194); capture before/after 0; script syntax 0; both UI scans 0.",
+    "       git diff --check 0; added-line length scan 0; own dev server stopped, port 5199 free check 0.",
+    "NEXT   Lead: review and integrate; expose page-only citation navigation if needed. Never pushed."
+  ]
+}
