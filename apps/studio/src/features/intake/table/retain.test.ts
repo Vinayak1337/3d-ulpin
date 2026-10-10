@@ -19,17 +19,17 @@ describe('retained table form', () => {
   });
 
   it('keeps the XLSX sheet and explicitly selected header rows', () => {
-    const selection = tableSelection(xlsx, 'Districts', '4, 5');
+    const selection = tableSelection(xlsx, 'T_18', '4, 5');
     const body = retainForm(xlsx, selection, 0, 'request-key');
     expect(body.get('format')).toBe('xlsx');
     expect(JSON.parse(String(body.get('selection')))).toEqual({
-      format: 'xlsx', sheet: 'Districts', table: null, headerRows: [4, 5],
+      format: 'xlsx', sheet: 'T_18', table: null, headerRows: [4, 5],
     });
   });
 
   it('refuses missing, duplicate, decreasing or too many workbook headers', () => {
     for (const rows of ['', '4,4', '5,4', '1,2,3,4,5,6']) {
-      expect(() => tableSelection(xlsx, 'Districts', rows)).toThrow('increasing');
+      expect(() => tableSelection(xlsx, 'T_18', rows)).toThrow('increasing');
     }
     expect(() => tableSelection(xlsx, '', '4,5')).toThrow('exact sheet');
   });

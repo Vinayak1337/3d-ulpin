@@ -51,6 +51,26 @@
   min-width: 0;
 }
 
+.answers {
+  max-height: 420px;
+  overflow: auto;
+}
+
+.answers td,
+.answers th {
+  vertical-align: top;
+  min-width: 240px;
+}
+
+.answers textarea {
+  resize: vertical;
+  height: auto;
+  min-height: calc(var(--ui-control-height) * 2);
+  padding: var(--ui-space-2) var(--ui-space-3);
+  width: 100%;
+  line-height: 1.5;
+}
+
 .form {
   display: grid;
   gap: var(--ui-space-4);

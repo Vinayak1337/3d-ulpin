@@ -15,6 +15,7 @@ describe('case ingestion reducer', () => {
     expect(next.metrics).toHaveLength(1);
     expect(next.cursor).toBe('1000002');
     expect(reduceFrame(next, '1000002', frame('1', metric), sourceId)).toBe(next);
+    expect(reduceFrame(next, '1000002', frame('2', metric), sourceId)).toBe(next);
     expect(reduceFrame(next, '1000001', frame('1', metric), sourceId)).toBe(next);
   });
 
@@ -25,6 +26,14 @@ describe('case ingestion reducer', () => {
     expect(next.mappingJobId).toBe(jobId);
     expect(next.refresh).toBe(1);
     expect(next.metrics).toEqual([]);
+  });
+
+  it('replay keeps the explicitly selected historical job until approval releases the pin', () => {
+    const seed = initialStream('', jobId);
+    const change = { kind: 'chunk-mapping.changed', sourceId, jobId: 'new-job', status: 'queued' };
+    const pinned = reduceFrame(seed, '19', frame('4', change), sourceId, { mappingJobId: jobId });
+    expect(pinned.mappingJobId).toBe(jobId);
+    expect(reduceFrame(pinned, '20', frame('5', change), sourceId).mappingJobId).toBe('new-job');
   });
 
   it('ignores jobs for another source but retains the case resume position', () => {

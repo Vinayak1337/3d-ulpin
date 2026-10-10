@@ -1,6 +1,5 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
 
-export type CaseDetail = GetResponse<'/api/v1/cases/{caseId}'>;
 export type TableProfile = Extract<
   GetResponse<'/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/profile'>,
   { version: 'manual-tabular/1' }

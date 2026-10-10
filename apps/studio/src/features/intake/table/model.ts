@@ -14,7 +14,7 @@ export function columnRows(profile: TableProfile, mapping?: ChunkMapping) {
     const question = mapping?.questions.find((item) => item.sourceField === sourceField);
     return { position: index + 1, header: profile.headers[index] ?? '', column, sourceField,
       target: field?.target ?? 'unknown', confidence: origin === 'officer' ? null : field?.confidence ?? null,
-      rationale: field?.rationale, origin, question };
+      origin, question };
   });
 }
 

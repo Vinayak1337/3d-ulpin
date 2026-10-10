@@ -24,7 +24,7 @@ export function SourceHeader({ profile, name }: { profile: TableProfile; name?: 
         <span className="ul-mono">SHA-256 {profile.source.sourceSha256.slice(0, 12)}…</span>
         <Button variant="ghost" onClick={() => void copy()}>{copied ? 'Copied' : 'Copy hash'}</Button>
       </div>
-      <details>
+      <details open>
         <summary>Source limitations</summary>
         <ul>{profile.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}</ul>
       </details>

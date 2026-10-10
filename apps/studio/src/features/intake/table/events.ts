@@ -5,12 +5,13 @@ export interface StreamState {
   sequence: string;
   rawJobId: string;
   mappingJobId: string;
+  recipeId: string;
   metrics: Metrics[];
   refresh: number;
 }
 
 export function initialStream(rawJobId = '', mappingJobId = ''): StreamState {
-  return { cursor: '0', sequence: '0', rawJobId, mappingJobId, metrics: [], refresh: 0 };
+  return { cursor: '0', sequence: '0', rawJobId, mappingJobId, recipeId: '', metrics: [], refresh: 0 };
 }
 
 function object(value: unknown): Record<string, unknown> {
@@ -31,10 +32,12 @@ function metricOf(change: Record<string, unknown>): Metrics {
 }
 
 /** Notifications only trigger reads; status, reasons and column values come from the status/chunk responses. */
-export function reduceFrame(state: StreamState, id: string, data: unknown, sourceId: string): StreamState {
+export function reduceFrame(state: StreamState, id: string, data: unknown, sourceId: string,
+  selected: { rawJobId?: string; mappingJobId?: string } = {}): StreamState {
   const frame = object(data);
   if (frame.kind === 'ready') return { ...state, cursor: id || state.cursor, refresh: state.refresh + 1 };
   if (frame.kind === 'resync') return { ...state, refresh: state.refresh + 1 };
+  if (id === state.cursor) return state;
   if (typeof frame.sequence !== 'string' || !/^[1-9]\d*$/.test(frame.sequence)) {
     throw new Error('The stream sequence is missing.');
   }
@@ -47,12 +50,16 @@ export function reduceFrame(state: StreamState, id: string, data: unknown, sourc
       item.jobId !== metric.jobId || item.chunkIndex !== metric.chunkIndex);
     return { ...next, metrics: [...metrics, metric], refresh: state.refresh + 1 };
   }
-  if (change.sourceId !== sourceId || typeof change.jobId !== 'string') return next;
+  if (change.sourceId !== sourceId) return next;
+  if (change.kind === 'recipe.changed' && typeof change.recipeId === 'string') {
+    return { ...next, recipeId: change.recipeId, refresh: state.refresh + 1 };
+  }
+  if (typeof change.jobId !== 'string') return next;
   if (String(change.kind).startsWith('streaming-vector.')) {
-    return { ...next, rawJobId: change.jobId, refresh: state.refresh + 1 };
+    return { ...next, rawJobId: selected.rawJobId || change.jobId, refresh: state.refresh + 1 };
   }
   if (String(change.kind).startsWith('chunk-mapping.')) {
-    return { ...next, mappingJobId: change.jobId, refresh: state.refresh + 1 };
+    return { ...next, mappingJobId: selected.mappingJobId || change.jobId, refresh: state.refresh + 1 };
   }
   return next;
 }

@@ -20,6 +20,14 @@ describe('table column presentation', () => {
     expect(rows.find((row) => row.question)?.question?.reason).toBe(copy.questions[0]?.reason);
   });
 
+  it('keeps the real duplicate headers as separate positional columns', () => {
+    const duplicate = controls.duplicateProfile as TableProfile;
+    const rows = columnRows(duplicate);
+    expect(new Set(duplicate.headers).size).toBeLessThan(duplicate.headers.length);
+    expect(rows.map((row) => row.header)).toEqual(duplicate.headers);
+    expect(new Set(rows.map((row) => row.sourceField)).size).toBe(rows.length);
+  });
+
   it('never invents a proposal or zero confidence before a chunk arrives', () => {
     expect(columnRows(profile).every((row) => row.target === 'unknown' && row.confidence === null)).toBe(true);
   });
