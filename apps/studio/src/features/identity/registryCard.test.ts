@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@ulpin/api-client';
-import { cardPdfPath, cardVerificationPath, isNotFound, isRouteAbsent, readFailure } from './registryCard';
+import type { UnitCards } from '../../api/queries';
+import {
+  cardAction, cardPdfPath, cardVerificationPath, isNotFound, isRouteAbsent, readFailure,
+} from './registryCard';
 
 const refusal = (status: number, code: string, message: string) =>
   new ApiError(status, '/api/v1/usp/property-cards/list', { error: { code, message } });
@@ -36,5 +39,44 @@ describe('registry card reads', () => {
   it('keeps the message of a failure that carries no code', () => {
     expect(readFailure(new ApiError(502, '/api/v1/usp/property-cards/list', null))).toBe('The server answered 502.');
     expect(readFailure(new TypeError('Failed to fetch'))).toBe('Failed to fetch');
+  });
+});
+
+describe('the gate of the Property Card action', () => {
+  const none: UnitCards = { snapshotCreatedAt: null, cards: [], truncated: false, searchedAll: true };
+  const listed: UnitCards = { ...none, snapshotCreatedAt: '2026-10-10T13:39:30.390Z' };
+  const denied = refusal(403, 'USP_LOCAL_ONLY', 'Local operator only.');
+
+  it('is enabled by a card the registry lists alone, and opens the registry cards over a draft', () => {
+    expect(cardAction({ data: listed, error: null }, false)).toEqual({ opens: 'registry', unanswered: null });
+    expect(cardAction({ data: listed, error: null }, true).opens).toBe('registry');
+  });
+
+  it('reaches the draft only when the registry lists none and this browser holds a code', () => {
+    expect(cardAction({ data: none, error: null }, true)).toEqual({ opens: 'draft', unanswered: null });
+    expect(cardAction({ data: none, error: null }, false)).toEqual({ opens: null, unanswered: null });
+  });
+
+  it('states a refusal instead of reading it as none listed', () => {
+    const stated = 'The registry could not be asked for the cards of this unit. '
+      + 'The server answers this read for its local operator only. (USP_LOCAL_ONLY)';
+    expect(cardAction({ error: denied }, false)).toEqual({ opens: null, unanswered: stated });
+    expect(cardAction({ error: denied }, true)).toEqual({ opens: 'draft', unanswered: stated });
+    expect(cardAction({ error: noRoute }, false).unanswered).toContain('no such route');
+  });
+
+  it('takes a server that holds no such building as none listed', () => {
+    const noBuilding = refusal(404, 'NOT_FOUND', 'Building not found.');
+    expect(cardAction({ error: noBuilding }, false)).toEqual({ opens: null, unanswered: null });
+  });
+
+  it('states a search that stopped short of every snapshot', () => {
+    const short = cardAction({ data: { ...none, searchedAll: false }, error: null }, false);
+    expect(short.opens).toBeNull();
+    expect(short.unanswered).toContain('were not searched');
+  });
+
+  it('opens nothing and states nothing while the registry has not answered', () => {
+    expect(cardAction({ error: null }, false)).toEqual({ opens: null, unanswered: null });
   });
 });

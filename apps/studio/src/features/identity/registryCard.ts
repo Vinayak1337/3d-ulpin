@@ -1,5 +1,7 @@
 import { ApiError } from '@ulpin/api-client';
+import type { UnitCards } from '../../api/queries';
 import { refusalOf } from '../review/candidates/commands';
+import { noCardText } from '../review/recorded/cards';
 
 /** The server's refusal codes of the card reads, in words. A code that is not listed is shown as it is. */
 const REFUSALS: Record<string, string> = {
@@ -44,4 +46,31 @@ export function readFailure(error: unknown): string {
   const { code, message } = refusalOf(error);
   if (!code) return message;
   return `${REFUSALS[code] ?? message} (${code})`;
+}
+
+const CARDS_UNASKED = 'The registry could not be asked for the cards of this unit.';
+
+/** The answer of `useUnitCards` as the gate reads it. */
+type CardsRead = { data?: UnitCards; error: unknown };
+
+/** What the Property Card action of one unit opens. */
+export interface CardAction {
+  /** The registry's cards when it lists one; this browser's draft only when it lists none or could not be asked. */
+  opens: 'registry' | 'draft' | null;
+  /** The sentence to state when the registry did not answer "none": a refusal, or a search that stopped short. */
+  unanswered: string | null;
+}
+
+/**
+ * The gate of the Property Card action. A card the registry lists enables it alone. A server that holds no such
+ * building has no card for it; a refusal or an incomplete search leaves that unknown and is stated, never "none".
+ */
+export function cardAction(cards: CardsRead, holdsDraft: boolean): CardAction {
+  if (cards.data?.snapshotCreatedAt) return { opens: 'registry', unanswered: null };
+  return { opens: holdsDraft ? 'draft' : null, unanswered: unanswered(cards) };
+}
+
+function unanswered({ data, error }: CardsRead): string | null {
+  if (error) return isNotFound(error) ? null : `${CARDS_UNASKED} ${readFailure(error)}`;
+  return data && !data.searchedAll ? noCardText(data) : null;
 }

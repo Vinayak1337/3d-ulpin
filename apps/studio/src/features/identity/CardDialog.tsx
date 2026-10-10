@@ -19,10 +19,10 @@ export function verifyPath(workflow: SpaceWorkflow) {
  * S14: the card preview with scope and audience; party names are forced off for Public. The code, revisions
  * and chain are this browser's own (local/workflow.ts), so the dialog says it is a draft on this device.
  */
-export function CardDialog({ workflow, space, level, buildingName, registryFailure = null, onClose }: {
+export function CardDialog({ workflow, space, level, buildingName, unanswered = null, onClose }: {
   workflow: SpaceWorkflow; space: SpaceModel; level: LevelModel | null; buildingName: string;
-  /** Why the registry could not be asked whether it holds a card for this unit, when it could not. */
-  registryFailure?: string | null; onClose: () => void;
+  /** What `cardAction` states when the registry did not answer that it lists no card for this unit. */
+  unanswered?: string | null; onClose: () => void;
 }) {
   const [audience, setAudience] = useState<'public' | 'owner' | 'officer'>('public');
   const [names, setNames] = useState(false);
@@ -44,9 +44,7 @@ export function CardDialog({ workflow, space, level, buildingName, registryFailu
       )}
     >
       <DraftNotice />
-      {registryFailure ? (
-        <Banner tone="info">The registry could not be asked for the cards of this unit. {registryFailure}</Banner>
-      ) : null}
+      {unanswered ? <Banner tone="info">{unanswered}</Banner> : null}
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 240px', gap: 24,
         marginTop: 'var(--ui-space-4)' }}>
         <PropertyCard

@@ -2,11 +2,12 @@ import { useState, type ReactNode } from 'react';
 import { CheckCircle, QrCode, ShieldCheck } from '@phosphor-icons/react';
 import type { BuildingLedger, SourcedValue } from '@ulpin/api-client/draft';
 import { Badge, Button, DescriptionList, EvidenceChip, StatusBadge, Tabs, UlpinCode, type Fact, type StatusWord } from '@ulpin/ui';
-import type { BuildingRegister } from '../../../api/queries';
+import { useUnitCards, type BuildingRegister } from '../../../api/queries';
 import type { BuildingModel, LevelModel, SpaceModel } from '../../../model/building';
 import { useOpenEvidence } from '../../evidence/EvidenceContext';
 import { parseLocator } from '../../evidence/refs';
 import { DRAFT_ON_THIS_DEVICE } from '../../identity/draft';
+import { cardAction } from '../../identity/registryCard';
 import { Cited } from '../../register/ReadingNote';
 import { useReadingStatements } from '../../register/useReadingStatements';
 import { useRecordReview, useSpaceWorkflow } from '../../workflow/useWorkflow';
@@ -21,7 +22,8 @@ type Tab = 'overview' | 'rights' | 'evidence';
  * Space variant: status (Draft → Reviewed → Assigned, or the ledger's review status), the proposed code
  * once assigned, facts with inline evidence, and one primary action that moves the space forward. The code and
  * that status are this browser's own (local/workflow.ts): the code is shown as a draft on this device and the
- * header then reads "Draft", not "Assigned".
+ * header then reads "Draft", not "Assigned". A card the registry lists for the unit enables the Property Card
+ * action by itself.
  */
 export function SpaceInspector({ space, level, model, register, ledger, buildingId, crumbs, datum, onSelectSpace, onAssign, onCard, onFinding }: {
   space: SpaceModel; level: LevelModel | null; model: BuildingModel; register: BuildingRegister; ledger: BuildingLedger | null | undefined;
@@ -32,6 +34,9 @@ export function SpaceInspector({ space, level, model, register, ledger, building
   const openEvidence = useOpenEvidence();
   const readings = useReadingStatements(buildingId, register.property.revision > 0);
   const workflow = useSpaceWorkflow(space.id);
+  // The registry is asked for the cards of the selected unit only; a refusal is stated below, never read as none.
+  const cards = useUnitCards(buildingId, space.id);
+  const card = cardAction(cards, Boolean(workflow.data?.code));
   const review = useRecordReview();
   const facts = ledgerSpace(ledger, space.id);
   const recorded = workflow.data?.status;
@@ -93,12 +98,22 @@ export function SpaceInspector({ space, level, model, register, ledger, building
   }
   if (parent) rows.push({ label: 'Within', value: <button type="button" className="ul-evid" onClick={() => onSelectSpace(parent.id)}><b>{parent.name}</b></button> });
   if (rooms.length) rows.push({ label: 'Rooms', value: <span className="ul-row">{rooms.map((r) => <button key={r.id} type="button" className="ul-evid" onClick={() => onSelectSpace(r.id)}><b>{r.shortName}</b></button>)}</span> });
+  if (card.opens === 'registry') rows.push({ label: 'Cards', value: 'Listed by the registry' });
 
-  const primary = status === 'Assigned'
-    ? <Button variant="primary" icon={QrCode} onClick={onCard}>Property Card</Button>
-    : status === 'Reviewed'
-      ? <Button variant="primary" icon={ShieldCheck} onClick={onAssign}>Assign draft code</Button>
-      : <Button variant="primary" icon={CheckCircle} disabled={review.isPending} onClick={() => review.mutate({ spaceId: space.id, buildingId, spaceName: space.name, recordRevision: space.record.revision })}>Record reviewed details</Button>;
+  // Until the registry has answered, this browser's own step waits: a card the registry lists takes its place.
+  const ownStep = status === 'Reviewed' ? (
+    <Button variant="primary" icon={ShieldCheck} disabled={cards.isPending} onClick={onAssign}>
+      Assign draft code
+    </Button>
+  ) : (
+    <Button variant="primary" icon={CheckCircle} disabled={review.isPending || cards.isPending}
+      onClick={() => review.mutate({ spaceId: space.id, buildingId, spaceName: space.name,
+        recordRevision: space.record.revision })}>
+      Record reviewed details
+    </Button>
+  );
+  const primary = card.opens
+    ? <Button variant="primary" icon={QrCode} onClick={onCard}>Property Card</Button> : ownStep;
   const secondary = finding && status !== 'Assigned'
     ? <Button onClick={() => onFinding(finding.id)}>{finding.code === 'carpet_area_deviation' ? 'Review area' : 'Open finding'}</Button> : null;
 
@@ -110,7 +125,12 @@ export function SpaceInspector({ space, level, model, register, ledger, building
       crumbs={crumbs}
       title={space.name}
       status={<StatusBadge status={workflow.data?.code ? 'Draft' : status} />}
-      subtitle={<span className="ul-mono">{space.record.identifier.replace(/\//g, ' / ')}</span>}
+      // An identifier with no place to break widens the inspector past its column and cuts every line short.
+      subtitle={(
+        <span className="ul-mono" style={{ overflowWrap: 'anywhere' }}>
+          {space.record.identifier.replace(/\//g, ' / ')}
+        </span>
+      )}
       tabs={<Tabs label="Space details" value={tab} onChange={setTab} tabs={[{ value: 'overview', label: 'Overview' }, { value: 'rights', label: 'Rights' }, { value: 'evidence', label: 'Evidence', count: refs.length }]} />}
       actions={<>{primary}{secondary}</>}
     >
@@ -123,7 +143,8 @@ export function SpaceInspector({ space, level, model, register, ledger, building
             </div>
           ) : null}
           <DescriptionList items={rows} />
-          {status === 'Draft' || status === 'Needs review' ? (
+          {card.unanswered ? <p className={styles.note}>{card.unanswered}</p> : null}
+          {!card.opens && (status === 'Draft' || status === 'Needs review') ? (
             <p className={styles.note}>
               Review the details against the sources, then record them. A draft code can be assigned after review.
             </p>
