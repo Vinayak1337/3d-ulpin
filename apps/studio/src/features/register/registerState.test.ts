@@ -85,7 +85,7 @@ describe('residentsStatement', () => {
 
   it('words a failed read with the code of the server, never its message, served or not', () => {
     expect(residentsStatement({ data: undefined, error: failure(500, 'INTERNAL') }, true))
-      .toEqual({ kind: 'failed', text: 'The residents of this building could not be read � INTERNAL' });
+      .toEqual({ kind: 'failed', text: 'The residents of this building could not be read · INTERNAL' });
     expect(residentsStatement({ data: undefined, error: new Error(SERVER_TEXT) }, false))
       .toEqual({ kind: 'failed', text: 'The residents of this building could not be read.' });
   });
