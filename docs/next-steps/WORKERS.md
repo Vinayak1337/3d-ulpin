@@ -24,11 +24,12 @@ Always use the first spawner in this list that isn't limited.
 | # | Spawner | Models | Limit behaviour |
 | --- | --- | --- | --- |
 | 1 | **pi codex-pool** (bash worker) | `gpt-6.1-sol`, effort `high` or `xhigh` | Several accounts. The pool moves to the next account when one hits its limit. The spawner is limited only when **every** account is. |
-| 2 | **Claude Code CLI** (bash worker) | `haiku`, `sonnet` or `opus`, with the effort the task needs (§3) | One Claude account. Limited when the CLI prints "You've hit your … limit · resets …". |
-| 3 | **The lead's own subagents** (Agent tool) | Sonnet or Opus | Fallback only, for when spawners 1 and 2 are both limited. |
+| 2 | **Claude Code CLI** (bash worker) | `haiku`, `sonnet` or `opus`, with the effort the task needs (§3) | Runs on **the account the terminal CLI is logged in to** (`claude auth status`). Limited when the CLI prints "You've hit your … limit · resets …". |
+| 3 | **The lead's own subagents** (Agent tool) | Sonnet or Opus | Run on the lead's own session account. Fallback only, for when spawners 1 and 2 are both limited. |
 
-- **Codex first.** While any codex account is ready, new tasks go to codex workers only.
-- **One Claude limit.** On 10 October the Claude CLI and the lead's own subagents were seen to share one session limit. When spawner 2 is limited, spawner 3 is usually limited too. Then nothing can run, and the lead waits for the first timer (§4).
+- **Codex first, then Claude.** While any codex account is ready, new tasks go to codex workers only. The Claude CLI takes over when every codex account is limited.
+- **Two Claude accounts.** The terminal CLI has its own login, separate from the account the lead's session runs on (checked on 10 October). Each has its own limit. The launcher strips the lead session's `CLAUDE*` and `ANTHROPIC*` environment variables, so a CLI worker always uses the terminal login. To change that account, the owner runs `claude auth login` in a terminal; the lead never signs in or out.
+- **If all three are limited,** nothing can run, and the lead waits for the first timer (§4).
 
 ## 3. Choosing the Claude model and effort
 
@@ -101,7 +102,7 @@ bash claude-worker.sh <haiku|sonnet|opus> <effort> E:/Projects/ulpin-wt/<worktre
   <task>.full.md [session-id] > logs/<task>.log 2>&1; echo "exit $?" >> logs/<task>.log
 ```
 
-- It runs `claude -p` in the worktree with `--permission-mode auto`.
+- It runs `claude -p` in the worktree with `--permission-mode auto`, on the terminal CLI's account.
 - Exit 0 is finished. **Exit 75 is the Claude limit,** with a `LIMIT claude: … resets …` line. Anything else is a failure.
 - The footer gives the session id for a resume.
 
