@@ -1,7 +1,7 @@
 # Pinned demo runtime
 
 The demo API and dispatcher run from `E:/Projects/ulpin-wt/demo`, a detached, unedited checkout.
-Current reviewed staging commit: `a4592e12` (10 October 2026).
+Current reviewed staging commit: `4d03be3f` (10 October 2026).
 Loopback API: `http://127.0.0.1:3194`; external demo configuration stays outside every checkout.
 Only the runtime owner explicitly named in a task file may roll this checkout forward.
 Worker worktrees must never serve the demo: lazy imports would mix unreviewed changes into running processes.
@@ -23,4 +23,3 @@ stop or replace containers, remove volumes, fetch unreviewed code, or use `down 
 The platform start command resumes the existing project only; populated storage and external credentials remain intact.
 If doctor fails, preserve the runtime and diagnose its specific failure; do not initialise replacement storage.
 Code changes merge on staging first, then roll here in a separately authorised runtime task.
-A3d steps 1–4 are not served until that later roll-out; this checkout remains pinned at `a4592e12`.
