@@ -4,7 +4,10 @@
  "codeCommit": "20bf2ed8",
  "base": "069f771f",
  "runAt": "2026-10-10T11:48:42.387Z",
- "qualification": "Temporary files with made-up values only. No provider call; the real demo configuration and runtime were not read, changed, started or stopped; the gateway stays off.",
+ "qualification": [
+  "Temporary files with made-up values only; no provider call.",
+  "The real demo configuration and runtime were not read, changed, started or stopped; the gateway stays off."
+ ],
  "checks": [
   {
    "command": "node --test scripts/platform/*.test.mjs",
@@ -28,33 +31,42 @@
   }
  ],
  "inputs": {
-  "good": "temporary demo configuration, flag 1, schema-valid test policy, key present: accepted; enable then disable restores the bytes (LF and CRLF)",
-  "difficult": "flag 1 with gate fields present but no price block: refused by the real ModelGatewayConfigSchema; the file and its folder are left unchanged"
+  "good": "temporary configuration, flag 1, schema-valid test policy, key present: accepted",
+  "goodRoundTrip": "enable then disable restores the bytes, in LF and in CRLF",
+  "difficult": "flag 1, gate fields present, no price block: refused by the real ModelGatewayConfigSchema",
+  "difficultAftermath": "the configuration and its folder are left unchanged"
  },
  "notRun": {
-  "platform:doctor --profile demo": "needs the real demo configuration; gatewayReport() and gatewayReportLines() tested directly, doctor syntax and imports checked with Docker access refused up front",
-  "demo-gateway.mjs status|enable|disable": "the command line always targets the real demo configuration; only its usage refusal was run, the exported functions were tested on temporary files"
+  "platform:doctor --profile demo": "needs the real demo configuration",
+  "doctorInstead": "gatewayReport() and gatewayReportLines() tested directly; doctor syntax and imports checked",
+  "demo-gateway.mjs status|enable|disable": "the command line always targets the real demo configuration",
+  "commandsInstead": "usage refusal run; the exported functions tested on temporary files"
  },
- "composeEnvFile": "docker compose config (no engine contact) on a temporary env file reads a one-line JSON policy value unchanged",
+ "composeEnvFile": "docker compose config (no engine contact) reads a one-line JSON policy value unchanged",
  "recordedInGit": [
   {
-   "fields": "price.inputPerMillionMicroInr, price.cachedInputPerMillionMicroInr, price.outputPerMillionMicroInr",
-   "source": "docs/orchestration/NESTJS_MIGRATION.md:679 (28 September, with the provider pricing URL)",
-   "recorded": "published 105B tariff in rupees per million tokens: uncached input, cached input, output",
+   "fields": "the three price.*PerMillionMicroInr rates",
+   "source": "docs/orchestration/NESTJS_MIGRATION.md:679",
+   "recorded": "published 105B tariff of 28 September, in rupees per million tokens, with the pricing URL",
    "versionLabel": null,
    "approvedForDemoPolicy": false
   },
   {
-   "fields": "same three prices as micro-INR, plus caps, call cap, pace and input bound",
+   "fields": "the same rates in micro-INR, caps, call cap, pace, input bound",
    "source": "scripts/agent/control-runtime.ts:29-48; tests/model-gateway/control.test.ts:16-20",
    "recorded": "software-control configurations only",
-   "versionLabel": "policy a2-control/1 | control-policy-v1; funding control-only | control-funding-v1; price h20-control-only | h20-software-price-input-v1; bound control-byte-bound | control-byte-bound-v1",
+   "versionLabel": {
+    "policy": "a2-control/1 | control-policy-v1",
+    "funding": "control-only | control-funding-v1",
+    "price": "h20-control-only | h20-software-price-input-v1",
+    "bound": "control-byte-bound | control-byte-bound-v1"
+   },
    "approvedForDemoPolicy": false
   },
   {
    "fields": "replay placeholders",
    "source": "packages/server/src/modules/model-gateway/runtime.ts:10-20",
-   "recorded": "schema placeholders for replay, which never dispatches or debits",
+   "recorded": "schema placeholders; replay never dispatches or debits",
    "versionLabel": "mapping-replay/1; offline-no-funding; offline-no-charge; offline-byte-bound/1",
    "approvedForDemoPolicy": false
   },
