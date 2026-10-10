@@ -2040,6 +2040,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/usp/identity/records/{recordId}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List the identity reviews that name a record and that the local operator may read, newest first
+         * @description Each item carries the scope the review is bound to, to pass unchanged to the assignment with the item's expectedManifestId, reviewId and expectedRecordVersion. used is null until an assignment or mutation has consumed the review; a used review cannot be used again. Order is the time the review was stored (createdAt), newest first, then the id. The evidence a review cites, its location and its reviewer are not answered, and the cited documents are not checked here: the assignment applies its own checks.
+         */
+        get: operations["GET_api_v1_usp_identity_records_recordId_reviews"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usp/exchange/cityjson/export": {
         parameters: {
             query?: never;
@@ -42116,6 +42136,70 @@ export interface components {
                     stage: "draft" | "recorded" | "retained";
                 };
             };
+        };
+        GET_usp_identity_records_recordId_reviews_Response_200_application_json: {
+            /** Format: uuid */
+            recordId: string;
+            /** Format: uuid */
+            siteId: string;
+            readonly items: {
+                /**
+                 * Format: uuid
+                 * @description The reviewId the assignment or mutation names.
+                 */
+                reviewId: string;
+                /**
+                 * @description The one operation this review allows.
+                 * @enum {string}
+                 */
+                operation: "assign" | "correct" | "cancel" | "retire" | "split" | "merge" | "boundary_adjustment";
+                /** @description The reason as the review stores it. */
+                reason: string;
+                /**
+                 * Format: date-time
+                 * @description When the review was stored. The list is ordered by this value, newest first.
+                 */
+                createdAt: string;
+                /** @description The scope the review is bound to, as its stored command states it: the scope to pass unchanged to the assignment. */
+                readonly scope: {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+                /**
+                 * Format: uuid
+                 * @description The expectedManifestId the assignment must name: the manifest of scope.
+                 */
+                expectedManifestId: string;
+                /** @description The revision of this record the review was made at, read from the expectedVersions of its stored command: the expectedRecordVersion the assignment must name. */
+                expectedRecordVersion: number;
+                /** @description used: the assignment or mutation that consumed this review; a used review cannot be used again. null while no command has consumed it. */
+                readonly used: {
+                    /**
+                     * Format: date-time
+                     * @description When the review was consumed.
+                     */
+                    at: string;
+                    /**
+                     * @description The operation the audit row of the consuming command records.
+                     * @enum {string}
+                     */
+                    operation: "assign" | "correct" | "cancel" | "retire" | "split" | "merge" | "boundary_adjustment";
+                } | null;
+                /** @description The hash the review answered when it was stored. */
+                commandSha256: string;
+            }[];
+            /** @description More reviews that the caller may read name this record than this page holds. */
+            truncated: boolean;
+            unreadable: number;
         };
         POST_usp_exchange_cityjson_export_Request_application_json: {
             scope: {
@@ -82222,6 +82306,109 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_usp_identity_records_recordId_reviews: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                recordId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_usp_identity_records_recordId_reviews_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_registry_drafts_draftId_native_exterior_references_reviews_Response_400_application_json"];
                 };
             };
         };

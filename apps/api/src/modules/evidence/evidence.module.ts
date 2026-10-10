@@ -12,6 +12,7 @@ import {SourceFusionController} from './source-fusion.controller';
 import {SourceFusionAssociationService} from '@ulpin/server/modules/usp/ingestion/source-fusion-associations';
 import {SourceFusionAssociationsController} from './source-fusion-associations.controller';
 import {DeclarationsController} from './declarations.controller';
+import {IdentityReviewsController} from './identity-reviews.controller';
 import {PacketPlansController} from './packet-plans.controller';
 import {PacketBundleController} from './packet-bundle.controller';
 import {PropertyCardController} from './property-card.controller';
@@ -26,6 +27,7 @@ import { CityJsonEvidenceService, DecisionEvidenceService, OriginalEvidenceServi
 
 @Module({
   controllers: [SurveyReportController, SnapshotEvidenceController, OriginalEvidenceController, DecisionEvidenceController,
+    IdentityReviewsController,
     CityJsonEvidenceController, PacketEvidenceController, PacketPlansController, PacketBundleController, PropertyCardController, PacketRegionController, PacketImageRegionController, DocumentAssociationController, DocumentPagesController, DocumentImagesController, SourceFusionController, SourceFusionAssociationsController, DeclarationsController],
   providers: [SurveyReportService, SnapshotEvidenceService, OriginalEvidenceService, DecisionEvidenceService,
     CityJsonEvidenceService, PacketEvidenceService, PacketRegionService, PacketImageRegionService, DocumentAssociationService, DocumentPagesService, DocumentImagesService, SourceFusionService, SourceFusionAssociationService],
