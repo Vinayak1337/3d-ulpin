@@ -338,7 +338,7 @@ function workbookRows(path: string, sheet?: string, headerRow?: number): Workboo
   return workbookTable(collectWorkbookCells(parts, selected), headerRow);
 }
 
-function decodeColumnText(bytes: Uint8Array): string {
+export function decodeColumnText(bytes: Uint8Array): string {
   let encoding = 'utf-8';
   if (bytes[0] === 0xff && bytes[1] === 0xfe) encoding = 'utf-16le';
   if (bytes[0] === 0xfe && bytes[1] === 0xff) encoding = 'utf-16be';
@@ -349,6 +349,17 @@ function decodeColumnText(bytes: Uint8Array): string {
   } catch {
     throw new Error('COLUMN_ENCODING_UNSUPPORTED');
   }
+}
+
+/** Literal positional records, also reused by tabular source admission and the raw chunk reader. */
+export function readColumnCsv(text: string, maxRows = 2000) {
+  const parsed = Papa.parse<string[]>(text, { dynamicTyping: false, skipEmptyLines: 'greedy', preview: maxRows + 2 });
+  if (parsed.errors.length || parsed.data.length > maxRows + 1) throw new Error('COLUMN_CSV_LIMIT_OR_INVALID');
+  const [headers = [], ...rows] = parsed.data;
+  if (!headers.length || !headers.some(header => header.trim()) || rows.some(row => row.length > headers.length)) {
+    throw new Error('COLUMN_HEADER_NEEDS_INPUT');
+  }
+  return { headers, rows };
 }
 
 function csvColumns(text: string): ProfiledInput {
