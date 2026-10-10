@@ -1,0 +1,596 @@
+{
+ "format": "Text longer than one line is stored as an array of lines.",
+ "task": "F3f",
+ "gates": ["GF4", "GF5"],
+ "date": "2026-10-10",
+ "branch": "task/f3f-draft-wording-map-cards",
+ "base": "e434ab644da371172d468c82d7466b617bfb6ac1",
+ "served": {
+  "api": "http://127.0.0.1:3194 (the demo API; reads only)",
+  "studio": [
+   "This worktree, vite dev server on 127.0.0.1:5190, proxying the demo API",
+   "(ULPIN_API_TARGET=http://127.0.0.1:3194). Every screenshot named live comes from it."
+  ],
+  "localStudio": [
+   "The same worktree, a second vite dev server on 127.0.0.1:5191 with VITE_LOCAL_DATA=on. Only the",
+   "screenshots named local-layer-* come from it: the demo API does not serve the portal reads (GET",
+   "/api/v1/public/records/{id} is a local route), so the portal record page shows a record only with the",
+   "local data layer on. The capture browser blocks service workers, so the layer answers through its fetch",
+   "wrapper and every request still passes the capture guard."
+  ],
+  "bothStopped": [
+   "Both dev servers were stopped after the capture; ports 5190 and 5191 were then checked and are free."
+  ]
+ },
+ "requests": {
+  "guard": [
+   "capture.mjs lets GET through, and POST /api/v1/usp/property-cards/list (the read the Studio already sends",
+   "for cards). It aborts every other request and records it in blockedWrites."
+  ],
+  "sentByTheCapture": {
+   "GET /api/v1/areas": 5,
+   "GET /api/v1/areas/{id}/canonical": 10,
+   "GET /api/v1/areas/{id}/context": 5,
+   "GET /api/v1/buildings/{id}/canonical": 10,
+   "GET /api/v1/buildings/{id}/ledger": 18,
+   "GET /api/v1/buildings/{id}/register": 18,
+   "GET /api/v1/buildings/{id}/snapshots": 5,
+   "GET /api/v1/public/records/{id}": 1,
+   "GET /api/v1/usp/property-cards/{id}/revisions/1/verification": 3,
+   "GET /api/v1/workspace-capabilities": 5,
+   "POST /api/v1/usp/property-cards/list": 3,
+   "mocked POST /api/v1/usp/property-cards/list": 5
+  },
+  "blockedWrites": [],
+  "runs": "The capture ran several times while it was written; the counts are those of the last run.",
+  "outsideTheCapture": [
+   "Two curl GETs (/api/v1/areas, /api/v1/buildings/{Tower 3}/register) and a few probe runs of the same pages",
+   "under the same guard, to learn the map address of the unit, the Tools list and the inspector's boxes. No",
+   "other request; no write of any kind."
+  ],
+  "browserOnly": [
+   "Record reviewed details, Assign draft code and the draft made for the verify page write to the capture",
+   "browser's own IndexedDB through local/workflow.ts. The local layer's session (Lake View as imported) was",
+   "written to that browser's localStorage through local/session.ts. Neither reaches a server."
+  ]
+ },
+ "built": {
+  "1 draft wording": {
+   "oneSentence": [
+    "DRAFT_ON_THIS_DEVICE = 'Draft on this device, not a registry record', defined once in",
+    "apps/studio/src/features/identity/draft.ts. Imported by DraftNotice (every notice), DRAFT_FACT (the row of",
+    "a printed draft card), the inspector, the toast and the portal record page. No second sentence."
+   ],
+   "map inspector": [
+    "features/map/inspector/SpaceInspector.tsx: a code from the browser store is shown as \"3D ULPIN (proposed)",
+    "· Draft\" with the sentence under it in the inspector's note style. The header badge reads Draft where it",
+    "read Assigned. Both browser steps are named \"Assign draft code\"."
+   ],
+   "assign dialog and toast": [
+    "features/identity/AssignDialog.tsx: the notice is the first thing in the dialog (\"... the code assigned",
+    "here is made in this browser and is not sent to the server.\"), the button reads \"Assign draft code\". The",
+    "toast is raised in features/map/MapWorkspace.tsx: it carries the sentence where it carried an \"Assigned\"",
+    "badge."
+   ],
+   "portal record page": [
+    "portal/RecordPage.tsx. Which of the two options: the first. The page does not only show browser data: its",
+    "facts are the released record of the local data layer, and a record can be released without any code",
+    "(local/public.ts:46-49). A code there is always the browser's (local/public.ts:56), so only then: the code",
+    "is labelled Draft, the notice stands under it, the button reads \"Download draft Property Card\", and the",
+    "print-only card carries the row \"Record: Draft on this device, not a registry record\" and the words",
+    "useLocalChain computes in place of the fixed \"Chain consistent\". A record released without a code shows no",
+    "notice (checked in the capture)."
+   ],
+   "draft verify page": [
+    "features/verify/VerifyPage.tsx: under the notice, \"Valid: revision rN\" (green) is now \"Draft revision rN",
+    "on this device\" in a new neutral tone of ResultBanner; \"Superseded by revision rN\" is unchanged; the code",
+    "is labelled Draft. The line comes from draftLead (features/identity/draft.ts), which is unit tested."
+   ]
+  },
+  "2 registry cards from the map inspector": {
+   "gate": [
+    "cardAction(cards, holdsDraft) in features/identity/registryCard.ts, a pure function used by the inspector",
+    "and by UnitCardDialog: a card the registry lists opens 'registry' whatever the browser holds; otherwise",
+    "'draft' only when the browser holds a code; otherwise nothing."
+   ],
+   "refusal": [
+    "A failed read is stated (\"The registry could not be asked for the cards of this unit.\" and the reason with",
+    "the server's code) and is never read as none. A server that holds no such building (404 NOT_FOUND, not a",
+    "missing route) has no card. A search that did not reach every snapshot is stated with the words the Cards",
+    "block already uses (noCardText)."
+   ],
+   "onlyTheSelectedUnit": [
+    "useUnitCards is called by the inspector of the selected unit and nowhere else on the map. Capture: with",
+    "Tower 3 and its floor selected, no snapshots read and no card list read had been sent; both followed the",
+    "selection of UNIT-3B."
+   ],
+   "whileTheRegistryHasNotAnswered": [
+    "The browser's own step (Record reviewed details, Assign draft code) is disabled until the card read has",
+    "answered, so a card the registry lists is not pre-empted by a click."
+   ],
+   "noNewQuery": "api/queries.ts is unchanged: useUnitCards as F3d left it."
+  },
+  "3 small things": {
+   "card id": [
+    "features/verify/CardVerificationPage.tsx shows the card id through CopyableId",
+    "(features/verify/CopyableId.tsx): the ul-code copy control, labelled \"Copy card id <id>\". The capture",
+    "pressed Enter on it and read the exact id back from the clipboard."
+   ],
+   "routes": [
+    "apps/studio/src/local/routes.ts lists, as live: GET /api/v1/buildings/:buildingId/snapshots, POST",
+    "/api/v1/usp/property-cards/list, GET /api/v1/usp/property-cards/:cardId/revisions/:revision and GET",
+    ".../verification. local/contract.test.ts finds all four in the published schema."
+   ]
+  }
+ },
+ "unitTests": {
+  "observed": "161 of 161 pass in apps/studio (152 at the branch point; 9 new)",
+  "apps/studio/src/features/identity/registryCard.test.ts": [
+   "is enabled by a card the registry lists alone, and opens the registry cards over a draft",
+   "reaches the draft only when the registry lists none and this browser holds a code",
+   "states a refusal instead of reading it as none listed",
+   "takes a server that holds no such building as none listed",
+   "states a search that stopped short of every snapshot",
+   "opens nothing and states nothing while the registry has not answered"
+  ],
+  "apps/studio/src/features/identity/draft.test.ts": [
+   "names the draft revision in a neutral tone and claims no validity",
+   "names the newest revision when the address names none",
+   "keeps the superseded line for an older revision"
+  ]
+ },
+ "browserChecks": [
+  {
+   "check": "Can UNIT-3B be selected on the map",
+   "mode": "live",
+   "observed": [
+    "Yes, without geometry: Tools, View, Floors, then the unit in \"Spaces on 2ND FLOOR PLAN\"; a saved address",
+    "selects it too. It cannot be clicked on the canvas: nothing is drawn for Tower 3."
+   ]
+  },
+  {
+   "check": "Card read only for the selected unit",
+   "mode": "live",
+   "observed": "No snapshots read and no card list read before the unit was chosen; both sent after."
+  },
+  {
+   "check": "Inspector with a registry card and no draft",
+   "mode": "live",
+   "observed": [
+    "Row \"Cards: Listed by the registry\"; Property Card enabled; no draft wording; no browser step offered."
+   ]
+  },
+  {
+   "check": "Property Card from the inspector",
+   "mode": "live",
+   "observed": "Opens \"Property cards · UNIT-3B\" with the registry row and its Verification link; no draft notice."
+  },
+  {
+   "check": "Copy control on the verification page",
+   "mode": "live",
+   "observed": [
+    "Reached with the keyboard, focus ring 2 px inside the control; Enter put the exact card id on the",
+    "clipboard."
+   ]
+  },
+  {
+   "check": "Inspector with a refused card read",
+   "mode": "mocked",
+   "observed": "States the refusal with (USP_SCOPE_STALE); no Cards row; no Property Card."
+  },
+  {
+   "check": "Assign dialog and toast",
+   "mode": "mocked (card list empty)",
+   "observed": [
+    "Notice before the action; after it the toast and the inspector name the code a draft; Make Property Card",
+    "opens the browser draft with its notice."
+   ]
+  },
+  {
+   "check": "Inspector with a draft and a registry card",
+   "mode": "live",
+   "observed": "Code labelled Draft with the sentence; Cards row beside it; Property Card opens the registry cards."
+  },
+  {
+   "check": "Draft verify page",
+   "mode": "live",
+   "observed": [
+    "Notice, then \"Draft revision r3 on this device\" in the neutral tone; no \"Valid\"; rev=1 shows \"Superseded",
+    "by revision r3\"."
+   ]
+  },
+  {
+   "check": "Portal record page against the demo API",
+   "mode": "live",
+   "observed": "This record is not released (the API answers 404)."
+  },
+  {
+   "check": "Portal record page with a browser code",
+   "mode": "local layer",
+   "observed": [
+    "Code labelled Draft, the notice, \"Download draft Property Card\"; as print media the card carries the draft",
+    "row and \"Local chain consistent\"; a record released without a code shows no notice."
+   ]
+  },
+  {
+   "check": "200% zoom (720 x 450 CSS px)",
+   "mode": "live and local layer",
+   "observed": [
+    "No horizontal overflow on the verification page, the draft verify page, the portal record page or inside",
+    "the inspector. The inspector is 197 px high: header 158 px, rows 32 px (their padding), 25 of 40 px of",
+    "Property Card in view; the action opened with the keyboard."
+   ]
+  }
+ ],
+ "screenshots": [
+  {
+   "file": "01-live-map-inspector-registry-card.png",
+   "mode": "live",
+   "notes": [
+    "Map, Tower 3, UNIT-3B chosen in the Tools list (no geometry to click): the registry lists a card, so",
+    "Property Card is the action; no draft in this browser."
+   ]
+  },
+  {
+   "file": "02-live-map-registry-cards-dialog.png",
+   "mode": "live",
+   "notes": "The same inspector after Property Card: the registry cards of the unit, as on the register page."
+  },
+  {
+   "file": "03-live-verification-copy-card-id.png",
+   "mode": "live",
+   "notes": "The verification page of the live card: the card id with the copy control, focused."
+  },
+  {
+   "file": "mocked-13-map-inspector-cards-refused.png",
+   "mode": "mocked",
+   "notes": [
+    "Card list mocked as refused (409), no draft in this browser: the inspector states the refusal with its",
+    "code and offers no Property Card."
+   ]
+  },
+  {
+   "file": "mocked-14-assign-dialog-draft-notice.png",
+   "mode": "mocked",
+   "notes": [
+    "Card list mocked as empty and the review recorded in this browser: the assign dialog says before the",
+    "action that the code is a draft."
+   ]
+  },
+  {
+   "file": "mocked-15-assign-toast-and-inspector-draft.png",
+   "mode": "mocked",
+   "notes": [
+    "After the assignment: the toast and the inspector both name the code a draft on this device; no registry",
+    "row is shown."
+   ]
+  },
+  {
+   "file": "05-live-map-inspector-draft-and-registry.png",
+   "mode": "live",
+   "notes": [
+    "Live card list, and a draft this capture browser made: the code is labelled a draft on this device, the",
+    "Cards row is the registry statement."
+   ]
+  },
+  {
+   "file": "04-live-draft-verify-page.png",
+   "mode": "live",
+   "notes": "The verify page of the draft: the notice, then a neutral line that names the draft."
+  },
+  {
+   "file": "06-live-portal-record-not-served.png",
+   "mode": "live",
+   "notes": [
+    "The portal record page against the demo API, which does not serve the portal reads (local routes): the",
+    "nearest live state."
+   ]
+  },
+  {
+   "file": "local-layer-10-portal-record-draft.png",
+   "mode": "local-layer",
+   "notes": "Local data layer, Flat 701: a code made in this capture browser is named a draft."
+  },
+  {
+   "file": "local-layer-11-portal-record-printed-card.png",
+   "mode": "local-layer",
+   "notes": [
+    "The same page as print media: the card that Download prints carries the draft row and the local chain",
+    "words."
+   ]
+  },
+  {
+   "file": "07-zoom-200-map-inspector-registry-card.png",
+   "mode": "live",
+   "notes": [
+    "200% zoom (720 CSS px, device scale 2): the inspector keeps its width; the 450 px-high window leaves its",
+    "rows no height (browser-result.json, zoom)."
+   ]
+  },
+  {
+   "file": "08-zoom-200-verification-copy-card-id.png",
+   "mode": "live",
+   "notes": "The verification page of the live card: the card id with the copy control, focused."
+  },
+  {
+   "file": "09-zoom-200-draft-verify-page.png",
+   "mode": "live",
+   "notes": "The verify page of the draft: the notice, then a neutral line that names the draft."
+  },
+  {
+   "file": "local-layer-12-zoom-200-portal-record-draft.png",
+   "mode": "local-layer",
+   "notes": "Local data layer, Flat 701: a code made in this capture browser is named a draft."
+  }
+ ],
+ "checks": {
+  "pnpm studio:typecheck": "exit 0, at each of the three code commits",
+  "pnpm studio:test": "exit 0; apps/studio 161 passed in 31 files (152 before; 155 after the first commit)",
+  "node docs/evidence/gf5/f3f/capture.mjs": "exit 0; blockedWrites [], pageErrors []",
+  "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs": "exit 0 (it reads apps/web only)",
+  "scan patterns over the 242 added Studio lines": "no match",
+  "git diff --check e434ab64 HEAD": "clean",
+  "added lines over 120 characters": [
+   "0 in code and written files; browser-result.json is the capture output, one line"
+  ]
+ },
+ "notVerified": [
+  ["The portal record page against a server: no server serves it. It was seen with the local data layer only,",
+   "and that layer's session and draft were written in the capture browser through the layer's own modules,",
+   "not by importing files through the screens."],
+  ["The incomplete-search statement in the inspector and the route-absent case: unit tests only. The refused",
+   "read: unit test and a mocked screenshot. The demo holds one valid card."],
+  "The printed card on paper: seen as print media in the browser (emulateMedia), not sent to a printer.",
+  ["The focus ring of the copy control inside UlpinCode and AssignedCode (not changed, see gaps): not", "captured."],
+  "Contrast was not measured with a tool; the new texts use --ui-ink and --ui-muted on existing surfaces."
+ ],
+ "gaps": [
+  ["A printed draft card still labels its code \"3D ULPIN (proposed) · Assigned\":",
+   "packages/ui/src/components/PropertyCard.tsx:22 passes no state to UlpinCode, and packages/** is read-only.",
+   "The card carries the row \"Record: Draft on this device, not a registry record\" above the facts. Seen in",
+   "local-layer-11-portal-record-printed-card.png; the card of CardDialog is the same component."],
+  ["Map inspector at 200% zoom: no row is visible and Property Card is cut to 25 of 40 px in a 720 x 450",
+   "window (numbers in browserChecks). The height rule is in features/map/MapWorkspace.module.css:12 and the",
+   "grid in features/map/inspector/Inspector.module.css:1, neither owned. Before this change the action was",
+   "whole there, and every line was cut 64 px on the right instead; the wrap of the identifier traded one for",
+   "the other, and fixes 1440 px (where 32 px were cut)."],
+  ["The header status of the inspector is not the registry's. For UNIT-3B, which the registry holds with a",
+   "code and a card, it reads Draft: SpaceInspector.tsx:43 takes it from the browser store, then from the",
+   "ledger's review status. Not a code or a card, so not changed here; F3e Part 1 gives it a registry source."],
+  ["Record reviewed details (SpaceInspector.tsx:109-113) still writes a review to the browser only, and the",
+   "header then reads Reviewed. It is a status, not a code or a card, so its wording is unchanged; F3e Part 1",
+   "replaces the step."],
+  ["The row \"Assigned <date>\" of a draft card and of the draft verify page",
+   "(features/identity/cardFacts.tsx:36, features/verify/VerifyPage.tsx:72) is the day the draft code was",
+   "made. It stands under the notice and was not reworded."],
+  ["On the register page (read-only for this task) the units table, the shares table and the exports still",
+   "show a browser code without the draft sentence (RegisterPage.tsx:334,408; exporters.ts). The task excludes",
+   "features/register/**."]
+ ],
+ "outsideOwnedPaths": [
+  ["packages/ui PropertyCard: a state prop passed to UlpinCode, so that a draft card prints \"Draft\" (both",
+   "callers would pass it)."],
+  ["features/map/inspector/Inspector.module.css: .subtitle { overflow-wrap: anywhere } (then the inline style",
+   "at SpaceInspector.tsx:130 goes), and one scrolling region above the actions so the rows are reachable at",
+   "200% zoom."],
+  ["packages/ui components.css: draw the focus ring of .ul-code__copy inside the code box (the outline is",
+   "clipped by overflow: hidden); then the local rule VerifyPage.module.css:14 goes."],
+  ["features/review/recorded/AssignedCode.tsx (read-only) and features/verify/CopyableId.tsx are the same",
+   "markup; AssignedCode can become CopyableId with name \"code\"."]
+ ],
+ "report": {
+  "TASK": [
+   "F3f (GF4, GF5): every remaining place that shows a browser-made code or card says it is a draft; the map",
+   "inspector opens the registry's cards; the card id can be copied; the four card reads are in the route",
+   "table. All four items are done. F3e Parts 1 and 2 were not started."
+  ],
+  "WORKS": [
+   ["1. Draft wording. One sentence, 'Draft on this device, not a registry record' (DRAFT_ON_THIS_DEVICE,",
+    "features/identity/draft.ts), is imported by the notice, the inspector, the toast, the portal page and the",
+    "printed card row. Inspector: the browser code is labelled Draft with the sentence under it, and the header",
+    "reads Draft, not Assigned. Assign dialog: the notice before the action; the toast (raised in",
+    "features/map/MapWorkspace.tsx) carries the sentence. Draft verify page: \"Draft revision rN on this",
+    "device\", neutral, under the notice; superseded unchanged."],
+   ["Portal record page: the first of the two options. The page is not browser-only (a record can be released",
+    "without a code), so the notice shows only where a code is shown; the printed card carries the draft row",
+    "and the local chain words from useLocalChain instead of the fixed \"Chain consistent\"."],
+   ["2. Map inspector. A card the registry lists enables Property Card by itself and opens the registry's cards",
+    "(UnitCardDialog); the browser draft is reached only when the registry lists none or could not be asked.",
+    "One pure gate, cardAction, serves the inspector and the dialog. A refusal is stated with the server's",
+    "code; so is a search that stopped short. The read is made for the selected unit only (asserted: none",
+    "before the unit is chosen)."],
+   ["3. The card id on the verification page has the copy control (keyboard, Enter, exact id on the clipboard).",
+    "local/routes.ts lists the four F3d reads as live."],
+   "4. The list the task asks for is item4 of this report."
+  ],
+  "SEE IT": [
+   ["docs/evidence/gf5/f3f/. UNIT-3B can be selected on the map although it has no geometry: Tools, View,",
+    "Floors, then the unit in the list. So the inspector screenshots are live, not mocked:",
+    "01-live-map-inspector-registry-card.png, 02-live-map-registry-cards-dialog.png,",
+    "05-live-map-inspector-draft-and-registry.png (a registry fact and a draft side by side),",
+    "07-zoom-200-map-inspector-registry-card.png."],
+   ["04-live-draft-verify-page.png and 09-zoom-200-...; 03-live-verification-copy-card-id.png and",
+    "08-zoom-200-...; mocked-13 (refused read), mocked-14 (assign dialog), mocked-15 (toast)."],
+   ["Portal record page: 06-live-portal-record-not-served.png is the live state (the demo API does not serve",
+    "the page). local-layer-10, -11 (the printed card) and -12 (200%) show it with the Studio's local data",
+    "layer on; they are labelled on the image and are not registry data."]
+  ],
+  "INPUTS": [
+   ["The demo API at 127.0.0.1:3194: GET, and the card list POST the Studio already sends. blockedWrites is",
+    "empty. Ids of Tower 3 and UNIT-3B from docs/evidence/gf5/f3d/responses.json."],
+   ["Drafts and the local layer's session were made in the capture browser only, through local/workflow.ts and",
+    "local/session.ts."]
+  ],
+  "GAPS": [
+   ["A printed draft card still labels its code \"3D ULPIN (proposed) · Assigned\":",
+    "packages/ui/src/components/PropertyCard.tsx:22 passes no state to UlpinCode, and packages/** is read-only.",
+    "The card carries the row \"Record: Draft on this device, not a registry record\" above the facts. Seen in",
+    "local-layer-11-portal-record-printed-card.png; the card of CardDialog is the same component."],
+   ["Map inspector at 200% zoom: no row is visible and Property Card is cut to 25 of 40 px in a 720 x 450",
+    "window (numbers in browserChecks). The height rule is in features/map/MapWorkspace.module.css:12 and the",
+    "grid in features/map/inspector/Inspector.module.css:1, neither owned. Before this change the action was",
+    "whole there, and every line was cut 64 px on the right instead; the wrap of the identifier traded one for",
+    "the other, and fixes 1440 px (where 32 px were cut)."],
+   ["The header status of the inspector is not the registry's. For UNIT-3B, which the registry holds with a",
+    "code and a card, it reads Draft: SpaceInspector.tsx:43 takes it from the browser store, then from the",
+    "ledger's review status. Not a code or a card, so not changed here; F3e Part 1 gives it a registry source."],
+   ["Record reviewed details (SpaceInspector.tsx:109-113) still writes a review to the browser only, and the",
+    "header then reads Reviewed. It is a status, not a code or a card, so its wording is unchanged; F3e Part 1",
+    "replaces the step."],
+   ["The row \"Assigned <date>\" of a draft card and of the draft verify page",
+    "(features/identity/cardFacts.tsx:36, features/verify/VerifyPage.tsx:72) is the day the draft code was",
+    "made. It stands under the notice and was not reworded."],
+   ["On the register page (read-only for this task) the units table, the shares table and the exports still",
+    "show a browser code without the draft sentence (RegisterPage.tsx:334,408; exporters.ts). The task excludes",
+    "features/register/**."]
+  ],
+  "DESIGN": [
+   ["The gate is one function with two answers (what opens, what to state), so the inspector and the dialog",
+    "cannot disagree. It also states a search that stopped short of every snapshot: that is not \"none\" either."],
+   ["The header badge of the inspector reads Draft when the browser holds a code. Left as it was it read",
+    "Assigned directly above \"· Draft\"."],
+   ["The record identifier in the inspector header may now wrap. One without a break made the inspector 384 px",
+    "wide in a 352 px panel and cut the new refusal sentence short at 1440 px."],
+   ["The browser's own step waits for the card read, so a unit with a registry card is not reviewed or assigned",
+    "in the browser by a quick click."],
+   ["ResultBanner has a fourth tone, neutral (surface-subtle, ink, a border), for a line that reports no",
+    "result. The copy control draws its focus ring inside, because the code box clips one drawn outside."],
+   "No new query: api/queries.ts is unchanged."
+  ],
+  "COMMITS": [
+   ["31d44076 fix(studio): a browser-made code or card is named a draft in the inspector, the assign dialog, the",
+    "portal page and the draft verify page"],
+   "98f4a4da feat(studio): the map inspector opens a unit's registry cards",
+   ["bfd6317a fix(studio): the card id on the verification page can be copied; the card reads are listed with the",
+    "Studio's routes"],
+   "docs(studio): F3f evidence (the commit that holds this file)",
+   ["Trailer: Co-Authored-By: Claude Opus 5.5, as WORKERS.md section 7 and the session rule say; the task file",
+    "names \"Claude worker\". Nothing is pushed."]
+  ],
+  "CHECKS": {
+   "pnpm studio:typecheck": "exit 0, at each of the three code commits",
+   "pnpm studio:test": "exit 0; apps/studio 161 passed in 31 files (152 before; 155 after the first commit)",
+   "node docs/evidence/gf5/f3f/capture.mjs": "exit 0; blockedWrites [], pageErrors []",
+   "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs": "exit 0 (it reads apps/web only)",
+   "scan patterns over the 242 added Studio lines": "no match",
+   "git diff --check e434ab64 HEAD": "clean",
+   "added lines over 120 characters": [
+    "0 in code and written files; browser-result.json is the capture output, one line"
+   ]
+  },
+  "item4": {
+   "question": [
+    "Which exports of local/workflow.ts and features/workflow/useWorkflow.ts have no caller once a recorded",
+    "unit's code and card come from the registry (F3e Parts 1 and 2). Line numbers at bfd6317a. Nothing is",
+    "deleted in this task."
+   ],
+   "noCallerLeft": [
+    {
+     "export": "useAssignCode (useWorkflow.ts:34)",
+     "callers": "only caller features/identity/AssignDialog.tsx:15",
+     "why": "Part 1 replaces the browser assignment with the review and assignment of the registry."
+    },
+    {
+     "export": "assignProposedCode (workflow.ts:118)",
+     "callers": "only caller useWorkflow.ts:37",
+     "why": "Goes with useAssignCode."
+    },
+    {
+     "export": "randomPayload (workflow.ts:153)",
+     "callers": "workflow.ts:124 and local/workflow.test.ts:3,8",
+     "why": "Used by assignProposedCode only; its test goes with it."
+    },
+    {
+     "export": "useRecordReview (useWorkflow.ts:23)",
+     "callers": "only caller features/map/inspector/SpaceInspector.tsx:40",
+     "why": "Part 1 replaces the inspector's Record reviewed details with the registry's Record review."
+    },
+    {
+     "export": "recordReview (workflow.ts:106)",
+     "callers": "only caller useWorkflow.ts:26",
+     "why": "Goes with useRecordReview."
+    }
+   ],
+   "readersOfADraft": {
+    "why": [
+     "These only read what the two writers above made. Once nothing makes a draft they find one only in a",
+     "browser that still holds an old one. They lose their purpose with Part 2, but each still has a caller",
+     "until that caller stops showing drafts: a decision for the lead (show old drafts, or drop them)."
+    ],
+    "rows": [
+     {
+      "export": "useSpaceWorkflow (useWorkflow.ts:11), getSpaceWorkflow (workflow.ts:92)",
+      "callers": "SpaceInspector.tsx:36; features/map/MapWorkspace.tsx:109; portal/RecordPage.tsx:29",
+      "why": [
+       "The draft code and status in the inspector; the draft passed to UnitCardDialog; the local chain of the",
+       "portal page's printed card."
+      ]
+     },
+     {
+      "export": "useBuildingWorkflow (useWorkflow.ts:15), listBuildingWorkflow (workflow.ts:101)",
+      "callers": "features/register/RegisterPage.tsx:87",
+      "why": [
+       "Draft codes and status in the units table (:334, :337), the shares table (:408), the history (:450), the",
+       "register exports (exporters.ts:25,47,104) and registry.ts:37."
+      ]
+     },
+     {
+      "export": "useResolveCode (useWorkflow.ts:19), resolveCode (workflow.ts:134)",
+      "callers": "features/verify/VerifyPage.tsx:26",
+      "why": "The draft verify page that the QR of a draft card opens."
+     },
+     {
+      "export": "chainState (workflow.ts:141)",
+      "callers": "features/identity/localChain.ts:22",
+      "why": "useLocalChain, used by CardDialog, VerifyPage and RecordPage."
+     },
+     {
+      "export": "listAssigned (workflow.ts:97)",
+      "callers": "local/public.ts:43",
+      "why": "The local data layer's portal: which units carry a browser code. Stays while that layer shows them."
+     },
+     {
+      "export": "types SpaceWorkflow (workflow.ts:22), WorkflowEvent (:12), WorkflowStatus (:10)",
+      "callers": [
+       "CardDialog.tsx:6, cardFacts.tsx:4, localChain.ts:2, UnitCardDialog.tsx:3, register/exporters.ts:4,",
+       "RegisterPage.tsx:13, registry.ts:4, VerifyPage.tsx:6, local/public.ts:3"
+      ],
+      "why": "Go with their users. WorkflowStatus has no importer outside workflow.ts today."
+     }
+    ]
+   },
+   "remainWhateverF3eDoes": [
+    {
+     "export": "useBuildingActions, useRecordAction, useClearAction (useWorkflow.ts:45,49,57)",
+     "callers": [
+      "features/intake/AddFilesDialog.tsx:348-350; RegisterPage.tsx:88,465,466;",
+      "features/review/WorkspacePage.tsx:56,118,119,224,225,283"
+     ],
+     "why": "The officer's building actions (file roles, level answers, check decisions): not a code or a card."
+    },
+    {
+     "export": "listBuildingActions, recordAction, clearAction, type BuildingAction (workflow.ts:70,76,86,36)",
+     "callers": "useWorkflow.ts:46,52,60; WorkspacePage.tsx:9",
+     "why": "Behind the three hooks above."
+    },
+    {
+     "export": "shortHash (workflow.ts:169)",
+     "callers": [
+      "RegisterPage.tsx:455; register/SourceList.tsx:32; CardDialog.tsx:55; VerifyPage.tsx:73,99;",
+      "RecordPage.tsx:86"
+     ],
+     "why": "A formatter, also used for source and ledger hashes. BuildingInspector.tsx:166 holds a second copy."
+    }
+   ]
+  },
+  "NEXT": [
+   ["Three small changes outside the owned paths, each named in outsideOwnedPaths: PropertyCard state (so a",
+    "draft card stops printing \"Assigned\"), the inspector's subtitle wrap and scroll region in",
+    "Inspector.module.css (200% zoom), the copy control's focus ring in packages/ui."],
+   ["F3e Part 1 can remove useAssignCode, assignProposedCode, randomPayload, useRecordReview and recordReview",
+    "with their two callers. For the readers of a draft the lead decides whether a browser that still holds an",
+    "old draft keeps showing it."],
+   "Both dev servers are stopped. F3e Parts 1 and 2 wait for K11 and K12."
+  ]
+ }
+}

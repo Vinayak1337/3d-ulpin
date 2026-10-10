@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
-import { CheckCircle, Warning, WarningOctagon } from '@phosphor-icons/react';
+import { CheckCircle, Info, Warning, WarningOctagon } from '@phosphor-icons/react';
 import { Icon } from '@ulpin/ui';
 import styles from './VerifyPage.module.css';
 
-const ICONS = { success: CheckCircle, warning: Warning, danger: WarningOctagon };
+// `neutral` states what is shown and claims no result: a draft made in this browser has none.
+const ICONS = { success: CheckCircle, neutral: Info, warning: Warning, danger: WarningOctagon };
 
 /** The frame of the verify pages, outside the Studio frame: the wordmark, the way back and one narrow column. */
 export function VerifyFrame({ children }: { children: ReactNode }) {
