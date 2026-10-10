@@ -7,6 +7,9 @@ export const DRAFT_ON_THIS_DEVICE = 'Draft on this device, not a registry record
 /** The row a printed draft card carries: the print leaves the page and its notice behind. */
 export const DRAFT_FACT = { label: 'Record', value: DRAFT_ON_THIS_DEVICE };
 
+/** The label of the day a draft code was made in this browser. No registry assigned it, so not "Assigned". */
+export const DRAFT_MADE = 'Draft made';
+
 export interface DraftLead {
   text: string;
   tone: 'neutral' | 'warning';

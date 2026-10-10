@@ -1,15 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { Printer, QrCode } from '@phosphor-icons/react';
-import { Banner, Button, Dialog, Icon, PropertyCard, SegmentedControl, Toggle } from '@ulpin/ui';
+import { Banner, Button, Dialog, Icon, SegmentedControl, Toggle } from '@ulpin/ui';
 import type { SpaceModel, LevelModel } from '../../model/building';
 import type { SpaceWorkflow } from '../../local/workflow';
-import { shortHash } from '../../local/workflow';
-import { Qr } from './Qr';
 import { useCardFacts } from './cardFacts';
-import { DRAFT_FACT } from './draft';
+import { DraftCard } from './DraftCard';
 import { DraftNotice } from './DraftNotice';
-import { LOCAL_CHAIN_WORDS, useLocalChain } from './localChain';
+import { useLocalChain } from './localChain';
 
 export function verifyPath(workflow: SpaceWorkflow) {
   return `/verify/${encodeURIComponent(workflow.code!)}?rev=${workflow.events[0]!.revision}`;
@@ -47,16 +45,15 @@ export function CardDialog({ workflow, space, level, buildingName, unanswered = 
       {unanswered ? <Banner tone="info">{unanswered}</Banner> : null}
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 240px', gap: 24,
         marginTop: 'var(--ui-space-4)' }}>
-        <PropertyCard
+        <DraftCard
           title={`${space.name}, ${buildingName}`}
           code={workflow.code}
           location={card?.location ?? null}
-          revision={`r${head.revision}`}
-          hash={shortHash(head.hash)}
-          chain={LOCAL_CHAIN_WORDS[chain]}
-          qr={<Qr value={link} size={88} label="QR code: verification page" />}
+          revision={head.revision}
+          hash={head.hash}
+          chain={chain}
+          link={link}
           facts={[
-            DRAFT_FACT,
             ...(card?.facts ?? []),
             ...(audience !== 'public' && names ? [{ label: 'Party names', value: <em className="ul-unknown">Restricted (officer role)</em> }] : []),
           ]}
