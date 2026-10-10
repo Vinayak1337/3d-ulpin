@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import type { RetainedImagery, SpatialMlItem } from '@ulpin/contracts';
-import { geographicMlComponent } from './spatial-ml-georeference';
+import { geographicMlComponent, projectedGeographicComponents } from './spatial-ml-georeference';
+import type { PoolClient } from 'pg';
 import { spatialMlFootprintDraftSchema } from './spatial-ml-footprints';
 
 const evidence = 'docs/evidence/gf-backend/k2c';
@@ -27,6 +28,20 @@ test('real retained Karnataka pixels use their exact source affine, not invented
 test('changed original hash or image grid fails closed before georeferencing', () => {
   assert.throws(() => geographicMlComponent(item, { ...chip, sourceSha256: '0'.repeat(64) }, component), /exact retained/);
   assert.throws(() => geographicMlComponent(item, { ...chip, width: chip.width + 1 }, component), /exact retained/);
+});
+
+test('projection SELECT types its CRS and unary-negated origins to avoid PostgreSQL 42725', async () => {
+  const queries: string[] = [];
+  const client = { query: async (sql: string) => {
+    queries.push(sql);
+    return { rows: [{ geometry: component.geometry }] };
+  } } as unknown as PoolClient;
+  const reference = { sourceCrs: 'EPSG:4326', analysisCrs: 'EPSG:6933' as const, origin: [0, 0] as [number, number],
+    anchor: [0, 0] as [number, number], verticalReference: 'unknown', transformVersion: 'fixture-only' };
+  await projectedGeographicComponents(client, [component], reference);
+  assert.match(queries[0], /\$2::integer/);
+  assert.match(queries[0], /-\(\$3::double precision\)/);
+  assert.match(queries[0], /-\(\$4::double precision\)/);
 });
 
 test('footprint adapter accepts exact TIFF reference and rejects requests with no reference', () => {

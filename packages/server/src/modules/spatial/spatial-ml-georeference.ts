@@ -43,8 +43,8 @@ export async function projectedGeographicComponents(
   const results: SpatialMlComponent[] = [];
   for (const component of components) {
     const projected = (await client.query<{ geometry: SpatialMlComponent['geometry'] }>(
-      `SELECT ST_AsGeoJSON(ST_Translate(ST_Transform(ST_SetSRID(ST_GeomFromGeoJSON($1),4326),$2),
-        -$3,-$4),15)::jsonb geometry`,
+      `SELECT ST_AsGeoJSON(ST_Translate(ST_Transform(ST_SetSRID(ST_GeomFromGeoJSON($1),4326),$2::integer),
+        -($3::double precision),-($4::double precision)),15)::jsonb geometry`,
       [JSON.stringify(component.geometry), Number(reference.analysisCrs.slice(5)), ...reference.origin],
     )).rows[0].geometry;
     results.push({ ...component, geometry: projected });
