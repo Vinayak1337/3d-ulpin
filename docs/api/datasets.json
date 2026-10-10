@@ -5266,6 +5266,59 @@
           "manifestVerification": {}
         }
       ]
+    },
+    {
+      "manifest": "fixtures/usp/D8-open-property-foreign/manifest.json",
+      "manifestSha256": "0ea691ae0c6c7a0713b84a26e9707ea40e46c0863fe3b978c9386109e124cc8e",
+      "packId": "D8-foreign",
+      "profile": "open-property-foreign-development-d1f",
+      "version": 1,
+      "description": "D1f foreign government property tables; development only, not Indian operational data.",
+      "apiInstallation": "not-verified",
+      "runtimeVerified": false,
+      "missingCapabilities": [
+        "ten_new_families",
+        "120_documented_target_matching_columns",
+        "12_columns_per_requested_target",
+        "additional_Indian_heldout_publisher",
+        "foreign_family_contract_and_manifest_registration",
+        "source_CRS_qualification"
+      ],
+      "assets": [
+        {
+          "id": "seattle-energy.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://cos-data.seattle.gov/api/views/teqw-tu6e/rows.csv?accessType=DOWNLOAD"
+          },
+          "attribution": "City of Seattle Office of Sustainability and Environment",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "Public Domain",
+            "reference": null,
+            "scope": "Public local development only"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "City of Seattle Office of Sustainability and Environment",
+          "acquiredAt": "2026-10-10T12:10:22.542007+00:00",
+          "geography": "Seattle, Washington, United States",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d02/seattle-energy.csv",
+            "sha256": "d1a8227bf9c7c82aea8279a67405add617271852a985d96bb6e4ac9070e8250f",
+            "bytes": 13321421,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        }
+      ]
     }
   ],
   "retainedOfficialTestSources": [
@@ -9038,6 +9091,42 @@
         "Range-selected unchanged ZIP members only; full 5.47 GB archive not downloaded or whole-archive verified",
         "No fine-tuning, threshold search, Indian accuracy, canonical records, ownership, rights or deployment claim",
         "Interrupted-file original acquisition times remain unknown; resumed bytes verified by CRC and SHA"
+      ]
+    },
+    {
+      "id": "d1f-open-property-foreign-development-20261010",
+      "classification": "test_only",
+      "split": "dev",
+      "originKind": "foreign_government_issuing_portal_native_CSV_exports",
+      "issuer": "Foreign municipal issuing authorities; exact publishers in manifest",
+      "geography": "Foreign development only; exact per-source geography in manifest",
+      "manifest": "fixtures/usp/D8-open-property-foreign/manifest.json",
+      "manifestSha256": "0ea691ae0c6c7a0713b84a26e9707ea40e46c0863fe3b978c9386109e124cc8e",
+      "guide": "docs/evidence/gf-agent/d1f/result.json",
+      "sourceCount": 1,
+      "sourceFamilies": 1,
+      "totalOriginalBytes": 13321421,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f",
+        "itemsPointer": "/assets",
+        "formats": [
+          "CSV"
+        ],
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "state": "unconfirmed",
+        "reference": "Per-source issuing metadata",
+        "limitations": "Stated licences preserved; unconfirmed permission is local development only."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "Native originals and byte-exact prefixes are distinct; prefixes are not extra families.",
+        "No labels, training, provider calls, measurements, rights or Indian operational qualification.",
+        "Dataset-scope geometry descriptions are weaker than expanded column dictionaries.",
+        "Whole-file screening and closed disposition precede profile dispatch."
       ]
     }
   ],
