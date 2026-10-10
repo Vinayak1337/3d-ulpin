@@ -7,7 +7,11 @@
 .titleRow { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--ui-space-2); }
 .titleRow h2 { overflow-wrap: anywhere; }
 .subtitle { font-size: 13px; line-height: 19px; color: var(--ui-muted); }
-.body { overflow: auto; padding: var(--ui-space-4); display: grid; align-content: start; gap: var(--ui-space-4); }
+/* One column no wider than the inspector: a long citation is cut short and the text beside it wraps. */
+.body {
+  overflow: auto; padding: var(--ui-space-4);
+  display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: var(--ui-space-4);
+}
 .foot { display: grid; gap: 6px; padding: var(--ui-space-3) var(--ui-space-4); border-top: 1px solid var(--ui-divider); background: var(--ui-surface-subtle); }
 .actions { display: flex; flex-wrap: wrap; gap: var(--ui-space-2); }
 .actions a { text-decoration: none; }
