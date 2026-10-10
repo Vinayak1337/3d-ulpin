@@ -87,7 +87,8 @@ export function probeParquet(card: IntakeCard, bytes: Uint8Array) {
       && Buffer.from(pair[1]).toString('utf8') === 'geo');
     if (!(geoPair?.[2] instanceof Uint8Array)) return;
     const geo = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(geoPair[2]));
-    if (typeof geo.version !== 'string' || !geo.columns || typeof geo.columns !== 'object') return;
+    if (typeof geo.version !== 'string' || !/^\d+\.\d+\.\d+$/.test(geo.version)
+      || !geo.columns || typeof geo.columns !== 'object') return;
     card.format = 'geoparquet';
     card.family = 'vector';
     card.formatVersion = /^\d+\.\d+\.\d+$/.test(geo.version) ? geo.version : null;

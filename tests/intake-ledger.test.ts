@@ -214,7 +214,7 @@ test('existing source notifications contain no source payload and publish only a
   });
 });
 
-test('unextracted member and sheet cards register idempotently with parent authority and unknown sheet sizes', async () => {
+test('member and sheet cards keep parent authority, idempotency and unknown sheet sizes', async () => {
   await configured(async () => {
     const f = fixture();
     const bytes = Buffer.from('key,value\n1,2\n');

@@ -130,6 +130,18 @@ test('ZIP shapefile companions form one item and absent PRJ stays absent', async
   assert.equal(intakeWave(card.members[0].card!), 1);
 });
 
+test('ZIP companions never borrow a CRS from a different case-sensitive folder or base name', async () => {
+  const shp = head(100);
+  shp.writeUInt32BE(9994);
+  shp.writeUInt32LE(1000, 28);
+  shp.writeUInt32LE(5, 32);
+  const card = await probe(zipSync({ 'Folder/layer.shp': shp,
+    'folder/layer.prj': bytes('GEOGCS["CRS_CONTROL"]'), 'Folder/Layer.prj': bytes('GEOGCS["CRS_CONTROL"]') }));
+  assert.equal(card.members.length, 1);
+  assert.deepEqual(card.members[0].companions, []);
+  assert.equal(card.members[0].card?.crs.state, 'absent');
+});
+
 for (const name of ['/absolute.bin', '../parent.bin', 'folder/../parent.bin', 'C:\\drive.bin']) {
   test(`ZIP refuses unsafe path ${name}`, async () => {
     const card = await probe(zipSync({ [name]: bytes('PAR1') }));
@@ -176,6 +188,10 @@ test('GeoParquet is recognized from bounded Compact-Thrift geo metadata, not its
   assert.equal(card.formatVersion, '1.1.0');
   assert.equal(card.depth, 'signature');
   assert.equal(card.counts.features, null);
+  footer.write('VALUE', footer.indexOf('1.1.0'));
+  const untyped = await probe(Buffer.concat([bytes('PAR1'), footer, length, bytes('PAR1')]), 'control.parquet');
+  assert.equal(untyped.format, 'parquet');
+  assert.ok(!JSON.stringify(untyped).includes('VALUE'));
 });
 
 test('TIFF first IFD states dimensions, bands and an explicit geographic GeoKey only', async () => {

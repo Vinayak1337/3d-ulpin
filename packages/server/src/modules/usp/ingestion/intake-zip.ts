@@ -148,8 +148,8 @@ function groupSidecars(inspected: InspectedEntry[], card: IntakeCard) {
   const primary = /\.(?:shp|tif|tiff|png|jpg|jpeg)$/i;
   const grouped = new Set<string>();
   for (const item of inspected.filter(item => primary.test(item.member.name))) {
-    const base = item.member.name.replace(primary, '').toLowerCase();
-    const companions = inspected.filter(other => other.member.name.replace(sidecar, '').toLowerCase() === base
+    const base = item.member.name.replace(primary, '');
+    const companions = inspected.filter(other => other.member.name.replace(sidecar, '') === base
       && sidecar.test(other.member.name));
     item.member.companions = companions.map(other => other.member.name);
     for (const other of companions) {
