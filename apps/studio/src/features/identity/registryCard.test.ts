@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ApiError } from '@ulpin/api-client';
 import type { UnitCards } from '../../api/queries';
 import {
-  cardAction, cardPdfPath, cardVerificationPath, isNotFound, isRouteAbsent, readFailure,
+  cardAction, cardPdfPath, cardVerificationPath, isNotFound, isRouteAbsent, readFailure, unitCardView,
 } from './registryCard';
 
 const refusal = (status: number, code: string, message: string) =>
@@ -39,6 +39,36 @@ describe('registry card reads', () => {
   it('states an answer without a code by its status, and no answer at all in fixed words', () => {
     expect(readFailure(new ApiError(502, '/api/v1/usp/property-cards/list', null))).toBe('The server answered 502.');
     expect(readFailure(new TypeError('Failed to fetch'))).toBe('The server gave no answer.');
+  });
+});
+
+describe('the served registry decision of the Property Card dialog', () => {
+  const none: UnitCards = { snapshotCreatedAt: null, cards: [], truncated: false, searchedAll: true,
+    unlisted: false, snapshots: 0, unread: 0 };
+
+  it('shows listed registry cards, never the browser draft', () => {
+    const listed = { ...none, snapshotCreatedAt: '2026-10-10T13:39:30.390Z' };
+    expect(unitCardView({ data: listed, error: null }, true, true)).toBe('registry');
+  });
+
+  it('states none when the served registry lists none, even with a draft', () => {
+    expect(unitCardView({ data: none, error: null }, true, true)).toBe('none');
+  });
+
+  it('states unanswered when the served registry could not be asked, even with a draft', () => {
+    expect(unitCardView({ error: noRoute }, true, true)).toBe('unanswered');
+    expect(unitCardView({ data: none, error: new TypeError('Failed to fetch') }, true, true)).toBe('unanswered');
+    expect(unitCardView({ data: { ...none, searchedAll: false }, error: null }, true, true)).toBe('unanswered');
+    expect(unitCardView({ error: null }, true, true)).toBe('unanswered');
+  });
+
+  it('keeps the draft in a transport that does not serve card routes', () => {
+    expect(unitCardView({ data: none, error: null }, false, true)).toBe('draft');
+    expect(unitCardView({ error: noRoute }, false, true)).toBe('draft');
+  });
+
+  it('opens nothing without a draft in a transport that does not serve card routes', () => {
+    expect(unitCardView({ data: none, error: null }, false, false)).toBe('closed');
   });
 });
 
