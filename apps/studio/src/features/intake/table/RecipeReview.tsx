@@ -27,7 +27,8 @@ export function RecipeReview({ profile, mapping, job, onApproved }: {
           Answer mapping questions
         </Button></div> : null}
         {eligible && review.open ? <AnswerForm profile={profile} mapping={mapping} answers={review.answers}
-          change={review.change} record={review.propose} pending={record.isPending} /> : null}
+          change={review.change} markUnknown={review.markUnknown} record={review.propose}
+          pending={record.isPending} /> : null}
         <RecipeActions review={review} job={job} />
         {record.error && !confirmation ? <TableRefusal error={record.error} /> : null}
         {history.data ? <RecipeHistory revisions={history.data} /> : null}

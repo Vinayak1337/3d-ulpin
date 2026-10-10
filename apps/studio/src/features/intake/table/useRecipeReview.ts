@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { authorRecipe, approveRecipe, readRecipe } from './recipe-api';
-import { initialAnswers, recipeBody } from './recipe';
+import { fillUnknownAnswers, initialAnswers, recipeBody } from './recipe';
 import { tableKey } from './queries';
 import type { Confirmation } from './RecipeConfirmation';
 import type { OfficerAnswer } from './recipe';
@@ -11,7 +11,7 @@ import type { ChunkMapping, MappingJob, Recipe, TableProfile } from './types';
 export function useRecipeReview(profile: TableProfile, mapping: ChunkMapping, job: MappingJob,
   onApproved: () => void) {
   const [params, setParams] = useSearchParams();
-  const [answers, setAnswers] = useState(() => initialAnswers(profile, mapping));
+  const { answers, change, markUnknown } = useOfficerAnswers(profile, mapping);
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
   const [open, setOpen] = useState(false);
   const recipeId = params.get('recipeId') ?? job.recipeId ?? '';
@@ -24,18 +24,28 @@ export function useRecipeReview(profile: TableProfile, mapping: ChunkMapping, jo
     setOpen(false);
     if (receipt.state === 'approved') onApproved();
   });
-  const change = (sourceField: string, answer: OfficerAnswer) => {
-    setAnswers((previous) => ({ ...previous, [sourceField]: answer }));
-  };
   const propose = () => {
     record.reset();
-    setConfirmation({ kind: 'propose', body: recipeBody(profile, mapping, answers,
+    const sharedReasonCount = Object.values(answers).filter((answer) => answer.sharedReason).length;
+    setConfirmation({ kind: 'propose', sharedReasonCount, body: recipeBody(profile, mapping, answers,
       crypto.randomUUID(), current?.revision ?? 0) });
   };
   const reading = Boolean(recipeId) && history.isPending;
   const replay = approvalReplay(params, recipeId);
   return { answers, confirmation, setConfirmation, open, setOpen, history, current,
-    record, change, propose, reading, replay };
+    record, change, markUnknown, propose, reading, replay };
+}
+
+function useOfficerAnswers(profile: TableProfile, mapping: ChunkMapping) {
+  const [answers, setAnswers] = useState(() => initialAnswers(profile, mapping));
+  const change = (sourceField: string, answer: OfficerAnswer) => {
+    // An individually edited answer is no longer attributed to the shared-reason action.
+    setAnswers((previous) => ({ ...previous, [sourceField]: { target: answer.target, reason: answer.reason } }));
+  };
+  const markUnknown = (reason: string) => {
+    setAnswers((previous) => fillUnknownAnswers(profile, previous, reason));
+  };
+  return { answers, change, markUnknown };
 }
 
 function useRecipeCommands(profile: TableProfile, saved: (receipt: Recipe, step: Confirmation) => void) {
