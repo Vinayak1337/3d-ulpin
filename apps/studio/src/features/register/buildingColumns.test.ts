@@ -1,7 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { IDENTIFIER_HEADERS, NOT_STATED, identifierColumns } from './buildingColumns';
+import { IDENTIFIER_HEADERS, NOT_STATED, identifierColumns, openRequestsColumn } from './buildingColumns';
 
 const headers = (codes: (string | null)[]) => identifierColumns(codes).map((column) => IDENTIFIER_HEADERS[column]);
+
+describe('the Open requests column', () => {
+  it('draws no column while the read is pending or is not served', () => {
+    expect(openRequestsColumn(undefined)).toBe(false);
+    expect(openRequestsColumn(null)).toBe(false);
+  });
+
+  it('draws the column when the read answers, including an empty list', () => {
+    expect(openRequestsColumn([])).toBe(true);
+    expect(openRequestsColumn([{ buildingId: 'test-building' }])).toBe(true);
+  });
+});
 
 describe('the identifier columns of Register > Buildings', () => {
   it('draws the building identifier alone when no building of the read carries a project code', () => {

@@ -14,7 +14,7 @@ import {
 import { DeleteDialog } from '../manage/DeleteDialog';
 import { REQUEST_KINDS } from '../../local/requestKinds';
 import { isServed } from '../../local/routes';
-import { IDENTIFIER_HEADERS, NOT_STATED, identifierColumns } from './buildingColumns';
+import { IDENTIFIER_HEADERS, NOT_STATED, identifierColumns, openRequestsColumn } from './buildingColumns';
 import { buildingCount, indexView } from './indexView';
 import styles from './Requests.module.css';
 
@@ -280,7 +280,10 @@ function BuildingsView() {
                       <Identifier value={column === 'identifier' ? b.identifier : featureCode(b)} />
                     ),
                   })),
-                  { header: 'Open requests', numeric: true, width: '120px', cell: (b) => <OpenRequests count={openFor(b.id)} /> },
+                  ...(openRequestsColumn(requests.data) ? [{
+                    header: 'Open requests', numeric: true, width: '120px',
+                    cell: (b: AreaFeature) => <OpenRequests count={openFor(b.id)} />,
+                  }] : []),
                   {
                     header: 'Actions', width: '150px', cell: (b) => (
                       <span className={styles.tableActions}>

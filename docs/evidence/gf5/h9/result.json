@@ -1,0 +1,124 @@
+{
+  "task": "H9",
+  "gates": ["GF5: C7, B3, C13", "M2"],
+  "branch": "task/h9-studio-prints-what-reads-state",
+  "base": "616f630a",
+  "codeHead": "e940c84a",
+  "report": [
+    "TASK   H9 — Studio prints what reads state            GATE GF5, M2",
+    "WORKS  History distinguishes absent/null/stated fields; cases keep every listed table; size refusal is plain.",
+    "SEE IT node docs/evidence/gf5/h9/verify.mjs",
+    "INPUTS Tower 3 history and register; five-table A3c case; TNHB 90-column table; empty case.",
+    "GAPS   Additive reads and size refusal remain mocked on the old demo; stated building codes tested only.",
+    "DESIGN ledger.ts preserves optional actor presence and formats entry-owned record words for RegisterPage.",
+    "       caseEntry uses row IDs in order; CasePage keeps the multiple-table list and filtered-row fallback.",
+    "       model words the size code; registry reuses identifierColumns; buildingColumns gates requests.",
+    "COMMITS ba17bbc7 fix(studio): a history entry names its record and its actor when the read states them",
+    "        1ced3f04 fix(studio): a case opens the tables its own row lists",
+    "        623bd146 fix(studio): a teacher that was not asked for size says so",
+    "        c1249180 fix(studio): the register exports label the project code as the screen does",
+    "        71ed1036 fix(studio): the draft code title holds no worked-out revision",
+    "        32f63e41 fix(studio): Register > Buildings draws Open requests only when its read answers",
+    "        e940c84a fix(studio): keep the case row opened from a filtered queue",
+    "        (this commit) docs(studio): H9 evidence",
+    "CHECKS studio:typecheck 0; studio:test 0 (303 to 318); focused tests 0; diff --check 0.",
+    "       capture.mjs before/after 0; exports.mjs before/after 0; mocked.mjs before/after 0; verify.mjs 0.",
+    "       inspect-exports.py 0; ui-design-check scan 0; Studio/evidence UTF-8 and added-line scans 0.",
+    "NEXT   Runtime owner qualifies BR1/S5 on rollout; lead reviews. Server stopped; port 5229 free; no push."
+  ],
+  "items": {
+    "history": {
+      "absent": "Older titles retained; no actor sentence and no leading byline separator.",
+      "null": "Actor not recorded / Name not recorded; null kind says Kind not recorded, never inferred.",
+      "stated": "Floor · 2ND FLOOR PLAN · revision 1; selection-demo-runtime where the entry states it.",
+      "mockedTower3": {"entries": 8, "actorStated": 6, "actorNull": 2},
+      "source": "GET each registry record's immutable history; BR1's existing projection helper, not copied.",
+      "featureHistory": "This read publishes no actor; source-feature entries therefore show only the date."
+    },
+    "tables": {
+      "absent": "Case-source profile filter and existing retention-date sort.",
+      "present": "Only row.tableSourceIds, all IDs and the exact stated order, including empty lists.",
+      "several": "Existing list retained; no officer table chosen. Exactly one still redirects to its page.",
+      "missingMetadata": "Listed ID remains a link; name uses that ID and retention date is Unknown.",
+      "reviewRepair": "Filtered queue row retained in route state if unfiltered page one omits it.",
+      "deepLink": "If no matching queue row is read or saved, the existing case-source fallback remains."
+    },
+    "teacher": {
+      "sentence": [
+        "This table is too long for one request, so the mapping teacher was not asked",
+        "and the columns are left for the officer."
+      ],
+      "effect": "Unmapped, no confidence; reason named in both question and unanswered-source presentation.",
+      "liveDemo": "Stored TNHB job still states TEACHER_UNAVAILABLE; no job or teacher was started.",
+      "mock": "Existing 90-column table with only the refusal reason/source and unanswered metrics replaced."
+    },
+    "exports": {
+      "buildingCode": "Project code field only if identifierColumns includes projectCode, as on screen.",
+      "unitPdf": "Existing code column uses Project code and is omitted if no unit of that table carries one.",
+      "realFiles": ["tower3-register.xlsx", "tower3-register.pdf"],
+      "opened": "Workbook ZIP/XML headers and facts read; both PDF pages read and rendered, images inspected.",
+      "headers": "Quoted under exports in after.json; Field | Value workbook, six-column PDF unit table.",
+      "realResult": "No building project code in demo read: absent from both exports, not an Unknown value.",
+      "unrelated": "Machine-readable Units proposed_3d_ulpin header retained; not the building projectCode.",
+      "before": "Base export module replayed from git show 616f630a, using real demo GET reads.",
+      "knownLayout": "Both before/after PDFs have two pages; the existing footer spills onto page two."
+    },
+    "draftTitle": "Only the event title changed; revision/hash chain unchanged; IndexedDB mocked in the test.",
+    "openRequests": "No column for null/undefined; served arrays including [] draw the existing count column."
+  },
+  "verification": {
+    "studio": {"before": 303, "after": 318, "filesAfter": 48, "exitCode": 0},
+    "otherSuites": {"apiClient": 2, "ui": 4, "scene": 10, "exitCode": 0},
+    "typecheck": 0,
+    "focusedTests": {
+      "historyEntryAndLedger": 8,
+      "caseEntry": 10,
+      "tableModel": 16,
+      "registry": 2,
+      "workflow": 2,
+      "buildingColumns": 5,
+      "exitCodes": 0
+    },
+    "publishedSchema": "Four validated answers: live ledger/queue and additive mocked ledger/queue.",
+    "contractValidator": "Installed Ajv 2020; types/enums/required checked; date formats not re-qualified.",
+    "utf8": {"studioSourceFiles": 280, "invalidUtf8": 0, "replacementCharacters": 0},
+    "addedStudioLinesOver120": 0,
+    "evidenceLinesOver120": 0,
+    "diffCheck": 0,
+    "screenshots": {
+      "width": 1440,
+      "zoomEquivalent": "720x450 CSS viewport, deviceScaleFactor 2 = 1440x900 pixels at 200%.",
+      "initial": "before/ and after/: history, five-table case, TNHB import, Buildings, PDF export.",
+      "mocked": "after/mocked-*: additive history/null name, one/five/empty table cases, size code, requests [].",
+      "beforeReplay": "after/mocked-before-*: pre-H9 history and size-code presentation at both sizes.",
+      "caveat": "Initial history 200% captures the top frame; mocked-before/after scroll to the actual history.",
+      "draft": "No draft action clicked; title only proven by the mocked-DB test.",
+      "pageSidewaysScroll": false,
+      "table": "Question column at 200% uses the existing internal horizontal scroll."
+    },
+    "designCheck": "ui-design-check.md: both scans 0; no blocking finding, two existing layout observations.",
+    "selfReview": "Full git diff staging...HEAD read; filtered-case row omission found and repaired separately."
+  },
+  "recoveries": [
+    "openpyxl absent: opened workbook with Python standard-library ZIP/XML instead; no dependency installed.",
+    "jsonschema absent in shell and plans venv: used already installed Ajv; no dependency installed.",
+    "Node /tmp path resolved as E:/tmp: used node:os.tmpdir for the Studio-only design scan."
+  ],
+  "safety": {
+    "demoStoringRequests": 0,
+    "browserRefusedRequests": 0,
+    "credentialsRead": false,
+    "databaseOrRuntimeChanges": false,
+    "providerCalls": 0,
+    "pushed": false,
+    "studioPort": 5229,
+    "serverStopped": true,
+    "portFree": true
+  },
+  "next": [
+    "Lead reviews code and evidence; runtime owner rolls BR1/S5 and qualifies the PostgreSQL reads.",
+    "Live new fields and TEACHER_INPUT_LIMIT remain unqualified; no gate-complete claim.",
+    "No building projectCode exists on demo: present-code export branch tested, not shown with an invented value.",
+    "Map worker removes the unused draft flow later; H9 leaves that flow untouched except its event title."
+  ]
+}

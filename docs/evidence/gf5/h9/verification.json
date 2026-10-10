@@ -1,0 +1,29 @@
+{
+  "contracts": [
+    {
+      "name": "ledger-live",
+      "valid": true,
+      "errors": null
+    },
+    {
+      "name": "queue-live",
+      "valid": true,
+      "errors": null
+    },
+    {
+      "name": "ledger-additive-mocked",
+      "valid": true,
+      "errors": null
+    },
+    {
+      "name": "queue-additive-mocked",
+      "valid": true,
+      "errors": null
+    }
+  ],
+  "utf8": {
+    "files": 280,
+    "failures": []
+  },
+  "longAddedLines": []
+}

@@ -1,0 +1,34 @@
+{
+  "state": "before",
+  "source": "Registry export module replayed from 616f630a; real demo GET reads",
+  "headerRows": [
+    "Unit3D ULPIN (proposed)Carpet m²Share %Registered ownersResidentsOccupancy"
+  ],
+  "buildingFacts": [
+    "3D ULPIN (PROPOSED)",
+    "Unknown",
+    "APPLICATION ID",
+    "3DU-7D9F1TW6R284QABK02NK7PJEGV:B001",
+    "PARCEL ULPIN / PARCEL",
+    "Unknown",
+    "AREA",
+    "Gurugram sectors 59/63A reference area",
+    "FLOORS",
+    "1",
+    "UNITS",
+    "1",
+    "REGISTERED RESIDENTS",
+    "0",
+    "OWNER-OCCUPIED · RENTED · VACANT",
+    "0 · 0 · 0",
+    "SHARE BASIS",
+    "Unknown",
+    "SHARES TOTAL",
+    "Unknown",
+    "HEIGHT DATUM",
+    "building-relative; not aligned between features",
+    "REGISTER EXTRACT AS OF",
+    "Unknown"
+  ],
+  "refused": []
+}
