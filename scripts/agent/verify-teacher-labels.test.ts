@@ -18,17 +18,19 @@ function fixture() {
     });
   }
   const lines = readFileSync(join(T1_ROOT, 'labels/teacher-labels.jsonl'), 'utf8').trim().split('\n')
-    .map((line, index) => ({ inputLine: index + 1, value: JSON.parse(line) as { profileId: string } }))
+    .map((line, index) => ({ inputLine: index + 1,
+      value: JSON.parse(line) as { profileId: string } }))
     .filter(line => linked.has(line.value.profileId));
   return { selected, linked, lines };
 }
 
-test('complete table is accepted once; incomplete table preserves canonical rejection and original input lines', async () => {
+test('complete table accepted once; incomplete table keeps canonical rejection and input lines', async () => {
   const { selected, linked, lines } = fixture();
   const missing = selected[1].profileIds.at(-1);
   const remaining = lines.filter(line => line.value.profileId !== missing);
   const groups = groupTeacherLabels(remaining, linked);
-  const report = await verifyLabelGroups(groups, join(T1_ROOT, `verifier/group-regression-${Date.now()}`));
+  const output = join(T1_ROOT, `verifier/group-regression-${Date.now()}`);
+  const report = await verifyLabelGroups(groups, output);
   assert.equal(report.accepted, 1);
   assert.equal(report.examples, selected[0].profile.columns.length);
   assert.equal(report.rejected, 1);
@@ -37,7 +39,8 @@ test('complete table is accepted once; incomplete table preserves canonical reje
     remaining.filter(line => selected[0].profileIds.includes(line.value.profileId)).map(line => line.inputLine));
   assert.deepEqual(report.rejections[0].inputLines,
     remaining.filter(line => selected[1].profileIds.includes(line.value.profileId)).map(line => line.inputLine));
-  assert.deepEqual(groups[0].entry!.table.profile.columns.map(column => column.name),
+  const normalized = JSON.parse(readFileSync(join(output, 'normalized-labels.jsonl'), 'utf8').split('\n')[0]);
+  assert.deepEqual(normalized.plan.fields.map((field: { sourceField: string }) => field.sourceField),
     selected[0].profile.columns.map(column => column.name));
 });
 

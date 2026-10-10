@@ -24,8 +24,13 @@ export type MappingMemoryLookup = {
   lineage?: MappingMemoryLineage;
 };
 
-function readEntries(path: string): MemoryEntry[] {
+function checkMemoryPath(path: string) {
+  if (/(?:^|[\\/])\.env(?:\.|$)/i.test(path)) throw new Error('MAPPING_MEMORY_PATH_DENIED');
   assertTeacherOutputOutsideGit(path);
+}
+
+function readEntries(path: string): MemoryEntry[] {
+  checkMemoryPath(path);
   if (!existsSync(path)) return [];
   const lines = readFileSync(path, 'utf8').split(/\r?\n/).filter(line => line.trim());
   // Corrupt append history fails closed; silently skipping an officer decision could expose a teacher plan.
@@ -44,7 +49,7 @@ export function rememberMapping(
   plan: MappingPlanV2, context: MappingValidationContext, lineage: MappingMemoryLineage,
   path = MAPPING_MEMORY_PATH,
 ) {
-  assertTeacherOutputOutsideGit(path);
+  checkMemoryPath(path);
   const checked = validateMappingPlanV2(plan, context);
   if (!checked.success) throw new Error(checked.errors[0]?.code ?? 'MAPPING_MEMORY_PLAN_INVALID');
   const authority = lineageSchema.parse(lineage);
