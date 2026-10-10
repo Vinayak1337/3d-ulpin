@@ -2340,6 +2340,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/usp/property-cards/{cardId}/revisions/{revision}/verification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Report whether one exact card revision is consistent with its stored hash chain, plan and packet; no signature is assessed */
+        get: operations["GET_api_v1_usp_property_cards_cardId_revisions_revision_verification"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usp/packets/sources/{sourceId}/pages/{page}/region": {
         parameters: {
             query?: never;
@@ -49981,6 +49998,71 @@ export interface components {
                 };
             };
         };
+        GET_usp_property_cards_cardId_revisions_revision_verification_Response_200_application_json: {
+            readonly data: {
+                /** Format: uuid */
+                cardId: string;
+                revision: number;
+                /** Format: date-time */
+                checkedAt: string;
+                /** @enum {string} */
+                result: "consistent" | "inconsistent";
+                readonly checks: {
+                    /** @enum {string} */
+                    key: "card_body" | "stored_linkage" | "revision_chain" | "artifact_bytes" | "plan_link" | "packet_bytes";
+                    /** @enum {string} */
+                    state: "pass" | "fail" | "not_checked";
+                    reasonCode: string | null;
+                }[];
+                readonly lifecycle: {
+                    latestRevision: number;
+                    superseded: boolean;
+                    /** Format: date-time */
+                    expiresAt: string | null;
+                    expired: boolean | null;
+                    readonly revocation: {
+                        /** Format: date-time */
+                        revokedAt: string;
+                        reasonCode: string;
+                    } | null;
+                };
+                readonly snapshot: {
+                    cardTargetRevision: number;
+                    currentTargetRevision: number;
+                    /** @enum {string} */
+                    state: "same_revision" | "changed_revision";
+                };
+                readonly signature: {
+                    /** @enum {string} */
+                    state: "not_assessed";
+                    /** @enum {string} */
+                    reasonCode: "NO_TRUSTED_KEY_POLICY";
+                };
+            };
+            readonly meta: {
+                /** @enum {string} */
+                schemaVersion: "usp/1";
+                requestId: string;
+                scope: {
+                    /** @enum {string} */
+                    kind: "intake";
+                    workspaceId: string;
+                    version: number;
+                } | {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+            };
+        };
         POST_usp_packets_sources_sourceId_pages_page_region_Request_application_json: {
             revision: string;
             sha256: string;
@@ -83106,6 +83188,49 @@ export interface operations {
                 };
             };
             /** @description Current operator/source access or exact-card expiry denied */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Exact revision unavailable; no latest-revision fallback */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GET_api_v1_usp_property_cards_cardId_revisions_revision_verification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                revision: string;
+                cardId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Private consistency report. A failed check, an expired card and a later revision are reported here, not refused */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_usp_property_cards_cardId_revisions_revision_verification_Response_200_application_json"];
+                };
+            };
+            /** @description Current operator/source access denied; the QR is not an access grant */
             403: {
                 headers: {
                     /** @description Server request identifier. */
