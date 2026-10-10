@@ -1,7 +1,8 @@
 // R5c reads the demo after its roll-out: snapshot order, identity reviews, plan entries and the card preview.
-// Every request is a read; the two POST routes are reads that store nothing. `ocr` runs the product's own OCR
-// entry once with the demo's paths (the owner check after the interpreter switch). It reuses R2's exchange
-// helpers and the bodies in docs/evidence/gf4/k12/REQUESTS.md, unchanged.
+// Every request is a read; the POST routes are reads that store nothing. `ocr-site-plan` and `ocr-label` run the
+// product's own OCR entry once each with the demo's paths (the owner check after the interpreter switch) and
+// send nothing to the API. It reuses R2's exchange helpers and the bodies in docs/evidence/gf4/k12/REQUESTS.md,
+// unchanged.
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -90,7 +91,8 @@ async function reviews() {
   console.log(JSON.stringify(summary));
 }
 
-/** K12: the recorded unit's plan entries, then the building record of the same snapshot (another profile). */
+/** K12: the recorded unit's plan entries, then the building record of the same snapshot (another profile; the
+ * snapshot selects the unit, so the demo refuses it as a selection before it looks at the profile). */
 async function entries() {
   const directory = join(root, 'k12');
   const route = '/api/v1/usp/packets/plans/entries';
