@@ -195,7 +195,7 @@
     "packages/contracts/src/usp/gltf-ingestion.ts": "1fe5cdc66617e64e26228a51bf2cb928f7b197538b4a52bd23b7ca601dd94214",
     "packages/contracts/src/usp/ifc-ingestion.ts": "3cd4dc43edf36d9c76b4edbf376b7052758905c167b9f924216646427c05b28a",
     "packages/contracts/src/usp/index.ts": "431872d141cb1b631020df264b09e8d4f88d0c248f66bc92a924b2f9190d5b77",
-    "packages/contracts/src/usp/ingestion-events.ts": "7412b6def7ca4228ec8021835d7567fb5ba72e5f7bbf651004feab240bda2051",
+    "packages/contracts/src/usp/ingestion-events.ts": "b1d5122d817fb13b768ad3224054a116bc576b4758fdfab6c80f9ca8e6e76635",
     "packages/contracts/src/usp/ingestion.ts": "de4b28067a3ba2115e3f0b94d2a63de2bbd3de7401675191321bcc12ddca256d",
     "packages/contracts/src/usp/kml-ingestion.ts": "8f1f9697dc021842d7901273b5c410b14279d1ea255b7e6b71b0f6affe8f595f",
     "packages/contracts/src/usp/obj-ingestion.ts": "b8b868cee00e42c2d58ba91b0d6eb5b74bd0376f4c6710b18a3c3a08ce21cb2b",
@@ -558,7 +558,8 @@
     "packages/server/src/modules/spatial/spatial-ml-georeference.ts": "25b3464815cdffcfc45cc0666ac4c48fb64e4e9d9a631252b2b2e16cea71ce76",
     "packages/server/src/modules/spatial/spatial-ml-canonical-candidates.ts": "ef8a016616457350ed6a1678a7be6024ecc7e6d0572fa3b076834275b21fdd59",
     "packages/server/src/modules/usp/ingestion/source-building-candidates.ts": "b81859a297a5f7e9d4781ded56340d8c9d94f00d3aecd8623288b97c78c69b76",
-    "apps/api/src/modules/register/candidate.controller.test.ts": "88b8555b99d2c5bbe9352540ae5a974a8f8b0e054cad945c9cb231093444fd9b"
+    "apps/api/src/modules/register/candidate.controller.test.ts": "88b8555b99d2c5bbe9352540ae5a974a8f8b0e054cad945c9cb231093444fd9b",
+    "packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts": "5ba7bdd5a9828d73e8b05d15523119fd98b1639c2e8670a2fa8157e457519066"
   },
   "operations": [
     "GET /api",

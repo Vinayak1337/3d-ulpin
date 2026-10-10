@@ -45,7 +45,7 @@ export type SourceTable = {
   rows: unknown[][];
   headerRows: number[];
 };
-type NativePart = {
+export type NativePart = {
   text: string;
   locator: { sheet: string; row: number; column: number; cell: string; cellState: string; cellType?: string };
 };
@@ -124,14 +124,16 @@ function nativeParts(asset: SourceAsset): NativePart[] {
   return JSON.parse(result.stdout).parts as NativePart[];
 }
 
-function headerRows(parts: NativePart[], asset: SourceAsset): number[] {
+type TableSelection = Pick<SourceAsset, 'sourceSchema' | 'sourceTable'>;
+
+function headerRows(parts: NativePart[], asset: TableSelection): number[] {
   if (asset.sourceSchema?.headerRows) return asset.sourceSchema.headerRows;
   const explicit = [...new Set(parts.filter(part => part.locator.cellType === 'header').map(part => part.locator.row))];
   if (explicit.length) return explicit.sort((left, right) => left - right);
   throw new Error('T1_HEADER_SELECTION_REQUIRED');
 }
 
-function nativeRows(parts: NativePart[], headings: number[], width: number, asset: SourceAsset): unknown[][] {
+function nativeRows(parts: NativePart[], headings: number[], width: number, asset: TableSelection): unknown[][] {
   const data = new Map<number, unknown[]>();
   for (const part of parts) {
     if (part.locator.row <= Math.max(...headings)) continue;
@@ -146,7 +148,7 @@ function nativeRows(parts: NativePart[], headings: number[], width: number, asse
   return [...data].sort(([left], [right]) => left - right).map(([, row]) => row);
 }
 
-function nativeTable(name: string, parts: NativePart[], asset: SourceAsset): SourceTable {
+export function nativeTable(name: string, parts: NativePart[], asset: TableSelection): SourceTable {
   const selected = parts.filter(part => part.locator.sheet === name);
   const headings = headerRows(selected, asset);
   const width = Math.max(...selected.filter(part => headings.includes(part.locator.row)).map(p => p.locator.column));
