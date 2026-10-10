@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { api } from '@ulpin/api-client';
 import recorded from '../../../../../docs/evidence/gf5/f3d/responses.json';
+import journey from '../../../../../docs/evidence/runtime/r3/result.json';
 import {
   confirmPlan, createPlan, executePlan, generateCard, previewCard, readCard, readPlanEntries,
 } from '../../api/queries';
@@ -29,15 +30,15 @@ const { UspConfirmPacketPlanSchema, UspCreatePacketPlanSchema, UspExecutePacketP
 const scope = recorded.snapshots.items[0]!.scope as SnapshotScope;
 const card = {
   cardId: recorded.cardList.data.items[0]!.cardId, revision: 1,
-  planId: '8f3ebb97-deab-4235-a377-819e5942bfd8', planVersion: 1, scope,
+  planId: journey.step3.plan.planId, planVersion: journey.step3.plan.version, scope,
 } as Parameters<typeof nextRevision>[0];
 const expiry = '2026-10-11T06:30:00.000Z';
-const plan = { planId: card.planId, version: card.planVersion, planSha256: scope.snapshotDigest };
+const plan = journey.step3.plan;
 const subject = {
   unitId: recorded.spaceId, areaId: scope.scopeId, revision: 2,
   evidence: { sourceId: '5293cd72-2377-4deb-a51c-c76d11ccb429', revision: 1, locator: 'page 1' },
 };
-const entry = { bindingId: scope.snapshotDigest } as PlanEntry;
+const entry = { bindingId: plan.entryHandle } as PlanEntry;
 const requestKey = 'f3i-contract-regression';
 const preview = nextRevision(card, expiry);
 
@@ -67,7 +68,8 @@ describe('route boundaries select fields from structurally wider objects', () =>
 
   it('builds the plan creation without UI fields', async () => {
     accept(UspCreatePacketPlanSchema);
-    const body = planBody(scope, subject, entry, { expiresAt: expiry, inclusionReason: 'The boxed label.' }, requestKey);
+    const typed = { expiresAt: expiry, inclusionReason: 'The boxed label.' };
+    const body = planBody(scope, subject, entry, typed, requestKey);
     const wider = { ...body, label: 'Prepare' };
     await createPlan(wider);
   });
@@ -80,7 +82,7 @@ describe('route boundaries select fields from structurally wider objects', () =>
 
   it('builds the packet execution without UI fields', async () => {
     accept(UspExecutePacketPlanSchema);
-    const wider = { ...executeBody(plan, scope.manifestId, requestKey), label: 'Prepare' };
+    const wider = { ...executeBody(plan, journey.step3.confirm.confirmationId, requestKey), label: 'Prepare' };
     await executePlan(wider);
   });
 

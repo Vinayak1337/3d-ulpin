@@ -60,6 +60,8 @@ describe('the served registry decision of the Property Card dialog', () => {
     expect(unitCardView({ data: none, error: new TypeError('Failed to fetch') }, true, true)).toBe('unanswered');
     expect(unitCardView({ data: { ...none, searchedAll: false }, error: null }, true, true)).toBe('unanswered');
     expect(unitCardView({ error: null }, true, true)).toBe('unanswered');
+    const cached = { ...none, snapshotCreatedAt: '2026-10-10T13:39:30.390Z' };
+    expect(unitCardView({ data: cached, error: noRoute }, true, true)).toBe('unanswered');
   });
 
   it('keeps the draft in a transport that does not serve card routes', () => {

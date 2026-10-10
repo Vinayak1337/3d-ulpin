@@ -75,6 +75,7 @@ export function cardAction(cards: CardsRead, holdsDraft: boolean): CardAction {
 
 /** A served registry never falls back to a browser code, even when its card read did not answer. */
 export function unitCardView(cards: CardsRead, served: boolean, holdsDraft: boolean) {
+  if (served && cards.error) return 'unanswered';
   if (cards.data?.snapshotCreatedAt) return 'registry';
   if (!served) return holdsDraft ? 'draft' : 'closed';
   if (cards.error || !cards.data || !cards.data.searchedAll) return 'unanswered';
