@@ -17,7 +17,9 @@ export async function doctor(context: Context): Promise<Step> {
       context.servedCommit = head.stdout.trim();
       assert(/^[a-f0-9]{40}$/.test(context.servedCommit), 'Invalid serving commit');
       const disabled = /^\s*enabled: false\s*$/m.test(output);
-      const observed = { exitCode: result.status, gatewayDisabled: disabled, servedCommit: context.servedCommit };
+      const failedComponents = output.split(/\r?\n/).filter(line => line.startsWith('FAIL '));
+      const observed = { exitCode: result.status, gatewayDisabled: disabled, servedCommit: context.servedCommit,
+        failedComponents };
       return { state: result.status === 0 && disabled ? 'pass' : 'fail', observed };
     });
 }
