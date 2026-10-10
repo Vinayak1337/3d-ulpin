@@ -130,10 +130,10 @@ type PlannedStep = {
   exec: Exec | { kind: 'replay'; of: string };
 };
 
-/** The body the gateway measures, and the same refusals it would make before any admission. */
 type RequestSpec = Pick<CallSpec, 'messages' | 'schema' | 'scopeHash' | 'taskKind' | 'template' |
   'consumer' | 'replayKey'>;
 
+/** The body the gateway measures, and the same refusals it would make before any admission. */
 function gatewayBody(spec: RequestSpec, policy: GatewayConfig) {
   const messages = minimizeMessages(spec.messages);
   const body = { messages, outputSchema: spec.schema, model: policy.model, maxOutputTokens: policy.maxOutputTokens };
@@ -1004,7 +1004,10 @@ function wideTablePlan(profile: ColumnProfileDocument, tariff: Tariff) {
 async function wideTableDryRun(profile: ColumnProfileDocument, tariff: Tariff) {
   const ledger = new ControlLedger();
   let asks = 0;
-  const adapter = new ReplayAdapter(async () => { asks++; return undefined; });
+  const adapter = new ReplayAdapter(async () => {
+    asks++;
+    return undefined;
+  });
   const gateway = new ModelGateway(tariff.policy, ledger, adapter);
   const walked = await withoutNetwork(() => proposeMappingWithTeacher(profile, {
     context: proofContext('local-os:s6-wide-dry-run'), authorize: async () => {}, gateway, maxAttempts: 1,

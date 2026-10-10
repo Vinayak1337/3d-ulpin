@@ -131,19 +131,20 @@ test('the teacher layer is the forwarded form: the gateway minimizer redacts an 
   assert.deepEqual(screen.refusals, []);
 });
 
-// Two requests that are still refused, both for size. The storey selection leaves out every line the gateway
-// refuses for what it holds, before a request exists. It bounds a request in characters and the gateway bounds
-// it in bytes, so one batch of Devanagari lines, at three bytes a character, is still over the gateway's bound.
-test('a request the gateway would refuse is screened as built and listed with the refusal code', () => {
+// The storey selection now closes a batch at the gateway byte bound. The single-request mapping builder
+// still exposes an oversized request for the screen; the teacher asks that table in column groups instead.
+test('byte-bounded storey batches pass the screen; an oversized single mapping request keeps its refusal code', () => {
   const floorLine = `तल ${'क'.repeat(230)}`;
   const devanagari = Array.from({ length: 40 }, (_, index) => ({ id: `p1-l${index + 2}`, text: floorLine }));
   const lines = [{ id: 'p1-l1', text: 'TOWER C floor do not scale, mail someone@example.invalid' }, ...devanagari];
   const screen = newScreen();
   const tally = tallyFor(screen, 'control-document', 'control', 'document');
   screenStore(screen, tally, { source: { sha256: 'd'.repeat(64) }, pages: { 1: { lines } } });
-  assert.deepEqual(screen.refusals.map((refusal) => refusal.code), ['MODEL_INPUT_LIMIT']);
-  assert.equal(tally.n.promptsRefusedByGateway, 1);
-  assert.deepEqual(tally.candidates.teacher, { instruction_phrase: 1, url_email: 1 });
+  assert.deepEqual(screen.refusals, []);
+  assert.equal(tally.n.promptsRefusedByGateway ?? 0, 0);
+  assert.equal(tally.n.promptRequests, 2);
+  assert.deepEqual(tally.candidates.teacher, { instruction_phrase: 1 });
+  assert.equal(tally.candidates.raw.url_email, 1);
 
   // A real table of 90 columns: its user message is longer than one message may be (32,768 characters).
   const wide = developmentProfileAssets().find((asset) => asset.family === 'mi-d22')!;

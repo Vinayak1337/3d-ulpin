@@ -128,7 +128,26 @@ test('batches: only storey-related lines are sent and each call stays under the 
   const batches = storeyPartBatches(store);
   assert(batches.length > 1);
   assert(batches.flat().every((part) => part.partId !== 'p1-noise'));
-  for (const batch of batches) assert(batch.reduce((sum, part) => sum + part.text.length, 0) <= 14000);
+  for (const [index, batch] of batches.entries()) {
+    assert.doesNotThrow(() => minimizeMessages(storeyRequest(batch).messages));
+    const next = batches[index + 1]?.[0];
+    if (next) assert.throws(() => minimizeMessages(storeyRequest([...batch, next]).messages),
+      { code: 'MODEL_INPUT_LIMIT' });
+  }
+});
+
+test('batches: three-byte lines close at the gateway byte bound, despite fitting the old character bound', () => {
+  const lines = Array.from({ length: 40 }, (_, index) => ({ id: `p1-l${index}`, text: `तल ${'क'.repeat(230)}` }));
+  const store: StoreyPageStore = { source: { sha256: 'e'.repeat(64) }, pages: { '1': { lines } } };
+  const whole = lines.map(line => ({ partId: line.id, page: 1, text: line.text }));
+  assert(whole.reduce((sum, part) => sum + part.text.length + 48, 0) < 14000);
+  assert.throws(() => minimizeMessages(storeyRequest(whole).messages), { code: 'MODEL_INPUT_LIMIT' });
+  const batches = storeyPartSelection(store).batches;
+  assert.equal(batches.length, 2);
+  assert.deepEqual(batches.flat(), whole);
+  for (const batch of batches) assert.doesNotThrow(() => minimizeMessages(storeyRequest(batch).messages));
+  assert.throws(() => minimizeMessages(storeyRequest([...batches[0], batches[1][0]]).messages),
+    { code: 'MODEL_INPUT_LIMIT' });
 });
 
 test('selection: a line the minimizer refuses is left out, named, and cannot be cited', async () => {

@@ -208,7 +208,7 @@ const withSamples = (profile: ColumnProfileDocument, samples: number): ColumnPro
 });
 
 /** The gateway's own answer for these messages: true when it would refuse them for size. */
-function overGatewayBound(messages: Parameters<typeof minimizeMessages>[0]): boolean {
+export function overGatewayBound(messages: Parameters<typeof minimizeMessages>[0]): boolean {
   try {
     minimizeMessages(messages);
     return false;
@@ -616,7 +616,8 @@ async function askColumnGroups(
     if (isManualMappingMethod(result.plan.method)) {
       const code = result.issues[0]?.code ?? 'TEACHER_UNAVAILABLE';
       return failedResult(manualTeacherPlan(profile, code), code, {
-        ...groupMetadata(profile, groups.map(item => item.request.samplesPerColumn), results),
+        ...groupMetadata(profile, groups.map((item, index) =>
+          results[index]?.samplesPerColumn?.[0] ?? item.request.samplesPerColumn), results),
         ...(result.gatewayRefusal ? { gatewayRefusal: result.gatewayRefusal } : {}),
       });
     }
