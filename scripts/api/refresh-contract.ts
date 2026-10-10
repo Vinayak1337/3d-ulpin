@@ -4,9 +4,10 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { pinnedOperations } from '../../apps/api/scripts/pinned-operations';
 import { createApiDocument } from '../../apps/api/src/openapi';
 
-type SourcePins = { sourceSha256: Record<string, string> };
+type SourcePins = { sourceSha256: Record<string, string>; operations: string[] };
 
 /** Preserve existing pins; new pins cover native non-test producers only, not verification scripts. */
 function needsPin(path: string, pins: SourcePins) {
@@ -23,13 +24,15 @@ function changedPaths(base: string) {
   return [...new Set((changed + '\n' + added).trim().split('\n').filter(Boolean))];
 }
 
-function repin(paths: string[]) {
+function repin(paths: string[], operations: string[]) {
   const pins = JSON.parse(readFileSync('docs/api/source-pins.json', 'utf8')) as SourcePins;
   const selected = paths.filter(path => needsPin(path, pins));
   for (const path of selected) {
     const bytes = readFileSync(path).toString('latin1').replace(/\r\n/g, '\n');
     pins.sourceSha256[path] = createHash('sha256').update(bytes, 'latin1').digest('hex');
   }
+  // A route added or removed since the last full generation must not stay unlisted.
+  pins.operations = operations;
   writeFileSync('docs/api/source-pins.json', JSON.stringify(pins, null, 2) + '\n');
   console.log(JSON.stringify({ repinned: selected }));
 }
@@ -47,7 +50,7 @@ async function main() {
   try {
     const document = createApiDocument(app);
     writeFileSync('docs/api/openapi.json', JSON.stringify(document, null, 2) + '\n');
-    repin(paths);
+    repin(paths, pinnedOperations(document));
   } finally { await app.close(); }
 }
 
