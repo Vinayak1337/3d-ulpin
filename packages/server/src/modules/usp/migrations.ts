@@ -49,5 +49,10 @@ export async function migrateUsp() {
       await client.query(sql('usp.packet-pdf-entries.schema'));
       await client.query(sql('usp.packet-pdf-entries.mark'), [packetPdfEntriesName]);
     }
+    const propertyCardRevocationsName = 'usp_property_card_revocations_001';
+    if (!(await client.query(sql('usp.property-card-revocations.check'), [propertyCardRevocationsName])).rowCount) {
+      await client.query(sql('usp.property-card-revocations.schema'));
+      await client.query(sql('usp.property-card-revocations.mark'), [propertyCardRevocationsName]);
+    }
   });
 }

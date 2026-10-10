@@ -2465,6 +2465,116 @@
         "path": "packages/server/src/modules/spatial/spatial-ml-db.ts",
         "function": "migrateSpatialMl"
       }
+    },
+    {
+      "id": "usp.property-card-revocations.check",
+      "source": {
+        "path": "database/sql/60-usp/23-property-card-revocations-check.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "K5",
+        "acceptedBase": "d95d7bb831bb8f42a686d04b6b0cc419f8041639"
+      },
+      "file": "sql/60-usp/23-property-card-revocations-check.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "always",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "propertyCardRevocationsName",
+          "value": "usp_property_card_revocations_001"
+        }
+      ],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 52,
+      "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.property-card-revocations.schema",
+      "source": {
+        "path": "database/sql/60-usp/24-property-card-revocations-schema.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "K5",
+        "acceptedBase": "d95d7bb831bb8f42a686d04b6b0cc419f8041639"
+      },
+      "file": "sql/60-usp/24-property-card-revocations-schema.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "only when usp.property-card-revocations.check returns no row",
+      "parameters": [],
+      "guardedBy": "usp.property-card-revocations.check",
+      "callMode": "one-query-call",
+      "order": 53,
+      "sha256": "078d7aa71068760d51ce0d9edf5e8375b0022668d73ba9fb1e0c9e5b8a067fd3",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "60ad08aef218ca8c9a8ed6eed5c0c0973ace1388a9f0ea7faa52a9fdf8b0c44d"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "e190d520146ea95c9d8ea93263da529cd3cad34d2294df13a845e19694b160e1"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "206a116e8c63f87d7bc701e2e3d5095fa4ce22ee108888e3204d06360dd0ba83"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
+    },
+    {
+      "id": "usp.property-card-revocations.mark",
+      "source": {
+        "path": "database/sql/60-usp/25-property-card-revocations-mark.sql",
+        "function": "migrateUsp",
+        "kind": "authored-sql",
+        "task": "K5",
+        "acceptedBase": "d95d7bb831bb8f42a686d04b6b0cc419f8041639"
+      },
+      "file": "sql/60-usp/25-property-card-revocations-mark.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp-migration-ledger",
+      "condition": "after usp.property-card-revocations.schema succeeds",
+      "parameters": [
+        {
+          "position": 1,
+          "expression": "propertyCardRevocationsName",
+          "value": "usp_property_card_revocations_001"
+        }
+      ],
+      "guardedBy": "usp.property-card-revocations.check",
+      "callMode": "one-query-call",
+      "order": 54,
+      "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/migrations.ts",
+        "function": "migrateUsp"
+      }
     }
   ],
   "plannedButAbsent": []

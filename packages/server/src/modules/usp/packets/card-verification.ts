@@ -1,7 +1,8 @@
 import type { PoolClient } from 'pg';
 import { ZodError } from 'zod';
 import type { RequestContext } from '@ulpin/contracts/usp';
-import { UspPropertyCardSchema, UspPropertyCardVerificationSchema, UspReadPropertyCardSchema, type PropertyCard,
+import { UspPropertyCardRevocationSchema, UspPropertyCardSchema, UspPropertyCardVerificationSchema,
+  UspReadPropertyCardSchema, type PropertyCard,
   type PropertyCardVerification } from '../../../../../contracts/src/usp/property-card';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, notFound } from '../../../infrastructure/errors';
@@ -10,7 +11,7 @@ import { canonical } from '../../cases/domain';
 import { assertLocalUsp } from '../snapshots';
 import { authorizePlanTx, protectPlanDisclosureTx } from './plan-authority';
 import { readPacketPlan } from './plan-service';
-import { cardAccessDenied, cardArtifact, cardBodyDefect, currentRevisionTx, executedView, expiredTx, link,
+import { cardAccessDenied, cardArtifact, cardBodyDefect, cardLifecycleTx, currentRevisionTx, executedView, link,
   linkedPacket, planLinkageTx, storage, storedLinkageHolds, type Executed, type PropertyCardIo } from './card-service';
 
 /** Earlier revisions read by one report. A longer chain fails its check instead of passing unread. */
@@ -129,12 +130,15 @@ async function packetBytesCheck(ctx: RequestContext, executed: Executed | null, 
   return outcome(key, await refuses(() => linkedPacket(ctx, executed, io)) ? 'LINKED_PACKET' : null);
 }
 
+/** A revocation is keyed by the row, not by the body, so it is reported even when the body failed its check. */
 async function lifecycleTx(client: PoolClient, command: Command, card: PropertyCard | null) {
   const latest = (await client.query('SELECT max(revision) AS revision FROM usp_property_cards WHERE id=$1',
     [command.cardId])).rows[0];
-  const latestRevision = Number(latest.revision);
-  return { latestRevision, superseded: latestRevision > command.revision, expiresAt: card?.expiresAt ?? null,
-    expired: card ? await expiredTx(client, card.expiresAt) : null, revocation: null };
+  const latestRevision = Number(latest.revision), expiresAt = card?.expiresAt ?? null;
+  const state = await cardLifecycleTx(client, command.cardId, command.revision, expiresAt);
+  const stored = state.revocation ? UspPropertyCardRevocationSchema.parse(state.revocation) : null;
+  return { latestRevision, superseded: latestRevision > command.revision, expiresAt, expired: state.expired,
+    revocation: stored && { revokedAt: stored.revokedAt, reasonCode: stored.reasonCode } };
 }
 
 async function snapshotTx(client: PoolClient, view: PlanView) {
@@ -147,7 +151,7 @@ async function snapshotTx(client: PoolClient, view: PlanView) {
 /**
  * Reports whether one exact card revision still agrees with its own stored hash chain, plan and packet.
  * Access is settled first and again after the object reads; only then is a failed check an answer
- * (`inconsistent`) instead of a refusal. Expiry and a later revision are states here, not refusals.
+ * (`inconsistent`) instead of a refusal. Expiry, revocation and a later revision are states here, not refusals.
  * Nothing is written.
  */
 export async function verifyPropertyCard(ctx: RequestContext, raw: unknown, io: PropertyCardIo = storage) {
