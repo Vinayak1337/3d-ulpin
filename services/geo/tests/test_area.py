@@ -19,6 +19,14 @@ from geo.validation import InputError
 REFERENCE = {"sourceCrs": "EPSG:32643", "analysisCrs": "EPSG:32643", "origin": [500000, 3100000]}
 
 
+def test_equal_area_imagery_reference_keeps_a_bounded_explicit_metre_crs():
+    from geo.area import _analysis_crs
+    assert _analysis_crs("EPSG:6933").to_epsg() == 6933
+    assert all(axis.unit_name == "metre" for axis in _analysis_crs("EPSG:6933").axis_info)
+    with pytest.raises(InputError):
+        _analysis_crs("EPSG:3857")
+
+
 def ring(x=0, y=0, width=10, height=10):
     return [[x, y], [x + width, y], [x + width, y + height], [x, y + height], [x, y]]
 
