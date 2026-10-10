@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { useParams } from 'react-router';
-import { FileText } from '@phosphor-icons/react';
-import { DescriptionList, Icon, formatDateTime, type Fact } from '@ulpin/ui';
+import { DescriptionList, EvidenceChip, formatDateTime, type Fact } from '@ulpin/ui';
 import { useBuildingCanonical, useSpatialMlBatch, useSpatialMlItem } from '../../../api/queries';
 import { useOpenEvidence } from '../../evidence/EvidenceContext';
 import { Cited, ReadingStatementsContext } from '../../register/ReadingNote';
@@ -98,20 +97,12 @@ function Limitations({ items }: { items: string[] }) {
   );
 }
 
-/**
- * One citation as a control that opens the evidence viewer at the cited source, page and region. It is the
- * evidence chip drawn as its own button, because the chip's button is named by its text alone and this one
- * has to say what it opens.
- */
+/** The shared chip names the source and place it opens, without changing its visible text or look. */
 function CitationControl({ title, citation }: { title: string; citation: CandidateCitation }) {
   const open = useOpenEvidence();
   return (
-    <button type="button" className="ul-evid" aria-label={citationOpenLabel(citation)}
-      onClick={() => open(candidateEvidenceRef(title, citation))}>
-      <Icon icon={FileText} size={16} />
-      <b>{citation.source}</b>
-      <span>{citation.locator}</span>
-    </button>
+    <EvidenceChip source={citation.source} locator={citation.locator} accessibleName={citationOpenLabel(citation)}
+      onOpen={() => open(candidateEvidenceRef(title, citation))} />
   );
 }
 
