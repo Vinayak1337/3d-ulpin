@@ -2,7 +2,7 @@ import { Link, useParams } from 'react-router';
 import { Banner, Skeleton } from '@ulpin/ui';
 import { ColumnsTable } from './ColumnsTable';
 import { LearnerPanel } from './LearnerPanel';
-import { mergeMetrics } from './model';
+import { mergeMetrics, reviewMapping } from './model';
 import { Progress, TableRefusal } from './Progress';
 import { RecipeReview } from './RecipeReview';
 import { SourceHeader } from './SourceHeader';
@@ -47,12 +47,12 @@ function MappingContent({ profile, mappings, metrics, jobId, job, onApproved }: 
   profile: TableProfile; mappings: ChunkMapping[]; metrics: Metrics[]; jobId: string;
   job?: MappingJob; onApproved: () => void;
 }) {
-  const latest = mappings.at(-1);
+  const review = reviewMapping(mappings);
   return (
     <>
-      <ColumnsTable profile={profile} mapping={latest} />
+      <ColumnsTable profile={profile} mapping={review} />
       <LearnerPanel chunks={mergeMetrics(metrics, mappings, jobId)} />
-      {latest && job ? <RecipeReview key={jobId} profile={profile} mapping={latest} job={job}
+      {review && job ? <RecipeReview key={jobId} profile={profile} mapping={review} job={job}
         onApproved={onApproved} /> : null}
     </>
   );

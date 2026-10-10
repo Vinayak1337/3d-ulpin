@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { authorRecipe, approveRecipe, readRecipe } from './recipe-api';
-import { fillUnknownAnswers, initialAnswers, recipeBody } from './recipe';
+import { fillUnknownAnswers, officerAnswers, recipeBody } from './recipe';
 import { tableKey } from './queries';
 import type { Confirmation } from './RecipeConfirmation';
-import type { OfficerAnswer } from './recipe';
+import type { OfficerAnswer, OfficerAnswers } from './recipe';
 import type { ChunkMapping, MappingJob, Recipe, TableProfile } from './types';
 
 export function useRecipeReview(profile: TableProfile, mapping: ChunkMapping, job: MappingJob,
@@ -37,13 +37,17 @@ export function useRecipeReview(profile: TableProfile, mapping: ChunkMapping, jo
 }
 
 function useOfficerAnswers(profile: TableProfile, mapping: ChunkMapping) {
-  const [answers, setAnswers] = useState(() => initialAnswers(profile, mapping));
+  // Only edits are state: a question that arrives with a later-loaded chunk still clears an unedited target.
+  const [edits, setEdits] = useState<OfficerAnswers>({});
+  const answers = officerAnswers(profile, mapping, edits);
   const change = (sourceField: string, answer: OfficerAnswer) => {
     // An individually edited answer is no longer attributed to the shared-reason action.
-    setAnswers((previous) => ({ ...previous, [sourceField]: { target: answer.target, reason: answer.reason } }));
+    setEdits((previous) => ({ ...previous, [sourceField]: { target: answer.target, reason: answer.reason } }));
   };
   const markUnknown = (reason: string) => {
-    setAnswers((previous) => fillUnknownAnswers(profile, previous, reason));
+    const filled = Object.entries(fillUnknownAnswers(profile, answers, reason));
+    const shared = Object.fromEntries(filled.filter(([, answer]) => answer.sharedReason));
+    setEdits((previous) => ({ ...previous, ...shared }));
   };
   return { answers, change, markUnknown };
 }
