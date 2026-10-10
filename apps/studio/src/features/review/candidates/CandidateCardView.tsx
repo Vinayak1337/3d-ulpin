@@ -22,8 +22,8 @@ function Mono({ children }: { children: ReactNode }) {
   return <span className={styles.mono}>{children}</span>;
 }
 
-function Unknown() {
-  return <em className="ul-unknown">Unknown</em>;
+function Unknown({ children = 'Unknown' }: { children?: string }) {
+  return <em className="ul-unknown">{children}</em>;
 }
 
 function recordedFacts(card: CandidateCard): Fact[] {
@@ -33,7 +33,8 @@ function recordedFacts(card: CandidateCard): Fact[] {
     { label: 'Confidence', value: card.confidence },
   ];
   if (card.kind === 'room') {
-    facts.push({ label: 'Level', value: card.level });
+    const { text, stated } = card.level;
+    facts.push({ label: 'Level', value: stated ? text : <Unknown>{text}</Unknown> });
     facts.push({ label: 'Floor title in the drawing', value: card.levelLiteral ?? <Unknown /> });
   }
   facts.push({ label: 'Frame', value: <Mono>{card.frame}</Mono> });
