@@ -413,6 +413,18 @@ NATIVE_TEXT_MIN_CHARS = 20
 RUNNER_MAX_PAGES = 8
 RUNNER_MAX_BYTES = 16 * 1024**2
 OCR_TILE_SECONDS = 90
+PDF_POINTS_PER_INCH = 72.0
+TILE_PIXELS = 1400
+TILE_PIXEL_OVERLAP = 0.10
+SCAN_DPI_FLOOR = 200.0
+SCAN_DPI_CEILING = 300.0
+VECTOR_PAGE_DPI = 300.0
+WORD_DUPLICATE_IOU = 0.5
+WORD_MIN_CONFIDENCE = 60.0
+WORD_GRID_POINTS = 64.0
+TESSERACT_TILE_SECONDS = 180
+TSV_COLUMNS = ["level", "page_num", "block_num", "par_num", "line_num", "word_num",
+               "left", "top", "width", "height", "conf", "text"]
 
 EXPRESSION_PART = r"(?:\d{0,2}B|S|G|P|UG|LG|ST|(?i:STILT|BASEMENT|GROUND|PODIUM))"
 FLOOR_EXPRESSION = re.compile(rf"(?<![A-Za-z0-9])(?:{EXPRESSION_PART}\s*\+\s*){{1,4}}\d{{1,3}}(?![0-9A-Za-z])")
@@ -568,14 +580,15 @@ def native_lines(page) -> list[dict]:
     return lines
 
 
-def tile_boxes(width: float, height: float) -> list[list[float]]:
+def tile_boxes(width: float, height: float, edge: float = TILE_EDGE_POINTS,
+               overlap: float = TILE_OVERLAP_POINTS) -> list[list[float]]:
     """Overlapping source-page tiles in PDF points, top-left origin."""
-    step = TILE_EDGE_POINTS - TILE_OVERLAP_POINTS
+    step = edge - overlap
     boxes, top = [], 0.0
     while True:
         left = 0.0
         while True:
-            right, bottom = min(width, left + TILE_EDGE_POINTS), min(height, top + TILE_EDGE_POINTS)
+            right, bottom = min(width, left + edge), min(height, top + edge)
             boxes.append([left, top, right, bottom])
             if right >= width:
                 break
@@ -701,6 +714,136 @@ def page_status(tile_states: set[str]) -> str:
     return "complete" if tile_states == {"complete"} else "partial"
 
 
+def verify_tile_assets(tesseract: Path, tessdata: Path) -> None:
+    """The tiled path runs the same pinned executable and English data as the supervised runner."""
+    helpers()
+    from geo.usp_document_candidates.docling_tesseract import ENG_SHA256, TESSERACT_SHA256
+
+    if digest(tesseract) != TESSERACT_SHA256 or digest(tessdata / "eng.traineddata") != ENG_SHA256:
+        raise ValueError("OCR asset mismatch")
+
+
+def scan_dpi(page) -> float:
+    """Native resolution of the largest raster on a page, kept within the OCR floor and ceiling.
+
+    The floor is the baseline's own density (about 202 dpi), so low-resolution scans are not made coarser;
+    a page with no raster is vector and is rendered at the vector density.
+    """
+    best_area, best_dpi = 0.0, None
+    for image in page.get_images(full=True):
+        for rect in page.get_image_rects(image[0]):
+            if rect.width > 0 and rect.get_area() > best_area:
+                best_area, best_dpi = rect.get_area(), image[2] / rect.width * PDF_POINTS_PER_INCH
+    if best_dpi is None:
+        return VECTOR_PAGE_DPI
+    return min(max(best_dpi, SCAN_DPI_FLOOR), SCAN_DPI_CEILING)
+
+
+def pixel_tile_boxes(width: float, height: float, scale: float) -> list[list[float]]:
+    """Source-page tiles that render to at most TILE_PIXELS on a side, overlapping by TILE_PIXEL_OVERLAP."""
+    edge = (TILE_PIXELS - 2) / scale
+    return tile_boxes(width, height, edge, edge * TILE_PIXEL_OVERLAP)
+
+
+def render_tile(page, box: list[float], scale: float, target: Path):
+    """Grayscale render of one tile at the scan density; the PNG is retained next to its TSV."""
+    import fitz
+
+    pixmap = page.get_pixmap(matrix=fitz.Matrix(scale, scale), clip=fitz.Rect(*box), colorspace=fitz.csGRAY,
+                             alpha=False)
+    if max(pixmap.width, pixmap.height) > TILE_PIXELS:
+        raise ValueError("tile render exceeds the pixel bound")
+    pixmap.set_dpi(round(scale * PDF_POINTS_PER_INCH), round(scale * PDF_POINTS_PER_INCH))
+    pixmap.save(target)
+    return pixmap
+
+
+def tile_words(tsv: str, pixmap, scale: float, page_size: tuple[float, float]) -> list[dict]:
+    """Confident Tesseract words of one tile, boxed in source-page points."""
+    rows = csv.DictReader(io.StringIO(tsv), delimiter="	", quoting=csv.QUOTE_NONE)
+    if rows.fieldnames != TSV_COLUMNS:
+        raise ValueError("invalid TSV header")
+    words = []
+    for row in rows:
+        confidence = float(row["conf"])
+        if row["level"] != "5" or not row["text"].strip() or confidence < WORD_MIN_CONFIDENCE:
+            continue
+        left, top = int(row["left"]), int(row["top"])
+        pixels = [left, top, left + int(row["width"]), top + int(row["height"])]
+        box = [(pixmap.x + pixels[0]) / scale, (pixmap.y + pixels[1]) / scale,
+               (pixmap.x + pixels[2]) / scale, (pixmap.y + pixels[3]) / scale]
+        box = [min(max(box[0], 0.0), page_size[0]), min(max(box[1], 0.0), page_size[1]),
+               min(max(box[2], 0.0), page_size[0]), min(max(box[3], 0.0), page_size[1])]
+        words.append({"text": row["text"], "box": box, "confidence": confidence})
+    return words
+
+
+def box_iou(first: list[float], second: list[float]) -> float:
+    width = min(first[2], second[2]) - max(first[0], second[0])
+    height = min(first[3], second[3]) - max(first[1], second[1])
+    inside = max(width, 0) * max(height, 0)
+    union = ((first[2] - first[0]) * (first[3] - first[1]) + (second[2] - second[0]) * (second[3] - second[1])
+             - inside)
+    return inside / union if union > 0 else 0.0
+
+
+def grid_cells(box: list[float]) -> list[tuple[int, int]]:
+    columns = range(int(box[0] // WORD_GRID_POINTS), int(box[2] // WORD_GRID_POINTS) + 1)
+    rows = range(int(box[1] // WORD_GRID_POINTS), int(box[3] // WORD_GRID_POINTS) + 1)
+    return [(column, row) for column in columns for row in rows]
+
+
+def dedupe_words(words: list[dict]) -> list[dict]:
+    """Words seen by two overlapping tiles: at IoU of 0.5 or more on the page, keep the higher confidence."""
+    kept: list[dict] = []
+    grid: dict[tuple[int, int], list[dict]] = {}
+    for word in sorted(words, key=lambda item: -item["confidence"]):
+        cells = grid_cells(word["box"])
+        if any(box_iou(word["box"], other["box"]) >= WORD_DUPLICATE_IOU
+               for cell in cells for other in grid.get(cell, [])):
+            continue
+        kept.append(word)
+        for cell in cells:
+            grid.setdefault(cell, []).append(word)
+    return kept
+
+
+def ocr_scan_tile(job: dict, page, box: list[float], index: int) -> tuple[dict, list[dict]]:
+    """Render and OCR one tile; a failed tile is recorded as ocr_unavailable and contributes no words."""
+    target = job["folder"] / f"p{job['number']:02d}-t{index:02d}"
+    pixmap = render_tile(page, box, job["scale"], target.with_suffix(".png"))
+    command = [str(job["tesseract"]), str(target.with_suffix(".png")), "stdout", "--tessdata-dir",
+               str(job["tessdata"]), "-l", "eng", "--psm", "11", "tsv"]
+    try:
+        completed = subprocess.run(command, env=ocr_environment(job["tesseract"], job["tessdata"]),
+                                   stdin=subprocess.DEVNULL, capture_output=True, timeout=TESSERACT_TILE_SECONDS,
+                                   check=True)
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as error:
+        return {"box": box, "status": "ocr_unavailable", "issues": [type(error).__name__]}, []
+    target.with_suffix(".tsv").write_bytes(completed.stdout)
+    words = tile_words(completed.stdout.decode("utf-8"), pixmap, job["scale"], job["page_size"])
+    return {"box": box, "status": "complete", "issues": [], "words": len(words)}, words
+
+
+def tiled_page_entry(page, number: int, settings: argparse.Namespace, pool) -> dict:
+    """OCR of a page without a text layer at its scan density, in tiles of at most TILE_PIXELS."""
+    dpi = scan_dpi(page)
+    width, height = page.rect.width, page.rect.height
+    folder = settings.output / "ocr-tiles" / settings.expected_source_sha256[:12]
+    folder.mkdir(parents=True, exist_ok=True)
+    job = {"scale": dpi / PDF_POINTS_PER_INCH, "tesseract": settings.tesseract, "tessdata": settings.tessdata,
+           "folder": folder, "number": number, "page_size": (width, height)}
+    boxes = pixel_tile_boxes(width, height, job["scale"])
+    results = list(pool.map(lambda pair: ocr_scan_tile(job, page, *pair), zip(boxes, range(len(boxes)))))
+    tiles = [tile for tile, _ in results]
+    words = dedupe_words([word for _, tile_list in results for word in tile_list])
+    rows = join_rows(words)
+    lines = [{"id": f"p{number}-l{index}", **row} for index, row in enumerate(rows)]
+    status = page_status({tile["status"] for tile in tiles})
+    return {"width": width, "height": height, "origin": "ocr", "method": "ocr:tesseract-cli-native-resolution-tiles",
+            "scanDpi": round(dpi, 1), "status": status, "tiles": tiles, "lines": lines}
+
+
 def page_entry(page, number: int, sources: dict, settings: argparse.Namespace, pool) -> dict:
     """Native text when the page has a text layer; otherwise OCR over tiles, in parallel."""
     lines = native_lines(page)
@@ -708,6 +851,8 @@ def page_entry(page, number: int, sources: dict, settings: argparse.Namespace, p
     if sum(len(line["text"]) for line in lines) >= NATIVE_TEXT_MIN_CHARS:
         merged = [{"id": f"p{number}-l{index}", **line} for index, line in enumerate(lines)]
         return {"width": width, "height": height, "origin": "native_text", "status": "complete", "lines": merged}
+    if settings.ocr_tiles:
+        return tiled_page_entry(page, number, settings, pool)
     job = {**sources[number], "python": settings.ocr_python, "models": settings.models,
            "tesseract": settings.tesseract, "tessdata": settings.tessdata}
     boxes = tile_boxes(width, height)
@@ -728,6 +873,10 @@ def pages_command(args: argparse.Namespace) -> int:
 
     if digest(args.source) != args.expected_source_sha256:
         raise ValueError("source hash mismatch")
+    if not args.ocr_tiles and not (args.ocr_python and args.models):
+        raise ValueError("the supervised runner needs --ocr-python and --models")
+    if args.ocr_tiles:
+        verify_tile_assets(args.tesseract, args.tessdata)
     args.output.mkdir(parents=True, exist_ok=True)
     work = args.output / "derived"
     work.mkdir(exist_ok=True)
@@ -779,11 +928,13 @@ def add_storey_parsers(sub) -> None:
     pages.add_argument("--source", type=Path, required=True)
     pages.add_argument("--expected-source-sha256", required=True)
     pages.add_argument("--output", type=Path, required=True, help="private directory outside Git")
-    pages.add_argument("--ocr-python", type=Path, required=True)
-    pages.add_argument("--models", type=Path, required=True)
+    pages.add_argument("--ocr-python", type=Path, help="supervised runner interpreter; not used with --ocr-tiles")
+    pages.add_argument("--models", type=Path, help="supervised runner models; not used with --ocr-tiles")
     pages.add_argument("--tesseract", type=Path, required=True)
     pages.add_argument("--tessdata", type=Path, required=True)
     pages.add_argument("--workers", type=int, default=3)
+    pages.add_argument("--ocr-tiles", action="store_true",
+                       help="OCR pages without a text layer at scan resolution in tiles of at most 1400 px")
     storey = sub.add_parser("storey", help="storey and unit rules over a retained page store")
     storey.add_argument("--pages", type=Path, required=True)
     storey.add_argument("--output", type=Path, required=True)
