@@ -172,3 +172,15 @@
 @media (max-width: 1280px) {
   .body { grid-template-columns: minmax(240px, 280px) minmax(0, 1fr) minmax(320px, 360px); }
 }
+
+/*
+ * Under 960 px (a 1280 px window at 200% zoom is 640 px) the canvas between the queue and the inspector would be
+ * narrower than the queue. The three columns then stack in document order (queue, canvas, inspector), each full
+ * width, and the page scrolls as one. The queue keeps six rows in view so the canvas stays within reach.
+ */
+@media (max-width: 960px) {
+  .page { grid-template-rows: auto max-content; overflow: auto; }
+  .body { grid-template-columns: minmax(0, 1fr); }
+  .list { max-height: 264px; }
+  .rowTitle { white-space: normal; overflow-wrap: anywhere; }
+}

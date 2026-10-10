@@ -23,6 +23,8 @@ import { useBuildingScene } from '../map/useBuildingScene';
 import { CheckGroups } from '../review/CheckGroups';
 import { useBuildingActions, useBuildingWorkflow, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import { cityJson, download, fileStem } from './exporters';
+import { RegisterAbsent } from './RegisterAbsent';
+import { absentReason } from './registerState';
 import { printRegistry, registryDetail, registryHtml, registryPackage, registryTables, registryWorkbook } from './registry';
 import { featureCode } from '../../api/queries';
 import type { ConsolidatedRegistryReport } from '../../../../../packages/contracts/src/building-registry-report';
@@ -39,6 +41,8 @@ export function RegisterPage() {
   if (register.isPending) {
     return <div className={styles.loading}><div className="ul-panel ul-pad ul-stack">{Array.from({ length: 7 }, (_, i) => <Skeleton key={i} width={i ? '100%' : '40%'} />)}</div></div>;
   }
+  const absent = absentReason(register.error);
+  if (absent && buildingId) return <RegisterAbsent buildingId={buildingId} reason={absent} />;
   if (register.error || !register.data) {
     const notRecorded = register.error instanceof ApiError && register.error.status === 404;
     return (
