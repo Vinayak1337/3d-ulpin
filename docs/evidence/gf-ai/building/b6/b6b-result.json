@@ -1,6 +1,6 @@
 {
   "schema": "building-b6b-result/1",
-  "status": "training_launched_detached_not_evaluated",
+  "status": "rejected_on_dev",
   "gate": "GF-AI/building_mask",
   "loss": {
     "revision": "ulpin-rfdetr-empty-mask-scalar-chunked/2",
@@ -71,5 +71,20 @@
     "evaluations_run": 0,
     "tests": "scripts/ml/test_transfer2_runner.py"
   },
-  "closed_sets": "Karnataka HOLDOUT, Coxs Bazar and Chittagong untouched; DEV only inside training."
+  "closed_sets": "Karnataka HOLDOUT, Coxs Bazar and Chittagong untouched; DEV only inside training.",
+  "outcome": {
+    "decision": "docs/evidence/gf-ai/building/b6/b6-decision.json",
+    "summary": [
+      "b6b-train-r672 stopped at epoch 6 on recall patience 3.",
+      "Best DEV epoch 3: recall 0.640, precision 0.866, against epoch 4 recall 0.662, precision 0.854.",
+      "The preregistered rule needs strictly higher DEV recall, so B6 fails before transfer-2."
+    ],
+    "transferEvaluations": 0,
+    "transfer2SlotsRemaining": [
+      "epoch4",
+      "b6"
+    ],
+    "demoCandidate": "epoch 4 (B3, 432 px)",
+    "b6Checkpoints": "outside Git; not registered; not exported"
+  }
 }
