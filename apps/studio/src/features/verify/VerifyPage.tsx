@@ -6,6 +6,7 @@ import {
 import { shortHash, type SpaceWorkflow, type WorkflowEvent } from '../../local/workflow';
 import { useResolveCode } from '../workflow/useWorkflow';
 import { useCardFacts } from '../identity/cardFacts';
+import { draftLead } from '../identity/draft';
 import { DraftNotice } from '../identity/DraftNotice';
 import { LOCAL_CHAIN_TONES, LOCAL_CHAIN_WORDS, useLocalChain, type LocalChain } from '../identity/localChain';
 import { usePublicCode } from '../../portal/queries';
@@ -58,17 +59,15 @@ function Result({ workflow, revision, chain }: {
   workflow: SpaceWorkflow; revision: number | null; chain: LocalChain;
 }) {
   const head = workflow.events[0]!;
-  const superseded = revision !== null && revision < head.revision;
+  const lead = draftLead(revision, head.revision);
   const card = useCardFacts(workflow);
   return (
     <>
       <DraftNotice />
-      <ResultBanner tone={superseded ? 'warning' : 'success'}>
-        {superseded ? `Superseded by revision r${head.revision}` : `Valid: revision r${head.revision}`}
-      </ResultBanner>
+      <ResultBanner tone={lead.tone}>{lead.text}</ResultBanner>
       <section className="ul-panel ul-pad ul-stack">
         <h1 className="ul-heading">{card?.buildingName ? `${card.spaceName}, ${card.buildingName}` : workflow.spaceName}</h1>
-        <UlpinCode code={workflow.code} location={card?.location ?? null} state="assigned" />
+        <UlpinCode code={workflow.code} location={card?.location ?? null} state="draft" />
         <DescriptionList items={[
           ...(card?.facts ?? [{ label: 'Assigned', value: workflow.assignedAt ? formatDate(workflow.assignedAt) : 'Unknown' }]),
           { label: 'Revision hash', value: <span className="ul-mono">{shortHash(head.hash)}</span> },

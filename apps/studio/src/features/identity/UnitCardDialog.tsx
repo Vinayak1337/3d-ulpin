@@ -4,7 +4,7 @@ import type { SpaceWorkflow } from '../../local/workflow';
 import type { LevelModel, SpaceModel } from '../../model/building';
 import { ListedCards } from '../review/recorded/ListedCards';
 import { CardDialog } from './CardDialog';
-import { isNotFound, readFailure } from './registryCard';
+import { cardAction } from './registryCard';
 
 /**
  * What the Property Card button opens for a unit. The registry's own cards when it lists one; the draft made in
@@ -26,10 +26,8 @@ export function UnitCardDialog({ buildingId, workflow, space, level, buildingNam
     );
   }
   if (!workflow?.code) return null;
-  // A server that holds no such building has no card for it; any other failure leaves that unknown.
-  const unasked = cards.error && !isNotFound(cards.error) ? readFailure(cards.error) : null;
   return (
-    <CardDialog workflow={workflow} space={space} level={level} buildingName={buildingName} registryFailure={unasked}
-      onClose={onClose} />
+    <CardDialog workflow={workflow} space={space} level={level} buildingName={buildingName}
+      unanswered={cardAction(cards, true).unanswered} onClose={onClose} />
   );
 }
