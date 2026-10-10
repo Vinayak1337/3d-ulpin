@@ -2502,5 +2502,12 @@
       {"x":1507,"y":42.1,"buildingBuildMs":11.5,"treeRefreshMs":30.2,"baseRebuilds":0},
       {"x":1603,"y":26.7,"buildingBuildMs":5.9,"treeRefreshMs":20.7,"baseRebuilds":0}
     ]
+  },
+  "lv2": {
+    "after": "lv2-after.json",
+    "difficult": "lv2-throttled.json",
+    "headed": "lv2-headed.json",
+    "comparison": "lv2-comparison.json",
+    "measurementChange": "3a uses main-thread long tasks, not rAF gaps."
   }
 }

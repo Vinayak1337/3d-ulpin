@@ -1,0 +1,368 @@
+{
+  "runs": {
+    "before": {
+      "git": "3f70b3f29775c6955dc0a06ab9c9215696ffe4c1",
+      "setterSlopeMsPerPriorBuilding": 0.12543,
+      "deferredInclusiveSlopeMsPerPriorBuilding": null,
+      "built": 15857,
+      "buildingOnlyBaseRebuilds": 17,
+      "baseSlopeMsPerPriorFeature": 0.171863,
+      "baseSlopeMsPerPriorPart": 16.49881,
+      "baseParts": [
+        {"x":0,"part":0,"y":78.4,"arriving":96},
+        {"x":96,"part":1,"y":75,"arriving":96},
+        {"x":192,"part":2,"y":79.4,"arriving":96},
+        {"x":288,"part":3,"y":132.9,"arriving":96},
+        {"x":384,"part":4,"y":139.5,"arriving":96},
+        {"x":480,"part":5,"y":160.6,"arriving":96},
+        {"x":576,"part":6,"y":192.1,"arriving":96},
+        {"x":672,"part":7,"y":157,"arriving":29}
+      ],
+      "longTasksOver50": 33,
+      "sceneOrStudioLongTaskCount": 33,
+      "sampleAlignment": {"offsetMs":83,"matchedMs":11598.875},
+      "longTasksFile": "E:/BhuAayam-data/task-data/lv1/lv2-analysis-1791669966605/before-long-tasks.json",
+      "raf": {"count":135,"p50Ms":16.7,"p95Ms":533.3,"longestMs":1983.3,"over50":32,"over100":27},
+      "environment": {"browser":"HeadlessChrome/153.0.8010.12","pixelRatio":1},
+      "importCompleteMs": 34676.7,
+      "finalDrawMs": 34670.8,
+      "maxFullAreaRenderFrameMs": 36.5,
+      "acknowledgements": null,
+      "scene": {"bounds":[[181.222351,0,-1701.498779],[1853.974609,173.817413,-22.512215]],"drawn":1662}
+    },
+    "after": {
+      "git": "4a9d86a3026c105a74a186a0bf5df88fff060b1a",
+      "setterSlopeMsPerPriorBuilding": 0.000028,
+      "deferredInclusiveSlopeMsPerPriorBuilding": 0.011219,
+      "built": 1662,
+      "buildingOnlyBaseRebuilds": 0,
+      "baseSlopeMsPerPriorFeature": 0.141518,
+      "baseSlopeMsPerPriorPart": 13.585714,
+      "baseParts": [
+        {"x":0,"part":0,"y":53.6,"arriving":96},
+        {"x":96,"part":1,"y":68.3,"arriving":96},
+        {"x":192,"part":2,"y":88.2,"arriving":96},
+        {"x":288,"part":3,"y":99,"arriving":96},
+        {"x":384,"part":4,"y":109.9,"arriving":96},
+        {"x":480,"part":5,"y":120.7,"arriving":96},
+        {"x":576,"part":6,"y":146.9,"arriving":96},
+        {"x":672,"part":7,"y":145,"arriving":29}
+      ],
+      "longTasksOver50": 9,
+      "sceneOrStudioLongTaskCount": 9,
+      "sampleAlignment": {"offsetMs":143,"matchedMs":2303.056},
+      "longTasksFile": "E:/BhuAayam-data/task-data/lv1/lv2-analysis-1791669966605/after-long-tasks.json",
+      "raf": {"count":139,"p50Ms":16.7,"p95Ms":333.3,"longestMs":616.7,"over50":55,"over100":50},
+      "environment": {"browser":"HeadlessChrome/153.0.8010.12","pixelRatio":1,"cpuThrottleRate":1},
+      "importCompleteMs": 30672.4,
+      "finalDrawMs": 30494.1,
+      "maxFullAreaRenderFrameMs": 40.7,
+      "acknowledgements": 25,
+      "acknowledgementsWithLaterBacklog": 0,
+      "scene": {"bounds":[[181.222351,0,-1701.498779],[1853.974609,173.817413,-22.512215]],"drawn":1662}
+    },
+    "lv2-after": {
+      "git": "3deb7ec1d1a948a2f92d4b1639b3eeee50ba4801",
+      "setterSlopeMsPerPriorBuilding": -0.000106,
+      "deferredInclusiveSlopeMsPerPriorBuilding": 0.005923,
+      "built": 1662,
+      "buildingOnlyBaseRebuilds": 0,
+      "baseSlopeMsPerPriorFeature": -0.04907,
+      "baseSlopeMsPerPriorPart": -4.710714,
+      "baseParts": [
+        {"x":0,"part":0,"y":64.6,"arriving":96},
+        {"x":96,"part":1,"y":44.7,"arriving":96},
+        {"x":192,"part":2,"y":28.5,"arriving":96},
+        {"x":288,"part":3,"y":28.1,"arriving":96},
+        {"x":384,"part":4,"y":34.7,"arriving":96},
+        {"x":480,"part":5,"y":28,"arriving":96},
+        {"x":576,"part":6,"y":33.7,"arriving":96},
+        {"x":672,"part":7,"y":15.2,"arriving":29}
+      ],
+      "longTasksOver50": 2,
+      "sceneOrStudioLongTaskCount": 2,
+      "remainingLongTasks": [
+        {
+          "at": 18209.2,
+          "ms": 71,
+          "topInclusive": [
+            ["performWorkOnRoot",64.084],
+            ["performSyncWorkOnRoot",64.084],
+            ["flushSyncWorkAcrossRoots_impl",64.084],
+            ["processRootScheduleInMicrotask",64.084],
+            ["run",63.524]
+          ],
+          "topSelf": [["(garbage collector)",7.372],["addVertex",6.956],["sidewalls",6.261]],
+          "overlappingCalls": [{"name":"setBase","at":18215.3,"ms":64.6},{"name":"setBuildings","at":18279.9,"ms":0}],
+          "topSceneOrLoader": [["setBase",55.849]],
+          "sceneOrStudioAttributable": true,
+          "decoderDuringStream": false
+        },
+        {
+          "at": 19052.5,
+          "ms": 67,
+          "topInclusive": [
+            ["inflate$1",29.651],
+            ["decodeBlock",29.651],
+            ["decode",29.651],
+            ["getTileOrStrip",29.651],
+            ["Inflate$1.push",28.2]
+          ],
+          "topSelf": [["(anonymous)",29.417],["inflate_fast",24.969],["imageryOverlay",4.808]],
+          "overlappingCalls": [],
+          "topSceneOrLoader": [["inflate$1",29.651],["decodeBlock",29.651],["getTileOrStrip",29.651]],
+          "sceneOrStudioAttributable": true,
+          "decoderDuringStream": true
+        }
+      ],
+      "sampleAlignment": {"offsetMs":161,"matchedMs":1664.286},
+      "longTasksFile": "E:/BhuAayam-data/task-data/lv1/lv2-analysis-1791669966605/lv2-after-long-tasks.json",
+      "raf": {"count":122,"p50Ms":66.6,"p95Ms":316.6,"longestMs":533.3,"over50":62,"over100":43},
+      "environment": {
+        "browser": "HeadlessChrome/153.0.8010.12",
+        "pixelRatio": 1,
+        "cpuThrottleRate": 1,
+        "gpuRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      "importCompleteMs": 28414.6,
+      "finalDrawMs": 28252,
+      "maxFullAreaRenderFrameMs": 27,
+      "acknowledgements": 25,
+      "acknowledgementsWithLaterBacklog": 0,
+      "scene": {
+        "bounds": [[181.222351,0,-1701.498779],[1853.974609,173.817413,-22.512215]],
+        "drawn": 1662,
+        "padBatches": 57,
+        "baseBounds": [[0,0,-1553.399323],[1868.713832,0,0]],
+        "framedBounds": [[0,0,-1701.498765],[1868.713832,117.801433,0]]
+      }
+    },
+    "lv2-throttled": {
+      "git": "3deb7ec1d1a948a2f92d4b1639b3eeee50ba4801",
+      "setterSlopeMsPerPriorBuilding": 0.000418,
+      "deferredInclusiveSlopeMsPerPriorBuilding": 0.956055,
+      "built": 1662,
+      "buildingOnlyBaseRebuilds": 0,
+      "baseSlopeMsPerPriorFeature": -0.324206,
+      "baseSlopeMsPerPriorPart": -31.12381,
+      "baseParts": [
+        {"x":0,"part":0,"y":328.9,"arriving":96},
+        {"x":96,"part":1,"y":263.4,"arriving":96},
+        {"x":192,"part":2,"y":131.9,"arriving":96},
+        {"x":288,"part":3,"y":113.8,"arriving":96},
+        {"x":384,"part":4,"y":117.1,"arriving":96},
+        {"x":480,"part":5,"y":116.5,"arriving":96},
+        {"x":576,"part":6,"y":103.3,"arriving":96},
+        {"x":672,"part":7,"y":75.9,"arriving":29}
+      ],
+      "longTasksOver50": 368,
+      "sceneOrStudioLongTaskCount": 368,
+      "sampleAlignment": {"offsetMs":270,"matchedMs":42409.217},
+      "longTasksFile": "E:/BhuAayam-data/task-data/lv1/lv2-analysis-1791669966605/lv2-throttled-long-tasks.json",
+      "raf": {"count":431,"p50Ms":166.6,"p95Ms":216.8,"longestMs":2983.2,"over50":406,"over100":337},
+      "environment": {
+        "browser": "HeadlessChrome/153.0.8010.12",
+        "pixelRatio": 1,
+        "cpuThrottleRate": 4,
+        "gpuRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+      },
+      "importCompleteMs": 48562.2,
+      "finalDrawMs": 89646.9,
+      "maxFullAreaRenderFrameMs": 180.2,
+      "acknowledgements": 25,
+      "acknowledgementsWithLaterBacklog": 17,
+      "scene": {
+        "bounds": [[181.222351,0,-1701.498779],[1853.974609,173.817413,-22.512215]],
+        "drawn": 1662,
+        "padBatches": 381,
+        "baseBounds": [[0,0,-1553.399323],[1868.713832,0,0]],
+        "framedBounds": [[0,0,-1701.498765],[1868.713832,117.801433,0]]
+      }
+    },
+    "lv2-headed": {
+      "git": "3deb7ec1d1a948a2f92d4b1639b3eeee50ba4801",
+      "setterSlopeMsPerPriorBuilding": 0.000033,
+      "deferredInclusiveSlopeMsPerPriorBuilding": 0.003401,
+      "built": 1662,
+      "buildingOnlyBaseRebuilds": 0,
+      "baseSlopeMsPerPriorFeature": -0.084214,
+      "baseSlopeMsPerPriorPart": -8.084524,
+      "baseParts": [
+        {"x":0,"part":0,"y":84.4,"arriving":96},
+        {"x":96,"part":1,"y":53.8,"arriving":96},
+        {"x":192,"part":2,"y":20.6,"arriving":96},
+        {"x":288,"part":3,"y":28.2,"arriving":96},
+        {"x":384,"part":4,"y":26.1,"arriving":96},
+        {"x":480,"part":5,"y":21.4,"arriving":96},
+        {"x":576,"part":6,"y":22.5,"arriving":96},
+        {"x":672,"part":7,"y":9.7,"arriving":29}
+      ],
+      "longTasksOver50": 7,
+      "sceneOrStudioLongTaskCount": 7,
+      "remainingLongTasks": [
+        {
+          "at": 20384.5,
+          "ms": 91,
+          "topInclusive": [
+            ["performWorkOnRoot",77.627],
+            ["performSyncWorkOnRoot",77.627],
+            ["flushSyncWorkAcrossRoots_impl",77.627],
+            ["processRootScheduleInMicrotask",77.627],
+            ["run",76.159]
+          ],
+          "topSelf": [["ringLines",17.381],["(garbage collector)",13.512],["setXYZ",7.387]],
+          "overlappingCalls": [{"name":"setBase","at":20391,"ms":84.4}],
+          "topSceneOrLoader": [["setBase",71.405]],
+          "sceneOrStudioAttributable": true,
+          "decoderDuringStream": false
+        },
+        {
+          "at": 20475.7,
+          "ms": 64,
+          "topInclusive": [
+            ["WebGLRenderer.render",62.47],
+            ["renderFrame",62.47],
+            ["renderObject",56.156],
+            ["renderObjects",56.156],
+            ["renderScene",56.156]
+          ],
+          "topSelf": [["onFirstUse",52.983],["createBuffer",3.723],["WebGLShader",1.664]],
+          "overlappingCalls":
+          [{"name":"drainBuildingQueue","at":20476.2,"ms":0},{"name":"renderFrame","at":20476.2,"ms":63.4}],
+          "topSceneOrLoader": [["renderFrame",62.47]],
+          "sceneOrStudioAttributable": true,
+          "decoderDuringStream": false
+        },
+        {
+          "at": 20634.6,
+          "ms": 59,
+          "topInclusive": [
+            ["performWorkOnRoot",54.799],
+            ["performSyncWorkOnRoot",54.799],
+            ["flushSyncWorkAcrossRoots_impl",54.799],
+            ["processRootScheduleInMicrotask",54.799],
+            ["react_stack_bottom_frame",53.115]
+          ],
+          "topSelf": [["applyMatrix4",8.518],["setXYZ",5.04],["(garbage collector)",4.819]],
+          "overlappingCalls": [{"name":"setBase","at":20639.6,"ms":53.8},{"name":"setBuildings","at":20693.4,"ms":0}],
+          "topSceneOrLoader": [["setBase",48.475]],
+          "sceneOrStudioAttributable": true,
+          "decoderDuringStream": false
+        },
+        {
+          "at": 20825.3,
+          "ms": 55,
+          "topInclusive": [
+            ["WebGLRenderer.render",55.402],
+            ["renderFrame",55.402],
+            ["renderObject",53.803],
+            ["renderObjects",53.803],
+            ["renderScene",53.803]
+          ],
+          "topSelf": [["onFirstUse",49.805],["WebGLRenderer.renderBufferDirect",1.59],["push",0.969]],
+          "overlappingCalls":
+          [{"name":"drainBuildingQueue","at":20825.4,"ms":0},{"name":"renderFrame","at":20825.4,"ms":54.8}],
+          "topSceneOrLoader": [["renderFrame",55.402]],
+          "sceneOrStudioAttributable": true,
+          "decoderDuringStream": false
+        },
+        {
+          "at": 21126.3,
+          "ms": 73,
+          "topInclusive": [
+            ["getTileOrStrip",37.801],
+            ["inflate$1",36.143],
+            ["decodeBlock",36.143],
+            ["decode",36.143],
+            ["Inflate$1.push",30.115]
+          ],
+          "topSelf": [["(anonymous)",27.152],["inflate_fast",15.346],["inflateResetKeep",6.028]],
+          "overlappingCalls": [],
+          "topSceneOrLoader": [["getTileOrStrip",37.801],["inflate$1",36.143],["decodeBlock",36.143]],
+          "sceneOrStudioAttributable": true,
+          "decoderDuringStream": true
+        },
+        {
+          "at": 21584.1,
+          "ms": 104,
+          "topInclusive": [
+            ["WebGLRenderer.render",104.324],
+            ["renderFrame",104.324],
+            ["renderObject",100.966],
+            ["renderObjects",100.685],
+            ["renderScene",100.685]
+          ],
+          "topSelf": [["onFirstUse",96.462],["createBuffer",1.522],["renderObject",1.302]],
+          "overlappingCalls":
+          [{"name":"drainBuildingQueue","at":21584.2,"ms":0},{"name":"renderFrame","at":21584.2,"ms":104.4}],
+          "topSceneOrLoader": [["renderFrame",104.324]],
+          "sceneOrStudioAttributable": true,
+          "decoderDuringStream": false
+        },
+        {
+          "at": 21799.1,
+          "ms": 94,
+          "topInclusive": [
+            ["renderFrame",93.806],
+            ["WebGLRenderer.render",88.482],
+            ["renderObject",85.453],
+            ["WebGLRenderer.renderBufferDirect",84.303],
+            ["setProgram",83.877]
+          ],
+          "topSelf": [["onFirstUse",78.803],["EdgesGeometry",1.634],["replaceLightNums",1.573]],
+          "overlappingCalls":
+          [{"name":"drainBuildingQueue","at":21799.1,"ms":5.1},{"name":"renderFrame","at":21799.1,"ms":93.5}],
+          "topSceneOrLoader": [["renderFrame",93.806],["drainBuildingQueue",5.324]],
+          "sceneOrStudioAttributable": true,
+          "decoderDuringStream": false
+        }
+      ],
+      "sampleAlignment": {"offsetMs":158,"matchedMs":2861.623},
+      "longTasksFile": "E:/BhuAayam-data/task-data/lv1/lv2-analysis-1791669966605/lv2-headed-long-tasks.json",
+      "raf": {"count":369,"p50Ms":7.1,"p95Ms":24.8,"longestMs":166.1,"over50":6,"over100":3},
+      "environment": {
+        "browser": "Chrome/154.0.0.0",
+        "pixelRatio": 1,
+        "cpuThrottleRate": 1,
+        "gpuRenderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)"
+      },
+      "importCompleteMs": 23185,
+      "finalDrawMs": 23050,
+      "maxFullAreaRenderFrameMs": 21.8,
+      "acknowledgements": 25,
+      "acknowledgementsWithLaterBacklog": 0,
+      "scene": {
+        "bounds": [[181.222351,0,-1701.498779],[1853.974609,173.817413,-22.512215]],
+        "drawn": 1662,
+        "padBatches": 44,
+        "baseBounds": [[0,0,-1553.399323],[1868.713832,0,0]],
+        "framedBounds": [[0,0,-1701.498765],[1868.713832,117.801433,0]]
+      }
+    }
+  },
+  "parity": {
+    "rect": {"x":12,"y":68,"width":1416,"height":632},
+    "identicalApplicationIds": true,
+    "drawn": 1662,
+    "scene":
+    {"bounds":[[181.222351,0,-1701.498779],[1853.974609,173.817413,-22.512215]],"baseBatches":8,"padBatches":53},
+    "pixels": {"meanAbsoluteError255":0.103617,"changedFraction":0.003245},
+    "screenshot": "E:/BhuAayam-data/task-data/lv1/parity-1791666304729/final.png",
+    "qualification": "Fixed-id part replay for visual parity; the measured stream remains in lv2-after.json."
+  },
+  "frozenLv1Pixels": {
+    "meanAbsoluteError255": 0.987542,
+    "changedFraction": 0.024215,
+    "regions": {
+      "labels": {"changedPixels":2315,"shareOfChanged":0.10683,"fractionOfCanvas":0.002587},
+      "assetErrorNote": {"changedPixels":19226,"shareOfChanged":0.887217,"fractionOfCanvas":0.021484},
+      "remainder": {"changedPixels":129,"shareOfChanged":0.005953,"fractionOfCanvas":0.000144}
+    }
+  },
+  "diagnosisFile": "docs/evidence/gf5/lv1/lv2-diagnosis-assets-present.json",
+  "measurementChange": "3a uses PerformanceObserver long tasks >50 ms; rAF gaps are stated, not the gate.",
+  "attributionLimit": "Call boundaries are direct; CDP offset calibrated by overlap with measured calls, +/-500 ms.",
+  "taskAttributionRule":
+  "Attributable when scene calls overlap or samples include scene/Studio source; decoder noted separately.",
+  "frozenDifferenceImage": "E:/BhuAayam-data/task-data/lv1/lv2-analysis-1791669966605/lv1-frozen-difference.png"
+}

@@ -2,7 +2,8 @@
 import { readFile } from 'node:fs/promises';
 import { writeEvidence } from './evidence-json.mjs';
 const directory = 'docs/evidence/gf5/lv1';
-const lag = JSON.parse(await readFile(`${directory}/lag.json`, 'utf8'));
+const capture = process.env.LV1_ANALYZE_FILE || 'lag';
+const lag = JSON.parse(await readFile(`${directory}/${capture}.json`, 'utf8'));
 const profile = JSON.parse(await readFile(lag.rawCpuFile, 'utf8'));
 const timings = JSON.parse(await readFile(lag.rawTimingFile, 'utf8'));
 const nodes = new Map(profile.nodes.map((node) => [node.id, node]));
@@ -65,6 +66,6 @@ if (lag.environment.userAgent) {
 lag.cpu.topSelfFunctions = lag.cpu.topSelfFunctions.map((entry) => ({
   ...entry, name: entry.name.replace(/node_modules\/\.vite\/deps\//, 'deps/'),
 }));
-await writeEvidence(`${directory}/lag.json`, lag);
+await writeEvidence(`${directory}/${capture}.json`, lag);
 console.log(JSON.stringify({ hypothesis: lag.hypothesis, idleMs: lag.cpu.idleMs,
   unattributedMs: lag.cpu.unattributedProgramMs, functions: lag.cpu.inclusiveFunctions }, null, 2));

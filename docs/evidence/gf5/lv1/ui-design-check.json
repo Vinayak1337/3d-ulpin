@@ -1,33 +1,39 @@
 {
+  "task": "LV2",
   "blocking": [],
   "designSystem": [],
   "checkedNoIssue": [
     {
-      "at": "apps/studio/src/features/map/ImportTray.tsx:50-59",
-      "rule": "docs/design-system/README.md:25-48",
-      "finding": "Received counts are stream counts; drawn counts come from the engine, not accepted proposals."
+      "at": "apps/studio/src/features/map/MapWorkspace.tsx:67-69,245",
+      "rule": "docs/design-system/map-and-3d.md#camera (task's explicit streamed-import exception)",
+      "finding": "Only an active import follows growing arrived bounds; interaction or selection stops it."
     },
     {
-      "at": "apps/studio/src/features/map/MapWorkspace.tsx:239-241,377-380",
-      "rule": "docs/design-system/map-and-3d.md:90-94",
-      "finding": "Removed the automatic camera reset on an append. No new controls, CSS, colours or fonts."
+      "at": "packages/scene/src/engine.ts:644-690,1510-1562,1789-1843",
+      "rule": "docs/design-system/README.md#visual-foundations (Motion)",
+      "finding": "One eased 600 ms flight, no overlapping refit, reduced motion jumps; input cancels following."
     },
     {
-      "at": "packages/scene/src/engine.ts:506-583,776-911",
-      "rule": "docs/design-system/map-and-3d.md:36-46",
-      "finding": "Existing candidate, unknown-height, thematic, selection and storey builders retain their inputs."
+      "at": "packages/scene/src/engine.ts:472-606,968-1001",
+      "rule": "docs/design-system/map-and-3d.md#evidence-and-record-status-always-on",
+      "finding": "Same source geometry/materials, candidate/unknown states, layers and unpickable dressing."
+    },
+    {
+      "at": "docs/evidence/gf5/lv1/lv2-callers.json",
+      "rule": "docs/design-system/README.md#principles",
+      "finding": "Retained Swiss unknown placement/heights stay unknown; no synthetic registers or rights."
     }
   ],
-  "manualReview": {
-    "desktop": "1440 x 900 first, middle, final and same-identity replay screenshots; paths in result.json.",
-    "keyboard": "No control, focus style, label, tab order or keyboard handler changed.",
-    "qualification": "No new zoom/contrast measurement; existing UI tests passed. No live backend was used.",
-    "quarantine": "The existing quarantine message takes precedence over progress metadata in this pack.",
-    "look": "No look parameter was reduced to improve timings; pixel tolerance still misses (result.json)."
+  "manual": {
+    "desktop": "1440 x 900 first/middle/final stream, fixed-id replay, and four actual caller captures reviewed.",
+    "scene": "The final stream keeps the whole arrived area in frame. Pixel comparison uses the before pose.",
+    "controls": "No CSS, typography, tab order, focus styling or control label changed.",
+    "look": "No lighting, texture, shadow, geometry or quality setting reduced to improve timings.",
+    "limit": "No new 200% zoom or contrast measurement; unchanged caller tests pass.",
+    "callerLimit": "Isolated read-only callers, not live backend routes; Swiss scene is honestly unplaced."
   },
-  "unqualified": "Register, review workspace, roofprint map and portal screenshots remain for the lead.",
   "scan": {
-    "limit": "The scanner covers apps/web only (0 added lines); changed Studio components were read manually.",
+    "limit": "The mechanical scanner covers apps/web only; the changed Studio lines were read manually.",
     "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs staging",
     "exit": 0
   }

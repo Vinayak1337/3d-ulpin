@@ -16,7 +16,10 @@ const port = Number(process.env.LV0_PORT || 5234);
 const pack = process.env.LV0_PACK || 'E:/BhuAayam-data/datasets/nyc-10013/nyc-10013-multimodal.zip';
 const python = process.env.LV0_PYTHON || 'E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe';
 const capture = process.env.LV1_CAPTURE || (process.env.LV1_CPU_RATE === '4' ? 'throttled' : 'after');
-if (!['before', 'after', 'throttled'].includes(capture)) throw new Error('Unknown capture name');
+if (!['before', 'after', 'throttled', 'lv2-after', 'lv2-throttled', 'lv2-headed'].includes(capture)) {
+  throw new Error('Unknown capture name');
+}
+const headed = process.env.LV2_HEADED === '1';
 const forbidden = /(^|[\\/])(heldout|holdout|evaluator|provisional|acquisitions|runtime)([\\/]|$)/i;
 if (forbidden.test(pack) || forbidden.test(python)) throw new Error('Forbidden input path');
 if ([5188, 5190, 5193, 5198, 5199, 5217, 5226, 5229].includes(port)) throw new Error('Reserved port');
@@ -104,8 +107,10 @@ function summarize(probe, profile, input) {
 
 async function runBrowser() {
   const browser = await chromium.launch({
-    headless: true,
-    args: ['--enable-precise-memory-info', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
+    headless: !headed,
+    channel: headed ? 'chrome' : undefined,
+    args: headed ? ['--enable-precise-memory-info']
+      : ['--enable-precise-memory-info', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
   });
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
@@ -143,22 +148,26 @@ async function runBrowser() {
     }, throttle);
     await page.getByRole('button', { name: 'Start import', exact: true }).click();
     await page.waitForFunction(() => window.__lv0.completed || window.__lv0.failed, null, { timeout: 180000 });
-    if (throttle !== 1) {
-      // The sender's fallback can finish receiving while the budgeted scene is still draining.
+    {
+      // Sender completion is not renderer completion; capture the entire arrived scene.
       await page.waitForFunction(() => {
         const expected = window.__lv0.parts.reduce((sum, part) => sum + (part.buildings || 0), 0);
         return window.__lv0.failed || window.__ulpinScene?.drawnBuildings().count === expected;
       }, null, { timeout: 180000 });
     }
+    await page.waitForFunction(() => !window.__ulpinScene.flight);
     await page.waitForTimeout(1000);
     const probe = await page.evaluate(() => {
       const probe = window.__lv0;
       probe.end = performance.now();
       probe.active = false;
       probe.heap.endBytes = performance.memory.usedJSHeapSize;
+      const gl = window.__ulpinScene.renderer.getContext();
+      const info = gl.getExtension('WEBGL_debug_renderer_info');
       probe.environment = {
-        browser: navigator.userAgent.match(/HeadlessChrome\/[^ ]+/)?.[0], pixelRatio: devicePixelRatio,
+        browser: navigator.userAgent.match(/(?:HeadlessChrome|Chrome)\/[^ ]+/)?.[0], pixelRatio: devicePixelRatio,
         cpuThrottleRate: Number(window.__lv1Throttle || 1),
+        gpuRenderer: info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : 'Unavailable',
       };
       return probe;
     });
@@ -170,6 +179,10 @@ async function runBrowser() {
         bounds: [engine.areaBox.min.toArray(), engine.areaBox.max.toArray()],
         camera: engine.camera.position.toArray(),
         target: engine.controls.target.toArray(),
+        baseBounds: [engine.baseBox.min.toArray(), engine.baseBox.max.toArray()],
+        framedBounds: engine.framedBox && [engine.framedBox.min.toArray(), engine.framedBox.max.toArray()],
+        padBatches: engine.padBatches?.size,
+        drawCalls: engine.renderer.info.render.calls,
       };
     });
     await writeFile(`${scratch}/scene.json`, JSON.stringify(scene));
@@ -212,9 +225,9 @@ try {
   });
   const input = { path: pack, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex'), git };
   const result = summarize(probe, profile, input);
-  await writeFile(`${evidence}/lag.json`, JSON.stringify(result, null, 2) + '\n');
+  await writeEvidence(`${evidence}/${capture}.json`, result);
+  process.env.LV1_ANALYZE_FILE = capture;
   await import('./analyze.mjs');
-  await writeEvidence(`${evidence}/${capture}.json`, JSON.parse(await readFile(`${evidence}/lag.json`, 'utf8')));
   console.log(JSON.stringify(result.frames));
 } finally {
   await writeFile(`${scratch}/server.log`, server.log());

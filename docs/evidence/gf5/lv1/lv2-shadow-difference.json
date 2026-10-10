@@ -1,0 +1,11 @@
+{
+  "residualPixels": 129,
+  "shadowMaskMatchedPixels": 129,
+  "paths": [
+    "E:/BhuAayam-data/task-data/lv1/run-1791658537591/final.png",
+    "E:/BhuAayam-data/task-data/lv1/parity-1791660083589/final.png",
+    "E:/BhuAayam-data/task-data/lv1/lv2-diagnosis-1791665674182/unmodified.png",
+    "E:/BhuAayam-data/task-data/lv1/lv2-diagnosis-1791665674182/shadow-forced-update.png"
+  ],
+  "limit": "A matching changed-pixel mask supports a shadow cause; no lighting/frustum code was changed for pixels."
+}

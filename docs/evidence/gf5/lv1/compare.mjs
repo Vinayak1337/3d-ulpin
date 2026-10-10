@@ -2,71 +2,13 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { comparePixels } from './pixels.mjs';
 import { writeEvidence } from './evidence-json.mjs';
+import { slope, partWork, sampleStack, frameProfile } from './profile.mjs';
 
 const directory = 'docs/evidence/gf5/lv1';
 const scratch = `E:/BhuAayam-data/task-data/lv1/comparison-${Date.now()}`;
 await mkdir(scratch, { recursive: true });
 const load = async (path) => JSON.parse(await readFile(path, 'utf8'));
 const round = (key, value) => typeof value === 'number' ? Math.round(value * 1000000) / 1000000 : value;
-
-function slope(points) {
-  const mean = (key) => points.reduce((sum, point) => sum + point[key], 0) / points.length;
-  const x = mean('x');
-  const y = mean('y');
-  return points.reduce((sum, point) => sum + (point.x - x) * (point.y - y), 0)
-    / points.reduce((sum, point) => sum + (point.x - x) ** 2, 0);
-}
-
-function partWork(lag, timings) {
-  return lag.chunks.filter((part) => part.buildings).map((part) => {
-    const next = lag.chunks[lag.chunks.indexOf(part) + 1]?.at ?? timings.end;
-    const calls = timings.calls.filter((call) => call.at >= part.at && call.at < next);
-    const total = (names) => calls.filter((call) => names.includes(call.name))
-      .reduce((sum, call) => sum + call.ms, 0);
-    return {
-      x: part.buildingsBefore, y: total(['setBuildings', 'drainBuildingQueue']),
-      buildingBuildMs: total(['addBuilding']), treeRefreshMs: total(['buildDressing']),
-      baseRebuilds: calls.filter((call) => call.name === 'setBase' && call.rebuilt).length,
-    };
-  });
-}
-
-function sampleStack(profile, timings) {
-  const nodes = new Map(profile.nodes.map((node) => [node.id, node]));
-  const parents = new Map();
-  for (const node of profile.nodes) for (const child of node.children ?? []) parents.set(child, node.id);
-  const duration = (profile.endTime - profile.startTime) / 1000;
-  let at = timings.end - duration;
-  return profile.samples.map((id, index) => {
-    const ms = profile.timeDeltas[index] / 1000;
-    at += ms;
-    const stack = [];
-    for (let current = id; current; current = parents.get(current)) {
-      stack.push(nodes.get(current).callFrame.functionName || '(anonymous)');
-    }
-    return { at, ms, stack };
-  });
-}
-
-function frameProfile(frame, timings, samples) {
-  const from = frame.at - frame.ms;
-  const calls = timings.calls.filter((call) => call.at >= from && call.at < frame.at);
-  const sampled = samples.filter((sample) => sample.at >= from && sample.at < frame.at);
-  const groups = {};
-  const leaves = {};
-  const named = ['setBase', 'addBuilding', 'buildDressing', 'renderFrame'];
-  for (const sample of sampled) {
-    const group = named.find((name) => sample.stack.includes(name)) ?? sample.stack[0];
-    groups[group] = (groups[group] ?? 0) + sample.ms;
-    leaves[sample.stack[0]] = (leaves[sample.stack[0]] ?? 0) + sample.ms;
-  }
-  const selected = calls.filter((call) => ['setBase', 'drainBuildingQueue', 'renderFrame'].includes(call.name));
-  return {
-    at: frame.at, gapMs: frame.ms, groupsMs: groups,
-    topSelf: Object.entries(leaves).sort((a, b) => b[1] - a[1]).slice(0, 3),
-    calls: selected.map((call) => [call.name, call.ms, call.buildings ?? call.queued ?? null]),
-  };
-}
 
 async function pixels(before, after) {
   const rect = await load(`${after}/canvas-rect.json`);
