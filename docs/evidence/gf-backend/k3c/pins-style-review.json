@@ -1,0 +1,1 @@
+{"hashScope": "crlf-to-lf", "reviewed": [{"producer": "apps/api/src/modules/spatial/spatial.openapi.ts", "before": "85993f58dc3aace78b642c7a95d24d17d7b337a8c8cc2b55dae784652efc739d", "after": "f28a7cde4e6465f7aba1ba373ab46ef8ce97f7cab951df72aa0ff68dd05e8be9"}], "operationAdditions": [], "runtimeReceiptsRepinned": false}
