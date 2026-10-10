@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 from pathlib import Path
 from typing import Any
@@ -117,6 +118,36 @@ def verify_evaluation(path: Path) -> dict[str, Any]:
     return {"plans": result["plans"], "perClassIoURecalculated": True, "roomCountMae": mae}
 
 
+def source_units(text: str) -> dict[str, str]:
+    units = {}
+    for node in ast.parse(text).body:
+        if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+            units[node.name] = ast.dump(node, include_attributes=False)
+        if isinstance(node, ast.ClassDef):
+            for method in node.body:
+                if isinstance(method, ast.FunctionDef):
+                    units[f"{node.name}.{method.name}"] = ast.dump(method, include_attributes=False)
+    return units
+
+
+def verify_code_continuity(evidence: Path) -> None:
+    inference = load(evidence / "inference-code-continuity.json")
+    evaluation = load(evidence / "evaluation-code-continuity.json")
+    checks = [inference, *evaluation["sourceChecks"]]
+    for check in checks:
+        retained = check["retainedExactSource"]
+        verify_pin(retained)
+        if retained["sha256"] != check["executed"]["sha256"]:
+            raise ValueError("historical_executed_source_pin_mismatch")
+        previous = Path(retained["path"]).read_text(encoding="utf-8")
+        current = Path(check["current"]["path"]).read_text(encoding="utf-8")
+        original_units = source_units(previous)
+        current_units = source_units(current)
+        names = check["unchangedAstUnits"] + check.get("unchangedAstMethods", [])
+        if any(current_units.get(name) != original_units[name] for name in names):
+            raise ValueError("executed_inference_or_evaluation_ast_changed")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--evidence", type=Path, required=True)
@@ -124,6 +155,7 @@ def main() -> int:
     raster = load(args.evidence / "tower3-current/result.json")
     panels = [verify_panel(panel) for panel in raster["panels"]]
     evaluation = verify_evaluation(args.evidence / "cubicasa-result.json")
+    verify_code_continuity(args.evidence)
     print(json.dumps({"panels": panels, "evaluation": evaluation, "status": "passed"}))
     return 0
 

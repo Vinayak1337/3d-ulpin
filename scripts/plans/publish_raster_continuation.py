@@ -21,6 +21,34 @@ def load_panel(receipt: dict[str, Any]) -> dict[str, Any]:
     return json.loads(Path(full["path"]).read_text(encoding="utf-8"))
 
 
+def overlay_path(receipt: dict[str, Any]) -> Path:
+    original = Path(receipt["path"])
+    if original.exists():
+        if pin(original) != receipt:
+            raise ValueError("continuation_overlay_pin_mismatch")
+        return original
+    history = original.parent.parent / "historical-artifacts.json"
+    index = json.loads(history.read_text(encoding="utf-8"))
+    retained = next(artifact["retained"] for artifact in index["artifacts"]
+                    if Path(artifact["historicalPath"]) == original.relative_to(REPO)
+                    and artifact["retained"]["sha256"] == receipt["sha256"])
+    destination = Path(retained["path"])
+    if pin(destination) != retained or retained["bytes"] != receipt["bytes"]:
+        raise ValueError("archived_overlay_pin_mismatch")
+    return destination
+
+
+def selection_snapshot(runner: dict[str, Any], receipt_path: Path) -> dict[str, Any]:
+    snapshot = receipt_path.parent / "selection.json"
+    if pin(snapshot)["sha256"] != runner["selection"]["sha256"]:
+        raise ValueError("historical_selection_snapshot_pin_mismatch")
+    value = json.loads(snapshot.read_text(encoding="utf-8"))
+    current = json.loads((REPO / "scripts/plans/tower3-raster-selection.json").read_text(encoding="utf-8"))
+    if value["panels"] != current["panels"] or value["excluded"] != current["excluded"]:
+        raise ValueError("continuation_selection_scope_changed")
+    return current
+
+
 def join_panel(prior: dict[str, Any], runner: dict[str, Any], full: Path, output: Path) -> dict[str, Any]:
     from geo.raster_plan import refresh_panel_ocr
 
@@ -43,9 +71,7 @@ def join_panel(prior: dict[str, Any], runner: dict[str, Any], full: Path, output
     compact = compact_panel(result, full_pin, runner["artifacts"])
     compact["ocrLineage"] = result["ocrLineage"]
     output_pin = write_json(output / f"{result['panel']}.json", compact)
-    overlay = Path(runner["overlay"]["path"])
-    if pin(overlay) != runner["overlay"]:
-        raise ValueError("continuation_overlay_pin_mismatch")
+    overlay = overlay_path(runner["overlay"])
     destination = output / overlay.name
     with destination.open("xb") as stream:
         stream.write(overlay.read_bytes())
@@ -54,6 +80,12 @@ def join_panel(prior: dict[str, Any], runner: dict[str, Any], full: Path, output
             "output": output_pin, "fullPrecision": full_pin, "overlay": pin(destination),
             "artifacts": runner["artifacts"], "ocrLineage": result["ocrLineage"],
             "inferenceLineage": result["inferenceLineage"]}
+
+
+def publication_directory(path: Path) -> Path:
+    # Verification derivatives may stay wholly private instead of creating another Git publication.
+    allowed = PRIVATE if path.resolve().is_relative_to(PRIVATE.resolve()) else REPO / "docs/evidence/gf-ai/plans/raster"
+    return require_fresh_directory(path, allowed)
 
 
 def main() -> int:
@@ -67,8 +99,8 @@ def main() -> int:
     prior = json.loads(args.prior_run.read_text(encoding="utf-8"))
     runner = json.loads(args.runner_run.read_text(encoding="utf-8"))
     full = require_fresh_directory(args.full_out, PRIVATE)
-    output = require_fresh_directory(args.out, REPO / "docs/evidence/gf-ai/plans/raster")
-    selection = json.loads(Path(runner["selection"]["path"]).read_text(encoding="utf-8"))
+    output = publication_directory(args.out)
+    selection = selection_snapshot(runner, args.runner_run)
     write_json(output / "selection.json", selection)
     previous = {panel["panel"]: panel for panel in prior["panels"]}
     panels = [join_panel(previous[panel["panel"]], panel, full, output) for panel in runner["panels"]]
