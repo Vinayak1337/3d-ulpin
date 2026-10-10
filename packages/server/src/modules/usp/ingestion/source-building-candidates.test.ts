@@ -33,7 +33,7 @@ test('an explicit existing level selection preserves plan-local candidate geomet
   assert.equal(candidate.levelId, null);
 });
 
-test('room rejection retains cited plan-local geometry and a decided candidate cannot be attached or rejected again', () => {
+test('room rejection retains cited geometry and prior review refuses attachment or rejection', () => {
   const building = NormalizedBuildingSchema.parse(JSON.parse(
     readFileSync('docs/evidence/gf-t16/k3b/magnolia-after-current.json', 'utf8'),
   ));

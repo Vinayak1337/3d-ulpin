@@ -247,10 +247,11 @@ export const footprintDraftResult = {
       georeference: { type: 'string', nullable: true, enum: ['source_geotiff'] },
       decisions: { type: 'array', items: { type: 'object' } },
       selections: { type: 'array', items: { type: 'object' } },
-      target: { type: 'object', required: ['areaId', 'frame', 'analysisCrs', 'origin', 'expectedRevision'], properties: {
-        areaId: { type: 'string', format: 'uuid' }, frame: { type: 'string' }, analysisCrs: { type: 'string' },
-        origin: { type: 'array', items: { type: 'number' } }, expectedRevision: { type: 'integer' },
-      } },
+      target: { type: 'object', required: ['areaId', 'frame', 'analysisCrs', 'origin', 'expectedRevision'],
+        properties: {
+          areaId: { type: 'string', format: 'uuid' }, frame: { type: 'string' }, analysisCrs: { type: 'string' },
+          origin: { type: 'array', items: { type: 'number' } }, expectedRevision: { type: 'integer' },
+        } },
       method: { type: 'string' }, authority: { type: 'string' },
     }, additionalProperties: true },
   },
