@@ -1,5 +1,7 @@
 # Handoff: cloud review session → local session on the owner's PC
 
+> **The current hand-off is [hand-off.md](../../hand-off.md) at the repo root (10 October 2026).**
+>
 > **Superseded on 10 October 2026.** The reconciliation is done; see [docs/STATUS.md](../STATUS.md). The executable plan is [SPRINT-SELECTION.md](SPRINT-SELECTION.md). The owner answered the open decisions:
 > - Claude leads everything;
 > - no team labels;

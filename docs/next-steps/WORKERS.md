@@ -2,6 +2,8 @@
 
 Owner decision, 10 October 2026. This is the one place that says how the lead spawns workers, what it does when one stops, and what happens when a limit is hit. It replaces the worker lines in earlier settings. Task-file content and review rules stay in [00-STANDARDS](00-STANDARDS.md) §9 and §11 and in [SPRINT-SELECTION](SPRINT-SELECTION.md) §3.
 
+**The rule in one line:** spawn **codex workers first**. When they hit their limit (every codex account limited), use the **Claude worker**. When both are limited, the lead's own subagents carry on until a limit comes back.
+
 ## 1. The loop
 
 1. **Dispatch.** The lead starts each worker as a **background task** and then ends its turn. It doesn't poll, wait in a loop or do the build work itself.
