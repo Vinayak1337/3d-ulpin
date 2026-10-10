@@ -140,16 +140,13 @@ def asset_entry(manifest_path, asset):
 
 
 def retained_external_sources(local_sources, published):
-    """List the separately maintained sources and keep entries authored only in the published catalogue.
-
-    Generation never drops a retained source; delete an entry there explicitly to retire it.
-    """
+    """List the separately maintained sources; a published source is never kept or dropped silently."""
     maintained = {source["id"] for source in local_sources if "id" in source}
-    result = [source for source in local_sources if source.get("apiInstallation") != "local-opt-in-demo-only"]
-    for index, entry in enumerate(published):
-        if "id" in entry and entry["id"] not in maintained:
-            result.insert(index, entry)
-    return result
+    unmaintained = [entry["id"] for entry in published if "id" in entry and entry["id"] not in maintained]
+    if unmaintained:
+        raise ValueError("Published retained source is missing from docs/api/retained-local-datasets.json: "
+                         f"{unmaintained}; retire it explicitly or restore its maintained entry")
+    return [source for source in local_sources if source.get("apiInstallation") != "local-opt-in-demo-only"]
 
 
 def catalogue():

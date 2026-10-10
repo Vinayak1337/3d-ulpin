@@ -102,13 +102,13 @@ class ExternalAssets(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "neither repository content nor an external pin"):
             BUILDER.asset_entry(self.MANIFEST, {"id": "nothing-stated"})
 
-    def test_generation_keeps_sources_authored_only_in_the_published_catalogue(self):
+    def test_generation_refuses_a_published_source_without_a_maintained_entry(self):
         maintained = [{"id": "kept-current", "note": "new"}, {"manifest": "no-id.json"},
                       {"id": "demo", "apiInstallation": "local-opt-in-demo-only"}]
-        published = [{"id": "catalogue-only"}, {"id": "kept-current", "note": "old"}, {"manifest": "no-id.json"},
-                     {"id": "demo"}]
-        self.assertEqual(BUILDER.retained_external_sources(maintained, published),
-                         [{"id": "catalogue-only"}, {"id": "kept-current", "note": "new"}, {"manifest": "no-id.json"}])
+        published = [{"id": "kept-current", "note": "old"}, {"manifest": "no-id.json"}, {"id": "demo"}]
+        self.assertEqual(BUILDER.retained_external_sources(maintained, published), maintained[:2])
+        with self.assertRaisesRegex(ValueError, r"\['catalogue-only'\]; retire it explicitly or restore"):
+            BUILDER.retained_external_sources(maintained, [{"id": "catalogue-only"}, *published])
 
 
 if __name__ == "__main__":

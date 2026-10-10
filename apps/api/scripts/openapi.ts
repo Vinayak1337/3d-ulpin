@@ -6,6 +6,7 @@ import { join, relative } from 'node:path';
 import { settings } from '@ulpin/server/infrastructure/config';
 import { AppModule } from '../src/app.module';
 import { createApiDocument } from '../src/openapi';
+import { pinnedOperations } from './pinned-operations';
 
 const root = settings.repositoryRoot;
 const check = process.argv.includes('--check');
@@ -42,7 +43,7 @@ try {
   // Producer text pins are portable across Git autocrlf checkouts. Source originals
   // and runtime receipts retain their independent, exact-byte hashes.
   const pins = Object.fromEntries(sourceFiles.sort().map(path => [relative(root, path).replace(/\\/g, '/'), createHash('sha256').update(readFileSync(path).toString('latin1').replace(/\r\n/g, '\n'), 'latin1').digest('hex')]));
-  const operations = Object.entries(document.paths).flatMap(([path, item]) => Object.keys(item!).filter(method => ['get','post','patch','put','delete','head','options'].includes(method)).map(method => `${method.toUpperCase()} ${path}`)).sort();
+  const operations = pinnedOperations(document);
   emit('docs/api/openapi.json', document);
   emit('docs/api/source-pins.json', {schemaVersion: 'ulpin-native-openapi-pins/1', producerHashScope: 'crlf-to-lf', sourceSha256: pins,
     operations});
