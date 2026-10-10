@@ -1,9 +1,11 @@
 import { Controller, Get, HttpCode, Param, Post, Req, Res, UseFilters, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
-import { UspGeneratePropertyCardSchema, UspReadPropertyCardSchema, UspPropertyCardRevocationSchema, UspPropertyCardSchema,
-  UspPropertyCardVerificationSchema, UspPropertyCardViewSchema, UspRevokePropertyCardSchema } from '../../../../../packages/contracts/src/usp/property-card';
+import { UspGeneratePropertyCardSchema, UspListPropertyCardsSchema, UspReadPropertyCardSchema, UspPropertyCardListSchema,
+  UspPropertyCardRevocationSchema, UspPropertyCardSchema, UspPropertyCardVerificationSchema, UspPropertyCardViewSchema,
+  UspRevokePropertyCardSchema } from '../../../../../packages/contracts/src/usp/property-card';
 import { generatePropertyCard, readPropertyCard, resolvePropertyCard } from '@ulpin/server/modules/usp/packets/card-service';
+import { listPropertyCards } from '@ulpin/server/modules/usp/packets/card-listing';
 import { revokePropertyCard } from '@ulpin/server/modules/usp/packets/card-revocation';
 import { verifyPropertyCard } from '@ulpin/server/modules/usp/packets/card-verification';
 import { localRequestContext } from '@ulpin/server/modules/usp/principal';
@@ -38,6 +40,14 @@ export class PropertyCardController {
     const command = await readUspBody(req, UspReadPropertyCardSchema);
     const view = await readPropertyCard(localRequestContext(requestId(req)), command);
     return uspEnvelope(req, view.card.scope, view);
+  }
+  @Post('list') @HttpCode(200)
+  @UspJsonPost('POST_api_v1_usp_property_cards_list', 'List the card revisions the caller created for one target, newest first, with their lifecycle and no card fact', UspListPropertyCardsSchema, UspPropertyCardListSchema)
+  async list(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    res.setHeader('Cache-Control', 'private, no-store');
+    const command = await readUspBody(req, UspListPropertyCardsSchema);
+    const list = await listPropertyCards(localRequestContext(requestId(req)), command);
+    return uspEnvelope(req, command.scope, list);
   }
   @Post('revoke') @HttpCode(200)
   @UspJsonPost('POST_api_v1_usp_property_cards_revoke', 'Revoke one exact card revision as its creator; the card row and its PDF stay unchanged and later reads are refused', UspRevokePropertyCardSchema, UspPropertyCardRevocationSchema)
