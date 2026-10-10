@@ -8,6 +8,7 @@ import {
   Badge, Banner, Button, DataTable, DescriptionList, EmptyState, EvidenceChip, Icon, LevelRail, Menu, Panel, RevisionTimeline, Skeleton,
   StatusBadge, Tabs, formatDate, formatDateTime, type RailLevel, type StatusWord,
 } from '@ulpin/ui';
+import { revisedRecordId } from '../../api/ledger';
 import { useAreaContext, useBuildingLedger, useBuildingRegister, useBuildingResidents, type BuildingRegister } from '../../api/queries';
 import { shortHash, type SpaceWorkflow } from '../../local/workflow';
 import { buildingModel, type LevelModel, type SpaceModel } from '../../model/building';
@@ -465,6 +466,16 @@ function Documents({ register, ledger }: { register: BuildingRegister; ledger: B
   );
 }
 
+/**
+ * A ledger revision as a History entry. The key holds the record it revises, because two records of a building
+ * can be revised at the same time; an actor the ledger does not state is said to be not recorded.
+ */
+function ledgerEntry(revision: BuildingLedger['revisions'][number]) {
+  const { title, kind, at, hash, previousHash } = revision;
+  const id = `${revisedRecordId(revision) ?? 'entry'}:${revisionKey(revision)}`;
+  return { id, title, kind, at, by: revision.actor ?? 'Actor not recorded', hash, previousHash };
+}
+
 function History({ register, ledger, workflow, actions }: {
   register: BuildingRegister; ledger: BuildingLedger | null | undefined; workflow: SpaceWorkflow[]; actions: { title: string; at: string; by: string; hash: string; previousHash: string | null; kind: string }[];
 }) {
@@ -472,7 +483,7 @@ function History({ register, ledger, workflow, actions }: {
     ...actions.map((a) => ({ id: a.hash, title: a.title, kind: a.kind === 'finding' ? 'evidence' as const : 'draft' as const, at: a.at, by: a.by, hash: a.hash, previousHash: a.previousHash })),
     ...workflow.flatMap((w) => w.events.map((e) => ({ id: `${w.spaceId}-${e.hash}`, title: `${w.spaceName}: ${e.title}`, kind: e.kind, at: e.at, by: e.by, hash: e.hash, previousHash: e.previousHash }))),
   ];
-  const recorded = ledger?.revisions.map((r) => ({ id: revisionKey(r), title: r.title, kind: r.kind, at: r.at, by: r.actor ?? 'Unknown', hash: r.hash, previousHash: r.previousHash }))
+  const recorded = ledger?.revisions.map(ledgerEntry)
     ?? register.sources.slice(0, 1).map((s) => ({ id: s.id, title: `r${register.property.revision} Imported from ${s.name}`, kind: 'draft' as const, at: s.createdAt, by: 'Import', hash: s.sha256, previousHash: null }));
   const revisions = [...own, ...recorded].sort((a, b) => b.at.localeCompare(a.at)).map((r) => ({
     id: r.id, title: r.title, kind: r.kind, byline: `${r.by} · ${formatDateTime(r.at)}`, hash: r.hash ? shortHash(r.hash) : null, previousHash: r.previousHash ? shortHash(r.previousHash) : null,
