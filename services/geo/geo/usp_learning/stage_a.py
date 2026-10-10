@@ -9,6 +9,7 @@ import re
 import subprocess
 import sys
 import unicodedata
+from collections import Counter
 from importlib.metadata import version
 from pathlib import Path
 from typing import Any
@@ -21,6 +22,8 @@ REPO = Path(__file__).resolve().parents[4]
 CALIBRATION_FAMILY = "mi-d03"
 N_FEATURES = 32768
 SEED = 17
+DEFAULT_CALIBRATION_MODE = "single_family"
+DEFAULT_CLASS_BALANCE = False
 Row = dict[str, Any]
 
 
@@ -178,12 +181,14 @@ def choose_threshold(probabilities: np.ndarray, expected: list[str], classes: np
 
 def calibration_metrics(model: SGDClassifier, calibration: list[Row]) -> Row:
     if not calibration:
-        return {"threshold": None, "committed": 0, "precision": None, "fields": 0, "agreement": None}
+        return {"mode": "single_family", "threshold": None, "committed": 0, "precision": None,
+                "fields": 0, "agreement": None}
     matrix = vectorizer().transform([feature_text(profile) for profile in calibration])
     probabilities = model.predict_proba(matrix)
     expected = [example["target"] for example in calibration]
     predicted = model.classes_[probabilities.argmax(axis=1)]
-    return {**choose_threshold(probabilities, expected, model.classes_), "fields": len(calibration),
+    return {**choose_threshold(probabilities, expected, model.classes_), "mode": "single_family",
+            "fields": len(calibration),
             "agreement": float(np.mean(predicted == expected)),
             "unknownBaselineAgreement": sum(target == "unknown" for target in expected) / len(expected),
             "probabilities": "plain SGD; too few grouped calibration positives for stable CV calibration"}
@@ -220,6 +225,11 @@ def load_model(directory: Path) -> tuple[SGDClassifier, Row]:
         model.n_features_in_ = N_FEATURES
     if set(model.classes_) != set(canonical_targets()):
         raise ValueError("STAGE_A_CLASS_LIST_CHANGED")
+    calibration = manifest.setdefault("calibration", {"threshold": manifest["threshold"]})
+    calibration.setdefault("mode", "single_family")
+    manifest.setdefault("classBalance", False)
+    if calibration["mode"] not in ("single_family", "cross_fit"):
+        raise ValueError("STAGE_A_CALIBRATION_MODE_INVALID")
     return model, manifest
 
 
@@ -237,6 +247,7 @@ def version_manifest(index: int, training: list[Row], calibration: list[Row], me
             "classesContractSha256": sha256_file(REPO / "packages/contracts/src/canonical/targets.ts"),
             "calibrationFamily": CALIBRATION_FAMILY, "calibrationIds": [row["profileId"] for row in calibration],
             "threshold": metrics["threshold"], "calibration": metrics,
+            "classBalance": metrics.get("classBalance", False),
             "trainingExamples": [{key: row[key] for key in ("profileId", "family", "profileHash", "sourceField",
                                    "target", "method", "labelKind", "labelFileSha256", "exampleSha256")}
                                  for row in training],
@@ -250,10 +261,13 @@ def training_batches(examples: list[Row]) -> list[list[Row]]:
     return list(batches.values())
 
 
-def resume_state(resume: Path | None, fitting: list[Row]) -> tuple[SGDClassifier, list[Row], int]:
+def resume_state(resume: Path | None, fitting: list[Row], mode: str = "single_family",
+                 class_balance: bool = False) -> tuple[SGDClassifier, list[Row], int]:
     if not resume:
         return SGDClassifier(loss="log_loss", random_state=SEED), [], 0
     model, previous = load_model(resume)
+    if previous["calibration"]["mode"] != mode or previous["classBalance"] != class_balance:
+        raise ValueError("STAGE_A_RULE_LINEAGE_CHANGED")
     if previous["calibrationFamily"] != CALIBRATION_FAMILY:
         raise ValueError("STAGE_A_CALIBRATION_CHANGED")
     trained = previous["trainingExamples"]
@@ -263,9 +277,114 @@ def resume_state(resume: Path | None, fitting: list[Row]) -> tuple[SGDClassifier
     return model, trained, int(previous["version"].removeprefix("v"))
 
 
-def train(examples_paths: list[Path], out: Path, resume: Path | None = None) -> Row:
+def sample_weights(rows: list[Row], counts: Counter[str]) -> np.ndarray:
+    """Mean-one inverse frequency: w_i = N_fit / (K_present * n_fit[target_i])."""
+    total = sum(counts.values())
+    return np.asarray([total / (len(counts) * counts[row["target"]]) for row in rows], dtype=np.float32)
+
+
+def fit_batch(model: SGDClassifier, batch: list[Row], counts: Counter[str], class_balance: bool) -> None:
+    matrix = vectorizer().transform([feature_text(row) for row in batch])
+    weights = sample_weights(batch, counts) if class_balance else None
+    model.partial_fit(matrix, [row["target"] for row in batch], classes=np.asarray(canonical_targets()),
+                      sample_weight=weights)
+
+
+def fit_rows(rows: list[Row], class_balance: bool) -> SGDClassifier:
+    if not rows:
+        raise ValueError("STAGE_A_NO_VERIFIED_FIT_EXAMPLES")
+    model = SGDClassifier(loss="log_loss", random_state=SEED)
+    counts = Counter(row["target"] for row in rows)
+    for batch in training_batches(rows):
+        fit_batch(model, batch, counts, class_balance)
+    return model
+
+
+def commit_counts(scores: list[Row], threshold: float | None) -> Row:
+    per_target = {}
+    for target in sorted({score["expectedTarget"] for score in scores}):
+        selected = [score for score in scores if score["expectedTarget"] == target]
+        committed = [score for score in selected if threshold is not None and score["confidence"] >= threshold]
+        correct = sum(score["predictedTarget"] == target for score in committed)
+        per_target[target] = {"n": len(selected), "committed": len(committed), "committedCorrect": correct,
+                              "wrongCommitted": len(committed) - correct, "abstained": len(selected) - len(committed)}
+    return {"n": len(scores), "perTarget": per_target,
+            "wrongCommitted": sum(count["wrongCommitted"] for count in per_target.values()),
+            "correctPositiveCommitted": sum(count["committedCorrect"] for target, count in per_target.items()
+                                            if target != "unknown"),
+            "unknownCommitted": sum(score["predictedTarget"] == "unknown" for score in scores
+                                    if threshold is not None and score["confidence"] >= threshold),
+            "unknownCommittedCorrect": per_target.get("unknown", {}).get("committedCorrect", 0),
+            "abstained": sum(count["abstained"] for count in per_target.values())}
+
+
+def cross_fit_fold(rows: list[Row], family: str, class_balance: bool, out: Path) -> tuple[np.ndarray, list[Row]]:
+    fitting = [row for row in rows if row["family"] != family]
+    testing = [row for row in rows if row["family"] == family]
+    model = fit_rows(fitting, class_balance)
+    probabilities = model.predict_proba(vectorizer().transform([feature_text(row) for row in testing]))
+    scores = [{"profileId": row["profileId"], "family": family, "expectedTarget": row["target"],
+               "predictedTarget": str(model.classes_[distribution.argmax()]), "confidence": float(distribution.max())}
+              for row, distribution in zip(testing, probabilities, strict=True)]
+    out.mkdir(parents=True, exist_ok=False)
+    manifest = {"excludedFamily": family, "fitExamples": len(fitting),
+                "fitFamilies": sorted({row["family"] for row in fitting}), "classBalance": class_balance,
+                "testIds": [row["profileId"] for row in testing], "fitIds": [row["profileId"] for row in fitting]}
+    save_model(model, out / "model.npz", manifest)
+    write_json(out / "manifest.json", manifest)
+    return probabilities, scores
+
+
+def cross_fit_metrics(rows: list[Row], class_balance: bool, out: Path) -> tuple[Row, list[Row]]:
+    families = sorted({row["family"] for row in rows if row["split"] == "dev"})
+    if len(families) < 2:
+        raise ValueError("STAGE_A_CROSS_FIT_FAMILIES_REQUIRED")
+    distributions = []
+    scores = []
+    for family in families:
+        probabilities, fold = cross_fit_fold(rows, family, class_balance, out / "folds" / family)
+        distributions.append(probabilities)
+        scores.extend(fold)
+    classes = np.asarray(sorted(canonical_targets()))
+    threshold = choose_threshold(np.concatenate(distributions), [score["expectedTarget"] for score in scores], classes)
+    metrics = {**threshold, **commit_counts(scores, threshold["threshold"]), "mode": "cross_fit",
+               "fields": len(scores), "families": len(families), "classBalance": class_balance,
+               "sampleWeightFormula": "N_fit / (K_present * n_fit[target])" if class_balance else "none",
+               "poolPolicy": "Pool families remain in each fold's fitting set; only dev families are cross-fitted."}
+    write_json(out / "cross-fit-scores.json", scores)
+    write_json(out / "cross-fit-metrics.json", metrics)
+    return metrics, scores
+
+
+def train_cross_fit(rows: list[Row], out: Path, class_balance: bool) -> Row:
+    metrics, scores = cross_fit_metrics(rows, class_balance, out)
+    model = fit_rows(rows, class_balance)
+    destination = out / "v1"
+    destination.mkdir(parents=True, exist_ok=False)
+    calibration = [row for row in rows if row["split"] == "dev"]
+    manifest = version_manifest(1, rows, calibration, metrics)
+    manifest["calibrationFamily"] = None
+    manifest["qualification"] = "Pseudo-label fit; threshold uses development out-of-family predictions, not accuracy."
+    manifest["crossFitScoresSha256"] = sha256_file(out / "cross-fit-scores.json")
+    manifest["partialFitCalls"] = len(training_batches(rows))
+    save_model(model, destination / "model.npz", manifest)
+    write_json(destination / "manifest.json", manifest)
+    write_json(destination / "metrics.json", {**metrics, "fitExamples": len(rows),
+                                              "fitFamilies": len({row["family"] for row in rows})})
+    return {"model": str(destination), "fitExamples": len(rows), "calibration": metrics,
+            "pooledScoreCount": len(scores)}
+
+
+def train(examples_paths: list[Path], out: Path, resume: Path | None = None,
+          calibration_mode: str = DEFAULT_CALIBRATION_MODE, class_balance: bool = DEFAULT_CLASS_BALANCE) -> Row:
     external_output(out)
     rows = preferred_examples([example for path in examples_paths for example in load_examples(path)])
+    if calibration_mode == "cross_fit":
+        if resume:
+            raise ValueError("STAGE_A_CROSS_FIT_REQUIRES_FRESH_REBUILD")
+        return train_cross_fit(rows, out, class_balance)
+    if calibration_mode != "single_family" or class_balance:
+        raise ValueError("STAGE_A_CALIBRATION_MODE_INVALID")
     calibration = [row for row in rows if row["family"] == CALIBRATION_FAMILY]
     fitting = [row for row in rows if row["family"] != CALIBRATION_FAMILY]
     if not fitting:
@@ -274,8 +393,7 @@ def train(examples_paths: list[Path], out: Path, resume: Path | None = None) -> 
     for index, batch in enumerate(training_batches(fitting), start + 1):
         destination = out / f"v{index}"
         destination.mkdir(parents=True, exist_ok=False)
-        matrix = vectorizer().transform([feature_text(row) for row in batch])
-        model.partial_fit(matrix, [row["target"] for row in batch], classes=np.asarray(canonical_targets()))
+        fit_batch(model, batch, Counter(row["target"] for row in fitting), False)
         trained.extend(batch)
         metrics = calibration_metrics(model, calibration)
         manifest = version_manifest(index, trained, calibration, metrics)
@@ -286,26 +404,35 @@ def train(examples_paths: list[Path], out: Path, resume: Path | None = None) -> 
     return {"model": str(destination), "versions": index, "fitExamples": len(trained), "calibration": metrics}
 
 
+def online_metrics(previous: Row) -> Row:
+    if previous["calibration"]["mode"] == "single_family":
+        return {"mode": "single_family", "threshold": None, "committed": 0, "precision": None,
+                "qualification": "New weights abstain until frozen development recalibration; no holdout tuning."}
+    return {**previous["calibration"], "classBalance": previous["classBalance"],
+            "inheritedFromModelSha256": previous["modelSha256"],
+            "qualification": "Seed cross-fit threshold retained; updated weights are not independently recalibrated."}
+
+
 def online_update(examples_path: Path, out: Path, resume: Path) -> Row:
     """One approved officer batch, serialized by the existing server job transaction."""
     external_output(out)
     rows = preferred_examples(load_examples(examples_path))
     if not rows or any(row["labelKind"] != "officer" for row in rows):
         raise ValueError("STAGE_A_OFFICER_BATCH_REQUIRED")
-    if any(row["family"] == CALIBRATION_FAMILY for row in rows):
-        raise ValueError("STAGE_A_CALIBRATION_FIT_DENIED")
     model, previous = load_model(resume)
-    if previous["calibrationFamily"] != CALIBRATION_FAMILY:
-        raise ValueError("STAGE_A_CALIBRATION_CHANGED")
-    matrix = vectorizer().transform([feature_text(row) for row in rows])
-    model.partial_fit(matrix, [row["target"] for row in rows], classes=np.asarray(canonical_targets()))
+    if previous["calibration"]["mode"] == "single_family":
+        if any(row["family"] == CALIBRATION_FAMILY for row in rows):
+            raise ValueError("STAGE_A_CALIBRATION_FIT_DENIED")
+        if previous["calibrationFamily"] != CALIBRATION_FAMILY:
+            raise ValueError("STAGE_A_CALIBRATION_CHANGED")
     trained = preferred_examples([*previous["trainingExamples"], *rows])
+    fit_batch(model, rows, Counter(row["target"] for row in trained), previous["classBalance"])
     index = int(previous["version"].removeprefix("v")) + 1
     destination = out / f"v{index}"
     destination.mkdir(parents=True, exist_ok=False)
-    metrics = {"threshold": None, "committed": 0, "precision": None,
-               "qualification": "New weights abstain until frozen development recalibration; no holdout tuning."}
+    metrics = online_metrics(previous)
     manifest = version_manifest(index, trained, [], metrics)
+    manifest["calibrationFamily"] = previous["calibrationFamily"]
     manifest["calibrationIds"] = previous["calibrationIds"]
     manifest["qualification"] = "officer-approved; one partial_fit; old pseudo-label weights are not evaluation truth"
     manifest["parentModelSha256"] = previous["modelSha256"]
@@ -339,6 +466,9 @@ def main() -> None:
     fitting.add_argument("--examples", type=Path, nargs="+", required=True)
     fitting.add_argument("--out", type=Path, required=True)
     fitting.add_argument("--resume", type=Path)
+    fitting.add_argument("--calibration-mode", choices=("single_family", "cross_fit"),
+                         default=DEFAULT_CALIBRATION_MODE)
+    fitting.add_argument("--class-balance", action=argparse.BooleanOptionalAction, default=DEFAULT_CLASS_BALANCE)
     online = commands.add_parser("online")
     online.add_argument("--examples", type=Path, required=True)
     online.add_argument("--out", type=Path, required=True)
@@ -348,7 +478,7 @@ def main() -> None:
     inference.add_argument("--profiles", type=Path, required=True)
     args = parser.parse_args()
     if args.command == "train":
-        print(json.dumps(train(args.examples, args.out, args.resume)))
+        print(json.dumps(train(args.examples, args.out, args.resume, args.calibration_mode, args.class_balance)))
     elif args.command == "online":
         print(json.dumps(online_update(args.examples, args.out, args.resume)))
     else:
