@@ -3605,7 +3605,7 @@
     "issuer": "Foreign municipal issuing authorities; exact publishers in manifest",
     "geography": "Foreign development only; exact per-source geography in manifest",
     "manifest": "fixtures/usp/D8-open-property-foreign/manifest.json",
-    "manifestSha256": "f809240e1972c752534f50c2eb36faabec75e79a3f04508ace0955dca5436c1f",
+    "manifestSha256": "2d89fdd0de35237c1fa69bca67d4e068555405b6f0c0b2dfd95144878e788a3d",
     "guide": "docs/evidence/gf-agent/d1f/result.json",
     "sourceCount": 9,
     "sourceFamilies": 8,

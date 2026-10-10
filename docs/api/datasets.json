@@ -5269,7 +5269,7 @@
     },
     {
       "manifest": "fixtures/usp/D8-open-property-foreign/manifest.json",
-      "manifestSha256": "f809240e1972c752534f50c2eb36faabec75e79a3f04508ace0955dca5436c1f",
+      "manifestSha256": "2d89fdd0de35237c1fa69bca67d4e068555405b6f0c0b2dfd95144878e788a3d",
       "packId": "D8-foreign",
       "profile": "open-property-foreign-development-d1f",
       "version": 1,
@@ -5392,7 +5392,7 @@
             "kind": "external",
             "url": "https://data.sf.gov/api/views/bfhx-j6n5/rows.csv?accessType=DOWNLOAD"
           },
-          "attribution": "City and County of San Francisco Environment Department",
+          "attribution": "SFPUC",
           "permission": {
             "state": "unconfirmed",
             "licence": "Open Data Commons Public Domain Dedication and License",
@@ -5403,7 +5403,7 @@
             "horizontalCrs": null,
             "verticalReference": null
           },
-          "issuer": "City and County of San Francisco Environment Department",
+          "issuer": "City and County of San Francisco Public Utilities Commission",
           "acquiredAt": "2026-10-10T12:11:43.144801+00:00",
           "geography": "San Francisco, California, United States",
           "split": "dev",
@@ -5425,7 +5425,7 @@
             "kind": "external",
             "url": "https://data.kcmo.org/api/views/9xwa-2b59/rows.csv?accessType=DOWNLOAD"
           },
-          "attribution": "City of Kansas City Office of Environmental Quality",
+          "attribution": "City of Kansas City issuing portal",
           "permission": {
             "state": "unconfirmed",
             "licence": "not stated",
@@ -5436,7 +5436,7 @@
             "horizontalCrs": null,
             "verticalReference": null
           },
-          "issuer": "City of Kansas City Office of Environmental Quality",
+          "issuer": "City of Kansas City",
           "acquiredAt": "2026-10-10T12:11:48.415760+00:00",
           "geography": "Kansas City, Missouri, United States",
           "split": "dev",
@@ -5467,7 +5467,10 @@
           },
           "reference": {
             "horizontalCrs": null,
-            "verticalReference": null
+            "verticalReference": null,
+            "publisherDeclaredCrs": "LL-WGS84",
+            "crsDictionaryLocator": "/metadata/custom_fields/Spatial/Coordinate System",
+            "crsQualification": "Publisher source CRS is stated; native CSV export CRS remains unverified."
           },
           "issuer": "City of Edmonton",
           "acquiredAt": "2026-10-10T12:11:51.712492+00:00",
@@ -5566,7 +5569,10 @@
           },
           "reference": {
             "horizontalCrs": null,
-            "verticalReference": null
+            "verticalReference": null,
+            "publisherDeclaredCrs": "NAD83(CSRS) / Alberta 10-TM (Resource)",
+            "crsDictionaryLocator": "/metadata/custom_fields/Spatial/Coordinate System",
+            "crsQualification": "Publisher source CRS is stated; native CSV export CRS remains unverified."
           },
           "issuer": "City of Edmonton",
           "acquiredAt": "2026-10-10T12:19:55.582079+00:00",
@@ -9365,7 +9371,7 @@
       "issuer": "Foreign municipal issuing authorities; exact publishers in manifest",
       "geography": "Foreign development only; exact per-source geography in manifest",
       "manifest": "fixtures/usp/D8-open-property-foreign/manifest.json",
-      "manifestSha256": "f809240e1972c752534f50c2eb36faabec75e79a3f04508ace0955dca5436c1f",
+      "manifestSha256": "2d89fdd0de35237c1fa69bca67d4e068555405b6f0c0b2dfd95144878e788a3d",
       "guide": "docs/evidence/gf-agent/d1f/result.json",
       "sourceCount": 9,
       "sourceFamilies": 8,
