@@ -8,7 +8,7 @@ import type { ModelGateway, TrustedCall } from '../model-gateway/gateway';
 import { TeacherRecordings } from '../model-gateway/recordings';
 import { minimizeStructuredText } from '../model-gateway/redaction';
 import { mappingTeacherGatewayRuntime } from '../model-gateway/runtime';
-import { teacherFailureCode } from '../usp/ingestion/mapping-teacher';
+import { gatewayRefusal, teacherFailureCode, type GatewayRefusal } from '../usp/ingestion/mapping-teacher';
 
 export const STOREY_AGENT_TEMPLATE = 'document-storey/1.0';
 export const STOREY_AGENT_MODEL = 'sarvam-105b';
@@ -191,6 +191,7 @@ export type StoreyAgentResult = {
   replayed: boolean;
   partsHash: string;
   method: string;
+  gatewayRefusal?: GatewayRefusal;
 };
 
 function unavailable(partsHash: string, code: string, attempts = 0): StoreyAgentResult {
@@ -276,7 +277,9 @@ export async function extractStoreyFacts(parts: StoreyPart[], options: StoreyAge
       }
       errors = checked.errors;
     } catch (error) {
-      return unavailable(partsHash, teacherFailureCode(error), attempt);
+      const refusal = gatewayRefusal(error);
+      return { ...unavailable(partsHash, teacherFailureCode(error), attempt),
+        ...(refusal ? { gatewayRefusal: refusal } : {}) };
     }
   }
   return unavailable(partsHash, 'TEACHER_INVALID_OUTPUT', options.maxAttempts ?? 2);

@@ -76,6 +76,7 @@ test('gateway: a candidate keeps both Tower 3 expressions and is recorded for re
   const { ledger, gateway } = gatewayReturning(answer());
   const result = await extractStoreyFacts(PARTS, optionsFor(gateway, recordings));
   assert.equal(result.state, 'candidate');
+  assert.equal(result.gatewayRefusal, undefined);
   assert.deepEqual(result.output?.floorExpressions.map((item) => item.expression), ['G+41', 'G+42']);
   assert.equal(ledger.settled, 1);
   const replayAdapter = new ReplayAdapter((key) => recordings.replay(key));
@@ -98,6 +99,7 @@ test('gateway: abstention and a budget failure are reported, not turned into fac
   const result = await extractStoreyFacts(PARTS, optionsFor(capped));
   const expected = ['teacher_unavailable', 'TEACHER_BUDGET_EXHAUSTED', null];
   assert.deepEqual([result.state, result.code, result.output], expected);
+  assert.deepEqual(result.gatewayRefusal, { code: 'MODEL_PROJECT_CAP', retryable: false });
 });
 
 test('policy: held-out and private documents never reach the gateway', async () => {
@@ -105,6 +107,7 @@ test('policy: held-out and private documents never reach the gateway', async () 
   for (const policy of [{ dataClass: 'public', split: 'held_out' }, { dataClass: 'private', split: 'development' }]) {
     const result = await extractStoreyFacts(PARTS, { ...optionsFor(gateway), dataPolicy: policy as never });
     assert.equal(result.code, 'TEACHER_DATA_DENIED');
+    assert.equal(result.gatewayRefusal, undefined);
   }
   assert.equal(ledger.reserved, 0);
 });
@@ -112,6 +115,7 @@ test('policy: held-out and private documents never reach the gateway', async () 
 test('no configured gateway fails closed as teacher_unavailable', async () => {
   const result = await extractStoreyFacts(PARTS, { ...optionsFor(undefined as never), runtime: async () => undefined });
   assert.deepEqual([result.state, result.code], ['teacher_unavailable', 'TEACHER_UNAVAILABLE']);
+  assert.equal(result.gatewayRefusal, undefined);
 });
 
 test('batches: only storey-related lines are sent and each call stays under the prompt bound', () => {
