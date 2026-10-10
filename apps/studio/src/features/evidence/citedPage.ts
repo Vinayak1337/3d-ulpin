@@ -32,6 +32,33 @@ export function useEvidencePin(evidence: EvidenceRef): SourcePin | undefined {
 export type CitedPage = PagesResponse['pages'][number] & Pick<PagesResponse,
   'name' | 'sourceId' | 'sourceRevision' | 'sourceSha256' | 'revision'>;
 
+export type PageViewState = {
+  kind: 'supported' | 'reduced' | 'unsupported';
+  statement: string | null;
+  offersRegion: boolean;
+};
+
+/** Whole-sheet support comes from the listing, never the raster's dimensions or headers. */
+export function pageViewState(page: PagesResponse['pages'][number], hasRegion: boolean): PageViewState {
+  const scale = page.reducedScalePxPerPt;
+  const reduced = page.renderSupport === 'reduced';
+  if (reduced !== (scale !== undefined) ||
+      (reduced && (!Number.isFinite(scale) || scale! <= 0 || scale! > 3))) {
+    throw new Error('The page listing could not be read: a reduced page must state its scale, and only it may.');
+  }
+  switch (page.renderSupport) {
+    case 'supported': return { kind: 'supported', statement: null, offersRegion: false };
+    case 'reduced': return {
+      kind: 'reduced',
+      statement: `This sheet is shown whole at a reduced scale of ${scale!.toFixed(2)} px per pt. ` +
+        'Small text is not readable at this scale.',
+      offersRegion: hasRegion,
+    };
+    case 'unsupported': return { kind: 'unsupported', statement: null, offersRegion: hasRegion };
+    default: throw new Error('The page listing could not be read: its render support is not stated.');
+  }
+}
+
 /** The server holds another revision or hash of the original than the citation was recorded against. */
 export class OriginalChangedError extends Error {
   constructor() {
@@ -47,6 +74,7 @@ export function citedPageOf(response: PagesResponse, page: number, pin: SourcePi
   }
   const found = response.pages.find((item) => item.page === page);
   if (!found) throw new Error(`The server returned no page ${page} for this source.`);
+  pageViewState(found, false);
   const { name, sourceId, sourceRevision, sourceSha256, revision } = response;
   return { ...found, name, sourceId, sourceRevision, sourceSha256, revision };
 }
