@@ -4,7 +4,7 @@
   "base": "a330332fb5080a73ea5609611949f6c698323e99",
   "scope": "offline environment ownership; no runtime/configuration/API/DB access",
   "artifactsRoot": "E:/BhuAayam-data/task-data/k9",
-  "status": "step0_complete_before_build",
+  "status": "step1_complete_offline_qualification_in_progress",
   "step0": {
     "environment": {
       "locatedBy": "folder named in retained K4d/K2b evidence; direct directory listing outside runtime",
@@ -131,7 +131,9 @@
         "The checked-in recovery handoff records a passing historical worker run, then line-ending issues",
         "on integration. Historical success is a retained report, not a reproduction of the replaced base."
       ],
-      "harnessFailure": "initial scratch test lacked package-level node_modules; added read-only junctions, ran once",
+      "harnessFailure": [
+        "initial scratch test lacked package-level node_modules; added read-only junctions, ran once"
+      ],
       "scratchWorktree": "E:/BhuAayam-data/task-data/k9/introduced-test",
       "scratchWorktreeBytesExcludingJunctionTargets": 193639228,
       "retention": "nothing deleted; non-executable test fixtures retained under k9/test-temp"
@@ -145,7 +147,7 @@
       "b": {
         "proposal": "private uv CPython 3.12.14 under the new ml environment folder; bind its full versioned path",
         "remainingWriters": "project environment owner/admin or explicitly targeted uv/pip operation",
-        "ordinaryCachePolicy": "fresh cache-free install; deny writes to newly owned environment/base after installation",
+        "ordinaryCachePolicy": "cache-free hooks; deny writes to newly owned environment/base after installation",
         "why": "no external application's updater or shared uv upgrade can replace this private base"
       },
       "c": {
@@ -155,6 +157,44 @@
       },
       "recommended": "b",
       "decision": "proceed only with exact versions/public-index hashes; stop a failed or mismatching package"
+    }
+  },
+  "step1": {
+    "option": "b",
+    "environment": "E:/BhuAayam-data/ml/venv-demo-documents-20261010",
+    "manifest": "environment.json",
+    "base": "private uv CPython 3.12.14; full versioned directory inside environment/base",
+    "build": {
+      "pythonInstallExit": 0,
+      "venvCreateExit": 0,
+      "publicIndexHashCompileExit": 0,
+      "requireHashesInstallExit": 0,
+      "committedRequirementsAuditExit": 0,
+      "index": "https://pypi.org/simple",
+      "versionsEqual": "77/77",
+      "wheelAvailabilityFailures": [],
+      "hashFailures": [],
+      "uvFlags": "--no-config; Python install --no-bin --no-registry; pip --only-binary --no-deps --link-mode copy",
+      "requirements": "requirements.txt; 77 installed WHEEL tags uniquely match hashes from original install lock",
+      "privateResolutionLock": "requirements-hashed.txt; all public wheel hashes generated before installation",
+      "recordHashesEqual": "52/77; changed RECORDs retained in private new-distributions.json"
+    },
+    "cacheDecision": {
+      "stdlibCaches": "159 pinned caches shipped in uv base; retained and frozen rather than deleted",
+      "hookCacheDirectories": {"_virtualenv": false, "_distutils_hack": false, "pywin32_bootstrap": false},
+      "writeDenied": "owned environment/base only; current-account inherited WD,AD,WEA,WA ACL",
+      "readAndExecuteAllowed": true,
+      "settingsOrPathChanged": false,
+      "assetsCopied": false
+    },
+    "boundedFailure": {
+      "signature": "generic icacls W deny also denies synchronize, making Python/filesystem reads unavailable",
+      "attempt": "new-profile-1.log: dry-run exit 1; directory preserved, no profile produced",
+      "hypothesis": "deny data/append/attribute writes, not shared read/synchronize rights",
+      "change": "removed only the new folder's deny ACE; applied WD,AD,WEA,WA there",
+      "successCriterion": "read/execute work while frozen-profile stability and hook-cache absence hold",
+      "comparison": "new-profile-2.log: dry-run exit 0; ten-start stability exit 0",
+      "stopCondition": "another ACL/read failure would stop environment qualification"
     }
   },
   "safety": {
