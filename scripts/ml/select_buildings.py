@@ -25,6 +25,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--selection-id", required=True)
     parser.add_argument("--provider", choices=("cpu", "cuda"), default="cpu")
     parser.add_argument("--final", action="store_true", help="Require finished training before fixing candidate")
+    parser.add_argument("--compare-selection", type=Path, help="Retain an earlier DEV-selected fallback")
     args = parser.parse_args()
     for value in (args.run_id, args.selection_id):
         if not re.fullmatch(r"[A-Za-z0-9_-]+", value):
@@ -130,7 +131,9 @@ def complete_selection(plan: dict[str, Any], rows: list[dict[str, Any]]) -> dict
         "recall_delta": chosen["recall"] - plan["baseline_dev_recall"],
         "empty_fp_delta": chosen["empty_fp"]["buildings"] - plan["baseline_empty_fp"]["buildings"],
         "profile_version": profile,
-        "note": "Selection uses DEV only. Freeze this committed result before final HOLDOUT reservation.",
+        "note": (
+            "Selection uses DEV only; any transfer test needs its own preregistration. Karnataka HOLDOUT is closed."
+        ),
     }
 
 
@@ -148,8 +151,15 @@ def main() -> None:
     output = EVIDENCE / args.selection_id
     output.mkdir(exist_ok=False)
     plan = selection_plan(args, entries)
-    write_json(output / "plan.json", plan)
     rows = []
+    if args.compare_selection:
+        comparison = read_json(args.compare_selection)
+        if comparison["status"] != "completed" or not comparison["final_candidate_fixed"]:
+            raise ValueError("Comparison must be a completed fixed DEV selection")
+        rows.extend(comparison["threshold_results"])
+        plan["comparison_selection"] = str(args.compare_selection)
+        plan["comparison_sha256"] = sha(args.compare_selection)
+    write_json(output / "plan.json", plan)
     for epoch in entries:
         for threshold in THRESHOLDS:
             path = evaluate_epoch(args, epoch, threshold)

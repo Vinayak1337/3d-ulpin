@@ -19,6 +19,8 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--smoke-result", type=Path, required=True)
     parser.add_argument("--duration-minutes", type=float, default=85)
     parser.add_argument("--resume", type=Path)
+    parser.add_argument("--early-stopping-metric", choices=("f1", "recall"), default="f1")
+    parser.add_argument("--dev-thresholds", type=float, nargs="+", default=[0.5])
     args = parser.parse_args()
     if sys.platform != "win32":
         raise RuntimeError("This helper explicitly targets Windows detachment")
@@ -47,6 +49,10 @@ def launch(args: argparse.Namespace, root: Path) -> dict[str, Any]:
         args.run_id,
         "--duration-minutes",
         str(args.duration_minutes),
+        "--early-stopping-metric",
+        args.early_stopping_metric,
+        "--dev-thresholds",
+        *[str(value) for value in args.dev_thresholds],
     ]
     if args.resume:
         command += ["--resume", str(args.resume)]

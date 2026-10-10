@@ -232,14 +232,44 @@ def export(items, output, role):
     return {"split": role, "images": len(images), "instances": len(annotations), "empty_chips": sum(x["empty"] for x in images), "zero_pixel_features": len(zero), "annotations_sha256": sha(target / "_annotations.coco.json")}
 
 
+def reject_transfer_training(region: str) -> None:
+    prereg_path = REPO / "docs/evidence/gf-ai/preregistration.json"
+    if prereg_path.is_file():
+        transfer = json.loads(prereg_path.read_bytes()).get("building_mask_transfer", {})
+        if transfer.get("status") == "frozen" and transfer.get("region") == region:
+            raise ValueError("Region is frozen for transfer HOLDOUT, never TRAIN")
+
+
+def transfer_shard(root: Path, region: str, target: Path, manifest: dict) -> dict:
+    """Reserve a whole Bangladesh region as transfer-only, never a TRAIN shard."""
+    if not region.endswith("_bangladesh"):
+        raise ValueError("Transfer region must be in Bangladesh")
+    target.mkdir(parents=True, exist_ok=False)
+    items = region_items(root, region, manifest)
+    save_new(target / "source-index.json", {"items": items})
+    result = export(items, target / "coco", "transfer")
+    result.update(region=region, role="transfer_holdout", source_hashes_verified=True)
+    result["source_index"] = {"path": str(target / "source-index.json"), "sha256": sha(target / "source-index.json")}
+    save_new(target / "export-result.json", result)
+    return result
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--root", type=Path, default=Path("E:/BhuAayam-data/datasets/ramp"))
     p.add_argument("--bangladesh-region", help="Export one completed Bangladesh region as TRAIN-only shard")
+    p.add_argument("--transfer-region", help="Export a new independent Bangladesh transfer holdout")
+    p.add_argument("--transfer-root", type=Path, help="New external output directory; never an existing TRAIN shard")
     args = p.parse_args()
     root = args.root.resolve()
     manifest = json.loads((root / "manifest.json").read_bytes())
+    if args.transfer_region:
+        if args.bangladesh_region or not args.transfer_root:
+            p.error("Transfer requires --transfer-root and forbids --bangladesh-region")
+        print(json.dumps(transfer_shard(root, args.transfer_region, args.transfer_root, manifest)), flush=True)
+        return
     if args.bangladesh_region:
+        reject_transfer_training(args.bangladesh_region)
         if not args.bangladesh_region.endswith("_bangladesh"):
             raise ValueError("Bangladesh shard must be Bangladesh")
         items = region_items(root, args.bangladesh_region, manifest)
