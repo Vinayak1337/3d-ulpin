@@ -1,0 +1,54 @@
+{
+  "task": "CA4",
+  "gate": "GF1 / B-packet-citation-kind",
+  "status": "stopped at Step 0; no product implementation or gate qualification",
+  "base": "917ed20b",
+  "auditCommit": "a0153b81",
+  "stop": {
+    "condition": "b: missing exact feature key-selection context in the captured source",
+    "qualification": "Original object_key/bytes/sha256 are present. This is not a missing storage receipt.",
+    "finding": "normalize_area computes sourceKey using an arbitrary chosen idField, or feature.id",
+    "constraint": "The requested (Buffer, featureKey) function lacks both chosen mapping and reusable key helper",
+    "safety": "No hard-coded NYC field, property-value guessing, duplicate key rule or new snapshot context introduced",
+    "refs": ["services/geo/geo/area.py:341-349", "packages/server/src/modules/areas/areas.ts:465-467",
+             "packages/server/src/modules/areas/areas.ts:665-688",
+             "packages/server/src/modules/areas/areas.ts:886-899"]
+  },
+  "otherStopConditions": {"schemaChangeNeeded": false, "buildingKindOrIdentityRefusal": false},
+  "leadReading": "Cheaper spaces-only identity wording recorded as the lead's reading; not implemented",
+  "inputs": {
+    "path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+    "classification": "NYC / United States / foreign test_only development input",
+    "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+    "bytes": 1103282,
+    "features": 1662,
+    "distinctDoittKeys": 1662,
+    "ordinary": {"index": 0, "doitt_id": "345", "featureIdPresent": false},
+    "sparse": {"index": 1620, "doitt_id": "1272393", "ground_elevation": null, "featureIdPresent": false},
+    "originalBytesBeforeEqualAfter": true,
+    "proof": "These real features require the chosen doitt_id field; feature.id fallback cannot select them."
+  },
+  "checks": [
+    {"command": "python - (read-only original and published schema inventory)", "exit": 0,
+     "operations": 305, "schemas": 346, "originalUnchanged": true},
+    {"command": "node --import tsx --input-type=module -e (in-process schema controls)", "exit": 0,
+     "controls": ["Verbatim feature pointer accepted", "Included plan entry accepted",
+                  "Both building card facts accepted as available",
+                  "CA1 exterior body rejected: footprint too_small and representation unrecognized_keys"]},
+    {"command": "python - (Step 0 JSON, six answers, reference bounds and <=120-column lines)",
+     "exit": 0, "references": 76},
+    {"command": "git diff --check staging...HEAD", "exit": 0}
+  ],
+  "deferred": ["Extractor and real-extract tests", "Plan/card/review product changes and tests",
+               "Existing suite before/after counts", "Backend typecheck", "OpenAPI generation and --check"],
+  "whyDeferred": "Step 0 stop applied before product build; no source pins or published API schema changed.",
+  "safety": "No database, container, runtime, provider, original write, forbidden-folder read or push.",
+  "next": [
+    "Lead resolves the missing source-key context/import seam and authorizes resumption.",
+    "Alternate: captured observation retains sourceFeatureIndex/sourceKey/sourceRevisionId;",
+    "select that original feature by index after integrity verification and amend the pure helper signature.",
+    "If recomputation is required: normalization owner exposes a reusable key function and pins chosen mapping.",
+    "Then implement extract, plan/packetLine, building rows and record-only review admission in order."
+  ],
+  "details": "step0.json: six answers, route 422 INVALID_INPUT refusals and other-reader span/hash inventory"
+}
