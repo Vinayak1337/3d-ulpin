@@ -3,8 +3,57 @@
   "task": "b9-more-regions",
   "status": "preregistered",
   "preregistration": "docs/evidence/gf-ai/preregistration.json (building_mask_b9)",
-  "run_id": "b9-ka-more-regions-20261010",
+  "run_id": "b9-ka-three-regions-20261010",
+  "stopped_run_id": "b9-ka-more-regions-20261010",
   "data_receipt": "docs/evidence/gf-ai/building/b9/data.json",
+  "amendments": [
+    {
+      "number": 1,
+      "at": "2026-10-10T18:56:00+05:30",
+      "decided_by": "lead",
+      "made": [
+        "After the launch of run b9-ka-more-regions-20261010 and before any DEV result of this",
+        "comparison was read by the lead or by the worker. That run was stopped in epoch 1 at",
+        "optimizer step 475 of 3,146: no epoch ended, so it saved no epoch and no DEV scoring ran."
+      ],
+      "found_by": "The lead, reading the trainer diff and the launch report; not by any result",
+      "stopped_run": "docs/evidence/gf-ai/building/b9/stopped.json",
+      "first_registered_text": "commit 7c6aaa85",
+      "defects": {
+        "instances_that_leave_the_tile": [
+          "The plan handled an instance left with no pixel after scaling by the zero-pixel policy. That",
+          "policy is for publisher masks that rasterize to no pixel but keep a real box. Applied to a",
+          "roof the crop removed from the image, it made a building target with a zero box and no",
+          "visual evidence for about 1 instance in 10 (505 of 5,268 sampled), teaching the model to",
+          "emit building queries for roofs it cannot see."
+        ],
+        "one_region_instead_of_three": [
+          "The cap rule filled the cap from Dhaka alone, which is not what the hypothesis (more South",
+          "Asian regions) says."
+        ]
+      },
+      "changes": {
+        "scale_augmentation": [
+          "An instance that had at least one mask pixel before the scale augmentation and has none",
+          "after it is removed from the sample's targets (box, mask and class). An instance that had no",
+          "pixel before it keeps the existing policy: its box is transformed with the image, and it is",
+          "removed only if that box ends entirely outside the tile. A chip left with no instance is an",
+          "empty chip."
+        ],
+        "extra_regions": [
+          "The 9,000 extra chips are 3,000 from each of Dhaka, Barishal and Jashore, each chosen by the",
+          "same id rule within the region. A region with fewer than 3,000 chips gives all of them and",
+          "Dhaka fills the shortfall by the same rule."
+        ]
+      },
+      "unchanged": [
+        "Starting weights and fresh optimizer, learning rates, resolution, augment ranges, at most 8",
+        "epochs and 480 minutes (counted from the relaunch), early stop, selection, outcomes, TRAIN",
+        "only, every publisher feature of a kept chip, empty chips kept, closed lists excluded and",
+        "proved by id."
+      ]
+    }
+  ],
   "hypothesis": [
     "With publisher-labelled roofs from more South Asian RAMP regions and scale + colour",
     "augmentation, DEV recall at the served threshold 0.5 rises."
@@ -73,71 +122,22 @@
     },
     "cap_extra_chips": 9000,
     "cap_rule": [
-      "Regions in the listed order until the cap is reached. A region that must be cut keeps the",
-      "chip ids whose SHA-256 (of the UTF-8 id) is lowest after sorting the ids; never by images,",
-      "labels or predictions."
+      "3,000 chips from each listed region: the chip ids whose SHA-256 (of the UTF-8 id) is lowest",
+      "after sorting the region's ids; never by images, labels or predictions. A region with fewer",
+      "than 3,000 chips gives all of them and Dhaka fills the shortfall by the same rule."
     ],
     "retention": [
       "Every publisher feature of a kept chip is retained; empty chips are retained; nothing is",
       "relabelled, dropped or padded."
     ],
-    "extra": [
-      {
-        "region": "dhaka_bangladesh",
-        "doi": "10.34911/rdnt.848og9",
-        "source_pairs": 11905,
-        "source_publisher_features": 188284,
-        "source_empty_chips": 3059,
-        "kept_chips": 9000,
-        "kept_publisher_features": 140865,
-        "kept_empty_chips": 2323,
-        "cut_by_cap": 2905,
-        "root": "E:/BhuAayam-data/ml/datasets/b9-dhaka-train-20261010/coco/train",
-        "coco_sha256": "d8dfae7685ec815aa5e5def07a4410414d61f4f67b9c21c4d01e84dec499d95f",
-        "chip_ids_sha256": "e751074a73956839fd6c2fac42ccb6119ccdc6851d688aecc1b1898d91f6d8c3",
-        "source_index_sha256": "2985abfc5820f12f29c87c4d7aa429986a655967a8620c50761bf34e31283d52",
-        "zero_pixel_features": 12
-      }
-    ],
-    "regions_without_kept_chips": [
-      {
-        "region": "barishal_bangladesh",
-        "doi": "10.34911/rdnt.cmejc0",
-        "source_pairs": 3024,
-        "source_publisher_features": 39834,
-        "source_empty_chips": 252,
-        "kept_chips": 0,
-        "kept_publisher_features": 0,
-        "kept_empty_chips": 0,
-        "cut_by_cap": 3024
-      },
-      {
-        "region": "jashore_bangladesh",
-        "doi": "10.34911/rdnt.wn4jmp",
-        "source_pairs": 7310,
-        "source_publisher_features": 79058,
-        "source_empty_chips": 1735,
-        "kept_chips": 0,
-        "kept_publisher_features": 0,
-        "kept_empty_chips": 0,
-        "cut_by_cap": 7310
-      }
-    ],
-    "extra_total": {
-      "chips": 9000,
-      "publisher_features": 140865,
-      "empty_chips": 2323
-    },
-    "measured_consequence": [
-      "Dhaka alone has more source pairs than the cap, so the cap is reached inside the first",
-      "region. Barishal and Jashore contribute no chip under the rule as written; this run adds one",
-      "region."
-    ],
+    "extra": [],
     "exclusion_proof": [
       "docs/evidence/gf-ai/building/b9/data.json (exclusion): no kept chip id is in the Karnataka",
       "DEV/holdout, Cox's Bazar or Chittagong lists; no kept cluster is a Karnataka DEV/holdout",
       "cell."
-    ]
+    ],
+    "per_region_extra_chips": 3000,
+    "extra_pins": "Counts and hashes of the three prepared shards are added by the data commit, before launch"
   },
   "recipe": {
     "init_weights": "E:/BhuAayam-data/ml/runs/b3-ka-run1-20261010/epoch-004",
@@ -160,8 +160,8 @@
       ],
       "scale": [
         "Random factor, then crop or pad back to the tile; boxes and masks transformed with the",
-        "image; an instance left with no pixel is handled the way the existing zero-pixel policy",
-        "handles it"
+        "image; an instance that had a mask pixel and is left with none is removed from the targets",
+        "(amendment 1)"
       ],
       "colour_jitter": 0.2,
       "colour": "Brightness, contrast and saturation jitter of at most +-0.2"
@@ -179,7 +179,8 @@
     "relaunch": [
       "One relaunch from the last saved epoch is allowed after a runtime fault (crash, driver,",
       "disk), recorded in the ledger; never after a disappointing number."
-    ]
+    ],
+    "max_minutes_counted_from": "the relaunch (amendment 1)"
   },
   "selection": {
     "split": "dev",
@@ -252,14 +253,15 @@
     "scale": [
       "Zoom of the 432-pixel tile tensor (image bilinear with antialiasing, masks nearest), then a",
       "random crop or a randomly placed black pad. Boxes move with the image and are clipped to the",
-      "tile. An instance with no mask pixel left keeps its class with a zero mask and a zero box,",
-      "as publisher zero-pixel features do."
+      "tile. An instance whose mask had a pixel and has none left is dropped with its box and",
+      "class. A publisher zero-pixel feature keeps its class, zero mask and moved box unless the",
+      "box lies entirely outside the tile."
     ],
     "order": "On TRAIN: flips, colour jitter, scale. Python random seeded 26011, as the existing flips.",
     "pass_dev_prerequisite": [
-      "The frozen evaluator's holdout reservation refuses a third attempt (two slots, both used).",
-      "Admitting attempt 3 is outside this task and needs the lead's decision; nothing is changed",
-      "here."
+      "The frozen evaluator's holdout reservation has no third slot and stays as it is (lead,",
+      "amendment 1). On pass_dev the outcome is reported and the task stops; the holdout run needs",
+      "the owner's decision first."
     ]
   }
 }
