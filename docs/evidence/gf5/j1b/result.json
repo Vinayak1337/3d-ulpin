@@ -1,0 +1,154 @@
+{
+ "task": "J1b", "gate": "GF5", "base": "83965a21", "traceWrittenBeforeCode": true,
+ "traceBasis": "Source at this checkout; no database or object-store requests made for the trace",
+ "paths": {
+  "identityResolve": {
+   "route": "POST /api/v1/usp/identity/resolve", "databaseWrites": [], "objectWrites": [],
+   "calls": [
+    "apps/api/src/modules/evidence/evidence.controllers.ts:151-157 validates and calls service.resolveIdentity",
+    "apps/api/src/modules/evidence/evidence.services.ts:89-90 builds local context and calls resolveProjectIdentity",
+    "packages/server/src/modules/usp/project-identity.ts:346-397 validates, SELECTs captured records, checks pins",
+    "packages/server/src/modules/usp/commands.ts:18-27 scopedManifestTx SELECTs and validates stored manifest",
+    "packages/server/src/modules/usp/snapshots.ts:206-216 assertSnapshotDocumentsTx SELECTs each captured source",
+    "packages/server/src/modules/usp/snapshots.ts:27-29 retainedDocumentTx calls documentAuthorityTx retained",
+    "packages/server/src/modules/usp/ingestion/document-authority.ts:23-85 SELECTs sources/jobs/cases recursively",
+    "packages/server/src/modules/usp/ingestion/document-context.ts:19-33,58-68 SELECTs case/source/family head",
+    "packages/server/src/modules/usp/source-stated-snapshots.ts:73-81 original authority SELECTs case FOR SHARE",
+    "packages/server/src/modules/usp/ingestion/source-building-review.ts:18-25 checks original access by SELECT"
+   ],
+   "effects": "BEGIN/COMMIT or ROLLBACK and SELECT FOR SHARE only; no allocation, capture, receipt or outbox"
+  },
+  "cardList": {
+   "route": "POST /api/v1/usp/property-cards/list", "databaseWrites": [], "objectWrites": [],
+   "calls": [
+    "apps/api/src/modules/evidence/property-card.controller.ts:44-50 validates and calls listPropertyCards",
+    "packages/server/src/modules/usp/packets/card-listing.ts:109-128 reads scope, page and distinct plans",
+    "packages/server/src/modules/usp/packets/card-listing.ts:43-53 pageTx SELECTs cards/plans/revocations/clock",
+    "packages/server/src/modules/usp/snapshots.ts:218-234 readManifest SELECTs, then source authority above",
+    "packages/server/src/modules/usp/packets/plan-service.ts:107-126 readPacketPlan loads and authorizes plan",
+    "packages/server/src/modules/usp/packets/plan-store.ts:71-78 loads SELECTed plans and checks fingerprints",
+    "packages/server/src/modules/usp/packets/card-service.ts:162-169 currentRevisionTx SELECT FOR SHARE"
+   ],
+   "effects": "No object I/O; plan authority closure below is SELECTs and locks, not generation"
+  },
+  "cardRead": {
+   "route": "POST /api/v1/usp/property-cards/read", "databaseWrites": [], "objectWrites": [],
+   "calls": [
+    "apps/api/src/modules/evidence/property-card.controller.ts:36-42 calls readPropertyCard",
+    "packages/server/src/modules/usp/packets/card-service.ts:232-248 reads stored card, plan, packet, lifecycle",
+    "packages/server/src/modules/usp/packets/card-service.ts:70-85 lifecycle uses database clock and SELECT",
+    "packages/server/src/modules/usp/packets/card-service.ts:97-113 storedTx and executed read existing rows",
+    "packages/server/src/modules/usp/packets/card-service.ts:115-145 linkedPacket/protectedTx check saved linkage",
+    "packages/server/src/modules/usp/packets/pdf-service.ts:278-304 reads PDF packet before/after object GET",
+    "packages/server/src/modules/usp/packet0.ts:141-174 text branch reads receipt and object, never creates it"
+   ],
+   "effects": "Object GET for linked PDF; no put. Audited but excluded from allow-list: journey does not need it"
+  },
+  "cardVerification": {
+   "route": "GET /api/v1/usp/property-cards/{cardId}/revisions/{revision}/verification",
+   "databaseWrites": [], "objectWrites": [],
+   "calls": [
+    "apps/api/src/modules/evidence/property-card.controller.ts:91-95 calls verifyPropertyCard",
+    "packages/server/src/modules/usp/packets/card-verification.ts:157-182 reads exact row, plan, chain/lifecycle",
+    "packages/server/src/modules/usp/packets/card-verification.ts:82-92,125-130 reads artifact and linked packet",
+    "packages/server/src/modules/usp/packets/card-service.ts:250-264 cardArtifact only uses boundedCardRead",
+    "packages/server/src/modules/usp/packets/card-service.ts:28-40 boundedCardRead uses openObjectStream GET",
+    "packages/server/src/infrastructure/storage.ts:51-63,140-158 readObject/openObjectStream use GetObjectCommand"
+   ],
+   "effects": "Reads card and packet bytes; no crop/render/generate, put, upload or store mutation"
+  }
+ },
+ "planAuthorityClosure": [
+  "packages/server/src/modules/usp/packets/plan-authority.ts:83-116 SELECTs and case/recording/source locks",
+  "packages/server/src/modules/usp/declarations/authority.ts:34-88 replay evidence SELECTs; no fence writer",
+  "packages/server/src/modules/usp/packets/pdf-service.ts:70-74,122-133 protects and reads PDF plan view",
+  "packages/server/src/modules/usp/packets/pdf-authority.ts:30-79,82-142 checks targets/sources and locks",
+  "packages/server/src/modules/usp/packets/source-stated-binding.ts:34-79,147-159 snapshot SELECTs/checks only",
+  "packages/server/src/modules/registry/registry-document-locks.ts:13-19 case advisory locks and FOR SHARE",
+  "packages/server/src/modules/cases/source-case-lock.ts:9-12 SELECT pg_advisory_xact_lock only",
+  "packages/server/src/infrastructure/db.ts:14-18,54-71,113-117 transaction/SET LOCAL timeouts; no migration call"
+ ],
+ "notReachableFromTheseReads": [
+  "snapshots.ts:198-203 capture inserts; resolve never calls captureRegistrySnapshotTx",
+  "declarations/authority.ts:27-32 lockDeclarationFenceTx inserts; replay read never calls it",
+  "card-service.ts:170-229 generatePropertyCard puts PDF/inserts card/receipt/outbox; read never calls it",
+  "pdf-service.ts:88-119,134-276 create/revise/confirm/execute write; view/read never call them",
+  "source-stated-binding.ts:119-133 prepareSourceStatementBindings performs native I/O; read uses saved bindings"
+ ],
+ "legacyGetExcluded": {
+  "route": "GET /api/v1/registry/{identifier}",
+  "calls": [
+   "apps/api/src/modules/register/register.controller.ts:214-217 -> register.service.ts:53",
+   "packages/server/src/modules/registry/registry.ts:234-235 resolveRecord calls syncLegacyIdentifiers",
+   "packages/server/src/modules/areas/area-resolver.ts:22-23 resolveAreaIdentifier also synchronizes"
+  ],
+  "writes": [
+   "area-resolver.ts:10-14 INSERT external_identifiers from reviewed officialUlpin bindings",
+   "area-resolver.ts:15-17 UPDATE external_identifiers.valid_to=now() for changed bindings",
+   "area-resolver.ts:18-20 UPDATE external_identifiers.valid_to=NULL for restored bindings"
+  ],
+  "objectWrites": [], "decision": "Not P3 exact snapshot authority; never requested by journey"
+ },
+ "allowListDecision": {
+  "count": 2, "names": ["identityResolve", "cardList"],
+  "resolverWrites": false, "readCardAuditedButNotAllowed": true,
+  "claim": "No application database or object-store writes reachable; locks and transaction-local settings remain",
+  "qualification": "Static source trace, not database instrumentation; serving code must match reviewed checkout"
+ },
+ "run": {
+  "command": [
+   "pnpm exec tsx --tsconfig scripts/agent/tsconfig.json",
+   "scripts/golden-journey/run.ts --profile demo"
+  ],
+  "exit": 0, "startedAt": "2026-10-10T14:22:42.345Z", "totalMs": 12966,
+  "servedCommit": "83965a21078fede5a4f740ced05de40836e68a30",
+  "servedCommitSource": "git HEAD of doctor-checked serving checkout; health does not carry a commit field",
+  "health": {"http": 200, "ok": true, "databaseReadiness": "structurally_ready"},
+  "doctor": {"exit": 0, "gatewayDisabled": true, "failedComponents": []},
+  "summary": {"pass": 11, "fail": 0, "blocked": 0, "skipped": 2},
+  "routeAvailability": "K8 snapshot list 200 on first run; no five-minute wait or retry required",
+  "evidence": "docs/evidence/gf5/20261010/journey.json",
+  "previousArchived": "docs/evidence/gf5/20261010/attempt-2.json",
+  "archiveMatchesPreviousCommittedJson": true,
+  "earlierAttemptAndDoctorFailurePreserved": true,
+  "identity": {
+   "state": "pass", "canonicalState": "reviewed", "resolvedStatus": "assigned",
+   "recordId": "46b7265e-ca88-402d-83df-065cf7c45140", "recordVersion": 2,
+   "code": "P3-YBF8MA4FYHGFRA0CERYJ-T3",
+   "answeringManifest": "a9fd4c9d-0a5a-4f4d-9032-527ab7857b78", "fallbackToOlderScope": false
+  },
+  "card": {
+   "state": "pass", "listed": 1, "verified": 1, "checksPass": 6,
+   "cardId": "6a997624-6c8d-40a9-8215-8a671a74dc1c", "revision": 1,
+   "result": "consistent", "revoked": false, "expired": false, "expiresAt": "2026-10-11T13:39:30.390Z",
+   "answeringManifest": "a9fd4c9d-0a5a-4f4d-9032-527ab7857b78", "fallbackToOlderScope": false,
+   "signature": "not_assessed", "expiryNext": "P7 write-mode officer action to append a card revision"
+  },
+  "skipped": ["geometry: P5.2/K4 cited limits/placed geometry", "exchange: P5.3 readable nonempty export"],
+  "gate": "Partial: exit 0 means no failed steps, not that skipped capabilities passed"
+ },
+ "checks": {
+  "goldenJourneyTsc": 0, "agentTsc": 0, "liveJourney": 0, "diffCheck": 0, "linesOver120": 0,
+  "postRefusal": {
+   "command": [
+    "pnpm exec tsx --tsconfig scripts/agent/tsconfig.json",
+    "docs/evidence/gf5/j1b/refuse-post.ts"
+   ],
+   "exit": 1, "networkRequests": 0,
+   "message": "POST refused before request: /api/v1/usp/identity/assign is not a named pure read",
+   "earlierInlineAttempt": "tsx -e exited 0 with no output; not counted as a check; replaced by file command"
+  },
+  "writeModeRefusal": {
+   "exit": 1, "beforeRequests": true,
+   "message": "Write mode is not built; check mode reads only (GET, and 2 named POST reads)."
+  },
+  "evidence": "13 steps; summary/mode/request-response hashes valid; prior JSON archived unchanged",
+  "sourceComparison": "Serving checkout HEAD equals base 83965a21; diff of audited server/controller paths empty",
+  "selfReview": "Read full git diff staging...HEAD; only owned paths changed; no new line over 120 columns"
+ },
+ "notPerformed": [
+  "Runtime start/stop/rollout/reconfiguration; SQL; .env or external runtime-file reads by runner",
+  "Provider, GPU or held-out work; assignment, record, generate, revoke or append-card commands",
+  "Merge, rebase, push, edit of another checkout"
+ ]
+}

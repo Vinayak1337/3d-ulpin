@@ -6,7 +6,8 @@ export type State = 'pass' | 'fail' | 'blocked' | 'skipped';
 export type Step = { id: string; title: string; state: State; ms: number; expected: unknown;
   observed: unknown; evidence: unknown[]; promptId: string };
 export type Outcome = { state?: State; observed: unknown };
-export type Read = { route: string[]; params: Record<string, string | number>; query: Record<string, string | number>;
+export type Read = { method: 'GET' | 'POST'; requestSha256?: string; route: string[];
+  params: Record<string, string | number>; query: Record<string, string | number>;
   status: number; code: string | null; bodySha256: string; body: unknown };
 type Operation = { parameters?: { name: string; in: string; required?: boolean }[] };
 type Contract = { paths: Record<string, { get?: Operation; post?: Operation }> };
@@ -25,6 +26,15 @@ export function text(value: unknown): string {
   return value;
 }
 
+// Source trace, including downstream authority: docs/evidence/gf5/j1b/result.json (committed before code).
+export const POST_READS = [
+  { name: 'identityResolve', route: '/api/v1/usp/identity/resolve', writes: false,
+    code: 'packages/server/src/modules/usp/project-identity.ts:346-397' },
+  { name: 'cardList', route: '/api/v1/usp/property-cards/list', writes: false,
+    code: 'packages/server/src/modules/usp/packets/card-listing.ts:109-128' },
+] as const;
+export const readMode = `reads only (GET, and ${POST_READS.length} named POST reads)`;
+
 export class Reader {
   readonly reads: Read[] = [];
   private readonly cache = new Map<string, Read>();
@@ -40,19 +50,35 @@ export class Reader {
     assert(!path.includes('undefined'), 'Missing path pin');
     const search = new URLSearchParams(Object.entries(query).map(([key, value]) => [key, String(value)]));
     const url = `${r1.api}${path}${search.size ? '?' + search : ''}`;
-    let result = this.cache.get(url);
+    return this.request(url, route, 'GET', params, query);
+  }
+
+  async postRead(route: string, body: unknown): Promise<Read> {
+    const named = POST_READS.find(entry => entry.route === route);
+    assert(named && !named.writes, `POST refused before request: ${route} is not a named pure read`);
+    assert(contract.paths[route]?.post, 'POST read route is not in the published contract');
+    return this.request(`${r1.api}${route}`, route, 'POST', {}, {}, JSON.stringify(body));
+  }
+
+  private async request(url: string, route: string, method: Read['method'], params: Read['params'],
+    query: Read['query'], payload?: string): Promise<Read> {
+    const key = JSON.stringify([method, url, payload]);
+    let result = this.cache.get(key);
     if (!result) {
-      const response = await fetch(url, { method: 'GET', redirect: 'error', signal: AbortSignal.timeout(30000) });
+      const response = await fetch(url, { method, body: payload,
+        headers: payload === undefined ? {} : { 'Content-Type': 'application/json' },
+        redirect: 'error', signal: AbortSignal.timeout(30000) });
       const bytes = await response.text();
       const body: unknown = JSON.parse(bytes);
       const envelope = Array.isArray(body) ? {} : object(body);
       const error = envelope.error;
       const wrapped = error && typeof error === 'object' ? object(error) : {};
       const code = envelope.code ?? wrapped.code;
-      result = { route: route.split('/').filter(Boolean), params, query, status: response.status,
+      result = { method, route: route.split('/').filter(Boolean), params, query, status: response.status,
+        ...(payload === undefined ? {} : { requestSha256: createHash('sha256').update(payload).digest('hex') }),
         code: typeof code === 'string' ? code : null,
         bodySha256: createHash('sha256').update(bytes).digest('hex'), body };
-      this.cache.set(url, result);
+      this.cache.set(key, result);
     }
     this.reads.push(result);
     return result;
@@ -66,7 +92,7 @@ export function ok(read: Read): unknown {
 export function refs(reads: Read[]): unknown[] {
   const groups = new Map<string, Read[]>();
   for (const read of reads) {
-    const key = JSON.stringify([read.route, read.query]);
+    const key = JSON.stringify([read.method, read.route, read.query]);
     groups.set(key, [...(groups.get(key) ?? []), read]);
   }
   return [...groups.values()].map(groupedRefs);
@@ -76,9 +102,10 @@ function groupedRefs(reads: Read[]): unknown {
   const first = reads[0];
   const shared = Object.fromEntries(Object.entries(first.params).filter(([key, value]) =>
     reads.every(read => read.params[key] === value)));
-  return { route: first.route, params: shared, query: first.query,
+  return { method: first.method, route: first.route, params: shared, query: first.query,
     reads: reads.map(read => ({ params: Object.fromEntries(Object.entries(read.params).filter(([key]) =>
-      !(key in shared))), status: read.status, code: read.code, bodySha256: read.bodySha256 })) };
+      !(key in shared))), status: read.status, code: read.code, bodySha256: read.bodySha256,
+      ...(read.requestSha256 ? { requestSha256: read.requestSha256 } : {}) })) };
 }
 
 export async function check(reader: Reader, id: string, title: string, promptId: string,
