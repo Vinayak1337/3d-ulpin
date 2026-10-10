@@ -41,6 +41,11 @@ The plan prints `tariff.policyHash`, the ordered steps and the totals. The dry r
 gateway that holds only a replay store: its summary must say `providerDispatches: 0` and every planned request
 must match (`requestsMatchingPlan` equals the number of calls). Neither command reads a key or opens a connection.
 
+For the two wide development tables, add `--wide-tables` to `--plan` or `--dry-run`. It prints each
+column group's column count, byte count, samples per column and recording identity under
+`developmentWideTables`, separately from the unchanged ten-call sequence. These probes use no provider
+and are refused with `--live`. A missing group recording returns the whole table's fallback, never a half plan.
+
 ## 3. Turn the gateway on
 
 Stop the demo API and dispatcher, then enable and start again ([DEMO-GATEWAY.md](DEMO-GATEWAY.md#commands-owner-only)):
