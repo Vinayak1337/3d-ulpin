@@ -1,0 +1,51 @@
+{
+  "task": "K9b",
+  "gates": ["GF1", "GF5"],
+  "base": "b931a441",
+  "status": "step0_complete_part1_requires_readonly_reader_seam",
+  "runtimeAccess": false,
+  "liveSwitchPerformed": false,
+  "step0": {
+    "test": "tests/usp-packet-image-pdf-recovery.test.ts:271-294",
+    "freshAssertion": {
+      "oldBehavior": "hard-coded desktop-ai04f interpreter must resolve through reviewed hooks",
+      "productionRule": "inspectImageCheckpointRuntime refuses unknown startup hooks or unresolvable native imports",
+      "newEnvironmentAccepted": true,
+      "receipt": "E:/BhuAayam-data/task-data/k9/image-probe.json",
+      "pins": {
+        "pythonSha256": "1a967738a234a3bd90e8fa8b925e20a994326e1eb8b74913026a9449a933e6db",
+        "launcherSha256": "3b5cc4150dc98800ee46b09034187bb2d8ba3c8ea3368d3a46e9bb42876b58db",
+        "pillowImageSha256": "59f1b98ed7bfd7b516b9f13ffd9dd3bc0aa1a495042accdb5ae4609b41c329d5",
+        "imagingSha256": "c8c519ec72bf75b2945b4fc4afa854af2fca8b970a403134f9ddda3e164d85e9"
+      }
+    },
+    "historicalAssertion": {
+      "oldBehavior": "current interpreter/base/Pillow/native pins must equal retained crop provenance",
+      "productionRule": "pdf-entry-checkpoints.ts:152-158 refuses reuse if current recipe or runtime pins differ",
+      "newEnvironmentDifferences": ["pythonSha256", "launcherSha256", "imagingSha256"],
+      "bindingReusable": false,
+      "remainingBody": [
+        "Lines 280-285 resolve configured checkpoint runtime; retain in fresh-resolution test.",
+        "Lines 286-289 hash worker/decoder/supervisor bytes; retain in fresh-resolution test.",
+        "Lines 290-294 save evidence; remove stale hard-coded base/Pillow paths and record actual pins.",
+        "Historical test drives existing checkpoint authority with actual configured pins and expects refusal."
+      ]
+    }
+  },
+  "part1Prerequisites": [
+    {
+      "file": "scripts/platform/demo-config.mjs",
+      "signature": "readDemoOcrPaths() has no file/directory parameter",
+      "constraint": "file is read-only; override path is module-private; dry-run must never access runtime",
+      "requiredSeam": "an optional directory argument and shared override reader returning validated object/bytes/path",
+      "decision": "do not duplicate parser/constants, re-evaluate module source, or patch filesystem globals"
+    },
+    {
+      "constraint": "every new interpreter must have its base inside its own environment",
+      "previousInterpreter": "desktop-ai04f venv has its base outside that environment in the Codex runtime",
+      "decision": "same-command rollback to that previous interpreter would be refused by mandatory validation",
+      "requiredDecision": "authorize a private-base rollback environment or explicitly define a reviewed rollback exception"
+    }
+  ],
+  "plan": "complete the independently owned image-test split; leave the switch unimplemented, never a hand edit"
+}
