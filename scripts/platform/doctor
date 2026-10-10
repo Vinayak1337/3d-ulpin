@@ -4,7 +4,8 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { command, dockerRuntime, engine, inventory, storageProblems, migrationReady, root, services } from './runtime.mjs';
-import { readDemo, readDemoOcrPaths, demoProject } from './demo-config.mjs';
+import { readDemo, readDemoOcrPaths, readDemoDocumentRuntime, demoProject } from './demo-config.mjs';
+import { documentRuntimeReport } from './demo-document-runtime.mjs';
 import { gatewayReport, gatewayReportLines } from './demo-gateway.mjs';
 import { ownedProcess } from './processes.mjs';
 
@@ -63,6 +64,15 @@ function dispatcherRunning() {
 
 async function doctor() {
   if (!['ulpin', 'ulpin-repo', demoProject].includes(selectedProject)) throw new Error('Unsupported project.');
+  if (demo) await attempt('Document runtimes', () => {
+    const paths = readDemoDocumentRuntime();
+    console.log(`  documentPagesConfigured: ${Boolean(paths.ULPIN_DOCUMENT_PAGES_PYTHON)}`);
+    console.log(`  packetRegionsConfigured: ${Boolean(paths.ULPIN_PACKET_REGIONS_PROFILE)}`);
+    const report = documentRuntimeReport(paths);
+    console.log(`  regionProfileSha256: ${report.regionProfileSha256}`);
+    console.log(`  regionRepoMatches: ${report.regionRepoMatches}`);
+    return report.pagesConfigured && report.regionsConfigured && report.regionRepoMatches;
+  }, 'the runtime owner must rebuild document-runtime-paths.json from the reviewed demo checkout before startup.');
   if (demo && !await attempt('Demo external configuration', () => { demoEnv = readDemo(); return true; },
     'recover the original demo.env if demo volumes exist; otherwise use platform:start --profile demo --create.')) return;
   if (demo) {
