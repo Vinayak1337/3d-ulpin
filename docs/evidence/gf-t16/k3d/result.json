@@ -1,0 +1,73 @@
+{
+ "task": "K3d", "gates": ["GF-T16", "GF5"], "stage": "investigation complete; conditional Step 1 not run",
+ "base": "2d066c11e6afdc47b3a9f6bb07ea1aeb6bd5ecbb", "branch": "task/k3d-first-real-prism",
+ "startedAt": "2026-10-10T19:58:46+05:30", "evidenceAt": "2026-10-10T20:46:48+05:30",
+ "scope": "Retained demo/development originals; offline CPU plus two permitted canonical journey GETs",
+ "privateRoot": "E:/BhuAayam-data/task-data/k3d/",
+ "inventory": "inventory.json", "sourceFindings": "findings.json", "report": "REPORT.md",
+ "numbers": {
+  "originals": 8, "pages": 28, "vectorTextPages": 2, "scannedPages": 26,
+  "ocrTiles": 680, "pinnedRegionViews": 20, "canonicalGETs": 2,
+  "readyBuildings": 0, "oneDecisionShort": 1, "qualifiedIdentifiedUnitOutlines": 0,
+  "realPrisms": 0, "newPrismFixtures": 0, "unchangedPrismTestsPassed": 12
+ },
+ "verdictSummary": {
+  "Magnolia": "one decision short: source-local nominal room FFL envelope only; not an identified villa",
+  "Tower3": "not possible from retained sources as verified: global elevation units and qualified outline missing",
+  "3DApartment": "not possible from retained sources as verified: no exact unit outline/bound faces qualified",
+  "AOneHeritage": "not possible from retained sources as verified: no unit-specific metre bound pair",
+  "BiharPinnacle": "not possible from retained sources as verified: units/outline unqualified, rotated scan limited"
+ },
+ "verdictLimit": [
+  "Not an absence theorem: these originals contain real vertical evidence, including in Tower 3 and Bihar plans",
+  "No reviewed polygon alone is a workflow gap, not proof that a source has no outline",
+  "This task did not establish a dimension-bound identified-unit outline; new traced/reviewed evidence may change this",
+  "Magnolia nominal template is a scope decision, not permission to attach it to a numbered villa or existing unit"
+ ],
+ "canonical": {
+  "command": "pnpm exec tsx --tsconfig scripts/agent/tsconfig.json docs/evidence/gf-t16/k3d/read-canonical.ts",
+  "exitCode": 0, "method": "Reader.get; NormalizedBuildingSchema.parse", "receipt": "canonical-01/receipt.json",
+  "Tower3": {"recordRevision": 5, "unitRevision": 2, "levels": 1, "spaces": 1, "limits": "unknown/null"},
+  "Magnolia": {"recordRevision": 6, "reviewedCaptionLevels": 3, "spaces": 0, "limits": "unknown/null"},
+  "groundAssociation": "Live reviewed GROUND candidate is KITCHEN /pages/2/candidates/0, not nominated BEDROOM",
+  "runtimeChanges": 0, "doctorRun": false, "servedCommitClaim": "Not assessed by K3d"
+ },
+ "method": {
+  "native": "Existing geo.vector_plan.text_lines, parse_dimensions and parse_length; all pages, no synthetic outline",
+  "ocr": "Existing document_fields_baseline.py pages --ocr-tiles --workers 1; one run per original",
+  "python": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe -B",
+  "CUDA_VISIBLE_DEVICES": "", "PYTHONDONTWRITEBYTECODE": "1",
+  "tesseract": "E:/BhuAayam-data/task-data/k2/tesseract-runtime-k2b/Library/bin/tesseract.exe",
+  "tessdata": "E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/tesseract/Library/share/tessdata",
+  "tesseractSha256": "ea22b4adaa35ba9f449aaff9f111c97550ecd2220510cdce60c1503465a38357",
+  "englishSha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
+  "assetValidation": "Existing verify_tile_assets; fails closed on either mismatch",
+  "limits": "English horizontal OCR, confidence >=60, native-resolution tiles; execution complete is not full recall",
+  "visual": "Native source renders, no annotations; exact page-point boxes and PNG hashes in inventory.views",
+  "scopeEvidence": "A5b/plan.json development project list; demo Magnolia/Tower 3; split metadata only",
+  "closedProjects": ["RERAP269201800915-2", "RERAP296201800558-2", "RERAP69201800824-1"],
+  "heldoutReads": 0, "runtimeDirectoryReads": 0, "credentialReads": 0,
+  "acquisitions": 0, "providerCalls": 0, "gpuJobs": 0, "SQL": 0, "POSTs": 0, "pushes": 0
+ },
+ "checks": [
+  {"name": "Canonical schema/GET contract", "exitCode": 0},
+  {"name": "8 original and page-store hashes; 28-page coverage; 20 crop hashes; exact arithmetic", "exitCode": 0,
+   "script": "verify-evidence.py", "log": "verification-utf8-final.log"},
+  {"name": "Unchanged test_prisms.py, --noconftest -p no:cacheprovider", "exitCode": 0,
+   "passed": 12, "log": "prism-tests-02.log", "conftest": "Skipped unrelated missing pypdf import"},
+  {"name": "Conditional real-source prism fixture/test", "state": "not run", "reason": "No qualifying outline"},
+  {"name": "New-file 120-character lines and JSON parsing", "exitCode": 0},
+  {"name": "git diff --check and owned-path review", "exitCode": 0}
+ ],
+ "boundedCorrections": [
+  "Initial pytest exit 4: shared conftest imports absent pypdf; unchanged focused tests pass with --noconftest",
+  "Private summary KeyError method: native pages lack that OCR-specific field; explicit native fallback added",
+  "Two out-of-page Tower crops: stopped, read actual 2545x2590 pt inventory, rendered corrected regions once",
+  "Two uncounted candidate introspection KeyErrors: canonical candidate has no output field; keys then inspected",
+  "Initial compact inventory formatter split number tokens; round-trip assertion stopped before writing it",
+  "Wrong 270-degree section navigation retained; corrected 90-degree views retained separately, no OCR replay",
+  "An import using underscore for a hyphenated script exited 1; runpy used, no original evidence overwritten",
+  "Self-review caught ± mojibake from a default-codepage read; exact UTF-8 literals corrected and pinned by verifier"
+ ],
+ "next": "Lead decides nominal-room scope or supplies a dimension-bound identified-unit outline; no writes here"
+}
