@@ -63,6 +63,8 @@ export interface ImageOverlayInput {
   kind: 'image';
   corners: [LocalXY, LocalXY, LocalXY, LocalXY];
   image: HTMLCanvasElement;
+  /** Ground context, drawn above context fills and below records; omitted keeps the existing image placement. */
+  role?: 'ground';
 }
 
 /** Measured points (local east, north, up), coloured per point. */
