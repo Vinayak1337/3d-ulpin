@@ -51,6 +51,14 @@ function kindClause(kind: string) {
   return kind === '?' ? 'kind not recorded' : `kind ${kind}`;
 }
 
+/** A structure or a space by its number, then its kind. A number the locator holds is printed as the record
+ * states it, with no word on where it came from. A locator may hold no number beside an unknown kind; the clause
+ * then says that the number is not recorded, so the structure and the space are still named. */
+function numberedClause(part: 'Structure' | 'space', number: number | undefined, kind: string) {
+  const numbered = number === undefined ? `${part} number not recorded` : `${part} ${number}`;
+  return `${numbered}, ${kindClause(kind)}`;
+}
+
 function levelClause(levels: readonly string[]) {
   const stated = levels.map(level => (level === 'L?' ? 'not recorded' : level));
   return `${levels.length > 1 ? 'levels' : 'level'} ${stated.join(' and ')}`;
@@ -58,15 +66,16 @@ function levelClause(levels: readonly string[]) {
 
 /**
  * The recorded location in words, one clause for each field of the locator, with the formal locator kept at the
- * end. The card leaves parcels out of this row (they have a row of their own), so the formal locator always
- * starts with NO-ANCHOR; when the record does hold an anchor, the row says that it is left out.
+ * end as verticalLocator returns it. The card leaves parcels out of this row (they have a row of their own), so
+ * the formal locator always starts with NO-ANCHOR; when the record does hold an anchor, the row says that it is
+ * left out.
  */
 export function locationSentence(location: ProjectLocation) {
   const { structureKind, structureNumber, levels, spaceKind, spaceNumber } = location.locator;
   const formal = verticalLocator({ ...location, anchorState: 'not_supplied', parcels: [] });
   const locator = location.anchorState === 'not_supplied' ? 'Locator' : 'Locator, anchor left out';
-  return `${anchorSentence(location.anchorState)} Structure ${structureNumber}, ${kindClause(structureKind)}; `
-    + `${levelClause(levels)}; space ${spaceNumber}, ${kindClause(spaceKind)}. (${locator}: ${formal})`;
+  return `${anchorSentence(location.anchorState)} ${numberedClause('Structure', structureNumber, structureKind)}; `
+    + `${levelClause(levels)}; ${numberedClause('space', spaceNumber, spaceKind)}. (${locator}: ${formal})`;
 }
 
 /** Why a source-stated unit has no level ordinal. The floor segment of its registry identifier counts the floor

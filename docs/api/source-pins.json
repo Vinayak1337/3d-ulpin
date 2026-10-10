@@ -514,7 +514,7 @@
     "packages/server/src/modules/usp/packets/card-service.ts": "f9f718d781603f28c5fead704f6d27f8d36bb3f4a5dda0d608c2b4cdbbd3f975",
     "packages/server/src/modules/usp/packets/card-source-facts.ts": "99c4c83b60e7b119cc464d2cc3ea74b3fff24beb6a965edf944afdf67796c873",
     "packages/server/src/modules/usp/packets/card-verification.ts": "8f39aaf86b4fe57a0df080c7b631c22a1e3b7f85a10b85f50ea73b474bf8099d",
-    "packages/server/src/modules/usp/packets/card-wording.ts": "f0213f276243d720a86a350bb96ace494c63cafaa524c0024718b1f5addef4f3",
+    "packages/server/src/modules/usp/packets/card-wording.ts": "6c6c7a998f6c18ae98975c8b9019670f14c50012e0853caaa4fa58b73399d5b8",
     "packages/server/src/modules/usp/packets/image-checkpoint-runtime.ts": "ca70fc1c9f0f6893063adf327e592818c5bbf715f027ea681176e9947f08b7a1",
     "packages/server/src/modules/usp/packets/image-pdf-render.ts": "4642c659db463ab2d80d217c43e7ebb4ae9f375eb5449b4e5ba617c461f779fd",
     "packages/server/src/modules/usp/packets/image-region.ts": "3adff80ce6896e94cc545e23f8aeb1bdcc88f93f5f564f4b500b17e9e8ede099",
