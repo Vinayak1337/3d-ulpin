@@ -96,16 +96,23 @@ export const UspSnapshotManifestSchema = z.strictObject({
 export const UspListBuildingSnapshotsSchema = z.strictObject({
   buildingId: z.uuid(), limit: z.number().int().min(1).max(20).default(5),
 }).readonly();
-/** One recorded snapshot: its stored scope, to pass on unchanged, and counts read from its stored members. */
+/** One recorded snapshot: its stored scope, to pass on unchanged, its two times and counts read from its
+ * stored members. */
 const UspBuildingSnapshotItemSchema = z.strictObject({
-  scope: UspSnapshotScopeSchema, createdAt: timestamp,
+  scope: UspSnapshotScopeSchema,
+  createdAt: timestamp.describe('When the row was stored: the start of the storing transaction, so every '
+    + 'snapshot stored by one command carries the same value.'),
+  capturedAt: timestamp.describe('When the server captured the snapshot, as its stored manifest states. '
+    + 'The list is ordered by this value, newest first.'),
   members: z.strictObject({
     total: z.number().int().nonnegative().max(20000),
     documentResultNotCurrent: z.number().int().nonnegative().max(20000),
   }).readonly(),
 }).readonly();
-/** The snapshots of a building's site that list the building and that the caller may read, newest first.
- * `unreadable` counts rows of the page whose stored body is not the manifest of its own row; none is listed. */
+/** The snapshots of a building's site that list the building and that the caller may read, newest first by
+ * capture time. Two captures with one capture time follow the store time of their rows and then their ids,
+ * which says nothing about recency. `unreadable` counts rows of the page whose stored body is not the manifest
+ * of its own row; none is listed. */
 export const UspBuildingSnapshotListSchema = z.strictObject({
   buildingId: z.uuid(), siteId: z.uuid(),
   items: z.array(UspBuildingSnapshotItemSchema).max(20).readonly(),

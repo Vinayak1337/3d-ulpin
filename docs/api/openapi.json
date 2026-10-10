@@ -20573,7 +20573,7 @@
     },
     "/api/v1/buildings/{buildingId}/snapshots": {
       "get": {
-        "description": "Each item carries the scope its manifest stores, to pass unchanged to the USP reads. Order is the only statement about recency. Cited documents are not checked here: a read that is given a listed scope applies its own document checks.",
+        "description": "Each item carries the scope its manifest stores, to pass unchanged to the USP reads. Order is the only statement about recency: the capture time the server wrote into the manifest (capturedAt), newest first. Two captures with the same capture time follow the store time of their rows (createdAt, shared by every snapshot one command stores) and then their ids, which says nothing about which is newer. Cited documents are not checked here: a read that is given a listed scope applies its own document checks.",
         "operationId": "GET_api_v1_buildings_buildingId_snapshots",
         "parameters": [
           {
@@ -214697,7 +214697,14 @@
                 "createdAt": {
                   "type": "string",
                   "format": "date-time",
-                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                  "description": "When the row was stored: the start of the storing transaction, so every snapshot stored by one command carries the same value."
+                },
+                "capturedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+                  "description": "When the server captured the snapshot, as its stored manifest states. The list is ordered by this value, newest first."
                 },
                 "members": {
                   "readOnly": true,
@@ -214724,6 +214731,7 @@
               "required": [
                 "scope",
                 "createdAt",
+                "capturedAt",
                 "members"
               ],
               "additionalProperties": false
