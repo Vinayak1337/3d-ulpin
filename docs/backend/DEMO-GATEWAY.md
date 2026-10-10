@@ -10,8 +10,10 @@ The external demo configuration is accepted in exactly two states of `ULPIN_MODE
 - **`0` (off):** no `ULPIN_MODEL_GATEWAY_CONFIG` line and no `ULPIN_MAPPING_TEACHER_ADAPTER=sarvam` line.
 - **`1` (on):** all of
   - a `ULPIN_MODEL_GATEWAY_CONFIG` policy that the gateway schema accepts;
-  - its `secretReference` is exactly `ULPIN_PROVIDER_KEY_SARVAM`, and it states `projectDailyCapMicroInr`;
-  - `ULPIN_PROVIDER_KEY_SARVAM` is present and not empty.
+  - it names its key one way: `secretReference`, exactly `ULPIN_PROVIDER_KEY_SARVAM`, or `secretReferences`, a
+    list of 2 to 32 different names of the form `ULPIN_PROVIDER_KEY_SARVAM_01`, in the order the keys are used;
+  - it states `projectDailyCapMicroInr`;
+  - every key it names is present and not empty. A refusal names the first missing name.
 
 Any other flag value, or a mix of the two states, is refused. Refusals name the key, never a value.
 
@@ -23,9 +25,12 @@ Any other flag value, or a mix of the two states, is refused. Refusals name the 
   (`gatewayPolicyHash()`), in a child process that receives the policy and not the key. The schema is not copied.
 - **Each gateway use** in the API and dispatcher parses the same schema again (`configuredGateway()`); an invalid policy
   fails that request with `MODEL_CONFIGURATION`. The API does not check the policy when it starts.
-- **`pnpm platform:doctor --profile demo`** prints `Model gateway state` with five facts: `enabled`, `policyHash`
+- **`pnpm platform:doctor --profile demo`** prints `Model gateway state` with seven facts: `enabled`, `policyHash`
   (`modelGatewayPolicyHash()`, or `null` when off), `providerKeyPresent`, `mappingTeacherAdapter`
-  (`replay`, `sarvam` or `manual`, as the runtime resolves it) and `dailyCapPresent`.
+  (`replay`, `sarvam` or `manual`, as the runtime resolves it), `dailyCapPresent`, `providerKeysNamed` and
+  `providerKeysPresent`. When on, `providerKeysNamed` counts the names in the policy, `providerKeysPresent` counts
+  those that hold a value, and `providerKeyPresent` is `true` only when the two are equal. When off, no policy names
+  a key: `providerKeysNamed` is `0` and `providerKeysPresent` counts the Sarvam key lines that hold a value.
 
 ## Commands (owner only)
 
@@ -39,13 +44,69 @@ node scripts/platform/demo-gateway.mjs enable --config <policy.json>
 node scripts/platform/demo-gateway.mjs disable
 ```
 
-- `status` prints the same five facts as the doctor.
+- `status` prints the same seven facts as the doctor. It never reads the ledger, so it works with the database
+  stopped and does not say how many keys are used up; `key-marks` below does.
 - `enable` sets the flag to `1`, writes the policy as one line and sets `ULPIN_MAPPING_TEACHER_ADAPTER=sarvam`.
   `disable` sets the flag to `0`, removes the policy line and removes the adapter line when it selects `sarvam`.
 - Both rewrite only those three lines. Every other byte and the newline style stay as they are; the result is written
   beside the file, checked by the same reader and only then renamed over it. They print key names, never values.
 - `enable` followed by `disable` restores the configuration byte for byte. The one exception is an adapter line that
   was already there: `enable` overwrites it and `disable` removes it.
+
+## A list of keys: the owner's steps in order
+
+The gateway uses one key at a time: the first key of the list that is not marked used up. It moves to the next
+only when Sarvam answers about the key itself: HTTP 429 with `insufficient_quota_error` (credits used up) or
+HTTP 403 with `invalid_api_key_error` (key rejected). That call is closed without charge, the key is marked, and
+the next call uses the next key. A rate limit, a timeout, a 5xx and any other answer move nothing. The caps, the
+pace and the one call in flight count across all keys together.
+
+1. **Put the keys in** (demo stopped). Make a text file outside Git with one key per line, in the order of use.
+
+   ```sh
+   node scripts/platform/demo-gateway.mjs keys --from <keys file>
+   ```
+
+   It prints `11 keys written as ULPIN_PROVIDER_KEY_SARVAM_01 to ULPIN_PROVIDER_KEY_SARVAM_11` and the
+   `secretReferences` line for the policy file; never a value. It replaces the numbered key lines and leaves every
+   other line as it is. Then delete the text file. To rehearse, add
+   `--dry-run --out <empty folder> --settings <a synthetic settings file>`: the result is written to that folder
+   and the line says `would be written`. A rehearsal never reads the demo settings, because its result holds the
+   whole settings text with the keys in it; use synthetic keys and delete the folder afterwards.
+2. **Enable with the policy file.** In the policy, replace `secretReference` by the printed `secretReferences`.
+
+   ```sh
+   node scripts/platform/demo-gateway.mjs enable --config <policy.json>
+   ```
+
+   It prints `Changed: ...` and the seven facts.
+3. **Status.** `node scripts/platform/demo-gateway.mjs status` must print `enabled: true`, the policy hash,
+   `providerKeyPresent: true`, `mappingTeacherAdapter: sarvam`, `dailyCapPresent: true`,
+   `providerKeysNamed: 11` and `providerKeysPresent: 11`.
+4. **Start** the demo ([DEMO-RUNTIME.md](DEMO-RUNTIME.md)). The start applies the additive ledger columns and the
+   key-marks table. If the ledger was pinned to another key or list, every paid call is refused with
+   `MODEL_RECONCILIATION_REQUIRED` until the owner runs, with the database up and the API stopped:
+
+   ```sh
+   node scripts/platform/demo-gateway.mjs reconcile --reason "<why the keys changed>"
+   ```
+
+   It prints `key list: reconciled` (or `unchanged`, or `unpinned` for a ledger that has no call yet). It is
+   refused when anything but the keys differs from the pinned policy, and while a call has unresolved exposure.
+5. **The live proof**: [LIVE-PROOF.md](LIVE-PROOF.md).
+6. **Disable**: stop the demo, `node scripts/platform/demo-gateway.mjs disable`, start it again.
+
+With the database up, two more owner commands read or change the marks:
+
+```sh
+node scripts/platform/demo-gateway.mjs key-marks
+node scripts/platform/demo-gateway.mjs restore-key ULPIN_PROVIDER_KEY_SARVAM_03 --reason "<what changed>"
+```
+
+`key-marks` prints one line per name: `in_use`, `waiting`, or `used_up` with the reason and the time.
+`restore-key` closes the mark with the owner's reason and time; nothing else ever does. Adding, removing,
+reordering or replacing a key is steps 1, 2 and the `reconcile` of step 4; a used-up key stays marked wherever
+the new list puts it.
 
 ## Owner inputs
 
@@ -85,10 +146,15 @@ Ranges are in `packages/server/src/modules/model-gateway/config.ts`. This empty 
 
 ## Fail-closed behaviour
 
-- **One key.** Only `ULPIN_PROVIDER_KEY_SARVAM` in the demo configuration is ever used. No code lists, chooses or
-  rotates keys, and no code reads `sarvam-staged.env`. Changing the key is the owner's edit.
-- **No key:** flag `1` is refused, so the demo does not start in that state. With flag `0` the mapping teacher
-  replays recordings, or stays manual if the adapter line says so.
-- **No credit or no network:** the live call fails once and that request falls back to a manual mapping plan with a
-  reason code. Nothing retries on another key. To return to replay, stop the demo, run `disable`, and start it.
+- **One key at a time.** Only the keys the policy names are ever used, in the owner's order, never in turn and
+  never two for one call. No code reads `sarvam-staged.env`. Changing the keys is the owner's step.
+- **A key is missing:** flag `1` is refused, so the demo does not start in that state. With flag `0` the mapping
+  teacher replays recordings, or stays manual if the adapter line says so.
+- **One key used up or rejected (a list):** that call fails once with `MODEL_QUOTA_EXHAUSTED` or
+  `MODEL_CREDENTIAL_INVALID`, closed at zero, and falls back to a manual plan; the next call uses the next key.
+  With a single `secretReference` the pool is blocked as before.
+- **Every key used up:** paid calls are refused with `MODEL_KEYS_EXHAUSTED` before anything is sent; the request
+  falls back to a manual mapping plan. To return to replay, stop the demo, run `disable`, and start it.
+- **Rate limit, timeout or no network:** the call fails once, its reservation stays held and no other key is
+  tried. Sarvam states that all keys of one account share one rate limit.
 - Teacher outputs stay `pseudo_label` candidates; nothing here writes the registry.

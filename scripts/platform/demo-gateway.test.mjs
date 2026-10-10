@@ -1,11 +1,13 @@
 // Every file here is a temporary one with made-up values; the real demo configuration is never opened.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { readDemoSettings, redact } from './demo-config.mjs';
-import { disableGateway, enableGateway, gatewayReport, gatewayReportLines } from './demo-gateway.mjs';
+import {
+  disableGateway, enableGateway, gatewayReport, gatewayReportLines, ledgerStep, writeKeyList,
+} from './demo-gateway.mjs';
 
 const marker = 'zqmarker';
 const providerKey = `${marker}-made-up-provider-key`;
@@ -14,6 +16,13 @@ const flagKey = 'ULPIN_MODEL_GATEWAY_ENABLED';
 const policyKey = 'ULPIN_MODEL_GATEWAY_CONFIG';
 const adapterKey = 'ULPIN_MAPPING_TEACHER_ADAPTER';
 const stopped = () => [];
+// Not named demo.env: the guard these tests run under refuses every file of that kind, made-up or not.
+const settingsName = 'demo-settings.txt';
+const listNames = ['01', '02', '03'].map(number => `ULPIN_PROVIDER_KEY_SARVAM_${number}`);
+const listKeys = listNames.map((_name, index) => `${marker}-made-up-list-key-${index + 1}`);
+const listPolicy = (overrides = {}) =>
+  policy({ secretReference: undefined, secretReferences: listNames, ...overrides });
+const listKeyLines = (keys = listKeys) => keys.map((key, index) => `${listNames[index]}=${key}`);
 
 /** Test-only labels and amounts that satisfy the schema. Not a tariff, cap or funding statement. */
 function policy(overrides = {}) {
@@ -56,7 +65,7 @@ function temporaryFolder(context) {
 }
 
 function writeSettings(folder, lines, newline = '\n') {
-  const file = join(folder, 'demo.env');
+  const file = join(folder, settingsName);
   writeFileSync(file, lines.join(newline) + newline);
   return file;
 }
@@ -123,7 +132,7 @@ test('enable then disable restores the original bytes in either newline style, a
 
     assert.deepEqual(disableGateway({ file, running: stopped }), [flagKey, policyKey, adapterKey]);
     assert.ok(readFileSync(file).equals(original));
-    assert.deepEqual(readdirSync(folder).sort(), ['demo.env', 'policy.json']);
+    assert.deepEqual(readdirSync(folder).sort(), [settingsName, 'policy.json']);
   }
 });
 
@@ -142,14 +151,94 @@ test('a refused change leaves the file and its folder as they were', context => 
     return true;
   });
   assert.ok(readFileSync(file).equals(original));
-  assert.deepEqual(readdirSync(folder).sort(), ['demo.env', 'policy.json']);
+  assert.deepEqual(readdirSync(folder).sort(), ['policy.json', settingsName].sort());
 });
 
-test('the report states five facts and no configured value', () => {
+test('a list policy needs every key it names; a refusal names the missing name and never a value', context => {
+  const folder = temporaryFolder(context);
+  const enabled = (overrides, keys = listKeyLines()) =>
+    settingsLines([...enabledLines(JSON.stringify(listPolicy(overrides))), ...keys], null);
+  assert.equal(readDemoSettings(writeSettings(folder, enabled()))[flagKey], '1');
+  assertRefused(folder, enabled({}, listKeyLines().slice(0, 2)), /ULPIN_PROVIDER_KEY_SARVAM_03 is required/);
+  assertRefused(folder, enabled({}, [listKeyLines()[0], `${listNames[1]}=`, listKeyLines()[2]]),
+    /ULPIN_PROVIDER_KEY_SARVAM_02 is required/);
+  const form = /secretReferences must list names of the form ULPIN_PROVIDER_KEY_SARVAM_01/;
+  assertRefused(folder, enabled({ secretReferences: [listNames[0], listKeys[1]] }), form);
+  assertRefused(folder, enabled({ secretReferences: listNames[0] }), form);
+  assertRefused(folder, enabled({ secretReferences: [listNames[0], listNames[0]] }), /refused by the model gateway/);
+  assertRefused(folder, enabled({ secretReference: 'ULPIN_PROVIDER_KEY_SARVAM' }), /refused by the model gateway/);
+});
+
+test('the keys step writes numbered key lines, prints names only, and its rehearsal changes nothing', context => {
+  const folder = temporaryFolder(context);
+  const file = writeSettings(folder, settingsLines(), '\r\n');
+  const keysFile = join(folder, 'keys.txt');
+  const original = readFileSync(file);
+  writeFileSync(keysFile, `${listKeys.join('\n')}\n\n`);
+  assert.deepEqual(writeKeyList({ keysFile, file, outFolder: folder }), listNames);
+  assert.ok(readFileSync(file).equals(original), 'a rehearsal leaves the settings as they were');
+  const rehearsed = readFileSync(join(folder, 'demo-settings-after-keys.txt'), 'utf8');
+  assert.throws(() => writeKeyList({ keysFile, file, running: () => ['api'] }), /api recorded as running/);
+  assert.deepEqual(writeKeyList({ keysFile, file, running: stopped }), listNames);
+  assert.equal(readFileSync(file, 'utf8'), rehearsed);
+  assert.equal(rehearsed, original.toString('utf8') + listKeyLines().join('\r\n') + '\r\n');
+  // A shorter list replaces the numbered lines; the owner's single key line is never touched.
+  writeFileSync(keysFile, listKeys.slice(0, 2).reverse().join('\r\n'));
+  assert.deepEqual(writeKeyList({ keysFile, file, running: stopped }), listNames.slice(0, 2));
+  const env = readDemoSettings(file);
+  assert.deepEqual([env[listNames[0]], env[listNames[1]], env[listNames[2]], env.ULPIN_PROVIDER_KEY_SARVAM],
+    [listKeys[1], listKeys[0], undefined, providerKey]);
+  for (const text of [listKeys[0], `${listKeys[0]}\n${listKeys[0]}`, `${listKeys[0]}\n${marker} two words`]) {
+    writeFileSync(keysFile, text);
+    assert.throws(() => writeKeyList({ keysFile, file, running: stopped }), error => {
+      assert.match(error.message, /keys file/);
+      assertNamesNoValue(error.message);
+      return true;
+    });
+  }
+  assert.throws(() => writeKeyList({ keysFile: join(folder, 'absent.txt'), file, running: stopped }), /readable/);
+});
+
+test('the ledger steps need the owner\'s reason and a key name; nothing else reaches the ledger', () => {
+  const steps = [];
+  const step = args => { steps.push(args); return ['done']; };
+  assert.deepEqual(ledgerStep('key-marks', [], step), ['done']);
+  ledgerStep('reconcile', ['--reason', ' the owner reordered the keys '], step);
+  ledgerStep('restore-key', [listNames[1], '--reason', 'credits added'], step);
+  assert.deepEqual(steps, [['key-marks'], ['reconcile', 'the owner reordered the keys'],
+    ['restore-key', listNames[1], 'credits added']]);
+  for (const [action, options] of [['reconcile', []], ['reconcile', ['--reason', 'x']], ['key-marks', ['extra']],
+    ['restore-key', [listNames[1]]], ['restore-key', [listKeys[1], '--reason', 'credits added']], ['rotate', []]]) {
+    assert.throws(() => ledgerStep(action, options, step), error => {
+      assert.match(error.message, /^Usage:/);
+      assertNamesNoValue(error.message);
+      return true;
+    });
+  }
+  assert.equal(steps.length, 3);
+  assert.equal(existsSync(new URL('./demo-gateway-ledger.ts', import.meta.url)), true);
+});
+
+test('the report states seven facts and no configured value', () => {
   const disabled = gatewayReport({ [flagKey]: '0', ULPIN_PROVIDER_KEY_SARVAM: providerKey });
   assert.deepEqual(disabled, {
     enabled: false, policyHash: null, providerKeyPresent: true, mappingTeacherAdapter: 'replay', dailyCapPresent: false,
+    providerKeysNamed: 0, providerKeysPresent: 1,
   });
+  const staged = Object.fromEntries(listKeyLines().map(line => line.split('=')));
+  assert.deepEqual(gatewayReport({ [flagKey]: '0', ...staged, S3_SECRET_KEY: hexSecrets[1] }), {
+    enabled: false, policyHash: null, providerKeyPresent: true, mappingTeacherAdapter: 'replay', dailyCapPresent: false,
+    providerKeysNamed: 0, providerKeysPresent: 3,
+  });
+  assert.equal(gatewayReport({ [flagKey]: '0' }).providerKeyPresent, false);
+  const listEnv = { [flagKey]: '1', [policyKey]: JSON.stringify(listPolicy()), [adapterKey]: 'sarvam', ...staged };
+  const listed = gatewayReport(listEnv);
+  assert.deepEqual([listed.providerKeyPresent, listed.providerKeysNamed, listed.providerKeysPresent,
+    listed.mappingTeacherAdapter], [true, 3, 3, 'sarvam']);
+  const oneMissing = gatewayReport({ ...listEnv, [listNames[2]]: '' });
+  assert.deepEqual([oneMissing.providerKeyPresent, oneMissing.providerKeysNamed, oneMissing.providerKeysPresent,
+    oneMissing.mappingTeacherAdapter], [false, 3, 2, 'manual']);
+  assertNamesNoValue(gatewayReportLines(listed).join('\n'));
   const enabled = gatewayReport({
     [flagKey]: '1', [policyKey]: JSON.stringify(policy()), [adapterKey]: 'sarvam',
     ULPIN_PROVIDER_KEY_SARVAM: providerKey,
@@ -157,10 +246,11 @@ test('the report states five facts and no configured value', () => {
   assert.match(enabled.policyHash, /^[a-f0-9]{64}$/);
   assert.deepEqual({ ...enabled, policyHash: null }, {
     enabled: true, policyHash: null, providerKeyPresent: true, mappingTeacherAdapter: 'sarvam', dailyCapPresent: true,
+    providerKeysNamed: 1, providerKeysPresent: 1,
   });
   assert.equal(gatewayReport({ [flagKey]: '0', [adapterKey]: 'sarvam' }).mappingTeacherAdapter, 'manual');
   const lines = gatewayReportLines(enabled);
-  assert.equal(lines.length, 5);
+  assert.equal(lines.length, 7);
   assertNamesNoValue(lines.join('\n'));
 });
 

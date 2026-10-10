@@ -12,12 +12,20 @@ export function validateSecretReference(reference: string): string {
   }
   return normalized;
 }
+const secretReference = z.string().transform(validateSecretReference);
+type KeyNames = { secretReference?: string; secretReferences?: string[] };
+/** Readers written for one key ask for one name; a list policy answers with the first name of its list. */
+function nameFirstKey<Policy extends KeyNames>(policy: Policy): Policy & { secretReference: string } {
+  return { ...policy, secretReference: policy.secretReference ?? policy.secretReferences![0] };
+}
 
 /** Nonsecret, explicitly approved/versioned inputs. No production tariff or funding defaults. */
 export const ModelGatewayConfigSchema = z.strictObject({
   projectId: version, policyVersion: version, fundingVersion: version,
   gatewayExclusiveFunding: z.literal(true), indiaPrivateApproved: z.literal(true),
-  secretReference: z.string().transform(validateSecretReference),
+  // Exactly one of the two: one key as before, or the owner's list in the order the keys are used.
+  secretReference: secretReference.optional(),
+  secretReferences: z.array(secretReference).min(2).max(32).optional(),
   model: z.literal('sarvam-105b'),
   projectCapMicroInr: amount.refine(v => BigInt(v) > 0n),
   ingestProtectedBps: z.number().int().min(7000).max(10000).default(7000),
@@ -36,9 +44,16 @@ export const ModelGatewayConfigSchema = z.strictObject({
     ctx.addIssue({ code:'custom', message:'Cached price exceeds uncached price.' });
   if (BigInt(c.price.inputPerMillionMicroInr) === 0n || BigInt(c.price.outputPerMillionMicroInr) === 0n)
     ctx.addIssue({ code:'custom', message:'Paid transport requires nonzero approved prices.' });
-});
+  if ((c.secretReference === undefined) === (c.secretReferences === undefined))
+    ctx.addIssue({ code:'custom', message:'Name the key by secretReference or by secretReferences, not both.' });
+  if (new Set(c.secretReferences).size !== (c.secretReferences?.length ?? 0))
+    ctx.addIssue({ code:'custom', message:'A key list names each key once.' });
+}).transform(nameFirstKey);
 export type GatewayConfig = z.infer<typeof ModelGatewayConfigSchema>;
 export const hash = (value: unknown) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
+/** The key names of a policy in the owner's order: its list, or its one name. */
+export const providerKeyReferences = (config: GatewayConfig): readonly string[] =>
+  config.secretReferences ?? [config.secretReference];
 
 export function configuredGateway(env: NodeJS.ProcessEnv = process.env): GatewayConfig | undefined {
   if (env.ULPIN_MODEL_GATEWAY_ENABLED !== '1') return undefined;

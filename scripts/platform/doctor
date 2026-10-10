@@ -85,7 +85,7 @@ async function doctor() {
         console.log(`PASS Local document OCR paths available; ${languages} assets (runner uses eng).`);
       }
     } catch { console.log('INFO Local document OCR unavailable (invalid or missing local assets).'); }
-    // Five facts only: booleans, the resolved adapter name and the policy hash; never a configured value.
+    // Seven facts only: booleans, the resolved adapter name, the policy hash and two key counts; never a value.
     await attempt('Model gateway state', () => {
       gatewayReportLines(gatewayReport(demoEnv)).forEach(line => console.log(`  ${line}`));
       return true;
