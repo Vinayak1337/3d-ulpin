@@ -509,30 +509,38 @@ unchanged. Four main panels have cited pixel room candidates, literal OCR observ
 Site plans, area-only diagrams and sections are not room inputs. No new source acquisition, canonical level
 assignment, API installation, DB mutation, survey calibration or Indian accuracy claim follows.
 
-## B9 extra roof-training shard (10 October 2026)
+## B9 extra roof-training shards (10 October 2026)
 
-[B9's preregistered roof-training comparison](../evidence/gf-ai/building/b9/plan.json) adds one TRAIN-only shard
-of RAMP Dhaka publisher chips to the frozen Karnataka TRAIN split. Nothing was downloaded: the complete
-9 October RAMP acquisition under `E:/BhuAayam-data/datasets/ramp/` (104,711 files, no failures) is reused in
-place, after all 44,478 Dhaka, Barishal and Jashore image and label files were re-verified by size and SHA-256.
+[B9's preregistered roof-training comparison](../evidence/gf-ai/building/b9/plan.json) adds three TRAIN-only
+shards of RAMP publisher chips, 3,000 each from Dhaka, Barishal and Jashore, to the frozen Karnataka TRAIN split
+(the plan's amendment 1). Nothing was downloaded: the complete 9 October RAMP acquisition under
+`E:/BhuAayam-data/datasets/ramp/` (104,711 files, no failures) is reused in place, after all 44,478 image and
+label files of the three regions were re-verified by size and SHA-256.
 [The compact receipt](../evidence/gf-ai/building/b9/data.json) records per region the issuer, publisher URL,
 DOI, acquisition time, manifest hash, README claims, observed counts and the closed-list exclusion proof.
+Each region keeps the chip ids with the lowest SHA-256.
 
 - Dhaka (DOI 10.34911/rdnt.848og9): 11,905 source pairs, 188,284 publisher features, 3,059 empty chips; the
-  README claims 189,057 buildings. Kept: 9,000 chips (140,865 features, 2,323 empty), the ids with the lowest
-  SHA-256; 2,905 cut by the cap.
-- Barishal (DOI 10.34911/rdnt.cmejc0): 3,024 pairs, 39,834 features, 252 empty; README 41,248. Kept: 0.
-- Jashore (DOI 10.34911/rdnt.wn4jmp): 7,310 pairs, 79,058 features, 1,735 empty; README 80,050. Kept: 0.
+  README claims 189,057 buildings. Kept: 3,000 chips (48,222 features, 756 empty); 8,905 not kept.
+- Barishal (DOI 10.34911/rdnt.cmejc0): 3,024 source pairs, 39,834 publisher features, 252 empty chips; the
+  README claims 41,248 buildings. Kept: 3,000 chips (39,551 features, 251 empty); 24 not kept.
+- Jashore (DOI 10.34911/rdnt.wn4jmp): 7,310 source pairs, 79,058 publisher features, 1,735 empty chips; the
+  README claims 80,050 buildings. Kept: 3,000 chips (32,394 features, 731 empty); 4,310 not kept.
 
-The shard is `E:/BhuAayam-data/ml/datasets/b9-dhaka-train-20261010/`: source card, source index with per-file
-pins, chip ids and the COCO export. Issuer DevGlobal / Radiant Earth MLHub, labels TaQadam / B.O.T with publisher
-Tier 1 review, imagery Maxar Open Data Program; **CC-BY-NC-4.0**, `test_only`, noncommercial research.
-README totals differ from the observed originals in all three regions; the observed features are kept as they
-are, nothing padded, relabelled or repaired. No kept chip is in the Karnataka DEV/holdout, Cox's Bazar or
-Chittagong lists, and Sylhet stays untouched. Roof outlines are not surveyed footprints, ownership or registry
-truth, and Bangladesh chips support no Indian accuracy claim. The dataset catalogue has no row for the shard
-yet: [the proposed row](../evidence/gf-ai/building/b9/catalog-row.json) belongs in
-`retained-local-datasets.json`, which generates it.
+The shards are `E:/BhuAayam-data/ml/datasets/b9-three-regions-train-20261010/{dhaka,barishal,jashore}/`: each
+has a source card, a source index with per-file pins, chip ids and the COCO export. Issuer DevGlobal / Radiant
+Earth MLHub, labels TaQadam / B.O.T with publisher Tier 1 review, imagery Maxar Open Data Program;
+**CC-BY-NC-4.0**, `test_only`, noncommercial research. The Dhaka GeoTIFFs declare EPSG:32646; the Barishal and
+Jashore ones declare EPSG:4326. README totals differ from the observed originals in all three regions; the
+observed features are kept as they are, nothing padded, relabelled or repaired. No kept chip is in the Karnataka
+DEV/holdout, Cox's Bazar or Chittagong lists, and Sylhet stays untouched. Roof outlines are not surveyed
+footprints, ownership or registry truth, and Bangladesh chips support no Indian accuracy claim. The dataset
+catalogue has no rows for the shards yet: [the proposed rows](../evidence/gf-ai/building/b9/catalog-row.json)
+belong in `retained-local-datasets.json`, which generates it.
+
+Two earlier preparations stay on disk unused: `b9-dhaka-train-20261010/` (9,000 Dhaka chips, the data of the run
+the lead stopped before any DEV result; [its receipt](../evidence/gf-ai/building/b9/data-stopped-run.json)) and
+`b9-dhaka-train-cap4000-20261010/` (never used). Both sit beside the three-region root.
 
 ## Source-document worker evidence (27 September 2026)
 

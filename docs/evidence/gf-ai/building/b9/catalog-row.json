@@ -6,40 +6,115 @@
     "docs/api/datasets.json is generated from that file, which this task does not own.",
     "Adding the row there and regenerating puts it in retainedExternalSources; --check then stays 0."
   ],
-  "row": {
-    "id": "b9-ramp-dhaka-train-20261010",
-    "classification": "test_only",
-    "split": "train",
-    "originKind": "public_research_publisher_roof_labels",
-    "issuer": "DevGlobal / Radiant Earth MLHub; labels TaQadam / B.O.T; imagery Maxar Open Data Program",
-    "geography": "Dhaka, Bangladesh",
-    "manifest": "E:/BhuAayam-data/ml/datasets/b9-dhaka-train-20261010/source-index.json",
-    "manifestSha256": "2985abfc5820f12f29c87c4d7aa429986a655967a8620c50761bf34e31283d52",
-    "guide": "docs/evidence/gf-ai/building/b9/data.json",
-    "sourceCount": 18000,
-    "totalOriginalBytes": 1931635134,
-    "content": {
-      "externalRoot": "E:/BhuAayam-data/ml/datasets/b9-dhaka-train-20261010",
-      "originalsRoot": "E:/BhuAayam-data/datasets/ramp/originals/ramp_dhaka_bangladesh",
-      "chips": 9000,
-      "publisherFeatures": 140865,
-      "emptyChips": 2323,
-      "repositoryBytesVerified": false,
-      "pins": "Per chip: publisher URL, acquisition time, exact size and SHA-256 of the GeoTIFF and the GeoJSON"
+  "rows": [
+    {
+      "id": "b9-ramp-dhaka-train-3000-20261010",
+      "classification": "test_only",
+      "split": "train",
+      "originKind": "public_research_publisher_roof_labels",
+      "issuer": "DevGlobal / Radiant Earth MLHub; labels TaQadam / B.O.T; imagery Maxar Open Data Program",
+      "geography": "Dhaka, Bangladesh",
+      "manifest": "E:/BhuAayam-data/ml/datasets/b9-three-regions-train-20261010/dhaka/source-index.json",
+      "manifestSha256": "f3d19fb875d9c67ac57d4c869935d04aec9689f5c4afc260999481e1fca0de3d",
+      "guide": "docs/evidence/gf-ai/building/b9/data.json",
+      "sourceCount": 6000,
+      "totalOriginalBytes": 645570033,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/ml/datasets/b9-three-regions-train-20261010/dhaka",
+        "originalsRoot": "E:/BhuAayam-data/datasets/ramp/originals/ramp_dhaka_bangladesh",
+        "chips": 3000,
+        "publisherFeatures": 48222,
+        "emptyChips": 756,
+        "repositoryBytesVerified": false,
+        "pins": "Per chip: publisher URL, acquisition time, exact size and SHA-256 of the GeoTIFF and the GeoJSON"
+      },
+      "horizontalCrs": "EPSG:32646 (declared by each original GeoTIFF)",
+      "verticalReference": null,
+      "terms": {
+        "state": "CC-BY-NC-4.0",
+        "limitations": "Noncommercial research only; upstream Maxar imagery terms; owner clearance before launch"
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "TRAIN-only extra data for one preregistered roof-model comparison; never evaluation truth.",
+        "Roof outlines, not surveyed footprints, ownership or registry truth; no Indian accuracy claim.",
+        "3,000 of 11,905 publisher chips, kept by lowest SHA-256 of the chip id; README totals differ from originals."
+      ]
     },
-    "horizontalCrs": "EPSG:32646 (declared by each original GeoTIFF)",
-    "verticalReference": null,
-    "terms": {
-      "state": "CC-BY-NC-4.0",
-      "limitations": "Noncommercial research only; upstream Maxar imagery terms; owner clearance before launch"
+    {
+      "id": "b9-ramp-barishal-train-3000-20261010",
+      "classification": "test_only",
+      "split": "train",
+      "originKind": "public_research_publisher_roof_labels",
+      "issuer": "DevGlobal / Radiant Earth MLHub; labels TaQadam / B.O.T; imagery Maxar Open Data Program",
+      "geography": "Barishal, Bangladesh",
+      "manifest": "E:/BhuAayam-data/ml/datasets/b9-three-regions-train-20261010/barishal/source-index.json",
+      "manifestSha256": "418ebd12019649a966ea4c033c55fb4e80e16aa31ed33143c3831b059f59a75e",
+      "guide": "docs/evidence/gf-ai/building/b9/data.json",
+      "sourceCount": 6000,
+      "totalOriginalBytes": 645948775,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/ml/datasets/b9-three-regions-train-20261010/barishal",
+        "originalsRoot": "E:/BhuAayam-data/datasets/ramp/originals/ramp_barishal_bangladesh",
+        "chips": 3000,
+        "publisherFeatures": 39551,
+        "emptyChips": 251,
+        "repositoryBytesVerified": false,
+        "pins": "Per chip: publisher URL, acquisition time, exact size and SHA-256 of the GeoTIFF and the GeoJSON"
+      },
+      "horizontalCrs": "EPSG:4326 (declared by each original GeoTIFF)",
+      "verticalReference": null,
+      "terms": {
+        "state": "CC-BY-NC-4.0",
+        "limitations": "Noncommercial research only; upstream Maxar imagery terms; owner clearance before launch"
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "TRAIN-only extra data for one preregistered roof-model comparison; never evaluation truth.",
+        "Roof outlines, not surveyed footprints, ownership or registry truth; no Indian accuracy claim.",
+        "3,000 of 3,024 publisher chips, kept by lowest SHA-256 of the chip id; README totals differ from originals."
+      ]
     },
-    "apiInstallation": "not-installed",
-    "standingInstallation": false,
-    "runtimeVerified": false,
-    "limitations": [
-      "TRAIN-only extra data for one preregistered roof-model comparison; never evaluation truth.",
-      "Roof outlines, not surveyed footprints, ownership or registry truth; no Indian accuracy claim.",
-      "9,000 of 11,905 publisher chips, kept by lowest SHA-256 of the chip id; README totals differ from originals."
-    ]
-  }
+    {
+      "id": "b9-ramp-jashore-train-3000-20261010",
+      "classification": "test_only",
+      "split": "train",
+      "originKind": "public_research_publisher_roof_labels",
+      "issuer": "DevGlobal / Radiant Earth MLHub; labels TaQadam / B.O.T; imagery Maxar Open Data Program",
+      "geography": "Jashore, Bangladesh",
+      "manifest": "E:/BhuAayam-data/ml/datasets/b9-three-regions-train-20261010/jashore/source-index.json",
+      "manifestSha256": "750197c2a507f44858c198b0c500ecdc4d32ab2977cea2627184761262470d6f",
+      "guide": "docs/evidence/gf-ai/building/b9/data.json",
+      "sourceCount": 6000,
+      "totalOriginalBytes": 641938416,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/ml/datasets/b9-three-regions-train-20261010/jashore",
+        "originalsRoot": "E:/BhuAayam-data/datasets/ramp/originals/ramp_jashore_bangladesh",
+        "chips": 3000,
+        "publisherFeatures": 32394,
+        "emptyChips": 731,
+        "repositoryBytesVerified": false,
+        "pins": "Per chip: publisher URL, acquisition time, exact size and SHA-256 of the GeoTIFF and the GeoJSON"
+      },
+      "horizontalCrs": "EPSG:4326 (declared by each original GeoTIFF)",
+      "verticalReference": null,
+      "terms": {
+        "state": "CC-BY-NC-4.0",
+        "limitations": "Noncommercial research only; upstream Maxar imagery terms; owner clearance before launch"
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "TRAIN-only extra data for one preregistered roof-model comparison; never evaluation truth.",
+        "Roof outlines, not surveyed footprints, ownership or registry truth; no Indian accuracy claim.",
+        "3,000 of 7,310 publisher chips, kept by lowest SHA-256 of the chip id; README totals differ from originals."
+      ]
+    }
+  ],
+  "replaces": "The single Dhaka row proposed for the stopped run (9,000 chips); that root stays unused"
 }

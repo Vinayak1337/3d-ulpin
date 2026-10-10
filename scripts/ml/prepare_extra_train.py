@@ -1,9 +1,11 @@
 """Prepare capped TRAIN-only COCO shards from extra RAMP regions already acquired with a complete manifest.
 
-Regions are taken in the given order until the cap is reached. A region that must be cut keeps the chip ids
-whose SHA-256 is lowest: a rule on ids alone, never on images, labels or predictions. Originals are reused in
-place after every pin is verified against the acquisition manifest; every publisher feature and every empty
-chip of a kept chip is retained. No model is loaded here.
+With --per-region every listed region gives that many chips, and a region that has fewer gives all of them
+while the first listed region fills the shortfall. With --cap the regions are taken in the given order until the
+cap is reached. Either way a region that must be cut keeps the chip ids whose SHA-256 is lowest: a rule on ids
+alone, never on images, labels or predictions. Originals are reused in place after every pin is verified against
+the acquisition manifest; every publisher feature and every empty chip of a kept chip is retained. No model is
+loaded here.
 """
 
 from __future__ import annotations
@@ -30,12 +32,14 @@ def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path("E:/BhuAayam-data/datasets/ramp"))
     parser.add_argument("--regions", nargs="+", required=True, help="Publisher regions, in priority order")
-    parser.add_argument("--cap", type=int, required=True, help="Most extra chips kept over all regions")
+    share = parser.add_mutually_exclusive_group(required=True)
+    share.add_argument("--per-region", type=int, help="Chips from each region; the first fills a shortfall")
+    share.add_argument("--cap", type=int, help="Most extra chips kept, regions taken in order")
     parser.add_argument("--shard-pattern", required=True, help="New directory per region; {region} is replaced")
     parser.add_argument("--summary", type=Path, required=True, help="New compact receipt for the repository")
     args = parser.parse_args()
-    if args.cap < 1 or "{region}" not in args.shard_pattern:
-        parser.error("A positive cap and a shard pattern containing {region} are required")
+    if (args.per_region or args.cap) < 1 or "{region}" not in args.shard_pattern:
+        parser.error("A positive chip count and a shard pattern containing {region} are required")
     return args
 
 
@@ -64,6 +68,20 @@ def keep_lowest_hashes(chip_ids: list[str], limit: int) -> set[str]:
     """The cap rule: sort the ids, keep those whose SHA-256 is lowest."""
     ranked = sorted(sorted(chip_ids), key=lambda chip_id: hashlib.sha256(chip_id.encode()).hexdigest())
     return set(ranked[:limit])
+
+
+def region_limits(sizes: dict[str, int], per_region: int | None, cap: int | None) -> dict[str, int]:
+    """Chips each region may keep: an equal share with the first region filling shortfalls, or in order to a cap."""
+    if per_region is None:
+        limits: dict[str, int] = {}
+        for region, size in sizes.items():
+            limits[region] = min(size, cap - sum(limits.values()))
+        return limits
+    limits = {region: min(size, per_region) for region, size in sizes.items()}
+    first = next(iter(sizes))
+    shortfall = per_region * len(sizes) - sum(limits.values())
+    limits[first] = min(sizes[first], limits[first] + shortfall)
+    return limits
 
 
 def counts(items: list[dict[str, Any]]) -> dict[str, int]:
@@ -139,11 +157,9 @@ def write_shard(target: Path, kept: list[dict[str, Any]], card: dict[str, Any]) 
 
 
 def prepare_region(
-    args: argparse.Namespace, region: str, remaining: int, manifest: dict[str, Any], manifest_sha256: str
+    args: argparse.Namespace, region: str, items: list[dict[str, Any]], limit: int, manifest_sha256: str
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    refuse_closed_region(region)
-    items = region_items(args.root, region, manifest)
-    kept_ids = keep_lowest_hashes([item["id"] for item in items], remaining)
+    kept_ids = keep_lowest_hashes([item["id"] for item in items], limit)
     kept = [item for item in items if item["id"] in kept_ids]
     card = source_card(args.root, region, items, manifest_sha256)
     record = {**card, "kept": counts(kept), "cut_by_cap": len(items) - len(kept), "shard": None}
@@ -163,18 +179,30 @@ def main() -> None:
         raise ValueError("Acquisition manifest is incomplete; acquire fresh instead of reusing it")
     manifest_sha256 = sha(manifest_path)
     closed = closed_chip_lists()
+    for region in args.regions:
+        refuse_closed_region(region)
+    items = {region: region_items(root, region, manifest) for region in args.regions}
+    sizes = {region: len(chips) for region, chips in items.items()}
+    limits = region_limits(sizes, args.per_region, args.cap)
     regions = []
     kept_all: list[dict[str, Any]] = []
     for region in args.regions:
-        record, kept = prepare_region(args, region, args.cap - len(kept_all), manifest, manifest_sha256)
+        record, kept = prepare_region(args, region, items[region], limits[region], manifest_sha256)
         regions.append(record)
         kept_all.extend(kept)
         print(json.dumps({"region": region, "kept": record["kept"], "cut_by_cap": record["cut_by_cap"]}), flush=True)
     summary = {
         "schema": "building-extra-train-preparation/1",
-        "cap": args.cap,
-        "cap_rule": "Regions in the listed order; a cut region keeps the chip ids whose SHA-256 is lowest",
+        "cap": args.cap or args.per_region * len(args.regions),
+        "per_region": args.per_region,
+        "cap_rule": (
+            "An equal share per region, the first region filling a shortfall; "
+            if args.per_region
+            else "Regions in the listed order; "
+        )
+        + "a cut region keeps the chip ids whose SHA-256 is lowest",
         "region_order": args.regions,
+        "region_limits": limits,
         "kept_total": counts(kept_all),
         "regions": regions,
         "exclusion": exclusion_proof(kept_all, closed),

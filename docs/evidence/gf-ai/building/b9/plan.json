@@ -130,14 +130,68 @@
       "Every publisher feature of a kept chip is retained; empty chips are retained; nothing is",
       "relabelled, dropped or padded."
     ],
-    "extra": [],
+    "extra": [
+      {
+        "region": "dhaka_bangladesh",
+        "doi": "10.34911/rdnt.848og9",
+        "source_pairs": 11905,
+        "source_publisher_features": 188284,
+        "source_empty_chips": 3059,
+        "kept_chips": 3000,
+        "kept_publisher_features": 48222,
+        "kept_empty_chips": 756,
+        "cut_by_cap": 8905,
+        "root": "E:/BhuAayam-data/ml/datasets/b9-three-regions-train-20261010/dhaka/coco/train",
+        "coco_sha256": "60bc5be4edf42d314fa691ae3da9b3ccfda2996ae4f55209d54fda9a750eb486",
+        "chip_ids_sha256": "14d5942c24e4ed4d5001b18b21971dcd2abba611368b05886a943fb14fb8cf26",
+        "source_index_sha256": "f3d19fb875d9c67ac57d4c869935d04aec9689f5c4afc260999481e1fca0de3d",
+        "zero_pixel_features": 4
+      },
+      {
+        "region": "barishal_bangladesh",
+        "doi": "10.34911/rdnt.cmejc0",
+        "source_pairs": 3024,
+        "source_publisher_features": 39834,
+        "source_empty_chips": 252,
+        "kept_chips": 3000,
+        "kept_publisher_features": 39551,
+        "kept_empty_chips": 251,
+        "cut_by_cap": 24,
+        "root": "E:/BhuAayam-data/ml/datasets/b9-three-regions-train-20261010/barishal/coco/train",
+        "coco_sha256": "9e367fb2b312dd39708c3e933a9a1a5ebdc036be956b29f1626e44a77d3f03f1",
+        "chip_ids_sha256": "9a17bd37ea9378ac8dddb4bfb1dc2c19e291076a13145d2722c0f0f6d60450c3",
+        "source_index_sha256": "418ebd12019649a966ea4c033c55fb4e80e16aa31ed33143c3831b059f59a75e",
+        "zero_pixel_features": 2
+      },
+      {
+        "region": "jashore_bangladesh",
+        "doi": "10.34911/rdnt.wn4jmp",
+        "source_pairs": 7310,
+        "source_publisher_features": 79058,
+        "source_empty_chips": 1735,
+        "kept_chips": 3000,
+        "kept_publisher_features": 32394,
+        "kept_empty_chips": 731,
+        "cut_by_cap": 4310,
+        "root": "E:/BhuAayam-data/ml/datasets/b9-three-regions-train-20261010/jashore/coco/train",
+        "coco_sha256": "b0f6bb1402d05f1b060d75b4a49e70dc761a5a615c1e663f9fbdd091bc9ace00",
+        "chip_ids_sha256": "34beeb63afc8d3085acba5e7743932287a939337fc2c1eca3e55d8c1a0f6922d",
+        "source_index_sha256": "750197c2a507f44858c198b0c500ecdc4d32ab2977cea2627184761262470d6f",
+        "zero_pixel_features": 1
+      }
+    ],
     "exclusion_proof": [
       "docs/evidence/gf-ai/building/b9/data.json (exclusion): no kept chip id is in the Karnataka",
       "DEV/holdout, Cox's Bazar or Chittagong lists; no kept cluster is a Karnataka DEV/holdout",
       "cell."
     ],
     "per_region_extra_chips": 3000,
-    "extra_pins": "Counts and hashes of the three prepared shards are added by the data commit, before launch"
+    "extra_pins": "Measured from the prepared shards; the rule of amendment 1 fixed them before preparation",
+    "extra_total": {
+      "chips": 9000,
+      "publisher_features": 120167,
+      "empty_chips": 1738
+    }
   },
   "recipe": {
     "init_weights": "E:/BhuAayam-data/ml/runs/b3-ka-run1-20261010/epoch-004",
