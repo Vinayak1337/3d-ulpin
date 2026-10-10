@@ -7,6 +7,9 @@ import { areaGeo } from '../areas/areas';
 
 type Assessment = NonNullable<NormalizedBuilding['levels'][number]['prismAssessment']>;
 
+export const UNREVIEWED_LEVEL_SCHEDULE_GAP =
+  'No detailed level schedule, spaces, rights or parcel association reviewed.';
+
 /** Unknown limits or missing reviewed geometry never invoke extrusion or create replacement boundaries. */
 export async function assessSchedulePrisms(building: NormalizedBuilding,
   schedule: LevelSchedule): Promise<LevelSchedule['prisms']> {
@@ -69,8 +72,7 @@ export function applyLevelSchedules(building: NormalizedBuilding, records: Regis
   if (!latest) return;
   const schedule = LevelScheduleSchema.parse(latest);
   building.levelSchedule = schedule;
-  const oldGap = 'No detailed level schedule, spaces, rights or parcel association reviewed.';
-  building.gaps = building.gaps.filter(gap => gap !== oldGap);
+  building.gaps = building.gaps.filter(gap => gap !== UNREVIEWED_LEVEL_SCHEDULE_GAP);
   building.gaps.push(
     'Level schedule review does not create registry spaces, rights, parcel links or surveyed elevations.',
   );

@@ -17,6 +17,9 @@ type Body = RegistryBody & { canonicalCandidates?: Candidate[]; candidateCommand
 type RecordRow = { id: string; site_id: string; revision: number; body: Body };
 export type BuildingMetadataRecord = { id: string; site_id: string; revision: number; body: RegistryBody };
 
+/** Original page citations share the eight-page source OCR bound in run_source_ocr.py (MAX_PAGES). */
+export const BUILDING_CANDIDATE_MAX_PAGES = 8;
+
 /** Explicit selection changes only the association; plan-local polygons never become placed registry spaces. */
 export function attachCandidateLevel(building: NormalizedBuilding, candidate: Candidate,
   levelId: string, reason: string, actor: string, time: string): Candidate {
@@ -32,7 +35,7 @@ async function verifyCandidateSources(client: PoolClient, record: RecordRow, can
     for (const citation of candidate.citations ?? []) {
       const source = await sourceBuildingOriginalAccessTx(client, record.site_id, citation.sourceId);
       if (source.sha256 !== citation.sourceSha256 || citation.locator.kind !== 'region'
-        || citation.locator.unit !== 'pt' || citation.locator.page > 8) {
+        || citation.locator.unit !== 'pt' || citation.locator.page > BUILDING_CANDIDATE_MAX_PAGES) {
         throw new AppError(422, 'CANDIDATE_CITATION', 'Retain the exact original page and PDF-point bbox.');
       }
     }
