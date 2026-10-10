@@ -172,7 +172,9 @@ function checkSchedule(v: { state: string; levels: { levelId: string; order: num
   alternatives?: unknown[] }, ctx: z.RefinementCtx): void {
   if ((v.state === 'reviewed' && (!v.levels.length || v.alternatives))
     || (v.state === 'conflicting' && (v.levels.length || !v.alternatives))) {
-    ctx.addIssue({ code: 'custom', message: 'Review listed levels or retain conflicting alternatives without selection.' });
+    ctx.addIssue({
+      code: 'custom', message: 'Review listed levels or retain conflicting alternatives without selection.',
+    });
   }
   if (new Set(v.levels.map(row => row.levelId)).size !== v.levels.length
     || new Set(v.levels.map(row => row.order)).size !== v.levels.length) {
@@ -198,7 +200,8 @@ export const LevelScheduleRequestSchema = z.discriminatedUnion('action', [
 ]);
 export const LevelScheduleReceiptSchema = z.strictObject({
   requestKey: z.uuid(), buildingId: z.uuid(), recordRevision: z.number().int().positive(),
-  action: z.enum(['propose', 'review']), proposal: LevelScheduleProposalSchema, schedule: LevelScheduleSchema.nullable(),
+  action: z.enum(['propose', 'review']), proposal: LevelScheduleProposalSchema,
+  schedule: LevelScheduleSchema.nullable(),
 });
 export type LevelScheduleRow = z.infer<typeof LevelScheduleRowSchema>;
 export type LevelSchedule = z.infer<typeof LevelScheduleSchema>;
@@ -311,6 +314,10 @@ export const BuildingPlanCandidateRequestSchema = z.discriminatedUnion('action',
   z.strictObject({ action: z.literal('attach_level'), requestKey: z.uuid(),
     expectedCanonicalRevision: z.string().regex(/^[a-f0-9]{64}$/), candidateId: id,
     levelId: z.uuid(), reason: z.string().trim().min(3).max(2000),
+  }),
+  z.strictObject({ action: z.literal('reject'), requestKey: z.uuid(),
+    expectedCanonicalRevision: z.string().regex(/^[a-f0-9]{64}$/), candidateId: id,
+    reason: z.string().trim().min(3).max(2000),
   }),
 ]);
 export type BuildingPlanCandidateRequest = z.infer<typeof BuildingPlanCandidateRequestSchema>;

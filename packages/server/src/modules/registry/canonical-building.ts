@@ -29,7 +29,7 @@ import { SOURCE_BUILDING_GAP } from '../usp/ingestion/source-building-values';
 import { rasterSourceTx } from '../usp/ingestion/raster-window';
 import { AppError, notFound } from '../../infrastructure/errors';
 import { localOperatorSubject } from '../usp/principal';
-import { applyLevelSchedules } from './canonical-level-schedule';
+import { applyLevelSchedules, UNREVIEWED_LEVEL_SCHEDULE_GAP } from './canonical-level-schedule';
 
 export const ENU_METHOD = 'deterministic:wgs84-surface-to-enu@1';
 const WGS84_A = 6378137;
@@ -664,7 +664,7 @@ async function sourceBuildingDossier(
 ): Promise<CanonicalBuildingSource> {
   const dossier = proposalDossier(feature, context, buildingId);
   dossier.missing = [
-    SOURCE_BUILDING_GAP, 'No detailed level schedule, spaces, rights or parcel association reviewed.',
+    SOURCE_BUILDING_GAP, UNREVIEWED_LEVEL_SCHEDULE_GAP,
     'Current sanction/as-built status and source-to-unit association remain unqualified.',
   ];
   if (feature.revision > 0) {

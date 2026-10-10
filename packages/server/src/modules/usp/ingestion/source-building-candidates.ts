@@ -17,9 +17,13 @@ type Body = RegistryBody & { canonicalCandidates?: Candidate[]; candidateCommand
 type RecordRow = { id: string; site_id: string; revision: number; body: Body };
 export type BuildingMetadataRecord = { id: string; site_id: string; revision: number; body: RegistryBody };
 
+/** Original page citations share docling_tesseract.py's MAX_SOURCE_PAGES (eight-page OCR source bound). */
+export const BUILDING_CANDIDATE_MAX_PAGES = 8;
+
 /** Explicit selection changes only the association; plan-local polygons never become placed registry spaces. */
 export function attachCandidateLevel(building: NormalizedBuilding, candidate: Candidate,
   levelId: string, reason: string, actor: string, time: string): Candidate {
+  assertCandidateUndecided(candidate);
   if (!building.levels.some(level => level.levelId === levelId && level.label.state === 'reviewed')) {
     throw new AppError(422, 'CANDIDATE_LEVEL', 'Choose an existing reviewed level of this building.');
   }
@@ -27,12 +31,24 @@ export function attachCandidateLevel(building: NormalizedBuilding, candidate: Ca
     limitations: [...(candidate.limitations ?? []), 'Level association reviewed; local geometry remains unplaced'] };
 }
 
+function assertCandidateUndecided(candidate: Candidate): void {
+  if (candidate.review) {
+    throw new AppError(409, 'CANDIDATE_DECIDED', 'This candidate already has a review decision.');
+  }
+}
+
+/** Reject only the retained source candidate, preserving its unplaced geometry and citations. */
+export function rejectCandidate(candidate: Candidate, reason: string, actor: string, time: string): Candidate {
+  assertCandidateUndecided(candidate);
+  return { ...candidate, state: 'reviewed', levelId: null, review: { outcome: 'rejected', reason, actor, time } };
+}
+
 async function verifyCandidateSources(client: PoolClient, record: RecordRow, candidates: Candidate[]): Promise<void> {
   for (const candidate of candidates) {
     for (const citation of candidate.citations ?? []) {
       const source = await sourceBuildingOriginalAccessTx(client, record.site_id, citation.sourceId);
       if (source.sha256 !== citation.sourceSha256 || citation.locator.kind !== 'region'
-        || citation.locator.unit !== 'pt' || citation.locator.page > 8) {
+        || citation.locator.unit !== 'pt' || citation.locator.page > BUILDING_CANDIDATE_MAX_PAGES) {
         throw new AppError(422, 'CANDIDATE_CITATION', 'Retain the exact original page and PDF-point bbox.');
       }
     }
@@ -79,7 +95,9 @@ function nextCandidates(building: NormalizedBuilding, input: BuildingPlanCandida
     return [...candidates, ...input.candidates];
   }
   const selected = candidates.find(candidate => candidate.candidateId === input.candidateId) ?? notFound();
-  const updated = attachCandidateLevel(building, selected, input.levelId, input.reason, actor, time);
+  const updated = input.action === 'reject'
+    ? rejectCandidate(selected, input.reason, actor, time)
+    : attachCandidateLevel(building, selected, input.levelId, input.reason, actor, time);
   return candidates.map(candidate => candidate.candidateId === updated.candidateId ? updated : candidate);
 }
 

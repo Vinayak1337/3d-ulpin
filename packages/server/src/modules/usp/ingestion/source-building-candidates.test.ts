@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { NormalizedBuildingSchema, type NormalizedBuilding } from '@ulpin/contracts';
-import { attachCandidateLevel } from './source-building-candidates';
+import { attachCandidateLevel, rejectCandidate } from './source-building-candidates';
 import { sanitizedOcrFailure } from './document-ocr';
 
 const retained = JSON.parse(readFileSync('docs/evidence/gf-backend/k2/magnolia-canonical.json', 'utf8'));
@@ -31,6 +31,32 @@ test('an explicit existing level selection preserves plan-local candidate geomet
   assert.deepEqual(reviewed.polygons, candidate.polygons);
   assert.equal(reviewed.coordinateFrame, candidate.coordinateFrame);
   assert.equal(candidate.levelId, null);
+});
+
+test('room rejection retains cited geometry and prior review refuses attachment or rejection', () => {
+  const building = NormalizedBuildingSchema.parse(JSON.parse(
+    readFileSync('docs/evidence/gf-t16/k3b/magnolia-after-current.json', 'utf8'),
+  ));
+  const room = building.candidates.find(value => !value.review && value.levelId === null)!;
+  const before = structuredClone(room);
+  const rejected = rejectCandidate(room, 'K3c rejection contract fixture', 'fixture-operator', '2026-10-10T09:00:00Z');
+  assert.equal(rejected.state, 'reviewed');
+  assert.deepEqual(rejected.review, { outcome: 'rejected', reason: 'K3c rejection contract fixture',
+    actor: 'fixture-operator', time: '2026-10-10T09:00:00Z' });
+  assert.equal(rejected.levelId, null);
+  assert.deepEqual(rejected.polygons, before.polygons);
+  assert.deepEqual(rejected.planFrame, before.planFrame);
+  assert.deepEqual(rejected.citations, before.citations);
+  assert.deepEqual(room, before);
+  const decided = (error: unknown) => (error as { status: number; code: string }).status === 409
+    && (error as { code: string }).code === 'CANDIDATE_DECIDED';
+  assert.throws(() => attachCandidateLevel(building, rejected, building.levels[0].levelId,
+    'Cannot attach rejected room', 'fixture-operator', '2026-10-10T09:01:00Z'), decided);
+  const attached = building.candidates.find(value => value.review?.outcome === 'accepted')!;
+  assert.throws(() => rejectCandidate(attached, 'Cannot reject attached room',
+    'fixture-operator', '2026-10-10T09:01:00Z'), decided);
+  assert.throws(() => attachCandidateLevel(building, attached, building.levels[0].levelId,
+    'Cannot reattach reviewed room', 'fixture-operator', '2026-10-10T09:01:00Z'), decided);
 });
 
 test('OCR diagnostics keep only allowlisted classes and fixed messages, never source text or paths', () => {

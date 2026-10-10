@@ -61,7 +61,7 @@ export class OfficerController {
   @HttpCode(201)
   @Header('Cache-Control', 'private, no-store')
   @ApiOperation({ operationId: 'POST_api_v1_buildings_buildingId_candidates',
-    summary: 'Retain cited plan-local room candidates or review an existing level association' })
+    summary: 'Retain plan-local room candidates, reject one or review an existing level association' })
   @ApiParam({ name: 'buildingId', schema: { type: 'string', format: 'uuid' } })
   @ApiHeader({ name: 'Idempotency-Key', required: true, schema: { type: 'string', format: 'uuid' } })
   @jsonBody(BuildingPlanCandidateRequestSchema)
