@@ -1,6 +1,23 @@
 {
   "schema": "building-b9-smoke/2",
-  "status": "memory_and_time_fit; the_trainer_smoke_loss_check_failed; not_launched",
+  "status": "launch_gate_passed (plan amendment 2); the B3 loss-window check failed and does not apply",
+  "launch_gate": {
+    "amendment": 2,
+    "role": "Runtime sanity gate before launch; no part in selection",
+    "peak_reserved_bytes": 5165285376,
+    "budget_bytes": 6442450944,
+    "smoke_chip_losses": 195,
+    "non_finite_chip_losses": 0,
+    "same_chips": {
+      "what": "The smoke's own 35 TRAIN chips, un-augmented, same sampled points, before and after 50 steps",
+      "chips": 35,
+      "mean_loss_before": 28.276,
+      "mean_loss_after": 24.845,
+      "chips_with_roofs": 27,
+      "chips_with_roofs_and_lower_loss": 26
+    },
+    "written_after_measurement": "The same-chip criterion was written after this measurement was seen"
+  },
   "git_sha": "ceb4d49d8db15956de4c98be7ba86e39959c2ff0",
   "init_weights_sha256": "b6ef62646ed85d8102e37561324cee1dfc7e8c5e57e10c207a37927544ad5172",
   "gpu_preflight": {
@@ -76,7 +93,13 @@
       "mean_loss_after_50_steps": 24.845,
       "chips_with_roofs": 27,
       "chips_with_roofs_and_lower_loss": 26,
-      "log": "E:/BhuAayam-data/ml/runs/b9-logs/smoke-like-for-like-three-regions.log",
+      "helper": "scripts/ml/smoke_same_chips.py",
+      "log": "E:/BhuAayam-data/ml/runs/b9-logs/smoke-same-chips-three-regions.log",
+      "first_measurement": [
+        "Made at 19:11 IST with a one-off script, before the gate existed; its log is",
+        "smoke-like-for-like-three-regions.log beside this one. The committed helper repeats it",
+        "with identical values on every chip."
+      ],
       "result": "lower"
     },
     "reading": [
@@ -84,8 +107,9 @@
       "statistic, not the recipe. The first B9 smoke had 17 chips, so each window covered every chip."
     ],
     "decision": [
-      "The launch gate (launch_building_train.require_smoke) refuses a smoke with this status.",
-      "The worker did not change or bypass the gate and did not launch; the lead decides."
+      "B3's gate (launch_building_train.require_smoke) refuses a smoke with this status; the worker",
+      "stopped there. The lead then set the B9 gate in plan amendment 2 (launch_gate above); B3's",
+      "gate is unchanged and its failed statistic stays recorded here."
     ]
   },
   "timing": {
