@@ -1,0 +1,73 @@
+{
+  "profileRows": [
+    {
+      "Area (sq ft)": "1,23,456 sq ft",
+      "Mixed": "123 sq.m",
+      "Floor": "UGF",
+      "Khasra": "१२३/४",
+      "Date": "01/10/2026",
+      "Owner": "Test Person"
+    },
+    {
+      "Area (sq ft)": "४२ sq ft",
+      "Mixed": "12 ft2",
+      "Floor": "B1",
+      "Khasra": "15/2",
+      "Date": "2026-10-10",
+      "Owner": "other@example.invalid"
+    },
+    {
+      "Area (sq ft)": "",
+      "Mixed": null,
+      "Floor": "Stilt",
+      "Khasra": null,
+      "Date": null,
+      "Owner": "9999912345"
+    },
+    {
+      "Area (sq ft)": null,
+      "Mixed": "",
+      "Floor": "Mezz",
+      "Khasra": "",
+      "Date": "",
+      "Owner": "1234 5678 9012"
+    },
+    {
+      "Area (sq ft)": "2 sq ft",
+      "Mixed": "12",
+      "Floor": "Terrace",
+      "Khasra": "3/4",
+      "Date": "10/10/2026",
+      "Owner": "ABCDE1234F"
+    }
+  ],
+  "privateValues": ["Test Person", "other@example.invalid", "9999912345", "1234 5678 9012", "ABCDE1234F"],
+  "invalidTeacherFields": [
+    {
+      "target": "building.name",
+      "operation": { "kind": "copy" },
+      "confidence": "high",
+      "rationale": "Source states the name."
+    },
+    {
+      "target": "parcel.area",
+      "operation": { "kind": "unit_convert", "sourceUnit": "ft2", "factor": 42 },
+      "confidence": "high",
+      "rationale": "Source states the unit."
+    }
+  ],
+  "validTeacherFields": [
+    {
+      "target": "building.name",
+      "operation": { "kind": "copy" },
+      "confidence": "high",
+      "rationale": "Source name."
+    },
+    {
+      "target": "parcel.area",
+      "operation": { "kind": "unit_convert", "sourceUnit": "ft2" },
+      "confidence": "high",
+      "rationale": "Source declared unit."
+    }
+  ]
+}

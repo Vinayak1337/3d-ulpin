@@ -162,7 +162,10 @@ export class TeacherRecordings {
     });
   }
 
-  async replay(key: string, allowedAdapters: readonly string[] = ['sarvam', 'control']): Promise<RetainedReplay | undefined> {
+  async replay(
+    key: string,
+    allowedAdapters: readonly string[] = ['sarvam', 'control'],
+  ): Promise<RetainedReplay | undefined> {
     let latest: TeacherRecording | undefined;
     for (const path of listRecordingFiles(this.directory)) {
       for (const line of recordingLines(path)) {
