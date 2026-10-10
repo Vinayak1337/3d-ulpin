@@ -67,6 +67,8 @@ Image overlays use current ML RGB artifacts when present, otherwise the publishe
 Existing spatial-ML batches accept these building GeoTIFFs. The Karnataka candidate stays `active:false` by
 default; only the explicitly enabled demo profile permits CPU inference. Canonical area `candidates` expose
 roof projections with exact source-affine placement, source/model hashes, uncalibrated confidence and limits.
+A retained ML draft's caller-provided building alias and outline role also stay `candidate`; they are not
+literal names or roles established by an image.
 The existing `footprint-drafts` command supports either reviewed controls or `georeference:source_geotiff`,
 never both. Optional explicit rejected components and an accepted-selection reason retain actor/time decisions
 in the existing draft receipt. A `reviewed` candidate means **source-candidate selection only**, not registry

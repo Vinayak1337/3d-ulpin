@@ -69,6 +69,13 @@ async function verifyRooms(): Promise<NormalizedBuilding> {
   assert.deepEqual({ ...latest, revision: 1 }, original);
   return current;
 }
+async function verifyChipOriginals(chips: { sourceId: string; sourceSha256: string }[]): Promise<void> {
+  for (const chip of chips) {
+    const response = await fetch(`${base}/sources/${chip.sourceId}/file`);
+    assert.equal(response.status, 200);
+    assert.equal(hash(new Uint8Array(await response.arrayBuffer())), chip.sourceSha256);
+  }
+}
 async function verifyImagery(): Promise<void> {
   const pkg = read('imagery-import');
   const areaResponse = await get(`/areas/${pkg.areaId}/canonical`);
@@ -86,22 +93,21 @@ async function verifyImagery(): Promise<void> {
   assert.equal(area.candidates?.filter(candidate => candidate.review?.outcome === 'rejected').length, 1);
   assert.equal(area.candidates?.filter(candidate => candidate.state === 'candidate').length, 78);
   assert.equal(area.frame.origin.hEllipsoidal, null);
-  for (const chip of pkg.imagery.chips) {
-    const path = `/sources/${chip.sourceId}/file`;
-    const response = await fetch(`${base}${path}`);
-    assert.equal(response.status, 200);
-    assert.equal(hash(new Uint8Array(await response.arrayBuffer())), chip.sourceSha256);
-  }
+  await verifyChipOriginals(pkg.imagery.chips);
   const context = await (await get(`/areas/${pkg.areaId}/context`)).json();
   assert.equal(context.features.length, 0);
   assert.equal(context.displayFeatures.length, 1);
   const draft = read('roofprint-draft');
   const selected = await building(draft.package.features[0].id);
   assert.equal(selected.recordState, 'candidate');
+  assert.equal(selected.name.state, 'candidate');
+  assert.equal(selected.name.method, 'deterministic:retained-candidate-alias@1');
   assert.equal(selected.footprintKind.value, 'roofprint');
+  assert.equal(selected.footprintKind.state, 'candidate');
   assert.equal(selected.footprint.state, 'candidate');
   assert.equal(selected.inputRevisions.find(pin => pin.namespace === 'area_feature')?.revision, 0);
   await transport(selected);
+  writeFileSync(`${root}/roofprint-building-current.json`, JSON.stringify(selected) + '\n');
   assert.equal(read('roofprint-recording').body.error.code, 'USP_GEOMETRY_PAYLOAD_UNQUALIFIED');
 }
 async function verifyTower(): Promise<void> {

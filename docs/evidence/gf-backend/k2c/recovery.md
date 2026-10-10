@@ -13,6 +13,19 @@
 - Recovery uses only the exact saved request/key; no inference retry, changed crop, replacement originals or DB correction.
 - Read-only diagnostic setup initially lacked an absolute transaction deadline/profile configuration. The retained helper uses the existing `readDemo()` reader and an explicit read-only deadline; credentials are never printed.
 
+## Final read/provenance audit
+
+- The initial pre-inference overlay fallback used an unregistered case-prefixed original-file URL. The
+  original API uses `/api/v1/sources/{sourceId}/file`. Projection fallback and its regression now use that route;
+  all 22 bound originals were downloaded and hash-checked. The earlier receipt remains unchanged.
+- The generic K1 building projector treated a retained ML draft's caller-provided alias and outline role as
+  source-supported literals. The final projection keeps both as candidates, with an explicit retained-alias
+  method. No stored package, original, geometry or physical revision was changed; the earlier candidate receipt
+  remains historical. A focused regression checks the actual retained ML draft.
+- The first post-addition LF checker found the new room operation missing from the pin inventory. The reviewed
+  refresher now reconciles additions from generated OpenAPI without allowing established operations to disappear.
+  Final LF checks pass 292 native operations and 327 named schemas.
+
 ## OCR
 
 - One region-only Tower page-1 API retry: `521741ce-3527-4049-a0c9-43b13a6188f5`.
