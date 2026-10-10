@@ -1,0 +1,268 @@
+{
+ "task": "A4c",
+ "gates": [
+  "GF-AGENT",
+  "FP-LEARN-TEST"
+ ],
+ "qualification": "Pseudo-label agreement, not teacher-label accuracy. Pooled wrong commits are zero by construction.",
+ "hypothesis": "A threshold chosen on pooled leave-one-family-out predictions removes wrong commits on unseen families.",
+ "protocol": {
+  "devFamilies": "every development family predicted by a model fitted on all other families (pool families stay in fitting)",
+  "threshold": "smallest pooled confidence with every committed field agreeing with its pseudo_label; null commits nothing",
+  "armC": "class-balanced: sample_weight = N_fit / (K_present * n_fit[target]) per partial_fit batch",
+  "unchanged": "features, SGD log_loss, 32768 hashing, epochs, batching, labels"
+ },
+ "fitExamples": 591,
+ "fitTargetCounts": {
+  "unknown": 576,
+  "building.name": 3,
+  "building.storeyLabel": 3,
+  "document.registrationNo": 4,
+  "unit.type": 2,
+  "building.addressLiteral": 2,
+  "building.footprint": 1
+ },
+ "baseline": {
+  "arm": "baseline",
+  "model": "E:/BhuAayam-data/task-data/a4b/learner/v48",
+  "threshold": 0.9294836521148682,
+  "qualification": "A4b as merged: one calibration family; recorded folds only, no refit.",
+  "foldCount": 5,
+  "foldFields": 211,
+  "wrongCommitted": 4,
+  "correctPositiveCommitted": 0,
+  "unknownCommitted": 27,
+  "abstained": 184,
+  "perTargetPositives": {
+   "building.name": {
+    "n": 3,
+    "columns": 3,
+    "committed": 0,
+    "committedCorrect": 0,
+    "abstained": 3
+   },
+   "building.storeyLabel": {
+    "n": 3,
+    "columns": 3,
+    "committed": 0,
+    "committedCorrect": 0,
+    "abstained": 3
+   },
+   "document.registrationNo": {
+    "n": 4,
+    "columns": 4,
+    "committed": 2,
+    "committedCorrect": 0,
+    "abstained": 2
+   },
+   "unit.type": {
+    "n": 2,
+    "columns": 2,
+    "committed": 0,
+    "committedCorrect": 0,
+    "abstained": 2
+   },
+   "building.addressLiteral": {
+    "n": 2,
+    "columns": 2,
+    "committed": 2,
+    "committedCorrect": 0,
+    "abstained": 0
+   },
+   "building.footprint": {
+    "n": 1,
+    "columns": 1,
+    "committed": 0,
+    "committedCorrect": 0,
+    "abstained": 1
+   }
+  },
+  "foldThresholds": {
+   "mi-d02": 0.9241116642951965,
+   "mi-d03": null,
+   "mi-d22": 0.9347648024559021,
+   "mi-d23": 0.9474599361419678,
+   "mi-d24": 0.9306641817092896
+  }
+ },
+ "arms": [
+  {
+   "arm": "B",
+   "model": "E:/BhuAayam-data/task-data/a4c/arm-B/v1",
+   "threshold": 0.9497545957565308,
+   "pooledFields": 527,
+   "wrongCommitted": 0,
+   "correctPositiveCommitted": 0,
+   "perTargetPositives": {
+    "building.addressLiteral": {
+     "n": 2,
+     "committed": 0,
+     "committedCorrect": 0,
+     "wrongCommitted": 0,
+     "abstained": 2
+    },
+    "building.footprint": {
+     "n": 1,
+     "committed": 0,
+     "committedCorrect": 0,
+     "wrongCommitted": 0,
+     "abstained": 1
+    },
+    "building.name": {
+     "n": 3,
+     "committed": 0,
+     "committedCorrect": 0,
+     "wrongCommitted": 0,
+     "abstained": 3
+    },
+    "building.storeyLabel": {
+     "n": 3,
+     "committed": 0,
+     "committedCorrect": 0,
+     "wrongCommitted": 0,
+     "abstained": 3
+    },
+    "document.registrationNo": {
+     "n": 4,
+     "committed": 0,
+     "committedCorrect": 0,
+     "wrongCommitted": 0,
+     "abstained": 4
+    },
+    "unit.type": {
+     "n": 2,
+     "committed": 0,
+     "committedCorrect": 0,
+     "wrongCommitted": 0,
+     "abstained": 2
+    }
+   },
+   "unknownCommitted": 53,
+   "abstained": 474
+  },
+  {
+   "arm": "C",
+   "model": "E:/BhuAayam-data/task-data/a4c/arm-C/v1",
+   "threshold": null,
+   "pooledFields": 527,
+   "wrongCommitted": 0,
+   "correctPositiveCommitted": 0,
+   "perTargetPositives": {
+    "building.addressLiteral": {
+     "n": 2,
+     "committed": 0,
+     "committedCorrect": 0,
+     "wrongCommitted": 0,
+     "abstained": 2
+    },
+    "building.footprint": {
+     "n": 1,
+     "committed": 0,
+     "committedCorrect": 0,
+     "wrongCommitted": 0,
+     "abstained": 1
+    },
+    "building.name": {
+     "n": 3,
+     "committed": 0,
+     "committedCorrect": 0,
+     "wrongCommitted": 0,
+     "abstained": 3
+    },
+    "building.storeyLabel": {
+     "n": 3,
+     "committed": 0,
+     "committedCorrect": 0,
+     "wrongCommitted": 0,
+     "abstained": 3
+    },
+    "document.registrationNo": {
+     "n": 4,
+     "committed": 0,
+     "committedCorrect": 0,
+     "wrongCommitted": 0,
+     "abstained": 4
+    },
+    "unit.type": {
+     "n": 2,
+     "committed": 0,
+     "committedCorrect": 0,
+     "wrongCommitted": 0,
+     "abstained": 2
+    }
+   },
+   "unknownCommitted": 0,
+   "abstained": 527
+  }
+ ],
+ "chosen": "B",
+ "choiceReason": "Both arms meet pooled wrong commits = 0 (by construction); positive commits tie at 0, so arm B (simpler) by the rule. Arm C chose no threshold and commits nothing.",
+ "finding": "Zero wrong commits is reached only by committing nothing positive: the 13 positives never clear the pooled threshold. Wrong commits 4 -> 0; correct positive commits 0 -> 0.",
+ "heldOut": {
+  "n": 2,
+  "total": 2,
+  "committed": 0,
+  "committedCorrect": 0,
+  "abstained": 2,
+  "nonScorable": {
+   "n": 2,
+   "committed": 0
+  },
+  "truthSha256": "4fd1049c5bff5fcde3b54237d2561502c2f06197bf01e65bd5862d90a9a7797d",
+  "manifestSha256": "c08d802fdd945f9530e91ab94db280858892de880e9a24d424d73c5027769249",
+  "profiles": 4,
+  "qualification": "Fixed frozen model; n=2 is a count receipt, not an accuracy claim. No tuning feedback."
+ },
+ "defaultChanged": {
+  "train": "cross_fit, no class balance",
+  "a4bScriptPinned": "measure-a4b.ts passes --calibration-mode single_family",
+  "seedsUnchanged": "v43 and v48 load as single_family"
+ },
+ "armModelCodeNote": "Arms were run with explicit flags before DEFAULT_CALIBRATION_MODE was switched; only that constant changed afterwards.",
+ "tuningAfterMeasurements": false,
+ "teacherCalls": 0,
+ "providerCalls": 0,
+ "labelsChanged": false,
+ "runtimeChanged": false,
+ "artifacts": "E:/BhuAayam-data/task-data/a4c (arm-B, arm-C fold models and cross-fit scores; heldout-B closed to the lead)",
+ "checks": [
+  {
+   "command": "pytest isolated copy of test_stage_a.py without the shared conftest (needs pypdf)",
+   "exitCode": 0,
+   "passed": 7
+  },
+  {
+   "command": "ruff check stage_a.py test_stage_a.py",
+   "exitCode": 0
+  },
+  {
+   "command": "tsc with external resolution-only agent config (a4b/checks)",
+   "exitCode": 0
+  },
+  {
+   "command": "tsx --test scripts/agent/a3-chunk.test.ts (ULPIN_PROFILE_PYTHON set)",
+   "exitCode": 0,
+   "passed": 4
+  },
+  {
+   "command": "tsx --test scripts/agent/a3b-wiring.test.ts",
+   "exitCode": 1,
+   "reason": "needs object storage (ECONNREFUSED 127.0.0.1:1); unrelated to this change"
+  },
+  {
+   "command": "git diff --check",
+   "exitCode": 0
+  }
+ ],
+ "gaps": [
+  "13 positives in 585 examples; no positive ever clears a family-new threshold. More independent families are an owner decision.",
+  "Pooled wrong = 0 is by construction of the threshold; the held-out receipt (n=2, both abstain) cannot support an accuracy claim.",
+  "Baseline unknown commits and abstentions are over its 5 recorded folds (211 fields), not the 527 pooled fields; positives and wrong commits are comparable.",
+  "The TS bridge online path (DB and storage) was not run; online_update is covered by an isolated Python test.",
+  "measure-a4.ts (not owned) calls train without --calibration-mode; a rerun would now use cross_fit."
+ ],
+ "next": [
+  "Stop per the task: no further arm. Lead decides whether a cross_fit seed replaces v48 in any rollout.",
+  "Owner decision on additional independent families remains the only route to positive commits."
+ ]
+}
