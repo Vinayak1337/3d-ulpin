@@ -36,6 +36,12 @@ export interface StatedSizeView {
   citation: CandidateCitation;
 }
 
+/** The level line of a room's card. `stated` is false when the text stands in for a label the read lacks. */
+export interface CandidateLevel {
+  text: string;
+  stated: boolean;
+}
+
 export interface CandidateCard {
   id: string;
   kind: CandidateKind;
@@ -56,8 +62,8 @@ export interface CandidateCard {
   decision: CandidateDecision | null;
   /** The model inference item of a roofprint (from its output reference). */
   itemId: string | null;
-  /** The level a room names, in the read's own words; see `levelText`. */
-  level: string;
+  /** The level a room names, in the read's own words; see `candidateLevel`. */
+  level: CandidateLevel;
   levelLiteral: string | null;
   frame: string;
   /** Polygons in the candidate's own frame: area metres for a roofprint, plan metres for a room. */
@@ -70,7 +76,7 @@ export interface CandidateCard {
 
 const ITEM_REF = /\/spatial-ml\/items\/([0-9a-f-]{36})#/;
 const ROOM_FALLBACK = 'Unlabelled region';
-const NO_LEVEL = 'Not attached to a level';
+const NO_LEVEL: CandidateLevel = { text: 'Not attached to a level', stated: false };
 
 export function itemIdOf(outputRef: string | null | undefined): string | null {
   return ITEM_REF.exec(outputRef ?? '')?.[1] ?? null;
@@ -141,20 +147,21 @@ function stateWords(state: string): string {
   return state.replaceAll('_', ' ');
 }
 
-function listedLevelText(level: Level): string {
+function listedLevel(level: Level): CandidateLevel {
   const { value, state } = level.label;
-  if (value === null) return `Label ${stateWords(state)}`;
-  return state === 'reviewed' ? value : `${value} (${stateWords(state)})`;
+  if (value === null) return { text: `Label ${stateWords(state)}`, stated: false };
+  return { text: state === 'reviewed' ? value : `${value} (${stateWords(state)})`, stated: true };
 }
 
 /**
  * The level a room names, as the read states it: the level's label, with the label's state when it is not
  * reviewed. A label is never made up from an id or an order.
  */
-export function levelText(levelId: string | null | undefined, levels: readonly Level[]): string {
+export function candidateLevel(levelId: string | null | undefined, levels: readonly Level[]): CandidateLevel {
   if (!levelId) return NO_LEVEL;
   const level = levels.find((item) => item.levelId === levelId);
-  return level ? listedLevelText(level) : `Level not listed in this record · ${levelId.slice(0, 8)}`;
+  if (level) return listedLevel(level);
+  return { text: `Level not listed in this record · ${levelId.slice(0, 8)}`, stated: false };
 }
 
 function titleOf(candidate: CanonicalCandidate, kind: CandidateKind): string {
@@ -204,7 +211,7 @@ export function candidateCard(candidate: CanonicalCandidate, levels: readonly Le
     citations: (candidate.citations ?? []).map(citationOf),
     decision: candidate.review ?? null,
     itemId: itemIdOf(candidate.outputRef),
-    level: levelText(candidate.levelId, levels),
+    level: candidateLevel(candidate.levelId, levels),
     levelLiteral: candidate.levelLabelLiteral ?? null,
     frame: candidate.coordinateFrame ?? 'Not recorded',
     polygons: candidate.polygons as MultiPolygon,
