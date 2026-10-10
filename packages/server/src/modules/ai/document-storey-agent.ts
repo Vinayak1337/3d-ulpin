@@ -1,9 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import type { RequestContext } from '@ulpin/contracts/usp';
+import { AppError } from '../../infrastructure/errors';
 import { hash } from '../model-gateway/config';
 import type { ModelGateway, TrustedCall } from '../model-gateway/gateway';
 import { TeacherRecordings } from '../model-gateway/recordings';
+import { minimizeStructuredText } from '../model-gateway/redaction';
 import { mappingTeacherGatewayRuntime } from '../model-gateway/runtime';
 import { teacherFailureCode } from '../usp/ingestion/mapping-teacher';
 
@@ -27,6 +29,8 @@ export type StoreyPageStore = {
   source: { sha256: string };
   pages: Record<string, { lines: { id: string; text: string }[] }>;
 };
+export type StoreyOmittedLine = { partId: string; page: number; line: number; code: 'MODEL_PROMPT_PRIVACY' };
+export type StoreyPartSelection = { batches: StoreyPart[][]; omitted: StoreyOmittedLine[] };
 
 function citationSchema(partIds: [string, ...string[]]) {
   return z.strictObject({ partId: z.enum(partIds), quote: z.string().min(1).max(240) });
@@ -97,14 +101,34 @@ export const storeyPartsHash = (parts: StoreyPart[]) => hash({ template: STOREY_
 export const storeyReplayKey = (partsHash: string) =>
   hash({ template: STOREY_AGENT_TEMPLATE, profileHash: partsHash, model: STOREY_AGENT_MODEL });
 
-/** Keep lines that mention storeys, floors, units or heights, then split into calls under the prompt bound. */
-export function storeyPartBatches(store: StoreyPageStore): StoreyPart[][] {
+/** The gateway's own answer for one line: true when its minimizer would refuse the request that holds it. */
+function refusedByMinimizer(text: string): boolean {
+  try {
+    minimizeStructuredText(text);
+    return false;
+  } catch (error) {
+    if (error instanceof AppError && error.code === 'MODEL_PROMPT_PRIVACY') return true;
+    throw error;
+  }
+}
+
+/**
+ * Keep lines that mention storeys, floors, units or heights, then split into calls under the prompt bound.
+ * A line the minimizer refuses is left out and named in `omitted`: it is in no part, so no citation can name it.
+ */
+export function storeyPartSelection(store: StoreyPageStore): StoreyPartSelection {
   const batches: StoreyPart[][] = [];
+  const omitted: StoreyOmittedLine[] = [];
   let current: StoreyPart[] = [];
   let size = 0;
   for (const [page, entry] of Object.entries(store.pages)) {
-    for (const line of entry.lines.filter((item) => RELEVANT_LINE.test(item.text))) {
+    for (const [index, line] of entry.lines.entries()) {
+      if (!RELEVANT_LINE.test(line.text)) continue;
       const text = line.text.slice(0, 240);
+      if (refusedByMinimizer(text)) {
+        omitted.push({ partId: line.id, page: Number(page), line: index, code: 'MODEL_PROMPT_PRIVACY' });
+        continue;
+      }
       if (size + text.length > MAX_PROMPT_CHARS && current.length) {
         batches.push(current);
         current = [];
@@ -114,8 +138,10 @@ export function storeyPartBatches(store: StoreyPageStore): StoreyPart[][] {
       size += text.length + 48;
     }
   }
-  return current.length ? [...batches, current] : batches;
+  return { batches: current.length ? [...batches, current] : batches, omitted };
 }
+
+export const storeyPartBatches = (store: StoreyPageStore): StoreyPart[][] => storeyPartSelection(store).batches;
 
 export function validateStoreyOutput(raw: unknown, parts: StoreyPart[]) {
   const ids = parts.map((part) => part.partId) as [string, ...string[]];

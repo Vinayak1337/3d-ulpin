@@ -11,8 +11,8 @@ import { pathToFileURL } from 'node:url';
 import { TABULAR_LIMITS, type RequestContext } from '../../packages/contracts/src/usp/index';
 import { AppError } from '../../packages/server/src/infrastructure/errors';
 import {
-  extractStoreyFacts, storeyPartBatches, storeyPartsHash, storeyReplayKey, storeyRequest, STOREY_AGENT_TEMPLATE,
-  type StoreyAgentResult, type StoreyPageStore, type StoreyPart,
+  extractStoreyFacts, storeyPartSelection, storeyPartsHash, storeyReplayKey, storeyRequest, STOREY_AGENT_TEMPLATE,
+  type StoreyAgentResult, type StoreyOmittedLine, type StoreyPageStore, type StoreyPart,
 } from '../../packages/server/src/modules/ai/document-storey-agent';
 import {
   minimizeMessages, ReplayAdapter, type Message, type ProviderAdapter,
@@ -94,7 +94,7 @@ function amount(microInr: bigint, kind: Amount['kind'], tariff: Tariff): Amount 
 type Refusal = { input: string; reason: string; opened: boolean };
 type StepInput = {
   sourceId: string; sha256: string; dataClass: 'public'; split: 'development' | 'demo';
-  permission: string; permissionRecordedIn: string; sent: string;
+  permission: string; permissionRecordedIn: string; sent: string; omitted?: StoreyOmittedLine[];
 };
 type Exec =
   | { kind: 'mapping'; chunk: TabularChunkInput; file: number }
@@ -243,7 +243,9 @@ function storeySources(): StoreySource[] {
   return [...found.values()];
 }
 
-function storeySpec(source: StoreySource, store: StoreyPageStore, parts: StoreyPart[], batch: number): CallSpec {
+function storeySpec(
+  source: StoreySource, store: StoreyPageStore, parts: StoreyPart[], batch: number, omitted: StoreyOmittedLine[],
+): CallSpec {
   const request = storeyRequest(parts);
   const partsHash = storeyPartsHash(parts);
   const pages = [...new Set(parts.map(part => part.page))].join(', ');
@@ -257,10 +259,22 @@ function storeySpec(source: StoreySource, store: StoreyPageStore, parts: StoreyP
       permission: source.permission!, permissionRecordedIn: `${STOREY_TRUTH}/${source.record}`,
       sent: `${parts.length} OCR or text-layer lines of page ${pages} that name a storey, floor, unit or height, `
         + 'each cut to 240 characters; no image, no whole page',
+      omitted,
     },
     exec: { kind: 'storey', parts, split: source.split, source: store.source },
     template: STOREY_AGENT_TEMPLATE, taskKind: 'storey_facts_v1', scopeHash: partsHash,
     replayKey: storeyReplayKey(partsHash), messages: request.messages, schema: request.schema,
+  };
+}
+
+/** One line of a document that is otherwise asked: named by position, never by its text. */
+function omittedLine(source: StoreySource, line: StoreyOmittedLine): Refusal {
+  return {
+    input: `${source.record}, document ${source.sha256.slice(0, 8)}: line ${line.partId} (page ${line.page}, `
+      + `line ${line.line})`,
+    reason: `the gateway's text minimizer refuses this line (${line.code}); it is left out of the request and `
+      + 'the answer cannot cite it',
+    opened: true,
   };
 }
 
@@ -277,7 +291,9 @@ function storeySpecs(refused: Refusal[]): CallSpec[] {
     }
     const store = JSON.parse(readFileSync(path, 'utf8')) as StoreyPageStore;
     if (store.source.sha256 !== source.sha256) throw new Error('LIVE_PROOF_STORE_HASH_MISMATCH');
-    return storeyPartBatches(store).map((parts, batch) => storeySpec(source, store, parts, batch));
+    const { batches, omitted } = storeyPartSelection(store);
+    refused.push(...omitted.map(line => omittedLine(source, line)));
+    return batches.map((parts, batch) => storeySpec(source, store, parts, batch, omitted));
   });
 }
 
