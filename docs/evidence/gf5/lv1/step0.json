@@ -1,0 +1,193 @@
+{
+  "git": "3f70b3f29775c6955dc0a06ab9c9215696ffe4c1",
+  "criteriaBeforeWork": {
+    "slopeMsPerPriorBuilding": "<0.01",
+    "builtInputs": 1662,
+    "baseRebuildsDuringBuildingOnlyParts": 0,
+    "framesOver100": 0,
+    "final": "1662 identical ids and bounds; aligned canvas pixel MAE <=1/255, changed pixels <=1%"
+  },
+  "before": {
+    "file": "before.json",
+    "slopeMsPerPriorBuilding": 0.12543,
+    "builtInputs": 15857,
+    "frames": {
+      "count": 135,
+      "p50Ms": 16.7,
+      "p95Ms": 533.3,
+      "longestMs": 1983.3,
+      "over50": 32,
+      "over100": 27
+    },
+    "parity": [
+      "Slope is 3% below LV0; p95 identical; longest 11% higher. Same pack, counts, software browser:",
+      "noise accepted."
+    ],
+    "runnerDeviation": "Copied LV0 runner: only owned output paths/port and post-profile scene/still capture changed.",
+    "reason": "An unchanged invocation writes LV0 evidence and scratch, forbidden by this task. No LV0 file modified."
+  },
+  "costBasis": {
+    "finalSetBuildingsMs": 192.3,
+    "finalClearEntriesMs": 18.8,
+    "finalSetBaseMs": 261.6,
+    "finalBuildingDressingMs": 20.2,
+    "finalBaseDressingMs": 29.7,
+    "finalFitGroundMs": 0,
+    "warning": "Zero is timer resolution, not proof of zero cost. Per-field costs cannot be separated by LV0 probes.",
+    "cpu": "before.json:cpu.inclusiveFunctions; per-feature base stages share setBase's inclusive cost."
+  },
+  "engine": [
+    {
+      "structure": "buildings group and entries map (building/storey); meshes, edges, grow and themed/look state",
+      "at": "packages/scene/src/engine.ts:78,83,677-735,1271-1280,1315-1326",
+      "add": "Build just this envelope/storeys; register entries and grow at actual insertion.",
+      "remove": "Detach and dispose just its meshes/edges and entries; remove grow tracking.",
+      "scope": "Per building; entry index needed to avoid scanning all entries on removal.",
+      "cost": "192.3 ms total replacement, 18.8 ms disposal; footprint builder sampled 1539.376 ms over whole run."
+    },
+    {
+      "structure": "buildingBounds, storeyBuildings and footprintPolygons",
+      "at": "packages/scene/src/engine.ts:79-80,127,696,699-734",
+      "add": "Insert drawn geometry bounds, source storeys and polygons only when built.",
+      "remove": "Delete this id from each map.",
+      "scope": "Per building; all-below-ground storeys need a drawn-id authority separate from above-ground bounds.",
+      "cost": "Shared builder cost; no separately timed sample."
+    },
+    {
+      "structure": "areaBox, ground/fog/shadow fit and followSun",
+      "at": "packages/scene/src/engine.ts:118,495-497,1361-1402",
+      "add": "Union new bound O(1); fit is O(1) from areaBox.",
+      "remove": "Recompute union when a removed/changed building may have defined an extremum.",
+      "scope": "Incremental expansion, full union on contraction; fit has no building loop.",
+      "cost": "Final fit <0.1 ms (reported 0); union shares replacement's cost."
+    },
+    {
+      "structure": "plateFor/plate and halo/haloOwned",
+      "at": "packages/scene/src/engine.ts:969-1021",
+      "add": "Apply selection if this is the selected building, using drawn geometry only.",
+      "remove": "Invalidate cached selected plate; hide halo before disposing borrowed geometry.",
+      "scope": "One selected building; no change for an unrelated arrival.",
+      "cost": "No selection in measured run; cost unmeasured, not zero."
+    },
+    {
+      "structure": "anchors, anchorSizes and HTML labels",
+      "at": "packages/scene/src/engine.ts:114,133,269,588-611; apps/studio/src/features/map/SceneLabels.tsx",
+      "add": "Building labels project from buildingBounds; no anchor until drawn.",
+      "remove": "Missing bounds suppress label; derived section/depth anchors refreshed for selected removal.",
+      "scope": "Per building; external parcel/tool anchors independent of building inventory.",
+      "cost": "No separate probe; labels included in React CPU (895 ms in LV0, not per building)."
+    },
+    {
+      "structure": "dressing, dressingKey, lands; pads and instanced trees",
+      "at": "packages/scene/src/engine.ts:121,128-129,738-758; packages/scene/src/look.ts:243-260,303-356",
+      "add": "Pad geometry can be added for one footprint; trees avoid all footprints.",
+      "remove": "Remove its pad; recompute tree avoidance (removal can restore a tree).",
+      "scope": "Pads separable, tree scatter global (RNG depends on accepted points); recompute at drain/interval.",
+      "cost": "Final building dressing 20.2 ms, base dressing 29.7 ms; treeMeshes 292.659 ms sampled over run."
+    },
+    {
+      "structure": "cameraKey, first fit, flight",
+      "at": "packages/scene/src/engine.ts:106,110,500,1139-1237; MapWorkspace.tsx:264-269",
+      "add": "Fit only first nonempty content; selected pending target fits when available.",
+      "remove": "Retain camera pose; explicit reset/selection still works.",
+      "scope": "First fit uses global bounds once. Studio currently resets on EVERY streamed building append.",
+      "cost": "Not separately timed; uses bounds, not meshes. Removing Studio reset is required by camera rule."
+    },
+    {
+      "structure": "state, hovered, detailInput, selection/finding/comparison/section groups and material state",
+      "at": "packages/scene/src/engine.ts:101-107,503-530,555-563,781-1039,1426-1437",
+      "add": [
+        "Apply retained state to new entries; promote queued detail target before spaces; refresh",
+        "selected derivatives."
+      ],
+      "remove": [
+        "Drop entries, keep requested state; missing target is not drawn/picked/labelled; rebuild",
+        "selected derivatives."
+      ],
+      "scope": [
+        "Entry materials separable; mode/selection changes apply to all, findings/deviation remain",
+        "explicit inputs."
+      ],
+      "cost": "Shares 192.3 ms replacement; no isolated apply sample. Findings/comparison absent in measured import."
+    }
+  ],
+  "callers": [
+    {
+      "at": "packages/scene/src/react.tsx:64-69",
+      "calls": [
+        "Only direct production setBase/setBuildings caller; effects depend on array identity, not every",
+        "render."
+      ]
+    },
+    {
+      "at": [
+        "apps/studio/src/features/map/MapWorkspace.tsx:118-119,396-414; canonicalScene.ts:67;",
+        "useBuildingScene.ts:19-35"
+      ],
+      "passes": [
+        "Memoized arrays; uploaded append regenerates all objects/polygons/slabs and base. Stable on",
+        "frame ticks."
+      ]
+    },
+    {
+      "at": "apps/studio/src/features/register/RegisterPage.tsx:104-109,240; useBuildingScene.ts:19-35",
+      "passes": "Memoized canonical inputs/base, stable until record/features/colour/storeys changes."
+    },
+    {
+      "at": "apps/studio/src/features/review/WorkspacePage.tsx:340-344,364",
+      "passes": "Same shared hook as register, colour none; memoized and stable on unrelated renders."
+    },
+    {
+      "at": "apps/studio/src/features/review/candidates/RoofprintMap.tsx:9-27",
+      "passes": "Memoized fresh objects per cards array change; polygons borrowed from cards; default empty base."
+    },
+    {
+      "at": "apps/studio/src/portal/PublicScene.tsx:17-30,51",
+      "passes": [
+        "Memoized base per public features array, footprints per features/storeys; fresh objects at",
+        "invalidation."
+      ]
+    }
+  ],
+  "base": [
+    {
+      "at": "packages/scene/src/engine.ts:417-432,462-476",
+      "stage": [
+        "Clear base/kerbs/name anchors/sizes/raised; detect sidewalks/roads; collect lands/utilities;",
+        "apply state."
+      ],
+      "scope": "Whole list; final setBase 261.6 ms inclusive, disposal not separately wrapped."
+    },
+    {
+      "at": "packages/scene/src/engine.ts:433-460",
+      "stage": [
+        "Per-feature shapes and prism mesh; sidewalk extrusion; land/road/water material; named anchor",
+        "and size."
+      ],
+      "scope": "Per feature; prismGeometry 4428.894 ms sampled across base AND buildings, cannot separate kind cost."
+    },
+    {
+      "at": "packages/scene/src/engine.ts:435-443,462-467",
+      "stage": [
+        "Parcel rings concatenate into one lines object; sidewalk/road kerbs concatenate; lane dashes",
+        "concatenate."
+      ],
+      "scope": "All features of each kind merged; laneDashes/lines/ringLines have no isolated timing in LV0."
+    },
+    {
+      "at": "packages/scene/src/engine.ts:469-475,738-777",
+      "stage": "Global dressing tree avoidance plus per-utility extrusion; utilities have own anchors.",
+      "scope": "Dressing 29.7 ms at full scene; utilities no isolated timing. Base guard only in LV1."
+    }
+  ],
+  "plan": [
+    "One design: engine shallow reconciliation, ordered 4 ms addition queue, per-building pads/state;",
+    "global trees at drain or >=250 ms. WeakMap feature conversion, stable base array, ack after",
+    "engine render proof. No second design if criteria 1/2 miss."
+  ],
+  "safety": "No backend/provider/GPU/runtime request. Owned server port 5234 stopped and free.",
+  "processGap": [
+    "Before-test log was accidentally created at task-data/lv1-before-tests.log, not inside lv1/. It",
+    "is a new test log only; not moved/deleted under immutable-data rule. Lead may retire exact path."
+  ]
+}
