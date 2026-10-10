@@ -44,6 +44,10 @@ node scripts/platform/demo-gateway.mjs enable --config <policy.json>
 node scripts/platform/demo-gateway.mjs disable
 ```
 
+Every command here and below also takes `--runtime <name>` as its last two arguments (default `ulpin-demo`): for a
+rehearsal such as `ulpin-reh-01` it reads and writes only that runtime's own settings file, and `keys` is refused
+there unless it is the `--dry-run` form, so that no real key ever goes into a rehearsal.
+
 - `status` prints the same seven facts as the doctor. It never reads the ledger, so it works with the database
   stopped and does not say how many keys are used up; `key-marks` below does.
 - `enable` sets the flag to `1`, writes the policy as one line and sets `ULPIN_MAPPING_TEACHER_ADAPTER=sarvam`.
