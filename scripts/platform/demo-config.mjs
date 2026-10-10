@@ -8,26 +8,77 @@ import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { command, dockerRuntime, root } from './runtime.mjs';
 
-export const demoDir = 'E:/BhuAayam-data/runtime/ulpin-demo';
-export const demoProject = 'ulpin-demo';
-export const demoFile = join(demoDir, 'demo.env');
-export const demoOcrFile = join(demoDir, 'ocr-paths.json');
-export const demoTabularFile = join(demoDir, 'tabular-paths.json');
-export const demoDocumentFile = join(demoDir, 'document-runtime-paths.json');
+export const demoRuntime = 'ulpin-demo';
+const runtimesFolder = 'E:/BhuAayam-data/runtime';
+const rehearsalName = /^ulpin-reh-([0-9]{2})$/;
+const demoPorts = {
+  POSTGRES_PORT: '15434', S3_PORT: '19020', S3_CONSOLE_PORT: '19021', REDIS_PORT: '16381', GEO_PORT: '18002',
+  API_PORT: '3194',
+};
+const definitions = new WeakSet();
+
+/** Rehearsal NN listens on 21000 + 10 x NN + 1 to + 6, in the order of the demo's port keys: never a demo port. */
+function rehearsalPorts(number) {
+  const first = 21000 + 10 * number + 1;
+  return Object.fromEntries(Object.keys(demoPorts).map((key, index) => [key, String(first + index)]));
+}
+
+/**
+ * Everything that tells one runtime from another, from its name alone. ulpin-demo keeps the values it was
+ * created with. ulpin-reh-NN gets its own folder, project, bucket, database, ports and operator subject, so
+ * that no record made in a rehearsal can be mistaken for the demo's. Any other name is refused here, before
+ * a file is read. The second argument is for tests on a synthetic folder; no command passes it.
+ */
+export function runtimeDefinition(name = demoRuntime, folder = runtimesFolder) {
+  const rehearsal = typeof name === 'string' ? rehearsalName.exec(name) : null;
+  if (name !== demoRuntime && !rehearsal) {
+    throw new Error('Unknown runtime name: use ulpin-demo or ulpin-reh-NN with two digits.');
+  }
+  const dir = `${folder}/${name}`;
+  const database = name.replaceAll('-', '_');
+  const definition = Object.freeze({
+    name, rehearsal: Boolean(rehearsal), dir, project: name, bucket: name, database, databaseUser: database,
+    objectAccessKey: name.replaceAll('-', ''),
+    operatorSubject: rehearsal ? `rehearsal-runtime-${name}` : 'selection-demo-runtime',
+    ports: Object.freeze(rehearsal ? rehearsalPorts(Number(rehearsal[1])) : { ...demoPorts }),
+    file: join(dir, rehearsal ? 'runtime.env' : 'demo.env'), marker: join(dir, 'bootstrap.complete.json'),
+    ocrFile: join(dir, 'ocr-paths.json'), ocrProfileFile: join(dir, 'ocr-paths-profile.json'),
+    tabularFile: join(dir, 'tabular-paths.json'), documentFile: join(dir, 'document-runtime-paths.json'),
+    modelDir: join(dir, 'models').replaceAll('\\', '/'),
+  });
+  definitions.add(definition);
+  return definition;
+}
+
+/** A name is resolved; an object passes only if runtimeDefinition() made it. */
+export function definedRuntime(runtime = demoRuntime) {
+  if (typeof runtime === 'string') return runtimeDefinition(runtime);
+  if (!definitions.has(runtime)) throw new Error('Unknown runtime: only a validated runtime name is accepted.');
+  return runtime;
+}
+
+const demo = runtimeDefinition();
+export const demoDir = demo.dir;
+export const demoProject = demo.project;
+export const demoFile = demo.file;
+export const demoOcrFile = demo.ocrFile;
+export const demoTabularFile = demo.tabularFile;
+export const demoDocumentFile = demo.documentFile;
 const documentRuntimeGroups = [
   ['ULPIN_DOCUMENT_PAGES_PYTHON', 'ULPIN_DOCUMENT_PAGES_SCRATCH'],
   ['ULPIN_PACKET_REGIONS_PYTHON', 'ULPIN_PACKET_REGIONS_PROFILE',
     'ULPIN_PACKET_REGIONS_PROFILE_SHA256', 'ULPIN_PACKET_REGIONS_SCRATCH'],
 ];
-export const demoOcrProfileFile = join(demoDir, 'ocr-paths-profile.json');
+export const demoOcrProfileFile = demo.ocrProfileFile;
 const ocrNames = ['PYTHON', 'MODELS', 'TESSERACT', 'TESSDATA', 'SCRATCH'];
 
 /** Optional non-secret paths only. Never derive or replace credentials. */
-export function readDemoOcrPaths(file = demoOcrFile) {
+export function readDemoOcrPaths(file = demoOcrFile, overrideFile) {
   if (!existsSync(file)) return {};
   let paths = JSON.parse(readFileSync(file, 'utf8'));
-  // Any other file is itself read as a demo-scoped override; its scratch must lie in that file's own folder.
-  const profileFile = file === demoOcrFile ? demoOcrProfileFile : file;
+  // Any other file is itself read as a demo-scoped override, unless the caller names that runtime's own
+  // override file; the scratch must lie in the read file's own folder.
+  const profileFile = overrideFile ?? (file === demoOcrFile ? demoOcrProfileFile : file);
   if (existsSync(profileFile)) {
     const override = JSON.parse(readFileSync(profileFile, 'utf8'));
     if (override.profile !== 'demo' || Object.keys(override).sort().join(',') !== 'paths,profile') {
@@ -66,7 +117,7 @@ export function readDemoOcrPaths(file = demoOcrFile) {
   return paths;
 }
 /** Required non-secret paths; a missing bridge or seed must be visible before runtime starts. */
-export function readDemoTabularPaths(file = demoTabularFile) {
+export function readDemoTabularPaths(file = demoTabularFile, runtimeDir = demoDir) {
   if (!existsSync(file)) throw new Error('Demo tabular paths missing; configure tabular-paths.json first.');
   let paths;
   try { paths = JSON.parse(readFileSync(file, 'utf8')); }
@@ -85,13 +136,13 @@ export function readDemoTabularPaths(file = demoTabularFile) {
       throw new Error(`Demo tabular path has the wrong kind: ${key}.`);
     }
   }
-  validateTabularArtifacts(paths);
+  validateTabularArtifacts(paths, runtimeDir);
   return paths;
 }
 
-function validateTabularArtifacts(paths) {
+function validateTabularArtifacts(paths, runtimeDir) {
   const learning = realpathSync(paths.ULPIN_TABULAR_LEARNING_DIR);
-  const insideRuntime = relative(realpathSync(demoDir), learning);
+  const insideRuntime = relative(realpathSync(runtimeDir), learning);
   const repository = realpathSync(resolve(dirname(fileURLToPath(import.meta.url)), '../..'));
   for (const path of [learning, realpathSync(paths.ULPIN_TABULAR_LEARNER_SEED)]) {
     const insideRepository = relative(repository, path);
@@ -266,18 +317,27 @@ function assertDemoGateway(env) {
   else throw new Error(`Demo setting ${gatewayFlag} must be 0 or 1.`);
 }
 
-const expectedPorts = { POSTGRES_PORT: '15434', S3_PORT: '19020', S3_CONSOLE_PORT: '19021', REDIS_PORT: '16381', GEO_PORT: '18002', API_PORT: '3194' };
-export function readDemo() {
+/** The whole configuration of one runtime: its settings file and its three path files, and no other's. */
+export function readDemo(name = demoRuntime) {
+  const runtime = definedRuntime(name);
   let tabular;
-  try { tabular = readDemoTabularPaths(); }
+  try { tabular = readDemoTabularPaths(runtime.tabularFile, runtime.dir); }
   catch (error) {
     console.error(error.message); // Only path-validation messages, never demo.env values.
     throw error;
   }
-  return { ...readDemoSettings(), ...readDemoOcrPaths(), ...tabular, ...readDemoDocumentRuntime() };
+  return {
+    ...readDemoSettings(runtime.file, runtime), ...readDemoOcrPaths(runtime.ocrFile, runtime.ocrProfileFile),
+    ...tabular, ...readDemoDocumentRuntime(runtime.documentFile),
+  };
 }
-/** The demo.env part of readDemo(). Only tests and the gateway script's unrenamed copy pass another file. */
-export function readDemoSettings(file = demoFile) {
+/**
+ * The settings-file part of readDemo(). Only tests and the gateway script's unrenamed copy pass another file.
+ * The file must hold exactly the named runtime's project, bucket, database and ports: one runtime's settings
+ * are refused under another's name.
+ */
+export function readDemoSettings(file = demoFile, name = demoRuntime) {
+  const runtime = definedRuntime(name);
   if (!existsSync(file)) throw new Error('Demo configuration missing; use --profile demo --create after inventory reconciliation.');
   // Only this explicitly authorized external file is read, never checkout .env.
   const env = Object.fromEntries(readFileSync(file, 'utf8').split(/\r?\n/).filter(Boolean).map(line => {
@@ -285,8 +345,9 @@ export function readDemoSettings(file = demoFile) {
     if (at <= 0) throw new Error('Invalid demo configuration.');
     return [line.slice(0, at), line.slice(at + 1)];
   }));
-  for (const [key, value] of Object.entries({ ...expectedPorts, ULPIN_PROFILE: 'demo', COMPOSE_PROJECT_NAME: demoProject,
-    POSTGRES_DB: 'ulpin_demo', POSTGRES_USER: 'ulpin_demo', S3_BUCKET: demoProject, REPO_DATA: 'false' })) {
+  for (const [key, value] of Object.entries({ ...runtime.ports, ULPIN_PROFILE: 'demo',
+    COMPOSE_PROJECT_NAME: runtime.project, POSTGRES_DB: runtime.database, POSTGRES_USER: runtime.databaseUser,
+    S3_BUCKET: runtime.bucket, REPO_DATA: 'false' })) {
     if (env[key] !== value) throw new Error(`Unexpected demo setting ${key}; refusing profile mixing.`);
   }
   assertDemoGateway(env);
@@ -302,37 +363,56 @@ export async function freePort(port) {
     server.listen(Number(port), '127.0.0.1', () => server.close(ok));
   });
 }
-export function assertDemoConfigMayBeGenerated(hasConfig, volumes, hasContainers) {
-  if (!hasConfig && (volumes.some(v => v.startsWith(`${demoProject}_`)) || hasContainers))
+export function assertDemoConfigMayBeGenerated(hasConfig, volumes, hasContainers, project = demoProject) {
+  if (!hasConfig && (volumes.some(v => v.startsWith(`${project}_`)) || hasContainers))
     throw new Error('Demo storage/containers already exist but demo.env is missing. STOP: recover its original configuration; never generate replacement passwords.');
 }
-export async function createDemo() {
+/**
+ * The settings a new runtime is created with, in the order they are written. `secret` is called three times:
+ * database password, object-store secret, processor token. The gateway always starts disabled.
+ */
+export function runtimeSettings(name, secret) {
+  const runtime = definedRuntime(name);
+  const { ports, database, databaseUser } = runtime;
+  const password = secret();
+  return { ...ports, ULPIN_PROFILE: 'demo', COMPOSE_PROJECT_NAME: runtime.project, REPO_DATA: 'false',
+    POSTGRES_DB: database, POSTGRES_USER: databaseUser, POSTGRES_PASSWORD: password,
+    DATABASE_URL: `postgresql://${databaseUser}:${password}@127.0.0.1:${ports.POSTGRES_PORT}/${database}`,
+    S3_ENDPOINT: `http://127.0.0.1:${ports.S3_PORT}`, S3_ACCESS_KEY: runtime.objectAccessKey,
+    S3_SECRET_KEY: secret(), S3_BUCKET: runtime.bucket, S3_REGION: 'us-east-1', GEO_SERVICE_TOKEN: secret(),
+    GEO_URL: `http://127.0.0.1:${ports.GEO_PORT}`, REDIS_URL: `redis://127.0.0.1:${ports.REDIS_PORT}/0`,
+    ULPIN_LOCAL_OPERATOR_SUBJECT: runtime.operatorSubject, ULPIN_MODEL_GATEWAY_ENABLED: '0',
+    ULPIN_DEMO_MODEL_DIR: runtime.modelDir };
+}
+
+/** Limit Windows ACL inheritance BEFORE secrets are written. No security-product settings changed. */
+function restrictFolder(dir) {
+  if (process.platform !== 'win32') return;
+  const identity = '[System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value';
+  const sid = command('powershell.exe', ['-NoProfile', '-Command', identity]);
+  const grants = [`*${sid}:(OI)(CI)F`, '*S-1-5-18:(OI)(CI)F', '*S-1-5-32-544:(OI)(CI)F'];
+  command('icacls.exe', [dir, '/inheritance:r', '/grant:r', ...grants]);
+}
+
+export async function createDemo(name = demoRuntime) {
+  const definition = definedRuntime(name);
+  if (definition.rehearsal) throw new Error('Create is not yet available for a rehearsal: no writer of its path files.');
+  const { file, dir, project } = definition;
   const runtime = dockerRuntime();
   const volumes = runtime.docker('volume', 'ls', '--format', '{{.Name}}').split('\n');
-  const containers = runtime.docker('ps', '-a', '--filter', `label=com.docker.compose.project=${demoProject}`, '--format', '{{.ID}}');
-  assertDemoConfigMayBeGenerated(existsSync(demoFile), volumes, !!containers);
-  if (existsSync(demoFile)) return readDemo();
-  for (const port of Object.values(expectedPorts)) await freePort(port);
-  mkdirSync(join(demoDir, 'logs'), { recursive: true, mode: 0o700 });
-  mkdirSync(join(demoDir, 'models'), { recursive: true, mode: 0o700 });
-  // Limit Windows ACL inheritance BEFORE writing secrets. No security-product settings changed.
-  if (process.platform === 'win32') {
-    const sid = command('powershell.exe', ['-NoProfile', '-Command', '[System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value']);
-    command('icacls.exe', [demoDir, '/inheritance:r', '/grant:r', `*${sid}:(OI)(CI)F`, '*S-1-5-18:(OI)(CI)F', '*S-1-5-32-544:(OI)(CI)F']);
-  }
-  const secret = () => randomBytes(32).toString('hex');
-  const password = secret();
-  const env = { ...expectedPorts, ULPIN_PROFILE: 'demo', COMPOSE_PROJECT_NAME: demoProject, REPO_DATA: 'false',
-    POSTGRES_DB: 'ulpin_demo', POSTGRES_USER: 'ulpin_demo', POSTGRES_PASSWORD: password,
-    DATABASE_URL: `postgresql://ulpin_demo:${password}@127.0.0.1:${expectedPorts.POSTGRES_PORT}/ulpin_demo`,
-    S3_ENDPOINT: `http://127.0.0.1:${expectedPorts.S3_PORT}`, S3_ACCESS_KEY: 'ulpindemo', S3_SECRET_KEY: secret(),
-    S3_BUCKET: demoProject, S3_REGION: 'us-east-1', GEO_SERVICE_TOKEN: secret(),
-    GEO_URL: `http://127.0.0.1:${expectedPorts.GEO_PORT}`, REDIS_URL: `redis://127.0.0.1:${expectedPorts.REDIS_PORT}/0`,
-    ULPIN_LOCAL_OPERATOR_SUBJECT: 'selection-demo-runtime', ULPIN_MODEL_GATEWAY_ENABLED: '0',
-    ULPIN_DEMO_MODEL_DIR: join(demoDir, 'models').replaceAll('\\', '/') };
-  writeFileSync(demoFile, Object.entries(env).map(([k, v]) => `${k}=${v}`).join('\n') + '\n', { flag: 'wx', mode: 0o600 });
-  chmodSync(demoFile, 0o600);
-  return readDemo();
+  const filter = `label=com.docker.compose.project=${project}`;
+  const containers = runtime.docker('ps', '-a', '--filter', filter, '--format', '{{.ID}}');
+  assertDemoConfigMayBeGenerated(existsSync(file), volumes, !!containers, project);
+  if (existsSync(file)) return readDemo(definition);
+  for (const port of Object.values(definition.ports)) await freePort(port);
+  mkdirSync(join(dir, 'logs'), { recursive: true, mode: 0o700 });
+  mkdirSync(join(dir, 'models'), { recursive: true, mode: 0o700 });
+  restrictFolder(dir);
+  const env = runtimeSettings(definition, () => randomBytes(32).toString('hex'));
+  const text = Object.entries(env).map(([k, v]) => `${k}=${v}`).join('\n') + '\n';
+  writeFileSync(file, text, { flag: 'wx', mode: 0o600 });
+  chmodSync(file, 0o600);
+  return readDemo(definition);
 }
 export function safeEnvironment(env) {
   const keys = ['SystemRoot', 'WINDIR', 'PATH', 'TEMP', 'TMP', 'USERPROFILE', 'APPDATA', 'LOCALAPPDATA', 'COMSPEC', 'PATHEXT'];
