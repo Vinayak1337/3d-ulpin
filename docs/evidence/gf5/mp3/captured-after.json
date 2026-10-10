@@ -1,0 +1,204 @@
+{
+  "run": "after",
+  "refused": [],
+  "captures": [
+    {
+      "view": "1440",
+      "failedPicture": false,
+      "failureNote": false,
+      "samples": [
+        {
+          "distance": 30,
+          "pick": {
+            "kind": "building",
+            "id": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4"
+          },
+          "stableFrames": true
+        },
+        {
+          "distance": 60,
+          "pick": {
+            "kind": "building",
+            "id": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4"
+          },
+          "stableFrames": true
+        },
+        {
+          "distance": 120,
+          "pick": {
+            "kind": "building",
+            "id": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4"
+          },
+          "stableFrames": true
+        }
+      ],
+      "clicked": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4",
+      "off": "false",
+      "sideways": false,
+      "scene": {
+        "records": [
+          {
+            "kind": "building",
+            "id": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4",
+            "known": false,
+            "bottomM": 2.5252015156505955e-15,
+            "topM": 0.05000000074505806,
+            "renderOrder": 0,
+            "depthTest": true,
+            "depthWrite": false,
+            "transparent": true,
+            "polygonOffset": false,
+            "factor": 0,
+            "units": 0
+          }
+        ],
+        "pictureCount": 22,
+        "pictureStyles": [
+          {
+            "bottomM": 0,
+            "topM": 0,
+            "renderOrder": -3,
+            "depthTest": false,
+            "depthWrite": false,
+            "transparent": false,
+            "polygonOffset": false,
+            "factor": 0,
+            "units": 0
+          }
+        ]
+      }
+    },
+    {
+      "view": "200pct",
+      "failedPicture": false,
+      "failureNote": false,
+      "samples": [
+        {
+          "distance": 30,
+          "pick": {
+            "kind": "building",
+            "id": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4"
+          },
+          "stableFrames": true
+        },
+        {
+          "distance": 60,
+          "pick": {
+            "kind": "building",
+            "id": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4"
+          },
+          "stableFrames": true
+        },
+        {
+          "distance": 120,
+          "pick": {
+            "kind": "building",
+            "id": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4"
+          },
+          "stableFrames": true
+        }
+      ],
+      "clicked": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4",
+      "off": "false",
+      "sideways": false,
+      "scene": {
+        "records": [
+          {
+            "kind": "building",
+            "id": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4",
+            "known": false,
+            "bottomM": 2.5252015156505955e-15,
+            "topM": 0.05000000074505806,
+            "renderOrder": 0,
+            "depthTest": true,
+            "depthWrite": false,
+            "transparent": true,
+            "polygonOffset": false,
+            "factor": 0,
+            "units": 0
+          }
+        ],
+        "pictureCount": 22,
+        "pictureStyles": [
+          {
+            "bottomM": 0,
+            "topM": 0,
+            "renderOrder": -3,
+            "depthTest": false,
+            "depthWrite": false,
+            "transparent": false,
+            "polygonOffset": false,
+            "factor": 0,
+            "units": 0
+          }
+        ]
+      }
+    },
+    {
+      "view": "1440",
+      "failedPicture": true,
+      "failureNote": true,
+      "samples": [
+        {
+          "distance": 30,
+          "pick": {
+            "kind": "building",
+            "id": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4"
+          },
+          "stableFrames": true
+        },
+        {
+          "distance": 60,
+          "pick": {
+            "kind": "building",
+            "id": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4"
+          },
+          "stableFrames": true
+        },
+        {
+          "distance": 120,
+          "pick": {
+            "kind": "building",
+            "id": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4"
+          },
+          "stableFrames": true
+        }
+      ],
+      "clicked": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4",
+      "off": "false",
+      "sideways": false,
+      "scene": {
+        "records": [
+          {
+            "kind": "building",
+            "id": "a2ea9cd6-da0d-413a-9a48-03d7f25cd5e4",
+            "known": false,
+            "bottomM": 2.5252015156505955e-15,
+            "topM": 0.05000000074505806,
+            "renderOrder": 0,
+            "depthTest": true,
+            "depthWrite": false,
+            "transparent": true,
+            "polygonOffset": false,
+            "factor": 0,
+            "units": 0
+          }
+        ],
+        "pictureCount": 21,
+        "pictureStyles": [
+          {
+            "bottomM": 0,
+            "topM": 0,
+            "renderOrder": -3,
+            "depthTest": false,
+            "depthWrite": false,
+            "transparent": false,
+            "polygonOffset": false,
+            "factor": 0,
+            "units": 0
+          }
+        ]
+      }
+    }
+  ]
+}
