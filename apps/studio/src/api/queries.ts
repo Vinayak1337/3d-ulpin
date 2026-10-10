@@ -299,6 +299,41 @@ export async function assignCode(body: PostBody<'/api/v1/usp/identity/assign'>) 
   return unwrap(await api.POST('/api/v1/usp/identity/assign', { body })).data;
 }
 
+/** Reads the recorded citation a plan for this unit may include, with the handle the plan names. Stores nothing. */
+export async function readPlanEntries(body: PostBody<'/api/v1/usp/packets/plans/entries'>) {
+  return unwrap(await api.POST('/api/v1/usp/packets/plans/entries', { body })).data;
+}
+
+/** Stores a plan of the citations a packet of this unit will hold. */
+export async function createPlan(body: PostBody<'/api/v1/usp/packets/plans/create'>) {
+  return unwrap(await api.POST('/api/v1/usp/packets/plans/create', { body })).data;
+}
+
+/** Stores the confirmation that the plan was reviewed; a plan is executed under its confirmation only. */
+export async function confirmPlan(body: PostBody<'/api/v1/usp/packets/plans/confirm'>) {
+  return unwrap(await api.POST('/api/v1/usp/packets/plans/confirm', { body })).data;
+}
+
+/** Stores the packet of a confirmed plan. A card is issued from an executed plan only. */
+export async function executePlan(body: PostBody<'/api/v1/usp/packets/plans/execute'>) {
+  return unwrap(await api.POST('/api/v1/usp/packets/plans/execute', { body })).data;
+}
+
+/** Reads one stored card revision: its plan and the snapshot a further revision must name. Stores nothing. */
+export async function readCard(body: PostBody<'/api/v1/usp/property-cards/read'>) {
+  return unwrap(await api.POST('/api/v1/usp/property-cards/read', { body })).data;
+}
+
+/** Reads the rows a card of this executed plan would state, and the revision it would be. Stores nothing. */
+export async function previewCard(body: PostBody<'/api/v1/usp/property-cards/preview'>) {
+  return unwrap(await api.POST('/api/v1/usp/property-cards/preview', { body })).data;
+}
+
+/** Stores the card. The same key with the same body answers the same card. */
+export async function generateCard(body: PostBody<'/api/v1/usp/property-cards/generate'>) {
+  return unwrap(await api.POST('/api/v1/usp/property-cards/generate', { body })).data;
+}
+
 /** One retained inference batch with its items: model, state and the decisions already applied. */
 export function useSpatialMlBatch(batchId: string | null | undefined) {
   return useQuery({
