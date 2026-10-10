@@ -5493,6 +5493,31 @@ export interface components {
             jobId?: string;
         };
         GET_source_workspaces_Response_200_application_json: {
+            imagery?: {
+                clusterId: string;
+                /** @enum {string} */
+                classification: "test_only";
+                /** @enum {string} */
+                analyticalEligibility: "not_assessed";
+                chips: {
+                    /** Format: uuid */
+                    chipId: string;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceSha256: string;
+                    /** @enum {string} */
+                    sourceCrs: "EPSG:4326";
+                    affine: (number)[];
+                    width: number;
+                    height: number;
+                    /** Format: uri */
+                    originalUrl: string;
+                    acquiredAt: string;
+                    /** @enum {string} */
+                    licence: "CC-BY-NC-4.0";
+                    upstreamConditions: string;
+                }[];
+            };
             /** @enum {boolean} */
             geometryFree?: true;
             administrativeContext?: {
@@ -6030,6 +6055,31 @@ export interface components {
             caseId?: string;
         };
         POST_source_workspaces_Response_201_application_json: {
+            imagery?: {
+                clusterId: string;
+                /** @enum {string} */
+                classification: "test_only";
+                /** @enum {string} */
+                analyticalEligibility: "not_assessed";
+                chips: {
+                    /** Format: uuid */
+                    chipId: string;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceSha256: string;
+                    /** @enum {string} */
+                    sourceCrs: "EPSG:4326";
+                    affine: (number)[];
+                    width: number;
+                    height: number;
+                    /** Format: uri */
+                    originalUrl: string;
+                    acquiredAt: string;
+                    /** @enum {string} */
+                    licence: "CC-BY-NC-4.0";
+                    upstreamConditions: string;
+                }[];
+            };
             /** @enum {boolean} */
             geometryFree?: true;
             administrativeContext?: {
@@ -6950,6 +7000,31 @@ export interface components {
                 };
             }[];
             packages: {
+                imagery?: {
+                    clusterId: string;
+                    /** @enum {string} */
+                    classification: "test_only";
+                    /** @enum {string} */
+                    analyticalEligibility: "not_assessed";
+                    chips: {
+                        /** Format: uuid */
+                        chipId: string;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceSha256: string;
+                        /** @enum {string} */
+                        sourceCrs: "EPSG:4326";
+                        affine: (number)[];
+                        width: number;
+                        height: number;
+                        /** Format: uri */
+                        originalUrl: string;
+                        acquiredAt: string;
+                        /** @enum {string} */
+                        licence: "CC-BY-NC-4.0";
+                        upstreamConditions: string;
+                    }[];
+                };
                 /** @enum {boolean} */
                 geometryFree?: true;
                 administrativeContext?: {
@@ -9291,6 +9366,31 @@ export interface components {
                     method: string;
                     revisionId: string;
                 };
+            }[];
+            imagery?: {
+                clusterId: string;
+                /** @enum {string} */
+                classification: "test_only";
+                /** @enum {string} */
+                analyticalEligibility: "not_assessed";
+                chips: {
+                    /** Format: uuid */
+                    chipId: string;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceSha256: string;
+                    /** @enum {string} */
+                    sourceCrs: "EPSG:4326";
+                    affine: (number)[];
+                    width: number;
+                    height: number;
+                    /** Format: uri */
+                    originalUrl: string;
+                    acquiredAt: string;
+                    /** @enum {string} */
+                    licence: "CC-BY-NC-4.0";
+                    upstreamConditions: string;
+                }[];
             }[];
             overlays: ({
                 id: string;
@@ -69272,7 +69372,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        /** @description JSON retains an acquisition; multipart retains GIS or document-backed geometry-free buildings. */
+        /** @description JSON retains an acquisition; multipart retains GIS, source-only buildings or original-only imagery. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["POST_import_packages_Request_application_json"];

@@ -6028,7 +6028,7 @@
         "parameters": [],
         "requestBody": {
           "required": true,
-          "description": "JSON retains an acquisition; multipart retains GIS or document-backed geometry-free buildings.",
+          "description": "JSON retains an acquisition; multipart retains GIS, source-only buildings or original-only imagery.",
           "content": {
             "application/json": {
               "schema": {
@@ -63342,6 +63342,136 @@
         "nullable": true,
         "type": "object",
         "properties": {
+          "imagery": {
+            "type": "object",
+            "properties": {
+              "clusterId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "classification": {
+                "type": "string",
+                "enum": [
+                  "test_only"
+                ]
+              },
+              "analyticalEligibility": {
+                "type": "string",
+                "enum": [
+                  "not_assessed"
+                ]
+              },
+              "chips": {
+                "minItems": 1,
+                "maxItems": 64,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "chipId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "sourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "sourceSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "sourceCrs": {
+                      "type": "string",
+                      "enum": [
+                        "EPSG:4326"
+                      ]
+                    },
+                    "affine": {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "minItems": 6,
+                      "maxItems": 6
+                    },
+                    "width": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 256
+                    },
+                    "height": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 256
+                    },
+                    "originalUrl": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "acquiredAt": {
+                      "type": "string"
+                    },
+                    "licence": {
+                      "type": "string",
+                      "enum": [
+                        "CC-BY-NC-4.0"
+                      ]
+                    },
+                    "upstreamConditions": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1000
+                    }
+                  },
+                  "required": [
+                    "chipId",
+                    "sourceId",
+                    "sourceSha256",
+                    "sourceCrs",
+                    "affine",
+                    "width",
+                    "height",
+                    "originalUrl",
+                    "acquiredAt",
+                    "licence",
+                    "upstreamConditions"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "clusterId",
+              "classification",
+              "analyticalEligibility",
+              "chips"
+            ],
+            "additionalProperties": false
+          },
           "geometryFree": {
             "type": "boolean",
             "enum": [
@@ -65855,6 +65985,136 @@
       "POST_source_workspaces_Response_201_application_json": {
         "type": "object",
         "properties": {
+          "imagery": {
+            "type": "object",
+            "properties": {
+              "clusterId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "classification": {
+                "type": "string",
+                "enum": [
+                  "test_only"
+                ]
+              },
+              "analyticalEligibility": {
+                "type": "string",
+                "enum": [
+                  "not_assessed"
+                ]
+              },
+              "chips": {
+                "minItems": 1,
+                "maxItems": 64,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "chipId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "sourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "sourceSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "sourceCrs": {
+                      "type": "string",
+                      "enum": [
+                        "EPSG:4326"
+                      ]
+                    },
+                    "affine": {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "minItems": 6,
+                      "maxItems": 6
+                    },
+                    "width": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 256
+                    },
+                    "height": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 256
+                    },
+                    "originalUrl": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "acquiredAt": {
+                      "type": "string"
+                    },
+                    "licence": {
+                      "type": "string",
+                      "enum": [
+                        "CC-BY-NC-4.0"
+                      ]
+                    },
+                    "upstreamConditions": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1000
+                    }
+                  },
+                  "required": [
+                    "chipId",
+                    "sourceId",
+                    "sourceSha256",
+                    "sourceCrs",
+                    "affine",
+                    "width",
+                    "height",
+                    "originalUrl",
+                    "acquiredAt",
+                    "licence",
+                    "upstreamConditions"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "clusterId",
+              "classification",
+              "analyticalEligibility",
+              "chips"
+            ],
+            "additionalProperties": false
+          },
           "geometryFree": {
             "type": "boolean",
             "enum": [
@@ -70233,6 +70493,136 @@
             "items": {
               "type": "object",
               "properties": {
+                "imagery": {
+                  "type": "object",
+                  "properties": {
+                    "clusterId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 120
+                    },
+                    "classification": {
+                      "type": "string",
+                      "enum": [
+                        "test_only"
+                      ]
+                    },
+                    "analyticalEligibility": {
+                      "type": "string",
+                      "enum": [
+                        "not_assessed"
+                      ]
+                    },
+                    "chips": {
+                      "minItems": 1,
+                      "maxItems": 64,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "chipId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "sourceId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "sourceSha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "sourceCrs": {
+                            "type": "string",
+                            "enum": [
+                              "EPSG:4326"
+                            ]
+                          },
+                          "affine": {
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            },
+                            "minItems": 6,
+                            "maxItems": 6
+                          },
+                          "width": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 256
+                          },
+                          "height": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 256
+                          },
+                          "originalUrl": {
+                            "type": "string",
+                            "format": "uri"
+                          },
+                          "acquiredAt": {
+                            "type": "string"
+                          },
+                          "licence": {
+                            "type": "string",
+                            "enum": [
+                              "CC-BY-NC-4.0"
+                            ]
+                          },
+                          "upstreamConditions": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 1000
+                          }
+                        },
+                        "required": [
+                          "chipId",
+                          "sourceId",
+                          "sourceSha256",
+                          "sourceCrs",
+                          "affine",
+                          "width",
+                          "height",
+                          "originalUrl",
+                          "acquiredAt",
+                          "licence",
+                          "upstreamConditions"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "clusterId",
+                    "classification",
+                    "analyticalEligibility",
+                    "chips"
+                  ],
+                  "additionalProperties": false
+                },
                 "geometryFree": {
                   "type": "boolean",
                   "enum": [
@@ -81781,6 +82171,139 @@
                 "sourceCrs",
                 "name",
                 "polygons"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "imagery": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "clusterId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                "classification": {
+                  "type": "string",
+                  "enum": [
+                    "test_only"
+                  ]
+                },
+                "analyticalEligibility": {
+                  "type": "string",
+                  "enum": [
+                    "not_assessed"
+                  ]
+                },
+                "chips": {
+                  "minItems": 1,
+                  "maxItems": 64,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "chipId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "sourceId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "sourceSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "sourceCrs": {
+                        "type": "string",
+                        "enum": [
+                          "EPSG:4326"
+                        ]
+                      },
+                      "affine": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "minItems": 6,
+                        "maxItems": 6
+                      },
+                      "width": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 256
+                      },
+                      "height": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 256
+                      },
+                      "originalUrl": {
+                        "type": "string",
+                        "format": "uri"
+                      },
+                      "acquiredAt": {
+                        "type": "string"
+                      },
+                      "licence": {
+                        "type": "string",
+                        "enum": [
+                          "CC-BY-NC-4.0"
+                        ]
+                      },
+                      "upstreamConditions": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      }
+                    },
+                    "required": [
+                      "chipId",
+                      "sourceId",
+                      "sourceSha256",
+                      "sourceCrs",
+                      "affine",
+                      "width",
+                      "height",
+                      "originalUrl",
+                      "acquiredAt",
+                      "licence",
+                      "upstreamConditions"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "clusterId",
+                "classification",
+                "analyticalEligibility",
+                "chips"
               ],
               "additionalProperties": false
             }

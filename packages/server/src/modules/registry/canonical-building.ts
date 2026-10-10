@@ -26,6 +26,7 @@ import { areaFeatureContext, listAreas } from '../areas/areas';
 import { query, transaction } from '../../infrastructure/db';
 import { sourceBuildingOriginalAccessTx } from '../usp/ingestion/source-building-review';
 import { SOURCE_BUILDING_GAP } from '../usp/ingestion/source-building-values';
+import { rasterSourceTx } from '../usp/ingestion/raster-window';
 import { AppError, notFound } from '../../infrastructure/errors';
 import { localOperatorSubject } from '../usp/principal';
 
@@ -107,6 +108,13 @@ function orientRing(points: [number, number][], isOuter: boolean): [number, numb
   return needsReverse ? points.reverse() : points;
 }
 
+/** A surface point for image-corner placement, not an elevation or physical control. */
+export function geographicPointToEnu(point: [number, number], frame: AreaFrame): [number, number] | null {
+  const { lon, lat } = frame.origin;
+  if (lon === null || lat === null) return null;
+  return ecefToEnu(toEcef(...point), toEcef(lon, lat), lon * DEGREES_TO_RADIANS, lat * DEGREES_TO_RADIANS);
+}
+
 /**
  * WGS84 ellipsoid surface projection. h=0 is only the mathematical surface, not an asserted measured height.
  * Up is never used as a source elevation.
@@ -171,6 +179,14 @@ function citationLocator(entry: SourceLocator): BuildingCitation['locator'] {
 
 async function readSourceSha256(sourceId: string, siteId: string): Promise<string> {
   const access = await transaction(async client => {
+    const row = (await client.query('SELECT case_id,profile FROM sources WHERE id=$1', [sourceId])).rows[0];
+    if (row?.profile === 'geotiff-raster-v1') {
+      const context = await rasterSourceTx(client, row.case_id, sourceId);
+      if (context.current.site_id !== siteId || !context.latest) {
+        throw new AppError(403, 'CANONICAL_RASTER_DENIED', 'This raster original is outside the current site.');
+      }
+      return context.source;
+    }
     const sourceOnly = (await client.query(
       "SELECT 1 FROM import_packages WHERE body->>'geometryFree'='true' AND body->'sourceRevisionIds' ? $1 LIMIT 1",
       [sourceId],
