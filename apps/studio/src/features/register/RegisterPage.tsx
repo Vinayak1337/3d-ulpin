@@ -252,7 +252,8 @@ function Register({ register }: { register: BuildingRegister }) {
                   ]} />
                 <div key={tab} className={styles.tabBody}>
                   {tab === 'units' ? (
-                    <UnitsTab view={unitsView} floorLabel={level?.label ?? null} onClearFloor={clearLevel} table={(
+                    <UnitsTab view={unitsView} buildingId={property.id} floorLabel={level?.label ?? null}
+                      onClearFloor={clearLevel} table={(
                       <UnitsTable register={register} units={unitsView.rows} levelLabel={level?.label ?? null}
                         levels={new Map(model.levels.map((l) => [l.id, l.label]))}
                         ledger={ledger} workflow={workflowMap} selectedId={record?.id ?? null}

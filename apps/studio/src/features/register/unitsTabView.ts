@@ -14,7 +14,7 @@ export interface CanonicalRead {
  * - `pending`: the canonical read has not answered, so nothing is listed or denied yet.
  * - `register`: the register read has units of its own to list in the table.
  * - `recorded`: it has none, and the record holds floors recorded from a source label.
- * - `nothing`: neither read holds a unit or a recorded floor.
+ * - `nothing`: neither read holds a unit or a recorded floor (`scheduled` says what the record does hold).
  * - `unread`: the register read holds none and the canonical read failed, so nothing can be said.
  */
 export interface UnitsTabView<Row> {
@@ -25,6 +25,8 @@ export interface UnitsTabView<Row> {
   recorded: BuildingCanonical | null;
   /** The units the tab lists, table rows and recorded units together; undefined while that is not known. */
   count: number | undefined;
+  /** The labels of a reviewed level schedule's levels that no registry floor carries, in schedule order. */
+  scheduled: string[];
   /** The canonical read failed, so the recorded floors and units are not known. */
   unread: boolean;
   /** The server's code for that failure, when it gave one. */
@@ -39,6 +41,15 @@ function recordedOn(building: BuildingCanonical, floorId: string | null): Buildi
   const levels = floorId ? building.levels.filter((level) => level.registryFloorId === floorId) : building.levels;
   if (!recordedFloors(levels).length) return null;
   return floorId ? { ...building, levels } : building;
+}
+
+/** The levels a reviewed schedule states and no registry floor carries: reviewed, and not yet in the registry. */
+function scheduledOnly(building: BuildingCanonical | undefined): string[] {
+  const schedule = building?.levelSchedule;
+  if (!building || schedule?.state !== 'reviewed') return [];
+  const carried = new Set(building.levels.filter((level) => level.registryFloorId).map((level) => level.levelId));
+  return schedule.levels.filter((level) => !carried.has(level.levelId))
+    .sort((a, b) => a.order - b.order).map((level) => level.labelLiteral);
 }
 
 /** A read that failed for another reason than "this building has no record", and holds no earlier answer. */
@@ -56,17 +67,19 @@ export function unitsTabView<Row extends { id: string }>(
   listed: Row[], read: CanonicalRead, floorId: string | null,
 ): UnitsTabView<Row> {
   if (read.isPending) {
-    return { state: 'pending', rows: [], recorded: null, count: undefined, unread: false, code: null };
+    return { state: 'pending', rows: [], recorded: null, count: undefined, scheduled: [], unread: false, code: null };
   }
   if (failed(read)) {
     const state = listed.length ? 'register' : 'unread';
-    return { state, rows: listed, recorded: null, count: undefined, unread: true, code: refusalOf(read.error).code };
+    const code = refusalOf(read.error).code;
+    return { state, rows: listed, recorded: null, count: undefined, scheduled: [], unread: true, code };
   }
   const recorded = read.data ? recordedOn(read.data, floorId) : null;
   const units = recorded ? recordedFloors(recorded.levels).flatMap((floor) => floor.units) : [];
   const fromLabel = new Set(units.map((unit) => unit.id));
   const rows = listed.filter((row) => !fromLabel.has(row.id));
-  const known = { rows, recorded, count: rows.length + units.length, unread: false, code: null };
+  const scheduled = scheduledOnly(read.data);
+  const known = { rows, recorded, count: rows.length + units.length, scheduled, unread: false, code: null };
   if (rows.length) return { ...known, state: 'register' };
   return { ...known, state: recorded ? 'recorded' : 'nothing' };
 }
