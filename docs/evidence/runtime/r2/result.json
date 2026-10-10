@@ -3,6 +3,13 @@
   "gates": ["GF1", "GF4"],
   "artifactsRoot": "E:/BhuAayam-data/task-data/r2",
   "api": "http://127.0.0.1:3194/api/v1",
+  "inputs": {
+    "buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+    "siteId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b",
+    "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429",
+    "sourceRevision": 1,
+    "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865"
+  },
   "step1": {
     "result": "done",
     "before": {
@@ -69,7 +76,7 @@
     "record": {
       "http": 201,
       "requestKey": "c85083aa-ea4b-40f2-bcea-94b23e4b5dba",
-      "reason": "exact R2 lead/demo attribution; no field-officer decision; no shortening",
+      "reasonNote": "exact R2 lead/demo attribution retained in external request; no shortening",
       "recordRevisionBefore": 4,
       "recordRevisionAfter": 5,
       "floorId": "614ca200-1f3d-48ac-b7db-d1b893b352a1",
@@ -95,8 +102,10 @@
       "staticDiagnosis": "snapshotRows captures all same-site sources, not only the cited source-only target originals",
       "failedSourceId": null,
       "failedSourceIdState": "not exposed; not guessed",
-      "serverLogLinesCollected": false,
-      "serverLogNote": "USP filter does not log the handled AppError; no approved native-log reader exists"
+      "serverLogReadOnlyScan": true,
+      "serverLogMatchingLines": 0,
+      "serverLogNote": "platform-derived API log scanned for exact request ID/message; handler emits no matching line",
+      "serverLogReceipt": "step2/snapshot-server-log-receipt.json"
     },
     "readBack": {
       "http": 200,
@@ -121,7 +130,30 @@
     "expiresAt": null,
     "unknownFactDefectsObserved": []
   },
-  "step3": {"result": "pending"},
+  "step3": {
+    "result": "partly: recorded-panel API reads pass; no assigned code; Studio route not reachable",
+    "studioUrl": "http://127.0.0.1:5188/studio/review/6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+    "studioHtmlHttp": null,
+    "studioTransportAvailable": false,
+    "studioServerStartedOrRetried": false,
+    "browserVerified": false,
+    "canonicalHttp": 200,
+    "pageMetadataHttp": 200,
+    "floorLabel": "2ND FLOOR PLAN",
+    "spaceLabel": "UNIT-3B",
+    "assignedCode": null,
+    "assignedCodeState": "unknown",
+    "recordedPanelApiFactsVerified": true,
+    "sourcePinsVerified": true,
+    "citations": [
+      {"literal": "2ND FLOOR PLAN", "page": 1, "regionPt": [850, 875, 1020, 910]},
+      {"literal": "UNIT-3B", "page": 1, "regionPt": [596, 390, 644, 409]}
+    ],
+    "wholePageRaster": "unsupported",
+    "pageFramePt": [2586, 1695],
+    "measurementsAndPlacement": "unknown; geometry absent; parcelRefs empty",
+    "schedule": "conflicting G+41/G+42, unchanged"
+  },
   "invariants": {
     "before": {
       "registry": 2, "areas": 4, "sites": 4, "importPackages": 7,
@@ -136,5 +168,27 @@
     "recordRevisionChanges": ["Tower 3 building 4 to 5; floor and space created at revision 1"],
     "areaPackageCaseSourceLearnerCountsChanged": false
   },
-  "checks": {"driverTypecheck": 0, "doctorAfterRollout": 0, "fullRuntimeGatePassed": false}
+  "finalRuntime": {
+    "servedCommit": "9aad8da2e51e43dee279539a24efb0d0db645b45",
+    "servedCheckoutClean": true,
+    "apiPid": 25080,
+    "dispatcherPid": 14424,
+    "nativeProcessesRunning": true,
+    "documentRuntimesPass": true,
+    "containersPreserved": true
+  },
+  "checks": {
+    "driverTypecheck": 0,
+    "doctorAfterRollout": 0,
+    "doctorFinal": 0,
+    "recordedCanonical": 0,
+    "beforeAfterCounts": 0,
+    "studioApiRead": 0,
+    "studioHtmlProbe": 1,
+    "studioHtmlProbeNote": "transport unavailable; no retry or frontend start",
+    "diffCheck": 0,
+    "newManual120ColumnCheck": 0,
+    "fullRuntimeGatePassed": false
+  },
+  "overall": "partial delivery; GF1/GF4 identity-card gate not passed"
 }
