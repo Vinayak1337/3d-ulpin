@@ -55,13 +55,13 @@ Read this once before any prompt in this folder. Where it disagrees with an olde
   - Truth comes from people who labelled it independently of us (publisher labels with review, such as RAMP), from official literals (registry fields, stated plan dimensions), or from publisher data dictionaries.
   - There is no team labelling (owner, 10 October).
   - Teacher or agent outputs are never truth.
-- **Baseline first:** the existing model as installed, or rules/regex, or a strong pretrained model without fine-tuning. Fine-tune only on a measured gap, with enough labels (hundreds of images, or 300+ text examples across 5+ families).
+- **Baseline first:** the existing model as installed, or rules/regex, or a strong pretrained model without fine-tuning. Fine-tune only on a measured gap, with enough labels (hundreds of images, or 300+ text examples of the classes to be learned, across 5+ families; `unknown` or background rows don't count).
 - **Per-class metrics, never a single pooled score.** Report the denominators. State the abstention rate.
 - **Model card JSON** for every model used: source URL, revision, licence, weight SHA-256, preprocessing profile, training data (or "undocumented"), evaluation results, known failure modes.
 - Use standard tooling (torchvision/RF-DETR/CubiCasa scripts, Hugging Face TRL/PEFT, sentence-transformers, scikit-learn). Don't build custom training frameworks.
 - Hardware: one GPU owner (RTX 3070, 8 GB; plan for ≤6 GiB). Offline weights (`HF_HUB_OFFLINE=1`), safetensors/ONNX only. One plain results JSON per run (git SHA, data hash, model hash, metrics). Experiments run in a plain environment (P4.0). The heavy containment check runs once before integration, not per experiment.
-- **Teachers (owner decision, 10 October):**
-  - Claude (Opus 5.5, the lead) is the development teacher.
+- **Teachers (owner decisions, 10 October):**
+  - No model is the development teacher by name. Teacher work and learner work each go to the provider that has limit, and the model follows the provider: Claude Code CLI or a Claude desktop background task → Opus 5.5; pi codex-pool → `gpt-6.1-sol` ([WORKERS.md §8](WORKERS.md#8-teacher-and-learner-work-the-model-follows-the-provider)).
   - Sarvam is the runtime teacher.
   - Our learners may train on their verified outputs, because these learners don't compete with any provider. This supersedes the old H21 permission rule for this use.
 - **Distillation (teacher → student) is allowed for language and layout tasks, and only when it's real distillation:**
