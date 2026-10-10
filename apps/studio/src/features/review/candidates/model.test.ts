@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { evidenceRef } from '../recorded/model';
 import {
-  candidateCard, candidateCards, candidateGroups, countByState, decisionHistory, itemIdOf, levelText, locatorText,
-  planEstimateView, type CanonicalCandidate,
+  candidateCard, candidateCards, candidateGroups, citationOpenLabel, countByState, decisionHistory, itemIdOf,
+  levelText, locatorText, planEstimateView, type CanonicalCandidate,
 } from './model';
 
 const ITEM = '11111111-1111-4111-8111-111111111111';
@@ -71,7 +72,7 @@ describe('candidateCard', () => {
   });
 
   it('carries the full source id of a citation, and shows its first characters and locator', () => {
-    expect(card.citations).toEqual([
+    expect(card.citations).toMatchObject([
       { sourceId: 'abcdef12-0000-4000-8000-000000000000', source: 'abcdef12', locator: 'p.1' },
     ]);
   });
@@ -129,6 +130,43 @@ describe('candidateCard', () => {
 
   it('counts only entries of the asked kind as without geometry', () => {
     expect(candidateCards([room(), roofprint()], 'room')).toMatchObject({ withoutGeometry: 0 });
+  });
+});
+
+describe('the target a citation opens', () => {
+  const target = (candidate: CanonicalCandidate) => {
+    const card = candidateCard(candidate)!;
+    return evidenceRef(card.title, card.citations[0]!);
+  };
+
+  it('is the cited source at its page and region, with the numbers and unit the record carries', () => {
+    const { x, y, width, height, unit } = region;
+    expect(target(room())).toMatchObject({
+      sourceId: citation.sourceId,
+      label: 'FIXTURE ROOM',
+      locator: { kind: 'region', page: 2, region: { x, y, width, height, unit } },
+    });
+  });
+
+  it('is the cited source at its page when the citation names no region', () => {
+    expect(target(roofprint())).toMatchObject({ sourceId: citation.sourceId, locator: { kind: 'page', page: 1 } });
+  });
+
+  it('pins the original only when the citation records its revision; none is assumed', () => {
+    expect(target(roofprint()).pin).toBeUndefined();
+    const pinned = roofprint({ citations: [{ ...citation, sourceRevision: 3 }] });
+    expect(target(pinned).pin).toEqual({ revision: 3, sha256: citation.sourceSha256 });
+  });
+
+  it('names the control by what it opens', () => {
+    expect(citationOpenLabel(candidateCard(roofprint())!.citations[0]!)).toBe('Open cited source abcdef12 at p.1');
+    expect(citationOpenLabel(candidateCard(room())!.citations[0]!))
+      .toBe('Open cited source abcdef12 at p.2 · x 443.8, y 1196.9 · 71.3 × 79.8 pt');
+  });
+
+  it('keeps two citations of one source apart', () => {
+    const twice = candidateCard(roofprint({ citations: [citation, citation] }))!;
+    expect(new Set(twice.citations.map((item) => item.key)).size).toBe(2);
   });
 });
 
