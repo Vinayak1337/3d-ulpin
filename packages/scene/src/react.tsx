@@ -21,6 +21,7 @@ export interface SceneViewProps {
   onPick?: (pick: Pick) => void;
   onHover?: (pick: Pick) => void;
   onView?: () => void;
+  onBuildingsDrawn?: () => void;
   onMeasure?: (measurement: Measurement) => void;
   onTrench?: (trench: Trench) => void;
   /** Receives the engine once it exists, for camera commands and overlays. */
@@ -37,11 +38,15 @@ const NO_OVERLAYS: OverlayInput[] = [];
  * Thin React adapter: one engine per mount, props forwarded as imperative calls.
  * Callbacks go through a ref so a new closure never rebuilds the scene.
  */
-export function SceneView({ base = NO_BASE, buildings, detail, state, growNew, look = 'enhanced', flat = false, layers, overlays = NO_OVERLAYS, onPick, onHover, onView, onMeasure, onTrench, onReady, className, style, label }: SceneViewProps) {
+export function SceneView({
+  base = NO_BASE, buildings, detail, state, growNew, look = 'enhanced', flat = false, layers,
+  overlays = NO_OVERLAYS, onPick, onHover, onView, onBuildingsDrawn, onMeasure, onTrench, onReady,
+  className, style, label,
+}: SceneViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [engine, setEngine] = useState<SceneEngine | null>(null);
-  const callbacks = useRef({ onPick, onHover, onView, onMeasure, onTrench });
-  callbacks.current = { onPick, onHover, onView, onMeasure, onTrench };
+  const callbacks = useRef({ onPick, onHover, onView, onMeasure, onTrench, onBuildingsDrawn });
+  callbacks.current = { onPick, onHover, onView, onMeasure, onTrench, onBuildingsDrawn };
 
   useEffect(() => {
     const options: SceneEngineOptions = {
@@ -50,6 +55,7 @@ export function SceneView({ base = NO_BASE, buildings, detail, state, growNew, l
       onPick: (pick) => callbacks.current.onPick?.(pick),
       onHover: (pick) => callbacks.current.onHover?.(pick),
       onView: () => callbacks.current.onView?.(),
+      onBuildingsDrawn: () => callbacks.current.onBuildingsDrawn?.(),
       onMeasure: (m) => callbacks.current.onMeasure?.(m),
       onTrench: (t) => callbacks.current.onTrench?.(t),
     };

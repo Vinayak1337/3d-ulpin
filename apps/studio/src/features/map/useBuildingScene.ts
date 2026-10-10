@@ -1,5 +1,6 @@
-import { useMemo } from 'react';
-import type { BuildingDetailInput, FindingInput, FootprintInput, MultiPolygon, StoreyInput } from '@ulpin/scene';
+import { useMemo, useRef } from 'react';
+import type { BaseFeatureInput, BuildingDetailInput, FindingInput, FootprintInput } from '@ulpin/scene';
+import type { MultiPolygon, StoreyInput } from '@ulpin/scene';
 import type { BuildingLedger } from '@ulpin/api-client/draft';
 import type { AreaFeature, BuildingRegister } from '../../api/queries';
 import type { BuildingModel } from '../../model/building';
@@ -16,7 +17,11 @@ import { heightColour } from './heightBands';
  */
 export function useBuildingScene(features: AreaFeature[], feature: AreaFeature | null, model: BuildingModel | null, ledger: BuildingLedger | null | undefined, colour: Exclude<ColourBy, 'auto'>, drawn: FootprintInput[]) {
   const groundM = ledger?.groundElevationM ?? null;
-  const base = useMemo(() => toBase(features), [features]);
+  const previousBase = useRef<BaseFeatureInput[]>([]);
+  const base = useMemo(() => {
+    previousBase.current = toBase(features, previousBase.current);
+    return previousBase.current;
+  }, [features]);
 
   const storeys = useMemo(() => {
     const map = new Map<string, StoreyInput[]>();
