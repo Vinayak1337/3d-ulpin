@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import live from '../../../../../../docs/evidence/gf5/f3d/responses.json';
 import { mergeUnitCards, type ListedCard, type UnitCards } from '../../../api/queries';
 import { issueTarget } from '../../identity/issue';
-import { cardRows, noCardText, searchGaps, snapshotText } from './cards';
+import { cardRows, noCardText, searchGaps, severalCards, snapshotText } from './cards';
 
 const listed = live.cardList.data.items[0] as ListedCard;
 // The shape the server lists for a row it could not read back consistently: every detail is null.
@@ -86,8 +86,10 @@ describe('the cards of a unit across the snapshots the listing returns', () => {
     expect(searchGaps(merged)).toEqual([]);
     expect(cardRows(merged.cards).map((row) => row.unit))
       .toEqual(['Changed since this card', 'At its present revision', 'At its present revision']);
-    expect(cardRows(merged.cards).map((row) => `${row.card} r${row.revision}`))
-      .toEqual(['6a997624 r2', '6a997624 r1', 'an-older r1']);
+    const rows = cardRows(merged.cards);
+    expect(rows.map((row) => `${row.card} r${row.revision}`)).toEqual(['6a997624 r2', '6a997624 r1', 'an-older r1']);
+    expect(severalCards(rows)).toBe(true);
+    expect(severalCards(rows.slice(0, 2))).toBe(false);
   });
 
   it('counts a snapshot whose card read failed and names it in one sentence, never as none listed', () => {

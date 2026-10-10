@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import { Badge, DataTable, type Column } from '@ulpin/ui';
 import type { UnitCards } from '../../../api/queries';
 import { cardPdfPath, cardVerificationPath } from '../../identity/registryCard';
-import { cardRows, searchGaps, snapshotText, type CardRow } from './cards';
+import { cardRows, severalCards, searchGaps, snapshotText, type CardRow } from './cards';
 import styles from './Recorded.module.css';
 
 /** The PDF of a readable revision, and the server's verification report of any listed revision. */
@@ -23,8 +23,10 @@ function CardActions({ row }: { row: CardRow }) {
   );
 }
 
+const CARD: Column<CardRow> = {
+  header: 'Card', cell: (row) => <span className="ul-mono" title={row.cardId}>{row.card}</span>,
+};
 const COLUMNS: Column<CardRow>[] = [
-  { header: 'Card', cell: (row) => <span className="ul-mono" title={row.cardId}>{row.card}</span> },
   { header: 'Revision', cell: (row) => row.revision },
   { header: 'Issued', cell: (row) => row.issued ?? <em className="ul-unknown">Not reported</em> },
   { header: 'Status', cell: (row) => <Badge tone={row.tone} icon={null}>{row.status}</Badge> },
@@ -34,15 +36,16 @@ const COLUMNS: Column<CardRow>[] = [
 
 /**
  * Every card revision the registry lists for a unit under the snapshots that were read, and under the list what
- * the read could not cover.
+ * the read could not cover. The Card column is there only when the rows belong to more than one card.
  */
 export function ListedCards({ cards, snapshotCreatedAt }: { cards: UnitCards; snapshotCreatedAt: string }) {
+  const rows = cardRows(cards.cards);
   return (
     <div className={styles.cards}>
       <p className="ul-help">{snapshotText(cards, snapshotCreatedAt)}</p>
       <div className={styles.cardTable}>
-        <DataTable caption="Property cards of this unit" columns={COLUMNS} rows={cardRows(cards.cards)}
-          rowKey={(row) => row.key} />
+        <DataTable caption="Property cards of this unit" rows={rows} rowKey={(row) => row.key}
+          columns={severalCards(rows) ? [CARD, ...COLUMNS] : COLUMNS} />
       </div>
       {cards.truncated ? (
         <p className="ul-help">The registry holds more cards for this unit than the {cards.cards.length} listed.</p>
