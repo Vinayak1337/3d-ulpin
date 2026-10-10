@@ -12,7 +12,7 @@ import { canonicalBuilding, collectCanonicalCitationPins } from '../registry/can
 import { localOperatorSubject } from '../usp/principal';
 import { sourceBuildingOriginalAccessTx } from '../usp/ingestion/source-building-review';
 import {
-  appendBuildingMetadataRevisionTx, lockBuildingMetadataTx,
+  appendBuildingMetadataRevisionTx, BUILDING_CANDIDATE_MAX_PAGES, lockBuildingMetadataTx,
 } from '../usp/ingestion/source-building-candidates';
 import { assessSchedulePrisms } from '../registry/canonical-level-schedule';
 
@@ -80,7 +80,7 @@ async function verifyScheduleSources(client: PoolClient, siteId: string,
     const source = await sourceBuildingOriginalAccessTx(client, siteId, citation.sourceId);
     if (source.sha256 !== citation.sourceSha256 || retained.get(citation.sourceId) !== citation.sourceSha256
       || !['page', 'region'].includes(citation.locator.kind)
-      || ('page' in citation.locator && citation.locator.page > 8)) {
+      || ('page' in citation.locator && citation.locator.page > BUILDING_CANDIDATE_MAX_PAGES)) {
       throw new AppError(422, 'LEVEL_SCHEDULE_CITATION', 'Use a retained original page citation of this building.');
     }
   }
