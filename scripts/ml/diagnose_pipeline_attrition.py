@@ -457,16 +457,22 @@ def largest_category(table: dict[str, dict]) -> str:
     return max(CATEGORIES, key=lambda category: counts[category])
 
 
+def verdict(is_helpful: bool) -> str:
+    return "helps" if is_helpful else "does not help"
+
+
 def conclusion(tables: dict, compared: dict) -> str:
-    table = tables["primary"]["0.45"]
-    lost = table["all"]["with_raw_match"]
-    category = largest_category(table)
-    verdicts = ", ".join(f"{key}: {'helps' if value['helps'] else 'does not help'}" for key, value in compared.items())
-    gains = ", ".join(f"{key} {value['recall_gain']:+.4f}" for key, value in compared.items())
+    table = tables["primary"]["0.45"]["all"]
+    own = tables["supplementary_at_own_score"]["all"]
+    gains = "; ".join(f"at {key} {value['recall_gain']:+.4f}" for key, value in compared.items())
+    verdicts = " and ".join(f"{key} ({verdict(value['helps'])})" for key, value in compared.items())
     return (
-        f"At 0.45, {lost} DEV truths have a raw match yet no pipeline match; the largest cause is {category} "
-        f"({table['all']['categories'][category]}). Score-ordered mask NMS changes recall by {gains}; by the "
-        f"preregistered rule it {verdicts}."
+        f"Of {own['with_raw_match']} DEV truths missed at 0.5 that have a raw match, "
+        f"{own['categories'][RECOVERED]} are matched once the threshold sits just below the match's score and "
+        f"{own['categories']['claimed_by_higher_score']} are still lost to painting claimed by a higher-scored mask; "
+        f"at 0.45 itself only {table['with_raw_match']} truths are lost after the model, "
+        f"{table['categories']['claimed_by_higher_score']} of them to claiming. "
+        f"Score-ordered mask NMS changes DEV recall {gains}; by the preregistered rule it {verdicts}."
     )
 
 
@@ -515,9 +521,9 @@ def contact_sheet(records: list[dict], jobs: dict[str, dict], directory: Path, c
     return written
 
 
-def build_jobs(run_id: str) -> tuple[list[dict], dict, dict]:
+def build_jobs(source_run: str) -> tuple[list[dict], dict, dict]:
     coco, receipt, by_image = dev_inputs()
-    directory = CACHE_ROOT / run_id
+    directory = CACHE_ROOT / source_run
     manifest = read_json(directory / "manifest.json")
     if manifest["model_sha256"] != receipt["model"]["sha256"]:
         raise ValueError("Cached scores come from different weights")
@@ -537,8 +543,8 @@ def parity_proof(records: list[dict], receipt: dict) -> dict[str, Any]:
     return parity([metric_counts(records, REFERENCE, "production")], receipt)
 
 
-def run_parity(run_id: str) -> None:
-    jobs, receipt, _ = build_jobs(run_id)
+def run_parity(source_run: str) -> None:
+    jobs, receipt, _ = build_jobs(source_run)
     with Pool(WORKERS) as pool:
         records = pool.map(production_counts, jobs, chunksize=8)
     print(json.dumps(parity_proof(records, receipt)))
