@@ -1,12 +1,10 @@
 import { Link, useParams } from 'react-router';
 import { DownloadSimple, WarningCircle } from '@phosphor-icons/react';
-import { Button, DescriptionList, EmptyState, PropertyCard, Skeleton, StrataSection, UlpinCode, formatDate } from '@ulpin/ui';
-import { DRAFT_FACT } from '../features/identity/draft';
+import { Button, DescriptionList, EmptyState, Skeleton, StrataSection, UlpinCode, formatDate } from '@ulpin/ui';
+import { DraftCard } from '../features/identity/DraftCard';
 import { DraftNotice } from '../features/identity/DraftNotice';
-import { LOCAL_CHAIN_WORDS, useLocalChain } from '../features/identity/localChain';
-import { Qr } from '../features/identity/Qr';
+import { useLocalChain } from '../features/identity/localChain';
 import { useSpaceWorkflow } from '../features/workflow/useWorkflow';
-import { shortHash } from '../local/workflow';
 import { Crumbs } from './PortalFrame';
 import { PublicScene } from './PublicScene';
 import { usePublicBuilding, usePublicMap, usePublicRecord } from './queries';
@@ -82,10 +80,8 @@ export function RecordPage() {
       </div>
       {r.code && verify ? (
         <div className={styles.printOnly} aria-hidden="true">
-          <PropertyCard title={title} code={r.code} location={r.location} revision={`r${r.revision}`}
-            hash={shortHash(r.revisionHash)} chain={LOCAL_CHAIN_WORDS[chain]}
-            qr={<Qr value={verify} size={88} label="QR code: verification page" />}
-            facts={[DRAFT_FACT, ...facts.slice(0, 4)]} />
+          <DraftCard title={title} code={r.code} location={r.location} revision={r.revision}
+            hash={r.revisionHash} chain={chain} link={verify} facts={facts.slice(0, 4)} />
         </div>
       ) : null}
     </div>

@@ -6,7 +6,7 @@ import {
 import { shortHash, type SpaceWorkflow, type WorkflowEvent } from '../../local/workflow';
 import { useResolveCode } from '../workflow/useWorkflow';
 import { useCardFacts } from '../identity/cardFacts';
-import { draftLead } from '../identity/draft';
+import { DRAFT_MADE, draftLead } from '../identity/draft';
 import { DraftNotice } from '../identity/DraftNotice';
 import { LOCAL_CHAIN_TONES, LOCAL_CHAIN_WORDS, useLocalChain, type LocalChain } from '../identity/localChain';
 import { usePublicCode } from '../../portal/queries';
@@ -61,6 +61,7 @@ function Result({ workflow, revision, chain }: {
   const head = workflow.events[0]!;
   const lead = draftLead(revision, head.revision);
   const card = useCardFacts(workflow);
+  const made = { label: DRAFT_MADE, value: workflow.assignedAt ? formatDate(workflow.assignedAt) : 'Unknown' };
   return (
     <>
       <DraftNotice />
@@ -69,7 +70,7 @@ function Result({ workflow, revision, chain }: {
         <h1 className="ul-heading">{card?.buildingName ? `${card.spaceName}, ${card.buildingName}` : workflow.spaceName}</h1>
         <UlpinCode code={workflow.code} location={card?.location ?? null} state="draft" />
         <DescriptionList items={[
-          ...(card?.facts ?? [{ label: 'Assigned', value: workflow.assignedAt ? formatDate(workflow.assignedAt) : 'Unknown' }]),
+          ...(card?.facts ?? [made]),
           { label: 'Revision hash', value: <span className="ul-mono">{shortHash(head.hash)}</span> },
         ]} />
       </section>
