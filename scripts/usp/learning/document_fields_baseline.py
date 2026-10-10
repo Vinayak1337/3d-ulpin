@@ -745,8 +745,8 @@ def pixel_tile_boxes(width: float, height: float, scale: float) -> list[list[flo
     return tile_boxes(width, height, edge, edge * TILE_PIXEL_OVERLAP)
 
 
-def render_tile(page, box: list[float], scale: float, target: Path):
-    """Grayscale render of one tile at the scan density; the PNG is retained next to its TSV."""
+def render_tile(page, box: list[float], scale: float, target: Path) -> tuple[int, int]:
+    """Grayscale render of one tile at the scan density, saved as PNG; returns the pixel origin of the render."""
     import fitz
 
     pixmap = page.get_pixmap(matrix=fitz.Matrix(scale, scale), clip=fitz.Rect(*box), colorspace=fitz.csGRAY,
@@ -755,12 +755,12 @@ def render_tile(page, box: list[float], scale: float, target: Path):
         raise ValueError("tile render exceeds the pixel bound")
     pixmap.set_dpi(round(scale * PDF_POINTS_PER_INCH), round(scale * PDF_POINTS_PER_INCH))
     pixmap.save(target)
-    return pixmap
+    return pixmap.x, pixmap.y
 
 
-def tile_words(tsv: str, pixmap, scale: float, page_size: tuple[float, float]) -> list[dict]:
+def tile_words(tsv: str, origin: tuple[int, int], scale: float, page_size: tuple[float, float]) -> list[dict]:
     """Confident Tesseract words of one tile, boxed in source-page points."""
-    rows = csv.DictReader(io.StringIO(tsv), delimiter="	", quoting=csv.QUOTE_NONE)
+    rows = csv.DictReader(io.StringIO(tsv), delimiter="\t", quoting=csv.QUOTE_NONE)
     if rows.fieldnames != TSV_COLUMNS:
         raise ValueError("invalid TSV header")
     words = []
@@ -768,10 +768,9 @@ def tile_words(tsv: str, pixmap, scale: float, page_size: tuple[float, float]) -
         confidence = float(row["conf"])
         if row["level"] != "5" or not row["text"].strip() or confidence < WORD_MIN_CONFIDENCE:
             continue
-        left, top = int(row["left"]), int(row["top"])
-        pixels = [left, top, left + int(row["width"]), top + int(row["height"])]
-        box = [(pixmap.x + pixels[0]) / scale, (pixmap.y + pixels[1]) / scale,
-               (pixmap.x + pixels[2]) / scale, (pixmap.y + pixels[3]) / scale]
+        left, top = origin[0] + int(row["left"]), origin[1] + int(row["top"])
+        right, bottom = left + int(row["width"]), top + int(row["height"])
+        box = [left / scale, top / scale, right / scale, bottom / scale]
         box = [min(max(box[0], 0.0), page_size[0]), min(max(box[1], 0.0), page_size[1]),
                min(max(box[2], 0.0), page_size[0]), min(max(box[3], 0.0), page_size[1])]
         words.append({"text": row["text"], "box": box, "confidence": confidence})
@@ -808,20 +807,18 @@ def dedupe_words(words: list[dict]) -> list[dict]:
     return kept
 
 
-def ocr_scan_tile(job: dict, page, box: list[float], index: int) -> tuple[dict, list[dict]]:
-    """Render and OCR one tile; a failed tile is recorded as ocr_unavailable and contributes no words."""
-    target = job["folder"] / f"p{job['number']:02d}-t{index:02d}"
-    pixmap = render_tile(page, box, job["scale"], target.with_suffix(".png"))
-    command = [str(job["tesseract"]), str(target.with_suffix(".png")), "stdout", "--tessdata-dir",
-               str(job["tessdata"]), "-l", "eng", "--psm", "11", "tsv"]
+def ocr_scan_tile(job: dict, box: list[float], png: Path, origin: tuple[int, int]) -> tuple[dict, list[dict]]:
+    """OCR one rendered tile; a failed tile is recorded as ocr_unavailable and contributes no words."""
+    command = [str(job["tesseract"]), str(png), "stdout", "--tessdata-dir", str(job["tessdata"]),
+               "-l", "eng", "--psm", "11", "tsv"]
     try:
         completed = subprocess.run(command, env=ocr_environment(job["tesseract"], job["tessdata"]),
                                    stdin=subprocess.DEVNULL, capture_output=True, timeout=TESSERACT_TILE_SECONDS,
                                    check=True)
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as error:
         return {"box": box, "status": "ocr_unavailable", "issues": [type(error).__name__]}, []
-    target.with_suffix(".tsv").write_bytes(completed.stdout)
-    words = tile_words(completed.stdout.decode("utf-8"), pixmap, job["scale"], job["page_size"])
+    png.with_suffix(".tsv").write_bytes(completed.stdout)
+    words = tile_words(completed.stdout.decode("utf-8"), origin, job["scale"], job["page_size"])
     return {"box": box, "status": "complete", "issues": [], "words": len(words)}, words
 
 
@@ -832,9 +829,11 @@ def tiled_page_entry(page, number: int, settings: argparse.Namespace, pool) -> d
     folder = settings.output / "ocr-tiles" / settings.expected_source_sha256[:12]
     folder.mkdir(parents=True, exist_ok=True)
     job = {"scale": dpi / PDF_POINTS_PER_INCH, "tesseract": settings.tesseract, "tessdata": settings.tessdata,
-           "folder": folder, "number": number, "page_size": (width, height)}
+           "page_size": (width, height)}
     boxes = pixel_tile_boxes(width, height, job["scale"])
-    results = list(pool.map(lambda pair: ocr_scan_tile(job, page, *pair), zip(boxes, range(len(boxes)))))
+    pngs = [folder / f"p{number:02d}-t{index:02d}.png" for index in range(len(boxes))]
+    origins = [render_tile(page, box, job["scale"], png) for box, png in zip(boxes, pngs)]
+    results = list(pool.map(lambda args: ocr_scan_tile(job, *args), zip(boxes, pngs, origins)))
     tiles = [tile for tile, _ in results]
     words = dedupe_words([word for _, tile_list in results for word in tile_list])
     rows = join_rows(words)

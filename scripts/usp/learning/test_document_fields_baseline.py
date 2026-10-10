@@ -5,7 +5,6 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from types import SimpleNamespace
 
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -137,8 +136,7 @@ class NativeResolutionTileTest(unittest.TestCase):
         header = "\t".join(rules.TSV_COLUMNS)
         strong = "\t".join(["5", "1", "1", "1", "1", "1", "120", "60", "60", "30", "92.5", "B+G+6"])
         weak = "\t".join(["5", "1", "1", "1", "1", "2", "10", "10", "20", "20", "41.0", "noise"])
-        pixmap = SimpleNamespace(x=300, y=600)
-        words = rules.tile_words("\n".join([header, strong, weak]), pixmap, 2.0, (1000.0, 1000.0))
+        words = rules.tile_words("\n".join([header, strong, weak]), (300, 600), 2.0, (1000.0, 1000.0))
         self.assertEqual(words, [{"text": "B+G+6", "box": [210.0, 330.0, 240.0, 345.0], "confidence": 92.5}])
 
 
@@ -159,10 +157,11 @@ class DevelopmentCropTest(unittest.TestCase):
             page = document[4]
             dpi = rules.scan_dpi(page)
             scale = dpi / rules.PDF_POINTS_PER_INCH
-            job = {"scale": scale, "tesseract": TESSERACT, "tessdata": TESSDATA, "folder": Path(folder),
-                   "number": 5, "page_size": (page.rect.width, page.rect.height)}
+            job = {"scale": scale, "tesseract": TESSERACT, "tessdata": TESSDATA,
+                   "page_size": (page.rect.width, page.rect.height)}
             box = rules.pixel_tile_boxes(page.rect.width, page.rect.height, scale)[37]
-            tile, words = rules.ocr_scan_tile(job, page, box, 37)
+            png = Path(folder) / "p05-t37.png"
+            tile, words = rules.ocr_scan_tile(job, box, png, rules.render_tile(page, box, scale, png))
         found = [item["value"] for row in rules.join_rows(rules.dedupe_words(words))
                  for item in rules.find_floor_expressions(row["text"])]
         self.assertEqual((tile["status"], dpi), ("complete", 300.0))
