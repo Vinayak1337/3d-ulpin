@@ -197,9 +197,14 @@
       "use": "Historical A3 truth and receipt reproduce against the unchanged original metadata bytes."
     },
     "d1c": {
-      "familyIds": [],
-      "status": "blocked_no_eligible_property_holdout",
-      "reason": "No newly discovered property original passed privacy and publisher-dictionary qualification.",
+      "familyIds": ["h1", "h2"],
+      "evaluatorManifest": {
+        "externalPath": "E:/BhuAayam-data/task-data/d1c/evaluator-manifest-d1d-v2.json",
+        "sha256": "c08d802fdd945f9530e91ab94db280858892de880e9a24d424d73c5027769249",
+        "bytes": 5611
+      },
+      "status": "blocked_threshold_shortfall",
+      "reason": "D1d replaces the empty checkpoint with two publisher-supported positive columns; targets unmet.",
       "teacherCalls": 0
     }
   }

@@ -1,15 +1,46 @@
 {
-  "task": "D1c",
-  "path": "E:/BhuAayam-data/task-data/d1c/heldout-truth.jsonl",
-  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-  "manifestSha256": "799c337913b5ccb4c380424133d5ae0bb78b14a1611ce74fbe1367ac344e86e8",
-  "files": 0,
-  "columns": 0,
-  "scorable": 0,
-  "positiveTargets": 0,
-  "families": [],
-  "status": "blocked_no_eligible_property_holdout",
-  "method": "Publisher-only freeze; no teacher/team labels. No qualifying new originals admitted.",
+  "task": "D1d",
+  "familySet": "d1c",
+  "path": "E:/BhuAayam-data/task-data/d1c/d1d-v1/heldout-truth.jsonl",
+  "sha256": "4fd1049c5bff5fcde3b54237d2561502c2f06197bf01e65bd5862d90a9a7797d",
+  "manifestSha256": "c08d802fdd945f9530e91ab94db280858892de880e9a24d424d73c5027769249",
+  "files": 2,
+  "columns": 4,
+  "scorable": 2,
+  "positiveTargets": 2,
+  "positiveCountsByTarget": {
+    "building.footprint": 2
+  },
+  "families": [
+    {
+      "family": "h1",
+      "columns": 2,
+      "scorable": 1,
+      "positiveTargets": 1
+    },
+    {
+      "family": "h2",
+      "columns": 2,
+      "scorable": 1,
+      "positiveTargets": 1
+    }
+  ],
+  "status": "blocked_threshold_shortfall",
+  "thresholdsMet": false,
+  "bridgeSha256": "622851e96a712bc5ef26fbb68d4828f114beb57d5813141752021d7511264b7d",
+  "splitAssignmentSha256": "14b313184db20f8d8244680fd4b2fba7d7786c117651599e3d54f447f2847729",
+  "evaluatorSourcesSha256": "9a1aba1349b91280976db11f60406d64ec84b334431635bd1c04736c58961e47",
+  "replacesCheckpointReceiptSha256": "1fa537f23c199a0ab465db6ab003c56210dce6f562ec73f8df47cf2ad31703c1",
+  "method": "Literal publisher-documentation bridge; semantic column truth, not physical/registry truth.",
+  "rules": [
+    "Positive targets require an explicit publisher meaning matching the canonical definition.",
+    "Area, length and height require a literal publisher-stated unit; otherwise truth_absent.",
+    "Documented non-property concepts and internal identifiers without an exact target are unknown.",
+    "Undocumented, ambiguous and compound nested fields are truth_absent; no leaf expansion.",
+    "Keep every source attribute, geometry, row and scalar literal; no inferred conversions.",
+    "Hash-sort publishers; alternate heldout/dev; undocumented holdout moves dev.",
+    "No heldout family, header, value or dictionary is sent to a teacher/provider."
+  ],
   "teacherCalls": 0,
   "trainingWrites": 0,
   "memoryWrites": 0,
