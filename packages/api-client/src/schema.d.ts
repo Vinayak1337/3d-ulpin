@@ -1260,7 +1260,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Retain cited plan-local room candidates or review an existing level association */
+        /** Retain plan-local room candidates, reject one or review an existing level association */
         post: operations["POST_api_v1_buildings_buildingId_candidates"];
         delete?: never;
         options?: never;
@@ -2817,7 +2817,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create a reviewed area draft from selected building pixels */
+        /** Review source building pixels; reject-only decisions create no package */
         post: operations["POST_api_v1_spatial_ml_items_itemId_footprint_drafts"];
         delete?: never;
         options?: never;
@@ -21634,6 +21634,14 @@ export interface components {
             candidateId: string;
             /** Format: uuid */
             levelId: string;
+            reason: string;
+        } | {
+            /** @enum {string} */
+            action: "reject";
+            /** Format: uuid */
+            requestKey: string;
+            expectedCanonicalRevision: string;
+            candidateId: string;
             reason: string;
         };
         POST_buildings_buildingId_candidates_Response_201_application_json: {
@@ -60175,7 +60183,7 @@ export interface components {
                     }[];
                     coverage: string[];
                 };
-            };
+            } | null;
             receipt: {
                 /** @enum {string} */
                 schemaVersion: "spatial-footprint-derivation/1";

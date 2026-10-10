@@ -13,7 +13,10 @@ import { readBoundedBytes } from '../../common/body';
 import { readMlJson } from './ml-json';
 import { PrivateSpatialGuard } from './private-spatial.guard';
 import { sendWebResponse } from '../../common/response';
-import { ApiResult, binary, mlBatch, mlItem, mlStatus, packageProjection, requestKey, uuid, requestWire as wire } from './spatial.openapi';
+import {
+  ApiResult, binary, footprintDraftResult, mlBatch, mlItem, mlStatus, packageProjection,
+  requestKey, uuid, requestWire as wire,
+} from './spatial.openapi';
 
 const JSON_LIMIT = 100_000;
 const sha = z.string().regex(/^[a-f0-9]{64}$/);
@@ -132,27 +135,13 @@ export class SpatialMlController {
 
   @Post('items/:itemId/footprint-drafts')
   @HttpCode(200)
-  @ApiOperation({ operationId: 'POST_api_v1_spatial_ml_items_itemId_footprint_drafts', summary: 'Create a reviewed area draft from selected building pixels' })
+  @ApiOperation({ operationId: 'POST_api_v1_spatial_ml_items_itemId_footprint_drafts',
+    summary: 'Review source building pixels; reject-only decisions create no package' })
   @ApiParam(itemParam)
   @ApiBody({ schema: wire(spatialMlFootprintDraftSchema) as never })
-  @ApiResult(200, { type: 'object', required: ['package', 'receipt'], properties: {
-    package: packageProjection,
-    receipt: { type: 'object', required: ['schemaVersion','itemId','jobId','inputFingerprint','originalSourceRevisionId','originalSha256','worldStatus','rasterSha256','calibration','selections','target','method','authority'],
-      properties: {
-        schemaVersion: { type: 'string', enum: ['spatial-footprint-derivation/1'] },
-        itemId: { type: 'string', format: 'uuid' }, jobId: { type: 'string', format: 'uuid' },
-        inputFingerprint: { type: 'string' }, originalSourceRevisionId: { type: 'string', format: 'uuid' },
-        originalSha256: { type: 'string', pattern: '^[a-f0-9]{64}$' }, worldStatus: { type: 'string' },
-        rasterSha256: { type: 'string', pattern: '^[a-f0-9]{64}$' },
-        calibration: { type: 'object', nullable: true },
-        georeference: { type: 'string', nullable: true, enum: ['source_geotiff'] },
-        decisions: { type: 'array', items: { type: 'object' } },
-        selections: { type: 'array', items: { type: 'object' } }, target: { type: 'object', required: ['areaId','frame','analysisCrs','origin','expectedRevision'],
-          properties: { areaId: { type:'string',format:'uuid' },frame:{type:'string'},analysisCrs:{type:'string'},origin:{type:'array',items:{type:'number'}},expectedRevision:{type:'integer'} } },
-        method: { type: 'string' }, authority: { type: 'string' },
-      }, additionalProperties: true },
-  } }, [400, 403, 404, 409, 413, 422, 503])
+  @ApiResult(200, footprintDraftResult, [400, 403, 404, 409, 413, 422, 503])
   async footprintDraft(@Param('itemId') rawId: string, @Req() request: Request) {
-    return createSpatialMlFootprintDraft(uuid.parse(rawId), spatialMlFootprintDraftSchema.parse(await readMlJson(request, JSON_LIMIT)));
+    return createSpatialMlFootprintDraft(uuid.parse(rawId),
+      spatialMlFootprintDraftSchema.parse(await readMlJson(request, JSON_LIMIT)));
   }
 }
