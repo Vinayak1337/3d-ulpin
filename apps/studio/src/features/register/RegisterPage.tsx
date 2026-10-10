@@ -19,15 +19,17 @@ import { levelSummary } from '../map/inspector/BuildingInspector';
 import { ledgerSpace, ledgerStatus, revisionChain, revisionKey } from '../map/ledger';
 import { polygonsOf } from '../map/footprints';
 import { useCanonicalFootprints } from '../map/canonicalScene';
+import { hasGeometry } from '../map/sceneGeometry';
 import { useBuildingScene } from '../map/useBuildingScene';
 import { CheckGroups } from '../review/CheckGroups';
 import { useBuildingActions, useBuildingWorkflow, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import { cityJson, download, fileStem } from './exporters';
+import { NoGeometry } from './NoGeometry';
 import { ReadingStatementsContext } from './ReadingNote';
 import { RegisterAbsent } from './RegisterAbsent';
-import { absentReason } from './registerState';
+import { NO_READING_STATEMENTS, absentReason, unstatedReadings } from './registerState';
 import { SourceList } from './SourceList';
-import { useReadingStatements } from './useReadingStatements';
+import { useReadingStatementsRead } from './useReadingStatements';
 import { printRegistry, registryDetail, registryHtml, registryPackage, registryTables, registryWorkbook } from './registry';
 import { featureCode, useUnitCards } from '../../api/queries';
 import type { ConsolidatedRegistryReport } from '../../../../../packages/contracts/src/building-registry-report';
@@ -89,8 +91,12 @@ function Register({ register }: { register: BuildingRegister }) {
   // Streamed areas carry their map layers as display features.
   const features = context?.displayFeatures ?? context?.features ?? NO_FEATURES;
   const feature = features.find((f) => f.id === property.id) ?? null;
-  const drawn = useCanonicalFootprints(register.area.id, property.id, features).footprints;
+  const canonicalScene = useCanonicalFootprints(register.area.id, property.id, features);
+  const drawn = canonicalScene.footprints;
   const { base, footprints, detail, groundM } = useBuildingScene(features, feature, model, ledger, levelId ? 'rights' : 'none', drawn);
+  // Stated only once the scene's reads have answered and hold nothing to draw for this building.
+  const sceneRead = Boolean(context) && !canonicalScene.pending && !canonicalScene.error;
+  const noGeometry = sceneRead && !hasGeometry(property.id, { footprints, detail });
   const level = model.levels.find((l) => l.id === levelId) ?? null;
   const record = recordId ? model.spaceById.get(recordId) ?? null : null;
   const recordWorkflow = record ? byId.get(record.id) : undefined;
@@ -196,6 +202,7 @@ function Register({ register }: { register: BuildingRegister }) {
         <div className={styles.body}>
           <div className={styles.sceneColumn}>
             <div className={styles.canvasWrap}>
+              {noGeometry ? <NoGeometry buildingId={property.id} /> : <>
               {context ? <SceneView look={mapLook} layers={mapLayers} className={styles.canvas} base={base} buildings={footprints} detail={detail} state={sceneState}
                 onPick={onPick} onView={() => setTick((t) => (t + 1) % 1_000_000)} onReady={setEngine}
                 label={`3D view of ${property.name}. The tables beside it list the same levels and units.`} /> : null}
@@ -215,6 +222,7 @@ function Register({ register }: { register: BuildingRegister }) {
                 </div>
               ) : null}
               {!context ? <div className={styles.sceneLoading}><Skeleton width={160} /></div> : null}
+              </>}
             </div>
             {compare && ledger?.deviation ? <p className={styles.caption}>{ledger.deviation.note}</p> : null}
           </div>
@@ -416,7 +424,9 @@ function Shares({ ledger, model, workflow }: { ledger: BuildingLedger | null | u
 function Documents({ register, ledger }: { register: BuildingRegister; ledger: BuildingLedger | null | undefined }) {
   const openEvidence = useOpenEvidence();
   // The consolidated read answers only for a recorded building (revision above 0).
-  const readings = useReadingStatements(register.property.id, register.property.revision > 0);
+  const reading = useReadingStatementsRead(register.property.id, register.property.revision > 0);
+  const readings = reading.data ?? NO_READING_STATEMENTS;
+  const unstated = unstatedReadings(reading.error);
   const sources = ledger?.sources ?? register.sources.map((s) => ({ sourceId: s.id, kind: 'table' as const, name: s.name, file: s.name, summary: `r${s.revision}` }));
   const bySource = new Map(register.sources.map((s) => [s.id, s]));
   return (
@@ -426,7 +436,9 @@ function Documents({ register, ledger }: { register: BuildingRegister; ledger: B
           sourceId: s.sourceId, label: s.name, locator: parseLocator({ locator: s.summary }),
         })} />
       </ReadingStatementsContext.Provider>
-    )} />
+    )}>
+      {unstated ? <span className="ul-caption">{unstated}</span> : null}
+    </Panel>
   );
 }
 
