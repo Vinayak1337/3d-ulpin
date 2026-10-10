@@ -2091,6 +2091,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/usp/packets/plans/entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Read the recorded source-statement entry a target plan may include; stores nothing */
+        post: operations["POST_api_v1_usp_packets_plans_entries"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usp/packets/{packetId}/receipt": {
         parameters: {
             query?: never;
@@ -2323,6 +2340,23 @@ export interface paths {
         put?: never;
         /** Generate a private one-page summary linked to an executed confirmed text/CSV, required-region, original-image or mixed PDF plan */
         post: operations["POST_api_v1_usp_property_cards_generate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/usp/property-cards/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** The rows a card made now from this executed plan would print. A preview is not a card: nothing is stored and it has no id. */
+        post: operations["POST_api_v1_usp_property_cards_preview"];
         delete?: never;
         options?: never;
         head?: never;
@@ -42719,6 +42753,79 @@ export interface components {
                 };
             };
         };
+        POST_usp_packets_plans_entries_Request_application_json: {
+            scope: {
+                /** @enum {string} */
+                kind: "snapshot";
+                scopeId: string;
+                world: {
+                    namespace: string;
+                    id: string;
+                };
+                manifestId: string;
+                snapshotDigest: string;
+                /** @enum {string} */
+                stage: "draft" | "recorded" | "retained";
+            };
+            target: {
+                ref: {
+                    namespace: string;
+                    id: string;
+                };
+                revision: number;
+            };
+        };
+        POST_usp_packets_plans_entries_Response_200_application_json: {
+            readonly data: {
+                readonly target: {
+                    readonly ref: {
+                        namespace: string;
+                        id: string;
+                    };
+                    revision: number;
+                };
+                readonly entries: {
+                    bindingId: string;
+                    /** @enum {string} */
+                    kind: "source_statement";
+                    label: string;
+                    readonly citation: {
+                        /** Format: uuid */
+                        sourceId: string;
+                        revision: number;
+                        locator: string;
+                        page: number;
+                        /** @description The recorded page-point box [left, top, right, bottom], not normalized coordinates. */
+                        region: (number)[];
+                    } | null;
+                    includable: boolean;
+                    reasonCode: string | null;
+                }[];
+            };
+            readonly meta: {
+                /** @enum {string} */
+                schemaVersion: "usp/1";
+                requestId: string;
+                scope: {
+                    /** @enum {string} */
+                    kind: "intake";
+                    workspaceId: string;
+                    version: number;
+                } | {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+            };
+        };
         POST_usp_packets_plans_enqueue_Request_application_json: {
             /** Format: uuid */
             planId: string;
@@ -49966,6 +50073,78 @@ export interface components {
                     pages: 1;
                 };
                 cardSha256: string;
+            };
+            readonly meta: {
+                /** @enum {string} */
+                schemaVersion: "usp/1";
+                requestId: string;
+                scope: {
+                    /** @enum {string} */
+                    kind: "intake";
+                    workspaceId: string;
+                    version: number;
+                } | {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
+            };
+        };
+        POST_usp_property_cards_preview_Request_application_json: {
+            /** Format: uuid */
+            planId: string;
+            planVersion: number;
+            /** Format: uuid */
+            cardId: string | null;
+            /** Format: date-time */
+            expiresAt: string;
+            guard: {
+                /** @enum {string} */
+                mode: "create";
+            } | {
+                /** @enum {string} */
+                mode: "update";
+                expectedVersion: number;
+                expectedManifestId?: string;
+            };
+        };
+        POST_usp_property_cards_preview_Response_200_application_json: {
+            /** @description The rows a card made now from this executed plan would print. A preview is not a card: nothing is stored and it has no id. */
+            readonly data: {
+                /** @enum {string} */
+                mode: "create" | "update";
+                revision: number;
+                readonly facts: {
+                    key: string;
+                    label: string;
+                    /** @enum {string} */
+                    state: "available" | "unavailable" | "not_assessed";
+                    value: string | null;
+                    reasonCode: string | null;
+                }[];
+                /** Format: date-time */
+                expiresAt: string;
+                readonly scope: {
+                    /** @enum {string} */
+                    kind: "snapshot";
+                    scopeId: string;
+                    readonly world: {
+                        namespace: string;
+                        id: string;
+                    };
+                    manifestId: string;
+                    snapshotDigest: string;
+                    /** @enum {string} */
+                    stage: "draft" | "recorded" | "retained";
+                };
             };
             readonly meta: {
                 /** @enum {string} */
@@ -82359,6 +82538,110 @@ export interface operations {
             };
         };
     };
+    POST_api_v1_usp_packets_plans_entries: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description JSON, maximum 1 MiB of received bytes */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_usp_packets_plans_entries_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Private exact-scope USP result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_packets_plans_entries_Response_200_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+        };
+    };
     GET_api_v1_usp_packets_packetId_receipt: {
         parameters: {
             query?: never;
@@ -83334,6 +83617,110 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["POST_usp_property_cards_generate_Response_200_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description USP denial or common loopback Host/Origin guard denial; no private source bytes or details */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_403_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+            /** @description USP error envelope; no private source bytes or details */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_evidence_survey_report_context_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_usp_property_cards_preview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description JSON, maximum 1 MiB of received bytes */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_usp_property_cards_preview_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Private exact-scope USP result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_usp_property_cards_preview_Response_200_application_json"];
                 };
             };
             /** @description USP error envelope; no private source bytes or details */

@@ -24791,6 +24791,189 @@
         "x-dataset-catalogue": "/api/docs/datasets.json"
       }
     },
+    "/api/v1/usp/packets/plans/entries": {
+      "post": {
+        "operationId": "POST_api_v1_usp_packets_plans_entries",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "JSON, maximum 1 MiB of received bytes",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_usp_packets_plans_entries_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Private exact-scope USP result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_packets_plans_entries_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "USP denial or common loopback Host/Origin guard denial; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Read the recorded source-statement entry a target plan may include; stores nothing",
+        "tags": [
+          "USP scoped packets"
+        ],
+        "x-source-file": "apps/api/src/modules/evidence/evidence.controllers.ts",
+        "x-batch": "PACK-K12",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/evidence/operation-manifest.json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
     "/api/v1/usp/packets/{packetId}/receipt": {
       "get": {
         "operationId": "GET_api_v1_usp_packets_packetId_receipt",
@@ -26702,6 +26885,189 @@
         ],
         "x-source-file": "apps/api/src/modules/evidence/property-card.controller.ts",
         "x-batch": "CARD-01",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/evidence/operation-manifest.json",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/usp/property-cards/preview": {
+      "post": {
+        "operationId": "POST_api_v1_usp_property_cards_preview",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "JSON, maximum 1 MiB of received bytes",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POST_usp_property_cards_preview_Request_application_json"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Private exact-scope USP result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_property_cards_preview_Response_200_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "USP denial or common loopback Host/Origin guard denial; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_403_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "USP error envelope; no private source bytes or details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_usp_evidence_survey_report_context_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "The rows a card made now from this executed plan would print. A preview is not a card: nothing is stored and it has no id.",
+        "tags": [
+          "USP private exact-revision property cards"
+        ],
+        "x-source-file": "apps/api/src/modules/evidence/property-card.controller.ts",
+        "x-batch": "CARD-K12",
         "x-disposition": "added",
         "x-code-status": "implemented-native",
         "x-runtime-verified": false,
@@ -252130,6 +252496,378 @@
         ],
         "additionalProperties": false
       },
+      "POST_usp_packets_plans_entries_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "scope": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "snapshot"
+                ]
+              },
+              "scopeId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+              },
+              "world": {
+                "type": "object",
+                "properties": {
+                  "namespace": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                  },
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "required": [
+                  "namespace",
+                  "id"
+                ],
+                "additionalProperties": false
+              },
+              "manifestId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+              },
+              "snapshotDigest": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+              },
+              "stage": {
+                "type": "string",
+                "enum": [
+                  "draft",
+                  "recorded",
+                  "retained"
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "scopeId",
+              "world",
+              "manifestId",
+              "snapshotDigest",
+              "stage"
+            ],
+            "additionalProperties": false
+          },
+          "target": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "object",
+                "properties": {
+                  "namespace": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                  },
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "required": [
+                  "namespace",
+                  "id"
+                ],
+                "additionalProperties": false
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "ref",
+              "revision"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "scope",
+          "target"
+        ],
+        "additionalProperties": false
+      },
+      "POST_usp_packets_plans_entries_Response_200_application_json": {
+        "readOnly": true,
+        "type": "object",
+        "properties": {
+          "data": {
+            "readOnly": true,
+            "type": "object",
+            "properties": {
+              "target": {
+                "readOnly": true,
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "namespace": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                      },
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      }
+                    },
+                    "required": [
+                      "namespace",
+                      "id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "ref",
+                  "revision"
+                ],
+                "additionalProperties": false
+              },
+              "entries": {
+                "readOnly": true,
+                "minItems": 1,
+                "maxItems": 1,
+                "type": "array",
+                "items": {
+                  "readOnly": true,
+                  "type": "object",
+                  "properties": {
+                    "bindingId": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "source_statement"
+                      ]
+                    },
+                    "label": {
+                      "type": "string",
+                      "pattern": "^[^\\u0000-\\u001f\\u007f]{1,120}(?![\\s\\S])"
+                    },
+                    "citation": {
+                      "nullable": true,
+                      "readOnly": true,
+                      "type": "object",
+                      "properties": {
+                        "sourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "revision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "locator": {
+                          "type": "string",
+                          "pattern": "^[^\\u0000-\\u001f\\u007f]{1,500}(?![\\s\\S])"
+                        },
+                        "page": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "region": {
+                          "type": "array",
+                          "items": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          },
+                          "minItems": 4,
+                          "maxItems": 4,
+                          "description": "The recorded page-point box [left, top, right, bottom], not normalized coordinates."
+                        }
+                      },
+                      "required": [
+                        "sourceId",
+                        "revision",
+                        "locator",
+                        "page",
+                        "region"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "includable": {
+                      "type": "boolean"
+                    },
+                    "reasonCode": {
+                      "nullable": true,
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                    }
+                  },
+                  "required": [
+                    "bindingId",
+                    "kind",
+                    "label",
+                    "citation",
+                    "includable",
+                    "reasonCode"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "target",
+              "entries"
+            ],
+            "additionalProperties": false
+          },
+          "meta": {
+            "readOnly": true,
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "string",
+                "enum": [
+                  "usp/1"
+                ]
+              },
+              "requestId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+              },
+              "scope": {
+                "oneOf": [
+                  {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "intake"
+                        ]
+                      },
+                      "workspaceId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "version": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "workspaceId",
+                      "version"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "snapshot"
+                        ]
+                      },
+                      "scopeId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "world": {
+                        "readOnly": true,
+                        "type": "object",
+                        "properties": {
+                          "namespace": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                          },
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                          }
+                        },
+                        "required": [
+                          "namespace",
+                          "id"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "manifestId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "snapshotDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                      },
+                      "stage": {
+                        "type": "string",
+                        "enum": [
+                          "draft",
+                          "recorded",
+                          "retained"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "scopeId",
+                      "world",
+                      "manifestId",
+                      "snapshotDigest",
+                      "stage"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "required": [
+              "schemaVersion",
+              "requestId",
+              "scope"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "additionalProperties": false
+      },
       "POST_usp_packets_plans_enqueue_Request_application_json": {
         "type": "object",
         "properties": {
@@ -293192,6 +293930,348 @@
               "cardSha256"
             ],
             "additionalProperties": false
+          },
+          "meta": {
+            "readOnly": true,
+            "type": "object",
+            "properties": {
+              "schemaVersion": {
+                "type": "string",
+                "enum": [
+                  "usp/1"
+                ]
+              },
+              "requestId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+              },
+              "scope": {
+                "oneOf": [
+                  {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "intake"
+                        ]
+                      },
+                      "workspaceId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "version": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "workspaceId",
+                      "version"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "snapshot"
+                        ]
+                      },
+                      "scopeId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "world": {
+                        "readOnly": true,
+                        "type": "object",
+                        "properties": {
+                          "namespace": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                          },
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                          }
+                        },
+                        "required": [
+                          "namespace",
+                          "id"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "manifestId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      },
+                      "snapshotDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                      },
+                      "stage": {
+                        "type": "string",
+                        "enum": [
+                          "draft",
+                          "recorded",
+                          "retained"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "scopeId",
+                      "world",
+                      "manifestId",
+                      "snapshotDigest",
+                      "stage"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "required": [
+              "schemaVersion",
+              "requestId",
+              "scope"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "data",
+          "meta"
+        ],
+        "additionalProperties": false
+      },
+      "POST_usp_property_cards_preview_Request_application_json": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "planVersion": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 2147483647
+          },
+          "cardId": {
+            "nullable": true,
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "guard": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "create"
+                    ]
+                  }
+                },
+                "required": [
+                  "mode"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "update"
+                    ]
+                  },
+                  "expectedVersion": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "expectedManifestId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  }
+                },
+                "required": [
+                  "mode",
+                  "expectedVersion"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "required": [
+          "planId",
+          "planVersion",
+          "cardId",
+          "expiresAt",
+          "guard"
+        ],
+        "additionalProperties": false
+      },
+      "POST_usp_property_cards_preview_Response_200_application_json": {
+        "readOnly": true,
+        "type": "object",
+        "properties": {
+          "data": {
+            "readOnly": true,
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "create",
+                  "update"
+                ]
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 2147483647
+              },
+              "facts": {
+                "readOnly": true,
+                "minItems": 1,
+                "maxItems": 24,
+                "type": "array",
+                "items": {
+                  "readOnly": true,
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "pattern": "^[^\\u0000-\\u001f\\u007f]{1,64}(?![\\s\\S])"
+                    },
+                    "label": {
+                      "type": "string",
+                      "pattern": "^[^\\u0000-\\u001f\\u007f]{1,128}(?![\\s\\S])"
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "available",
+                        "unavailable",
+                        "not_assessed"
+                      ]
+                    },
+                    "value": {
+                      "nullable": true,
+                      "type": "string",
+                      "pattern": "^[^\\u0000-\\u001f\\u007f]{1,4096}(?![\\s\\S])"
+                    },
+                    "reasonCode": {
+                      "nullable": true,
+                      "type": "string",
+                      "pattern": "^[^\\u0000-\\u001f\\u007f]{1,128}(?![\\s\\S])"
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "label",
+                    "state",
+                    "value",
+                    "reasonCode"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "expiresAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              "scope": {
+                "readOnly": true,
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "snapshot"
+                    ]
+                  },
+                  "scopeId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  },
+                  "world": {
+                    "readOnly": true,
+                    "type": "object",
+                    "properties": {
+                      "namespace": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_.-]{0,63}(?![\\s\\S])"
+                      },
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                      }
+                    },
+                    "required": [
+                      "namespace",
+                      "id"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "manifestId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}(?![\\s\\S])"
+                  },
+                  "snapshotDigest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                  },
+                  "stage": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "recorded",
+                      "retained"
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "scopeId",
+                  "world",
+                  "manifestId",
+                  "snapshotDigest",
+                  "stage"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "mode",
+              "revision",
+              "facts",
+              "expiresAt",
+              "scope"
+            ],
+            "additionalProperties": false,
+            "description": "The rows a card made now from this executed plan would print. A preview is not a card: nothing is stored and it has no id."
           },
           "meta": {
             "readOnly": true,

@@ -64,7 +64,7 @@ async function capturedOriginalTx(client: PoolClient, ctx: RequestContext, input
   return source;
 }
 
-async function statementContextTx(client: PoolClient, ctx: RequestContext, input: AnyPdfPacketPlanInput) {
+export async function statementContextTx(client: PoolClient, ctx: RequestContext, input: AnyPdfPacketPlanInput) {
   assertLocalUsp(ctx);
   const target = await snapshotMemberTx(client, ctx, input, input.target) as SnapshotTarget;
   const record = statementRecord(target, input);
