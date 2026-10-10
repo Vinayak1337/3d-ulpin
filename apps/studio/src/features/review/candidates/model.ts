@@ -1,6 +1,7 @@
 import type { GetResponse } from '@ulpin/api-client';
 import type { MultiPolygon } from '@ulpin/scene';
 import type { StatusWord } from '@ulpin/ui';
+import type { RecordedCitation } from '../recorded/model';
 
 type AreaCanonical = GetResponse<'/api/v1/areas/{areaId}/canonical'>;
 type BuildingCanonical = GetResponse<'/api/v1/buildings/{buildingId}/canonical'>;
@@ -26,12 +27,8 @@ export interface CandidateDecision {
 /** A room's size exactly as the read states it, formatted for the card; the Studio computes nothing. */
 export type PlanEstimateView = { state: 'estimated'; extent: string; area: string } | { state: 'unknown' };
 
-export interface CandidateCitation {
-  sourceId: string;
-  /** The first characters of the source id, as the chip shows it; the record carries no file name. */
-  source: string;
-  locator: string;
-}
+/** A candidate's citation has the shape of a recorded label's, so both open the evidence viewer the same way. */
+export type CandidateCitation = RecordedCitation;
 
 export interface CandidateCard {
   id: string;
@@ -157,9 +154,22 @@ function titleOf(candidate: CanonicalCandidate, kind: CandidateKind): string {
   return `Roofprint ${candidate.candidateId.slice(0, 8)}`;
 }
 
-function citationOf(citation: Citation): CandidateCitation {
+function citationOf(citation: Citation, index: number): CandidateCitation {
   const { sourceId } = citation;
-  return { sourceId, source: sourceId.slice(0, 8), locator: locatorText(citation.locator) };
+  return {
+    key: `${sourceId}:${index}`,
+    sourceId,
+    source: sourceId.slice(0, 8),
+    locator: locatorText(citation.locator),
+    place: citation.locator,
+    sha256: citation.sourceSha256,
+    revision: citation.sourceRevision ?? null,
+  };
+}
+
+/** The accessible name of a citation's control: what it opens, by the source and place the chip shows. */
+export function citationOpenLabel(citation: CandidateCitation): string {
+  return `Open cited source ${citation.source} at ${citation.locator}`;
 }
 
 export function candidateCard(candidate: CanonicalCandidate, levels: readonly Level[] = []): CandidateCard | null {
