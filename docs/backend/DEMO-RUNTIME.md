@@ -34,8 +34,8 @@ Code changes merge on staging first, then roll here in a separately authorised r
 
 The roll-out never creates or resets the database, and `platform:start --profile demo` refuses to start when the
 served commit expects a migration the populated database has not run ("Demo schema missing"). An additive step is
-applied once by its own registered runner, from the demo checkout at the new commit, while the API still answers
-(before step 2), by the runtime owner only:
+applied once by its own registered runner, from the runtime owner's own worktree at the new commit (never by
+moving the serving checkout under running processes), while the old API still answers, before step 2:
 
 | Needed from commit | Migration | Command | Receipt |
 | --- | --- | --- | --- |
