@@ -15,9 +15,13 @@ by `SourceBuildingImportSchema` in `packages/contracts/src/canonical/building.ts
 their declared document keys. Declarations require `geometry:null`, `footprint:null`, `placement:unknown`,
 source-literal claims and document/page/locator citations. Originals use existing private document intake.
 Source-only prepare/review reports the analytical gap; commit records registry buildings with empty
-footprints and null-geometry physical declarations. It cannot replace geometry or rights. Human original
-citations use original authority, not staged extraction parts or teacher/model outputs. GIS geometry
-qualification remains unchanged. Reviewed here means local source-only acceptance, not statutory approval.
+footprints and null-geometry physical declarations. It cannot replace geometry or rights. Page citations
+use original authority, not staged extraction acceptance. Each claim now declares `transcription` as
+`{by:agent,agent:<task/model id>}` or `{by:officer}`. Agent transcriptions retain their citations but store
+`ai_extraction/unresolved` and project as `candidate`, not officer-entered source facts. Legacy source-only
+claims without transcriber metadata also project conservatively as candidates; their stored history remains
+unchanged because no post-commit provenance correction route fits. GIS geometry qualification remains unchanged.
+Reviewed records mean local source-only acceptance, not blanket confirmation of their claims or statutory approval.
 
 `format=administrative_context` uses the same route/package flow for a pinned native ArcGIS original and
 explicit sector ID/name mapping, with no building declarations. It records existing administrative-unit
@@ -30,6 +34,26 @@ K2's [Magnolia receipt](../evidence/gf-backend/k2/magnolia-canonical.json) keeps
 local frame unplaced, and no villa/unit schedule inferred. [OCR evidence](../evidence/gf-backend/k2/ocr-comparison.md)
 records validated local English assets, unsupported whole-page dimensions and one failed bounded region job;
 no OCR result lines or Hindi support are claimed.
+
+## Officer conflict command
+
+`POST /api/v1/buildings/{buildingId}/conflict-decisions` is the one private officer command for canonical
+conflicts. Send `Idempotency-Key` matching body `requestKey`, `expectedCanonicalRevision` (the current digest),
+`property`, `reason`, the exact checked page `citation`, and `outcome:selected` with an existing `chosenValue`,
+or `outcome:unresolved` without a value. No new literal/count can be supplied outside the retained alternatives.
+The command appends existing registry/physical revisions with actor, time and package lineage; exact replay
+does not append again. Stale writes return 409. Source claims and alternatives are never deleted.
+
+A selection projects the chosen value as `reviewed`, with `resolvedConflicts` retaining both alternatives and
+`conflictDecisions` retaining the decision history. A reviewed storey label still does not become an integer
+count or level schedule. An unresolved decision leaves null/conflicting headlines and the conflict visible.
+[Route review](../evidence/gf-backend/k2b/route-review.md) explains why the existing preparation/proposal routes
+could not adopt a committed canonical conflict. Tower truth does not settle G+41/G+42, so the
+[demo action](../evidence/gf-backend/k2b/officer-decision.json) is unresolved, needs source.
+
+K2b [OCR diagnosis](../evidence/gf-backend/k2b/ocr-diagnosis.md) fixes a missing native DLL in a new isolated
+runtime and records eng+hin asset availability. The single API region retry still failed with no text lines;
+Hindi execution, accuracy and accepted extracted fields remain unqualified.
 
 ## Two real examples (complete payloads linked)
 

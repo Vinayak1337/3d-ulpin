@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
+import { z } from 'zod';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import {
@@ -53,6 +54,23 @@ function checkProjection(input: SelectedRequest, decision: BuildingConflictDecis
   assert.equal(unchanged.conflictDecisions![0].outcome, 'unresolved');
 }
 
+function checkPublishedContract(): void {
+  const document = JSON.parse(readFileSync('docs/api/openapi.json', 'utf8'));
+  const operation = document.paths['/api/v1/buildings/{buildingId}/conflict-decisions'].post;
+  const contracts = [
+    [operation.requestBody.content['application/json'].schema, BuildingConflictDecisionRequestSchema],
+    [operation.responses['201'].content['application/json'].schema, BuildingConflictDecisionSchema],
+  ] as const;
+  for (const [reference, validator] of contracts) {
+    const expected = z.toJSONSchema(validator, { target: 'openapi-3.0' });
+    delete expected.$schema;
+    assert.deepEqual(document.components.schemas[reference.$ref.split('/').at(-1)], expected);
+  }
+  assert(operation.parameters.some((parameter: { name: string; required: boolean }) => (
+    parameter.name === 'Idempotency-Key' && parameter.required
+  )));
+}
+
 function checkRefusals(input: SelectedRequest, decision: BuildingConflictDecision): void {
   assert.throws(() => reviewedConflictDecision(retained, {
     ...input, expectedCanonicalRevision: '0'.repeat(64),
@@ -95,6 +113,7 @@ test('officer physical revisions retain the non-null original import package lin
 class TestModule {}
 
 test('checked-page decision preserves alternatives for both selection and unresolved outcomes', async () => {
+  checkPublishedContract();
   const previous = process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
   process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'contract-test-operator';
   const app = await NestFactory.create(TestModule, { logger: false, bodyParser: false });
