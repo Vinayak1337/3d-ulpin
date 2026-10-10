@@ -14,6 +14,10 @@ import {DocumentProposalsSaveSchema,DocumentProposalSnapshotViewSchema,DocumentP
   DocumentProposalDecisionHistorySchema} from '../packages/contracts/src/usp/document-proposals';
 import {DocumentProposalsController} from '../apps/api/src/modules/ingestion/document-proposals.controller';
 import {PrivateSpatialGuard} from '../apps/api/src/modules/spatial/private-spatial.guard';
+import type {QuotePage} from '../packages/server/src/modules/usp/ingestion/document-proposal-quotes';
+import {documentInput} from '../packages/server/src/modules/usp/ingestion/document-context';
+import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
+import {DocumentResultSchema} from '../packages/contracts/src/usp/document-ingestion';
 
 const root=process.env.ULPIN_DOCUMENT_PROPOSAL_FIXTURE??'E:/BhuAayam-data/task-data/d08-document-field-baseline-20261005';
 const sourceRows='E:/BhuAayam-data/task-data/d07-source-only-spatial-runtime-20261005-run02/pg-before.json';
@@ -43,7 +47,11 @@ function inputFor(sourceId:string){
     conflicts:p.crossMethodQuoteDifferences.filter((v:any)=>v.sourceId===sourceId).map((v:any)=>({proposalIds:v.proposalIds,reason:v.reason,state:'unresolved'})),
     unknowns:p.unknowns}};
 }
-function harness(useSecond=false){
+function uncheckedPacket(packet:any){
+  return {...packet,proposals:packet.proposals.map(({quotationCheck,...proposal}:any)=>proposal)};
+}
+function harness(useSecond=false,textPages:QuotePage[]=[],useStoredText=false){
+
   const original=JSON.parse(readFileSync(sourceRows,'utf8')).state;
   const first=fixture().packet.proposals[0].sourceId;
   const records=structuredClone(original.sources);
@@ -53,7 +61,9 @@ function harness(useSecond=false){
   const state={revision:2,archived:false,owner:subject,latest:1,pages:0,verified:0,inserts:0,
     onPage:undefined as undefined|(()=>void),onVerify:undefined as undefined|(()=>void),
     onLock:undefined as undefined|(()=>void),onInsert:undefined as undefined|(()=>void),
-    onHistoryRead:undefined as undefined|(()=>void),pageFrame:frame};
+    onHistoryRead:undefined as undefined|(()=>void),pageFrame:frame,
+    storedInput:null as any,storedBytes:null as Buffer|null,productHash:null as string|null,textReads:0,
+    onTextRead:undefined as undefined|(()=>void)};
   const operations=new Map<string,{payload_hash:string;result:any}>();
   let writeScope=false,caseLocked=false,sourceLocked=false;
   const client={query:async(sql:string,v:any[]=[])=>{
@@ -68,6 +78,11 @@ function harness(useSecond=false){
     if(sql.startsWith('SELECT * FROM sources'))return rows(records.filter((r:any)=>r.case_id===v[0]&&r.id===v[1]).map((r:any)=>({...r,
       inspection:{...r.inspection,documentOriginal:{...r.inspection.documentOriginal,subject:state.owner}}})));
     if(sql.startsWith('SELECT max(revision)'))return rows([{revision:state.latest}]);
+    if(sql.startsWith('SELECT payload FROM jobs WHERE id=$1')||sql.startsWith('SELECT payload,input_fingerprint'))
+      return rows([{payload:state.storedInput,input_fingerprint:fingerprint(state.storedInput)}]);
+    if(sql.startsWith('SELECT j.status,j.payload'))return rows([{status:'succeeded',logical_state:'succeeded',
+      payload:state.storedInput,input_sha256:fingerprint(state.storedInput),
+      result_ref:{sha256:state.productHash},completion_sha256:state.productHash}]);
     if(sql.startsWith("SELECT max((result#>>'{snapshot,decisionRevision}')")){
       const revisions=[...operations].filter(([key])=>{const [c,k,kind]=key.split('|');return c===v[0]&&kind===v[1]&&k.startsWith(v[2].slice(0,-1));})
         .map(([,r])=>r.result.snapshot.decisionRevision);return rows([{revision:Math.max(...revisions)}]);
@@ -96,7 +111,13 @@ function harness(useSecond=false){
       finally{writeScope=false;caseLocked=sourceLocked=false;}
     });tail=run.catch(()=>{});return run;
   }) as typeof transaction;
-  const service=new DocumentProposalsService({transaction:tx,verify:async(a,deadline)=>{
+  const service=new DocumentProposalsService({transaction:tx,
+    ...(useStoredText?{}:{text:async()=>({pages:textPages})}),
+    readTextObject:async key=>{
+      assert(!caseLocked&&!sourceLocked,'Stored text object I/O occurs outside insertion locks.');
+      assert.equal(key,`document-results/${state.storedInput.jobId}/${state.productHash}.json`);
+      state.textReads++;state.onTextRead?.();return state.storedBytes!;
+    },verify:async(a,deadline)=>{
     assert(!caseLocked&&!sourceLocked,'Original verification outside insertion locks.');assert(deadline>Date.now());
     assert.equal(a.sourceId,sourceId);assert.equal(a.sourceSha256,source.sha256);assert.equal(a.sourceBytes,Number(source.bytes));
     state.verified++;state.onVerify?.();
@@ -109,7 +130,27 @@ function harness(useSecond=false){
         boxConvention:'pymupdf_page_rectangles/1' as const,renderSupport:'unsupported' as const,url:null,locator:{kind:'pdf_page' as const,page:1},calibration:null}],
       anchors:[{locator:'page:1',page:1,region:null}]};state.onPage?.();return result as any;
   }});
-  return {service,state,operations,request,caseId,sourceId};
+  function storeOcrProduct(proposal:any){
+    const caseFrame={id:'UNASSIGNED',horizontalUnit:'m',verticalUnit:'m',benchmark:'UNASSIGNED'};
+    const current={id:caseId,revision:2,archived:false,frame:caseFrame,context:[],site_id:null};
+    const input=documentInput({current,source,binding:ingestionBinding(caseId),latest:true,
+      context:fingerprint({frame:caseFrame,context:[],siteId:null})},randomUUID(),'native_only',
+      {page:proposal.locator.page,region:proposal.locator.box});
+    const result=DocumentResultSchema.parse({version:'source-document/1',input,
+      native:{status:'needs_ocr',format:'pdf',readerSha256:input.readerSha256,
+        code:'NATIVE_TEXT_UNAVAILABLE',warnings:[],parts:[]},
+      model:{status:'not_requested',code:null,candidates:[],validationErrors:[],calls:[]},
+      ocr:{sourceSha256:input.sourceSha256,sourceRevision:1,sourcePage:1,requestedRegion:input.ocrSelection!.region,
+        sourcePageFrame:proposal.locator.frame,method:'ocr:tesseract-cli-5.5.1:sparse-tsv-v1',
+        toolStatus:'complete',outputStatus:'complete',textCompleteness:'unverified',issues:[],
+        items:[{text:proposal.lineQuote,label:'line',method:'ocr:tesseract-cli-sparse-tsv',
+          sourcePageBoxes:[{pageNumber:1,frame:'pdf_display_page_top_left_points',box:proposal.locator.box,
+            derivedFrom:'tesseract_tsv_pixels_via_mupdf_pixel_origin'}]}]},createdAt:new Date().toISOString()});
+    state.storedInput=input;state.storedBytes=Buffer.from(JSON.stringify(result));
+    state.productHash=sha256(state.storedBytes);
+    source.inspection.documentAccepted={jobId:input.jobId,sha256:state.productHash};
+  }
+  return {service,state,operations,request,caseId,sourceId,storeOcrProduct};
 }
 async function withSubject(work:()=>Promise<void>){const prior=process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;process.env.ULPIN_LOCAL_OPERATOR_SUBJECT=subject;
   try{await work();}finally{if(prior===undefined)delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT=prior;}}
@@ -118,16 +159,18 @@ test('actual T3-2 ten cited proposals save/exact-read/replay with literal captio
   const f=harness(),input=f.request(),saved=await f.service.save(f.caseId,f.sourceId,input);
   assert(DocumentProposalSnapshotViewSchema.safeParse(saved).success);assert.equal(saved.packet.proposals.length,10);
   assert.equal(saved.packet.proposals[0].quote,'TYPICAL FLOOR - 02 (13rd , 21st , 30th & 38th FLOOR)');
-  assert.deepEqual(saved.packet,input.packet);assert.equal(saved.packet.conflicts.length,1);
+  assert.deepEqual(uncheckedPacket(saved.packet),input.packet);assert.equal(saved.packet.conflicts.length,1);
   assert.equal(saved.method,'caller_supplied_provisional');assert.equal(saved.provenanceAuthority,'caller_supplied_unverified');
   assert.equal(saved.review.actor,subject);assert.equal(saved.review.humanAuthenticated,false);assert.equal(saved.review.independentGroundTruth,false);
-  assert.equal(saved.quotationVerification,'not_machine_verified');assert.equal(saved.learningLabel,false);assert.equal(saved.canonicalTarget,null);
+  assert.equal(saved.quotationVerification,'locator_checks_recorded');
+  assert.equal(saved.learningLabel,false);assert.equal(saved.canonicalTarget,null);
   assert.equal(f.state.pages,1);assert.equal(f.operations.size,2);
   assert.deepEqual(await f.service.save(f.caseId,f.sourceId,input),saved);assert.equal(f.state.pages,1);assert.equal(f.operations.size,2);
   assert.deepEqual(await f.service.read(f.caseId,f.sourceId,saved.snapshotId),saved);
   await assert.rejects(f.service.save(f.caseId,f.sourceId,{...input,packet:{...input.packet,unknowns:[...input.packet.unknowns,'changed']}}),error(409));
   f.state.revision=3;const later=await f.service.read(f.caseId,f.sourceId,saved.snapshotId);
-  assert.equal(later.currentCaseRevision,3);assert.equal(later.caseRevision,2);assert.deepEqual(later.packet,input.packet);
+  assert.equal(later.currentCaseRevision,3);assert.equal(later.caseRevision,2);
+  assert.deepEqual(uncheckedPacket(later.packet),input.packet);
 }));
 test('same-key recovery after unrelated case advance returns the committed snapshot without new operations or page inspection',options,()=>withSubject(async()=>{
   const f=harness(),input=f.request();
@@ -350,3 +393,104 @@ test('history controller keeps private no-store collection and exact-query seman
     assert(Reflect.getMetadata('__headers__',handler).some((h:any)=>h.name==='Cache-Control'&&h.value==='private, no-store'));
   }
 });
+
+function towerQuoteFixture(){
+  const candidatePath='docs/evidence/gf-ai/storeys/a5/candidates/haryana-2831-tower3.json';
+  const packet=JSON.parse(readFileSync(candidatePath,'utf8')).packet;
+  const path='E:/BhuAayam-data/task-data/a5/stores/'+packet.declaredOrigin.sha256+'.pages.json';
+  const bytes=readFileSync(path),store=JSON.parse(bytes.toString('utf8'));
+  assert.equal(store.source.sha256,packet.declaredOrigin.sha256);
+  const pages:QuotePage[]=Object.entries(store.pages).map(([number,entry]:[string,any])=>({
+    page:Number(number),frame:packet.proposals[0].locator.frame,lines:entry.lines,
+    basis:{kind:'ocr_observations',productSha256:sha256(bytes)}
+  }));
+  return {packet,pages};
+}
+test('real Tower 3 A5 packet keeps 20 quotes; one altered digit refuses 1 and keeps 19 before save',options,
+  ()=>withSubject(async()=>{
+    const {packet,pages}=towerQuoteFixture();
+    for(const altered of [false,true]){
+      const f=harness(true,pages),input=f.request();
+      input.packet=structuredClone(packet);f.state.pageFrame=packet.proposals[0].locator.frame;
+      assert.equal(input.source.sourceSha256,packet.declaredOrigin.sha256);
+      if(altered){const p=input.packet.proposals.find((p:any)=>p.quote==='G+42')!;
+        p.quote='G+43';p.lineQuote=p.lineQuote.replace('G+42','G+43');}
+      const saved=await f.service.save(f.caseId,f.sourceId,input);
+      assert.equal(saved.version,'source-document-proposals/2');
+      assert.equal(saved.packet.proposals.length,altered?19:20);
+      assert.equal(saved.packet.rejected.length,altered?1:0);
+      assert(saved.packet.proposals.every(p=>'quotationCheck' in p&&p.quotationCheck.outcome==='quote_at_locator'));
+      assert(saved.packet.proposals.every(p=>p.status==='needs_review'));assert.equal(saved.learningLabel,false);
+      assert.equal(saved.unresolved[0],'quote_truth');
+      if(altered){const r=saved.packet.rejected[0];assert.equal(r.reason,'quote_not_at_locator');
+        assert.deepEqual(r.locator,input.packet.proposals.find((p:any)=>p.quote==='G+43')!.locator);}
+      assert.deepEqual(await f.service.save(f.caseId,f.sourceId,input),saved);
+      assert.equal(f.state.pages,1);assert.equal(f.operations.size,2);
+    }
+  }));
+test('one good and one bad quote stores both populations and unresolved conflict; all refused still saves',options,
+  ()=>withSubject(async()=>{
+    const {packet,pages}=towerQuoteFixture();
+    for(const allBad of [false,true]){
+      const f=harness(true,pages),input=f.request();
+      input.packet={...packet,proposals:[structuredClone(packet.proposals[5]),structuredClone(packet.proposals[5])]};
+      input.packet.proposals[0].proposalId='good';input.packet.proposals[1].proposalId='bad';
+      input.packet.proposals[1].quote='G+43';input.packet.proposals[1].quoteCharacterSpan=null;
+      if(allBad){input.packet.proposals[0].quote='G+44';input.packet.proposals[0].quoteCharacterSpan=null;}
+      input.packet.conflicts=[{proposalIds:['good','bad'],reason:'control alternatives',state:'unresolved'}];
+      const saved=await f.service.save(f.caseId,f.sourceId,input);
+      assert.equal(saved.packet.proposals.length,allBad?0:1);assert.equal(saved.packet.rejected.length,allBad?2:1);
+      assert.deepEqual(saved.packet.conflicts,input.packet.conflicts);
+      assert(saved.packet.rejected.every(r=>r.reason==='quote_not_at_locator'));
+    }
+  }));
+test('moving failed quotes over rejected limit refuses the complete save with a named 422',options,
+  ()=>withSubject(async()=>{
+    const {packet,pages}=towerQuoteFixture(),f=harness(true,pages),input=f.request();
+    const p=structuredClone(packet.proposals[5]);p.quote='G+43';p.quoteCharacterSpan=null;
+    input.packet={...packet,proposals:[p],rejected:Array.from({length:256},(_,i)=>({entryId:`r${i}`,
+      lineQuote:null,reason:'retained control',locator:p.locator,declaredMethod:null,declaredObservation:null}))};
+    await assert.rejects(f.service.save(f.caseId,f.sourceId,input),error(422,'DOCUMENT_PROPOSALS_REJECTED_LIMIT'));
+    assert.equal(f.operations.size,0);
+  }));
+test('stored /1 snapshot still reads, lists in history and accepts a reviewed decision unchanged',historyOptions,
+  ()=>withSubject(async()=>{
+    const f=await historyFixture(),saved=await f.service.read(f.caseId,f.sourceId,f.retained.snapshotId);
+    assert.equal(saved.version,'source-document-proposals/1');
+    const history=await f.service.history(f.caseId,f.sourceId);
+    assert.equal(history.references[0].quotationVerification,'not_machine_verified');
+    const p=saved.packet.proposals[0];
+    const decision=await f.service.reviewDecision(f.caseId,f.sourceId,saved.snapshotId,{
+      requestKey:randomUUID(),expectedCaseRevision:2,source:{sourceRevision:saved.source.sourceRevision,
+        sourceSha256:saved.source.sourceSha256,sourceBytes:saved.source.sourceBytes},
+      proposal:{snapshotId:saved.snapshotId,snapshotRevision:1,
+        snapshotSha256:saved.snapshotSha256,proposalId:p.proposalId},
+      decision:'reviewed',reviewReason:'Compatibility control retains the original cited proposal.',
+      citation:{quote:p.quote,lineQuote:p.lineQuote,quoteCharacterSpan:p.quoteCharacterSpan,locator:p.locator},
+      missingPrerequisites:[]
+    });
+    assert.deepEqual(decision.originalProposal,p);
+    assert.deepEqual(await f.service.readDecision(f.caseId,f.sourceId,saved.snapshotId,decision.decisionId,
+      {revision:'1'}),decision);
+  }));
+test('production stored-text reader checks accepted OCR bytes, product hash and source pins before persistence',options,
+  ()=>withSubject(async()=>{
+    const {packet}=towerQuoteFixture(),f=harness(true,[],true),input=f.request();
+    input.packet={...packet,proposals:[packet.proposals[5]]};f.storeOcrProduct(input.packet.proposals[0]);
+    const saved=await f.service.save(f.caseId,f.sourceId,input),p=saved.packet.proposals[0];
+    assert('quotationCheck' in p);assert.equal(p.quotationCheck.outcome,'quote_at_locator');
+    assert.deepEqual(p.quotationCheck.basis,{kind:'ocr_observations',productSha256:f.state.productHash});
+    assert.equal(f.state.textReads,1);assert.equal(f.operations.size,2);
+    f.state.storedBytes=Buffer.from('{}');
+    await assert.rejects(f.service.save(f.caseId,f.sourceId,{...input,requestKey:randomUUID()}),
+      error(422,'DOCUMENT_RESULT_INTEGRITY'));
+    assert.equal(f.operations.size,2);
+  }));
+test('accepted OCR authority drift during stored-object I/O refuses before any operation insert',options,
+  ()=>withSubject(async()=>{
+    const {packet}=towerQuoteFixture(),f=harness(true,[],true),input=f.request();
+    input.packet={...packet,proposals:[packet.proposals[5]]};f.storeOcrProduct(input.packet.proposals[0]);
+    f.state.onTextRead=()=>{f.state.productHash='f'.repeat(64);};
+    await assert.rejects(f.service.save(f.caseId,f.sourceId,input),error(409));
+    assert.equal(f.operations.size,0);
+  }));

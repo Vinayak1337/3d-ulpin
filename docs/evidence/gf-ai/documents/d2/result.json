@@ -1,7 +1,26 @@
 {
   "task": "D2",
   "base": "e4623944",
-  "qualification": "Step 0 inspection only; no runtime or provider call.",
+  "qualification": "Part 1 offline proof; SQL and storage doubles, no runtime or provider call.",
+  "part1": {
+    "snapshotVersion": "source-document-proposals/2",
+    "quotationVerification": "locator_checks_recorded",
+    "truth": "quote_truth remains unresolved: presence in stored OCR is neither OCR accuracy nor fact truth.",
+    "good": {"file": "a5/candidates/haryana-2831-tower3.json", "kept": 20, "refused": 0, "codes": []},
+    "difficult": {"change": "p6 G+42 quote changed to G+43", "kept": 19, "refused": 1,
+      "codes": ["quote_not_at_locator"]},
+    "pageStore": "E:/BhuAayam-data/task-data/a5/stores/26c2d3101bfe*.pages.json",
+    "basis": "ocr_observations; SHA-256 of the exact page store in controls, accepted result SHA-256 in production",
+    "parity": {"table": "quote-cases.json", "cases": 9, "python": "ULPIN_PROFILE_PYTHON with -B",
+      "missingQuote": "Python drops it; the route preserves not_checked/no_quote as explicitly required."},
+    "tests": {"documentProposals": 18, "quoteCheck": 2, "documentClaims": 6,
+      "documentPages": 6, "storeyAgent": 8, "pageController": 1, "total": 41, "failed": 0, "skipped": 0},
+    "checks": {"typecheckBackend": 0, "studioTypecheck": 0, "scriptsAgentTsc": 0,
+      "openapiCheck": 0, "pythonApiCheck": 1, "diffCheck": 0},
+    "checkGap": "check.py: API-DOC runtime receipt changed; existing owner re-pin blocker, not altered here.",
+    "operations": {"added": 0, "generatedAtThisBranch": 298,
+      "merge": "Lead must regenerate against newer staging's 300 operations; no manifest edit here."}
+  },
   "step0": {
     "pageText": {
       "reader": "documents.ts:61 readDocumentResult(input, resultHash, readObject)",
