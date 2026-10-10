@@ -4,7 +4,10 @@ import {
 import { ApiHeader, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
-import { BuildingConflictDecisionRequestSchema, BuildingConflictDecisionSchema } from '@ulpin/contracts';
+import {
+  BuildingConflictDecisionRequestSchema, BuildingConflictDecisionSchema,
+  BuildingPlanCandidateRequestSchema, BuildingPlanCandidateReceiptSchema,
+} from '@ulpin/contracts';
 import { PrivateSpatialGuard } from '../spatial/private-spatial.guard';
 import { jsonBody, wireResponse } from '../intake/wire-schemas';
 import { AppError } from '@ulpin/server/infrastructure/errors';
@@ -50,6 +53,25 @@ export class OfficerController {
       throw new AppError(422, 'CONFLICT_DECISION_KEY', 'Match Idempotency-Key to the decision request key.');
     }
     return this.service.conflictDecision(uuid.parse(buildingId), input);
+  }
+
+  @Post('buildings/:buildingId/candidates')
+  @UseGuards(PrivateSpatialGuard)
+  @HttpCode(201)
+  @Header('Cache-Control', 'private, no-store')
+  @ApiOperation({ operationId: 'POST_api_v1_buildings_buildingId_candidates',
+    summary: 'Retain cited plan-local room candidates or review an existing level association' })
+  @ApiParam({ name: 'buildingId', schema: { type: 'string', format: 'uuid' } })
+  @ApiHeader({ name: 'Idempotency-Key', required: true, schema: { type: 'string', format: 'uuid' } })
+  @jsonBody(BuildingPlanCandidateRequestSchema)
+  @wireResponse(201, BuildingPlanCandidateReceiptSchema)
+  async candidates(@Param('buildingId') buildingId: string, @Req() req: Request) {
+    if (queryUrl(req).search) throw new AppError(422, 'CANDIDATE_QUERY', 'This command accepts no query fields.');
+    const input = await body(req, BuildingPlanCandidateRequestSchema);
+    if (uuid.parse(req.header('idempotency-key')) !== input.requestKey) {
+      throw new AppError(422, 'CANDIDATE_KEY', 'Match Idempotency-Key to the candidate request key.');
+    }
+    return this.service.candidates(uuid.parse(buildingId), input);
   }
 
   @Get('work-queue')
