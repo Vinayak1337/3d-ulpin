@@ -4,7 +4,7 @@ import controls from '../../../../../docs/evidence/gf1/ui/f3a/responses.json';
 import type { BuildingCanonical } from '../review/recorded/model';
 import {
   absentReason, conflictingStoreys, openCheckCount, readingStatement, readingStatements, registerNotFound,
-  unreadRegister, unrecordedStatement, unstatedReadings,
+  residentsStatement, unreadRegister, unrecordedStatement, unstatedReadings,
 } from './registerState';
 
 const SERVER_TEXT = 'Server text that is never shown.';
@@ -63,6 +63,36 @@ describe('a building with no register', () => {
   it('words any other failed register read with the code, never the message', () => {
     expect(unreadRegister(failure(500, 'INTERNAL'))).toBe('The server did not read this register out · INTERNAL');
     expect(unreadRegister(new Error(SERVER_TEXT))).toBe('The server did not read this register out.');
+  });
+});
+
+describe('residentsStatement', () => {
+  it('says the read is not served when the server answers 404 for a route this build does not have live', () => {
+    expect(residentsStatement({ data: null, error: null }, false)).toEqual({
+      kind: 'unserved',
+      text: 'This server does not serve the residents read yet, so nothing is stated here about '
+        + 'who holds or lives in this building.',
+    });
+  });
+
+  it('says the server holds no extract when it serves the read and answers 404 for the building', () => {
+    expect(residentsStatement({ data: null, error: null }, true)).toEqual({
+      kind: 'none',
+      text: 'The server holds no register extract for this building. Holders come from the deed index; '
+        + 'residents from the society or tenant register.',
+    });
+  });
+
+  it('words a failed read with the code of the server, never its message, served or not', () => {
+    expect(residentsStatement({ data: undefined, error: failure(500, 'INTERNAL') }, true))
+      .toEqual({ kind: 'failed', text: 'The residents of this building could not be read � INTERNAL' });
+    expect(residentsStatement({ data: undefined, error: new Error(SERVER_TEXT) }, false))
+      .toEqual({ kind: 'failed', text: 'The residents of this building could not be read.' });
+  });
+
+  it('says nothing while the read is pending and once it holds an extract', () => {
+    expect(residentsStatement({ data: undefined, error: null }, false)).toBeNull();
+    expect(residentsStatement({ data: { units: [] }, error: null }, true)).toBeNull();
   });
 });
 
