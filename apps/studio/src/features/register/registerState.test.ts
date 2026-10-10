@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@ulpin/api-client';
-import { absentReason, readingStatement, readingStatements } from './registerState';
+import { absentReason, readingStatement, readingStatements, statedSourceId } from './registerState';
 
 const SERVER_TEXT = 'Server text that is never shown.';
 const failure = (status: number, code?: string) => new ApiError(status, '/api/v1/buildings/b/register', {
@@ -64,5 +64,20 @@ describe('readingStatements', () => {
       { id: 'silent' },
     ]);
     expect([...statements]).toEqual([['stated', 'A newer version of this source exists']]);
+  });
+});
+
+describe('statedSourceId', () => {
+  const statements = new Map([['10946c4c-0001', 'a'], ['c59d2027-0001', 'b'], ['c59d2027-0002', 'c']]);
+
+  it('finds the one stated source that begins with the characters a citation shows', () => {
+    expect(statedSourceId(statements, '10946c4c')).toBe('10946c4c-0001');
+  });
+
+  it('gives nothing for a source that is not stated, for no characters and for characters two sources share', () => {
+    expect(statedSourceId(statements, '7a1b2c3d')).toBeNull();
+    expect(statedSourceId(statements, '')).toBeNull();
+    expect(statedSourceId(statements, 'c59d2027')).toBeNull();
+    expect(statedSourceId(new Map(), '10946c4c')).toBeNull();
   });
 });

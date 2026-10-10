@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react';
+import { useParams } from 'react-router';
 import { DescriptionList, EvidenceChip, formatDateTime, type Fact } from '@ulpin/ui';
-import { useSpatialMlBatch, useSpatialMlItem } from '../../../api/queries';
+import { useBuildingCanonical, useSpatialMlBatch, useSpatialMlItem } from '../../../api/queries';
+import { Cited, ReadingStatementsContext } from '../../register/ReadingNote';
+import { statedSourceId } from '../../register/registerState';
+import { useReadingStatements } from '../../register/useReadingStatements';
 import { CandidateChip } from './CandidateQueue';
 import { modelCardSummary } from './modelCard';
 import type { CandidateCard } from './model';
@@ -65,16 +69,27 @@ function Limitations({ items }: { items: string[] }) {
   );
 }
 
+/**
+ * The card carries neither its building nor a full source id, so the reading statements are those of the
+ * page's building (none on an area's review page) and a citation is joined to them by the short id it shows.
+ */
 function Citations({ card }: { card: CandidateCard }) {
+  const { buildingId } = useParams();
+  const reviewed = useBuildingCanonical(buildingId).data?.recordState === 'reviewed';
+  const readings = useReadingStatements(buildingId, reviewed);
   return (
     <section className={styles.section} aria-label="Citations">
       <h3 className={styles.sectionTitle}>Citations</h3>
       {card.citations.length ? (
-        <div className="ul-row">
-          {card.citations.map((c) => (
-            <EvidenceChip key={`${c.source}${c.locator}`} source={c.source} locator={c.locator} />
-          ))}
-        </div>
+        <ReadingStatementsContext.Provider value={readings}>
+          <div className="ul-row">
+            {card.citations.map((c) => (
+              <Cited key={`${c.source}${c.locator}`} sourceId={statedSourceId(readings, c.source)}>
+                <EvidenceChip source={c.source} locator={c.locator} />
+              </Cited>
+            ))}
+          </div>
+        </ReadingStatementsContext.Provider>
       ) : (
         <p className="ul-help"><Unknown />: the record cites no source.</p>
       )}

@@ -6,6 +6,8 @@ import type { BuildingRegister } from '../../../api/queries';
 import type { BuildingModel, LevelModel, SpaceModel } from '../../../model/building';
 import { useOpenEvidence } from '../../evidence/EvidenceContext';
 import { parseLocator } from '../../evidence/refs';
+import { Cited } from '../../register/ReadingNote';
+import { useReadingStatements } from '../../register/useReadingStatements';
 import { useRecordReview, useSpaceWorkflow } from '../../workflow/useWorkflow';
 import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerSpace } from '../ledger';
 import { recordEvidence } from './evidence';
@@ -25,6 +27,7 @@ export function SpaceInspector({ space, level, model, register, ledger, building
 }) {
   const [tab, setTab] = useState<Tab>('overview');
   const openEvidence = useOpenEvidence();
+  const readings = useReadingStatements(buildingId, register.property.revision > 0);
   const workflow = useSpaceWorkflow(space.id);
   const review = useRecordReview();
   const facts = ledgerSpace(ledger, space.id);
@@ -41,6 +44,7 @@ export function SpaceInspector({ space, level, model, register, ledger, building
     return (
       <span className="ul-row">
         <span className="ul-num">{format(value.value as never)}</span>
+        <Cited sourceId={value.sourceId}>
         {value.sourceId
           ? <EvidenceChip source={value.source ?? 'Source'} locator={value.locator ?? undefined} onOpen={() => openEvidence({
               sourceId: value.sourceId!, label: value.source ?? 'Source', locator: parseLocator({ locator: value.locator ?? undefined }),
@@ -48,6 +52,7 @@ export function SpaceInspector({ space, level, model, register, ledger, building
               supports: supportsFrom(value.sourceId!),
             })} />
           : <EvidenceChip state="missing" source="Needs evidence" />}
+        </Cited>
         {extra}
       </span>
     );
@@ -98,6 +103,7 @@ export function SpaceInspector({ space, level, model, register, ledger, building
   return (
     <InspectorShell
       rekey={space.id}
+      readings={readings}
       crumbs={crumbs}
       title={space.name}
       status={<StatusBadge status={status} />}
@@ -118,7 +124,14 @@ export function SpaceInspector({ space, level, model, register, ledger, building
           { label: 'Share', value: facts?.sharePct ? `${facts.sharePct.value.toFixed(2)} %` : <StatusBadge status="Unknown" /> },
         ]} />
       ) : (
-        <div className={styles.chips}>{refs.map((ref) => <EvidenceChip key={ref.locator.text + ref.sourceId} kind="document" source={ref.label} locator={ref.locator.text} onOpen={() => openEvidence(ref)} />)}</div>
+        <div className={styles.chips}>
+          {refs.map((ref) => (
+            <Cited key={ref.locator.text + ref.sourceId} sourceId={ref.sourceId}>
+              <EvidenceChip kind="document" source={ref.label} locator={ref.locator.text}
+                onOpen={() => openEvidence(ref)} />
+            </Cited>
+          ))}
+        </div>
       )}
     </InspectorShell>
   );

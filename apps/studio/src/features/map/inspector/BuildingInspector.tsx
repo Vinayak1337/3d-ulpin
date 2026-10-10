@@ -11,6 +11,8 @@ import { featureCode, type AreaFeature, type BuildingRegister } from '../../../a
 import type { BuildingModel } from '../../../model/building';
 import { useOpenEvidence } from '../../evidence/EvidenceContext';
 import { parseLocator } from '../../evidence/refs';
+import { Cited } from '../../register/ReadingNote';
+import { useReadingStatements } from '../../register/useReadingStatements';
 import { CheckBadge } from '../CheckBadge';
 import { RecordState } from '../RecordState';
 import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerStatus, revisionChain, revisionKey } from '../ledger';
@@ -39,6 +41,7 @@ export function BuildingInspector({ feature, canonical, register, model, ledger,
   const [tab, setTab] = useState<Tab>('overview');
   const openEvidence = useOpenEvidence();
   const evidence = featureEvidence(feature);
+  const readings = useReadingStatements(feature.id, (register?.property.revision ?? 0) > 0);
   const levels = model?.levels ?? [];
   const units = model?.spaces.filter((s) => s.use === 'apartment').length ?? 0;
   const findings = register?.findings ?? [];
@@ -59,10 +62,15 @@ export function BuildingInspector({ feature, canonical, register, model, ledger,
       <span className="ul-row">
         {known ? <span className="ul-num">{formatMeasure(feature.height.value, 'm', 1)}</span> : <StatusBadge status="Unknown" />}
         {evidence.height.slice(0, 1).map((ref) => (
-          <EvidenceChip key={ref.locator.text} kind="feature" source={feature.height.originalValue !== undefined ? 'Roof height' : ref.label}
-            locator={feature.height.originalValue !== undefined ? sourceValue(feature.height.originalValue, feature.height.originalUnit, 2) : ref.locator.text}
-            exact={feature.height.originalValue !== undefined ? sourceValue(feature.height.originalValue, feature.height.originalUnit) : undefined}
-            onOpen={() => openEvidence(ref)} />
+          <Cited key={ref.locator.text} sourceId={ref.sourceId}>
+            <EvidenceChip kind="feature"
+              source={feature.height.originalValue !== undefined ? 'Roof height' : ref.label}
+              locator={feature.height.originalValue !== undefined
+                ? sourceValue(feature.height.originalValue, feature.height.originalUnit, 2) : ref.locator.text}
+              exact={feature.height.originalValue !== undefined
+                ? sourceValue(feature.height.originalValue, feature.height.originalUnit) : undefined}
+              onOpen={() => openEvidence(ref)} />
+          </Cited>
         ))}
       </span>
     ),
@@ -86,6 +94,7 @@ export function BuildingInspector({ feature, canonical, register, model, ledger,
   return (
     <InspectorShell
       rekey={feature.id}
+      readings={readings}
       crumbs={crumbs}
       title={feature.name}
       status={canonical ? <RecordState state={canonical.recordState} /> : status ? <StatusBadge status={status} /> : undefined}
@@ -117,8 +126,19 @@ export function BuildingInspector({ feature, canonical, register, model, ledger,
       ) : tab === 'evidence' ? (
         <div className={styles.chips}>
           {ledger
-            ? ledger.sources.map((s) => <EvidenceChip key={s.sourceId} kind={s.kind} source={s.name} locator={s.summary} onOpen={() => openEvidence({ sourceId: s.sourceId, label: s.name, locator: parseLocator({ locator: s.summary }) })} />)
-            : evidence.geometry.map((ref) => <EvidenceChip key={ref.sourceId + ref.locator.text} kind="feature" source={ref.label} locator={ref.locator.text} onOpen={() => openEvidence(ref)} />)}
+            ? ledger.sources.map((s) => (
+              <Cited key={s.sourceId} sourceId={s.sourceId}>
+                <EvidenceChip kind={s.kind} source={s.name} locator={s.summary} onOpen={() => openEvidence({
+                  sourceId: s.sourceId, label: s.name, locator: parseLocator({ locator: s.summary }),
+                })} />
+              </Cited>
+            ))
+            : evidence.geometry.map((ref) => (
+              <Cited key={ref.sourceId + ref.locator.text} sourceId={ref.sourceId}>
+                <EvidenceChip kind="feature" source={ref.label} locator={ref.locator.text}
+                  onOpen={() => openEvidence(ref)} />
+              </Cited>
+            ))}
           {register?.missing.length ? <ul className={styles.gaps}>{register.missing.map((m) => <li key={m}>{m}</li>)}</ul> : null}
         </div>
       ) : tab === 'checks' && ledger ? (
