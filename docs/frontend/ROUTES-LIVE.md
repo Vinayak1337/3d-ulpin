@@ -40,7 +40,7 @@ Status: `exists` = path, method and the shape the Studio reads are published; `p
 | `/api/v1/sources/{sourceId}/file` | GET | exists | The file name is in `filename*=UTF-8''…` form |
 | `/api/v1/resolve` | GET | exists | Called by the building search; not in the route table |
 | `/api/v1/areas/{areaId}/canonical` | GET | exists | **Live**: the map draws its footprints from this record through `toSceneInputs()`. Every building of the demo Bronx area is `recordState: candidate`; the Gurugram area has `buildings: []` and its two road base features have no polygons (`value: null`, state `unknown`) and no line geometry |
-| `/api/v1/buildings/{buildingId}/canonical` | GET | exists | **Live**: the inspector shows its `recordState` and `gaps`; the scene adds its storeys and levels when it has them |
+| `/api/v1/buildings/{buildingId}/canonical` | GET | exists | **Live**: the inspector shows its `recordState` and `gaps`; the scene adds its storeys and levels when it has them; the candidates page lists its recorded floors and units (F3a below) |
 | `/api/v1/spatial-ml/batches/{batchId}` | GET | exists | **Live** (F2a): batch id, items and image count, shown beside a roofprint candidate |
 | `/api/v1/spatial-ml/items/{itemId}` | GET | exists | **Live** (F2a): the inference receipt (model card summary) and the footprint drafts already made from the image |
 | `/api/v1/spatial-ml/items/{itemId}/footprint-drafts` | POST | exists | **Live**: F2c below |
@@ -110,6 +110,34 @@ Evidence: [F2b result](../evidence/gf-agent/ui/f2b/result.json),
 [live read checks](../evidence/gf-agent/ui/f2b/live-result.json) and
 [UI design check](../evidence/gf-agent/ui/f2b/ui-design-check.md).
 
+## F3a recorded floors and units, table result freshness — live reads / intercepted states, 10 October 2026
+
+Studio route: `/studio/properties/:buildingId/candidates`, panel **Recorded floors and units** below the
+review columns. Read-only; it has no write control.
+
+- `GET /buildings/{buildingId}/canonical` is its only read. A level with `registryFloorId` is a recorded
+  floor; a space with `recordState: reviewed` and a `label` is a recorded unit. Label, heights, kind, area
+  and citations are shown as returned; a code is shown only when `proposedCode.state` is `reviewed`.
+  A floor the server linked to a schedule row arrives as that row and is listed once, under it.
+- The gap sentence about source-stated labels is found in `gaps` by its opening words, because gaps carry
+  no code, and is shown once above the list.
+- **Live, read-only:** Tower 3 `6f95d04e-2067-4ac8-a3c2-6cc21ea46325` (no levels) and Magnolia
+  `e8777ffc-9409-4129-bacf-f680160d8795` (3 levels) hold no recorded floor; both show the empty state.
+- **Intercepted:** the populated states, without and with a code. The responses come from the K4b offline
+  protocol double fed with the K4c request literals and validate against the published contract; the code
+  is a test value from the existing generator, not an issued identity. No live write was made.
+- **Citation control:** opens the existing evidence viewer on the cited source with the page and region as
+  locator text. Against the demo runtime the viewer shows its file view, not the page: see Backend requests.
+- **Table page** (`/studio/work/cases/:caseId/tables/:sourceId`): the raw and mapping status and chunk
+  responses carry `current` and `reasons`. When any is `current: false` the page shows one **Needs review**
+  notice with the reasons in words and offers neither Approve nor the shared-reason control. Mapping
+  questions are kept across chunks by `sourceField`, first occurrence first; plan and field origins come
+  from the latest chunk. Checked with intercepted controls only.
+
+Evidence: [F3a result](../evidence/gf1/ui/f3a/result.json),
+[browser checks](../evidence/gf1/ui/f3a/browser-result.json) and
+[UI design check](../evidence/gf1/ui/f3a/ui-design-check.md).
+
 ## Backend requests
 
 One line per route or field the Studio needs and the screen that needs it.
@@ -132,3 +160,8 @@ One line per route or field the Studio needs and the screen that needs it.
 - Historical mapping job/chunk reads that preserve source fences after an unrelated source changes the case (F2b/A3c).
 - Ordinary dispatcher rollout of tabular raw/mapping jobs (F2b/A3c): the live fenced-worker receipt is not automatic dispatch.
 - Preserve null-only fields in `openapi-fetch` Readable/Writable types (F2b): `selection.table` and `destination` are null.
+- A stable code or kind on each canonical `gaps` entry (F3a): the recorded panel finds the source-label sentence by its opening words.
+- The recorded floor's own label, citation and `recordState` when it is linked to a schedule row (F3a): the canonical level then carries only the schedule row's label and citations.
+- The source file name on canonical citations (F3a): the citation control names the source by a short id.
+- A page-and-region evidence read (F3a): canonical citations carry `sourceSha256`, `sourceRevision` and a page region, but the evidence viewer has no region locator and the demo runtime answers 503 `DOCUMENT_PAGES_RUNTIME_UNAVAILABLE` for `GET /sources/{id}/pages`.
+- A recorded building with a source-recorded floor and unit in the demo database (F3a): the populated panel was checked with intercepted responses only.
