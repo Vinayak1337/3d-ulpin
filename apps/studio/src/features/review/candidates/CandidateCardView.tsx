@@ -9,7 +9,9 @@ import { useReadingStatements } from '../../register/useReadingStatements';
 import { evidenceRef } from '../recorded/model';
 import { CandidateChip } from './CandidateQueue';
 import { modelCardSummary } from './modelCard';
-import { citationOpenLabel, type CandidateCard, type CandidateCitation, type PlanEstimateView } from './model';
+import {
+  citationOpenLabel, type CandidateCard, type CandidateCitation, type PlanEstimateView, type StatedSizeView,
+} from './model';
 import styles from './CandidateReview.module.css';
 
 const DETERMINISTIC = 'Deterministic extraction; no model';
@@ -112,6 +114,17 @@ function CitationControl({ title, citation }: { title: string; citation: Candida
   );
 }
 
+/** What the sheet prints beside the room, as read, with where it is printed. It is never set against the estimate. */
+function StatedSize({ title, stated }: { title: string; stated: StatedSizeView | null }) {
+  if (!stated) return null;
+  return (
+    <section className={styles.section} aria-label="Stated size">
+      <p className={styles.stated}>Stated on the sheet: {stated.literal}</p>
+      <div className="ul-row"><CitationControl title={title} citation={stated.citation} /></div>
+    </section>
+  );
+}
+
 /**
  * The card does not carry its building, so the reading statements are those of the page's building (none
  * on an area's review page). A citation is joined to them by its source id.
@@ -164,6 +177,7 @@ export function CandidateCardView({ card, children }: { card: CandidateCard; chi
       <DecisionRecord card={card} />
       {children}
       <DescriptionList items={recordedFacts(card)} />
+      <StatedSize title={card.title} stated={card.statedSize} />
       <PlanEstimate estimate={card.planEstimate} />
       {card.itemId ? <ModelSection itemId={card.itemId} /> : null}
       <Limitations items={card.limitations} />

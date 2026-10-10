@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { evidenceRef } from '../recorded/model';
 import {
   candidateCard, candidateCards, candidateGroups, citationOpenLabel, countByState, decisionHistory, itemIdOf,
-  levelText, locatorText, planEstimateView, type CanonicalCandidate,
+  levelText, locatorText, planEstimateView, statedSizeView, type CanonicalCandidate,
 } from './model';
 
 const ITEM = '11111111-1111-4111-8111-111111111111';
@@ -219,6 +219,32 @@ describe('planEstimateView', () => {
   it('states nothing when the read carries no estimate', () => {
     expect(planEstimateView(room())).toBeNull();
     expect(candidateCard(room())!.planEstimate).toBeNull();
+  });
+});
+
+describe('statedSizeView', () => {
+  const literal = "(8' X 8'11\")";
+  const line = { kind: 'region', page: 2, x: 472.16, y: 1256.7, width: 20.09, height: 4.16, unit: 'pt' };
+  const statedSize = { literal, citation: { ...citation, locator: line } };
+
+  it('keeps the text of the sheet exactly as read, with the place it was read from', () => {
+    const view = candidateCard(room({ statedSize }))!.statedSize!;
+    expect(view.literal).toBe(literal);
+    expect(view.citation).toMatchObject({ sourceId: citation.sourceId, place: line });
+    expect(evidenceRef('FIXTURE ROOM', view.citation).locator).toMatchObject({ kind: 'region', page: 2 });
+  });
+
+  it('leaves the estimate in its own words beside it', () => {
+    const basis = { method: 'polygon_area_in_plan_metres@1', scaleState: 'candidate', metresPerPdfPoint: 0.034 };
+    const planEstimate = { state: 'estimated', areaM2: 6.55, extentM: [2.42, 2.71], basis, limitations: [] };
+    const card = candidateCard(room({ statedSize, planEstimate }))!;
+    expect(card.planEstimate).toEqual(candidateCard(room({ planEstimate }))!.planEstimate);
+  });
+
+  it('states nothing when the record holds none: not from the label, not from the estimate', () => {
+    expect(statedSizeView(room({ labelLiteral: `KITCHEN ${literal}` }))).toBeNull();
+    expect(candidateCard(room())!.statedSize).toBeNull();
+    expect(candidateCard(roofprint())!.statedSize).toBeNull();
   });
 });
 

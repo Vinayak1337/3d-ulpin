@@ -30,6 +30,12 @@ export type PlanEstimateView = { state: 'estimated'; extent: string; area: strin
 /** A candidate's citation has the shape of a recorded label's, so both open the evidence viewer the same way. */
 export type CandidateCitation = RecordedCitation;
 
+/** The size a sheet prints beside a room: its text exactly as the read carries it, and where that text is. */
+export interface StatedSizeView {
+  literal: string;
+  citation: CandidateCitation;
+}
+
 export interface CandidateCard {
   id: string;
   kind: CandidateKind;
@@ -58,6 +64,8 @@ export interface CandidateCard {
   polygons: MultiPolygon;
   /** Null when the read states no estimate (an older server, or not a room). */
   planEstimate: PlanEstimateView | null;
+  /** Null when the record holds none; never filled from a label, a neighbour or the estimate. */
+  statedSize: StatedSizeView | null;
 }
 
 const ITEM_REF = /\/spatial-ml\/items\/([0-9a-f-]{36})#/;
@@ -167,6 +175,12 @@ function citationOf(citation: Citation, index: number): CandidateCitation {
   };
 }
 
+/** The stated size as the read carries it. The text is not parsed, converted or compared with the estimate. */
+export function statedSizeView(candidate: CanonicalCandidate): StatedSizeView | null {
+  const stated = candidate.statedSize;
+  return stated ? { literal: stated.literal, citation: citationOf(stated.citation, 0) } : null;
+}
+
 /** The accessible name of a citation's control: what it opens, by the source and place the chip shows. */
 export function citationOpenLabel(citation: CandidateCitation): string {
   return `Open cited source ${citation.source} at ${citation.locator}`;
@@ -195,6 +209,7 @@ export function candidateCard(candidate: CanonicalCandidate, levels: readonly Le
     frame: candidate.coordinateFrame ?? 'Not recorded',
     polygons: candidate.polygons as MultiPolygon,
     planEstimate: planEstimateView(candidate),
+    statedSize: statedSizeView(candidate),
   };
 }
 

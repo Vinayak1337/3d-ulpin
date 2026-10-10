@@ -11,6 +11,7 @@ import { localOperatorSubject } from '../principal';
 import { sourceBuildingOriginalAccessTx } from './source-building-review';
 
 type Candidate = NormalizedBuilding['candidates'][number];
+type Citation = NonNullable<Candidate['citations']>[number];
 type Receipt = ReturnType<typeof BuildingPlanCandidateReceiptSchema.parse>;
 type Stored = { digest: string; receipt: Receipt };
 type Body = RegistryBody & { canonicalCandidates?: Candidate[]; candidateCommands?: Stored[] };
@@ -43,9 +44,15 @@ export function rejectCandidate(candidate: Candidate, reason: string, actor: str
   return { ...candidate, state: 'reviewed', levelId: null, review: { outcome: 'rejected', reason, actor, time } };
 }
 
+/** Every citation a retained room carries: its own, and that of the size its sheet states beside it. */
+export function roomCandidateCitations(candidate: Candidate): Citation[] {
+  const stated = candidate.statedSize ? [candidate.statedSize.citation] : [];
+  return [...(candidate.citations ?? []), ...stated];
+}
+
 async function verifyCandidateSources(client: PoolClient, record: RecordRow, candidates: Candidate[]): Promise<void> {
   for (const candidate of candidates) {
-    for (const citation of candidate.citations ?? []) {
+    for (const citation of roomCandidateCitations(candidate)) {
       const source = await sourceBuildingOriginalAccessTx(client, record.site_id, citation.sourceId);
       if (source.sha256 !== citation.sourceSha256 || citation.locator.kind !== 'region'
         || citation.locator.unit !== 'pt' || citation.locator.page > BUILDING_CANDIDATE_MAX_PAGES) {
