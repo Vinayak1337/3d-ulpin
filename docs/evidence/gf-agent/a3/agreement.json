@@ -1,0 +1,14 @@
+{
+  "agreementReceipt": "docs/evidence/gf-agent/t1/agreement.json",
+  "leadRuling": {
+    "authority": "lead development teacher; A3 task review of A4",
+    "affectedDisagreements": 3,
+    "target": "building.storeyLabel",
+    "operation": { "kind": "copy" },
+    "reason": "Sanctioned floor registry entries are storey expressions, not supported literal counts.",
+    "citation": "docs/evidence/usp/finale/GF-DATA/storey-truth/README.md",
+    "leadQuotedExample": "B+S+17",
+    "labelsChanged": false,
+    "qualification": "Review ruling supplements the retained agreement; not independent evaluation truth."
+  }
+}
