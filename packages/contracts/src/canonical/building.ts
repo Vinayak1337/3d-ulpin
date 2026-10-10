@@ -286,6 +286,18 @@ export const BuildingConflictDecisionSchema = z.strictObject({
 export type BuildingConflictDecisionRequest = z.infer<typeof BuildingConflictDecisionRequestSchema>;
 export type BuildingConflictDecision = z.infer<typeof BuildingConflictDecisionSchema>;
 
+const estimateBasis = z.strictObject({ method: z.literal('polygon_area_in_plan_metres@1'),
+  scaleState: z.literal('candidate'), metresPerPdfPoint: number.positive() });
+/** A room's size in its plan's own metres, computed by the read; an estimate, never a measurement. */
+export const RoomPlanEstimateSchema = z.discriminatedUnion('state', [
+  z.strictObject({ state: z.literal('estimated'), areaM2: number.positive(),
+    extentM: z.tuple([number.nonnegative(), number.nonnegative()]), basis: estimateBasis,
+    limitations: z.array(z.string()) }),
+  z.strictObject({ state: z.literal('unknown'), areaM2: z.null(), extentM: z.null(), basis: z.null(),
+    limitations: z.array(z.string()) }),
+]);
+export type RoomPlanEstimate = z.infer<typeof RoomPlanEstimateSchema>;
+
 export const BuildingCandidateRefSchema = z.strictObject({
   candidateId: id,
   task: id,
@@ -306,6 +318,7 @@ export const BuildingCandidateRefSchema = z.strictObject({
     metresPerPdfPoint: number.positive(), unit: z.literal('m'), axes: z.tuple([
       z.literal('page_right'), z.literal('page_up')]), placement: z.literal('unknown'),
     scaleState: z.literal('candidate') }).optional(),
+  planEstimate: RoomPlanEstimateSchema.optional(),
   review: z.strictObject({ outcome: z.enum(['accepted', 'rejected']), reason: z.string().min(1),
     actor: id, time: z.string().datetime() }).optional(),
 });
@@ -317,6 +330,7 @@ export const BuildingPlanCandidateRequestSchema = z.discriminatedUnion('action',
       state: z.literal('candidate'), method: z.literal('deterministic:vector-plan@1'),
       levelId: z.null(), coordinateFrame: id, polygons: BuildingMultiPolygonSchema,
       citations: z.array(BuildingCitationSchema).min(1), review: z.never().optional(),
+      planEstimate: z.never().optional(),
     })).min(1).max(64),
   }),
   z.strictObject({ action: z.literal('attach_level'), requestKey: z.uuid(),

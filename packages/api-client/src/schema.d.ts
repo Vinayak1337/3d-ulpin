@@ -9244,6 +9244,30 @@ export interface components {
                     /** @enum {string} */
                     scaleState: "candidate";
                 };
+                planEstimate?: {
+                    /** @enum {string} */
+                    state: "estimated";
+                    areaM2: number;
+                    extentM: (number)[];
+                    basis: {
+                        /** @enum {string} */
+                        method: "polygon_area_in_plan_metres@1";
+                        /** @enum {string} */
+                        scaleState: "candidate";
+                        metresPerPdfPoint: number;
+                    };
+                    limitations: string[];
+                } | {
+                    /** @enum {string} */
+                    state: "unknown";
+                    /** @enum {string|null} */
+                    areaM2: null;
+                    /** @enum {string|null} */
+                    extentM: null;
+                    /** @enum {string|null} */
+                    basis: null;
+                    limitations: string[];
+                };
                 review?: {
                     /** @enum {string} */
                     outcome: "accepted" | "rejected";
@@ -12040,6 +12064,30 @@ export interface components {
                     placement: "unknown";
                     /** @enum {string} */
                     scaleState: "candidate";
+                };
+                planEstimate?: {
+                    /** @enum {string} */
+                    state: "estimated";
+                    areaM2: number;
+                    extentM: (number)[];
+                    basis: {
+                        /** @enum {string} */
+                        method: "polygon_area_in_plan_metres@1";
+                        /** @enum {string} */
+                        scaleState: "candidate";
+                        metresPerPdfPoint: number;
+                    };
+                    limitations: string[];
+                } | {
+                    /** @enum {string} */
+                    state: "unknown";
+                    /** @enum {string|null} */
+                    areaM2: null;
+                    /** @enum {string|null} */
+                    extentM: null;
+                    /** @enum {string|null} */
+                    basis: null;
+                    limitations: string[];
                 };
                 review?: {
                     /** @enum {string} */
@@ -21989,6 +22037,7 @@ export interface components {
                     /** @enum {string} */
                     scaleState: "candidate";
                 };
+                planEstimate?: unknown;
                 review?: unknown;
             }[];
         } | {
