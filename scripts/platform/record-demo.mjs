@@ -8,6 +8,7 @@ import pg from 'pg';
 import { readDemo, demoFile, demoProject, safeEnvironment } from './demo-config.mjs';
 import { dockerRuntime, engine, inventory, storageProblems, root } from './runtime.mjs';
 import { ownedProcess } from './processes.mjs';
+import { gatewayReport } from './demo-gateway.mjs';
 
 const file = join(root, 'scripts/platform/evidence/s03/result.json');
 const receipt = JSON.parse(readFileSync(file, 'utf8'));
@@ -56,7 +57,7 @@ receipt.demo = {
   observedAt: new Date().toISOString(), project: demoProject, configuration: demoFile,
   configurationSha256,
   configurationSecurity: '0600-style; Windows ACL inheritance removed on new demo directory; grants only operator, SYSTEM, Administrators',
-  engine: info, gatewayEnabled: false,
+  engine: info, gatewayEnabled: gatewayReport(env).enabled,
   ports: Object.fromEntries(['POSTGRES_PORT', 'S3_PORT', 'S3_CONSOLE_PORT', 'REDIS_PORT', 'GEO_PORT', 'API_PORT'].map(key => [key, Number(env[key])])),
   volumes: demoVolumes,
   containers: snapshot.containers.map(c => ({ id: c.id, service: c.service, state: c.state, health: c.health, restart: c.restart })),
@@ -64,7 +65,7 @@ receipt.demo = {
   retainedProjectsUnchanged: { containerIds: true, all24StillStopped: true, all14OriginalVolumeNamesPresent: true, only3ApprovedNewVolumes: true },
   schemaAudit: { publicTables: tableCount, domainTables: tableCount - Object.keys(nonempty).length, domainRows: 0, nonemptyTables: nonempty,
     migrationMarkers: markers, backfills: 'identity_floors/spaces and map_areas derive only from existing units/sites; inserted zero rows in this new database',
-    otherMigrations: 'Existing lazy dataset and model-gateway schema producers invoked once, without enabling the gateway or creating examples' },
+    otherMigrations: 'Existing lazy dataset and model-gateway schema producers invoked once; they create no examples and do not change the gateway state (see gatewayEnabled)' },
   api: { healthHttpStatus: response.status, healthOk: health.ok, schemaReady: health.databaseReadiness.schema.ready,
     manifestSha256: health.databaseReadiness.schema.manifestSha256, databaseTargetToken: health.databaseReadiness.schema.targetToken,
     unvalidatedConstraints: health.databaseReadiness.schema.unvalidatedConstraints, areasHttpStatus: areasResponse.status, areas },
