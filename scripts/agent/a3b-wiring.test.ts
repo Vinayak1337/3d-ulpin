@@ -6,7 +6,8 @@ import { Readable } from 'node:stream';
 import { mock, test } from 'node:test';
 import type { PoolClient } from 'pg';
 import { AnySourceProfileSchema, AnyStreamingInputSchema, ChunkMappingInputSchema, ChunkMappingPayloadSchema,
-  StreamingVectorInputSchema, CaseIngestionEventSchema, TabularSourceProfileSchema, AnyAuthorMappingSchema } from '../../packages/contracts/src/usp/index';
+  StreamingVectorInputSchema, CaseIngestionEventSchema, TabularSourceProfileSchema,
+  AnyAuthorMappingSchema } from '../../packages/contracts/src/usp/index';
 import { transaction } from '../../packages/server/src/infrastructure/db';
 import { settings } from '../../packages/server/src/infrastructure/config';
 import { sha256 } from '../../packages/server/src/infrastructure/storage';
@@ -263,7 +264,8 @@ function assertOfficerFieldOrder(f: ReturnType<typeof fixture>) {
   assert.throws(() => validateTabularRecipe(reversed, TabularSourceProfileSchema.parse(f.profile), f.bytes),
     (error: any) => error.code === 'MAPPING_TABULAR_ORDER');
   assert(!AnyAuthorMappingSchema.safeParse({ requestKey: randomUUID(), expectedRecipeRevision: 0,
-    destination: null, plan: { ...plan, decisions: plan.decisions.map(item => ({ ...item, reason: '   ' })) } }).success);
+    destination: null, plan: { ...plan,
+      decisions: plan.decisions.map(item => ({ ...item, reason: '   ' })) } }).success);
 }
 
 test('existing recipe commands record officer reasons, append approval once and replay its request idempotently', () =>
