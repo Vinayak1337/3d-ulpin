@@ -17,6 +17,18 @@ export const router = createBrowserRouter([
       // The map pulls in Three.js; load it only when a map route opens.
       { path: 'map', lazy: async () => ({ Component: (await import('../features/map/MapPage')).MapIndexRedirect }) },
       { path: 'areas/:areaId', lazy: async () => ({ Component: (await import('../features/map/MapPage')).MapPage }) },
+      {
+        path: 'areas/:areaId/candidates',
+        lazy: async () => ({
+          Component: (await import('../features/review/candidates/CandidateReviewPage')).AreaCandidatesPage,
+        }),
+      },
+      {
+        path: 'properties/:buildingId/candidates',
+        lazy: async () => ({
+          Component: (await import('../features/review/candidates/CandidateReviewPage')).BuildingCandidatesPage,
+        }),
+      },
       { path: 'add-files', lazy: async () => ({ Component: (await import('../features/intake/AddFilesRoute')).AddFilesRoute }) },
       { path: 'registry', lazy: async () => ({ Component: (await import('../features/register/RequestsPage')).RegistryIndex }) },
       { path: 'registry/*', element: <Navigate to="/studio/registry" replace /> },
