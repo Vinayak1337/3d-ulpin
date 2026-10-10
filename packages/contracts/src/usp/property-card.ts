@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { CoreSha256Schema, coreText } from '../spatial/core/scalars';
-import { UspMutationGuardSchema, UspSnapshotScopeSchema, UspTargetPinSchema, UspPrincipalSchema } from './common';
+import { UspCreateGuardSchema, UspMutationGuardSchema, UspSnapshotScopeSchema, UspTargetPinSchema,
+  UspPrincipalSchema } from './common';
 
 export const PROPERTY_CARD_ASCII_PROFILE = 'property-card-summary-ascii/1' as const;
 export const PROPERTY_CARD_UNICODE_PROFILE = 'property-card-summary-latin-deva/1' as const;
@@ -87,7 +88,20 @@ export const UspPropertyCardVerificationSchema = z.strictObject({
   if ((snapshot.state === 'same_revision') !== (snapshot.cardTargetRevision === snapshot.currentTargetRevision))
     issue('The snapshot state must follow from the two target revisions.');
 }).readonly();
+// The code is the caller's own short lower-case classification; no fixed list of reasons is decided yet.
+const UspPropertyCardRevocationReasonCodeSchema = z.string().regex(/^[a-z][a-z0-9_]{0,63}$/);
+/** Revokes one exact revision. A revocation is recorded once and is never changed or withdrawn. */
+export const UspRevokePropertyCardSchema = z.strictObject({
+  cardId: z.uuid(), revision: z.number().int().positive().max(2147483647),
+  reasonCode: UspPropertyCardRevocationReasonCodeSchema, reason: coreText(1024), guard: UspCreateGuardSchema,
+}).readonly();
+export const UspPropertyCardRevocationSchema = z.strictObject({
+  cardId: z.uuid(), revision: z.number().int().positive().max(2147483647), cardSha256: CoreSha256Schema,
+  reasonCode: UspPropertyCardRevocationReasonCodeSchema, reason: coreText(1024), scope: UspSnapshotScopeSchema,
+  revokedAt: z.iso.datetime({ offset: true }),
+}).readonly();
 export type PropertyCard = z.infer<typeof UspPropertyCardSchema>;
+export type PropertyCardRevocation = z.infer<typeof UspPropertyCardRevocationSchema>;
 export type PropertyCardVerification = z.infer<typeof UspPropertyCardVerificationSchema>;
 export type PropertyCardFact = z.infer<typeof UspPropertyCardFactSchema>;
 export type PropertyCardView = z.infer<typeof UspPropertyCardViewSchema>;

@@ -37,6 +37,8 @@ export type CardRow = {
   id: string; revision: number; site_id: string; manifest_id: string; plan_id: string; plan_version: number;
   packet_id: string; subject: string; artifact_hash: string; object_key: string; body: PropertyCard;
 };
+type RevocationRow = { card_id: string; revision: number; subject: string; reason_code: string; body: unknown;
+  revoked_at: string };
 type Values = readonly any[];
 type Handler = (values: Values, sql: string) => unknown[];
 
@@ -44,6 +46,9 @@ export class CardStore {
   cards: CardRow[] = [];
   receipts: any[] = [];
   events: unknown[] = [];
+  revocations: RevocationRow[] = [];
+  /** False models a database that has not run usp_property_card_revocations_001. */
+  revocationTable = true;
   objects = new Map<string, Uint8Array>();
   writes = 0;
   puts = 0;
@@ -104,6 +109,30 @@ export class CardStore {
     return bytes;
   }
 
+  /** The expiry clock, and the revocation of one exact revision when the statement asks for it. */
+  private lifecycle(values: Values, sql: string) {
+    const live = !this.expired && Date.parse(values[0]) > Date.now();
+    if (!sql.includes('usp_property_card_revocations')) return [{ live }];
+    this.requireRevocationTable();
+    const row = this.revocations.find(item => item.card_id === values[1] && item.revision === values[2]);
+    return [{ live, revocation: row?.body ?? null }];
+  }
+
+  private requireRevocationTable() {
+    if (this.revocationTable) return;
+    // PostgreSQL answers a statement that names a missing relation with SQLSTATE 42P01.
+    throw Object.assign(new Error('relation "usp_property_card_revocations" does not exist'), { code: '42P01' });
+  }
+
+  /** The primary key and the foreign key of the table refuse a second row and a row for no card. */
+  private revoke(values: Values) {
+    this.requireRevocationTable();
+    const [card_id, revision, subject, reason_code, body, revoked_at] = values;
+    assert(this.cardsOf(card_id).some(row => row.revision === revision), 'a revocation references a stored card');
+    assert(!this.revocations.some(row => row.card_id === card_id && row.revision === revision), 'one row a revision');
+    this.revocations.push({ card_id, revision, subject, reason_code, body: structuredClone(body), revoked_at });
+  }
+
   private manifest() {
     const members = [{ pin: pin('source_revision', sourceId), body: source, authority: 'source' },
       { pin: target, body: captured, authority: 'registry' }].map(member => ({ pin: member.pin,
@@ -140,7 +169,7 @@ export class CardStore {
     ['SELECT body FROM usp_packet_plan_executions', () => [{ body: this.execution }]],
     ['SELECT body,object_key,artifact_hash FROM usp_packets', () => [{ body: this.packet,
       object_key: 'control-packet', artifact_hash: this.packet.artifact.sha256 }]],
-    ['SELECT clock_timestamp()', values => [{ live: !this.expired && Date.parse(values[0]) > Date.now() }]],
+    ['SELECT clock_timestamp()', (values, sql) => this.lifecycle(values, sql)],
     ['SELECT max(revision)', values => [{ revision: Math.max(...this.cardsOf(values[0]).map(row => row.revision)) }]],
     ['SELECT revision,body,object_key,artifact_hash FROM usp_property_cards', values =>
       this.cardsOf(values[0]).filter(row => row.revision < values[1]).sort((a, b) => a.revision - b.revision)],
@@ -160,7 +189,8 @@ export class CardStore {
         body] = values;
       this.cards.push({ id, revision, site_id, manifest_id, plan_id, plan_version, packet_id, subject, artifact_hash,
         object_key, body: structuredClone(body) });
-    } else if (sql.startsWith('INSERT INTO usp_command_receipts')) {
+    } else if (sql.startsWith('INSERT INTO usp_property_card_revocations')) this.revoke(values);
+    else if (sql.startsWith('INSERT INTO usp_command_receipts')) {
       this.receipts.push({ subject: values[1], scope_key: values[2], operation: values[3], request_key: values[4],
         command_sha256: values[5], body: structuredClone(values[6]) });
     } else if (sql.startsWith('INSERT INTO usp_outbox(')) this.events.push(values[2]);

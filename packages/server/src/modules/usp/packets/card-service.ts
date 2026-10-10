@@ -62,23 +62,37 @@ function validateCard(raw: unknown) {
 export function cardAccessDenied() {
   return new AppError(403, 'CARD_ACCESS', 'Current operator access does not authorize this private card.');
 }
-function actor(ctx: RequestContext, card: PropertyCard) {
+export function actor(ctx: RequestContext, card: PropertyCard) {
   assertLocalUsp(ctx);
   if (canonical(ctx.principal) !== canonical(card.creator) || ctx.accessViewId !== card.accessViewId || ctx.policyVersion !== card.policyVersion)
     throw cardAccessDenied();
 }
-export async function expiredTx(client: PoolClient, expiresAt: string) {
-  return !(await client.query('SELECT clock_timestamp() < $1::timestamptz AS live', [expiresAt])).rows[0]?.live;
-}
 async function liveTx(client: PoolClient, expiresAt: string) {
-  if (await expiredTx(client, expiresAt)) throw new AppError(403, 'CARD_EXPIRED', 'This exact card revision expired.');
+  if (!(await client.query('SELECT clock_timestamp() < $1::timestamptz AS live', [expiresAt])).rows[0]?.live)
+    throw new AppError(403, 'CARD_EXPIRED', 'This exact card revision expired.');
+}
+/** Expiry and revocation of one stored revision, read together on the database clock. An unknown expiry stays unknown. */
+export async function cardLifecycleTx(client: PoolClient, cardId: string, revision: number, expiresAt: string | null) {
+  const row = (await client.query(`SELECT clock_timestamp() < $1::timestamptz AS live,
+    (SELECT body FROM usp_property_card_revocations WHERE card_id=$2 AND revision=$3) AS revocation`, [expiresAt, cardId, revision])).rows[0];
+  return { expired: expiresAt === null ? null : !row?.live, revocation: (row?.revocation ?? null) as unknown };
+}
+/** A revoked revision is refused before an expired one: revocation is the permanent state. */
+async function liveCardTx(client: PoolClient, card: PropertyCard) {
+  const state = await cardLifecycleTx(client, card.cardId, card.revision, card.expiresAt);
+  if (state.revocation) throw new AppError(403, 'CARD_REVOKED', 'This exact card revision was revoked.');
+  if (state.expired) throw new AppError(403, 'CARD_EXPIRED', 'This exact card revision expired.');
+}
+/** Held to commit by a revocation and by a new revision of the same card, so neither misses the other. */
+export async function lockCardTx(client: PoolClient, cardId: string) {
+  await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`property-card:${cardId}`]);
 }
 /** Whether a row's own columns still name this body at this exact card revision. */
 export function storedLinkageHolds(row: { object_key: unknown; artifact_hash: unknown }, card: PropertyCard, cardId: string, revision: number) {
   return card.cardId === cardId && card.revision === revision && row.artifact_hash === card.artifact.sha256
     && row.object_key === `usp/property-cards/${cardId}/${revision}/${card.artifact.sha256}`;
 }
-async function storedTx(client: PoolClient, cardId: string, revision: number) {
+export async function storedTx(client: PoolClient, cardId: string, revision: number) {
   const row = (await client.query('SELECT body,object_key,artifact_hash FROM usp_property_cards WHERE id=$1 AND revision=$2', [cardId, revision])).rows[0]
     ?? notFound('The exact property card revision is unavailable.');
   const card = validateCard(row.body);
@@ -135,7 +149,7 @@ export function link(card: PropertyCard, view: Executed) {
     || canonical(card.omissions) !== canonical(view.execution.omissions)) conflict('The card does not match its immutable plan and packet.');
 }
 async function authorityTx(client: PoolClient, ctx: RequestContext, card: PropertyCard, view: Executed) {
-  actor(ctx, card); link(card, view); await protectedTx(client, ctx, view); await liveTx(client, card.expiresAt);
+  actor(ctx, card); link(card, view); await protectedTx(client, ctx, view); await liveCardTx(client, card);
 }
 export async function currentRevisionTx(client: PoolClient, plan: AnyPacketPlan) {
   const row = (await client.query('SELECT revision FROM registry_records WHERE id=$1 AND site_id=$2 FOR SHARE',
@@ -170,6 +184,9 @@ export async function generatePropertyCard(ctx: RequestContext, raw: unknown, io
       link(old, view);
       const latest = (await client.query('SELECT max(revision) AS revision FROM usp_property_cards WHERE id=$1', [old.cardId])).rows[0];
       if (Number(latest?.revision) !== old.revision) conflict('A newer immutable card revision exists.');
+      await lockCardTx(client, old.cardId);
+      if ((await cardLifecycleTx(client, old.cardId, old.revision, old.expiresAt)).revocation)
+        throw new AppError(422, 'CARD_REVISION_REVOKED', 'The latest revision of this card was revoked. Create a separate card.');
       if (old.revision === 2147483647) throw new AppError(422, 'CARD_REVISION_BOUND', 'This card has reached its revision bound. Create a separate card.');
       revision = old.revision + 1;
     }
@@ -224,7 +241,7 @@ export async function readPropertyCard(ctx: RequestContext, raw: unknown, io: Pr
   return transaction(async client => {
     await authorityTx(client, ctx, saved.card, view);
     const currentTargetRevision = await currentRevisionTx(client, view.plan);
-    await authorizePlanTx(client, ctx, view.plan, true); await liveTx(client, saved.card.expiresAt);
+    await authorizePlanTx(client, ctx, view.plan, true); await liveCardTx(client, saved.card);
     return UspPropertyCardViewSchema.parse({ card: saved.card, currentTargetRevision,
       snapshotState: currentTargetRevision === saved.card.target.revision ? 'same_revision' : 'changed_revision' });
   });
