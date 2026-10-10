@@ -1,0 +1,64 @@
+{
+ "task": "K12",
+ "gates": ["GF4", "GF5"],
+ "base": "e434ab64",
+ "step0": {
+  "writtenBeforeCode": true,
+  "entries": {
+   "common": [
+    "PDF plan create parses a registry_record target and snapshot scope; assertLocalUsp requires the local operator.",
+    "protectPdfPlanTx calls targetTx: scopedManifestTx checks scope/access view/policy (NOT_FOUND or STALE_REVISION).",
+    "The manifest must select precisely one matching target (PACKET_PLAN_SELECTION); captured target/member hashes must agree (STALE_REVISION).",
+    "The target must be the same id, site and revision and a building/floor/space (PACKET_PLAN_TARGET).",
+    "assessPdfPlanTx checks current committed target, target history, full captured identity/aliases and original authority.",
+    "Retired/cancelled targets are PACKET_PLAN_TARGET_ACCESS; changed current/captured context is STALE_REVISION."
+   ],
+   "sourceStatement": [
+    "A space with body.sourceOnly has exactly one entry under pack1-single-region-image/1; statementRecord validates SourceStatedRecordSchema.",
+    "Its selection bindingId is sourceStatementHandle(input.target), not a persisted citation id.",
+    "The recorded source revision/hash must be captured in the same manifest; missing member is STALE_REVISION, mismatched statement is PACKET_SOURCE_STATEMENT.",
+    "prepareSourceStatementBindings checks current canonical original, page metadata and bounded crop; region beyond the page is PACKET_SOURCE_STATEMENT.",
+    "IMPORTANT: changing one character of the handle does NOT throw from create today. It skips preparation, creates a blocked plan with committed_region_binding_unavailable, and confirm refuses PACKET_PLAN_BLOCKED. No existing behavior will be changed to turn that into a create refusal."
+   ],
+   "storedBindings": [
+    "Other targets load RegistryDocumentCitationsSchema from captured target.body.documentCitations (up to 25).",
+    "Region ids are the stored citation.id, derived at reviewed canonical commit by regionCitationId or imageRegionCitationId.",
+    "targetTx finds the id and citation version selected by recipe: PDF page region, original image region, or mixed entry kind.",
+    "Matching binding must name target, an earlier target revision and record_evidence purpose; mismatch or broken integrity is STALE_REVISION.",
+    "Missing/non-region/wrong-version id yields blocked_required_context with committed_region_binding_unavailable, not a create refusal.",
+    "Source access checks current operator, access digest, retained bytes, original case and validation; PACKET_PDF_SOURCE_ACCESS, REGISTRY_REGION_SOURCE_DENIED, REGISTRY_REGION_COPY_UNSUPPORTED and STALE_REVISION can refuse.",
+    "Image/mixed recipes support building/floor only (PACKET_IMAGE_PDF_TARGET); aggregate/original-set recipe limits add PACKET_PDF_ORIGINAL_BYTES and PACKET_PDF_ORIGINAL_SCOPE."
+   ]
+  },
+  "projection": {
+   "order": [
+    "assertLocalUsp; parse generate command; fingerprint it; executed() calls readPacketPlan, requires confirmed/executed/complete view (CARD_EXECUTED_PLAN_REQUIRED).",
+    "prepare transaction: protectedTx protects plan disclosure, authorizePlanTx checks access, planLinkageTx reads exact stored plan/confirmation/execution and PDF packet linkage.",
+    "requestReceiptTx takes transaction advisory lock and reads receipt. Replay validates card, actor/link/protected plan/lifecycle and stored card linkage, returning before expiry/projection.",
+    "No replay: expiry must be future and <=24 hours (CARD_EXPIRY).",
+    "Update: storedTx exact old card; actor; same plan/version and expected manifest (CARD_REVISION_CONTEXT); link; latest revision (STALE_REVISION); transaction card lock; lifecycle revocation (CARD_REVISION_REVOKED); integer revision bound (CARD_REVISION_BOUND).",
+    "projectCardFactsTx reads scoped manifest and exact captured bodies including source-stated ancestors/citation, verifies hashes and projects facts without writes.",
+    "authorizePlanTx again; database liveTx on requested expiry (CARD_EXPIRED). Prepare commits.",
+    "linkedPacket reads protected private packet bytes, validates receipt and linkage; then id/resolver/profile selection, PDF rendering, object put (first persistent write).",
+    "Publication repeats prepare, compares projection/revision, reauthorizes and inserts card/receipt/outbox atomically."
+   ],
+   "previewRepeats": [
+    "Same executed-view read and protectedTx; same expiry/revision/projection/authorization/database-clock checks via extracted shared helpers; same linkedPacket read after transaction.",
+    "No receipt lookup: a preview has no request key and predicts a new command, never a replay. It takes no receipt lock.",
+    "Executed view, planLinkageTx and linkedPacket require an existing executed packet; expiry/revision guards and projection itself do not inherently require execution, but this route deliberately requires it."
+   ]
+  },
+  "writes": [
+   "All preparation and linked-packet authority helpers issue SELECTs and transaction-scoped locks only; no receipt, lock row or access log is inserted.",
+   "requestReceiptTx only locks and SELECTs; preview skips it entirely. Row/advisory locks in shared protection expire at commit/rollback.",
+   "FOR SHARE helpers prohibit PostgreSQL READ ONLY transactions; use ordinary transactions with no DML, as K7 does, and assert no INSERT/UPDATE/DELETE in the protocol trace."
+  ],
+  "facts": [
+   "generate answer data.facts is UspPropertyCardSchema.facts: ordered array of UspPropertyCardFactSchema (PropertyCardFact).",
+   "Both ASCII and Unicode renderers iterate precisely these facts, labels and values; unavailable/not_assessed values get a state prefix.",
+   "They also print a title/private-revision/snapshot header, application-summary disclaimer, footer card/plan/packet ids, entry counts, capture time, expiry, packet hash, fixed-snapshot and separate-access notices, QR/resolver link and private-access captions.",
+   "Preview answers facts, not an entire PDF transcript; it invents no id and cannot answer future card-id/QR/footer lines or guarantee font/layout rendering."
+  ]
+ },
+ "state": "Step 0 complete; implementation pending."
+}
