@@ -49,7 +49,8 @@ export function undrawnBuildings(area: NormalizedArea, footprints: FootprintInpu
 
 /**
  * What the map draws: the canonical records of the area and of the explored building. Areas uploaded in the
- * browser (demo import) have no canonical record and keep drawing their context features.
+ * browser (demo import) have no canonical record and keep drawing their context features. The area record is
+ * returned too, for the imagery it lists.
  */
 export function useCanonicalFootprints(
   areaId: string | undefined,
@@ -65,5 +66,5 @@ export function useCanonicalFootprints(
   );
   const uploaded = useMemo(() => (isDemoId(areaId) ? toFootprints(features) : null), [areaId, features]);
   const drawn = uploaded ? { footprints: uploaded, undrawn: [] } : canonical;
-  return { ...drawn, pending: area.isLoading, error: area.error };
+  return { ...drawn, area: area.data, pending: area.isLoading, error: area.error };
 }

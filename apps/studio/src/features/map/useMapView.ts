@@ -6,19 +6,39 @@ export interface MapView {
   layers: SceneLayers;
   /** Recorded road and park names on the map. */
   labels: boolean;
-  /** Source imagery and measured point overlays, when the area has them. */
-  overlays: { imagery: boolean; lidar: boolean };
+  /**
+   * Source imagery and measured point overlays, when the area has them. Imagery is null until the viewer
+   * chooses: the map then shows the pictures an area's canonical read lists, and no other imagery.
+   */
+  overlays: { imagery: boolean | null; lidar: boolean };
 }
 
 const KEY = 'bhuaayam.mapView';
-const DEFAULT: MapView = { look: 'enhanced', layers: { parcels: true, roads: true, publicLand: true, trees: true }, labels: true, overlays: { imagery: false, lidar: false } };
+const DEFAULT: MapView = {
+  look: 'enhanced', layers: { parcels: true, roads: true, publicLand: true, trees: true }, labels: true,
+  overlays: { imagery: null, lidar: false },
+};
+
+type SavedView = Partial<MapView> & { overlayPreferenceVersion?: number };
+
+/**
+ * Older preferences enabled aerial imagery automatically; they require a new explicit choice. Version 1 stored
+ * imagery off whether or not it was chosen, so only its point-overlay choice is kept.
+ */
+function savedOverlays(saved: SavedView): MapView['overlays'] {
+  if (saved.overlayPreferenceVersion === 2) return { ...DEFAULT.overlays, ...saved.overlays };
+  if (saved.overlayPreferenceVersion === 1) return { ...DEFAULT.overlays, lidar: saved.overlays?.lidar ?? false };
+  return DEFAULT.overlays;
+}
 
 function read(): MapView {
   try {
-    const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null') as (Partial<MapView> & { overlayPreferenceVersion?: number }) | null;
+    const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null') as SavedView | null;
     if (!saved) return DEFAULT;
-    // Older preferences enabled aerial imagery automatically; require a new explicit choice.
-    return { look: saved.look ?? DEFAULT.look, labels: saved.labels ?? DEFAULT.labels, layers: { ...DEFAULT.layers, ...saved.layers }, overlays: saved.overlayPreferenceVersion === 1 ? { ...DEFAULT.overlays, ...saved.overlays } : DEFAULT.overlays };
+    return {
+      look: saved.look ?? DEFAULT.look, labels: saved.labels ?? DEFAULT.labels,
+      layers: { ...DEFAULT.layers, ...saved.layers }, overlays: savedOverlays(saved),
+    };
   } catch {
     return DEFAULT;
   }
@@ -30,7 +50,9 @@ export function useMapView() {
   const update = useCallback((patch: Partial<MapView>) => {
     setView((current) => {
       const next = { ...current, ...patch, layers: { ...current.layers, ...patch.layers }, overlays: { ...current.overlays, ...patch.overlays } };
-      try { localStorage.setItem(KEY, JSON.stringify({ ...next, overlayPreferenceVersion: 1 })); } catch { /* storage unavailable: keep in memory */ }
+      try {
+        localStorage.setItem(KEY, JSON.stringify({ ...next, overlayPreferenceVersion: 2 }));
+      } catch { /* storage unavailable: keep in memory */ }
       return next;
     });
   }, []);
