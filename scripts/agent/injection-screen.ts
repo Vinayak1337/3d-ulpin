@@ -40,7 +40,7 @@ type Surface = 'table' | 'document';
 type Layer = 'teacher' | 'raw';
 type Kind = keyof typeof CAPS;
 type Span = readonly [number, number];
-export type ScreenClass = {
+type ScreenClass = {
   id: string;
   meaning: string;
   surfaces: readonly Surface[];
@@ -48,7 +48,7 @@ export type ScreenClass = {
   find: (text: string, cap: number) => Span[];
 };
 export type Item = { layer: Layer; kind: Kind; text: string; header: string; where: string; asPrompt: boolean };
-export type FamilyTally = {
+type FamilyTally = {
   family: string;
   split: string;
   surface: Surface;
@@ -66,7 +66,7 @@ type Group = {
 };
 type NotScreened = { family: string; file: string; reason: string; code: string };
 type Refusal = { family: string; where: string; code: string; bodyBytes: number };
-export type Screen = {
+type Screen = {
   tallies: Map<string, FamilyTally>;
   groups: Map<string, Group>;
   notScreened: NotScreened[];
@@ -258,9 +258,7 @@ function promptTable(prepared: ReturnType<typeof prepareTable>): PromptTable {
   return { columns: request.user.columnProfile.columns, bodyBytes: request.bodyBytes, code: request.code };
 }
 
-type RequestNote = { bodyBytes: number; code?: string };
-
-function noteRequest(screen: Screen, tally: FamilyTally, where: string, request: RequestNote) {
+function noteRequest(screen: Screen, tally: FamilyTally, where: string, request: Omit<Forwarded<unknown>, 'user'>) {
   tally.n.promptBytesMax = Math.max(tally.n.promptBytesMax ?? 0, request.bodyBytes);
   bump(tally.n, 'promptRequests');
   if (!request.code) return;
