@@ -1,0 +1,647 @@
+{
+  "task": "K13",
+  "base": "113dfb8f",
+  "decision": "STOP after Step 0; no production pin change",
+  "references": {
+                  "input": "packages/contracts/src/usp/document-ingestion.ts",
+                  "context": "packages/server/src/modules/usp/ingestion/document-context.ts",
+                  "documents": "packages/server/src/modules/usp/ingestion/documents.ts",
+                  "worker": "packages/server/src/modules/usp/ingestion/document-worker.ts",
+                  "authority": "packages/server/src/modules/usp/ingestion/document-authority.ts",
+                  "domain": "packages/server/src/modules/cases/domain.ts",
+                  "events": "packages/server/src/modules/usp/ingestion/events.ts",
+                  "ingestion": "packages/server/src/modules/usp/ingestion/",
+                  "test": "tests/document-later-receipt.test.ts"
+                },
+  "referenceConvention": [
+                           "Aliases resolve to the files above; ingestion+basename resolves within ingestion. Long prose is a",
+                           "fragment array joined by spaces; refs and enumerations remain ordinary lists."
+                         ],
+  "inputFields": [
+                   {"field":"version","protects":"Document input contract version","refs":["input:19","context:37"]},
+                   {
+                     "field": "jobId",
+                     "protects": "Exact logical job identity, not another extraction",
+                     "refs": ["input:19","context:37"]
+                   },
+                   {
+                     "field": "caseId",
+                     "protects": "Source membership and private case authority",
+                     "refs": ["input:19","context:37","context:28"]
+                   },
+                   {
+                     "field": "caseRevision",
+                     "protects": "Revision under which the read was queued; currently invalidated by any case bump",
+                     "refs": ["input:19","context:37","context:73"]
+                   },
+                   {
+                     "field": "caseContextSha256",
+                     "protects": "Case frame, context and site binding",
+                     "refs": ["input:20","context:24","context:38"]
+                   },
+                   {"field":"sourceId","protects":"Exact original row","refs":["input:20","context:28","context:38"]},
+                   {
+                     "field": "familyId",
+                     "protects": "Original family and supersession lineage",
+                     "refs": ["input:20","context:32","context:38"]
+                   },
+                   {
+                     "field": "sourceRevision",
+                     "protects": "Exact source revision, with latest-family check outside the fingerprint",
+                     "refs": ["input:20","context:32","context:38","context:73"]
+                   },
+                   {
+                     "field": "sourceSha256",
+                     "protects": "Exact original bytes",
+                     "refs": ["input:20","context:31","context:39","worker:45"]
+                   },
+                   {
+                     "field": "sourceBytes",
+                     "protects": "Exact byte count and bounded original",
+                     "refs": ["input:21","context:31","context:39","worker:45"]
+                   },
+                   {
+                     "field": "objectKey",
+                     "protects": "Storage address of original; hidden from generic projections",
+                     "refs": ["input:21","context:39","worker:44"]
+                   },
+                   {
+                     "field": "subject",
+                     "protects": "Server-configured local process owner, not human authentication",
+                     "refs": ["input:22","context:30","context:40","packages/server/src/modules/usp/principal.ts:22"]
+                   },
+                   {
+                     "field": "accessSha256",
+                     "protects": "Subject, accessViewId, access policyVersion and entitlementVersion",
+                     "refs": ["input:22","context:40","events:24","packages/server/src/modules/usp/principal.ts:34"]
+                   },
+                   {
+                     "field": "policyVersion",
+                     "protects": "Native document processing/data policy constant, not a per-source permission ledger",
+                     "refs": ["input:4","input:22","context:40"]
+                   },
+                   {
+                     "field": "readerSha256",
+                     "protects": "Hash of reader, contract, redaction and bridge implementation files",
+                     "refs": ["input:22","context:40","ingestion+document-native.ts:10-25"]
+                   },
+                   {
+                     "field": "gatewayPolicySha256",
+                     "protects": "Current model gateway policy; null for native_only",
+                     "refs": ["input:23","context:16-17","context:41"]
+                   },
+                   {
+                     "field": "layoutCap",
+                     "protects": "Configured bounded model layout allowance; null for native_only",
+                     "refs": ["input:23","context:11-14","context:41"]
+                   },
+                   {
+                     "field": "mode",
+                     "protects": "native_only versus propose execution request",
+                     "refs": ["input:23","context:36","context:41"]
+                   },
+                   {
+                     "field": "ocrSelection",
+                     "protects": "Optional exact PDF page and region selection",
+                     "refs": ["input:11","input:24","context:36","context:42"]
+                   },
+                   {
+                     "field": "ocrConfigSha256",
+                     "protects": "Optional operator OCR configuration paired with selection",
+                     "refs": ["input:24-25","context:42"]
+                   },
+                   {
+                     "field": "archiveSelection",
+                     "protects": "Optional exact member ordinal, member hash and member bytes; native_only without OCR",
+                     "refs": ["input:12-13","input:24-26","context:36","context:42","context:78-79"]
+                   }
+                 ],
+  "fingerprints": [
+                    {
+                      "what": [
+                                "Canonical key-sorted object / ordered array serialization, SHA-256; entire parsed input including",
+                                "all optional present fields. There is no excluded caseRevision field."
+                              ],
+                      "refs": [
+                                "domain:38-49",
+                                "documents:50-53",
+                                "context:73",
+                                "packages/server/src/modules/usp/jobs.ts:41-45"
+                              ]
+                    },
+                    {
+                      "what": [
+                                "Result stores the unchanged complete input; read checks its full fingerprint, part hashes and",
+                                "complete continuation hashes. Result native reader and source citations must match input."
+                              ],
+                      "refs": ["input:199-236","documents:62-84","worker:54-55"]
+                    },
+                    {
+                      "what": [
+                                "Case context digest excludes sources and source counts; receipt INSERT and case UPDATE do not",
+                                "alter frame/context/site. Only caseRevision changes for an unrelated receipt with stable process",
+                                "configuration."
+                              ],
+                      "refs": ["context:24","documents:123-127","test:190-210"]
+                    },
+                    {
+                      "what": [
+                                "No separate per-original licence/permission field is present in DocumentInputSchema. Existing",
+                                "access policy, DOCUMENT_POLICY, redaction implementation and gateway policy are pinned; do not",
+                                "claim a new data-policy journal exists."
+                              ],
+                      "refs": ["input:19-26","context:40-42","ingestion+document-native.ts:23-25"]
+                    }
+                  ],
+  "caseRevisionWriters": [
+                           {
+                             "event": "Document original added OR source family revised",
+                             "refs": ["documents:100-106","documents:123-127"]
+                           },
+                           {
+                             "event": "Manual GIS/tabular original added OR source family revised",
+                             "refs": ["ingestion+service.ts:159-175"]
+                           },
+                           {
+                             "event": "Large original v1 finalisation publishes original",
+                             "refs": ["ingestion+large-original.ts:265-269"]
+                           },
+                           {
+                             "event": "Large original v2 finalisation publishes original",
+                             "refs": ["ingestion+large-original.ts:436-439"]
+                           },
+                           {"event":"Raster original added","refs":["ingestion+raster-window.ts:138-144"]},
+                           {"event":"Point original added","refs":["ingestion+point-batch.ts:137-143"]},
+                           {"event":"IFC original added","refs":["ingestion+ifc.ts:167-170"]},
+                           {"event":"DXF original added","refs":["ingestion+dxf.ts:167-170"]},
+                           {"event":"KML original added","refs":["ingestion+kml.ts:167-170"]},
+                           {"event":"CityGML original added","refs":["ingestion+citygml.ts:167-170"]},
+                           {"event":"CityJSON original added","refs":["ingestion+cityjson.ts:159-162"]},
+                           {"event":"glTF original added","refs":["ingestion+gltf.ts:167-170"]},
+                           {"event":"OBJ original added","refs":["ingestion+obj.ts:167-170"]},
+                           {"event":"GeoParquet original added","refs":["ingestion+geoparquet.ts:237-240"]},
+                           {
+                             "event": "Prepare units from inspected sources; changes frame/context/units",
+                             "refs": ["domain:593-602"]
+                           },
+                           {"event":"Apply source levels to candidate units","refs":["domain:146-150","domain:662-668"]},
+                           {"event":"Edit unit outline, limits or calibration","refs":["domain:723-731"]},
+                           {"event":"Create manually outlined unit","refs":["domain:821-828"]},
+                           {
+                             "event": "Officer placement review",
+                             "refs": ["packages/server/src/modules/officer/officer-preparation.ts:450-459"]
+                           },
+                           {
+                             "event": "Prepare canonical detail derivative; add/revise derivative source, units and context",
+                             "refs": ["packages/server/src/modules/officer/officer-preparation.ts:657-701"]
+                           }
+                         ],
+  "changesWithoutCaseRevision": [
+                                  {
+                                    "event": "Legacy uploadSource adds/revises a family and records source.received; it does NOT bump cases",
+                                    "refs": ["domain:305-414"]
+                                  },
+                                  {
+                                    "event": "Officer preparation sets case frame without a revision bump",
+                                    "refs": [
+                                              "packages/server/src/modules/officer/officer-preparation.ts:373",
+                                              "packages/server/src/modules/officer/officer-preparation.ts:384"
+                                            ]
+                                  },
+                                  {
+                                    "event": "Registry seed binds site_id without a revision bump (still changes context digest)",
+                                    "refs": ["packages/server/src/modules/registry/registry-seed.ts:220"]
+                                  },
+                                  {
+                                    "event": "Build publication updates current_snapshot_id/updated_at only",
+                                    "refs": ["packages/server/src/modules/cases/processing.ts:183-192"]
+                                  },
+                                  {
+                                    "event": [
+                                               "Case archive script changes archived without a revision bump; document authority denies archived",
+                                               "cases"
+                                             ],
+                                    "refs": ["scripts/archive-workspaces.ts:11","context:22"]
+                                  },
+                                  {
+                                    "event": [
+                                               "Local subject/access versions, native policy, reader and gateway/OCR configuration change outside",
+                                               "cases; no case revision event is recorded"
+                                             ],
+                                    "refs": [
+                                              "packages/server/src/modules/usp/principal.ts:22-36",
+                                              "events:24-26",
+                                              "context:11-17",
+                                              "context:40-42"
+                                            ]
+                                  },
+                                  {
+                                    "event": [
+                                               "Document completion stores accepted result pointer without a case bump; proposal/decision review",
+                                               "stores operations only"
+                                             ],
+                                    "refs": [
+                                              "worker:65-76",
+                                              "ingestion+document-proposals.ts:328-334",
+                                              "ingestion+document-proposals.ts:374-380"
+                                            ]
+                                  },
+                                  {
+                                    "event": [
+                                               "No production DELETE FROM sources or case source-removal route found in packages/server/src;",
+                                               "absent sources fail notFound, newer same-family source fails latest. Do not claim deletion",
+                                               "advances revision."
+                                             ],
+                                    "refs": [
+                                              "context:28",
+                                              "context:32",
+                                              "context:73",
+                                              "database/sql/01-core/core.sql:15-30"
+                                            ]
+                                  }
+                                ],
+  "historyProof": {
+                    "complete": false,
+                    "observations": [
+                                      {
+                                        "what": "cases stores only current revision/frame/context, not revision snapshots or change kinds",
+                                        "refs": ["database/sql/01-core/core.sql:3-14"]
+                                      },
+                                      {
+                                        "what": "events stores kind/message/actor/time, no fromRevision/toRevision or exact structured source changes",
+                                        "refs": ["database/sql/01-core/core.sql:77-85","domain:133-144"]
+                                      },
+                                      {
+                                        "what": [
+                                                  "Case ingestion outbox stores current caseRevision and job/source change notifications, not a",
+                                                  "unique exhaustive transition; queued/completed events share a revision and source",
+                                                  "additions/revisions are not distinct reasons"
+                                                ],
+                                        "refs": [
+                                                  "events:57-65",
+                                                  "packages/contracts/src/usp/ingestion-events.ts:29-30",
+                                                  "packages/contracts/src/usp/ingestion-events.ts:69-76",
+                                                  "documents:54"
+                                                ]
+                                      },
+                                      {
+                                        "what": [
+                                                  "Unit edit bumps revision and records only a textual unit.edited event, with no ingestion outbox",
+                                                  "transition. It can leave all document pins other than caseRevision unchanged. Current context",
+                                                  "equality cannot prove addition-only history."
+                                                ],
+                                        "refs": ["domain:723-731","context:24","context:37-42"]
+                                      },
+                                      {
+                                        "what": [
+                                                  "Source created_at and family revisions lack the case revision at which they were added. Operations",
+                                                  "are command-specific receipts, not a complete case revision ledger; snapshots are optional build",
+                                                  "results, not every transition."
+                                                ],
+                                        "refs": [
+                                                  "database/sql/01-core/core.sql:15-30",
+                                                  "database/sql/01-core/core.sql:68-96"
+                                                ]
+                                      }
+                                    ],
+                    "requiredRecording": [
+                                           [
+                                             "Atomically record every case revision transition under the existing case lock: caseId,",
+                                             "fromRevision, toRevision, explicit change kind and exact affected",
+                                             "sourceId/familyId/sourceRevision/hash (when applicable)."
+                                           ],
+                                           [
+                                             "Distinguish new-family source_added from source_revised/replaced/removed,",
+                                             "review/unit/frame/context/site changes and policy/access changes. Combined changes must never be",
+                                             "classified as addition-only."
+                                           ],
+                                           [
+                                             "Enforce one complete structured transition per case revision and contiguous coverage;",
+                                             "missing/legacy/unknown/conflicting history fails closed. Never backfill inferred addition-only",
+                                             "truth from timestamps or current rows."
+                                           ],
+                                           [
+                                             "Record before/after authority hashes or monotonic policy/access epochs for mutable security/data",
+                                             "policy if historical changes including a change-and-revert must invalidate reads. Retain the",
+                                             "existing current reader/access/model/source checks."
+                                           ],
+                                           [
+                                             "Cover all 20 case revision writer sites above, not just document receipts; additions of another",
+                                             "format must be distinguishable too. Schema, migrations and non-document writers require a",
+                                             "separately owned foundation task."
+                                           ]
+                                         ]
+                  },
+  "directAssertCallers": [
+                           {
+                             "caller": "worker:21",
+                             "behavior": [
+                                           "Claim callback before job locks and repeated authorize boundaries (40,46,48,50,59); claim conflict",
+                                           "becomes stale/DOCUMENT_INPUT_STALE unless an active attempt still owns work (35-38). No original",
+                                           "read on refused claim."
+                                         ]
+                           },
+                           {
+                             "caller": "worker:80",
+                             "behavior": "Completion validator; conflict caught at 82-83, fenced terminal stale bookkeeping at 86-97."
+                           },
+                           {
+                             "caller": "documents:45",
+                             "behavior": "Active job reuse refuses conflict; cannot enqueue over an already-active stale input."
+                           },
+                           {
+                             "caller": "documents:99",
+                             "behavior": "Retain idempotent replay refuses stale job instead of rewriting pins."
+                           },
+                           {"caller":"documents:140","behavior":"Retry idempotent replay refuses stale prior input."},
+                           {
+                             "caller": "documents:154",
+                             "behavior": "Status catches 409, returns status stale/code DOCUMENT_INPUT_STALE and no derivative."
+                           },
+                           {
+                             "caller": "documents:162",
+                             "behavior": [
+                                           "Status reauthorizes after object I/O; a new conflict propagates rather than disclosing under",
+                                           "changed pins."
+                                         ]
+                           },
+                           {
+                             "caller": "authority:65",
+                             "behavior": [
+                                           "pins=current snapshot authority propagates conflict. Recursive copied lineage (77) and capture",
+                                           "wrapper (115) preserve the same pins choice."
+                                         ]
+                           },
+                           {
+                             "caller": "ingestion+document-model.ts:44",
+                             "behavior": [
+                                           "Layout reservation requires current locked input before operations/provider allowance; failure",
+                                           "propagates. Provider authorization callbacks at 76-79 use worker authorize; unavailable model",
+                                           "handling at 102-106 does not bypass worker completion pins."
+                                         ]
+                           },
+                           {
+                             "caller": "ingestion+document-proposals.ts:188",
+                             "behavior": "Stored quote product authorization before result read; conflict refuses proposal command."
+                           },
+                           {
+                             "caller": "ingestion+document-proposals.ts:198",
+                             "behavior": "Quote product authorization after result read; conflict refuses proposal command."
+                           },
+                           {
+                             "caller": "ingestion+document-proposals.ts:316",
+                             "behavior": "Final proposal save under insertion locks; conflict prevents snapshot insertion."
+                           },
+                           {
+                             "caller": "ingestion+document-association-authority.ts:26",
+                             "behavior": [
+                                           "Association read/write and registry review/commit require exact current input; conflict propagates",
+                                           "before accepted result check."
+                                         ]
+                           },
+                           {
+                             "caller": "ingestion+sufficiency-context.ts:133",
+                             "behavior": "Sufficiency read catches 409 and reports processing stale with no parts."
+                           },
+                           {
+                             "caller": "ingestion+sufficiency-context.ts:141",
+                             "behavior": "Recheck after result I/O; conflict propagates."
+                           }
+                         ],
+  "authorityCurrentBranchCallers": [
+                                     {
+                                       "caller": "packages/server/src/modules/usp/external-scene.ts:40,53",
+                                       "mode": "default snapshot/current; propagate refusal"
+                                     },
+                                     {
+                                       "caller": "packages/server/src/modules/areas/package-authority.ts:35",
+                                       "mode": "default snapshot/current; propagate refusal"
+                                     },
+                                     {
+                                       "caller": "packages/server/src/modules/areas/area-display-proposals.ts:34",
+                                       "mode": "default snapshot/current; propagate refusal"
+                                     },
+                                     {
+                                       "caller": "packages/server/src/modules/registry/registry-metadata.ts:25",
+                                       "mode": [
+                                                 "snapshot with caller pins, default current; registryDocumentSourceAccessTx:32 and",
+                                                 "registrySourceTx:42 propagate refusal"
+                                               ]
+                                     },
+                                     {
+                                       "caller": "packages/server/src/modules/usp/declarations/authority.ts:83",
+                                       "mode": [
+                                                 "new evidence snapshot/current propagates refusal; replay original mode does not enter",
+                                                 "current-input branch"
+                                               ]
+                                     },
+                                     {
+                                       "caller": "packages/server/src/modules/usp/packets/plan-authority.ts:193",
+                                       "mode": "captureDocumentSourceTx defaults current (authority:113-115); propagate refusal"
+                                     },
+                                     {
+                                       "caller": "authority:77,115",
+                                       "mode": "recursive parent and capture wrapper, forwarding same current/retained choice"
+                                     }
+                                   ],
+  "authorityNonCurrentCallers": [
+                                  {
+                                    "caller": "packages/server/src/modules/usp/snapshots.ts:28,39",
+                                    "mode": "explicit retained; locateDocumentInputTx reports freshness, not current derivation authority"
+                                  },
+                                  {
+                                    "caller": "packages/server/src/modules/registry/registry-metadata.ts:53-55",
+                                    "mode": "recorded source uses retained; still checks private original and exposes freshness"
+                                  },
+                                  {
+                                    "caller": "packages/server/src/modules/areas/areas.ts:1597",
+                                    "mode": "copy; document copy prohibited by authority:92 independently of extraction pins"
+                                  },
+                                  {
+                                    "caller": "packages/server/src/modules/cases/case-intake-service.ts:56,61",
+                                    "mode": "original; no extraction-current branch"
+                                  },
+                                  {
+                                    "caller": "ingestion+source-building-review.ts:24",
+                                    "mode": "original; source-only review authority"
+                                  },
+                                  {
+                                    "caller": "ingestion+sufficiency-context.ts:34,60",
+                                    "mode": "original; actual extraction evidence separately uses direct assert callers above"
+                                  },
+                                  {
+                                    "caller": "packages/server/src/modules/usp/declarations/authority.ts:74,83",
+                                    "mode": "replay original authority"
+                                  }
+                                ],
+  "retryToday": {
+                  "route": "POST /api/v1/ingestion/cases/:caseId/sources/:sourceId/documents/retry",
+                  "refs": [
+                            "apps/api/src/modules/ingestion/documents.controller.ts:12,43-48",
+                            "documents:132-144",
+                            "documents:40-48"
+                          ],
+                  "who": [
+                           "Configured local operator context under private spatial/cross-origin guard; server derives",
+                           "subject. Pin current case revision, source revision/hash, mode and optional selection; bounded 32",
+                           "jobs/source."
+                         ],
+                  "genericRetry": "Rejected DOCUMENT_RETRY_REQUIRED; packages/server/src/modules/cases/domain.ts:937-938",
+                  "dispatcher": [
+                                  "Runs queued/running document jobs, not stale ones; no successor rule:",
+                                  "packages/server/src/modules/cases/processing.ts:309-310; worker:19,35-38"
+                                ],
+                  "studio": [
+                              "None for document re-extraction. Repository search of apps/studio/src found no documents/retry",
+                              "caller. CitedPageViewer.tsx:85 retries a page GET, not a document job."
+                            ]
+                },
+  "reproduction": {
+                    "refs": ["test:190-210","test:212-226","test:228-236","documents:123-127","worker:21-38"],
+                    "harness": [
+                                 "Existing in-process global ulpinPool and S3Client.send substitutions; actual retain/enqueue/job",
+                                 "registration/claim/failure/status/accept functions. No database/runtime or network. Unsupported",
+                                 "binary controls, not operational documents."
+                               ],
+                    "two": [
+                             "First input differs only in caseRevision; claim refused before attempt or read I/O;",
+                             "jobs.status=stale, metadata.logical_state=failed, code DOCUMENT_INPUT_STALE; status read returns",
+                             "stale."
+                           ],
+                    "fourBefore": ["stale","stale","stale","completed"],
+                    "fourCodes": ["DOCUMENT_INPUT_STALE","DOCUMENT_INPUT_STALE","DOCUMENT_INPUT_STALE",null],
+                    "fourAfter": [
+                                   "Unchanged: repair deliberately not attempted under stop rule; last completed native status is",
+                                   "unsupported, not extraction success."
+                                 ],
+                    "keptRegression": [
+                                        "Executable test.todo expects four succeeded jobs and currently fails with three stale jobs. Remove",
+                                        "todo and replace defect assertions when a safe repair is authorised."
+                                      ],
+                    "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/document-later-receipt.test.ts",
+                    "exit": 0,
+                    "pass": 2,
+                    "todo": 1
+                  },
+  "otherReadersCodeOnly": [
+                            [
+                              "streaming-vector: admission ingestion+streaming-vector.ts:131; check:58-67; claim",
+                              "ingestion+streaming-vector-worker.ts:135, heartbeat:178, publish:59, completion:214-225; read",
+                              "ingestion+streaming-vector.ts:74-90 reports case_advanced. Later receipt makes queued/running job",
+                              "stale/STREAMING_CONTEXT_STALE (worker:143,100-106); retained reads remain accessible as",
+                              "noncurrent."
+                            ],
+                            [
+                              "chunk-mapping: admission ingestion+chunk-mapping.ts:54,223; check:111-124 via raw streaming pin;",
+                              "claim ingestion+chunk-mapping-worker.ts:289, heartbeat:294, publication:154,216, completion:235;",
+                              "history read ingestion+chunk-mapping.ts:144-178 can report noncurrent. Later receipt stales",
+                              "queued/running work/MAPPING_CONTEXT_STALE (worker:257,327-333)."
+                            ],
+                            [
+                              "streamed-profile: admission ingestion+streamed-profile.ts:35,153; check:41-47 via raw streaming",
+                              "pin; claim ingestion+streamed-profile-worker.ts:164, heartbeat:173, publish:85, completion:110;",
+                              "read ingestion+streamed-profile.ts:195 strict. Later receipt stales queued/running",
+                              "work/STREAMED_PROFILE_CONTEXT_STALE (worker:168,135-140)."
+                            ],
+                            [
+                              "projected-vector: admission ingestion+projected-vector.ts:118-148; check:42-46; dispatch",
+                              "ingestion+projected-publication.ts:77 (after geo dispatch, cases/processing.ts:320-331);",
+                              "publication claim:135 checks bounds only, heartbeat:152,157,161 checks bounds only; stage:108,",
+                              "seal:154, completion:165 check pins. Read ingestion+projected-vector.ts:81 remains strict even",
+                              "immutable_read. Later receipt stales at dispatch or next stage/publication",
+                              "check/PROJECTED_CONTEXT_STALE (publication:51-53), not heartbeat itself."
+                            ],
+                            [
+                              "private-mvt: admission packages/server/src/modules/usp/tiles/service.ts:115; check:44-56 compares",
+                              "full source with caseRevision; preclaim packages/server/src/modules/usp/tiles/publication.ts:126,",
+                              "claim:128 and heartbeat:123 check bounds only; cell:160 and completion:115 check current pins;",
+                              "read service.ts:60,84 still compares full source. Later receipt stales queued/running",
+                              "work/MVT_CONTEXT_STALE at current checks (publication:42-43), not heartbeat itself."
+                            ],
+                            [
+                              "raster-window: admission ingestion+raster-window.ts:131,158; check:45-48; claim",
+                              "ingestion+raster-window-worker.ts:85-88, execution boundaries:96, completion:125; no",
+                              "lease-heartbeat function, bounded operation reauthorization instead; read",
+                              "ingestion+raster-window.ts:102,175-182 reports stale and denies artifact. Later receipt stales",
+                              "queued/running work/RASTER_INPUT_STALE (worker:19,51-54)."
+                            ],
+                            [
+                              "point-batch: admission ingestion+point-batch.ts:130,157; check:45-48; claim",
+                              "ingestion+point-batch-worker.ts:94-97, execution boundaries:105, completion:134; no",
+                              "lease-heartbeat function, bounded operation reauthorization instead; read",
+                              "ingestion+point-batch.ts:101,174-181 reports stale and denies artifact. Later receipt stales",
+                              "queued/running work/POINT_INPUT_STALE (worker:19,59-62)."
+                            ],
+                            [
+                              "KML: admission ingestion+kml.ts:158,189; pin fingerprint check:79-82; claim",
+                              "ingestion+kml-worker.ts:81,91; execution rechecks:95,105; completion:128-129; read",
+                              "ingestion+kml.ts:123. No lease heartbeat; later receipt stales queued/running work/KML_INPUT_STALE",
+                              "(worker:42)."
+                            ],
+                            [
+                              "DXF: admission ingestion+dxf.ts:158,189; pin fingerprint check:79-82; claim",
+                              "ingestion+dxf-worker.ts:81,91; execution rechecks:95,105; completion:128-129; read",
+                              "ingestion+dxf.ts:123. No lease heartbeat; later receipt stales queued/running work/DXF_INPUT_STALE",
+                              "(worker:42)."
+                            ],
+                            [
+                              "IFC: admission ingestion+ifc.ts:158,189; pin fingerprint check:79-82; claim",
+                              "ingestion+ifc-worker.ts:81,91; execution rechecks:95,105; completion:128-129; read",
+                              "ingestion+ifc.ts:123. No lease heartbeat; later receipt stales queued/running work/IFC_INPUT_STALE",
+                              "(worker:42)."
+                            ],
+                            [
+                              "CityGML: admission ingestion+citygml.ts:158,189; pin fingerprint check:79-82; claim",
+                              "ingestion+citygml-worker.ts:81,91; execution rechecks:95,105; completion:128-129; read",
+                              "ingestion+citygml.ts:123. No lease heartbeat; later receipt stales queued/running",
+                              "work/CITYGML_INPUT_STALE (worker:42)."
+                            ],
+                            [
+                              "CityJSON: admission ingestion+cityjson.ts:151,178; pin fingerprint check:75-78; claim",
+                              "ingestion+cityjson-worker.ts:63-65; execution recheck:72; completion:92-93; read",
+                              "ingestion+cityjson.ts:113. No lease heartbeat; later receipt stales queued/running",
+                              "work/CITYJSON_INPUT_STALE (worker:50-54)."
+                            ],
+                            [
+                              "glTF: admission ingestion+gltf.ts:158,189; pin fingerprint check:79-82; claim",
+                              "ingestion+gltf-worker.ts:81,91; execution rechecks:95,105; completion:128-129; read",
+                              "ingestion+gltf.ts:123. No lease heartbeat; later receipt stales queued/running",
+                              "work/GLTF_INPUT_STALE (worker:42)."
+                            ],
+                            [
+                              "OBJ: admission ingestion+obj.ts:158,189; pin fingerprint check:79-82; claim",
+                              "ingestion+obj-worker.ts:81,91; execution rechecks:95,105; completion:128-129; read",
+                              "ingestion+obj.ts:123. No lease heartbeat; later receipt stales queued/running work/OBJ_INPUT_STALE",
+                              "(worker:42)."
+                            ],
+                            [
+                              "GeoParquet: admission ingestion+geoparquet.ts:228,259; pin fingerprint check:79-80,90-96 including",
+                              "continuation; claim ingestion+geoparquet-worker.ts:81,91; execution rechecks:95,105;",
+                              "completion:128-129; read ingestion+geoparquet.ts:138. No lease heartbeat; later receipt stales",
+                              "queued/running work/GEOPARQUET_INPUT_STALE (worker:42), continuation also requires exact parent",
+                              "authority."
+                            ]
+                          ],
+  "designDecision": {
+                      "chosen": "Neither: Step 0.6 explicitly requires stopping when history cannot prove intervening changes.",
+                      "design1": [
+                                   "Not sound with today's history. Do not infer from unchanged context hashes, source counts,",
+                                   "timestamps, events or outbox sequence."
+                                 ],
+                      "design2": [
+                                   "Not attempted: successor design cannot override the explicit stop condition, and repeatedly",
+                                   "creating successors under batch intake would need the lead's new decision."
+                                 ],
+                      "sharedFunctionPlacement": [
+                                                   "Proposed packages/server/src/modules/usp/ingestion/source-pin.ts, NOT created. A reader-agnostic",
+                                                   "same-transaction query accepting case/current revision, pinned revision and exact source,",
+                                                   "returning current/reason/proof, with no document imports, avoids cycles. Document-context calls it",
+                                                   "only when all non-caseRevision pins match; keep every caller and existing case-before-job lock",
+                                                   "order."
+                                                 ],
+                      "prerequisiteOwner": [
+                                             "Lead must authorise a revision-change schema/migration and all revision writers (outside K13 owned",
+                                             "paths), or explicitly revise this task's proof and stop rule. Legacy gaps must stay stale."
+                                           ]
+                    }
+}
