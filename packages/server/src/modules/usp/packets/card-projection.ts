@@ -66,9 +66,25 @@ export async function projectCardFactsTx(client: PoolClient, ctx: RequestContext
     else missing('parcel_assertions', 'Parent parcel assertions', 'Selected evidence does not support a parent '
       + `parcel assertion. ${anchorSentence(location.anchorState)}`, 'selected_parcel_evidence_unavailable');
   } else {
-    missing('project_identity', 'Application identity', 'No captured P3/1 identity', 'project_identity_not_recorded');
+    if (body.kind === 'building')
+      available('project_identity', 'Application identity', 'Identity codes are for recorded spaces only');
+    else missing('project_identity', 'Application identity', 'No captured P3/1 identity', 'project_identity_not_recorded');
     missing('vertical_locator', 'Recorded location', 'No captured structured location', 'location_not_recorded');
     missing('parcel_assertions', 'Parent parcel assertions', 'No selected source-backed parcel assertion', 'selected_parcel_evidence_unavailable');
+  }
+  if (body.kind === 'building' && !isPdfPlan(plan)) {
+    const citations: string[] = [];
+    for (const entry of plan.entries) {
+      const pointer = entry.selection.pointer, locator = pointer.locator;
+      if (entry.state !== 'included' || entry.selection.review.kind !== 'direct' || pointer.origin !== 'direct'
+        || locator.kind !== 'verbatim' || !/^feature \S(.*\S)?$/.test(locator.locator)) continue;
+      const source = await captured(pointer.sourceRevision);
+      if (source.body_sha256 !== entry.sourceBodySha256 || source.body.sha256 !== entry.sourceSha256
+        || typeof source.body.name !== 'string' || !source.body.name.length)
+        conflict('The included feature citation source changed.');
+      citations.push(`${source.body.name}, ${locator.locator}`);
+    }
+    if (citations.length) available('source_citation', 'Source citation', citations.join('; '));
   }
   const shares: string[] = [], visited = new Set<string>();
   if (!isPdfPlan(plan)) for (const entry of plan.entries) if (entry.state === 'included' && entry.applicabilitySha256 && entry.selection.review.kind === 'shared') {

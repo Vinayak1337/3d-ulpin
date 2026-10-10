@@ -125,8 +125,11 @@ test('saved accepted image PDF -> existing card generate/read/replay/exact resol
   assert.equal(card.planSha256,db.plan.planSha256);assert.equal(card.confirmationId,db.confirmation.confirmationId);
   assert.deepEqual(card.target,db.plan.input.target);assert.deepEqual(card.scope,db.plan.input.scope);
   assert.equal(card.targetBodySha256,db.plan.targetBodySha256);assert.deepEqual(card.evidenceEntrySha256,db.plan.entries.map(e=>e.entrySha256));
-  for(const key of ['project_identity','vertical_locator','parcel_assertions','declared_share','geometry','measurements','render'])
+  for(const key of ['vertical_locator','parcel_assertions','declared_share','geometry','measurements','render'])
     assert.equal(card.facts.find(f=>f.key===key)?.state,'unavailable');
+  // A building has no identity code of its own: the card states the scope instead of reporting a missing value.
+  assert.deepEqual([card.facts.find(f=>f.key==='project_identity')?.state,card.facts.find(f=>f.key==='project_identity')?.value],
+    ['available','Identity codes are for recorded spaces only']);
   assert.equal(card.facts.find(f=>f.key==='rights')?.state,'not_assessed');
   assert.equal(card.facts.find(f=>f.key==='identifier')?.value,db.captured.identifier);
   const before={reads:db.packetReads+db.cardReads,puts:db.cardPuts,events:db.state.events.length};

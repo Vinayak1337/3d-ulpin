@@ -1,4 +1,6 @@
 import type { PoolClient } from 'pg';
+import { isDeepStrictEqual } from 'node:util';
+import { featurePropertiesExtract } from './feature-extract';
 import type { RequestContext, TargetPin, EvidencePointer, DeclarationEvidence } from '@ulpin/contracts/usp';
 import { z } from 'zod';
 import type { PacketPlan, PacketPlanInput, PacketPlanEntry,AnyPacketPlan } from '../../../../../contracts/src/usp/packets';
@@ -138,6 +140,34 @@ async function sharedTx(client: PoolClient, ctx: RequestContext, input: PacketPl
   if (!latest || latest.revision !== selection.review.declaration.revision) conflict('The shared applicability revision changed.');
   return fingerprint(selected);
 }
+async function capturedFeatureTx(client: PoolClient, input: PacketPlanInput,
+  manifest: Awaited<ReturnType<typeof scopedManifestTx>>, pointer: EvidencePointer) {
+  if (pointer.locator.kind !== 'verbatim') return null;
+  const key = pointer.locator.locator.slice('feature '.length), matches: Record<string, any>[] = [];
+  for (const member of manifest.members) {
+    if (member.pin.ref.namespace !== 'area_feature') continue;
+    const captured = await capturedTx(client, input.scope.manifestId, member.pin);
+    if (captured.body_sha256 !== member.bodySha256
+      || member.bodyRef !== fingerprint([member.pin.ref.namespace, member.pin.ref.id, member.pin.revision, captured.body]))
+      conflict('The exact captured feature does not match its manifest.');
+    const observation = captured.body, feature = observation.body;
+    if (observation.record_id !== input.target.ref.id || !feature
+      || feature.sourceRevisionId !== pointer.sourceRevision.ref.id || feature.sourceKey !== key
+      || !Number.isSafeInteger(feature.sourceFeatureIndex) || feature.sourceFeatureIndex < 0) continue;
+    matches.push(feature);
+  }
+  if (matches.length !== 1 || Object.hasOwn(matches[0].properties ?? {}, 'spatialExtraction')) return null;
+  return matches[0];
+}
+function observedFeatureExtract(bytes: Uint8Array, observation: Record<string, any> | null) {
+  if (!observation) return null;
+  const excerpt = featurePropertiesExtract(Buffer.from(bytes), observation.sourceFeatureIndex);
+  if (excerpt === null || !excerpt.length || excerpt.length > 16000) return null;
+  const original = JSON.parse(excerpt);
+  for (const [name, value] of Object.entries(observation.properties ?? {}))
+    if (Object.hasOwn(original, name) && !isDeepStrictEqual(value, original[name])) return null;
+  return excerpt;
+}
 export async function assessPlanTx(client: PoolClient, ctx: RequestContext, input: PacketPlanInput,
   readBytes: typeof readObject = readObject, shared?: SharedAuthority) {
   assertLocalUsp(ctx);
@@ -170,6 +200,7 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
   let totalBytes = 0;
   const sources = new Map<string, Awaited<ReturnType<typeof capturedTx>>>();
   const verifiedBytes = new Set<string>();
+  const featureBytes = new Map<string, Uint8Array>();
   for (const selection of input.entries) {
     const pointer = selection.pointer;
     if (canonical(pointer.target) !== canonical(input.target.ref))
@@ -211,7 +242,23 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
     const supported = !pointer.assetRevision && !pointer.partRevision && locator.kind === 'verbatim' && (
       source.body.profile === 'text-reference-v2' && /^line [1-9][0-9]*$/.test(locator.locator)
       || source.body.profile === 'csv-reference-v2' && /^CSV row [1-9][0-9]*$/.test(locator.locator));
-    const excerpt = supported ? selectExactPart(source.body.inspection?.referenceParts, locator) : null;
+    const featureSupported = target.kind === 'building' && !pointer.assetRevision && !pointer.partRevision
+      && locator.kind === 'verbatim' && /^feature \S(.*\S)?$/.test(locator.locator)
+      && source.body.profile === 'geojson-area-v2' && source.body.status === 'inspected'
+      && source.body.inspection?.status === 'interpreted';
+    let excerpt = supported ? selectExactPart(source.body.inspection?.referenceParts, locator) : null;
+    if (featureSupported && !reasonCode) {
+      let bytes = featureBytes.get(id);
+      if (!bytes) {
+        bytes = await readBytes(source.body.object_key);
+        if (bytes.length !== Number(source.body.bytes) || sha256(bytes) !== source.body.sha256)
+          throw new AppError(422, 'PACKET_PLAN_ORIGINAL_INTEGRITY', 'The selected original does not match its byte receipt.');
+        featureBytes.set(id, bytes);
+        verifiedBytes.add(id);
+      }
+      const observation = await capturedFeatureTx(client, input, manifest, pointer);
+      excerpt = observedFeatureExtract(bytes, observation);
+    }
     if (!reasonCode && excerpt === null) reasonCode = 'exact_extract_unavailable';
     if (!reasonCode && !verifiedBytes.has(id)) {
       const bytes = await readBytes(source.body.object_key);

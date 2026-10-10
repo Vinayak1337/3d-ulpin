@@ -25,7 +25,8 @@ import { syncLegacyIdentifiers } from "../areas/area-resolver";
 import { settings } from "../../infrastructure/config";
 import { AppError, conflict, notFound } from "../../infrastructure/errors";
 import { assertRegistrySourceFrame } from './registry-import-evidence';
-import { permitsReferenceRecordSource, permitsReferenceRightSource } from './registry-reference-policy';
+import { permitsFeatureRecordSource, permitsReferenceRecordSource,
+  permitsReferenceRightSource } from './registry-reference-policy';
 import { propertyIdentifier } from "../../shared/identifiers";
 import { fingerprint, sourceFrom } from "../cases/domain";
 import {
@@ -597,10 +598,22 @@ async function evidenceChecks(
           [source.case_id, b.sourceId, b.locator, purpose],
         )).rowCount)
         : false;
+      const featureKey = /^feature \S(.*\S)?$/.test(b.locator) ? b.locator.slice("feature ".length) : null;
+      const committedFeature = source && featureKey !== null && permitsFeatureRecordSource(source, purpose)
+        ? Boolean((await client.query(
+          `SELECT 1 FROM external_identifiers e
+           JOIN physical_features f ON f.id=e.feature_id JOIN map_areas a ON a.id=f.area_id
+           WHERE e.scheme='source_feature_id' AND e.normalized_value=$1
+           AND e.valid_to IS NULL AND e.verification_state='validated'
+           AND f.revision>0 AND a.site_id=$2
+           AND f.body->>'sourceRevisionId'=$3 AND f.body->>'sourceKey'=$4 LIMIT 1`,
+          [featureKey.toUpperCase(), site.id, b.sourceId, featureKey],
+        )).rowCount)
+        : false;
       if (
         !source ||
         !(
-          retainedPart || source.status === "ready" ||
+          retainedPart || committedFeature || source.status === "ready" ||
           (source.status === "needs_input" &&
             (source.inspection?.image ||
               source.inspection?.levels?.length ||
