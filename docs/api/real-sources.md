@@ -1,5 +1,55 @@
 # Official source index and retained dataset catalogue
 
+## D1d inventory / building-attribute checkpoint — 10 October 2026 UTC
+
+Development now has three property-relevant publisher families, five immutable originals, no development labels:
+
+- **Tamil Nadu Housing Board:** `schemes-yes.json` and `schemes-no.json`, native JSON, 90 columns each.
+  Both now have deterministic CSV derivatives, not publisher-native CSV originals. Original receipts below remain valid.
+- **Pune Municipal Corporation:** library/site and municipal-office inventories, two native XLSX files, five columns each.
+  Public issuing URLs and hashes are in the D8 manifest. These are facility/site lists, not verified building identities.
+  Full workbook metadata was screened; no person-level, contact, owner or applicant columns were admitted.
+  Licence: **not stated**, permission unconfirmed, `test_only`.
+- **Microsoft Global Building Footprints:** one native Indian `.csv.gz` partition (contents are GeoJSONL), three columns.
+  Publisher: https://github.com/microsoft/GlobalMLBuildingFootprints ; licence: **CDLA Permissive 2.0**.
+  The partition contains the existing Uttam Nagar demo bounds. A 128-row decompressed byte-exact prefix and CSV
+  derivative are recorded separately; the prefix is not geographically filtered or claimed as a matched demo inventory.
+  Vendor predictions stay `test_only`, never official geometry, measured heights, ownership or learning truth.
+
+2 held-out sources recorded evaluator-only; SHA-256 of the evaluator source list:
+`9a1aba1349b91280976db11f60406d64ec84b334431635bd1c04736c58961e47`.
+
+`dev/d1c/derivatives.json` records original pointers, prefix locators, script versions/hashes and derivative hashes.
+No original is reformatted or replaced. The 4/3/25 GF-AGENT data prerequisite is still blocked. No providers,
+training, teacher profiling, registry installation or runtime gate qualification occurred. The known catalogue
+builder `KeyError: content` was not repaired or regenerated; catalogue changes retain all historical sections.
+The following D1c section is historical; D1d replaces its empty freeze receipt with additive external truth.
+
+## D1c property-table checkpoint — 10 October 2026 UTC
+
+Two unlabelled **Tamil Nadu Housing Board** issuing-authority JSON tables, one conservative schema family,
+are retained under `E:/BhuAayam-data/datasets/messy-india/d1c/dev/`, with byte-identical small copies in
+`fixtures/usp/D8-messy-india/dev/d1c/`. They state scheme-level property facts, not person-level ownership.
+No CSV conversion, inferred units, development targets, teacher calls or registry installation occurred.
+Public availability does not confirm redistribution/training permission; licence remains unconfirmed.
+
+- 2026-10-10T09:03:54.128858+00:00 — `schemes-yes.json`, 243,327 bytes, public issuing-authority GET:
+  https://propertysalesapi.tnhb.org.in/api/getSchemeDataByPublishedStatus?publishedStatus=Yes
+- 2026-10-10T09:03:54.557115+00:00 — `schemes-no.json`, 229,451 bytes, public issuing-authority GET:
+  https://propertysalesapi.tnhb.org.in/api/getSchemeDataByPublishedStatus?publishedStatus=No
+
+Exact hashes and layout fingerprints are in the [development manifest](../../fixtures/usp/D8-messy-india/manifest.json).
+Both share one layout; publication-state queries do not constitute independent families or years.
+The unpublished response is public but does not establish that its schemes are offered/current/approved.
+New heldout counts: **0 families, 0 files, 0 columns, 0 scorable columns, 0 positive targets**.
+The requested data prerequisite is **blocked**, not passed. Blind discovery/support metadata stays evaluator-only.
+OpenCity occupancy registers embed personal names in address cells and were excluded without retaining or redacting.
+Login/CAPTCHA, transport and privacy gaps are recorded in `docs/evidence/gf-agent/d1c/result.json`.
+
+These are native JSON tables, not qualified CSV/XLSX import inputs. The catalogue builder already fails on D8's
+acquisition-style assets lacking the strict DTO `content` field. Its read-only preview and regression test were run;
+no unrelated catalogue or source history was regenerated away. The lead must adapt the unowned builder/retained ledger.
+
 ## T1-prep public municipal pool — 10 October 2026 UTC
 
 Five additional **unlabelled `split: pool` schema families** from Surat Municipal Corporation's issuing portal

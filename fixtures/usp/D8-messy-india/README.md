@@ -1,4 +1,60 @@
-# D8 — source-native Indian tables and GIS (D1b, 10 October 2026 IST)
+# D8 — source-native Indian tables and GIS
+
+## D1d second-route checkpoint — 10 October 2026 UTC
+
+**Incomplete GF-AGENT prerequisite.** Development: **3 publisher families / 5 originals**, no new column labels.
+
+| Family | Publisher | Native files | Format | Columns per file |
+| --- | --- | ---: | --- | ---: |
+| `mi-d22` | Tamil Nadu Housing Board | 2 | JSON object tables | 90 |
+| `mi-d23` | Pune Municipal Corporation | 2 | XLSX facility/site inventories | 5 |
+| `mi-d24` | Microsoft | 1 | Gzip-compressed GeoJSONL | 3 |
+
+TNHB remains development. All layouts from each other publisher remain together, mechanically hash-split;
+undocumented potential holdouts move to development. The split ledger, identities and support remain evaluator-only.
+Heldout: **2 families / 2 files / 4 columns / 2 scorable / 2 positive targets** (`building.footprint`: 2).
+No nested leaf expansion, repeated-layout counting or unsupported targets pad these numbers. Shortfall: **1/1/23**.
+
+`scripts/agent/flatten-json-table.py` preserves first-seen keys, every column, row order, lexical number tokens,
+scalar text, booleans and nulls; nested values are compact JSON. Missing keys remain empty, null is the text `null`.
+`dev/d1c/derivatives.json` pins both TNHB CSVs and a 128-row byte-exact prefix / CSV of the native footprint partition.
+The prefix is from the demo's publisher partition, not a geographic clip. Derived CSVs are not native originals.
+Full originals are immutable; byte-identical small copies and derivatives have checkout-safe Git attributes.
+The publisher's compressed filename says CSV, but its native content is GeoJSONL; the native reader is unqualified.
+
+Pune tables describe institutional facilities/sites, not verified buildings or units. Licence **not stated**;
+reuse unconfirmed, `test_only`. Microsoft has explicit CDLA Permissive 2.0 licensing but remains a vendor prediction,
+not official measurement, ownership, geometry accuracy or learning truth. TNHB qualifications below remain valid.
+The publisher-only truth bridge verifies literal documentation and source/derivative pins in the existing freeze
+script. Its new receipt replaces the empty checkpoint; original empty truth and A3 bytes are not overwritten.
+No teacher, provider, training, memory, runtime import, evaluation or registry writes occurred.
+
+Whole pack: **44 originals / 31 historical-or-new schema families; 37 development and 7 evaluator-only files**.
+This does not mean 31 distinct publishers. `verify-d1c.py` checks the amendment, not task acceptance.
+All sections below are historical checkpoints; old D1b seals are retained unchanged.
+
+## D1c checkpoint — 10 October 2026 UTC
+
+**Partial acquisition, not a passed GF-AGENT data prerequisite.** Two unlabelled issuing-authority Tamil Nadu
+Housing Board JSON originals extend development by **one family**, with 108 and 102 scheme rows. Both have
+90 keys and the same ordered-key fingerprint; publication-state queries are not independent families.
+They contain property-scheme facts, rather than the statistical measures that dominate D1b. No canonical
+labels or unit conversions were added. Public unpublished-scheme rows do not establish offered/current status.
+
+Originals are external; small byte-identical copies are in `dev/d1c/`. These are **native JSON tables, not
+CSV/XLSX originals**. Their import/teacher profiling is unqualified; do not silently convert them and claim
+publisher-native CSV coverage. Issuing provenance does not confirm reuse/training permission (`unconfirmed`).
+
+New heldout: **0 families, 0 files, 0 columns, 0 scorable columns, 0 positive targets**. No unsafe register
+was redacted or admitted. The empty, explicitly blocked D1c receipt records the shortfall, not a useful
+property evaluation set. The historical A3 set and truth remain unchanged. All evaluator-only materials
+remain closed to teachers; an empty new selection does not reopen the historical set.
+
+Whole pack: **39 originals / 27 families; 34 dev files / 22 families and 5 historical heldout files / 5 families**.
+See `docs/evidence/gf-agent/d1c/result.json` for gaps and `verify-d1c.py` for read-only amendment checks.
+The earlier counts and qualification below describe the historical D1b acquisition.
+
+## D1b — 10 October 2026 IST
 
 `manifest.json` is the development-teacher-safe view. **D1b adds 29 unchanged CSV/XLSX files in 21 publisher/schema families: 26 development files / 18 families and 3 tabular holdout files / 3 families.** Whole pack: **37 originals, 26 families; 32 development files / 21 families and 5 heldout files / 5 families**. These are schema families, not 26 distinct publishers.
 
