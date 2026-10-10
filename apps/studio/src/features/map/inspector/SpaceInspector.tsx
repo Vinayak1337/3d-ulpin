@@ -125,12 +125,7 @@ export function SpaceInspector({ space, level, model, register, ledger, building
       crumbs={crumbs}
       title={space.name}
       status={<StatusBadge status={workflow.data?.code ? 'Draft' : status} />}
-      // An identifier with no place to break widens the inspector past its column and cuts every line short.
-      subtitle={(
-        <span className="ul-mono" style={{ overflowWrap: 'anywhere' }}>
-          {space.record.identifier.replace(/\//g, ' / ')}
-        </span>
-      )}
+      subtitle={<span className="ul-mono">{space.record.identifier.replace(/\//g, ' / ')}</span>}
       tabs={<Tabs label="Space details" value={tab} onChange={setTab} tabs={[{ value: 'overview', label: 'Overview' }, { value: 'rights', label: 'Rights' }, { value: 'evidence', label: 'Evidence', count: refs.length }]} />}
       actions={<>{primary}{secondary}</>}
     >
