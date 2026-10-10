@@ -1,7 +1,8 @@
 # Pinned demo runtime
 
 The demo API and dispatcher run from `E:/Projects/ulpin-wt/demo`, a detached, unedited checkout.
-Current reviewed staging commit: `9aad8da2` (10 October 2026; R2 rollout, document runtimes configured).
+Current reviewed staging commit: `fbe525f7` (10 October 2026; R3 rollout, K5 revocation table applied first,
+document runtimes rebuilt).
 Loopback API: `http://127.0.0.1:3194`; external demo configuration stays outside every checkout.
 Only the runtime owner explicitly named in a task file may roll this checkout forward.
 Worker worktrees must never serve the demo: lazy imports would mix unreviewed changes into running processes.
@@ -39,12 +40,13 @@ moving the serving checkout under running processes), while the old API still an
 
 | Needed from commit | Migration | Command | Receipt |
 | --- | --- | --- | --- |
-| K5 part 2 merge (card revocation) | `usp_property_card_revocations_001` (one new append-only table) | `node docs/evidence/gf4/k5/run-migration.mjs` | `docs/evidence/gf4/k5/migration-receipt.json` (create-once) |
+| K5 part 2 merge (card revocation) | `usp_property_card_revocations_001` (one new append-only table) | `node docs/evidence/gf4/k5/run-migration.mjs` | `docs/evidence/gf4/k5/migration-receipt.json` (create-once). **Applied on the demo 10 October 2026** (`applied: true`) |
 
-The K5 runner has not been executed anywhere yet (no PostgreSQL was available to its author): its first run is
-on the demo. It applies only the registered check/schema/mark steps in one transaction with short lock and
-statement timeouts, compares the card rows before and after, and stops if the database is not the served one.
-If it fails, do not start the new commit: go back to the previous served commit and report.
+The K5 runner's first run anywhere was on the demo (R3, 10 October 2026): applied, card rows unchanged, the old
+API answering throughout. A runner applies only its registered check/schema/mark steps in one transaction with
+short lock and statement timeouts, compares the rows it names before and after, and stops if the database is not
+the served one. If a runner fails, do not start the new commit: keep the previous served commit and report.
+A runner is never run a second time after a failure.
 
 ## Document runtime configuration
 
@@ -72,6 +74,14 @@ Doctor's **Document runtimes** check reports `documentPagesConfigured`, `packetR
 `verifiedProfile()` check refuses the configured profile hash, resolved asset bytes or serving-checkout `repo`.
 The interpreter must also match the frozen profile. A pass verifies host configuration/closure only, not current
 HTTP source access or a successful native crop. The existing G1 model-gateway checks remain unchanged.
+
+**Known cause of a later FAIL (found by R3, 10 October 2026).** The frozen profile pins the bytes of the base
+interpreter behind the configured environment. On this desktop that base is a Python bundled with another
+application, which replaces it when it updates itself: at 18:44 IST its binaries and 70 pinned standard-library
+caches changed, and the check failed from then until the roll-out rebuilt the profile. No repository file,
+package or project environment had changed. Until the demo's document runtime has an interpreter the project
+owns, a FAIL here after a PASS means "check whether the base interpreter was replaced", and the remedy is the
+rebuild in step 5 at the next roll-out, with the cause stated in the report.
 
 For offline development, another checkout is permitted only with `--dry-run --out <absolute temporary folder>`
 (and an explicit `--python` if no OCR paths are configured). Dry runs cannot target a checkout or shared runtime.
