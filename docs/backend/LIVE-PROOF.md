@@ -1,31 +1,34 @@
 # The first approved Sarvam run: the approval day, in order
 
 One run, known in advance to the call and to the rupee, that produces the live receipts seven M1 boxes wait for.
-Nothing here is approved yet. Every figure below was computed by `scripts/agent/live-proof.ts --plan` from the
-**lead's proposal of 10 October 2026 (not approved)**; run it again with the owner's policy file and use its output.
+The owner approved the prices and caps on 10 October 2026; the two statements are not yet confirmed, so the run
+is not approved. Every figure below was computed by `scripts/agent/live-proof.ts --plan --tariff` from the
+**pending policy file with both statements `true` in memory** (policy hash
+`efb90b3a440a875d80314024d30482abbc7c4c14a6e3682cd5ec946567dc6721`); run it again with the file the owner enables.
 
 ## 1. What the owner writes into the policy
 
 The policy is one JSON file kept outside Git. Fields, units and rules are those of
 [DEMO-GATEWAY.md](DEMO-GATEWAY.md#owner-inputs); amounts are decimal strings in micro-INR (1 INR = 1,000,000).
 
-| Field | Unit | Proposal (not approved) |
+| Field | Unit | Pending policy file (approved 10 October unless marked) |
 |---|---|---|
-| `projectId`, `policyVersion`, `fundingVersion` | labels | the owner's own labels |
-| `gatewayExclusiveFunding`, `indiaPrivateApproved` | `true` only if the owner confirms each | owner's confirmation |
-| `secretReference` or `secretReferences`, `model` | names | one key name or the printed list; `sarvam-105b` |
+| `projectId` | label | `bhuaayam-sih26011` |
+| `policyVersion`, `fundingVersion` | labels | `owner-approved-20261010/1`, `sarvam-free-credit-11-keys-20261010/1` |
+| `gatewayExclusiveFunding`, `indiaPrivateApproved` | `true` only if the owner confirms each | `null`: not confirmed |
+| `secretReferences`, `model` | names | `ULPIN_PROVIDER_KEY_SARVAM_01` to `_11`; `sarvam-105b` |
 | `projectCapMicroInr` | micro-INR, total | `"100000000"` (₹100) |
 | `projectDailyCapMicroInr` | micro-INR per day | `"25000000"` (₹25) |
 | `principalDailyCallCap` | calls per person per day | `150` |
-| `price.version` | label of the approved tariff | the owner's label |
+| `price.version` | label of the approved tariff | `owner-approved-20261010/1` |
 | `price.inputPerMillionMicroInr` | micro-INR per million input tokens | `"15000000"` (₹15) |
 | `price.cachedInputPerMillionMicroInr` | micro-INR per million cached input tokens | `"5000000"` (₹5) |
 | `price.outputPerMillionMicroInr` | micro-INR per million output tokens | `"60000000"` (₹60) |
-| `inputBound.version`, `inputBound.maxPromptTokens` | label; tokens | plan used `34816`, the smallest allowed |
-| `paceMs` | milliseconds between calls | plan used `1500`, the smallest allowed |
+| `inputBound.version`, `inputBound.maxPromptTokens` | label; tokens | `34816`, the smallest allowed: not approved |
+| `paceMs` | milliseconds between calls | `1500`, the smallest allowed: not approved |
 
-Left out, the optional fields take the gateway's defaults: at most 2048 output tokens per call, a 45 second
-timeout, a 20% cushion on each reservation, and 30% of the total open to the document agent.
+The file writes out the gateway's defaults for the optional fields: at most 2048 output tokens per call, a 45
+second timeout, a 20% cushion on each reservation, and 30% of the total open to the document agent.
 
 ## 2. Before anything is turned on
 
@@ -73,13 +76,13 @@ proposal, on a state that is not `enabled: true`, or when the enabled hash is no
 
 ## 5. What it costs at most
 
-At the proposal (not approved): **10 calls; estimate ₹1.14; at most ₹7.75 of the ₹100 proposed.**
+At the owner's approved prices and caps: **10 calls; estimate ₹1.14; at most ₹7.75 of the ₹100 total.**
 
 - Estimate: request bytes divided by 3 as input tokens, half the output maximum as output tokens. No tokenizer for
   the provider is in the repository, so the error of this estimate is not measured.
-- Upper bound: every call held at the ledger's full reservation, ₹0.78 a call at the proposed tariff. A call cannot
+- Upper bound: every call held at the ledger's full reservation, ₹0.78 a call at the approved tariff. A call cannot
   settle above its reservation without the gateway blocking the pool.
-- Share of each proposed cap at most: 7.75% of the total, 30.97% of the day, 10 of 150 calls for one person,
+- Share of each cap at most: 7.75% of the total, 30.97% of the day, 10 of 150 calls for one person,
   20.65% of the document agent's part.
 
 ## 6. The receipts, and the boxes they close

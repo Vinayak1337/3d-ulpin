@@ -2,7 +2,7 @@ import type { OfficerAiStatus, OfficerAiRun } from '../../shared/officer-ai-type
 import { AI_PROPERTIES, boundedPolygon, chooseFreeModel, extractionSchema, digest, PROMPT_VERSION, SCHEMA_VERSION, type AiPart } from './officer-ai-validation';
 import { assertNonIndiaProviderAllowed, nonIndiaProviderAllowed } from '../../infrastructure/provider-policy';
 import { assertNoImageEgress, redactDerivative, redactPrivateText, redactMessageText } from '../usp/ingest/redact';
-import { configuredGateway } from '../model-gateway/config';
+import { configuredGateway, providerKeyReferences } from '../model-gateway/config';
 import { existsSync } from 'node:fs';
 import { minimizeStructuredText } from '../model-gateway/redaction';
 
@@ -68,9 +68,12 @@ export async function inspectModelGateway():Promise<{status:OfficerAiStatus;mode
   try {
     const config=configuredGateway();
     if (!config) return {status:base};
-    const present=config.secretReference.startsWith('/run/secrets/') ? existsSync(config.secretReference)
-      : Object.hasOwn(process.env,config.secretReference);
-    if (!present) return {status:{...base,message:'The allowed provider key is absent. No inference ran; manual preparation remains available.'}};
+    // Every key the policy names must be there. The message says the absent name, never a value.
+    const present=(reference:string)=>reference.startsWith('/run/secrets/') ? existsSync(reference)
+      : Object.hasOwn(process.env,reference);
+    const absent=providerKeyReferences(config).find(reference=>!present(reference));
+    if (absent) return {status:{...base,
+      message:`The allowed provider key ${absent} is absent. No inference ran; manual preparation remains available.`}};
     return {model:{id:config.model},status:{...base,configured:true,state:'available',model:config.model,
       message:'Private extraction is configured, subject to durable budget admission. Provider availability, residency and permission remain separately unqualified; no live call was made by this status check.'}};
   } catch { return {status:{...base,state:'unavailable',message:'Private extraction configuration needs review. Manual preparation remains available.'}}; }

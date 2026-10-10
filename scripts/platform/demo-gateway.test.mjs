@@ -1,9 +1,11 @@
 // Every file here is a temporary one with made-up values; the real demo configuration is never opened.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { readDemoSettings, redact } from './demo-config.mjs';
 import {
   disableGateway, enableGateway, gatewayReport, gatewayReportLines, ledgerStep, writeKeyList,
@@ -197,6 +199,54 @@ test('the keys step writes numbered key lines, prints names only, and its rehear
     });
   }
   assert.throws(() => writeKeyList({ keysFile: join(folder, 'absent.txt'), file, running: stopped }), /readable/);
+});
+
+/** The command as the owner types it, in a child process: only there does the argument rule apply. */
+function keysCommand(options) {
+  const script = fileURLToPath(new URL('./demo-gateway.mjs', import.meta.url));
+  return spawnSync(process.execPath, [script, 'keys', ...options], { encoding: 'utf8', timeout: 60000,
+    windowsHide: true });
+}
+
+test('a keys rehearsal without --settings is refused with the usage text and reads no file', context => {
+  const folder = temporaryFolder(context);
+  const out = join(folder, 'out');
+  mkdirSync(out);
+  // The keys file does not exist. It is read before the settings, so a run that read anything would say so
+  // instead of printing the usage text; the demo settings are never the starting point.
+  const absentKeys = join(folder, 'absent-keys.txt');
+  for (const rest of [['--out', out], ['--out', out, '--settings'], []]) {
+    const refused = keysCommand(['--from', absentKeys, '--dry-run', ...rest]);
+    assert.equal(refused.status, 1);
+    assert.equal(refused.stdout, '');
+    assert.match(refused.stderr, /^Usage: demo-gateway\.mjs status /);
+    assert.ok(refused.stderr.includes('keys --from <file> [--dry-run --out <folder> --settings <file>]'));
+    assert.doesNotMatch(refused.stderr, /readable|absent-keys/);
+    assert.equal(refused.stderr.trim().split(/\r?\n/).length, 3, 'the usage text and nothing else');
+  }
+  assert.deepEqual([readdirSync(out), readdirSync(folder)], [[], ['out']]);
+});
+
+test('a keys rehearsal with --settings writes only into the out folder and prints names only', context => {
+  const folder = temporaryFolder(context);
+  const [source, out] = ['source', 'out'].map(name => join(folder, name));
+  mkdirSync(source);
+  mkdirSync(out);
+  const file = writeSettings(source, settingsLines(), '\r\n');
+  const keysFile = join(source, 'keys.txt');
+  writeFileSync(keysFile, `${listKeys.join('\n')}\n`);
+  const before = [file, keysFile].map(path => readFileSync(path));
+  const rehearsal = keysCommand(['--from', keysFile, '--dry-run', '--out', out, '--settings', file]);
+  assert.deepEqual([rehearsal.status, rehearsal.stderr], [0, '']);
+  assert.ok(rehearsal.stdout.startsWith(`3 keys would be written as ${listNames[0]} to ${listNames[2]}\n`));
+  assert.match(rehearsal.stdout, /Rehearsal only: the demo settings were not changed\./);
+  assertNamesNoValue(rehearsal.stdout);
+  assert.deepEqual(readdirSync(out), ['demo-settings-after-keys.txt']);
+  assert.deepEqual(readdirSync(source).sort(), [settingsName, 'keys.txt'].sort());
+  assert.deepEqual(readdirSync(folder).sort(), ['out', 'source']);
+  [file, keysFile].forEach((path, index) => assert.ok(readFileSync(path).equals(before[index]), 'inputs unchanged'));
+  assert.equal(readFileSync(join(out, 'demo-settings-after-keys.txt'), 'utf8'),
+    before[0].toString('utf8') + listKeyLines().join('\r\n') + '\r\n');
 });
 
 test('the ledger steps need the owner\'s reason and a key name; nothing else reaches the ledger', () => {
