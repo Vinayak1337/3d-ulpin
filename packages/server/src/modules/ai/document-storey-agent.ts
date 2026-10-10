@@ -8,12 +8,13 @@ import type { ModelGateway, TrustedCall } from '../model-gateway/gateway';
 import { TeacherRecordings } from '../model-gateway/recordings';
 import { minimizeStructuredText } from '../model-gateway/redaction';
 import { mappingTeacherGatewayRuntime } from '../model-gateway/runtime';
-import { gatewayRefusal, teacherFailureCode, type GatewayRefusal } from '../usp/ingestion/mapping-teacher';
+import {
+  gatewayRefusal, overGatewayBound, teacherFailureCode, type GatewayRefusal,
+} from '../usp/ingestion/mapping-teacher';
 
 export const STOREY_AGENT_TEMPLATE = 'document-storey/1.0';
 export const STOREY_AGENT_MODEL = 'sarvam-105b';
 export const STOREY_AGENT_METHOD = 'model:sarvam-105b@2026-10-10';
-export const MAX_PROMPT_CHARS = 14000;
 const LABEL_KINDS = [
   'ordinal', 'ground', 'basement', 'stilt', 'podium', 'terrace', 'mezzanine', 'refuge', 'typical',
 ] as const;
@@ -137,7 +138,6 @@ export function storeyPartSelection(store: StoreyPageStore): StoreyPartSelection
   const batches: StoreyPart[][] = [];
   const omitted: StoreyOmittedLine[] = [];
   let current: StoreyPart[] = [];
-  let size = 0;
   for (const [page, entry] of Object.entries(store.pages)) {
     for (const [index, line] of entry.lines.entries()) {
       const omit = (code: StoreyOmittedLine['code']) =>
@@ -152,13 +152,12 @@ export function storeyPartSelection(store: StoreyPageStore): StoreyPartSelection
         omit(refusal);
         continue;
       }
-      if (size + text.length > MAX_PROMPT_CHARS && current.length) {
+      const part = { partId: line.id, page: Number(page), text };
+      if (current.length && overGatewayBound(storeyRequest([...current, part]).messages)) {
         batches.push(current);
         current = [];
-        size = 0;
       }
-      current.push({ partId: line.id, page: Number(page), text });
-      size += text.length + 48;
+      current.push(part);
     }
   }
   return { batches: current.length ? [...batches, current] : batches, omitted };
