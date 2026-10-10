@@ -62,3 +62,42 @@ test('no stored page text or no spatial native text yields not_checked, not a pa
   const cropped: QuotePage = { ...page, storedRegion: [10, 60, 90, 70] };
   assert.equal(quoteRegionText(cropped, proposal.locator), null, 'Outside a stored OCR crop is not absent text.');
 });
+
+test('a cited box is read within the OCR result\'s own stated edge; TypeScript and Python agree', () => {
+  // Numbers of the retained site plan OCR result (K9d): its region, its render scale, one of its boxes.
+  const region: [number, number, number, number] = [280, 860, 960, 2580];
+  const stated = { renderScalePxPerPt: 0.813953488372093 };
+  const overhanging: [number, number, number, number] = [278.8857142857143, 1117.2131, 293.63041428571427, 1174.5536];
+  const lines = [{ text: 'a', box: overhanging }];
+  const cases = [
+    { name: 'equal to an overhanging OCR box of a result that states its edge', regionEdge: stated,
+      box: overhanging, text: 'a' },
+    { name: 'the same box against a result without the block', regionEdge: undefined, box: overhanging, text: null },
+    { name: 'a box further out than one rendered pixel', regionEdge: stated,
+      box: [278.7, overhanging[1], overhanging[2], overhanging[3]], text: null },
+  ];
+  const code = [
+    'import json, sys',
+    'sys.path.insert(0, "scripts/usp/learning")',
+    'from storey_quote_verifier import region_text',
+    'answers = []',
+    'for case in json.loads(sys.argv[1]):',
+    '    page = {"lines": case["lines"], "storedRegion": case["region"]}',
+    '    if case.get("regionEdge"): page["regionEdge"] = case["regionEdge"]',
+    '    answers.append(region_text({"pages": {"1": page}}, 1, case["box"]))',
+    'print(json.dumps(answers))',
+  ].join('\n');
+  const sent = JSON.stringify(cases.map((item) => ({ ...item, lines, region })));
+  const run = spawnSync(process.env.ULPIN_PROFILE_PYTHON ?? 'E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe',
+    ['-B', '-c', code, sent], { encoding: 'utf8', timeout: 10000 });
+  assert.equal(run.status, 0, run.stderr);
+  const python = JSON.parse(run.stdout);
+  const siteFrame = { ...frame, width: 2585, height: 3390 };
+  for (const [index, item] of cases.entries()) {
+    const stored: QuotePage = { ...page, frame: siteFrame, lines, storedRegion: region, regionEdge: item.regionEdge };
+    const locator = { page: 1, frame: siteFrame, box: item.box, selectedRegion: null, declaredPrecision: null };
+    const text = quoteRegionText(stored, locator as Parameters<typeof quoteRegionText>[1]);
+    assert.equal(text, item.text, item.name);
+    assert.equal(python[index], text, `Python differs: ${item.name}`);
+  }
+});

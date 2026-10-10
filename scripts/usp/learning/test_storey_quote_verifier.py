@@ -58,6 +58,25 @@ class QuoteVerifierTest(unittest.TestCase):
         self.assertEqual(verifier.verify_item(store(), missing), [verifier.QUOTE_NOT_AT_LOCATOR])
         self.assertEqual(verifier.verify_item(store(), foreign), [verifier.QUOTE_NOT_AT_LOCATOR])
 
+    def test_cited_box_is_read_within_the_stored_regions_own_stated_edge_only(self) -> None:
+        # Numbers of the retained site plan OCR result (K9d): its region, its render scale, one of its boxes.
+        region, scale = [280, 860, 960, 2580], 0.813953488372093
+        overhanging = [278.8857142857143, 1117.2131, 293.63041428571427, 1174.5536]
+        further = [278.7, *overhanging[1:]]
+
+        def read(bbox: list[float], edge: dict | None) -> str | None:
+            page = {"lines": [{"id": "l0", "text": "a", "box": overhanging}], "storedRegion": region}
+            if edge:
+                page["regionEdge"] = edge
+            return verifier.region_text({"source": {"sha256": SHA}, "pages": {"1": page}}, 1, bbox)
+
+        stated = {"renderScalePxPerPt": scale}
+        self.assertEqual(read(overhanging, stated), "a")
+        self.assertIsNone(read(overhanging, None))
+        self.assertIsNone(read(further, stated))
+        self.assertIsNone(read(None, stated))
+        self.assertEqual(read([300, 1117.2131, 340, 1174.5536], None), "")
+
 
 if __name__ == "__main__":
     unittest.main()
