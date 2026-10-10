@@ -12,7 +12,7 @@ Status: `exists` = path, method and the shape the Studio reads are published; `p
 | `/api/v1/work-board` | GET | missing | Draft `WorkBoard` (READY-01). Batches leave Stage and Readiness empty |
 | `/api/v1/buildings/{buildingId}/ledger` | GET | partial | Published as `building-ledger/1`; **live**, mapped to the screens' `BuildingLedger` by `apps/studio/src/api/ledger.ts`. The published shape has the parcel ULPIN, spaces, sources, history, `assessment` and `missing`. Rights, shares, readiness, checks, deviation, address, declaration, ground elevation, and the actor and hash of each revision are absent: the screens show them as Unknown or Not assessed |
 | `/api/v1/buildings/{buildingId}/residents` | GET | missing | Draft `BuildingResidents` (REGISTER-02) |
-| `/api/v1/buildings/{buildingId}/levels/{levelId}/review` | GET | missing | Draft `LevelReview` (EXTRACT-02) |
+| `/api/v1/buildings/{buildingId}/levels/{levelId}/review` | GET | missing, superseded for candidates | Draft `LevelReview` (EXTRACT-02). The candidate review screen (F2a) no longer reads it: roofprints come from `/areas/{id}/canonical` and rooms from `/buildings/{id}/canonical` (`candidates`). Only the old workspace's level question still calls it |
 | `/api/v1/import-batches/{batchId}` | GET | missing | Draft `ImportBatch` (INGEST-03) |
 | `/api/v1/sources/{sourceId}/pages` | GET | partial | Published as `document-pages/1`: requires `sha256` and `revision` query parameters (422 without them), pages carry `frame`, `mediaBox`, `renderSupport`, `url`, `locator`, `calibration`. The Studio calls it with neither parameter and reads the draft `DocumentPages`. Non-document sources answer an error and fall back to the file viewer |
 | `/api/v1/sources/{sourceId}/pages/{page}` | GET | missing | Page renders are published as `/pages/{page}/raster` |
@@ -41,6 +41,11 @@ Status: `exists` = path, method and the shape the Studio reads are published; `p
 | `/api/v1/resolve` | GET | exists | Called by the building search; not in the route table |
 | `/api/v1/areas/{areaId}/canonical` | GET | exists | **Live**: the map draws its footprints from this record through `toSceneInputs()`. Every building of the demo Bronx area is `recordState: candidate`; the Gurugram area has `buildings: []` and its two road base features have no polygons (`value: null`, state `unknown`) and no line geometry |
 | `/api/v1/buildings/{buildingId}/canonical` | GET | exists | **Live**: the inspector shows its `recordState` and `gaps`; the scene adds its storeys and levels when it has them |
+| `/api/v1/spatial-ml/batches/{batchId}` | GET | exists | **Live** (F2a): batch id, items and image count, shown beside a roofprint candidate |
+| `/api/v1/spatial-ml/items/{itemId}` | GET | exists | **Live** (F2a): the inference receipt (model card summary) and the footprint drafts already made from the image |
+| `/api/v1/spatial-ml/items/{itemId}/footprint-drafts` | POST | exists | **Live** (F2a): records the accepted and rejected roofprints of one image together, each with a reason. It needs at least one accepted selection, so a reject-only decision cannot be sent. Only the demo's K2c decisions are recorded so far |
+| `/api/v1/buildings/{buildingId}/candidates` | POST | exists | **Live** (F2a): `attach_level` puts a room candidate on an existing reviewed level, with an `Idempotency-Key` equal to `requestKey`. Magnolia has no reviewed level, so the picker is disabled there |
+| `/api/v1/import-packages/{packageId}/review` | POST | exists | **Live** (F2a): answers 422 `USP_GEOMETRY_PAYLOAD_UNQUALIFIED` for every roofprint draft; the Studio shows it as a blocked state |
 
 ## Backend requests
 
@@ -57,4 +62,7 @@ One line per route or field the Studio needs and the screen that needs it.
 - Line geometry drawn, or a `roads` polygon, for road proposals: Map of the Gurugram area (the 2 road lines are not drawn).
 - `GET /import-batches/{id}` (INGEST-03), `POST /buildings/{id}/imports/inspect`, `POST /buildings/{id}/imports`, `GET /building-imports/{id}` (INGEST-04): Add files for building documents.
 - `GET /public/*`, `POST /public/requests`, `POST /public/requests/track`, `GET` and `PATCH /register-requests` (PUBLIC-01, REQUEST-01): the public portal and the Registry requests screen.
+- A reject-only roofprint decision (F2a): `footprint-drafts` needs one accepted selection, so a reviewer cannot reject a lone roofprint.
+- A room reject command (F2a): `POST /buildings/{id}/candidates` only attaches a level, so a room candidate cannot be rejected or kept with a reason.
+- The officer geometry-qualification route (K2e) (F2a): not in `docs/api/openapi.json` yet. Until it is, every accepted roofprint stops at the blocked state; the typed TODO is `reviewDraftForRegistry` in `apps/studio/src/features/review/candidates/commands.ts`.
 - A committed, recorded building in the demo database: no register exists to check S12 and S5 levels against the live API.
