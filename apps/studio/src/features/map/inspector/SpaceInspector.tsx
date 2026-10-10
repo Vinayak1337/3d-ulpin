@@ -25,9 +25,10 @@ const UNREAD = 'The record of this building could not be read.';
 const AT_ITS_UNIT = 'The review, the code and the cards of this unit are recorded in the registry from its '
   + 'recorded unit.';
 
-function UnitLink({ buildingId, unit, primary }: { buildingId: string; unit: RecordedUnit; primary: boolean }) {
+/** The way to the recorded unit: the inspector's one button, or a text link when a card holds that place. */
+function UnitLink({ buildingId, unit, asText }: { buildingId: string; unit: RecordedUnit; asText: boolean }) {
   return (
-    <Link className={primary ? 'ul-btn ul-btn--primary' : 'ul-btn'} to={recordedUnitPath(buildingId, unit.id)}>
+    <Link className={asText ? undefined : 'ul-btn ul-btn--primary'} to={recordedUnitPath(buildingId, unit.id)}>
       Open recorded unit
     </Link>
   );
@@ -37,7 +38,8 @@ function UnitLink({ buildingId, unit, primary }: { buildingId: string; unit: Rec
  * Space variant: the status and the code the registry states, facts with inline evidence, and the way on. The
  * inspector writes nothing and reads nothing from this browser's store: a recorded unit links to its block on
  * the record page, where it is reviewed, assigned its code and issued a card through the registry. A card the
- * registry lists for the unit enables the Property Card action by itself.
+ * registry lists for the unit enables the Property Card action by itself; the link to the recorded unit is then
+ * text beside its note, so the actions hold one button.
  */
 export function SpaceInspector({
   space, level, model, register, ledger, buildingId, crumbs, datum, onSelectSpace, onCard, onFinding,
@@ -117,12 +119,14 @@ export function SpaceInspector({
 
   const cardButton = card.opens
     ? <Button variant="primary" icon={QrCode} onClick={onCard}>Property Card</Button> : null;
-  const unitLink = unit ? <UnitLink buildingId={buildingId} unit={unit} primary={!card.opens} /> : null;
+  const listed = Boolean(card.opens);
+  const unitLink = unit ? <UnitLink buildingId={buildingId} unit={unit} asText={listed} /> : null;
   const unread = canonical.error ? `${UNREAD} ${readFailure(canonical.error)}` : null;
   const secondary = finding && status !== 'Assigned'
     ? <Button onClick={() => onFinding(finding.id)}>{finding.code === 'carpet_area_deviation' ? 'Review area' : 'Open finding'}</Button> : null;
   // A space the registry holds no recorded unit, card or finding for has no action: the shell then has no footer.
-  const hasActions = Boolean(cardButton || unitLink || secondary);
+  const unitButton = listed ? null : unitLink;
+  const hasActions = Boolean(cardButton || unitButton || secondary);
 
   const rights = facts?.rights ?? 'unknown';
   return (
@@ -134,7 +138,7 @@ export function SpaceInspector({
       status={<StatusBadge status={status} />}
       subtitle={<span className="ul-mono">{space.record.identifier.replace(/\//g, ' / ')}</span>}
       tabs={<Tabs label="Space details" value={tab} onChange={setTab} tabs={[{ value: 'overview', label: 'Overview' }, { value: 'rights', label: 'Rights' }, { value: 'evidence', label: 'Evidence', count: refs.length }]} />}
-      actions={hasActions ? <>{cardButton}{unitLink}{secondary}</> : undefined}
+      actions={hasActions ? <>{cardButton}{unitButton}{secondary}</> : undefined}
     >
       {tab === 'overview' ? (
         <>
@@ -142,7 +146,9 @@ export function SpaceInspector({
           <DescriptionList items={rows} />
           {card.unanswered ? <p className={styles.note}>{card.unanswered}</p> : null}
           {unread ? <p className={styles.note}>{unread}</p> : null}
-          {canonical.data ? <p className={styles.note}>{unit ? AT_ITS_UNIT : NOT_RECORDED}</p> : null}
+          {canonical.data ? (
+            <p className={styles.note}>{unit ? AT_ITS_UNIT : NOT_RECORDED} {listed ? unitLink : null}</p>
+          ) : null}
         </>
       ) : tab === 'rights' ? (
         <DescriptionList items={[

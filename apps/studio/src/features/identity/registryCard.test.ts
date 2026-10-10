@@ -36,14 +36,15 @@ describe('registry card reads', () => {
       .toBe('The record changed. (STALE_REVISION)');
   });
 
-  it('keeps the message of a failure that carries no code', () => {
+  it('states an answer without a code by its status, and no answer at all in fixed words', () => {
     expect(readFailure(new ApiError(502, '/api/v1/usp/property-cards/list', null))).toBe('The server answered 502.');
-    expect(readFailure(new TypeError('Failed to fetch'))).toBe('Failed to fetch');
+    expect(readFailure(new TypeError('Failed to fetch'))).toBe('The server gave no answer.');
   });
 });
 
 describe('the gate of the Property Card action', () => {
-  const none: UnitCards = { snapshotCreatedAt: null, cards: [], truncated: false, searchedAll: true };
+  const none: UnitCards = { snapshotCreatedAt: null, cards: [], truncated: false, searchedAll: true,
+    unlisted: false, snapshots: 0, unread: 0 };
   const listed: UnitCards = { ...none, snapshotCreatedAt: '2026-10-10T13:39:30.390Z' };
   const denied = refusal(403, 'USP_LOCAL_ONLY', 'Local operator only.');
 
@@ -71,7 +72,7 @@ describe('the gate of the Property Card action', () => {
   });
 
   it('states a search that stopped short of every snapshot', () => {
-    const short = cardAction({ data: { ...none, searchedAll: false }, error: null }, false);
+    const short = cardAction({ data: { ...none, searchedAll: false, unlisted: true }, error: null }, false);
     expect(short.opens).toBeNull();
     expect(short.unanswered).toContain('were not searched');
   });

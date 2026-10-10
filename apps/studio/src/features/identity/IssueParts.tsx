@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import { DescriptionList, formatDateTime } from '@ulpin/ui';
+import { CopyableId } from './CopyableId';
 import { EXPIRY_RULE, factText, inclusionError, type CardFact, type CardPreview } from './issue';
 import type { Answered, Typed } from './prepare';
 import styles from './Registry.module.css';
@@ -48,7 +49,10 @@ export function TypedReason({ typed }: { typed: Typed }) {
   return <DescriptionList items={[{ label: 'Why this citation is included', value: why }]} />;
 }
 
-/** The entry, the plan and the packet as the steps of Prepare answered them. */
+/**
+ * The entry, the plan and the packet as the steps of Prepare answered them. Each id the registry answered
+ * carries the copy control; the hash stays text.
+ */
 export function AnsweredFacts({ answered }: { answered: Answered }) {
   const { entry, plan, packet } = answered;
   if (!entry && !plan && !packet) return null;
@@ -59,12 +63,20 @@ export function AnsweredFacts({ answered }: { answered: Answered }) {
         <p className={styles.answered}>
           Entry {entry.label} · {cited ? `source ${cited.sourceId} revision ${cited.revision} · ${cited.locator}`
             : 'no citation answered'} · {entry.includable ? 'includable' : `not includable (${entry.reasonCode})`}
-          {' · '}binding {entry.bindingId}
         </p>
       ) : null}
-      {plan ? <p className={styles.answered}>Plan {plan.planId} · version {plan.version}</p> : null}
+      {entry ? (
+        <p className={styles.answered}>Binding <CopyableId id={entry.bindingId} name="binding id" /></p>
+      ) : null}
+      {plan ? (
+        <p className={styles.answered}>
+          Plan <CopyableId id={plan.planId} name="plan id" /> · version {plan.version}
+        </p>
+      ) : null}
       {packet ? (
-        <p className={styles.answered}>Packet {packet.packetId} · sha256 {packet.artifact.sha256}</p>
+        <p className={styles.answered}>
+          Packet <CopyableId id={packet.packetId} name="packet id" /> · sha256 {packet.artifact.sha256}
+        </p>
       ) : null}
     </div>
   );

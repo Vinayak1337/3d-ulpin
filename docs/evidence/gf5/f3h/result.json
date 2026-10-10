@@ -1,0 +1,606 @@
+{
+ "format": "evidence-result/1",
+ "task": "F3h",
+ "gates": [
+  "GF4",
+  "GF5",
+  "M2"
+ ],
+ "finding": "C13",
+ "date": "2026-10-10",
+ "branch": "task/f3h-recorded-panel-and-card-list",
+ "base": "d6dbc207",
+ "served": {
+  "api": "http://127.0.0.1:3194 (the demo API; GET reads and the card list only)",
+  "studio": "This worktree, vite on 127.0.0.1:5190, proxying the demo API.",
+  "stopped": "The dev server was stopped after the capture; port 5190 was checked free."
+ },
+ "tests": {
+  "studioBefore": 243,
+  "studioAfter": 256,
+  "files": 40
+ },
+ "requests": {
+  "blockedWrites": [],
+  "pageErrors": [],
+  "counts": {
+   "GET /api/v1/areas": 18,
+   "GET /api/v1/areas/{id}/canonical": 8,
+   "GET /api/v1/areas/{id}/context": 4,
+   "GET /api/v1/buildings/{id}/canonical": 24,
+   "GET /api/v1/buildings/{id}/ledger": 8,
+   "GET /api/v1/buildings/{id}/register": 38,
+   "GET /api/v1/buildings/{id}/snapshots": 13,
+   "GET /api/v1/workspace-capabilities": 18,
+   "POST /api/v1/usp/property-cards/list": 25,
+   "mocked GET /api/v1/buildings/{id}/canonical": 14,
+   "mocked GET /api/v1/buildings/{id}/register": 20,
+   "mocked GET /api/v1/usp/identity/records/{id}/reviews": 4,
+   "mocked POST /api/v1/usp/identity/assign": 4,
+   "mocked POST /api/v1/usp/packets/plans/confirm": 2,
+   "mocked POST /api/v1/usp/packets/plans/create": 2,
+   "mocked POST /api/v1/usp/packets/plans/entries": 2,
+   "mocked POST /api/v1/usp/packets/plans/execute": 2,
+   "mocked POST /api/v1/usp/property-cards/list": 24,
+   "mocked POST /api/v1/usp/property-cards/preview": 2,
+   "mocked POST /api/v1/usp/snapshots": 2
+  },
+  "note": [
+   "Counts of the last run of capture.mjs. \"mocked\" requests were answered by the script and never",
+   "reached the demo; the only POST that reached it is the card list, a read."
+  ]
+ },
+ "fixtures": "fixtures.json: shaped (each marked contract-shaped, not recorded) and the files it reuses.",
+ "before": "before.json: which read holds identifier, kind and area for the floor and the unit.",
+ "browserChecks": {
+  "zoomMethod": "viewport 720x450 at device scale 2",
+  "panel": {
+   "floor": {
+    "Identifier": "3DU-7D9F1TW6R284QABK02NK7PJEGV:B001:F001",
+    "Lower height": "Unknown",
+    "Upper height": "Unknown",
+    "Citation": "5293cd72p.1 · x 850.0, y 875.0 · 170.0 × 35.0 pt"
+   },
+   "unit": {
+    "Kind": "Unknown",
+    "Area": "Unknown"
+   },
+   "identifierFrom": "register[].identifier of the entry whose id is the floor's registryFloorId",
+   "pageOverflowPx": 0
+  },
+  "panelZoomed": {
+   "floor": {
+    "Identifier": "3DU-7D9F1TW6R284QABK02NK7PJEGV:B001:F001",
+    "Lower height": "Unknown",
+    "Upper height": "Unknown",
+    "Citation": "5293cd72p.1 · x 850.0, y 875.0 · 170.0 × 35.0 pt"
+   },
+   "unit": {
+    "Kind": "Unknown",
+    "Area": "Unknown"
+   },
+   "identifierFrom": "register[].identifier of the entry whose id is the floor's registryFloorId",
+   "pageOverflowPx": 0
+  },
+  "cards": {
+   "snapshotsListed": 4,
+   "cardListReads": 4,
+   "mostInFlight": 1,
+   "rows": [
+    [
+     "1 10 Oct 2026, 19:19 Valid until 11 Oct 2026, 19:09 At its present revision Open",
+     "card PDF Verification"
+    ]
+   ],
+   "sentences": [
+    "Read under 4 snapshots; the newest that lists a card is of 10 Oct 2026, 19:18"
+   ],
+   "pageOverflowPx": 0
+  },
+  "cardsZoomed": {
+   "snapshotsListed": 4,
+   "cardListReads": 4,
+   "mostInFlight": 1,
+   "rows": [
+    [
+     "1 10 Oct 2026, 19:19 Valid until 11 Oct 2026, 19:09 At its present revision Open",
+     "card PDF Verification"
+    ]
+   ],
+   "sentences": [
+    "Read under 4 snapshots; the newest that lists a card is of 10 Oct 2026, 19:18"
+   ],
+   "pageOverflowPx": 0
+  },
+  "states": {
+   "floorIdentifier": "The register read states no identifier for this floor.",
+   "unit": {
+    "Kind": "Not recorded",
+    "Area": "Not recorded"
+   },
+   "registerFailed": "The register could not be read, so no identifier is shown.",
+   "pageOverflowPx": 0
+  },
+  "statesZoomed": {
+   "floorIdentifier": "The register read states no identifier for this floor.",
+   "unit": {
+    "Kind": "Not recorded",
+    "Area": "Not recorded"
+   },
+   "registerFailed": "The register could not be read, so no identifier is shown.",
+   "pageOverflowPx": 0
+  },
+  "older": {
+   "rows": [
+    [
+     "6a997624 1 10 Oct 2026, 19:19 Valid until 11 Oct 2026, 19:09 At its present",
+     "revision Open card PDF Verification"
+    ],
+    [
+     "00000000 1 10 Oct 2026, 16:30 Expired 10 Oct 2026, 17:30 Changed since this card",
+     "Open card PDF Verification"
+    ]
+   ],
+   "sentences": [
+    "Read under 2 snapshots; the newest that lists a card is of 10 Oct 2026, 19:18",
+    "2 of 4 snapshots could not be read."
+   ],
+   "mostInFlight": 1,
+   "action": "Issue new revision",
+   "pageOverflowPx": 0
+  },
+  "olderZoomed": {
+   "rows": [
+    [
+     "6a997624 1 10 Oct 2026, 19:19 Valid until 11 Oct 2026, 19:09 At its present",
+     "revision Open card PDF Verification"
+    ],
+    [
+     "00000000 1 10 Oct 2026, 16:30 Expired 10 Oct 2026, 17:30 Changed since this card",
+     "Open card PDF Verification"
+    ]
+   ],
+   "sentences": [
+    "Read under 2 snapshots; the newest that lists a card is of 10 Oct 2026, 19:18",
+    "2 of 4 snapshots could not be read."
+   ],
+   "mostInFlight": 1,
+   "action": "Issue new revision",
+   "pageOverflowPx": 0
+  },
+  "unknown": {
+   "noAnswer": "The result is unknown: no answer says whether the registry stored anything.",
+   "gateway502": "The result is unknown: no answer says whether the registry stored anything.",
+   "faultWithCode": [
+    "The result is unknown: no answer says whether the registry stored anything.",
+    "(USP_POSTWRITE_MISSING)"
+   ]
+  },
+  "unknownZoomed": {
+   "said": "The result is unknown: no answer says whether the registry stored anything.",
+   "controls": 3,
+   "widthOverflowPx": 0,
+   "whole": true
+  },
+  "withCard": {
+   "actions": [
+    "Property Card"
+   ],
+   "link": {
+    "inFooter": false,
+    "asButton": false,
+    "underlined": true
+   },
+   "heightPx": 518,
+   "rowsShownPx": 453,
+   "rowsContentPx": 453,
+   "widthOverflowPx": 0,
+   "actionsWhole": true
+  },
+  "withCardZoomed": {
+   "actions": [
+    "Property Card"
+   ],
+   "link": {
+    "inFooter": false,
+    "asButton": false,
+    "underlined": true
+   },
+   "heightPx": 197,
+   "rowsShownPx": 132,
+   "rowsContentPx": 453,
+   "widthOverflowPx": 0,
+   "actionsWhole": true
+  },
+  "withoutCard": {
+   "actions": [
+    "Open recorded unit"
+   ],
+   "link": {
+    "inFooter": true,
+    "asButton": true,
+    "underlined": false
+   },
+   "heightPx": 472,
+   "rowsShownPx": 407,
+   "rowsContentPx": 407,
+   "widthOverflowPx": 0,
+   "actionsWhole": true
+  },
+  "withoutCardZoomed": {
+   "actions": [
+    "Open recorded unit"
+   ],
+   "link": {
+    "inFooter": true,
+    "asButton": true,
+    "underlined": false
+   },
+   "heightPx": 197,
+   "rowsShownPx": 132,
+   "rowsContentPx": 407,
+   "widthOverflowPx": 0,
+   "actionsWhole": true
+  },
+  "ids": {
+   "copies": [
+    "Copy binding id {id}",
+    "Copy plan id {id}",
+    "Copy packet id {id}"
+   ],
+   "copiedPlanIdEqualsAnswer": true,
+   "controls": 2,
+   "widthOverflowPx": 0,
+   "whole": true
+  },
+  "idsZoomed": {
+   "copies": [
+    "Copy binding id {id}",
+    "Copy plan id {id}",
+    "Copy packet id {id}"
+   ],
+   "copiedPlanIdEqualsAnswer": true,
+   "controls": 2,
+   "widthOverflowPx": 0,
+   "whole": true
+  }
+ },
+ "screenshots": [
+  {
+   "file": "live-01-recorded-floor-and-unit.png",
+   "mode": "live",
+   "notes": [
+    "Live reads only: the floor prints the identifier the register read states, with the copy control.",
+    "UNIT-3B reads Unknown for Kind and Area because the canonical read itself says unknown for both."
+   ]
+  },
+  {
+   "file": "live-02-zoom-200-recorded-floor-and-unit.png",
+   "mode": "live",
+   "notes": [
+    "Live reads only at 200% zoom (720 x 450 CSS px, device scale 2): the floor prints the identifier the",
+    "register read states, with the copy control. UNIT-3B reads Unknown for Kind and Area because the",
+    "canonical read itself says unknown for both."
+   ]
+  },
+  {
+   "file": "live-03-cards-across-snapshots.png",
+   "mode": "live",
+   "notes": [
+    "Live reads only: the 4 snapshots of the listing each list the same card revision; it is listed once,",
+    "with the state of the unit in its snapshot."
+   ]
+  },
+  {
+   "file": "live-04-zoom-200-cards-across-snapshots.png",
+   "mode": "live",
+   "notes": [
+    "Live reads only at 200% zoom (720 x 450 CSS px, device scale 2): the 4 snapshots of the listing each",
+    "list the same card revision; it is listed once, with the state of the unit in its snapshot."
+   ]
+  },
+  {
+   "file": "mocked-05-no-identifier-and-not-recorded.png",
+   "mode": "mocked",
+   "notes": [
+    "Mocked canonical and register reads: the register lists no entry for the floor, so the row says so",
+    "in words; Kind and Area read Not recorded where the record states absent."
+   ]
+  },
+  {
+   "file": "mocked-06-zoom-200-no-identifier-and-not-recorded.png",
+   "mode": "mocked",
+   "notes": [
+    "Mocked canonical and register reads at 200% zoom (720 x 450 CSS px, device scale 2): the register",
+    "lists no entry for the floor, so the row says so in words; Kind and Area read Not recorded where the",
+    "record states absent."
+   ]
+  },
+  {
+   "file": "mocked-07-cards-of-older-snapshots-and-failed-reads.png",
+   "mode": "mocked",
+   "notes": [
+    "Mocked card lists: the newest snapshot lists none, the second read gets no answer, the third lists",
+    "two cards and the fourth is answered 502. Both cards stay listed, each with the state of the unit in",
+    "its snapshot, and the two failed reads are counted in one sentence."
+   ]
+  },
+  {
+   "file": "mocked-08-zoom-200-cards-and-failed-reads.png",
+   "mode": "mocked",
+   "notes": [
+    "Mocked card lists at 200% zoom (720 x 450 CSS px, device scale 2): the newest snapshot lists none,",
+    "the second read gets no answer, the third lists two cards and the fourth is answered 502. Both cards",
+    "stay listed, each with the state of the unit in its snapshot, and the two failed reads are counted",
+    "in one sentence."
+   ]
+  },
+  {
+   "file": "mocked-09-unknown-no-answer.png",
+   "mode": "mocked",
+   "notes": [
+    "The assignment got no answer: the fixed sentence alone, without the words of the browser. The review",
+    "and its snapshot carry the copy control."
+   ]
+  },
+  {
+   "file": "mocked-10-unknown-502-without-body.png",
+   "mode": "mocked",
+   "notes": [
+    "The assignment is answered 502 with an empty body: the same fixed sentence, with no status line",
+    "after it."
+   ]
+  },
+  {
+   "file": "mocked-11-unknown-fault-with-code.png",
+   "mode": "mocked",
+   "notes": [
+    "The assignment is answered 503 USP_POSTWRITE_MISSING: the fixed sentence and the code of the server,",
+    "without its sentence."
+   ]
+  },
+  {
+   "file": "mocked-12-zoom-200-unknown-no-answer.png",
+   "mode": "mocked",
+   "notes": [
+    "200% zoom (720 x 450 CSS px, device scale 2): the unknown outcome of an assignment that got no",
+    "answer; the actions are whole."
+   ]
+  },
+  {
+   "file": "live-13-inspector-card-listed.png",
+   "mode": "live",
+   "notes": [
+    "Live reads only: UNIT-3B with a listed card. Property Card is the one button; Open recorded unit is",
+    "a text link at the end of the note."
+   ]
+  },
+  {
+   "file": "live-14-zoom-200-inspector-card-listed.png",
+   "mode": "live",
+   "notes": [
+    "Live reads only at 200% zoom (720 x 450 CSS px, device scale 2): UNIT-3B with a listed card.",
+    "Property Card is the one button; Open recorded unit is a text link at the end of the note."
+   ]
+  },
+  {
+   "file": "mocked-15-inspector-no-card.png",
+   "mode": "mocked",
+   "notes": "Mocked empty card lists: UNIT-3B with no card listed. Open recorded unit is the one button."
+  },
+  {
+   "file": "mocked-16-zoom-200-inspector-no-card.png",
+   "mode": "mocked",
+   "notes": [
+    "Mocked empty card lists at 200% zoom (720 x 450 CSS px, device scale 2): UNIT-3B with no card",
+    "listed. Open recorded unit is the one button."
+   ]
+  },
+  {
+   "file": "mocked-17-answered-ids-with-copy.png",
+   "mode": "mocked",
+   "notes": [
+    "Mocked Prepare: the binding, the plan and the packet as answered, each id with its copy control; the",
+    "sha256 stays text."
+   ]
+  },
+  {
+   "file": "mocked-18-zoom-200-answered-ids-with-copy.png",
+   "mode": "mocked",
+   "notes": [
+    "Mocked Prepare at 200% zoom (720 x 450 CSS px, device scale 2): the binding, the plan and the packet",
+    "as answered, each id with its copy control; the sha256 stays text."
+   ]
+  }
+ ],
+ "designCheck": "ui-design-check.md",
+ "report": {
+  "TASK": [
+   "F3h (GF4, GF5 finding C13, M2): the recorded panel says what the register holds for a floor and a",
+   "unit, a unit's cards stay listed across the snapshots the listing returns, the registry dialogs",
+   "state an unknown outcome without the transport's words, the inspector links to the recorded unit as",
+   "text when a card is listed, and the answered ids carry the copy control. All five items are done and",
+   "committed. Nothing was stored on the demo: only GET reads and the card list were sent; every storing",
+   "step in the screenshots is mocked and named so."
+  ],
+  "WORKS": [
+   [
+    "1. The recorded panel (700edc91). A recorded floor has an Identifier row: the register read's own",
+    "`identifier` of the entry whose id is the floor's registryFloorId, printed whole with the copy",
+    "control and never composed. When the register lists no entry for the floor, could not be read, or is",
+    "still on its way, the row says so in a sentence. Kind and Area print \"Not recorded\" where the record",
+    "states absent, \"Unknown\" only where it says unknown (the kind value \"unknown\" included), withheld",
+    "and conflicting by their own word, \"Not reported\" for a field the read omits, and never a zero. Pure",
+    "part floorIdentifier and the state words in recorded/model.ts, a test for each state."
+   ],
+   [
+    "2. Cards across snapshots (24bac39d, 319dcd3e, edc86e88). The card list is read under every snapshot",
+    "of the listing's one page, newest first, one read at a time (measured: at most 1 in flight, live and",
+    "mocked). Each scope lists every card of the unit, so the demo's one card arrives four times and is",
+    "listed once (by card id and revision, the newest snapshot's row kept). Each row says \"At its present",
+    "revision\" or \"Changed since this card\" from its own snapshotState. Failed reads are counted in one",
+    "sentence under the list (\"2 of 4 snapshots could not be read.\"); snapshots the listing left out get",
+    "a second sentence. When every card read fails the query fails as before, so nothing is answered as",
+    "empty. issueTarget decides from the whole merged list. Two cards of one unit are told apart by a",
+    "Card column (first eight characters, whole id as title), drawn only when the rows belong to more",
+    "than one card; the row actions always name the card. Pure part mergeUnitCards (api/queries.ts) with",
+    "tests."
+   ],
+   [
+    "3. The unknown outcome (2d80b800). For no answer and for a 5xx the dialogs print the fixed sentence",
+    "\"The result is unknown: no answer says whether the registry stored anything.\", followed by the",
+    "server's code in brackets when the answer has one; the browser's words, a status line and the",
+    "server's sentence are left out. Tests: no answer at all; a 502 without a body; a 500 with a code; a",
+    "503 USP_POSTWRITE_MISSING. One addition beyond the task: a read that gets no answer during Prepare",
+    "now says \"The server gave no answer.\" in place of the browser's words (identity/registryCard.ts)."
+   ],
+   [
+    "4. The inspector (6a3091a4). With a card listed, Property Card is the one button and \"Open recorded",
+    "unit\" is a text link at the end of the note; with none listed the link is the one button, as before.",
+    "At 200% zoom the rows keep 132 px of the inspector's 197 px (84 px with two buttons in F3e2)."
+   ],
+   [
+    "5. Copy controls (eb4e873b, 4b3e9de2): yes. packages/ui has the `ul-code` copy button and the Studio",
+    "already wraps it as features/identity/CopyableId.tsx, so the binding, plan and packet ids after",
+    "Prepare, the review, snapshot and receipt ids of an assignment, and the floor's identifier carry it.",
+    "The packet's sha256 stays text. packages/ui was not changed."
+   ]
+  ],
+  "SEE IT": [
+   [
+    "Start the Studio from this worktree (cd apps/studio && ULPIN_API_TARGET=http://127.0.0.1:3194 pnpm",
+    "exec vite --port 5190 --strictPort) and open",
+    "http://127.0.0.1:5190/studio/properties/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/candidates. Scroll to",
+    "\"Recorded floors and units\": 2ND FLOOR PLAN shows Identifier",
+    "3DU-7D9F1TW6R284QABK02NK7PJEGV:B001:F001 with a copy button; under UNIT-3B, Cards reads \"Read under",
+    "4 snapshots; the newest that lists a card is of 10 Oct 2026, 19:18\" and one row with \"At its present",
+    "revision\". Screenshots: live-01-recorded-floor-and-unit.png, live-03-cards-across-snapshots.png",
+    "(200%: live-02, live-04)."
+   ],
+   [
+    "The inspector: open http://127.0.0.1:5190/studio/areas/ed4bc3ae-1b02-412e-a5cc-",
+    "02accf693a1b?feature=6f95d04e-2067-4ac8-a3c2-6cc21ea46325, then Tools, View, Floors, UNIT-3B. The",
+    "note ends in the underlined link \"Open recorded unit\" and the footer has Property Card alone",
+    "(live-13-inspector-card-listed.png; 200%: live-14)."
+   ],
+   [
+    "Mocked, because the demo holds no such record or because the step stores: the register without the",
+    "floor and a unit stated absent (mocked-05, 06); two cards with two failed reads (mocked-07, 08); the",
+    "three unknown outcomes of an assignment (mocked-09, 10, 11; 200%: mocked-12); the inspector with no",
+    "card listed (mocked-15, 16); the answered ids with copy controls (mocked-17, 18). Reproduce all 18",
+    "with `node docs/evidence/gf5/f3h/capture.mjs` while the Studio runs on 5190."
+   ]
+  ],
+  "INPUTS": [
+   [
+    "Live: the demo API at http://127.0.0.1:3194, GET reads and POST /api/v1/usp/property-cards/list only",
+    "(Tower 3, 2ND FLOOR PLAN, UNIT-3B). before.json states which read holds identifier, kind and area",
+    "for the floor and the unit, by field name."
+   ],
+   [
+    "Mocked: docs/evidence/gf5/f3h/fixtures.json. `shaped.*` are marked \"contract-shaped, not recorded\"",
+    "and name the route and the change made to a live answer (unitAbsent, registerWithoutFloor,",
+    "cardsAcrossSnapshots, gateway, faultWithCode). The second card in mocked-07/08 has a placeholder id",
+    "(00000000-…) and is not a registry record. The storing answers of Prepare are R3's stored exchanges,",
+    "named by file and JSON path in docs/evidence/gf5/f3e2/fixtures.json (`recorded.*`); the card row is",
+    "docs/evidence/gf5/f3d/responses.json `cardList`."
+   ]
+  ],
+  "GAPS": [
+   [
+    "UNIT-3B still reads \"Unknown\" for Kind and Area on the demo. The canonical read itself states",
+    "unknown for both, so the panel prints the record's word; \"Not recorded\" appears only for a state of",
+    "absent, which no value of this unit has (seen mocked). C13's second half is therefore closed in the",
+    "Studio's wording only; whether a unit recorded from a label alone should state absent is the",
+    "server's decision."
+   ],
+   [
+    "Not seen in a browser, tests only: a card row whose snapshotState is null (\"Not reported\"); a",
+    "listing that is truncated or has unreadable snapshots (the second sentence); a 500 with a code (the",
+    "screenshot uses the server's 503 USP_POSTWRITE_MISSING instead). The copy control was pressed and",
+    "read back from the clipboard for the plan id only."
+   ],
+   [
+    "No storing step was sent to the demo, so the unknown-outcome banners and the answered ids are seen",
+    "against mocked answers only."
+   ],
+   [
+    "Only the listing's one page of snapshots is searched, as the task says; when the listing is",
+    "truncated or reports unreadable snapshots the list says older or unreadable snapshots were not",
+    "searched. When every card read fails the block says \"The cards of this unit could not be read.\" with",
+    "the reason of the first failure, as before, not a count."
+   ],
+   [
+    "UnitCards keeps snapshotCreatedAt (now: the newest snapshot that lists a card) because",
+    "features/register/RegisterPage.tsx, not mine, reads it."
+   ],
+   [
+    "The frame still names another area on a record page opened by its address (app/Frame.tsx); the task",
+    "file says it is not here."
+   ]
+  ],
+  "DESIGN": [
+   [
+    "$ui-design-check: docs/evidence/gf5/f3h/ui-design-check.md. Blocking: none. Design system, six",
+    "notes: UNIT-3B reads Unknown because the record says so; a list of several cards scrolls sideways",
+    "inside its block at 200% zoom (the page keeps its width); copy controls add keyboard stops (one per",
+    "floor, three per dialog); the inspector's text link is 12 px inside the note; \"Reading the",
+    "register…\" is drawn in the style of an unknown value; the frame's area on the record page (outside",
+    "this change). Two findings of the check were fixed in their own commits (319dcd3e, edc86e88)."
+   ],
+   [
+    "Scan: node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs d6dbc207 → \"0 added line(s) in",
+    "apps/web. No candidates.\", exit 0. The six patterns run by grep over the added apps/studio lines: no",
+    "match."
+   ]
+  ],
+  "COMMITS": [
+   [
+    "700edc91 fix(studio): a recorded floor prints the identifier its read states, and a unit's kind and",
+    "area say the record's state"
+   ],
+   "24bac39d feat(studio): a unit's cards stay listed across the snapshots the listing returns",
+   "2d80b800 fix(studio): an unknown outcome is stated without the transport's words",
+   "6a3091a4 style(studio): the inspector links to the recorded unit as text when a card is listed",
+   "eb4e873b feat(studio): the ids a prepared card answers carry the copy control",
+   "4b3e9de2 feat(studio): the review, snapshot and receipt ids of an assignment carry the copy control",
+   "319dcd3e fix(studio): a listed card row names its card",
+   "edc86e88 fix(studio): the Card column is listed only when a unit's rows belong to more than one card",
+   "588490dc test(studio): the inconsistent card row's expectation keeps to the line length",
+   "(this commit) docs(studio): F3h evidence",
+   [
+    "Branch task/f3h-recorded-panel-and-card-list from d6dbc207; ten commits instead of five (two for the",
+    "copy controls, two for naming a card row, one line-length fix in a test). Every commit carries the",
+    "Co-Authored-By trailer. Not pushed, not merged."
+   ]
+  ],
+  "CHECKS": [
+   "pnpm studio:typecheck: exit 0.",
+   "pnpm studio:test: 243 before, 256 after (40 files, all passed).",
+   [
+    "git diff --check d6dbc207..HEAD: clean. New lines over 120 characters: 0 under apps, 0 in the",
+    "evidence files written by hand (browser-result.json is the one line capture.mjs writes)."
+   ],
+   [
+    "capture.mjs: exit 0; blockedWrites []; pageErrors []; card reads in flight at most 1; page overflow",
+    "0 px in every scene at 1440 and at 200% zoom; 18 screenshots (6 live, 12 mocked)."
+   ],
+   "The dev server was stopped and port 5190 checked free."
+  ],
+  "NEXT": [
+   [
+    "Lead: decide whether the canonical read should state absent (not unknown) for the kind and area of a",
+    "unit recorded from a label alone; until then the demo's panel reads Unknown."
+   ],
+   [
+    "Lead or the Frame's owner: the area the frame names on a record page opened by its address",
+    "(app/Frame.tsx)."
+   ],
+   [
+    "Optional: stack the two actions of a card row at narrow widths if units with several cards become",
+    "common (Recorded.module.css, .cardActions); features/register/RegisterPage.tsx could print the count",
+    "of snapshots read now that UnitCards carries it."
+   ]
+  ]
+ }
+}

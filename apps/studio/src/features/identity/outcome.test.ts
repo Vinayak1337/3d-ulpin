@@ -23,13 +23,22 @@ describe('commandFailure', () => {
     expect(commandFailure(other)).toEqual({ unknown: false, text: 'A sentence of the server. (SOMETHING_NEW)' });
   });
 
-  it('calls a server fault and a lost answer an unknown outcome', () => {
-    const fault = commandFailure(refusal(503, 'USP_POSTWRITE_MISSING', 'The write could not be confirmed.'));
-    expect(fault.unknown).toBe(true);
-    expect(fault.text).toContain('The result is unknown');
-    expect(fault.text).toContain('(USP_POSTWRITE_MISSING)');
-    expect(commandFailure(new TypeError('Failed to fetch'))).toMatchObject({ unknown: true });
-    expect(commandFailure(new ApiError(502, '/x', null)).unknown).toBe(true);
+  const unknown = 'The result is unknown: no answer says whether the registry stored anything.';
+
+  it('states no answer at all as the fixed sentence, without the words of the browser', () => {
+    expect(commandFailure(new TypeError('Failed to fetch'))).toEqual({ unknown: true, text: unknown });
+    expect(commandFailure(new Error('NetworkError when attempting to fetch resource.')).text).toBe(unknown);
+  });
+
+  it('states a 502 without a body as the fixed sentence alone', () => {
+    expect(commandFailure(new ApiError(502, '/x', null))).toEqual({ unknown: true, text: unknown });
+  });
+
+  it('adds the code of a server fault that has one, and not its sentence', () => {
+    const fault = commandFailure(refusal(500, 'INTERNAL_ERROR', 'connect ECONNREFUSED 127.0.0.1:5432'));
+    expect(fault).toEqual({ unknown: true, text: `${unknown} (INTERNAL_ERROR)` });
+    const missing = commandFailure(refusal(503, 'USP_POSTWRITE_MISSING', 'The write could not be confirmed.'));
+    expect(missing).toEqual({ unknown: true, text: `${unknown} (USP_POSTWRITE_MISSING)` });
   });
 
   it('keeps a fault that is answered before any write as a refusal', () => {
