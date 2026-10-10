@@ -40,7 +40,13 @@
     "publisher_features": 148495,
     "empty_chips": 2618
   },
-  "augmentation": "TRAIN horizontal/vertical flips only; smoke none; then brightness/contrast/saturation factors within 1 +- 0.2; then zoom factor in [0.75, 1.33] with random crop or black pad back to the tile; a roof left with no mask pixel leaves the targets",
+  "augmentation": [
+    "TRAIN horizontal/vertical flips only;",
+    "smoke none;",
+    "then brightness/contrast/saturation factors within 1 +- 0.2;",
+    "then zoom factor in [0.75, 1.33] with random crop or black pad back to the tile;",
+    "a roof left with no mask pixel leaves the targets"
+  ],
   "when_it_ends": {
     "normal": "result.json, dev-selection.jsonl and epoch-00N-dev.json in the run directory",
     "failure": "failure.json in the run directory; ended.json carries the exit code either way",
