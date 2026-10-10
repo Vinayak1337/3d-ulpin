@@ -28,7 +28,7 @@ export class StreamingVectorController{
   }
   @Get('jobs/:jobId') @param('caseId') @param('sourceId') @param('jobId')
   @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_sources_sourceId_streaming_vector_jobs_jobId',
-    summary:'Read current ordered draft watermark, coverage and incomplete-source state'})
+    summary:'Read retained draft coverage with explicit current/history reasons; never grants mutation authority'})
   @wireResponse(200,AnyStreamingStatusSchema)
   status(@Param('caseId')caseId:string,@Param('sourceId')sourceId:string,@Param('jobId')jobId:string,@Req()request:Request){
     noQuery(request);return this.streaming.status(caseId,sourceId,jobId);
@@ -36,7 +36,7 @@ export class StreamingVectorController{
   @Get('jobs/:jobId/chunks/:chunkIndex') @param('caseId') @param('sourceId') @param('jobId')
   @ApiParam({name:'chunkIndex',schema:{type:'integer',minimum:0,maximum:4096}})
   @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_sources_sourceId_streaming_vector_jobs_jobId_chunks_chunkIndex',
-    summary:'Read one published private source-native chunk or terminal quarantine marker'})
+    summary:'Read one integrity-verified private raw chunk, including obsolete pinned results'})
   @wireResponse(200,StreamingVectorChunkResponseSchema)
   chunk(@Param('caseId')caseId:string,@Param('sourceId')sourceId:string,@Param('jobId')jobId:string,
     @Param('chunkIndex')chunkIndex:string,@Req()request:Request){

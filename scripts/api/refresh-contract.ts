@@ -12,7 +12,7 @@ type SourcePins = { sourceSha256: Record<string, string> };
 function needsPin(path: string, pins: SourcePins) {
   if (Object.hasOwn(pins.sourceSha256, path)) return true;
   const producer = /^(?:apps\/api\/src|packages\/(?:server|contracts)\/src)\/.*\.(?:ts|js|json)$/.test(path);
-  const test = /(?:^|\/)tests?\//.test(path) || /\.(?:test|spec)\.(?:ts|js|json)$/.test(path);
+  const test = /(?:^|\/)tests?\//.test(path) || /\.(?:test|spec|test-fixture)\.(?:ts|js|json)$/.test(path);
   return producer && !test;
 }
 

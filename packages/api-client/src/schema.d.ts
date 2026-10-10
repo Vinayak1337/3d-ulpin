@@ -3720,7 +3720,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read current ordered draft watermark, coverage and incomplete-source state */
+        /** Read retained draft coverage with explicit current/history reasons; never grants mutation authority */
         get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_streaming_vector_jobs_jobId"];
         put?: never;
         post?: never;
@@ -3737,7 +3737,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read one published private source-native chunk or terminal quarantine marker */
+        /** Read one integrity-verified private raw chunk, including obsolete pinned results */
         get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_streaming_vector_jobs_jobId_chunks_chunkIndex"];
         put?: never;
         post?: never;
@@ -3771,7 +3771,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read provisional mapped coverage, recipe/proposal and source closure state */
+        /** Read retained mapped coverage and recipe pins with explicit current/history reasons */
         get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_chunk_mapping_jobs_jobId"];
         put?: never;
         post?: never;
@@ -3788,7 +3788,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Read one published private source-linked mapped draft chunk */
+        /** Read one integrity-verified private mapped chunk, including obsolete pinned results */
         get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_chunk_mapping_jobs_jobId_chunks_chunkIndex"];
         put?: never;
         post?: never;
@@ -63513,6 +63513,11 @@ export interface components {
                 sourceBytes: number;
                 developmentAssetId: string;
                 developmentFamily: string;
+                derivativeOf?: {
+                    originalSha256: string;
+                    /** @enum {string} */
+                    version: "json-table-csv/1";
+                };
             };
             /** Format: uuid */
             caseId: string;
@@ -63629,11 +63634,18 @@ export interface components {
                     sourceBytes: number;
                     developmentAssetId: string;
                     developmentFamily: string;
+                    derivativeOf?: {
+                        originalSha256: string;
+                        /** @enum {string} */
+                        version: "json-table-csv/1";
+                    };
                 };
                 mapping: {
                     /** @enum {string} */
                     version: "mapping-plan/2";
                     layoutFingerprint: string;
+                    /** @enum {string} */
+                    layoutFingerprintVersion?: "column-types/1" | "tabular-header/2";
                     /** @enum {string} */
                     sourceKind: "tabular" | "gis_attributes";
                     method: string;
@@ -63806,11 +63818,18 @@ export interface components {
                     sourceBytes: number;
                     developmentAssetId: string;
                     developmentFamily: string;
+                    derivativeOf?: {
+                        originalSha256: string;
+                        /** @enum {string} */
+                        version: "json-table-csv/1";
+                    };
                 };
                 mapping: {
                     /** @enum {string} */
                     version: "mapping-plan/2";
                     layoutFingerprint: string;
+                    /** @enum {string} */
+                    layoutFingerprintVersion?: "column-types/1" | "tabular-header/2";
                     /** @enum {string} */
                     sourceKind: "tabular" | "gis_attributes";
                     method: string;
@@ -63983,11 +64002,18 @@ export interface components {
                     sourceBytes: number;
                     developmentAssetId: string;
                     developmentFamily: string;
+                    derivativeOf?: {
+                        originalSha256: string;
+                        /** @enum {string} */
+                        version: "json-table-csv/1";
+                    };
                 };
                 mapping: {
                     /** @enum {string} */
                     version: "mapping-plan/2";
                     layoutFingerprint: string;
+                    /** @enum {string} */
+                    layoutFingerprintVersion?: "column-types/1" | "tabular-header/2";
                     /** @enum {string} */
                     sourceKind: "tabular" | "gis_attributes";
                     method: string;
@@ -66739,9 +66765,16 @@ export interface components {
                 sourceBytes: number;
                 developmentAssetId: string;
                 developmentFamily: string;
+                derivativeOf?: {
+                    originalSha256: string;
+                    /** @enum {string} */
+                    version: "json-table-csv/1";
+                };
             };
         };
         POST_ingestion_cases_caseId_sources_sourceId_streaming_vector_Response_202_application_json: {
+            current: boolean;
+            reasons: ("case_advanced" | "reader_changed" | "converter_changed" | "source_superseded")[];
             /** @enum {string} */
             version: "geojson-stream/2";
             /** Format: uuid */
@@ -66802,9 +66835,16 @@ export interface components {
                 sourceBytes: number;
                 developmentAssetId: string;
                 developmentFamily: string;
+                derivativeOf?: {
+                    originalSha256: string;
+                    /** @enum {string} */
+                    version: "json-table-csv/1";
+                };
             };
         };
         GET_ingestion_cases_caseId_sources_sourceId_streaming_vector_jobs_jobId_chunks_chunkIndex_Response_200_application_json: {
+            current: boolean;
+            reasons: ("case_advanced" | "reader_changed" | "converter_changed" | "source_superseded")[];
             slot: {
                 chunkIndex: number;
                 /** @enum {string} */
@@ -66876,9 +66916,16 @@ export interface components {
                 sourceBytes: number;
                 developmentAssetId: string;
                 developmentFamily: string;
+                derivativeOf?: {
+                    originalSha256: string;
+                    /** @enum {string} */
+                    version: "json-table-csv/1";
+                };
             };
         };
         POST_ingestion_cases_caseId_sources_sourceId_chunk_mapping_Response_202_application_json: {
+            current: boolean;
+            reasons: ("case_advanced" | "reader_changed" | "converter_changed" | "source_superseded")[];
             /** @enum {string} */
             version: "chunk-mapping/1";
             /** Format: uuid */
@@ -66919,6 +66966,11 @@ export interface components {
                 sourceBytes: number;
                 developmentAssetId: string;
                 developmentFamily: string;
+                derivativeOf?: {
+                    originalSha256: string;
+                    /** @enum {string} */
+                    version: "json-table-csv/1";
+                };
             };
             referenceEvidence: string | null;
             /** @enum {string} */
@@ -67022,6 +67074,8 @@ export interface components {
             }[];
         };
         GET_ingestion_cases_caseId_sources_sourceId_chunk_mapping_jobs_jobId_chunks_chunkIndex_Response_200_application_json: {
+            current: boolean;
+            reasons: ("case_advanced" | "reader_changed" | "converter_changed" | "source_superseded")[];
             slot: {
                 chunkIndex: number;
                 /** @enum {string} */
@@ -67074,6 +67128,11 @@ export interface components {
                     sourceBytes: number;
                     developmentAssetId: string;
                     developmentFamily: string;
+                    derivativeOf?: {
+                        originalSha256: string;
+                        /** @enum {string} */
+                        version: "json-table-csv/1";
+                    };
                 };
                 mapping?: {
                     profile: {
@@ -67108,6 +67167,8 @@ export interface components {
                         /** @enum {string} */
                         version: "mapping-plan/2";
                         layoutFingerprint: string;
+                        /** @enum {string} */
+                        layoutFingerprintVersion?: "column-types/1" | "tabular-header/2";
                         /** @enum {string} */
                         sourceKind: "tabular" | "gis_attributes";
                         method: string;

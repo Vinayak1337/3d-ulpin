@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { TABULAR_LIMITS, TabularPinSchema, type TabularSelection, type TabularPin } from '@ulpin/contracts/usp';
 import { settings } from '../../../infrastructure/config';
 import { AppError } from '../../../infrastructure/errors';
@@ -13,20 +13,52 @@ type Part = { text: string; locator: { sheet: string; row: number; column: numbe
 export type TabularTable = { headers: string[]; rows: unknown[][]; sourceRows: number[];
   cellStates?: ('literal' | 'absent' | 'unknown')[][] };
 type DevelopmentAsset = { id: string; family: string; split: string; mediaType: string;
-  privacy?: string; permission: { state: string }; original: { sha256: string; bytes: number } };
+  privacy?: string; permission: { state: string }; original: { sha256: string; bytes: number };
+  derivativeOf?: { originalSha256: string; version: 'json-table-csv/1' } };
+type Derivative = { family: string; originalSha256: string; sha256: string; bytes: number;
+  scriptSha256: string; developmentCopy: string };
+const JSON_TABLE_GENERATORS = new Set([
+  '63821f68526c441aa10a1614f5f92febee05a2536a3b6f13ff470c478eeee263',
+  '62d8248ccd5b45e705d21984bbce5926a62e0a4e80fd69502ff3a81b2d8b50ea',
+]);
 
-/** Only exact public D8 development bytes qualify; no evaluator manifest or teacher label is opened. */
-export function tabularDevelopmentAsset(hash: string, bytes: number): DevelopmentAsset {
-  const manifest = JSON.parse(readFileSync(join(settings.repositoryRoot,
-    'fixtures/usp/D8-messy-india/manifest.json'), 'utf8'));
+function publicDevelopmentAssets(manifest: any): DevelopmentAsset[] {
   const dev = new Set(manifest.families.filter((family: { split: string }) => family.split === 'dev')
     .map((family: { id: string }) => family.id));
   const blind = new Set(manifest.heldout.map((family: { id: string }) => family.id));
-  const asset = manifest.assets.find((item: DevelopmentAsset) => item.split === 'dev' && dev.has(item.family) &&
-    !blind.has(item.family) &&
-    item.original.sha256 === hash && item.original.bytes === bytes && item.permission.state !== 'restricted' &&
-    !/private|restricted/i.test(item.privacy ?? '')) as DevelopmentAsset | undefined;
-  if (!asset) throw new AppError(422, 'TABULAR_DATA_DENIED', 'Only exact public D8 development originals qualify.');
+  return manifest.assets.filter((item: DevelopmentAsset) => item.split === 'dev' && dev.has(item.family) &&
+    !blind.has(item.family) && item.permission.state !== 'restricted' &&
+    !/private|restricted/i.test(item.privacy ?? ''));
+}
+
+function recordedDerivative(hash: string, bytes: number, assets: DevelopmentAsset[]): DevelopmentAsset | undefined {
+  const index = JSON.parse(readFileSync(join(settings.repositoryRoot,
+    'fixtures/usp/D8-messy-india/dev/d1c/derivatives.json'), 'utf8'));
+  if (index.schemaVersion !== 'd1d-derivative-index/1' || index.script !== 'scripts/agent/flatten-json-table.py' ||
+      index.version !== 'json-table-csv/1') return undefined;
+  const matching = index.derivatives.filter((item: Derivative) => item.sha256 === hash && item.bytes === bytes);
+  if (matching.length !== 1) return undefined;
+  const derivative = matching[0] as Derivative;
+  const original = assets.find(item => item.original.sha256 === derivative.originalSha256 &&
+    item.family === derivative.family);
+  if (!original || !JSON_TABLE_GENERATORS.has(derivative.scriptSha256) ||
+      !/^fixtures\/usp\/D8-messy-india\/dev\/d1c\/[^/]+\.csv$/.test(derivative.developmentCopy)) return undefined;
+  return { ...original, id: basename(derivative.developmentCopy), mediaType: 'text/csv',
+    original: { sha256: hash, bytes },
+    derivativeOf: { originalSha256: original.original.sha256, version: 'json-table-csv/1' } };
+}
+
+/** Exact public development originals or recorded derivatives only; no evaluator or teacher labels are opened. */
+export function tabularDevelopmentAsset(hash: string, bytes: number): DevelopmentAsset {
+  const manifest = JSON.parse(readFileSync(join(settings.repositoryRoot,
+    'fixtures/usp/D8-messy-india/manifest.json'), 'utf8'));
+  const assets = publicDevelopmentAssets(manifest);
+  const asset = assets.find(item => item.original.sha256 === hash && item.original.bytes === bytes) ??
+    recordedDerivative(hash, bytes, assets);
+  if (!asset) {
+    throw new AppError(422, 'TABULAR_DATA_DENIED',
+      'Only exact public D8 development originals/recorded derivatives qualify.');
+  }
   return asset;
 }
 
@@ -112,19 +144,23 @@ export function inspectTabularSource(bytes: Uint8Array, selection: TabularSelect
   }
   const table = readTabularSource(bytes, selection);
   const profile = profileTabularChunk({ jobId: 'inventory', chunkIndex: 0, headers: table.headers,
-    rows: table.rows.slice(0, 100), sourceRef: 'inventory' }).profile;
+    rows: table.rows.slice(0, 100), sourceRef: 'inventory', selection }).profile;
   const tabular = TabularPinSchema.parse({ selection, sourceBytes: bytes.length,
-    developmentAssetId: asset.id, developmentFamily: asset.family });
+    developmentAssetId: asset.id, developmentFamily: asset.family,
+    ...(asset.derivativeOf ? { derivativeOf: asset.derivativeOf } : {}) });
   return { tabular, headers: table.headers, records: table.rows.length, profile,
     schemaFingerprint: fingerprint({ selection, headers: table.headers, layout: profile.layoutFingerprint }),
     limitations: ['test_only; permission unconfirmed unless publisher metadata states otherwise.',
-      'No geometry, identity issuance or registry writes; native sheet rows remain source locators.'] };
+      'No geometry, identity issuance or registry writes; native sheet rows remain source locators.',
+      ...(asset.derivativeOf ? [`Recorded JSON-original lineage: ${asset.derivativeOf.originalSha256}; ` +
+        `${asset.derivativeOf.version}. CSV is a development derivative, not a publisher-native CSV.`] : [])] };
 }
 
 export function assertTabularPin(pin: TabularPin, source: { sha256: string; bytes: number; inspection: any }) {
   TabularPinSchema.parse(pin);
   const asset = tabularDevelopmentAsset(source.sha256, Number(source.bytes));
   if (asset.id !== pin.developmentAssetId || asset.family !== pin.developmentFamily ||
+      fingerprint(asset.derivativeOf ?? null) !== fingerprint(pin.derivativeOf ?? null) ||
       fingerprint(pin) !== fingerprint(source.inspection?.manualProfile?.tabular)) {
     throw new AppError(409, 'TABULAR_PIN_CHANGED', 'The tabular byte receipt or selection changed.');
   }

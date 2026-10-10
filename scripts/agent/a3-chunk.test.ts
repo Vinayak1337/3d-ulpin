@@ -36,8 +36,8 @@ test('real CSV chunks reuse a validated layout, retain questions and never claim
   assert.equal(first.metrics.teacherCalls, 1);
   assert.equal(later.metrics.teacherCalls, 0);
   assert.equal(later.metrics.layout, 'memory');
-  assert.equal(later.questions.length, table.headers.length);
-  assert(later.questions.every(question => question.reason === 'TEACHER_REPLAY_UNAVAILABLE'));
+  assert.equal(later.questions.length, 0);
+  assert.equal(later.metrics.needsInput, table.headers.length);
   assert(later.proposal.fieldSources.every(field => field.source === 'memory'));
   CaseIngestionOutboxSchema.parse({ version: 'case-ingestion/1', caseId: randomUUID(),
     caseRevision: 0, change: later.metrics });
