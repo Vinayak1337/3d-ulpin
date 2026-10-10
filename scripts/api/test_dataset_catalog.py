@@ -1,9 +1,11 @@
-"""One regression for curated evidence loss and stale generated-field overrides."""
+"""Regressions: curated evidence loss, stale generated-field overrides, externally stored assets."""
 from copy import deepcopy
 import importlib.util
 import json
 from pathlib import Path
+import tempfile
 import unittest
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location("dataset_catalog", ROOT / "scripts/api/build-dataset-catalog.py")
@@ -74,6 +76,39 @@ class CatalogueRoundTrip(unittest.TestCase):
         ordered = BUILDER.published_order({"sourceVersion": "new", "content": {"sha256": "new"}},
                                           {"content": {"sha256": "old"}, "sourceVersion": "old", "removedField": True})
         self.assertEqual(ordered, {"content": {"sha256": "new"}, "sourceVersion": "new"})
+
+
+class ExternalAssets(unittest.TestCase):
+    MANIFEST = ROOT / "fixtures/usp/example/manifest.json"
+
+    def test_asset_without_content_is_listed_by_its_pin_and_never_read(self):
+        opened = AssertionError("the catalogue opened external bytes")
+        with tempfile.TemporaryDirectory() as folder:
+            outside = Path(folder) / "original.csv"
+            outside.write_bytes(b"bytes that do not match the stated pin")
+            pin = {"externalPath": outside.as_posix(), "sha256": "0" * 64, "bytes": 7}
+            asset = {"id": "outside.csv", "split": "dev", "purpose": "test_only",
+                     "permission": {"state": "unconfirmed"}, "original": pin}
+            with (mock.patch.object(Path, "open", side_effect=opened),
+                  mock.patch.object(Path, "read_bytes", side_effect=opened),
+                  mock.patch.object(Path, "stat", side_effect=opened)):
+                entry = BUILDER.asset_entry(self.MANIFEST, asset)
+                unhashed = BUILDER.asset_entry(self.MANIFEST, {"id": "unhashed", "original": {"externalPath": "x"}})
+        self.assertEqual(entry["content"], {"state": "external", **pin, "repositoryBytesVerified": False})
+        self.assertEqual((entry["split"], entry["purpose"]), ("dev", "test_only"))
+        self.assertNotIn("acquiredAt", entry)  # A field the manifest does not state stays absent.
+        self.assertEqual(unhashed["content"],
+                         {"state": "external", "externalPath": "x", "repositoryBytesVerified": False})
+        with self.assertRaisesRegex(ValueError, "neither repository content nor an external pin"):
+            BUILDER.asset_entry(self.MANIFEST, {"id": "nothing-stated"})
+
+    def test_generation_keeps_sources_authored_only_in_the_published_catalogue(self):
+        maintained = [{"id": "kept-current", "note": "new"}, {"manifest": "no-id.json"},
+                      {"id": "demo", "apiInstallation": "local-opt-in-demo-only"}]
+        published = [{"id": "catalogue-only"}, {"id": "kept-current", "note": "old"}, {"manifest": "no-id.json"},
+                     {"id": "demo"}]
+        self.assertEqual(BUILDER.retained_external_sources(maintained, published),
+                         [{"id": "catalogue-only"}, {"id": "kept-current", "note": "new"}, {"manifest": "no-id.json"}])
 
 
 if __name__ == "__main__":
