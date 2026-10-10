@@ -1,0 +1,101 @@
+{
+  "workbook": {
+    "Building": [
+      "Field",
+      "Value"
+    ],
+    "building_fields": [
+      "Building",
+      "Building record ID",
+      "Application ID",
+      "Address",
+      "Parcel",
+      "Official parcel number",
+      "Issued by",
+      "Area",
+      "Building revision",
+      "Recorded",
+      "Floors",
+      "Units",
+      "Registered residents",
+      "Share basis",
+      "Shares total %",
+      "Height datum",
+      "Register extract as of",
+      "Owners and residents from",
+      "Report schema",
+      "Generated"
+    ],
+    "Floors": [
+      "floor_record_id",
+      "application_id",
+      "level",
+      "use",
+      "bottom_above_ground_m",
+      "top_above_ground_m",
+      "bottom_datum_m",
+      "top_datum_m",
+      "units",
+      "residents"
+    ],
+    "Units": [
+      "unit_record_id",
+      "application_id",
+      "level",
+      "unit",
+      "use",
+      "proposed_3d_ulpin",
+      "rights",
+      "carpet_area_m2",
+      "declared_area_m2",
+      "undivided_share_pct",
+      "occupancy",
+      "owners",
+      "residents",
+      "status",
+      "address"
+    ],
+    "Owners": [
+      "unit_record_id",
+      "level",
+      "unit",
+      "owner",
+      "share_in_unit_pct",
+      "deed_registration_no",
+      "owner_since",
+      "source_ref"
+    ],
+    "Residents": [
+      "unit_record_id",
+      "level",
+      "unit",
+      "name",
+      "relation",
+      "role",
+      "living_here_since",
+      "registered_through",
+      "source_ref"
+    ],
+    "Sources": [
+      "source_ref",
+      "source_id",
+      "profile",
+      "revision",
+      "received_at",
+      "sha256",
+      "document_reading"
+    ]
+  },
+  "pdf_pages": 2,
+  "pdf_header": [
+    "Unit",
+    "Carpet m\u00b2",
+    "Share %",
+    "Registered owners",
+    "Residents",
+    "Occupancy"
+  ],
+  "pdf_contains_project_code": false,
+  "workbook_contains_building_project_code": false,
+  "opened_by": "zipfile + ElementTree (all workbook headers); PyMuPDF (PDF text and page image)"
+}
