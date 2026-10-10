@@ -53,13 +53,17 @@ export class ApiError extends Error {
     this.name = 'ApiError';
   }
 
+  /** Nest validation errors carry a top-level `message`; the API's own failures are `{ error: { code, message } }`. */
   private static describe(status: number, body: unknown): string {
-    if (body && typeof body === 'object' && 'message' in body) {
-      const message = (body as { message: unknown }).message;
-      if (typeof message === 'string') return message;
-      if (Array.isArray(message)) return message.join('; ');
-    }
-    return `The server answered ${status}.`;
+    const wrapped = (body as { error?: unknown } | null)?.error;
+    return ApiError.messageOf(body) ?? ApiError.messageOf(wrapped) ?? `The server answered ${status}.`;
+  }
+
+  private static messageOf(body: unknown): string | null {
+    if (!body || typeof body !== 'object' || !('message' in body)) return null;
+    const message = (body as { message: unknown }).message;
+    if (typeof message === 'string') return message;
+    return Array.isArray(message) ? message.join('; ') : null;
   }
 }
 

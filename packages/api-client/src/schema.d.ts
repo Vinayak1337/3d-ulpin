@@ -508,7 +508,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Import a bounded GIS original or a retained acquisition */
+        /** Import a bounded GIS original, document-backed unknown-geometry buildings, or a retained acquisition */
         post: operations["POST_api_v1_import_packages"];
         delete?: never;
         options?: never;
@@ -746,6 +746,40 @@ export interface paths {
         };
         /** Read a retained area check */
         get: operations["GET_api_v1_area_checks_checkId"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/areas/{areaId}/canonical": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the private canonical ENU area projection without capture writes */
+        get: operations["GET_api_v1_areas_areaId_canonical"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/buildings/{buildingId}/canonical": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the private canonical building projection with exact current dependency revision */
+        get: operations["GET_api_v1_buildings_buildingId_canonical"];
         put?: never;
         post?: never;
         delete?: never;
@@ -5442,6 +5476,40 @@ export interface components {
             jobId?: string;
         };
         GET_source_workspaces_Response_200_application_json: {
+            /** @enum {boolean} */
+            geometryFree?: true;
+            administrativeContext?: {
+                /** Format: uuid */
+                sourceId: string;
+                sourceCrs: string;
+                units: {
+                    /** Format: uuid */
+                    id: string;
+                    sourceKey: string;
+                    /** @enum {string} */
+                    kind: "sector";
+                    name: string;
+                    rings: (number)[][][];
+                }[];
+            };
+            documentPins?: {
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+            }[];
+            sourceMetadata?: {
+                key: string;
+                filename: string;
+                sourceSha256: string;
+                originalUrl: string;
+                issuer: string;
+                acquiredAt: string;
+                /** @enum {string} */
+                permission: "unconfirmed";
+                /** @enum {string} */
+                classification: "test_only";
+            }[];
             quarantine?: {
                 total: number;
                 accepted: number;
@@ -5495,15 +5563,17 @@ export interface components {
                     type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                     coordinates?: number[] | number[][] | number[][][] | number[][][][];
                     geometries?: unknown[];
-                };
+                } | null;
                 geographicGeometry: {
                     /** @enum {string} */
                     type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                     coordinates?: number[] | number[][] | number[][][] | number[][][][];
                     geometries?: unknown[];
-                };
+                } | null;
                 /** @description Retained source-specific or processor-specific value. */
                 sourceGeometry: unknown;
+                /** @enum {string} */
+                placement?: "unknown";
                 sourceReference?: {
                     sourceCrs: string;
                     analysisCrs: string;
@@ -5754,15 +5824,17 @@ export interface components {
                             type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                             coordinates?: number[] | number[][] | number[][][] | number[][][][];
                             geometries?: unknown[];
-                        };
+                        } | null;
                         geographicGeometry: {
                             /** @enum {string} */
                             type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                             coordinates?: number[] | number[][] | number[][][] | number[][][][];
                             geometries?: unknown[];
-                        };
+                        } | null;
                         /** @description Retained source-specific or processor-specific value. */
                         sourceGeometry: unknown;
+                        /** @enum {string} */
+                        placement?: "unknown";
                         sourceReference?: {
                             sourceCrs: string;
                             analysisCrs: string;
@@ -5933,6 +6005,40 @@ export interface components {
             caseId?: string;
         };
         POST_source_workspaces_Response_201_application_json: {
+            /** @enum {boolean} */
+            geometryFree?: true;
+            administrativeContext?: {
+                /** Format: uuid */
+                sourceId: string;
+                sourceCrs: string;
+                units: {
+                    /** Format: uuid */
+                    id: string;
+                    sourceKey: string;
+                    /** @enum {string} */
+                    kind: "sector";
+                    name: string;
+                    rings: (number)[][][];
+                }[];
+            };
+            documentPins?: {
+                /** Format: uuid */
+                sourceId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+            }[];
+            sourceMetadata?: {
+                key: string;
+                filename: string;
+                sourceSha256: string;
+                originalUrl: string;
+                issuer: string;
+                acquiredAt: string;
+                /** @enum {string} */
+                permission: "unconfirmed";
+                /** @enum {string} */
+                classification: "test_only";
+            }[];
             quarantine?: {
                 total: number;
                 accepted: number;
@@ -5986,15 +6092,17 @@ export interface components {
                     type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                     coordinates?: number[] | number[][] | number[][][] | number[][][][];
                     geometries?: unknown[];
-                };
+                } | null;
                 geographicGeometry: {
                     /** @enum {string} */
                     type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                     coordinates?: number[] | number[][] | number[][][] | number[][][][];
                     geometries?: unknown[];
-                };
+                } | null;
                 /** @description Retained source-specific or processor-specific value. */
                 sourceGeometry: unknown;
+                /** @enum {string} */
+                placement?: "unknown";
                 sourceReference?: {
                     sourceCrs: string;
                     analysisCrs: string;
@@ -6245,15 +6353,17 @@ export interface components {
                             type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                             coordinates?: number[] | number[][] | number[][][] | number[][][][];
                             geometries?: unknown[];
-                        };
+                        } | null;
                         geographicGeometry: {
                             /** @enum {string} */
                             type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                             coordinates?: number[] | number[][] | number[][][] | number[][][][];
                             geometries?: unknown[];
-                        };
+                        } | null;
                         /** @description Retained source-specific or processor-specific value. */
                         sourceGeometry: unknown;
+                        /** @enum {string} */
+                        placement?: "unknown";
                         sourceReference?: {
                             sourceCrs: string;
                             analysisCrs: string;
@@ -6510,15 +6620,17 @@ export interface components {
                     type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                     coordinates?: number[] | number[][] | number[][][] | number[][][][];
                     geometries?: unknown[];
-                };
+                } | null;
                 geographicGeometry: {
                     /** @enum {string} */
                     type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                     coordinates?: number[] | number[][] | number[][][] | number[][][][];
                     geometries?: unknown[];
-                };
+                } | null;
                 /** @description Retained source-specific or processor-specific value. */
                 sourceGeometry: unknown;
+                /** @enum {string} */
+                placement?: "unknown";
                 sourceReference?: {
                     sourceCrs: string;
                     analysisCrs: string;
@@ -6683,15 +6795,17 @@ export interface components {
                     type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                     coordinates?: number[] | number[][] | number[][][] | number[][][][];
                     geometries?: unknown[];
-                };
+                } | null;
                 geographicGeometry: {
                     /** @enum {string} */
                     type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                     coordinates?: number[] | number[][] | number[][][] | number[][][][];
                     geometries?: unknown[];
-                };
+                } | null;
                 /** @description Retained source-specific or processor-specific value. */
                 sourceGeometry: unknown;
+                /** @enum {string} */
+                placement?: "unknown";
                 sourceReference?: {
                     sourceCrs: string;
                     analysisCrs: string;
@@ -6803,6 +6917,40 @@ export interface components {
                 };
             }[];
             packages: {
+                /** @enum {boolean} */
+                geometryFree?: true;
+                administrativeContext?: {
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceCrs: string;
+                    units: {
+                        /** Format: uuid */
+                        id: string;
+                        sourceKey: string;
+                        /** @enum {string} */
+                        kind: "sector";
+                        name: string;
+                        rings: (number)[][][];
+                    }[];
+                };
+                documentPins?: {
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                }[];
+                sourceMetadata?: {
+                    key: string;
+                    filename: string;
+                    sourceSha256: string;
+                    originalUrl: string;
+                    issuer: string;
+                    acquiredAt: string;
+                    /** @enum {string} */
+                    permission: "unconfirmed";
+                    /** @enum {string} */
+                    classification: "test_only";
+                }[];
                 quarantine?: {
                     total: number;
                     accepted: number;
@@ -6856,15 +7004,17 @@ export interface components {
                         type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                         coordinates?: number[] | number[][] | number[][][] | number[][][][];
                         geometries?: unknown[];
-                    };
+                    } | null;
                     geographicGeometry: {
                         /** @enum {string} */
                         type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                         coordinates?: number[] | number[][] | number[][][] | number[][][][];
                         geometries?: unknown[];
-                    };
+                    } | null;
                     /** @description Retained source-specific or processor-specific value. */
                     sourceGeometry: unknown;
+                    /** @enum {string} */
+                    placement?: "unknown";
                     sourceReference?: {
                         sourceCrs: string;
                         analysisCrs: string;
@@ -7115,15 +7265,17 @@ export interface components {
                                 type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                                 coordinates?: number[] | number[][] | number[][][] | number[][][][];
                                 geometries?: unknown[];
-                            };
+                            } | null;
                             geographicGeometry: {
                                 /** @enum {string} */
                                 type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                                 coordinates?: number[] | number[][] | number[][][] | number[][][][];
                                 geometries?: unknown[];
-                            };
+                            } | null;
                             /** @description Retained source-specific or processor-specific value. */
                             sourceGeometry: unknown;
+                            /** @enum {string} */
+                            placement?: "unknown";
                             sourceReference?: {
                                 sourceCrs: string;
                                 analysisCrs: string;
@@ -7331,15 +7483,17 @@ export interface components {
                             type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                             coordinates?: number[] | number[][] | number[][][] | number[][][][];
                             geometries?: unknown[];
-                        };
+                        } | null;
                         geographicGeometry: {
                             /** @enum {string} */
                             type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                             coordinates?: number[] | number[][] | number[][][] | number[][][][];
                             geometries?: unknown[];
-                        };
+                        } | null;
                         /** @description Retained source-specific or processor-specific value. */
                         sourceGeometry: unknown;
+                        /** @enum {string} */
+                        placement?: "unknown";
                         sourceReference?: {
                             sourceCrs: string;
                             analysisCrs: string;
@@ -7628,15 +7782,17 @@ export interface components {
                         type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                         coordinates?: number[] | number[][] | number[][][] | number[][][][];
                         geometries?: unknown[];
-                    };
+                    } | null;
                     geographicGeometry: {
                         /** @enum {string} */
                         type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                         coordinates?: number[] | number[][] | number[][][] | number[][][][];
                         geometries?: unknown[];
-                    };
+                    } | null;
                     /** @description Retained source-specific or processor-specific value. */
                     sourceGeometry: unknown;
+                    /** @enum {string} */
+                    placement?: "unknown";
                     sourceReference?: {
                         sourceCrs: string;
                         analysisCrs: string;
@@ -7787,15 +7943,17 @@ export interface components {
                             type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                             coordinates?: number[] | number[][] | number[][][] | number[][][][];
                             geometries?: unknown[];
-                        };
+                        } | null;
                         geographicGeometry: {
                             /** @enum {string} */
                             type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                             coordinates?: number[] | number[][] | number[][][] | number[][][][];
                             geometries?: unknown[];
-                        };
+                        } | null;
                         /** @description Retained source-specific or processor-specific value. */
                         sourceGeometry: unknown;
+                        /** @enum {string} */
+                        placement?: "unknown";
                         sourceReference?: {
                             sourceCrs: string;
                             analysisCrs: string;
@@ -7931,15 +8089,17 @@ export interface components {
                         type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                         coordinates?: number[] | number[][] | number[][][] | number[][][][];
                         geometries?: unknown[];
-                    };
+                    } | null;
                     geographicGeometry: {
                         /** @enum {string} */
                         type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                         coordinates?: number[] | number[][] | number[][][] | number[][][][];
                         geometries?: unknown[];
-                    };
+                    } | null;
                     /** @description Retained source-specific or processor-specific value. */
                     sourceGeometry: unknown;
+                    /** @enum {string} */
+                    placement?: "unknown";
                     sourceReference?: {
                         sourceCrs: string;
                         analysisCrs: string;
@@ -8363,15 +8523,17 @@ export interface components {
                         type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                         coordinates?: number[] | number[][] | number[][][] | number[][][][];
                         geometries?: unknown[];
-                    };
+                    } | null;
                     geographicGeometry: {
                         /** @enum {string} */
                         type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
                         coordinates?: number[] | number[][] | number[][][] | number[][][][];
                         geometries?: unknown[];
-                    };
+                    } | null;
                     /** @description Retained source-specific or processor-specific value. */
                     sourceGeometry: unknown;
+                    /** @enum {string} */
+                    placement?: "unknown";
                     sourceReference?: {
                         sourceCrs: string;
                         analysisCrs: string;
@@ -8518,6 +8680,2023 @@ export interface components {
             createdAt: string;
             stale?: boolean;
             error?: string;
+        };
+        GET_areas_areaId_canonical_Response_200_application_json: {
+            /** @enum {string} */
+            schemaVersion: "normalized-building/1";
+            revisionId: string;
+            frame: {
+                areaId: string;
+                origin: {
+                    lon: number | null;
+                    lat: number | null;
+                    hEllipsoidal: number | null;
+                };
+                /** @enum {string} */
+                axes: "ENU";
+                /** @enum {string} */
+                unit: "m";
+                /** @enum {string} */
+                placement: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                sourceCrs: string[];
+                verticalRefs: string[];
+                horizontalOperation: string | null;
+            };
+            buildings: {
+                buildingId: string;
+                revisionId: string;
+                /** @enum {string} */
+                recordState: "candidate" | "reviewed";
+                name: {
+                    value: string | null;
+                    /** @enum {string} */
+                    state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                    unit?: string;
+                    citations: {
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "region";
+                            page: number;
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized" | "pt" | "pixel";
+                        } | {
+                            /** @enum {string} */
+                            kind: "row";
+                            row: number;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "cell";
+                            row: number;
+                            column: string;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "entity";
+                            entityId: string;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "point";
+                            pointId: string;
+                        };
+                    }[];
+                    method: string;
+                    revisionId: string;
+                };
+                footprint: {
+                    value: (number)[][][][] | null;
+                    /** @enum {string} */
+                    state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                    /** @enum {string} */
+                    unit?: "m";
+                    citations: {
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "region";
+                            page: number;
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized" | "pt" | "pixel";
+                        } | {
+                            /** @enum {string} */
+                            kind: "row";
+                            row: number;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "cell";
+                            row: number;
+                            column: string;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "entity";
+                            entityId: string;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "point";
+                            pointId: string;
+                        };
+                    }[];
+                    method: string;
+                    revisionId: string;
+                };
+                heightM: {
+                    value: number | null;
+                    /** @enum {string} */
+                    state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                    /** @enum {string} */
+                    unit?: "m";
+                    citations: {
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "region";
+                            page: number;
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized" | "pt" | "pixel";
+                        } | {
+                            /** @enum {string} */
+                            kind: "row";
+                            row: number;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "cell";
+                            row: number;
+                            column: string;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "entity";
+                            entityId: string;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "point";
+                            pointId: string;
+                        };
+                    }[];
+                    method: string;
+                    revisionId: string;
+                };
+                /** @enum {string} */
+                heightState: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+            }[];
+            baseFeatures: {
+                id: string;
+                /** @enum {string} */
+                kind: "parcel" | "road" | "public_land" | "water" | "utility";
+                polygons: {
+                    value: (number)[][][][] | null;
+                    /** @enum {string} */
+                    state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                    /** @enum {string} */
+                    unit?: "m";
+                    citations: {
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "region";
+                            page: number;
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized" | "pt" | "pixel";
+                        } | {
+                            /** @enum {string} */
+                            kind: "row";
+                            row: number;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "cell";
+                            row: number;
+                            column: string;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "entity";
+                            entityId: string;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "point";
+                            pointId: string;
+                        };
+                    }[];
+                    method: string;
+                    revisionId: string;
+                };
+                name: {
+                    value: string | null;
+                    /** @enum {string} */
+                    state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                    unit?: string;
+                    citations: {
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "region";
+                            page: number;
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized" | "pt" | "pixel";
+                        } | {
+                            /** @enum {string} */
+                            kind: "row";
+                            row: number;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "cell";
+                            row: number;
+                            column: string;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "entity";
+                            entityId: string;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "point";
+                            pointId: string;
+                        };
+                    }[];
+                    method: string;
+                    revisionId: string;
+                };
+                lowerM: {
+                    value: number | null;
+                    /** @enum {string} */
+                    state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                    /** @enum {string} */
+                    unit?: "m";
+                    citations: {
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "region";
+                            page: number;
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized" | "pt" | "pixel";
+                        } | {
+                            /** @enum {string} */
+                            kind: "row";
+                            row: number;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "cell";
+                            row: number;
+                            column: string;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "entity";
+                            entityId: string;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "point";
+                            pointId: string;
+                        };
+                    }[];
+                    method: string;
+                    revisionId: string;
+                };
+                upperM: {
+                    value: number | null;
+                    /** @enum {string} */
+                    state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                    /** @enum {string} */
+                    unit?: "m";
+                    citations: {
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "region";
+                            page: number;
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized" | "pt" | "pixel";
+                        } | {
+                            /** @enum {string} */
+                            kind: "row";
+                            row: number;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "cell";
+                            row: number;
+                            column: string;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "entity";
+                            entityId: string;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "point";
+                            pointId: string;
+                        };
+                    }[];
+                    method: string;
+                    revisionId: string;
+                };
+                network: {
+                    value: string | null;
+                    /** @enum {string} */
+                    state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                    unit?: string;
+                    citations: {
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "region";
+                            page: number;
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized" | "pt" | "pixel";
+                        } | {
+                            /** @enum {string} */
+                            kind: "row";
+                            row: number;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "cell";
+                            row: number;
+                            column: string;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "entity";
+                            entityId: string;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "point";
+                            pointId: string;
+                        };
+                    }[];
+                    method: string;
+                    revisionId: string;
+                };
+            }[];
+            administrativeContext?: {
+                id: string;
+                /** @enum {string} */
+                kind: "sector";
+                /** @enum {string} */
+                role: "administrative_context";
+                /** @enum {string} */
+                analyticalEligibility: "not_assessed";
+                sourceCrs: string;
+                name: {
+                    value: string | null;
+                    /** @enum {string} */
+                    state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                    unit?: string;
+                    citations: {
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "region";
+                            page: number;
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized" | "pt" | "pixel";
+                        } | {
+                            /** @enum {string} */
+                            kind: "row";
+                            row: number;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "cell";
+                            row: number;
+                            column: string;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "entity";
+                            entityId: string;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "point";
+                            pointId: string;
+                        };
+                    }[];
+                    method: string;
+                    revisionId: string;
+                };
+                polygons: {
+                    value: (number)[][][][] | null;
+                    /** @enum {string} */
+                    state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                    /** @enum {string} */
+                    unit?: "m";
+                    citations: {
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "region";
+                            page: number;
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized" | "pt" | "pixel";
+                        } | {
+                            /** @enum {string} */
+                            kind: "row";
+                            row: number;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "cell";
+                            row: number;
+                            column: string;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "entity";
+                            entityId: string;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "point";
+                            pointId: string;
+                        };
+                    }[];
+                    method: string;
+                    revisionId: string;
+                };
+            }[];
+            overlays: ({
+                id: string;
+                /** @enum {string} */
+                kind: "image";
+                corners: ((number)[] | (number)[] | (number)[] | (number)[])[];
+                originalUrl: string;
+                citations: {
+                    sourceId: string;
+                    sourceSha256: string;
+                    locator: {
+                        /** @enum {string} */
+                        kind: "page";
+                        page: number;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "region";
+                        page: number;
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        unit: "normalized" | "pt" | "pixel";
+                    } | {
+                        /** @enum {string} */
+                        kind: "row";
+                        row: number;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "cell";
+                        row: number;
+                        column: string;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "entity";
+                        entityId: string;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "feature";
+                        featureId: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "point";
+                        pointId: string;
+                    };
+                }[];
+            } | {
+                id: string;
+                /** @enum {string} */
+                kind: "points";
+                positions: number[];
+                colors: number[];
+                sizeM: number;
+            } | {
+                id: string;
+                /** @enum {string} */
+                kind: "comparison";
+                /** @enum {string} */
+                role: "plan" | "conflict";
+                polygons: (number)[][][][];
+                heightM: number;
+            })[];
+            tilesets: {
+                id: string;
+                url: string;
+                revisionId: string;
+            }[];
+            gaps: string[];
+        };
+        GET_buildings_buildingId_canonical_Response_200_application_json: {
+            /** @enum {string} */
+            schemaVersion: "normalized-building/1";
+            buildingId: string;
+            revisionId: string;
+            /** @enum {string} */
+            recordState: "candidate" | "reviewed";
+            areaId: string;
+            frame: {
+                areaId: string;
+                origin: {
+                    lon: number | null;
+                    lat: number | null;
+                    hEllipsoidal: number | null;
+                };
+                /** @enum {string} */
+                axes: "ENU";
+                /** @enum {string} */
+                unit: "m";
+                /** @enum {string} */
+                placement: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                sourceCrs: string[];
+                verticalRefs: string[];
+                horizontalOperation: string | null;
+            };
+            name: {
+                value: string | null;
+                /** @enum {string} */
+                state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                unit?: string;
+                citations: {
+                    sourceId: string;
+                    sourceSha256: string;
+                    locator: {
+                        /** @enum {string} */
+                        kind: "page";
+                        page: number;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "region";
+                        page: number;
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        unit: "normalized" | "pt" | "pixel";
+                    } | {
+                        /** @enum {string} */
+                        kind: "row";
+                        row: number;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "cell";
+                        row: number;
+                        column: string;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "entity";
+                        entityId: string;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "feature";
+                        featureId: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "point";
+                        pointId: string;
+                    };
+                }[];
+                method: string;
+                revisionId: string;
+            };
+            inputRevisions: {
+                /** @enum {string} */
+                namespace: "area" | "area_feature" | "registry_record" | "import_package";
+                id: string;
+                revision: number;
+            }[];
+            parcelRefs: {
+                parcelId: string;
+                officialUlpin: {
+                    value: string | null;
+                    /** @enum {string} */
+                    state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                    unit?: string;
+                    citations: {
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "region";
+                            page: number;
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized" | "pt" | "pixel";
+                        } | {
+                            /** @enum {string} */
+                            kind: "row";
+                            row: number;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "cell";
+                            row: number;
+                            column: string;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "entity";
+                            entityId: string;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "point";
+                            pointId: string;
+                        };
+                    }[];
+                    method: string;
+                    revisionId: string;
+                };
+            }[];
+            footprint: {
+                value: (number)[][][][] | null;
+                /** @enum {string} */
+                state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                /** @enum {string} */
+                unit?: "m";
+                citations: {
+                    sourceId: string;
+                    sourceSha256: string;
+                    locator: {
+                        /** @enum {string} */
+                        kind: "page";
+                        page: number;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "region";
+                        page: number;
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        unit: "normalized" | "pt" | "pixel";
+                    } | {
+                        /** @enum {string} */
+                        kind: "row";
+                        row: number;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "cell";
+                        row: number;
+                        column: string;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "entity";
+                        entityId: string;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "feature";
+                        featureId: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "point";
+                        pointId: string;
+                    };
+                }[];
+                method: string;
+                revisionId: string;
+            };
+            footprintKind: {
+                /** @enum {string|null} */
+                value: "roofprint" | "ground_footprint" | null;
+                /** @enum {string} */
+                state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                unit?: string;
+                citations: {
+                    sourceId: string;
+                    sourceSha256: string;
+                    locator: {
+                        /** @enum {string} */
+                        kind: "page";
+                        page: number;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "region";
+                        page: number;
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        unit: "normalized" | "pt" | "pixel";
+                    } | {
+                        /** @enum {string} */
+                        kind: "row";
+                        row: number;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "cell";
+                        row: number;
+                        column: string;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "entity";
+                        entityId: string;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "feature";
+                        featureId: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "point";
+                        pointId: string;
+                    };
+                }[];
+                method: string;
+                revisionId: string;
+            };
+            baseM: {
+                value: number | null;
+                /** @enum {string} */
+                state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                /** @enum {string} */
+                unit?: "m";
+                citations: {
+                    sourceId: string;
+                    sourceSha256: string;
+                    locator: {
+                        /** @enum {string} */
+                        kind: "page";
+                        page: number;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "region";
+                        page: number;
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        unit: "normalized" | "pt" | "pixel";
+                    } | {
+                        /** @enum {string} */
+                        kind: "row";
+                        row: number;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "cell";
+                        row: number;
+                        column: string;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "entity";
+                        entityId: string;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "feature";
+                        featureId: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "point";
+                        pointId: string;
+                    };
+                }[];
+                method: string;
+                revisionId: string;
+            };
+            heightM: {
+                value: number | null;
+                /** @enum {string} */
+                state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                /** @enum {string} */
+                unit?: "m";
+                citations: {
+                    sourceId: string;
+                    sourceSha256: string;
+                    locator: {
+                        /** @enum {string} */
+                        kind: "page";
+                        page: number;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "region";
+                        page: number;
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        unit: "normalized" | "pt" | "pixel";
+                    } | {
+                        /** @enum {string} */
+                        kind: "row";
+                        row: number;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "cell";
+                        row: number;
+                        column: string;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "entity";
+                        entityId: string;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "feature";
+                        featureId: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "point";
+                        pointId: string;
+                    };
+                }[];
+                method: string;
+                revisionId: string;
+            };
+            /** @enum {string} */
+            heightState: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+            storeyCount: {
+                value: number | null;
+                /** @enum {string} */
+                state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                /** @enum {string} */
+                unit?: "count";
+                citations: {
+                    sourceId: string;
+                    sourceSha256: string;
+                    locator: {
+                        /** @enum {string} */
+                        kind: "page";
+                        page: number;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "region";
+                        page: number;
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        unit: "normalized" | "pt" | "pixel";
+                    } | {
+                        /** @enum {string} */
+                        kind: "row";
+                        row: number;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "cell";
+                        row: number;
+                        column: string;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "entity";
+                        entityId: string;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "feature";
+                        featureId: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "point";
+                        pointId: string;
+                    };
+                }[];
+                method: string;
+                revisionId: string;
+            };
+            storeyLabel: {
+                value: string | null;
+                /** @enum {string} */
+                state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                unit?: string;
+                citations: {
+                    sourceId: string;
+                    sourceSha256: string;
+                    locator: {
+                        /** @enum {string} */
+                        kind: "page";
+                        page: number;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "region";
+                        page: number;
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        unit: "normalized" | "pt" | "pixel";
+                    } | {
+                        /** @enum {string} */
+                        kind: "row";
+                        row: number;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "cell";
+                        row: number;
+                        column: string;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "entity";
+                        entityId: string;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "feature";
+                        featureId: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "point";
+                        pointId: string;
+                    };
+                }[];
+                method: string;
+                revisionId: string;
+            };
+            storeys: {
+                value: {
+                    levelId: string;
+                    label: {
+                        value: string | null;
+                        /** @enum {string} */
+                        state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                        unit?: string;
+                        citations: {
+                            sourceId: string;
+                            sourceSha256: string;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "region";
+                                page: number;
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                /** @enum {string} */
+                                unit: "normalized" | "pt" | "pixel";
+                            } | {
+                                /** @enum {string} */
+                                kind: "row";
+                                row: number;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "cell";
+                                row: number;
+                                column: string;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "entity";
+                                entityId: string;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "point";
+                                pointId: string;
+                            };
+                        }[];
+                        method: string;
+                        revisionId: string;
+                    };
+                    lowerM: {
+                        value: number | null;
+                        /** @enum {string} */
+                        state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                        /** @enum {string} */
+                        unit?: "m";
+                        citations: {
+                            sourceId: string;
+                            sourceSha256: string;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "region";
+                                page: number;
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                /** @enum {string} */
+                                unit: "normalized" | "pt" | "pixel";
+                            } | {
+                                /** @enum {string} */
+                                kind: "row";
+                                row: number;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "cell";
+                                row: number;
+                                column: string;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "entity";
+                                entityId: string;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "point";
+                                pointId: string;
+                            };
+                        }[];
+                        method: string;
+                        revisionId: string;
+                    };
+                    upperM: {
+                        value: number | null;
+                        /** @enum {string} */
+                        state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                        /** @enum {string} */
+                        unit?: "m";
+                        citations: {
+                            sourceId: string;
+                            sourceSha256: string;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "region";
+                                page: number;
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                /** @enum {string} */
+                                unit: "normalized" | "pt" | "pixel";
+                            } | {
+                                /** @enum {string} */
+                                kind: "row";
+                                row: number;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "cell";
+                                row: number;
+                                column: string;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "entity";
+                                entityId: string;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "point";
+                                pointId: string;
+                            };
+                        }[];
+                        method: string;
+                        revisionId: string;
+                    };
+                    belowGround: {
+                        value: boolean | null;
+                        /** @enum {string} */
+                        state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                        unit?: string;
+                        citations: {
+                            sourceId: string;
+                            sourceSha256: string;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "region";
+                                page: number;
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                /** @enum {string} */
+                                unit: "normalized" | "pt" | "pixel";
+                            } | {
+                                /** @enum {string} */
+                                kind: "row";
+                                row: number;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "cell";
+                                row: number;
+                                column: string;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "entity";
+                                entityId: string;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "point";
+                                pointId: string;
+                            };
+                        }[];
+                        method: string;
+                        revisionId: string;
+                    };
+                    open: {
+                        value: boolean | null;
+                        /** @enum {string} */
+                        state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                        unit?: string;
+                        citations: {
+                            sourceId: string;
+                            sourceSha256: string;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "region";
+                                page: number;
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                /** @enum {string} */
+                                unit: "normalized" | "pt" | "pixel";
+                            } | {
+                                /** @enum {string} */
+                                kind: "row";
+                                row: number;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "cell";
+                                row: number;
+                                column: string;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "entity";
+                                entityId: string;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "point";
+                                pointId: string;
+                            };
+                        }[];
+                        method: string;
+                        revisionId: string;
+                    };
+                    roof: {
+                        value: boolean | null;
+                        /** @enum {string} */
+                        state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                        unit?: string;
+                        citations: {
+                            sourceId: string;
+                            sourceSha256: string;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "region";
+                                page: number;
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                /** @enum {string} */
+                                unit: "normalized" | "pt" | "pixel";
+                            } | {
+                                /** @enum {string} */
+                                kind: "row";
+                                row: number;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "cell";
+                                row: number;
+                                column: string;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "entity";
+                                entityId: string;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "point";
+                                pointId: string;
+                            };
+                        }[];
+                        method: string;
+                        revisionId: string;
+                    };
+                    polygons: {
+                        value: (number)[][][][] | null;
+                        /** @enum {string} */
+                        state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                        /** @enum {string} */
+                        unit?: "m";
+                        citations: {
+                            sourceId: string;
+                            sourceSha256: string;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "region";
+                                page: number;
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                /** @enum {string} */
+                                unit: "normalized" | "pt" | "pixel";
+                            } | {
+                                /** @enum {string} */
+                                kind: "row";
+                                row: number;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "cell";
+                                row: number;
+                                column: string;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "entity";
+                                entityId: string;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "point";
+                                pointId: string;
+                            };
+                        }[];
+                        method: string;
+                        revisionId: string;
+                    };
+                }[] | null;
+                /** @enum {string} */
+                state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                unit?: string;
+                citations: {
+                    sourceId: string;
+                    sourceSha256: string;
+                    locator: {
+                        /** @enum {string} */
+                        kind: "page";
+                        page: number;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "region";
+                        page: number;
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        unit: "normalized" | "pt" | "pixel";
+                    } | {
+                        /** @enum {string} */
+                        kind: "row";
+                        row: number;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "cell";
+                        row: number;
+                        column: string;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "entity";
+                        entityId: string;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "feature";
+                        featureId: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "point";
+                        pointId: string;
+                    };
+                }[];
+                method: string;
+                revisionId: string;
+            };
+            levels: {
+                levelId: string;
+                order: number;
+                label: {
+                    value: string | null;
+                    /** @enum {string} */
+                    state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                    unit?: string;
+                    citations: {
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "region";
+                            page: number;
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized" | "pt" | "pixel";
+                        } | {
+                            /** @enum {string} */
+                            kind: "row";
+                            row: number;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "cell";
+                            row: number;
+                            column: string;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "entity";
+                            entityId: string;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "point";
+                            pointId: string;
+                        };
+                    }[];
+                    method: string;
+                    revisionId: string;
+                };
+                lowerM: {
+                    value: number | null;
+                    /** @enum {string} */
+                    state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                    /** @enum {string} */
+                    unit?: "m";
+                    citations: {
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "region";
+                            page: number;
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized" | "pt" | "pixel";
+                        } | {
+                            /** @enum {string} */
+                            kind: "row";
+                            row: number;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "cell";
+                            row: number;
+                            column: string;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "entity";
+                            entityId: string;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "point";
+                            pointId: string;
+                        };
+                    }[];
+                    method: string;
+                    revisionId: string;
+                };
+                upperM: {
+                    value: number | null;
+                    /** @enum {string} */
+                    state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                    /** @enum {string} */
+                    unit?: "m";
+                    citations: {
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "region";
+                            page: number;
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized" | "pt" | "pixel";
+                        } | {
+                            /** @enum {string} */
+                            kind: "row";
+                            row: number;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "cell";
+                            row: number;
+                            column: string;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "entity";
+                            entityId: string;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "point";
+                            pointId: string;
+                        };
+                    }[];
+                    method: string;
+                    revisionId: string;
+                };
+                spaces: {
+                    spaceId: string;
+                    kind: {
+                        /** @enum {string|null} */
+                        value: "unit" | "common" | "shaft" | "balcony" | "terrace" | "parking" | "unknown" | null;
+                        /** @enum {string} */
+                        state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                        unit?: string;
+                        citations: {
+                            sourceId: string;
+                            sourceSha256: string;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "region";
+                                page: number;
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                /** @enum {string} */
+                                unit: "normalized" | "pt" | "pixel";
+                            } | {
+                                /** @enum {string} */
+                                kind: "row";
+                                row: number;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "cell";
+                                row: number;
+                                column: string;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "entity";
+                                entityId: string;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "point";
+                                pointId: string;
+                            };
+                        }[];
+                        method: string;
+                        revisionId: string;
+                    };
+                    polygons: {
+                        value: (number)[][][][] | null;
+                        /** @enum {string} */
+                        state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                        /** @enum {string} */
+                        unit?: "m";
+                        citations: {
+                            sourceId: string;
+                            sourceSha256: string;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "region";
+                                page: number;
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                /** @enum {string} */
+                                unit: "normalized" | "pt" | "pixel";
+                            } | {
+                                /** @enum {string} */
+                                kind: "row";
+                                row: number;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "cell";
+                                row: number;
+                                column: string;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "entity";
+                                entityId: string;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "point";
+                                pointId: string;
+                            };
+                        }[];
+                        method: string;
+                        revisionId: string;
+                    };
+                    lowerM: {
+                        value: number | null;
+                        /** @enum {string} */
+                        state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                        /** @enum {string} */
+                        unit?: "m";
+                        citations: {
+                            sourceId: string;
+                            sourceSha256: string;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "region";
+                                page: number;
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                /** @enum {string} */
+                                unit: "normalized" | "pt" | "pixel";
+                            } | {
+                                /** @enum {string} */
+                                kind: "row";
+                                row: number;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "cell";
+                                row: number;
+                                column: string;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "entity";
+                                entityId: string;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "point";
+                                pointId: string;
+                            };
+                        }[];
+                        method: string;
+                        revisionId: string;
+                    };
+                    upperM: {
+                        value: number | null;
+                        /** @enum {string} */
+                        state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                        /** @enum {string} */
+                        unit?: "m";
+                        citations: {
+                            sourceId: string;
+                            sourceSha256: string;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "region";
+                                page: number;
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                /** @enum {string} */
+                                unit: "normalized" | "pt" | "pixel";
+                            } | {
+                                /** @enum {string} */
+                                kind: "row";
+                                row: number;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "cell";
+                                row: number;
+                                column: string;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "entity";
+                                entityId: string;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "point";
+                                pointId: string;
+                            };
+                        }[];
+                        method: string;
+                        revisionId: string;
+                    };
+                    proposedCode: {
+                        value: string | null;
+                        /** @enum {string} */
+                        state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                        unit?: string;
+                        citations: {
+                            sourceId: string;
+                            sourceSha256: string;
+                            locator: {
+                                /** @enum {string} */
+                                kind: "page";
+                                page: number;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "region";
+                                page: number;
+                                x: number;
+                                y: number;
+                                width: number;
+                                height: number;
+                                /** @enum {string} */
+                                unit: "normalized" | "pt" | "pixel";
+                            } | {
+                                /** @enum {string} */
+                                kind: "row";
+                                row: number;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "cell";
+                                row: number;
+                                column: string;
+                                sheet?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "entity";
+                                entityId: string;
+                                text?: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "feature";
+                                featureId: string;
+                            } | {
+                                /** @enum {string} */
+                                kind: "point";
+                                pointId: string;
+                            };
+                        }[];
+                        method: string;
+                        revisionId: string;
+                    };
+                }[];
+            }[];
+            conflicts: {
+                property: string;
+                alternatives: {
+                    value: (string | number | boolean) | null;
+                    /** @enum {string} */
+                    state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
+                    unit?: string;
+                    citations: {
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            /** @enum {string} */
+                            kind: "page";
+                            page: number;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "region";
+                            page: number;
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized" | "pt" | "pixel";
+                        } | {
+                            /** @enum {string} */
+                            kind: "row";
+                            row: number;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "cell";
+                            row: number;
+                            column: string;
+                            sheet?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "entity";
+                            entityId: string;
+                            text?: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "feature";
+                            featureId: string;
+                        } | {
+                            /** @enum {string} */
+                            kind: "point";
+                            pointId: string;
+                        };
+                    }[];
+                    method: string;
+                    revisionId: string;
+                }[];
+                reason: string;
+            }[];
+            gaps: string[];
+            candidates: {
+                candidateId: string;
+                task: string;
+                taskVersion: string;
+                inputManifest: string;
+                outputRef: string | null;
+                /** @enum {string} */
+                state: "candidate" | "abstained" | "unsupported" | "failed" | "reviewed";
+            }[];
         };
         POST_registry_drafts_draftId_native_exterior_references_reviews_Request_application_json: {
             /** Format: uuid */
@@ -45648,7 +47827,7 @@ export interface components {
                 reasonCodes: string[];
                 source: {
                     /** @enum {string} */
-                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
+                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "html" | "png" | "jpeg" | "archive" | "unsupported";
                     /** @enum {string} */
                     nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                     readerSha256: string;
@@ -46262,7 +48441,7 @@ export interface components {
                     /** @enum {string} */
                     kind: "document";
                     /** @enum {string} */
-                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
+                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "html" | "png" | "jpeg" | "archive" | "unsupported";
                     /** @enum {string} */
                     nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                     code: string | null;
@@ -46466,7 +48645,7 @@ export interface components {
                     /** @enum {string} */
                     kind: "document_ocr";
                     /** @enum {string} */
-                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
+                    format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "html" | "png" | "jpeg" | "archive" | "unsupported";
                     /** @enum {string} */
                     nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                     nativeCode: string | null;
@@ -48506,7 +50685,7 @@ export interface components {
                         /** @enum {string} */
                         kind: "document";
                         /** @enum {string} */
-                        format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
+                        format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "html" | "png" | "jpeg" | "archive" | "unsupported";
                         /** @enum {string} */
                         nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                         code: string | null;
@@ -48710,7 +50889,7 @@ export interface components {
                         /** @enum {string} */
                         kind: "document_ocr";
                         /** @enum {string} */
-                        format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
+                        format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "html" | "png" | "jpeg" | "archive" | "unsupported";
                         /** @enum {string} */
                         nativeStatus: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                         nativeCode: string | null;
@@ -60047,7 +62226,7 @@ export interface components {
                 /** @enum {string} */
                 status: "extracted" | "needs_ocr" | "unsupported" | "encrypted" | "tool_error";
                 /** @enum {string} */
-                format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "png" | "jpeg" | "archive" | "unsupported";
+                format: "pdf" | "text" | "csv" | "docx" | "xlsx" | "ods" | "html" | "png" | "jpeg" | "archive" | "unsupported";
                 readerSha256: string;
                 code: string | null;
                 warnings: string[];
@@ -66781,7 +68960,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        /** @description application/json retains an acquisition; multipart/form-data retains an uploaded GIS original. */
+        /** @description JSON retains an acquisition; multipart retains GIS or document-backed geometry-free buildings. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["POST_import_packages_Request_application_json"];
@@ -68497,6 +70676,97 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
                 };
+            };
+        };
+    };
+    GET_api_v1_areas_areaId_canonical: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                areaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Quoted complete projection revisionId */
+                    ETag?: string;
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_areas_areaId_canonical_Response_200_application_json"];
+                };
+            };
+            /** @description Private local operator/source access denied */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Area not found */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    GET_api_v1_buildings_buildingId_canonical: {
+        parameters: {
+            query?: {
+                /** @description Current (default) or the exact current projection revisionId. Unavailable complete historical projections return 404. */
+                revision?: string;
+            };
+            header?: never;
+            path: {
+                buildingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Quoted complete projection revisionId */
+                    ETag?: string;
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_buildings_buildingId_canonical_Response_200_application_json"];
+                };
+            };
+            /** @description Private local operator/source access denied */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Building or complete projection revision not found */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

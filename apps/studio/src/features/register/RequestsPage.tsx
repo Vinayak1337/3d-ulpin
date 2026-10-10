@@ -12,6 +12,7 @@ import {
 } from '../../api/queries';
 import { DeleteDialog } from '../manage/DeleteDialog';
 import { REQUEST_KINDS } from '../../local/requestKinds';
+import { isServed } from '../../local/routes';
 import styles from './Requests.module.css';
 
 type View = 'requests' | 'buildings';
@@ -40,12 +41,20 @@ export function RegistryIndex() {
         </div>
         <div className={styles.tabs}>
           <Tabs label="Register" value={view} onChange={(v) => setParams(v === 'requests' ? {} : { tab: v })}
-            tabs={[{ value: 'requests', label: 'Requests', count: open.data?.length ?? 0 }, { value: 'buildings', label: 'Buildings' }]} />
+            tabs={[{ value: 'requests', label: 'Requests', count: open.data?.length }, { value: 'buildings', label: 'Buildings' }]} />
         </div>
       </header>
       {view === 'requests' ? <RequestsView /> : <BuildingsView />}
     </div>
   );
+}
+
+function emptyRequestsText(filter: RequestFilter, unserved: boolean): { title: string; text: string } {
+  if (unserved) return { title: 'Requests are not available', text: 'This API does not serve requests from the public portal yet.' };
+  return {
+    title: filter === 'open' ? 'No open requests' : 'Nothing here',
+    text: 'Citizens file requests from a building or record page on the public portal.',
+  };
 }
 
 function RequestsView() {
@@ -55,6 +64,7 @@ function RequestsView() {
   const all = useRegisterRequests('all');
   const selectedRef = params.get('ref');
   const items = list.data ?? [];
+  const emptyRequests = emptyRequestsText(filter, list.data === null);
   const selected = all.data?.find((r) => r.ref === selectedRef) ?? null;
   const set = (patch: Record<string, string | null>) => setParams((p) => {
     const n = new URLSearchParams(p);
@@ -94,9 +104,7 @@ function RequestsView() {
           </ul>
         ) : (
           <div className={styles.empty}>
-            <EmptyState icon={Tray} title={filter === 'open' ? 'No open requests' : 'Nothing here'}>
-              Citizens file requests from a building or record page on the public portal.
-            </EmptyState>
+            <EmptyState icon={Tray} title={emptyRequests.title}>{emptyRequests.text}</EmptyState>
           </div>
         )}
       </div>
@@ -200,7 +208,16 @@ function RequestDetail({ request: r }: { request: RegisterRequest }) {
   );
 }
 
+const canDeleteBuilding = isServed('DELETE', '/api/v1/buildings/:buildingId');
+const canDeleteArea = isServed('DELETE', '/api/v1/areas/:areaId');
+
 const formatSize = (bytes: number) => (bytes >= 1_048_576 ? `${(bytes / 1_048_576).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`);
+
+/** Open requests of a building; unknown while the API serves no requests. */
+function OpenRequests({ count }: { count: number | null }) {
+  if (count === null) return <span className="ul-unknown">Unknown</span>;
+  return count ? <>{count}</> : <span className="ul-muted">0</span>;
+}
 
 function BuildingsView() {
   const areas = useAreas();
@@ -223,7 +240,7 @@ function BuildingsView() {
       </div>
     );
   }
-  const openFor = (id: string) => requests.data?.filter((r) => r.buildingId === id).length ?? 0;
+  const openFor = (id: string) => requests.data?.filter((r) => r.buildingId === id).length ?? null;
   return (
     <div className={styles.buildings}>
       {areas.data.map((area, i) => {
@@ -234,10 +251,12 @@ function BuildingsView() {
             <div className={styles.areaHead}>
               <h2 className="ul-heading">{area.name} <span className="ul-caption">{formatCount(buildings.length)} buildings</span></h2>
               <Link to={`/studio/areas/${area.id}`} className="ul-btn ul-btn--ghost"><Icon icon={MapPin} />Open map</Link>
-              <Button variant="ghost" icon={Trash} onClick={() => setTarget({
-                kind: 'area', id: area.id, name: area.name,
-                detail: `${area.name} and its ${buildings.length} buildings, parcels, roads and utilities are deleted, with every building register in it.`,
-              })}>Delete area</Button>
+              {canDeleteArea ? (
+                <Button variant="ghost" icon={Trash} onClick={() => setTarget({
+                  kind: 'area', id: area.id, name: area.name,
+                  detail: `${area.name} and its ${buildings.length} buildings, parcels, roads and utilities are deleted, with every building register in it.`,
+                })}>Delete area</Button>
+              ) : null}
             </div>
             {contexts[i]?.isPending ? <Skeleton height={200} /> : (
               <DataTable<AreaFeature>
@@ -248,13 +267,15 @@ function BuildingsView() {
                   { header: 'Building', cell: (b) => <Link to={`/studio/properties/${b.id}/register`}>{b.name}</Link> },
                   { header: '3D ULPIN (proposed)', width: '300px', cell: (b) => featureCode(b) ? <span className="ul-mono">{featureCode(b)}</span> : <span className="ul-unknown">Not assigned</span> },
                   { header: 'Building identifier', width: '220px', cell: (b) => <span className="ul-mono ul-muted">{b.identifier ?? 'Unknown'}</span> },
-                  { header: 'Open requests', numeric: true, width: '120px', cell: (b) => openFor(b.id) || <span className="ul-muted">0</span> },
+                  { header: 'Open requests', numeric: true, width: '120px', cell: (b) => <OpenRequests count={openFor(b.id)} /> },
                   {
                     header: 'Actions', width: '150px', cell: (b) => (
                       <span className={styles.tableActions}>
                         <Link to={`/studio/areas/${area.id}?feature=${b.id}&mode=building`} className="ul-btn ul-btn--ghost ul-btn--icon" aria-label={`Show ${b.name} on the map`} title="Show on map"><Icon icon={MapPin} /></Link>
-                        <Button variant="ghost" iconOnly icon={Trash} aria-label={`Delete ${b.name}`} title="Delete building"
-                          onClick={() => setTarget({ kind: 'building', id: b.id, name: b.name, detail: `${b.name} and its register (floors, units, findings and history) are deleted from ${area.name}.` })} />
+                        {canDeleteBuilding ? (
+                          <Button variant="ghost" iconOnly icon={Trash} aria-label={`Delete ${b.name}`} title="Delete building"
+                            onClick={() => setTarget({ kind: 'building', id: b.id, name: b.name, detail: `${b.name} and its register (floors, units, findings and history) are deleted from ${area.name}.` })} />
+                        ) : null}
                       </span>
                     ),
                   },

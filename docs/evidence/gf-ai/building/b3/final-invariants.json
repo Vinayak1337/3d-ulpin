@@ -1,0 +1,1 @@
+{"status":"passed","selection_recheck_identical":true,"additional_model_calls":0,"holdout_attempts":2,"holdout_completions":2,"executed_result_hashes_match_archives":true,"new_python_helpers_typed_max40lines":true,"new_python_lines_max120":true,"images_max_bytes":47040,"only_owned_paths_in_diff":true,"weights_not_in_git":true,"serving_parity_pass_claimed":false}
