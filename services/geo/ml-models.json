@@ -130,6 +130,7 @@
       },
       "quality": {
         "claim": "Roofprint research candidates; recall below preregistered target",
+        "evaluationBackend": "PyTorch-cuda; ONNX instance equivalence tested on 20 fixed DEV chips only",
         "matchIoU": 0.5,
         "dev": {"precision": 0.8544117647058823, "recall": 0.6624353906962602, "chips": 1434},
         "karnatakaHoldout": {
