@@ -9,7 +9,7 @@ import { SourceSpaceRequestSchema, SourceSpaceReceiptSchema,
 import { UspCaptureSnapshotRequestSchema } from '../../packages/contracts/src/usp/ports';
 import { UspSnapshotManifestSchema } from '../../packages/contracts/src/usp/domain';
 
-const base = 'http://127.0.0.1:3194';
+export const base = 'http://127.0.0.1:3194';
 const root = 'E:/BhuAayam-data/task-data/r2';
 export const buildingId = '6f95d04e-2067-4ac8-a3c2-6cc21ea46325';
 export const sourceId = '5293cd72-2377-4deb-a51c-c76d11ccb429';
@@ -41,11 +41,11 @@ export async function exchange(directory: string, name: string, path: string, in
 
 export function accepted(step: string, result: Exchange) {
   if (result.status >= 200 && result.status < 300) return result.body;
-  throw new Error(`R2_STEP_REFUSED ${step}: HTTP ${result.status} ${result.body?.code ?? result.body?.error?.code}`);
+  throw new Error(`LIVE_STEP_REFUSED ${step}: HTTP ${result.status} ${result.body?.code ?? result.body?.error?.code}`);
 }
 
-function stored(stage: string, name: string) {
-  return JSON.parse(readFileSync(join(root, stage, `${name}-response.json`), 'utf8')).body;
+export function stored(stage: string, name: string, part: 'request' | 'response' = 'response', artifacts = root) {
+  return JSON.parse(readFileSync(join(artifacts, stage, `${name}-${part}.json`), 'utf8')).body;
 }
 
 async function probes() {
@@ -110,8 +110,8 @@ async function snapshot() {
   UspSnapshotManifestSchema.parse(result.data);
 }
 
-async function readRecorded(stage: string) {
-  const directory = join(root, stage);
+export async function readRecorded(stage: string, artifacts = root, assigned = false) {
+  const directory = join(artifacts, stage);
   const receipt = stored('step2', '02-record');
   const canonical = accepted('recorded canonical read', await exchange(directory, 'recorded-canonical',
     `/api/v1/buildings/${buildingId}/canonical`));
@@ -126,7 +126,7 @@ async function readRecorded(stage: string) {
   assert.equal(floor.upperM.state, 'unknown');
   assert.equal(space.areaM2.state, 'unknown');
   assert.equal(space.kind.state, 'unknown');
-  assert.equal(space.proposedCode.value, null, 'No assignment has run');
+  if (!assigned) assert.equal(space.proposedCode.value, null, 'No assignment has run');
   assert.deepEqual(canonical.parcelRefs, []);
   assert.equal(canonical.levelSchedule.state, 'conflicting');
   const citations = [...floor.label.citations, ...space.label.citations];
@@ -139,6 +139,7 @@ async function readRecorded(stage: string) {
     lowerM: floor.lowerM, upperM: floor.upperM, areaM2: space.areaM2, kind: space.kind,
     floorGeometry: floor.polygons.state, spaceGeometry: space.polygons.state,
     schedule: canonical.levelSchedule.state, parcelRefs: canonical.parcelRefs });
+  return { canonical, floor, space };
 }
 
 async function studio() {
@@ -155,7 +156,7 @@ async function main() {
     return counts(stage);
   }
   const actions: Record<string, () => Promise<void>> = { probes, record, snapshot, studio,
-    'record-read': () => readRecorded('step2') };
+    'record-read': async () => { await readRecorded('step2'); } };
   assert(actions[action], 'Use probes | counts <stage> | record | snapshot | record-read | studio');
   await actions[action]();
 }

@@ -222,5 +222,74 @@
    "DEMO-RUNTIME.md commit line -> fbe525f7",
    "DEMO-RUNTIME.md K5 row -> applied 10 October 2026, applied: true"
   ]
+ },
+ "step2": {
+  "result": "done: all eight answer 200; two differences from the K6 expectation recorded as findings",
+  "at": "2026-10-10T13:44Z",
+  "reads": [
+   {
+    "building": "Tower 3 6f95d04e",
+    "registerConsolidated": 200,
+    "register": 200,
+    "ledger": 200,
+    "dossier": 200
+   },
+   {
+    "building": "Magnolia e8777ffc",
+    "registerConsolidated": 200,
+    "register": 200,
+    "ledger": 200,
+    "dossier": 200
+   }
+  ],
+  "consolidatedSources": {
+   "tower3": [
+    {
+     "id": "5293cd72-2377-4deb-a51c-c76d11ccb429",
+     "documentResult": null
+    },
+    {
+     "id": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "documentResult": {
+      "current": false,
+      "reasons": [
+       "reader_changed",
+       "policy_changed"
+      ]
+     }
+    }
+   ],
+   "magnolia": [
+    {
+     "id": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "documentResult": {
+      "current": false,
+      "reasons": [
+       "reader_changed"
+      ]
+     }
+    }
+   ]
+  },
+  "ledgerNotes": {
+   "tower3": [
+    "The document reading retained beside source c59d2027-f176-4773-a799-5f0eb682fa2a is no longer current (reader_changed, policy_changed); the recorded citation is unchanged."
+   ],
+   "magnolia": [
+    "The document reading retained beside source 10946c4c-0cae-41f7-8303-41f2512e630d is no longer current (reader_changed); the recorded citation is unchanged."
+   ]
+  },
+  "asExpected": [
+   "all eight 200",
+   "10946c4c current:false reader_changed",
+   "5293cd72 carries no documentResult",
+   "one ledger note per source that carries documentResult (one each)",
+   "default register and dossier state no freshness"
+  ],
+  "differencesFromK6": [
+   "Tower 3 consolidated sources[] lists two sources (5293cd72, c59d2027), not four. 25a8fbcb and 357b6258 do not appear in the consolidated report, the ledger, the default register or the dossier, so 25a8fbcb carries no documentResult anywhere and the Tower 3 ledger has one note, not two.",
+   "c59d2027 states two reasons, reader_changed and policy_changed; K6 expected reader_changed (it named a gateway policy pin as a possible extra for this source)."
+  ],
+  "notExplained": "why 25a8fbcb is absent was not investigated here; the responses are saved in full under step2/"
  }
 }
