@@ -32,6 +32,24 @@ function noAnswerReason(source: FieldSource | undefined): string | null {
   return NO_ANSWER_WORDS[code] ?? code;
 }
 
+/**
+ * Nobody answered a column either when the server still asks about it with one of those codes and its plan
+ * proposes no target: the stored job of a table imported without a teacher names a model as the field's source.
+ */
+function unansweredQuestion(question: Question | undefined, target: Target, origin: FieldSource['source'] | undefined) {
+  if (!question || target !== 'unknown' || origin === 'officer') return null;
+  return NO_ANSWER_WORDS[question.reason] ?? null;
+}
+
+// A question whose reason is a code, as a sentence. A reason not listed here is the server's own wording.
+const QUESTION_WORDS: Record<string, string> = {
+  TEACHER_UNAVAILABLE: 'No teacher was available when this table was imported: this column is unmapped.',
+};
+
+export function questionWords(reason: string): string {
+  return QUESTION_WORDS[reason] ?? reason;
+}
+
 export function targetDefinition(target: Target) {
   if (target === 'building.geometry') return CANONICAL_TARGETS['building.footprint'];
   return CANONICAL_TARGETS[target];
@@ -43,13 +61,30 @@ export function columnRows(profile: TableProfile, mapping?: ChunkMapping) {
     const field = mapping?.plan.fields.find((item) => item.sourceField === sourceField);
     const source = mapping?.fieldSources.find((item) => item.sourceField === sourceField);
     const origin = source?.source;
-    const noAnswer = noAnswerReason(source);
+    const target = field?.target ?? 'unknown';
     const question = mapping?.questions.find((item) => item.sourceField === sourceField);
-    return { position: index + 1, header: profile.headers[index] ?? '', column, sourceField,
-      target: field?.target ?? 'unknown',
+    const noAnswer = noAnswerReason(source) ?? unansweredQuestion(question, target, origin);
+    return { position: index + 1, header: profile.headers[index] ?? '', column, sourceField, target,
       confidence: origin === 'officer' || noAnswer !== null ? null : field?.confidence ?? null,
       origin, noAnswer, question };
   });
+}
+
+type ColumnRow = ReturnType<typeof columnRows>[number];
+
+/** A column nobody answered and no target is proposed for: it says "Unmapped", not the name of a target. */
+export function isUnmapped(row: Pick<ColumnRow, 'noAnswer' | 'target'>): boolean {
+  return row.noAnswer !== null && row.target === 'unknown';
+}
+
+/**
+ * The confidence cell in words: who decided, or a percentage only when the answer holds a confidence. Null when
+ * nobody answered: there is no confidence to print, and 0% would read as a measured one.
+ */
+export function confidenceText(row: Pick<ColumnRow, 'origin' | 'noAnswer' | 'confidence'>): string | null {
+  if (row.origin === 'officer') return 'Officer decision';
+  if (row.noAnswer !== null) return null;
+  return row.confidence === null ? 'Unknown' : `${Math.round(row.confidence * 100)}%`;
 }
 
 /**

@@ -20,6 +20,41 @@ export function absentReason(error: unknown): string | null {
   return ABSENT_REASONS[code] ?? code;
 }
 
+/** The server holds no register for this building: its code NOT_FOUND, never its message or the status alone. */
+export function registerNotFound(error: unknown): boolean {
+  return error instanceof ApiError && refusalOf(error).code === 'NOT_FOUND';
+}
+
+const UNREAD_REGISTER = 'The server did not read this register out';
+
+/** A register read that failed for a reason this page has no words for: the fixed words, then the server's code. */
+export function unreadRegister(error: unknown): string {
+  const { code } = refusalOf(error);
+  return code ? `${UNREAD_REGISTER} · ${code}` : `${UNREAD_REGISTER}.`;
+}
+
+type Canonical = GetResponse<'/api/v1/buildings/{buildingId}/canonical'>;
+
+/** What the building's own record is, by the record state of its canonical read, when it has no register. */
+const UNRECORDED: Record<Canonical['recordState'], string> = {
+  candidate: 'The server holds this building as a candidate from its sources. '
+    + 'Nothing of it is recorded in the registry, so there is no register to open.',
+  reviewed: 'The server holds a reviewed record of this building and no register for it.',
+};
+const NO_RECORD = 'The server holds no record of this building.';
+const UNREAD_RECORD = 'The record of this building could not be read';
+
+/**
+ * The sentence under "No register is recorded": what the canonical read holds of the building, or, when that read
+ * failed, that the server holds no record (its code NOT_FOUND) or the failure's code. Never the server's message.
+ */
+export function unrecordedStatement(building: Pick<Canonical, 'recordState'> | undefined, error: unknown): string {
+  if (building) return UNRECORDED[building.recordState];
+  const { code } = refusalOf(error);
+  if (code === 'NOT_FOUND') return NO_RECORD;
+  return code ? `${UNREAD_RECORD} · ${code}` : `${UNREAD_RECORD}.`;
+}
+
 /**
  * The checks that block or need review, for the Checks tab. Undefined when the ledger holds no check at all:
  * nothing was assessed, so there is no number to show, and 0 would read as "all clear".
@@ -28,8 +63,6 @@ export function openCheckCount(checks: readonly { state: string }[] | undefined)
   if (!checks?.length) return undefined;
   return checks.filter((check) => check.state === 'blocking' || check.state === 'needs_review').length;
 }
-
-type Canonical = GetResponse<'/api/v1/buildings/{buildingId}/canonical'>;
 
 /**
  * The storey labels the sources state against each other, as literals in the record's order, while the record

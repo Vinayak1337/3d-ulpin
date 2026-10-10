@@ -2,10 +2,13 @@ import { Link } from 'react-router';
 import { FileDashed } from '@phosphor-icons/react';
 import { EmptyState, Skeleton } from '@ulpin/ui';
 import { useBuildingCanonical } from '../../api/queries';
+import { unrecordedStatement } from './registerState';
 import styles from './RegisterPage.module.css';
 
 // The server refused the read (409); whether a register was ever recorded is not known from that answer.
-const TITLE = 'The register of this building could not be read';
+const REFUSED = 'The register of this building could not be read';
+// The server holds none (404 NOT_FOUND).
+const NOT_RECORDED = 'No register is recorded for this building';
 
 /** The pages that do hold this building's record; the register index when its record cannot be read either. */
 function RecordLinks({ buildingId, areaId }: { buildingId: string; areaId: string | undefined }) {
@@ -19,19 +22,20 @@ function RecordLinks({ buildingId, areaId }: { buildingId: string; areaId: strin
 }
 
 /**
- * A building the server will not read a register out for: its recorded name, the server's reason in words and
- * the pages that hold its record. No export, table or unit count, because no register was read.
+ * A building with no register to show: its recorded name, why in words and the pages that hold its record.
+ * `reason` is the server's refusal in words (409); null when the server holds no register (404), and then the
+ * sentence says what the building's canonical record is. No export, table or unit count: no register was read.
  */
-export function RegisterAbsent({ buildingId, reason }: { buildingId: string; reason: string }) {
+export function RegisterAbsent({ buildingId, reason }: { buildingId: string; reason: string | null }) {
   const canonical = useBuildingCanonical(buildingId);
   if (canonical.isPending) return <div className={styles.loading}><Skeleton width="40%" height={28} /></div>;
   const building = canonical.data;
   return (
     <div className={styles.loading}>
       <h1 className={`ul-title ${styles.absentName}`}>{building?.name.value ?? 'Name unknown'}</h1>
-      <EmptyState icon={FileDashed} title={TITLE}
+      <EmptyState icon={FileDashed} title={reason === null ? NOT_RECORDED : REFUSED}
         action={<RecordLinks buildingId={buildingId} areaId={building?.areaId} />}>
-        {reason}
+        {reason ?? unrecordedStatement(building, canonical.error)}
       </EmptyState>
     </div>
   );

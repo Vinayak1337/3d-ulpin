@@ -3,7 +3,8 @@ import { ApiError } from '@ulpin/api-client';
 import controls from '../../../../../docs/evidence/gf1/ui/f3a/responses.json';
 import type { BuildingCanonical } from '../review/recorded/model';
 import {
-  absentReason, conflictingStoreys, openCheckCount, readingStatement, readingStatements, unstatedReadings,
+  absentReason, conflictingStoreys, openCheckCount, readingStatement, readingStatements, registerNotFound,
+  unreadRegister, unrecordedStatement, unstatedReadings,
 } from './registerState';
 
 const SERVER_TEXT = 'Server text that is never shown.';
@@ -30,6 +31,38 @@ describe('absentReason', () => {
     expect(absentReason(failure(500, 'STALE_REVISION'))).toBeNull();
     expect(absentReason(new Error('offline'))).toBeNull();
     expect(absentReason(null)).toBeNull();
+  });
+});
+
+describe('a building with no register', () => {
+  it('reads "no register" from the code NOT_FOUND, not from the status or the message', () => {
+    expect(registerNotFound(failure(404, 'NOT_FOUND'))).toBe(true);
+    expect(registerNotFound(failure(404))).toBe(false);
+    expect(registerNotFound(failure(409, 'STALE_REVISION'))).toBe(false);
+    expect(registerNotFound(new Error('offline'))).toBe(false);
+  });
+
+  it('says what the canonical record is: a candidate with nothing recorded, or a reviewed record', () => {
+    expect(unrecordedStatement({ recordState: 'candidate' }, null)).toBe(
+      'The server holds this building as a candidate from its sources. '
+      + 'Nothing of it is recorded in the registry, so there is no register to open.',
+    );
+    expect(unrecordedStatement({ recordState: 'reviewed' }, null))
+      .toBe('The server holds a reviewed record of this building and no register for it.');
+  });
+
+  it('says that no record is held, or gives the code, when the canonical read failed; never the message', () => {
+    expect(unrecordedStatement(undefined, failure(404, 'NOT_FOUND')))
+      .toBe('The server holds no record of this building.');
+    expect(unrecordedStatement(undefined, failure(409, 'STALE_REVISION')))
+      .toBe('The record of this building could not be read · STALE_REVISION');
+    expect(unrecordedStatement(undefined, new Error(SERVER_TEXT)))
+      .toBe('The record of this building could not be read.');
+  });
+
+  it('words any other failed register read with the code, never the message', () => {
+    expect(unreadRegister(failure(500, 'INTERNAL'))).toBe('The server did not read this register out · INTERNAL');
+    expect(unreadRegister(new Error(SERVER_TEXT))).toBe('The server did not read this register out.');
   });
 });
 

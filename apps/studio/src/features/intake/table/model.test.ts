@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import controls from '../../../../../../docs/evidence/gf-agent/ui/f2b/responses.json';
 import fresh from '../../../../../../docs/evidence/gf1/ui/f3a/table-responses.json';
 import {
-  columnRows, learnerTotals, mergeMetrics, publishedChunkIndexes, reviewControls, reviewMapping, staleReasons,
-  unansweredTotalText,
+  columnRows, confidenceText, isUnmapped, learnerTotals, mergeMetrics, publishedChunkIndexes, questionWords,
+  reviewControls, reviewMapping, staleReasons, unansweredTotalText,
 } from './model';
 import type { ChunkMapping, Freshness, MappingJob, Metrics, TableProfile } from './types';
 
@@ -121,6 +121,45 @@ describe('columns nobody answered', () => {
       const [row] = columnRows(profile, withSources(source, source === 'memory' ? 'cache' : 'model'));
       expect(row!.noAnswer).toBeNull();
     }
+  });
+});
+
+describe('a column of a table imported without a teacher', () => {
+  const SENTENCE = 'No teacher was available when this table was imported: this column is unmapped.';
+
+  // The demo's stored job: a model is named as the field's source, the plan proposes no target at confidence 0,
+  // and the question carries the code.
+  function withoutTeacher() {
+    const copy = structuredClone(mapping);
+    copy.plan.fields[0]!.confidence = 0;
+    copy.fieldSources[0]!.source = 'memory';
+    copy.questions[0]!.reason = 'TEACHER_UNAVAILABLE';
+    return copy;
+  }
+
+  it('says that no teacher was available and that the column is unmapped, with no percentage', () => {
+    const [row] = columnRows(profile, withoutTeacher());
+    expect(row).toMatchObject({ noAnswer: 'teacher unavailable', confidence: null });
+    expect(isUnmapped(row!)).toBe(true);
+    expect(confidenceText(row!)).toBeNull();
+    expect(questionWords(row!.question!.reason)).toBe(SENTENCE);
+  });
+
+  it('prints a percentage for a proposal that holds a confidence, and a reason it has no words for as it is', () => {
+    const [row] = columnRows(profile, mapping);
+    expect(row!.confidence).toBe(mapping.plan.fields[0]!.confidence);
+    expect(confidenceText(row!)).toBe(`${Math.round(mapping.plan.fields[0]!.confidence * 100)}%`);
+    expect(isUnmapped(row!)).toBe(false);
+    expect(questionWords(row!.question!.reason)).toBe(mapping.questions[0]!.reason);
+  });
+
+  it('keeps an officer decision and a column with a proposed target as answered', () => {
+    const decided = withoutTeacher();
+    decided.fieldSources[0]!.source = 'officer';
+    expect(confidenceText(columnRows(profile, decided)[0]!)).toBe('Officer decision');
+    const proposed = withoutTeacher();
+    proposed.plan.fields[0]!.target = 'building.geometry';
+    expect(columnRows(profile, proposed)[0]!.noAnswer).toBeNull();
   });
 });
 

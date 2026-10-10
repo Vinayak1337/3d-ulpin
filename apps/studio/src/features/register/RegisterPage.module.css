@@ -8,6 +8,8 @@
 .meta { margin: 0; font-size: 13px; line-height: 19px; color: var(--ui-muted); }
 .primary { display: grid; justify-items: end; gap: 2px; }
 .blocked { font-size: 12px; line-height: 16px; color: var(--ui-muted); }
+/* What a disabled action needs, under it: held to the width of two short lines so the header keeps its row. */
+.needs { max-width: 216px; text-align: end; }
 
 .body { min-height: 0; display: grid; grid-template-columns: minmax(0, 55fr) minmax(0, 45fr); gap: var(--ui-space-4); padding: var(--ui-space-4); }
 .sceneColumn { min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: var(--ui-space-2); }
