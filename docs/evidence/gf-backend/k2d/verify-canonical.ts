@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import {
   NormalizedAreaSchema, NormalizedBuildingSchema,
@@ -43,6 +44,14 @@ async function verifyRetainedCandidates(): Promise<void> {
   const area = NormalizedAreaSchema.parse(await (await get(`/areas/${areaId}/canonical`)).json());
   assert.equal(area.candidates?.length, 80);
   assert.equal(area.overlays.length, 22);
+  const imagery = area.imagery?.[0];
+  assert(imagery && imagery.classification === 'test_only' && imagery.analyticalEligibility === 'not_assessed');
+  assert.equal(imagery.chips.length, 22);
+  for (const chip of imagery.chips) {
+    const original = await get(`/sources/${chip.sourceId}/file`);
+    const digest = createHash('sha256').update(new Uint8Array(await original.arrayBuffer())).digest('hex');
+    assert.equal(digest, chip.sourceSha256);
+  }
   assert.equal(area.candidates?.filter(candidate => candidate.review?.outcome === 'accepted').length, 1);
   assert.equal(area.candidates?.filter(candidate => candidate.review?.outcome === 'rejected').length, 1);
   assert(area.candidates?.every(candidate => candidate.confidenceCalibration === 'uncalibrated'));
@@ -55,13 +64,16 @@ async function verifyRetainedCandidates(): Promise<void> {
   const tower = NormalizedBuildingSchema.parse(await (await get(`/buildings/${towerId}/canonical`)).json());
   assert.equal(tower.storeyLabel.state, 'conflicting');
   assert.equal(tower.conflictDecisions?.at(-1)?.outcome, 'unresolved');
+  const retainedTower = JSON.parse(readFileSync('docs/evidence/gf-backend/k2b/tower3-after.json', 'utf8'));
+  assert.deepEqual(tower, retainedTower);
 }
 
 await verifyRoofprint();
 await verifyRetainedCandidates();
-writeFileSync(`${root}/canonical-check.json`, JSON.stringify({ exitCode: 0, candidateRevision: 0,
+writeFileSync(`${root}/canonical-check-final.json`, JSON.stringify({ exitCode: 0, candidateRevision: 0,
   registryReviewedLifecycle: 'blocked, not demonstrated', admissionRefusalPreservesCanonical: true,
-  unknownHeightLevelsParcels: true, imageryChips: 22, roofprintCandidates: 80, magnoliaRooms: 18,
+  unknownHeightLevelsParcels: true, imageryChips: 22, imageryOriginalHashesVerified: 22,
+  roofprintCandidates: 80, magnoliaRooms: 18,
   previousSourceSelectionsPreserved: true, addedRejectDecisions: 0,
   etagAndExactCurrent: true, crossSite: 403 }) + '\n');
 console.log('Blocked admission preserves candidate lineage and unknowns; existing rooms/conflict unchanged.');
