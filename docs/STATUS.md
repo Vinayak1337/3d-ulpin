@@ -27,12 +27,12 @@ Reconciled 6 October 2026, 18:30 IST, from the live `staging` head, the Codex wo
   - **No model has been trained.**
 - **Release gates:** still 0 of 30 tests with any receipt or attempt, and no `targetDate`.
 
-## Live state right now (10 October, 15:30 IST)
+## Live state right now (10 October, 15:37 IST)
 
 | Item | State |
 | --- | --- |
-| `staging` | `1133de9f` plus this board update, local; next push at M1 (14 Oct). Merged this afternoon: **K3b** (reviewed level schedules), **K3c** (room reject, reject-only roofprint decision), **A3b** (CSV and XLSX through the fenced chunk-mapping job, recipe approval, officer-approved learning) and **F2c** (the Studio records rejections). Earlier on 10 Oct: A5b, B8, A3 checkpoint, A5, K3a, K2f, B7, F2a, F1a/F1b, K2–K2d, B3–B6c, A2, P1/P2, T1 + A4. |
-| Workers | Running, all codex: **A3c** (`a2`, `xhigh`: tabular enrolment fix in `jobs.ts`, clean-ups, demo learner paths, then the live two-file run `mi-d10-02.csv` → `mi-d10-03.csv`; it takes the runtime only after K4a exits), **F2b** (`f1`, `xhigh`: Studio table import page, learner panel, answer and approve), **D1d** (`d1`, `xhigh`: second source route for property tables), **K4a** (`k1`, `high`, runtime/DB owner: registers the reject-only migration and reports what P3 identity needs on the real demo records). |
+| `staging` | `0476489b` plus this board update, local; next push at M1 (14 Oct). Merged this afternoon: **K3b** (reviewed level schedules), **K3c** (room reject, reject-only roofprint decision), **A3b** (CSV and XLSX through the fenced chunk-mapping job, recipe approval, officer-approved learning) **F2c** (the Studio records rejections) and **K4a** (migration registered, identity readiness report). Earlier on 10 Oct: A5b, B8, A3 checkpoint, A5, K3a, K2f, B7, F2a, F1a/F1b, K2–K2d, B3–B6c, A2, P1/P2, T1 + A4. |
+| Workers | Running, all codex: **A3c** (`a2`, `xhigh`: tabular enrolment fix in `jobs.ts`, clean-ups, demo learner paths, then the live two-file run `mi-d10-02.csv` → `mi-d10-03.csv`; it is the runtime owner for that run), **F2b** (`f1`, `xhigh`: Studio table import page, learner panel, answer and approve), **D1d** (`d1`, `xhigh`: second source route for property tables), **K4b** (`k1`, `xhigh`, no runtime: a source-stated floor and unit recorded without geometry, shown in canonical, P3 code wired to `proposedCode`). |
 | Waiting on owner | Re-pin of four runtime-receipt hashes in `docs/api/runtime-qualification.json` (CRLF-computed; LF hashes proposed). It is the only `check.py` failure. Separately, `scripts/api/build-dataset-catalog.py --check` fails on `staging` with `KeyError: 'content'` (the D8 entries are not in the catalogue's strict shape); not yet assigned. |
 | Runtime | `ulpin-demo` is **up again** (resumed by K3c from `E:/Projects/ulpin-wt/k1`; containers healthy at 15:00). It holds Tower 3 (revision 4, schedule reviewed as conflicting), Bihar Magnolia (revision 5, three reviewed levels, one room on GROUND), the Karnataka RAMP imagery area (22 chips, 80 roofprint candidates, `test_only`), GMDA sectors and NYC `test_only` proposals. The PostgreSQL container mounts a file from `ulpin-wt/s03`, so that folder must stay. |
 | Building model | RF-DETR-Seg epoch 4: Karnataka holdout P 0.836 / R 0.649 (target R ≥ 0.70 missed); Cox's Bazar transfer P 0.830 / R 0.355. B6 (672 px) rejected. B7: 87% of missed roofs have a raw instance under 0.5, but the pipeline recovers only about half; DEV rule picks 0.45 (R 0.708, P 0.816). **Lead decision:** keep serving at 0.5, the only point with held-out evidence. B8 now locates the post-model loss. |
@@ -50,7 +50,7 @@ Reconciled 6 October 2026, 18:30 IST, from the live `staging` head, the Codex wo
 | Gate | State | Last real evidence | Next |
 | --- | --- | --- | --- |
 | GF0 Data/contracts | Partial | Demo runtime with K2 imports; canonical routes; pins | Owner: receipt re-pin |
-| GF1 Identity/exchange | Pending | D10 authority fix only. **Finding:** the P3 module assigns codes only to recorded registry spaces, and the demo has none (Magnolia rooms are unplaced candidates; Tower 3 has no levels) | K4a readiness report, then the lead designs K4 |
+| GF1 Identity/exchange | Partial | D10 authority fix; K4a readiness (`docs/evidence/gf1/k4a/readiness.md`): no recorded floors or spaces on the demo buildings, Magnolia has no source-stated unit that links to a plan panel, Tower 3 prints `UNIT-3A`/`UNIT-3B` on its `2ND FLOOR PLAN` sheet. **Lead decision:** floors and units are recorded source-stated and geometry-absent, like the building record; first target Tower 3 `UNIT-3B` | K4b (mechanism, tests), K4c (live record and code after the lead checks the crop), K5 card + QR |
 | GF-AI (building/plans) | Partial | Fine-tuned model with holdout + transfer numbers; B7 DEV diagnosis; plan candidates | B8 attribution |
 | GF-AGENT | Partial | Teacher labels verified; memory + student + routing; tabular sources through the real job with software controls (A3b) | A3c live two-file run; held-out results after D1d |
 | GF-T16 Geometry | Partial | K3a prisms with hand cases; K3b schedules on Tower 3 and Magnolia | K4 (real prisms need stated heights and a placed footprint) |
@@ -83,6 +83,6 @@ Reconciled 6 October 2026, 18:30 IST, from the live `staging` head, the Codex wo
 ## Assessment: what to do next
 
 1. Owner: approve or refuse the runtime-receipt re-pin (four LF hashes).
-2. On return: A3c → merge, then F2b's owed live check; D1d → the lead labels its development columns (T1b), then A4b (student retrain, one held-out run); K4a → the lead designs K4 (identity on one honest space), then K5 (card + QR); F2b → merge.
+2. On return: A3c → merge, then F2b's owed live check; D1d → the lead labels its development columns (T1b), then A4b (student retrain, one held-out run); K4b → the lead checks the cited crop, then K4c (live record, snapshot, code), then K5 (card + QR); F2b → merge.
 3. A dev-only A5 follow-up (repaired OCR, native-text threshold, cropped tables, a live agent run through the demo gateway).
 4. M1 on 14 Oct: push `staging`.
