@@ -30354,6 +30354,10 @@ export interface components {
                 profile: string;
                 /** Format: date-time */
                 receivedAt: string;
+                readonly documentResult?: {
+                    current: boolean;
+                    readonly reasons: ("case_advanced" | "reader_changed" | "policy_changed" | "source_superseded")[];
+                };
             }[];
             omissions: string[];
         };
@@ -38466,6 +38470,10 @@ export interface components {
                     bodyRef: string;
                     /** @enum {string} */
                     authority: "registry" | "area_feature" | "source" | "source_part" | "relationship" | "review" | "geometry" | "declaration" | "declaration_entry" | "applicability";
+                    readonly documentResult?: {
+                        current: boolean;
+                        readonly reasons: ("case_advanced" | "reader_changed" | "policy_changed" | "source_superseded")[];
+                    };
                 }[];
                 readonly declarations?: {
                     /** @enum {string} */

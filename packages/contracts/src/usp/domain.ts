@@ -8,6 +8,7 @@ import {
   UspProposalSelectionSchema, UspScopeSchema, UspSnapshotScopeSchema, UspTargetPinSchema,
   UspCreateGuardSchema, UspPinnedUpdateGuardSchema,
 } from './common';
+import { RetainedDocumentFreshnessSchema } from '../document-freshness';
 import { UspGeometryProjectionSchema } from './geometry';
 import { UspDeclarationInputSchema, DECLARATION_ACKNOWLEDGEMENT } from './declarations';
 export * from './declarations';
@@ -48,6 +49,8 @@ export const UspAuthorizedAssetSchema = z.strictObject({
 export const UspSnapshotMemberSchema = z.strictObject({
   pin, bodySha256: CoreSha256Schema, bodyRef: CoreIdSchema,
   authority: z.enum(['registry', 'area_feature', 'source', 'source_part', 'relationship', 'review', 'geometry', 'declaration', 'declaration_entry', 'applicability']),
+  /** Source members only: stated when the document result retained beside this original is no longer current. */
+  documentResult: RetainedDocumentFreshnessSchema.optional(),
 }).readonly();
 export const UspSnapshotManifestSchema = z.strictObject({
   schemaVersion: z.literal('usp/1'), id: CoreIdSchema, digest: CoreSha256Schema,

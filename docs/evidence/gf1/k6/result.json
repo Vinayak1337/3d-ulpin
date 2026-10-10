@@ -1,0 +1,592 @@
+{
+ "format": "Text longer than one line is stored as an array of lines.",
+ "task": "K6",
+ "gates": [
+  "GF1",
+  "GF6"
+ ],
+ "step0": {
+  "observedAt": "2026-10-10T12:45Z to 12:58Z",
+  "api": "http://127.0.0.1:3194/api/v1 (GET only)",
+  "servedCommit": {
+   "value": "9aad8da2",
+   "state": "reported by R2 (docs/evidence/runtime/r2, API restarted 12:26 UTC); GET /health exposes no commit"
+  },
+  "liveReads": [
+   {
+    "building": "Tower 3 6f95d04e",
+    "register": "409 STALE_REVISION",
+    "registerConsolidated": "409 STALE_REVISION",
+    "dossier": "409 STALE_REVISION",
+    "ledger": "409 REGISTRY_SOURCE_UNAVAILABLE",
+    "canonical": 200
+   },
+   {
+    "building": "Magnolia e8777ffc",
+    "register": "409 STALE_REVISION",
+    "registerConsolidated": "409 STALE_REVISION",
+    "dossier": "409 STALE_REVISION",
+    "ledger": "409 REGISTRY_SOURCE_UNAVAILABLE",
+    "canonical": 200
+   }
+  ],
+  "whatTheBuildingsAre": [
+   "Both were recorded from geometry-free source-building packages (geometryFree: true, parts: [], documentPins):",
+   "085434ff (Tower 3, four Haryana RERA PDFs, case fef196d1) and abf88703 (Magnolia, one Bihar RERA PDF, case",
+   "06849e03). Their records cite the retained originals by page and region. No recorded fact was taken from a",
+   "document extraction result: source-building-review.ts:17-26 admits the original only (documentAuthorityTx mode",
+   "'original'). The canonical read answers 200 because canonical-building.ts:193-197 sends such sources to",
+   "sourceBuildingOriginalAccessTx, and GET /import-packages/{id} answers 200 because areas.ts:285-290 does the",
+   "same. The register, dossier, ledger and snapshot readers lack that branch and apply the staged-document",
+   "'snapshot' authority, which demands an accepted extraction with current pins for every marked original."
+  ],
+  "callPaths": [
+   {
+    "route": "GET /buildings/{id}/register?profile=consolidated",
+    "path": [
+     "apps/api/src/modules/register/officer.controller.ts:159-176 buildingRegister",
+     "apps/api/src/modules/register/officer.service.ts:37-38 registerExport",
+     [
+      "packages/server/src/modules/officer/consolidated-register.ts:206 exportConsolidatedRegister, :197 capture,",
+      ":68 captureTx"
+     ],
+     "consolidated-register.ts:111 assertPackageDocumentAuthority (every package naming the building)",
+     "packages/server/src/modules/areas/package-authority.ts:35 documentAuthorityTx(client, source) mode 'snapshot'",
+     "packages/server/src/modules/usp/ingestion/document-authority.ts:61 assertDocumentInputTx",
+     "packages/server/src/modules/usp/ingestion/document-context.ts:45-46 conflict -> 409 STALE_REVISION"
+    ],
+    "behindIt": [
+     "document-authority.ts:52 409 DOCUMENT_STAGE_UNAVAILABLE for a marked original with no accepted extraction",
+     "consolidated-register.ts:132 assertRegistryMetadataTx -> registry-metadata.ts:52 registrySourceTx",
+     "consolidated-register.ts:177 registrySourceTx -> registry-metadata.ts:34-36 409 REGISTRY_SOURCE_UNAVAILABLE,",
+     "then registry-metadata.ts:20 documentAuthorityTx -> document-authority.ts:52 or :61 again"
+    ]
+   },
+   {
+    "route": "GET /buildings/{id}/register (default profile) and GET /buildings/{id}/dossier",
+    "path": [
+     "officer.service.ts:40 exportRegister / :36 dossier",
+     "packages/server/src/modules/officer/officer-investigations.ts:485 buildingDossier",
+     "packages/server/src/modules/officer/officer.ts:395 assertPackageDocumentAuthority",
+     "package-authority.ts:35 -> document-authority.ts:61 -> document-context.ts:45-46 409 STALE_REVISION"
+    ],
+    "behindIt": [
+     "document-authority.ts:52 409 DOCUMENT_STAGE_UNAVAILABLE"
+    ]
+   },
+   {
+    "route": "GET /buildings/{id}/ledger",
+    "path": [
+     "apps/api/src/modules/register/building-ledger.controller.ts:10-15",
+     "packages/server/src/modules/officer/building-ledger.ts:94 buildingLedger, :137 registrySourceTx per cited source",
+     "packages/server/src/modules/registry/registry-metadata.ts:34-36 status list -> 409 REGISTRY_SOURCE_UNAVAILABLE"
+    ],
+    "behindIt": [
+     "registry-metadata.ts:37 -> :20 documentAuthorityTx -> document-authority.ts:52 or :61 (same two refusals)",
+     "building-ledger.ts:107 assertPackageDocumentAuthority, revision 0 buildings only"
+    ]
+   },
+   {
+    "route": "POST /usp/snapshots (not sent by this task; refusal observed by R2, request b94c1677)",
+    "path": [
+     "apps/api/src/modules/evidence/evidence.controllers.ts:20-28 capture",
+     "apps/api/src/modules/evidence/evidence.services.ts:43 captureRegistrySnapshot",
+     "packages/server/src/modules/usp/snapshots.ts:123, :132 captureRegistrySnapshotTx, :134 snapshotRows",
+     "snapshots.ts:74-77 selects every source of every case of the site; :95-100 captures each one",
+     "snapshots.ts:100 captureDocumentSourceTx for a source that is not a source-stated pin",
+     "document-authority.ts:91 documentAuthorityTx(..., 'snapshot', ..., true) -> :61 assertDocumentInputTx",
+     "document-context.ts:45-46 -> 409 STALE_REVISION"
+    ],
+    "sameAssertionLaterInTheSequence": [
+     "snapshots.ts:194 assertSnapshotDocumentsTx (readManifest :206, packet0.ts:121,",
+     "project-identity.ts:239, :287, :360)",
+     "snapshots.ts:233 readSnapshotBody, :260 readSnapshotOriginal, :417",
+     "project-identity.ts:34 and :213, commands.ts:56, :114, :131 recapture through snapshots.ts:100",
+     "packets/plan-authority.ts:193 captureDocumentSourceTx for each source a packet plan entry selects"
+    ]
+   }
+  ],
+  "differingPin": {
+   "pin": "readerSha256",
+   "storedValue": "unknown (no GET route exposes a stored document input)",
+   "method": "elimination from GET reads plus the repository history; the stored hash itself was not read",
+   "perSource": [
+    {
+     "building": "Magnolia",
+     "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+     "status": "needs_input",
+     "acceptedJob": "373dbb31 (native_only, created 2026-10-09T22:53:08Z, succeeded)",
+     "jobReadNow": "GET documents/jobs/373dbb31 -> status stale, DOCUMENT_INPUT_STALE, currentCaseRevision 1"
+    },
+    {
+     "building": "Tower 3",
+     "sourceId": "25a8fbcb-2607-4a88-81e2-f2a247deb56f",
+     "status": "needs_input",
+     "note": "first in the package's id order, so it is the one that throws for the register",
+     "acceptedJob": "e9c90a8b (native_only, created 2026-10-09T22:50:29Z at case revision 4, succeeded)",
+     "jobReadNow": "status stale, DOCUMENT_INPUT_STALE, currentCaseRevision 4"
+    },
+    {
+     "building": "Tower 3",
+     "sourceId": "c59d2027-f176-4773-a799-5f0eb682fa2a",
+     "status": "needs_input",
+     "acceptedJob": "latest succeeded 521741ce (2026-10-10T01:45:21Z); its mode is unknown",
+     "jobReadNow": "status stale, DOCUMENT_INPUT_STALE",
+     "extraCandidate": "gatewayPolicySha256 if that job was 'propose'"
+    },
+    {
+     "building": "Tower 3",
+     "sourceIds": [
+      "357b6258-4f19-4a81-83b6-6da93874dd31",
+      "5293cd72-2377-4deb-a51c-c76d11ccb429"
+     ],
+     "status": "received",
+     "acceptedJob": [
+      "none: their only jobs went stale at birth (22:50:29Z) because each later original retained in the same",
+      "import advanced the case revision (source-building-import.ts:117-129, documents.ts:126)"
+     ],
+     "consequence": [
+      "with current pins no longer required these two still answer 409 DOCUMENT_STAGE_UNAVAILABLE; 5293cd72 is",
+      "cited by the canonical record"
+     ]
+    },
+    {
+     "site": "Tower 3 site ed4bc3ae",
+     "sourceId": "a6b2fd14-4bd2-43a7-b363-c9633cbb52c3",
+     "case": "710a0ebf GMDA sector 59 / 63 A administrative boundaries",
+     "profile": "document-original-v1",
+     "status": "needs_input",
+     "acceptedJob": "49dd95f6 (created 2026-10-09T23:19:53Z, succeeded)",
+     "jobReadNow": "status stale, DOCUMENT_INPUT_STALE, currentCaseRevision 1",
+     "note": [
+      "the same-site source that refuses the snapshot of space 46b7265e: it is not a document pin of the tower",
+      "package, so snapshots.ts:100 sends it through captureDocumentSourceTx"
+     ]
+    }
+   ],
+   "why": [
+    "documentReaderSha (document-native.ts:10-24) hashes 20 files of the serving checkout. After every accepted job",
+    "above, four commits changed four of them and all are in 9aad8da2: fcd698fe (07:15 IST: document-ingestion.ts,",
+    "document-ocr.ts), 03cb0c36 (07:19: area.py), 8f5f5415 (07:33: document-ingestion.ts, document-ocr.ts,",
+    "area.py), 61ec7ed3 (11:01: api.py)."
+   ],
+   "excluded": {
+    "caseRevision": [
+     "Magnolia case is at revision 1 and Tower 3 at 4; the accepted jobs were enqueued after the last retain and",
+     "revisions only rise"
+    ],
+    "sourceRevision, sourceSha256, sourceBytes, objectKey, familyId": [
+     "each source is still revision 1 with the package's pinned hash"
+    ],
+    "subject": "the job and canonical reads pass documentSourceTx's subject comparison (document-context.ts:29)",
+    "accessSha256": "subject plus three constants in principal.ts, unchanged since before the jobs",
+    "policyVersion": "DOCUMENT_POLICY literal unchanged since 26 September",
+    "gatewayPolicySha256, layoutCap, ocr and archive selections": "null or absent for native_only import jobs"
+   },
+   "notExcludedByReads": [
+    [
+     "caseContextSha256 (frame, context, site): no writer changes them without a revision bump for these cases, but",
+     "the stored hash is unknown"
+    ]
+   ]
+  },
+  "ledger": {
+   "citedSources": "the same retained originals (statuses needs_input and received, profile pdf-reference-v2)",
+   "whyRefused": [
+    "registry-metadata.ts:32-36 admits status ready or partial, a native area, or an inspected reference_only",
+    "text/CSV/PDF part. A retained document original stays needs_input (document-worker.ts:71-75) or received, so",
+    "it never matches."
+   ],
+   "reallyGone": false,
+   "deliberateForWrites": [
+    "tests/registry-document-evidence.test.ts:440-443 pins this refusal for ordinary recording evidence, so the",
+    "list itself must stay"
+   ]
+  },
+  "item4": {
+   "snapshot": [
+    "Refused today for any snapshot of site ed4bc3ae (409 STALE_REVISION on a6b2fd14), including the source-space",
+    "target R2 sent. A 'site' selection, or building or floor targets, additionally send the four tower originals",
+    "through the same check. Magnolia's site: a 'site' selection refuses on 10946c4c."
+   ],
+   "identity": [
+    "prepare, assign and every later step recapture or re-assert the same snapshot (lines above), so the Tower 3",
+    "identity sequence cannot pass the snapshot step on the served code."
+   ],
+   "packetPlan": [
+    "plan-authority.ts:193 runs the same snapshot authority on each selected source: 409 STALE_REVISION for an",
+    "accepted original, 409 DOCUMENT_STAGE_UNAVAILABLE for 5293cd72 and 357b6258. Not exercised."
+   ],
+   "card": [
+    "the card reads the manifest and bodies through readManifest and readSnapshotBody (snapshots.ts:199-240), so it",
+    "is refused whenever its snapshot is; card files were not edited or run."
+   ]
+  },
+  "closure": {
+   "code": [
+    "snapshots.ts:45-121 captures every recorded record, every recorded feature and every source of every case of",
+    "the site (limits 1000, 1000, 2000). The selection is checked to be among those rows and stored; it never",
+    "narrows the members. Coverage is always 'complete'."
+   ],
+   "contract": [
+    "packages/contracts/src/usp/common.ts:19-24 scopes a snapshot to the world registry-site/<siteId>;",
+    "domain.ts:52-75 has selection, members (max 20000) and coverage. Nothing in it limits members to what the",
+    "targets reach."
+   ],
+   "difference": [
+    "none found. The site-wide closure is what the contract's scope describes, and pinnedManifest",
+    "(project-identity.ts:32-37) relies on it to detect any change in the site. The defect is the authority applied",
+    "to a same-site document source, not the closure; the closure is unchanged."
+   ]
+  },
+  "decisionForTheFix": [
+   "The stale reader pin is real and is the first refusal, as the task describes. Two further refusals sit behind",
+   "it for these buildings (REGISTRY_SOURCE_UNAVAILABLE and DOCUMENT_STAGE_UNAVAILABLE), because the readers do not",
+   "use the original-only authority that the canonical read and the package read already use for geometry-free",
+   "packages. The fix therefore has two parts: (1) the split the task asks for: retained document results are",
+   "located and authorized without current pins on reads and on snapshot capture, with freshness stated; (2)",
+   "register, dossier and ledger reads send originals pinned by a geometry-free package to the existing",
+   "original-only authority instead of the staged-document one."
+  ]
+ },
+ "step1": {
+  "rule": [
+   "A read or a capture of what is already recorded never requires current document pins; a new derivation or write",
+   "does."
+  ],
+  "split": {
+   "locateDocumentInputTx": [
+    "Authorize and locate. Another subject or access, or an archived case, refuses 403 DOCUMENT_DENIED; a changed",
+    "original refuses 422 DOCUMENT_SOURCE_INTEGRITY. Returns freshness {current, reasons}."
+   ],
+   "assertDocumentInputTx": "Require current pins. Body unchanged; 409 STALE_REVISION as before.",
+   "documentAuthorityTx": [
+    "New last parameter pins = 'current' (default) | 'retained'. Only the line that called assertDocumentInputTx",
+    "branches; every other refusal is shared."
+   ]
+  },
+  "callers": [
+   {
+    "caller": "documents.ts:45, :99, :140, :154, :162 (enqueue, retain, retry, job status)",
+    "uses": "require current pins",
+    "why": "starts or serves a document reading"
+   },
+   {
+    "caller": "document-worker.ts:21, :80; document-model.ts:44",
+    "uses": "require current pins",
+    "why": "extraction, publication, model proposal"
+   },
+   {
+    "caller": "document-association-authority.ts:26; sufficiency-context.ts:133, :141",
+    "uses": "require current pins",
+    "why": "citation and sufficiency writes; reads that serve extracted text"
+   },
+   {
+    "caller": "areas/package-authority.ts:35 (area and package writes, reads of ordinary packages)",
+    "uses": "require current pins",
+    "why": "not edited; default"
+   },
+   {
+    "caller": [
+     "registrySourceTx and registryDocumentSourceAccessTx by default (registry writes, evidence recording,",
+     "canonical-building.ts:198; the unrecorded proposal paths consolidated-register.ts:44, :47 and",
+     "building-ledger.ts:116, :146)"
+    ],
+    "uses": "require current pins",
+    "why": "recording evidence and unrecorded summaries; unchanged"
+   },
+   {
+    "caller": "packets/plan-authority.ts:193 captureDocumentSourceTx",
+    "uses": "require current pins",
+    "why": "not edited; see next"
+   },
+   {
+    "caller": "area-display-proposals.ts:34; external-scene.ts:40, :53; declarations/authority.ts:74, :83",
+    "uses": "require current pins",
+    "why": "not edited; default"
+   },
+   {
+    "caller": [
+     "snapshots.ts: snapshotSourceRowsTx (capture), assertSnapshotDocumentsTx, readSnapshotBody,",
+     "readSnapshotOriginal, asset authorization"
+    ],
+    "uses": "authorize and locate",
+    "why": "captures or reads what is recorded; no document reader runs"
+   },
+   {
+    "caller": "registryRecordedSourceTx (consolidated register, ledger of a recorded building)",
+    "uses": "original-only authority for an original pinned by a geometry-free package, else authorize and locate",
+    "why": "read of a cited source"
+   },
+   {
+    "caller": "assertRecordedPackageTx (consolidated register, dossier, default register)",
+    "uses": "source-building authority for a geometry-free package, else package authority with current pins",
+    "why": "same branch the canonical read already takes; ordinary packages unchanged"
+   }
+  ],
+  "publishedShape": [
+   [
+    "One additive optional field documentResult {current, reasons} on consolidated report sources[] and on snapshot",
+    "manifest members[]. Reasons: case_advanced, reader_changed, policy_changed, source_superseded."
+   ],
+   [
+    "It is present only when a retained document result is no longer current, so the digest of a manifest whose",
+    "document results are all current is the same as before."
+   ],
+   [
+    "The ledger states the same as a note in its existing missing[] list: its published shape is hand-written in",
+    "apps/api, which this task does not own."
+   ]
+  ],
+  "tests": [
+   {
+    "file": "packages/server/src/modules/officer/recorded-building-reads.test.ts",
+    "test": "the register of a recorded building reads the same after the document reader hash changed",
+    "expected": [
+     "200; report identical to the one before; the read source states current:false, reader_changed; the",
+     "never-extracted original states nothing"
+    ],
+    "observed": "pass"
+   },
+   {
+    "file": "packages/server/src/modules/officer/recorded-building-reads.test.ts",
+    "test": "the ledger of a recorded building reads the same after a later import advanced the case revision",
+    "expected": "200; ledger identical apart from one added missing[] note naming case_advanced",
+    "observed": "pass"
+   },
+   {
+    "file": "packages/server/src/modules/officer/recorded-building-reads.test.ts",
+    "test": "an archived case and a changed original still refuse the register and the ledger with their own codes",
+    "expected": "403 DOCUMENT_DENIED and 422 DOCUMENT_SOURCE_INTEGRITY from both reads",
+    "observed": "pass"
+   },
+   {
+    "file": "packages/server/src/modules/registry/registry-recorded-source.test.ts",
+    "test": "a recorded original reads the same after its document reader hash changed, with freshness stated",
+    "expected": "same id, revision and hash; current:false, reader_changed",
+    "observed": "pass"
+   },
+   {
+    "file": "packages/server/src/modules/registry/registry-recorded-source.test.ts",
+    "test": "a recorded original reads the same after a later import advanced its case revision",
+    "expected": "same id, revision and hash; current:false, case_advanced",
+    "observed": "pass"
+   },
+   {
+    "file": "packages/server/src/modules/registry/registry-recorded-source.test.ts",
+    "test": "a recorded original that never had an accepted reading is readable and states no freshness",
+    "expected": "readable; documentResult absent",
+    "observed": "pass"
+   },
+   {
+    "file": "packages/server/src/modules/registry/registry-recorded-source.test.ts",
+    "test": "a new derivation or ordinary recording under changed pins is still refused",
+    "expected": "assertDocumentInputTx 409 STALE_REVISION; registrySourceTx 409 REGISTRY_SOURCE_UNAVAILABLE",
+    "observed": "pass"
+   },
+   {
+    "file": "packages/server/src/modules/registry/registry-recorded-source.test.ts",
+    "test": "a converted source reads under its parent document result; a write still needs current pins",
+    "expected": "registrySourceTx 409 STALE_REVISION; recorded read succeeds with reader_changed",
+    "observed": "pass"
+   },
+   {
+    "file": "packages/server/src/modules/registry/registry-recorded-source.test.ts",
+    "test": "an archived case, a changed original, another site and another operator still refuse the read",
+    "expected": "403 DOCUMENT_DENIED, 422 DOCUMENT_SOURCE_INTEGRITY, 403 SOURCE_BUILDING_DENIED, 403 DOCUMENT_DENIED",
+    "observed": "pass"
+   },
+   {
+    "file": "packages/server/src/modules/usp/snapshot-retained-documents.test.ts",
+    "test": "a snapshot of a cited target succeeds beside a same-site document whose reader moved on, and says so",
+    "expected": [
+     "manifest captured; that member states current:false, reader_changed; its body hash is unchanged; the four",
+     "cited originals state nothing; readManifest returns the same digest"
+    ],
+    "observed": "pass"
+   },
+   {
+    "file": "packages/server/src/modules/usp/snapshot-retained-documents.test.ts",
+    "test": "a write that derives from the same document result still needs current pins",
+    "expected": "captureDocumentSourceTx with default pins: STALE_REVISION",
+    "observed": "pass"
+   },
+   {
+    "file": "packages/server/src/modules/usp/snapshot-retained-documents.test.ts",
+    "test": "an archived case or another operator's document result still refuses the snapshot",
+    "expected": "DOCUMENT_DENIED twice; the capture succeeds again once the case is restored",
+    "observed": "pass"
+   }
+  ],
+  "checks": [
+   {
+    "command": "pnpm typecheck:backend",
+    "exit": 0
+   },
+   {
+    "command": "pnpm studio:typecheck",
+    "exit": 0
+   },
+   {
+    "command": [
+     "tsx --tsconfig apps/api/tsconfig.json --test: the 3 new files, source-stated-identity, building-ledger,",
+     "source-building-admission, register-scope, registry-document-evidence, registry-region-evidence,",
+     "registry-image-region-evidence, registry-survey-reference"
+    ],
+    "exit": 0,
+    "files": 11,
+    "tests": 54,
+    "pass": 54,
+    "fail": 0
+   },
+   {
+    "command": [
+     "tsx --tsconfig apps/api/tsconfig.json --test: 27 further files under tests/ that reach document authority,",
+     "snapshots, packets and cards"
+    ],
+    "exit": 1,
+    "tests": 138,
+    "pass": 129,
+    "skipped": 6,
+    "fail": 3,
+    "note": [
+     "The same 3 fail on unmodified ca82b4f1 (checked with the change stashed): gltf-ingestion, obj-ingestion,",
+     "registry-document-lock-order."
+    ]
+   },
+   {
+    "command": "tsx --tsconfig scripts/agent/tsconfig.json --test scripts/agent/a3d-history.test.ts",
+    "exit": 0,
+    "tests": 3,
+    "pass": 3,
+    "fail": 0
+   },
+   {
+    "command": "tsx scripts/api/refresh-contract.ts staging; pnpm studio:api-types",
+    "exit": 0
+   },
+   {
+    "command": "python scripts/api/check.py",
+    "exit": 1,
+    "note": "Only 'API-DOC: runtime receipt changed', the failure the task allows."
+   },
+   {
+    "command": "git diff --check",
+    "exit": 0
+   }
+  ],
+  "notVerified": [
+   [
+    "Nothing was run against the demo. The fix is proven with in-memory doubles shaped like the live rows; the",
+    "served runtime does not carry this code and this task may only send GET requests."
+   ],
+   "The snapshot of space 46b7265e revision 1 is a POST and was not sent.",
+   [
+    "The dossier and the default (non-consolidated) register take the same package branch but have no route-level",
+    "test and state no freshness."
+   ],
+   "Packet plan, packet PDF and property card were not exercised.",
+   [
+    "The stored reader hash of the accepted jobs is not readable through any GET; reader_changed is the expected",
+    "reason by elimination, not an observed value."
+   ]
+  ],
+  "next": [
+   [
+    "packets/plan-authority.ts:193 still calls captureDocumentSourceTx(client, live, parts) with current pins. A",
+    "packet plan that selects a document original whose reader moved on answers 409 STALE_REVISION, and one that",
+    "selects a never-extracted original answers 409 DOCUMENT_STAGE_UNAVAILABLE. Not edited: the second case is not",
+    "the one-line split."
+   ],
+   [
+    "building-ledger.documentation.ts (apps/api) is hand-written with additionalProperties:false; a documentResult",
+    "field on ledger sources belongs there."
+   ],
+   [
+    "areas.ts assertAreaPackageAuthority and canonical-building.ts:193-197 repeat what assertRecordedPackageTx and",
+    "registryRecordedSourceTx now do; they can call them."
+   ],
+   [
+    "staging moved to d95d7bb8 after this branch was cut at ca82b4f1. docs/api/openapi.json,",
+    "docs/api/source-pins.json and packages/api-client/src/schema.d.ts must be regenerated after the merge."
+   ]
+  ],
+  "confirmAfterRollout": {
+   "base": "http://127.0.0.1:3194/api/v1",
+   "requests": [
+    "GET /buildings/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/register?profile=consolidated&format=json",
+    "GET /buildings/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/register",
+    "GET /buildings/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/ledger",
+    "GET /buildings/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/dossier",
+    "GET /buildings/e8777ffc-9409-4129-bacf-f680160d8795/register?profile=consolidated&format=json",
+    "GET /buildings/e8777ffc-9409-4129-bacf-f680160d8795/register",
+    "GET /buildings/e8777ffc-9409-4129-bacf-f680160d8795/ledger",
+    "GET /buildings/e8777ffc-9409-4129-bacf-f680160d8795/dossier"
+   ],
+   "expect": [
+    "All eight answer 200.",
+    [
+     "Consolidated sources 25a8fbcb and c59d2027 (Tower 3) and 10946c4c (Magnolia) carry documentResult with",
+     "current:false; the reason is expected to be reader_changed."
+    ],
+    "Sources 357b6258 and 5293cd72 (Tower 3) carry no documentResult: they never had an accepted reading.",
+    "Each ledger lists one missing[] note per source that carries documentResult.",
+    [
+     "Then the runtime owner resends the unchanged snapshot request for space 46b7265e revision 1: expect a",
+     "manifest whose source member a6b2fd14-4bd2-43a7-b363-c9633cbb52c3 carries documentResult."
+    ]
+   ]
+  }
+ },
+ "report": {
+  "note": [
+   "This environment refused to create REPORT.md, so the one-screen report is kept here. What was not verified and",
+   "the read-only requests for the runtime owner are in step1.notVerified and step1.confirmAfterRollout."
+  ],
+  "whatWasWrong": [
+   [
+    "Tower 3 (6f95d04e) and Magnolia (e8777ffc) were recorded from geometry-free packages that cite retained",
+    "originals only. The canonical read already authorizes such originals by identity and hash. The register,",
+    "dossier, ledger and snapshot did not: they asked for an accepted document reading whose pins are all still",
+    "current."
+   ],
+   [
+    "Register and dossier, 409 STALE_REVISION: the reader hash stored with each accepted reading no longer matches",
+    "the served code. Named by elimination; the stored hash cannot be read through any GET."
+   ],
+   [
+    "Ledger, 409 REGISTRY_SOURCE_UNAVAILABLE: the cited originals are needs_input or received PDFs, which the",
+    "ordinary recording status list refuses before any pin is compared."
+   ],
+   [
+    "Snapshot, 409 STALE_REVISION: capture closes over every source of the site. The failing source is the GMDA",
+    "boundary original a6b2fd14, which no tower record cites."
+   ],
+   "Behind these, Tower 3 originals 357b6258 and 5293cd72 never had an accepted reading at all.",
+   "The same refusal stops the identity sequence, the packet plan and the property card."
+  ],
+  "whatChanged": [
+   [
+    "The document input check is split: locateDocumentInputTx authorizes, locates and returns freshness;",
+    "assertDocumentInputTx still requires current pins and is unchanged. Every derivation and write keeps it."
+   ],
+   [
+    "Register, dossier and ledger of a recorded building read originals pinned by a geometry-free package under the",
+    "original-only authority, and every other cited source without requiring current pins."
+   ],
+   [
+    "Snapshot capture and snapshot reads no longer require current pins. Closure is unchanged: site-wide, as the",
+    "contract scopes it."
+   ],
+   [
+    "Freshness is stated as documentResult {current:false, reasons} on consolidated report sources and snapshot",
+    "source members, only when not current. The ledger states it as a note in missing[]."
+   ],
+   [
+    "Denied access, an archived case and a changed original still refuse: DOCUMENT_DENIED,",
+    "DOCUMENT_SOURCE_INTEGRITY, SOURCE_BUILDING_DENIED."
+   ],
+   "An unrecorded proposal (revision 0) keeps the ordinary authority with current pins in the register and the ledger."
+  ]
+ }
+}

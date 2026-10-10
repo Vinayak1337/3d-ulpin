@@ -21,6 +21,7 @@ import { getArea, getPackage, currentAreaCheckFingerprint } from "../areas/areas
 import { AppError, conflict, notFound } from "../../infrastructure/errors";
 import { fingerprint } from "../cases/domain";
 import { assertPackageDocumentAuthority } from "../areas/package-authority";
+import { assertRecordedPackageTx } from "../registry/registry-metadata";
 import { publicRegistryBody } from "../registry/registry-document-evidence";
 
 export async function physicalFeature(
@@ -392,7 +393,7 @@ export async function buildingDossier(id: string): Promise<BuildingDossier & {
         `SELECT body FROM import_packages WHERE body->'features' @> $1::jsonb ORDER BY created_at DESC LIMIT 30`,
         [JSON.stringify([{ id }])],
       );
-      for (const row of rows.rows) await assertPackageDocumentAuthority(client, row.body);
+      for (const row of rows.rows) await assertRecordedPackageTx(client, row.body);
       return rows;
     })
   ).rows
