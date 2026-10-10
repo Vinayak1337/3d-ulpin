@@ -29,7 +29,31 @@ function sourceOf(source: PublishedLedger['sources'][number]): Source {
 }
 
 /** A registry entry of the history keeps the id of the record it revises: the building, a floor or a space. */
-type RecordedRevision = Revision & { recordId: string };
+type PublishedRevision = Revision & { publishedActor?: string | null };
+type RecordedRevision = PublishedRevision & { recordId: string };
+type RegistryEntry = PublishedLedger['history']['registry'][number];
+
+const RECORD_KINDS = { parcel: 'Parcel', building: 'Building', floor: 'Floor', space: 'Space' };
+
+/** Optional fields are an older read, whereas null explicitly states that the record holds none. */
+export function registryEntryTitle(entry: RegistryEntry, fallback: string): string {
+  const words: string[] = [];
+  if (entry.recordKind !== undefined) {
+    words.push(entry.recordKind === null ? 'Kind not recorded' : RECORD_KINDS[entry.recordKind]);
+  }
+  if (entry.recordName !== undefined) words.push(entry.recordName ?? 'Name not recorded');
+  if (!words.length) return `${fallback}, revision ${entry.revision}`;
+  return [...words, `revision ${entry.revision}`].join(' · ');
+}
+
+/** The published read's absence is not a statement that the stored actor is null. */
+export function historyActor(revision: Revision): string | null {
+  if ('publishedActor' in revision) {
+    if (revision.publishedActor === undefined) return null;
+    return revision.publishedActor === null ? 'Actor not recorded' : String(revision.publishedActor);
+  }
+  return revision.actor ?? 'Actor not recorded';
+}
 
 /** The id of the registry record a history entry revises; null for an entry that names none. */
 export function revisedRecordId(revision: Revision): string | null {
@@ -44,17 +68,19 @@ function recordWords(published: PublishedLedger, recordId: string): string {
 }
 
 /**
- * The published history carries revision numbers and times only: no actor, no hashes. Its registry entries are
+ * The published history carries optional record words and actors, but no hashes. Its registry entries are
  * one per record and revision, so two records revised at the same time are two entries, each with its record id.
  */
 function revisionsOf(published: PublishedLedger): Revision[] {
   const unsigned = { actor: null, hash: null, previousHash: null };
-  const feature = published.history.feature.map((entry): Revision => ({
-    ...unsigned, kind: 'draft', title: `Source feature, revision ${entry.revision}`, at: entry.recordedAt,
+  const feature = published.history.feature.map((entry): PublishedRevision => ({
+    ...unsigned, publishedActor: undefined, kind: 'draft',
+    title: `Source feature, revision ${entry.revision}`, at: entry.recordedAt,
   }));
   const registry = published.history.registry.map((entry): RecordedRevision => ({
     ...unsigned, kind: 'recorded', at: entry.recordedAt, recordId: entry.recordId,
-    title: `${recordWords(published, entry.recordId)}, revision ${entry.revision}`,
+    actor: entry.actor ?? null, publishedActor: entry.actor,
+    title: registryEntryTitle(entry, recordWords(published, entry.recordId)),
   }));
   return [...feature, ...registry];
 }
