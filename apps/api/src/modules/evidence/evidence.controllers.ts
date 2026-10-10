@@ -1,5 +1,5 @@
 import { Controller, Get, HttpCode, Inject, Param, Post, Req, Res, UseFilters } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { z } from 'zod';
 import type { Request, Response as ExpressResponse } from 'express';
 import { UspReadEvidenceRequestSchema } from '@ulpin/contracts/usp';
@@ -123,6 +123,8 @@ export class DecisionEvidenceController {
   @HttpCode(200)
   @UspJsonPost('POST_api_v1_usp_identity_reviews', 'Record an exact project identity review',
     evidenceSchemas.identityReview.request, evidenceSchemas.identityReview.response)
+  @ApiOperation({ operationId: 'POST_api_v1_usp_identity_reviews', summary: 'Record an exact project identity review',
+    description: 'A source-stated review omits location; other assign reviews require it.' })
   async review(@Req() request: Request) {
     const input = await readUspBody(request, evidenceSchemas.identityReview.request);
     return uspEnvelope(request, input.scope, await this.service.review(requestId(request), input));

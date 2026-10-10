@@ -24,6 +24,7 @@ const refusedReads = ['register?profile=consolidated&format=json', 'register', '
 const cards = '/api/v1/usp/property-cards';
 // The source states no parcel, structure kind, level or use: the review carries the contract's unknown tokens.
 const unknownLocation = { anchorState: 'not_supplied', parcels: [],
+  // From K11 on a source-stated review omits location; these constants record the past R3 run.
   locator: { structureKind: '?', structureNumber: 1, levels: ['L?'], spaceKind: '?', spaceNumber: 1 } };
 
 /** The eight reads K6 names: status, the sources that state documentResult, and the ledger's missing notes. */
