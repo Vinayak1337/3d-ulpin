@@ -22,7 +22,7 @@ REPO = Path(__file__).resolve().parents[4]
 CALIBRATION_FAMILY = "mi-d03"
 N_FEATURES = 32768
 SEED = 17
-DEFAULT_CALIBRATION_MODE = "single_family"
+DEFAULT_CALIBRATION_MODE = "cross_fit"
 DEFAULT_CLASS_BALANCE = False
 Row = dict[str, Any]
 
