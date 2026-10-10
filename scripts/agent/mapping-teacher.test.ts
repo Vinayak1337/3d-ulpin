@@ -285,23 +285,28 @@ test('groups: one fitting request is unchanged; the fewest equal groups keep col
 async function askGroups(duplicate: boolean, failSecond = false) {
   const profile = madeUpProfile(90);
   let calls = 0;
+  let lastCompleted = 0;
+  const gaps: number[] = [];
   const ledger = new ControlLedger();
   const adapter = new ControlAdapter(async request => {
     calls++;
+    if (lastCompleted) gaps.push(Date.now() - lastCompleted);
     if (calls === 2 && failSecond) throw classifyProviderFailure(429, 'rate_limit_exceeded_error', null);
     const response = unknownResponse(request);
     const fields = (response.output as { fields: Record<string, unknown>[] }).fields;
     fields[0] = { ...fields[0], target: calls === 1 || duplicate ? 'building.name' : 'building.addressLiteral',
       confidence: 'high', rationale: 'Software interpretation for merge verification.' };
+    lastCompleted = Date.now();
     return response;
   });
   const result = await proposeMappingWithTeacher(profile, options(new ModelGateway(controlConfig(), ledger, adapter)));
-  return { result, calls, profile };
+  return { result, calls, profile, gaps };
 }
 
 test('merge: disjoint targets survive, but a target claimed by both groups belongs to neither', async () => {
   const disjoint = await askGroups(false);
   assert.equal(disjoint.calls, 2);
+  assert(disjoint.gaps.every(gap => gap >= controlConfig().paceMs));
   assert.deepEqual(disjoint.result.plan.fields.filter(field => field.target !== 'unknown')
     .map(field => field.target), ['building.name', 'building.addressLiteral']);
   const duplicated = await askGroups(true);

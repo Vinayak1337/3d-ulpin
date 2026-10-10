@@ -431,7 +431,7 @@
     "packages/server/src/modules/usp/ingestion/mapping-memory.ts": "7f347d32df89315643742164572277a736a4847d8300779a601933596c17e2db",
     "packages/server/src/modules/usp/ingestion/mapping-plan-v2.ts": "87399bd9cc2b56d41a9a562cc42755e5cdebd96ed9bbc52303e892f2ec18a1c1",
     "packages/server/src/modules/usp/ingestion/mapping-teacher-prompt.ts": "97f28597d10916707d9abf115cc59e723510ea7a113a2e6b6ac8ce6dce817507",
-    "packages/server/src/modules/usp/ingestion/mapping-teacher.ts": "17abe72ae478cb3f60a4b3c06bb687ac35f3d92a700af04767c14e692219f100",
+    "packages/server/src/modules/usp/ingestion/mapping-teacher.ts": "263b82c700cec0e4da16999d0c1329c32fec58410040991b289b1c5d2bd92e9e",
     "packages/server/src/modules/usp/ingestion/migration.ts": "49afdef4735b617ba193dcbcb3d78f7bd1866455526bc8ddeee4c31b2580f529",
     "packages/server/src/modules/usp/ingestion/obj-config.ts": "968b2be136a1ec0b356c6a43a1225c910b87e9f1e637c0fe91231e094aa5ced3",
     "packages/server/src/modules/usp/ingestion/obj-processor.ts": "d1d7e68f15d1c9a67efb676915ec839aa3aab5e304728d9dddd3be7711c8eaf2",
