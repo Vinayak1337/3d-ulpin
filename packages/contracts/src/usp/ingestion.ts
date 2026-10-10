@@ -84,6 +84,7 @@ export const TabularSelectionSchema = z.strictObject({
 export const TabularPinSchema = z.strictObject({
   selection: TabularSelectionSchema, sourceBytes: z.number().int().positive().max(TABULAR_LIMITS.bytes),
   developmentAssetId: z.string().min(1).max(150), developmentFamily: z.string().regex(/^mi-d\d+$/),
+  derivativeOf: z.strictObject({ originalSha256: hash, version: z.literal('json-table-csv/1') }).optional(),
 });
 export const TabularSourceProfileSchema = z.strictObject({
   version: z.literal('manual-tabular/1'), source: SourcePinSchema, tabular: TabularPinSchema,

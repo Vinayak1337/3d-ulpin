@@ -3,7 +3,8 @@ import { CHUNK_MAPPING_LIMITS, CaseIngestionChangeSchema, type CaseIngestionChan
 import type { ColumnProfileDocument, MappingPlanV2 } from '@ulpin/contracts';
 import { AppError } from '../../../infrastructure/errors';
 import { profileColumns } from './column-profile';
-import { validateMappingPlanV2 } from './mapping-plan-v2';
+import { layoutFingerprint, tabularLayoutFingerprint, validateMappingPlanV2 } from './mapping-plan-v2';
+import { lookupMappingMemory } from './mapping-memory';
 import {
   columnProfileHash, executeTeacherMappingDryRun, manualTeacherPlan, mappingContextFromColumnProfile, proposeMapping,
   learnerVersion, type MappingRoutingResult,
@@ -20,6 +21,7 @@ export type TabularChunkInput = {
   rows: readonly (readonly unknown[])[];
   sourceRef: string;
   rowOffset?: number;
+  selection?: { sheet: string; headerRows: readonly number[] };
 };
 export type TabularChunkDraft = {
   profile: ColumnProfileDocument;
@@ -42,7 +44,9 @@ export function profileTabularChunk(input: TabularChunkInput) {
   // Positional prefixes retain duplicate/blank literal headers without collapsing their identities.
   const fields = input.headers.map((header, index) => ({ name: `${index + 1}|${header}`, literalHeader: header }));
   const rows = input.rows.map(row => Object.fromEntries(fields.map((field, index) => [field.name, row[index]])));
-  const profile = profileColumns(rows, fields, 'tabular');
+  const observed = profileColumns(rows, fields, 'tabular');
+  const profile = input.selection ? { ...observed,
+    layoutFingerprint: tabularLayoutFingerprint(observed.columns, input.selection) } : observed;
   const learnerColumns = input.headers.map((header, index) => ({
     profileId: `${columnProfileHash(profile)}/${index + 1}`, header,
     neighbourHeaders: input.headers.slice(Math.max(0, index - 2), index)
@@ -54,7 +58,9 @@ export function profileTabularChunk(input: TabularChunkInput) {
   return { profile, rows, learnerColumns };
 }
 
-export function mappingQuestions(proposal: MappingRoutingResult, input: TabularChunkInput): MappingQuestion[] {
+export function mappingQuestions(
+  proposal: MappingRoutingResult, input: Pick<TabularChunkInput, 'headers'>,
+): MappingQuestion[] {
   const reasons = new Map(proposal.issues.map(issue => [issue.sourceField, issue.code]));
   return proposal.plan.fields.flatMap(field => {
     const reason = reasons.get(field.sourceField);
@@ -69,8 +75,10 @@ export function mappingQuestions(proposal: MappingRoutingResult, input: TabularC
   });
 }
 
-function reuseProposal(prior: MappingRoutingResult, profile: ColumnProfileDocument): MappingRoutingResult {
-  const checked = validateMappingPlanV2(prior.plan, mappingContextFromColumnProfile(profile));
+function reuseProposal(
+  prior: MappingRoutingResult, profile: ColumnProfileDocument, selection?: TabularChunkInput['selection'],
+): MappingRoutingResult {
+  const checked = validateMappingPlanV2(prior.plan, mappingContextFromColumnProfile(profile, selection));
   if (!checked.success) {
     return { ...manualTeacherPlan(profile, 'MAPPING_CACHED_PLAN_STALE'),
       activeLearnerVersion: prior.activeLearnerVersion, memoryReasonCode: checked.errors[0].code,
@@ -114,9 +122,11 @@ function verifiedProposal(proposal: MappingRoutingResult, dryRun: TabularChunkDr
 
 function officerProposal(
   plan: MappingPlanV2, profile: ColumnProfileDocument, modelPath?: string,
+  selection?: TabularChunkInput['selection'],
 ): MappingRoutingResult {
-  const checked = validateMappingPlanV2({ ...plan, layoutFingerprint: profile.layoutFingerprint },
-    mappingContextFromColumnProfile(profile));
+  const checked = validateMappingPlanV2({ ...plan, layoutFingerprint: profile.layoutFingerprint,
+    ...(selection ? { layoutFingerprintVersion: 'tabular-header/2' as const } : {}) },
+    mappingContextFromColumnProfile(profile, selection));
   if (!checked.success) {
     throw new AppError(422, 'MAPPING_APPROVED_PLAN_INVALID', 'The approved plan failed chunk revalidation.');
   }
@@ -127,9 +137,22 @@ function officerProposal(
     })) };
 }
 
+function acceptedMemoryProposal(
+  memory: ReturnType<typeof lookupMappingMemory>, profile: ColumnProfileDocument, modelPath?: string,
+): MappingRoutingResult {
+  const base = manualTeacherPlan(profile, 'MAPPING_REVIEW_REQUIRED');
+  const officer = memory.lineage?.source === 'officer';
+  return { ...base, plan: memory.plan!, ...(officer ? { issues: [], state: 'candidate' as const } : {}),
+    activeLearnerVersion: learnerVersion(modelPath), memoryMatched: true,
+    memoryReasonCode: null, studentReasonCode: null,
+    fieldSources: profile.columns.map(column => ({ sourceField: column.name,
+      source: officer ? 'officer' : 'memory', method: memory.plan!.method })) };
+}
+
 /** Job-local validated proposal reuse does not create shared accepted memory or learning examples. */
 export class TabularChunkMapper {
   private readonly layouts = new Map<string, MappingRoutingResult>();
+  private readonly asked = new Map<string, number>();
 
   async map(input: TabularChunkInput, options: RoutingOptions): Promise<TabularChunkDraft> {
     const started = performance.now();
@@ -137,31 +160,55 @@ export class TabularChunkMapper {
     const prepared = profileTabularChunk(input);
     const layoutKey = `${prepared.profile.layoutFingerprint}/${options.learnerModelPath ?? 'none'}`;
     const prior = options.dataPolicy.split === 'held_out' ? undefined : this.layouts.get(layoutKey);
-    const cached = prior && !options.approvedPlan ? reuseProposal(prior, prepared.profile) : null;
+    const cached = prior && !options.approvedPlan ? reuseProposal(prior, prepared.profile, input.selection) : null;
     const proposal = options.approvedPlan
-      ? officerProposal(options.approvedPlan, prepared.profile, options.learnerModelPath)
-      : cached ?? await this.routeLayout(prepared, options);
-    const checked = validateMappingPlanV2(proposal.plan, mappingContextFromColumnProfile(prepared.profile));
+      ? officerProposal(options.approvedPlan, prepared.profile, options.learnerModelPath, input.selection)
+      : cached ?? await this.routeLayout(prepared, options, input.selection);
+    const context = mappingContextFromColumnProfile(prepared.profile, input.selection);
+    const checked = validateMappingPlanV2(proposal.plan, context);
     if (!checked.success) throw new AppError(422, 'MAPPING_PLAN_INVALID', 'The routed plan failed verification.');
     const dryRun = executeTeacherMappingDryRun(proposal, prepared.rows, {
-      ...mappingContextFromColumnProfile(prepared.profile), sourceRef: input.sourceRef, rowOffset: input.rowOffset,
+      ...context, sourceRef: input.sourceRef, rowOffset: input.rowOffset,
     });
     const verified = verifiedProposal(proposal, dryRun);
     if (options.dataPolicy.split !== 'held_out' && this.layouts.size < MAX_JOB_LAYOUTS) {
       this.layouts.set(layoutKey, verified);
     }
     const questions = mappingQuestions(verified, input);
-    return { profile: prepared.profile, proposal: verified, dryRun, questions,
+    const draft = { profile: prepared.profile, proposal: verified, dryRun, questions,
       metrics: chunkMetrics(input, verified, questions, Boolean(cached),
         Math.round((performance.now() - started) * 100) / 100) };
+    this.deduplicateQuestions(draft);
+    return draft;
   }
 
-  private async routeLayout(prepared: ReturnType<typeof profileTabularChunk>, options: RoutingOptions) {
+  /** Permit final native-cell annotation on the same chunk without asking again on a later chunk. */
+  deduplicateQuestions(draft: TabularChunkDraft) {
+    draft.questions = draft.questions.filter(question => {
+      const key = `${draft.profile.layoutFingerprint}/${question.sourceField}/${question.reason}`;
+      const firstChunk = this.asked.get(key);
+      if (firstChunk !== undefined) return firstChunk === draft.metrics.chunkIndex;
+      if (this.asked.size < MAX_JOB_LAYOUTS * 256) this.asked.set(key, draft.metrics.chunkIndex);
+      return true;
+    });
+  }
+
+  private async routeLayout(
+    prepared: ReturnType<typeof profileTabularChunk>, options: RoutingOptions,
+    selection?: TabularChunkInput['selection'],
+  ) {
+    const context = mappingContextFromColumnProfile(prepared.profile, selection);
+    const memory = selection && options.dataPolicy.split !== 'held_out'
+      ? lookupMappingMemory(prepared.profile.layoutFingerprint, context, options.memoryPath) : null;
+    if (memory?.plan) return acceptedMemoryProposal(memory, prepared.profile, options.learnerModelPath);
     const routing = { ...options, learnerColumns: prepared.learnerColumns };
     if (this.layouts.size >= MAX_JOB_LAYOUTS) {
       // The layout cap limits teacher dispatch, not already accepted memory or local student inference.
       routing.teacher = async profile => manualTeacherPlan(profile, 'MAPPING_LAYOUT_CAP');
     }
-    return proposeMapping(prepared.profile, routing);
+    const observed = { ...prepared.profile, layoutFingerprint: layoutFingerprint(prepared.profile.columns) };
+    const proposed = await proposeMapping(observed, routing);
+    return { ...proposed, plan: { ...proposed.plan, layoutFingerprint: prepared.profile.layoutFingerprint,
+      ...(selection ? { layoutFingerprintVersion: 'tabular-header/2' as const } : {}) } };
   }
 }
