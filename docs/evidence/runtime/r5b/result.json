@@ -97,5 +97,109 @@
       "exactly. Only if both hold is the same code pointed at UNIT-3A, and its result is a candidate for an",
       "officer, not a fact."
     ]
+  },
+  "control": {
+    "interpreter": "E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe, PyMuPDF 1.25.5",
+    "command": "python -B scripts/agent/r5b-unit-region.py control", "exit": 0, "matches": true,
+    "unit": "PDF points, frame pdf_display_page_top_left_points, [x0, y0, x1, y1]",
+    "recordedPt": [596, 390, 644, 409], "reproducedPt": [596, 390, 644, 409], "differencePt": [0, 0, 0, 0],
+    "labelBoxPt": [601, 395, 638, 404.75], "marginsPt": [5, 5, 6, 4.25], "strayMarksPt": null, "cropSameAsK4c": true,
+    "cropSha256": "3c9e7914f428fa0ea160874814498584ffc410cfb4642cbe6a1aba1049eb9923",
+    "rule": ["Render a window of 96 x 48 pt around a point inside the label at 4 times. A pixel is ink when its",
+      "grey level is below 128. The label box is the one group of touching ink pixels whose box holds the",
+      "point and holds another group (the frame around the characters). The region is that box widened by",
+      "the four K4c margins. Outside the label box and a soft edge of 0.5 pt the region must hold nothing",
+      "darker than grey 224. The crop of the recorded region must have the K4c crop's SHA-256."],
+    "whatItProves": [
+      "The 4 times render, the meaning of \"ink\" and the four margins are K4c's: the label box is found from",
+      "the sheet without using the recorded numbers, and adding the margins K4c reported gives the recorded",
+      "numbers with no difference. It does not prove that a rule produced the recorded region; step0 says",
+      "none did."
+    ],
+    "inkLevel": [
+      "K4c did not record the grey level it called ink. Levels 108, 128 and 144 all reproduce the recorded",
+      "region (exit 0 with --ink-below); 160 gives [595.75, 390, 644.25, 409] (exit 1). A scratch loop over",
+      "the committed functions in steps of 4 found 108 to 144 reproduce and nothing outside does. UNIT-3B",
+      "alone cannot say which level in that range is the right one."
+    ],
+    "seed": ["[619, 399], read off the K4b wide crop. Six other points inside the frame gave the same label box in",
+      "a scratch loop; a point on the unboxed room name below ([619, 418]) is refused (in the test)."]
+  },
+  "unit3a": {
+    "state": "no_candidate", "regionPt": null,
+    "command": "python -B scripts/agent/r5b-unit-region.py measure UNIT-3A", "exit": 1,
+    "reason": "LABEL_FRAME_IS_NOT_ONE_INK_GROUP",
+    "answer": ["No box is given. The same code that reproduces UNIT-3B refuses UNIT-3A, because this label is not",
+      "drawn on the sheet the way UNIT-3B is. Three choices are needed that UNIT-3B never needed; they are",
+      "for the lead or an officer, and each is listed below with the numbers measured."],
+    "literal": [
+      "Read by eye from the saved crop as UNIT-3A, in a drawn box. An unreviewed reading; K4a read the same",
+      "(docs/evidence/gf1/k4a/readiness.md:46). There is no text layer to compare with and no OCR was run."
+    ],
+    "source": {
+      "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429", "revision": 1,
+      "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865", "page": 1,
+      "frame": "pdf_display_page_top_left_points", "pageBoxPt": [0, 0, 2586, 1695]
+    },
+    "seedPt": [1105, 405],
+    "measured": [
+      {"inkBelow": 108, "exit": 1, "inkGroupsPt": [], "reason": "NO_LABEL_FRAME_AT_SEED"},
+      {"inkBelow": 128, "exit": 1,
+        "inkGroupsPt": [[1082.5, 400.75, 1111.75, 410.75], [1091.75, 401, 1119.75, 410.5]],
+        "reason": "LABEL_FRAME_IS_NOT_ONE_INK_GROUP",
+        "ifTheGroupsAreOneLabel": {
+          "inkBoxPt": [1082.5, 400.75, 1119.75, 410.75], "regionPt": [1077.5, 395.75, 1125.75, 415],
+          "strayMarksPt": [1113.5, 414.75, 1114, 415]
+        }},
+      {"inkBelow": 144, "exit": 1, "inkGroupsPt": [[1082.25, 400.75, 1119.75, 410.75]],
+        "reason": "OTHER_INK_IN_REGION", "labelBoxPt": [1082.25, 400.75, 1119.75, 410.75],
+        "regionWithK4cMarginsPt": [1077.25, 395.75, 1125.75, 415], "strayMarksPt": [1113.5, 414.75, 1114, 415]}
+    ],
+    "whatUnit3BDidNotNeed": [
+      {"id": "D1", "choice": "Is the frame one thing?",
+        "measured": [
+          "At grey level 128 the UNIT-3B frame is one group of touching pixels. The UNIT-3A frame is two groups",
+          "that overlap ([1082.5, 400.75, 1111.75, 410.75] and [1091.75, 401, 1119.75, 410.5]): its line is",
+          "fainter and breaks once on the top edge and once on the bottom edge. At 108 it falls into pieces and",
+          "no group holds the point; at 144 it is one group."
+        ]},
+      {"id": "D2", "choice": "Which grey level is ink?",
+        "measured": [
+          "Every level from 108 to 144 gives the same UNIT-3B box, so UNIT-3B cannot choose. For UNIT-3A the",
+          "left edge of the label box is 1082.5 at 128 and 1082.25 at 144; the other three edges agree (400.75,",
+          "1119.75, 410.75)."
+        ]},
+      {"id": "D3", "choice": "How much paper below the label?",
+        "measured": [
+          "K4c's bottom margin is 4.25 pt. Below UNIT-3A the paper is clear for 4.0 pt only: the label box ends",
+          "at 410.75 and the first mark of the room name DRAWING ROOM begins at 414.75 (strayMarksPt [1113.5,",
+          "414.75, 1114, 415]). With K4c's margin the crop would show that mark, so it fails K4c's own test",
+          "that nothing else is in the crop. Below UNIT-3B the same margin is clear."
+        ]}
+    ],
+    "labelSize": [
+      "UNIT-3A's box is 37.25 pt wide at level 128 (37.5 at 144) and 10 pt high; UNIT-3B's is 37 by 9.75.",
+      "Both are the same kind of boxed label."
+    ],
+    "pictures": [
+      {"path": "E:/BhuAayam-data/task-data/r5b/unit-3a-ink128-label.png",
+        "sha256": "a2b450f14e28160f493a70576fc622d2ec94542cfa3db62201e32a9c3fd9f99d", "pixels": [193, 77],
+        "shows": "the region as a renderer would crop it"},
+      {"path": "E:/BhuAayam-data/task-data/r5b/unit-3a-ink128-outlined.png",
+        "sha256": "9f1eb5fb4f2e2ae28da3ce5898d9929b13a656c68865a10fba5a56ea0d1eb8d2", "pixels": [913, 557],
+        "shows": "surroundings, region outlined; not original"},
+      {"path": "E:/BhuAayam-data/task-data/r5b/unit-3a-ink144-label.png",
+        "sha256": "f3ea0d5605d8c6aa6286c3a1b1a0f9594a444fac06a6277fcae0a30a43e2858d", "pixels": [194, 77],
+        "shows": "the region as a renderer would crop it"},
+      {"path": "E:/BhuAayam-data/task-data/r5b/unit-3a-ink144-outlined.png",
+        "sha256": "343f1b34300e6c99fbd24bc303e2c7546c4cad4a8f52c18490e9a47104c236c5", "pixels": [914, 557],
+        "shows": "surroundings, region outlined; not original"}
+    ],
+    "picturesNote": [
+      "Private, for the lead to look at, not in Git. The outlined pictures show the region that the K4c",
+      "margins would give under each reading; it is not a candidate. New files only: the script keeps an",
+      "existing picture and stops if its bytes differ."
+    ],
+    "nothingSent": "No request was sent for UNIT-3A. Nothing was recorded."
   }
 }
