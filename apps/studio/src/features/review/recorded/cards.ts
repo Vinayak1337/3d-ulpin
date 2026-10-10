@@ -61,6 +61,11 @@ export function cardRows(cards: readonly ListedCard[]): CardRow[] {
   return cards.map(cardRow);
 }
 
+/** True when the rows belong to more than one card, so that a revision number alone does not name a row. */
+export function severalCards(rows: readonly CardRow[]): boolean {
+  return new Set(rows.map((row) => row.cardId)).size > 1;
+}
+
 /** How many snapshots the cards were read under, and when the newest that lists one was created. */
 export function snapshotText(cards: UnitCards, createdAt: string): string {
   const read = cards.snapshots - cards.unread;
