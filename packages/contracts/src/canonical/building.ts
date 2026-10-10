@@ -312,7 +312,6 @@ export const RoomStatedSizeSchema = z.strictObject({
   literal: z.string().max(200).regex(/\S/),
   citation: BuildingCitationSchema,
 });
-export type RoomStatedSize = z.infer<typeof RoomStatedSizeSchema>;
 
 export const BuildingCandidateRefSchema = z.strictObject({
   candidateId: id,
