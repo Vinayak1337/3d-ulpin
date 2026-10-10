@@ -125,6 +125,9 @@ export const ROUTES: RouteEntry[] = [
   { method: 'GET', path: '/api/v1/sources/:sourceId/file', mode: 'live' },
   { method: 'GET', path: '/api/v1/spatial-ml/batches/:batchId', mode: 'live' },
   { method: 'GET', path: '/api/v1/spatial-ml/items/:itemId', mode: 'live' },
+  { method: 'POST', path: '/api/v1/spatial-ml/items/:itemId/footprint-drafts', mode: 'live' },
+  { method: 'POST', path: '/api/v1/buildings/:buildingId/candidates', mode: 'live' },
+  { method: 'POST', path: '/api/v1/import-packages/:packageId/review', mode: 'live' },
 ];
 
 export const localRoutes = () => ROUTES.filter((route) => route.mode === 'local');

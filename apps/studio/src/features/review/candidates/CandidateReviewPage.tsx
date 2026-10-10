@@ -1,11 +1,14 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { WarningCircle } from '@phosphor-icons/react';
 import { EmptyState, Skeleton } from '@ulpin/ui';
 import { useAreaCanonical, useAreaContext, useBuildingCanonical } from '../../../api/queries';
+import { levelChoices, type StagedDecision } from './decisions';
 import { candidateCards } from './model';
 import { PlanLocalPanel } from './PlanLocalPanel';
+import { RoofprintDecisions } from './RoofprintDecisions';
 import { RoofprintMap } from './RoofprintMap';
+import { RoomDecisions } from './RoomDecisions';
 import { ReviewShell } from './ReviewShell';
 import styles from './CandidateReview.module.css';
 
@@ -41,6 +44,7 @@ export function AreaCandidatesPage() {
   const canonical = useAreaCanonical(areaId);
   const context = useAreaContext(areaId);
   const [selectedId, select] = useSelectedCandidate();
+  const [staged, setStaged] = useState<StagedDecision[]>([]);
   const candidates = canonical.data?.candidates;
   const { cards, withoutGeometry } = useMemo(() => candidateCards(candidates, 'roofprint'), [candidates]);
   if (canonical.isPending) return <Loading />;
@@ -48,12 +52,21 @@ export function AreaCandidatesPage() {
     return <Unavailable message={canonical.error?.message ?? 'The area was not found.'} />;
   }
 
+  const titleOf = (id: string) => cards.find((card) => card.id === id)?.title ?? id;
+  const stage = (decision: StagedDecision) => {
+    setStaged((all) => [...all.filter((d) => d.candidateId !== decision.candidateId), decision]);
+  };
+  const unstage = (id: string) => setStaged((all) => all.filter((d) => d.candidateId !== id));
+
   return (
     <ReviewShell heading="Roofprint candidates" scope={context.data?.area.name ?? ''} cards={cards}
       withoutGeometry={withoutGeometry} backTo={{ to: `/studio/areas/${areaId}`, label: 'Open map' }}
       selectedId={selectedId} onSelect={select}
       canvas={<RoofprintMap cards={cards} selectedId={selectedId} onSelect={select} />}
-      decisions={() => null} />
+      decisions={(card, notify) => (
+        <RoofprintDecisions card={card} staged={staged} areaRevision={context.data?.area.revision} titleOf={titleOf}
+          onStage={stage} onUnstage={unstage} onRecorded={(message) => { setStaged([]); notify(message); }} />
+      )} />
   );
 }
 
@@ -67,12 +80,16 @@ export function BuildingCandidatesPage() {
   if (canonical.isPending) return <Loading />;
   if (!canonical.data) return <Unavailable message={canonical.error?.message ?? 'The building was not found.'} />;
   const building = canonical.data;
+  const choices = levelChoices(building.levels);
 
   return (
     <ReviewShell heading="Room candidates" scope={building.name.value ?? 'Name unknown'} cards={cards}
       withoutGeometry={withoutGeometry} backTo={{ to: `/studio/areas/${building.areaId}`, label: 'Open area map' }}
       selectedId={selectedId} onSelect={select}
       canvas={<PlanLocalPanel cards={cards} selectedId={selectedId} onSelect={select} />}
-      decisions={() => null} />
+      decisions={(card, notify) => (
+        <RoomDecisions buildingId={building.buildingId} canonicalRevision={building.revisionId} card={card}
+          choices={choices} onRecorded={notify} />
+      )} />
   );
 }
