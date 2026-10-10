@@ -32,6 +32,7 @@
     "platform:start": "bash scripts/platform-start.sh",
     "platform:health": "bash scripts/platform-health.sh",
     "platform:doctor": "node scripts/platform/doctor",
+    "journey:check": "tsx --tsconfig scripts/agent/tsconfig.json scripts/golden-journey/run.ts --profile demo",
     "platform:stop": "bash scripts/platform-stop.sh",
     "db:migrate": "tsx scripts/migrate.ts",
     "typecheck": "pnpm typecheck:backend",
