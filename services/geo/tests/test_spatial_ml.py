@@ -185,6 +185,26 @@ def test_model_readiness_refuses_missing_or_changed_artifacts(tmp_path, monkeypa
     assert error.value.code == "MODEL_MISMATCH"
 
 
+def test_registered_inactive_candidate_is_not_ready_or_allowed_to_read_sources(monkeypatch: pytest.MonkeyPatch) -> None:
+    model = next(row for row in ml._manifest()["models"] if row["id"] == "rfdetr-ramp-ka-seg-medium-b3-v1")
+    assert model["state"] == "candidate" and model["active"] is False and model["use"] == "test_only"
+    monkeypatch.setattr(ml, "_manifest", lambda: {"models": [model]})
+    monkeypatch.setattr(ml, "_runtime_dependency_error", lambda: None)
+
+    def forbidden_access(*args: object, **kwargs: object) -> None:
+        raise AssertionError("Inactive registration must not read sources or installed weights")
+
+    monkeypatch.setattr(ml, "_model_dir", forbidden_access)
+    monkeypatch.setattr(ml, "_read_source", forbidden_access)
+    readiness = ml.spatial_ml_readiness()
+    assert readiness["available"] is False
+    assert readiness["models"][0]["ready"] is False
+    assert "inactive" in readiness["models"][0]["reason"]
+    with pytest.raises(ml.SpatialInferenceError) as error:
+        ml.infer_spatial({**request(), "task": "building"})
+    assert error.value.code == "MODEL_NOT_ACTIVE"
+
+
 def test_missing_native_library_blocks_readiness_and_inference_before_storage(monkeypatch):
     def broken_native_import(name):
         if name == "rasterio":

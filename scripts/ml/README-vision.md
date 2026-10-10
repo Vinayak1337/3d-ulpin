@@ -173,3 +173,33 @@ unchanged epoch4 has the new transfer claim. Epochs5–7 have DEV receipts only;
 B3 epoch4 alone retains its original Karnataka result.
 Check `b4/result.json` and `b4/HANDOFF.md` for final task evidence. The process is
 dead; no training or evaluation is pending. No unchanged relaunch after spent patience.
+
+## B5 instance parity and inactive candidate registration
+
+`parity-protocol-v2.json` was committed before `check_building_instances.py`
+compared the same 20 fixed DEV chips on the unchanged epoch4 opset17 graph.
+It Hungarian-matches final production polygons after thresholding/painting,
+independent of query order. All 20 pass: equal counts, minimum mask IoU .999345,
+max served-score delta .000092 and zero pixel-box-corner movement. No unmatched
+threshold-band exceptions. The original raw element-wise v1 stays **failed**.
+This is a different measurement, not relaxed raw-tensor tolerances, and covers
+single-chip output equivalence only, not large-image seams or model accuracy.
+
+The existing `services/geo/ml-models.json` now contains the new
+`rfdetr-ramp-ka-seg-medium-b3-v1` entry in `candidate`, `active=false`, `test_only`
+state. The original two entries are unchanged. `_verified_path` denies an inactive
+entry before weights/source access, so installation cannot silently activate it.
+The model card keeps exact DEV, Karnataka HOLDOUT and cross-geography transfer
+claims, uncalibrated confidence, CC-BY-NC-4.0 training data and below-target recall.
+No model was installed or invoked on demo imagery; activation is a lead decision.
+
+`diagnose_building_recall.py` used existing epoch4 DEV count journals for 580
+unambiguous chips. They contain no feature identities or prediction masks, so
+854 partially matched chips needed one DEV-only attribution replay. Every TP and
+prediction count matched the historical receipt. Publisher polygon areas use
+original declared TIFF geometry and geodesic WGS84 m²; occlusion stays unknown.
+The 13,156 feature attribution journal is external; compact bins and one unstarted
+mask-Dice-weight proposal are in `b5-recall-diagnosis-20261010/`.
+
+`b5/HANDOFF.md` and `b5/result.json` are the final review entry point. Neither
+Karnataka HOLDOUT nor Coxs Bazar transfer was reopened; no training was started.
