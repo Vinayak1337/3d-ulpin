@@ -9,6 +9,7 @@ import { ColumnProfileDocumentSchema, type ColumnProfileDocument } from '../../p
 import { assertTeacherOutputOutsideGit } from '../../packages/server/src/modules/model-gateway/recordings';
 import {
   developmentManifest, preparationAssets, sourceTables, digest, stableHash, T1_ROOT, D8_MANIFEST, POOL_MANIFEST,
+  developmentProfileAssets, T1B_ROOT, T1B_FAMILIES, D1C_DERIVATIVES,
   type SourceAsset, type SourceTable,
 } from './t1-sources';
 
@@ -168,6 +169,52 @@ function runPreparation(output: string, scanOnly = false) {
   return { summary, boundary };
 }
 
+function developmentFamilyCounts(inventory: TableInventory[], profiles: PreparedColumn[]) {
+  return T1B_FAMILIES.map(family => {
+    const tables = inventory.filter(table => table.asset.family === family);
+    const columns = profiles.filter(profile => profile.family === family);
+    const layouts = tables.map(table => stableHash(columns.filter(column =>
+      column.file === table.asset.id && column.sheet === table.sheet).map(column => column.header)));
+    return {
+      family, files: new Set(tables.map(table => table.asset.id)).size, tables: tables.length,
+      columns: columns.length, distinctLayouts: new Set(layouts).size,
+      declaredUnitColumns: columns.filter(column => column.declaredUnit !== null).length,
+      tableLayouts: tables.map((table, index) => ({
+        file: table.asset.id, sheet: table.sheet, headerLayoutFingerprint: layouts[index],
+        profileLayoutFingerprint: table.profile.layoutFingerprint,
+      })),
+    };
+  });
+}
+
+export function runDevelopmentPreparation(output = T1B_ROOT) {
+  assert.equal(resolve(output), resolve(T1B_ROOT), 'T1B_OUTPUT_DIRECTORY_DENIED');
+  const assets = developmentProfileAssets();
+  const prepared = assets.flatMap(asset => sourceTables(asset).map(table => prepareTable(asset, table)));
+  const profiles = prepared.flatMap(table => table.profiles);
+  const inventory = prepared.map(table => table.inventory);
+  const boundary = checkBoundary(profiles);
+  assert(profiles.every(profile => profile.split === 'dev' && T1B_FAMILIES.includes(profile.family)));
+  assert.equal(new Set(profiles.map(profile => profile.file)).size, assets.length, 'T1B_ASSET_UNPROFILED');
+  const summary = {
+    task: 'T1b-prep', families: T1B_FAMILIES.length, files: assets.length, tables: inventory.length,
+    columns: profiles.length, perFamily: developmentFamilyCounts(inventory, profiles), boundary,
+    manifestSha256: digest(D8_MANIFEST), derivativeIndexSha256: digest(D1C_DERIVATIVES),
+    sources: assets.map(asset => ({
+      file: asset.id, family: asset.family, split: asset.split, source: asset.original,
+      ...(asset.derivedFrom ? { derivedFrom: asset.derivedFrom } : {}),
+    })),
+    policy: 'Derivative profile rows name the CSV derivative; derivedFrom retains the native original and locator.',
+    layoutPolicy: 'Distinct layouts hash ordered literal headers; profile fingerprints also include inferred types.',
+    compoundCellPolicy: 'Recorded JSONL prefix verifies native compound types; T1 masks restored objects as [object].',
+    publisherMeanings: 0, heldOutFileOpened: false, teacherCalls: 0, labelsProduced: 0,
+  };
+  saveNew(join(output, 'profiles/profiles.jsonl'), profiles, true);
+  saveNew(join(output, 'profiles/summary.json'), summary);
+  saveNew(join(output, 'verifier/inventory.json'), inventory);
+  return summary;
+}
+
 function writeEvidence(output: string, result: ReturnType<typeof runPreparation>) {
   const evidence = {
     task: 'T1-prep', gate: 'GF-AGENT',
@@ -188,6 +235,10 @@ function writeEvidence(output: string, result: ReturnType<typeof runPreparation>
 }
 
 function main(args: string[]) {
+  if (args[0] === '--t1b') {
+    console.log(JSON.stringify(runDevelopmentPreparation(args[1] ?? T1B_ROOT)));
+    return;
+  }
   if (args[0] === '--check') {
     const profiles = readFileSync(args[1] ?? join(T1_ROOT, 'profiles/profiles.jsonl'), 'utf8').trim().split('\n')
       .map(line => JSON.parse(line) as PreparedColumn);
