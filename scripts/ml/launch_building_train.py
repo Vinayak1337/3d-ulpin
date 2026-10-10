@@ -34,11 +34,11 @@ def parse_arguments() -> argparse.Namespace:
     if not re.fullmatch(r"[A-Za-z0-9_-]+", args.run_id):
         parser.error("Simple new run id required")
     if args.resolution < 432 or args.resolution % 24:
-        parser.error("RF-DETR resolution must be at least432 and divisible by24")
+        parser.error("RF-DETR resolution must be at least 432 and divisible by 24")
     if args.batch_size * args.accumulation != 4 or min(args.batch_size, args.accumulation) < 1:
         parser.error("Preserve effective batch4 with positive batch size and accumulation")
     if not 1 <= args.max_epochs <= 12 or (args.resolution > 432 and args.max_epochs > 8):
-        parser.error("Maximum epochs must be1..12;higher-resolution B6 ceiling is8")
+        parser.error("Maximum epochs must be 1..12; higher-resolution B6 ceiling is 8")
     return args
 
 
