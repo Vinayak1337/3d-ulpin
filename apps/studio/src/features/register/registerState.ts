@@ -33,6 +33,31 @@ export function unreadRegister(error: unknown): string {
   return code ? `${UNREAD_REGISTER} · ${code}` : `${UNREAD_REGISTER}.`;
 }
 
+/** Why the Residents tab lists no one: the read is not served, the server holds no extract, or the read failed. */
+export type ResidentsStatement = { kind: 'unserved' | 'none' | 'failed'; text: string };
+
+const RESIDENTS_UNSERVED = 'This server does not serve the residents read yet, so nothing is stated here about '
+  + 'who holds or lives in this building.';
+const NO_EXTRACT = 'The server holds no register extract for this building. Holders come from the deed index; '
+  + 'residents from the society or tenant register.';
+const UNREAD_RESIDENTS = 'The residents of this building could not be read';
+
+/**
+ * What the Residents tab says in place of its table. The read answers null for a 404: from a server that does not
+ * serve the route that says nothing of the building, from one that serves it the building has no extract. A failed
+ * read gives the fixed words and the server's code, never its message. Null while pending and once it holds rows.
+ */
+export function residentsStatement(
+  read: { data: object | null | undefined; error: unknown }, served: boolean,
+): ResidentsStatement | null {
+  if (read.error) {
+    const { code } = refusalOf(read.error);
+    return { kind: 'failed', text: code ? `${UNREAD_RESIDENTS} · ${code}` : `${UNREAD_RESIDENTS}.` };
+  }
+  if (read.data !== null) return null;
+  return served ? { kind: 'none', text: NO_EXTRACT } : { kind: 'unserved', text: RESIDENTS_UNSERVED };
+}
+
 type Canonical = GetResponse<'/api/v1/buildings/{buildingId}/canonical'>;
 
 /** What the building's own record is, by the record state of its canonical read, when it has no register. */

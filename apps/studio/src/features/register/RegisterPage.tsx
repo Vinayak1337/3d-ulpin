@@ -10,6 +10,7 @@ import {
 } from '@ulpin/ui';
 import { revisedRecordId } from '../../api/ledger';
 import { useAreaContext, useBuildingLedger, useBuildingRegister, useBuildingResidents, type BuildingRegister } from '../../api/queries';
+import { isServed } from '../../local/routes';
 import { shortHash, type SpaceWorkflow } from '../../local/workflow';
 import { buildingModel, type LevelModel, type SpaceModel } from '../../model/building';
 import { EvidenceProvider, useOpenEvidence } from '../evidence/EvidenceContext';
@@ -28,8 +29,8 @@ import { NoGeometry } from './NoGeometry';
 import { ReadingStatementsContext } from './ReadingNote';
 import { RegisterAbsent } from './RegisterAbsent';
 import {
-  NO_READING_STATEMENTS, absentReason, conflictingStoreys, openCheckCount, registerNotFound, unreadRegister,
-  unstatedReadings,
+  NO_READING_STATEMENTS, absentReason, conflictingStoreys, openCheckCount, registerNotFound, residentsStatement,
+  unreadRegister, unstatedReadings, type ResidentsStatement,
 } from './registerState';
 import { SourceList } from './SourceList';
 import { FloorFilter, UnitsTab } from './UnitsTab';
@@ -45,6 +46,8 @@ type Tab = 'units' | 'residents' | 'shares' | 'documents' | 'checks' | 'history'
 const TABS: Tab[] = ['units', 'residents', 'shares', 'documents', 'checks', 'history'];
 // What the deviation check needs, said under the button while it is disabled and in its title.
 const DEVIATION_NEEDS = 'Needs a sanctioned plan and an observed survey of this building';
+// Whether this build has the residents read at all: a 404 from a server that does not serve it says nothing.
+const RESIDENTS_SERVED = isServed('GET', '/api/v1/buildings/:buildingId/residents');
 
 /** S12/S13 Register: the building in 3D beside its units, shares, documents, checks and history. */
 export function RegisterPage() {
@@ -92,7 +95,8 @@ function Register({ register }: { register: BuildingRegister }) {
   const property = register.property;
   const context = useAreaContext(register.area.id).data;
   const ledger = useBuildingLedger(property.id).data;
-  const residents = useBuildingResidents(property.id).data;
+  const residentsRead = useBuildingResidents(property.id);
+  const residents = residentsRead.data;
   const workflow = useBuildingWorkflow(property.id).data;
   const actions = useBuildingActions(property.id).data ?? [];
   const model = useMemo(() => buildingModel(register), [register]);
@@ -275,7 +279,8 @@ function Register({ register }: { register: BuildingRegister }) {
                         onClearLevel={clearLevel} />
                     )} />
                   ) : tab === 'residents' ? (
-                    <Residents residents={residents} levelLabel={level?.label ?? null} selectedId={record?.id ?? null}
+                    <Residents residents={residents} statement={residentsStatement(residentsRead, RESIDENTS_SERVED)}
+                      levelLabel={level?.label ?? null} selectedId={record?.id ?? null}
                       onSelect={(spaceId) => { const s = model.spaceById.get(spaceId); if (s) set({ record: s.id === record?.id ? null : s.id, level: s.levelId }); }}
                       onClearLevel={() => set({ level: null, record: null })} />
                   ) : tab === 'shares' ? (
@@ -370,16 +375,18 @@ function UnitsTable({ register, units, levelLabel, levels, ledger, workflow, sel
   );
 }
 
-function Residents({ residents, levelLabel, selectedId, onSelect, onClearLevel }: {
-  residents: BuildingResidents | null | undefined; levelLabel: string | null; selectedId: string | null; onSelect: (spaceId: string) => void; onClearLevel: () => void;
+function Residents({ residents, statement, levelLabel, selectedId, onSelect, onClearLevel }: {
+  residents: BuildingResidents | null | undefined; statement: ResidentsStatement | null; levelLabel: string | null;
+  selectedId: string | null; onSelect: (spaceId: string) => void; onClearLevel: () => void;
 }) {
-  if (!residents) {
+  if (statement) {
     return (
-      <Panel title="Residents" aside={<StatusBadge status="Not assessed" />}>
-        <p className="ul-help">No register extract is linked to this building yet. Holders come from the deed index; residents from the society or tenant register.</p>
+      <Panel title="Residents" aside={statement.kind === 'none' ? <StatusBadge status="Not assessed" /> : undefined}>
+        <p className="ul-help">{statement.text}</p>
       </Panel>
     );
   }
+  if (!residents) return <Panel title="Residents"><Skeleton width="60%" /></Panel>;
   const rows = levelLabel ? residents.units.filter((u) => u.level === levelLabel) : residents.units;
   const people = rows.reduce((n, u) => n + u.occupants.length, 0);
   const tone = { owner_occupied: 'success', rented: 'info', vacant: 'neutral' } as const;

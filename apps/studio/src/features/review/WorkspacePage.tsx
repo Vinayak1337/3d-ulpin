@@ -20,6 +20,7 @@ import { absentReason, registerNotFound, unreadRegister } from '../register/regi
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import { refusalOf } from './candidates/commands';
 import { CheckGroups } from './CheckGroups';
+import { RECORDED_TITLE, provisionalTitle } from './recordTitle';
 import { registerCounts } from './registerCounts';
 import { useMapView } from '../map/useMapView';
 import styles from './Workspace.module.css';
@@ -294,7 +295,10 @@ function LevelQuestion({ register, level, review, actions }: {
         ) : review?.question ? (
           <>
             <Link className="ul-btn ul-btn--primary" to={`/studio/add-files?feature=${register.property.id}`}><Icon icon={FilePlus} />Add level evidence</Link>
-            <Button onClick={() => record.mutate({ buildingId: register.property.id, kind: 'record', subjectId: level.id, value: 'provisional', title: `${level.label} kept provisional: estimate stays flagged` })}>Keep as provisional</Button>
+            <Button onClick={() => record.mutate({
+              buildingId: register.property.id, kind: 'record', subjectId: level.id, value: 'provisional',
+              title: provisionalTitle(level.label),
+            })}>Keep as provisional</Button>
           </>
         ) : null}>
         <p className={styles.questionText}>{review?.question ?? (level.estimated ? 'The limits of this level are estimated.' : 'Nothing on this level is waiting for review.')}</p>
@@ -374,7 +378,10 @@ function CheckStage({ register, model, ledger, actions }: { register: BuildingRe
               {recorded ? <><StatusBadge status="Recorded" /><span className="ul-help">{formatDateTime(recorded.at)} · {recorded.by}</span></> : (
                 <>
                   <Button variant="primary" disabled={blocking > 0 || record.isPending}
-                    onClick={() => record.mutate({ buildingId: register.property.id, kind: 'record', subjectId: register.property.id, value: 'recorded', title: `r${(ledger?.revision ?? register.property.revision) + 1} Recorded` })}>
+                    onClick={() => record.mutate({
+                      buildingId: register.property.id, kind: 'record', subjectId: register.property.id,
+                      value: 'recorded', title: RECORDED_TITLE,
+                    })}>
                     Record reviewed details
                   </Button>
                   {blocking > 0 ? <span className="ul-help">Blocked: {blocking} blocking finding{blocking > 1 ? 's' : ''} open</span> : null}
