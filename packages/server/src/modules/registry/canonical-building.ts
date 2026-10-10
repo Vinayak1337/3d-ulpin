@@ -323,7 +323,8 @@ function baseBuilding(
     parcelRefs: [],
     footprint: canonicalValue(polygons, polygons ? state : 'unknown', citations, ENU_METHOD, 'm'),
     footprintKind: canonicalValue(kind, !kind ? 'unknown'
-      : feature.properties.spatialExtraction ? 'candidate' : 'source_supported', citations),
+      : feature.properties.spatialExtraction ? 'candidate' : 'source_supported', citations,
+    feature.properties.spatialExtraction ? 'deterministic:retained-candidate-outline-role@1' : 'source_literal'),
     baseM: canonicalValue<number>(null, 'unknown', [], 'source_literal', 'm'),
     heightM: heightValue,
     heightState: heightValue.state,
