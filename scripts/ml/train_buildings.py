@@ -89,14 +89,18 @@ def augment_flips(rgb: torch.Tensor, boxes: torch.Tensor, masks: torch.Tensor) -
 
 
 class RampTrain(Dataset):
-    def __init__(self, smoke: bool = False) -> None:
+    def __init__(self, smoke: bool = False, resolution: int = 432) -> None:
         coco, split_hash = verified_train_coco()
         self.annotations: dict[int, list] = defaultdict(list)
         for annotation in coco["annotations"]:
             self.annotations[annotation["image_id"]].append(annotation)
         self.images = coco["images"]
         if smoke:
+            largest = max(self.images, key=lambda image: len(self.annotations[image["id"]]))
             self.images = smoke_images(self.images, self.annotations)
+            if resolution > 432 and largest not in self.images:
+                self.images.append(largest)
+        self.resolution = resolution
         self.smoke = smoke
         self.binding = {
             "split": "train",
@@ -119,8 +123,9 @@ class RampTrain(Dataset):
         width, height = image.size
         if width > 512 or height > 512:
             raise ValueError("TRAIN chip exceeds production single tile; explicit tiling required")
-        resized = np.asarray(image.resize((432, 432), Image.Resampling.BILINEAR)).copy()
+        resized = np.asarray(image.resize((self.resolution, self.resolution), Image.Resampling.BILINEAR)).copy()
         rgb = torch.from_numpy(resized).permute(2, 0, 1).float() / 255
+        # Preserve epoch4's 432-pixel supervision; criterion samples normalized coordinates independently.
         boxes, masks = decode_targets(self.annotations[item["id"]], width, height)
         # Keep zero-pixel publisher masks and their box/class supervision.
         if not self.smoke:
@@ -209,7 +214,7 @@ def offload_optimizer(optimizer: Any) -> list[tuple[dict, str, torch.device]]:
 
 
 def evaluate_checkpoint(
-    output: Path, checkpoint: Path, epoch: int, threshold: float = 0.5
+    output: Path, checkpoint: Path, epoch: int, threshold: float = 0.5, size_bins: bool = False
 ) -> tuple[str, dict[str, Any]]:
     run_id = f"{output.name}-epoch{epoch:03d}-dev-t{round(threshold * 100):03d}"
     command = [
@@ -230,6 +235,8 @@ def evaluate_checkpoint(
         "--artifacts-dir",
         str(output / f"epoch-{epoch:03d}-dev-t{round(threshold * 100):03d}"),
     ]
+    if size_bins:
+        command.append("--size-bins")
     with (output / f"epoch-{epoch:03d}-dev-t{round(threshold * 100):03d}.log").open("x") as log:
         subprocess.run(command, cwd=REPO, stdout=log, stderr=subprocess.STDOUT, check=True)
     return run_id, read_json(EVIDENCE / run_id / "result.json")
@@ -291,11 +298,17 @@ class DevEpochs(TrainerCallback):
             "bad_epochs": self.bad_epochs,
             "peak_reserved_bytes": torch.cuda.max_memory_reserved(),
             "early_stopping_metric": self.metric,
+            "size_recall": result.get("size_recall"),
         }
         self.results.append(entry)
         with (self.output / "dev-selection.jsonl").open("a") as journal:
             journal.write(json.dumps(entry) + "\n")
         print(json.dumps({"event": "epoch_dev", **entry}), flush=True)
+
+    def should_stop(self, epoch: int) -> bool:
+        # Stop at a fully scored checkpoint, never mid-accumulation.
+        deadline = time.monotonic() - self.start >= self.duration
+        return self.bad_epochs >= 3 or epoch >= self.recipe.get("max_epochs", 12) or deadline
 
     def on_epoch_end(
         self,
@@ -316,8 +329,17 @@ class DevEpochs(TrainerCallback):
         try:
             evaluations = []
             for threshold in self.recipe.get("dev_thresholds", [0.5]):
-                run_id, result = evaluate_checkpoint(self.output, checkpoint, epoch, threshold)
-                evaluations.append({"threshold": threshold, "run_id": run_id, "metrics": result["metrics"]})
+                run_id, result = evaluate_checkpoint(
+                    self.output, checkpoint, epoch, threshold, self.recipe.get("size_bins", False)
+                )
+                evaluations.append(
+                    {
+                        "threshold": threshold,
+                        "run_id": run_id,
+                        "metrics": result["metrics"],
+                        "size_recall": result.get("size_recall"),
+                    }
+                )
                 if threshold == 0.5:
                     self.record_dev(checkpoint, epoch, run_id, result)
             write_json(self.output / f"epoch-{epoch:03d}-dev.json", {"epoch": epoch, "evaluations": evaluations})
@@ -325,8 +347,7 @@ class DevEpochs(TrainerCallback):
             model.to("cuda")
             for values, key, device in devices:
                 values[key] = values[key].to(device)
-        # Stop at a fully scored checkpoint, never mid-accumulation.
-        if self.bad_epochs >= 3 or time.monotonic() - self.start >= self.duration:
+        if self.should_stop(epoch):
             control.should_training_stop = True
         return control
 
@@ -337,11 +358,26 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--duration-minutes", type=float, default=85)
     parser.add_argument("--resume", type=Path)
+    parser.add_argument("--resolution", type=int, default=432)
+    parser.add_argument("--batch-size", type=int, default=1)
+    parser.add_argument("--accumulation", type=int, default=4)
+    parser.add_argument("--max-epochs", type=int, default=12)
+    parser.add_argument("--checkpoint-backbone", action="store_true")
+    parser.add_argument("--checkpoint-decoder", action="store_true")
+    parser.add_argument("--size-bins", action="store_true")
     parser.add_argument("--early-stopping-metric", choices=("f1", "recall"), default="f1")
     parser.add_argument("--dev-thresholds", type=float, nargs="+", default=[0.5])
     args = parser.parse_args()
     if 0.5 not in args.dev_thresholds or any(not 0 < value < 1 for value in args.dev_thresholds):
         parser.error("DEV thresholds must include .5 and lie strictly between zero and one")
+    if args.resolution < 432 or args.resolution % 24:
+        parser.error("RF-DETR resolution must be at least432 and divisible by24")
+    if args.batch_size * args.accumulation != 4 or min(args.batch_size, args.accumulation) < 1:
+        parser.error("Preserve effective batch4 with positive batch size and accumulation")
+    if args.max_epochs < 1 or args.max_epochs > 12:
+        parser.error("Maximum epochs must be between1 and12")
+    if args.resolution > 432 and args.max_epochs > 8:
+        parser.error("Higher-resolution B6 ceiling is8epochs")
     if not re.fullmatch(r"[A-Za-z0-9_-]+", args.run_id):
         parser.error("Simple unique run-id required")
     return args
@@ -353,16 +389,22 @@ def training_recipe(args: argparse.Namespace, dataset: RampTrain) -> dict[str, A
         "base": str(BASE),
         "base_sha256": sha(BASE / "model.safetensors"),
         "seed": 26011,
-        "batch_size": 1,
-        "gradient_accumulation_steps": 4,
+        "batch_size": args.batch_size,
+        "gradient_accumulation_steps": args.accumulation,
+        "input_resolution": args.resolution,
+        "target_mask_resolution": 432,
+        "checkpoint_backbone": args.checkpoint_backbone,
+        "checkpoint_decoder": args.checkpoint_decoder,
+        "size_bins": args.size_bins,
         "learning_rate_heads": 1e-4,
         "learning_rate_backbone": 1e-5,
         "amp": "bf16",
-        "max_epochs": 12,
+        "max_epochs": args.max_epochs,
+        "lr_scheduler": "constant",
         "early_stopping": f"DEV {args.early_stopping_metric} at .5, patience 3",
         "early_stopping_metric": args.early_stopping_metric,
         "dev_thresholds": args.dev_thresholds,
-        "preprocessing": "production RGB Pillow bilinear 432; ImageNet; source tiles <=512; stride384",
+        "preprocessing": f"RGB Pillow bilinear {args.resolution}; ImageNet; source tiles <=512; stride384",
         "augmentation": "TRAIN horizontal/vertical flips only; smoke none",
         "zero_pixel_masks": "Retained; box/class and zero mask supervised; no relabel/drop",
         "loss_revision": REVISION,
@@ -375,13 +417,14 @@ def training_recipe(args: argparse.Namespace, dataset: RampTrain) -> dict[str, A
     }
 
 
-def training_arguments(output: Path, smoke: bool) -> TrainingArguments:
+def training_arguments(output: Path, smoke: bool, batch_size: int = 1, accumulation: int = 4) -> TrainingArguments:
     return TrainingArguments(
         output_dir=str(output / "trainer"),
         max_steps=50 if smoke else -1,
+        # Keep B3's Trainer default; callback independently enforces the requested B6 epoch ceiling.
         num_train_epochs=12,
-        per_device_train_batch_size=1,
-        gradient_accumulation_steps=4,
+        per_device_train_batch_size=batch_size,
+        gradient_accumulation_steps=accumulation,
         learning_rate=1e-4,
         weight_decay=1e-4,
         lr_scheduler_type="constant",
@@ -401,13 +444,44 @@ def training_arguments(output: Path, smoke: bool) -> TrainingArguments:
     )
 
 
-def load_model_optimizer(resume: Path | None) -> tuple[Any, torch.optim.Optimizer]:
+def configure_resolution(
+    model: Any, resolution: int, checkpoint_backbone: bool, checkpoint_decoder: bool = False
+) -> None:
+    from transformers.models.rf_detr.modeling_rf_detr import RfDetrDinov2Backbone
+
+    config = model.config.backbone_config
+    multiple = config.patch_size * config.num_windows
+    if resolution < 432 or resolution % multiple:
+        raise ValueError(f"Resolution must be at least432 and divisible by patch/window multiple {multiple}")
+    if model.config.to_dict().get("ulpin_input_resolution", resolution) != resolution:
+        raise ValueError("Resume checkpoint resolution differs; do not silently change its recipe")
+    model.config.ulpin_input_resolution = resolution
+    if checkpoint_backbone:
+        backbones = [module for module in model.modules() if isinstance(module, RfDetrDinov2Backbone)]
+        if len(backbones) != 1:
+            raise ValueError("Expected one HF RF-DETR DINOv2 backbone")
+        backbones[0].gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
+    if checkpoint_decoder:
+        from functools import partial
+        from torch.utils.checkpoint import checkpoint
+
+        model.model.model.decoder._set_gradient_checkpointing(
+            enable=True, gradient_checkpointing_func=partial(checkpoint, use_reentrant=False, preserve_rng_state=True)
+        )
+
+
+def load_model_optimizer(
+    resume: Path | None, resolution: int = 432, checkpoint_backbone: bool = False, checkpoint_decoder: bool = False
+) -> tuple[Any, torch.optim.Optimizer]:
     model = RfDetrForInstanceSegmentation.from_pretrained(
         resume or BASE,
         local_files_only=True,
         use_safetensors=True,
         attn_implementation="eager",
     )
+    if resume and model.config.to_dict().get("ulpin_input_resolution", 432) != resolution:
+        raise ValueError("Resume checkpoint resolution differs; start a separately authorized experiment")
+    configure_resolution(model, resolution, checkpoint_backbone, checkpoint_decoder)
     model.loss_function = repaired_loss()
     model.to("cuda")
     groups = [
@@ -426,6 +500,11 @@ def training_result(trainer: FiniteTrainer, callback: DevEpochs, output: Path, s
     return {
         "status": status,
         "optimizer_steps": trainer.state.global_step,
+        "input_resolution": callback.recipe["input_resolution"],
+        "batch_size": callback.recipe["batch_size"],
+        "gradient_accumulation_steps": callback.recipe["gradient_accumulation_steps"],
+        "checkpoint_backbone": callback.recipe["checkpoint_backbone"],
+        "checkpoint_decoder": callback.recipe["checkpoint_decoder"],
         "micro_steps": len(trainer.micro_losses),
         "first_20_mean_loss": first,
         "last_20_mean_loss": last,
@@ -440,12 +519,14 @@ def training_result(trainer: FiniteTrainer, callback: DevEpochs, output: Path, s
 
 
 def execute_training(args: argparse.Namespace, output: Path, dataset: RampTrain, recipe: dict[str, Any]) -> None:
-    model, optimizer = load_model_optimizer(args.resume)
+    model, optimizer = load_model_optimizer(
+        args.resume, args.resolution, args.checkpoint_backbone, args.checkpoint_decoder
+    )
     callback = DevEpochs(output, recipe, args.smoke, args.duration_minutes)
     with (output / "steps.jsonl").open("x", buffering=1) as journal:
         trainer = FiniteTrainer(
             model=model,
-            args=training_arguments(output, args.smoke),
+            args=training_arguments(output, args.smoke, args.batch_size, args.accumulation),
             train_dataset=dataset,
             data_collator=collate,
             optimizers=(optimizer, None),
@@ -489,7 +570,7 @@ def main() -> None:
     random.seed(26011)
     np.random.seed(26011)
     torch.cuda.set_per_process_memory_fraction(0.75)
-    dataset = RampTrain(args.smoke)
+    dataset = RampTrain(args.smoke, args.resolution)
     recipe = training_recipe(args, dataset)
     write_json(output / "run-config.json", recipe)
     execute_training(args, output, dataset, recipe)

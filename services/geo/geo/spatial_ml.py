@@ -273,8 +273,10 @@ def _building_layout(image):
     return [{"x": x, "y": y, "width": min(BUILDING_TILE, image.width), "height": min(BUILDING_TILE, image.height), "tileToRaster": [1, 0, x, 0, 1, y]} for y in origins(image.height) for x in origins(image.width)]
 
 
-def _building_tile(session, image):
-    resized = image.resize((432, 432), Image.Resampling.BILINEAR)
+def _building_tile(session, image, input_resolution: int = 432):
+    if input_resolution < 432 or input_resolution % 24:
+        _fail("INVALID_INPUT", "RF-DETR input must respect its 12-pixel patch and 2-window grid.")
+    resized = image.resize((input_resolution, input_resolution), Image.Resampling.BILINEAR)
     tensor = np.asarray(resized).transpose(2, 0, 1).astype(np.float32) / 255
     tensor = ((tensor - np.array([.485, .456, .406], np.float32)[:, None, None]) / np.array([.229, .224, .225], np.float32)[:, None, None])[None]
     logits, masks = session.run(None, {"image": tensor})
@@ -314,15 +316,18 @@ def _run_model(model, image):
         labels = logits.argmax(axis=0).astype(np.uint8)
         return labels, probabilities.max(axis=0), {i: name for i, name in enumerate(ROOMS)}, "mean_pixel_softmax"
     tiles = _building_layout(image)
+    input_resolution = model.get("preprocessing", {}).get("inputShape", [1, 3, 432, 432])[-1]
     if len(tiles) == 1:
-        return _building_tile(session, image)
+        return _building_tile(session, image, input_resolution)
     # Union on the unchanged source raster. Confidence max is commutative: tile
     # traversal cannot change a seam. Connected roofs may merge and require review.
     labels = np.zeros((image.height, image.width), np.uint8)
     scores = np.zeros(labels.shape, np.float32)
     for tile in tiles:
         x, y, width, height = (tile[key] for key in ("x", "y", "width", "height"))
-        tile_labels, tile_scores, _, _ = _building_tile(session, image.crop((x, y, x + width, y + height)))
+        tile_labels, tile_scores, _, _ = _building_tile(
+            session, image.crop((x, y, x + width, y + height)), input_resolution
+        )
         foreground = tile_labels > 0
         labels[y:y + height, x:x + width] |= foreground.astype(np.uint8)
         np.maximum(scores[y:y + height, x:x + width], np.where(foreground, tile_scores, 0), out=scores[y:y + height, x:x + width])

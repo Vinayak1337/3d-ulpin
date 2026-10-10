@@ -235,9 +235,11 @@ def export(items, output, role):
 def reject_transfer_training(region: str) -> None:
     prereg_path = REPO / "docs/evidence/gf-ai/preregistration.json"
     if prereg_path.is_file():
-        transfer = json.loads(prereg_path.read_bytes()).get("building_mask_transfer", {})
-        if transfer.get("status") == "frozen" and transfer.get("region") == region:
-            raise ValueError("Region is frozen for transfer HOLDOUT, never TRAIN")
+        preregistration = json.loads(prereg_path.read_bytes())
+        for key, transfer in preregistration.items():
+            if key.startswith("building_mask_transfer"):
+                if transfer.get("status") == "frozen" and transfer.get("region") == region:
+                    raise ValueError("Region is frozen for transfer HOLDOUT, never TRAIN")
 
 
 def transfer_shard(root: Path, region: str, target: Path, manifest: dict) -> dict:
