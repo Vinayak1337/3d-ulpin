@@ -110,6 +110,10 @@ describe('candidateCard', () => {
     expect(candidateCard(roofprint({ polygons: null }))).toBeNull();
     expect(candidateCards([roofprint({ polygons: null }), roofprint()], 'roofprint').withoutGeometry).toBe(1);
   });
+
+  it('counts only entries of the asked kind as without geometry', () => {
+    expect(candidateCards([room(), roofprint()], 'room')).toMatchObject({ withoutGeometry: 0 });
+  });
 });
 
 describe('locatorText', () => {
