@@ -1,0 +1,1 @@
+{"status":"passed","regressions":["ancestor recall patience","pre-TopK classifier capture","premature transfer selection","empty-mask scalar loss"],"strict_tolerances_unchanged":true,"new_functions_max_lines":40,"legacy_formatting_preserved":true,"full_legacy_black_check_exit":1,"full_legacy_ruff_exit":0,"new_python_black_ruff_exit":0,"gpu_run_unchanged_after_launch":true}
