@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "storey-holdout-seal/1",
+  "frozenAt": "2026-10-09T19:22:22.239613+00:00",
+  "scope": "3 extra projects; no teacher access; all source/plan relatives held out together",
+  "files": [
+    {
+      "path": "docs/evidence/usp/finale/GF-DATA/storey-truth/holdout/RERAP269201800915-2-building-1.json",
+      "sha256": "ee38031d6f4169f972e71beb200a638af9c8376afb9038508a98f03836c6e602",
+      "bytes": 7273,
+      "projectSourceId": "RERAP269201800915-2",
+      "sources": [
+        {
+          "externalPath": "E:/BhuAayam-data/datasets/rera-storeys/RERAP269201800915-2/registry-system-trust.html",
+          "sha256": "83fdeba91c7f1c93cae8954fc7852c3bbbc5427983c9b7f95bb0c1fe1b0a5571",
+          "bytes": 136125
+        },
+        {
+          "externalPath": "E:/BhuAayam-data/datasets/rera-storeys/RERAP269201800915-2/sanctioned-building-plan.pdf",
+          "sha256": "cd1e2aaa4818c3d052a25acd30d5e5e85c8069ede29988916d87863aeaa84e8b",
+          "bytes": 125570
+        }
+      ]
+    },
+    {
+      "path": "docs/evidence/usp/finale/GF-DATA/storey-truth/holdout/RERAP296201800558-2-building-1.json",
+      "sha256": "9191aa1e29d71a707e502acc1439f2b802ae61cc09992a6186a514a4501f9b62",
+      "bytes": 7289,
+      "projectSourceId": "RERAP296201800558-2",
+      "sources": [
+        {
+          "externalPath": "E:/BhuAayam-data/datasets/rera-storeys/RERAP296201800558-2/registry-system-trust.html",
+          "sha256": "b5c3c08c4b1ae11c8663433de56b38891fc34d670b2aa9a6c880436cae6749de",
+          "bytes": 137090
+        },
+        {
+          "externalPath": "E:/BhuAayam-data/datasets/rera-storeys/RERAP296201800558-2/sanctioned-building-plan.pdf",
+          "sha256": "67d0d0808650e3bea6fe67972ff8eb52c085d98ac4f302800e24852c5ab5c890",
+          "bytes": 1282434
+        }
+      ]
+    },
+    {
+      "path": "docs/evidence/usp/finale/GF-DATA/storey-truth/holdout/RERAP69201800824-1-building-1.json",
+      "sha256": "969ed8b5545d1c686ef7302577715dff0ee270c85a282a3fdbb62d96e8eb3799",
+      "bytes": 12658,
+      "projectSourceId": "RERAP69201800824-1",
+      "sources": [
+        {
+          "externalPath": "E:/BhuAayam-data/datasets/rera-storeys/RERAP69201800824-1/registry-system-trust.html",
+          "sha256": "aebc4f694dda8f85499766991f2976fbf47997d603a2e6ce71fc35675db8ad71",
+          "bytes": 138987
+        },
+        {
+          "externalPath": "E:/BhuAayam-data/datasets/rera-storeys/RERAP69201800824-1/sanctioned-building-plan.pdf",
+          "sha256": "8d25a2a53c6c254f4aa87ea440d07d6d6ffc52c49db8ede020f5f33a6a5bfb30",
+          "bytes": 1384467
+        }
+      ]
+    }
+  ]
+}

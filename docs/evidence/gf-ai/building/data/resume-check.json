@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "real_input": "ramp_karnataka_india/labels/0020b409-a333-4eb4-89c8-531b8110312a.geojson",
+  "url": "https://radiantearth.blob.core.windows.net/mlhub/repositories/ramp/ramp/ramp_karnataka_india/labels/0020b409-a333-4eb4-89c8-531b8110312a.geojson",
+  "sha256": "f111a3a65bcc351112fe962f536d838fc24001c6c18f8f6817c39f2a5cd79b9c",
+  "prefix_bytes": 1024,
+  "complete_bytes": 13110,
+  "range_response_206_and_start_checked": true,
+  "byte_identical_to_acquired_original": true,
+  "completed_original_reused_without_overwrite": true,
+  "dataset_original_hash_unchanged": true,
+  "model_calls": 0,
+  "diagnosed_prior_failure": {
+    "signature": "Server did not honour resume range",
+    "approach": "Standard Range without explicit Azure API version",
+    "preserved_checkpoint": "E:/BhuAayam-data/ml/ramp-range-resume-check",
+    "initial_status_header": "not recorded"
+  },
+  "bounded_comparison": {
+    "hypothesis": "Azure x-ms-range with API version 2023-11-03 enables proper ranged responses on this anonymous Blob endpoint",
+    "candidate_status": 206,
+    "success_criterion": "Exact source SHA-256 after appending only the missing bytes; no original overwrite",
+    "decision": "passed; use corrected headers for future resumes"
+  }
+}

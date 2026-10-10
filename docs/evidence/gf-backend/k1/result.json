@@ -1,0 +1,110 @@
+{
+  "schemaVersion": "k1-verification/1",
+  "branch": "task/k1-canonical-projection",
+  "baseCommit": "38f73580",
+  "codeCommits": [
+    {"sha": "3e603d28", "subject": "feat(contracts): define cited normalized building and exact scene adapter"},
+    {"sha": "6d7de951", "subject": "feat(api): serve private canonical projections from existing record readers"},
+    {"sha": "46bf7f2b", "subject": "chore(api): publish canonical routes and verify their transport contracts"}
+  ],
+  "gateStatus": {
+    "GF-CONTRACT": "focused_contract_verified_not_full_gate",
+    "GF-SCENE": "adapter_verified_renderer_unqualified"
+  },
+  "contractTests": 2,
+  "manualIngestionRegressionTests": 2,
+  "openapiOperations": 290,
+  "previousExpectedCount": 235,
+  "previousActualCount": 288,
+  "newProjectionOperations": 2,
+  "typechecks": ["contracts full index strict compilation", "server", "api", "api-client"],
+  "checks": [
+    {"command": "pnpm install --frozen-lockfile --ignore-scripts", "exit": 0},
+    {"command": "pnpm exec tsc --noEmit --target ES2022 --module ESNext --moduleResolution Bundler --strict --skipLibCheck --esModuleInterop --allowJs --lib ES2022,DOM,DOM.Iterable packages/contracts/src/index.ts", "exit": 0},
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "pnpm --filter @ulpin/api-client typecheck", "exit": 0},
+    {"command": "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS='--require ./scripts/platform/isolated-env.cjs' pnpm exec tsx --tsconfig apps/api/tsconfig.json --test apps/api/src/modules/register/canonical.controller.test.ts tests/manual-ingestion.test.ts", "exit": 0},
+    {"command": "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS='--require ./scripts/platform/isolated-env.cjs' pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf-backend/k1/generate-openapi.ts", "exit": 0},
+    {"command": "pnpm studio:api-types", "exit": 0},
+    {"command": "curl --fail-with-body -sS http://127.0.0.1:3194/api/v1/areas/ed4bc3ae-1b02-412e-a5cc-02accf693a1b/canonical", "exit": 0, "http": 200},
+    {"command": "curl --fail-with-body -sS http://127.0.0.1:3194/api/v1/buildings/7ea8da1a-1700-4de6-9b82-d5866e4450d8/canonical", "exit": 0, "http": 200},
+    {"command": "pnpm exec tsx docs/evidence/gf-backend/k2/verify-canonical.ts", "exit": 0},
+    {"command": "pnpm platform:start --profile demo", "exit": 0},
+    {"command": "pnpm platform:doctor --profile demo", "exit": 0},
+    {"command": "git diff --check", "exit": 0}
+  ],
+  "resolvedFailures": [
+    {"signature": "tsc is not recognized; worktree node_modules absent", "commandExit": 1, "decision": "Installed locked dependencies with scripts disabled; did not repeat the unchanged command."},
+    {"signature": "generic Zod superRefine value property inference", "commandExit": 2, "decision": "Narrowed only the generic validation property access; strict backend compilation passed."},
+    {"signature": "10.207752000000001 versus 10.207752 exact IEEE floating comparison", "commandExit": 1, "decision": "The independent metre expectation remains 10.207752; comparison uses 1e-12 numerical tolerance."},
+    {"signature": "Tower-3 source case expected revision 1 but new case is revision 0", "http": 409, "decision": "Read the actual case through GET /cases; receipt with expectedCaseRevision=0 succeeded."}
+  ],
+  "limitations": [
+    "Exact current digest or current is supported; complete historical projection snapshots are not reconstructed.",
+    "Scene inputs are the existing scene types; candidate and hatch metadata is a sidecar because the protected renderer has no candidate flag or estimated-envelope hatching.",
+    "Live curl building is a NYC test_only import proposal, not a reviewed record. Tower-3 conflict is preserved in the real-source contract example, not yet installed as a building.",
+    "No source-pins.json write: it is outside task ownership. Lead must regenerate all producer pins before integration.",
+    "Read projection/source access is rechecked after assembly; constituent register graph reads reuse existing readers, not a new historical snapshot store."
+  ],
+  "styleRefactor": {
+    "baseline": "staging 9e310c10 merged into task/k1-canonical-projection before the snapshot",
+    "scope": "pure refactor of K1 files to 00-STANDARDS section 11; behaviour, errors, method strings and JSON unchanged",
+    "snapshot": {
+      "files": 64,
+      "routes": "GET /areas/{id}/canonical (2 areas) and GET /buildings/{id}/canonical (62 NYC proposals)",
+      "areaRevisionIds": {
+        "da1e72c8-dc8b-4717-b24d-d470bd8442e4": "5400fb5fc86380e7adcdb1a98f39411705863d4ee3651122f733625818ec8d53",
+        "ed4bc3ae-1b02-412e-a5cc-02accf693a1b": "778d2fcf05d531cf52d8dd5f4afad61cf21582442c0ef39ac996a6a84b7cfc37"
+      },
+      "buildingRevisionIdsSha256": "919f7f4d50cbb3831e14077b2cee2b2c410bc6e3b68e42b19f0585a9a395b1a1",
+      "hashListSha256Before": "7049939b0a210eded6241c866cedc60407fd1e3ea85a26648f6a6e239912dd10",
+      "hashListSha256After": "7049939b0a210eded6241c866cedc60407fd1e3ea85a26648f6a6e239912dd10",
+      "identical": true,
+      "location": "E:/BhuAayam-data/task-data/k1-style/{before,after}"
+    },
+    "differentialChecks": {
+      "projectBuilding": "12 synthetic reviewed/proposal dossiers (floors, spaces, claims, parcels) byte-identical old vs new",
+      "toSceneInputs": "levels, spaces, base features and all overlay kinds byte-identical old vs new"
+    },
+    "openapi": {
+      "committedSha256": "0cc888ec931bbfe814cfca0b6fd3b74b05a6be7ef18031de6156bc94085dd655",
+      "regeneratedBeforeRefactorSha256": "75e4ca0dbded1d2e0f373ea8705aebe013ed7e9e16b237f6716da93811700512",
+      "regeneratedAfterRefactorSha256": "75e4ca0dbded1d2e0f373ea8705aebe013ed7e9e16b237f6716da93811700512",
+      "note": "Refactor does not change the document. Committed file lacks the html enum value that staging D3 added; lead regenerates at integration."
+    },
+    "checks": [
+      {
+        "command": "tsc contracts index",
+        "exit": 0
+      },
+      {
+        "command": "pnpm typecheck:backend",
+        "exit": 0
+      },
+      {
+        "command": "pnpm --filter @ulpin/api-client typecheck",
+        "exit": 0
+      },
+      {
+        "command": "canonical.controller.test.ts tests/manual-ingestion.test.ts",
+        "exit": 0
+      },
+      {
+        "command": "generate-openapi.ts",
+        "exit": 0
+      },
+      {
+        "command": "pnpm platform:stop|start|doctor --profile demo",
+        "exit": 0
+      },
+      {
+        "command": "verify-canonical.ts",
+        "exit": 0
+      },
+      {
+        "command": "git diff --check",
+        "exit": 0
+      }
+    ]
+  }
+}

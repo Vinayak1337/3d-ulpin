@@ -10,7 +10,7 @@ const ocrBox=z.tuple([z.number().finite(),z.number().finite(),z.number().finite(
 export const DocumentOcrSelectionSchema=z.strictObject({page:z.number().int().min(1).max(8),region:ocrBox.optional()});
 export const DocumentArchiveSelectionSchema=z.strictObject({ordinal:z.number().int().min(0).max(255),
   memberSha256:hash,memberBytes:z.number().int().min(1).max(8*1024*1024)});
-export const DocumentFormatSchema=z.enum(['pdf','text','csv','docx','xlsx','ods','png','jpeg','archive','unsupported']);
+export const DocumentFormatSchema=z.enum(['pdf','text','csv','docx','xlsx','ods','html','png','jpeg','archive','unsupported']);
 export const DocumentOriginalSchema=z.strictObject({version:z.literal(DOCUMENT_VERSION),subject:z.string().min(1).max(256),
   format:DocumentFormatSchema,sha256:hash,bytes:z.number().int().positive(),receivedAt:z.iso.datetime()});
 export const DocumentInputSchema=z.strictObject({version:z.literal(DOCUMENT_VERSION),jobId:id,caseId:id,caseRevision:rev,

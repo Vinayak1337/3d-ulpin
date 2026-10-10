@@ -52,48 +52,14 @@ export function storyAreas(): Json[] | null {
   return [{ ...(lake.context.area as Json), featureCount: visibleFeatures().length }];
 }
 
-export function storyContext(areaId: string): Json | undefined {
-  if (areaId !== AREA_ID || !areaStarted()) return undefined;
-  const features = visibleFeatures();
-  return { ...(lake.context as unknown as Json), area: { ...(lake.context.area as Json), featureCount: features.length }, features };
-}
-
 // ------------------------------------------------------------------ floors
-type Rec = (typeof lake.register.register)[number];
 const levels = lake.register.register.filter((r) => r.kind === 'floor');
 /** Lowest level first: B2, B1, G, F1 … F8, Roof. */
 const BOTTOM_UP = [...levels].sort((a, b) => (a.geometry?.lower ?? 0) - (b.geometry?.lower ?? 0));
-const levelOf = (r: Rec) => r.kind === 'floor' ? r.id : r.links.find((l) => l.type === 'floor')?.targetId;
 
 export function visibleLevelIds(): Set<string> {
   const p = floorsProgress();
   return new Set(BOTTOM_UP.filter((_, i) => 0.05 + (0.85 * i) / BOTTOM_UP.length <= p).map((l) => l.id));
-}
-
-export function storyRegister(buildingId: string, body: Json): Json {
-  if (buildingId !== RESIDENCE) return body;
-  const reg = body as unknown as typeof lake.register;
-  if (!floorsStarted()) {
-    return {
-      ...body, register: [], findings: [], sources: reg.sources.filter((s) => s.name === 'parcels.gpkg'),
-      missing: ['No floors or spaces are recorded for this building yet. Add its plans and level schedule.'],
-      findingQualification: { state: 'not_assessed', missing: [] },
-    };
-  }
-  const shown = visibleLevelIds();
-  const done = floorsDone();
-  return {
-    ...body,
-    register: reg.register.filter((r) => shown.has(levelOf(r) ?? '')),
-    findings: done ? reg.findings : [],
-    findingQualification: done ? reg.findingQualification : { state: 'not_assessed', missing: [] },
-  };
-}
-
-export function storyLedger(body: Json): Json | undefined {
-  if (!floorsStarted()) return undefined;
-  if (floorsDone()) return body;
-  return { ...body, checks: [], findingDetails: [], deviation: null };
 }
 
 // ------------------------------------------------------------------ work queue and board

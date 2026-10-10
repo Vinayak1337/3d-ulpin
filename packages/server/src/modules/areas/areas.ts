@@ -1,4 +1,8 @@
 import { requireQualifiedGeometryRecords } from '../usp/geometry';
+import {
+  assertSourceBuildingPackageAuthorityTx, commitSourceBuildingsTx, isGeometryFreePackage,
+  lockSourceBuildingCasesTx, reviewSourceBuildings,
+} from '../usp/ingestion/source-building-review';
 import type {GisGeometryDisposition} from '@ulpin/contracts';
 import {gisQuarantine} from './gis-quarantine';
 import {displayAreaProposals} from './area-display-proposals';
@@ -126,10 +130,10 @@ function areaFrom(row: any): MapArea {
     featureCount: Number(row.feature_count || 0),
   };
 }
-export async function listAreas(includeArchived = false, client?: PoolClient): Promise<MapArea[]> {
+export async function listAreas(includeArchived = false, client?: PoolClient, readOnly = false): Promise<MapArea[]> {
   const run = client ? client.query.bind(client) : query;
   // Include legacy sites added after the additive migration, without georeferencing them.
-  await run(
+  if (!readOnly) await run(
     "INSERT INTO map_areas(id,site_id,name) SELECT id,id,name FROM registry_sites ON CONFLICT(site_id) DO NOTHING",
   );
   return (
@@ -142,7 +146,7 @@ export async function listAreas(includeArchived = false, client?: PoolClient): P
   ).rows.map(areaFrom);
 }
 export async function getArea(id: string, client?: PoolClient): Promise<MapArea> {
-  const area = (await listAreas(true, client)).find((a) => a.id === id);
+  const area = (await listAreas(true, client, true)).find((a) => a.id === id);
   return area || notFound("Map area not found.");
 }
 async function projectedFeatures(
@@ -223,7 +227,7 @@ export async function areaContext(id: string): Promise<AreaContext> {
     loadAreaFeatures(area),
     transaction(async client => {
       const rows = await client.query("SELECT body FROM import_packages WHERE area_id=$1 ORDER BY created_at DESC LIMIT 30", [id]);
-      for (const row of rows.rows) await assertPackageDocumentAuthority(client, row.body);
+      for (const row of rows.rows) await assertAreaPackageAuthority(client, row.body);
       return {rows:rows.rows,displayFeatures:await displayAreaProposals(client,area,rows.rows.map(row=>row.body))};
     }),
     query(
@@ -271,10 +275,24 @@ export async function areaContext(id: string): Promise<AreaContext> {
     latestCheck: latestCheck || null,
   };
 }
+/** Locate a feature's own existing context; display proposals remain separate from recorded features. */
+export async function areaFeatureContext(featureId: string): Promise<AreaContext> {
+  const row = (await query('SELECT area_id FROM physical_features WHERE id=$1', [featureId])).rows[0];
+  if (!row) notFound('Physical feature not found.');
+  return areaContext(row.area_id);
+}
+async function assertAreaPackageAuthority(client: PoolClient, pkg: ImportPackage): Promise<ImportPackage> {
+  if (isGeometryFreePackage(pkg)) {
+    await assertSourceBuildingPackageAuthorityTx(client, pkg.id);
+    return pkg;
+  }
+  return assertPackageDocumentAuthority(client, pkg);
+}
+
 export async function getPackage(id: string, client?: PoolClient): Promise<ImportPackage> {
   const read=async(current:PoolClient)=>{
     const pkg:ImportPackage=(await current.query("SELECT body FROM import_packages WHERE id=$1",[id])).rows[0]?.body||notFound('Import package not found.');
-    return assertPackageDocumentAuthority(current,pkg);
+    return assertAreaPackageAuthority(current,pkg);
   };
   return client?read(client):transaction(read);
 }
@@ -301,6 +319,10 @@ async function lockedPackage(
     )
   ).rows[0]?.body as ImportPackage | undefined;
   if (!pkg) notFound("Import package not found.");
+  if (isGeometryFreePackage(pkg)) {
+    throw new AppError(422, 'SOURCE_BUILDING_CORRECTION_REQUIRED',
+      'Source-only declarations cannot use GIS geometry editing or staged document extraction.');
+  }
   await assertPackageDocumentAuthority(client, pkg);
   if (pkg.revision !== expectedRevision)
     conflict("Package changed. Refresh before editing or reviewing.");
@@ -1006,6 +1028,8 @@ async function withNeighbours(
   area: MapArea,
   client?: PoolClient,
 ): Promise<PhysicalFeature[]> {
+  // Source-only declarations have no geometry to qualify or analyse.
+  features = features.filter(feature => feature.geometry !== null);
   if (!area.reference || !features.length) return features;
   const positions: number[][] = [];
   function visit(value: unknown) {
@@ -1214,6 +1238,7 @@ export async function createPackageCorrection(id: string, requestKey: string) {
   });
 }
 export async function reviewPackage(id: string, expectedRevision: number) {
+  if (isGeometryFreePackage(await getPackage(id))) return reviewSourceBuildings(id, expectedRevision);
   if ((await getPackage(id)).sourceWorkspace) throw new AppError(422, "SOURCE_WORKSPACE", "Review the derived footprint draft or assign documents to a property before recording.");
   const pkg = await getPackage(id),
     area = await getArea(pkg.areaId);
@@ -1274,6 +1299,7 @@ export async function commitPackage(
   acknowledgement: string,
 ) {
   return transaction(async (client) => {
+    await lockSourceBuildingCasesTx(client, id);
     // Single-operator acceptance is serialized across areas so a cross-area neighbour cannot change after fingerprint validation.
     await client.query(
       "SELECT pg_advisory_xact_lock(hashtextextended('physical-area-recording',0))",
@@ -1286,6 +1312,9 @@ export async function commitPackage(
       )
     ).rows[0];
     if (!raw) notFound();
+    if (isGeometryFreePackage(raw.body)) {
+      return commitSourceBuildingsTx(client, raw.body, expectedRevision, acknowledgement);
+    }
     const pkg = raw.body as ImportPackage & {
       extent: Normalized["extent"];
       geographicExtent: Normalized["extent"];

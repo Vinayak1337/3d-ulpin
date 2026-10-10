@@ -27,17 +27,16 @@ Reconciled 6 October 2026, 18:30 IST, from the live `staging` head, the Codex wo
   - **No model has been trained.**
 - **Release gates:** still 0 of 30 tests with any receipt or attempt, and no `targetDate`.
 
-## Live state right now
+## Live state right now (10 October, 02:45 IST)
 
 | Item | State |
 | --- | --- |
-| `staging` (`E:/Projects/3d-ulpin`) | Pushed to `origin/staging` on 10 Oct; the instruction reset (S0.2) follows `e95273e5`. Integration is owned by the lead. |
-| Codex chats (retired 10 Oct) | Orchestrator `01a0ed8a`, D00 integration `01a0fbd1`, AI-04B backend `01a0ee2d`, D01/data `01a0f810` (GLTF-01) and ML Teacher `01a0fbd5`. Project activity stopped at about 16:25 IST. **AI-04B's last three turns failed with `503 account busy` from the local account router (127.0.0.1:18891).** The router chat `01a0edb3` also ended with a `502`. The Codex app restarted at 17:41. |
-| In-flight work | **AI-04B launcher bridge fix: uncommitted.** It touches 2 files in `desktop-plan-extraction`, branch `task/d07-rfdetr-repaired-bridge-fix-20261006`. The teacher's failure record `cf85c491` (branch `task/d07-native-cpu-empty-loss-20261006`) is **not yet integrated**. D08 decision runtime check: prepared, not run. |
-| Other worktrees | 16 Codex worktrees. Three old detached ones hold uncommitted edits that predate the reset: `56f9` (fragment rank), `b3eb` (CityJSON) and `backend-review` (native PDF/archive). Keep them parked; don't discard them. |
-| Runtime | Docker engine is **not running** (`docker ps` fails; D07-DOCKER-AVAILABILITY returned blocked on `sailor-ingest.sock` errors). The last D01 report had 24 containers and 14 volumes preserved. No API is serving. The GPU is idle. |
-| Private data | `E:/BhuAayam-data/{datasets,runtime,task-data}`. There are 97 task folders since 4 October, all receipts and inputs. The 5 October cleanup review was a metadata-only inventory with no deletions. |
-| This branch | `claude/magical-bardeen-31bi7c` (worktree `E:/Projects/3d-ulpin-claude`). It contains the review bundle, including unaccepted learner checkpoints. **Never merge it wholesale into `staging`**; take only the docs. |
+| `staging` | `5adc06ef`, local; next push at M1 (14 Oct). Merged on 10 Oct: S0.2 instruction reset, A1 mapping vocabulary + executor, D1/D1b messy-India pack (37 files, 26 families, held-out split), D2 storyline sources + storey truth, B1 RAMP data + split + preregistration + installed-model DEV baseline, S0.3 demo runtime, D3 HTML table reader, K1 canonical area/building routes. |
+| Workers | pi codex-pool `gpt-6.1-sol` (xhigh). All four accounts hit the 5-hour limit around 01:30 IST; codex-3 resets 03:40, codex-1 05:30. Paused with checkpoints: A2b (Sarvam teacher fixes + A1 readability), P1c (vector plan reader structure), B3 (fine-tune). Next: K2 (demo buildings through the import route). Claude Sonnet workers cover the gap: K1 style refactor (merged), F1a Studio live switch (running). |
+| Runtime | `ulpin-demo` profile up from `E:/Projects/ulpin-wt/k1` (API 127.0.0.1:3194; `pnpm platform:doctor --profile demo`). Demo DB holds only 62 NYC and 2 GMDA `test_only` proposals; Tower 3 and Bihar Magnolia wait on K2. OCR not yet configured in the runtime (K2 step 3). |
+| GPU | B3 RF-DETR-Seg fine-tune on RAMP Karnataka, running detached. DEV at IoU 0.5: installed 0.728 P / 0.431 R → epoch 1 0.890 / 0.579 → epoch 2 0.835 / 0.656 (preregistered target P ≥ 0.75, R ≥ 0.70; holdout not yet used for selection). |
+| Contract check | `python scripts/api/check.py` fails on `staging`: producer pins stale after D1 (`datasets.json`) and K1. Regeneration is K2 step 0. |
+| Private data | `E:/BhuAayam-data/{datasets,runtime,task-data}`; nothing deleted. |
 
 ## Gates
 
@@ -60,7 +59,7 @@ Reconciled 6 October 2026, 18:30 IST, from the live `staging` head, the Codex wo
 | Geometry | Missing: D09 is parked; CityJSON still has empty vertices. |
 | Identity | Partial: P3 code exists; no input wired. |
 | Card | Missing: D12 is parked. |
-| Studio | Partial: unchanged since 2 October; 3 live routes and 33 mocked; D13 parked. |
+| Studio | Partial: F1a (live API switch-over) in progress on 10 Oct. |
 | Data | Partial: Tower-3 documents and foreign/RAMP labels; 0 Indian labelled pairs. |
 
 ## Findings on 9–10 October that changed the plan
@@ -73,11 +72,8 @@ Reconciled 6 October 2026, 18:30 IST, from the live `staging` head, the Codex wo
 
 ## Assessment: what to do next
 
-Follow [SPRINT-SELECTION.md](next-steps/SPRINT-SELECTION.md):
-1. S0.1–S0.2 done on 10 Oct (preservation, AGENTS.md reset). S0.3 runtime is in wave 1.
-2. Wave 1:
-   - the RAMP data and plain GPU environment (B1);
-   - the canonical vocabulary for the agent (A1);
-   - the messy Indian files and storyline sources (D1, D2);
-   - the vector plan reader (P1).
-3. Then the teacher bootstrap (T1, by the lead), the learner, the Sarvam teacher and the building fine-tune, ahead of the Studio slice.
+Follow [SPRINT-SELECTION.md](next-steps/SPRINT-SELECTION.md) §6:
+1. On the codex-3 reset: K2 (Tower 3 and Magnolia through the import route, OCR, pins), then B3 model selection on DEV and its single holdout run, then A2b and P1c.
+2. Review and merge F1a; F1 part 2 draws the scene from the canonical routes (K1 is merged).
+3. After A2 merges: T1 teacher bootstrap (lead labels development-family column profiles), then A3/A4.
+4. M1 on 14 Oct: push `staging` with the runtime, canonical record, data pack and first fine-tune result.

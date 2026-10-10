@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import {LegacyMappingTargetSchema} from '../canonical/targets';
+export {MappingPlanV2Schema} from '../canonical/mapping-plan';
+export type {MappingPlanV2} from '../canonical/mapping-plan';
 
 const id = z.string().uuid();
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -9,7 +12,7 @@ export const ConversionIdSchema = z.enum(['literal_identifier@1', 'literal_text@
 /** Paths are inventory tokens, never expressions or values. Membership is checked by the server. */
 export const SourcePathSchema = z.string().max(512).regex(/^\/features\/\*\/(?:id|geometry|properties\/(?:[^~\/]|~[01])+)$/);
 export const MappingOperationSchema = z.strictObject({
-  target: z.enum(['building.sourceKey', 'building.name', 'building.geometry']),
+  target: LegacyMappingTargetSchema,
   sourcePath: SourcePathSchema, conversionId: ConversionIdSchema,
 });
 export const SourcePinSchema = z.strictObject({sourceId: id, familyId: id, sourceRevision: revision, sourceSha256: hash, schemaFingerprint: hash});
