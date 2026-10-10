@@ -16,7 +16,7 @@ import { DeleteDialog } from '../manage/DeleteDialog';
 import { CardDialog } from '../identity/CardDialog';
 import { useSpaceWorkflow } from '../workflow/useWorkflow';
 import { polygonsOf, undrawnNote } from './footprints';
-import { undrawnBuildingsNote, useCanonicalFootprints } from './canonicalScene';
+import { useCanonicalFootprints } from './canonicalScene';
 import { findingVolume, useBuildingScene } from './useBuildingScene';
 import { PlanCheck, type MapPlanCheck } from './PlanCheck';
 import { isDemoId } from '../../api/demo-import';
@@ -24,6 +24,7 @@ import { isServed } from '../../local/routes';
 import { MapSidebar, type ViewKey } from './MapSidebar';
 import { BuildingImportTray, ImportTray } from './ImportTray';
 import { ScaleAndNorth } from './ScaleAndNorth';
+import { UndrawnBuildings } from './UndrawnBuildings';
 import { BuildingSearch } from './BuildingSearch';
 import { CandidateBanner } from '../review/candidates/CandidateBanner';
 import { useMapView } from './useMapView';
@@ -44,6 +45,7 @@ const ATTRIBUTION: Record<string, string> = {
   'swiss-dwellings': 'Swiss Dwellings (Zenodo 7070952), CC BY 4.0',
 };
 const shownQuarantine = new Set<string>();
+const WIDE_WINDOW = '(min-width: 1000px)';
 
 /**
  * S4–S6, S8: one canvas whose modes (area, building, level, findings, underground) share one selection,
@@ -113,10 +115,20 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const drawn = useCanonicalFootprints(context.area.id, feature?.id, context.features, Boolean(packageId));
   const { base, footprints, detail } = useBuildingScene(context.features, feature, model, ledger, colour, drawn.footprints);
   const [mapView, setMapView] = useMapView();
+  const drawnIds = useMemo(() => new Set(footprints.map((f) => f.id)), [footprints]);
   const baseKinds = useMemo(() => new Set(base.map((f) => f.kind)), [base]);
   const supplemental = (context as unknown as { supplementalDatasets?: SupplementalDataset[] }).supplementalDatasets;
   const overlayQuery = useOverlays(context.area.id, supplemental, context.area.reference as AreaReference | null);
   const loadedOverlays = overlayQuery.data?.overlays ?? NO_LOADED_OVERLAYS;
+  // Nothing to scale or fit: no footprint, base feature or overlay, and every read has settled.
+  const nothingToDraw = !footprints.length && !base.length && !loadedOverlays.length && !drawn.pending
+    && !drawn.error && !overlayQuery.isLoading && !packageId && !buildingImportId;
+  // On a wide window the tools open on the list of buildings without geometry, so a record that is not drawn is
+  // still seen; a narrow one keeps the canvas clear and names the list instead.
+  const [toolsOpen, setToolsOpen] = useState(false);
+  useEffect(() => {
+    if (drawn.undrawn.length && window.matchMedia(WIDE_WINDOW).matches) setToolsOpen(true);
+  }, [drawn.undrawn.length]);
   const showContextOverlays = (selection.mode === 'area' || selection.mode === 'building');
   const overlayInputs = useMemo<OverlayInput[]>(() => [
     ...loadedOverlays.filter((o) => showContextOverlays && mapView.overlays[o.layer]).map((o) => o.input),
@@ -127,7 +139,12 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   ], [loadedOverlays, mapView.overlays, showContextOverlays, activePlan]);
   const visibleOverlays = loadedOverlays.filter((o) => showContextOverlays && mapView.overlays[o.layer]);
   const overlayNotes = visibleOverlays.map((o) => o.note);
-  const viewNotes = [mapView.look === 'enhanced' ? 'Enhanced view' : null, ...visibleOverlays.map((o) => o.caption), undrawnNote(context.features), undrawnBuildingsNote(drawn.undrawn), ...(overlayQuery.data?.warnings ?? [])].filter(Boolean);
+  const viewNotes = [
+    mapView.look === 'enhanced' ? 'Enhanced view' : null,
+    ...visibleOverlays.map((o) => o.caption),
+    undrawnNote(context.features),
+    ...(overlayQuery.data?.warnings ?? []),
+  ].filter(Boolean);
   const layerSwitches = [
     { key: 'look', label: 'Enhanced view', checked: mapView.look === 'enhanced' },
     ...(baseKinds.has('road') ? [{ key: 'roads', label: 'Roads', checked: mapView.layers.roads }] : []),
@@ -267,7 +284,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   // Legend: only the active Colour by, plus the evidence key on a floor.
   const legend: LegendSection[] = [];
   if (colour === 'height') {
-    const { counts, unknown } = heightCounts(buildings);
+    const { counts, unknown } = heightCounts(buildings.filter((b) => drawnIds.has(b.id)));
     legend.push({ title: 'Roof height', items: [
       ...HEIGHT_BANDS.map((b, i) => ({ label: b.label, count: counts[i], color: b.color })).filter((item) => item.count),
       ...(unknown ? [{ label: 'Unknown', count: unknown, color: 'var(--ui-map-building)', hatch: true }] : []),
@@ -391,6 +408,16 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                 />
               </div>
             ) : null}
+            {nothingToDraw ? (
+              <div className={styles.noGeometry}>
+                <div className={`ul-float ${styles.emptyCard}`}>
+                  <span>No geometry is recorded for this area yet</span>
+                  {drawn.undrawn.length && !toolsOpen ? (
+                    <span>Buildings recorded without geometry are listed under Tools.</span>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
             {noFloors ? (
               <div className={styles.emptyOverlay}>
                 <div className={`ul-float ${styles.emptyCard}`}>
@@ -400,9 +427,14 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
               </div>
             ) : null}
             <SceneLabels engine={engine} labels={labels} tick={tick} />
-            <details className={styles.mapTools}>
+            <details
+              className={styles.mapTools}
+              open={toolsOpen}
+              onToggle={(event) => setToolsOpen(event.currentTarget.open)}
+            >
               <summary><Icon icon={SlidersHorizontal} size={20} />Tools</summary>
               <MapSidebar
+                undrawn={<UndrawnBuildings buildings={drawn.undrawn} />}
                 planCheck={isDemoId(context.area.id) ? <PlanCheck key={context.area.id} areaId={context.area.id} result={activePlan} onResult={(result) => { setPlanResult(result); if (result) dispatch({ type: 'selectBuilding', id: null }); }} /> : undefined}
                 views={[
                   { key: 'area', label: 'Area' },
@@ -421,7 +453,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                   { value: 'none', label: 'None' },
                   { value: 'rights', label: 'Rights', disabled: !model?.levels.length },
                   { value: 'utilities', label: 'Utilities', disabled: !utilities.length || !feature },
-                  { value: 'height', label: 'Height', disabled: !buildings.length },
+                  { value: 'height', label: 'Height', disabled: !footprints.length },
                 ]}
                 floor={selection.mode === 'level' && level ? level.label : null}
                 spaces={selection.mode === 'level' && model ? model.spaces.filter((s) => s.levelId === selection.levelId && !s.parentId) : []}
@@ -452,7 +484,11 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
             )}
             {hint ? <div className={styles.hint} key={hint}>{hint}</div> : null}
             {viewNotes.length ? <p className={styles.viewNote}>{viewNotes.map((note, i) => <span key={i}>{note}</span>)}</p> : null}
-            <div className={styles.readout}><ScaleAndNorth engine={engine} tick={tick} title={readoutTitle} prefix={readout} /></div>
+            {nothingToDraw ? null : (
+              <div className={styles.readout}>
+                <ScaleAndNorth engine={engine} tick={tick} title={readoutTitle} prefix={readout} />
+              </div>
+            )}
             {namespaces.length ? <p className={styles.attribution}>{namespaces.map((ns) => ATTRIBUTION[ns]).join(' · ')}</p> : null}
           </div>
           {tray ? <div className={styles.tray}>{tray}</div> : null}
