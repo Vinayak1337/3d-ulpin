@@ -3063,7 +3063,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Retain and inspect a source-pinned GeoJSON original in an existing unassigned source case */
+        /** Retain a pinned GeoJSON or public D8 CSV/XLSX original in an existing source case */
         post: operations["POST_api_v1_ingestion_cases_caseId_sources"];
         delete?: never;
         options?: never;
@@ -3671,7 +3671,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Queue a retained GeoJSON original for bounded source-native draft chunks */
+        /** Queue retained GeoJSON or pinned D8 tabular bytes for bounded source-native draft chunks */
         post: operations["POST_api_v1_ingestion_cases_caseId_sources_sourceId_streaming_vector"];
         delete?: never;
         options?: never;
@@ -61906,7 +61906,9 @@ export interface components {
             /** Format: binary */
             file: string;
             /** @enum {string} */
-            format: "geojson";
+            format: "geojson" | "csv" | "xlsx";
+            /** @description JSON tabular selection: format, sheet, table:null, ordered headerRows */
+            selection?: string;
             /** Format: uuid */
             requestKey: string;
             expectedWorkspaceRevision: number;
@@ -61949,6 +61951,66 @@ export interface components {
                 literalIdEligible: boolean;
                 literalTextEligible: boolean;
             }[];
+            limitations: string[];
+        } | {
+            /** @enum {string} */
+            version: "manual-tabular/1";
+            source: {
+                /** Format: uuid */
+                sourceId: string;
+                /** Format: uuid */
+                familyId: string;
+                sourceRevision: number;
+                sourceSha256: string;
+                schemaFingerprint: string;
+            };
+            tabular: {
+                selection: {
+                    /** @enum {string} */
+                    format: "csv" | "xlsx";
+                    sheet: string;
+                    /** @enum {string|null} */
+                    table: null;
+                    headerRows: number[];
+                };
+                sourceBytes: number;
+                developmentAssetId: string;
+                developmentFamily: string;
+            };
+            /** Format: uuid */
+            caseId: string;
+            workspaceRevision: number;
+            workspaceFingerprint: string;
+            headers: string[];
+            records: number;
+            profile: {
+                /** @enum {string} */
+                version: "column-profile/1";
+                /** @enum {string} */
+                sourceKind: "tabular" | "gis_attributes";
+                layoutFingerprint: string;
+                columns: {
+                    name: string;
+                    /** @enum {string} */
+                    inferredType: "text" | "number" | "date" | "boolean" | "geometry" | "object" | "array" | "mixed" | "unknown";
+                    /** @enum {string} */
+                    declaredUnit?: "m2" | "ft2" | "sq_yd" | "gaj" | "marla" | "bigha" | "kanal" | "cent" | "guntha" | "m" | "ft" | "count";
+                    valueShapes: {
+                        dateDmyRate: number | null;
+                        dateIsoRate: number | null;
+                        lakhGroupingRate: number | null;
+                        devanagariDigitRate: number | null;
+                        khasraLikeRate: number | null;
+                        floorLabelRate: number | null;
+                        nullRate: number | null;
+                        blankRate: number | null;
+                        absentRate: number | null;
+                        distinctRatio: number | null;
+                    };
+                    maskedSamples: string[];
+                }[];
+                sampleShortfall: boolean;
+            };
             limitations: string[];
         };
         POST_ingestion_cases_caseId_sources_sourceId_recipes_Request_application_json: {
@@ -61996,6 +62058,91 @@ export interface components {
                 namespace: string;
                 name: string;
             };
+        } | {
+            /** Format: uuid */
+            requestKey: string;
+            expectedRecipeRevision: number;
+            plan: {
+                /** @enum {string} */
+                version: "manual-tabular/1";
+                /** @enum {string} */
+                mode: "manual_mapping";
+                source: {
+                    /** Format: uuid */
+                    sourceId: string;
+                    /** Format: uuid */
+                    familyId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    schemaFingerprint: string;
+                };
+                /** Format: uuid */
+                caseId: string;
+                workspaceRevision: number;
+                workspaceFingerprint: string;
+                tabular: {
+                    selection: {
+                        /** @enum {string} */
+                        format: "csv" | "xlsx";
+                        sheet: string;
+                        /** @enum {string|null} */
+                        table: null;
+                        headerRows: number[];
+                    };
+                    sourceBytes: number;
+                    developmentAssetId: string;
+                    developmentFamily: string;
+                };
+                mapping: {
+                    /** @enum {string} */
+                    version: "mapping-plan/2";
+                    layoutFingerprint: string;
+                    /** @enum {string} */
+                    sourceKind: "tabular" | "gis_attributes";
+                    method: string;
+                    fields: {
+                        sourceField: string;
+                        /** @enum {string} */
+                        target: "building.sourceKey" | "building.name" | "building.addressLiteral" | "building.use" | "building.storeyLabel" | "building.storeyCount" | "building.heightM" | "building.footprint" | "parcel.khasra" | "parcel.plot" | "parcel.survey" | "parcel.ulpinAnchor" | "parcel.area" | "unit.unitNo" | "unit.floorLabel" | "unit.type" | "unit.carpetArea" | "unit.builtUpArea" | "unit.balconyArea" | "level.label" | "level.kind" | "level.lowerM" | "level.upperM" | "space.name" | "space.kind" | "space.area" | "document.registrationNo" | "document.sanctionNo" | "document.date" | "document.issuer" | "document.status" | "building.parentSourceKey" | "unit.parentSourceKey" | "level.parentSourceKey" | "space.parentSourceKey" | "unknown" | "building.geometry";
+                        operation: {
+                            /** @enum {string} */
+                            kind: "copy";
+                        } | {
+                            /** @enum {string} */
+                            kind: "enum_lookup";
+                            /** @enum {string} */
+                            tableId: "building_use@1" | "unit_type@1" | "level_kind@1" | "space_kind@1" | "document_status@1";
+                        } | {
+                            /** @enum {string} */
+                            kind: "unit_convert";
+                            /** @enum {string} */
+                            sourceUnit: "m2" | "ft2" | "sq_yd" | "gaj" | "marla" | "bigha" | "kanal" | "cent" | "guntha" | "m" | "ft" | "count";
+                        } | {
+                            /** @enum {string} */
+                            kind: "parse_literal";
+                            /** @enum {string} */
+                            literalKind: "text_literal" | "number" | "date_dmy" | "date_iso";
+                        } | {
+                            /** @enum {string} */
+                            kind: "link_parent_key";
+                            parentField: string;
+                        };
+                        confidence: number;
+                        rationale: string;
+                        citations?: {
+                            sourceRef: string;
+                            row: number;
+                            column: string;
+                        }[];
+                    }[];
+                };
+                decisions: {
+                    sourceField: string;
+                    reason: string;
+                }[];
+            };
+            /** @enum {string|null} */
+            destination: null;
         };
         POST_ingestion_cases_caseId_sources_sourceId_recipes_Response_201_application_json: {
             /** Format: uuid */
@@ -62065,8 +62212,116 @@ export interface components {
                 /** Format: date-time */
                 at: string;
             } | null;
+        } | {
+            /** Format: uuid */
+            id: string;
+            revision: number;
+            /** @enum {string} */
+            state: "proposed" | "approved" | "executed";
+            planHash: string;
+            authoredBy: string;
+            /** Format: date-time */
+            authoredAt: string;
+            approval: {
+                subject: string;
+                /** Format: date-time */
+                at: string;
+                planHash: string;
+                /** @enum {string} */
+                provenance: "server_configured_local_operator";
+            } | null;
+            execution: {
+                /** Format: uuid */
+                packageId: string;
+                /** Format: uuid */
+                sourceRevisionId: string;
+                subject: string;
+                /** Format: date-time */
+                at: string;
+            } | null;
+            plan: {
+                /** @enum {string} */
+                version: "manual-tabular/1";
+                /** @enum {string} */
+                mode: "manual_mapping";
+                source: {
+                    /** Format: uuid */
+                    sourceId: string;
+                    /** Format: uuid */
+                    familyId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    schemaFingerprint: string;
+                };
+                /** Format: uuid */
+                caseId: string;
+                workspaceRevision: number;
+                workspaceFingerprint: string;
+                tabular: {
+                    selection: {
+                        /** @enum {string} */
+                        format: "csv" | "xlsx";
+                        sheet: string;
+                        /** @enum {string|null} */
+                        table: null;
+                        headerRows: number[];
+                    };
+                    sourceBytes: number;
+                    developmentAssetId: string;
+                    developmentFamily: string;
+                };
+                mapping: {
+                    /** @enum {string} */
+                    version: "mapping-plan/2";
+                    layoutFingerprint: string;
+                    /** @enum {string} */
+                    sourceKind: "tabular" | "gis_attributes";
+                    method: string;
+                    fields: {
+                        sourceField: string;
+                        /** @enum {string} */
+                        target: "building.sourceKey" | "building.name" | "building.addressLiteral" | "building.use" | "building.storeyLabel" | "building.storeyCount" | "building.heightM" | "building.footprint" | "parcel.khasra" | "parcel.plot" | "parcel.survey" | "parcel.ulpinAnchor" | "parcel.area" | "unit.unitNo" | "unit.floorLabel" | "unit.type" | "unit.carpetArea" | "unit.builtUpArea" | "unit.balconyArea" | "level.label" | "level.kind" | "level.lowerM" | "level.upperM" | "space.name" | "space.kind" | "space.area" | "document.registrationNo" | "document.sanctionNo" | "document.date" | "document.issuer" | "document.status" | "building.parentSourceKey" | "unit.parentSourceKey" | "level.parentSourceKey" | "space.parentSourceKey" | "unknown" | "building.geometry";
+                        operation: {
+                            /** @enum {string} */
+                            kind: "copy";
+                        } | {
+                            /** @enum {string} */
+                            kind: "enum_lookup";
+                            /** @enum {string} */
+                            tableId: "building_use@1" | "unit_type@1" | "level_kind@1" | "space_kind@1" | "document_status@1";
+                        } | {
+                            /** @enum {string} */
+                            kind: "unit_convert";
+                            /** @enum {string} */
+                            sourceUnit: "m2" | "ft2" | "sq_yd" | "gaj" | "marla" | "bigha" | "kanal" | "cent" | "guntha" | "m" | "ft" | "count";
+                        } | {
+                            /** @enum {string} */
+                            kind: "parse_literal";
+                            /** @enum {string} */
+                            literalKind: "text_literal" | "number" | "date_dmy" | "date_iso";
+                        } | {
+                            /** @enum {string} */
+                            kind: "link_parent_key";
+                            parentField: string;
+                        };
+                        confidence: number;
+                        rationale: string;
+                        citations?: {
+                            sourceRef: string;
+                            row: number;
+                            column: string;
+                        }[];
+                    }[];
+                };
+                decisions: {
+                    sourceField: string;
+                    reason: string;
+                }[];
+            };
+            /** @enum {string|null} */
+            destination: null;
         };
-        GET_ingestion_cases_caseId_recipes_recipeId_Response_200_application_json: {
+        GET_ingestion_cases_caseId_recipes_recipeId_Response_200_application_json: ({
             /** Format: uuid */
             id: string;
             revision: number;
@@ -62134,7 +62389,115 @@ export interface components {
                 /** Format: date-time */
                 at: string;
             } | null;
-        }[];
+        } | {
+            /** Format: uuid */
+            id: string;
+            revision: number;
+            /** @enum {string} */
+            state: "proposed" | "approved" | "executed";
+            planHash: string;
+            authoredBy: string;
+            /** Format: date-time */
+            authoredAt: string;
+            approval: {
+                subject: string;
+                /** Format: date-time */
+                at: string;
+                planHash: string;
+                /** @enum {string} */
+                provenance: "server_configured_local_operator";
+            } | null;
+            execution: {
+                /** Format: uuid */
+                packageId: string;
+                /** Format: uuid */
+                sourceRevisionId: string;
+                subject: string;
+                /** Format: date-time */
+                at: string;
+            } | null;
+            plan: {
+                /** @enum {string} */
+                version: "manual-tabular/1";
+                /** @enum {string} */
+                mode: "manual_mapping";
+                source: {
+                    /** Format: uuid */
+                    sourceId: string;
+                    /** Format: uuid */
+                    familyId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    schemaFingerprint: string;
+                };
+                /** Format: uuid */
+                caseId: string;
+                workspaceRevision: number;
+                workspaceFingerprint: string;
+                tabular: {
+                    selection: {
+                        /** @enum {string} */
+                        format: "csv" | "xlsx";
+                        sheet: string;
+                        /** @enum {string|null} */
+                        table: null;
+                        headerRows: number[];
+                    };
+                    sourceBytes: number;
+                    developmentAssetId: string;
+                    developmentFamily: string;
+                };
+                mapping: {
+                    /** @enum {string} */
+                    version: "mapping-plan/2";
+                    layoutFingerprint: string;
+                    /** @enum {string} */
+                    sourceKind: "tabular" | "gis_attributes";
+                    method: string;
+                    fields: {
+                        sourceField: string;
+                        /** @enum {string} */
+                        target: "building.sourceKey" | "building.name" | "building.addressLiteral" | "building.use" | "building.storeyLabel" | "building.storeyCount" | "building.heightM" | "building.footprint" | "parcel.khasra" | "parcel.plot" | "parcel.survey" | "parcel.ulpinAnchor" | "parcel.area" | "unit.unitNo" | "unit.floorLabel" | "unit.type" | "unit.carpetArea" | "unit.builtUpArea" | "unit.balconyArea" | "level.label" | "level.kind" | "level.lowerM" | "level.upperM" | "space.name" | "space.kind" | "space.area" | "document.registrationNo" | "document.sanctionNo" | "document.date" | "document.issuer" | "document.status" | "building.parentSourceKey" | "unit.parentSourceKey" | "level.parentSourceKey" | "space.parentSourceKey" | "unknown" | "building.geometry";
+                        operation: {
+                            /** @enum {string} */
+                            kind: "copy";
+                        } | {
+                            /** @enum {string} */
+                            kind: "enum_lookup";
+                            /** @enum {string} */
+                            tableId: "building_use@1" | "unit_type@1" | "level_kind@1" | "space_kind@1" | "document_status@1";
+                        } | {
+                            /** @enum {string} */
+                            kind: "unit_convert";
+                            /** @enum {string} */
+                            sourceUnit: "m2" | "ft2" | "sq_yd" | "gaj" | "marla" | "bigha" | "kanal" | "cent" | "guntha" | "m" | "ft" | "count";
+                        } | {
+                            /** @enum {string} */
+                            kind: "parse_literal";
+                            /** @enum {string} */
+                            literalKind: "text_literal" | "number" | "date_dmy" | "date_iso";
+                        } | {
+                            /** @enum {string} */
+                            kind: "link_parent_key";
+                            parentField: string;
+                        };
+                        confidence: number;
+                        rationale: string;
+                        citations?: {
+                            sourceRef: string;
+                            row: number;
+                            column: string;
+                        }[];
+                    }[];
+                };
+                decisions: {
+                    sourceField: string;
+                    reason: string;
+                }[];
+            };
+            /** @enum {string|null} */
+            destination: null;
+        })[];
         POST_ingestion_cases_caseId_recipes_recipeId_approve_Request_application_json: {
             /** Format: uuid */
             requestKey: string;
@@ -64819,6 +65182,27 @@ export interface components {
             sourceSha256: string;
             /** @enum {string} */
             framing: "feature-collection" | "geojson-seq-rs";
+        } | {
+            /** Format: uuid */
+            requestKey: string;
+            expectedCaseRevision: number;
+            expectedSourceRevision: number;
+            sourceSha256: string;
+            /** @enum {string} */
+            framing: "tabular";
+            tabular: {
+                selection: {
+                    /** @enum {string} */
+                    format: "csv" | "xlsx";
+                    sheet: string;
+                    /** @enum {string|null} */
+                    table: null;
+                    headerRows: number[];
+                };
+                sourceBytes: number;
+                developmentAssetId: string;
+                developmentFamily: string;
+            };
         };
         POST_ingestion_cases_caseId_sources_sourceId_streaming_vector_Response_202_application_json: {
             /** @enum {string} */
@@ -64831,8 +65215,6 @@ export interface components {
             sourceId: string;
             sourceRevision: number;
             sourceSha256: string;
-            /** @enum {string} */
-            framing: "feature-collection" | "geojson-seq-rs";
             /** @enum {string} */
             status: "queued" | "running" | "completed" | "completed_with_rejections" | "failed" | "stale";
             nextPublishIndex: number;
@@ -64869,6 +65251,21 @@ export interface components {
                 attempt: number;
                 fence: number;
             }[];
+            /** @enum {string} */
+            framing: "feature-collection" | "geojson-seq-rs" | "tabular";
+            tabular?: {
+                selection: {
+                    /** @enum {string} */
+                    format: "csv" | "xlsx";
+                    sheet: string;
+                    /** @enum {string|null} */
+                    table: null;
+                    headerRows: number[];
+                };
+                sourceBytes: number;
+                developmentAssetId: string;
+                developmentFamily: string;
+            };
         };
         GET_ingestion_cases_caseId_sources_sourceId_streaming_vector_jobs_jobId_chunks_chunkIndex_Response_200_application_json: {
             slot: {
@@ -64930,6 +65327,19 @@ export interface components {
             profileHash?: string;
             /** @enum {string} */
             prefixAdmissionVersion?: "streamed-prefix-admission/1";
+            tabular?: {
+                selection: {
+                    /** @enum {string} */
+                    format: "csv" | "xlsx";
+                    sheet: string;
+                    /** @enum {string|null} */
+                    table: null;
+                    headerRows: number[];
+                };
+                sourceBytes: number;
+                developmentAssetId: string;
+                developmentFamily: string;
+            };
         };
         POST_ingestion_cases_caseId_sources_sourceId_chunk_mapping_Response_202_application_json: {
             /** @enum {string} */
@@ -64960,6 +65370,19 @@ export interface components {
             profileHash?: string;
             /** @enum {string} */
             prefixAdmissionVersion?: "streamed-prefix-admission/1";
+            tabular?: {
+                selection: {
+                    /** @enum {string} */
+                    format: "csv" | "xlsx";
+                    sheet: string;
+                    /** @enum {string|null} */
+                    table: null;
+                    headerRows: number[];
+                };
+                sourceBytes: number;
+                developmentAssetId: string;
+                developmentFamily: string;
+            };
             referenceEvidence: string | null;
             /** @enum {string} */
             globalPlacement: "not_qualified";
@@ -65101,7 +65524,148 @@ export interface components {
                 chunkIndex: number;
                 rawResultSha256: string;
                 schemaFingerprint: string | null;
-                recipeRevision: number;
+                recipeRevision: number | null;
+                tabular?: {
+                    selection: {
+                        /** @enum {string} */
+                        format: "csv" | "xlsx";
+                        sheet: string;
+                        /** @enum {string|null} */
+                        table: null;
+                        headerRows: number[];
+                    };
+                    sourceBytes: number;
+                    developmentAssetId: string;
+                    developmentFamily: string;
+                };
+                mapping?: {
+                    profile: {
+                        /** @enum {string} */
+                        version: "column-profile/1";
+                        /** @enum {string} */
+                        sourceKind: "tabular" | "gis_attributes";
+                        layoutFingerprint: string;
+                        columns: {
+                            name: string;
+                            /** @enum {string} */
+                            inferredType: "text" | "number" | "date" | "boolean" | "geometry" | "object" | "array" | "mixed" | "unknown";
+                            /** @enum {string} */
+                            declaredUnit?: "m2" | "ft2" | "sq_yd" | "gaj" | "marla" | "bigha" | "kanal" | "cent" | "guntha" | "m" | "ft" | "count";
+                            valueShapes: {
+                                dateDmyRate: number | null;
+                                dateIsoRate: number | null;
+                                lakhGroupingRate: number | null;
+                                devanagariDigitRate: number | null;
+                                khasraLikeRate: number | null;
+                                floorLabelRate: number | null;
+                                nullRate: number | null;
+                                blankRate: number | null;
+                                absentRate: number | null;
+                                distinctRatio: number | null;
+                            };
+                            maskedSamples: string[];
+                        }[];
+                        sampleShortfall: boolean;
+                    };
+                    plan: {
+                        /** @enum {string} */
+                        version: "mapping-plan/2";
+                        layoutFingerprint: string;
+                        /** @enum {string} */
+                        sourceKind: "tabular" | "gis_attributes";
+                        method: string;
+                        fields: {
+                            sourceField: string;
+                            /** @enum {string} */
+                            target: "building.sourceKey" | "building.name" | "building.addressLiteral" | "building.use" | "building.storeyLabel" | "building.storeyCount" | "building.heightM" | "building.footprint" | "parcel.khasra" | "parcel.plot" | "parcel.survey" | "parcel.ulpinAnchor" | "parcel.area" | "unit.unitNo" | "unit.floorLabel" | "unit.type" | "unit.carpetArea" | "unit.builtUpArea" | "unit.balconyArea" | "level.label" | "level.kind" | "level.lowerM" | "level.upperM" | "space.name" | "space.kind" | "space.area" | "document.registrationNo" | "document.sanctionNo" | "document.date" | "document.issuer" | "document.status" | "building.parentSourceKey" | "unit.parentSourceKey" | "level.parentSourceKey" | "space.parentSourceKey" | "unknown" | "building.geometry";
+                            operation: {
+                                /** @enum {string} */
+                                kind: "copy";
+                            } | {
+                                /** @enum {string} */
+                                kind: "enum_lookup";
+                                /** @enum {string} */
+                                tableId: "building_use@1" | "unit_type@1" | "level_kind@1" | "space_kind@1" | "document_status@1";
+                            } | {
+                                /** @enum {string} */
+                                kind: "unit_convert";
+                                /** @enum {string} */
+                                sourceUnit: "m2" | "ft2" | "sq_yd" | "gaj" | "marla" | "bigha" | "kanal" | "cent" | "guntha" | "m" | "ft" | "count";
+                            } | {
+                                /** @enum {string} */
+                                kind: "parse_literal";
+                                /** @enum {string} */
+                                literalKind: "text_literal" | "number" | "date_dmy" | "date_iso";
+                            } | {
+                                /** @enum {string} */
+                                kind: "link_parent_key";
+                                parentField: string;
+                            };
+                            confidence: number;
+                            rationale: string;
+                            citations?: {
+                                sourceRef: string;
+                                row: number;
+                                column: string;
+                            }[];
+                        }[];
+                    };
+                    fieldSources: {
+                        sourceField: string;
+                        /** @enum {string} */
+                        source: "memory" | "student" | "teacher" | "officer";
+                        method: string;
+                    }[];
+                    questions: {
+                        sourceField: string;
+                        header: string;
+                        reason: string;
+                        candidates: ("building.sourceKey" | "building.name" | "building.addressLiteral" | "building.use" | "building.storeyLabel" | "building.storeyCount" | "building.heightM" | "building.footprint" | "parcel.khasra" | "parcel.plot" | "parcel.survey" | "parcel.ulpinAnchor" | "parcel.area" | "unit.unitNo" | "unit.floorLabel" | "unit.type" | "unit.carpetArea" | "unit.builtUpArea" | "unit.balconyArea" | "level.label" | "level.kind" | "level.lowerM" | "level.upperM" | "space.name" | "space.kind" | "space.area" | "document.registrationNo" | "document.sanctionNo" | "document.date" | "document.issuer" | "document.status" | "building.parentSourceKey" | "unit.parentSourceKey" | "level.parentSourceKey" | "space.parentSourceKey" | "unknown" | "building.geometry")[];
+                    }[];
+                    metrics: {
+                        /** @enum {string} */
+                        kind: "mapping.chunk";
+                        /** Format: uuid */
+                        jobId: string;
+                        chunkIndex: number;
+                        /** @enum {string} */
+                        layout: "new" | "memory";
+                        teacherCalls: number;
+                        memoryHits: number;
+                        studentFields: number;
+                        teacherFields: number;
+                        needsInput: number;
+                        latencyMs: number;
+                        learnerVersion: string | null;
+                    };
+                    sourceRows: number[];
+                    rows: {
+                        row: number;
+                        fields: {
+                            value: string | number | {
+                                [key: string]: unknown;
+                            } | (null);
+                            /** @enum {string} */
+                            state: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed" | "needs_input";
+                            /** @enum {string} */
+                            unit?: "m2" | "m" | "count";
+                            citations: {
+                                sourceRef: string;
+                                row: number;
+                                column: string;
+                            }[];
+                            method: string;
+                            literal?: unknown;
+                            issueCode?: string;
+                            /** Format: uri */
+                            conversionSource?: string;
+                            sourceCrs?: string;
+                            sourceField: string;
+                            /** @enum {string} */
+                            target: "building.sourceKey" | "building.name" | "building.addressLiteral" | "building.use" | "building.storeyLabel" | "building.storeyCount" | "building.heightM" | "building.footprint" | "parcel.khasra" | "parcel.plot" | "parcel.survey" | "parcel.ulpinAnchor" | "parcel.area" | "unit.unitNo" | "unit.floorLabel" | "unit.type" | "unit.carpetArea" | "unit.builtUpArea" | "unit.balconyArea" | "level.label" | "level.kind" | "level.lowerM" | "level.upperM" | "space.name" | "space.kind" | "space.area" | "document.registrationNo" | "document.sanctionNo" | "document.date" | "document.issuer" | "document.status" | "building.parentSourceKey" | "unit.parentSourceKey" | "level.parentSourceKey" | "space.parentSourceKey" | "unknown";
+                        }[];
+                    }[];
+                };
                 converterSha256: string;
                 profileHash?: string;
                 /** @enum {string} */
