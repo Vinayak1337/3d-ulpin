@@ -9,6 +9,13 @@ const API_TARGET = process.env.ULPIN_API_TARGET ?? 'http://127.0.0.1:3188';
 const API_PROXY = { '/api': { target: API_TARGET, changeOrigin: true, headers: { origin: API_TARGET } } };
 
 export default defineConfig({
+  resolve: {
+    // Browser vocabulary only; avoid typechecking the contracts' unrelated backend export surface.
+    alias: [{
+      find: /^@ulpin\/contracts$/,
+      replacement: resolve(__dirname, '../../packages/contracts/src/canonical/targets.ts'),
+    }],
+  },
   plugins: [
     studioDemoImport(),
     react(),
