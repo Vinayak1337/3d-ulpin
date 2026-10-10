@@ -21,5 +21,6 @@ writeFileSync(receipt, JSON.stringify({ checkoutCommit: execFileSync('git', ['re
 }).trim(), completedAt: new Date().toISOString(), identityChecked: true,
   profile: 'demo', ocrPrefix: env.ULPIN_DOCUMENT_OCR_TESSDATA,
   containersOrVolumesChanged: false, reset: false, seed: false,
-  reason: 'Serve final schedule projection/association safeguards and demo-only OCR override' }) + '\n', { flag: 'wx' });
+  reason: 'Serve final schedule/association safeguards and demo-only OCR override',
+}) + '\n', { flag: 'wx' });
 console.log('Owned native processes restarted against the final source checkpoint; existing services/data unchanged.');
