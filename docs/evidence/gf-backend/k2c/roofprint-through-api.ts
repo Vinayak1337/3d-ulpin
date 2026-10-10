@@ -19,7 +19,12 @@ async function api(path: string, input?: unknown): Promise<any> {
   assert(response.ok, `${response.status}: ${JSON.stringify(value)}`);
   return value;
 }
-async function draft(): Promise<void> {
+async function draft(recovery = false): Promise<void> {
+  if (recovery) {
+    assert(!existsSync(`${root}/roofprint-draft.json`), 'Already persisted: no recovery mutation permitted.');
+    const input = JSON.parse(readFileSync(`${root}/roofprint-request.json`, 'utf8'));
+    return publish(input);
+  }
   assert(!existsSync(`${root}/roofprint-request.json`), 'Preserve the existing selection; no duplicate mutation.');
   const before = NormalizedAreaSchema.parse(await api(`/areas/${pkg.areaId}/canonical`));
   assert.equal(before.candidates?.length, 80);
@@ -32,6 +37,9 @@ async function draft(): Promise<void> {
     rejected: [{ componentId: rejected, reason: 'Right-edge clipped region; complete roof boundary unavailable' }],
     reason: 'Retained RGB and mask inspected: selected red-roof projection for draft observation review only' };
   save('roofprint-request', input);
+  return publish(input);
+}
+async function publish(input: unknown): Promise<void> {
   const receipt = await api(`/spatial-ml/items/${itemId}/footprint-drafts`, input);
   save('roofprint-draft', receipt);
   const after = NormalizedAreaSchema.parse(await api(`/areas/${pkg.areaId}/canonical`));
@@ -58,5 +66,6 @@ async function record(): Promise<void> {
   save('roofprint-building-after-commit', await api(`/buildings/${committed.features[0].id}/canonical`));
 }
 if (process.argv[2] === 'draft') await draft();
+else if (process.argv[2] === 'recover') await draft(true);
 else if (process.argv[2] === 'record') await record();
-else throw new Error('Use draft or record; no repeated inference or registry bypass.');
+else throw new Error('Use draft, recover or record; recovery replays the exact rolled-back request only.');

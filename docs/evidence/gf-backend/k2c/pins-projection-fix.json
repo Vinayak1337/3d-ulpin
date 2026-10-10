@@ -1,0 +1,1 @@
+{"hashScope": "crlf-to-lf", "reviewed": [{"producer": "packages/server/src/modules/spatial/spatial-ml-georeference.ts", "before": "94321263e255312402f1216b6979acc35ea4f3f31ba68680df392ea2f01030c2", "after": "f47a1d9cbeb2efd31f6427653ad5ec13fe0e9a01c21a12834369e18c8d416176"}]}

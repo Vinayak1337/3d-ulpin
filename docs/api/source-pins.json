@@ -555,7 +555,7 @@
     "packages/server/src/shared/work-queue.ts": "4b5467fc517cc3afd735862acabafab5ace921c9ac1a4ead293a7c45bdd53c7c",
     "packages/server/src/shared/workspace-capabilities.ts": "791e4b3eac411d4aae0f3c28e6fafcd7b5934b44f15ae77c6b3a9437af8af4cb",
     "packages/server/src/modules/usp/ingestion/source-building-imagery.ts": "387b4ab5f6a0a2b3f2725bb883012bcb1245c08fd3a9f61e00184f7f607ba52f",
-    "packages/server/src/modules/spatial/spatial-ml-georeference.ts": "94321263e255312402f1216b6979acc35ea4f3f31ba68680df392ea2f01030c2",
+    "packages/server/src/modules/spatial/spatial-ml-georeference.ts": "f47a1d9cbeb2efd31f6427653ad5ec13fe0e9a01c21a12834369e18c8d416176",
     "packages/server/src/modules/spatial/spatial-ml-canonical-candidates.ts": "ef8a016616457350ed6a1678a7be6024ecc7e6d0572fa3b076834275b21fdd59",
     "packages/server/src/modules/usp/ingestion/source-building-candidates.ts": "5a49b4ff06b288af88d49919a9e0aecae04269241373f4ddd251ba0e4f47fc08"
   },
