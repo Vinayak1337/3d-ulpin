@@ -10,18 +10,23 @@
   border-radius: var(--ui-radius-8);
   background: var(--ui-surface);
   color: var(--ui-ink);
-  font: 400 15px/22px var(--ui-font-sans);
+  font: 400 var(--ui-text-md)/22px var(--ui-font-sans);
   resize: vertical;
 }
 .text[aria-invalid="true"] { border-color: var(--ui-danger); }
 
 /* An id or a hash as the registry answered it: small, and broken anywhere so it never widens the dialog. */
-.answered { margin: 0; font: 400 12px/18px var(--ui-font-mono); color: var(--ui-ink-soft); overflow-wrap: anywhere; }
+.answered {
+  margin: 0;
+  font: 400 var(--ui-text-xs)/18px var(--ui-font-mono);
+  color: var(--ui-ink-soft);
+  overflow-wrap: anywhere;
+}
 .reason { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .answeredList { display: grid; gap: var(--ui-space-1); min-width: 0; }
 /* The state and the reason code of a card row that is not available, under its value. */
 .fact { display: grid; min-width: 0; }
-.note { font: 400 12px/18px var(--ui-font-mono); color: var(--ui-ink-soft); overflow-wrap: anywhere; }
+.note { font: 400 var(--ui-text-xs)/18px var(--ui-font-mono); color: var(--ui-ink-soft); overflow-wrap: anywhere; }
 .heading { margin: 0; font: 600 var(--ui-text-sm)/20px var(--ui-font-sans); }
 .until { width: 100%; max-width: 280px; }
 
