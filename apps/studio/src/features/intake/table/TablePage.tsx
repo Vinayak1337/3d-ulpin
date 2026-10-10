@@ -54,7 +54,7 @@ function MappingContent({ profile, mappings, metrics, jobId, job, stale, onAppro
   return (
     <>
       <ColumnsTable profile={profile} mapping={review} />
-      <LearnerPanel chunks={mergeMetrics(metrics, mappings, jobId)} />
+      <LearnerPanel chunks={mergeMetrics(metrics, mappings, jobId)} openQuestions={review?.questions.length} />
       {review && job ? <RecipeReview key={jobId} profile={profile} mapping={review} job={job} stale={stale}
         onApproved={onApproved} /> : null}
     </>
