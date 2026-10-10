@@ -19,15 +19,17 @@ const documentRuntimeGroups = [
   ['ULPIN_PACKET_REGIONS_PYTHON', 'ULPIN_PACKET_REGIONS_PROFILE',
     'ULPIN_PACKET_REGIONS_PROFILE_SHA256', 'ULPIN_PACKET_REGIONS_SCRATCH'],
 ];
-const demoOcrProfileFile = join(demoDir, 'ocr-paths-profile.json');
+export const demoOcrProfileFile = join(demoDir, 'ocr-paths-profile.json');
 const ocrNames = ['PYTHON', 'MODELS', 'TESSERACT', 'TESSDATA', 'SCRATCH'];
 
 /** Optional non-secret paths only. Never derive or replace credentials. */
-export function readDemoOcrPaths() {
-  if (!existsSync(demoOcrFile)) return {};
-  let paths = JSON.parse(readFileSync(demoOcrFile, 'utf8'));
-  if (existsSync(demoOcrProfileFile)) {
-    const override = JSON.parse(readFileSync(demoOcrProfileFile, 'utf8'));
+export function readDemoOcrPaths(file = demoOcrFile) {
+  if (!existsSync(file)) return {};
+  let paths = JSON.parse(readFileSync(file, 'utf8'));
+  // Any other file is itself read as a demo-scoped override; its scratch must lie in that file's own folder.
+  const profileFile = file === demoOcrFile ? demoOcrProfileFile : file;
+  if (existsSync(profileFile)) {
+    const override = JSON.parse(readFileSync(profileFile, 'utf8'));
     if (override.profile !== 'demo' || Object.keys(override).sort().join(',') !== 'paths,profile') {
       throw new Error('OCR profile override must be explicitly demo-scoped.');
     }
@@ -49,7 +51,7 @@ export function readDemoOcrPaths() {
     }
   }
   const scratch = realpathSync(paths.ULPIN_DOCUMENT_OCR_SCRATCH);
-  const runtime = realpathSync(demoDir);
+  const runtime = realpathSync(dirname(file));
   const repository = realpathSync(resolve(dirname(fileURLToPath(import.meta.url)), '../..'));
   const runtimeRelative = relative(runtime, scratch);
   const repoRelative = relative(repository, scratch);
