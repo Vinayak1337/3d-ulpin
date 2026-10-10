@@ -1,6 +1,6 @@
 # Selection sprint, 10–23 October 2026
 
-**Goal:** by **Thursday 22 October**, judges can open the Officer Studio on the live backend and walk through real Indian data.
+**Goal:** by **Thursday 22 October**, the Officer Studio on the live backend, started with **nothing in it**, takes in real data while the judges watch: first the data we chose to show, then a file the judges hand over, in a format we have not seen, **with no code change**, streamed without the page freezing (owner direction, 10 October night; see §1).
 
 The pipelines come first:
 1. **The model that accepts heterogeneous data automatically.** The agent translates inputs it hasn't seen, and a learner absorbs every verified translation. This is priority one.
@@ -15,6 +15,15 @@ This file is the executable plan. The prompts P0–P10 hold the detail for each 
 ---
 
 ## 1. What the judges will see
+
+**Owner direction, 10 October night. It governs this section.** Nothing is prepared in advance on the presentation runtime. Before the presentation the Studio is cleaned of the data added during development. The show is the intake itself:
+
+- **Our own data, live.** The data we selected (for example the NYC building footprints, and the Indian files below) is ingested in front of the judges, through the product's own routes.
+- **Their data, live.** If the judges hand over a file, the same Studio ingests it without anyone changing code: the product either already understands the layout (memory, student) or learns it then, from the Sarvam teacher's guidance, and an officer reviews what it proposes. With the model or without it, the file gets in.
+- **Large and streamed.** A large file arrives in parts, drawn and listed as they arrive, at a steady pace. The page never freezes while it streams. Today the streamed import applies its parts faster than the page can draw them and the page lags; that is a defect to remove, measured in frame times.
+- The data rules do not bend for the show: nothing is invented, every model output is a candidate until an officer reviews it, and unknown stays unknown.
+
+Consequences for the work: an **empty runtime that ingests a file it has never seen** ranks above polish of records already on the demo. Tower 3, Magnolia and the Karnataka area remain our test inputs and our own data to ingest live; they are not a prepared stage. Every rehearsal starts from an empty runtime (`ulpin-reh-NN`, [DEMO-RUNTIME.md](../backend/DEMO-RUNTIME.md)). The five items below are what the live intake leads to, in the order a presenter would take them.
 
 1. **The map.** The Studio opens a real Indian area on the map: context layers, imagery, and **AI roofprint candidates** from our fine-tuned building model. The officer accepts one, and it becomes a reviewed footprint with lineage.
 2. **Tower 3 (Haryana RERA 2831).** Storeys come from the RERA documents through the **document agent**. **G+41 and G+42 stay a visible conflict**, and each value opens its cited page region.
@@ -43,6 +52,10 @@ Every number on screen comes from a result JSON. Unknowns are shown as unknown.
 | Several Sarvam keys | **Owner decision, 10 October night (replaces the one-key rule of H20):** the gateway works through the owner's list of keys, one in use at a time, and moves on only when the provider says a key is used up or rejected (AGENTS.md "Sarvam keys"; GK1) | Money caps count across all keys together. When every key is used up, calls fail closed to replay/manual mode. Adding, removing or reordering keys is the owner's step. |
 | Downloads | Approved | RAMP Karnataka plus 6 Bangladesh regions (~9.7 GiB), CUDA PyTorch and rfdetr (~4 GiB), weights, and small public files. Everything goes under `E:/BhuAayam-data/`. |
 | Git | Push `staging` now, then at milestones only | Never `main`, never force. |
+| What is shown (10 October night) | **Live intake on a cleaned Studio**: our selected data, then a file the judges hand over, with no code change, streamed smoothly. Nothing pre-cached | §1. Rehearsals start from an empty runtime. The streamed import's lag is a defect with its own task. |
+| Gateway confirmations (10 October night) | **Yes** to both: the keys' credit is spent only through this gateway; Sarvam is approved as this project's route for the minimised text the gateway sends | The confirmed policy file is `E:/BhuAayam-data/task-data/gk2/demo-gateway-policy.owner-confirmed-20261010.json` (outside Git; policy hash `efb90b3a…6721`, accepted by the check). The pending file is kept. |
+| The eleven keys (10 October night) | **Eleven separate Sarvam accounts**, each with its own ₹100 of free credit | The approved caps stay as they are, counted across all keys: ₹100 in total, ₹25 a day, 150 calls per person per day. Raising a cap is an owner decision. |
+| Header variants for training (10 October night) | **Allowed**: a teacher model may write other spellings of real column headers, for training material only | [FALLBACK-LEARNER.md](FALLBACK-LEARNER.md) Step 1 may start when its trigger is met. Variants are `synthetic_variant`, never evaluation, calibration or held-out. |
 
 ---
 
@@ -251,6 +264,11 @@ Cut from the top of this list first:
 
 ## 10. Owner actions
 
+**Current (10 October night):**
+1. **Put the keys in**, when the lead says the demo is stopped for its second roll-out: `node scripts/platform/demo-gateway.mjs keys --from <a text file outside Git, one key per line>`, then delete the text file. The lead never handles a key value.
+2. **Before the presentation:** approve the cleaning of the development data from the presentation runtime (or the use of a fresh runtime), at the time it is done.
+
+**Earlier (9–10 October), kept for the record:**
 1. Put the Sarvam key in the repo `.env` under the name A2 reports. I found only one key, `SARVAM_API_KEY`, in `E:/BhuAayam-data/runtime/prefix-worker-20260929/compose.env`. I don't read or edit `.env`.
 2. Stop or archive the five old Codex desktop chats. They're idle; just don't resume them.
 3. Run `git push origin staging`. My push was blocked by the session's permission check. Alternatively, allow it in the Claude Code settings.

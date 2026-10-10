@@ -173,6 +173,12 @@ The policy written from them is `E:/BhuAayam-data/task-data/gk2/demo-gateway-pol
 (SHA-256 `d3a4576f564383185c3fd4fc4d99f1e7b43d6c2776fed755596d55d73c888969`). It is pending because the owner has not
 yet confirmed two statements. Both are `null` in the file, so the gateway refuses it as it stands.
 
+**Confirmed on 10 October 2026, at night:** the owner answered yes to both statements below. The confirmed
+policy is `E:/BhuAayam-data/task-data/gk2/demo-gateway-policy.owner-confirmed-20261010.json`, outside Git: the
+pending file with the two statements `true` and nothing else changed. The check accepts it with the policy hash
+given below. The pending file is kept as it was. The owner also stated that the eleven keys belong to eleven
+separate Sarvam accounts. Enabling still needs the owner's key step (step 1 above) on a stopped demo.
+
 - `gatewayExclusiveFunding`: yes means the credit behind these keys is spent only through this gateway. Nobody
   uses any of the keys anywhere else, so the gateway's own ledger is the whole account of what was spent.
 - `indiaPrivateApproved`: yes means the owner approves Sarvam as this project's India-private route for the
