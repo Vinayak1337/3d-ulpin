@@ -73,15 +73,30 @@ export const router = createBrowserRouter([
     path: '/portal',
     lazy: async () => ({ Component: (await import('../portal/PortalFrame')).PortalFrame }),
     children: [
-      { index: true, lazy: async () => ({ Component: (await import('../portal/HomePage')).HomePage }) },
-      { path: 'search', lazy: async () => ({ Component: (await import('../portal/ResultsPage')).ResultsPage }) },
-      { path: 'records/:recordId', lazy: async () => ({ Component: (await import('../portal/RecordPage')).RecordPage }) },
-      { path: 'buildings/:buildingId', lazy: async () => ({ Component: (await import('../portal/BuildingPage')).BuildingPage }) },
-      { path: 'request', lazy: async () => ({ Component: (await import('../portal/RequestPage')).RequestPage }) },
-      { path: 'track', lazy: async () => ({ Component: (await import('../portal/TrackPage')).TrackPage }) },
-      { path: 'map', lazy: async () => ({ Component: (await import('../portal/PublicMapPage')).PublicMapIndex }) },
-      { path: 'map/:areaId', lazy: async () => ({ Component: (await import('../portal/PublicMapPage')).PublicMapPage }) },
-      { path: 'verify', lazy: async () => ({ Component: (await import('../portal/VerifyPortal')).VerifyPortal }) },
+      // A render error in a portal page stays inside the portal frame: its header and footer remain.
+      {
+        errorElement: <PageError />,
+        children: [
+          { index: true, lazy: async () => ({ Component: (await import('../portal/HomePage')).HomePage }) },
+          { path: 'search', lazy: async () => ({ Component: (await import('../portal/ResultsPage')).ResultsPage }) },
+          {
+            path: 'records/:recordId',
+            lazy: async () => ({ Component: (await import('../portal/RecordPage')).RecordPage }),
+          },
+          {
+            path: 'buildings/:buildingId',
+            lazy: async () => ({ Component: (await import('../portal/BuildingPage')).BuildingPage }),
+          },
+          { path: 'request', lazy: async () => ({ Component: (await import('../portal/RequestPage')).RequestPage }) },
+          { path: 'track', lazy: async () => ({ Component: (await import('../portal/TrackPage')).TrackPage }) },
+          { path: 'map', lazy: async () => ({ Component: (await import('../portal/PublicMapPage')).PublicMapIndex }) },
+          {
+            path: 'map/:areaId',
+            lazy: async () => ({ Component: (await import('../portal/PublicMapPage')).PublicMapPage }),
+          },
+          { path: 'verify', lazy: async () => ({ Component: (await import('../portal/VerifyPortal')).VerifyPortal }) },
+        ],
+      },
     ],
   },
   // The card's QR opens this, outside the Studio frame.
