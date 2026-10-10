@@ -21,7 +21,7 @@ import {
   proposeMappingWithTeacher,
 } from '../../packages/server/src/modules/usp/ingestion/mapping-teacher';
 import {
-  DEVELOPMENT_TEACHER_METHOD,
+  DEVELOPMENT_TEACHER_METHODS,
   ingestTeacherLabels,
 } from '../../packages/server/src/modules/usp/ingestion/teacher-labels';
 
@@ -42,7 +42,7 @@ test('label verification is per field, accepts a ten-percent issue rate, and rep
     version: 'mapping-plan/2',
     layoutFingerprint: profile.layoutFingerprint,
     sourceKind: profile.sourceKind,
-    method: DEVELOPMENT_TEACHER_METHOD,
+    method: DEVELOPMENT_TEACHER_METHODS['claude-opus-5-5'],
     fields: [
       { sourceField: 'Good', target: 'building.name', operation: { kind: 'copy' } },
       {
@@ -60,7 +60,9 @@ test('label verification is per field, accepts a ten-percent issue rate, and rep
   const directory = mkdtempSync(join(tmpdir(), 'a2-per-field-'));
   const input = join(directory, 'teacher-labels.jsonl');
   const output = join(directory, 'examples.jsonl');
-  writeFileSync(input, JSON.stringify({ profileHash, plan, method: DEVELOPMENT_TEACHER_METHOD }) + '\n');
+  writeFileSync(input, JSON.stringify({
+    profileHash, plan, method: DEVELOPMENT_TEACHER_METHODS['claude-opus-5-5'],
+  }) + '\n');
   const profiles = new Map([
     [
       profileHash,

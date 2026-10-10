@@ -7,7 +7,8 @@ import {
 } from '../../packages/contracts/src/index';
 import { DocumentArchiveInspectionSchema } from '../../packages/contracts/src/usp/document-ingestion';
 import {
-  ingestTeacherLabels as ingestCanonicalLabels, DEVELOPMENT_TEACHER_METHOD, type TeacherProfileEntry,
+  ingestTeacherLabels as ingestCanonicalLabels, DEVELOPMENT_TEACHER_METHODS,
+  type DevelopmentTeacher, type TeacherProfileEntry,
 } from '../../packages/server/src/modules/usp/ingestion/teacher-labels';
 import { columnProfileHash } from '../../packages/server/src/modules/usp/ingestion/mapping-teacher';
 import { assertTeacherOutputOutsideGit } from '../../packages/server/src/modules/model-gateway/recordings';
@@ -150,7 +151,9 @@ export function groupTeacherLabels(lines: InputLabelLine[], linked: ReadonlyMap<
   return [...groups.values()];
 }
 
-function normalizedPlan(group: LabelGroup) {
+type DevelopmentTeacherMethod = typeof DEVELOPMENT_TEACHER_METHODS[DevelopmentTeacher];
+
+function normalizedPlan(group: LabelGroup, method: DevelopmentTeacherMethod) {
   if (group.codes.length || !group.entry) return null;
   const profile = group.entry.table.profile;
   const fields = profile.columns.flatMap(column => {
@@ -158,18 +161,19 @@ function normalizedPlan(group: LabelGroup) {
     return field ? [field] : [];
   });
   if (!fields.length) group.codes.push('MAPPING_SOURCE_FIELD_UNMAPPED');
-  return { profileHash: group.profileHash, method: DEVELOPMENT_TEACHER_METHOD, plan: {
+  return { profileHash: group.profileHash, method, plan: {
     version: 'mapping-plan/2', sourceKind: profile.sourceKind, layoutFingerprint: profile.layoutFingerprint,
-    method: DEVELOPMENT_TEACHER_METHOD, fields,
+    method, fields,
   } };
 }
 
 export async function verifyLabelGroups(
-  groups: LabelGroup[], output: string, load: (entry: LinkedColumn) => TeacherProfileEntry = materialize,
+  groups: LabelGroup[], output: string, method: DevelopmentTeacherMethod,
+  load: (entry: LinkedColumn) => TeacherProfileEntry = materialize,
 ) {
   const inventory = new Map<string, TeacherProfileEntry>();
   const normalized = groups.map(group => {
-    const plan = normalizedPlan(group);
+    const plan = normalizedPlan(group, method);
     if (plan && group.entry) inventory.set(group.profileHash, load(group.entry));
     return plan;
   });
@@ -196,26 +200,32 @@ function saveProfileLinks(linked: Map<string, LinkedColumn>, output: string) {
 }
 
 /** Resolve stable column IDs and verify complete table plans through the unchanged canonical A2 verifier. */
-export async function ingestTeacherLabels(inputPath: string, profilesPath: string, outputDirectory?: string) {
+export async function ingestTeacherLabels(
+  teacher: DevelopmentTeacher, inputPath: string, profilesPath: string, outputDirectory?: string,
+) {
+  assert(Object.hasOwn(DEVELOPMENT_TEACHER_METHODS, teacher), 'TEACHER_LABEL_TEACHER_INVALID');
+  const method = DEVELOPMENT_TEACHER_METHODS[teacher];
   const output = outputDirectory ?? join(T1_ROOT, `verifier/labels-${Date.now()}`);
   const location = relative(resolve(T1_ROOT), resolve(output));
   assert(location && !location.startsWith('..') && !isAbsolute(location), 'T1_OUTPUT_DIRECTORY_DENIED');
   assertTeacherOutputOutsideGit(join(output, 'normalized-labels.jsonl'));
   const linked = linkedProfiles(profilesPath);
   const groups = groupTeacherLabels(readJsonLines(inputPath), linked);
-  const report = await verifyLabelGroups(groups, output);
+  const report = await verifyLabelGroups(groups, output, method);
   saveProfileLinks(linked, output);
   saveNew(join(output, 'report.json'), {
-    ...report, inputPath, profilesPath, method: DEVELOPMENT_TEACHER_METHOD,
+    ...report, inputPath, profilesPath, method,
     qualification: 'pseudo_label; verified is not correctness or officer approval',
   });
   return { ...report, outputDirectory: output, linkedProfiles: linked.size };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
-  const [inputPath, profilesPath, output] = process.argv.slice(2);
-  if (!inputPath || !profilesPath) {
-    throw new Error('Usage: verify-teacher-labels.ts <labels.jsonl> <profiles.jsonl> [new-output-directory]');
+  const [teacher, inputPath, profilesPath, output] = process.argv.slice(2);
+  if (!teacher || !Object.hasOwn(DEVELOPMENT_TEACHER_METHODS, teacher) || !inputPath || !profilesPath) {
+    throw new Error('Usage: verify-teacher-labels.ts <claude-opus-5-5|gpt-6.1-sol> ' +
+      '<labels.jsonl> <profiles.jsonl> [new-output-directory]');
   }
-  ingestTeacherLabels(inputPath, profilesPath, output).then(report => console.log(JSON.stringify(report)));
+  ingestTeacherLabels(teacher as DevelopmentTeacher, inputPath, profilesPath, output)
+    .then(report => console.log(JSON.stringify(report)));
 }

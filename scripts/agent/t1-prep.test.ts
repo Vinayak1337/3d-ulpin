@@ -93,7 +93,7 @@ test('path-based label adapter links real profile IDs without fabricating accept
     { profileId: profiles[0].profileId, field: {} },
     { profileId: stableHash('no-such-profile'), field: {} },
   ], true);
-  const report = await ingestTeacherLabels(input, profilesPath, join(root, 'result'));
+  const report = await ingestTeacherLabels('claude-opus-5-5', input, profilesPath, join(root, 'result'));
   assert.equal(report.linkedProfiles, profiles.length);
   assert.equal(report.accepted, 0);
   assert.equal(report.rejected, 2);

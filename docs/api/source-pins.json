@@ -501,7 +501,7 @@
     "packages/server/src/modules/usp/ingestion/survey-report.ts": "dc74c815907fff73b0106b65c126f59550634435438fe211361914fa08b02d2f",
     "packages/server/src/modules/usp/ingestion/tabular-recipe.ts": "4821257772664a227e3a1ba9c3c2243d4cb7900edc1fa96fe0356059b5e3a20e",
     "packages/server/src/modules/usp/ingestion/tabular-source.ts": "2d9e1e05358f52654ee23e7ace16aee7cbc174a8852c5e50c83dc51f049b90d2",
-    "packages/server/src/modules/usp/ingestion/teacher-labels.ts": "db61d3d270dd2ffe0676d935ab7832547b3fafebf0f23c731e96ffc2ab4c7c24",
+    "packages/server/src/modules/usp/ingestion/teacher-labels.ts": "2e75dfbf33f54b4baa0eaa9586cb33cb794bd3a3991fe6f9399c40dff68f6ce1",
     "packages/server/src/modules/usp/ingestion/unit-table.ts": "e5cc321252e8618f608a683dd9c23876f2a8911ef5afb5f22395ede6a5a5fa2a",
     "packages/server/src/modules/usp/jobs.ts": "9953bdc32aa3145bc396ea65a65d8f435714b2f333a14824620d2803f27a81ad",
     "packages/server/src/modules/usp/migrations.ts": "03d591aaf4053be3eac35ec7208829934667edb5f66819f23766d2b1deff5554",
