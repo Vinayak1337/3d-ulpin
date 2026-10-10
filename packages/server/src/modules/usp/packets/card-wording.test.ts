@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { SourceStatedRecordSchema } from '@ulpin/contracts';
-import { ProjectLocationSchema } from '../../../../../contracts/src/usp/project-identity';
+import { ProjectLocationSchema, verticalLocator,
+  type ProjectLocation } from '../../../../../contracts/src/usp/project-identity';
 import { UspPropertyCardFactSchema } from '../../../../../contracts/src/usp/property-card';
 import { fingerprint } from '../../cases/domain';
 import { generatePropertyCard } from './card-service';
@@ -30,6 +31,28 @@ test('a locator with a known level and known kinds prints them as the record sta
     'No parcel anchor supplied. Structure 1, kind S; level G; space 1, kind R. (Locator: NO-ANCHOR / S01 / G / R001)');
   assert.match(locationSentence(twoLevels), /; levels F07 and not recorded; .*\(Locator: NO-ANCHOR \/ S01 \/ F07-L\? /);
 });
+
+test('a number beside an unknown kind prints as the record states it, and the formal locator ends the row', () => {
+  const stored = ProjectLocationSchema.parse({ anchorState: 'not_supplied', parcels: [],
+    locator: { structureKind: '?', structureNumber: 1, levels: ['L?'], spaceKind: '?', spaceNumber: 1 } });
+
+  assert.equal(locationSentence(stored), 'No parcel anchor supplied. Structure 1, kind not recorded; '
+    + 'level not recorded; space 1, kind not recorded. (Locator: NO-ANCHOR / ?01 / L? / ?001)');
+  assert(locationSentence(stored).endsWith(` (Locator: ${verticalLocator(stored)})`));
+});
+
+test('a locator without numbers prints two "number not recorded" clauses and no digit before the formal locator',
+  () => {
+    // The contract still requires both numbers; they become optional beside an unknown kind, hence the cast.
+    const bare = { anchorState: 'not_supplied', parcels: [],
+      locator: { structureKind: '?', levels: ['L?'], spaceKind: '?' } } as unknown as ProjectLocation;
+    const [words, formal] = locationSentence(bare).split(' (Locator: ');
+
+    assert.equal(words, 'No parcel anchor supplied. Structure number not recorded, kind not recorded; '
+      + 'level not recorded; space number not recorded, kind not recorded.');
+    assert.doesNotMatch(words, /\d|undefined/);
+    assert.equal(formal, `${verticalLocator(bare)})`);
+  });
 
 test('a record that holds an anchor says so and says that the locator of this row leaves it out', () => {
   const parcel = { literalValue: 'CONTROL-PARCEL', role: 'primary', source, issuer: { state: 'unknown' },
