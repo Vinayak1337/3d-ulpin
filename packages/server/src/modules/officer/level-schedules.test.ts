@@ -84,6 +84,7 @@ test('unstated limits cannot be filled with a typical height, nor derived withou
 });
 
 test('controlled stated-height fixture accumulates only from its explicitly cited base', () => {
+  // Arithmetic-only hypothetical contract input; it asserts no height about the retained Magnolia document.
   const input = content();
   input.statedBase = { valueM: 5, verticalReference: 'building_relative', citations: [citation] };
   input.levels[0] = { ...input.levels[0], heightSource: 'derived', statedHeightM: 4,
