@@ -1,0 +1,334 @@
+{
+  "task": "GK2",
+  "title": "The policy file from the owner's approved numbers; the readers of one key name; the rehearsal rule",
+  "branch": "task/gk2-policy-and-single-key-readers",
+  "base": "3b3f6045",
+  "forTheOwner": {
+    "gatewayExclusiveFunding": {
+      "yesMeans": [
+        "The free credit behind these eleven keys is spent only through this gateway: nobody uses any",
+        "of the keys anywhere else, so the gateway's own count is the whole account of what was spent."
+      ],
+      "why": [
+        "H20 line 140: no interface to read the provider's balance is qualified, so the automatic mode is",
+        "gateway-exclusive funding; with outside spending the headroom is unknown and paid work must wait.",
+        "H20 line 15: Sarvam's credit belongs to an account, not to a key; keys of one account share one balance."
+      ],
+      "sources": [
+        "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md:140",
+        "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md:15"
+      ]
+    },
+    "indiaPrivateApproved": {
+      "yesMeans": [
+        "The owner approves Sarvam as this project's India-private route for the minimised text the gateway",
+        "sends, on Sarvam's own word about hosting, logs, retention and training; the code checks none of that."
+      ],
+      "why": [
+        "H20 line 181: India-private qualification covers actual hosting, logs, backups, retention and",
+        "model-training settings; Sarvam's trust-centre claim is vendor context, not proof of our system.",
+        "H20 line 254 (G-18): India-private mode denies external-demo endpoints and unapproved download hosts.",
+        "adapter.ts line 108: configuration does not establish hosting residency or processor permission."
+      ],
+      "sources": [
+        "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md:181",
+        "docs/usp-agent-handoffs/20-model-gateway-and-budget-pools.md:254",
+        "packages/server/src/modules/model-gateway/adapter.ts:108"
+      ]
+    },
+    "codeThatReadsThem": [
+      "packages/server/src/modules/model-gateway/config.ts:25 is the only reader: each must be the literal true.",
+      "config.ts:58-65: with anything else the policy is refused (422 MODEL_CONFIGURATION) and no call is made.",
+      "Nothing else in the gateway behaves differently because of them. Both are part of the policy hash."
+    ]
+  },
+  "policyFile": {
+    "path": "E:/BhuAayam-data/task-data/gk2/demo-gateway-policy.pending.json",
+    "outsideGit": true,
+    "bytes": 1188,
+    "sha256": "d3a4576f564383185c3fd4fc4d99f1e7b43d6c2776fed755596d55d73c888969",
+    "holds": "names and numbers only; no key value",
+    "content": {
+      "projectId": "bhuaayam-sih26011",
+      "policyVersion": "owner-approved-20261010/1",
+      "fundingVersion": "sarvam-free-credit-11-keys-20261010/1",
+      "gatewayExclusiveFunding": null,
+      "indiaPrivateApproved": null,
+      "secretReferences": [
+        "ULPIN_PROVIDER_KEY_SARVAM_01",
+        "ULPIN_PROVIDER_KEY_SARVAM_02",
+        "ULPIN_PROVIDER_KEY_SARVAM_03",
+        "ULPIN_PROVIDER_KEY_SARVAM_04",
+        "ULPIN_PROVIDER_KEY_SARVAM_05",
+        "ULPIN_PROVIDER_KEY_SARVAM_06",
+        "ULPIN_PROVIDER_KEY_SARVAM_07",
+        "ULPIN_PROVIDER_KEY_SARVAM_08",
+        "ULPIN_PROVIDER_KEY_SARVAM_09",
+        "ULPIN_PROVIDER_KEY_SARVAM_10",
+        "ULPIN_PROVIDER_KEY_SARVAM_11"
+      ],
+      "model": "sarvam-105b",
+      "projectCapMicroInr": "100000000",
+      "ingestProtectedBps": 7000,
+      "principalDailyCallCap": 150,
+      "projectDailyCapMicroInr": "25000000",
+      "price": {
+        "version": "owner-approved-20261010/1",
+        "inputPerMillionMicroInr": "15000000",
+        "cachedInputPerMillionMicroInr": "5000000",
+        "outputPerMillionMicroInr": "60000000"
+      },
+      "cushionBps": 2000,
+      "inputBound": {
+        "version": "schema-minimum/not-approved",
+        "maxPromptTokens": 34816
+      },
+      "maxOutputTokens": 2048,
+      "timeoutMs": 45000,
+      "paceMs": 1500
+    },
+    "arithmetic": {
+      "unit": "1 rupee = 1,000,000 micro-INR, written as a decimal string",
+      "inputPerMillionMicroInr": "15 x 1,000,000 = 15000000 (₹15 per million input tokens)",
+      "cachedInputPerMillionMicroInr": "5 x 1,000,000 = 5000000 (₹5 per million cached input tokens)",
+      "outputPerMillionMicroInr": "60 x 1,000,000 = 60000000 (₹60 per million output tokens)",
+      "projectCapMicroInr": "100 x 1,000,000 = 100000000 (at most ₹100 in total)",
+      "projectDailyCapMicroInr": "25 x 1,000,000 = 25000000 (at most ₹25 a day)",
+      "principalDailyCallCap": "150 calls per person per day, a plain count",
+      "heldPerCall": [
+        "34816 x 15000000 / 1,000,000 = 522240; 2048 x 60000000 / 1,000,000 = 122880; sum 645120;",
+        "with the 2000 bps cushion: 645120 x 12000 / 10000 = 774144 micro-INR, printed as ₹0.78 (rounded up)"
+      ]
+    },
+    "ownerApproved": [
+      "the three prices, the two money caps, the daily call count, the eleven key names in order",
+      "(owner decisions of 10 October 2026, AGENTS.md, Sarvam keys)"
+    ],
+    "labelsFromTheTaskFile": ["projectId", "policyVersion", "fundingVersion", "price.version"],
+    "technicalBounds": {
+      "note": "None is the owner's approval and none is invented: each is the value the live-proof plan runs with.",
+      "inputBound.maxPromptTokens": {
+        "value": 34816,
+        "from": "scripts/agent/live-proof.ts:68",
+        "qualification": [
+          "The smallest value the schema allows (packages/server/src/modules/model-gateway/config.ts:38).",
+          "gateway.ts:54 refuses a body over 32768 bytes or one whose bytes + 2048 exceed the bound, so at",
+          "34816 (32768 + 2048) the bound admits exactly the largest body the byte rule admits.",
+          "docs/evidence/gf-agent/s1/result.json:654 says it is the schema's smallest value, not an approved bound."
+        ]
+      },
+      "inputBound.version": {
+        "value": "schema-minimum/not-approved",
+        "from": "scripts/agent/live-proof.ts:68",
+        "qualification": "The plan's own label, kept word for word; it says what the bound is. Part of the hash."
+      },
+      "paceMs": {
+        "value": 1500,
+        "from": "scripts/agent/live-proof.ts:69",
+        "qualification": "The smallest value the schema allows (config.ts:41); used at ledger.ts:159."
+      },
+      "maxOutputTokens": {
+        "value": 2048,
+        "from": "packages/server/src/modules/model-gateway/config.ts:39",
+        "qualification": "The schema default; the plan leaves the field out and so runs with it."
+      },
+      "timeoutMs": {
+        "value": 45000,
+        "from": "packages/server/src/modules/model-gateway/config.ts:40",
+        "qualification": "The schema default and its largest value; the plan leaves the field out."
+      },
+      "cushionBps": {
+        "value": 2000,
+        "from": "packages/server/src/modules/model-gateway/config.ts:36",
+        "qualification": "The schema default (20% on each reservation, pricing.ts:24-25); the plan leaves it out."
+      },
+      "ingestProtectedBps": {
+        "value": 7000,
+        "from": "packages/server/src/modules/model-gateway/config.ts:31",
+        "qualification": "The schema default and its smallest value (ledger.ts:119); the plan leaves it out."
+      },
+      "writtenOutOrLeftOut": "Writing the four defaults out gives the same parsed policy and the same hash."
+    }
+  },
+  "schemaProof": {
+    "command": [
+      "pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf-ai/gateway/gk2/check-policy.ts",
+      "  E:/BhuAayam-data/task-data/gk2/demo-gateway-policy.pending.json"
+    ],
+    "asWritten": {
+      "accepted": false,
+      "refusedOn": [
+        "gatewayExclusiveFunding: Invalid input: expected true",
+        "indiaPrivateApproved: Invalid input: expected true"
+      ]
+    },
+    "withBothStatementsTrueInMemory": {
+      "accepted": true,
+      "policyHash": "efb90b3a440a875d80314024d30482abbc7c4c14a6e3682cd5ec946567dc6721",
+      "keyNames": { "count": 11, "first": "ULPIN_PROVIDER_KEY_SARVAM_01", "last": "ULPIN_PROVIDER_KEY_SARVAM_11" }
+    }
+  },
+  "plan": {
+    "command": [
+      "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/agent/live-proof.ts --plan",
+      "  --tariff E:/BhuAayam-data/task-data/gk2/demo-gateway-policy.approved-form-for-planning.json",
+      "  --out E:/BhuAayam-data/task-data/gk2/plan"
+    ],
+    "ranOnce": true,
+    "nothingSent": true,
+    "tariffFile": [
+      "The in-memory approved form, written once by check-policy.ts --planning-copy, read by the plan,",
+      "then deleted. No file with either statement true remains."
+    ],
+    "writtenTo": "E:/BhuAayam-data/task-data/gk2/plan/plan.json",
+    "planSha256": "a134d61e0df7fcc9448b3133d558a098854f1927edb3482243d446dd917300d1",
+    "policyHash": "efb90b3a440a875d80314024d30482abbc7c4c14a6e3682cd5ec946567dc6721",
+    "priceVersion": "owner-approved-20261010/1",
+    "steps": 15,
+    "calls": 10,
+    "estimate": { "microInr": "1140060", "rupees": "₹1.15" },
+    "requestBound": { "microInr": "3112815", "rupees": "₹3.12" },
+    "atMost": { "microInr": "7741440", "rupees": "₹7.75" },
+    "heldPerCall": { "microInr": "774144", "rupees": "₹0.78" },
+    "shareOfCapsAtMost": {
+      "total": "7.75% of ₹100",
+      "daily": "30.97% of ₹25",
+      "callsPerPersonPerDay": "10 of 150 (6.67%)",
+      "documentAgentAllocation": "20.65%"
+    },
+    "ledgerAtStart": "assumed empty: the plan does not read the runtime ledger",
+    "sameAsTheProposal": "calls, estimate and ceiling equal the proposal's: the approved prices are the proposed ones"
+  },
+  "checks": {
+    "typecheckBackend": "pnpm typecheck:backend: pass",
+    "typecheckAgentScripts": "pnpm exec tsc -p scripts/agent/tsconfig.json: pass",
+    "gatewayTests": {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/model-gateway/*.test.ts",
+      "onStaging": "20 tests: 19 pass, 1 skipped",
+      "now": "23 tests: 22 pass, 1 skipped (the 3 new tests of key-readers.test.ts)"
+    },
+    "neighbours": {
+      "files": [
+        "scripts/agent/mapping-teacher.test.ts",
+        "scripts/agent/mapping-teacher-review.test.ts",
+        "scripts/agent/mapping-routing.test.ts",
+        "scripts/agent/verify-teacher-labels.test.ts",
+        "packages/server/src/modules/ai/document-storey-agent.test.ts"
+      ],
+      "now": "30 tests: 27 pass, 3 fail",
+      "onStagingWithoutThisTask": "30 tests: 27 pass, 3 fail (the same three, compared by git stash)",
+      "failingBeforeAndAfter": [
+        "actual local NPZ student is invoked before dev replay teacher",
+        "complete table accepted once; incomplete table keeps canonical rejection and input lines",
+        "duplicate column label rejects its table without last-value-wins"
+      ],
+      "liveProofTest": "scripts/agent/live-proof.test.ts: 5 tests, 5 pass (run, not edited)"
+    },
+    "platformTestsUnderTheK9cGuard": {
+      "command": [
+        "node --require ./docs/evidence/gf1/k9c/safety.cjs --test",
+        "  --test-skip-pattern=\"a refused change leaves the file and its folder as they were\"",
+        "  scripts/platform/demo-gateway.test.mjs scripts/platform/demo-gateway-state.test.mjs"
+      ],
+      "now": "14 tests: 14 pass (12 before, 2 new)",
+      "deselected": "one test that deletes a folder cannot pass under the guard, as at GK1; not run outside it"
+    },
+    "livePlan": "scripts/agent/live-proof.ts --plan --tariff: ran once, exit 0 (see plan)",
+    "gitDiffCheck": "clean",
+    "newLinesOver120Characters": 0,
+    "syntheticKeyStringsOutsideTestFiles": 0,
+    "filesWithEitherStatementTrue": [
+      "None for the owner's policy. tests/model-gateway/key-readers.test.ts holds a control policy",
+      "(projectId model-core-control) with both true, as every gateway test needs one that parses."
+    ],
+    "neverRun": [
+      "No provider call, no real key, no settings file of the demo, no database, no request to the demo API.",
+      "enable, keys, reconcile and restore-key were not run against the demo; keys ran only as a rehearsal",
+      "inside the platform test, on made-up settings in a temporary folder.",
+      "The qualifier was never run with a readable file: its three child runs stop at the key check or at a",
+      "file that does not exist, behind a preload that makes any request or socket throw."
+    ]
+  },
+  "pinnedProducerSourcesChanged": {
+    "files": [
+      "packages/server/src/modules/usp/ingestion/mapping-teacher.ts",
+      "packages/server/src/modules/ai/officer-ai-provider.ts"
+    ],
+    "docsApiRegenerated": false,
+    "note": "docs/api/source-pins.json names both; the lead re-pins at the merge. config.ts is unchanged."
+  },
+  "report": {
+    "FOR_THE_OWNER": [
+      "gatewayExclusiveFunding, yes means: the free credit behind these eleven keys is spent only through",
+      "  this gateway; nobody uses any of the keys anywhere else, so the gateway's own count is the whole",
+      "  account of what was spent.",
+      "indiaPrivateApproved, yes means: you approve Sarvam as this project's India-private route for the",
+      "  minimised text the gateway sends, on Sarvam's own word about hosting, logs, retention and training;",
+      "  the code checks none of that."
+    ],
+    "TASK": "GK2: the policy file from the approved numbers, the readers of one key name, the rehearsal rule.",
+    "WORKS": [
+      "The pending policy file holds the approved prices, caps and eleven key names; both statements are null.",
+      "The gateway's schema refuses it as written, on exactly those two fields; with both true in memory it",
+      "  parses, policy hash efb90b3a440a875d80314024d30482abbc7c4c14a6e3682cd5ec946567dc6721.",
+      "The plan at that policy: 10 calls, estimate ₹1.15, at most ₹7.75 of ₹100 (30.97% of the ₹25 day).",
+      "A used-up key list reaches the mapping teacher as TEACHER_BUDGET_EXHAUSTED, not TEACHER_UNAVAILABLE.",
+      "The officer provider's status check accepts a list with every key present and names an absent one.",
+      "The one-call mapping qualifier accepts one Sarvam key or a list, and refuses an absent key by name",
+      "  before it reads the file.",
+      "A keys rehearsal without --settings prints the usage text and reads nothing; with it, one new file."
+    ],
+    "SEE_IT": [
+      "pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf-ai/gateway/gk2/check-policy.ts",
+      "  E:/BhuAayam-data/task-data/gk2/demo-gateway-policy.pending.json",
+      "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/model-gateway/key-readers.test.ts",
+      "E:/BhuAayam-data/task-data/gk2/plan/plan.json (totals and tariff)",
+      "docs/backend/DEMO-GATEWAY.md, section: Approved on 10 October 2026, and the pending file"
+    ],
+    "INPUTS": [
+      "The owner's decisions of 10 October as the task file and AGENTS.md state them.",
+      "The plan's own inputs: committed fixtures and the development and demo storey stores it already reads.",
+      "Synthetic keys made inside the tests. No real key, no demo settings, no provider call, no database."
+    ],
+    "GAPS": [
+      "The two statements are not confirmed: the pending file cannot be enabled, and no approved file exists.",
+      "The input bound (34816) and pace (1500 ms) are the schema's smallest values, not operator-qualified",
+      "  bounds; the bound's label says so (schema-minimum/not-approved) and is part of the policy hash.",
+      "  Another label, or any other change, gives another hash: run check-policy.ts and the plan again.",
+      "fundingVersion says eleven keys of free credit. H20 line 15 says Sarvam's credit belongs to an account,",
+      "  not a key; whether the eleven keys are eleven accounts is the owner's knowledge. The ₹100 cap does",
+      "  not depend on it.",
+      "The qualifier with every key present was run only up to a file that does not exist; no live run.",
+      "The officer provider checks that each key name is present, as before; it does not read a value, so an",
+      "  empty value still counts as present there (the gateway itself refuses it at the call).",
+      "With --live and a policy the schema refuses, the qualifier still ends as the teacher's own refusal",
+      "  (TEACHER_UNAVAILABLE), as before; only an absent or non-Sarvam key name is refused by name.",
+      "Three neighbour tests fail on staging without this task and fail the same way with it (see checks).",
+      "Two pinned producer sources changed; docs/api was not regenerated."
+    ],
+    "DESIGN": [
+      "No model-gateway export was added: providerKeyReferences, readProviderSecret and configuredGateway",
+      "  were already exported; config.ts is unchanged.",
+      "The qualifier checks the key names at the top of the script: an error thrown inside the teacher's",
+      "  runtime callback is swallowed into TEACHER_UNAVAILABLE and could never name a key.",
+      "The rehearsal test gives a keys file that does not exist. The keys file is read before the settings,",
+      "  so even code without the rule could not reach the demo settings from this test.",
+      "The planning copy of the approved form was deleted after the one plan run, so no file on disk says",
+      "  yes for the owner."
+    ],
+    "COMMITS": [
+      "8561c2e6 feat(gateway): the mapping teacher and the officer provider read a key list; a used-up",
+      "  list is a budget refusal",
+      "691eaaf7 test(runtime): a keys rehearsal never starts from the demo settings",
+      "this commit: docs(gateway): GK2 the policy from the owner's approved numbers, pending two confirmations"
+    ],
+    "CHECKS": "see checks: every listed check ran; the three neighbour failures are the same on staging",
+    "NEXT": [
+      "Owner: yes or no to each of the two statements above.",
+      "On two yeses: the owner's file is the pending content with both set to true; check-policy.ts must",
+      "  print the hash above, and enable must print the same hash in status.",
+      "Lead: re-pin docs/api for the two changed producer sources at the merge.",
+      "Lead or owner: decide whether the input bound keeps the label schema-minimum/not-approved."
+    ]
+  }
+}
