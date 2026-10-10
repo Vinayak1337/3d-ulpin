@@ -162,20 +162,26 @@ def scale_to_tile(planes: torch.Tensor, factor: float, shift: tuple[float, float
 def augment_scale(
     rgb: torch.Tensor, boxes: torch.Tensor, masks: torch.Tensor, scale_range: tuple[float, float]
 ) -> tuple[torch.Tensor, ...]:
-    """Random zoom, then crop or pad to the tile; boxes and masks move with the image."""
+    """Random zoom, then crop or pad to the tile; boxes and masks move with the image.
+
+    A roof whose mask had a pixel and has none left is no longer in the image, so it leaves the targets. A
+    publisher zero-pixel feature keeps its moved box and zero mask unless that box lies entirely outside the tile.
+    """
     factor = random.uniform(*scale_range)
     shift = (random.random(), random.random())
+    had_pixels = masks.flatten(1).amax(1) > 0
     rgb = scale_to_tile(rgb, factor, shift, "bilinear")
     masks = scale_to_tile(masks, factor, shift, "nearest-exact")
     tile = masks.shape[-1]
     size = round(tile * factor)
     offset = torch.tensor(tile_offset(tile, size, shift) * 2, dtype=torch.float32)
     corners = torch.cat([boxes[:, :2] - boxes[:, 2:] / 2, boxes[:, :2] + boxes[:, 2:] / 2], dim=1)
-    corners = ((corners * size + offset) / tile).clamp(0, 1)
+    corners = (corners * size + offset) / tile
+    outside = (corners[:, 2:] <= 0).any(1) | (corners[:, :2] >= 1).any(1)
+    keep = torch.where(had_pixels, masks.flatten(1).amax(1) > 0, ~outside)
+    corners = corners.clamp(0, 1)
     boxes = torch.cat([(corners[:, :2] + corners[:, 2:]) / 2, corners[:, 2:] - corners[:, :2]], dim=1)
-    # Existing zero-pixel policy: an instance left with no pixel stays, with a zero mask and a zero box.
-    boxes[masks.flatten(1).amax(1) == 0] = 0
-    return rgb, boxes, masks
+    return rgb, boxes[keep], masks[keep]
 
 
 class RampTrain(Dataset):
@@ -532,6 +538,7 @@ def augmentation_note(args: argparse.Namespace) -> str:
     if args.scale_range:
         low, high = args.scale_range
         note += f"; then zoom factor in [{low}, {high}] with random crop or black pad back to the tile"
+        note += "; a roof left with no mask pixel leaves the targets"
     return note
 
 

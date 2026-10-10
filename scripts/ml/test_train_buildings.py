@@ -102,12 +102,34 @@ class TrainAugmentation(unittest.TestCase):
         self.assertEqual(rgb[:, :54].abs().sum().item(), 0.0)
         self.assert_aligned(rgb, boxes, masks)
 
-    def test_an_instance_left_with_no_pixel_stays_with_a_zero_mask_and_box(self) -> None:
-        _, boxes, masks = self.scaled(1.33, (1.0, 1.0))
-        self.assertEqual(len(boxes), 2)
-        self.assertEqual(masks[0].sum().item(), 0)
-        self.assertEqual(boxes[0].tolist(), [0.0, 0.0, 0.0, 0.0])
-        self.assertGreater(masks[1].sum().item(), 0)
+    def test_an_instance_cropped_out_leaves_the_targets_and_the_rest_keep_order_and_alignment(self) -> None:
+        chip = rectangle_chip([(200, 200, 260, 250), (40, 60, 120, 100), (300, 320, 420, 400)])
+        with patch("train_buildings.random.random", side_effect=(1.0, 1.0)):
+            rgb, boxes, masks = augment_scale(*chip, (1.33, 1.33))
+        self.assertEqual((len(boxes), len(masks)), (2, 2))
+        self.assertLess(boxes[0, 0].item(), boxes[1, 0].item())
+        self.assert_aligned(rgb, boxes, masks)
+
+    def test_class_labels_follow_the_instances_that_remain(self) -> None:
+        plain = RampTrain(smoke=True)[2]["labels"]
+        with patch("train_buildings.random.random", side_effect=(1.0, 1.0)):
+            cropped = RampTrain(smoke=True, scale_range=(1.33, 1.33))[2]["labels"]
+        self.assertLess(len(cropped["boxes"]), len(plain["boxes"]))
+        self.assertEqual(len(cropped["class_labels"]), len(cropped["boxes"]))
+        self.assertEqual(len(cropped["masks"]), len(cropped["boxes"]))
+
+    def test_a_publisher_zero_pixel_instance_keeps_its_moved_box_until_the_box_leaves_the_tile(self) -> None:
+        rgb, boxes, masks = rectangle_chip([(40, 60, 120, 100), (0, 0, 0, 0)])
+        boxes[1] = torch.tensor([216.0, 216.0, 4.0, 4.0]) / TILE
+        with patch("train_buildings.random.random", side_effect=(0.5, 0.5)):
+            _, kept_boxes, kept_masks = augment_scale(rgb, boxes.clone(), masks, (0.75, 0.75))
+        self.assertEqual(len(kept_boxes), 2)
+        self.assertEqual(kept_masks[1].sum().item(), 0)
+        self.assertTrue(torch.allclose(kept_boxes[1] * TILE, torch.tensor([216.0, 216.0, 3.0, 3.0]), atol=1e-3))
+        boxes[1] = torch.tensor([20.0, 20.0, 4.0, 4.0]) / TILE
+        with patch("train_buildings.random.random", side_effect=(1.0, 1.0)):
+            _, no_boxes, no_masks = augment_scale(rgb, boxes.clone(), masks, (1.33, 1.33))
+        self.assertEqual((tuple(no_boxes.shape), tuple(no_masks.shape)), ((0, 4), (0, TILE, TILE)))
 
     def test_colour_jitter_changes_pixels_and_leaves_labels_unchanged(self) -> None:
         plain = RampTrain(smoke=True)[2]
