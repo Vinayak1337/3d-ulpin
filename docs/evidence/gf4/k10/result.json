@@ -424,6 +424,66 @@
    "see it is a local address."
   ]
  ],
+ "followUp": {
+  "why": [
+   "Lead note after the first report: the 1 and 1 on the live card were constants of the assigning script,",
+   "and K11 makes both numbers optional beside an unknown kind."
+  ],
+  "commit": "99d537f9 fix(card): a location without a structure or space number says so",
+  "change": [
+   "card-wording.ts only: numberedClause(part, number: number | undefined, kind) writes the structure and",
+   "the space; locationSentence reads both numbers as possibly absent. The formal locator is still what",
+   "verticalLocator returns."
+  ],
+  "rowsAsRendered": {
+   "withNumbers": [
+    "No parcel anchor supplied. Structure 1, kind not recorded; level not recorded; space 1, kind not",
+    "recorded. (Locator: NO-ANCHOR / ?01 / L? / ?001)"
+   ],
+   "withoutNumbersToday": [
+    "No parcel anchor supplied. Structure number not recorded, kind not recorded; level not recorded; space",
+    "number not recorded, kind not recorded. (Locator: NO-ANCHOR / ?undefined / L? / ?undefined)"
+   ],
+   "withoutNumbersAfterK11": [
+    "No parcel anchor supplied. Structure number not recorded, kind not recorded; level not recorded; space",
+    "number not recorded, kind not recorded. (Locator: NO-ANCHOR / ? / L? / ?), by the lead's statement of",
+    "what verticalLocator will print; not rendered"
+   ]
+  },
+  "tests": [
+   "a number beside an unknown kind prints as the record states it, and the formal locator ends the row",
+   "a locator without numbers prints two \"number not recorded\" clauses and no digit before the formal locator"
+  ],
+  "render": {
+   "pdf": "E:/BhuAayam-data/task-data/k10/after-unqualified/card.pdf",
+   "pdfSha256": "125848495c0d132014a5eb5d26d7df1f24c4b0a65d54f5b074e2e3133908c7a8",
+   "png": "E:/BhuAayam-data/task-data/k10/after-unqualified/card.png",
+   "pngSha256": "84eef00a9d7eea52fec1e39d74e4c8d2fa66e7395b9154513d9e3732c5a42679",
+   "unicodePdf": "E:/BhuAayam-data/task-data/k10/after-unqualified/card-unicode.pdf",
+   "unicodePdfSha256": "fa8f85512af034a92ccf9c846a24a1517f638a796ad3e77fff9adc869acc90b6",
+   "unicodePng": "E:/BhuAayam-data/task-data/k10/after-unqualified/card-unicode.png",
+   "unicodePngSha256": "fa78f4b8dee36a9d05851f4899df91acbca4341c47ebbb691a4ddd12274fe2b5",
+   "lookedAt": [
+    "Both PNGs were opened and read: the row is three whole lines in each, nothing is clipped, the rows below",
+    "move down and stay above the rule."
+   ]
+  },
+  "layout": {
+   "unit": "points; value column 190 to 555",
+   "widestLineOfTheRow": {"ascii": 535.2, "unicode": 550.1},
+   "afterK11Ascii": {"lines": 3, "widths": [342.9, 356.8, 7.9], "columnWidth": 365}
+  },
+  "checks": {
+   "pnpm typecheck:backend": "exit 0",
+   "card tests": "the same nine files: 47 tests, 47 pass",
+   "openapi.ts --check": "after re-pinning card-wording.ts: 298 operations, 337 named schemas",
+   "python -B scripts/api/check.py": [
+    "as before: exit 1 on the runtime receipts only; exit 0",
+    "with that comparison tolerated"
+   ],
+   "git diff --check and line length": "clean; no added line over 120 characters"
+  }
+ },
  "report": {
   "TASK": [
    "K10: a new property card says in words what it does not know. Worktree E:/Projects/ulpin-wt/a2, branch",
@@ -463,6 +523,10 @@
    [
     "A stored card is untouched: a card whose body holds the earlier words reports consistent with six",
     "passing checks."
+   ],
+   [
+    "Follow-up (99d537f9): a locator without its numbers prints \"Structure number not recorded\" and \"space",
+    "number not recorded\"; a locator with numbers prints as before."
    ]
   ],
   "SEE IT": [
@@ -538,7 +602,23 @@
     "receipts are checked out with CRLF. With the receipt comparison tolerated it exits 0."
    ],
    "The session ran to about 95 minutes against a box of about 80.",
-   "Commit trailer: Co-Authored-By: Claude Opus 5.5, as the session requires, in place of the one in the task file."
+   "Commit trailer: Co-Authored-By: Claude Opus 5.5, as the session requires, in place of the one in the task file.",
+   [
+    "Follow-up: the render in after-unqualified/ shows NO-ANCHOR / ?undefined / L? / ?undefined in the formal",
+    "locator. That is what verticalLocator returns today for a locator without numbers, an input the contract",
+    "does not yet accept; K11 changes it to NO-ANCHOR / ? / L? / ?. The worded clauses before it are final",
+    "and hold no digit and no \"undefined\"."
+   ],
+   [
+    "Follow-up: the number-less row takes three lines. With the locator K11 will print, the ASCII renderer",
+    "leaves \"?)\" alone on the third line (computed with its own line splitter, not rendered), and the Unicode",
+    "renderer breaks the formal locator after \"NO-\" at the hyphen (seen in the render). Both are whole and",
+    "inside the column; keeping the formal locator on one line would be a renderer change."
+   ],
+   [
+    "Follow-up: the number-less render was drawn once through a temporary edit of the drawing hook in",
+    "source-stated-binding.test.ts, restored before the commit; that test file is unchanged by the follow-up."
+   ]
   ],
   "DESIGN": [
    [
@@ -551,7 +631,9 @@
   "COMMITS": [
    "c366a476 docs(card): K10 what each card row is read from and what verification compares",
    "0b9d6680 fix(card): an unknown location, state and author are printed in words",
-   "docs(card): K10 evidence (this file and rasterise.ts)"
+   "d4f63b42 docs(card): K10 evidence",
+   "99d537f9 fix(card): a location without a structure or space number says so",
+   "docs(card): K10 evidence for a location without numbers (this file)"
   ],
   "CHECKS": {
    "pnpm typecheck:backend": "exit 0",
@@ -578,7 +660,8 @@
    "paths": [
     "git diff staging...HEAD --name-only: the owned files, their tests, this evidence folder and",
     "docs/api/source-pins.json"
-   ]
+   ],
+   "follow-up": "typecheck exit 0; 47 card tests pass; contract check 298 operations"
   },
   "NEXT": [
    "Runtime owner: after the merge, restart the demo API and generate a new card for UNIT-3B to see the words.",
