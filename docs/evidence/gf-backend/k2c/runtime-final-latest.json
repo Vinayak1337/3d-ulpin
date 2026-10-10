@@ -1,0 +1,84 @@
+{
+  "profile": "demo",
+  "project": "ulpin-demo",
+  "loopbackApi": "http://127.0.0.1:3194/api/v1",
+  "observedAt": "2026-10-10T02:12:40.382Z",
+  "leftRunning": true,
+  "servedCheckoutCommit": "3138affe5ca949d04cd7bb3a749f28c919fe71bc",
+  "servedImage": "ulpin-geo:demo-k2c-final",
+  "processorSourcesMatchCheckout": true,
+  "servedProcessorHashes": {
+    "geo/spatial_ml.py": "1f11ed46b79d171fd933f3cd64fd7e44e2bc060d6b91e56323f58bcf8c114671",
+    "geo/area.py": "0d5c7c5bf8e53335694807d927d055754f19b3e42cb8fa3911a74fb4a303d834",
+    "ml-models.json": "117924e8d92a2aee403cbf62d0c95a6331cdd84b981e73c2cc6d732b72a80832"
+  },
+  "processes": [
+    {
+      "label": "api",
+      "pid": 35484,
+      "creationDate": "/Date(1791598344343)/",
+      "checkoutIdentityVerified": true
+    },
+    {
+      "label": "dispatcher",
+      "pid": 15192,
+      "creationDate": "/Date(1791598345166)/",
+      "checkoutIdentityVerified": true
+    }
+  ],
+  "volumes": [
+    "ulpin-demo_minio-data",
+    "ulpin-demo_postgres-data",
+    "ulpin-demo_redis-data"
+  ],
+  "dataContainersPreserved": true,
+  "originalsPreserved": true,
+  "resets": 0,
+  "seeds": 0,
+  "pushes": 0,
+  "nativeRestarts": [
+    {
+      "code": "fea94e72",
+      "completedAt": null,
+      "reason": "Imagery-only import and canonical overlays"
+    },
+    {
+      "code": "fcd698fe",
+      "completedAt": null,
+      "reason": "Canonical candidates, room command and sanitized OCR"
+    },
+    {
+      "code": "017dbdbc",
+      "completedAt": null,
+      "reason": "Exact-source SQL origin casts"
+    },
+    {
+      "code": "8f5f5415",
+      "completedAt": null,
+      "reason": "Original overlay route and final closed diagnostic contract"
+    },
+    {
+      "code": "3138affe5ca949d04cd7bb3a749f28c919fe71bc",
+      "completedAt": null,
+      "reason": "Keep retained ML aliases and outline roles as candidates in canonical reads"
+    }
+  ],
+  "processorUpdates": [
+    "demo-k2c",
+    "demo-k2c-equal-area",
+    "demo-k2c-final"
+  ],
+  "processorUpdatesScope": "Owned demo geo/worker only; existing storage containers and volumes retained",
+  "gpuUsed": false,
+  "scored": false,
+  "inferenceChips": 22,
+  "additionalModelInference": 0,
+  "ocrAttempts": 1,
+  "qualifications": [
+    "Health/heartbeat is not extraction accuracy",
+    "Roofprint registry acceptance is blocked",
+    "OCR still failed",
+    "Hindi assets present, runner uses English",
+    "No complete runtime gate pass"
+  ]
+}

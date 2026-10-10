@@ -206,6 +206,42 @@ export const BuildingCandidateRefSchema = z.strictObject({
   inputManifest: id,
   outputRef: id.nullable(),
   state: z.enum(['candidate', 'abstained', 'unsupported', 'failed', 'reviewed']),
+  kind: z.enum(['roofprint', 'room']).optional(),
+  method: BuildingMethodSchema.optional(),
+  modelId: id.optional(), modelHash: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  confidence: number.min(0).max(1).nullable().optional(),
+  confidenceCalibration: z.enum(['uncalibrated', 'not_applicable']).optional(),
+  limitations: z.array(z.string()).optional(), citations: z.array(BuildingCitationSchema).optional(),
+  polygons: BuildingMultiPolygonSchema.nullable().optional(),
+  coordinateFrame: id.optional(), levelId: id.nullable().optional(),
+  labelLiteral: z.string().optional(), levelLabelLiteral: z.string().optional(),
+  planFrame: z.strictObject({ originPdf: z.tuple([number, number]),
+    metresPerPdfPoint: number.positive(), unit: z.literal('m'), axes: z.tuple([
+      z.literal('page_right'), z.literal('page_up')]), placement: z.literal('unknown'),
+    scaleState: z.literal('candidate') }).optional(),
+  review: z.strictObject({ outcome: z.enum(['accepted', 'rejected']), reason: z.string().min(1),
+    actor: id, time: z.string().datetime() }).optional(),
+});
+export const BuildingPlanCandidateRequestSchema = z.discriminatedUnion('action', [
+  z.strictObject({ action: z.literal('retain_rooms'), requestKey: z.uuid(),
+    expectedCanonicalRevision: z.string().regex(/^[a-f0-9]{64}$/),
+    derivativeSha256: z.string().regex(/^[a-f0-9]{64}$/),
+    candidates: z.array(BuildingCandidateRefSchema.extend({ kind: z.literal('room'),
+      state: z.literal('candidate'), method: z.literal('deterministic:vector-plan@1'),
+      levelId: z.null(), coordinateFrame: id, polygons: BuildingMultiPolygonSchema,
+      citations: z.array(BuildingCitationSchema).min(1), review: z.never().optional(),
+    })).min(1).max(64),
+  }),
+  z.strictObject({ action: z.literal('attach_level'), requestKey: z.uuid(),
+    expectedCanonicalRevision: z.string().regex(/^[a-f0-9]{64}$/), candidateId: id,
+    levelId: z.uuid(), reason: z.string().trim().min(3).max(2000),
+  }),
+]);
+export type BuildingPlanCandidateRequest = z.infer<typeof BuildingPlanCandidateRequestSchema>;
+export const BuildingPlanCandidateReceiptSchema = z.strictObject({ requestKey: z.uuid(),
+  buildingId: z.uuid(), recordRevision: z.number().int().positive(),
+  candidateIds: z.array(id), actor: id, time: z.string().datetime(),
+  derivativeSha256: z.string().regex(/^[a-f0-9]{64}$/).nullable(),
 });
 export const BuildingInputRevisionSchema = z.strictObject({
   namespace: z.enum(['area', 'area_feature', 'registry_record', 'import_package']),
@@ -255,6 +291,19 @@ export const BuildingBaseFeatureSchema = z.strictObject({
   upperM: buildingValueSchema(number, 'm'),
   network: buildingValueSchema(z.string()),
 });
+export const RetainedImagerySchema = z.strictObject({
+  clusterId: z.string().min(1).max(120),
+  classification: z.literal('test_only'),
+  analyticalEligibility: z.literal('not_assessed'),
+  chips: z.array(z.strictObject({
+    chipId: z.string().uuid(), sourceId: z.string().uuid(), sourceSha256: z.string().regex(/^[a-f0-9]{64}$/),
+    sourceCrs: z.literal('EPSG:4326'),
+    affine: z.tuple([number, number, number, number, number, number]),
+    width: z.number().int().positive().max(256), height: z.number().int().positive().max(256),
+    originalUrl: z.string().url(), acquiredAt: z.string(),
+    licence: z.literal('CC-BY-NC-4.0'), upstreamConditions: z.string().min(1).max(1000),
+  })).min(1).max(64),
+});
 export const BuildingOverlaySchema = z.discriminatedUnion('kind', [
   z.strictObject({
     id,
@@ -292,6 +341,7 @@ export const NormalizedAreaSchema = z.strictObject({
   revisionId: id,
   frame: AreaFrameSchema,
   buildings: z.array(NormalizedBuildingSummarySchema),
+  candidates: z.array(BuildingCandidateRefSchema).optional(),
   baseFeatures: z.array(BuildingBaseFeatureSchema),
   administrativeContext: z.array(z.strictObject({
     id,
@@ -302,10 +352,17 @@ export const NormalizedAreaSchema = z.strictObject({
     name: buildingValueSchema(z.string()),
     polygons: buildingValueSchema(BuildingMultiPolygonSchema, 'm'),
   })).optional(),
+  imagery: z.array(RetainedImagerySchema).optional(),
   overlays: z.array(BuildingOverlaySchema),
   tilesets: z.array(z.strictObject({ id, url: z.string(), revisionId: id })),
   gaps: z.array(z.string()),
 });
+export const ImageryAreaImportSchema = z.strictObject({
+  format: z.literal('imagery_area'), requestKey: z.string().uuid(), clusterId: z.string().min(1).max(120),
+});
+export type RetainedImagery = z.infer<typeof RetainedImagerySchema>;
+export type ImageryAreaImport = z.infer<typeof ImageryAreaImportSchema>;
+
 export type AreaFrame = z.infer<typeof AreaFrameSchema>;
 export type NormalizedBuilding = z.infer<typeof NormalizedBuildingSchema>;
 export type NormalizedArea = z.infer<typeof NormalizedAreaSchema>;

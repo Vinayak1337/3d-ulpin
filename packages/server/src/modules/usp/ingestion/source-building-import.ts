@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
-import { SourceBuildingImportSchema, type SourceBuildingImport, type SourceBuildingPackage } from '@ulpin/contracts';
+import {
+  SourceBuildingImportSchema, type AreaReference, type SourceBuildingImport, type SourceBuildingPackage,
+} from '@ulpin/contracts';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { sha256 } from '../../../infrastructure/storage';
@@ -40,7 +42,10 @@ function validateFiles(input: SourceBuildingImport, files: SourceBuildingFile[])
   }
 }
 
-async function destinationTx(client: PoolClient, input: SourceBuildingImport): Promise<string> {
+export async function sourceImportDestinationTx(
+  client: PoolClient, input: Pick<SourceBuildingImport, 'name' | 'areaId' | 'expectedAreaRevision'>,
+  reference: AreaReference | null = null,
+): Promise<string> {
   if (input.areaId) {
     const area = await getArea(input.areaId, client);
     if (area.revision !== input.expectedAreaRevision) conflict('Destination area changed before import.');
@@ -52,7 +57,9 @@ async function destinationTx(client: PoolClient, input: SourceBuildingImport): P
     'INSERT INTO registry_sites(id,identifier,name,frame,synthetic) VALUES($1,$2,$3,$4,false)',
     [areaId, propertyIdentifier(areaId), input.name, frame],
   );
-  await client.query('INSERT INTO map_areas(id,site_id,name) VALUES($1,$1,$2)', [areaId, input.name]);
+  await client.query('INSERT INTO map_areas(id,site_id,name,reference) VALUES($1,$1,$2,$3)', [
+    areaId, input.name, reference,
+  ]);
   return areaId;
 }
 
@@ -79,7 +86,7 @@ async function createContextTx(client: PoolClient, input: SourceBuildingImport):
       packageId: prior.id, areaId: prior.area_id, caseId: prior.case_id, complete: prior.body.state !== 'RECEIVED',
     };
   }
-  const areaId = await destinationTx(client, input);
+  const areaId = await sourceImportDestinationTx(client, input);
   const site = (await client.query(
     'SELECT s.* FROM registry_sites s JOIN map_areas a ON a.site_id=s.id WHERE a.id=$1 FOR UPDATE OF s', [areaId],
   )).rows[0];

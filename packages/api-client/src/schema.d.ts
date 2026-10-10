@@ -1251,6 +1251,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/buildings/{buildingId}/candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retain cited plan-local room candidates or review an existing level association */
+        post: operations["POST_api_v1_buildings_buildingId_candidates"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/work-queue": {
         parameters: {
             query?: never;
@@ -5493,6 +5510,31 @@ export interface components {
             jobId?: string;
         };
         GET_source_workspaces_Response_200_application_json: {
+            imagery?: {
+                clusterId: string;
+                /** @enum {string} */
+                classification: "test_only";
+                /** @enum {string} */
+                analyticalEligibility: "not_assessed";
+                chips: {
+                    /** Format: uuid */
+                    chipId: string;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceSha256: string;
+                    /** @enum {string} */
+                    sourceCrs: "EPSG:4326";
+                    affine: (number)[];
+                    width: number;
+                    height: number;
+                    /** Format: uri */
+                    originalUrl: string;
+                    acquiredAt: string;
+                    /** @enum {string} */
+                    licence: "CC-BY-NC-4.0";
+                    upstreamConditions: string;
+                }[];
+            };
             /** @enum {boolean} */
             geometryFree?: true;
             administrativeContext?: {
@@ -6030,6 +6072,31 @@ export interface components {
             caseId?: string;
         };
         POST_source_workspaces_Response_201_application_json: {
+            imagery?: {
+                clusterId: string;
+                /** @enum {string} */
+                classification: "test_only";
+                /** @enum {string} */
+                analyticalEligibility: "not_assessed";
+                chips: {
+                    /** Format: uuid */
+                    chipId: string;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceSha256: string;
+                    /** @enum {string} */
+                    sourceCrs: "EPSG:4326";
+                    affine: (number)[];
+                    width: number;
+                    height: number;
+                    /** Format: uri */
+                    originalUrl: string;
+                    acquiredAt: string;
+                    /** @enum {string} */
+                    licence: "CC-BY-NC-4.0";
+                    upstreamConditions: string;
+                }[];
+            };
             /** @enum {boolean} */
             geometryFree?: true;
             administrativeContext?: {
@@ -6950,6 +7017,31 @@ export interface components {
                 };
             }[];
             packages: {
+                imagery?: {
+                    clusterId: string;
+                    /** @enum {string} */
+                    classification: "test_only";
+                    /** @enum {string} */
+                    analyticalEligibility: "not_assessed";
+                    chips: {
+                        /** Format: uuid */
+                        chipId: string;
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceSha256: string;
+                        /** @enum {string} */
+                        sourceCrs: "EPSG:4326";
+                        affine: (number)[];
+                        width: number;
+                        height: number;
+                        /** Format: uri */
+                        originalUrl: string;
+                        acquiredAt: string;
+                        /** @enum {string} */
+                        licence: "CC-BY-NC-4.0";
+                        upstreamConditions: string;
+                    }[];
+                };
                 /** @enum {boolean} */
                 geometryFree?: true;
                 administrativeContext?: {
@@ -8909,6 +9001,92 @@ export interface components {
                 /** @enum {string} */
                 heightState: "unknown" | "absent" | "null" | "withheld" | "conflicting" | "estimated" | "candidate" | "source_supported" | "reviewed";
             }[];
+            candidates?: {
+                candidateId: string;
+                task: string;
+                taskVersion: string;
+                inputManifest: string;
+                outputRef: string | null;
+                /** @enum {string} */
+                state: "candidate" | "abstained" | "unsupported" | "failed" | "reviewed";
+                /** @enum {string} */
+                kind?: "roofprint" | "room";
+                method?: string;
+                modelId?: string;
+                modelHash?: string;
+                confidence?: number | null;
+                /** @enum {string} */
+                confidenceCalibration?: "uncalibrated" | "not_applicable";
+                limitations?: string[];
+                citations?: {
+                    sourceId: string;
+                    sourceSha256: string;
+                    locator: {
+                        /** @enum {string} */
+                        kind: "page";
+                        page: number;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "region";
+                        page: number;
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        unit: "normalized" | "pt" | "pixel";
+                    } | {
+                        /** @enum {string} */
+                        kind: "row";
+                        row: number;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "cell";
+                        row: number;
+                        column: string;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "entity";
+                        entityId: string;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "feature";
+                        featureId: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "point";
+                        pointId: string;
+                    };
+                }[];
+                polygons?: (number)[][][][] | null;
+                coordinateFrame?: string;
+                levelId?: string | null;
+                labelLiteral?: string;
+                levelLabelLiteral?: string;
+                planFrame?: {
+                    originPdf: (number)[];
+                    metresPerPdfPoint: number;
+                    /** @enum {string} */
+                    unit: "m";
+                    axes: ("page_right" | "page_up")[];
+                    /** @enum {string} */
+                    placement: "unknown";
+                    /** @enum {string} */
+                    scaleState: "candidate";
+                };
+                review?: {
+                    /** @enum {string} */
+                    outcome: "accepted" | "rejected";
+                    reason: string;
+                    actor: string;
+                    /** Format: date-time */
+                    time: string;
+                };
+            }[];
             baseFeatures: {
                 id: string;
                 /** @enum {string} */
@@ -9291,6 +9469,31 @@ export interface components {
                     method: string;
                     revisionId: string;
                 };
+            }[];
+            imagery?: {
+                clusterId: string;
+                /** @enum {string} */
+                classification: "test_only";
+                /** @enum {string} */
+                analyticalEligibility: "not_assessed";
+                chips: {
+                    /** Format: uuid */
+                    chipId: string;
+                    /** Format: uuid */
+                    sourceId: string;
+                    sourceSha256: string;
+                    /** @enum {string} */
+                    sourceCrs: "EPSG:4326";
+                    affine: (number)[];
+                    width: number;
+                    height: number;
+                    /** Format: uri */
+                    originalUrl: string;
+                    acquiredAt: string;
+                    /** @enum {string} */
+                    licence: "CC-BY-NC-4.0";
+                    upstreamConditions: string;
+                }[];
             }[];
             overlays: ({
                 id: string;
@@ -10891,6 +11094,83 @@ export interface components {
                 outputRef: string | null;
                 /** @enum {string} */
                 state: "candidate" | "abstained" | "unsupported" | "failed" | "reviewed";
+                /** @enum {string} */
+                kind?: "roofprint" | "room";
+                method?: string;
+                modelId?: string;
+                modelHash?: string;
+                confidence?: number | null;
+                /** @enum {string} */
+                confidenceCalibration?: "uncalibrated" | "not_applicable";
+                limitations?: string[];
+                citations?: {
+                    sourceId: string;
+                    sourceSha256: string;
+                    locator: {
+                        /** @enum {string} */
+                        kind: "page";
+                        page: number;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "region";
+                        page: number;
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        unit: "normalized" | "pt" | "pixel";
+                    } | {
+                        /** @enum {string} */
+                        kind: "row";
+                        row: number;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "cell";
+                        row: number;
+                        column: string;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "entity";
+                        entityId: string;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "feature";
+                        featureId: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "point";
+                        pointId: string;
+                    };
+                }[];
+                polygons?: (number)[][][][] | null;
+                coordinateFrame?: string;
+                levelId?: string | null;
+                labelLiteral?: string;
+                levelLabelLiteral?: string;
+                planFrame?: {
+                    originPdf: (number)[];
+                    metresPerPdfPoint: number;
+                    /** @enum {string} */
+                    unit: "m";
+                    axes: ("page_right" | "page_up")[];
+                    /** @enum {string} */
+                    placement: "unknown";
+                    /** @enum {string} */
+                    scaleState: "candidate";
+                };
+                review?: {
+                    /** @enum {string} */
+                    outcome: "accepted" | "rejected";
+                    reason: string;
+                    actor: string;
+                    /** Format: date-time */
+                    time: string;
+                };
             }[];
         };
         POST_registry_drafts_draftId_native_exterior_references_reviews_Request_application_json: {
@@ -12895,6 +13175,14 @@ export interface components {
                             exitCode: number | null;
                             receiptSha256: string | null;
                             candidateSha256: string | null;
+                            failure?: {
+                                /** Format: uuid */
+                                attemptId: string;
+                                /** @enum {string} */
+                                class: "RuntimeError" | "ValueError" | "TypeError" | "AttributeError" | "ModuleNotFoundError" | "ImportError" | "OSError" | "CalledProcessError" | "SourceOcrError" | "ValidationError" | "KeyError" | "AssertionError" | "UnknownWorkerFailure";
+                                /** @enum {string} */
+                                message: "Native dependency unavailable" | "Python dependency unavailable" | "Invalid worker result" | "Worker exception; sensitive detail withheld" | "Worker terminated by resource bound" | "Worker failed before producing diagnostics";
+                            };
                             worker: {
                                 exitCode: number;
                                 stopReason: string | null;
@@ -15921,6 +16209,14 @@ export interface components {
                             exitCode: number | null;
                             receiptSha256: string | null;
                             candidateSha256: string | null;
+                            failure?: {
+                                /** Format: uuid */
+                                attemptId: string;
+                                /** @enum {string} */
+                                class: "RuntimeError" | "ValueError" | "TypeError" | "AttributeError" | "ModuleNotFoundError" | "ImportError" | "OSError" | "CalledProcessError" | "SourceOcrError" | "ValidationError" | "KeyError" | "AssertionError" | "UnknownWorkerFailure";
+                                /** @enum {string} */
+                                message: "Native dependency unavailable" | "Python dependency unavailable" | "Invalid worker result" | "Worker exception; sensitive detail withheld" | "Worker terminated by resource bound" | "Worker failed before producing diagnostics";
+                            };
                             worker: {
                                 exitCode: number;
                                 stopReason: string | null;
@@ -17851,6 +18147,14 @@ export interface components {
                             exitCode: number | null;
                             receiptSha256: string | null;
                             candidateSha256: string | null;
+                            failure?: {
+                                /** Format: uuid */
+                                attemptId: string;
+                                /** @enum {string} */
+                                class: "RuntimeError" | "ValueError" | "TypeError" | "AttributeError" | "ModuleNotFoundError" | "ImportError" | "OSError" | "CalledProcessError" | "SourceOcrError" | "ValidationError" | "KeyError" | "AssertionError" | "UnknownWorkerFailure";
+                                /** @enum {string} */
+                                message: "Native dependency unavailable" | "Python dependency unavailable" | "Invalid worker result" | "Worker exception; sensitive detail withheld" | "Worker terminated by resource bound" | "Worker failed before producing diagnostics";
+                            };
                             worker: {
                                 exitCode: number;
                                 stopReason: string | null;
@@ -20715,6 +21019,117 @@ export interface components {
             /** Format: date-time */
             time: string;
             recordRevision: number;
+        };
+        POST_buildings_buildingId_candidates_Request_application_json: {
+            /** @enum {string} */
+            action: "retain_rooms";
+            /** Format: uuid */
+            requestKey: string;
+            expectedCanonicalRevision: string;
+            derivativeSha256: string;
+            candidates: {
+                candidateId: string;
+                task: string;
+                taskVersion: string;
+                inputManifest: string;
+                outputRef: string | null;
+                /** @enum {string} */
+                state: "candidate";
+                /** @enum {string} */
+                kind: "room";
+                /** @enum {string} */
+                method: "deterministic:vector-plan@1";
+                modelId?: string;
+                modelHash?: string;
+                confidence?: number | null;
+                /** @enum {string} */
+                confidenceCalibration?: "uncalibrated" | "not_applicable";
+                limitations?: string[];
+                citations: {
+                    sourceId: string;
+                    sourceSha256: string;
+                    locator: {
+                        /** @enum {string} */
+                        kind: "page";
+                        page: number;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "region";
+                        page: number;
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        unit: "normalized" | "pt" | "pixel";
+                    } | {
+                        /** @enum {string} */
+                        kind: "row";
+                        row: number;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "cell";
+                        row: number;
+                        column: string;
+                        sheet?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "entity";
+                        entityId: string;
+                        text?: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "feature";
+                        featureId: string;
+                    } | {
+                        /** @enum {string} */
+                        kind: "point";
+                        pointId: string;
+                    };
+                }[];
+                polygons: (number)[][][][];
+                coordinateFrame: string;
+                /** @enum {string|null} */
+                levelId: null;
+                labelLiteral?: string;
+                levelLabelLiteral?: string;
+                planFrame?: {
+                    originPdf: (number)[];
+                    metresPerPdfPoint: number;
+                    /** @enum {string} */
+                    unit: "m";
+                    axes: ("page_right" | "page_up")[];
+                    /** @enum {string} */
+                    placement: "unknown";
+                    /** @enum {string} */
+                    scaleState: "candidate";
+                };
+                review?: unknown;
+            }[];
+        } | {
+            /** @enum {string} */
+            action: "attach_level";
+            /** Format: uuid */
+            requestKey: string;
+            expectedCanonicalRevision: string;
+            candidateId: string;
+            /** Format: uuid */
+            levelId: string;
+            reason: string;
+        };
+        POST_buildings_buildingId_candidates_Response_201_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            /** Format: uuid */
+            buildingId: string;
+            recordRevision: number;
+            candidateIds: string[];
+            actor: string;
+            /** Format: date-time */
+            time: string;
+            derivativeSha256: string | null;
         };
         GET_work_queue_Response_200_application_json: {
             total: number;
@@ -33657,6 +34072,14 @@ export interface components {
                             exitCode: number | null;
                             receiptSha256: string | null;
                             candidateSha256: string | null;
+                            failure?: {
+                                /** Format: uuid */
+                                attemptId: string;
+                                /** @enum {string} */
+                                class: "RuntimeError" | "ValueError" | "TypeError" | "AttributeError" | "ModuleNotFoundError" | "ImportError" | "OSError" | "CalledProcessError" | "SourceOcrError" | "ValidationError" | "KeyError" | "AssertionError" | "UnknownWorkerFailure";
+                                /** @enum {string} */
+                                message: "Native dependency unavailable" | "Python dependency unavailable" | "Invalid worker result" | "Worker exception; sensitive detail withheld" | "Worker terminated by resource bound" | "Worker failed before producing diagnostics";
+                            };
                             worker: {
                                 exitCode: number;
                                 stopReason: string | null;
@@ -48996,6 +49419,14 @@ export interface components {
                             exitCode: number | null;
                             receiptSha256: string | null;
                             candidateSha256: string | null;
+                            failure?: {
+                                /** Format: uuid */
+                                attemptId: string;
+                                /** @enum {string} */
+                                class: "RuntimeError" | "ValueError" | "TypeError" | "AttributeError" | "ModuleNotFoundError" | "ImportError" | "OSError" | "CalledProcessError" | "SourceOcrError" | "ValidationError" | "KeyError" | "AssertionError" | "UnknownWorkerFailure";
+                                /** @enum {string} */
+                                message: "Native dependency unavailable" | "Python dependency unavailable" | "Invalid worker result" | "Worker exception; sensitive detail withheld" | "Worker terminated by resource bound" | "Worker failed before producing diagnostics";
+                            };
                             worker: {
                                 exitCode: number;
                                 stopReason: string | null;
@@ -51240,6 +51671,14 @@ export interface components {
                                 exitCode: number | null;
                                 receiptSha256: string | null;
                                 candidateSha256: string | null;
+                                failure?: {
+                                    /** Format: uuid */
+                                    attemptId: string;
+                                    /** @enum {string} */
+                                    class: "RuntimeError" | "ValueError" | "TypeError" | "AttributeError" | "ModuleNotFoundError" | "ImportError" | "OSError" | "CalledProcessError" | "SourceOcrError" | "ValidationError" | "KeyError" | "AssertionError" | "UnknownWorkerFailure";
+                                    /** @enum {string} */
+                                    message: "Native dependency unavailable" | "Python dependency unavailable" | "Invalid worker result" | "Worker exception; sensitive detail withheld" | "Worker terminated by resource bound" | "Worker failed before producing diagnostics";
+                                };
                                 worker: {
                                     exitCode: number;
                                     stopReason: string | null;
@@ -58012,13 +58451,20 @@ export interface components {
                 componentId: string;
                 subject: string;
             }[];
-            calibration: {
+            rejected?: {
+                componentId: string;
+                reason: string;
+            }[];
+            reason?: string;
+            calibration?: {
                 rasterSha256: string;
                 imagePoints: ((number)[] | (number)[])[];
                 worldPoints: ((number)[] | (number)[])[];
                 frame: string;
                 reason: string;
             };
+            /** @enum {string} */
+            georeference?: "source_geotiff";
         };
         POST_spatial_ml_items_itemId_footprint_drafts_Response_200_application_json: {
             package: {
@@ -58512,7 +58958,10 @@ export interface components {
                 originalSha256: string;
                 worldStatus: string;
                 rasterSha256: string;
-                calibration: Record<string, never>;
+                calibration: Record<string, never> | null;
+                /** @enum {string|null} */
+                georeference?: "source_geotiff" | null;
+                decisions?: Record<string, never>[];
                 selections: Record<string, never>[];
                 target: {
                     /** Format: uuid */
@@ -62662,6 +63111,14 @@ export interface components {
                     exitCode: number | null;
                     receiptSha256: string | null;
                     candidateSha256: string | null;
+                    failure?: {
+                        /** Format: uuid */
+                        attemptId: string;
+                        /** @enum {string} */
+                        class: "RuntimeError" | "ValueError" | "TypeError" | "AttributeError" | "ModuleNotFoundError" | "ImportError" | "OSError" | "CalledProcessError" | "SourceOcrError" | "ValidationError" | "KeyError" | "AssertionError" | "UnknownWorkerFailure";
+                        /** @enum {string} */
+                        message: "Native dependency unavailable" | "Python dependency unavailable" | "Invalid worker result" | "Worker exception; sensitive detail withheld" | "Worker terminated by resource bound" | "Worker failed before producing diagnostics";
+                    };
                     worker: {
                         exitCode: number;
                         stopReason: string | null;
@@ -69272,7 +69729,7 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        /** @description JSON retains an acquisition; multipart retains GIS or document-backed geometry-free buildings. */
+        /** @description JSON retains an acquisition; multipart retains GIS, source-only buildings or original-only imagery. */
         requestBody: {
             content: {
                 "application/json": components["schemas"]["POST_import_packages_Request_application_json"];
@@ -74197,6 +74654,124 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["POST_buildings_buildingId_conflict_decisions_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_buildings_buildingId_candidates: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
+            path: {
+                buildingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_buildings_buildingId_candidates_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            201: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_buildings_buildingId_candidates_Response_201_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */

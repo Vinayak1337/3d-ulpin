@@ -31,6 +31,18 @@ const receiptSchema=z.object({schemaVersion:z.literal('source-ocr-attempt/1'),
     resultBytes:z.literal(resultLimit)}),worker:DocumentOcrExecutionSchema.shape.worker.unwrap().strip(),
   result:z.object({sha256:z.string().nullable(),method:DocumentOcrSchema.shape.method})});
 
+/** Never echo an exception message: map known failure classes to a closed, content-free vocabulary. */
+export function sanitizedOcrFailure(attemptId:string,log:string,stopReason:string|null){
+  const tail=log.slice(-4096),match=tail.match(/(?:^|\n)([A-Za-z][A-Za-z0-9_]{0,79}(?:Error|Exception)):/g)?.at(-1);
+  const parsed=match?.trim().split(':')[0];
+  const checked=DocumentOcrExecutionSchema.shape.failure.unwrap().shape.class.safeParse(parsed);
+  const failureClass=checked.success?checked.data:'UnknownWorkerFailure';
+  const message=stopReason?'Worker terminated by resource bound':/0xC0000135|3221225781|DLL load failed/i.test(tail)
+    ?'Native dependency unavailable':/ModuleNotFoundError:|ImportError:/.test(tail)?'Python dependency unavailable'
+      :match?'Worker exception; sensitive detail withheld':'Worker failed before producing diagnostics';
+  return DocumentOcrExecutionSchema.shape.failure.unwrap().parse({attemptId,class:failureClass,message});
+}
+
 /** Check the opened file before reading; growth still cannot exceed the fixed buffer. */
 export async function readBoundedOcrArtifact(path:string,limit:number){
   const file=await open(path,'r');
@@ -133,6 +145,13 @@ export async function runSourceOcr(input:OcrInput,original:Uint8Array,deadline:n
         throw new Error('OCR_RECEIPT_SCOPE');
       receipt=parsed;execution.receiptSha256=sha256(receiptBytes);execution.worker=parsed.worker;
     }catch{/* A failure before worker startup may have no receipt. Success requires it below. */}
+    if(exitCode!==0){
+      let log='';
+      try{
+        log=(await readBoundedOcrArtifact(join(output,'worker.log'),2*1024**2)).toString('utf8');
+      }catch{/* bounded absence */}
+      execution.failure=sanitizedOcrFailure(input.jobId,log,execution.worker?.stopReason??null);
+    }
     const path=join(output,'result.json');let bytes:Buffer;
     try{bytes=await readBoundedOcrArtifact(path,resultLimit);}catch(error){
       return finish(error instanceof Error&&error.message==='OCR_ARTIFACT_LIMIT'?failed(input,'OCR_RESULT_LIMIT'):

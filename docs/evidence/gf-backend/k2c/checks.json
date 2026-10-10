@@ -1,0 +1,113 @@
+{
+  "task": "K2c",
+  "cwd": "E:/Projects/ulpin-wt/k1",
+  "servedApiCode": "395e7770dc1c6a7144176c95d3ca799e617e1db7",
+  "checks": [
+    {
+      "name": "backend typecheck",
+      "command": "pnpm typecheck:backend",
+      "exitCode": 0,
+      "log": "E:/BhuAayam-data/task-data/k2c/backend-final-method.log"
+    },
+    {
+      "name": "focused TypeScript contracts and invariants",
+      "command": "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS='--require ./scripts/platform/isolated-env.cjs' pnpm exec tsx --tsconfig apps/api/tsconfig.json --test apps/api/src/modules/register/candidate.controller.test.ts apps/api/src/modules/register/conflict-decision.controller.test.ts packages/server/src/modules/usp/ingestion/source-building-candidates.test.ts packages/server/src/modules/spatial/spatial-ml-georeference.test.ts packages/server/src/modules/usp/ingestion/source-building-admission.test.ts apps/api/src/modules/register/canonical.controller.test.ts tests/manual-ingestion.test.ts",
+      "exitCode": 0,
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0,
+      "log": "E:/BhuAayam-data/task-data/k2c/focused-final-method.log"
+    },
+    {
+      "name": "focused Python demo profile and reference invariants",
+      "command": "Owned ulpin-demo geo container: PYTHONPATH=/app python /tmp/ulpin-k2c-profile-reference-test.py",
+      "source": "docs/evidence/gf-backend/k2c/profile-reference.test.py",
+      "exitCode": 0,
+      "passed": 2,
+      "failed": 0,
+      "modelInferenceExecuted": false,
+      "log": "E:/BhuAayam-data/task-data/k2c/python-final-image.log"
+    },
+    {
+      "name": "LF published API checker",
+      "command": "python docs/evidence/gf-backend/k2c/check-lf-export.py",
+      "checker": "Unchanged scripts/api/check.py on a fresh committed LF export with hash-matching historical receipt encodings",
+      "exitCode": 0,
+      "nativeOperations": 292,
+      "baseline": 132,
+      "added": 160,
+      "namedSchemas": 327,
+      "log": "E:/BhuAayam-data/task-data/k2c/api-check-final-method.log"
+    },
+    {
+      "name": "extended live canonical verifier",
+      "command": "pnpm exec tsx docs/evidence/gf-backend/k2c/verify-canonical.ts",
+      "exitCode": 0,
+      "result": "docs/evidence/gf-backend/k2c/canonical-check.json",
+      "log": "E:/BhuAayam-data/task-data/k2c/canonical-final-method.log"
+    },
+    {
+      "name": "demo health and ownership",
+      "command": "pnpm platform:doctor --profile demo",
+      "exitCode": 0,
+      "scope": "Health, storage ownership, worker heartbeat, native process identity and migrations; not inference or OCR accuracy",
+      "log": "E:/BhuAayam-data/task-data/k2c/doctor-final-method.log"
+    },
+    {
+      "name": "current served processor pins",
+      "command": "node docs/evidence/gf-backend/k2c/capture-runtime.mjs runtime-final-method.json",
+      "exitCode": 0,
+      "processorSourcesMatchCheckout": true,
+      "runtime": "docs/evidence/gf-backend/k2c/runtime-final-method.json"
+    },
+    {
+      "name": "added-code style and syntax audit",
+      "exitCode": 0,
+      "scope": "Added nongenerated TypeScript/Python/MJS lines <=120 columns; new TypeScript helpers and Python evidence functions <=40 lines; Python AST parse without bytecode writes",
+      "log": "E:/BhuAayam-data/task-data/k2c/function-audit-final.log"
+    },
+    {
+      "name": "whitespace and diff review",
+      "command": "git diff --check; review git diff 4ca735e9...HEAD",
+      "exitCode": 0,
+      "databaseSchemaChanged": false,
+      "studioChanged": false,
+      "sceneChanged": false,
+      "trainingOrEvaluationScriptsChanged": false
+    }
+  ],
+  "separateFailures": [
+    {
+      "name": "single region-only OCR observation",
+      "command": "pnpm exec tsx docs/evidence/gf-backend/k2c/ocr-through-api.ts capture",
+      "exitCode": 1,
+      "attemptId": "521741ce-3527-4049-a0c9-43b13a6188f5",
+      "jobStatus": "completed",
+      "ocrStatus": "failed",
+      "code": "OCR_SUPERVISOR_FAILED",
+      "class": "KeyError",
+      "message": "Worker exception; sensitive detail withheld",
+      "textLines": 0,
+      "furtherOcrExecution": 0
+    },
+    {
+      "name": "reviewed roofprint registry recording",
+      "httpStatus": 422,
+      "code": "USP_GEOMETRY_PAYLOAD_UNQUALIFIED",
+      "qualificationBypassed": false,
+      "registryCommitted": false,
+      "receipt": "docs/evidence/gf-backend/k2c/roofprint-recording.json"
+    }
+  ],
+  "resumeChecks": {
+    "lfExportCommand": "python docs/evidence/gf-backend/k2c/check-lf-export.py",
+    "lfExportExitCode": 0,
+    "lfExportPath": "E:/BhuAayam-data/task-data/k2c/api-check-fe6083ak",
+    "backendCommand": "pnpm typecheck:backend",
+    "backendExitCode": 0,
+    "diffCommand": "git diff --check; git diff --cached --check",
+    "diffExitCode": 0,
+    "runtimeInferenceOcrOrDbWork": false
+  },
+  "gatesPassed": []
+}

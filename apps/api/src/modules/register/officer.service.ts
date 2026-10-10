@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { decideCanonicalConflict } from '@ulpin/server/modules/officer/canonical-conflict-decisions';
+import { retainBuildingCandidates } from '@ulpin/server/modules/usp/ingestion/source-building-candidates';
 import { exportConsolidatedRegister } from '@ulpin/server/modules/officer/consolidated-register';
 import { AppError } from '@ulpin/server/infrastructure/errors';
 import type { z } from 'zod';
@@ -24,6 +25,7 @@ import type {
 @Injectable()
 export class OfficerService {
   conflictDecision(buildingId: string, input: unknown) { return decideCanonicalConflict(buildingId, input); }
+  candidates(buildingId: string, input: unknown) { return retainBuildingCandidates(buildingId, input); }
   workQueue(url: URL) { return readWorkQueue(url); }
   featureRevisions(id: string, before: number) { return physicalFeatureRevisions(id, before); }
   blockExport(id: string, format: 'json' | 'pdf' | 'zip') { return exportBlock(id, format); }
