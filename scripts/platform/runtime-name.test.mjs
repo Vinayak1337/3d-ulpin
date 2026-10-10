@@ -43,6 +43,8 @@ test('ulpin-demo resolves to the values it was created with, and the old names s
     ocrProfileFile: join(demoFolder, 'ocr-paths-profile.json'),
     tabularFile: join(demoFolder, 'tabular-paths.json'),
     documentFile: join(demoFolder, 'document-runtime-paths.json'), modelDir: `${demoFolder}/models`,
+    servingCheckout: 'E:/Projects/ulpin-wt/demo', composeFile: 'scripts/platform/demo.compose.json',
+    processorImage: 'ulpin-geo:demo-s03', buildsProcessorImage: true,
   };
   for (const definition of [runtimeDefinition(), runtimeDefinition('ulpin-demo'), definedRuntime()]) {
     assert.deepEqual({ ...definition, ports: { ...definition.ports } }, expected);
@@ -87,7 +89,7 @@ test('ulpin-reh-01 and ulpin-reh-02 have their own folder, project, bucket, data
   assert.equal(first.file, join(first.dir, 'runtime.env'));
   const runtimes = [runtimeDefinition(), first, second];
   const distinct = ['dir', 'project', 'bucket', 'database', 'databaseUser', 'objectAccessKey', 'operatorSubject',
-    'file', 'marker', 'ocrFile', 'ocrProfileFile', 'tabularFile', 'documentFile', 'modelDir'];
+    'file', 'marker', 'ocrFile', 'ocrProfileFile', 'tabularFile', 'documentFile', 'modelDir', 'servingCheckout'];
   for (const key of distinct) assert.equal(new Set(runtimes.map(runtime => runtime[key])).size, 3, key);
   assert.equal(new Set(runtimes.flatMap(runtime => Object.values(runtime.ports))).size, 18);
   assert.ok(first.rehearsal && second.rehearsal && !runtimes[0].rehearsal);

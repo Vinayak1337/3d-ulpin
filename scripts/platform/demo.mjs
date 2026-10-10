@@ -23,12 +23,23 @@ function execute(file, args, env, timeout = 180000) {
     throw new Error(`Runtime command failed (${error.status ?? 'timeout'}): ${detail}`);
   }
 }
-/** The docker arguments of one compose step: always this runtime's settings file and project, never another's. */
+const imageSteps = ['build', '--build', 'watch', 'commit', 'push', 'publish'];
+/**
+ * The docker arguments of one compose step: always this runtime's settings file, project and compose
+ * definition, never another's. Given a rehearsal name, a step that could build or tag an image is refused
+ * here, so no caller can rebuild or retag the demo's image under a rehearsal's name.
+ */
 export function composeArguments(context, args, name = demoRuntime) {
   const definition = definedRuntime(name);
+  const creates = args.includes('up') || args.includes('create');
+  if (!definition.buildsProcessorImage
+    && (args.some(arg => imageSteps.includes(arg)) || (creates && !args.includes('--no-build')))) {
+    throw new Error(`${definition.name} never builds or tags a processor image: it reuses the reviewed `
+      + `${definition.processorImage}.`);
+  }
   return ['--context', context, 'compose', '--project-directory', root,
     '--env-file', definition.file, '-p', definition.project, '-f', join(root, 'compose.yaml'),
-    '-f', join(root, 'scripts/platform/demo.compose.json'), ...args];
+    '-f', join(root, definition.composeFile), ...args];
 }
 export function demoCompose(runtime, env, args, timeout, name = demoRuntime) {
   return execute('docker', composeArguments(runtime.context, args, name), env, timeout);
@@ -70,15 +81,44 @@ export async function stopRuntime(name = demoRuntime, docker = localEngine) {
   console.log(`${definition.name} API/dispatcher and containers stopped; all data volumes preserved.`);
 }
 
-function bootstrap(definition, env, compose) {
+/**
+ * The create steps in order. The demo's are the ones it was created with. A rehearsal never builds: where the
+ * demo builds its image, a rehearsal only checks (read-only) that the demo's reviewed image is on the engine.
+ */
+export function bootstrapSteps(name = demoRuntime) {
+  const definition = definedRuntime(name);
+  const noBuild = definition.buildsProcessorImage ? [] : ['--no-build'];
+  const stores = ['postgres', 'minio', 'redis'];
+  return [
+    { compose: ['up', '-d', ...noBuild, '--no-recreate', '--wait', '--wait-timeout', '90', ...stores] },
+    { compose: ['run', '--rm', 'minio-init'] },
+    { migrate: true },
+    definition.buildsProcessorImage ? { compose: ['build', 'geo'], timeout: 900000 }
+      : { reviewedImage: definition.processorImage },
+    { compose: ['--profile', 'app', 'up', '-d', '--no-build', '--no-recreate', '--wait', '--wait-timeout', '120'] },
+  ];
+}
+
+function bootstrap(definition, runtime, env, compose) {
   console.log(`Creating/resuming the explicitly approved new ${definition.name} project.`);
-  compose(['up', '-d', '--no-recreate', '--wait', '--wait-timeout', '90', 'postgres', 'minio', 'redis']);
-  compose(['run', '--rm', 'minio-init']);
-  migrate(env, definition);
-  compose(['build', 'geo'], 900000);
-  compose(['--profile', 'app', 'up', '-d', '--no-build', '--no-recreate', '--wait', '--wait-timeout', '120']);
+  for (const step of bootstrapSteps(definition)) {
+    if (step.compose) compose(step.compose, step.timeout);
+    else if (step.migrate) migrate(env, definition);
+    else {
+      try { runtime.docker('image', 'inspect', step.reviewedImage, '--format', '{{.Id}}'); }
+      catch { throw new Error(`The reviewed image ${step.reviewedImage} is not on this engine; none is built.`); }
+    }
+  }
   const marker = { project: definition.project, schemaOnly: true, completedAt: new Date().toISOString() };
   writeFileSync(definition.marker, JSON.stringify(marker) + '\n', { flag: 'wx', mode: 0o600 });
+}
+
+/** A rehearsal is served from its own checkout only, so its process records never point into another's. */
+export function assertServingCheckout(name = demoRuntime, checkout = root) {
+  const definition = definedRuntime(name);
+  if (definition.rehearsal && resolve(checkout).toLowerCase() !== resolve(definition.servingCheckout).toLowerCase()) {
+    throw new Error(`${definition.name} is served from ${definition.servingCheckout} only; start it from there.`);
+  }
 }
 
 function resume(definition, runtime, compose) {
@@ -93,6 +133,7 @@ function resume(definition, runtime, compose) {
 }
 
 async function startRuntime(definition, create) {
+  assertServingCheckout(definition);
   const runtime = dockerRuntime(); engine(runtime);
   const env = create ? await createDemo(definition) : readDemo(definition);
   const compose = (args, timeout) => demoCompose(runtime, env, args, timeout, definition);
@@ -100,7 +141,7 @@ async function startRuntime(definition, create) {
     if (!create) {
       throw new Error('Demo bootstrap is incomplete; explicit --create is required to resume schema-only setup.');
     }
-    bootstrap(definition, env, compose);
+    bootstrap(definition, runtime, env, compose);
   } else resume(definition, runtime, compose);
   await launchProcesses(env, definition);
   await waitForApi(env, definition);
