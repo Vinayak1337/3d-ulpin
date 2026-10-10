@@ -19,8 +19,9 @@ class TableSelector(HTMLParser):
         self.table_id = table_id
         self.text = text
         self.line_offsets = [0]
-        for line in text.splitlines(keepends=True):
-            self.line_offsets.append(self.line_offsets[-1] + len(line))
+        # HTMLParser positions count LF only, not other Unicode line separators.
+        for line in text.split("\n")[:-1]:
+            self.line_offsets.append(self.line_offsets[-1] + len(line) + 1)
         self.table_count = 0
         self.depth = 0
         self.selected_depth: int | None = None
