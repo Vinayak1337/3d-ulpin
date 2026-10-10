@@ -1,4 +1,6 @@
-.inspector { min-height: 0; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; overflow: hidden; }
+/* The actions keep their own row. The header, the tabs and the body share the box above them. */
+.inspector { min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; overflow: hidden; }
+.above { min-height: 0; display: grid; grid-template-rows: auto auto minmax(0, 1fr); }
 .head { padding: var(--ui-space-4) var(--ui-space-4) var(--ui-space-3); display: grid; gap: 6px; border-bottom: 1px solid var(--ui-divider); }
 .crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 12px; line-height: 16px; color: var(--ui-muted); }
 .crumbs button { all: unset; cursor: pointer; color: var(--ui-ink-soft); }
@@ -6,7 +8,8 @@
 .crumbs button:focus-visible { outline: 2px solid var(--ui-focus); outline-offset: 2px; }
 .titleRow { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--ui-space-2); }
 .titleRow h2 { overflow-wrap: anywhere; }
-.subtitle { font-size: 13px; line-height: 19px; color: var(--ui-muted); }
+/* An identifier with no place to break would widen the inspector past its column and cut every line short. */
+.subtitle { font-size: 13px; line-height: 19px; color: var(--ui-muted); overflow-wrap: anywhere; }
 /* One column no wider than the inspector: a long citation is cut short and the text beside it wraps. */
 .body {
   overflow: auto; padding: var(--ui-space-4);
@@ -47,3 +50,12 @@
 .inspector :global(.ul-dl) { grid-template-columns: 84px minmax(0, 1fr); column-gap: var(--ui-space-2); }
 
 .delete { justify-self: start; color: var(--ui-danger); padding-left: 0; }
+
+/*
+ * A short window (1440 x 900 at 200% zoom is 450 px high): the header alone would fill the inspector and
+ * leave the body no height. There the header, the tabs and the body scroll as one region above the actions.
+ */
+@media (max-height: 640px) {
+  .above { display: block; overflow: auto; }
+  .body { overflow: visible; }
+}

@@ -1,10 +1,12 @@
 import { DescriptionList } from '@ulpin/ui';
-import { AssignedCode } from './AssignedCode';
+import { CopyableId } from '../../identity/CopyableId';
 import { CitationControls } from './CitationControls';
 import type { RecordedUnit } from './model';
 import { UnitCards } from './UnitCards';
 import { ValueText } from './ValueText';
 import styles from './Recorded.module.css';
+
+const NO_CODE = <span>No code assigned</span>;
 
 /**
  * One unit recorded from a source label: its literal, what is unknown about it, its citation and its code.
@@ -18,7 +20,7 @@ export function RecordedUnitItem({ buildingId, unit }: { buildingId: string; uni
         { label: 'Kind', value: <ValueText value={unit.kind} /> },
         { label: 'Area', value: <ValueText value={unit.area} /> },
         { label: 'Citation', value: <CitationControls label={unit.label} citations={unit.citations} /> },
-        { label: 'Application code', value: <AssignedCode code={unit.code} /> },
+        { label: 'Application code', value: unit.code ? <CopyableId id={unit.code} name="code" /> : NO_CODE },
       ]} />
       {unit.code ? <UnitCards buildingId={buildingId} unit={unit} /> : null}
     </li>
