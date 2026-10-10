@@ -14,11 +14,17 @@ export interface CardRow {
   tone: CardTone;
   /** False for a row the server could not read back consistently: its PDF is not offered. */
   readable: boolean;
+  /** Whether the card's snapshot holds the unit at its present revision; null when the row does not say. */
+  unit: string | null;
 }
 
 const NO_CARD = 'No card has been issued for this unit.';
-const NOT_ALL_SEARCHED = 'No card is listed under the newest snapshots of this building. '
-  + 'Older or unreadable snapshots were not searched.';
+const NONE_LISTED = 'No card is listed under the snapshots of this building that were read.';
+const NOT_ALL_LISTED = 'Older or unreadable snapshots of this building were not searched.';
+const UNIT_STATES: Record<NonNullable<ListedCard['snapshotState']>, string> = {
+  same_revision: 'At its present revision',
+  changed_revision: 'Changed since this card',
+};
 
 function timed(word: string, at: string | null): string {
   return at ? `${word} ${formatDateTime(at)}` : word;
@@ -43,20 +49,34 @@ function cardRow(card: ListedCard): CardRow {
     issued: card.createdAt ? formatDateTime(card.createdAt) : null,
     ...statusOf(card),
     readable: card.integrity === 'consistent',
+    unit: card.snapshotState ? UNIT_STATES[card.snapshotState] : null,
   };
 }
 
-/** The listed card revisions in the server's order (newest first). */
+/** The listed card revisions in the order they were read: newest snapshot first, then the server's order. */
 export function cardRows(cards: readonly ListedCard[]): CardRow[] {
   return cards.map(cardRow);
 }
 
-/** The snapshot the cards were read under, named by when it was created. */
-export function snapshotText(createdAt: string): string {
-  return `Read under the snapshot of ${formatDateTime(createdAt)}`;
+/** How many snapshots the cards were read under, and when the newest that lists one was created. */
+export function snapshotText(cards: UnitCards, createdAt: string): string {
+  const read = cards.snapshots - cards.unread;
+  const snapshots = read === 1 ? '1 snapshot' : `${read} snapshots`;
+  return `Read under ${snapshots}; the newest that lists a card is of ${formatDateTime(createdAt)}`;
+}
+
+/**
+ * What the list could not cover, one sentence each: the snapshots whose card read failed, counted, and the
+ * snapshots the listing itself left out. Empty when every snapshot of the building was read.
+ */
+export function searchGaps(cards: UnitCards): string[] {
+  const { unread, snapshots } = cards;
+  const noun = snapshots === 1 ? 'snapshot' : 'snapshots';
+  const failed = unread ? [`${unread} of ${snapshots} ${noun} could not be read.`] : [];
+  return cards.unlisted ? [...failed, NOT_ALL_LISTED] : failed;
 }
 
 /** What to say when no scope lists a card: that none was issued only when every snapshot was searched. */
 export function noCardText(cards: UnitCards): string {
-  return cards.searchedAll ? NO_CARD : NOT_ALL_SEARCHED;
+  return cards.searchedAll ? NO_CARD : [NONE_LISTED, ...searchGaps(cards)].join(' ');
 }

@@ -43,7 +43,8 @@ describe('registry card reads', () => {
 });
 
 describe('the gate of the Property Card action', () => {
-  const none: UnitCards = { snapshotCreatedAt: null, cards: [], truncated: false, searchedAll: true };
+  const none: UnitCards = { snapshotCreatedAt: null, cards: [], truncated: false, searchedAll: true,
+    unlisted: false, snapshots: 0, unread: 0 };
   const listed: UnitCards = { ...none, snapshotCreatedAt: '2026-10-10T13:39:30.390Z' };
   const denied = refusal(403, 'USP_LOCAL_ONLY', 'Local operator only.');
 
@@ -71,7 +72,7 @@ describe('the gate of the Property Card action', () => {
   });
 
   it('states a search that stopped short of every snapshot', () => {
-    const short = cardAction({ data: { ...none, searchedAll: false }, error: null }, false);
+    const short = cardAction({ data: { ...none, searchedAll: false, unlisted: true }, error: null }, false);
     expect(short.opens).toBeNull();
     expect(short.unanswered).toContain('were not searched');
   });
