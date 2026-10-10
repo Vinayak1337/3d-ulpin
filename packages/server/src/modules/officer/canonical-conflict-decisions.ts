@@ -86,14 +86,25 @@ async function appendReviewedRevision(
   await client.query('INSERT INTO registry_revisions(record_id,revision,body,site_revision) VALUES($1,$2,$3,$4)', [
     record.id, decision.recordRevision, body, site.revision,
   ]);
+  await recordConflictFeatureRevisionTx(client, feature, decision, area.revision);
+}
+
+/** Physical history requires the original package lineage even when only an officer note changes. */
+export async function recordConflictFeatureRevisionTx(
+  client: PoolClient, feature: FeatureRow, decision: BuildingConflictDecision, areaRevision: number,
+): Promise<void> {
+  const lineage = (await client.query(
+    'SELECT package_id FROM physical_feature_revisions WHERE feature_id=$1 AND revision=$2',
+    [feature.id, feature.revision],
+  )).rows[0] ?? notFound('The retained physical revision lineage is unavailable.');
   const physical = { ...feature.body, revision: feature.revision + 1,
     properties: { ...feature.body.properties, officerConflictDecision: decision } };
   await client.query('UPDATE physical_features SET revision=$2,body=$3 WHERE id=$1', [
     feature.id, physical.revision, physical,
   ]);
   await client.query(
-    'INSERT INTO physical_feature_revisions(feature_id,revision,body,area_revision) VALUES($1,$2,$3,$4)',
-    [feature.id, physical.revision, physical, area.revision],
+    'INSERT INTO physical_feature_revisions(feature_id,revision,body,package_id,area_revision) VALUES($1,$2,$3,$4,$5)',
+    [feature.id, physical.revision, physical, lineage.package_id, areaRevision],
   );
 }
 
