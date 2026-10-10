@@ -343,6 +343,28 @@ test('every case-original teacher callback refuses before the request builder is
   assert.equal(builder.mock.callCount(), 0);
 });
 
+test('case-original routing still invokes the existing local learner without training', async () => {
+  const inventory = inspectTabularSource(originalBytes, selection);
+  const table = readTabularSource(originalBytes, selection);
+  const draft = await new TabularChunkMapper().map({ jobId: randomUUID(), chunkIndex: 0, headers: table.headers,
+    rows: table.rows.slice(0, 16), sourceRef: 'protocol-control', selection }, {
+    context: localRequestContext('tabular-mapping'), authorize: async () => {},
+    memoryPath: join(directory, 'missing-memory'),
+    learnerModelPath: 'E:/BhuAayam-data/task-data/a4/learner/v43', ...tabularTeacherPolicy(inventory.tabular),
+  });
+  assert.equal(draft.proposal.activeLearnerVersion, 'v43');
+  assert.equal(draft.proposal.studentReasonCode, null);
+  assert.equal(draft.metrics.teacherCalls, 0);
+});
+
+test('the existing row and column bounds still refuse oversized case-original test controls', () => {
+  const table = readTabularSource(originalBytes, selection);
+  const oversizedRows = Buffer.concat([originalBytes, originalBytes.subarray(originalBytes.indexOf(10) + 1)]);
+  assert.throws(() => inspectTabularSource(oversizedRows, selection), /2,000 rows/);
+  const control = `${Array(257).fill(table.headers[0]).join(',')}\n${Array(257).fill('').join(',')}\n`;
+  assert.throws(() => inspectTabularSource(Buffer.from(control), selection), /256 columns/);
+});
+
 test('an approved table queues both jobs with the current case revision and unchanged source pins', async () => {
   const { profile } = await retained();
   const receipt = approvedReceipt(profile);
@@ -381,7 +403,7 @@ function catalogueAsset(value: unknown, id: string): unknown {
   return undefined;
 }
 
-test('good and difficult unseen public tables retain and read in-process with their recorded licence state', async () => {
+test('good and difficult unseen tables retain and read with their recorded licence state', async () => {
   const catalogue = JSON.parse(readFileSync('docs/api/datasets.json', 'utf8'));
   const assetSchema = z.object({ id: z.string(), permission: z.object({ state: z.literal('unconfirmed') }),
     content: z.object({ externalPath: z.string(), sha256: z.string(), bytes: z.number() }) });
@@ -398,11 +420,13 @@ test('good and difficult unseen public tables retain and read in-process with th
     assert.equal(read.sha256, asset.content.sha256);
     assert.equal(rows, profile.records);
     assert.equal(protocol.puts, 1);
+    const refusal = await tabularTeacherPolicy(profile.tabular).teacher!(profile.profile);
+    assert(refusal.issues.every(issue => issue.code === 'CASE_ORIGINAL_TEACHER_REFUSED'));
     outcomes.push({ name: id, sha256: read.sha256, bytes: bytes.length,
       recordedLicenceState: asset.permission.state, requestedLicence: asset.permission.state,
       admission: profile.tabular.admission.kind, issuer: null, containsPersonalData: 'unknown',
       rows, columns: profile.headers.length, headers: profile.headers, outcome: 'retained_and_read',
-      teacherCode: 'CASE_ORIGINAL_TEACHER_REFUSED', runtimeRequests: 0, providerCalls: 0 });
+      teacherCode: refusal.issues[0].code, runtimeRequests: 0, providerCalls: 0 });
   }
   if (process.env.ULPIN_TB6_WRITE_EVIDENCE === '1') {
     writeFileSync('docs/evidence/gf1/tb6/real-inputs.json', JSON.stringify(outcomes, null, 2) + '\n');
