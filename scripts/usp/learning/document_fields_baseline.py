@@ -438,12 +438,15 @@ COUNT_TOKEN = rf"(?P<count>\d{{1,3}}|(?i:{'|'.join(NUMBER_WORDS)}))"
 STOREY_PHRASE = re.compile(
     rf"(?<![A-Za-z0-9+]){COUNT_TOKEN}[\s-]*(?i:storeys?|stories|storied|storeyed|floors?)\b(?!\s*(?i:plan))")
 HINDI_STOREY_PHRASE = re.compile(r"(?P<count>[0-9०-९]{1,3})\s*(?:मंजिला|मंजिल|तल)")
-BASEMENT_PHRASE = re.compile(rf"(?<![A-Za-z0-9+]){COUNT_TOKEN}[\s-]*(?:(?i:levels?\s+of\s+))?(?i:basements?)\b")
+BASEMENT_COUNT = r"(?P<count>[1-5]|(?i:ONE|TWO|THREE|FOUR|FIVE))"
+BASEMENT_PHRASE = re.compile(
+    rf"(?<![A-Za-z0-9+.]){BASEMENT_COUNT}[\s-]*(?:(?i:levels?\s+of\s+))?(?i:basements?)\b")
 UNIT_NOUN = r"(?:dwelling\s+units?|units?|apartments?|flats?|tenements?)"
+PER_FLOOR = r"(?!\s*(?:[/!|]|(?i:per\b|each\b)))"
 UNIT_COUNT = re.compile(
     rf"(?i:(?:total\s+)?(?:no\.?|number)\s*(?:of\s*)?{UNIT_NOUN}\s*[:=\-]?\s*(?P<after>\d{{1,4}})"
     rf"|total\s+{UNIT_NOUN}\s*[:=\-]?\s*(?P<total>\d{{1,4}})"
-    rf"|(?<![\d.])(?P<before>\d{{1,4}})\s*(?:nos\.?\s*)?{UNIT_NOUN}\b)")
+    rf"|(?<![\d.])(?P<before>\d{{1,4}})\s*(?:nos\.?\s*)?{UNIT_NOUN}\b{PER_FLOOR})")
 HEIGHT_KEYWORD = r"(?i:floor\s*to\s*floor(?:\s*height)?|storey\s*height|floor\s*height|height|ht\.?)"
 HEIGHT_UNIT = r"(?:(?i:mtrs?|mts?|metres?|meters?|mm|m|ft|feet|foot)\b|['\"])"
 HEIGHT = re.compile(rf"{HEIGHT_KEYWORD}\W{{0,12}}(?P<number>\d+(?:\.\d+)?)\s*(?P<unit>{HEIGHT_UNIT})?")
@@ -619,7 +622,8 @@ def read_tile_result(path: Path, box: list[float]) -> dict:
     lines = []
     for item in result.get("items", []):
         boxes = [entry["box"] for entry in item["sourcePageBoxes"]]
-        merged = [min(b[0] for b in boxes), min(b[1] for b in boxes), max(b[2] for b in boxes), max(b[3] for b in boxes)]
+        left, top, right, bottom = zip(*boxes)
+        merged = [min(left), min(top), max(right), max(bottom)]
         lines.append({"text": item["text"], "box": [round(value, 2) for value in merged]})
     if result.get("toolStatus") not in {"complete", "partial"}:
         status = "ocr_unavailable"
@@ -649,35 +653,41 @@ def overlap_ratio(first: list[float], second: list[float]) -> float:
 
 
 def unique_words(tiles: list[dict]) -> list[dict]:
-    """Overlapping tiles see some words twice; keep one per text and place."""
-    kept: dict[str, list[dict]] = {}
-    for tile in tiles:
-        for line in tile["lines"]:
-            same = kept.setdefault(line["text"], [])
-            if not any(overlap_ratio(line["box"], other["box"]) >= 0.5 for other in same):
-                same.append(line)
-    return [line for group in kept.values() for line in group]
+    """Overlapping tiles see some words twice; keep the longest text per place."""
+    words = sorted((line for tile in tiles for line in tile["lines"]), key=lambda item: -len(item["text"]))
+    kept: list[dict] = []
+    for word in words:
+        if not any(word["text"] in other["text"] and overlap_ratio(word["box"], other["box"]) >= 0.5
+                   for other in kept):
+            kept.append(word)
+    return kept
 
 
-def continues_row(row_box: list[float], word_box: list[float]) -> bool:
-    heights = (row_box[3] - row_box[1], word_box[3] - word_box[1])
-    shared = min(row_box[3], word_box[3]) - max(row_box[1], word_box[1])
-    gap = word_box[0] - row_box[2]
-    return min(heights) > 0 and shared >= 0.5 * min(heights) and -min(heights) <= gap <= 2.0 * max(heights)
+def continues_row(row: dict, word_box: list[float]) -> bool:
+    """A word continues a row when it sits on the last word's line, just to its right."""
+    last, first = row["last"], row["first"]
+    heights = (last[3] - last[1], word_box[3] - word_box[1])
+    shared_last = min(last[3], word_box[3]) - max(last[1], word_box[1])
+    shared_first = min(first[3], word_box[3]) - max(first[1], word_box[1])
+    gap = word_box[0] - last[2]
+    on_line = shared_last >= 0.5 * min(heights) and shared_first >= 0.3 * min(heights)
+    return min(heights) > 0 and on_line and -min(heights) <= gap <= 2.0 * max(heights)
 
 
 def join_rows(words: list[dict]) -> list[dict]:
     """OCR emits words; patterns such as 'G + 41' or 'SIXTH FL.' need them joined along a row."""
     rows: list[dict] = []
     for word in sorted(words, key=lambda item: item["box"][0]):
-        row = next((row for row in rows if continues_row(row["box"], word["box"])), None)
+        row = next((row for row in rows if continues_row(row, word["box"])), None)
         if row is None:
-            rows.append({"text": word["text"], "box": list(word["box"])})
+            rows.append({"text": word["text"], "box": list(word["box"]), "first": word["box"], "last": word["box"]})
             continue
         row["text"] += " " + word["text"]
+        row["last"] = word["box"]
         row["box"] = [min(row["box"][0], word["box"][0]), min(row["box"][1], word["box"][1]),
                       max(row["box"][2], word["box"][2]), max(row["box"][3], word["box"][3])]
-    return sorted(rows, key=lambda item: (round(item["box"][1]), item["box"][0]))
+    ordered = sorted(rows, key=lambda item: (round(item["box"][1]), item["box"][0]))
+    return [{"text": row["text"], "box": row["box"]} for row in ordered]
 
 
 def merge_lines(page_number: int, tiles: list[dict]) -> list[dict]:
