@@ -26,7 +26,8 @@ def missing_hints(function: ast.FunctionDef | ast.AsyncFunctionDef) -> list[str]
 
 def audit(path: Path) -> dict[str, Any]:
     text = path.read_text(encoding="utf-8")
-    functions = [node for node in ast.walk(ast.parse(text)) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))]
+    functions = [node for node in ast.walk(ast.parse(text))
+                 if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))]
     typed = [{"function": node.name, "missing": missing_hints(node)} for node in functions if missing_hints(node)]
     sizes = {node.name: (node.end_lineno or node.lineno) - node.lineno + 1 for node in functions}
     long_lines = [number for number, line in enumerate(text.splitlines(), 1) if len(line) > 120]
