@@ -1,0 +1,3 @@
+{ "index": "006", "method": "GET", "route": "/api/v1/cases/05de834a-859b-4bc0-bb4e-cfe7be0871cf", "status": 200,
+"seconds": 0.021, "requestKey": null, "idempotencyHeader": null, "ids": {}, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/006", "request": null }
