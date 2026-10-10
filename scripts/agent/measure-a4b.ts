@@ -80,7 +80,8 @@ function fixedFoldModel(root: string, train: RecordLabel[]) {
   saveNew(join(root, 'inputs/pseudo-labels.jsonl'), train.map(record => record.example), true);
   saveNew(join(root, 'inputs/profile-links.jsonl'), train.map(record => record.link), true);
   return JSON.parse(python(['-m', 'geo.usp_learning.stage_a', 'train', '--examples',
-    join(root, 'inputs/pseudo-labels.jsonl'), '--out', join(root, 'learner')]));
+    join(root, 'inputs/pseudo-labels.jsonl'), '--out', join(root, 'learner'),
+    '--calibration-mode', 'single_family']));
 }
 
 export function agreement(records: RecordLabel[], predictions: Prediction[]) {
