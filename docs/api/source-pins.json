@@ -195,7 +195,7 @@
     "packages/contracts/src/usp/gltf-ingestion.ts": "1fe5cdc66617e64e26228a51bf2cb928f7b197538b4a52bd23b7ca601dd94214",
     "packages/contracts/src/usp/ifc-ingestion.ts": "3cd4dc43edf36d9c76b4edbf376b7052758905c167b9f924216646427c05b28a",
     "packages/contracts/src/usp/index.ts": "431872d141cb1b631020df264b09e8d4f88d0c248f66bc92a924b2f9190d5b77",
-    "packages/contracts/src/usp/ingestion-events.ts": "7412b6def7ca4228ec8021835d7567fb5ba72e5f7bbf651004feab240bda2051",
+    "packages/contracts/src/usp/ingestion-events.ts": "b1d5122d817fb13b768ad3224054a116bc576b4758fdfab6c80f9ca8e6e76635",
     "packages/contracts/src/usp/ingestion.ts": "de4b28067a3ba2115e3f0b94d2a63de2bbd3de7401675191321bcc12ddca256d",
     "packages/contracts/src/usp/kml-ingestion.ts": "8f1f9697dc021842d7901273b5c410b14279d1ea255b7e6b71b0f6affe8f595f",
     "packages/contracts/src/usp/obj-ingestion.ts": "b8b868cee00e42c2d58ba91b0d6eb5b74bd0376f4c6710b18a3c3a08ce21cb2b",
@@ -553,7 +553,8 @@
     "packages/server/src/shared/spatial-datasets.ts": "b4a8bc6bd7eecdcf4a6722c307a48d02a8191fe0672ebd6d28aff6a3da808c3b",
     "packages/server/src/shared/urls/urls.ts": "3b6349b08201b0b382e891868e574a0b5828fb8f9885c7e26f16a0d2021a24a2",
     "packages/server/src/shared/work-queue.ts": "4b5467fc517cc3afd735862acabafab5ace921c9ac1a4ead293a7c45bdd53c7c",
-    "packages/server/src/shared/workspace-capabilities.ts": "791e4b3eac411d4aae0f3c28e6fafcd7b5934b44f15ae77c6b3a9437af8af4cb"
+    "packages/server/src/shared/workspace-capabilities.ts": "791e4b3eac411d4aae0f3c28e6fafcd7b5934b44f15ae77c6b3a9437af8af4cb",
+    "packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts": "641f6b357a0b754bb39e5e6c86ee0cf47e582fb70029d7095bb978a30e6baf90"
   },
   "operations": [
     "GET /api",
