@@ -13,7 +13,10 @@ OUTPUT = ROOT / "docs/api/datasets.json"
 ASSET_SOURCE_FIELDS = (
     "id", "mediaType", "classification", "origin", "sourceVersion",
     "attribution", "permission", "reference", "dependencies", "provenance",
+    "issuer", "acquiredAt", "geography", "split", "purpose", "licenceCitation",
 )
+# The pin a manifest records for original bytes retained outside Git.
+EXTERNAL_PIN_FIELDS = ("externalPath", "sha256", "bytes")
 ASSET_GENERATED_FIELDS = {*ASSET_SOURCE_FIELDS, "content", "manifestVerification"}
 # These reviewed annotations are authored in the published catalogue, not in
 # issuing manifests. Delete a field there explicitly to retire it; a missing
@@ -114,6 +117,41 @@ def checked_content(manifest_path, content):
     return result
 
 
+def external_content(manifest_path, asset):
+    """Repeat the manifest's pin for bytes kept outside Git; that file is never opened or hashed here."""
+    pin = asset.get("original")
+    if not isinstance(pin, dict) or "externalPath" not in pin:
+        raise ValueError("Asset states neither repository content nor an external pin: "
+                         f"{manifest_path.relative_to(ROOT).as_posix()}/{asset.get('id')}")
+    return {"state": "external", **{key: pin[key] for key in EXTERNAL_PIN_FIELDS if key in pin},
+            "repositoryBytesVerified": False}
+
+
+def asset_entry(manifest_path, asset):
+    # These remain statements from the linked manifest, not new permissions
+    # or assertions that the API has installed the dataset.
+    entry = {key: asset[key] for key in ASSET_SOURCE_FIELDS if key in asset}
+    if "content" in asset:
+        entry["content"] = checked_content(manifest_path, asset["content"])
+    else:
+        entry["content"] = external_content(manifest_path, asset)
+    entry["manifestVerification"] = asset.get("verification", {})
+    return entry
+
+
+def retained_external_sources(local_sources, published):
+    """List the separately maintained sources and keep entries authored only in the published catalogue.
+
+    Generation never drops a retained source; delete an entry there explicitly to retire it.
+    """
+    maintained = {source["id"] for source in local_sources if "id" in source}
+    result = [source for source in local_sources if source.get("apiInstallation") != "local-opt-in-demo-only"]
+    for index, entry in enumerate(published):
+        if "id" in entry and entry["id"] not in maintained:
+            result.insert(index, entry)
+    return result
+
+
 def catalogue():
     runtime = json.loads((ROOT / 'docs/api/runtime-qualification.json').read_text(encoding="utf-8"))
     published = json.loads(OUTPUT.read_text(encoding="utf-8")) if OUTPUT.is_file() else {}
@@ -139,14 +177,7 @@ def catalogue():
         raw = file.read_bytes()
         manifest = json.loads(raw)
         relative = file.relative_to(ROOT).as_posix()
-        assets = []
-        for asset in manifest["assets"]:
-            # These remain statements from the linked manifest, not new permissions
-            # or assertions that the API has installed the dataset.
-            entry = {key: asset[key] for key in ASSET_SOURCE_FIELDS if key in asset}
-            entry["content"] = checked_content(file, asset["content"])
-            entry["manifestVerification"] = asset.get("verification", {})
-            assets.append(entry)
+        assets = [asset_entry(file, asset) for asset in manifest["assets"]]
         packs.append({
             "manifest": file.relative_to(ROOT).as_posix(), "manifestSha256": sha(raw),
             "packId": manifest["packId"], "profile": manifest["profile"],
@@ -216,7 +247,7 @@ def catalogue():
         "schemaVersion": "ulpin-api-dataset-catalog/1",
         "purpose": "Source metadata for API integration; not installed records or permission grants.",
         "guide": "docs/api/real-sources.md",
-        "availabilityMeaning": "available refers to checked repository bytes; unavailable may mean retained outside Git. Neither proves an API import.",
+        "availabilityMeaning": "available refers to checked repository bytes; unavailable may mean retained outside Git; external repeats a manifest's recorded path, size and hash outside Git, not opened or verified here. None proves an API import.",
         "qualification": "Official provenance, permitted use, reference quality and runtime support are separate. Community OSM and research samples are not Indian official property records.",
         "servingObservation": json.loads((ROOT / "docs/api/serving-observation.json").read_text(encoding="utf-8")),
         "packs": packs, "retainedOfficialTestSources": retained,
@@ -224,8 +255,8 @@ def catalogue():
         # their separately maintained acquisition metadata on every regeneration.
         "localDemoSources": [source for source in local_sources
                              if source.get("apiInstallation") == "local-opt-in-demo-only"],
-        "retainedExternalSources": [source for source in local_sources
-                                    if source.get("apiInstallation") != "local-opt-in-demo-only"],
+        "retainedExternalSources": retained_external_sources(
+            local_sources, published.get("retainedExternalSources", [])),
         "offlineLearningCorpus": {
             "manifest": "docs/api/learning-corpus.json", "manifestSha256": sha(learning_raw.decode('utf-8').replace('\r\n', '\n').encode('utf-8')),
             "manifestHashScope": "UTF-8 metadata with LF line endings; retained source originals use exact-byte hashes.",
