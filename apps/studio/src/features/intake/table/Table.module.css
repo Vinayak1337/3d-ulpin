@@ -1,6 +1,7 @@
 .page {
   display: grid;
   align-content: start;
+  grid-auto-rows: max-content;
   gap: var(--ui-space-4);
   padding: var(--ui-space-4);
   overflow: auto;
@@ -14,6 +15,11 @@
 
 .scroll {
   overflow-x: auto;
+}
+
+.columns {
+  max-height: 420px;
+  overflow: auto;
 }
 
 .scroll table {
@@ -34,6 +40,15 @@
   display: grid;
   gap: var(--ui-space-1);
   min-width: 200px;
+}
+
+.fieldset {
+  display: grid;
+  gap: var(--ui-space-4);
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
 }
 
 .form {

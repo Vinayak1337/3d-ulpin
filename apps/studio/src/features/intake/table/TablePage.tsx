@@ -7,6 +7,7 @@ import { LearnerPanel } from './LearnerPanel';
 import { mergeMetrics } from './model';
 import { Progress, TableRefusal } from './Progress';
 import { SourceHeader } from './SourceHeader';
+import { StartJobs } from './StartJobs';
 import { tableKey, useMappedChunks, useSourceCase, useTableJobs, useTableProfile } from './queries';
 import { useTableStream } from './useTableStream';
 import type { ChunkMapping } from './types';
@@ -44,6 +45,7 @@ function TableImport({ caseId, sourceId }: { caseId: string; sourceId: string })
       <Banner tone="info">
         Tables produce mapped draft rows, not buildings. Nothing enters the registry or the map.
       </Banner>
+      <StartJobs profile={profile.data} />
       <Progress raw={jobs.raw.data} mapping={jobs.mapping.data} fallback={fallback} reconnect={reconnect}
         rawReason={sourceCase.data?.jobs.find((job) => job.id === state.rawJobId)?.error}
         mappingReason={sourceCase.data?.jobs.find((job) => job.id === state.mappingJobId)?.error} />

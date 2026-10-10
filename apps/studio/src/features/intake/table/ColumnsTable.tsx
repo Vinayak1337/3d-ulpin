@@ -10,7 +10,8 @@ export function ColumnsTable({ profile, mapping }: { profile: TableProfile; mapp
         <h2 className="ul-heading">Columns</h2>
         <span className="ul-caption">Proposals are candidates, not recorded facts</span>
       </div>
-      <div className={styles.scroll} tabIndex={0} aria-label="Column mapping table, scroll horizontally">
+      <div className={`${styles.scroll} ${styles.columns}`} tabIndex={0}
+        aria-label="Column mapping table, scroll for more columns and rows">
         <DataTable caption="Column mapping candidates" rows={columnRows(profile, mapping)}
           rowKey={(row) => String(row.position)} columns={[
             { header: 'Position', numeric: true, cell: (row) => row.position },
