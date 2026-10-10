@@ -1,0 +1,706 @@
+{
+ "format": "evidence-result/1",
+ "task": "F3e2",
+ "gates": [
+  "GF4",
+  "GF5"
+ ],
+ "date": "2026-10-10",
+ "branch": "task/f3e2-assign-and-issue",
+ "base": "9138678c",
+ "served": {
+  "api": "http://127.0.0.1:3194 (the demo API; reads only)",
+  "studio": "This worktree, vite on 127.0.0.1:5190, proxying the demo API.",
+  "stopped": "The dev server was stopped after the capture; port 5190 was checked free."
+ },
+ "requests": {
+  "blockedWrites": [],
+  "pageErrors": [],
+  "counts": {
+   "GET /api/v1/areas": 13,
+   "GET /api/v1/areas/{id}/canonical": 6,
+   "GET /api/v1/areas/{id}/context": 3,
+   "GET /api/v1/buildings/{id}/canonical": 17,
+   "GET /api/v1/buildings/{id}/ledger": 6,
+   "GET /api/v1/buildings/{id}/register": 36,
+   "GET /api/v1/buildings/{id}/snapshots": 12,
+   "GET /api/v1/usp/identity/records/{id}/reviews": 1,
+   "GET /api/v1/workspace-capabilities": 13,
+   "POST /api/v1/usp/property-cards/list": 5,
+   "mocked GET /api/v1/buildings/{id}/canonical": 14,
+   "mocked GET /api/v1/usp/identity/records/{id}/reviews": 8,
+   "mocked POST /api/v1/usp/identity/assign": 3,
+   "mocked POST /api/v1/usp/identity/reviews": 3,
+   "mocked POST /api/v1/usp/packets/plans/confirm": 3,
+   "mocked POST /api/v1/usp/packets/plans/create": 3,
+   "mocked POST /api/v1/usp/packets/plans/entries": 4,
+   "mocked POST /api/v1/usp/packets/plans/execute": 3,
+   "mocked POST /api/v1/usp/property-cards/generate": 4,
+   "mocked POST /api/v1/usp/property-cards/list": 25,
+   "mocked POST /api/v1/usp/property-cards/preview": 3,
+   "mocked POST /api/v1/usp/property-cards/read": 1,
+   "mocked POST /api/v1/usp/snapshots": 4
+  },
+  "note": [
+   "Counts of the last run of capture.mjs. \"mocked\" requests were answered by the script and never",
+   "reached the demo. The one live reviews GET is mocked-30."
+  ]
+ },
+ "fixtures": "fixtures.json: recorded (file and JSON path of each R3 exchange), derived, live, shaped (marked).",
+ "browserChecks": {
+  "assigned": {
+   "sentBodies": {
+    "captures": 1,
+    "reviews": 2,
+    "reviewHasLocation": false,
+    "assignments": 2,
+    "assignmentsEqual": true,
+    "fourValuesAreTheReviews": true,
+    "evidence": [
+     {
+      "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429",
+      "revision": 1,
+      "locator": "page 1; region pt [596,390,644,409]; literal UNIT-3B"
+     }
+    ]
+   },
+   "focusAfterClose": "UNIT-3B"
+  },
+  "listed": {
+   "offeredWhenUnreadable": [
+    "Read again"
+   ]
+  },
+  "zoomReview": {
+   "method": "viewport 720x450 at device scale 2",
+   "form": {
+    "controls": 2,
+    "widthOverflowPx": 0,
+    "whole": true
+   },
+   "assign": {
+    "controls": 2,
+    "widthOverflowPx": 0,
+    "whole": true
+   }
+  },
+  "issued": {
+   "sentBodies": {
+    "captures": 1,
+    "entryReads": 3,
+    "plans": 2,
+    "cardRequests": 3,
+    "cardRequestsEqual": true,
+    "oneExpiryForPlanPreviewAndCard": true,
+    "keyLength": 36
+   },
+   "focusAfterClose": "Issue new revision"
+  },
+  "revised": {
+   "previewed": {
+    "planId": "8f3ebb97-deab-4235-a377-819e5942bfd8",
+    "planVersion": 1,
+    "cardId": "6a997624-6c8d-40a9-8215-8a671a74dc1c",
+    "expiresAt": "as typed",
+    "guard": {
+     "mode": "update",
+     "expectedVersion": 1,
+     "expectedManifestId": "a9fd4c9d-0a5a-4f4d-9032-527ab7857b78"
+    }
+   },
+   "plansSent": 0
+  },
+  "zoomIssue": {
+   "method": "viewport 720x450 at device scale 2",
+   "form": {
+    "controls": 2,
+    "widthOverflowPx": 0,
+    "whole": true
+   },
+   "prepared": {
+    "controls": 2,
+    "widthOverflowPx": 0,
+    "whole": true
+   }
+  },
+  "inspector": {
+   "code": "as the live canonical record states it",
+   "withCode": [
+    "Property Card",
+    "Open recorded unit"
+   ],
+   "statusWithoutCode": "Draft",
+   "withoutCode": [
+    "Open recorded unit"
+   ],
+   "arrivesFocusedAt": "#unit-46b7265e-ca88-402d-83df-065cf7c45140"
+  },
+  "reviewsRead": {
+   "liveReviewReads": 1,
+   "said": [
+    "The registry lists no unused review for assigning a code to this unit."
+   ],
+   "offered": [
+    "Review and assign code"
+   ]
+  },
+  "keyboard": {
+   "review": {
+    "openedWith": "Enter",
+    "stops": [
+     "textarea Reason for this review (required)",
+     "button Cancel",
+     "button Record review"
+    ],
+    "closedWith": "Escape",
+    "focusAfterClose": "Review and assign code"
+   },
+   "issue": {
+    "openedWith": "Enter",
+    "stops": [
+     "input Valid until (required)",
+     "textarea Why this citation is included (required)",
+     "button Cancel",
+     "button Prepare"
+    ],
+    "closedWith": "Escape",
+    "focusAfterClose": "Issue card"
+   }
+  },
+  "zoomInspector": {
+   "method": "viewport 720x450 at device scale 2",
+   "heightPx": 197,
+   "rowsShownPx": 84,
+   "rowsContentPx": 437,
+   "widthOverflowPx": 0,
+   "actions": 2,
+   "actionsWhole": true
+  }
+ },
+ "keyboardWalk": [
+  [
+   "Review dialog: Enter on \"Review and assign code\" opens it and the reason field takes the focus. Tab",
+   "goes to Cancel, then \"Record review\" (a stop once a reason is typed), then back to the field; never",
+   "out of the dialog. Escape closes it and the focus is back on \"Review and assign code\". After an",
+   "assignment the action is gone, so the focus goes to the unit block (focusAfterClose UNIT-3B)."
+  ],
+  [
+   "Card dialog: Enter on \"Issue card\" opens it and \"Valid until\" takes the focus. Tab goes to \"Why this",
+   "citation is included\", Cancel, \"Prepare\" (a stop once the form is filled) and round again. Escape",
+   "closes it and the focus is back on \"Issue card\". After a card is issued the dialog closes by itself",
+   "and the focus is on the action of the Cards block, then named \"Issue new revision\"."
+  ],
+  [
+   "Measured by capture.mjs (browserChecks.keyboard, assigned.focusAfterClose, issued.focusAfterClose).",
+   "The date field was filled by the script, not key by key."
+  ]
+ ],
+ "clickPath": {
+  "assign": [
+   [
+    "Provable only on a recorded unit that has no code. The demo has none: UNIT-3B has its code (its",
+    "block shows the code and no review action) and UNIT-3A is not recorded, so it has no block. Record a",
+    "unit from a source label first; its block then appears under \"Recorded floors and units\"."
+   ],
+   [
+    "1. Open /studio/properties/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/candidates for its building and",
+    "scroll to the unit. It reads \"No code assigned\" and offers \"Review and assign code\". API log: GET",
+    "/api/v1/buildings/{id}/canonical, GET /api/v1/usp/identity/records/{unitId}/reviews."
+   ],
+   [
+    "2. Click \"Review and assign code\", type the reason, click \"Record review\". API log: POST",
+    "/api/v1/usp/snapshots, then POST /api/v1/usp/identity/reviews (operation assign, no location). The",
+    "dialog shows the reason, the review id and the snapshot it is bound to."
+   ],
+   [
+    "3. Click \"Assign code\". API log: POST /api/v1/usp/identity/assign, then GET .../canonical. The",
+    "dialog shows the code read from the record and \"Close\"; the block shows the code, no review action,",
+    "and the Cards block offers \"Issue card\"."
+   ]
+  ],
+  "issueOnUnit3B": [
+   [
+    "Provable on UNIT-3B now. Open /studio/properties/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/candidates and",
+    "scroll to UNIT-3B."
+   ],
+   [
+    "While its card is valid (revision 1, until 11 Oct 2026 19:09 IST) and the snapshot is unchanged, the",
+    "Cards block offers \"Issue new revision\". Click it, type \"Valid until\" within 24 hours, click",
+    "\"Prepare\". API log: POST /api/v1/usp/property-cards/read, POST /api/v1/usp/property-cards/preview;",
+    "nothing is stored. The dialog shows Mode update, Revision 2, Valid until and the rows. Click \"Issue",
+    "new revision\". API log: POST /api/v1/usp/property-cards/generate, then GET .../snapshots, GET",
+    ".../canonical, POST /api/v1/usp/property-cards/list. The dialog closes and the table lists revision",
+    "2 above revision 1."
+   ],
+   [
+    "After the card has expired, or once the record changed under it, the block offers \"Issue card\".",
+    "Click it, type \"Valid until\" and the reason, click \"Prepare\". API log, in this order: POST",
+    "/api/v1/usp/snapshots, POST /api/v1/usp/packets/plans/entries, .../plans/create, .../plans/confirm,",
+    ".../plans/execute, POST /api/v1/usp/property-cards/preview. A snapshot, a plan and a packet now",
+    "exist; the dialog shows the plan id, the packet id with its sha256, and Mode create, Revision 1 with",
+    "the rows. Click \"Issue card\". API log: POST /api/v1/usp/property-cards/generate, then the same three",
+    "reads. The dialog closes on the listed card."
+   ],
+   [
+    "Each request should appear once per click. If the dialog says the result is unknown, click \"Read the",
+    "record again\" and compare with the API log before anything else."
+   ]
+  ]
+ },
+ "screenshots": [
+  {
+   "file": "mocked-01-unit-without-review.png",
+   "mode": "mocked",
+   "notes": [
+    "The unit block of UNIT-3B before it had a code: the reviews read lists no unused review, so the",
+    "block offers Review and assign code."
+   ]
+  },
+  {
+   "file": "mocked-02-review-form.png",
+   "mode": "mocked",
+   "notes": [
+    "The dialog as it opens: what is decided, read from the record; an empty reason; Record review is off",
+    "until a reason is given."
+   ]
+  },
+  {
+   "file": "mocked-03-review-refused.png",
+   "mode": "mocked",
+   "notes": [
+    "A refused review (422 USP_IDENTITY_EVIDENCE): the words of Step 0 with the code; the dialog stays",
+    "open with the reason as entered."
+   ]
+  },
+  {
+   "file": "mocked-04-review-recorded.png",
+   "mode": "mocked",
+   "notes": [
+    "The review is stored: its reason, id and the snapshot it is bound to as answered; Assign code is",
+    "offered."
+   ]
+  },
+  {
+   "file": "mocked-05-assignment-unknown.png",
+   "mode": "mocked",
+   "notes": [
+    "The assignment got no answer: the dialog says that the result is unknown, Assign code is off and",
+    "Read the record again is offered."
+   ]
+  },
+  {
+   "file": "mocked-06-code-assigned.png",
+   "mode": "mocked",
+   "notes": [
+    "After the answered assignment: the code is the one the live canonical record states, with the",
+    "receipt as answered."
+   ]
+  },
+  {
+   "file": "mocked-07-unit-with-unused-review.png",
+   "mode": "mocked",
+   "notes": [
+    "The unit block when the reviews read lists an unused assign review: its reason, time and bound",
+    "snapshot, and Assign code directly."
+   ]
+  },
+  {
+   "file": "mocked-08-assignment-refused.png",
+   "mode": "mocked",
+   "notes": [
+    "A refused assignment (409 STALE_REVISION): the sentence of the server with its code; Record a new",
+    "review leaves the listed review."
+   ]
+  },
+  {
+   "file": "mocked-09-reviews-unreadable.png",
+   "mode": "mocked",
+   "notes": "The reviews read counts a row it could not read back: no action is offered, only Read again."
+  },
+  {
+   "file": "mocked-10-zoom-200-review-form.png",
+   "mode": "mocked",
+   "notes": [
+    "200% zoom (720 x 450 CSS px, device scale 2): the review form; the body scrolls and both actions are",
+    "whole."
+   ]
+  },
+  {
+   "file": "mocked-11-zoom-200-assign.png",
+   "mode": "mocked",
+   "notes": "200% zoom: the stored review and Assign code."
+  },
+  {
+   "file": "mocked-12-unit-without-card.png",
+   "mode": "mocked",
+   "notes": [
+    "The Cards block of UNIT-3B when the card list is empty (mocked list; every other read is live): it",
+    "offers Issue card."
+   ]
+  },
+  {
+   "file": "mocked-13-issue-form.png",
+   "mode": "mocked",
+   "notes": [
+    "The dialog as it opens: the sentence that Prepare stores a snapshot, a plan and a packet; both",
+    "inputs empty; Prepare is off."
+   ]
+  },
+  {
+   "file": "mocked-14-expiry-refused-in-form.png",
+   "mode": "mocked",
+   "notes": [
+    "An expiry one hour in the past: the form refuses it with the sentence of the registry and sends",
+    "nothing."
+   ]
+  },
+  {
+   "file": "mocked-15-entry-not-includable.png",
+   "mode": "mocked",
+   "notes": [
+    "The entry is answered as not includable: it is shown with its reason code (a contract-shaped",
+    "placeholder) and Prepare stops before the plan."
+   ]
+  },
+  {
+   "file": "mocked-16-prepare-unknown.png",
+   "mode": "mocked",
+   "notes": [
+    "The packet step got no answer: the dialog names the step, says the result is unknown, shows the plan",
+    "that was answered and offers Read the record again."
+   ]
+  },
+  {
+   "file": "mocked-17-prepared-rows.png",
+   "mode": "mocked",
+   "notes": [
+    "After Prepare: what was typed, the entry, plan and packet as answered, the mode and revision of the",
+    "preview and its rows in the answered order; Issue card is offered."
+   ]
+  },
+  {
+   "file": "mocked-18-card-refused.png",
+   "mode": "mocked",
+   "notes": [
+    "A refused card request (422 CARD_EXPIRY): the sentence of the server with its code; the dialog stays",
+    "open and offers Prepare again."
+   ]
+  },
+  {
+   "file": "mocked-19-card-unknown.png",
+   "mode": "mocked",
+   "notes": [
+    "The card request got no answer: the result is unknown, Issue card is off and Read the record again",
+    "is offered."
+   ]
+  },
+  {
+   "file": "mocked-20-card-listed.png",
+   "mode": "mocked",
+   "notes": [
+    "After the answered card request the cards are read again (live list) and the dialog closes on the",
+    "listed row; focus is back on the action that opened it."
+   ]
+  },
+  {
+   "file": "live-21-unit-with-valid-card.png",
+   "mode": "live",
+   "notes": [
+    "Live reads only: UNIT-3B lists a card that is valid now under an unchanged snapshot, so the block",
+    "offers Issue new revision."
+   ]
+  },
+  {
+   "file": "mocked-22-revision-form.png",
+   "mode": "mocked",
+   "notes": [
+    "Issue new revision: Prepare reads the listed card and the rows, so the dialog says it stores nothing",
+    "and asks for Valid until only."
+   ]
+  },
+  {
+   "file": "mocked-23-revision-rows.png",
+   "mode": "mocked",
+   "notes": "The preview of the revision: mode update, revision 2 and the rows as answered."
+  },
+  {
+   "file": "mocked-24-revision-listed.png",
+   "mode": "mocked",
+   "notes": "The cards read after the card request list revision 2 above revision 1; the dialog has closed."
+  },
+  {
+   "file": "mocked-25-zoom-200-issue-form.png",
+   "mode": "mocked",
+   "notes": [
+    "200% zoom (720 x 450 CSS px, device scale 2): the form of a first card; the body scrolls and both",
+    "actions are whole."
+   ]
+  },
+  {
+   "file": "mocked-26-zoom-200-rows.png",
+   "mode": "mocked",
+   "notes": "200% zoom: the rows of the card and Issue card."
+  },
+  {
+   "file": "live-27-inspector-recorded-unit.png",
+   "mode": "live",
+   "notes": [
+    "Live reads only: UNIT-3B in the map inspector. The header reads Assigned and the code from the",
+    "canonical record; the actions are the listed card and the link to the recorded unit. No review or",
+    "draft-code button is left."
+   ]
+  },
+  {
+   "file": "live-28-arrival-at-recorded-unit.png",
+   "mode": "live",
+   "notes": [
+    "Live reads only: the link opens the record page at the block of UNIT-3B, which is scrolled to and",
+    "holds the focus."
+   ]
+  },
+  {
+   "file": "mocked-29-inspector-unit-without-code.png",
+   "mode": "mocked",
+   "notes": [
+    "The canonical record as before the assignment and an empty card list: the header reads the review",
+    "status of the live ledger, no code is shown, and the one action is the link to the recorded unit."
+   ]
+  },
+  {
+   "file": "mocked-30-live-reviews-read.png",
+   "mode": "mocked",
+   "notes": [
+    "Only the canonical record is mocked (UNIT-3B before its code), so that the block asks for the",
+    "reviews: the reviews read is the GET the demo answers itself. It lists one review, already used by",
+    "the assignment, so the block offers a new review and no Assign code."
+   ]
+  },
+  {
+   "file": "live-31-zoom-200-inspector.png",
+   "mode": "live",
+   "notes": [
+    "Live reads only, 200% zoom (720 x 450 CSS px, device scale 2): the inspector of UNIT-3B with its two",
+    "actions."
+   ]
+  }
+ ],
+ "report": {
+  "TASK": [
+   "F3e2 (GF4, GF5; P8.3): the Studio reviews a recorded unit, assigns its code and issues its card",
+   "through the registry. All three parts are done and committed. Nothing was written to the demo: every",
+   "step that stores is mocked in the screenshots, from R3's stored exchanges where one exists."
+  ],
+  "WORKS": [
+   [
+    "1. Review and assign (fac523f9). The block of a recorded unit without a code reads its reviews (GET)",
+    "and offers \"Review and assign code\". The dialog shows what is decided, asks for a reason (required,",
+    "empty), and \"Record review\" sends the capture and then the review: operation assign, no location for",
+    "a source-stated unit. \"Assign code\" sends the assignment with the four values of that review. The",
+    "code is shown only once the canonical record states it. An unused review the registry already lists",
+    "is offered for assignment as it is. A unit with a code shows no review action."
+   ],
+   [
+    "2. Issue a card (534e3461). The Cards block offers \"Issue new revision\" when a listed card is valid",
+    "now under an unchanged snapshot, otherwise \"Issue card\". One required \"Valid until\" (local date and",
+    "time, empty; a past value or one more than 24 hours ahead is refused in the form with \"Use an expiry",
+    "within the next 24 hours.\" before anything is sent) and, for a first card, one required \"Why this",
+    "citation is included\" (empty, at most 2,048 characters). The dialog says before Prepare that Prepare",
+    "is not a dry run. Prepare runs capture, entries, plan create, confirm, execute and preview, and the",
+    "same instant goes to the plan, the preview and the card. Afterwards the dialog shows the entry, the",
+    "plan id and the packet receipt as answered, and the preview's mode, revision and rows in the",
+    "answered order. Only \"Issue card\" sends generate; the cards are then read again and the dialog",
+    "closes on the listed row. An entry answered as not includable is shown with its reason code and",
+    "Prepare stops there. For a revision Prepare reads the listed card and the preview and stores",
+    "nothing; the dialog says so."
+   ],
+   [
+    "3. Drafts (1924e344). Of the two ways the task allows I took the smaller: the map inspector links to",
+    "the recorded unit (\"Open recorded unit\") and does not open the dialogs itself. The link lands on the",
+    "unit block, which is scrolled to and takes the focus. The inspector's header reads Assigned from the",
+    "canonical record, else the review status of the ledger; it reads and writes nothing in the browser",
+    "store. useRecordReview is removed and recordReview is no longer exported. The draft verify page is",
+    "untouched."
+   ],
+   [
+    "4. Both dialogs: each request is sent once per click and the button is disabled while it is in",
+    "flight. A refusal is stated with the server's code and words and the dialog stays open with what was",
+    "typed. After no answer the dialog says the result is unknown and offers \"Read the record again\",",
+    "never a resend of its own; for a lost card request a new listed row means the card exists, otherwise",
+    "the officer may send the same request with the same key."
+   ],
+   [
+    "5. Found by my own review after the part commits and fixed: the field took the focus before the",
+    "dialog noted its opener, so the focus did not return on a second open (in 534e3461); the expiry was",
+    "printed twice after Prepare (8b16e4a3); the inspector drew an empty action bar for a space with no",
+    "action (a3338518); two literal text sizes where tokens exist (8f74a09a)."
+   ]
+  ],
+  "SEE IT": [
+   [
+    "docs/evidence/gf5/f3e2/. Review and assign: mocked-01 to mocked-09 (refusal mocked-03 and mocked-08,",
+    "unknown outcome mocked-05, 200% zoom mocked-10 and mocked-11). First card: mocked-12 to mocked-20",
+    "(expiry refused in the form mocked-14, entry not includable mocked-15, unknown outcome mocked-16 and",
+    "mocked-19, refusal mocked-18, 200% zoom mocked-25 and mocked-26). Revision: live-21, mocked-22 to",
+    "mocked-24. Inspector: live-27, live-28 (arrival at the unit), mocked-29, live-31 (200% zoom)."
+   ],
+   [
+    "mocked-30-live-reviews-read.png is the coordinator's addition: the reviews read there is the demo's",
+    "own GET answer after its roll-out. UNIT-3B has its code and its block then asks for no reviews, so",
+    "the canonical record alone is mocked to its state before the code, and the file is named mocked."
+   ],
+   [
+    "browser-result.json holds what capture.mjs measured: the bodies it checked, the keyboard walk, the",
+    "zoom measurements and every request. fixtures.json names the JSON path of every fixture."
+   ]
+  ],
+  "INPUTS": [
+   [
+    "The demo API at 127.0.0.1:3194: GET, and the card list POST the Studio already sent. The capture",
+    "guard refused nothing because nothing else was attempted: blockedWrites is empty."
+   ],
+   [
+    "R3's stored exchanges under E:/BhuAayam-data/task-data/r3/step3/ (read only) and",
+    "docs/evidence/runtime/r3/result.json; K11b's expected reviews answer",
+    "(docs/evidence/gf1/k11b/result.json); K12's docs/evidence/gf4/k12/REQUESTS.md for the entries read",
+    "and the preview. Ids of Tower 3 and UNIT-3B from docs/evidence/gf5/f3d/responses.json."
+   ],
+   [
+    "Contract-shaped, not recorded (marked in fixtures.json): an empty reviews list, a reviews list with",
+    "an unreadable row, the two refusals (Step 0 codes and sentences), the reason code of an entry that",
+    "is not includable, an empty card list, the preview as a whole, the meta of the entries and preview",
+    "answers, the revision-2 card answer and the list that holds it."
+   ]
+  ],
+  "GAPS": [
+   [
+    "No real answer of a storing route, of the entries read or of the preview has passed through the",
+    "Studio: I may not write to the demo and the task keeps the two POST reads mocked. The first real run",
+    "is the runtime owner's (clickPath in this file)."
+   ],
+   [
+    "The assign flow cannot be shown on the demo as it is: it needs a recorded unit without a code.",
+    "UNIT-3B has its code and UNIT-3A is not recorded."
+   ],
+   [
+    "G8 is followed as decided: an expired card gives \"Issue card\". K12's REQUESTS.md notes that an",
+    "expired card does not itself prevent a revision preview; the Studio does not offer that."
+   ],
+   [
+    "The Studio's card list (F3d) stops at the newest snapshot that lists a card. A first card under a",
+    "new snapshot is therefore listed alone afterwards; cards under older snapshots are no longer shown."
+   ],
+   [
+    "A plan and a packet whose answer was lost stay in the registry; the next Prepare makes a new plan",
+    "with new keys and claims nothing about the old one."
+   ],
+   [
+    "The citation in both dialogs is text, not the evidence control: a second dialog over the first",
+    "closes both on Escape, and packages/ui is read-only for me."
+   ],
+   [
+    "The flow hooks useAssignFlow and useIssueFlow are 65 and 61 lines, over the guide of about 40. Seven",
+    "commits, not four: three small fixes came after the part commits and I may not rebase."
+   ],
+   [
+    "Not seen in a browser: the inspector of a space the registry lists no recorded unit for (the demo",
+    "has none); a refusal from the real server (both are mocked with the Step 0 code and sentence);",
+    "\"Valid until\" typed in a browser outside IST (the capture runs in Asia/Kolkata; the conversion is",
+    "unit-tested)."
+   ],
+   [
+    "The inspector of a unit with a listed card now holds two actions. At 200% zoom both are whole and",
+    "the rows keep 84 px of 197 px (132 px with one action in F3g). The short-window layout stays open,",
+    "as the lead said."
+   ]
+  ],
+  "DESIGN": [
+   [
+    "One way to send a command: features/identity/outcome.ts states refusals with refusalOf of",
+    "features/review/candidates/commands.ts and adds the one distinction these flows need, refused or",
+    "unknown. Request bodies are built by pure functions (assignment.ts, issue.ts) and typed from",
+    "@ulpin/api-client; no response shape is written by hand."
+   ],
+   [
+    "Prepare is one sequence in prepare.ts that names the step it stopped at. A lost answer in a step",
+    "that stores is an unknown outcome; in a step that only reads it is a failed read."
+   ],
+   [
+    "One snapshot is captured per record revision per open dialog and reused by later Prepare clicks. The",
+    "two dialogs share no state, so the card dialog always captures its own."
+   ],
+   [
+    "The rows of the card are printed by a small new component: the existing card facts take a browser",
+    "workflow, not the preview's rows. A row that is not available keeps its value and shows its state",
+    "and reason code under it."
+   ],
+   [
+    "\"Valid until\" is typed in the browser's zone and shown after Prepare as the registry answered it,",
+    "once. The task's form sentence is used as the hint and as the refusal."
+   ],
+   [
+    "After a refused assignment the dialog offers \"Record a new review\"; after a refused card request",
+    "\"Prepare again\". Neither resends by itself."
+   ],
+   [
+    "The inspector's pure parts (which recorded unit a space is, its status, the link) are in",
+    "features/map/inspector/registryState.ts with tests."
+   ]
+  ],
+  "COMMITS": [
+   "fac523f9 feat(studio): a recorded unit is reviewed and assigned its code through the registry",
+   [
+    "534e3461 feat(studio): a card is issued from the recorded unit, its rows read by the officer before",
+    "it exists"
+   ],
+   "1924e344 refactor(studio): the inspector makes no browser draft once the registry flows exist",
+   "8b16e4a3 fix(studio): the card dialog states the expiry once after Prepare",
+   "a3338518 fix(studio): the inspector draws no action bar for a space that has no action",
+   "8f74a09a style(studio): the registry dialogs take their text sizes from the tokens",
+   "docs(studio): F3e2 evidence (this commit)"
+  ],
+  "CHECKS": {
+   "pnpm studio:typecheck": "exit 0 on the final tree",
+   "pnpm studio:test": "apps/studio 213 passed in 37 files (173 on staging); packages/ui 4, api-client 2, scene 10",
+   "node docs/evidence/gf5/f3e2/capture.mjs": [
+    "exit 0 on the final tree, no page error, no write attempted (blockedWrites empty);",
+    "31 screenshots"
+   ],
+   "git diff --check": "clean against 9138678c",
+   "line length": "no new line over 120 characters under apps/ or in this folder",
+   "$ui-design-check": "ui-design-check.md: nothing blocking, five findings, three more fixed before it",
+   "dev server": "stopped; port 5190 checked free",
+   "not pushed": "nothing was pushed, merged or rebased"
+  },
+  "NEXT": [
+   [
+    "Runtime owner: prove the issue flow on UNIT-3B with the clicks under clickPath. That stores in the",
+    "demo, so it is the owner's step."
+   ],
+   [
+    "Draft callers outside my paths, left as they are. features/map/MapWorkspace.tsx:13, :343 and :510",
+    "render AssignDialog; nothing opens it any more, since the inspector no longer calls onAssign. Once",
+    "those lines go, these can go too: features/identity/AssignDialog.tsx, useAssignCode,",
+    "assignProposedCode, randomPayload with its test in local/workflow.test.ts, recordReview, the",
+    "onAssign prop of SpaceInspector and the toast at MapWorkspace.tsx:516-520."
+   ],
+   [
+    "Draft readers outside my paths: MapWorkspace.tsx:109 (useSpaceWorkflow) and :513 (UnitCardDialog);",
+    "features/register/RegisterPage.tsx:89 (useBuildingWorkflow) and :292 (UnitCardDialog);",
+    "portal/RecordPage.tsx:27 (useSpaceWorkflow). Worker H is changing the register page."
+   ],
+   [
+    "The card list across snapshots (GAPS): decide whether a unit's cards under older snapshots stay",
+    "listed once a newer snapshot lists one."
+   ],
+   [
+    "Lead choices from ui-design-check.md: copy controls for the answered ids; the link of the inspector",
+    "as a text link when a card is listed; leaving out the browser's \"Failed to fetch\" after the unknown-",
+    "outcome sentence."
+   ],
+   [
+    "app/Frame.tsx: the area switcher names another area on a record page opened by its address",
+    "(mocked-13). Not mine, unchanged."
+   ]
+  ]
+ }
+}
