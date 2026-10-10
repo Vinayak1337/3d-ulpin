@@ -6,10 +6,12 @@ import { Cited, ReadingStatementsContext } from '../../register/ReadingNote';
 import { useReadingStatements } from '../../register/useReadingStatements';
 import { CandidateChip } from './CandidateQueue';
 import { modelCardSummary } from './modelCard';
-import type { CandidateCard } from './model';
+import type { CandidateCard, PlanEstimateView } from './model';
 import styles from './CandidateReview.module.css';
 
 const DETERMINISTIC = 'Deterministic extraction; no model';
+const ESTIMATE_BASIS = "From the candidate polygon in the plan's own metres, at the plan's candidate scale; "
+  + "not a measurement.";
 
 function Mono({ children }: { children: ReactNode }) {
   return <span className={styles.mono}>{children}</span>;
@@ -51,6 +53,28 @@ function ModelSection({ itemId }: { itemId: string }) {
     <section className={styles.section} aria-label="Model">
       <h3 className={styles.sectionTitle}>Model card summary</h3>
       <DescriptionList items={facts} />
+    </section>
+  );
+}
+
+function estimateFacts(estimate: PlanEstimateView): Fact[] {
+  if (estimate.state === 'unknown') {
+    return [{ label: 'Bounding extent', value: <Unknown /> }, { label: 'Area', value: <Unknown /> }];
+  }
+  return [
+    { label: 'Bounding extent', value: `${estimate.extent} (estimated)` },
+    { label: 'Area', value: `${estimate.area} (estimated)` },
+  ];
+}
+
+/** The size the read states for a room; nothing when the read states none. */
+function PlanEstimate({ estimate }: { estimate: PlanEstimateView | null }) {
+  if (!estimate) return null;
+  return (
+    <section className={styles.section} aria-label="Estimated size">
+      <h3 className={styles.sectionTitle}>Estimated size</h3>
+      <DescriptionList items={estimateFacts(estimate)} />
+      {estimate.state === 'estimated' ? <p className="ul-help">{ESTIMATE_BASIS}</p> : null}
     </section>
   );
 }
@@ -120,6 +144,7 @@ export function CandidateCardView({ card, children }: { card: CandidateCard; chi
       <DecisionRecord card={card} />
       {children}
       <DescriptionList items={recordedFacts(card)} />
+      <PlanEstimate estimate={card.planEstimate} />
       {card.itemId ? <ModelSection itemId={card.itemId} /> : null}
       <Limitations items={card.limitations} />
       <Citations card={card} />

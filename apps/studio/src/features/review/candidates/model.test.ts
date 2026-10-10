@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   candidateCard, candidateCards, candidateGroups, countByState, decisionHistory, itemIdOf, locatorText,
-  type CanonicalCandidate,
+  planEstimateView, type CanonicalCandidate,
 } from './model';
 
 const ITEM = '11111111-1111-4111-8111-111111111111';
@@ -129,6 +129,26 @@ describe('candidateCard', () => {
 
   it('counts only entries of the asked kind as without geometry', () => {
     expect(candidateCards([room(), roofprint()], 'room')).toMatchObject({ withoutGeometry: 0 });
+  });
+});
+
+describe('planEstimateView', () => {
+  const basis = { method: 'polygon_area_in_plan_metres@1', scaleState: 'candidate', metresPerPdfPoint: 0.034 };
+  const estimated = { state: 'estimated', areaM2: 6.55, extentM: [2.42, 2.71], basis, limitations: [] };
+  const unknown = { state: 'unknown', areaM2: null, extentM: null, basis: null, limitations: ['No plan frame.'] };
+
+  it('prints the extent and area the read states, at one decimal', () => {
+    expect(planEstimateView(room({ planEstimate: estimated }))).toEqual(
+      { state: 'estimated', extent: '2.4 × 2.7 m', area: '6.6 m²' });
+  });
+
+  it('keeps an unknown estimate unknown, never 0', () => {
+    expect(planEstimateView(room({ planEstimate: unknown }))).toEqual({ state: 'unknown' });
+  });
+
+  it('states nothing when the read carries no estimate', () => {
+    expect(planEstimateView(room())).toBeNull();
+    expect(candidateCard(room())!.planEstimate).toBeNull();
   });
 });
 
