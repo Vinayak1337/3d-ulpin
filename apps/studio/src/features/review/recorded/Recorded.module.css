@@ -1,0 +1,36 @@
+/* The building page: the candidate review keeps its height; the recorded panel follows at full width. */
+.layout {
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-rows: minmax(520px, 1fr) auto;
+}
+
+.below { min-width: 0; padding: 0 var(--ui-space-4) var(--ui-space-4); }
+.body { display: grid; gap: var(--ui-space-4); }
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--ui-space-4); }
+.floor { display: grid; gap: var(--ui-space-3); }
+.floor + .floor { padding-top: var(--ui-space-4); border-top: 1px solid var(--ui-divider); }
+.head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ui-space-2); }
+.label { margin: 0; font: 600 var(--ui-text-md)/22px var(--ui-font-sans); overflow-wrap: anywhere; }
+
+.unit {
+  display: grid;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-3);
+  border-radius: var(--ui-radius-8);
+  background: var(--ui-surface-subtle);
+}
+
+.citations { display: flex; flex-wrap: wrap; gap: var(--ui-space-2); min-width: 0; }
+
+/* A page-and-region locator is long: let the chip wrap instead of clipping at 200% zoom. */
+.citations :global(.ul-evid) {
+  height: auto;
+  min-height: 28px;
+  padding-block: 4px;
+  white-space: normal;
+  line-height: 18px;
+  text-align: left;
+}
