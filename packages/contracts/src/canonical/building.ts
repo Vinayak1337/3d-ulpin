@@ -320,7 +320,10 @@ const sourceImportCitation = z.strictObject({
 });
 
 export const ClaimTranscriptionSchema = z.discriminatedUnion('by', [
-  z.strictObject({ by: z.literal('agent'), agent: sourceImportText }),
+  z.strictObject({
+    by: z.literal('agent'),
+    agent: z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9._:/@+-]*$/),
+  }),
   z.strictObject({ by: z.literal('officer') }),
 ]);
 export type ClaimTranscription = z.infer<typeof ClaimTranscriptionSchema>;

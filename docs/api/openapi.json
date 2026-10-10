@@ -15191,11 +15191,21 @@
         "operationId": "POST_api_v1_buildings_buildingId_conflict_decisions",
         "parameters": [
           {
-            "name": "buildingId",
-            "in": "path",
+            "name": "Idempotency-Key",
+            "in": "header",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "buildingId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
             }
           }
         ],
@@ -64496,7 +64506,8 @@
                         "agent": {
                           "type": "string",
                           "minLength": 1,
-                          "maxLength": 500
+                          "maxLength": 128,
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/@+-]*$"
                         }
                       },
                       "required": [
@@ -67008,7 +67019,8 @@
                         "agent": {
                           "type": "string",
                           "minLength": 1,
-                          "maxLength": 500
+                          "maxLength": 128,
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/@+-]*$"
                         }
                       },
                       "required": [
@@ -71385,7 +71397,8 @@
                               "agent": {
                                 "type": "string",
                                 "minLength": 1,
-                                "maxLength": 500
+                                "maxLength": 128,
+                                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/@+-]*$"
                               }
                             },
                             "required": [

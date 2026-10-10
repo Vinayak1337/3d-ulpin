@@ -62,6 +62,7 @@ function activatePaths() {
   assert.match(probe.stdout, /eng/);
   assert.match(probe.stdout, /hin/);
   const backup = 'E:/BhuAayam-data/task-data/k2/ocr-debug/ocr-paths-before-k2b.json';
+  assert(!existsSync(backup), 'Configuration was already activated; retain its original backup.');
   copyFileSync(demoOcrFile, backup);
   const next = { ...paths, ULPIN_DOCUMENT_OCR_TESSERACT: executable,
     ULPIN_DOCUMENT_OCR_TESSDATA: env.TESSDATA_PREFIX };

@@ -74174,7 +74174,9 @@ export interface operations {
     POST_api_v1_buildings_buildingId_conflict_decisions: {
         parameters: {
             query?: never;
-            header?: never;
+            header: {
+                "Idempotency-Key": string;
+            };
             path: {
                 buildingId: string;
             };
