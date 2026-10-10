@@ -217,7 +217,7 @@
     "packages/server/src/infrastructure/workspace-capabilities.ts": "06a80a8786df2e86e8260b78fae009220fb62befa1ba1f45639a175028d73aa7",
     "packages/server/src/modules/ai/document-storey-agent.ts": "d74109705ec49816df45cef4111700282d3896f1f0840119e49a039fa7c47850",
     "packages/server/src/modules/ai/officer-ai-images.ts": "e45d71c57f7211b0b39a62b1e62e198a6ea5428cbf3faf7f78de88f6809adc8e",
-    "packages/server/src/modules/ai/officer-ai-provider.ts": "c1fe70b6103acc70a2a599e0168b5ad6c66c20cd5da7527bbaae05ba123789cc",
+    "packages/server/src/modules/ai/officer-ai-provider.ts": "435b57d2f811a3cf8d993417f6db6da69a133eef9179093cc205c50485202074",
     "packages/server/src/modules/ai/officer-ai-validation.ts": "f26679524945eb95f16958c6f38a331207022b749fbf2a8af3f771c36fd023f2",
     "packages/server/src/modules/ai/officer-ai.ts": "eb0d27d7d194e807f09eea263bf97b35eb546cdb84d0f30e474410c62689494e",
     "packages/server/src/modules/ai/storey-document-proposals.ts": "4a51becd1eb305066c826319afe3b6709eff427d00053e4c9d983f0d13c99fab",

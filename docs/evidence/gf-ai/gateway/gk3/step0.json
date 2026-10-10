@@ -1,0 +1,182 @@
+{
+  "task": "GK3",
+  "step": 0,
+  "writtenBeforeAnythingWasRun": true,
+  "onlyReadOnlyCommandsSoFar": [
+    "docker version, docker context show, docker ps -a / volume ls / network ls with --format (names only),",
+    "docker image inspect of the pinned image (id and declared volume path), git show and git diff."
+  ],
+  "howTheSqlTestGetsItsDatabase": {
+    "skippedUnless": "tests/model-gateway/sql.test.ts:30 runs only when ULPIN_MODEL_SQL_URL is set",
+    "whatItRequires": [
+      "sql.test.ts:31 no .env at the checkout root (an existence check; it never reads one)",
+      "sql.test.ts:32-33 ULPIN_MODEL_SQL_NONCE, 16 hex characters",
+      "sql.test.ts:34-36 docker inspect of a container named ulpin-model-control-<nonce> whose labels are",
+      "  io.ulpin.task=DEPLOY-01 and io.ulpin.nonce=<nonce>",
+      "sql.test.ts:37-39 the URL: host 127.0.0.1, user model_control, no password in the URL,",
+      "  database model_control_<nonce>",
+      "sql.test.ts:40-41 the container publishes 5432 on 127.0.0.1 at the URL's port",
+      "sql.test.ts:42-44 the SHA-256 of model-gateway.sql equals the manifest's"
+    ],
+    "whatItCreates": [
+      "sql.test.ts:48-51 one schema control_<nonce>_<n> per sub-test, and in it the gateway's SQL file applied",
+      "  twice (the file as it is now, with GK1's five statements); rows of control calls in those schemas"
+    ],
+    "whatItDrops": "Nothing. sql.test.ts:142 only closes its connection pools.",
+    "canItReachADatabaseItDidNotCreate": [
+      "It creates no database itself: it uses the one in the URL. It cannot use a URL whose host is not",
+      "127.0.0.1, whose database name does not carry the nonce, or whose port is not the published port of",
+      "the container that carries the same nonce as its label. A database of the demo cannot satisfy that."
+    ],
+    "theExistingRunner": {
+      "file": "tests/model-gateway/run-sql.mjs",
+      "notUsedBecause": [
+        "run-sql.mjs:11-12 refuses a Docker endpoint that is not unix:// (this machine: Docker Desktop).",
+        "run-sql.mjs:15,20-23 creates a named volume and :43 only stops the container: both would stay.",
+        "run-sql.mjs:22 runs the database without a password (trust)."
+      ]
+    }
+  },
+  "findingBeforeTheRun": {
+    "what": [
+      "The task names the container ulpin-gk3-sqltest-<8 hex>; the test's guard accepts only",
+      "ulpin-model-control-<16 hex> with the label io.ulpin.task=DEPLOY-01. A container has one name."
+    ],
+    "decision": [
+      "The container keeps the task's name. sql.test.ts (owned in this task) gets a second accepted form:",
+      "the name given in ULPIN_MODEL_SQL_CONTAINER, which must be ulpin-<word>-sqltest-<first 8 hex of the",
+      "nonce>, with a task label present. The nonce label, loopback host, port, user, database name and the",
+      "empty password in the URL are checked exactly as before. Without the variable nothing changes.",
+      "The password is not in the URL: the pg driver reads PGPASSWORD from the process environment."
+    ]
+  },
+  "howTheLedgerChildGetsItsDatabase": [
+    "scripts/platform/demo-gateway-ledger.ts:8 ownerKeyLedger() (runtime.ts:43-51) reads the policy and the",
+    "key names from the process environment, and infrastructure/db.ts:26 connects to DATABASE_URL.",
+    "infrastructure/config.ts:8 probes <checkout>/.env on import; scripts/platform/isolated-env.cjs (the same",
+    "preload demo-gateway.mjs uses) hides that one path. With REPO_DATA unset no other file is read",
+    "(scripts/repo-env.mjs:59-63). Nothing under E:/BhuAayam-data/runtime is needed."
+  ],
+  "stopRule": {
+    "testNeedsTheDemoDatabase": false,
+    "ledgerChildNeedsTheDemoDatabaseOrRuntimeFiles": false,
+    "result": "not triggered: both take their database from the environment of the process that starts them"
+  },
+  "willNotTouch": {
+    "containers": [
+      "docsetu-benchmark-20261002-mongo",
+      "ulpin-demo-geo-1", "ulpin-demo-minio-1", "ulpin-demo-minio-init-1", "ulpin-demo-postgres-1",
+      "ulpin-demo-redis-1", "ulpin-demo-worker-1",
+      "ulpin-raster-worker-20260929-geo-1", "ulpin-raster-worker-20260929-minio-1",
+      "ulpin-raster-worker-20260929-minio-init-1", "ulpin-raster-worker-20260929-postgres-1",
+      "ulpin-raster-worker-20260929-redis-1", "ulpin-raster-worker-20260929-worker-1",
+      "ulpin-repo-geo-1", "ulpin-repo-minio-1", "ulpin-repo-minio-init-1", "ulpin-repo-postgres-1",
+      "ulpin-repo-redis-1", "ulpin-repo-worker-1",
+      "ulpin-usptest-8cd5555d8faac51d-geo-1", "ulpin-usptest-8cd5555d8faac51d-minio-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-init-1", "ulpin-usptest-8cd5555d8faac51d-postgres-1",
+      "ulpin-usptest-8cd5555d8faac51d-redis-1", "ulpin-usptest-8cd5555d8faac51d-worker-1",
+      "ulpin-usptest-b050544f3d2cb99e-geo-1", "ulpin-usptest-b050544f3d2cb99e-minio-1",
+      "ulpin-usptest-b050544f3d2cb99e-postgres-1", "ulpin-usptest-b050544f3d2cb99e-redis-1",
+      "ulpin-usptest-b050544f3d2cb99e-worker-1"
+    ],
+    "volumes": [
+      "743d1eb1a29f4d17bafa5910c08fbb7dcc1b3e878c0edfe5630a1cb80eb4c557",
+      "docsetu-benchmark-20261002-db",
+      "ulpin-demo_minio-data", "ulpin-demo_postgres-data", "ulpin-demo_redis-data",
+      "ulpin-raster-worker-20260929_minio-data", "ulpin-raster-worker-20260929_postgres-data",
+      "ulpin-raster-worker-20260929_redis-data",
+      "ulpin-repo_minio-data", "ulpin-repo_postgres-data", "ulpin-repo_redis-data",
+      "ulpin-usptest-8cd5555d8faac51d_minio-data", "ulpin-usptest-8cd5555d8faac51d_postgres-data",
+      "ulpin-usptest-8cd5555d8faac51d_redis-data",
+      "ulpin-usptest-b050544f3d2cb99e_minio-data", "ulpin-usptest-b050544f3d2cb99e_postgres-data",
+      "ulpin-usptest-b050544f3d2cb99e_redis-data"
+    ],
+    "networks": [
+      "bridge", "host", "none", "ulpin-demo_default", "ulpin-raster-worker-20260929_default",
+      "ulpin-repo_default", "ulpin-usptest-8cd5555d8faac51d_default", "ulpin-usptest-b050544f3d2cb99e_default"
+    ],
+    "counts": { "containers": 30, "volumes": 17, "networks": 8 }
+  },
+  "image": {
+    "composeNames": "compose.yaml:15 postgis/postgis:17-3.5 pinned by digest",
+    "used": "postgis/postgis@sha256:01a6a70e41e6c4467c8f55f6063555ed72db2d6662cd0d571040d42eadaeb6f6",
+    "alreadyLocal": true,
+    "nothingIsPulled": true,
+    "declaresVolumePath": "/var/lib/postgresql/data: a tmpfs is mounted there, so Docker makes no volume for it"
+  },
+  "commands": [
+    {
+      "command": [
+        "docker run --detach --name ulpin-gk3-sqltest-<8 hex> --label io.ulpin.task=GK3",
+        "  --label io.ulpin.nonce=<16 hex> --network bridge --publish 127.0.0.1::5432",
+        "  --tmpfs /var/lib/postgresql/data --env POSTGRES_USER=model_control",
+        "  --env POSTGRES_DB=model_control_<16 hex> --env POSTGRES_PASSWORD <the pinned image>"
+      ],
+      "creates": [
+        "One container on the existing bridge network, one free loopback port. No volume, no network.",
+        "The password is made in the driver's memory and passed by environment name only (no value on a",
+        "command line, in a file or in any output)."
+      ]
+    },
+    {
+      "command": "docker exec <that name> pg_isready ...; docker inspect <that name> (parsed, never printed)",
+      "creates": "nothing"
+    },
+    {
+      "command": "docker ps -a / docker volume ls / docker network ls, names only: before, during and after",
+      "creates": "nothing"
+    },
+    {
+      "command": [
+        "tsx tests/model-gateway/throwaway-steps.ts base: the schema through the server's own functions in",
+        "  the manifest's order (bootstrap.postgis, core, registry, area, officer, officer-ai, spatial-ml,",
+        "  usp, datasets, dataset-ml), then the gateway file of commit 63c986d5 in one query call, then two",
+        "  control rows in the shape of before GK1"
+      ],
+      "creates": "tables in the public schema of the container's own database"
+    },
+    {
+      "command": [
+        "tsx tests/model-gateway/throwaway-steps.ts migrate, twice: the gateway file as it is now in one",
+        "  query call, exactly as migrateModelGateway() (runtime.ts:75-79) sends it; each statement's result"
+      ],
+      "creates": "the three columns, the table and the index of GK1; the second run must change nothing"
+    },
+    {
+      "command": "tsx --test tests/model-gateway/sql.test.ts with ULPIN_MODEL_SQL_URL, _NONCE and _CONTAINER",
+      "creates": "schemas control_<nonce>_<n> in the same database"
+    },
+    {
+      "command": [
+        "tsx scripts/platform/demo-gateway-ledger.ts key-marks | restore-key <NAME> <reason> |",
+        "  reconcile <reason>, behind scripts/platform/isolated-env.cjs, with a synthetic policy and",
+        "  synthetic keys in the child's environment; tsx tests/model-gateway/throwaway-steps.ts mark puts",
+        "  one mark in through the ledger's own retainExposure()"
+      ],
+      "creates": "one budget row, one call row closed at zero and one mark row, all synthetic"
+    },
+    {
+      "command": "docker rm --force ulpin-gk3-sqltest-<the same 8 hex>",
+      "removes": "the one container this task created, by its exact name, and with it its tmpfs"
+    }
+  ],
+  "removedAtTheEnd": {
+    "containers": ["ulpin-gk3-sqltest-<8 hex>, the exact name printed by the run"],
+    "volumes": [],
+    "networks": [],
+    "ifDockerMadeAnAnonymousVolumeAfterAll": [
+      "It is checked right after the container starts. If one appeared, the container is removed with",
+      "docker rm --force --volumes <its exact name>, which removes only that container's own anonymous",
+      "volume, and the run is reported as a finding. No docker volume rm is ever run."
+    ]
+  },
+  "neverRun": [
+    "docker compose in any form; down, prune, stop, restart or rm of any name on the lists above;",
+    "docker volume rm; any connection to a database this task did not create; any provider call;",
+    "any read of a .env file, the demo settings or anything under E:/BhuAayam-data/runtime."
+  ],
+  "ifSomethingFails": [
+    "A failed migration call is recorded and not run again. The container is still removed by its exact",
+    "name, and the report says what failed."
+  ]
+}
