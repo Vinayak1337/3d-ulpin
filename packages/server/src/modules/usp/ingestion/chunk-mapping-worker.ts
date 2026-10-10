@@ -184,6 +184,22 @@ async function propose(input:ChunkMappingInput,attempt:UspJobAttempt){
         sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status},input.subject);
     });
 }
+/** Draft interpretation is not refusal: unresolved counts survive a successfully closed source. */
+export function chunkMappingCompletionStatus(state:{quarantined:number;refused:boolean}){
+  return state.quarantined>0||state.refused?'completed_with_rejections':'completed';
+}
+
+export async function finishChunkMappingTx(client:PoolClient,input:ChunkMappingInput){
+  const state=(await client.query(`SELECT quarantined,EXISTS(SELECT 1 FROM usp_chunk_mapping_slots
+    WHERE job_id=$1 AND published=true AND status='quarantined' AND records=0 AND issue_code IS NOT NULL) refused
+    FROM usp_chunk_mapping_imports WHERE job_id=$1`,[input.jobId])).rows[0];
+  const status=chunkMappingCompletionStatus(state);
+  await client.query('UPDATE usp_chunk_mapping_imports SET state=$2,issue_code=NULL,updated_at=now() WHERE job_id=$1',
+    [input.jobId,status]);
+  await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.changed',sourceId:input.sourceId,
+    sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status},input.subject);
+}
+
 async function complete(input:ChunkMappingInput,attempt:UspJobAttempt){
   const sealed=await transaction(async client=>{
     await assertChunkMappingInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
@@ -205,13 +221,7 @@ async function complete(input:ChunkMappingInput,attempt:UspJobAttempt){
       if(state?.sealed_chunks!==sealed.chunks||state.next_publish_index!==sealed.chunks
         ||state.records!==sealed.records||state.unknown_remainder||raw?.unknown_remainder)
         conflict('The complete mapped manifest is not published.');
-    },client=>assertChunkMappingInputTx(client,input).then(()=>{}),async client=>{
-      const state=(await client.query('SELECT quarantined,unresolved,duplicate_keys,schema_drift_chunks FROM usp_chunk_mapping_imports WHERE job_id=$1',[input.jobId])).rows[0];
-      const status=state.quarantined||state.unresolved||state.duplicate_keys||state.schema_drift_chunks?'completed_with_rejections':'completed';
-      await client.query('UPDATE usp_chunk_mapping_imports SET state=$2,issue_code=NULL,updated_at=now() WHERE job_id=$1',[input.jobId,status]);
-      await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.changed',sourceId:input.sourceId,
-        sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status},input.subject);
-    });
+    },client=>assertChunkMappingInputTx(client,input).then(()=>{}),client=>finishChunkMappingTx(client,input));
 }
 
 async function claimFailure(input:ChunkMappingInput,error:unknown){
