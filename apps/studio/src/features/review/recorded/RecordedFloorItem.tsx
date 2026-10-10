@@ -2,6 +2,7 @@ import { DescriptionList, StatusBadge } from '@ulpin/ui';
 import { CitationControls } from './CitationControls';
 import type { RecordedFloor } from './model';
 import { RecordedUnitItem } from './RecordedUnitItem';
+import { ValueText } from './ValueText';
 import styles from './Recorded.module.css';
 
 /** One recorded floor with the units recorded under it. Heights are the record's values, Unknown included. */
@@ -14,8 +15,8 @@ export function RecordedFloorItem({ floor }: { floor: RecordedFloor }) {
       </div>
       <p className="ul-help">{floor.origin}</p>
       <DescriptionList items={[
-        { label: 'Lower height', value: floor.lower },
-        { label: 'Upper height', value: floor.upper },
+        { label: 'Lower height', value: <ValueText value={floor.lower} /> },
+        { label: 'Upper height', value: <ValueText value={floor.upper} /> },
         { label: 'Citation', value: <CitationControls label={floor.label} citations={floor.citations} /> },
       ]} />
       {floor.units.length ? (

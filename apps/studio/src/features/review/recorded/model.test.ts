@@ -4,12 +4,13 @@ import { evidenceRef, recordedFloors, sourceLabelGaps, type BuildingCanonical } 
 
 const withoutCode = controls.withoutCode as BuildingCanonical;
 const withCode = controls.withCode as BuildingCanonical;
+const unknown = { text: 'Unknown', known: false };
 
 describe('recorded floors and units', () => {
   it('shows a recorded floor by its literal, with unknown heights and no number from the label', () => {
     const [floor] = recordedFloors(withoutCode.levels);
     expect(recordedFloors(withoutCode.levels)).toHaveLength(1);
-    expect(floor).toMatchObject({ label: '2ND FLOOR PLAN', reviewed: true, lower: 'Unknown', upper: 'Unknown',
+    expect(floor).toMatchObject({ label: '2ND FLOOR PLAN', reviewed: true, lower: unknown, upper: unknown,
       origin: 'Recorded from a source label · geometry not recorded' });
     expect(Object.values(floor!).filter((value) => typeof value === 'number')).toEqual([]);
     expect(floor!.citations).toEqual([{ key: `${floor!.citations[0]!.sourceId}:0`,
@@ -19,7 +20,7 @@ describe('recorded floors and units', () => {
 
   it('keeps a unit unknown where the record is, and only shows a reviewed code', () => {
     const unit = recordedFloors(withoutCode.levels)[0]!.units[0]!;
-    expect(unit).toMatchObject({ label: 'UNIT-3B', kind: 'Unknown', area: 'Unknown', code: null });
+    expect(unit).toMatchObject({ label: 'UNIT-3B', kind: unknown, area: unknown, code: null });
     expect(unit.citations[0]!.locator).toBe('p.1 · x 206.9, y 254.3 · 1034.4 × 305.1 pt');
     const assigned = withCode.levels[0]!.spaces[0]!.proposedCode;
     expect(assigned.state).toBe('reviewed');
