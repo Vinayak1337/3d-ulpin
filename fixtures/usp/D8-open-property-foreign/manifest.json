@@ -28,7 +28,7 @@
     {
       "id": "opf-d04",
       "split": "dev",
-      "publisher": "City and County of San Francisco Environment Department",
+      "publisher": "City and County of San Francisco; Environment and Public Utilities Commission",
       "fileCount": 2,
       "geography": "San Francisco, California, United States",
       "schemaIdentity": "Publisher table design: sf-existing",
@@ -37,7 +37,7 @@
     {
       "id": "opf-d05",
       "split": "dev",
-      "publisher": "City of Kansas City Office of Environmental Quality",
+      "publisher": "City of Kansas City",
       "fileCount": 1,
       "geography": "Kansas City, Missouri, United States",
       "schemaIdentity": "Publisher table design: kansas-municipal",
@@ -119,7 +119,8 @@
         "evaluationEligible": false
       },
       "dictionary": {
-        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d02/seattle-energy-dictionary.json",
+        "externalPath":
+        "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d02/seattle-energy-dictionary.json",
         "sha256": "21e18de920aadaea8ad6e5b5370283426388545104fbbb89e8cd3795252eed74",
         "bytes": 84951,
         "url": "https://cos-data.seattle.gov/api/views/teqw-tu6e.json",
@@ -262,8 +263,8 @@
         "kind": "external",
         "url": "https://data.sf.gov/api/views/bfhx-j6n5/rows.csv?accessType=DOWNLOAD"
       },
-      "issuer": "City and County of San Francisco Environment Department",
-      "attribution": "City and County of San Francisco Environment Department",
+      "issuer": "City and County of San Francisco Public Utilities Commission",
+      "attribution": "SFPUC",
       "acquiredAt": "2026-10-10T12:11:43.144801+00:00",
       "geography": "San Francisco, California, United States",
       "purpose": "test_only",
@@ -318,8 +319,8 @@
         "kind": "external",
         "url": "https://data.kcmo.org/api/views/9xwa-2b59/rows.csv?accessType=DOWNLOAD"
       },
-      "issuer": "City of Kansas City Office of Environmental Quality",
-      "attribution": "City of Kansas City Office of Environmental Quality",
+      "issuer": "City of Kansas City",
+      "attribution": "City of Kansas City issuing portal",
       "acquiredAt": "2026-10-10T12:11:48.415760+00:00",
       "geography": "Kansas City, Missouri, United States",
       "purpose": "test_only",
@@ -394,6 +395,9 @@
       },
       "reference": {
         "horizontalCrs": null,
+        "publisherDeclaredCrs": "LL-WGS84",
+        "crsDictionaryLocator": "/metadata/custom_fields/Spatial/Coordinate System",
+        "crsQualification": "Publisher source CRS is stated; native CSV export CRS remains unverified.",
         "verticalReference": null
       },
       "privacy": "Whole-file identity/contact screening; no redaction; excluded files never profiled",
@@ -567,6 +571,9 @@
       },
       "reference": {
         "horizontalCrs": null,
+        "publisherDeclaredCrs": "NAD83(CSRS) / Alberta 10-TM (Resource)",
+        "crsDictionaryLocator": "/metadata/custom_fields/Spatial/Coordinate System",
+        "crsQualification": "Publisher source CRS is stated; native CSV export CRS remains unverified.",
         "verticalReference": null
       },
       "privacy": "Whole-file identity/contact screening; no redaction; excluded files never profiled",

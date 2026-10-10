@@ -134,6 +134,18 @@ function writeProducts(profiles: PreparedColumn[], links: unknown[], dictionarie
   saveNew(join(OUTPUT, 'profiles/summary.json'), summary);
 }
 
+function checkProducts(profiles: PreparedColumn[], links: unknown[], dictionaries: unknown[],
+  prepared: ReturnType<typeof prepareTable>[]) {
+  const readRows = (path: string) => readFileSync(join(OUTPUT, path), 'utf8').trim().split(/\r?\n/).map(line =>
+    JSON.parse(line) as unknown);
+  assert.deepEqual(readRows('profiles.jsonl'), profiles, 'D1F_RECORDED_PROFILES_CHANGED');
+  assert.deepEqual(readRows('profiles/profiles.jsonl'), profiles, 'D1F_RECORDED_PROFILE_COPY_CHANGED');
+  assert.deepEqual(readRows('profile-links.jsonl'), links, 'D1F_RECORDED_LINKS_CHANGED');
+  assert.deepEqual(readRows('dictionary.jsonl'), dictionaries, 'D1F_RECORDED_DICTIONARY_ROWS_CHANGED');
+  const inventory = JSON.parse(readFileSync(join(OUTPUT, 'verifier/inventory.json'), 'utf8')) as unknown;
+  assert.deepEqual(inventory, prepared.map(table => table.inventory), 'D1F_RECORDED_INVENTORY_CHANGED');
+}
+
 function main() {
   const assets = admittedAssets();
   const { ready, gaps } = prepareAssets(assets);
@@ -165,6 +177,7 @@ function main() {
   };
   assets.forEach(asset => checkedPin(asset.original));
   if (process.argv.includes('--check')) {
+    checkProducts(profiles, links, dictionaries, prepared);
     console.log(JSON.stringify(summary));
     return;
   }
