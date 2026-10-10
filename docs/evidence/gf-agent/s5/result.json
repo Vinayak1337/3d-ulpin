@@ -1,0 +1,118 @@
+{
+  "task": "S5",
+  "branch": "task/s5-request-fits-the-gateway",
+  "base": "39ed2dbb",
+  "state": "stopped at the time box: Step 0 and items 1, 2, 3 and 5 are done; item 4 is not started",
+  "noProviderCall": "no provider call, no key, no network, no runtime, no database: every proof is a test with a control gateway, a plan or a dry run",
+  "items": {
+    "step0": { "state": "done", "commit": "bf123d99", "evidence": "docs/evidence/gf-agent/s5/step0.json" },
+    "item1_mappingRule": {
+      "state": "done", "commit": "132ec1f5",
+      "rule": "mappingTeacherRequest asks the gateway's own message check (minimizeMessages). Within the bound: every sample, bytes unchanged. Over it: the same number of samples in every column, one fewer at a time, down to none. It returns samplesPerColumn and overBound. Still over with none: proposeMappingWithTeacher returns TEACHER_INPUT_LIMIT before the gateway is asked (attempts 0).",
+      "withinBound": "two retained inputs give the same hash of messages and schema as on the base (measured on both); the ten planned request hashes are the same",
+      "madeUpTables": [
+        { "columns": 40, "samplesInProfile": 10, "samplesPerColumn": 7, "overBound": false, "gatewayAsked": 1 },
+        { "columns": 60, "samplesInProfile": 10, "samplesPerColumn": 0, "overBound": true, "gatewayAsked": 0, "code": "TEACHER_INPUT_LIMIT" }
+      ],
+      "realMiD22Tables": [
+        { "columns": 90, "samplesPerColumn": 0, "overBound": true, "userMessageCharacters": 33178, "messagesBytes": 37690, "gatewayAsked": 0, "code": "TEACHER_INPUT_LIMIT" },
+        { "columns": 90, "samplesPerColumn": 0, "overBound": true, "userMessageCharacters": 33054, "messagesBytes": 37566, "gatewayAsked": 0, "code": "TEACHER_INPUT_LIMIT" }
+      ],
+      "notAsTheTaskFileExpected": "the task file expected the two mi-d22 tables to be within the bound after the rule. They are not: with no samples they are 13,114 and 12,990 bytes over the 24,576-byte bound. The rule ends them at 0 samples and refuses them unasked.",
+      "planStates": "samplesPerColumn beside sampleForms on each mapping step (10 on both planned steps)",
+      "liveRun": "TEACHER_INPUT_LIMIT is among the codes that stop a live run, as the same refusal did under TEACHER_UNAVAILABLE"
+    },
+    "item2_gatewaySizeCode": {
+      "state": "done", "commit": "9da1935f",
+      "what": "a message over 32,768 characters that passes the shape and whole-message checks is refused as 413 MODEL_INPUT_LIMIT, the gateway's existing size code; before, 403 MODEL_PROMPT_PRIVACY",
+      "publishedContract": "neither code is under docs/api/ or packages/contracts/; nothing was regenerated"
+    },
+    "item3_perLineCheck": {
+      "state": "done", "commit": "341baed8",
+      "what": "holdsRefusedForm is exported from adapter.ts (one export, same behaviour); the storey selection asks it per line; a refused line is left out and named by position under MODEL_MESSAGE_CHECK",
+      "plannedDocuments": "0 of 3,451 lines in the 8 planned documents are refused by it, so no planned request changes"
+    },
+    "item4_gatewayCodeOnResults": {
+      "state": "not started",
+      "checkpoint": [
+        "The field must say more than the code: attemptStep attempts a step again only when the refusal is retryable, and a one-key policy throws MODEL_QUOTA_EXHAUSTED without retryable. A field such as gatewayRefusal?: { code, retryable } on both results carries what observed() records today.",
+        "Storey: set it in extractStoreyFacts where the catch calls unavailable(partsHash, teacherFailureCode(error), attempt).",
+        "Mapping: set it in proposeMappingWithTeacher's catch (failedResult), then copy it in routedResult, which builds a new object. chunk-mapping-agent.ts (not owned) spreads the proposal in verifiedProposal, so the field reaches draft.proposal without a change there; it also keeps the proposal per layout, and live-proof already drops the mapper before attempting a step again.",
+        "live-proof: runMapping and runStorey return it in Outcome; attemptStep reads outcome.gatewayRefusal in place of drivers.refusals; then observed(), Drivers.refusals and their three call sites go.",
+        "LIVE-PROOF.md section 7, bullets 1 and 2, is untouched."
+      ]
+    },
+    "item5_screen": {
+      "state": "done", "commits": ["9da1935f", "341baed8", "132ec1f5"],
+      "miD22Half": "still a real refused table: code MODEL_INPUT_LIMIT, 90 columns, 0 samples in the request as built",
+      "storeyHalf": "a line holding data: is now left out, so it no longer refuses a request. The case uses a request that is still refused: 40 Devanagari lines within the 14,000-character batch bound and over the 24,576-byte gateway bound (MODEL_INPUT_LIMIT)."
+    }
+  },
+  "pinnedProducerSourcesChanged": [
+    "packages/server/src/modules/usp/ingestion/mapping-teacher.ts",
+    "packages/server/src/modules/ai/document-storey-agent.ts",
+    "packages/server/src/modules/model-gateway/adapter.ts"
+  ],
+  "pinnedNote": "all three are listed in docs/api/source-pins.json; docs/api/** was not regenerated; the lead re-pins at the merge",
+  "checks": {
+    "pnpm typecheck:backend": "exit 0",
+    "pnpm exec tsc -p scripts/agent/tsconfig.json": "exit 0",
+    "tests": {
+      "scripts/agent/mapping-teacher.test.ts": { "before": 13, "after": 18, "fail": 0 },
+      "packages/server/src/modules/ai/document-storey-agent.test.ts": { "before": 10, "after": 11, "fail": 0 },
+      "scripts/agent/live-proof.test.ts": { "before": 10, "after": 10, "fail": 0 },
+      "scripts/agent/injection-screen.test.ts": { "before": 9, "after": 9, "fail": 0 },
+      "tests/model-gateway/*.test.ts": { "before": "23 tests, 22 pass, 1 skipped", "after": "23 tests, 22 pass, 1 skipped" }
+    },
+    "testEnvironment": "injection-screen.test.ts reads a workbook through Python: it passes with ULPIN_PROFILE_PYTHON set to the venv-plans interpreter and fails its workbook case (T1_NATIVE_READER_UNAVAILABLE) with the bare python of this shell",
+    "plan": "exit 0; 10 calls, estimate ₹1.14, at most ₹7.75 (upper bound), tariff lead-proposal-20261010, printed as not approved; the ten request hashes equal Step 0's (E:/BhuAayam-data/task-data/s1/s5-plan-final-2/plan.json)",
+    "dryRun": "exit 0 (E:/BhuAayam-data/task-data/s1/s5-dry-run-final/receipt.json). Against S4's receipt every part is the same except keyMoves.everyKeyMarked.firstStep.code: TEACHER_UNAVAILABLE in S4, TEACHER_BUDGET_EXHAUSTED now. By the diff this comes from GK2 on the base (MODEL_KEYS_EXHAUSTED joined the budget codes), not from this branch; it was not confirmed by a dry run on the base.",
+    "git diff --check": "clean",
+    "lineLength": "no new line over 120 characters"
+  },
+  "report": {
+    "TASK": "S5: one over-long table or one refused line should not cost a whole request. Stopped at the time box with Step 0 and items 1, 2, 3 and 5 done and item 4 not started.",
+    "WORKS": [
+      "A mapping request over the gateway's bound carries fewer samples per column, the same number in every column, and states it as samplesPerColumn. A made-up table of 40 columns goes from 10 samples to 7 and is asked once.",
+      "A mapping request still over the bound with no samples is refused as TEACHER_INPUT_LIMIT and the gateway is not asked (0 reservations, 0 dispatches).",
+      "A request within the bound is byte for byte what it was: two retained inputs by hash, and the ten planned request hashes are the same.",
+      "A message that is only too long is refused as MODEL_INPUT_LIMIT (413), no longer as a privacy refusal.",
+      "The storey selection leaves out a line holding data:, image_url or base64, names it by position under MODEL_MESSAGE_CHECK, and sends the rest."
+    ],
+    "SEE IT": [
+      "pnpm exec tsx --test scripts/agent/mapping-teacher.test.ts (the four tests named 'size:' and the one named 'gateway:')",
+      "pnpm exec tsx --test packages/server/src/modules/ai/document-storey-agent.test.ts ('selection: a line the check on a whole message refuses ...')",
+      "pnpm exec tsx scripts/agent/live-proof.ts --plan (each mapping step states samplesPerColumn)",
+      "docs/evidence/gf-agent/s5/step0.json for the sizes"
+    ],
+    "INPUTS": "Development inputs only: the two recorded mi-d22 derivatives, the two retained control inputs, the 8 planned page stores (counts only). No held-out folder, no .env, nothing under the runtime folder. No sample or line text is in Git.",
+    "GAPS": [
+      "The rule does not bring the two real mi-d22 tables within the bound, which the task file expected. With no samples they are still 13,114 and 12,990 bytes over; they are now refused unasked under the size code. Value shapes are 39% of the message; shrinking them, or sending a wide table as two requests, is a decision for the lead.",
+      "Item 4 is not started: results do not carry the gateway's code, live-proof.ts still has observed(), and LIVE-PROOF.md section 7 is unchanged. The design notes are in items.item4_gatewayCodeOnResults.checkpoint.",
+      "apps/studio/src/features/intake/table/model.ts (not mine) has no label for TEACHER_INPUT_LIMIT.",
+      "teacherFailureCode now maps the gateway's MODEL_INPUT_LIMIT to TEACHER_INPUT_LIMIT for the storey agent too. scripts/agent/measure-c1.ts (not mine) lists TEACHER_UNAVAILABLE among codes that are not refusals; it does not list the new code.",
+      "One dry-run receipt field differs from S4's (keyMoves.everyKeyMarked.firstStep.code). The diff points to GK2 on the base; this was not confirmed by a run on the base."
+    ],
+    "DESIGN": [
+      "The bound is asked of the gateway's own minimizeMessages, not copied: the builder cannot drift from it.",
+      "Only the bound on messages is checked. The bound on the whole body cannot be the first to refuse: the widest made-up table that fits the messages bound (53 columns) has a body of 28,049 bytes against 32,768.",
+      "The builder never throws for size; it returns the request as built with overBound, so the screen still measures it.",
+      "The size code reuses MODEL_INPUT_LIMIT; privacy checks run first and keep their code.",
+      "TEACHER_INPUT_LIMIT stops a live run, as the same refusal did before under TEACHER_UNAVAILABLE."
+    ],
+    "COMMITS": [
+      "bf123d99 docs(agent): S5 what an over-size mapping message is made of, and which lines the gateway's message check refuses",
+      "9da1935f feat(gateway): a message over the bound is refused under a code of its own",
+      "341baed8 feat(agent): the storey selection leaves out a line the gateway's message check refuses, and names it",
+      "132ec1f5 feat(agent): a mapping message over the gateway's bound carries fewer samples per column, and says how many",
+      "docs(agent): S5 evidence (this file)"
+    ],
+    "CHECKS": "typecheck:backend 0; tsc scripts/agent 0; mapping-teacher 13 to 18, storey agent 10 to 11, live-proof 10 to 10, injection-screen 9 to 9, all passing; tests/model-gateway 23 tests, 22 pass, 1 skipped, unchanged; --plan and --dry-run exit 0; ten hashes equal; plan 10 calls, estimate ₹1.14, at most ₹7.75 (upper bound) at lead-proposal-20261010, not approved; git diff --check clean; no new line over 120. Three pinned sources changed; docs/api/** not regenerated. Not pushed.",
+    "NEXT": [
+      "Lead decision: what a table of more than about 59 columns loses so that it fits (value shapes, or two requests).",
+      "Item 4 from the checkpoint, then LIVE-PROOF.md section 7 bullets 1 and 2.",
+      "The storey selection bounds a batch by 14,000 characters while the gateway bounds bytes: a batch of Devanagari lines can pass the first and be refused by the second. Found while writing the screen's case; not fixed.",
+      "A studio label for TEACHER_INPUT_LIMIT."
+    ]
+  }
+}
