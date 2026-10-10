@@ -6,8 +6,8 @@ import type { OfficerAnswer, OfficerAnswers } from './recipe';
 import type { ChunkMapping, TableProfile } from './types';
 import styles from './Table.module.css';
 
-export function AnswerForm({ profile, mapping, answers, change, markUnknown, record, pending }: {
-  profile: TableProfile; mapping: ChunkMapping; answers: OfficerAnswers; pending: boolean;
+export function AnswerForm({ profile, mapping, answers, change, markUnknown, record, pending, canRecord }: {
+  profile: TableProfile; mapping: ChunkMapping; answers: OfficerAnswers; pending: boolean; canRecord: boolean;
   change: (sourceField: string, answer: OfficerAnswer) => void;
   /** Null when the result is not current: one reason is never spread over a stale result. */
   markUnknown: ((reason: string) => void) | null; record: () => void;
@@ -18,19 +18,20 @@ export function AnswerForm({ profile, mapping, answers, change, markUnknown, rec
       {markUnknown ? <SharedUnknown count={unansweredUnknownColumns(profile, answers).length}
         apply={markUnknown} pending={pending} /> : null}
       <ColumnAnswers profile={profile} mapping={mapping} answers={answers} change={change} record={record}
-        pending={pending} unanswered={unanswered} />
+        pending={pending} canRecord={canRecord} unanswered={unanswered} />
     </div>
   );
 }
 
-function ColumnAnswers({ profile, mapping, answers, change, record, pending, unanswered }: {
-  profile: TableProfile; mapping: ChunkMapping; answers: OfficerAnswers; pending: boolean; unanswered: string[];
+function ColumnAnswers({ profile, mapping, answers, change, record, pending, canRecord, unanswered }: {
+  profile: TableProfile; mapping: ChunkMapping; answers: OfficerAnswers; pending: boolean; canRecord: boolean;
+  unanswered: string[];
   change: (sourceField: string, answer: OfficerAnswer) => void; record: () => void;
 }) {
   return (
     <form className={styles.form} onSubmit={(event) => {
       event.preventDefault();
-      record();
+      if (canRecord) record();
     }}>
       <p className="ul-help">
         Choose a meaning and give a reason for every column, including unknown fields.
@@ -51,7 +52,7 @@ function ColumnAnswers({ profile, mapping, answers, change, record, pending, una
         </div>
       </fieldset>
       {unanswered.length ? <p className="ul-help" role="status">Unanswered: {unanswered.join('; ')}</p> : null}
-      <div><Button variant="primary" type="submit" disabled={Boolean(unanswered.length) || pending}>
+      <div><Button variant="primary" type="submit" disabled={Boolean(unanswered.length) || pending || !canRecord}>
         Record the mapping
       </Button></div>
     </form>
