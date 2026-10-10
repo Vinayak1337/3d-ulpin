@@ -1,0 +1,287 @@
+{
+  "task": "R5b",
+  "title": "UNIT-3A's page region measured the way UNIT-3B's was, and the reference-area step as request bodies",
+  "gate": "GF5 (rehearsal), GF1",
+  "worktree": "E:/Projects/ulpin-wt/r5, branch task/r5b-unit3a-region-and-area-step, cut from staging 3a8f5df1",
+  "step0": {
+    "question": "How was the recorded page region of UNIT-3B obtained, and what does the record store?",
+    "answer": ["It was not computed and it was not read from a text layer. The four numbers [596, 390, 644, 409] are",
+      "the lead's estimate, read off the wide K4b crop and written into the K4c task file. The K4c worker",
+      "rendered that estimate at 4 times, measured how far the dark pixels of the boxed label lie from each",
+      "edge (5.0, 5.0, 6.0 and 4.25 pt: left, top, right, bottom), found all four inside the allowed 6 pt,",
+      "saw no other label in the crop, and kept the estimate unchanged. So the record's region is an",
+      "estimate that passed a measured test; no script, rule or formula produced it."],
+    "sheet": {
+      "path": "E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/haryana-2831-tower3-plan1.pdf",
+      "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429", "revision": 1,
+      "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865", "bytes": 1655334, "pages": 1,
+      "textLayer": ["none: PyMuPDF 1.25.5 returns 0 words and 0 vector drawings for page 1. The page is one embedded",
+        "image, 5388 x 3531 pixels, RGB, drawn over the whole page (about 2.08 pixels per point). Every label",
+        "on this sheet is pixels, so a label is read by a person; K4a already said so (\"manual visual",
+        "inspection of retained PDF raster pages; no OCR\", docs/evidence/gf1/k4a/unit-statements.json, key",
+        "methods)."],
+      "readAt": "2026-10-10T15:44Z, read-only, bytes hashed before opening"
+    },
+    "frame": {
+      "name": "pdf_display_page_top_left_points", "unit": "PDF point (1/72 inch)",
+      "origin": "top-left corner of the displayed page", "axes": "x to the right, y down",
+      "order": "[x0, y0, x1, y1]: left, top, right, bottom", "pageBox": [0, 0, 2586, 1695], "rotation": 0,
+      "from": ["docs/evidence/gf1/k4c/visual-evidence.json (frame, pageBox)",
+        "scripts/agent/r2-live.ts:56-57 (the demo answered frame 2586 x 1695 for this source)"]
+    },
+    "howObtained": [
+      {"step": 1,
+        "what": ["K4b cited a wide region [206.88, 254.25, 1241.28, 559.35] that holds both UNIT-3B and UNIT-3A, and",
+          "kept its crop."],
+        "from": ["docs/evidence/gf1/k4b/visual-evidence.json",
+          "E:/BhuAayam-data/task-data/k4b/unit-cited-region.png, SHA-256 94065f1d...8219b"]},
+      {"step": 2,
+        "what": [
+          "The lead read an estimate off that crop: \"The lead's estimate from your broad crop is about `[596,",
+          "390, 644, 409]` pt on page 1 (top-left origin, 2586 × 1695 pt). Render it, adjust so the whole boxed",
+          "label is inside with a margin of at most 6 pt, and confirm by eye that `UNIT-3A` and every other",
+          "label are outside.\""
+        ],
+        "from": ["E:/Projects/ulpin-wt/_tasks/k4c.md:20 (the task folder is not in Git)"]},
+      {"step": 3,
+        "what": [
+          "The K4c worker rendered the estimate at 4 times (192 x 76 pixels), reported the margins from the ink",
+          "to the region edge as 5.0 / 5.0 / 6.0 / 4.25 pt and kept the estimate. The region is a constant in",
+          "its script; nothing derives it."
+        ],
+        "from": ["docs/evidence/gf1/k4c/render-label.py:13 (REGION), :30 (the 4 times crop)",
+          "docs/evidence/gf1/k4c/REPORT.md:8-12",
+          "docs/evidence/gf1/k4c/visual-evidence.json",
+          "E:/BhuAayam-data/task-data/k4c/unit-3b-label.png, SHA-256 3c9e7914...b9923",
+          "commit 2465b5af docs(identity): label-only citation for UNIT-3B"]},
+      {"step": 4, "what": "R2 sent that body unchanged, with the canonical revision read at run time.",
+        "from": ["docs/evidence/gf1/k4c/source-space-request.json:20", "scripts/agent/r2-live.ts:88-92"]}
+    ],
+    "retainedReceipt": {
+      "request": "E:/BhuAayam-data/task-data/r2/step2/02-record-request.json",
+      "requestSha256": "b5d099b8bef8d996b0b9128dd0b1667edfdebe7bccccfa078abfe5b5cf2746ee",
+      "sentAt": "2026-10-10T12:29:48.234Z",
+      "spaceEvidenceSent": {
+        "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429", "sourceRevision": 1, "page": 1,
+        "region": [596, 390, 644, 409], "literal": "UNIT-3B"
+      },
+      "response": "E:/BhuAayam-data/task-data/r2/step2/02-record-response.json",
+      "responseSha256": "47132b94632f15570a3d0bd47eb9e864f02338ca6ce7b0ceed807a89a3bd7829", "status": 201,
+      "spaceId": "46b7265e-ca88-402d-83df-065cf7c45140", "floorId": "614ca200-1f3d-48ac-b7db-d1b893b352a1",
+      "spaceRevision": 1
+    },
+    "whatTheRecordStores": {
+      "readWith": "GET /api/v1/buildings/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/canonical",
+      "readAt": "2026-10-10T15:46:53Z", "status": 200,
+      "canonicalRevision": "906c2e9bbe7e24134dd7ec2bef2b5dba18046d626e5f3aed3b9ca50d16f21bdb",
+      "spaceLabel": {"value": "UNIT-3B", "state": "reviewed"},
+      "sourcePin": {
+        "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429", "sourceRevision": 1,
+        "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865"
+      },
+      "box": {"kind": "region", "page": 1, "x": 596, "y": 390, "width": 48, "height": 19, "unit": "pt"},
+      "boxAsSent": [596, 390, 644, 409], "locatorText": "page 1; region pt [596,390,644,409]; literal UNIT-3B",
+      "locatorTextFrom": ["packages/contracts/src/canonical/source-spaces.ts:54-56 (the function that writes it)",
+        "docs/evidence/runtime/r3/result.json:304 (the text the R3 review had to equal)"],
+      "alsoStored": ["the literal UNIT-3B with transcription \"officer_entered\", the actor, the reason and the time",
+        "(packages/contracts/src/canonical/source-spaces.ts:32-38). No boundary, geometry or area."],
+      "precision": ["Four whole numbers of points. The contract accepts any finite non-negative numbers",
+        "(source-spaces.ts:5-6), so a region on the quarter-point grid of a 4 times render can be recorded as",
+        "it is."]
+    },
+    "whatThisMeansForUnit3A": [
+      "There is no rule to reuse as written. What can be repeated from the retained sheet is the K4c",
+      "measurement: the same 4 times render and the same margins. The control in this task therefore has",
+      "two parts: the crop of the recorded region must be byte-identical to the K4c crop, and the label box",
+      "found from a point inside the label, widened by the four K4c margins, must give the recorded numbers",
+      "exactly. Only if both hold is the same code pointed at UNIT-3A, and its result is a candidate for an",
+      "officer, not a fact."
+    ]
+  },
+  "control": {
+    "interpreter": "E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe, PyMuPDF 1.25.5",
+    "command": "python -B scripts/agent/r5b-unit-region.py control", "exit": 0, "matches": true,
+    "unit": "PDF points, frame pdf_display_page_top_left_points, [x0, y0, x1, y1]",
+    "recordedPt": [596, 390, 644, 409], "reproducedPt": [596, 390, 644, 409], "differencePt": [0, 0, 0, 0],
+    "labelBoxPt": [601, 395, 638, 404.75], "marginsPt": [5, 5, 6, 4.25], "strayMarksPt": null, "cropSameAsK4c": true,
+    "cropSha256": "3c9e7914f428fa0ea160874814498584ffc410cfb4642cbe6a1aba1049eb9923",
+    "rule": ["Render a window of 96 x 48 pt around a point inside the label at 4 times. A pixel is ink when its",
+      "grey level is below 128. The label box is the one group of touching ink pixels whose box holds the",
+      "point and holds another group (the frame around the characters). The region is that box widened by",
+      "the four K4c margins. Outside the label box and a soft edge of 0.5 pt the region must hold nothing",
+      "darker than grey 224. The crop of the recorded region must have the K4c crop's SHA-256."],
+    "whatItProves": [
+      "The 4 times render, the meaning of \"ink\" and the four margins are K4c's: the label box is found from",
+      "the sheet without using the recorded numbers, and adding the margins K4c reported gives the recorded",
+      "numbers with no difference. It does not prove that a rule produced the recorded region; step0 says",
+      "none did."
+    ],
+    "inkLevel": [
+      "K4c did not record the grey level it called ink. Levels 108, 128 and 144 all reproduce the recorded",
+      "region (exit 0 with --ink-below); 160 gives [595.75, 390, 644.25, 409] (exit 1). A scratch loop over",
+      "the committed functions in steps of 4 found 108 to 144 reproduce and nothing outside does. UNIT-3B",
+      "alone cannot say which level in that range is the right one."
+    ],
+    "seed": ["[619, 399], read off the K4b wide crop. Six other points inside the frame gave the same label box in",
+      "a scratch loop; a point on the unboxed room name below ([619, 418]) is refused (in the test)."]
+  },
+  "unit3a": {
+    "state": "no_candidate", "regionPt": null,
+    "command": "python -B scripts/agent/r5b-unit-region.py measure UNIT-3A", "exit": 1,
+    "reason": "LABEL_FRAME_IS_NOT_ONE_INK_GROUP",
+    "answer": ["No box is given. The same code that reproduces UNIT-3B refuses UNIT-3A, because this label is not",
+      "drawn on the sheet the way UNIT-3B is. Three choices are needed that UNIT-3B never needed; they are",
+      "for the lead or an officer, and each is listed below with the numbers measured."],
+    "literal": [
+      "Read by eye from the saved crop as UNIT-3A, in a drawn box. An unreviewed reading; K4a read the same",
+      "(docs/evidence/gf1/k4a/readiness.md:46). There is no text layer to compare with and no OCR was run."
+    ],
+    "source": {
+      "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429", "revision": 1,
+      "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865", "page": 1,
+      "frame": "pdf_display_page_top_left_points", "pageBoxPt": [0, 0, 2586, 1695]
+    },
+    "seedPt": [1105, 405],
+    "measured": [
+      {"inkBelow": 108, "exit": 1, "inkGroupsPt": [], "reason": "NO_LABEL_FRAME_AT_SEED"},
+      {"inkBelow": 128, "exit": 1,
+        "inkGroupsPt": [[1082.5, 400.75, 1111.75, 410.75], [1091.75, 401, 1119.75, 410.5]],
+        "reason": "LABEL_FRAME_IS_NOT_ONE_INK_GROUP",
+        "ifTheGroupsAreOneLabel": {
+          "inkBoxPt": [1082.5, 400.75, 1119.75, 410.75], "regionPt": [1077.5, 395.75, 1125.75, 415],
+          "strayMarksPt": [1113.5, 414.75, 1114, 415]
+        }},
+      {"inkBelow": 144, "exit": 1, "inkGroupsPt": [[1082.25, 400.75, 1119.75, 410.75]],
+        "reason": "OTHER_INK_IN_REGION", "labelBoxPt": [1082.25, 400.75, 1119.75, 410.75],
+        "regionWithK4cMarginsPt": [1077.25, 395.75, 1125.75, 415], "strayMarksPt": [1113.5, 414.75, 1114, 415]}
+    ],
+    "whatUnit3BDidNotNeed": [
+      {"id": "D1", "choice": "Is the frame one thing?",
+        "measured": [
+          "At grey level 128 the UNIT-3B frame is one group of touching pixels. The UNIT-3A frame is two groups",
+          "that overlap ([1082.5, 400.75, 1111.75, 410.75] and [1091.75, 401, 1119.75, 410.5]): its line is",
+          "fainter and breaks once on the top edge and once on the bottom edge. At 108 it falls into pieces and",
+          "no group holds the point; at 144 it is one group."
+        ]},
+      {"id": "D2", "choice": "Which grey level is ink?",
+        "measured": [
+          "Every level from 108 to 144 gives the same UNIT-3B box, so UNIT-3B cannot choose. For UNIT-3A the",
+          "left edge of the label box is 1082.5 at 128 and 1082.25 at 144; the other three edges agree (400.75,",
+          "1119.75, 410.75)."
+        ]},
+      {"id": "D3", "choice": "How much paper below the label?",
+        "measured": [
+          "K4c's bottom margin is 4.25 pt. Below UNIT-3A the paper is clear for 4.0 pt only: the label box ends",
+          "at 410.75 and the first mark of the room name DRAWING ROOM begins at 414.75 (strayMarksPt [1113.5,",
+          "414.75, 1114, 415]). With K4c's margin the crop would show that mark, so it fails K4c's own test",
+          "that nothing else is in the crop. Below UNIT-3B the same margin is clear."
+        ]}
+    ],
+    "labelSize": [
+      "UNIT-3A's box is 37.25 pt wide at level 128 (37.5 at 144) and 10 pt high; UNIT-3B's is 37 by 9.75.",
+      "Both are the same kind of boxed label."
+    ],
+    "pictures": [
+      {"path": "E:/BhuAayam-data/task-data/r5b/unit-3a-ink128-label.png",
+        "sha256": "a2b450f14e28160f493a70576fc622d2ec94542cfa3db62201e32a9c3fd9f99d", "pixels": [193, 77],
+        "shows": "the region as a renderer would crop it"},
+      {"path": "E:/BhuAayam-data/task-data/r5b/unit-3a-ink128-outlined.png",
+        "sha256": "9f1eb5fb4f2e2ae28da3ce5898d9929b13a656c68865a10fba5a56ea0d1eb8d2", "pixels": [913, 557],
+        "shows": "surroundings, region outlined; not original"},
+      {"path": "E:/BhuAayam-data/task-data/r5b/unit-3a-ink144-label.png",
+        "sha256": "f3ea0d5605d8c6aa6286c3a1b1a0f9594a444fac06a6277fcae0a30a43e2858d", "pixels": [194, 77],
+        "shows": "the region as a renderer would crop it"},
+      {"path": "E:/BhuAayam-data/task-data/r5b/unit-3a-ink144-outlined.png",
+        "sha256": "343f1b34300e6c99fbd24bc303e2c7546c4cad4a8f52c18490e9a47104c236c5", "pixels": [914, 557],
+        "shows": "surroundings, region outlined; not original"}
+    ],
+    "picturesNote": [
+      "Private, for the lead to look at, not in Git. The outlined pictures show the region that the K4c",
+      "margins would give under each reading; it is not a candidate. New files only: the script keeps an",
+      "existing picture and stops if its bytes differ."
+    ],
+    "nothingSent": "No request was sent for UNIT-3A. Nothing was recorded."
+  },
+  "areaStep": {
+    "file": "docs/evidence/runtime/r5b/area-step.json", "nothingSent": true, "requests": 7, "post": 5, "get": 2,
+    "createOnce": ["A2", "A4", "A5", "A6"], "valuesWithUnknownOrigin": 1,
+    "unknown": ["A2 expectedAreaRevision: whether the demo sent it; it has no effect when left out"],
+    "finding": ["One request made the demo's area: a GIS import of the GMDA roads file (A2, 2026-10-09T20:05:52Z).",
+      "Its fields were not kept, so they were rebuilt and then proved: the text the code signs, built from",
+      "them, has the SHA-256 the demo answered as importSignature",
+      "(docs/evidence/runtime/r5b/check-area-signature.mjs, exit 0). The sector context (A3 to A7) was sent",
+      "later by the retained script docs/evidence/gf-backend/k2/context-through-api.ts, so its values come",
+      "from that script, the fixture manifest and the previous responses."],
+    "correctionToR5a": ["R5a's sequence step S3 said the area was made by hand through import, prepare and commit at",
+      "20:14:43Z. That commit was refused (409 STALE_REVISION), as were the review and the prepare (422).",
+      "The roads package is still an unrecorded proposal on the demo."],
+    "order": ["On the demo: A2, then Tower 3 (R5a S4), then A3 to A7. Whether A3 to A7 also work before Tower 3 has",
+      "not been tried."]
+  },
+  "demoReads": {
+    "rule": "GET only; no POST, no SQL, no runtime start or stop",
+    "sent": ["2026-10-10T15:46:53Z GET /api/v1/areas/ed4bc3ae-.../canonical 200 (UNIT-3B as recorded, for step0)",
+      "15:58:10Z GET /api/v1/areas 200; GET /api/v1/areas/ed4bc3ae-.../context 200",
+      "15:58:10Z GET /api/v1/import-packages/ba7a0da7-... 200; GET /api/v1/import-packages/0f777141-... 200",
+      "15:58:27Z GET /api/v1/sources/1811f56c-.../file 200, headers only (the stored file name)",
+      "16:03:21Z GET /api/v1/health 200 (the closing check)"]
+  },
+  "checks": [
+    ["0: E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe -B",
+      "scripts/agent/r5b-unit-region.py control (recorded [596, 390, 644, 409], measured the same,",
+      "difference [0, 0, 0, 0])"],
+    ["0, 5 tests OK: E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe -B -m unittest",
+      "scripts/agent/test_r5b_unit_region.py"],
+    ["1, as intended: E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe -B",
+      "scripts/agent/r5b-unit-region.py measure UNIT-3A (no_candidate)"],
+    "0: node docs/evidence/runtime/r5b/check-area-signature.mjs (same: true)",
+    "0: python -B -c json.load on result.json and area-step.json",
+    "0: git diff --check; 0: git diff staging...HEAD --check",
+    "0, nothing printed: git diff staging...HEAD --name-only | xargs awk 'length>120 {print FILENAME\": \"FNR}'",
+    "tsc not run: the script is Python (PyMuPDF is in the documents environment; pytest is not, so unittest)",
+    "200: one GET http://127.0.0.1:3194/api/v1/health at 2026-10-10T16:03:21Z"
+  ],
+  "report": [
+    "TASK   R5b — UNIT-3A's page region measured the way UNIT-3B's was, and the reference-area step as request",
+    "       bodies GATE GF5 (rehearsal), GF1",
+    "WORKS  Part 1: the lead can run one script that finds UNIT-3B's label on the retained sheet and gets the",
+    "       recorded region with no difference, and the same script refuses UNIT-3A with the three measured",
+    "       reasons. No box is given for UNIT-3A. Part 2: a runtime owner can read the seven ordered requests",
+    "       that made the demo's reference area, each value with its origin. Nothing was sent or recorded.",
+    "SEE IT cd E:/Projects/ulpin-wt/r5; E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe -B",
+    "       scripts/agent/r5b-unit-region.py control; then the same with \"measure UNIT-3A\"; node",
+    "       docs/evidence/runtime/r5b/check-area-signature.mjs",
+    "INPUTS good: UNIT-3B on the retained Tower 3 sheet (SHA-256 2b9f8803...c865, page 1), reproduced exactly,",
+    "       and its crop is byte for byte K4c's. Difficult: UNIT-3A on the same sheet, whose frame line is",
+    "       fainter and broken and sits 4.0 pt above the next room name; and the roads import, whose request was",
+    "       not kept.",
+    "BOXES  PDF points, frame pdf_display_page_top_left_points (origin top left, y down), [x0, y0, x1, y1].",
+    "       UNIT-3B recorded [596, 390, 644, 409]; reproduced [596, 390, 644, 409]; difference [0, 0, 0, 0];",
+    "       label box [601, 395, 638, 404.75]. UNIT-3A measured: no box. What was measured: label box [1082.5,",
+    "       400.75, 1119.75, 410.75] if the two ink groups at grey 128 are one label (left edge 1082.25 at grey",
+    "       144); with K4c's margins that would be [1077.5, 395.75, 1125.75, 415] (or 1077.25 on the left),",
+    "       which touches the next room name at [1113.5, 414.75, 1114, 415].",
+    "CROPS  private, not in Git: E:/BhuAayam-data/task-data/r5b/unit-3a-ink128-label.png and -outlined.png,",
+    "       unit-3a-ink144-label.png and -outlined.png. They show the would-be region under each reading, not a",
+    "       candidate.",
+    "AREA   7 requests (5 POST, 2 GET); create-once A2, A4, A5, A6; values with unknown origin: 1 (whether the",
+    "       roads import carried expectedAreaRevision; it has no effect when left out).",
+    "GAPS   UNIT-3A has no candidate region until D1 to D3 are decided (unit3a.whatUnit3BDidNotNeed). The",
+    "       literal UNIT-3A is read by eye; the sheet has no text layer and no OCR was run. The area step was",
+    "       written, not run: replay behaviour and the order \"context before Tower 3\" are untested.",
+    "DESIGN step0 found that no rule produced UNIT-3B's region: it is the lead's estimate, kept by K4c after a 4",
+    "       times render. So the control rebuilds it from what K4c reported (ink, four margins, nothing else in",
+    "       the crop) and the script stops with CONTROL_MISMATCH before any other label if that fails. Grey",
+    "       levels 108 to 144 all reproduce UNIT-3B, so UNIT-3B cannot fix the level; the script gives no",
+    "       candidate rather than choose. Area request A2 is proved by recomputing the retained importSignature.",
+    "COMMITS three on task/r5b-unit3a-region-and-area-step, not pushed: 9aeec3db step 0; 196b9bb9 the script, its",
+    "       test and Part 1 evidence; the third (area step and evidence) is named in the final message.",
+    "CHECKS control 0; unittest 5 OK; signature check 0; JSON load 0; git diff --check 0; no line over 120; one",
+    "       GET /api/v1/health 200 at 16:03:21Z. tsc not run (Python).",
+    "NEXT   Lead: decide D1 (is a frame broken at grey 128 one label), D2 (which grey level is ink) and D3",
+    "       (bottom margin 4.0 pt here against K4c's 4.25) or have an officer draw UNIT-3A's region; the four",
+    "       private pictures show both readings. Lead: R5a's S3 wording is corrected in areaStep. Two deviations",
+    "       to note: the second commit's subject says the rule refuses UNIT-3A, because no candidate exists; the",
+    "       trailer is Claude Opus 5.5, as in R3 to R5a. Not started: the C1 to C5 task and the R5 roll-out."
+  ]
+}
