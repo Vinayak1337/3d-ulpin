@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { CanonicalMappedValueSchema } from './mapping-plan';
-import type { ImportPackage, PhysicalFeature } from '../area';
+import type { FactCandidate, ImportPackage, PhysicalFeature } from '../area';
 
 export const NORMALIZED_BUILDING_VERSION = 'normalized-building/1' as const;
 /** The mapping vocabulary also has needs_input (a workflow state, not a record value state). */
@@ -167,6 +167,38 @@ export const BuildingConflictSchema = z.strictObject({
   alternatives: z.array(conflictValue).min(2),
   reason: z.string(),
 });
+const conflictProperty = z.enum(['building.storeyLabel', 'building.storeyCount', 'building.floorCount']);
+const conflictScalar = z.union([z.string().trim().min(1).max(500), z.number().int().nonnegative()]);
+const checkedPage = BuildingCitationSchema.extend({ locator: BuildingCitationSchema.shape.locator.options[0] });
+const decisionFields = {
+  requestKey: z.string().uuid(),
+  expectedCanonicalRevision: z.string().regex(/^[a-f0-9]{64}$/),
+  property: conflictProperty,
+  reason: z.string().trim().min(1).max(2000),
+  citation: checkedPage,
+};
+export const BuildingConflictDecisionRequestSchema = z.discriminatedUnion('outcome', [
+  z.strictObject({ ...decisionFields, outcome: z.literal('selected'), chosenValue: conflictScalar }),
+  z.strictObject({ ...decisionFields, outcome: z.literal('unresolved') }),
+]);
+export const BuildingConflictDecisionSchema = z.strictObject({
+  ...decisionFields,
+  outcome: z.enum(['selected', 'unresolved']),
+  chosenValue: conflictScalar.nullable(),
+  alternatives: z.array(conflictValue).min(2),
+  actor: id,
+  time: z.string().datetime(),
+  recordRevision: z.number().int().positive(),
+}).superRefine((decision, ctx) => {
+  const valid = decision.outcome === 'unresolved' ? decision.chosenValue === null
+    : decision.alternatives.some(alternative => alternative.value === decision.chosenValue);
+  if (!valid) ctx.addIssue({
+    code: 'custom', message: 'A decision selects a retained alternative or remains unresolved.',
+  });
+});
+export type BuildingConflictDecisionRequest = z.infer<typeof BuildingConflictDecisionRequestSchema>;
+export type BuildingConflictDecision = z.infer<typeof BuildingConflictDecisionSchema>;
+
 export const BuildingCandidateRefSchema = z.strictObject({
   candidateId: id,
   task: id,
@@ -209,6 +241,8 @@ export const NormalizedBuildingSchema = z.strictObject({
   storeys: buildingValueSchema(z.array(BuildingStoreySchema)),
   levels: z.array(BuildingLevelSchema),
   conflicts: z.array(BuildingConflictSchema),
+  conflictDecisions: z.array(BuildingConflictDecisionSchema).optional(),
+  resolvedConflicts: z.array(BuildingConflictDecisionSchema).optional(),
   gaps: z.array(z.string()),
   candidates: z.array(BuildingCandidateRefSchema),
 }).superRefine(addHeightStateIssue);
@@ -285,7 +319,17 @@ const sourceImportCitation = z.strictObject({
   quote: sourceImportText.optional(),
 });
 
-/** Original-backed human transcriptions, not extracted facts or analytical geometry. */
+export const ClaimTranscriptionSchema = z.discriminatedUnion('by', [
+  z.strictObject({
+    by: z.literal('agent'),
+    agent: z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9][A-Za-z0-9._:/@+-]*$/),
+  }),
+  z.strictObject({ by: z.literal('officer') }),
+]);
+export type ClaimTranscription = z.infer<typeof ClaimTranscriptionSchema>;
+export type SourceBuildingClaim = FactCandidate & { transcription: ClaimTranscription };
+
+/** Original-backed transcriptions; agent claims remain candidates until officer confirmation. */
 export const SourceBuildingImportSchema = z.strictObject({
   format: z.enum(['document_buildings', 'administrative_context']),
   requestKey: sourceImportId,
@@ -315,6 +359,7 @@ export const SourceBuildingImportSchema = z.strictObject({
       property: z.enum(['building.storeyLabel', 'building.storeyCount', 'building.floorCount']),
       value: z.union([sourceImportText, z.number().int().nonnegative()]),
       method: z.literal('source_literal'),
+      transcription: ClaimTranscriptionSchema,
       citations: z.array(sourceImportCitation).min(1).max(20),
     })).max(30),
   })).max(100),
@@ -329,7 +374,9 @@ export const SourceBuildingImportSchema = z.strictObject({
   }
   if (input.format === 'administrative_context' && (input.buildings.length || !input.administrativeContext
     || !input.areaId || input.documents.length !== 1)) {
-    ctx.addIssue({ code: 'custom', message: 'Administrative context needs one original, a pinned area and no buildings.' });
+    ctx.addIssue({
+      code: 'custom', message: 'Administrative context needs one original, a pinned area and no buildings.',
+    });
   }
   const keys = new Set(input.documents.map(document => document.key));
   if (keys.size !== input.documents.length) {
@@ -360,8 +407,9 @@ export type SourceBuildingImport = z.infer<typeof SourceBuildingImportSchema>;
 export type SourceBuildingFeature = Omit<
   PhysicalFeature, 'geometry' | 'geographicGeometry' | 'sourceGeometry'
 > & { geometry: null; geographicGeometry: null; sourceGeometry: null; placement: 'unknown' };
-export type SourceBuildingPackage = Omit<ImportPackage, 'features'> & {
+export type SourceBuildingPackage = Omit<ImportPackage, 'features' | 'factCandidates'> & {
   geometryFree: true;
+  factCandidates: SourceBuildingClaim[];
   features: SourceBuildingFeature[];
   documentPins: { sourceId: string; sourceRevision: number; sourceSha256: string }[];
   sourceMetadata: SourceBuildingImport['documents'];

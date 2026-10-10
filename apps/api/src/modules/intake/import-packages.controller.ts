@@ -75,7 +75,8 @@ export class ImportPackagesController {
 
   @Post('import-packages')
   @HttpCode(201)
-  @ApiOperation({operationId: 'POST_api_v1_import_packages', summary: 'Import a bounded GIS original, document-backed unknown-geometry buildings, or a retained acquisition'})
+  @ApiOperation({operationId: 'POST_api_v1_import_packages',
+    summary: 'Import a bounded GIS original, document-backed unknown-geometry buildings, or a retained acquisition'})
   @gisImportBody(acquisitionImportSchema, ['file', 'format', 'namespace', 'name', 'mapping'], {
     format: {type: 'string', enum: areaImportMetadataSchema.shape.format.options},
     layer: {type: 'string', maxLength: 256},

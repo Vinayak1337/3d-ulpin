@@ -1,0 +1,17 @@
+{
+  "featureId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+  "currentRevision": 2,
+  "revisions": [
+    {
+      "revision": 2,
+      "createdAt": "2026-10-10T00:10:34.102Z",
+      "hasOfficerDecision": true
+    },
+    {
+      "revision": 1,
+      "createdAt": "2026-10-09T22:52:28.151Z",
+      "hasOfficerDecision": false
+    }
+  ],
+  "originalsOrAlternativesDeleted": false
+}

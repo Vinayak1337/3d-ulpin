@@ -1,0 +1,160 @@
+{
+  "task": "K2b",
+  "gatesPassed": [],
+  "gateScope": {
+    "GF-BACKEND": "candidate provenance and command/runtime invariants verified; OCR still failed",
+    "GF-GOVERN": "backend unresolved officer decision and immutable revision history demonstrated"
+  },
+  "provenance": {
+    "newImportTranscriberRequired": true,
+    "agentClaims": "ai_extraction/unresolved => candidate",
+    "legacyStoredClaims": "unchanged; no supported post-commit correction route",
+    "legacyProjection": "candidate",
+    "destructiveReimport": false
+  },
+  "officer": {
+    "buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+    "outcome": "unresolved",
+    "recordRevision": 2,
+    "registryHistoryWrite": "transaction appends revision 2; current canonical pin verified",
+    "physicalHistoryRead": [
+      1,
+      2
+    ],
+    "replayCreatesRevision": false,
+    "selectedPath": "contract-tested only; no truth-supported live selection",
+    "alternatives": [
+      "G+41",
+      "G+42"
+    ],
+    "chosenFloorCount": null,
+    "reason": "checked against site-plan page 1; D2 truth preserves G+41/G+42 conflict; unresolved, needs a current Tower-3-keyed approved source"
+  },
+  "canonical": {
+    "revisionId": "95cb9afd3b38783bcbcf6aa383412829735cb7699d8501236fddd5ea8a2fff5e",
+    "current": 200,
+    "exactCurrent": 200,
+    "unavailable": 404,
+    "crossSite": 403,
+    "staleDecision": 409,
+    "unknownFootprintsRemainNull": true,
+    "sourceCitationsUnchanged": true
+  },
+  "ocr": {
+    "wholePage": "documented 2000-point limit; unchanged",
+    "diagnosedCause": "Tesseract --list-langs: STATUS_DLL_NOT_FOUND, missing libcurl.dll",
+    "nativeDependencyProbe": 0,
+    "assets": "eng+hin",
+    "hindiExecutionClaimed": false,
+    "regionApiResult": {
+      "jobId": "828d327b-f9f7-4a12-b4fb-39c756c02ab3",
+      "status": "completed",
+      "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+      "ocr": {
+        "sourceSha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+        "sourceRevision": 1,
+        "sourcePage": 1,
+        "requestedRegion": [
+          280,
+          860,
+          960,
+          2580
+        ],
+        "sourcePageFrame": null,
+        "method": "ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned",
+        "toolStatus": "failed",
+        "outputStatus": "failed",
+        "textCompleteness": "unverified",
+        "issues": [
+          "OCR_SUPERVISOR_FAILED"
+        ],
+        "execution": {
+          "maxSeconds": 90,
+          "exitCode": 1,
+          "receiptSha256": "e5965c7b6c279b34a1964fd5c60b579fd19e6b76b7caeb95f3800f5ef62f441d",
+          "candidateSha256": "f8d4edce86806cf5ba366410aa69d9acb03ee981dde8e1c5d76442ff7ad49d62",
+          "worker": {
+            "exitCode": 1,
+            "stopReason": null,
+            "elapsedSeconds": 10.25,
+            "peakObservedRssBytes": 851124224,
+            "peakJobPrivateBytes": 999006208,
+            "gatedStart": true,
+            "logSha256": "d9cca9e67cd5d563d4f5e5d78b49fc615184d8e7cf798ee677ad130798b72a67"
+          }
+        }
+      },
+      "firstLines": [],
+      "nativeStatus": "needs_ocr",
+      "qualification": "OCR observations only; no reviewed field, accuracy, level schedule or Hindi execution claim"
+    },
+    "furtherRetries": 0
+  },
+  "runtime": {
+    "profile": "demo",
+    "worktree": "E:/Projects/ulpin-wt/k1",
+    "api": "http://127.0.0.1:3194/api/v1",
+    "servedCheckoutCommit": "b37a4e5f",
+    "apiBackendCodeLastChanged": "da77a9d2",
+    "leftRunning": true,
+    "preservedContainersVolumesOriginals": true,
+    "apiDispatcherRestarts": [
+      {
+        "completedAt": null,
+        "reason": "candidate provenance and officer command"
+      },
+      {
+        "completedAt": null,
+        "reason": "physical revision package lineage fix"
+      },
+      {
+        "completedAt": "2026-10-10T05:49:33+05:30",
+        "reason": "isolated native OCR dependency closure and eng+hin paths"
+      },
+      {
+        "completedAt": "2026-10-10T06:16:30+05:30",
+        "reason": "final API idempotency header and single-claim method mapping after resume"
+      }
+    ],
+    "scope": "only identity-checked API/dispatcher restarted; no service activation outside loopback"
+  },
+  "checks": {
+    "backendTypecheck": {
+      "command": "pnpm typecheck:backend",
+      "exitCode": 0
+    },
+    "focusedTests": {
+      "command": "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS='--require ./scripts/platform/isolated-env.cjs' pnpm exec tsx --tsconfig apps/api/tsconfig.json --test apps/api/src/modules/register/conflict-decision.controller.test.ts packages/server/src/modules/usp/ingestion/source-building-admission.test.ts apps/api/src/modules/register/canonical.controller.test.ts tests/manual-ingestion.test.ts",
+      "exitCode": 0,
+      "passed": 12,
+      "skipped": 0
+    },
+    "apiContract": {
+      "command": "python docs/evidence/gf-backend/k2b/check-lf-export.py (unchanged scripts/api/check.py on fresh LF archive)",
+      "exitCode": 0,
+      "operations": 291,
+      "namedSchemas": 325,
+      "reviewedK2bProducers": 11
+    },
+    "doctor": {
+      "command": "pnpm platform:doctor --profile demo",
+      "exitCode": 0,
+      "qualification": "health, ownership, eng+hin asset paths; not successful OCR or Hindi execution"
+    },
+    "styleAudit": {
+      "exitCode": 0,
+      "scope": "new code lines <=120; new core/test/verifier/dependency helpers <=40 lines; Python syntax"
+    },
+    "diffReview": {
+      "command": "git diff staging...HEAD",
+      "mergeBase": "84544578b01ddb5012484dc74c5f0e90b3582a46",
+      "unownedPathsTouched": [],
+      "diffCheckExitCode": 0
+    },
+    "externalLogs": "E:/BhuAayam-data/task-data/k2/k2b-*-resume-final.log",
+    "canonicalRuntime": {
+      "command": "pnpm exec tsx docs/evidence/gf-backend/k2b/verify-canonical.ts",
+      "exitCode": 0
+    }
+  }
+}

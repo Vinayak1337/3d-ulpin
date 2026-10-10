@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type {
-  FactCandidate, SourceBuildingFeature, SourceBuildingImport, SourceBuildingPackage, SourceLocator,
+  SourceBuildingClaim, SourceBuildingFeature, SourceBuildingImport, SourceBuildingPackage, SourceLocator,
 } from '@ulpin/contracts';
 import { AppError } from '../../../infrastructure/errors';
 import { sha256 } from '../../../infrastructure/storage';
@@ -49,11 +49,14 @@ export function sourceBuildingFeature(
 
 export function sourceBuildingClaims(
   building: BuildingInput, featureId: string, pins: DocumentPins,
-): FactCandidate[] {
+): SourceBuildingClaim[] {
   return building.claims.map(claim => ({
     id: randomUUID(), entityId: featureId, property: claim.property, value: claim.value,
     evidence: sourceLocators(claim.citations, pins),
-    method: 'human_entry', evidenceState: 'source_supported', worldStatus: building.worldStatus,
+    transcription: claim.transcription,
+    method: claim.transcription.by === 'agent' ? 'ai_extraction' : 'human_entry',
+    evidenceState: claim.transcription.by === 'agent' ? 'unresolved' : 'source_supported',
+    worldStatus: building.worldStatus,
   }));
 }
 
