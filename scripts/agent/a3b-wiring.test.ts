@@ -9,6 +9,7 @@ import { AnySourceProfileSchema, AnyStreamingInputSchema, ChunkMappingInputSchem
   StreamingVectorInputSchema, CaseIngestionEventSchema, TabularSourceProfileSchema,
   AnyAuthorMappingSchema } from '../../packages/contracts/src/usp/index';
 import { transaction } from '../../packages/server/src/infrastructure/db';
+import { registerUspJobInputTx } from '../../packages/server/src/modules/usp/jobs';
 import { settings } from '../../packages/server/src/infrastructure/config';
 import { sha256 } from '../../packages/server/src/infrastructure/storage';
 import { fingerprint } from '../../packages/server/src/modules/cases/domain';
@@ -193,6 +194,30 @@ function objectBytes(bytes: Buffer) {
     return { Body: { transformToByteArray: async () => bytes } };
   });
 }
+
+test('stream enrollment accepts tabular/GIS and rejects changed source pins', () => controls(async () => {
+  const f = fixture();
+  const { tabular: _tabular, ...common } = f.db.raw;
+  const gis = StreamingVectorInputSchema.parse({ ...common, framing: 'feature-collection' });
+  for (const input of [f.db.raw, gis]) {
+    let inserted = false;
+    const client = { query: async (sql: string) => {
+      if (sql.startsWith('SELECT * FROM jobs')) return { rows: [{ id: input.jobId, operation: 'streaming-vector',
+        payload: input, case_id: f.caseId, source_id: f.sourceId, case_revision: 0,
+        input_fingerprint: fingerprint(input) }] };
+      if (sql.startsWith('SELECT * FROM usp_job_metadata')) return { rows: [] };
+      assert(sql.startsWith('INSERT INTO usp_job_metadata'));
+      inserted = true;
+      return { rows: [] };
+    } } as unknown as PoolClient;
+    const scope = { kind: 'intake' as const, workspaceId: f.caseId, version: 1 };
+    await registerUspJobInputTx(client, input.jobId, scope, f.sourceId, fingerprint(input));
+    assert(inserted);
+    input.sourceId = randomUUID();
+    await assert.rejects(() => registerUspJobInputTx(client, input.jobId, scope, f.sourceId, fingerprint(input)),
+      (error: any) => error.code === 'STREAMING_INPUT_SCOPE');
+  }
+}));
 
 test('CSV receipt accepts exact public dev bytes; no-header, oversize and non-dev sources are explicit refusals', () =>
   controls(async () => {

@@ -68,7 +68,7 @@ export type MappingReceipt = z.infer<typeof MappingReceiptSchema>;
 export type SourceProfile = z.infer<typeof SourceProfileSchema>;
 export type MappingDestination = z.infer<typeof MappingDestinationSchema>;
 
-export const TABULAR_LIMITS = Object.freeze({ bytes: 16 * 1024 * 1024, rows: 2000, columns: 256 });
+export const TABULAR_LIMITS = Object.freeze({ bytes: 16 * 1024 * 1024, rows: 2000, columns: 256, chunkRows: 16 });
 export const TabularSelectionSchema = z.strictObject({
   format: z.enum(['csv', 'xlsx']), sheet: z.string().min(1).max(150), table: z.null(),
   headerRows: z.array(z.number().int().min(1).max(2000)).min(1).max(5),

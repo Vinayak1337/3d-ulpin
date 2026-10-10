@@ -6,7 +6,7 @@ import {z} from 'zod';
 import {CHUNK_MAPPING_LIMITS as limits,ChunkMappingRequestSchema,ChunkMappingInputSchema,
   ChunkMappingStatusSchema,ChunkMappingSlotSchema,ChunkMappingPayloadSchema,ChunkMappingChunkResponseSchema,
   MappingReceiptSchema,MappingPlanSchema,StreamedMappingReceiptSchema,AnyStreamedMappingPlanSchema,
-  AnyStreamingInputSchema as StreamingVectorInputSchema,TabularMappingReceiptSchema,
+  AnyStreamingInputSchema,TabularMappingReceiptSchema,
   type ChunkMappingInput,type SourceProfile,type TabularSourceProfile,
   type StreamedProfileGeneration} from '@ulpin/contracts/usp';
 import {transaction} from '../../../infrastructure/db';
@@ -51,7 +51,7 @@ export const chunkMappingConverterSha=()=>fingerprint(converterFiles.map(path=>(
 async function rawContextTx(client:PoolClient,rawJobId:string){
   const prior=(await client.query("SELECT payload FROM jobs WHERE id=$1 AND operation='streaming-vector'",[rawJobId])).rows[0]
     ??notFound('Source streaming job not found.');
-  const raw=StreamingVectorInputSchema.parse(prior.payload),ctx=await assertStreamingInputTx(client,raw);
+  const raw=AnyStreamingInputSchema.parse(prior.payload),ctx=await assertStreamingInputTx(client,raw);
   const job=(await client.query("SELECT payload,input_fingerprint FROM jobs WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='streaming-vector' FOR SHARE",
     [rawJobId,raw.caseId,raw.sourceId])).rows[0]??notFound('Source streaming job not found.');
   if(job.input_fingerprint!==fingerprint(raw)||fingerprint(job.payload)!==fingerprint(raw))
