@@ -97,31 +97,46 @@ literal labels only, never a unit boundary, numeric level, measurements, rights 
 
 ## Changing the document interpreter
 
-Runtime owner only, after lead review of `docs/evidence/gf1/k9/result.json`; no switch was made by K9.
+Runtime owner only, after lead review of `docs/evidence/gf1/k9/result.json` and `docs/evidence/gf1/k9c/result.json`.
+No switch was made by K9, K9b or K9c: the workers ran both actions only as dry runs on synthetic copies.
 The project-owned environment is `E:/BhuAayam-data/ml/venv-demo-documents-20261010`.
 Its `pyvenv.cfg` binds the full `base/cpython-3.12.14-windows-x86_64-none` directory, not uv's patch alias.
 The new environment/base deny ordinary writes; retain that ACL and rebuild deliberately after any owner change.
 
 K3b's `docs/evidence/gf-t16/k3b/activate-demo.mjs` created the demo-only `ocr-paths-profile.json` override.
-It is create-once and cannot update an existing override. **Never edit a runtime file by hand.** The scripted
-switch remains blocked in K9b: the read-only `readDemoOcrPaths()` has no directory/file argument, and its override
-path is private. A reviewed extension of that shared reader is needed before an offline switch can reuse its
-validation without touching the runtime folder or adding a second parser. See `docs/evidence/gf1/k9b/result.json`.
+It is create-once and cannot update an existing override. **Never edit a runtime file by hand.** The interpreter
+in that override is changed only by the builder's `switch-ocr-python` action. It reads the override through
+`readDemoOcrPaths`, the reader the runtime itself uses, and never creates one.
 Do not edit `demo.env`, the original OCR path file, model weights, tessdata or any existing environment.
 
-The intended command is `node scripts/platform/demo-document-runtime.mjs switch-ocr-python --python "$PYTHON"`;
-**it is not implemented or runnable yet.** It must save the previous override, atomically change only the Python
-path and print one JSON line with previous/new interpreter paths, the backup filename and old/new file hashes.
-After that action is implemented and reviewed, run it after roll-out steps 2–4 (native processes stopped,
-reviewed checkout selected), then run the existing step 5 from the demo checkout:
+**The switch (forward).** After roll-out steps 2–4 (native processes stopped, reviewed checkout selected) and
+before step 5, from the demo checkout; then step 5 with the same interpreter:
 
 ```sh
 PYTHON='E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe'
+node scripts/platform/demo-document-runtime.mjs switch-ocr-python --python "$PYTHON"
 node scripts/platform/demo-document-runtime.mjs build --python "$PYTHON"
 ```
 
-The explicit builder option changes pages/regions, **not OCR**; omitting the scripted switch leaves OCR on the old base.
-The existing build prints configured key names, the profile hash and the document-runtime path-file hash.
+The switch refuses, and writes nothing, unless all of these hold:
+
+- the override exists and the shared reader accepts it as demo-scoped;
+- `--python` is an absolute path to an existing file;
+- the `pyvenv.cfg` of its environment names one base **inside** that environment. A base outside it is refused
+  and named in the message; no flag relaxes this rule;
+- started with `-I -B` and `CUDA_VISIBLE_DEVICES` empty, the interpreter imports what the OCR and region steps
+  import (`fitz`, `psutil`, `pypdfium2`, `pypdfium2_raw`, `PIL.Image` and the four `docling` modules) within
+  180 seconds. Only imports run; no model is loaded.
+
+It then saves the current file beside it as `ocr-paths-profile.previous-<UTC>.json` and replaces the override by
+one rename, with only `paths.ULPIN_DOCUMENT_OCR_PYTHON` changed and every other byte as it was. It must print one
+JSON line and nothing else: `restored: false`, `previousPython`, `newPython` (equal to `$PYTHON`),
+`baseInsideEnvironment: true`, `savedPreviousFile`, `previousSha256` and `newSha256`. Keep that line in the owner's
+receipt: `savedPreviousFile` is what a rollback needs.
+
+The build's `--python` changes pages/regions, **not OCR**; omitting the switch leaves OCR on the old base. The build
+now runs the same import check first, then prints the configured key names, the profile hash and the
+document-runtime path-file hash, as before.
 Continue steps 6–7: `pnpm platform:start --profile demo`, then `pnpm platform:doctor --profile demo`.
 Require PASS Document runtimes. Read the new profile's `repo`, `python`, `base` and pinned paths: its repo must be
 `E:/Projects/ulpin-wt/demo`, its interpreter/base must be the new environment, and every pin must be under that
@@ -132,10 +147,31 @@ it starts ten interpreters and repeats the same doctor profile check. Never reus
 Also check OCR once with the existing complete demo prefix; K9's no-runtime comparison used the retained split
 prefix plus an absolute, hash-checked TSV config, not a copy of or a read from the demo's tessdata.
 
-Intended rollback, once the action exists: stop the recorded native processes, run the same `switch-ocr-python`
-command with the saved previous interpreter path, rebuild at step 5 with that interpreter, then start and doctor.
-There is a prerequisite: K9's previous environment has an external Codex base, so the required private-base
-validation would refuse that rollback. The lead must approve a private-base rollback environment or explicitly
-define a reviewed rollback policy; K9b adds no bypass. Rebuild rather than restoring a historical profile: its
-repo/base bytes may have changed. K9's image check accepts the new hook sources without changing the reviewed table,
-but historical image bindings have different interpreter/decoder pins and require a separately reviewed binding.
+**The rollback (restore).** Stop the recorded native processes (step 2), then restore the saved file and rebuild.
+Without `--python`, the build takes the interpreter the restored override names:
+
+```sh
+node scripts/platform/demo-document-runtime.mjs switch-ocr-python --restore "$SAVED_PREVIOUS_FILE"
+node scripts/platform/demo-document-runtime.mjs build
+```
+
+`--restore` takes a file name only, never a path: `ocr-paths-profile.previous-<UTC>.json`, in the override's own
+folder. The saved file must pass the same reader (demo-scoped, its interpreter and four other paths present). The
+action saves the current override first, exactly as the switch does, then publishes the saved file's bytes by one
+rename. It does **not** apply the private-base rule, because what it restores is what ran before, and it says so
+in its one JSON line: `restored: true`, `previousPython`, `newPython` (the interpreter configured again),
+`baseInsideEnvironment` (`true`, `false`, or `null` when no `pyvenv.cfg` can be read), `savedPreviousFile` (the
+file just saved, which restores the state before this rollback), `previousSha256` and `newSha256`. `newSha256`
+must equal the `previousSha256` the switch printed. For K9's previous environment expect
+`baseInsideEnvironment: false`: its base belongs to another application, so the known cause of a later FAIL above
+applies again until the next switch. Then start and doctor (steps 6–7). Rebuild rather than restoring a historical
+profile: its repo/base bytes may have changed. K9's image check accepts the new hook sources without changing the
+reviewed table, but historical image bindings have different interpreter/decoder pins and require a separately
+reviewed binding.
+
+Neither action deletes anything. Saved `previous-` files accumulate beside the override. If the rename itself
+fails, the override is unchanged and an inert `ocr-paths-profile.json.pending-<id>` file stays beside it.
+Like the build, both actions refuse outside `E:/Projects/ulpin-wt/demo` or while a recorded native process runs.
+Elsewhere they run only with `--dry-run --out <absolute temporary folder>`, on an override already placed in that
+folder with its scratch inside it. A copy of the real override does not validate there, because its scratch
+belongs to the runtime folder; the rehearsal on a synthetic override is `docs/evidence/gf1/k9c/rehearsal.mjs`.
