@@ -4,7 +4,16 @@
   "base": "a330332fb5080a73ea5609611949f6c698323e99",
   "scope": "offline environment ownership; no runtime/configuration/API/DB access",
   "artifactsRoot": "E:/BhuAayam-data/task-data/k9",
-  "status": "step1_complete_offline_qualification_in_progress",
+  "status": "offline_core_complete_with_test_resolution_gaps",
+  "completeRuntimeGatePass": false,
+  "liveSwitchPerformed": false,
+  "report": [
+    "TASK   K9 — project-owned document interpreter            GATE GF1 / GF5",
+    "WORKS  Private CPython 3.12.14 serves identical renders/crops/64-line OCR and survives ten starts.",
+    "SEE IT Run stability.mjs with the retained new-profile-2 paths and a fresh output JSON.",
+    "INPUTS Tower 3 plan1 page 1 / UNIT-3B crop; difficult K2f site-plan page 1 OCR selection.",
+    "GAPS   No live switch; historical image fixture stays on old pins; five forbidden .env checks excluded."
+  ],
   "step0": {
     "environment": {
       "locatedBy": "folder named in retained K4d/K2b evidence; direct directory listing outside runtime",
@@ -43,7 +52,10 @@
         "offlineTessdata": "E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/tesseract/share/tessdata",
         "offlineEngSha256": "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2",
         "offlineHinSha256": "4c73ffc59d497c186b19d1e90f5d721d678ea6b2e277b719bee4e2af12271825",
-        "offlinePrefixNote": "retained complete prefix; eng/hin equal K2f pins, OSD present; no copies required",
+        "offlinePrefixNote": [
+          "eng/hin equal K2f pins and OSD is present, but Step 2 found configs in the separate Library prefix.",
+          "The initial assumption that this retained prefix alone was complete was wrong; see Step 2's repair."
+        ],
         "models": "E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/models"
       },
       "regionPackageRootsFromBuildProfile": [
@@ -180,7 +192,7 @@
       "recordHashesEqual": "52/77; changed RECORDs retained in private new-distributions.json"
     },
     "cacheDecision": {
-      "stdlibCaches": "159 pinned caches shipped in uv base; retained and frozen rather than deleted",
+      "stdlibCaches": "159 pinned caches present in private uv base; retained and frozen rather than deleted",
       "hookCacheDirectories": {"_virtualenv": false, "_distutils_hack": false, "pywin32_bootstrap": false},
       "writeDenied": "owned environment/base only; current-account inherited WD,AD,WEA,WA ACL",
       "readAndExecuteAllowed": true,
@@ -197,13 +209,209 @@
       "stopCondition": "another ACL/read failure would stop environment qualification"
     }
   },
+  "step2": {
+    "dryRun": {
+      "oldExit": 0,
+      "newExit": 0,
+      "oldProfileSha256": "6ae940f58d69683d26a9026b5721cc59997abdfb02d8a8e8ea923f5dd4716030",
+      "newProfileSha256": "d7898442d86640268b9c5dba6d9dfd1ddd7158b6f11b9310456a67a4b1dc9489",
+      "pinnedFiles": 1175,
+      "pinnedBytes": 110696811,
+      "classes": "environment.json frozenProfile.classes",
+      "pinnedOutsideMlAndWorktree": 0,
+      "paths": "E:/BhuAayam-data/task-data/k9/new-profile-2/document-runtime-paths.json"
+    },
+    "stability": {
+      "exit": 0,
+      "starts": 10,
+      "startExits": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      "sameProfileDoctorPass": true,
+      "sameProfileAfterOcrPass": true,
+      "hookCachesAfterAllProbes": false,
+      "script": "stability.mjs",
+      "receipt": "stability.json",
+      "startupPolicy": [
+        "Step 2 starts have no -B; required PYTHONDONTWRITEBYTECODE=1 protects initial startup.",
+        "Then sys.dont_write_bytecode=False enables ordinary cache writes and reloads all three hooks.",
+        "Stdlib/region packages import normally; inherited write denial prevents new or rewritten caches.",
+        "documentRuntimeReport checks the SAME profile before/after; all ten starts exit 0 with empty stderr."
+      ]
+    },
+    "good": {
+      "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429",
+      "path": "E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/haryana-2831-tower3-plan1.pdf",
+      "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "page": 1,
+      "regionPt": [596, 390, 644, 409],
+      "oldRenderExit": 0,
+      "newRenderExit": 0,
+      "pageMetadataEqual": true,
+      "productWholePageRaster": "unsupported on both; unchanged 2000-pt bound",
+      "preview": {
+        "scope": "bounded driver-only whole-page preview, not a newly supported product raster",
+        "pixels": [1293, 848],
+        "oldSha256": "de0436b086e1ea7f60255e2eae2b76bae7f8bed2628320f7e78605d628715030",
+        "newSha256": "de0436b086e1ea7f60255e2eae2b76bae7f8bed2628320f7e78605d628715030"
+      },
+      "region": {
+        "scope": "existing inspectPrivatePacketRegion, unchanged Windows Job/verified loader",
+        "oldExit": 0,
+        "newExit": 0,
+        "pixels": [144, 57],
+        "bytes": 5531,
+        "oldSha256": "da3e304dbe009ec92d9402f457c4f05066b2933898faa9661848160f7194b3b9",
+        "newSha256": "da3e304dbe009ec92d9402f457c4f05066b2933898faa9661848160f7194b3b9"
+      }
+    },
+    "difficult": {
+      "path": "E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/haryana-2831-site-plan.pdf",
+      "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+      "sourceNote": "K2f used this site-plan original, not the different plan1 original used for the label crop",
+      "page": 1,
+      "regionPt": [280, 860, 960, 2580],
+      "oldExit": 0,
+      "newExit": 0,
+      "oldLineCount": 64,
+      "newLineCount": 64,
+      "oldTextSha256": "c4453529d7805ccb914775da6c67d5a2fc4134b6ef502ced2beb20ab374c4cb9",
+      "newTextSha256": "c4453529d7805ccb914775da6c67d5a2fc4134b6ef502ced2beb20ab374c4cb9",
+      "textHashEncoding": "UTF-8 item.text joined with LF, without terminal LF",
+      "oldRenderSha256": "8e76472f7428807a58c98b694ad3ab1dc1005d9e6ab6c9a7fe722124c8477ec3",
+      "newRenderSha256": "8e76472f7428807a58c98b694ad3ab1dc1005d9e6ab6c9a7fe722124c8477ec3",
+      "oldResultSha256": "3d69916ebbb8a5a802a1996d7ca6582148a5a95015cacc78d709cce9e0e8b81e",
+      "newResultSha256": "3d69916ebbb8a5a802a1996d7ca6582148a5a95015cacc78d709cce9e0e8b81e",
+      "toolStatus": "complete",
+      "outputStatus": "partial",
+      "limitation": "item_limit_reached; observations are not verified facts or complete transcription",
+      "receipt": "ocr-config-parity.json",
+      "scope": "existing source OCR reader/Docling/Tesseract; retained split assets, no demo prefix access"
+    },
+    "ocrFailureRecovery": {
+      "baseline": "old-ocr/new-ocr: both exit 1, KeyError text, 0 lines; same failure result and render hashes",
+      "locatedCause": [
+        "Retained share/tessdata contains eng/hin/OSD but not configs/tsv.",
+        "Library/share/tessdata contains configs/tsv but not OSD; K2f's complete runtime copy is closed.",
+        "This is the K2f failure class, not an interpreter/package-version difference."
+      ],
+      "priorRecipe": [
+        "K2f complete-prefix.py/prefix.json retains the exact config bytes; native --help admits CONFIGFILE"
+      ],
+      "linkOnlySetup": "file symlink EPERM; empty tessdata-linked folder retained, no copied or changed assets",
+      "hypothesis": "an absolute retained TSV config selects the same bytes as K2f without copying tessdata",
+      "changedVariable": "only Tesseract's final tsv argument becomes the absolute retained configs/tsv path",
+      "configShaChecked": "against K2f prefix.json configs/tsv; same on old and new",
+      "driverScope": [
+        "Local SafePopen subclass adds required -B/CPU/no-bytecode flags and optional absolute config.",
+        "For this comparison only, run_trial's in-memory gate enters the wrapper, then the unchanged OCR worker.",
+        "Job attachment, timeout/memory bounds, runner/package/source/model/config bytes remain unchanged.",
+        "No application source or hook table was edited; no production runtime switch is claimed."
+      ],
+      "setupFaults": [
+        "old-ocr-config: runpy changed argv[0]; assertion stopped before OCR, exit 1, 0.265 seconds",
+        "old-ocr-config-2: function Popen cannot be subclassed by asyncio; stopped before OCR, exit 1",
+        "Repaired argv restoration and kept Popen a class. These were harness faults, not model comparisons."
+      ],
+      "comparison": "old/new-ocr-config-3: one successful bounded OCR run each; exit 0 and identical 64-line outputs",
+      "successCriterion": "64 lines on both, identical PNG/text/result hashes",
+      "stopCondition": "no further OCR comparison after this completed pair; no tuning, data or version changes"
+    },
+    "outputDifferences": [],
+    "originalHashesUnchangedAfterAllProcessing": true,
+    "imageCheckpoint": {
+      "unchangedReviewedHooksAcceptNewEnvironment": true,
+      "newFileOnlyInspectAndRecipeExit": 0,
+      "probe": "image-probe.ts; private image-probe.json",
+      "newEnvTests": {"exit": 1, "passed": 7, "failed": 1, "log": "image-tests-new-env.log"},
+      "whyTestDoesNotSelectNew": [
+        "The retained-current-runtime case hard-codes desktop-ai04f and then sets its own image interpreter.",
+        "ULPIN_DOCUMENT_IMAGES_PYTHON/ULPIN_DOCUMENT_OCR_PYTHON cannot override that test local constant.",
+        "Lead must separate fresh-runtime resolution from historical binding equality; no test/table edited here."
+      ],
+      "historicalBindingReusable": false,
+      "historicalDifferences": [
+        {
+          "field": "pythonSha256",
+          "old": "372c2eae555b344520bf147be0096e009069aeca4e7f78d6aecea6d53158056a",
+          "new": "1a967738a234a3bd90e8fa8b925e20a994326e1eb8b74913026a9449a933e6db"
+        },
+        {
+          "field": "launcherSha256",
+          "old": "2204195cec25879507d958a8b6949add67091244b8b4da9cf3672f993548fa49",
+          "new": "3b5cc4150dc98800ee46b09034187bb2d8ba3c8ea3368d3a46e9bb42876b58db"
+        },
+        {
+          "field": "imagingSha256",
+          "old": "2e62b249f2f10405ca9338240d5a8bd00e839031057352461e3e7c95d9c1e488",
+          "new": "c8c519ec72bf75b2945b4fc4afa854af2fca8b970a403134f9ddda3e164d85e9"
+        }
+      ]
+    },
+    "checks": {
+      "platformRequiredCommand": {
+        "exit": 1,
+        "passed": 14,
+        "failed": 5,
+        "skipped": 2,
+        "python": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe",
+        "why": "strict no-.env guard refuses five synthetic demo.env fixture readers; runtime-junction case skipped",
+        "log": "platform-tests.log"
+      },
+      "platformPermissionCompatibleSubset": {"exit": 0, "passed": 14, "skipped": 7},
+      "documentTestsOld": {"exit": 0, "passed": 18, "skipped": 2},
+      "documentTestsNew": {"exit": 0, "passed": 18, "skipped": 2},
+      "nativeRegressionSkips": "optional packet-region fixture setup not supplied; real native parity ran separately",
+      "imageTestsOld": {"exit": 1, "passed": 7, "failed": 1},
+      "imageTestsNew": {"exit": 1, "passed": 7, "failed": 1},
+      "profileAfterAllProbes": 0,
+      "syntax": 0,
+      "diffCheck": 0,
+      "newLinesOver120": 0
+    },
+    "temporaryFoldersRoot": "E:/BhuAayam-data/task-data/k9",
+    "temporaryFolders": [
+      {"folder": "introduced-test", "bytes": 193639085},
+      {"folder": "new-ocr", "bytes": 670217},
+      {"folder": "new-ocr-config-3", "bytes": 688057},
+      {"folder": "new-profile-1", "bytes": 0},
+      {"folder": "new-profile-2", "bytes": 1921384},
+      {"folder": "new-region", "bytes": 7814},
+      {"folder": "new-render", "bytes": 873033},
+      {"folder": "old-ocr", "bytes": 670353},
+      {"folder": "old-ocr-config", "bytes": 3311},
+      {"folder": "old-ocr-config-2", "bytes": 668708},
+      {"folder": "old-ocr-config-3", "bytes": 688058},
+      {"folder": "old-profile-1", "bytes": 1948099},
+      {"folder": "old-region", "bytes": 7814},
+      {"folder": "old-render", "bytes": 873033},
+      {"folder": "step0", "bytes": 316970},
+      {"folder": "tessdata-linked", "bytes": 0},
+      {"folder": "test-temp", "bytes": 5552148},
+      {"folder": "uv-cache", "bytes": 972078937}
+    ],
+    "folderInventoryReceipt": "temporary-folders-final.json; file counts and bytes; junction targets excluded",
+    "remainingWriters": [
+      "Project owner/admin can remove the write-deny ACE, replace/delete files or target this install explicitly.",
+      "An explicitly targeted uv/pip operation after unfreezing requires a deliberate profile rebuild.",
+      "Repo updates still change nine pinned files and require the existing roll-out rebuild.",
+      "Model/tessdata/native tools retain their existing owners; no copies or integrity exemptions were introduced.",
+      "Codex updates/shared uv patch-alias changes cannot replace this private full-version base."
+    ]
+  },
   "safety": {
     "runtimeAccess": false,
     "envOrCredentialsRead": false,
     "gpuUse": false,
     "providerCalls": 0,
     "existingEnvironmentsModified": false,
-    "deletedFiles": 0,
-    "harness": "k9/safety.cjs blocks protected filesystem reads, retains fixtures and forces CPU/no-bytecode children"
+    "explicitDeletionCommands": 0,
+    "testCleanupRetained": true,
+    "syntheticEnvFixtureWrites": [
+      "First platform command created five fake demo.env fixtures in owned k9/test-temp before reads were blocked.",
+      "No actual configuration/credential file was opened or changed; these synthetic files remain retained.",
+      "The final harness also blocks .env writes; the permission-compatible run excluded those five tests."
+    ],
+    "harness": [
+      "safety.cjs blocks protected filesystem reads/writes, retains fixtures and forces CPU/no-bytecode children"
+    ]
   }
 }

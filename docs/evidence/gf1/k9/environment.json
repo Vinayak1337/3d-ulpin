@@ -258,7 +258,7 @@
     "outsideMlAndWorktree": 0
   },
   "cachePolicy": {
-    "baseCaches": "159 pinned standard-library caches shipped with the uv base; retained, not deleted",
+    "baseCaches": "159 pinned standard-library caches present in the private uv base; retained, not deleted",
     "hookCaches": "absent; read-only directory inheritance prevents creation",
     "writeDenial": "current account: inherited WD,AD,WEA,WA; synchronize/read/execute remain allowed",
     "ordinaryStartsCannotReplacePinnedBytes": true,
