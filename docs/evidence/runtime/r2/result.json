@@ -1,0 +1,72 @@
+{
+  "task": "R2",
+  "gates": ["GF1", "GF4"],
+  "artifactsRoot": "E:/BhuAayam-data/task-data/r2",
+  "api": "http://127.0.0.1:3194/api/v1",
+  "step1": {
+    "result": "done",
+    "before": {
+      "commit": "4d03be3f2e64e8f109d2b74461f5132f696b9699",
+      "doctorExit": 0,
+      "apiPid": 7492,
+      "dispatcherPid": 22052
+    },
+    "target": {
+      "commit": "9aad8da2e51e43dee279539a24efb0d0db645b45",
+      "selection": "lead checkout staging at rollout time; contains 358baf0f",
+      "lockfileChangedSince4d03be3f": false,
+      "install": "not needed"
+    },
+    "procedure": {
+      "stopExit": 0,
+      "checkoutExit": 0,
+      "documentBuildExit": 0,
+      "startExit": 0,
+      "doctorExit": 0,
+      "containersStoppedOrReplaced": false,
+      "create": false
+    },
+    "after": {
+      "commit": "9aad8da2e51e43dee279539a24efb0d0db645b45",
+      "checkoutClean": true,
+      "api": {
+        "pid": 25080,
+        "entry": "E:/Projects/ulpin-wt/demo/apps/api/src/main.ts",
+        "started": "2026-10-10T12:26:03.836Z"
+      },
+      "dispatcher": {
+        "pid": 14424,
+        "entry": "E:/Projects/ulpin-wt/demo/scripts/dispatcher.ts",
+        "started": "2026-10-10T12:26:04.558Z"
+      },
+      "documentRuntimes": "PASS",
+      "regionProfileSha256": "9aac1f12cd252e1c09e0fc417bd0483a241ba4a22cfd6bcc69729ce97ff0492d",
+      "gatewayEnabled": false
+    },
+    "probes": {
+      "pagesHttp": 200,
+      "expectedFramePt": [2586, 1695],
+      "observedFramePt": [2586, 1695],
+      "fullPageRaster": "unsupported",
+      "canonicalHttp": 200,
+      "canonicalRevision": "d42ba09ec8a11411d11ca2cff2a794304824509c80b926181990575d81555981",
+      "schedule": "conflicting",
+      "alternatives": ["G+41", "G+42"],
+      "recordedFloors": 0,
+      "recordedUnits": 0
+    },
+    "automaticDispatch": "R1 existing successful job receipts reused; no new job submitted"
+  },
+  "step2": {"result": "pending"},
+  "step3": {"result": "pending"},
+  "invariants": {
+    "before": {
+      "registry": 2, "areas": 4, "sites": 4, "importPackages": 7,
+      "cases": 11, "sources": 38, "physicalFeatures": 67, "learnerVersion": "v44"
+    },
+    "learnerVersionSource": "R1 last-job retained chunk metrics, same read authority as R1; no learning operation",
+    "after": null,
+    "changed": []
+  },
+  "checks": {"driverTypecheck": 0, "doctorAfterRollout": 0, "fullRuntimeGatePassed": false}
+}
