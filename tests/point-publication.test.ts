@@ -126,11 +126,18 @@ test('controlled native reply and immutable replay publish through canonical fen
     original:{path:originalPath,bytes:f.original.length,sha256:sha256(f.original)},historicalArtifactReproduced:false});
 }));
 
+test('revision-only receipts before claim and during execution keep the queued point input',{skip:!present},()=>isolated(async f=>{
+  const enrolled=fingerprint(f.input);f.current.revision++;
+  f.setAfterRead(()=>{f.current.revision++;});await run(f);
+  assert.equal(f.job.status,'succeeded');assert.equal(fingerprint(f.input),enrolled);
+  assert.equal(f.job.case_revision,f.input.caseRevision);assert.equal(f.attempts[0].state,'accepted');
+}));
+
 test('preflight never waives final source, cancellation or newer-attempt authority',{skip:!present},async()=>{
   const outcomes=[];
   for(const mode of ['stale','revoked','cancelled','paused','newer','enrollment'] as const)await isolated(async f=>{
     f.setAfterRead(key=>{if(!key.endsWith('.bin'))return;
-      if(mode==='stale')f.current.revision++;
+      if(mode==='stale')f.current.context={changed:true} as any;
       if(mode==='revoked')f.current.archived=true;
       if(mode==='cancelled')f.meta.logical_state='cancelled';
       if(mode==='paused')f.meta.logical_state='paused';

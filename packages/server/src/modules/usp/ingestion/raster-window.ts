@@ -12,6 +12,7 @@ import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {originalAttempt} from '../../cases/original-attempt';
+import {compareSourcePins} from './source-pin';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
 import {readRasterObject,rasterReadDeadline,rasterReadLive} from './raster-window-object';
@@ -44,7 +45,7 @@ export function rasterInput(ctx:Awaited<ReturnType<typeof rasterSourceTx>>,jobId
 }
 export async function assertRasterInputTx(client:PoolClient,input:RasterWindowInput,lock=false){
   const ctx=await rasterSourceTx(client,input.caseId,input.sourceId,lock);
-  if(!ctx.latest||fingerprint(rasterInput(ctx,input.jobId,input.window))!==fingerprint(input))
+  if(!ctx.latest||!compareSourcePins(rasterInput(ctx,input.jobId,input.window),input).current)
     conflict('The raster original, case, reader or private access context changed. Retry under current pins.');
   return ctx;
 }
@@ -99,11 +100,11 @@ async function statusTx(client:PoolClient,caseId:string,sourceId:string,jobId:st
     WHERE j.id=$1 AND j.case_id=$2 AND j.source_id=$3 AND j.operation='raster-window' FOR SHARE OF j,m`,[jobId,caseId,sourceId])).rows[0]??notFound('Raster window job not found.');
   const input=RasterWindowInputSchema.parse(job.payload);
   assertRasterJobRow(job,input,job.status==='succeeded');
-  const stale=!ctx.latest||fingerprint(rasterInput(ctx,input.jobId,input.window))!==fingerprint(input),
+  const stale=!ctx.latest||!compareSourcePins(rasterInput(ctx,input.jobId,input.window),input).current,
     capture=fingerprint({input,status:job.status,error:job.error??null,inputManifestId:job.input_manifest_id,inputSha256:job.input_sha256,
       scope:job.scope,logicalState:job.logical_state,acceptedFence:job.accepted_fence,resultRef:job.result_ref,
       attemptState:job.attempt_state,attemptFence:job.attempt_fence,attemptInputSha256:job.attempt_input_sha256,
-      completionSha256:job.completion_sha256,currentCaseRevision:ctx.current.revision,sourceRevision:ctx.source.revision,
+      completionSha256:job.completion_sha256,sourceRevision:ctx.source.revision,
       sourceSha256:ctx.source.sha256,stale});
   return {ctx,job,input,stale,capture};
 }

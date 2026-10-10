@@ -122,7 +122,7 @@ test('queued/running/failed reader outage and stale status stay useful without o
     f.job.error=state==='failed'?'RASTER_PROCESSOR_UNAVAILABLE':null as any;
     const result=await status(c,f);assert.equal(result.status,state);assert.equal(result.code,f.job.error);assert.equal(result.result,null);assert.equal(c.reads.length,0);rows.push(result);
     await assert.rejects(()=>artifact(c,f),code('RASTER_NOT_ACCEPTED'));assert.equal(c.reads.length,0);}
-  const f=fixture(),c=control(f);f.current.revision++;const stale=await status(c,f);assert.equal(stale.status,'stale');assert.equal(stale.result,null);
+  const f=fixture(),c=control(f);f.current.context={changed:true} as any;const stale=await status(c,f);assert.equal(stale.status,'stale');assert.equal(stale.result,null);
   assert.equal(c.reads.length,0);save('pending-outage-control.json',{qualification:'memory SQL controls; no object/native calls',rows,stale});
 }));
 
