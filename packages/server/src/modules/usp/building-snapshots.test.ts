@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
-import test, { after } from 'node:test';
+import test, { after, mock } from 'node:test';
 import type { RequestContext } from '@ulpin/contracts/usp';
 import { transaction } from '../../infrastructure/db';
 import { AppError } from '../../infrastructure/errors';
@@ -19,11 +19,18 @@ type Values = readonly any[];
 type Stored = { id: string; scope_id: string; digest: string; body: any; created_at: Date };
 type Double = {
   snapshots: Stored[]; buildings: Map<string, string>; jobs: Map<string, object>; statements: string[];
+  began: Date;
 };
 const globals = globalThis as unknown as { ulpinPool?: unknown };
 const buildingId = retainedTower.buildingId;
 const siteId = retainedTower.areaId;
 const digest = 'e'.repeat(64);
+// The pair one assignment stored on the demo (docs/evidence/runtime/r4): one store time, two capture times.
+const R4 = {
+  createdAt: '2026-10-10T13:48:45.076Z',
+  beforeCommit: { id: '109e73b3-4759-48de-a852-0f0a3308ccac', capturedAt: '2026-10-10T13:48:45.255Z' },
+  afterCommit: { id: 'a9fd4c9d-0a5a-4f4d-9032-527ab7857b78', capturedAt: '2026-10-10T13:48:45.428Z' },
+};
 
 /** jsonb `left @> right` for objects, arrays and scalars: the containment the page statement asks for. */
 function contains(left: unknown, right: unknown): boolean {
@@ -36,13 +43,25 @@ function contains(left: unknown, right: unknown): boolean {
   return Object.entries(right).every(([key, wanted]) => key in held && contains(held[key], wanted));
 }
 
+/** The order of the page statement: capture time as text, descending, a missing one last; then the row's
+ * store time and id, descending. */
+function newestFirst(a: Stored, b: Stored) {
+  const [left, right] = [a.body.capturedAt, b.body.capturedAt];
+  if (left !== right) {
+    if (left === undefined) return 1;
+    if (right === undefined) return -1;
+    return left < right ? 1 : -1;
+  }
+  return b.created_at.getTime() - a.created_at.getTime() || (a.id < b.id ? 1 : -1);
+}
+
 /** The page statement of building-snapshots.ts over the rows this double recorded. */
 function page(double: Double, values: Values) {
   const [scopeId, accessViewId, policyVersion, member, limit] = values;
   return double.snapshots
     .filter(row => row.scope_id === scopeId && row.body.accessViewId === accessViewId
       && row.body.policyVersion === policyVersion && contains(row.body.members, JSON.parse(member)))
-    .sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
+    .sort(newestFirst)
     .slice(0, limit)
     .map(row => ({ ...row, body: structuredClone(row.body) }));
 }
@@ -60,33 +79,53 @@ function answer(double: Double, sql: string, values: Values): unknown[] | undefi
   return undefined;
 }
 
-/** Keeps what the snapshot insert writes besides its body; rows are created one second apart, in order. */
+/** Keeps what the snapshot insert writes besides its body. As with now(), every row of one transaction gets
+ * the time at which that transaction began. */
 function remember(double: Double, sql: string, values: Values) {
+  if (sql.startsWith('BEGIN')) double.began = new Date();
   if (!sql.startsWith('INSERT INTO usp_snapshots')) return;
   const [id, scope_id, snapshotDigest, body] = values;
-  const created_at = new Date(Date.UTC(2026, 9, 10, 12, 0, double.snapshots.length));
-  double.snapshots.push({ id, scope_id, digest: snapshotDigest, body: structuredClone(body), created_at });
+  double.snapshots.push({ id, scope_id, digest: snapshotDigest, body: structuredClone(body),
+    created_at: double.began });
 }
 
-/** One scenario on the snapshot protocol double with the two statements of the listing added to it. */
-function withListing(work: (f: SourceFixture, double: Double) => Promise<void>) {
-  return control(async f => {
-    const double: Double = { snapshots: [], buildings: new Map([[buildingId, siteId]]), jobs: new Map(),
-      statements: [] };
-    const query = async (text: string, values: any[] = []) => {
-      const sql = text.replace(/\s+/g, ' ').trim();
-      double.statements.push(sql);
-      remember(double, sql, values);
-      const rows = answer(double, sql, values);
-      return rows ? { rows, rowCount: rows.length } : f.memory.query(text, values);
-    };
-    globals.ulpinPool = { connect: async () => ({ query, release() {} }), query };
-    await work(f, double);
-  });
+/**
+ * One scenario on the snapshot protocol double with the two statements of the listing added to it. The clock
+ * is the double's own and every statement takes one millisecond of it, so two captures never share a capture
+ * time by accident and an assignment's two snapshots are told apart as they are on PostgreSQL.
+ */
+async function withListing(work: (f: SourceFixture, double: Double) => Promise<void>) {
+  mock.timers.enable({ apis: ['Date'], now: Date.parse('2026-10-10T12:00:00.000Z') });
+  try {
+    await control(async f => {
+      const double: Double = { snapshots: [], buildings: new Map([[buildingId, siteId]]), jobs: new Map(),
+        statements: [], began: new Date() };
+      const query = async (text: string, values: any[] = []) => {
+        const sql = text.replace(/\s+/g, ' ').trim();
+        mock.timers.tick(1);
+        double.statements.push(sql);
+        remember(double, sql, values);
+        const rows = answer(double, sql, values);
+        return rows ? { rows, rowCount: rows.length } : f.memory.query(text, values);
+      };
+      globals.ulpinPool = { connect: async () => ({ query, release() {} }), query };
+      await work(f, double);
+    });
+  } finally {
+    mock.timers.reset();
+  }
 }
 
 const list = (f: SourceFixture, limit?: number) => listBuildingSnapshots(f.ctx, { buildingId, limit });
 const storedScopes = (rows: Stored[]) => rows.map(row => JSON.stringify(row.body.scope));
+
+/** Rewrites what a stored row says about itself: its id, with the scope that names it, and its two times. */
+function restamp(row: Stored, stamp: { id: string; capturedAt: string }, createdAt: string) {
+  row.id = stamp.id;
+  row.created_at = new Date(createdAt);
+  Object.assign(row.body, stamp);
+  row.body.scope.manifestId = stamp.id;
+}
 
 /** The fixture's capture under another caller context. */
 function captureAs(f: SourceFixture, ctx: RequestContext) {
@@ -122,7 +161,7 @@ async function refusal(read: () => Promise<unknown>) {
   }
 }
 
-// Rows of docs/evidence/gf1/k8/result.json. Written only when K8_EVIDENCE_FILE is set.
+// Rows of the evidence files under docs/evidence/gf1/k8 and k8b. Written only when K8_EVIDENCE_FILE is set.
 const observations: object[] = [];
 function observe(condition: string, expected: string, observed: object) {
   observations.push({ condition, expected, observed });
@@ -143,14 +182,16 @@ test('two snapshots of one site are listed newest first, each with the scope its
     assert.deepEqual(result.items.map(item => item.scope.manifestId), [newer.id, older.id]);
     assert.deepEqual(result.items.map(item => JSON.stringify(item.scope)),
       storedScopes([...double.snapshots].reverse()));
+    assert.deepEqual(result.items.map(item => item.capturedAt), [newer.capturedAt, older.capturedAt]);
     assert.deepEqual(result.items.map(item => item.createdAt),
-      ['2026-10-10T12:00:01.000Z', '2026-10-10T12:00:00.000Z']);
+      [...double.snapshots].reverse().map(row => row.created_at.toISOString()));
     assert.deepEqual(result.items[0].members, { total: newer.members.length, documentResultNotCurrent: 0 });
     assert.deepEqual({ ...result, items: [] },
       { buildingId, siteId, items: [], truncated: false, unreadable: 0 });
     assert.equal(issued.length, 2);
     assert.match(issued[1], /scope_id=\$1 AND body->>'accessViewId'=\$2 AND body->>'policyVersion'=\$3/);
-    assert.match(issued[1], /body->'members' @> \$4::jsonb ORDER BY created_at DESC,id DESC LIMIT \$5$/);
+    assert.match(issued[1], /body->'members' @> \$4::jsonb ORDER BY \(body->>'capturedAt'\) COLLATE "C" DESC/);
+    assert.match(issued[1], / COLLATE "C" DESC NULLS LAST,created_at DESC,id DESC LIMIT \$5$/);
     assert(!issued.some(sql => /^(INSERT|UPDATE|DELETE)/.test(sql)));
     observe('two snapshots of the tower site', 'both listed newest first; scopes equal the stored manifests byte '
       + 'for byte; two statements, no write', { status: 200, items: result.items.length, statements: issued.length,
@@ -269,19 +310,94 @@ test('a stored body that is not the manifest of its own row is counted, not list
       thenUnreadable: none.unreadable, items: none.items.length });
   }));
 
-test('a listed scope is accepted unchanged by the identity resolve read and the card list',
+test('two snapshots of one transaction are listed later capture first, whichever id is higher (the R4 pair)',
+  () => withListing(async (f, double) => {
+    await f.capture();
+    await f.capture();
+    const [first, second] = double.snapshots;
+    const order = async (limit?: number) => (await list(f, limit)).items.map(item => item.scope.manifestId);
+
+    restamp(first, R4.beforeCommit, R4.createdAt);
+    restamp(second, R4.afterCommit, R4.createdAt);
+    const asStored = await list(f);
+    assert.deepEqual(asStored.items.map(item => item.capturedAt),
+      [R4.afterCommit.capturedAt, R4.beforeCommit.capturedAt]);
+    assert.deepEqual(asStored.items.map(item => item.createdAt), [R4.createdAt, R4.createdAt]);
+    assert.deepEqual(await order(), [R4.afterCommit.id, R4.beforeCommit.id]);
+    assert.deepEqual(await order(1), [R4.afterCommit.id]);
+
+    // The same two captures with their ids exchanged: the later capture now has the lower id.
+    restamp(first, { ...R4.beforeCommit, id: R4.afterCommit.id }, R4.createdAt);
+    restamp(second, { ...R4.afterCommit, id: R4.beforeCommit.id }, R4.createdAt);
+    const exchanged = await list(f, 1);
+    assert.deepEqual(await order(), [R4.beforeCommit.id, R4.afterCommit.id]);
+    assert.deepEqual(exchanged.items.map(item => item.scope.manifestId), [R4.beforeCommit.id]);
+    assert.equal(exchanged.items[0].capturedAt, R4.afterCommit.capturedAt);
+    assert.equal(exchanged.truncated, true);
+    observe('the R4 pair (one createdAt, capturedAt .255Z and .428Z), with its ids as stored and exchanged',
+      'the .428Z capture first in both, also at limit 1',
+      { firstAsStored: asStored.items[0].capturedAt, firstExchanged: exchanged.items[0].capturedAt,
+        limitOneTruncated: exchanged.truncated });
+  }));
+
+test('captures with one capture time follow the store time of their rows and then their ids',
+  () => withListing(async (f, double) => {
+    await f.capture();
+    await f.capture();
+    const [first, second] = double.snapshots;
+    const sameCapture = { capturedAt: R4.afterCommit.capturedAt };
+    const order = async () => (await list(f)).items.map(item => item.scope.manifestId);
+
+    restamp(first, { ...sameCapture, id: R4.afterCommit.id }, '2026-10-10T13:48:45.076Z');
+    restamp(second, { ...sameCapture, id: R4.beforeCommit.id }, '2026-10-10T13:48:45.077Z');
+    const byStoreTime = await order();
+    restamp(second, { ...sameCapture, id: R4.beforeCommit.id }, '2026-10-10T13:48:45.076Z');
+    const byId = await order();
+
+    assert.deepEqual(byStoreTime, [R4.beforeCommit.id, R4.afterCommit.id]);
+    assert.deepEqual(byId, [R4.afterCommit.id, R4.beforeCommit.id]);
+    observe('two rows with one capture time: store times a millisecond apart, then equal',
+      'the later store time first; with equal store times the higher id first, which states no recency',
+      { firstByStoreTime: byStoreTime[0], firstById: byId[0] });
+  }));
+
+test('a body without a capture time is ordered last and is never listed',
+  () => withListing(async (f, double) => {
+    const older = await f.capture();
+    await f.capture();
+    delete double.snapshots[1].body.capturedAt;
+    const one = await list(f, 1);
+    const all = await list(f);
+
+    assert.deepEqual(one.items.map(item => item.scope.manifestId), [older.id]);
+    assert.deepEqual([one.truncated, one.unreadable], [true, 0]);
+    assert.deepEqual(all.items.map(item => item.scope.manifestId), [older.id]);
+    assert.deepEqual([all.truncated, all.unreadable], [false, 1]);
+    observe('the later of two stored bodies has no capturedAt',
+      'it follows the other row: limit 1 answers the other row alone; the full page counts it in unreadable',
+      { limitOne: { items: one.items.length, truncated: one.truncated, unreadable: one.unreadable },
+        all: { items: all.items.length, truncated: all.truncated, unreadable: all.unreadable } });
+  }));
+
+test('after an assignment the first listed scope is the one its receipt returned, and the reads accept it',
   () => withListing(async f => {
     const { command } = await prepare(f);
     const receipt = await assignProjectCode(f.ctx, command);
     assert('outcome' in receipt);
     const code = (receipt.outcome as any).codes[f.recorded.spaceId];
-    const [{ scope }] = (await list(f)).items;
+    const [afterCommit, beforeCommit] = (await list(f)).items;
+    const { scope } = afterCommit;
 
+    assert.equal(afterCommit.createdAt, beforeCommit.createdAt);
+    assert(afterCommit.capturedAt > beforeCommit.capturedAt);
     assert.deepEqual(scope, receipt.snapshot);
     assert.equal((await resolveProjectIdentity(f.ctx, { scope, identifier: code })).projectCode, code);
     const target = { namespace: 'registry_record', id: f.recorded.spaceId };
     assert.deepEqual(await listPropertyCards(f.ctx, { scope, target }), { items: [], truncated: false });
-    observe('the newest listed scope after a code was assigned, passed on as returned',
-      'the identity resolve read answers the code; the card list answers an empty page (no card in the double)',
-      { resolve: 200, cardList: 200, cardItems: 0 });
+    observe('an assignment through assignProjectCode on the double: its two snapshots share createdAt',
+      'the first item is the scope of the receipt; the identity resolve read answers the code and the card list '
+      + 'an empty page (no card in the double)',
+      { sameCreatedAt: afterCommit.createdAt === beforeCommit.createdAt,
+        firstIsReceiptScope: scope.manifestId === receipt.snapshot.manifestId, resolve: 200, cardList: 200,
+        cardItems: 0 });
   }));
