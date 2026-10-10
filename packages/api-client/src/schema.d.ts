@@ -5738,6 +5738,14 @@ export interface components {
                 /** @enum {string} */
                 worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
                 subject?: string;
+                transcription?: {
+                    /** @enum {string} */
+                    by: "agent";
+                    agent: string;
+                } | {
+                    /** @enum {string} */
+                    by: "officer";
+                };
             }[];
             parts: {
                 /** Format: uuid */
@@ -6267,6 +6275,14 @@ export interface components {
                 /** @enum {string} */
                 worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
                 subject?: string;
+                transcription?: {
+                    /** @enum {string} */
+                    by: "agent";
+                    agent: string;
+                } | {
+                    /** @enum {string} */
+                    by: "officer";
+                };
             }[];
             parts: {
                 /** Format: uuid */
@@ -7179,6 +7195,14 @@ export interface components {
                     /** @enum {string} */
                     worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
                     subject?: string;
+                    transcription?: {
+                        /** @enum {string} */
+                        by: "agent";
+                        agent: string;
+                    } | {
+                        /** @enum {string} */
+                        by: "officer";
+                    };
                 }[];
                 parts: {
                     /** Format: uuid */

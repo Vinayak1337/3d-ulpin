@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { SourceBuildingImportSchema } from '@ulpin/contracts';
 import { importSourceBuildings } from './source-building-import';
-import { assertGeometryFreeFeatures, sourceBuildingFeature } from './source-building-values';
+import { assertGeometryFreeFeatures, sourceBuildingClaims, sourceBuildingFeature } from './source-building-values';
 import { sourceBuildingOriginalAccessTx } from './source-building-review';
 import { sourceAdministrativeContext } from './source-administrative-context';
 
@@ -26,6 +26,7 @@ const raw = {
     claims: truth.documentStatements.filter((statement: { kind: string }) => statement.kind === 'floor_expression')
       .map((statement: { value: string; citation: { page: number; locator: string; quote: string } }) => ({
         property: 'building.storeyLabel', value: statement.value, method: 'source_literal',
+        transcription: { by: 'agent', agent: 'D2-worker' },
         citations: [{ documentKey: 'sitePlan', page: statement.citation.page,
           locator: statement.citation.locator, quote: statement.citation.quote }],
       })) }],
@@ -48,6 +49,20 @@ test('real scanned Tower declaration admits null geometry and both literals with
   assert.equal(building.height.value, null);
   assert.equal(building.areaM2, null);
   assert.equal(building.placement, 'unknown');
+});
+
+test('agent transcriptions retain page citations but cannot masquerade as officer-entered source facts', () => {
+  const input = SourceBuildingImportSchema.parse(raw);
+  const pins = new Map([['sitePlan', {
+    sourceId: randomUUID(), sourceRevision: 1, sourceSha256: original.sha256,
+  }]]);
+  const claims = sourceBuildingClaims(input.buildings[0], randomUUID(), pins);
+  assert(claims.every(claim => claim.method === 'ai_extraction' && claim.evidenceState === 'unresolved'));
+  assert.equal(claims[0].evidence[0].page, 1);
+  assert.deepEqual(claims[0].transcription, { by: 'agent', agent: 'D2-worker' });
+  const missing = structuredClone(raw);
+  delete (missing.buildings[0].claims[0] as Partial<typeof missing.buildings[0]['claims'][0]>).transcription;
+  assert.equal(SourceBuildingImportSchema.safeParse(missing).success, false);
 });
 
 test('geometry-free mode cannot downgrade real geometry or fabricated placement into source-only review', () => {
