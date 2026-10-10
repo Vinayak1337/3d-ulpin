@@ -50098,6 +50098,7 @@ export interface components {
             };
         };
         POST_usp_property_cards_list_Request_application_json: {
+            /** @description Names the site whose cards are listed and is checked as on every USP read. It selects no row: the cards generated from every snapshot of that site are listed, and no field of a row is measured against this scope. */
             scope: {
                 /** @enum {string} */
                 kind: "snapshot";
@@ -50136,9 +50137,14 @@ export interface components {
                     revoked: boolean | null;
                     /** Format: date-time */
                     revokedAt: string | null;
+                    /** @description The revision of the target record that this card revision was generated from. */
                     targetRevision: number | null;
+                    /** @description The revision of the target record in the registry at the time of this read. It is not read from the scope of the request. */
                     currentTargetRevision: number | null;
-                    /** @enum {string|null} */
+                    /**
+                     * @description Whether the target record changed after the card was generated: same_revision exactly when targetRevision equals currentTargetRevision. The scope of the request takes no part in it, so a scope that holds the target at another revision is answered with the same state.
+                     * @enum {string|null}
+                     */
                     snapshotState: "same_revision" | "changed_revision" | null;
                     /** @enum {string|null} */
                     profile: "property-card-summary-ascii/1" | "property-card-summary-latin-deva/1" | null;
