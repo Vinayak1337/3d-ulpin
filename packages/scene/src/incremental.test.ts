@@ -10,6 +10,7 @@ function engineFixture() {
     entries: new Map(), buildingBounds: new Map(), buildingInputs: new Map(), buildingEntries: new Map(),
     buildingQueue: new Map(), renderedBuildings: new Set(), renderChanges: new Map(), drawWaiters: new Set(),
     storeyBuildings: new Map(), footprintPolygons: new Map(), pads: new Map(), buildings: new Group(),
+    padBatches: new Map(), pendingPads: new Map(),
     dressing: new Group(), trees: new Group(), detail: new Group(), anchors: new Map(),
     baseInputs: [], renderedBase: new Set(), baseBox: new Box3(), arrivedBox: new Box3(),
     arrivalBounds: new Map(),
@@ -67,6 +68,27 @@ describe('whole-list incremental building reconciliation', () => {
     expect(engine.buildings.children).not.toContain(mesh);
     expect(engine.entries.has('a')).toBe(false);
     expect(engine.areaBox.equals(engine.buildingBounds.get('b'))).toBe(true);
+  });
+
+  it('merges pads per drained batch and rebuilds only the batch of a removed building', () => {
+    const engine = engineFixture();
+    const inputs = ['a', 'b', 'c'].map(building);
+    engine.setBuildings(inputs);
+    draw(engine);
+    expect(engine.padBatches.size).toBe(1);
+    const batch = engine.pads.get('a');
+    expect(engine.pads.get('b')).toBe(batch);
+    const originalVertices = batch.geometry.getAttribute('position').count;
+    engine.setBuildings([...inputs, building('d')]);
+    draw(engine);
+    const otherBatch = engine.pads.get('d');
+    expect(engine.padBatches.size).toBe(2);
+    engine.setBuildings([inputs[1]!, inputs[2]!, engine.buildingInputs.get('d')]);
+    expect(engine.pads.has('a')).toBe(false);
+    expect(batch.geometry.getAttribute('position').count).toBeLessThan(originalVertices);
+    expect(engine.pads.get('d')).toBe(otherBatch);
+    engine.setBuildings([]);
+    expect(engine.padBatches.size).toBe(0);
   });
 
   it('rebuilds a changed drawn input immediately, leaving its neighbour untouched', () => {

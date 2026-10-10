@@ -156,6 +156,8 @@ export class SceneEngine {
   private dressingDirty = false;
   private dressingAt = -Infinity;
   private readonly pads = new Map<string, Mesh>();
+  private readonly padBatches = new Map<Mesh, Map<string, MultiPolygon>>();
+  private readonly pendingPads = new Map<string, MultiPolygon>();
   private readonly trees = new Group();
   private hasRoads = false;
   private readonly raised: Mesh[] = [];
@@ -539,6 +541,7 @@ export class SceneEngine {
     }
     this.buildingQueue = queue;
     if (removed) {
+      this.flushBuildingPads();
       this.areaBox.makeEmpty();
       for (const box of this.buildingBounds.values()) this.areaBox.union(box);
       this.fitGroundAndShadow();
@@ -656,6 +659,7 @@ export class SceneEngine {
     if (pending) {
       this.buildingQueue.delete(pending.input.id);
       this.addBuilding(pending.input, pending.growNew);
+      this.flushBuildingPads();
       this.fitGroundAndShadow();
     }
     this.clearEntries(this.detail, (e) => e.kind === 'space');
@@ -850,15 +854,7 @@ export class SceneEngine {
     this.renderChanges.set(input.id, true);
     const bounds = this.buildingBounds.get(input.id);
     if (bounds) this.areaBox.union(bounds);
-    const geometry = padGeometry([input.polygons], 2.2, 0.004);
-    if (geometry) {
-      const pad = new Mesh(geometry, this.m.pad);
-      pad.renderOrder = CONTEXT_FILL_ORDER;
-      pad.receiveShadow = true;
-      pad.raycast = () => {};
-      this.pads.set(input.id, pad);
-      this.dressing.add(pad);
-    }
+    this.pendingPads.set(input.id, input.polygons);
     this.dressingDirty = true;
     return entries;
   }
@@ -871,12 +867,7 @@ export class SceneEngine {
       }
       this.entries.delete(entry.id);
     }
-    const pad = this.pads.get(id);
-    if (pad) {
-      this.dressing.remove(pad);
-      pad.geometry.dispose();
-      this.pads.delete(id);
-    }
+    this.removeBuildingPad(id);
     this.buildingEntries.delete(id);
     this.buildingInputs.delete(id);
     this.buildingBounds.delete(id);
@@ -885,6 +876,37 @@ export class SceneEngine {
     this.renderChanges.set(id, false);
     if (this.plateFor === id) this.plateFor = null;
     this.dressingDirty = true;
+  }
+
+  private flushBuildingPads() {
+    if (!this.pendingPads.size) return;
+    const inputs = new Map(this.pendingPads);
+    this.pendingPads.clear();
+    const geometry = padGeometry([...inputs.values()], 2.2, 0.004);
+    if (!geometry) return;
+    const pad = new Mesh(geometry, this.m.pad);
+    pad.renderOrder = CONTEXT_FILL_ORDER;
+    pad.receiveShadow = true;
+    pad.raycast = () => {};
+    this.padBatches.set(pad, inputs);
+    for (const id of inputs.keys()) this.pads.set(id, pad);
+    this.dressing.add(pad);
+  }
+
+  private removeBuildingPad(id: string) {
+    this.pendingPads.delete(id);
+    const pad = this.pads.get(id);
+    if (!pad) return;
+    const inputs = this.padBatches.get(pad)!;
+    inputs.delete(id);
+    this.pads.delete(id);
+    pad.geometry.dispose();
+    const replacement = inputs.size ? padGeometry([...inputs.values()], 2.2, 0.004) : null;
+    if (replacement) pad.geometry = replacement;
+    else {
+      this.dressing.remove(pad);
+      this.padBatches.delete(pad);
+    }
   }
 
   private drainBuildingQueue() {
@@ -897,6 +919,7 @@ export class SceneEngine {
       if (performance.now() - started >= BUILDING_BUDGET_MS) break;
     }
     if (added.length) {
+      this.flushBuildingPads();
       this.fitGroundAndShadow();
       const selectedArrived = added.some((entry) => entry.buildingId === this.state.buildingId);
       if (selectedArrived) this.apply();
