@@ -5269,7 +5269,7 @@
     },
     {
       "manifest": "fixtures/usp/D8-open-property-foreign/manifest.json",
-      "manifestSha256": "8204a022de3da4666361677a078f77615d4d7a5b1d11864e9bb81965b7e6ff95",
+      "manifestSha256": "f809240e1972c752534f50c2eb36faabec75e79a3f04508ace0955dca5436c1f",
       "packId": "D8-foreign",
       "profile": "open-property-foreign-development-d1f",
       "version": 1,
@@ -5479,6 +5479,105 @@
             "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d06/edmonton-heritage.csv",
             "sha256": "1caa0303fdbcb9c18409154a0529f511b75fd3eb785877990a9718175f97f146",
             "bytes": 271421,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "baton-footprint.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://data.brla.gov/api/views/w2dv-n5tp/rows.csv?accessType=DOWNLOAD"
+          },
+          "attribution": "City of Baton Rouge / Parish of East Baton Rouge",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "Public Domain",
+            "reference": null,
+            "scope": "Public local development only"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "City of Baton Rouge / Parish of East Baton Rouge",
+          "acquiredAt": "2026-10-10T12:18:28.531088+00:00",
+          "geography": "East Baton Rouge Parish, Louisiana, United States",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d07/baton-footprint.csv",
+            "sha256": "0715a912e9f5f7f2a389bb9e1ee2d9fdd5b85f30b1ee1e36c72b43cf9fd79149",
+            "bytes": 76920137,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "nola-footprint.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://data.nola.gov/api/views/prh5-qsuf/rows.csv?accessType=DOWNLOAD"
+          },
+          "attribution": "City of New Orleans",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "Public Domain U.S. Government",
+            "reference": "https://www.usa.gov/government-works",
+            "scope": "Public local development only"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "City of New Orleans",
+          "acquiredAt": "2026-10-10T12:19:26.202540+00:00",
+          "geography": "New Orleans, Louisiana, United States",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d08/nola-footprint.csv",
+            "sha256": "a35ecdfc92cf070556835ba38c2c48fd9a87d43248d07faa3399102c99e5b9c7",
+            "bytes": 69616709,
+            "repositoryBytesVerified": false
+          },
+          "manifestVerification": {}
+        },
+        {
+          "id": "edmonton-footprint.csv",
+          "mediaType": "text/csv",
+          "classification": "observed",
+          "origin": {
+            "kind": "external",
+            "url": "https://data.edmonton.ca/api/views/6n9r-ddf8/rows.csv?accessType=DOWNLOAD"
+          },
+          "attribution": "City of Edmonton",
+          "permission": {
+            "state": "unconfirmed",
+            "licence": "See Terms of Use",
+            "reference": null,
+            "scope": "Public local development only"
+          },
+          "reference": {
+            "horizontalCrs": null,
+            "verticalReference": null
+          },
+          "issuer": "City of Edmonton",
+          "acquiredAt": "2026-10-10T12:19:55.582079+00:00",
+          "geography": "Edmonton, Alberta, Canada",
+          "split": "dev",
+          "purpose": "test_only",
+          "content": {
+            "state": "external",
+            "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d09/edmonton-footprint.csv",
+            "sha256": "889edcebb8f5612c2eeaf43826f6f52d3c9638747533179d5f76cf9fcbe980f0",
+            "bytes": 137471150,
             "repositoryBytesVerified": false
           },
           "manifestVerification": {}
@@ -9266,11 +9365,11 @@
       "issuer": "Foreign municipal issuing authorities; exact publishers in manifest",
       "geography": "Foreign development only; exact per-source geography in manifest",
       "manifest": "fixtures/usp/D8-open-property-foreign/manifest.json",
-      "manifestSha256": "8204a022de3da4666361677a078f77615d4d7a5b1d11864e9bb81965b7e6ff95",
+      "manifestSha256": "f809240e1972c752534f50c2eb36faabec75e79a3f04508ace0955dca5436c1f",
       "guide": "docs/evidence/gf-agent/d1f/result.json",
-      "sourceCount": 6,
-      "sourceFamilies": 5,
-      "totalOriginalBytes": 27449769,
+      "sourceCount": 9,
+      "sourceFamilies": 8,
+      "totalOriginalBytes": 311457765,
       "content": {
         "externalRoot": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f",
         "itemsPointer": "/assets",

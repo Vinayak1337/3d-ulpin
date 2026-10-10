@@ -51,6 +51,33 @@
       "geography": "Edmonton, Alberta, Canada",
       "schemaIdentity": "Publisher table design: edmonton-heritage",
       "familyRule": "Similar municipal/private templates and vintages grouped; no family per file."
+    },
+    {
+      "id": "opf-d07",
+      "split": "dev",
+      "publisher": "City of Baton Rouge / Parish of East Baton Rouge",
+      "fileCount": 1,
+      "geography": "East Baton Rouge Parish, Louisiana, United States",
+      "schemaIdentity": "Publisher table design: baton-footprint",
+      "familyRule": "Similar municipal/private templates and vintages grouped; no family per file."
+    },
+    {
+      "id": "opf-d08",
+      "split": "dev",
+      "publisher": "City of New Orleans",
+      "fileCount": 1,
+      "geography": "New Orleans, Louisiana, United States",
+      "schemaIdentity": "Publisher table design: nola-footprint",
+      "familyRule": "Similar municipal/private templates and vintages grouped; no family per file."
+    },
+    {
+      "id": "opf-d09",
+      "split": "dev",
+      "publisher": "City of Edmonton",
+      "fileCount": 1,
+      "geography": "Edmonton, Alberta, Canada",
+      "schemaIdentity": "Publisher table design: edmonton-footprint",
+      "familyRule": "Similar municipal/private templates and vintages grouped; no family per file."
     }
   ],
   "assets": [
@@ -99,7 +126,8 @@
         "acquiredAt": "2026-10-10T12:01:31.603019+00:00"
       },
       "profileInput": {
-        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d02/seattle-energy-prefix-128.csv",
+        "externalPath":
+        "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d02/seattle-energy-prefix-128.csv",
         "sha256": "8d27a78480c79fe5da82698b99397571cca16f7d04635b95dc0440b8a0fdc479",
         "bytes": 43775,
         "rows": 128,
@@ -148,14 +176,16 @@
         "evaluationEligible": false
       },
       "dictionary": {
-        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d03/nycha-addresses-dictionary.json",
+        "externalPath":
+        "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d03/nycha-addresses-dictionary.json",
         "sha256": "cacfa8ec8f8544990f6b5e4cb315d80dc89c830d8141359c2f22e83ffdb44612",
         "bytes": 44181,
         "url": "https://data.cityofnewyork.us/api/views/3ub5-4ph8.json",
         "acquiredAt": "2026-10-10T12:01:31.603412+00:00"
       },
       "profileInput": {
-        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d03/nycha-addresses-prefix-128.csv",
+        "externalPath":
+        "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d03/nycha-addresses-prefix-128.csv",
         "sha256": "85447b761fc5c180950ac9a23d5854dd8e41fa6c1d696dce6e0bb9a3fe9bc951",
         "bytes": 24024,
         "rows": 128,
@@ -316,14 +346,16 @@
         "evaluationEligible": false
       },
       "dictionary": {
-        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d05/kansas-municipal-dictionary.json",
+        "externalPath":
+        "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d05/kansas-municipal-dictionary.json",
         "sha256": "84569ad09f6538ac45865771ff5c9dba029ebf350425213f16ff4e2777c56751",
         "bytes": 72537,
         "url": "https://data.kcmo.org/api/views/9xwa-2b59.json",
         "acquiredAt": "2026-10-10T12:04:03.355370+00:00"
       },
       "profileInput": {
-        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d05/kansas-municipal-prefix-128.csv",
+        "externalPath":
+        "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d05/kansas-municipal-prefix-128.csv",
         "sha256": "010b015e868edd84cc0a60418f3a6c897d18ac8567d911b5a9b3d8aff831a52a",
         "bytes": 60526,
         "rows": 128,
@@ -372,14 +404,16 @@
         "evaluationEligible": false
       },
       "dictionary": {
-        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d06/edmonton-heritage-dictionary.json",
+        "externalPath":
+        "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d06/edmonton-heritage-dictionary.json",
         "sha256": "429c45b31d9990710ebd4ca9f191a124920097704e3b7e8312ad9f5760d55c86",
         "bytes": 32683,
         "url": "https://data.edmonton.ca/api/views/jgsn-dhai.json",
         "acquiredAt": "2026-10-10T12:06:31.309275+00:00"
       },
       "profileInput": {
-        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d06/edmonton-heritage-prefix-128.csv",
+        "externalPath":
+        "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d06/edmonton-heritage-prefix-128.csv",
         "sha256": "ec17face198473776d74e97d47400862f7423e88cb2e2ea36ef12faae6872bee",
         "bytes": 31705,
         "rows": 128,
@@ -389,12 +423,185 @@
         "script": "scripts/agent/acquire-d1f.py",
         "sourceSha256": "1caa0303fdbcb9c18409154a0529f511b75fd3eb785877990a9718175f97f146"
       }
+    },
+    {
+      "id": "baton-footprint.csv",
+      "family": "opf-d07",
+      "split": "dev",
+      "mediaType": "text/csv",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://data.brla.gov/api/views/w2dv-n5tp/rows.csv?accessType=DOWNLOAD"
+      },
+      "issuer": "City of Baton Rouge / Parish of East Baton Rouge",
+      "attribution": "City of Baton Rouge / Parish of East Baton Rouge",
+      "acquiredAt": "2026-10-10T12:18:28.531088+00:00",
+      "geography": "East Baton Rouge Parish, Louisiana, United States",
+      "purpose": "test_only",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d07/baton-footprint.csv",
+        "sha256": "0715a912e9f5f7f2a389bb9e1ee2d9fdd5b85f30b1ee1e36c72b43cf9fd79149",
+        "bytes": 76920137
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "licence": "Public Domain",
+        "reference": null,
+        "scope": "Public local development only"
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null
+      },
+      "privacy": "Whole-file identity/contact screening; no redaction; excluded files never profiled",
+      "sourceSchema": {
+        "dataRows": 197392,
+        "columnCount": 10,
+        "canonicalTargets": null,
+        "evaluationEligible": false
+      },
+      "dictionary": {
+        "externalPath":
+        "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d07/baton-footprint-dictionary.json",
+        "sha256": "7cb01c192fe02baca36c8014cbd5b2a14beb17b7cc4eb1c6d04dbc364d1349ad",
+        "bytes": 18217,
+        "url": "https://data.brla.gov/api/views/w2dv-n5tp.json",
+        "acquiredAt": "2026-10-10T12:15:24.036027+00:00"
+      },
+      "profileInput": {
+        "externalPath":
+        "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d07/baton-footprint-prefix-128.csv",
+        "sha256": "ccd13940afa1517d73cd2de1c4f0dead0a345d9c1151df40473c3fccd3368ea4",
+        "bytes": 54419,
+        "rows": 128,
+        "scriptSha256": "639780fe9e8e929e964969b88a03c8fc23200cbe14854631a3122fd4e3502cf2",
+        "sourceLocator": "CSV header and first 128 native-order data records",
+        "recipe": "byte-exact CSV record prefix; no re-serialization",
+        "script": "scripts/agent/acquire-d1f.py",
+        "sourceSha256": "0715a912e9f5f7f2a389bb9e1ee2d9fdd5b85f30b1ee1e36c72b43cf9fd79149"
+      }
+    },
+    {
+      "id": "nola-footprint.csv",
+      "family": "opf-d08",
+      "split": "dev",
+      "mediaType": "text/csv",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://data.nola.gov/api/views/prh5-qsuf/rows.csv?accessType=DOWNLOAD"
+      },
+      "issuer": "City of New Orleans",
+      "attribution": "City of New Orleans",
+      "acquiredAt": "2026-10-10T12:19:26.202540+00:00",
+      "geography": "New Orleans, Louisiana, United States",
+      "purpose": "test_only",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d08/nola-footprint.csv",
+        "sha256": "a35ecdfc92cf070556835ba38c2c48fd9a87d43248d07faa3399102c99e5b9c7",
+        "bytes": 69616709
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "licence": "Public Domain U.S. Government",
+        "reference": "https://www.usa.gov/government-works",
+        "scope": "Public local development only"
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null
+      },
+      "privacy": "Whole-file identity/contact screening; no redaction; excluded files never profiled",
+      "sourceSchema": {
+        "dataRows": 162486,
+        "columnCount": 8,
+        "canonicalTargets": null,
+        "evaluationEligible": false
+      },
+      "dictionary": {
+        "externalPath":
+        "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d08/nola-footprint-dictionary.json",
+        "sha256": "255106858dca29743d9553062830d5f993f18a3bb3ce95644d777da3eda37461",
+        "bytes": 15832,
+        "url": "https://data.nola.gov/api/views/prh5-qsuf.json",
+        "acquiredAt": "2026-10-10T12:15:24.036298+00:00"
+      },
+      "profileInput": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d08/nola-footprint-prefix-128.csv",
+        "sha256": "76b515c78a64ceb5b1f8f77c6f7d0ecc23d0af5598244b3fc8553ffe52e509f3",
+        "bytes": 52965,
+        "rows": 128,
+        "scriptSha256": "639780fe9e8e929e964969b88a03c8fc23200cbe14854631a3122fd4e3502cf2",
+        "sourceLocator": "CSV header and first 128 native-order data records",
+        "recipe": "byte-exact CSV record prefix; no re-serialization",
+        "script": "scripts/agent/acquire-d1f.py",
+        "sourceSha256": "a35ecdfc92cf070556835ba38c2c48fd9a87d43248d07faa3399102c99e5b9c7"
+      }
+    },
+    {
+      "id": "edmonton-footprint.csv",
+      "family": "opf-d09",
+      "split": "dev",
+      "mediaType": "text/csv",
+      "classification": "observed",
+      "origin": {
+        "kind": "external",
+        "url": "https://data.edmonton.ca/api/views/6n9r-ddf8/rows.csv?accessType=DOWNLOAD"
+      },
+      "issuer": "City of Edmonton",
+      "attribution": "City of Edmonton",
+      "acquiredAt": "2026-10-10T12:19:55.582079+00:00",
+      "geography": "Edmonton, Alberta, Canada",
+      "purpose": "test_only",
+      "original": {
+        "externalPath": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d09/edmonton-footprint.csv",
+        "sha256": "889edcebb8f5612c2eeaf43826f6f52d3c9638747533179d5f76cf9fcbe980f0",
+        "bytes": 137471150
+      },
+      "permission": {
+        "state": "unconfirmed",
+        "licence": "See Terms of Use",
+        "reference": null,
+        "scope": "Public local development only"
+      },
+      "reference": {
+        "horizontalCrs": null,
+        "verticalReference": null
+      },
+      "privacy": "Whole-file identity/contact screening; no redaction; excluded files never profiled",
+      "sourceSchema": {
+        "dataRows": 365822,
+        "columnCount": 3,
+        "canonicalTargets": null,
+        "evaluationEligible": false
+      },
+      "dictionary": {
+        "externalPath":
+        "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d09/edmonton-footprint-dictionary.json",
+        "sha256": "9a85d6da21aa6f2cd8c853f04018f7ba893aca7a3a87595975f4d41ccb06000b",
+        "bytes": 4641,
+        "url": "https://data.edmonton.ca/api/views/6n9r-ddf8.json",
+        "acquiredAt": "2026-10-10T12:15:24.036496+00:00"
+      },
+      "profileInput": {
+        "externalPath":
+        "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d09/edmonton-footprint-prefix-128.csv",
+        "sha256": "4d89bc5351872f3ffeffc408d7ff1a4bb8e5fe84d74a5485e8b17a06b0f9ea58",
+        "bytes": 139426,
+        "rows": 128,
+        "scriptSha256": "639780fe9e8e929e964969b88a03c8fc23200cbe14854631a3122fd4e3502cf2",
+        "sourceLocator": "CSV header and first 128 native-order data records",
+        "recipe": "byte-exact CSV record prefix; no re-serialization",
+        "script": "scripts/agent/acquire-d1f.py",
+        "sourceSha256": "889edcebb8f5612c2eeaf43826f6f52d3c9638747533179d5f76cf9fcbe980f0"
+      }
     }
   ],
   "heldout": [],
   "fileCounts": {
-    "development": 6,
-    "families": 5
+    "development": 9,
+    "families": 8
   },
   "teacherPolicy": "No labels/models. Closed discovery and Indian evaluator material stay separate.",
   "missingCapabilities": [
