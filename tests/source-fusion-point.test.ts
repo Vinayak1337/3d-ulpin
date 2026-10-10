@@ -165,7 +165,9 @@ test('technical point artifact transport recaptures exact result and denies sour
   for(const state of ['queued','running','failed'] as const){pending.job.status=state;pending.job.logical_state=state;
     pending.job.error=state==='failed'?'POINT_PROCESSOR_UNAVAILABLE':null;
     const s=await p.service.status(pending.input.caseId,pending.input.sourceId,pending.input.jobId);assert.equal(s.status,state);assert.equal(s.result,null);statuses.push(s.status);}
-  pending.current.revision++;const stale=await p.service.status(pending.input.caseId,pending.input.sourceId,pending.input.jobId);
+  pending.current.revision++;const unchanged=await p.service.status(pending.input.caseId,pending.input.sourceId,pending.input.jobId);
+  assert.equal(unchanged.status,'failed');assert.equal(unchanged.code,'POINT_PROCESSOR_UNAVAILABLE');
+  pending.current.context={changed:true} as any;const stale=await p.service.status(pending.input.caseId,pending.input.sourceId,pending.input.jobId);
   assert.equal(stale.status,'stale');assert.equal(stale.code,'POINT_INPUT_STALE');assert.equal(p.reads.length,0);
   save('technical-artifact-and-outage.json',{qualification:'explicit NON-NATIVE record transport bytes; no historical/native accuracy proof',
     bytes:output.bytes.length,sha256:output.sha256,finalCaptureDenied:true,revocationDenied:true,statuses,staleStatus:stale.status,noPendingObjectReads:true});

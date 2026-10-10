@@ -118,7 +118,7 @@ test('canonical stale/access/fence and captured/current marker refusals survive 
     const f=fixture(kind),captured=structuredClone(f.source),c=control(f),evidence=await sufficiencyRasterPointEvidenceTx(c.client,captured,c.options);
     assert(evidence);
     f.current.revision++;await assert.rejects(evidence.revalidate(),code('STALE_REVISION'));
-    const stale=await sufficiencyRasterPointEvidenceTx(c.client,captured,c.options);assert.equal(stale?.processing.state,'stale');
+    const current=await sufficiencyRasterPointEvidenceTx(c.client,captured,c.options);assert.equal(current?.processing.state,'pending');
     f.current.revision--;f.current.archived=true;
     await assert.rejects(evidence.revalidate(),code(kind==='raster'?'RASTER_DENIED':'POINT_DENIED'));f.current.archived=false;
     c.setJob({...f.job,status:'succeeded',logical_state:'succeeded'});

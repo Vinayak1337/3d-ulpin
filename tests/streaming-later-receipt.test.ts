@@ -1,14 +1,17 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import test from 'node:test';
+import { mock, test } from 'node:test';
+import { createRequire } from 'node:module';
+import { settings } from '../packages/server/src/infrastructure/config';
+import { sha256 } from '../packages/server/src/infrastructure/storage';
 import type { PoolClient } from 'pg';
 import { fingerprint } from '../packages/server/src/modules/cases/domain';
 import { ingestionBinding } from '../packages/server/src/modules/usp/ingestion/events';
 import { AnyStreamingInputSchema, ChunkMappingInputSchema, StreamedProfileInputSchema } from
   '../packages/contracts/src/usp';
-import { assertStreamingInputTx, streamingReadContextTx, streamingReaderSha } from
+import { assertStreamingInputTx, streamingReadContextTx, streamingReaderSha, StreamingVectorService } from
   '../packages/server/src/modules/usp/ingestion/streaming-vector';
-import { assertChunkMappingInputTx, chunkMappingReadContextTx, chunkMappingConverterSha } from
+import { assertChunkMappingInputTx, chunkMappingReadContextTx, chunkMappingConverterSha, ChunkMappingService } from
   '../packages/server/src/modules/usp/ingestion/chunk-mapping';
 import { assertStreamedProfileInputTx, streamedProfilerSha } from
   '../packages/server/src/modules/usp/ingestion/streamed-profile';
@@ -40,15 +43,69 @@ function fixture(caseId = randomUUID(), revision = 1) {
 
 function database(f: ReturnType<typeof fixture>) {
   const state = { revision: f.raw.caseRevision, latest: 1, archived: false };
-  const client = { async query(sql: string) {
+  const client = { async query(sql: string, args: any[] = []) {
+    if (['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql)) return { rows: [] };
     if (sql.includes('FROM cases')) return { rows: [{ id: f.raw.caseId, ...state }] };
     if (sql.includes('max(revision)')) return { rows: [{ revision: state.latest }] };
     if (sql.includes('FROM sources')) return { rows: [f.source] };
-    if (sql.includes('FROM jobs')) return { rows: [{ payload: f.raw, input_fingerprint: fingerprint(f.raw) }] };
+    if (sql.includes('FROM jobs')) {
+      const input = sql.includes("operation='chunk-mapping'") ? f.mapped : f.raw;
+      return { rows: [{ payload: input, input_fingerprint: fingerprint(input) }] };
+    }
     if (sql.includes('FROM usp_mapping_recipes')) return { rows: [] };
+    if (sql.includes('FROM usp_streaming_vector_imports') || sql.includes('FROM usp_chunk_mapping_imports')) {
+      return { rows: [{ state: 'completed', next_publish_index: 2, sealed_chunks: 2, records: 0,
+        accepted: 0, quarantined: 0, normalized: 0, unresolved: 0, duplicate_keys: 0, schema_drift_chunks: 0,
+        proposal: null, issue_code: null, unknown_remainder: false }] };
+    }
+    if (sql.includes('FROM usp_streaming_vector_slots') || sql.includes('FROM usp_chunk_mapping_slots')) {
+      const index = sql.includes('chunk_index=$') ? args[args.length - 1] : 0;
+      return { rows: [protocolSlot(f, sql.includes('usp_streaming_vector_slots'), index)] };
+    }
     throw new Error(`Unexpected protocol SQL: ${sql}`);
   } } as unknown as PoolClient;
   return { state, client };
+}
+
+function protocolPayload(f: ReturnType<typeof fixture>, raw: boolean, index: number) {
+  const input = raw ? f.raw : f.mapped;
+  return { version: input.version, jobId: input.jobId, sourceId: input.sourceId,
+    sourceRevision: 1, sourceSha256: input.sourceSha256, chunkIndex: index, records: [],
+    ...(!raw ? { rawJobId: f.raw.jobId, rawResultSha256: '1'.repeat(64), schemaFingerprint: null,
+      recipeRevision: null, converterSha256: f.mapped.converterSha256 } : {}) };
+}
+
+function protocolSlot(f: ReturnType<typeof fixture>, raw: boolean, index: number) {
+  const bytes = Buffer.from(JSON.stringify(protocolPayload(f, raw, index)));
+  return { chunk_index: index, status: 'ready', published: true, first_feature_index: 0,
+    last_feature_index: null, records: 0, accepted: 0, normalized: 0, quarantined: 0, unresolved: 0,
+    bytes: raw ? bytes.length : 0, object_key: raw ? `raw/${index}` : null,
+    object_sha256: raw ? sha256(bytes) : null,
+    result_sha256: sha256(bytes), attempt: 1, fence: 1, issue_code: null, raw_result_sha256: '1'.repeat(64),
+    schema_fingerprint: null, schema_drift: false };
+}
+
+async function publicReadControl(f: ReturnType<typeof fixture>, db: ReturnType<typeof database>,
+  run: () => Promise<void>) {
+  const globals = globalThis as any;
+  const prior = globals.ulpinPool;
+  globals.ulpinPool = { connect: async () => ({ query: db.client.query.bind(db.client), release() {} }) };
+  const require = createRequire(new URL('../packages/server/package.json', import.meta.url));
+  const { S3Client } = require('@aws-sdk/client-s3');
+  for (const name of ['s3Endpoint', 's3Region', 's3Bucket', 's3AccessKey', 's3SecretKey'] as const) {
+    mock.getter(settings, name, () => name === 's3Endpoint' ? 'http://127.0.0.1:1' : 'k14-memory-control');
+  }
+  mock.method(S3Client.prototype, 'send', async (command: any) => {
+    const [kind, index] = command.input.Key.split('/');
+    const bytes = Buffer.from(JSON.stringify(protocolPayload(f, kind === 'raw', Number(index))));
+    return { Body: { transformToByteArray: async () => bytes } };
+  });
+  try { await run(); }
+  finally {
+    if (prior === undefined) delete globals.ulpinPool;
+    else globals.ulpinPool = prior;
+    mock.restoreAll();
+  }
 }
 
 async function local(run: () => Promise<void>) {
@@ -88,6 +145,11 @@ test('sequential vector protocol receipts remain current before claim, at heartb
       db.state.revision = 5; // callback shared by heartbeat and completion
       await authority(f, db.client);
       await readFreshness(f, db.client);
+      await publicReadControl(f, db, async () => {
+        const result = await new StreamingVectorService().status(f.raw.caseId, f.raw.sourceId, f.raw.jobId);
+        assert.equal(result.current, true);
+        assert.deepEqual(result.reasons, []);
+      });
       assert.equal(fingerprint(f), before);
     }
   }));
@@ -97,11 +159,22 @@ test('difficult protocol: dependent mapping checks two chunk boundaries separate
     const f = fixture();
     const db = database(f);
     const enrolled = fingerprint(f);
-    await authority(f, db.client); // chunk zero publication authority
-    await readFreshness(f, db.client); // chunk zero retained read authority
-    db.state.revision++;
-    await authority(f, db.client); // chunk one / heartbeat / completion authority
-    await readFreshness(f, db.client);
+    await publicReadControl(f, db, async () => {
+      const raw = new StreamingVectorService();
+      const mapped = new ChunkMappingService();
+      for (const index of [0, 1]) {
+        await authority(f, db.client);
+        const first = await raw.chunk(f.raw.caseId, f.raw.sourceId, f.raw.jobId, index);
+        const second = await mapped.chunk(f.raw.caseId, f.raw.sourceId, f.mapped.jobId, index);
+        assert.deepEqual(first.reasons, []);
+        assert.deepEqual(second.reasons, []);
+        assert.equal(first.current && second.current, true);
+        assert.equal(first.payload?.chunkIndex, index);
+        assert.equal(second.slot.chunkIndex, index);
+        assert.equal(second.payload, null); // proposal-only control has no officer-approved GIS recipe
+        if (index === 0) db.state.revision++;
+      }
+    });
     assert.equal(fingerprint(f), enrolled);
   }));
 

@@ -11,6 +11,7 @@ import {settings} from '../../../infrastructure/config';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {openObjectStream,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
+import {compareSourcePins} from './source-pin';
 import {localOperatorSubject} from '../principal';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,ingestionBinding} from './events';
@@ -39,9 +40,10 @@ export function assertProjectedReadInput(ctx:Awaited<ReturnType<typeof projected
 function projectedInput(ctx:Awaited<ReturnType<typeof projectedContextTx>>,payload:unknown,immutableRead:boolean){
   const input=ProjectedVectorInputSchema.parse(payload);
   const {inputFingerprint,...base}=input;
-  if(fingerprint(base)!==inputFingerprint || ctx.current.id!==input.caseId || ctx.current.revision!==input.caseRevision || ctx.source.id!==input.sourceId || ctx.source.revision!==input.sourceRevision
-    || ctx.source.family_id!==input.sourceFamilyId || ctx.source.sha256!==input.sha256 || ctx.source.object_key!==input.objectKey
-    || ctx.access!==input.accessBinding || input.parserSha256!==projectedParserSha() || input.semanticChunks &&
+  const now={...base,caseId:ctx.current.id,caseRevision:ctx.current.revision,sourceId:ctx.source.id,
+    sourceRevision:ctx.source.revision,sourceFamilyId:ctx.source.family_id,sha256:ctx.source.sha256,
+    bytes:Number(ctx.source.bytes),objectKey:ctx.source.object_key,accessBinding:ctx.access,parserSha256:projectedParserSha()};
+  if(fingerprint(base)!==inputFingerprint || !compareSourcePins(now,base).current || input.semanticChunks &&
       (immutableRead?!semanticPublisherReadCompatible(input.semanticChunks.publisherSha256):input.semanticChunks.publisherSha256!==semanticPublisherSha()))
     throw new AppError(409,'PROJECTED_CONTEXT_STALE','The source, case, converter or private access context changed.');
   return input;
