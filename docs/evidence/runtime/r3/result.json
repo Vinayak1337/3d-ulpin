@@ -1,21 +1,32 @@
 {
   "task": "R3",
-  "gates": ["GF1", "GF4"],
+  "gates": [
+    "GF1",
+    "GF4"
+  ],
   "artifactsRoot": "E:/BhuAayam-data/task-data/r3",
   "api": "http://127.0.0.1:3194/api/v1",
   "step0": {
     "result": "done: cause located; nothing rebuilt, restarted or repaired in this step",
     "doctorBefore": {
-      "at": "2026-10-10T13:34:05Z", "exit": 1, "failed": ["Document runtimes"],
-      "servedCommit": "9aad8da2e51e43dee279539a24efb0d0db645b45", "servedCheckoutClean": true
+      "at": "2026-10-10T13:34:05Z",
+      "exit": 1,
+      "failed": [
+        "Document runtimes"
+      ],
+      "servedCommit": "9aad8da2e51e43dee279539a24efb0d0db645b45",
+      "servedCheckoutClean": true
     },
     "diagnostic": {
       "script": "E:/BhuAayam-data/task-data/r3/step0/diagnose-document-runtime.mjs",
-      "output": "E:/BhuAayam-data/task-data/r3/step0/diagnostic-output-2.txt",
+      "output": "E:/BhuAayam-data/task-data/r3/step0/diagnostic-output-4.txt",
       "how": "paths through the demo checkout's readDemoDocumentRuntime(); verifiedProfile's comparisons one by one; read-only",
       "firstRunNote": "diagnostic-output.txt shows FAIL 3 (profile shape): the diagnostic's own key-order mistake, corrected"
     },
-    "helperChild": {"code": "PACKET_REGION_EXECUTABLE_DRIFT", "ms": 853},
+    "helperChild": {
+      "code": "PACKET_REGION_EXECUTABLE_DRIFT",
+      "ms": 853
+    },
     "comparisons": {
       "profileFileWithinLimit": "pass",
       "profileBytesEqualConfiguredHash": "pass",
@@ -50,7 +61,9 @@
           "comparison": "unreadable, ENOENT: the re-created runtime has no such cache file"
         },
         "unchangedButRecreated": "791 other pinned files under the same base still match and were also created after the profile",
-        "repoFiles": 0, "configuredInterpreter": 0, "packages": 0
+        "repoFiles": 0,
+        "configuredInterpreter": 0,
+        "packages": 0
       },
       "who": [
         "No project worker edited a pinned file. The Codex application replaced its own managed runtime (the same",
@@ -61,7 +74,25 @@
         "The rebuild in Step 1 pins the replaced bytes. The check will fail again whenever the Codex application",
         "next refreshes that runtime, because the demo's frozen interpreter base is owned by another program."
       ],
-      "notTheCause": ["the check itself", "the 60-second helper timeout", "the demo checkout", "the profile file or its hash"]
+      "notTheCause": [
+        "the check itself",
+        "the 60-second helper timeout",
+        "the demo checkout",
+        "the profile file or its hash"
+      ],
+      "interpreterEnvironment": {
+        "name": "desktop-ai04f-docling-tesseract/venv",
+        "underDataMl": false,
+        "note": "the configured OCR interpreter (Python 3.12); its base installation is the Codex runtime named above"
+      }
+    },
+    "leadCandidate": {
+      "file": "venv-vision/Lib/site-packages/__pycache__/_virtualenv.cpython-311.pyc",
+      "isPinnedEntry": false,
+      "pinnedEntriesInsideVenvVision": 0,
+      "pinnedEntriesNamedVirtualenv": 0,
+      "verdict": "not the cause of FAIL Document runtimes: another set of files, in another interpreter (3.12, not 3.11)",
+      "action": "file left alone: not moved, not read, not hashed by this task"
     }
   }
 }
