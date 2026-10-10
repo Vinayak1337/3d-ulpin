@@ -1,0 +1,12 @@
+{
+  "task": "A4",
+  "calibrationFamily": "mi-d03",
+  "chosenBeforeTraining": true,
+  "reason": "Whole mi-d03 has registration-number positives and unknown columns; fixed before fitting.",
+  "features": "Profile metadata only; no raw values. Missing magnitude/unit-suffix statistics remain unavailable.",
+  "thresholdPolicy": "Smallest SGD threshold with nonzero commits and zero calibration errors; else abstain.",
+  "heldOutPolicy": "Evaluation only after frozen model and threshold; no teacher, fitting or calibration access.",
+  "learner": { "n_features": 32768, "alternate_sign": false, "loss": "log_loss", "seed": 17 },
+  "update": "One partial_fit per verified batch",
+  "qualification": "pseudo_label-trained; teacher calibration labels are not independent accuracy truth."
+}

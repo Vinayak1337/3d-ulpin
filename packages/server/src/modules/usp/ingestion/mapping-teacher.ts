@@ -1,5 +1,9 @@
 import { z } from 'zod';
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   CANONICAL_TARGETS,
   ColumnProfileDocumentSchema,
@@ -22,6 +26,7 @@ import {
   type MappingExecutionContext,
 } from './mapping-executor';
 import { MAPPING_TEACHER_SYSTEM_PROMPT } from './mapping-teacher-prompt';
+import { lookupMappingMemory } from './mapping-memory';
 
 export const MAPPING_TEACHER_TEMPLATE = 'mapping-teacher/2.1';
 export const MAPPING_TEACHER_MODEL = 'sarvam-105b';
@@ -461,6 +466,159 @@ export async function proposeMappingWithTeacher(
     }
   }
   return { ...fallback, ...retainValidFields(lastRaw, profile), ...metadata };
+}
+
+type StudentColumnMetadata = {
+  profileId: string;
+  header: string;
+  neighbourHeaders: string[];
+  cellCount: number;
+  emptyCount: number;
+};
+type RoutingOptions = TeacherOptions & {
+  memoryPath?: string;
+  learnerModelPath?: string;
+  learnerColumns?: StudentColumnMetadata[];
+  teacher?: (profile: ColumnProfileDocument, options: TeacherOptions) => Promise<MappingTeacherResult>;
+};
+export type MappingRoutingResult = MappingTeacherResult & {
+  activeLearnerVersion: string | null;
+  fieldSources: { sourceField: string; source: 'memory' | 'student' | 'teacher' | 'officer'; method: string }[];
+  memoryReasonCode: string | null;
+  studentReasonCode: string | null;
+};
+const StudentPredictionSchema = z.strictObject({
+  profileId: z.string(), target: z.enum(Object.keys(CANONICAL_TARGETS) as [
+    keyof typeof CANONICAL_TARGETS, ...(keyof typeof CANONICAL_TARGETS)[],
+  ]), probability: z.number().min(0).max(1), committed: z.boolean(), version: z.string().regex(/^v[1-9]\d*$/),
+});
+type StudentPrediction = z.infer<typeof StudentPredictionSchema>;
+
+function learnerVersion(path?: string): string | null {
+  if (!path) return null;
+  try {
+    const manifest = JSON.parse(readFileSync(resolve(path, 'manifest.json'), 'utf8'));
+    return /^v[1-9]\d*$/.test(manifest.version) ? manifest.version : null;
+  } catch {
+    return null;
+  }
+}
+
+function studentInputs(profile: ColumnProfileDocument, options: RoutingOptions) {
+  if (options.learnerColumns && options.learnerColumns.length !== profile.columns.length) {
+    throw new Error('STUDENT_COLUMN_METADATA_MISMATCH');
+  }
+  return profile.columns.map((column, index) => {
+    const metadata = options.learnerColumns?.[index];
+    return {
+      profileId: metadata?.profileId ?? column.name, header: metadata?.header ?? column.name,
+      neighbourHeaders: metadata?.neighbourHeaders ?? profile.columns.slice(Math.max(0, index - 2), index)
+        .concat(profile.columns.slice(index + 1, index + 3)).map(column => column.name),
+      inferredType: column.inferredType, declaredUnit: column.declaredUnit ?? null, valueShapes: column.valueShapes,
+      cellCount: metadata?.cellCount ?? 0, emptyCount: metadata?.emptyCount ?? 0,
+    };
+  });
+}
+
+function callStudent(profile: ColumnProfileDocument, options: RoutingOptions, version: string | null) {
+  if (!options.learnerModelPath || !version) return { fields: [] as StudentPrediction[], code: 'STUDENT_UNAVAILABLE' };
+  try {
+    const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../../..');
+    const inputs = studentInputs(profile, options);
+    const run = spawnSync(process.env.ULPIN_PROFILE_PYTHON ?? 'python', [
+      '-m', 'geo.usp_learning.stage_a', 'predict', '--model', resolve(options.learnerModelPath), '--profiles', '-',
+    ], { encoding: 'utf8', input: JSON.stringify(inputs), timeout: 30000, maxBuffer: 1024 * 1024,
+      env: { ...process.env, PYTHONPATH: resolve(root, 'services/geo'), PYTHONDONTWRITEBYTECODE: '1' } });
+    if (run.status !== 0) throw new Error('STUDENT_UNAVAILABLE');
+    const fields = run.stdout.trim().split('\n').map(line => StudentPredictionSchema.parse(JSON.parse(line)));
+    if (fields.length !== inputs.length || fields.some((field, index) =>
+      field.profileId !== inputs[index].profileId || field.version !== version)) {
+      throw new Error('STUDENT_OUTPUT_INVALID');
+    }
+    return { fields, code: null };
+  } catch {
+    return { fields: [] as StudentPrediction[], code: 'STUDENT_UNAVAILABLE' };
+  }
+}
+
+function studentPlanFields(profile: ColumnProfileDocument, predictions: StudentPrediction[]) {
+  return predictions.flatMap((prediction, index) => prediction.committed ? [{
+    sourceField: profile.columns[index].name, target: prediction.target, operation: { kind: 'copy' as const },
+    confidence: prediction.probability, rationale: 'Local calibrated Stage A classifier proposes this interpretation.',
+  }] : []);
+}
+
+async function remainingTeacher(
+  profile: ColumnProfileDocument, confident: MappingPlanV2['fields'], options: RoutingOptions,
+) {
+  const names = new Set(confident.map(field => field.sourceField));
+  const columns = profile.columns.filter(column => !names.has(column.name));
+  if (!columns.length) return undefined;
+  const remaining = { ...profile, columns, layoutFingerprint: layoutFingerprint(columns),
+    sampleShortfall: columns.some(column => column.maskedSamples.length < 5) };
+  if (options.dataPolicy.split === 'held_out' || options.dataPolicy.dataClass !== 'public') {
+    return manualTeacherPlan(remaining, 'TEACHER_DATA_DENIED');
+  }
+  return (options.teacher ?? proposeMappingWithTeacher)(remaining, options);
+}
+
+function routedResult(
+  profile: ColumnProfileDocument, version: string | null, confident: MappingPlanV2['fields'],
+  teacher: MappingTeacherResult | undefined, memoryReasonCode: string | null, studentReasonCode: string | null,
+): MappingRoutingResult {
+  const student = new Map(confident.map(field => [field.sourceField, field]));
+  const supplied = new Map(teacher?.plan.fields.map(field => [field.sourceField, field]) ?? []);
+  const fallback = manualTeacherPlan(profile, 'MAPPING_ROUTING_INVALID');
+  const fields = profile.columns.map(column => student.get(column.name) ?? supplied.get(column.name));
+  const method = `model:stage-a@${version ?? 'unavailable'}`;
+  let planMethod = teacher?.plan.method ?? method;
+  if (confident.length && teacher) planMethod = 'model:mapping-router@1';
+  else if (confident.length) planMethod = method;
+  const checked = validateMappingPlanV2({ ...fallback.plan, fields, method: planMethod },
+    mappingContextFromColumnProfile(profile));
+  const accepted = checked.success ? acceptedResult(checked.plan, {
+    profileHash: columnProfileHash(profile), attempts: teacher?.attempts ?? 0,
+    replayed: teacher?.replayed ?? false, validationCodes: teacher?.validationCodes ?? [],
+  }) : fallback;
+  const issues = checked.success ? [...accepted.issues, ...(teacher?.issues ?? [])] : fallback.issues;
+  return { ...accepted, issues, state: issues.length ? 'needs_input' : 'candidate', activeLearnerVersion: version,
+    memoryReasonCode, studentReasonCode, fieldSources: profile.columns.map(column => ({
+      sourceField: column.name, source: student.has(column.name) ? 'student' : 'teacher',
+      method: student.has(column.name) ? method : (teacher?.plan.method ?? MAPPING_TEACHER_METHOD),
+    })) };
+}
+
+/** Proposal-only exact memory → calibrated local student → governed teacher; held-outs never reach a teacher. */
+export async function proposeMapping(
+  profile: ColumnProfileDocument, options: RoutingOptions,
+): Promise<MappingRoutingResult> {
+  profile = ColumnProfileDocumentSchema.parse(profile);
+  const version = learnerVersion(options.learnerModelPath);
+  try {
+    await options.authorize();
+  } catch {
+    return { ...manualTeacherPlan(profile, 'MAPPING_AUTHORIZATION_DENIED'), activeLearnerVersion: version,
+      fieldSources: [], memoryReasonCode: null, studentReasonCode: null };
+  }
+  const memory = lookupMappingMemory(profile.layoutFingerprint, mappingContextFromColumnProfile(profile),
+    options.memoryPath);
+  if (memory.plan) {
+    return { ...acceptedResult(memory.plan, { profileHash: columnProfileHash(profile), attempts: 0,
+      replayed: false, validationCodes: [] }), activeLearnerVersion: version,
+      memoryReasonCode: null, studentReasonCode: null, fieldSources: profile.columns.map(column => ({
+        sourceField: column.name, source: memory.lineage?.source === 'officer' ? 'officer' : 'memory',
+        method: memory.plan!.method,
+      })) };
+  }
+  const student = callStudent(profile, options, version);
+  const confident = studentPlanFields(profile, student.fields);
+  let teacher: MappingTeacherResult | undefined;
+  try {
+    teacher = await remainingTeacher(profile, confident, options);
+  } catch {
+    teacher = manualTeacherPlan(profile, 'TEACHER_UNAVAILABLE');
+  }
+  return routedResult(profile, version, confident, teacher, memory.reasonCode, student.code);
 }
 
 /** Dry-run only; keep teacher issues on cells without collapsing null, absent or conflict states. */
