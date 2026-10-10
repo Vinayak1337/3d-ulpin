@@ -9,6 +9,7 @@ const STALE_REASON_WORDS: Record<Freshness['reasons'][number], string> = {
 // Reasons the server gives when nobody answered a column, in words. A code not listed here is shown as it is.
 const NO_ANSWER_WORDS: Record<string, string> = {
   TEACHER_UNAVAILABLE: 'teacher unavailable',
+  TEACHER_INPUT_LIMIT: 'table too wide; mapping teacher not asked',
   TEACHER_BUDGET_EXHAUSTED: 'teacher budget exhausted',
   TEACHER_RATE_LIMITED: 'teacher rate limited',
   TEACHER_AUTH_FAILED: 'teacher authorisation failed',
@@ -44,6 +45,8 @@ function unansweredQuestion(question: Question | undefined, target: Target, orig
 // A question whose reason is a code, as a sentence. A reason not listed here is the server's own wording.
 const QUESTION_WORDS: Record<string, string> = {
   TEACHER_UNAVAILABLE: 'No teacher was available when this table was imported: this column is unmapped.',
+  TEACHER_INPUT_LIMIT: 'This table is too wide for the mapping teacher, so the teacher was not asked '
+    + 'and the columns are left for the officer.',
 };
 
 export function questionWords(reason: string): string {

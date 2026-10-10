@@ -145,6 +145,22 @@ describe('a column of a table imported without a teacher', () => {
     expect(questionWords(row!.question!.reason)).toBe(SENTENCE);
   });
 
+  it('says the mapping teacher was not asked when the table is too wide, leaving columns for the officer', () => {
+    const copy = withoutTeacher();
+    copy.questions[0]!.reason = 'TEACHER_INPUT_LIMIT';
+    copy.fieldSources[0]!.source = 'unanswered';
+    copy.fieldSources[0]!.method = 'manual:TEACHER_INPUT_LIMIT';
+    const row = columnRows(profile, copy)[0]!;
+    expect(row).toMatchObject({ noAnswer: 'table too wide; mapping teacher not asked', confidence: null });
+    expect(isUnmapped(row)).toBe(true);
+    expect(questionWords(row.question!.reason))
+      .toBe('This table is too wide for the mapping teacher, so the teacher was not asked '
+        + 'and the columns are left for the officer.');
+    copy.fieldSources[0]!.source = 'memory';
+    copy.fieldSources[0]!.method = 'cache';
+    expect(columnRows(profile, copy)[0]!.noAnswer).toBe('table too wide; mapping teacher not asked');
+  });
+
   it('prints a percentage for a proposal that holds a confidence, and a reason it has no words for as it is', () => {
     const [row] = columnRows(profile, mapping);
     expect(row!.confidence).toBe(mapping.plan.fields[0]!.confidence);

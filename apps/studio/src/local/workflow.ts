@@ -126,7 +126,9 @@ export async function assignProposedCode(input: string | { spaceId: string; buil
   const code = projectCodeForPayload(randomPayload());
   const at = new Date().toISOString();
   const previous = workflow.events[0]!;
-  const recorded = await event(previous.revision + 1, 'recorded', `r${previous.revision + 1} Proposed code assigned`, at, previous.hash, { ...workflow, code });
+  const recorded = await event(
+    previous.revision + 1, 'recorded', 'Proposed code assigned', at, previous.hash, { ...workflow, code },
+  );
   const next: SpaceWorkflow = { ...workflow, status: 'Assigned', code, assignedAt: at, events: [recorded, ...workflow.events] };
   await (await db()).put(STORE, next);
   return next;

@@ -8,7 +8,7 @@ import {
   Badge, Banner, Button, DataTable, DescriptionList, EmptyState, EvidenceChip, Icon, LevelRail, Menu, Panel, RevisionTimeline, Skeleton,
   StatusBadge, Tabs, formatDate, formatDateTime, type RailLevel, type StatusWord,
 } from '@ulpin/ui';
-import { revisedRecordId } from '../../api/ledger';
+import { historyActor, revisedRecordId } from '../../api/ledger';
 import { useAreaContext, useBuildingLedger, useBuildingRegister, useBuildingResidents, type BuildingRegister } from '../../api/queries';
 import { isServed } from '../../local/routes';
 import { shortHash, type SpaceWorkflow } from '../../local/workflow';
@@ -480,12 +480,12 @@ function Documents({ register, ledger }: { register: BuildingRegister; ledger: B
 
 /**
  * A ledger revision as a History entry. The key holds the record it revises, because two records of a building
- * can be revised at the same time; an actor the ledger does not state is said to be not recorded.
+ * can be revised at the same time; only an explicitly null actor is said to be not recorded.
  */
 function ledgerEntry(revision: BuildingLedger['revisions'][number]) {
   const { title, kind, at, hash, previousHash } = revision;
   const id = `${revisedRecordId(revision) ?? 'entry'}:${revisionKey(revision)}`;
-  return { id, title, kind, at, by: revision.actor ?? 'Actor not recorded', hash, previousHash };
+  return { id, title, kind, at, by: historyActor(revision), hash, previousHash };
 }
 
 function History({ register, ledger, workflow, actions }: {
@@ -498,7 +498,9 @@ function History({ register, ledger, workflow, actions }: {
   const recorded = ledger?.revisions.map(ledgerEntry)
     ?? register.sources.slice(0, 1).map((s) => ({ id: s.id, title: `r${register.property.revision} Imported from ${s.name}`, kind: 'draft' as const, at: s.createdAt, by: 'Import', hash: s.sha256, previousHash: null }));
   const revisions = [...own, ...recorded].sort((a, b) => b.at.localeCompare(a.at)).map((r) => ({
-    id: r.id, title: r.title, kind: r.kind, byline: `${r.by} · ${formatDateTime(r.at)}`, hash: r.hash ? shortHash(r.hash) : null, previousHash: r.previousHash ? shortHash(r.previousHash) : null,
+    id: r.id, title: r.title, kind: r.kind,
+    byline: [r.by, formatDateTime(r.at)].filter(Boolean).join(' · '),
+    hash: r.hash ? shortHash(r.hash) : null, previousHash: r.previousHash ? shortHash(r.previousHash) : null,
   }));
   return <RevisionTimeline revisions={revisions} chain={ledger ? revisionChain(ledger.revisions) : 'unknown'} />;
 }

@@ -21,3 +21,8 @@ export const NOT_STATED = 'Not stated';
 export function identifierColumns(projectCodes: readonly (string | null)[]): readonly IdentifierColumn[] {
   return projectCodes.some(Boolean) ? ['identifier', 'projectCode'] : ['identifier'];
 }
+
+/** An empty served answer states zero requests; null or undefined states no count at all. */
+export function openRequestsColumn(requests: readonly unknown[] | null | undefined): boolean {
+  return Array.isArray(requests);
+}

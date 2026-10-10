@@ -1,8 +1,9 @@
-import { Link, Navigate, useParams } from 'react-router';
+import { Link, Navigate, useLocation, useParams } from 'react-router';
 import { FilePlus, WarningCircle } from '@phosphor-icons/react';
 import { DataTable, EmptyState, Icon, Panel, Skeleton, formatDateTime } from '@ulpin/ui';
 import { useSourceCase } from '../intake/table/queries';
-import { caseTables, noTableSentence, unreadCase, type CaseTable } from './caseEntry';
+import { useWorkQueue, type WorkItem } from '../../api/queries';
+import { caseQueueRow, caseTables, noTableSentence, unreadCase, type CaseTable } from './caseEntry';
 import styles from './BatchesPage.module.css';
 
 /**
@@ -11,8 +12,12 @@ import styles from './BatchesPage.module.css';
  */
 export function CasePage() {
   const caseId = useParams()['*']?.split('/')[0] ?? '';
+  const opened = (useLocation().state as { caseRow?: WorkItem } | null)?.caseRow;
   const sourceCase = useSourceCase(caseId);
-  if (sourceCase.isPending) return <div className={styles.casePage}><Skeleton width="40%" /><Skeleton /></div>;
+  const queue = useWorkQueue('all', '', 1);
+  if (sourceCase.isPending || queue.isPending) {
+    return <div className={styles.casePage}><Skeleton width="40%" /><Skeleton /></div>;
+  }
   if (sourceCase.error) {
     return (
       <div className={styles.casePage}>
@@ -24,7 +29,8 @@ export function CasePage() {
     );
   }
   const { sources } = sourceCase.data;
-  const tables = caseTables(caseId, sources);
+  const row = caseQueueRow(caseId, queue.data?.items ?? [], opened);
+  const tables = caseTables(caseId, sources, row);
   if (tables.length === 1) return <Navigate to={tables[0]!.href} replace />;
   return (
     <div className={styles.casePage}>
@@ -41,7 +47,7 @@ function RetainedTables({ tables }: { tables: CaseTable[] }) {
       <DataTable caption="Retained tables of this case, newest first" rows={tables} rowKey={(table) => table.sourceId}
         columns={[
           { header: 'Table', cell: (table) => <Link to={table.href}>{table.name}</Link> },
-          { header: 'Retained', cell: (table) => formatDateTime(table.retainedAt) },
+          { header: 'Retained', cell: (table) => table.retainedAt ? formatDateTime(table.retainedAt) : 'Unknown' },
         ]} />
     )}>
       <p className="ul-help">Each table has its own import page. Open one to continue its import.</p>

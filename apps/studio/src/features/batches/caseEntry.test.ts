@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@ulpin/api-client';
-import { caseTables, noTableSentence, unreadCase } from './caseEntry';
+import { caseQueueRow, caseTables, noTableSentence, unreadCase } from './caseEntry';
 
 // Shape-only sources: every value below is a structural placeholder for the rule under test, not a record.
 const source = (id: string, profile: string, createdAt: string) => ({ id, name: `${id}.file`, profile, createdAt });
@@ -20,6 +20,42 @@ describe('where Continue import leads', () => {
   it('gives no table page for a case without a table source', () => {
     expect(caseTables('c1', [source('s1', 'geotiff-raster-v1', '2026-10-01T00:00:00Z')])).toEqual([]);
     expect(caseTables('c1', [])).toEqual([]);
+  });
+});
+
+describe('opening a case from a filtered queue', () => {
+  it('keeps that row when the unfiltered first page omits it, without using another case row', () => {
+    type Row = NonNullable<ReturnType<typeof caseQueueRow>>;
+    const opened = { id: 'c1', kind: 'case', tableSourceIds: ['s1'] } as Row;
+    expect(caseQueueRow('c1', [], opened)).toBe(opened);
+    expect(caseQueueRow('c2', [], opened)).toBeUndefined();
+    const fresh = { ...opened, tableSourceIds: [] };
+    expect(caseQueueRow('c1', [fresh], opened)).toBe(fresh);
+  });
+});
+
+describe('the case row lists its own tables', () => {
+  const sources = [table('old', '2026-10-01T00:00:00Z'), table('new', '2026-10-03T00:00:00Z')];
+
+  it('keeps the case-source fallback when the row field is absent', () => {
+    expect(caseTables('c1', sources, {}).map((entry) => entry.sourceId)).toEqual(['new', 'old']);
+  });
+
+  it('an empty list opens none even when the source read lists tables', () => {
+    expect(caseTables('c1', sources, { tableSourceIds: [] })).toEqual([]);
+  });
+
+  it('opens the one id the row states, not another table in the case read', () => {
+    expect(caseTables('c1', sources, { tableSourceIds: ['old'] }).map((entry) => entry.href))
+      .toEqual(['/studio/work/cases/c1/tables/old']);
+  });
+
+  it('keeps all five ids in the order stated, including ids whose metadata is not in the case read', () => {
+    const ids = ['new', 'id-three', 'old', 'id-two', 'id-one'];
+    const tables = caseTables('c1', sources, { tableSourceIds: ids });
+    expect(tables.map((entry) => entry.sourceId)).toEqual(ids);
+    expect(tables.map((entry) => entry.href)).toEqual(ids.map((id) => `/studio/work/cases/c1/tables/${id}`));
+    expect(tables[1]).toMatchObject({ name: 'id-three', retainedAt: null });
   });
 });
 
