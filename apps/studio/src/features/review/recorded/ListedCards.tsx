@@ -11,12 +11,12 @@ function CardActions({ row }: { row: CardRow }) {
     <span className={styles.cardActions}>
       {row.readable ? (
         <a className="ul-btn" href={cardPdfPath(row.cardId, row.revision)} target="_blank" rel="noreferrer"
-          aria-label={`Open card PDF, revision ${row.revision}`}>
+          aria-label={`Open card PDF, card ${row.card}, revision ${row.revision}`}>
           Open card PDF
         </a>
       ) : null}
       <Link className="ul-btn" to={cardVerificationPath(row.cardId, row.revision)}
-        aria-label={`Verification, revision ${row.revision}`}>
+        aria-label={`Verification, card ${row.card}, revision ${row.revision}`}>
         Verification
       </Link>
     </span>
@@ -24,6 +24,7 @@ function CardActions({ row }: { row: CardRow }) {
 }
 
 const COLUMNS: Column<CardRow>[] = [
+  { header: 'Card', cell: (row) => <span className="ul-mono" title={row.cardId}>{row.card}</span> },
   { header: 'Revision', cell: (row) => row.revision },
   { header: 'Issued', cell: (row) => row.issued ?? <em className="ul-unknown">Not reported</em> },
   { header: 'Status', cell: (row) => <Badge tone={row.tone} icon={null}>{row.status}</Badge> },
