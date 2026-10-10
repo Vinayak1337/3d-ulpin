@@ -14,7 +14,7 @@ import { shortHash, type SpaceWorkflow } from '../../local/workflow';
 import { buildingModel, type SpaceModel } from '../../model/building';
 import { EvidenceProvider, useOpenEvidence } from '../evidence/EvidenceContext';
 import { parseLocator } from '../evidence/refs';
-import { CardDialog } from '../identity/CardDialog';
+import { UnitCardDialog } from '../identity/UnitCardDialog';
 import { levelSummary } from '../map/inspector/BuildingInspector';
 import { ledgerSpace, ledgerStatus, revisionChain, revisionKey } from '../map/ledger';
 import { polygonsOf } from '../map/footprints';
@@ -26,7 +26,7 @@ import { cityJson, download, fileStem } from './exporters';
 import { RegisterAbsent } from './RegisterAbsent';
 import { absentReason } from './registerState';
 import { printRegistry, registryDetail, registryHtml, registryPackage, registryTables, registryWorkbook } from './registry';
-import { featureCode } from '../../api/queries';
+import { featureCode, useUnitCards } from '../../api/queries';
 import type { ConsolidatedRegistryReport } from '../../../../../packages/contracts/src/building-registry-report';
 import { useMapView } from '../map/useMapView';
 import styles from './RegisterPage.module.css';
@@ -125,8 +125,10 @@ function Register({ register }: { register: BuildingRegister }) {
   const workflowMap = useMemo(() => byId, [byId]);
   const snapshot = useCallback(() => engine?.snapshot() ?? null, [engine]);
 
+  // A card the registry lists for the selected unit opens whether or not this browser holds a draft code.
+  const registryCard = Boolean(useUnitCards(property.id, record?.id).data?.snapshotCreatedAt);
   const cardBlocked = !record ? 'Blocked: select a unit with an assigned proposed code'
-    : !recordWorkflow?.code ? 'Blocked: assign a proposed code first' : null;
+    : !recordWorkflow?.code && !registryCard ? 'Blocked: assign a proposed code first' : null;
   const stem = fileStem(register);
   const [exportError, setExportError] = useState<string | null>(null);
   /** Every export starts from the API's consolidated registry report, then adds the register's measurements. */
@@ -262,8 +264,9 @@ function Register({ register }: { register: BuildingRegister }) {
           </div>
         </div>
 
-        {cardOpen && record && recordWorkflow?.code ? (
-          <CardDialog workflow={recordWorkflow} space={record} buildingName={property.name}
+        {cardOpen && record ? (
+          <UnitCardDialog buildingId={property.id} workflow={recordWorkflow} space={record}
+            buildingName={property.name}
             level={model.levels.find((l) => l.id === record.levelId) ?? null} onClose={() => setCardOpen(false)} />
         ) : null}
       </div>

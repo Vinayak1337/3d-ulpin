@@ -13,7 +13,7 @@ import { EvidenceProvider } from '../evidence/EvidenceContext';
 import { AssignDialog } from '../identity/AssignDialog';
 import { AddFilesDialog } from '../intake/AddFilesDialog';
 import { DeleteDialog } from '../manage/DeleteDialog';
-import { CardDialog } from '../identity/CardDialog';
+import { UnitCardDialog } from '../identity/UnitCardDialog';
 import { useSpaceWorkflow } from '../workflow/useWorkflow';
 import { polygonsOf, undrawnNote } from './footprints';
 import { useCanonicalFootprints } from './canonicalScene';
@@ -508,8 +508,9 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
       {dialog === 'assign' && space && register ? (
         <AssignDialog space={space} register={register} onClose={() => setDialog(null)} onAssigned={(code) => { setDialog(null); setToast(code); }} />
       ) : null}
-      {dialog === 'card' && space && spaceWorkflow.data?.code && feature ? (
-        <CardDialog workflow={spaceWorkflow.data} space={space} level={level} buildingName={feature.name} onClose={() => setDialog(null)} />
+      {dialog === 'card' && space && feature ? (
+        <UnitCardDialog buildingId={feature.id} workflow={spaceWorkflow.data} space={space} level={level}
+          buildingName={feature.name} onClose={() => setDialog(null)} />
       ) : null}
       {toast ? (
         <Toast onDone={() => setToast(null)}>
