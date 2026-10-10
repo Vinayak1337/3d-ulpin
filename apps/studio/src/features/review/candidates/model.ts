@@ -138,8 +138,9 @@ export function candidateCard(candidate: CanonicalCandidate): CandidateCard | nu
 
 /** Cards for every drawable candidate of a canonical record, plus how many entries carry no geometry. */
 export function candidateCards(candidates: readonly CanonicalCandidate[] | undefined, kind: CandidateKind) {
-  const cards = (candidates ?? []).flatMap((c) => candidateCard(c) ?? []).filter((card) => card.kind === kind);
-  return { cards, withoutGeometry: (candidates ?? []).length - cards.length };
+  const ofKind = (candidates ?? []).filter((candidate) => candidate.kind === kind);
+  const cards = ofKind.flatMap((candidate) => candidateCard(candidate) ?? []);
+  return { cards, withoutGeometry: ofKind.length - cards.length };
 }
 
 export interface CandidateGroup {

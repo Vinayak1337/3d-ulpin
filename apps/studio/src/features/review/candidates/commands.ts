@@ -18,9 +18,9 @@ export async function attachRoomToLevel(buildingId: string, body: AttachLevelBod
 }
 
 /**
- * Ask the registry to review a roofprint draft. TODO(K2e): call the officer geometry-qualification command
- * here, before this review, once it is published in docs/api/openapi.json; until then the review refuses an
- * unqualified payload and the refusal is shown as it is.
+ * Ask the registry to review a roofprint draft. Registry admission of model roofprints is deferred until after
+ * the demo (docs/evidence/gf-backend/k2f/admission-decision.md), so the review refuses the unqualified payload
+ * and the refusal is shown as it is.
  */
 export async function reviewDraftForRegistry(packageId: string, expectedRevision: number) {
   return unwrap(await api.POST('/api/v1/import-packages/{packageId}/review', {
