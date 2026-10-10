@@ -82,7 +82,8 @@ async function acceptSlot(input:AnyStreamingInput,attempt:UspJobAttempt,slot:Slo
   });
 }
 
-async function terminal(input:AnyStreamingInput,attempt:UspJobAttempt,code:string,nextIndex:number,nextFeatureIndex:number,stale=false){
+async function terminal(input:AnyStreamingInput,attempt:UspJobAttempt,code:string,
+  nextIndex:number,nextFeatureIndex:number,stale=false){
   await transaction(async client=>{
     if(stale)await lockStreamingRowsTx(client,input.caseId,input.sourceId);
     else await assertStreamingInputTx(client,input);
