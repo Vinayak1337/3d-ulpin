@@ -76,6 +76,7 @@ test('gateway: a candidate keeps both Tower 3 expressions and is recorded for re
   const { ledger, gateway } = gatewayReturning(answer());
   const result = await extractStoreyFacts(PARTS, optionsFor(gateway, recordings));
   assert.equal(result.state, 'candidate');
+  assert.equal(result.gatewayRefusal, undefined);
   assert.deepEqual(result.output?.floorExpressions.map((item) => item.expression), ['G+41', 'G+42']);
   assert.equal(ledger.settled, 1);
   const replayAdapter = new ReplayAdapter((key) => recordings.replay(key));
@@ -98,6 +99,7 @@ test('gateway: abstention and a budget failure are reported, not turned into fac
   const result = await extractStoreyFacts(PARTS, optionsFor(capped));
   const expected = ['teacher_unavailable', 'TEACHER_BUDGET_EXHAUSTED', null];
   assert.deepEqual([result.state, result.code, result.output], expected);
+  assert.deepEqual(result.gatewayRefusal, { code: 'MODEL_PROJECT_CAP', retryable: false });
 });
 
 test('policy: held-out and private documents never reach the gateway', async () => {
@@ -105,6 +107,7 @@ test('policy: held-out and private documents never reach the gateway', async () 
   for (const policy of [{ dataClass: 'public', split: 'held_out' }, { dataClass: 'private', split: 'development' }]) {
     const result = await extractStoreyFacts(PARTS, { ...optionsFor(gateway), dataPolicy: policy as never });
     assert.equal(result.code, 'TEACHER_DATA_DENIED');
+    assert.equal(result.gatewayRefusal, undefined);
   }
   assert.equal(ledger.reserved, 0);
 });
@@ -112,6 +115,7 @@ test('policy: held-out and private documents never reach the gateway', async () 
 test('no configured gateway fails closed as teacher_unavailable', async () => {
   const result = await extractStoreyFacts(PARTS, { ...optionsFor(undefined as never), runtime: async () => undefined });
   assert.deepEqual([result.state, result.code], ['teacher_unavailable', 'TEACHER_UNAVAILABLE']);
+  assert.equal(result.gatewayRefusal, undefined);
 });
 
 test('batches: only storey-related lines are sent and each call stays under the prompt bound', () => {
@@ -124,7 +128,26 @@ test('batches: only storey-related lines are sent and each call stays under the 
   const batches = storeyPartBatches(store);
   assert(batches.length > 1);
   assert(batches.flat().every((part) => part.partId !== 'p1-noise'));
-  for (const batch of batches) assert(batch.reduce((sum, part) => sum + part.text.length, 0) <= 14000);
+  for (const [index, batch] of batches.entries()) {
+    assert.doesNotThrow(() => minimizeMessages(storeyRequest(batch).messages));
+    const next = batches[index + 1]?.[0];
+    if (next) assert.throws(() => minimizeMessages(storeyRequest([...batch, next]).messages),
+      { code: 'MODEL_INPUT_LIMIT' });
+  }
+});
+
+test('batches: three-byte lines close at the gateway byte bound, despite fitting the old character bound', () => {
+  const lines = Array.from({ length: 40 }, (_, index) => ({ id: `p1-l${index}`, text: `तल ${'क'.repeat(230)}` }));
+  const store: StoreyPageStore = { source: { sha256: 'e'.repeat(64) }, pages: { '1': { lines } } };
+  const whole = lines.map(line => ({ partId: line.id, page: 1, text: line.text }));
+  assert(whole.reduce((sum, part) => sum + part.text.length + 48, 0) < 14000);
+  assert.throws(() => minimizeMessages(storeyRequest(whole).messages), { code: 'MODEL_INPUT_LIMIT' });
+  const batches = storeyPartSelection(store).batches;
+  assert.equal(batches.length, 2);
+  assert.deepEqual(batches.flat(), whole);
+  for (const batch of batches) assert.doesNotThrow(() => minimizeMessages(storeyRequest(batch).messages));
+  assert.throws(() => minimizeMessages(storeyRequest([...batches[0], batches[1][0]]).messages),
+    { code: 'MODEL_INPUT_LIMIT' });
 });
 
 test('selection: a line the minimizer refuses is left out, named, and cannot be cited', async () => {

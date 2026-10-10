@@ -317,7 +317,7 @@ type MapStep = {
 };
 type Observed = { before: ReturnType<Probe['snapshot']>; after: ReturnType<Probe['snapshot']>; asked: string[] };
 const NOT_REFUSALS = new Set(['TEACHER_UNCERTAIN', 'MAPPING_REVIEW_REQUIRED', 'TEACHER_UNAVAILABLE',
-  'TEACHER_REPLAY_UNAVAILABLE', 'TEACHER_RECORDING_UNAVAILABLE', 'TEACHER_DATA_DENIED']);
+  'TEACHER_REPLAY_UNAVAILABLE', 'TEACHER_RECORDING_UNAVAILABLE', 'TEACHER_DATA_DENIED', 'TEACHER_INPUT_LIMIT']);
 const REVIEW_NOTE = 'Test review by the C1 worker on a public development table; not property truth.';
 
 function committedFields(draft: TabularChunkDraft) {
