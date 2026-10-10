@@ -131,7 +131,9 @@ def complete_selection(plan: dict[str, Any], rows: list[dict[str, Any]]) -> dict
         "recall_delta": chosen["recall"] - plan["baseline_dev_recall"],
         "empty_fp_delta": chosen["empty_fp"]["buildings"] - plan["baseline_empty_fp"]["buildings"],
         "profile_version": profile,
-        "note": "Selection uses DEV only; any transfer test needs its own preregistration. Karnataka HOLDOUT is closed.",
+        "note": (
+            "Selection uses DEV only; any transfer test needs its own preregistration. Karnataka HOLDOUT is closed."
+        ),
     }
 
 

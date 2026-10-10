@@ -5,6 +5,11 @@ measures the existing FP32/eval PyTorch adapter with the unchanged production
 preprocessing, tiling, painting and polygonization on two real DEV chips.
 It is an in-process CPU measurement while training owns the GPU, not API latency
 or an accuracy/serving qualification. It does not use Karnataka HOLDOUT.
+The additional `b4-pytorch-resource-20261010/result.json` records model-load time,
+RSS before/after loading, final RSS and peak working set using `psutil`. The
+process peak includes Python/framework overhead and two source-chip calls; it is
+not a full-image capacity or concurrent-job benchmark. No model was moved onto
+the training GPU for these measurements. CPU-vs-CUDA raw parity is not qualified.
 
 ## Existing path and minimum integration work (not built here)
 
@@ -43,5 +48,7 @@ still fails. Tolerances and the PyTorch reference were not changed.
 
 Stop further export trials in this session. A future deterministic encoder-ranking
 inference profile would need a new DEV comparison and transfer-qualified model card;
-it cannot inherit B3's Karnataka HOLDOUT result. Do not mask the gap by aligning,
+it cannot inherit B3's Karnataka HOLDOUT result. B4's single Coxs Bazar transfer
+slot is consumed, so any future candidate needs a separately approved independent
+transfer protocol. Do not mask the gap by aligning,
 rounding or ignoring raw outputs solely to obtain a passing parity receipt.
