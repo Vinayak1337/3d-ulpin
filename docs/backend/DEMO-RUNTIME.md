@@ -13,13 +13,58 @@ Worker worktrees must never serve the demo: lazy imports would mix unreviewed ch
 3. Select an already-present, lead-reviewed staging commit:
    `git -C E:/Projects/ulpin-wt/demo checkout --detach <commit>`
 4. If `pnpm-lock.yaml` changed, run `pnpm install --frozen-lockfile` from that checkout.
-5. Start both native processes from that checkout:
+5. **On every rollout, after checkout and before startup**, rebuild the frozen document region profile there:
+   `node scripts/platform/demo-document-runtime.mjs build`
+   It reuses the configured OCR interpreter (paths only), the existing frozen-profile builder and private ACL helper.
+   If selecting an interpreter explicitly, append `--python <absolute existing interpreter file>`.
+   It refuses a normal build outside `E:/Projects/ulpin-wt/demo` or while a recorded native process is running.
+6. Start both native processes from that checkout:
    `pnpm platform:start --profile demo`
-6. Run `pnpm platform:doctor --profile demo` there. Record both process entry paths, PIDs and the served commit.
-7. Prove one existing job authority is dispatched automatically; retain API and SSE receipts outside Git.
+7. Run `pnpm platform:doctor --profile demo` there. Record both process entry paths, PIDs and the served commit.
+   Require **PASS Document runtimes**, alongside the existing model-gateway and other checks described below.
+8. Prove one existing job authority is dispatched automatically; retain API and SSE receipts outside Git.
 
 Never edit application files in the demo checkout, copy/read credentials, use `--create`, reset/reseed,
 stop or replace containers, remove volumes, fetch unreviewed code, or use `down -v`.
 The platform start command resumes the existing project only; populated storage and external credentials remain intact.
 If doctor fails, preserve the runtime and diagnose its specific failure; do not initialise replacement storage.
 Code changes merge on staging first, then roll here in a separately authorised runtime task.
+
+## Document runtime configuration
+
+The builder never opens or rewrites `demo.env`. It writes the non-secret `document-runtime-paths.json` beside it.
+Each build creates a new ACL-restricted directory containing an immutable `packet-region-runtime/1` profile and
+separate page/region scratch directories. Only the path-file pointer is atomically replaced; old profiles and
+scratch directories are retained, never automatically pruned. The command prints key names and hashes, not paths
+or profile contents. A failure preserves its new directory and leaves the existing pointer unchanged.
+
+The path file permits only these keys:
+
+| Runtime | Keys |
+| --- | --- |
+| Pages | `ULPIN_DOCUMENT_PAGES_PYTHON`, `ULPIN_DOCUMENT_PAGES_SCRATCH` |
+| Regions | `ULPIN_PACKET_REGIONS_PYTHON`, `ULPIN_PACKET_REGIONS_PROFILE` |
+| Regions (continued) | `ULPIN_PACKET_REGIONS_PROFILE_SHA256`, `ULPIN_PACKET_REGIONS_SCRATCH` |
+
+A missing file means unconfigured; either group may be absent, but a partial group fails closed.
+Paths must be absolute, existing files/directories of the right kind, and scratch must resolve outside every
+checkout. The profile hash is 64 lowercase hexadecimal characters. Validation errors name keys, never values.
+`readDemo()` merges these validated settings into the existing native launcher environment; no new authority is added.
+
+Doctor's **Document runtimes** check reports `documentPagesConfigured`, `packetRegionsConfigured`,
+`regionProfileSha256` and `regionRepoMatches`. It fails if either runtime is unconfigured, or if the existing
+`verifiedProfile()` check refuses the configured profile hash, resolved asset bytes or serving-checkout `repo`.
+The interpreter must also match the frozen profile. A pass verifies host configuration/closure only, not current
+HTTP source access or a successful native crop. The existing G1 model-gateway checks remain unchanged.
+
+For offline development, another checkout is permitted only with `--dry-run --out <absolute temporary folder>`
+(and an explicit `--python` if no OCR paths are configured). Dry runs cannot target a checkout or shared runtime.
+They do not activate configuration or services. Never reuse a worker-checkout profile for the demo: its absolute
+`repo` and physical closure are different. Rebuild deliberately after every reviewed checkout/runtime change.
+
+The Tower 3 plan1 metadata frame is 2586 × 1695 pt. Whole-page raster remains unsupported because its existing
+2000-pt page-side limit is exceeded. Packet regions have a separate 14,400-pt source-side bound and a 2000-pt
+**selected-side** bound. The caption `[850,875,1020,910]` (170 × 35 pt) and label `[596,390,644,409]` (48 × 19 pt)
+fit without changing any limit or scale: the existing 3× choice gives 510 × 105 and 144 × 57 px respectively.
+Only the inward-rounded region bitmap is allocated, not the 7758 × 5085 transform canvas. These citations prove
+literal labels only, never a unit boundary, numeric level, measurements, rights or current approval.
