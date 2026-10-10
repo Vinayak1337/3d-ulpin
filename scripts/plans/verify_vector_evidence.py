@@ -252,7 +252,7 @@ def verify_page(directory: Path, context: PageCheck, native_page: fitz.Page, rec
     if context.panels:
         verify_panels(context, native, native_page)
     verify_native_lines(context.page, native)
-    if context.page["classification"]["kind"] != "vector_plan":
+    if context.page["classification"]["kind"] != "vector_plan" or "no_matching_layer_profile" in context.page["gaps"]:
         assert not context.page["candidates"] and not context.panels
         assert context.page["scale"]["metresPerPdfPoint"] is None
     labels = dimensions = 0

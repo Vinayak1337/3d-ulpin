@@ -7,8 +7,10 @@ bbox's >5% diagnostic must not silently override the <5% area comparison.
 """
 
 import unittest
+
+import fitz
 from shapely.geometry import Polygon
-from geo.vector_plan import consistency, in_scope, parse_dimensions
+from geo.vector_plan import DEFAULTS, MAGNOLIA_CAD_LAYERS, consistency, digest, in_scope, parse_dimensions, read_page
 
 
 class DoorLeafBboxRegression(unittest.TestCase):
@@ -53,6 +55,26 @@ class SourceLineBboxRegression(unittest.TestCase):
             in_scope([1035.43994140625, 1507.6400146484375, 1234.4000244140625, 1507.6400146484375], region)
         )
         self.assertFalse(in_scope([1035.44, 1507.64, 1300, 1507.64], region))
+
+
+class LayerProfileAbstention(unittest.TestCase):
+    def test_other_cad_layer_names_return_explicit_no_match_gap(self) -> None:
+        # Synthetic code-path check only, not a room inventory or gate evidence.
+        with fitz.open() as document:
+            page = document.new_page()
+            other_layer = document.add_ocg("OTHER-ARCHITECT-WALLS")
+            for index in range(24):
+                page.draw_line((20, 30 + index * 5), (200, 30 + index * 5), oc=other_layer)
+            page.insert_text((20, 180), "GROUND FLOOR PLAN")
+            layers = {drawing["layer"] for drawing in page.get_drawings()}
+            self.assertEqual(layers, {"OTHER-ARCHITECT-WALLS"})
+            self.assertFalse(any(MAGNOLIA_CAD_LAYERS.matches_wall_layer(layer) for layer in layers))
+            result = read_page(page, {"purpose": "synthetic_code_path_test"}, digest(DEFAULTS), DEFAULTS)
+            self.assertEqual(result["classification"]["kind"], "vector_plan")
+            self.assertEqual(result["gaps"], ["no_matching_layer_profile"])
+            self.assertEqual(result["candidates"], [])
+            self.assertEqual(result["panels"], [])
+            self.assertIsNone(result["scale"]["metresPerPdfPoint"])
 
 
 if __name__ == "__main__":

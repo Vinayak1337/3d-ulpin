@@ -4,14 +4,17 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 from typing import Any
 
 from compact_evidence import encode
 
 JsonDict = dict[str, Any]
+ROOT = Path(__file__).resolve().parents[2]
 EXCLUSIONS = {
     "candidates.json": ["/codeSha256", "/pages/*/runtimeSeconds"],
     "consistency.json": [],
@@ -70,12 +73,72 @@ def compare(record: JsonDict, after_root: Path) -> JsonDict:
     }
 
 
-def proof(baseline: Path, after_root: Path) -> JsonDict:
+def function_quality(function: ast.FunctionDef) -> JsonDict:
+    arguments = [*function.args.posonlyargs, *function.args.args, *function.args.kwonlyargs]
+    return {
+        "name": function.name,
+        "lines": function.end_lineno - function.lineno + 1,
+        "typed": function.returns is not None
+        and all(argument.annotation is not None for argument in arguments if argument.arg not in {"self", "cls"}),
+    }
+
+
+def file_quality(path: Path) -> JsonDict:
+    text = path.read_text(encoding="utf-8")
+    functions = [function_quality(node) for node in ast.walk(ast.parse(text)) if isinstance(node, ast.FunctionDef)]
+    return {
+        "file": path.relative_to(ROOT).as_posix(),
+        "functionCount": len(functions),
+        "maximumFunctionLines": max(function["lines"] for function in functions),
+        "exceptionsOver40Lines": [function for function in functions if function["lines"] > 40],
+        "allFunctionsTyped": all(function["typed"] for function in functions),
+        "maximumLineCharacters": max(len(line) for line in text.splitlines()),
+        "over120CharacterLines": [index for index, line in enumerate(text.splitlines(), 1) if len(line) > 120],
+    }
+
+
+def code_quality() -> list[JsonDict]:
+    paths = [
+        ROOT / "services/geo/geo/vector_plan.py",
+        ROOT / "services/geo/geo/test_vector_plan.py",
+        *sorted((ROOT / "scripts/plans").glob("*.py")),
+    ]
+    results = [file_quality(path) for path in paths]
+    assert all(result["allFunctionsTyped"] and not result["over120CharacterLines"] for result in results)
+    assert all(not result["exceptionsOver40Lines"] for result in results)
+    return results
+
+
+def receipt_record(after_root: Path, input_name: str) -> JsonDict:
+    path = after_root / input_name / "result.json"
+    raw = path.read_bytes()
+    receipt = json.loads(raw)
+    return {
+        "input": input_name,
+        "path": str(path),
+        "sha256": checksum(raw),
+        "bytes": len(raw),
+        "layerProfileName": receipt["layerProfileName"],
+        "pageResults": receipt["pageResults"],
+        "sourceHashUnchanged": receipt["sourceHashUnchanged"],
+    }
+
+
+def git_context() -> JsonDict:
+    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True)
+    staging = subprocess.run(["git", "rev-parse", "staging"], cwd=ROOT, capture_output=True, text=True, check=True)
+    ancestor = subprocess.run(["git", "merge-base", "--is-ancestor", "staging", "HEAD"], cwd=ROOT)
+    return {
+        "head": head.stdout.strip(),
+        "staging": staging.stdout.strip(),
+        "stagingIsAncestor": ancestor.returncode == 0,
+    }
+
+
+def proof(baseline: Path, after_root: Path, checks_path: Path | None = None) -> JsonDict:
     manifest = json.loads(baseline.read_text(encoding="utf-8"))
     cases = [compare(record, after_root) for record in manifest["files"]]
-    receipts = [
-        json.loads((after_root / name / "result.json").read_text(encoding="utf-8")) for name in ["bihar", "tower3"]
-    ]
+    receipts = [receipt_record(after_root, name) for name in ["bihar", "tower3"]]
     return {
         "version": "vector-plan-refactor-proof/1",
         "task": "P1 structure review",
@@ -88,7 +151,11 @@ def proof(baseline: Path, after_root: Path) -> JsonDict:
         "Neither compared document has timestamps.",
         "receiptsNote": "result.json receipts retain fresh timestamps, code/git hashes "
         "and layerProfileName; not compared.",
-        "layerProfileNames": [receipt["layerProfileName"] for receipt in receipts],
+        "layerProfileName": receipts[0]["layerProfileName"],
+        "receipts": receipts,
+        "codeQuality": code_quality(),
+        "checks": json.loads(checks_path.read_text(encoding="utf-8")) if checks_path else [],
+        "gitContext": git_context(),
         "cases": cases,
         "allIdentical": all(case["identical"] for case in cases),
     }
@@ -101,8 +168,9 @@ def main() -> None:
         "--after", required=True, type=Path, help="private full-precision root with bihar/tower3 children"
     )
     parser.add_argument("--out", required=True, type=Path)
+    parser.add_argument("--checks", type=Path, help="optional receipt of verification commands actually executed")
     args = parser.parse_args()
-    result = proof(args.baseline, args.after)
+    result = proof(args.baseline, args.after, args.checks)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("xb") as stream:
         stream.write(encode(result))

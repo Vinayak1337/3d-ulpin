@@ -17,7 +17,16 @@ import time
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "services" / "geo"))
 import fitz
-from geo.vector_plan import DEFAULTS, METHOD, JsonDict, digest, read_page, render_overlay, sha256_file
+from geo.vector_plan import (
+    DEFAULTS,
+    MAGNOLIA_CAD_LAYERS,
+    METHOD,
+    JsonDict,
+    digest,
+    read_page,
+    render_overlay,
+    sha256_file,
+)
 from compact_evidence import publish
 
 
@@ -251,6 +260,7 @@ def run_receipt(
     return {
         "version": "vector-plan-result/2",
         "task": "P1",
+        "layerProfileName": MAGNOLIA_CAD_LAYERS.name,
         "gate": ["GF-AI:plan_rooms", "GF-T16-prerequisite"],
         "createdAt": datetime.now(timezone.utc).isoformat(),
         "gitSha": git.stdout.strip() if git.returncode == 0 else None,

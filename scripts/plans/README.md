@@ -23,6 +23,35 @@ Optional `--region PAGE:X0,Y0,X1,Y1` restricts a title-derived scope; crop edges
 never become room boundaries. `--max-opening-m` records a different explicit
 closure bound (default 1.85 m); it is not a tuning loop.
 
+## Named CAD layer profile (structure review)
+
+`LayerProfile` is a frozen dataclass in `services/geo/geo/vector_plan.py`. Its
+wall-hatch, floor-slab, built-outline and column/window-quad selectors are
+compiled full-match regexes or immutable name sets. `MAGNOLIA_CAD_LAYERS`
+(`magnolia-cad/1`) declares the supplied drawing's layer convention in one place.
+`read_page(..., layer_profile=...)` accepts an explicit source-family profile.
+The CLI uses this default and records `layerProfileName` in `result.json`.
+
+A vector page with **no matching wall layer** returns
+`no_matching_layer_profile`, zero rooms and unknown scale. There is **no
+layerless/thick-line guessing fallback**. A matched profile without reliable
+scale or hatch support still abstains with its existing reason. Regexes and
+name sets are dispatch rules, not inferred semantics or source facts.
+
+The pipeline now uses typed `WallEvidence`, `AxisSegment`, `WallStrip`,
+`OpeningBridge` and `OutlineResult` values between collection, pairing,
+closure, mask, outline and face extraction. Source-literal dictionaries remain
+at the existing JSON boundary; no alternate registry schema was introduced.
+Legacy parameter-receipt fields are retained solely to reproduce the accepted
+parameter hashes; the unused edge-polygonization implementation was removed.
+
+The structure-review proof is in
+`docs/evidence/gf-ai/plans/vector/20261010-p1-structure/result.json`. It compares
+SHA-pinned **full precision**, canonicalising object-key order and excluding
+only `/codeSha256` and `/pages/*/runtimeSeconds` from candidates; consistency
+has **no excluded fields**. Neither compared document contains timestamps.
+Fresh result receipts, with timing/code/profile metadata, are pinned separately.
+
 ## Detection, geometry and attachment
 
 - Detect `GROUND/FIRST/SECOND/TERRACE/... FLOOR PLAN` and the nearby scale line
