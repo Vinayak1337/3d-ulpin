@@ -101,5 +101,12 @@ export const router = createBrowserRouter([
   },
   // The card's QR opens this, outside the Studio frame.
   { path: '/verify/:code', element: <VerifyPage /> },
+  // The server's verification report of one registry card revision, also outside the Studio frame.
+  {
+    path: '/verify/card/:cardId/:revision',
+    lazy: async () => ({
+      Component: (await import('../features/verify/CardVerificationPage')).CardVerificationPage,
+    }),
+  },
   { path: '*', element: <NotFoundPage /> },
 ]);

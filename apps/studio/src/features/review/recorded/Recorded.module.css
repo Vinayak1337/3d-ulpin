@@ -43,3 +43,10 @@
   line-height: 18px;
   text-align: left;
 }
+
+/* The cards the registry lists for a unit, under its code. */
+.cards { display: grid; gap: var(--ui-space-2); min-width: 0; }
+.sublabel { margin: 0; font: 600 var(--ui-text-sm)/20px var(--ui-font-sans); }
+/* The card table scrolls inside its unit instead of widening the page at 200% zoom. */
+.cardTable { overflow-x: auto; }
+.cardActions { display: flex; flex-wrap: wrap; gap: var(--ui-space-2); }
