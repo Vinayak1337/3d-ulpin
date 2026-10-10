@@ -5,8 +5,9 @@ import { AppError } from '../../infrastructure/errors';
 import { redactDerivative } from '../usp/ingest/redact';
 import { hash, type GatewayConfig } from './config';
 import { cost } from './pricing';
-import { PgModelCallLedger } from './ledger';
-import { minimizeMessages, ProviderFailure, type ProviderAdapter, type ProviderResult } from './adapter';
+import { closedKeyRefusal, PgModelCallLedger } from './ledger';
+import { citedKeyRefusal, minimizeMessages, ProviderFailure, type KeyRefusalKind, type ProviderAdapter,
+  type ProviderResult } from './adapter';
 
 type Request = z.infer<typeof UspModelGatewayRequestSchema>;
 type Result = z.infer<typeof UspModelGatewayResultSchema>;
@@ -24,6 +25,10 @@ export type TrustedCall = {
 /** Uses the canonical USP gateway envelope. All routing/budget/profile controls are server-owned. */
 export type ModelCallLedger = Pick<PgModelCallLedger,
   'admissionDelay' | 'reserve' | 'dispatch' | 'releaseBeforeDispatch' | 'retainExposure' | 'settle'>;
+/** The refused call was closed without charge and its key marked; the same request may be sent again. */
+const keyRefused = (kind: KeyRefusalKind) => new AppError(503, `MODEL_${kind.toUpperCase()}`,
+  'The provider refused the key in use. It is marked used up and this call was closed without charge; '
+  + 'send the request again or prepare manually.', { retryable: true });
 export class ModelGateway {
   constructor(readonly config: GatewayConfig, private readonly ledger: ModelCallLedger,
     private readonly adapter: ProviderAdapter) {}
@@ -89,6 +94,8 @@ export class ModelGateway {
     if (!admission.admitted) {
       if (admission.call.state !== 'settled' || !admission.call.receipt)
         throw new AppError(503,'MODEL_CALL_PENDING','This call is already admitted or has unresolved exposure; no repeat dispatch occurs.');
+      const refusal = closedKeyRefusal(admission.call);
+      if (refusal) throw keyRefused(refusal);
       await trusted.authorize();
       return asResult(admission.call.output,admission.call.receipt);
     }
@@ -123,6 +130,7 @@ export class ModelGateway {
         this.adapter.propose({model:this.config.model,messages,outputSchema:trusted.outputSchema,
           maxOutputTokens: this.config.maxOutputTokens, inputHash, sourceHashes, signal: controller.signal,
           authorize: trusted.authorize, replayKey: trusted.replayKey,
+          credentialHash: admission.call.credential_hash ?? undefined,
         }).then(async completion => {
             try {
               await trusted.observeResponse?.({ inputHash, latencyMs: Date.now() - startedAt, result: completion });
@@ -149,6 +157,8 @@ export class ModelGateway {
         // No output will be accepted after a transport failure.
       }
       await this.ledger.retainExposure(admission.call.id,failure);
+      // On a key list the ledger has just closed a cited key refusal; every other failure stays reserved.
+      if (this.config.secretReferences && citedKeyRefusal(failure)) throw keyRefused(failure.kind);
       throw new AppError(failure.kind === 'rate_limited' ? 429 : 503,`MODEL_${failure.kind.toUpperCase()}`,
         'The provider call is unavailable. Its exposure remains reserved; manual preparation remains available.');
     } finally { if (timer) clearTimeout(timer); }
