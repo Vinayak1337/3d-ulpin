@@ -1,10 +1,7 @@
 {
  "format": "Text longer than one line is stored as an array of lines.",
  "task": "K8",
- "gates": [
-  "GF1",
-  "GF4"
- ],
+ "gates": ["GF1", "GF4"],
  "scope": "offline protocol evidence only; no runtime request, no database",
  "route": "GET /api/v1/buildings/{buildingId}/snapshots?limit=",
  "base": "e387b37d",
@@ -70,7 +67,8 @@
     "canonical reads answer."
    ],
    "localUsp": [
-    "assertLocalUsp(ctx) before any statement, as readManifest does (snapshots.ts:219): 403 USP_LOCAL_ONLY."
+    "assertLocalUsp(ctx) before any statement, as readManifest does",
+    "(snapshots.ts:219): 403 USP_LOCAL_ONLY."
    ],
    "manifest": [
     "readManifest answers 403 USP_ACCESS_CHANGED when the manifest accessViewId or policyVersion differs from",
@@ -78,7 +76,8 @@
     "snapshot is not selected, takes no page slot and is counted nowhere."
    ],
    "notInTheManifest": [
-    "The manifest stores no subject. Subject, case and original checks belong to the cited documents (below)."
+    "The manifest stores no subject. Subject, case and original",
+    "checks belong to the cited documents (below)."
    ]
   },
   "documentAssertion": {
@@ -161,5 +160,237 @@
    ]
   ],
   "decisionForTheLead": "None blocks the read: the stored manifest supports it as specified."
- }
+ },
+ "commit": "033104ea",
+ "input": [
+  "The snapshot protocol double (usp/source-stated-identity.test-fixture.ts: the recorded Tower 3 labels",
+  "and its four retained originals, hashes and byte counts only) with the building lookup and the page",
+  "statement answered inside building-snapshots.test.ts. Protocol values, not property facts."
+ ],
+ "producer": [
+  "K8_EVIDENCE_FILE=<file> pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+  "packages/server/src/modules/usp/building-snapshots.test.ts"
+ ],
+ "response": {
+  "shape": [
+   "{ buildingId, siteId, items: [ { scope, createdAt, members: { total, documentResultNotCurrent } } ],",
+   "truncated, unreadable }"
+  ],
+  "scope": "manifest.scope as stored, parsed with UspSnapshotScopeSchema inside UspSnapshotManifestSchema",
+  "createdAt": "usp_snapshots.created_at, the column the order uses (not the manifest capturedAt)",
+  "limit": "1..20, default 5; a repeated or malformed query value is 422 INVALID_INPUT",
+  "errors": "404 NOT_FOUND unknown building; 403 USP_LOCAL_ONLY; 403 CROSS_ORIGIN_READ; 422 INVALID_INPUT",
+  "envelope": "none: the plain document, as the building reads answer"
+ },
+ "bounds": {
+  "statements": 2,
+  "which": ["the site of the building", "the page (limit + 1 rows)"],
+  "writes": 0,
+  "index": [
+   "usp_snapshots_scope (scope_id, created_at DESC) serves the site and the order; the access view, policy",
+   "and member tests are applied to the snapshots of that site in that order"
+  ],
+  "bodies": "at most limit + 1 (21) stored manifests are fetched and parsed with the published schema"
+ },
+ "operations": {
+  "before": 297,
+  "after": 298,
+  "added": ["GET /api/v1/buildings/{buildingId}/snapshots"],
+  "removed": [],
+  "changed": [],
+  "schemasAdded": ["GET_buildings_buildingId_snapshots_Response_200_application_json"],
+  "comparedWith": "docs/api/openapi.json at staging fbe525f7"
+ },
+ "tests": {
+  "new": {
+   "packages/server/src/modules/usp/building-snapshots.test.ts": 10,
+   "apps/api/src/modules/register/building-snapshots.controller.test.ts": 3
+  },
+  "run": {"tests": 117, "pass": 117, "fail": 0},
+  "files": [
+   "the two new files",
+   "usp/snapshot-retained-documents.test.ts",
+   "usp/source-stated-identity.test.ts",
+   "usp/packets/card-listing.test.ts",
+   "usp/packets/card-revocation.test.ts",
+   "usp/packets/card-verification.test.ts",
+   "evidence/property-card.controller.test.ts",
+   "register/canonical.controller.test.ts",
+   "tests/usp-property-card.test.ts",
+   "tests/usp-property-card-image.test.ts",
+   "tests/usp-property-card-unicode.test.ts",
+   "tests/core-snapshot.test.ts"
+  ],
+  "untouched": "snapshots.ts, the capture path, every K5, K6 and K7 file and every existing test"
+ },
+ "observations": [
+  {
+   "condition": "two snapshots of the tower site",
+   "expected": "both listed newest first; scopes equal the stored manifests byte for byte; two statements, no write",
+   "observed": {
+    "status": 200,
+    "items": 2,
+    "statements": 2,
+    "members": {"total": 9, "documentResultNotCurrent": 0},
+    "truncated": false,
+    "unreadable": 0
+   }
+  },
+  {
+   "condition": "two newer snapshots of the same site under another access view and another policy",
+   "expected": "neither listed; the answer equals the one before them, also at limit 1 (truncated stays false)",
+   "observed": {"status": 200, "stored": 3, "items": 1, "truncated": false}
+  },
+  {
+   "condition": "a building of another site; a building of the same site that the snapshot does not list",
+   "expected": "no item for either",
+   "observed": {"status": 200, "otherSiteItems": 0, "unlistedItems": 0}
+  },
+  {
+   "condition": "a snapshot holding a document whose reader moved on",
+   "expected": "listed; documentResultNotCurrent 1",
+   "observed": {"status": 200, "items": 1, "members": {"total": 10, "documentResultNotCurrent": 1}}
+  },
+  {
+   "condition": "the case of the cited documents was archived after the capture",
+   "expected": "still listed; readManifest refuses the listed scope with 403 DOCUMENT_DENIED",
+   "observed": {"status": 200, "items": 1, "readManifest": "DOCUMENT_DENIED"}
+  },
+  {
+   "condition": "two snapshots, limit 1, 2, and 0 / 21 / 1.5",
+   "expected": "one item and truncated true; two and false; a limit outside 1 to 20 is refused before any statement",
+   "observed": {"items": 1, "truncated": true, "refused": "ZodError"}
+  },
+  {
+   "condition": "a building id the store does not hold",
+   "expected": "the status, code and message buildingLedger throws for it",
+   "observed": {"status": 404, "code": "NOT_FOUND", "message": "Building not found."}
+  },
+  {
+   "condition": "another subject asks",
+   "expected": "403 USP_LOCAL_ONLY, no statement",
+   "observed": {"code": "USP_LOCAL_ONLY", "statements": 0}
+  },
+  {
+   "condition": "a body that fails the manifest schema, then a row whose digest column differs from its body",
+   "expected": "left out of items and counted in unreadable",
+   "observed": {"firstUnreadable": 1, "thenUnreadable": 2, "items": 0}
+  },
+  {
+   "condition": "the newest listed scope after a code was assigned, passed on as returned",
+   "expected": [
+    "the identity resolve read answers the code; the card list",
+    "answers an empty page (no card in the double)"
+   ],
+   "observed": {"resolve": 200, "cardList": 200, "cardItems": 0}
+  }
+ ],
+ "atTheHttpEdge": {
+  "how": [
+   "building-snapshots.controller.test.ts serves the snapshot and ledger controllers in-process on an",
+   "ephemeral loopback port behind guardLocalRequest and ApiExceptionFilter, with a pool double (the pattern",
+   "of canonical.controller.test.ts). No demo API, no database."
+  ],
+  "rows": [
+   {
+    "request": "GET /buildings/{known}/snapshots",
+    "observed": [
+     "200; Cache-Control private, no-store; { buildingId, siteId,",
+     "items: [], truncated: false, unreadable: 0 }"
+    ]
+   },
+   {
+    "request": "GET /buildings/{unknown}/snapshots and GET /buildings/{unknown}/ledger",
+    "observed": [
+     "both 404 { error: { code: NOT_FOUND, message: Building not found., requestId } }; the two bodies are",
+     "equal apart from the request id"
+    ]
+   },
+   {"request": "the same read with sec-fetch-site: cross-site", "observed": "403"},
+   {
+    "request": "limit=0, 21, 1.5, empty, repeated; a building id that is not a UUID",
+    "observed": "422 INVALID_INPUT each; limit=20 answers 200"
+   },
+   {
+    "request": "docs/api/openapi.json",
+    "observed": "the 200 schema of the operation equals requestSchema(UspBuildingSnapshotListSchema)"
+   }
+  ]
+ },
+ "afterTheNextRollOut": {
+  "request": {
+   "method": "GET",
+   "headers": "none",
+   "url": "http://127.0.0.1:3194/api/v1/buildings/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/snapshots?limit=5"
+  },
+  "notSentHere": "This task sent no request to the demo API.",
+  "whileNoSnapshotListsTower3": {
+   "status": 200,
+   "body": {
+    "buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+    "siteId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b",
+    "items": [],
+    "truncated": false,
+    "unreadable": 0
+   }
+  },
+  "onceASnapshotExists": [
+   [
+    "200 with the same buildingId and siteId and one item per snapshot of that site that the API captured",
+    "under its own context (accessViewId local-demo-view-1, policyVersion usp-local-1) after Tower 3 was",
+    "recorded, newest first."
+   ],
+   [
+    "Each item: scope { kind: 'snapshot', scopeId: 'ed4bc3ae-1b02-412e-a5cc-02accf693a1b', world: {",
+    "namespace: 'world', id: 'registry-site/ed4bc3ae-1b02-412e-a5cc-02accf693a1b' }, manifestId,",
+    "snapshotDigest, stage: 'recorded' } with the ids of that capture; createdAt; members.total and",
+    "members.documentResultNotCurrent of that manifest."
+   ],
+   [
+    "truncated is true only when more than five such snapshots exist; unreadable is 0 unless a stored body is",
+    "damaged."
+   ]
+  ],
+  "siteId": [
+   "Recorded as the Tower 3 site in docs/evidence/gf1/k4a/site-readiness.json and k4b/REPORT.md; not re-read",
+   "in this task."
+  ],
+  "thenPassOn": [
+   "items[0].scope unchanged as \"scope\" to POST /api/v1/usp/identity/resolve and to POST",
+   "/api/v1/usp/property-cards/list."
+  ],
+  "whetherASnapshotExistsNow": "unknown here"
+ },
+ "forTheLeadToIntegrate": [
+  "apps/api/src/modules/register/building-snapshots.controller.ts and its test: new files.",
+  [
+   "apps/api/src/modules/register/register.module.ts: one import line after the BuildingLedgerController",
+   "import, and BuildingSnapshotsController added to the controllers array after BuildingLedgerController."
+  ],
+  [
+   "apps/api/src/modules/register/operation-manifest.json: one line after the ledger line, operationId",
+   "GET_api_v1_buildings_buildingId_snapshots."
+  ]
+ ],
+ "gaps": [
+  [
+   "Not run live. The two statements were never executed against PostgreSQL: the jsonb containment and the",
+   "two text comparisons on the body are checked by reading and by a double that implements them in",
+   "TypeScript."
+  ],
+  [
+   "A listed scope can still be refused by the next read on a document condition (step0, documentAssertion);",
+   "the archived-case test shows one."
+  ],
+  [
+   "The manifest stores no subject, so the list cannot tell two operators with the same access view and",
+   "policy apart. The local demo has one operator; with several, a snapshot captured by another one would be",
+   "listed with its scope and counts while its documents still refuse."
+  ],
+  [
+   "There is no index on the member test: the statement walks the snapshots of the site newest first until",
+   "limit + 1 match."
+  ],
+  "No client helper and no Studio use yet; schema.d.ts carries the operation."
+ ]
 }
