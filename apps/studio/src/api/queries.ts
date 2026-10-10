@@ -1,7 +1,7 @@
 import { ledgerFromPublished } from './ledger';
 import { demoAreas, isDemoId, useDemoAreaStream } from './demo-import';
-import { keepPreviousData, useQueries, useQuery } from '@tanstack/react-query';
-import { api, ApiError, unwrap, type GetResponse } from '@ulpin/api-client';
+import { keepPreviousData, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { api, ApiError, unwrap, type GetResponse, type paths } from '@ulpin/api-client';
 import type { BuildingImport, DocumentPages, FileDetection, ImportBatch, LevelReview, RegisterRequest, RequestState, WorkBoard, BuildingResidents } from '@ulpin/api-client/draft';
 
 export type WorkQueue = GetResponse<'/api/v1/work-queue'>;
@@ -18,6 +18,22 @@ export type RegisterSource = BuildingRegister['sources'][number];
 export type SpatialMlBatch = GetResponse<'/api/v1/spatial-ml/batches/{batchId}'>;
 export type SpatialMlItem = GetResponse<'/api/v1/spatial-ml/items/{itemId}'>;
 export type ImportPackage = GetResponse<'/api/v1/import-packages/{packageId}'>;
+export type BuildingSnapshots = GetResponse<'/api/v1/buildings/{buildingId}/snapshots'>;
+type CardListResponse = paths['/api/v1/usp/property-cards/list']['post']['responses'][200];
+export type ListedCard = CardListResponse['content']['application/json']['data']['items'][number];
+const CARD_VERIFICATION_PATH = '/api/v1/usp/property-cards/{cardId}/revisions/{revision}/verification';
+export type CardVerification = GetResponse<typeof CARD_VERIFICATION_PATH>['data'];
+
+/** What the registry lists as the cards of one unit, and how far the search for them went. */
+export interface UnitCards {
+  /** When the snapshot whose scope listed the cards was created; null when no scope tried lists a card. */
+  snapshotCreatedAt: string | null;
+  cards: ListedCard[];
+  /** The server holds more cards under that scope than the page it returned. */
+  truncated: boolean;
+  /** With no card listed: false when the building has snapshots the search did not try (older, or unreadable). */
+  searchedAll: boolean;
+}
 
 /** Published identifier resolver; keeps ULPIN and registry associations on the backend. */
 export function useMapIdentifierSearch(identifier: string) {
@@ -38,6 +54,9 @@ export const queryKeys = {
   areaContext: (areaId: string) => ['areas', areaId, 'context'] as const,
   areaCanonical: (areaId: string) => ['areas', areaId, 'canonical'] as const,
   buildingCanonical: (buildingId: string) => ['buildings', buildingId, 'canonical'] as const,
+  buildingSnapshots: (buildingId: string) => ['buildings', buildingId, 'snapshots'] as const,
+  unitCards: (buildingId: string, spaceId: string) => ['buildings', buildingId, 'units', spaceId, 'cards'] as const,
+  cardVerification: (cardId: string, revision: number) => ['property-cards', cardId, revision, 'verification'] as const,
   capabilities: ['workspace-capabilities'] as const,
   register: (buildingId: string) => ['buildings', buildingId, 'register'] as const,
   ledger: (buildingId: string) => ['buildings', buildingId, 'ledger'] as const,
@@ -179,6 +198,64 @@ export function useBuildingCanonical(buildingId: string | null | undefined) {
     enabled: Boolean(buildingId),
     queryFn: async ({ signal }) => unwrap(await api.GET('/api/v1/buildings/{buildingId}/canonical', { params: { path: { buildingId: buildingId! } }, signal })),
     staleTime: 60_000,
+  });
+}
+
+// A recorded unit is a registry record; the card list names it by that namespace and its id.
+const UNIT_NAMESPACE = 'registry_record';
+const CARD_PAGE_SIZE = 20;
+
+/** The recorded snapshots that hold a building, newest first: the server's default page of five. */
+const buildingSnapshotsQuery = (buildingId: string) => ({
+  queryKey: queryKeys.buildingSnapshots(buildingId),
+  queryFn: async () => unwrap(await api.GET('/api/v1/buildings/{buildingId}/snapshots', {
+    params: { path: { buildingId } },
+  })),
+  staleTime: 60_000,
+});
+
+/** Passes each listed scope on unchanged, newest first, and stops at the first that lists a card of the unit. */
+async function listUnitCards(snapshots: BuildingSnapshots, spaceId: string, signal: AbortSignal): Promise<UnitCards> {
+  for (const snapshot of snapshots.items) {
+    const page = unwrap(await api.POST('/api/v1/usp/property-cards/list', {
+      body: { scope: snapshot.scope, target: { namespace: UNIT_NAMESPACE, id: spaceId }, limit: CARD_PAGE_SIZE },
+      signal,
+    })).data;
+    if (page.items.length) {
+      return { snapshotCreatedAt: snapshot.createdAt, cards: page.items, truncated: page.truncated, searchedAll: true };
+    }
+  }
+  const searchedAll = !snapshots.truncated && snapshots.unreadable === 0;
+  return { snapshotCreatedAt: null, cards: [], truncated: false, searchedAll };
+}
+
+/**
+ * The property cards the registry lists for one recorded unit. The snapshots of a building are read once and
+ * shared by its units; a refusal of either read fails the query and is never answered as an empty list.
+ */
+export function useUnitCards(
+  buildingId: string | null | undefined, spaceId: string | null | undefined, enabled = true,
+) {
+  const client = useQueryClient();
+  return useQuery({
+    queryKey: queryKeys.unitCards(buildingId ?? '', spaceId ?? ''),
+    enabled: enabled && Boolean(buildingId && spaceId),
+    queryFn: async ({ signal }) => listUnitCards(
+      await client.fetchQuery(buildingSnapshotsQuery(buildingId!)), spaceId!, signal,
+    ),
+    staleTime: 60_000,
+  });
+}
+
+/** The server's verification report of one exact card revision. Asked again on every visit to its page. */
+export function useCardVerification(cardId: string | null, revision: number | null) {
+  return useQuery({
+    queryKey: queryKeys.cardVerification(cardId ?? '', revision ?? 0),
+    enabled: Boolean(cardId && revision),
+    queryFn: async ({ signal }) => unwrap(await api.GET(CARD_VERIFICATION_PATH, {
+      params: { path: { cardId: cardId!, revision: String(revision) } }, signal,
+    })).data,
+    staleTime: 0,
   });
 }
 
