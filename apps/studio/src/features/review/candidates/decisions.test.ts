@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import openapi from '../../../../../../docs/api/openapi.json';
 import { createContractValidator } from '../../../local/contract';
 import {
-  attachLevelBody, footprintDecisionPlan, levelChoices, NO_REVIEWED_LEVELS, REJECTION_NEEDS_ACCEPTANCE,
+  attachLevelBody, footprintDecisionPlan, levelChoices, NO_REVIEWED_LEVELS, rejectRoomBody,
   type StagedDecision,
 } from './decisions';
 
@@ -50,9 +50,27 @@ describe('footprintDecisionPlan', () => {
     itemId, candidateId: 'fedcba654321', outcome: 'rejected', reason: ' Clipped at the edge ',
   };
 
-  it('refuses a rejection without an accepted candidate, as the API does', () => {
+  it('records a rejection alone with no selections or top-level reason', () => {
     const plan = footprintDecisionPlan({ ...base, decisions: [reject] });
-    expect(plan).toEqual({ ok: false, reason: REJECTION_NEEDS_ACCEPTANCE });
+    expect(plan.ok && validate(FOOTPRINT_REQUEST, plan.body)).toEqual([]);
+    expect(plan).toEqual({
+      ok: true,
+      body: {
+        requestKey: base.requestKey,
+        expectedRevision: 2,
+        expectedAreaRevision: 0,
+        georeference: 'source_geotiff',
+        selections: [],
+        rejected: [{ componentId: 'fedcba654321', reason: 'Clipped at the edge' }],
+      },
+    });
+    expect(plan.ok && Object.hasOwn(plan.body, 'reason')).toBe(false);
+  });
+
+  it('refuses an empty decision list', () => {
+    expect(footprintDecisionPlan({ ...base, decisions: [] })).toEqual({
+      ok: false, reason: 'Stage a decision first.',
+    });
   });
 
   it('builds the command K2c used: selections, rejections with reasons and the accepted reason', () => {
@@ -84,5 +102,24 @@ describe('attachLevelBody', () => {
     });
     expect(validate(CANDIDATES_REQUEST, body)).toEqual([]);
     expect(body.reason).toBe('Floor title matches');
+  });
+});
+
+describe('rejectRoomBody', () => {
+  it('builds a reasoned rejection accepted by the published request schema', () => {
+    const body = rejectRoomBody({
+      requestKey: '11111111-2222-4333-8444-555555555555',
+      canonicalRevision: 'c'.repeat(64),
+      candidateId: 'candidate-1',
+      reason: ' Retain as rejected ',
+    });
+    expect(validate(CANDIDATES_REQUEST, body)).toEqual([]);
+    expect(body).toEqual({
+      action: 'reject',
+      requestKey: '11111111-2222-4333-8444-555555555555',
+      expectedCanonicalRevision: 'c'.repeat(64),
+      candidateId: 'candidate-1',
+      reason: 'Retain as rejected',
+    });
   });
 });

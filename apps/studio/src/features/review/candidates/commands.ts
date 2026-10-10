@@ -1,7 +1,7 @@
 import { api, ApiError, unwrap } from '@ulpin/api-client';
-import type { AttachLevelBody, FootprintDraftBody } from './decisions';
+import type { AttachLevelBody, FootprintDraftBody, RejectRoomBody } from './decisions';
 
-/** Accepted and rejected roofprints of one image: the same command K2c used. It creates a draft, never a record. */
+/** Records roofprint decisions; only accepted selections create a draft, never a registry record. */
 export async function recordRoofprintDecisions(itemId: string, body: FootprintDraftBody) {
   return unwrap(await api.POST('/api/v1/spatial-ml/items/{itemId}/footprint-drafts', {
     params: { path: { itemId } },
@@ -11,6 +11,14 @@ export async function recordRoofprintDecisions(itemId: string, body: FootprintDr
 
 /** Attach a room candidate to an existing reviewed level. The key travels as the idempotency header too. */
 export async function attachRoomToLevel(buildingId: string, body: AttachLevelBody) {
+  return unwrap(await api.POST('/api/v1/buildings/{buildingId}/candidates', {
+    params: { path: { buildingId }, header: { 'Idempotency-Key': body.requestKey } },
+    body,
+  }));
+}
+
+/** Reject a retained room candidate without attaching it to a level or changing its geometry. */
+export async function rejectRoom(buildingId: string, body: RejectRoomBody) {
   return unwrap(await api.POST('/api/v1/buildings/{buildingId}/candidates', {
     params: { path: { buildingId }, header: { 'Idempotency-Key': body.requestKey } },
     body,
