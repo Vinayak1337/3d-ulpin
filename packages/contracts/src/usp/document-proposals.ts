@@ -15,7 +15,22 @@ export const DocumentProposalLocatorSchema=z.strictObject({page:count.min(1).max
     ctx.addIssue({code:'custom',message:'A cited box must fit the declared PDF display page.'});
 });
 export const DocumentProposalArtifactClaimSchema=z.strictObject({sha256:hash,bytes:count.min(1).max(16*1024*1024)});
+export const DocumentProposalAgentFactSchema=z.union([
+  z.strictObject({kind:z.enum(['storeyCount','basementCount']),value:count.max(300).nullable(),
+    expression:text(60).nullable()}),
+  z.strictObject({kind:z.literal('floorExpression'),expression:text(60),scope:text(80).nullable()}),
+  z.strictObject({kind:z.literal('floorLabel'),label:text(80),labelKind:z.enum([
+    'ordinal','ground','basement','stilt','podium','terrace','mezzanine','refuge','typical'])}),
+  z.strictObject({kind:z.literal('height'),statedValue:z.number().finite().positive().max(100000),
+    statedUnit:z.enum(['m','mm','ft','in','unit_unknown'])}),
+  z.strictObject({kind:z.literal('unitCount'),value:count.max(100000),scope:text(80).nullable()})
+]);
+export type DocumentProposalAgentFact=z.output<typeof DocumentProposalAgentFactSchema>;
+const agentCitations=z.array(z.strictObject({partId:text(120),quote:text(240),
+  locator:DocumentProposalLocatorSchema.nullable()})).max(8).describe(
+    'All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck.');
 export const DocumentProposalInputSchema=z.strictObject({proposalId:text(120),fieldRole:text(120),
+  agentFact:DocumentProposalAgentFactSchema.optional(),agentCitations:agentCitations.optional(),
   quote:text(4096).nullable(),lineQuote:text(4096).nullable(),valueLiteral:text(512).optional(),
   quoteCharacterSpan:z.tuple([count.max(4096),count.max(4096)]).nullable(),
   status:z.enum(['needs_review','needs_input','rejected','unsupported']),reasons:z.array(text(2000)).min(1).max(16),
@@ -29,8 +44,13 @@ export const DocumentProposalInputSchema=z.strictObject({proposalId:text(120),fi
   }
 });
 export const DocumentProposalRejectedSchema=z.strictObject({entryId:text(120),lineQuote:text(4096).nullable(),
-  reason:text(2000),locator:DocumentProposalLocatorSchema,declaredMethod:text(512).nullable(),
-  declaredObservation:DocumentProposalArtifactClaimSchema.nullable()});
+  reason:text(2000),locator:DocumentProposalLocatorSchema.nullable(),declaredMethod:text(512).nullable(),
+  agentFact:DocumentProposalAgentFactSchema.optional(),
+  agentCitations:agentCitations.optional(),
+  declaredObservation:DocumentProposalArtifactClaimSchema.nullable()}).superRefine((v,ctx)=>{
+  if(v.locator===null&&!v.agentFact)
+    ctx.addIssue({code:'custom',message:'A rejection without a locator must retain its explicit agent fact.'});
+});
 export const DocumentProposalPacketSchema=z.strictObject({declaredOrigin:DocumentProposalArtifactClaimSchema.nullable(),
   proposals:z.array(DocumentProposalInputSchema).max(DOCUMENT_PROPOSAL_LIMITS.proposals),
   rejected:z.array(DocumentProposalRejectedSchema).max(DOCUMENT_PROPOSAL_LIMITS.rejected),
@@ -40,9 +60,12 @@ export const DocumentProposalPacketSchema=z.strictObject({declaredOrigin:Documen
   if(v.proposals.length+v.rejected.length===0||ids.size!==v.proposals.length||
     new Set(v.rejected.map(r=>r.entryId)).size!==v.rejected.length)
     ctx.addIssue({code:'custom',message:'Retain a nonempty population with distinct proposal and rejected-entry IDs.'});
-  for(const c of v.conflicts)if(new Set(c.proposalIds).size!==c.proposalIds.length||c.proposalIds.some(p=>!ids.has(p)))
-    ctx.addIssue({code:'custom',message:'Each conflict must name distinct proposals retained in this explicit source selection.'});
-  const pages=[...v.proposals,...v.rejected].map(v=>v.locator.page);
+  const conflictIds=new Set([...ids,...v.rejected.filter(r=>r.agentFact).map(r=>r.entryId)]);
+  for(const c of v.conflicts){
+    if(new Set(c.proposalIds).size!==c.proposalIds.length||c.proposalIds.some(p=>!conflictIds.has(p)))
+      ctx.addIssue({code:'custom',message:'Conflict members must be retained proposals or rejected agent facts.'});
+  }
+  const pages=[...v.proposals,...v.rejected].flatMap(v=>v.locator?[v.locator.page]:[]);
   if(Math.max(...pages)-Math.min(...pages)+1>DOCUMENT_PROPOSAL_LIMITS.pageSpan)
     ctx.addIssue({code:'custom',message:'Use a span of at most 50 PDF pages per bounded packet.'});
 });
@@ -60,7 +83,7 @@ export const DocumentProposalQuoteCheckSchema=z.strictObject({
 export const DocumentProposalCheckedSchema=DocumentProposalInputSchema.safeExtend({
   quotationCheck:DocumentProposalQuoteCheckSchema
 });
-const checkedRejected=DocumentProposalRejectedSchema.extend({
+const checkedRejected=DocumentProposalRejectedSchema.safeExtend({
   originalProposal:DocumentProposalCheckedSchema.optional()
 });
 const checkedPacket=DocumentProposalPacketSchema.safeExtend({
@@ -70,7 +93,11 @@ const checkedPacket=DocumentProposalPacketSchema.safeExtend({
 // Conflict members may have been refused by the check; retain the original conflict, never elect a winner.
 export const DocumentProposalCheckedPacketSchema=z.strictObject(checkedPacket.shape).superRefine((v,ctx)=>{
   const ids=[...v.proposals.map(p=>p.proposalId),
-    ...v.rejected.flatMap(r=>r.originalProposal?[r.originalProposal.proposalId]:[])];
+    ...v.rejected.flatMap(r=>{
+      if(r.originalProposal)return [r.originalProposal.proposalId];
+      if(r.agentFact)return [r.entryId];
+      return [];
+    })];
   if(!ids.length&&!v.rejected.length||new Set(ids).size!==ids.length||
     new Set(v.rejected.map(r=>r.entryId)).size!==v.rejected.length)
     ctx.addIssue({code:'custom',message:'Retain a nonempty explicit population with distinct IDs.'});
@@ -78,7 +105,7 @@ export const DocumentProposalCheckedPacketSchema=z.strictObject(checkedPacket.sh
     if(new Set(c.proposalIds).size!==c.proposalIds.length||c.proposalIds.some(p=>!ids.includes(p)))
       ctx.addIssue({code:'custom',message:'Conflict members must remain as proposals or refused original proposals.'});
   }
-  const pages=[...v.proposals,...v.rejected].map(p=>p.locator.page);
+  const pages=[...v.proposals,...v.rejected].flatMap(p=>p.locator?[p.locator.page]:[]);
   if(Math.max(...pages)-Math.min(...pages)+1>DOCUMENT_PROPOSAL_LIMITS.pageSpan)
     ctx.addIssue({code:'custom',message:'Use a span of at most 50 PDF pages per bounded packet.'});
 });

@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {randomUUID} from 'node:crypto';
-import {existsSync,readFileSync} from 'node:fs';
+import {existsSync,readFileSync,mkdirSync,mkdtempSync,writeFileSync} from 'node:fs';
+import {join} from 'node:path';
 import {Readable} from 'node:stream';
 import type {PoolClient} from 'pg';
 import type {transaction} from '../packages/server/src/infrastructure/db';
@@ -18,6 +19,12 @@ import type {QuotePage} from '../packages/server/src/modules/usp/ingestion/docum
 import {documentInput} from '../packages/server/src/modules/usp/ingestion/document-context';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
 import {DocumentResultSchema} from '../packages/contracts/src/usp/document-ingestion';
+import {saveReplayedStoreyProposals} from '../scripts/agent/storey-proposals-replay';
+import {TeacherRecordings} from '../packages/server/src/modules/model-gateway/recordings';
+import {hash} from '../packages/server/src/modules/model-gateway/config';
+import {controlConfig,requestContext} from '../scripts/agent/control-runtime';
+import {STOREY_AGENT_TEMPLATE,STOREY_AGENT_MODEL,storeyPartSelection,storeyPartsHash,storeyReplayKey,
+  validateStoreyOutput} from '../packages/server/src/modules/ai/document-storey-agent';
 
 const root=process.env.ULPIN_DOCUMENT_PROPOSAL_FIXTURE??'E:/BhuAayam-data/task-data/d08-document-field-baseline-20261005';
 const sourceRows='E:/BhuAayam-data/task-data/d07-source-only-spatial-runtime-20261005-run02/pg-before.json';
@@ -404,7 +411,7 @@ function towerQuoteFixture(){
     page:Number(number),frame:packet.proposals[0].locator.frame,lines:entry.lines,
     basis:{kind:'ocr_observations',productSha256:sha256(bytes)}
   }));
-  return {packet,pages};
+  return {packet,pages,store};
 }
 test('real Tower 3 A5 packet keeps 20 quotes; one altered digit refuses 1 and keeps 19 before save',options,
   ()=>withSubject(async()=>{
@@ -493,4 +500,103 @@ test('accepted OCR authority drift during stored-object I/O refuses before any o
     f.state.onTextRead=()=>{f.state.productHash='f'.repeat(64);};
     await assert.rejects(f.service.save(f.caseId,f.sourceId,input),error(409));
     assert.equal(f.operations.size,0);
+  }));
+
+function towerReplayFixture(){
+  const {packet,pages,store}=towerQuoteFixture(),f=harness(true,pages),input=f.request();
+  const selection=storeyPartSelection(store),batch=selection.batches.findIndex(parts=>
+    parts.some(p=>p.partId==='p1-l56')&&parts.some(p=>p.partId==='p1-l88'));
+  assert(batch>=0,'The two real control citations must be in one selected batch.');
+  const request={requestKey:input.requestKey,expectedCaseRevision:input.expectedCaseRevision,source:input.source,
+    caseId:f.caseId,sourceId:f.sourceId,batch,frames:{'1':packet.proposals[0].locator.frame}};
+  const root='E:/BhuAayam-data/task-data/d2';mkdirSync(root,{recursive:true});
+  const directory=mkdtempSync(join(root,'replay-')),recordings=new TeacherRecordings(directory);
+  return {...f,request,store,parts:selection.batches[batch],directory,recordings};
+}
+async function recordTowerControl(f:ReturnType<typeof towerReplayFixture>,output:any){
+  const validation=validateStoreyOutput(output,f.parts);assert(validation.success);
+  const profileHash=storeyPartsHash(f.parts);
+  await f.recordings.record({adapterKind:'control',templateVersion:STOREY_AGENT_TEMPLATE,model:STOREY_AGENT_MODEL,
+    profileHash,replayKey:storeyReplayKey(profileHash),attempt:1,inputHash:hash({control:true,parts:f.parts}),
+    latencyMs:0,result:{output,responseHash:hash(output),httpStatus:200,
+      rawResponse:{kind:'recorded_software_control',output}},parsedPlan:validation.output,validation,
+    price:controlConfig().price});
+}
+function replayTower(f:ReturnType<typeof towerReplayFixture>){
+  return saveReplayedStoreyProposals(f.store,f.request,{recordings:f.recordings,service:f.service,
+    context:requestContext});
+}
+function retainReplayProof(f:ReturnType<typeof towerReplayFixture>,value:unknown){
+  writeFileSync(join(f.directory,'proof.json'),JSON.stringify(value),{flag:'wx'});
+  writeFileSync(join(f.directory,'request.json'),JSON.stringify(f.request),{flag:'wx'});
+}
+test('real Tower 3 software control replays, adapts, quote-checks and saves, then decisions read back',options,
+  ()=>withSubject(async()=>{
+    const f=towerReplayFixture();
+    const output=JSON.parse(readFileSync('docs/evidence/gf-ai/documents/d2/control-output.json','utf8'));
+    await recordTowerControl(f,output);
+    const receipt=await replayTower(f),saved=receipt.snapshot;assert(saved);
+    assert.equal(saved.version,'source-document-proposals/2');
+    assert.equal(receipt.recordingKind,'control');assert.equal(receipt.dispatches,0);assert.equal(receipt.admissions,0);
+    assert.equal(saved.packet.proposals.length,2);assert.equal(saved.packet.rejected.length,0);
+    assert.deepEqual(saved.packet.conflicts,[],'There is no second storey expression in these retained OCR lines.');
+    for(const p of saved.packet.proposals){assert('quotationCheck' in p);
+      assert.equal(p.quotationCheck.outcome,'quote_at_locator');assert.equal(p.status,'needs_review');
+      assert.equal(p.declaredMethod,'recorded_software_control');}
+    assert.equal(saved.learningLabel,false);assert.equal(saved.unresolved[0],'quote_truth');
+    assert.deepEqual((await replayTower(f)).snapshot,saved);assert.equal(f.operations.size,2);
+    const decisions=[];
+    for(const [index,decision] of ['reviewed','rejected'].entries()){
+      const p=saved.packet.proposals[index];
+      const reviewed=await f.service.reviewDecision(f.caseId,f.sourceId,saved.snapshotId,{
+        requestKey:randomUUID(),expectedCaseRevision:2,source:f.request.source,
+        proposal:{snapshotId:saved.snapshotId,snapshotRevision:1,snapshotSha256:saved.snapshotSha256,
+          proposalId:p.proposalId},decision,reviewReason:'D2 offline software-control decision; not ground truth.',
+        citation:{quote:p.quote,lineQuote:p.lineQuote,quoteCharacterSpan:p.quoteCharacterSpan,locator:p.locator},
+        missingPrerequisites:[]});
+      assert.equal(reviewed.decision,decision);assert.equal(reviewed.learningLabel,false);
+      assert.deepEqual(reviewed.originalProposal,p);
+      assert.deepEqual(await f.service.readDecision(f.caseId,f.sourceId,saved.snapshotId,reviewed.decisionId,
+        {revision:'1'}),reviewed);decisions.push(reviewed.decision);
+    }
+    assert.equal((await f.service.decisionHistory(f.caseId,f.sourceId,saved.snapshotId)).references.length,2);
+    assert.equal(f.operations.size,6);
+    retainReplayProof(f,{kept:2,refused:0,codes:[],conflicts:0,decisions,dispatches:receipt.dispatches,
+      admissions:receipt.admissions,omitted:receipt.omitted,source:f.request.source});
+  }));
+test('real Tower 3 control with an absent quote retains that fact in rejected with its original citation',options,
+  ()=>withSubject(async()=>{
+    const f=towerReplayFixture();
+    const output=JSON.parse(readFileSync('docs/evidence/gf-ai/documents/d2/control-output.json','utf8'));
+    output.floorExpressions[0].expression='G+43';output.floorExpressions[0].citations[0].quote='G+43';
+    await recordTowerControl(f,output);
+    const receipt=await replayTower(f),saved=receipt.snapshot;assert(saved);
+    assert.equal(saved.packet.proposals.length,1);assert.equal(saved.packet.rejected.length,1);
+    const refused=saved.packet.rejected[0];assert.equal(refused.reason,'quote_not_at_locator');
+    assert.equal(refused.locator?.page,1);assert('originalProposal' in refused);
+    assert.equal(refused.originalProposal?.quote,'G+43');
+    assert.equal(refused.originalProposal?.agentFact?.kind,'floorExpression');
+    assert.equal(receipt.dispatches,0);assert.equal(receipt.admissions,0);
+    retainReplayProof(f,{kept:1,refused:1,codes:['quote_not_at_locator'],dispatches:0,admissions:0});
+  }));
+test('replay miss reports teacher_unavailable without packet, snapshot, provider dispatch or save',options,
+  ()=>withSubject(async()=>{
+    const f=towerReplayFixture(),receipt=await replayTower(f);
+    assert.equal(receipt.state,'teacher_unavailable');assert.equal(receipt.snapshot,null);
+    assert.equal(receipt.recordingKind,null);assert.equal(receipt.dispatches,0);assert.equal(receipt.admissions,0);
+    assert.equal(f.operations.size,0);assert.equal(f.state.verified,0);assert.equal(f.state.pages,0);
+    retainReplayProof(f,{state:receipt.state,code:receipt.code,snapshots:0,dispatches:0,admissions:0});
+  }));
+test('all-uncited agent facts save as explicit rejections with null locators and no invented page inspection',options,
+  ()=>withSubject(async()=>{
+    const f=towerReplayFixture();
+    const output=JSON.parse(readFileSync('docs/evidence/gf-ai/documents/d2/control-output.json','utf8'));
+    output.floorExpressions[0].citations=[];output.labels[0].citations=[];await recordTowerControl(f,output);
+    const receipt=await replayTower(f),saved=receipt.snapshot;assert(saved);
+    assert.equal(saved.packet.proposals.length,0);assert.equal(saved.packet.rejected.length,2);
+    assert(saved.packet.rejected.every(r=>r.reason==='missing_citation'&&r.locator===null&&r.agentFact));
+    assert.equal(saved.locatorWarnings.length,0);assert.equal(f.state.pages,0);assert.equal(f.state.verified,1);
+    assert.deepEqual(await f.service.read(f.caseId,f.sourceId,saved.snapshotId),saved);
+    assert.equal((await f.service.history(f.caseId,f.sourceId)).references[0].rejectedCount,2);
+    assert.equal(receipt.dispatches,0);assert.equal(receipt.admissions,0);
   }));

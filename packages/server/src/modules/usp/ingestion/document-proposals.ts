@@ -42,7 +42,9 @@ function bounded(value:unknown,bytes:number){if(Buffer.byteLength(JSON.stringify
 function locatorWarnings(packet:DocumentProposalPacket){
   const entries=[...packet.proposals.map(p=>({entryKind:'proposal' as const,entryId:p.proposalId,locator:p.locator})),
     ...packet.rejected.map(r=>({entryKind:'rejected' as const,entryId:r.entryId,locator:r.locator}))];
-  return entries.filter(({locator:{box,selectedRegion:r}})=>box&&r&&(box[0]<r[0]||box[1]<r[1]||box[2]>r[2]||box[3]>r[3]))
+  return entries.filter(({locator})=>{if(!locator)return false;
+    const {box,selectedRegion:r}=locator;
+    return box&&r&&(box[0]<r[0]||box[1]<r[1]||box[2]>r[2]||box[3]>r[3]);})
     .map(({entryKind,entryId})=>({entryKind,entryId,code:'citation_extends_declared_region' as const,basis:'caller_supplied_coordinates' as const}));
 }
 function stable(a:Authority){return fingerprint({caseId:a.caseId,context:a.contextSha256,subject:a.subject,access:a.accessSha256,
@@ -224,7 +226,7 @@ export class DocumentProposalsService{
   }
   private async verify(a:Authority,deadline:number){live(deadline);await this.dependencies.verify(a.source,deadline);live(deadline);}
   private async pages(a:Authority,locators:DocumentProposalPacket['proposals'][number]['locator'][],deadline:number){
-    live(deadline);
+    live(deadline);if(!locators.length)return;
     if(deadline-Date.now()<DOCUMENT_PAGE_LIMITS.seconds*1000+1000)
       throw new AppError(504,'DOCUMENT_PROPOSALS_DEADLINE','Not enough time remains for bounded source-page validation.');
     const pages=locators.map(l=>l.page),
@@ -302,7 +304,8 @@ export class DocumentProposalsService{
       return {authority,prior};});
     await this.verify(before.authority,deadline);
     if(before.prior)return this.disclose(before.authority,before.prior,deadline);
-    await this.pages(before.authority,[...request.packet.proposals,...request.packet.rejected].map(p=>p.locator),deadline);
+    const locators=[...request.packet.proposals,...request.packet.rejected].flatMap(p=>p.locator?[p.locator]:[]);
+    await this.pages(before.authority,locators,deadline);
     const text=await (this.dependencies.text?.(before.authority.source,deadline)??
       storedQuoteText(before.authority.source,this.dependencies,deadline));
     const packet=checkedPacket(request.packet,text.pages);

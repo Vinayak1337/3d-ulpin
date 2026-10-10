@@ -368502,6 +368502,303 @@
                       "minLength": 1,
                       "maxLength": 120
                     },
+                    "agentFact": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "storeyCount",
+                                "basementCount"
+                              ]
+                            },
+                            "value": {
+                              "nullable": true,
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 300
+                            },
+                            "expression": {
+                              "nullable": true,
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 60
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "value",
+                            "expression"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "floorExpression"
+                              ]
+                            },
+                            "expression": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 60
+                            },
+                            "scope": {
+                              "nullable": true,
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 80
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "expression",
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "floorLabel"
+                              ]
+                            },
+                            "label": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 80
+                            },
+                            "labelKind": {
+                              "type": "string",
+                              "enum": [
+                                "ordinal",
+                                "ground",
+                                "basement",
+                                "stilt",
+                                "podium",
+                                "terrace",
+                                "mezzanine",
+                                "refuge",
+                                "typical"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "label",
+                            "labelKind"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "height"
+                              ]
+                            },
+                            "statedValue": {
+                              "type": "number",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 100000
+                            },
+                            "statedUnit": {
+                              "type": "string",
+                              "enum": [
+                                "m",
+                                "mm",
+                                "ft",
+                                "in",
+                                "unit_unknown"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "statedValue",
+                            "statedUnit"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "unitCount"
+                              ]
+                            },
+                            "value": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 100000
+                            },
+                            "scope": {
+                              "nullable": true,
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 80
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "value",
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "agentCitations": {
+                      "maxItems": 8,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "partId": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "quote": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 240
+                          },
+                          "locator": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "page": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 400
+                              },
+                              "frame": {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "pdf_display_page_top_left_points"
+                                    ]
+                                  },
+                                  "rotation": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 359
+                                  },
+                                  "width": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 10000000
+                                  },
+                                  "height": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 10000000
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "rotation",
+                                  "width",
+                                  "height"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "box": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": 0
+                                    }
+                                  ]
+                                },
+                                "minItems": 4,
+                                "maxItems": 4
+                              },
+                              "selectedRegion": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": 0
+                                    }
+                                  ]
+                                },
+                                "minItems": 4,
+                                "maxItems": 4
+                              },
+                              "declaredPrecision": {
+                                "nullable": true,
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 120
+                              }
+                            },
+                            "required": [
+                              "page",
+                              "frame",
+                              "box",
+                              "selectedRegion",
+                              "declaredPrecision"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "partId",
+                          "quote",
+                          "locator"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "description": "All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck."
+                    },
                     "quote": {
                       "nullable": true,
                       "type": "string",
@@ -368734,6 +369031,7 @@
                       "maxLength": 2000
                     },
                     "locator": {
+                      "nullable": true,
                       "type": "object",
                       "properties": {
                         "page": {
@@ -368849,6 +369147,303 @@
                       "type": "string",
                       "minLength": 1,
                       "maxLength": 512
+                    },
+                    "agentFact": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "storeyCount",
+                                "basementCount"
+                              ]
+                            },
+                            "value": {
+                              "nullable": true,
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 300
+                            },
+                            "expression": {
+                              "nullable": true,
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 60
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "value",
+                            "expression"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "floorExpression"
+                              ]
+                            },
+                            "expression": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 60
+                            },
+                            "scope": {
+                              "nullable": true,
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 80
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "expression",
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "floorLabel"
+                              ]
+                            },
+                            "label": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 80
+                            },
+                            "labelKind": {
+                              "type": "string",
+                              "enum": [
+                                "ordinal",
+                                "ground",
+                                "basement",
+                                "stilt",
+                                "podium",
+                                "terrace",
+                                "mezzanine",
+                                "refuge",
+                                "typical"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "label",
+                            "labelKind"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "height"
+                              ]
+                            },
+                            "statedValue": {
+                              "type": "number",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 100000
+                            },
+                            "statedUnit": {
+                              "type": "string",
+                              "enum": [
+                                "m",
+                                "mm",
+                                "ft",
+                                "in",
+                                "unit_unknown"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "statedValue",
+                            "statedUnit"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "unitCount"
+                              ]
+                            },
+                            "value": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 100000
+                            },
+                            "scope": {
+                              "nullable": true,
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 80
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "value",
+                            "scope"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "agentCitations": {
+                      "maxItems": 8,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "partId": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "quote": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 240
+                          },
+                          "locator": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "page": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 400
+                              },
+                              "frame": {
+                                "type": "object",
+                                "properties": {
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "pdf_display_page_top_left_points"
+                                    ]
+                                  },
+                                  "rotation": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 359
+                                  },
+                                  "width": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 10000000
+                                  },
+                                  "height": {
+                                    "type": "number",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 10000000
+                                  }
+                                },
+                                "required": [
+                                  "kind",
+                                  "rotation",
+                                  "width",
+                                  "height"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "box": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": 0
+                                    }
+                                  ]
+                                },
+                                "minItems": 4,
+                                "maxItems": 4
+                              },
+                              "selectedRegion": {
+                                "nullable": true,
+                                "type": "array",
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    {
+                                      "type": "number",
+                                      "minimum": 0
+                                    }
+                                  ]
+                                },
+                                "minItems": 4,
+                                "maxItems": 4
+                              },
+                              "declaredPrecision": {
+                                "nullable": true,
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 120
+                              }
+                            },
+                            "required": [
+                              "page",
+                              "frame",
+                              "box",
+                              "selectedRegion",
+                              "declaredPrecision"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "partId",
+                          "quote",
+                          "locator"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "description": "All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck."
                     },
                     "declaredObservation": {
                       "nullable": true,
@@ -369047,6 +369642,303 @@
                           "type": "string",
                           "minLength": 1,
                           "maxLength": 120
+                        },
+                        "agentFact": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "storeyCount",
+                                    "basementCount"
+                                  ]
+                                },
+                                "value": {
+                                  "nullable": true,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 300
+                                },
+                                "expression": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 60
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "value",
+                                "expression"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "floorExpression"
+                                  ]
+                                },
+                                "expression": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 60
+                                },
+                                "scope": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "expression",
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "floorLabel"
+                                  ]
+                                },
+                                "label": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                },
+                                "labelKind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "ordinal",
+                                    "ground",
+                                    "basement",
+                                    "stilt",
+                                    "podium",
+                                    "terrace",
+                                    "mezzanine",
+                                    "refuge",
+                                    "typical"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "label",
+                                "labelKind"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "height"
+                                  ]
+                                },
+                                "statedValue": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 100000
+                                },
+                                "statedUnit": {
+                                  "type": "string",
+                                  "enum": [
+                                    "m",
+                                    "mm",
+                                    "ft",
+                                    "in",
+                                    "unit_unknown"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "statedValue",
+                                "statedUnit"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unitCount"
+                                  ]
+                                },
+                                "value": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "scope": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "value",
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        "agentCitations": {
+                          "maxItems": 8,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "partId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 120
+                              },
+                              "quote": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 240
+                              },
+                              "locator": {
+                                "nullable": true,
+                                "type": "object",
+                                "properties": {
+                                  "page": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 400
+                                  },
+                                  "frame": {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "enum": [
+                                          "pdf_display_page_top_left_points"
+                                        ]
+                                      },
+                                      "rotation": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 359
+                                      },
+                                      "width": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 10000000
+                                      },
+                                      "height": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 10000000
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "rotation",
+                                      "width",
+                                      "height"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "box": {
+                                    "nullable": true,
+                                    "type": "array",
+                                    "items": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        }
+                                      ]
+                                    },
+                                    "minItems": 4,
+                                    "maxItems": 4
+                                  },
+                                  "selectedRegion": {
+                                    "nullable": true,
+                                    "type": "array",
+                                    "items": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        }
+                                      ]
+                                    },
+                                    "minItems": 4,
+                                    "maxItems": 4
+                                  },
+                                  "declaredPrecision": {
+                                    "nullable": true,
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 120
+                                  }
+                                },
+                                "required": [
+                                  "page",
+                                  "frame",
+                                  "box",
+                                  "selectedRegion",
+                                  "declaredPrecision"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "partId",
+                              "quote",
+                              "locator"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "description": "All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck."
                         },
                         "quote": {
                           "nullable": true,
@@ -369280,6 +370172,7 @@
                           "maxLength": 2000
                         },
                         "locator": {
+                          "nullable": true,
                           "type": "object",
                           "properties": {
                             "page": {
@@ -369395,6 +370288,303 @@
                           "type": "string",
                           "minLength": 1,
                           "maxLength": 512
+                        },
+                        "agentFact": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "storeyCount",
+                                    "basementCount"
+                                  ]
+                                },
+                                "value": {
+                                  "nullable": true,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 300
+                                },
+                                "expression": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 60
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "value",
+                                "expression"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "floorExpression"
+                                  ]
+                                },
+                                "expression": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 60
+                                },
+                                "scope": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "expression",
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "floorLabel"
+                                  ]
+                                },
+                                "label": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                },
+                                "labelKind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "ordinal",
+                                    "ground",
+                                    "basement",
+                                    "stilt",
+                                    "podium",
+                                    "terrace",
+                                    "mezzanine",
+                                    "refuge",
+                                    "typical"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "label",
+                                "labelKind"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "height"
+                                  ]
+                                },
+                                "statedValue": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 100000
+                                },
+                                "statedUnit": {
+                                  "type": "string",
+                                  "enum": [
+                                    "m",
+                                    "mm",
+                                    "ft",
+                                    "in",
+                                    "unit_unknown"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "statedValue",
+                                "statedUnit"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unitCount"
+                                  ]
+                                },
+                                "value": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "scope": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "value",
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        "agentCitations": {
+                          "maxItems": 8,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "partId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 120
+                              },
+                              "quote": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 240
+                              },
+                              "locator": {
+                                "nullable": true,
+                                "type": "object",
+                                "properties": {
+                                  "page": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 400
+                                  },
+                                  "frame": {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "enum": [
+                                          "pdf_display_page_top_left_points"
+                                        ]
+                                      },
+                                      "rotation": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 359
+                                      },
+                                      "width": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 10000000
+                                      },
+                                      "height": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 10000000
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "rotation",
+                                      "width",
+                                      "height"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "box": {
+                                    "nullable": true,
+                                    "type": "array",
+                                    "items": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        }
+                                      ]
+                                    },
+                                    "minItems": 4,
+                                    "maxItems": 4
+                                  },
+                                  "selectedRegion": {
+                                    "nullable": true,
+                                    "type": "array",
+                                    "items": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        }
+                                      ]
+                                    },
+                                    "minItems": 4,
+                                    "maxItems": 4
+                                  },
+                                  "declaredPrecision": {
+                                    "nullable": true,
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 120
+                                  }
+                                },
+                                "required": [
+                                  "page",
+                                  "frame",
+                                  "box",
+                                  "selectedRegion",
+                                  "declaredPrecision"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "partId",
+                              "quote",
+                              "locator"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "description": "All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck."
                         },
                         "declaredObservation": {
                           "nullable": true,
@@ -369793,6 +370983,303 @@
                           "minLength": 1,
                           "maxLength": 120
                         },
+                        "agentFact": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "storeyCount",
+                                    "basementCount"
+                                  ]
+                                },
+                                "value": {
+                                  "nullable": true,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 300
+                                },
+                                "expression": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 60
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "value",
+                                "expression"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "floorExpression"
+                                  ]
+                                },
+                                "expression": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 60
+                                },
+                                "scope": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "expression",
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "floorLabel"
+                                  ]
+                                },
+                                "label": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                },
+                                "labelKind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "ordinal",
+                                    "ground",
+                                    "basement",
+                                    "stilt",
+                                    "podium",
+                                    "terrace",
+                                    "mezzanine",
+                                    "refuge",
+                                    "typical"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "label",
+                                "labelKind"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "height"
+                                  ]
+                                },
+                                "statedValue": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 100000
+                                },
+                                "statedUnit": {
+                                  "type": "string",
+                                  "enum": [
+                                    "m",
+                                    "mm",
+                                    "ft",
+                                    "in",
+                                    "unit_unknown"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "statedValue",
+                                "statedUnit"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unitCount"
+                                  ]
+                                },
+                                "value": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "scope": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "value",
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        "agentCitations": {
+                          "maxItems": 8,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "partId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 120
+                              },
+                              "quote": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 240
+                              },
+                              "locator": {
+                                "nullable": true,
+                                "type": "object",
+                                "properties": {
+                                  "page": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 400
+                                  },
+                                  "frame": {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "enum": [
+                                          "pdf_display_page_top_left_points"
+                                        ]
+                                      },
+                                      "rotation": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 359
+                                      },
+                                      "width": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 10000000
+                                      },
+                                      "height": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 10000000
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "rotation",
+                                      "width",
+                                      "height"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "box": {
+                                    "nullable": true,
+                                    "type": "array",
+                                    "items": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        }
+                                      ]
+                                    },
+                                    "minItems": 4,
+                                    "maxItems": 4
+                                  },
+                                  "selectedRegion": {
+                                    "nullable": true,
+                                    "type": "array",
+                                    "items": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        }
+                                      ]
+                                    },
+                                    "minItems": 4,
+                                    "maxItems": 4
+                                  },
+                                  "declaredPrecision": {
+                                    "nullable": true,
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 120
+                                  }
+                                },
+                                "required": [
+                                  "page",
+                                  "frame",
+                                  "box",
+                                  "selectedRegion",
+                                  "declaredPrecision"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "partId",
+                              "quote",
+                              "locator"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "description": "All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck."
+                        },
                         "quote": {
                           "nullable": true,
                           "type": "string",
@@ -370079,6 +371566,7 @@
                           "maxLength": 2000
                         },
                         "locator": {
+                          "nullable": true,
                           "type": "object",
                           "properties": {
                             "page": {
@@ -370195,6 +371683,303 @@
                           "minLength": 1,
                           "maxLength": 512
                         },
+                        "agentFact": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "storeyCount",
+                                    "basementCount"
+                                  ]
+                                },
+                                "value": {
+                                  "nullable": true,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 300
+                                },
+                                "expression": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 60
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "value",
+                                "expression"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "floorExpression"
+                                  ]
+                                },
+                                "expression": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 60
+                                },
+                                "scope": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "expression",
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "floorLabel"
+                                  ]
+                                },
+                                "label": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                },
+                                "labelKind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "ordinal",
+                                    "ground",
+                                    "basement",
+                                    "stilt",
+                                    "podium",
+                                    "terrace",
+                                    "mezzanine",
+                                    "refuge",
+                                    "typical"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "label",
+                                "labelKind"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "height"
+                                  ]
+                                },
+                                "statedValue": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 100000
+                                },
+                                "statedUnit": {
+                                  "type": "string",
+                                  "enum": [
+                                    "m",
+                                    "mm",
+                                    "ft",
+                                    "in",
+                                    "unit_unknown"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "statedValue",
+                                "statedUnit"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "unitCount"
+                                  ]
+                                },
+                                "value": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 100000
+                                },
+                                "scope": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 80
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "value",
+                                "scope"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        },
+                        "agentCitations": {
+                          "maxItems": 8,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "partId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 120
+                              },
+                              "quote": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 240
+                              },
+                              "locator": {
+                                "nullable": true,
+                                "type": "object",
+                                "properties": {
+                                  "page": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 400
+                                  },
+                                  "frame": {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "enum": [
+                                          "pdf_display_page_top_left_points"
+                                        ]
+                                      },
+                                      "rotation": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 359
+                                      },
+                                      "width": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 10000000
+                                      },
+                                      "height": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 10000000
+                                      }
+                                    },
+                                    "required": [
+                                      "kind",
+                                      "rotation",
+                                      "width",
+                                      "height"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "box": {
+                                    "nullable": true,
+                                    "type": "array",
+                                    "items": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        }
+                                      ]
+                                    },
+                                    "minItems": 4,
+                                    "maxItems": 4
+                                  },
+                                  "selectedRegion": {
+                                    "nullable": true,
+                                    "type": "array",
+                                    "items": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        }
+                                      ]
+                                    },
+                                    "minItems": 4,
+                                    "maxItems": 4
+                                  },
+                                  "declaredPrecision": {
+                                    "nullable": true,
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 120
+                                  }
+                                },
+                                "required": [
+                                  "page",
+                                  "frame",
+                                  "box",
+                                  "selectedRegion",
+                                  "declaredPrecision"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "partId",
+                              "quote",
+                              "locator"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "description": "All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck."
+                        },
                         "declaredObservation": {
                           "nullable": true,
                           "type": "object",
@@ -370227,6 +372012,303 @@
                               "type": "string",
                               "minLength": 1,
                               "maxLength": 120
+                            },
+                            "agentFact": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "storeyCount",
+                                        "basementCount"
+                                      ]
+                                    },
+                                    "value": {
+                                      "nullable": true,
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 300
+                                    },
+                                    "expression": {
+                                      "nullable": true,
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 60
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "value",
+                                    "expression"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "floorExpression"
+                                      ]
+                                    },
+                                    "expression": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 60
+                                    },
+                                    "scope": {
+                                      "nullable": true,
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 80
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "expression",
+                                    "scope"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "floorLabel"
+                                      ]
+                                    },
+                                    "label": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 80
+                                    },
+                                    "labelKind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "ordinal",
+                                        "ground",
+                                        "basement",
+                                        "stilt",
+                                        "podium",
+                                        "terrace",
+                                        "mezzanine",
+                                        "refuge",
+                                        "typical"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "label",
+                                    "labelKind"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "height"
+                                      ]
+                                    },
+                                    "statedValue": {
+                                      "type": "number",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 100000
+                                    },
+                                    "statedUnit": {
+                                      "type": "string",
+                                      "enum": [
+                                        "m",
+                                        "mm",
+                                        "ft",
+                                        "in",
+                                        "unit_unknown"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "statedValue",
+                                    "statedUnit"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "unitCount"
+                                      ]
+                                    },
+                                    "value": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 100000
+                                    },
+                                    "scope": {
+                                      "nullable": true,
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 80
+                                    }
+                                  },
+                                  "required": [
+                                    "kind",
+                                    "value",
+                                    "scope"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
+                            },
+                            "agentCitations": {
+                              "maxItems": 8,
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "partId": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 120
+                                  },
+                                  "quote": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 240
+                                  },
+                                  "locator": {
+                                    "nullable": true,
+                                    "type": "object",
+                                    "properties": {
+                                      "page": {
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 400
+                                      },
+                                      "frame": {
+                                        "type": "object",
+                                        "properties": {
+                                          "kind": {
+                                            "type": "string",
+                                            "enum": [
+                                              "pdf_display_page_top_left_points"
+                                            ]
+                                          },
+                                          "rotation": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "maximum": 359
+                                          },
+                                          "width": {
+                                            "type": "number",
+                                            "minimum": 0,
+                                            "exclusiveMinimum": true,
+                                            "maximum": 10000000
+                                          },
+                                          "height": {
+                                            "type": "number",
+                                            "minimum": 0,
+                                            "exclusiveMinimum": true,
+                                            "maximum": 10000000
+                                          }
+                                        },
+                                        "required": [
+                                          "kind",
+                                          "rotation",
+                                          "width",
+                                          "height"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      "box": {
+                                        "nullable": true,
+                                        "type": "array",
+                                        "items": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number",
+                                              "minimum": 0
+                                            },
+                                            {
+                                              "type": "number",
+                                              "minimum": 0
+                                            },
+                                            {
+                                              "type": "number",
+                                              "minimum": 0
+                                            },
+                                            {
+                                              "type": "number",
+                                              "minimum": 0
+                                            }
+                                          ]
+                                        },
+                                        "minItems": 4,
+                                        "maxItems": 4
+                                      },
+                                      "selectedRegion": {
+                                        "nullable": true,
+                                        "type": "array",
+                                        "items": {
+                                          "anyOf": [
+                                            {
+                                              "type": "number",
+                                              "minimum": 0
+                                            },
+                                            {
+                                              "type": "number",
+                                              "minimum": 0
+                                            },
+                                            {
+                                              "type": "number",
+                                              "minimum": 0
+                                            },
+                                            {
+                                              "type": "number",
+                                              "minimum": 0
+                                            }
+                                          ]
+                                        },
+                                        "minItems": 4,
+                                        "maxItems": 4
+                                      },
+                                      "declaredPrecision": {
+                                        "nullable": true,
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 120
+                                      }
+                                    },
+                                    "required": [
+                                      "page",
+                                      "frame",
+                                      "box",
+                                      "selectedRegion",
+                                      "declaredPrecision"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "required": [
+                                  "partId",
+                                  "quote",
+                                  "locator"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "description": "All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck."
                             },
                             "quote": {
                               "nullable": true,
@@ -371162,6 +373244,303 @@
                     "minLength": 1,
                     "maxLength": 120
                   },
+                  "agentFact": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "storeyCount",
+                              "basementCount"
+                            ]
+                          },
+                          "value": {
+                            "nullable": true,
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 300
+                          },
+                          "expression": {
+                            "nullable": true,
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 60
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "value",
+                          "expression"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "floorExpression"
+                            ]
+                          },
+                          "expression": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 60
+                          },
+                          "scope": {
+                            "nullable": true,
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "expression",
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "floorLabel"
+                            ]
+                          },
+                          "label": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                          },
+                          "labelKind": {
+                            "type": "string",
+                            "enum": [
+                              "ordinal",
+                              "ground",
+                              "basement",
+                              "stilt",
+                              "podium",
+                              "terrace",
+                              "mezzanine",
+                              "refuge",
+                              "typical"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "label",
+                          "labelKind"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "height"
+                            ]
+                          },
+                          "statedValue": {
+                            "type": "number",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 100000
+                          },
+                          "statedUnit": {
+                            "type": "string",
+                            "enum": [
+                              "m",
+                              "mm",
+                              "ft",
+                              "in",
+                              "unit_unknown"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "statedValue",
+                          "statedUnit"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "unitCount"
+                            ]
+                          },
+                          "value": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 100000
+                          },
+                          "scope": {
+                            "nullable": true,
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "value",
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  },
+                  "agentCitations": {
+                    "maxItems": 8,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "partId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "quote": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 240
+                        },
+                        "locator": {
+                          "nullable": true,
+                          "type": "object",
+                          "properties": {
+                            "page": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 400
+                            },
+                            "frame": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pdf_display_page_top_left_points"
+                                  ]
+                                },
+                                "rotation": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 359
+                                },
+                                "width": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 10000000
+                                },
+                                "height": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 10000000
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "rotation",
+                                "width",
+                                "height"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "box": {
+                              "nullable": true,
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "selectedRegion": {
+                              "nullable": true,
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "declaredPrecision": {
+                              "nullable": true,
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            }
+                          },
+                          "required": [
+                            "page",
+                            "frame",
+                            "box",
+                            "selectedRegion",
+                            "declaredPrecision"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "partId",
+                        "quote",
+                        "locator"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck."
+                  },
                   "quote": {
                     "nullable": true,
                     "type": "string",
@@ -371382,6 +373761,303 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 120
+                  },
+                  "agentFact": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "storeyCount",
+                              "basementCount"
+                            ]
+                          },
+                          "value": {
+                            "nullable": true,
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 300
+                          },
+                          "expression": {
+                            "nullable": true,
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 60
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "value",
+                          "expression"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "floorExpression"
+                            ]
+                          },
+                          "expression": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 60
+                          },
+                          "scope": {
+                            "nullable": true,
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "expression",
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "floorLabel"
+                            ]
+                          },
+                          "label": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                          },
+                          "labelKind": {
+                            "type": "string",
+                            "enum": [
+                              "ordinal",
+                              "ground",
+                              "basement",
+                              "stilt",
+                              "podium",
+                              "terrace",
+                              "mezzanine",
+                              "refuge",
+                              "typical"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "label",
+                          "labelKind"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "height"
+                            ]
+                          },
+                          "statedValue": {
+                            "type": "number",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 100000
+                          },
+                          "statedUnit": {
+                            "type": "string",
+                            "enum": [
+                              "m",
+                              "mm",
+                              "ft",
+                              "in",
+                              "unit_unknown"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "statedValue",
+                          "statedUnit"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "unitCount"
+                            ]
+                          },
+                          "value": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 100000
+                          },
+                          "scope": {
+                            "nullable": true,
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "value",
+                          "scope"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  },
+                  "agentCitations": {
+                    "maxItems": 8,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "partId": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "quote": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 240
+                        },
+                        "locator": {
+                          "nullable": true,
+                          "type": "object",
+                          "properties": {
+                            "page": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 400
+                            },
+                            "frame": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pdf_display_page_top_left_points"
+                                  ]
+                                },
+                                "rotation": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 359
+                                },
+                                "width": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 10000000
+                                },
+                                "height": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 10000000
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "rotation",
+                                "width",
+                                "height"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "box": {
+                              "nullable": true,
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "selectedRegion": {
+                              "nullable": true,
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  },
+                                  {
+                                    "type": "number",
+                                    "minimum": 0
+                                  }
+                                ]
+                              },
+                              "minItems": 4,
+                              "maxItems": 4
+                            },
+                            "declaredPrecision": {
+                              "nullable": true,
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 120
+                            }
+                          },
+                          "required": [
+                            "page",
+                            "frame",
+                            "box",
+                            "selectedRegion",
+                            "declaredPrecision"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "partId",
+                        "quote",
+                        "locator"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "All agent citations as declared, not presence-checked here; the primary quote and locator carry quotationCheck."
                   },
                   "quote": {
                     "nullable": true,
