@@ -1,5 +1,30 @@
 # Official source index and retained dataset catalogue
 
+## D1c property-table checkpoint — 10 October 2026 UTC
+
+Two unlabelled **Tamil Nadu Housing Board** issuing-authority JSON tables, one conservative schema family,
+are retained under `E:/BhuAayam-data/datasets/messy-india/d1c/dev/`, with byte-identical small copies in
+`fixtures/usp/D8-messy-india/dev/d1c/`. They state scheme-level property facts, not person-level ownership.
+No CSV conversion, inferred units, development targets, teacher calls or registry installation occurred.
+Public availability does not confirm redistribution/training permission; licence remains unconfirmed.
+
+- 2026-10-10T09:03:54.128858+00:00 — `schemes-yes.json`, 243,327 bytes, public issuing-authority GET:
+  https://propertysalesapi.tnhb.org.in/api/getSchemeDataByPublishedStatus?publishedStatus=Yes
+- 2026-10-10T09:03:54.557115+00:00 — `schemes-no.json`, 229,451 bytes, public issuing-authority GET:
+  https://propertysalesapi.tnhb.org.in/api/getSchemeDataByPublishedStatus?publishedStatus=No
+
+Exact hashes and layout fingerprints are in the [development manifest](../../fixtures/usp/D8-messy-india/manifest.json).
+Both share one layout; publication-state queries do not constitute independent families or years.
+The unpublished response is public but does not establish that its schemes are offered/current/approved.
+New heldout counts: **0 families, 0 files, 0 columns, 0 scorable columns, 0 positive targets**.
+The requested data prerequisite is **blocked**, not passed. Blind discovery/support metadata stays evaluator-only.
+OpenCity occupancy registers embed personal names in address cells and were excluded without retaining or redacting.
+Login/CAPTCHA, transport and privacy gaps are recorded in `docs/evidence/gf-agent/d1c/result.json`.
+
+These are native JSON tables, not qualified CSV/XLSX import inputs. The catalogue builder already fails on D8's
+acquisition-style assets lacking the strict DTO `content` field. Its read-only preview and regression test were run;
+no unrelated catalogue or source history was regenerated away. The lead must adapt the unowned builder/retained ledger.
+
 ## T1-prep public municipal pool — 10 October 2026 UTC
 
 Five additional **unlabelled `split: pool` schema families** from Surat Municipal Corporation's issuing portal
