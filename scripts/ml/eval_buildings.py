@@ -255,20 +255,35 @@ def ratio(a, b):
     return a / b if b else None
 
 
-def match(truth, predictions):
+def mask_iou_matrix(truth: list[Any], predictions: list[Any]) -> Any:
+    import numpy as np
+    ious = np.zeros((len(truth), len(predictions)), dtype=np.float64)
+    for truth_index, truth_mask in enumerate(truth):
+        for prediction_index, prediction_mask in enumerate(predictions):
+            union = np.count_nonzero(truth_mask | prediction_mask)
+            intersection = np.count_nonzero(truth_mask & prediction_mask)
+            ious[truth_index, prediction_index] = intersection / union if union else 0
+    return ious
+
+
+def matched_pairs(truth: list[Any], predictions: list[Any]) -> list[tuple[int, int, float]]:
     import numpy as np
     from scipy.optimize import linear_sum_assignment
-    ious = np.zeros((len(truth), len(predictions)), dtype=np.float64)
-    for i, t in enumerate(truth):
-        for j, p in enumerate(predictions):
-            union = np.count_nonzero(t | p)
-            ious[i, j] = np.count_nonzero(t & p) / union if union else 0
+    ious = mask_iou_matrix(truth, predictions)
     if not ious.size:
         return []
     # Cardinality first, IoU tie-break second; ineligible edges cannot match.
     reward = np.where(ious >= .5, min(ious.shape) + 1 + ious, 0)
-    ti, pi = linear_sum_assignment(reward, maximize=True)
-    return [float(ious[i, j]) for i, j in zip(ti, pi) if ious[i, j] >= .5]
+    truth_indices, prediction_indices = linear_sum_assignment(reward, maximize=True)
+    return [
+        (int(truth_index), int(prediction_index), float(ious[truth_index, prediction_index]))
+        for truth_index, prediction_index in zip(truth_indices, prediction_indices)
+        if ious[truth_index, prediction_index] >= .5
+    ]
+
+
+def match(truth, predictions):
+    return [iou for _, _, iou in matched_pairs(truth, predictions)]
 
 
 def boundary_counts(truth_union, pred_union):
