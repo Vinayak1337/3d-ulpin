@@ -1,21 +1,13 @@
-import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { pinnedOperations } from '../../apps/api/scripts/pinned-operations';
+import { pinnedSourceFiles, pinnedSourceHashes } from '../../apps/api/scripts/pinned-sources';
 import { createApiDocument } from '../../apps/api/src/openapi';
 
 type SourcePins = { sourceSha256: Record<string, string>; operations: string[] };
-
-/** Preserve existing pins; new pins cover native non-test producers only, not verification scripts. */
-function needsPin(path: string, pins: SourcePins) {
-  if (Object.hasOwn(pins.sourceSha256, path)) return true;
-  const producer = /^(?:apps\/api\/src|packages\/(?:server|contracts)\/src)\/.*\.(?:ts|js|json)$/.test(path);
-  const test = /(?:^|\/)tests?\//.test(path) || /\.(?:test|spec|test-fixture)\.(?:ts|js|json)$/.test(path);
-  return producer && !test;
-}
 
 function changedPaths(base: string) {
   execFileSync('git', ['rev-parse', '--verify', `${base}^{commit}`], { stdio: 'pipe' });
@@ -26,11 +18,10 @@ function changedPaths(base: string) {
 
 function repin(paths: string[], operations: string[]) {
   const pins = JSON.parse(readFileSync('docs/api/source-pins.json', 'utf8')) as SourcePins;
-  const selected = paths.filter(path => needsPin(path, pins));
-  for (const path of selected) {
-    const bytes = readFileSync(path).toString('latin1').replace(/\r\n/g, '\n');
-    pins.sourceSha256[path] = createHash('sha256').update(bytes, 'latin1').digest('hex');
-  }
+  const root = process.cwd();
+  // The pinned set is the generator's selection, never the previous file's, so a drifted pin set is corrected.
+  const selected = pinnedSourceFiles(root).filter(path => paths.includes(path));
+  pins.sourceSha256 = pinnedSourceHashes(root);
   // A route added or removed since the last full generation must not stay unlisted.
   pins.operations = operations;
   writeFileSync('docs/api/source-pins.json', JSON.stringify(pins, null, 2) + '\n');

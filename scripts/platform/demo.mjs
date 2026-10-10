@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { createDemo, readDemo, demoDir, demoProject, demoFile, safeEnvironment, redact } from './demo-config.mjs';
 import { dockerRuntime, engine, inventory, startProblems, root } from './runtime.mjs';
 import { launchProcesses, stopProcesses, waitForApi } from './processes.mjs';
+import { gatewayReport } from './demo-gateway.mjs';
+import { gatewayStateText } from './demo-gateway-state.mjs';
 
 function execute(file, args, env, timeout = 180000) {
   try {
@@ -66,7 +68,8 @@ export async function demoAction(action, create = false) {
   }
   await launchProcesses(env);
   await waitForApi(env);
-  console.log(`ulpin-demo running: http://127.0.0.1:${env.API_PORT}/api/v1/health (gateway disabled).`);
+  const gateway = gatewayStateText(gatewayReport(env));
+  console.log(`ulpin-demo running: http://127.0.0.1:${env.API_PORT}/api/v1/health (${gateway}).`);
   const output = execute(process.execPath, [join(root, 'scripts/platform/doctor'), '--profile', 'demo'], env);
   console.log(output);
 }

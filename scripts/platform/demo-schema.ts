@@ -8,5 +8,5 @@ try {
   await ensureSpatialDatasets();
   await ensureDatasetMl();
   await migrateModelGateway();
-  console.log('Additional dataset/model-gateway schemas ready; gateway remains disabled.');
+  console.log('Additional dataset/model-gateway schemas ready; this step does not change the gateway state.');
 } finally { await closePool(); }
