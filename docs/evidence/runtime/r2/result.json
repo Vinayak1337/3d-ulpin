@@ -57,7 +57,70 @@
     },
     "automaticDispatch": "R1 existing successful job receipts reused; no new job submitted"
   },
-  "step2": {"result": "pending"},
+  "step2": {
+    "result": "stopped at K4c NEXT step 3: snapshot",
+    "canonicalBefore": {
+      "http": 200,
+      "schedule": "conflicting",
+      "alternatives": ["G+41", "G+42"],
+      "recordedFloors": 0,
+      "recordedUnits": 0
+    },
+    "record": {
+      "http": 201,
+      "requestKey": "c85083aa-ea4b-40f2-bcea-94b23e4b5dba",
+      "reason": "exact R2 lead/demo attribution; no field-officer decision; no shortening",
+      "recordRevisionBefore": 4,
+      "recordRevisionAfter": 5,
+      "floorId": "614ca200-1f3d-48ac-b7db-d1b893b352a1",
+      "floorRevision": 1,
+      "spaceId": "46b7265e-ca88-402d-83df-065cf7c45140",
+      "spaceRevision": 1,
+      "time": "2026-10-10T12:29:49.672Z",
+      "actor": "selection-demo-runtime",
+      "replayHttp": 201,
+      "replayReceiptEqual": true,
+      "scheduleLevelId": null
+    },
+    "snapshot": {
+      "http": 409,
+      "code": "STALE_REVISION",
+      "message": "The document source, case, reader, access or model policy changed. Retry under current pins.",
+      "retryable": false,
+      "requestId": "b94c1677-7e20-4ac7-91a0-ba2f02123e08",
+      "targetRevision": 1,
+      "retried": false,
+      "alternateRouteOrBody": false,
+      "inputClarification": "world registry-site/<siteId> and stage recorded required by the actual contract",
+      "staticDiagnosis": "snapshotRows captures all same-site sources, not only the cited source-only target originals",
+      "failedSourceId": null,
+      "failedSourceIdState": "not exposed; not guessed",
+      "serverLogLinesCollected": false,
+      "serverLogNote": "USP filter does not log the handled AppError; no approved native-log reader exists"
+    },
+    "readBack": {
+      "http": 200,
+      "canonicalRevision": "e913035173ea3e49fb2bec272ec06cd7e7b75a0bd2e1c1beb2f5e2f1c6bba9a4",
+      "floorLabel": "2ND FLOOR PLAN",
+      "spaceLabel": "UNIT-3B",
+      "floorGeometry": "absent",
+      "spaceGeometry": "absent",
+      "lowerM": "unknown",
+      "upperM": "unknown",
+      "areaM2": "unknown",
+      "spaceKind": "unknown",
+      "proposedCode": null,
+      "proposedCodeState": "unknown",
+      "parcelRefs": [],
+      "schedule": "conflicting"
+    },
+    "notRun": ["review", "assign", "resolve", "plan", "confirm", "execute", "card", "tamper read"],
+    "packetPdf": null,
+    "cardPdf": null,
+    "pngRenders": [],
+    "expiresAt": null,
+    "unknownFactDefectsObserved": []
+  },
   "step3": {"result": "pending"},
   "invariants": {
     "before": {
@@ -65,8 +128,13 @@
       "cases": 11, "sources": 38, "physicalFeatures": 67, "learnerVersion": "v44"
     },
     "learnerVersionSource": "R1 last-job retained chunk metrics, same read authority as R1; no learning operation",
-    "after": null,
-    "changed": []
+    "after": {
+      "registry": 4, "areas": 4, "sites": 4, "importPackages": 7,
+      "cases": 11, "sources": 38, "physicalFeatures": 67, "learnerVersion": "v44"
+    },
+    "changed": ["registry +2: exactly one source-stated floor and one source-stated space"],
+    "recordRevisionChanges": ["Tower 3 building 4 to 5; floor and space created at revision 1"],
+    "areaPackageCaseSourceLearnerCountsChanged": false
   },
   "checks": {"driverTypecheck": 0, "doctorAfterRollout": 0, "fullRuntimeGatePassed": false}
 }

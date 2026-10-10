@@ -3,7 +3,10 @@
 import assert from 'node:assert/strict';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { SourceSpaceRequestSchema, SourceSpaceReceiptSchema } from '../../packages/contracts/src/canonical/source-spaces';
+import { SourceSpaceRequestSchema, SourceSpaceReceiptSchema,
+} from '../../packages/contracts/src/canonical/source-spaces';
+import { UspCaptureSnapshotRequestSchema } from '../../packages/contracts/src/usp/ports';
+import { UspSnapshotManifestSchema } from '../../packages/contracts/src/usp/domain';
 
 const base = 'http://127.0.0.1:3194';
 const root = 'E:/BhuAayam-data/task-data/r2';
@@ -47,7 +50,8 @@ function stored(stage: string, name: string) {
 async function probes() {
   const directory = join(root, 'step1');
   const query = `revision=1&sha256=${sourceHash}&offset=0&limit=1`;
-  const pages = accepted('page probe', await exchange(directory, 'pages', `/api/v1/sources/${sourceId}/pages?${query}`));
+  const pages = accepted('page probe', await exchange(directory, 'pages',
+    `/api/v1/sources/${sourceId}/pages?${query}`));
   assert.equal(pages.pages[0].frame.width, 2586);
   assert.equal(pages.pages[0].frame.height, 1695);
   const canonical = accepted('canonical probe', await exchange(directory, 'canonical',
@@ -92,15 +96,67 @@ async function record() {
   save(directory, '02-summary.json', { receipt, replaySame: true });
 }
 
+async function snapshot() {
+  const receipt = stored('step2', '02-record');
+  const scopeId = stored('step2', '01-canonical').areaId;
+  const input = UspCaptureSnapshotRequestSchema.parse({
+    scopeId, world: { namespace: 'world', id: `registry-site/${scopeId}` }, stage: 'recorded',
+    selection: { kind: 'targets', pins: [{ ref: { namespace: 'registry_record', id: receipt.spaceId },
+      revision: receipt.spaceRevision }] },
+  });
+  const result = accepted('snapshot', await exchange(join(root, 'step2'), '03-snapshot',
+    '/api/v1/usp/snapshots', input));
+  UspSnapshotManifestSchema.parse(result.data);
+}
+
+async function readRecorded(stage: string) {
+  const directory = join(root, stage);
+  const receipt = stored('step2', '02-record');
+  const canonical = accepted('recorded canonical read', await exchange(directory, 'recorded-canonical',
+    `/api/v1/buildings/${buildingId}/canonical`));
+  const floor = canonical.levels.find((level: any) => level.registryFloorId === receipt.floorId);
+  const space = floor?.spaces.find((unit: any) => unit.spaceId === receipt.spaceId);
+  assert(floor && space, 'Recorded hierarchy is missing');
+  assert.equal(floor.label.value, '2ND FLOOR PLAN');
+  assert.equal(space.label.value, 'UNIT-3B');
+  assert.equal(floor.polygons.state, 'absent');
+  assert.equal(space.polygons.state, 'absent');
+  assert.equal(floor.lowerM.state, 'unknown');
+  assert.equal(floor.upperM.state, 'unknown');
+  assert.equal(space.areaM2.state, 'unknown');
+  assert.equal(space.kind.state, 'unknown');
+  assert.equal(space.proposedCode.value, null, 'No assignment has run');
+  assert.deepEqual(canonical.parcelRefs, []);
+  assert.equal(canonical.levelSchedule.state, 'conflicting');
+  const citations = [...floor.label.citations, ...space.label.citations];
+  assert.equal(citations.length, 2);
+  assert(citations.every((citation: any) => citation.sourceId === sourceId
+    && citation.sourceSha256 === sourceHash && citation.sourceRevision === 1 && citation.locator.page === 1));
+  save(directory, 'recorded-summary.json', { canonicalRevision: canonical.revisionId,
+    floorId: floor.registryFloorId, floorLabel: floor.label.value, spaceId: space.spaceId,
+    spaceLabel: space.label.value, proposedCode: space.proposedCode, citations,
+    lowerM: floor.lowerM, upperM: floor.upperM, areaM2: space.areaM2, kind: space.kind,
+    floorGeometry: floor.polygons.state, spaceGeometry: space.polygons.state,
+    schedule: canonical.levelSchedule.state, parcelRefs: canonical.parcelRefs });
+}
+
+async function studio() {
+  await readRecorded('step3');
+  const query = `revision=1&sha256=${sourceHash}&offset=0&limit=1`;
+  accepted('Studio cited-page read', await exchange(join(root, 'step3'), 'cited-page',
+    `/api/v1/sources/${sourceId}/pages?${query}`));
+}
+
 async function main() {
   const [action, stage] = process.argv.slice(2);
-  if (action === 'probes') return probes();
   if (action === 'counts') {
     assert(stage && /^[a-z0-9-]+$/.test(stage));
     return counts(stage);
   }
-  assert.equal(action, 'record', 'Use probes | counts <stage> | record');
-  await record();
+  const actions: Record<string, () => Promise<void>> = { probes, record, snapshot, studio,
+    'record-read': () => readRecorded('step2') };
+  assert(actions[action], 'Use probes | counts <stage> | record | snapshot | record-read | studio');
+  await actions[action]();
 }
 
 main().catch(error => {
