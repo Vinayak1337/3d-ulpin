@@ -238,8 +238,12 @@ def test_empty_output_still_retains_exact_raster_and_mask_receipts(monkeypatch):
 
 
 @pytest.mark.skipif(importlib.util.find_spec("rasterio") is None, reason="optional pixel polygonizer")
-def test_tiled_buildings_union_seams_in_source_coordinates_with_max_confidence(monkeypatch):
-    model = ml._manifest()["models"][1]
+@pytest.mark.parametrize("resolution", [432, 624])
+def test_tiled_buildings_union_seams_in_source_coordinates_with_max_confidence(
+    monkeypatch: pytest.MonkeyPatch, resolution: int
+) -> None:
+    model = dict(ml._manifest()["models"][1])
+    model["preprocessing"] = {**model["preprocessing"], "inputShape": [1, 3, resolution, resolution]}
     monkeypatch.setattr(ml, "_verified_path", lambda model: ("unused", SimpleNamespace(st_size=1, st_mtime_ns=1)))
     monkeypatch.setattr(ml, "_session", lambda *args: None)
     pixels = np.zeros((32, 1024, 3), np.uint8)
@@ -248,7 +252,8 @@ def test_tiled_buildings_union_seams_in_source_coordinates_with_max_confidence(m
     image = Image.fromarray(pixels)
     seen = []
 
-    def tile_inference(session, tile):
+    def tile_inference(session: object, tile: Image.Image, input_resolution: int = 432) -> tuple:
+        assert input_resolution == resolution
         pixel = tile.getpixel((0, 0))
         origin = pixel[0] + pixel[1] * 256
         seen.append(origin)
@@ -286,7 +291,12 @@ def test_empty_tiled_receipt_retains_all_tile_transforms_and_same_size_masks(mon
     data.update(task="building", modelId=model["id"], expectedModelSha256=model["sha256"], expectedProfileVersion=model["profileVersion"])
     monkeypatch.setattr(ml, "_verified_path", lambda model: ("unused", SimpleNamespace(st_size=1, st_mtime_ns=1)))
     monkeypatch.setattr(ml, "_session", lambda *args: None)
-    monkeypatch.setattr(ml, "_building_tile", lambda session, image: (np.zeros((image.height, image.width), np.uint8), np.zeros((image.height, image.width), np.float32), {0: "background"}, "instance_sigmoid"))
+    def empty_tile(session: object, image: Image.Image, input_resolution: int = 432) -> tuple:
+        assert input_resolution == 432
+        labels = np.zeros((image.height, image.width), np.uint8)
+        return labels, np.zeros_like(labels, np.float32), {0: "background"}, "instance_sigmoid"
+
+    monkeypatch.setattr(ml, "_building_tile", empty_tile)
     result = ml.infer_spatial(data, Storage(raw))
     assert result["status"] == "empty"
     assert result["raster"]["width"] == result["mask"]["width"] == 768

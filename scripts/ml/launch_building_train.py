@@ -19,6 +19,13 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--smoke-result", type=Path, required=True)
     parser.add_argument("--duration-minutes", type=float, default=85)
     parser.add_argument("--resume", type=Path)
+    parser.add_argument("--resolution", type=int, default=432)
+    parser.add_argument("--batch-size", type=int, default=1)
+    parser.add_argument("--accumulation", type=int, default=4)
+    parser.add_argument("--max-epochs", type=int, default=12)
+    parser.add_argument("--checkpoint-backbone", action="store_true")
+    parser.add_argument("--checkpoint-decoder", action="store_true")
+    parser.add_argument("--size-bins", action="store_true")
     parser.add_argument("--early-stopping-metric", choices=("f1", "recall"), default="f1")
     parser.add_argument("--dev-thresholds", type=float, nargs="+", default=[0.5])
     args = parser.parse_args()
@@ -26,19 +33,37 @@ def parse_arguments() -> argparse.Namespace:
         raise RuntimeError("This helper explicitly targets Windows detachment")
     if not re.fullmatch(r"[A-Za-z0-9_-]+", args.run_id):
         parser.error("Simple new run id required")
+    if args.resolution < 432 or args.resolution % 24:
+        parser.error("RF-DETR resolution must be at least432 and divisible by24")
+    if args.batch_size * args.accumulation != 4 or min(args.batch_size, args.accumulation) < 1:
+        parser.error("Preserve effective batch4 with positive batch size and accumulation")
+    if not 1 <= args.max_epochs <= 12 or (args.resolution > 432 and args.max_epochs > 8):
+        parser.error("Maximum epochs must be1..12;higher-resolution B6 ceiling is8")
     return args
 
 
-def require_smoke(path: Path) -> None:
+def require_smoke(
+    path: Path,
+    resolution: int = 432,
+    checkpoint_backbone: bool = False,
+    checkpoint_decoder: bool = False,
+    batch_size: int = 1,
+    accumulation: int = 4,
+) -> None:
     smoke = read_json(path)
     qualified = smoke["status"] == "passed" and smoke["optimizer_steps"] == 50
     qualified = qualified and smoke["last_20_mean_loss"] < smoke["first_20_mean_loss"]
     qualified = qualified and smoke["peak_reserved_bytes"] <= 6 * 1024**3
+    qualified = qualified and smoke.get("input_resolution", 432) == resolution
+    qualified = qualified and smoke.get("checkpoint_backbone", False) == checkpoint_backbone
+    qualified = qualified and smoke.get("checkpoint_decoder", False) == checkpoint_decoder
+    qualified = qualified and smoke.get("batch_size", 1) == batch_size
+    qualified = qualified and smoke.get("gradient_accumulation_steps", 4) == accumulation
     if not qualified:
-        raise ValueError("50-step finite/falling smoke required before launch")
+        raise ValueError("Matching-resolution 50-step finite/falling smoke required before launch")
 
 
-def launch(args: argparse.Namespace, root: Path) -> dict[str, Any]:
+def train_command(args: argparse.Namespace) -> list[str]:
     script = REPO / "scripts/ml/train_buildings.py"
     command = [
         sys.executable,
@@ -54,8 +79,27 @@ def launch(args: argparse.Namespace, root: Path) -> dict[str, Any]:
         "--dev-thresholds",
         *[str(value) for value in args.dev_thresholds],
     ]
+    command += [
+        "--resolution",
+        str(args.resolution),
+        "--batch-size",
+        str(args.batch_size),
+        "--accumulation",
+        str(args.accumulation),
+        "--max-epochs",
+        str(args.max_epochs),
+    ]
+    for option in ("checkpoint-backbone", "checkpoint-decoder", "size-bins"):
+        if getattr(args, option.replace("-", "_")):
+            command.append("--" + option)
     if args.resume:
         command += ["--resume", str(args.resume)]
+    return command
+
+
+def launch(args: argparse.Namespace, root: Path) -> dict[str, Any]:
+    script = REPO / "scripts/ml/train_buildings.py"
+    command = train_command(args)
     with (root / "training.log").open("x") as log:
         child = subprocess.Popen(
             command,
@@ -82,7 +126,14 @@ def launch(args: argparse.Namespace, root: Path) -> dict[str, Any]:
 
 def main() -> None:
     args = parse_arguments()
-    require_smoke(args.smoke_result)
+    require_smoke(
+        args.smoke_result,
+        args.resolution,
+        args.checkpoint_backbone,
+        args.checkpoint_decoder,
+        args.batch_size,
+        args.accumulation,
+    )
     root = RUNS / args.run_id
     root.mkdir(parents=True, exist_ok=False)
     receipt = launch(args, root)

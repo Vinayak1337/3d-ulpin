@@ -179,6 +179,13 @@ def model_path(value):
     return path.resolve()
 
 
+def onnx_resolution(native: Any) -> int:
+    resolution = native.get_inputs()[0].shape[-1]
+    if not isinstance(resolution, int) or resolution < 432 or resolution % 24:
+        raise ValueError("Expected a static model-compatible RF-DETR ONNX input grid")
+    return resolution
+
+
 def session(path, provider):
     if path.suffix == ".onnx":
         import onnxruntime as ort
@@ -191,6 +198,7 @@ def session(path, provider):
             ort.preload_dlls()
             providers = [("CUDAExecutionProvider", {"gpu_mem_limit": 6 * 1024**3, "arena_extend_strategy": "kSameAsRequested"}), "CPUExecutionProvider"]
         native = ort.InferenceSession(str(path), options, providers=providers)
+        native.input_resolution = onnx_resolution(native)
         if provider == "cuda" and native.get_providers()[0] != "CUDAExecutionProvider":
             raise RuntimeError("CUDA provider failed; request explicit CPU fallback, never silent fallback")
         return native, native.get_providers()
@@ -204,6 +212,8 @@ def session(path, provider):
         raise ValueError("Safetensors checkpoint must be a standard model.safetensors + config.json directory")
     native = RfDetrForInstanceSegmentation.from_pretrained(path.parent, local_files_only=True, use_safetensors=True, attn_implementation="eager").to(provider if provider == "cuda" else "cpu").eval()
     class Adapter:
+        input_resolution = native.config.to_dict().get("ulpin_input_resolution", 432)
+
         def run(self, _outputs, inputs):
             with torch.inference_mode():
                 tensor = torch.from_numpy(inputs["image"]).to(provider if provider == "cuda" else "cpu")
@@ -224,6 +234,8 @@ def threshold_session(native: Any, threshold: float) -> Any:
         return native
     offset = math.log(threshold / (1 - threshold))
     class Adapter:
+        input_resolution = getattr(native, "input_resolution", 432)
+
         def run(self, outputs: Any, inputs: dict[str, Any]) -> tuple[Any, Any]:
             logits, masks = native.run(outputs, inputs)
             return logits - offset, masks
@@ -235,12 +247,13 @@ def infer(prod, native, image, fingerprint):
     layout = prod._building_layout(image)
     labels = np.zeros((image.height, image.width), np.uint8)
     scores = np.zeros(labels.shape, np.float32)
+    resolution = getattr(native, "input_resolution", 432)
     if len(layout) == 1:
-        labels, scores, palette, _ = prod._building_tile(native, image)
+        labels, scores, palette, _ = prod._building_tile(native, image, resolution)
     else:
         for tile in layout:
             x, y, w, h = (tile[k] for k in ("x", "y", "width", "height"))
-            tl, ts, _, _ = prod._building_tile(native, image.crop((x, y, x + w, y + h)))
+            tl, ts, _, _ = prod._building_tile(native, image.crop((x, y, x + w, y + h)), resolution)
             fg = tl > 0
             labels[y:y + h, x:x + w] |= fg.astype(np.uint8)
             np.maximum(scores[y:y + h, x:x + w], np.where(fg, ts, 0), out=scores[y:y + h, x:x + w])
@@ -249,6 +262,26 @@ def infer(prod, native, image, fingerprint):
     from rasterio.features import rasterize
     predictions = [rasterize([(x["geometry"], 1)], out_shape=labels.shape, dtype="uint8").astype(bool) for x in components]
     return predictions, labels > 0, omissions, len(layout)
+
+
+def building_profile(resolution: int) -> str:
+    return f"rfdetr-rgb{resolution}-tile512-stride384-threshold050-mask000-v2"
+
+
+def record_size_bins(annotations: list[dict], pairs: list[tuple], counts: dict) -> None:
+    from diagnose_building_recall import PIXEL_BINS, interval
+    matched = {pair[0] for pair in pairs}
+    for index, annotation in enumerate(annotations):
+        bucket = counts[interval(annotation["area"], PIXEL_BINS)]
+        bucket["tp" if index in matched else "fn"] += 1
+        bucket["truth_buildings"] += 1
+
+
+def size_recall(counts: dict) -> dict[str, dict]:
+    return {
+        label: {**count, "recall": ratio(count["tp"], count["truth_buildings"])}
+        for label, count in sorted(counts.items())
+    }
 
 
 def ratio(a, b):
@@ -340,6 +373,7 @@ def main():
     parser.add_argument("--run-id", default=datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"))
     parser.add_argument("--provider", choices=("cpu", "cuda"), default="cpu")
     parser.add_argument("--artifacts-dir", type=Path, help="New external directory for large execution artifacts")
+    parser.add_argument("--size-bins", action="store_true", help="Per-truth pixel-area recall using matched indices")
     parser.add_argument("--holdout-role", choices=("baseline", "final_candidate"))
     parser.add_argument("--score-threshold", type=float, default=.5, help="DEV only; HOLDOUT stays preregistered .5")
     args = parser.parse_args()
@@ -404,6 +438,7 @@ def main():
         boundary = defaultdict(int)
         totals = defaultdict(int)
         matched_iou_sum = 0.
+        size_counts = defaultdict(lambda: {"tp": 0, "fn": 0, "truth_buildings": 0})
         with (artifacts / "chip-results.jsonl").open("x", encoding="utf-8", buffering=1) as journal:
             for image in coco["images"]:
                 tick = time.perf_counter()
@@ -417,7 +452,10 @@ def main():
                 truth_union = np.logical_or.reduce(truth) if truth else np.zeros((raster.height, raster.width), bool)
                 predictions, raw_union, omissions, tiles = infer(prod, native, raster, image["source_image_sha256"])
                 pred_union = np.logical_or.reduce(predictions) if predictions else np.zeros_like(truth_union)
-                ious = match(truth, predictions)
+                pairs = matched_pairs(truth, predictions)
+                ious = [pair[2] for pair in pairs]
+                if args.size_bins:
+                    record_size_bins(by_image[image["id"]], pairs, size_counts)
                 tp, fp, fn = len(ious), len(predictions) - len(ious), len(truth) - len(ious)
                 bc = boundary_counts(truth_union, pred_union)
                 for k, v in bc.items():
@@ -436,6 +474,11 @@ def main():
         contact_sheet(selected, coco_dir, artifacts / "best-worst.png")
         metrics = {"per_building": {"precision": ratio(totals["tp"], totals["predicted_buildings"]), "recall": ratio(totals["tp"], totals["truth_buildings"]), "tp": totals["tp"], "fp": totals["fp"], "fn": totals["fn"], "precision_denominator_predicted_buildings": totals["predicted_buildings"], "recall_denominator_publisher_buildings": totals["truth_buildings"], "match_iou_threshold": .5, "matching": "Maximum cardinality one-to-one, total IoU tie-break; actual production polygon-candidate masks; zero-pixel source features retained as unmatched"}, "mean_iou_of_matches": {"value": ratio(matched_iou_sum, totals["tp"]), "sum": matched_iou_sum, "denominator_matches": totals["tp"]}, "false_buildings_on_empty": {"buildings": totals["false_buildings_on_empty"], "denominator_empty_chips": totals["empty_chips"], "per_empty_chip": ratio(totals["false_buildings_on_empty"], totals["empty_chips"]), "empty_chips_with_false_buildings": totals["empty_chips_with_false_buildings"]}, "boundary_f1_2px": boundary_summary(boundary), "raw_foreground_iou": {"value": ratio(totals["raw_mask_intersection_pixels"], totals["raw_mask_union_pixels"]), "intersection_pixels": totals["raw_mask_intersection_pixels"], "union_pixels": totals["raw_mask_union_pixels"]}, "abstention": {"failed_chips": 0, "denominator_chips": len(rows), "rate": 0, "note": "Empty predictions are scored, not treated as abstention"}}
         result = {"schema": "building-evaluation/1", "status": "completed", "run_id": args.run_id, "at": utc(), "git_sha": git("rev-parse", "HEAD").decode().strip(), "evaluator_sha256": sha(Path(__file__)), "production_source_sha256": sha(Path(prod.__file__)), "split": args.split, "split_sha256": split_sha, "repository_hash_encoding": "UTF-8 bytes with CRLF normalized to LF, matching Git text blobs", "split_chip_ids_sha256": expected["chip_ids_sha256"], "coco_sha256": sha(coco_path), "model": {"path": path.as_posix(), "sha256": model_sha, "bytes": path.stat().st_size, "id": BASELINE if model_sha == installed["sha256"] else "candidate", "config_sha256": sha(path.parent / "config.json") if path.suffix == ".safetensors" else None}, "profile": {"version": PROFILE, "tiling": installed["preprocessing"]["tiling"], "object_threshold": args.score_threshold, "threshold_calibration": "DEV monotone logit shift; shifted scores are not serving confidences" if args.score_threshold != .5 else None, "mask_logit_threshold": 0, "production_polygons": {"min_pixels": 16, "simplification_pixels": .5, "max_components": 100, "max_vertices": 500}}, "coverage": {"requested_chips": expected["chips"], "completed_chips": len(rows), "zero_pixel_truth_features": totals["zero_pixel_truth_features"], "inference_tiles": totals["inference_tiles"]}, "metrics": metrics, "runtime": {"total_seconds": time.perf_counter() - started, "providers": providers, "python": sys.version, "versions": {k: importlib.metadata.version(k) for k in ("onnxruntime-gpu", "numpy", "pillow", "rasterio", "scipy", "pycocotools")}}, "artifacts": {"contact_sheet": str(artifacts / "best-worst.png"), "per_chip": str(artifacts / "chip-results.jsonl")}, "limitations": split["limitations"] + ["Publisher label completeness/occlusion uncertainty is not independently audited; no relabelling or ignore-mask invention.", "Results are roofprint candidates, not legal/registry or surveyed footprint truth."]}
+        resolution = getattr(native, "input_resolution", 432)
+        result["profile"]["input_resolution"] = resolution
+        result["profile"]["version"] = building_profile(resolution)
+        if args.size_bins:
+            result["size_recall"] = size_recall(size_counts)
         with (output / "result.json").open("x", encoding="utf-8") as f:
             json.dump(result, f, separators=(",", ":"), allow_nan=False)
             f.write("\n")
