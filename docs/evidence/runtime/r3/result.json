@@ -560,7 +560,10 @@
  },
  "processNotes": [
   "No provider call; no SQL by hand; no second floor or unit; no source-spaces request; the card was not revoked.",
-  "Commit trailer: Claude Opus 5.5, as docs/next-steps/WORKERS.md section 7 gives for a Claude subagent.",
+  [
+   "Commit trailer: Claude Opus 5.5, as docs/next-steps/WORKERS.md section 7 gives for a Claude subagent; the",
+   "task file names \"Claude worker\". The checked-in rule was followed."
+  ],
   [
    "Python launched by this task: venv-plans with -B (PDF render); the system C:/Python313 with -B (QR decode)",
    "and, four times, without -B (stdin scripts that edit a file and import only pathlib). Checked afterwards:",
@@ -568,7 +571,18 @@
   ],
   "This environment does not create REPORT.md files, so the one-screen report is kept here."
  ],
- "checks": {"doctorFinal":0,"driverTypecheck":0,"diffCheck":0,"newFiles120Columns":0},
+ "checks": {
+  "doctorFinal": 0,
+  "doctorOutput": "E:/BhuAayam-data/task-data/r3/doctor-final-2.txt",
+  "driverTypecheck": 0,
+  "diffCheck": 0,
+  "linesOver120": {
+   "scripts/agent/r3-live.ts": 0,
+   "docs/evidence/runtime/r3/result.json": 0,
+   "docs/evidence/gf4/k5/migration-receipt.json": "one line of 378, as the K5 runner wrote it; not reformatted"
+  },
+  "selfReview": "git diff staging...HEAD read: five files, all owned paths"
+ },
  "report": [
   "TASK   R3 - demo rolled to staging with K5 and K6; refused reads confirmed; Tower 3 identity resumed to the card",
   "       GATE GF1, GF4",
