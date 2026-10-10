@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 import { profileColumns } from '../../packages/server/src/modules/usp/ingestion/column-profile';
 import { saveNew } from './t1-profiles';
 import { digest, stableHash } from './t1-sources';
@@ -10,7 +11,7 @@ import type { PseudoLabelExample } from '../../packages/server/src/modules/usp/i
 type Row = Record<string, unknown>;
 type Profile = Row & { profileId: string; family: string; header: string };
 type Link = Profile & { profileHash: string; sourceField: string; split: string };
-type RecordLabel = { example: PseudoLabelExample; link: Link };
+export type RecordLabel = { example: PseudoLabelExample; link: Link };
 type Prediction = { profileId: string; target: string; committed: boolean };
 type Pin = { externalPath: string; sha256: string };
 type BlindAsset = {
@@ -20,7 +21,7 @@ type BlindAsset = {
 type BlindTruth = { family: string; file: string; sourceField: string; header: string; expectedTarget: string };
 
 const ROOT = 'E:/BhuAayam-data/task-data/a4b';
-const EXAMPLES = [
+export const EXAMPLES = [
   `${ROOT}/t1-reverification-v1/pseudo-labels.jsonl`,
   'E:/BhuAayam-data/task-data/t1b/verifier/labels-a4b-v1/pseudo-labels.jsonl',
 ];
@@ -28,11 +29,11 @@ const MODEL = `${ROOT}/learner/v48`;
 const CALIBRATION = 'mi-d03';
 const RESUME_SCORING = process.argv.includes('--resume-scoring');
 
-function readLines<T>(path: string): T[] {
+export function readLines<T>(path: string): T[] {
   return readFileSync(path, 'utf8').split(/\r?\n/).filter(line => line.trim()).map(line => JSON.parse(line) as T);
 }
 
-function python(args: string[]): string {
+export function python(args: string[]): string {
   const run = spawnSync(process.env.ULPIN_PROFILE_PYTHON ?? 'python', args, {
     encoding: 'utf8', timeout: 120000, maxBuffer: 8 * 1024 * 1024,
     env: { ...process.env, PYTHONPATH: resolve('services/geo'), PYTHONDONTWRITEBYTECODE: '1' },
@@ -42,7 +43,7 @@ function python(args: string[]): string {
   return run.stdout;
 }
 
-function verifiedRecords(): RecordLabel[] {
+export function verifiedRecords(): RecordLabel[] {
   const records = new Map<string, RecordLabel>();
   for (const path of EXAMPLES) {
     const links = new Map(readLines<Link>(join(path, '../profile-links.jsonl'))
@@ -59,8 +60,8 @@ function verifiedRecords(): RecordLabel[] {
   return [...records.values()];
 }
 
-function predict(model: string, profiles: Profile[], path: string): Prediction[] {
-  if (RESUME_SCORING) assert.deepEqual(readLines<Profile>(path), profiles, 'A4B_SCORING_PROFILE_CHANGED');
+function predict(model: string, profiles: Profile[], path: string, resumeScoring = RESUME_SCORING): Prediction[] {
+  if (resumeScoring) assert.deepEqual(readLines<Profile>(path), profiles, 'A4B_SCORING_PROFILE_CHANGED');
   else saveNew(path, profiles, true);
   const predictions = python(['-m', 'geo.usp_learning.stage_a', 'predict', '--model', model, '--profiles', path])
     .trim().split(/\r?\n/).filter(Boolean).map(line => JSON.parse(line) as Prediction);
@@ -82,7 +83,7 @@ function fixedFoldModel(root: string, train: RecordLabel[]) {
     join(root, 'inputs/pseudo-labels.jsonl'), '--out', join(root, 'learner')]));
 }
 
-function agreement(records: RecordLabel[], predictions: Prediction[]) {
+export function agreement(records: RecordLabel[], predictions: Prediction[]) {
   assert.equal(records.length, predictions.length);
   const targets = [...new Set(records.map(record => record.example.target))].filter(target => target !== 'unknown');
   return Object.fromEntries(targets.map(target => {
@@ -97,7 +98,7 @@ function agreement(records: RecordLabel[], predictions: Prediction[]) {
   }));
 }
 
-function targetCounts(records: RecordLabel[]): Record<string, number> {
+export function targetCounts(records: RecordLabel[]): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const record of records) counts[record.example.target] = (counts[record.example.target] ?? 0) + 1;
   return counts;
@@ -156,7 +157,7 @@ function blindProfiles(asset: BlindAsset, rows: Row[]): Profile[] {
   });
 }
 
-function heldOutCounts() {
+function heldOutCounts(model = MODEL, root = ROOT) {
   const publicManifest = JSON.parse(readFileSync('fixtures/usp/D8-messy-india/heldout.json', 'utf8'));
   const pin: Pin = publicManifest.familySets.d1c.evaluatorManifest;
   assert.equal(digest(pin.externalPath), pin.sha256, 'A4B_BLIND_MANIFEST_PIN_CHANGED');
@@ -166,7 +167,7 @@ function heldOutCounts() {
   assert.equal(digest(receipt.path), receipt.sha256, 'A4B_BLIND_TRUTH_PIN_CHANGED');
   const truth = readLines<BlindTruth>(receipt.path);
   const profiles = (manifest.assets as BlindAsset[]).flatMap(asset => blindProfiles(asset, nativeRows(asset)));
-  const predictions = predict(MODEL, profiles, join(ROOT, 'evaluator/profiles.jsonl'));
+  const predictions = predict(model, profiles, join(root, 'evaluator/profiles.jsonl'), root === ROOT && RESUME_SCORING);
   const expected = profiles.map(profile => truth.find(row => row.family === profile.family &&
     row.file === profile.file && row.sourceField === profile.header && row.header === profile.header));
   assert(expected.every(Boolean), 'A4B_BLIND_TRUTH_PROFILE_LINK_INVALID');
@@ -187,9 +188,9 @@ function heldOutCounts() {
   };
 }
 
-function safeHeldOutCounts() {
+export function safeHeldOutCounts(model = MODEL, root = ROOT) {
   try {
-    return heldOutCounts();
+    return heldOutCounts(model, root);
   } catch {
     throw new Error('A4B_EVALUATOR_SCORING_FAILED; inspect closed evaluator artifacts, not lead-readable payloads.');
   }
@@ -239,4 +240,6 @@ function main() {
     threshold: result.threshold, calibration, leaveOneFamilyOut: folds, heldOut: result.heldOut }));
 }
 
-main();
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  main();
+}
