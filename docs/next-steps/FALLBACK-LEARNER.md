@@ -48,7 +48,7 @@ Unchanged throughout: layout memory, the deterministic verifier, officer review,
 - **Variants:** a teacher writes other spellings of each seed header and its neighbouring headers: abbreviations, Hindi and transliterated forms, portal styles. Code re-samples the cell values from real columns of the same target; no model types a value.
 - **Filter:** the same verifier with a dry-run on the re-sampled rows, duplicate and near-duplicate removal, and a fixed cap of variants per seed column.
 - **Lineage:** a separate file, `labelKind: synthetic_variant` with `seedProfileId` and `method: model:<teacher>@<version>`. Variants never enter evaluation, calibration or held-out, and every variant stays in the same fold as its seed family.
-- **Needs an owner decision first:** 00-STANDARDS §7 says a teacher doesn't hand-write examples. This step relaxes that for training material only.
+- **Needs an owner decision first:** 00-STANDARDS §7 says a teacher doesn't hand-write examples. This step relaxes that for training material only. **Decided, 10 October night: the owner allows it** ("do whatever necessary"), for training material only; the lineage and the limits of this step stay as written.
 
 **Step 2. A generative student by SFT** (the sprint's Stage B, brought forward).
 - **Model:** a small open-weights instruct model that trains on the 8 GB card, 0.5–1.5B with LoRA through PEFT and TRL. The video's 9B base does not.
