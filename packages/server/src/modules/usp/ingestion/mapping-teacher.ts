@@ -610,6 +610,10 @@ async function askColumnGroups(
   const results: MappingTeacherResult[] = [];
   const invocation = options.invocationKey ?? randomUUID();
   for (const group of groups) {
+    // A group is a new call, not repair attempt two: keep the gateway's pace before its admission.
+    if (results.length && gateway.adapterKind !== 'replay') {
+      await new Promise(resolve => setTimeout(resolve, gateway.config.paceMs));
+    }
     const invocationKey = hash({ invocation, profileHash: columnProfileHash(group.profile) });
     const result = await askMappingProfile(group.profile, { ...options, invocationKey }, gateway, recordings);
     results.push(result);
