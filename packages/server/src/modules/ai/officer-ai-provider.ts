@@ -68,9 +68,10 @@ export async function inspectModelGateway():Promise<{status:OfficerAiStatus;mode
   try {
     const config=configuredGateway();
     if (!config) return {status:base};
-    // Every key the policy names must be there. The message says the absent name, never a value.
+    // Every key the policy names must be there, and an empty value is absent, as the gateway reads it.
+    // The message says the absent name, never a value.
     const present=(reference:string)=>reference.startsWith('/run/secrets/') ? existsSync(reference)
-      : Object.hasOwn(process.env,reference);
+      : Boolean(process.env[reference]);
     const absent=providerKeyReferences(config).find(reference=>!present(reference));
     if (absent) return {status:{...base,
       message:`The allowed provider key ${absent} is absent. No inference ran; manual preparation remains available.`}};
