@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { basename, resolve } from 'node:path';
 import { createRequire } from 'node:module';
+import { checkedPin, prefixTable, profileAsset, type Asset as ForeignAsset } from './d1f-acquisition';
 
 // Reuse the server-owned CSV parser; do not introduce another format reader.
 const Papa = createRequire(resolve('packages/server/package.json'))('papaparse') as {
@@ -10,6 +11,7 @@ const Papa = createRequire(resolve('packages/server/package.json'))('papaparse')
 };
 
 export const D8_MANIFEST = 'fixtures/usp/D8-messy-india/manifest.json';
+export const FOREIGN_MANIFEST = 'fixtures/usp/D8-open-property-foreign/manifest.json';
 export const T1_ROOT = process.env.ULPIN_T1_ROOT ?? 'E:/BhuAayam-data/task-data/t1';
 export const T1B_ROOT = 'E:/BhuAayam-data/task-data/t1b';
 export const T1B_FAMILIES = ['mi-d22', 'mi-d23', 'mi-d24'];
@@ -40,7 +42,7 @@ export type SourceAsset = {
   dictionary?: { url: string; externalPath: string; sha256: string };
   permission: { state: string };
   privacy?: string;
-  preparation?: 't1b';
+  preparation?: 't1b' | 'd1f';
   derivedFrom?: {
     assetId: string;
     original: SourceAsset['original'];
@@ -67,15 +69,39 @@ type Manifest = {
   assets: SourceAsset[];
 };
 
-export function developmentManifest() {
-  // This manifest exposes blind family IDs; the separate evaluator manifest is never read.
-  const manifest = JSON.parse(readFileSync(D8_MANIFEST, 'utf8')) as Manifest;
+export function foreignDevelopmentManifest() {
+  const manifest = JSON.parse(readFileSync(FOREIGN_MANIFEST, 'utf8')) as Omit<Manifest, 'assets'> & {
+    purpose: string; assets: ForeignAsset[];
+  };
+  const validPin = (pin: SourceAsset['original']) => pin && /^[a-f0-9]{64}$/.test(pin.sha256) &&
+    Number.isSafeInteger(pin.bytes) && pin.bytes >= 0 && typeof pin.externalPath === 'string';
+  if (manifest.purpose !== 'test_only') throw new Error('T1_SOURCE_DENIED');
   const development = new Set(manifest.families.filter(family => family.split === 'dev').map(family => family.id));
-  const heldOut = new Set(manifest.heldout.map(family => family.id));
+  for (const family of development) {
+    const assets = manifest.assets.filter(asset => asset.family === family);
+    if (!assets.length || assets.some(asset => asset.split !== 'dev' || !validPin(asset.original) ||
+        !validPin(asset.profileInput) || !validPin(asset.dictionary) ||
+        asset.profileInput.sourceSha256 !== asset.original.sha256)) throw new Error('T1_SOURCE_DENIED');
+  }
+  return manifest;
+}
+
+export function developmentManifest() {
+  // Both expose blind IDs only; neither evaluator manifest nor held-out bytes is opened here.
+  const manifest = JSON.parse(readFileSync(D8_MANIFEST, 'utf8')) as Manifest;
+  const foreign = foreignDevelopmentManifest();
+  const heldOut = new Set([...manifest.heldout, ...foreign.heldout].map(family => family.id));
+  const indianFamilies = new Set([...manifest.families, ...manifest.heldout].map(family => family.id));
+  const development = new Set([...manifest.families, ...foreign.families]
+    .filter(family => family.split === 'dev').map(family => family.id));
+  if ([...development].some(family => heldOut.has(family)) ||
+      foreign.families.some(family => manifest.families.some(indian => indian.id === family.id))) {
+    throw new Error('T1_SPLIT_AMBIGUOUS');
+  }
   const assets = manifest.assets.filter(asset => asset.split === 'dev' && development.has(asset.family));
   if (assets.some(asset => heldOut.has(asset.family))) throw new Error('T1_SPLIT_AMBIGUOUS');
-  const allFamilies = new Set([...manifest.families.map(family => family.id), ...heldOut]);
-  return { assets, development, heldOut, allFamilies };
+  const allFamilies = new Set([...indianFamilies, ...foreign.families.map(family => family.id), ...heldOut]);
+  return { assets, development, heldOut, allFamilies, indianFamilies };
 }
 
 export function preparationAssets() {
@@ -142,8 +168,30 @@ export function developmentProfileAssets(): SourceAsset[] {
   return assets.map(asset => developmentProfileAsset(asset, index.derivatives));
 }
 
+function preparationKind(asset: SourceAsset) {
+  // Historical D1f inventories lack a preparation tag; their exact manifest locator selects this kind.
+  if (asset.preparation === 'd1f' || asset.derivedFrom?.index === FOREIGN_MANIFEST) return 'd1f';
+  return asset.preparation;
+}
+
+export function foreignProfileAssets(): SourceAsset[] {
+  const boundary = developmentManifest();
+  return foreignDevelopmentManifest().assets
+    .filter(asset => asset.split === 'dev' && boundary.development.has(asset.family))
+    .map(profileAsset);
+}
+
+function sourceCandidates(asset: SourceAsset): SourceAsset[] {
+  const kind = preparationKind(asset);
+  if (kind === 't1b') return developmentProfileAssets();
+  if (kind === 'd1f') {
+    return foreignProfileAssets().map(entry => asset.preparation === 'd1f' ? { ...entry, preparation: 'd1f' } : entry);
+  }
+  return preparationAssets().assets;
+}
+
 function authorizeSource(asset: SourceAsset) {
-  const candidates = asset.preparation === 't1b' ? developmentProfileAssets() : preparationAssets().assets;
+  const candidates = sourceCandidates(asset);
   const allowed = candidates.find(entry => entry.family === asset.family && entry.id === asset.id);
   if (!allowed || stableHash(allowed) !== stableHash(asset)) throw new Error('T1_SOURCE_DENIED');
   if (asset.permission.state === 'restricted' || /private|restricted/i.test(asset.privacy ?? '')) {
@@ -158,8 +206,13 @@ function authorizeSource(asset: SourceAsset) {
 
 function checkSource(asset: SourceAsset) {
   authorizeSource(asset); // Authorization precedes opening, stat or hashing source bytes.
-  if (statSync(asset.original.externalPath).size > 20 * 1024 * 1024) throw new Error('T1_SOURCE_LIMIT');
-  if (digest(asset.original.externalPath) !== asset.original.sha256) throw new Error('T1_SOURCE_HASH_MISMATCH');
+  const bytes = statSync(asset.original.externalPath).size;
+  if (preparationKind(asset) === 'd1f' && bytes !== asset.original.bytes) throw new Error('T1_SOURCE_DENIED');
+  if (bytes > 20 * 1024 * 1024) throw new Error('T1_SOURCE_LIMIT');
+  if (digest(asset.original.externalPath) !== asset.original.sha256) {
+    if (preparationKind(asset) === 'd1f') throw new Error('T1_SOURCE_DENIED');
+    throw new Error('T1_SOURCE_HASH_MISMATCH');
+  }
 }
 
 function restoreRecordedContainers(asset: SourceAsset, headers: string[], rows: string[][]): unknown[][] {
@@ -246,8 +299,24 @@ export function nativeTable(name: string, parts: NativePart[], asset: TableSelec
   };
 }
 
+function foreignSourceTable(asset: SourceAsset): SourceTable {
+  const native = foreignDevelopmentManifest().assets.find(entry => entry.id === asset.derivedFrom?.assetId &&
+    entry.family === asset.family);
+  if (!native) throw new Error('T1_SOURCE_DENIED');
+  // Reuse D1f's root/path/byte pins and bounded prefix reader; no competing CSV or source authority.
+  try {
+    for (const pin of [native.original, native.dictionary, native.profileInput]) checkedPin(pin);
+    const table = prefixTable(native);
+    checkedPin(native.profileInput);
+    return table;
+  } catch {
+    throw new Error('T1_SOURCE_DENIED');
+  }
+}
+
 export function sourceTables(asset: SourceAsset): SourceTable[] {
   checkSource(asset);
+  if (preparationKind(asset) === 'd1f') return [foreignSourceTable(asset)];
   if (asset.mediaType === 'text/csv') return [csvTable(asset)];
   const parts = nativeParts(asset);
   const tables = [...new Set(parts.map(part => part.locator.sheet))].map(name => nativeTable(name, parts, asset));

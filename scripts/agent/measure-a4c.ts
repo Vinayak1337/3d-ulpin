@@ -8,7 +8,7 @@ import type { RecordLabel } from './measure-a4b';
 type Arm = 'B' | 'C';
 type Score = { profileId: string; family: string; expectedTarget: string; predictedTarget: string; confidence: number };
 type PerTarget = { n: number; committed: number; committedCorrect: number; wrongCommitted: number; abstained: number };
-type ArmMetrics = {
+export type ArmMetrics = {
   threshold: number | null; wrongCommitted: number; correctPositiveCommitted: number; unknownCommitted: number;
   abstained: number; n: number; perTarget: Record<string, PerTarget>;
 };
