@@ -56,7 +56,13 @@ export function reviewedLevelSchedule(building: NormalizedBuilding, proposal: Pr
   if (proposal.buildingId !== building.buildingId) {
     throw new AppError(422, 'LEVEL_SCHEDULE_BUILDING', 'Review a proposal of this building only.');
   }
-  return { ...resolveScheduleHeights(proposal.content), buildingId: building.buildingId,
+  const content = resolveScheduleHeights(proposal.content);
+  const levelIds = new Set(content.levels.map(level => level.levelId));
+  if (building.candidates.some(candidate => candidate.levelId && !levelIds.has(candidate.levelId))) {
+    throw new AppError(422, 'LEVEL_SCHEDULE_ASSOCIATION',
+      'Retain the identities of explicitly associated levels; do not orphan prior room reviews.');
+  }
+  return { ...content, buildingId: building.buildingId,
     proposalId: proposal.proposalId, revision, decision: { actor, reason, at }, prisms: {} };
 }
 

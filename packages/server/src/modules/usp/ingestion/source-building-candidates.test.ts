@@ -22,7 +22,8 @@ test('Magnolia has no reviewed level and refuses an attachment without creating 
 test('an explicit existing level selection preserves plan-local candidate geometry', () => {
   // Controlled contract fixture only; no level is installed in Magnolia or inferred from its panel title.
   const building = { ...magnolia, levels: [{ levelId: 'fixture-only-reviewed-level', order: 0,
-    label: magnolia.storeyLabel, lowerM: magnolia.baseM, upperM: magnolia.heightM, spaces: [] }] };
+    label: { ...magnolia.storeyLabel, value: 'Fixture reviewed label', state: 'reviewed' as const },
+    lowerM: magnolia.baseM, upperM: magnolia.heightM, spaces: [] }] };
   const reviewed = attachCandidateLevel(building, candidate, building.levels[0].levelId,
     'Explicit fixture level selection', 'fixture-operator', '2026-10-10T01:45:00Z');
   assert.equal(reviewed.levelId, 'fixture-only-reviewed-level');
