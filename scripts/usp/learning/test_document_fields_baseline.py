@@ -39,6 +39,10 @@ class BasementCountTest(unittest.TestCase):
     def test_basement_phrase(self) -> None:
         self.assertEqual(found(rules.find_basement_counts, "two basements and a podium")[0][0], 2)
 
+    def test_an_area_figure_before_basement_is_not_a_count(self) -> None:
+        self.assertEqual(rules.find_basement_counts("192 BASEMENT PARKING"), [])
+        self.assertEqual(rules.find_basement_counts("AREA 7.5 BASEMENT"), [])
+
 
 class StoreyPhraseTest(unittest.TestCase):
     def test_numbers_and_words_before_storeys_or_floors(self) -> None:
@@ -78,6 +82,10 @@ class UnitCountTest(unittest.TestCase):
 
     def test_area_figures_are_not_unit_counts(self) -> None:
         self.assertEqual(rules.find_unit_counts("707.05 sqm built up"), [])
+
+    def test_units_per_floor_are_not_a_building_total(self) -> None:
+        self.assertEqual(rules.find_unit_counts("TYP. 2 UNITS/FL."), [])
+        self.assertEqual(rules.find_unit_counts("2 UNITS PER FLOOR"), [])
 
 
 class FloorHeightTest(unittest.TestCase):
