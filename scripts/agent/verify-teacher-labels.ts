@@ -13,7 +13,12 @@ import { assertTeacherOutputOutsideGit } from '../../packages/server/src/modules
 import { checkBoundary, prepareTable, saveNew, type PreparedColumn, type TableInventory } from './t1-profiles';
 import { sourceTables, stableHash, T1_ROOT } from './t1-sources';
 
-export type LinkedColumn = { column: PreparedColumn; table: TableInventory; index: number };
+export type LinkedColumn = {
+  column: PreparedColumn;
+  table: TableInventory;
+  index: number;
+  tableColumns?: PreparedColumn[];
+};
 export type InputLabelLine = { inputLine: number; value: unknown };
 type LabelGroup = {
   profileHash: string;
@@ -46,6 +51,8 @@ function linkedProfiles(profilesPath: string): Map<string, LinkedColumn> {
   const linked = new Map<string, LinkedColumn>();
   for (const table of tables) {
     ColumnProfileDocumentSchema.parse(table.profile);
+    const tableColumns = table.profileIds.map(id => profiles.find(profile => profile.profileId === id));
+    assert(tableColumns.every(column => column !== undefined), 'T1_PROFILE_LINK_INVALID');
     table.profileIds.forEach((id, index) => {
       const column = profiles.find(profile => profile.profileId === id);
       assert(column && !linked.has(id), 'T1_PROFILE_LINK_INVALID');
@@ -53,7 +60,7 @@ function linkedProfiles(profilesPath: string): Map<string, LinkedColumn> {
       assert.equal(column.file, table.asset.id);
       assert.equal(column.sheet, table.sheet);
       assert.equal(column.column, index + 1);
-      linked.set(id, { column, table, index });
+      linked.set(id, { column, table, index, tableColumns: tableColumns as PreparedColumn[] });
     });
   }
   assert.equal(linked.size, profiles.length);
@@ -69,7 +76,11 @@ function materialize(entry: LinkedColumn): TeacherProfileEntry {
   assert(table, 'T1_PROFILE_SHEET_MISSING');
   const prepared = prepareTable(entry.table.asset, table);
   assert.equal(stableHash(prepared.inventory), stableHash(entry.table), 'T1_PROFILE_INVENTORY_CHANGED');
-  assert.equal(stableHash(prepared.profiles[entry.index]), stableHash(entry.column), 'T1_PROFILE_CHANGED');
+  for (const expected of entry.tableColumns ?? [entry.column]) {
+    const actual = prepared.profiles.find(column => column.profileId === expected.profileId);
+    assert(actual, 'T1_PROFILE_CHANGED');
+    assert.equal(stableHash(actual), stableHash(expected), 'T1_PROFILE_CHANGED');
+  }
   const rows = table.rows.map(row => Object.fromEntries(entry.table.profile.columns.map((column, index) =>
     [column.name, row[index]])));
   return {

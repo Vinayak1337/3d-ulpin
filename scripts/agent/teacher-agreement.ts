@@ -22,7 +22,9 @@ function literalConcept(meaning: string): { target?: string; reason: string } {
   }
   if (/carpet area/.test(literal)) return { target: 'unit.carpetArea', reason: 'Literal names carpet area.' };
   if (/balcony/.test(literal)) return { target: 'unit.balconyArea', reason: 'Literal names balcony area.' };
-  if (/date of registration/.test(literal)) return { target: 'document.date', reason: 'Literal names registration date.' };
+  if (/date of registration/.test(literal)) {
+    return { target: 'document.date', reason: 'Literal names registration date.' };
+  }
   if (literal === 'project address') {
     return { reason: 'Project address is not explicitly a building address in the literal definition.' };
   }
