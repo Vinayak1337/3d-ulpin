@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@ulpin/api-client';
-import { absentReason, readingStatement, readingStatements, statedSourceId } from './registerState';
+import { absentReason, readingStatement, readingStatements, statedSourceId, unstatedReadings } from './registerState';
 
 const SERVER_TEXT = 'Server text that is never shown.';
 const failure = (status: number, code?: string) => new ApiError(status, '/api/v1/buildings/b/register', {
@@ -64,6 +64,28 @@ describe('readingStatements', () => {
       { id: 'silent' },
     ]);
     expect([...statements]).toEqual([['stated', 'A newer version of this source exists']]);
+  });
+});
+
+describe('unstatedReadings', () => {
+  const UNSTATED = 'The server did not state whether these readings are current';
+
+  it('states a failed read in the same words whatever failed, followed by the code the server gives', () => {
+    expect(unstatedReadings(failure(409, 'REGISTRY_SOURCE_UNAVAILABLE')))
+      .toBe(`${UNSTATED} · REGISTRY_SOURCE_UNAVAILABLE`);
+    expect(unstatedReadings(failure(500, 'SOMETHING_NEW'))).toBe(`${UNSTATED} · SOMETHING_NEW`);
+    expect(unstatedReadings(failure(500))).toBe(UNSTATED);
+    expect(unstatedReadings(new Error('offline'))).toBe(UNSTATED);
+  });
+
+  it('never shows the server message', () => {
+    expect(unstatedReadings(failure(409, 'STALE_REVISION'))).not.toContain(SERVER_TEXT);
+  });
+
+  it('says nothing while the read has not failed, and for a building the server holds no record of', () => {
+    expect(unstatedReadings(null)).toBeNull();
+    expect(unstatedReadings(undefined)).toBeNull();
+    expect(unstatedReadings(failure(404, 'NOT_FOUND'))).toBeNull();
   });
 });
 

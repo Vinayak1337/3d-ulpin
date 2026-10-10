@@ -27,9 +27,9 @@ import { cityJson, download, fileStem } from './exporters';
 import { NoGeometry } from './NoGeometry';
 import { ReadingStatementsContext } from './ReadingNote';
 import { RegisterAbsent } from './RegisterAbsent';
-import { absentReason } from './registerState';
+import { NO_READING_STATEMENTS, absentReason, unstatedReadings } from './registerState';
 import { SourceList } from './SourceList';
-import { useReadingStatements } from './useReadingStatements';
+import { useReadingStatementsRead } from './useReadingStatements';
 import { printRegistry, registryDetail, registryHtml, registryPackage, registryTables, registryWorkbook } from './registry';
 import { featureCode } from '../../api/queries';
 import type { ConsolidatedRegistryReport } from '../../../../../packages/contracts/src/building-registry-report';
@@ -421,7 +421,9 @@ function Shares({ ledger, model, workflow }: { ledger: BuildingLedger | null | u
 function Documents({ register, ledger }: { register: BuildingRegister; ledger: BuildingLedger | null | undefined }) {
   const openEvidence = useOpenEvidence();
   // The consolidated read answers only for a recorded building (revision above 0).
-  const readings = useReadingStatements(register.property.id, register.property.revision > 0);
+  const reading = useReadingStatementsRead(register.property.id, register.property.revision > 0);
+  const readings = reading.data ?? NO_READING_STATEMENTS;
+  const unstated = unstatedReadings(reading.error);
   const sources = ledger?.sources ?? register.sources.map((s) => ({ sourceId: s.id, kind: 'table' as const, name: s.name, file: s.name, summary: `r${s.revision}` }));
   const bySource = new Map(register.sources.map((s) => [s.id, s]));
   return (
@@ -431,7 +433,9 @@ function Documents({ register, ledger }: { register: BuildingRegister; ledger: B
           sourceId: s.sourceId, label: s.name, locator: parseLocator({ locator: s.summary }),
         })} />
       </ReadingStatementsContext.Provider>
-    )} />
+    )}>
+      {unstated ? <span className="ul-caption">{unstated}</span> : null}
+    </Panel>
   );
 }
 
