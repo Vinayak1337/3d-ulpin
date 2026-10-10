@@ -1,0 +1,59 @@
+{
+  "schema": "building-b9-launch-check/1",
+  "status": "running_first_epoch",
+  "checked_at": "2026-10-10T19:26:03+05:30",
+  "run_id": "b9-ka-three-regions-20261010",
+  "git_sha": "e5f3fbc3e5dc6d99ce7d3420e53a520f0f64d5d6",
+  "log": "E:/BhuAayam-data/ml/runs/b9-ka-three-regions-20261010/training.log",
+  "end_file": "E:/BhuAayam-data/ml/runs/b9-ka-three-regions-20261010/ended.json",
+  "end_file_present": false,
+  "pids": {
+    "trainer_launcher_stub": 8456,
+    "trainer_interpreter_on_gpu": 33168,
+    "supervisor": 36608
+  },
+  "first_step_at": "2026-10-10T19:22:30+05:30",
+  "chips_seen": 1080,
+  "chips_per_epoch": 12581,
+  "optimizer_step": 269,
+  "optimizer_steps_per_epoch": 3146,
+  "loss_lines_in_log": 27,
+  "last_loss_line": "{'loss': '25.84', 'grad_norm': '196.7', 'learning_rate': '0.0001', 'epoch': '0.08584'}",
+  "mean_seconds_per_chip": 0.1968,
+  "projected_training_minutes_per_epoch": 41.3,
+  "expected_minutes_per_epoch": 47.3,
+  "expected_minutes_8_epochs": 378.1,
+  "expected_end": {
+    "all_8_epochs": "2026-10-11 01:40 IST",
+    "earliest_early_stop_after_epoch_4": "2026-10-10 22:31 IST",
+    "no_epoch_starts_after": "2026-10-11 02:29 IST",
+    "basis": "This run's first chips and 6 minutes of DEV scoring per epoch; DEV scoring is not yet measured here"
+  },
+  "peak_reserved_bytes": 4150263808,
+  "gpu_memory_used_and_utilisation": "5810 MiB, 80 %",
+  "trainer_deadline_minutes": 427.0,
+  "cpu_affinity_mask": "0xffff",
+  "bytecode_writing": "off: -B on every command and PYTHONDONTWRITEBYTECODE=1 in the child environment",
+  "launch_gate": "passed; plan amendment 2; facts in launch.json and smoke.json",
+  "data": {
+    "chips": 12581,
+    "publisher_features": 148495,
+    "empty_chips": 2618
+  },
+  "augmentation": "TRAIN horizontal/vertical flips only; smoke none; then brightness/contrast/saturation factors within 1 +- 0.2; then zoom factor in [0.75, 1.33] with random crop or black pad back to the tile; a roof left with no mask pixel leaves the targets",
+  "when_it_ends": {
+    "normal": "result.json, dev-selection.jsonl and epoch-00N-dev.json in the run directory",
+    "failure": "failure.json in the run directory; ended.json carries the exit code either way",
+    "dev_receipts": "docs/evidence/gf-ai/building/b9-ka-three-regions-20261010-epoch00N-dev-tXXX/, untracked until B9b"
+  },
+  "while_it_runs": [
+    "Keep this worktree on task/b9-more-regions: every epoch runs scripts/ml/eval_buildings.py from it.",
+    "Start no other GPU work; the trainer may reserve up to 6 GiB beside the desktop's 1.6 GB."
+  ],
+  "not_verified": [
+    "A relaunch from a saved epoch (--resume with the same arguments and a new run id) was not exercised.",
+    "The epoch-end path (checkpoint, three DEV scorings with size bins) first runs at the end of epoch 1."
+  ],
+  "holdout_calls": 0,
+  "transfer_calls": 0
+}
