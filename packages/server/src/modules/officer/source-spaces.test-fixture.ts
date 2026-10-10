@@ -43,13 +43,20 @@ export class SourceSpaceControl {
   }
   private result(rows: any[] = []) { return { rows, rowCount: rows.length }; }
   private reads(q: string, values: any[]) {
-    if (q.startsWith('SELECT * FROM registry_records')) return this.result(this.rows.filter(row => row.id === values[0]));
-    if (q.startsWith('SELECT pin FROM import_packages')) return this.result(this.sourceAttached ? [{ pin: unitSource }] : []);
-    if (q.startsWith('SELECT body FROM registry_records')) return this.result(this.rows.filter(row => row.kind === 'floor'
-      && row.body.name === values[2] && row.body.sourceOnly.evidence.sourceId === values[3]));
+    if (q.startsWith('SELECT * FROM registry_records')) {
+      return this.result(this.rows.filter(row => row.id === values[0]));
+    }
+    if (q.startsWith('SELECT pin FROM import_packages')) {
+      return this.result(this.sourceAttached ? [{ pin: unitSource }] : []);
+    }
+    if (q.startsWith('SELECT body FROM registry_records')) return this.result(this.rows.filter(row => (
+      row.kind === 'floor'
+      && row.body.name === values[2] && row.body.sourceOnly.evidence.sourceId === values[3])));
     if (q.startsWith('SELECT id FROM registry_records')) return this.result(this.rows.filter(row => row.kind === 'space'
       && row.body.name === values[1] && row.body.links[0].targetId === JSON.parse(values[2])[0].targetId));
-    if (q.includes('MAX(ordinal)')) return this.result([{ ordinal: this.rows.filter(row => row.kind === values[1]).length + 1 }]);
+    if (q.includes('MAX(ordinal)')) {
+      return this.result([{ ordinal: this.rows.filter(row => row.kind === values[1]).length + 1 }]);
+    }
     if (q.startsWith('SELECT count(*)')) return this.result([{ count: this.rows.filter(row => row.kind === values[1]
       && row.body.links[0]?.targetId === JSON.parse(values[2])[0].targetId).length }]);
     if (q.startsWith('SELECT revision FROM registry_sites')) return this.result([{ revision: this.siteRevision }]);
@@ -87,7 +94,8 @@ export class SourceSpaceControl {
   readonly deps: NonNullable<Parameters<typeof commandSourceSpace>[2]> = {
     transaction: (async (work: (client: PoolClient) => Promise<unknown>) => {
       const saved = structuredClone({ rows: this.rows, histories: this.histories, links: this.links,
-        siteRevision: this.siteRevision, areaRevision: this.areaRevision, feature: this.feature, building: this.building });
+        siteRevision: this.siteRevision, areaRevision: this.areaRevision,
+        feature: this.feature, building: this.building });
       try { return await work({ query: this.query.bind(this) } as unknown as PoolClient); }
       catch (error) { Object.assign(this, saved); throw error; }
     }) as typeof transaction,

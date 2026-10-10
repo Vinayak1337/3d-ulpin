@@ -12,6 +12,7 @@ import { AppError, conflict, notFound } from '../../infrastructure/errors';
 import { appendUspOutboxTx, requestReceiptTx, scopedManifestTx } from './commands';
 import { assertLocalUsp, assertSnapshotDocumentsTx, captureRegistrySnapshotTx } from './snapshots';
 import { newProjectCode } from './project-code-generator';
+import { validateSourceStatedIdentityTx } from './source-stated-identity';
 
 type Review = z.infer<typeof ProjectIdentityReviewSchema>;
 type Assign = z.infer<typeof AssignProjectCodeSchema>;
@@ -125,6 +126,7 @@ export async function prepareProjectIdentityReview(ctx: RequestContext, raw: Rev
     const rows = await lockedRecords(client, review.scope.scopeId, review.recordIds);
     const manifest = await pinnedManifest(client, ctx, review.scope);
     validateMembers(manifest, rows, review.expectedVersions, review.evidence);
+    await validateSourceStatedIdentityTx(client, rows, review);
     if (review.location) validateLocationEvidence(review.location, review.evidence, rows);
     if (review.locations) for (const [id, location] of Object.entries(review.locations)) {
       const target = rows.find(row => row.id === id);
@@ -243,6 +245,7 @@ export async function assignProjectCode(ctx: RequestContext, raw: Assign,
       [command.recordId], versions);
     const manifest = await pinnedManifest(client, ctx, command.scope);
     validateMembers(manifest, rows, versions, review.evidence);
+    await validateSourceStatedIdentityTx(client, rows, review);
     if ((await client.query('SELECT 1 FROM usp_project_codes WHERE record_id=$1', [command.recordId])).rowCount) {
       conflict('This space already has a reserved project code.');
     }
@@ -289,6 +292,7 @@ export async function mutateProjectIdentity(ctx: RequestContext, raw: Mutation,
       ids, command.expectedVersions, command.predecessors, command.successors);
     const manifest = await pinnedManifest(client, ctx, command.scope);
     validateMembers(manifest, rows, command.expectedVersions, review.evidence);
+    await validateSourceStatedIdentityTx(client, rows, review);
     const statusRows = (await client.query('SELECT record_id,status FROM usp_project_codes WHERE record_id=ANY($1::uuid[])',
       [ids])).rows;
     const status = new Map(statusRows.map(row => [row.record_id as string, row.status as string]));

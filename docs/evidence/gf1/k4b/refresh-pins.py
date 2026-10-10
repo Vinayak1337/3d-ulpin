@@ -13,6 +13,9 @@ NEW_PRODUCERS = [
     "packages/contracts/src/canonical/source-spaces.ts",
     "packages/server/src/modules/officer/source-spaces.ts",
     "packages/server/src/modules/usp/ingestion/source-building-children.ts",
+    "packages/server/src/modules/registry/canonical-source-identity.ts",
+    "packages/server/src/modules/usp/source-stated-identity.ts",
+    "packages/server/src/modules/usp/source-stated-snapshots.ts",
 ]
 
 

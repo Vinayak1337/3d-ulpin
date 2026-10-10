@@ -41,7 +41,8 @@ export const SourceStatedRecordSchema = z.strictObject({
   if (record.name !== record.alias || record.name !== record.sourceOnly.evidence.literal
     || link.targetId !== record.sourceOnly.parentId || link.type !== (record.kind === 'floor' ? 'within' : 'floor')
     || (record.kind === 'floor' && record.sourceOnly.parentId !== record.sourceOnly.buildingId)
-    || record.evidence[0].sourceId !== record.sourceOnly.evidence.sourceId) {
+    || record.evidence[0].sourceId !== record.sourceOnly.evidence.sourceId
+    || record.evidence[0].locator !== sourceSpaceStatementLocator(record.sourceOnly.evidence)) {
     ctx.addIssue({ code: 'custom', message: 'Source-only labels, evidence and exact parent must agree.' });
   }
 });
@@ -49,3 +50,7 @@ export type SourceSpaceRequest = z.infer<typeof SourceSpaceRequestSchema>;
 export type SourceSpaceReceipt = z.infer<typeof SourceSpaceReceiptSchema>;
 export type SourceStatedRecord = z.infer<typeof SourceStatedRecordSchema>;
 export type SourceSpaceEvidence = z.infer<typeof SourceSpaceEvidenceSchema>;
+
+export function sourceSpaceStatementLocator(evidence: SourceSpaceEvidence): string {
+  return `page ${evidence.page}; region pt [${evidence.region.join(',')}]; literal ${evidence.literal}`;
+}

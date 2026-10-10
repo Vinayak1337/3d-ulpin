@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { NormalizedBuildingSchema } from '@ulpin/contracts';
+import { NormalizedBuildingSchema, sourceSpaceStatementLocator } from '@ulpin/contracts';
 import { commandSourceSpace } from '../officer/source-spaces';
 import { retainedTower, SourceSpaceControl, towerRequest } from '../officer/source-spaces.test-fixture';
 import { collectCanonicalCitationPins, finishBuilding, projectSourceRecordedChildren } from './canonical-building';
@@ -47,7 +47,7 @@ test('buildings without recorded children keep byte-identical canonical output',
   assert.equal(JSON.stringify(building), before);
 });
 
-test('reviewed schedule projection links an exact caption without losing recorded spaces or creating a storey', async () => {
+test('reviewed caption mapping preserves spaces and does not create a storey', async () => {
   const db = new SourceSpaceControl();
   await commandSourceSpace(retainedTower.buildingId, towerRequest, db.deps);
   const building = NormalizedBuildingSchema.parse(JSON.parse(readFileSync(
@@ -64,6 +64,7 @@ test('reviewed schedule projection links an exact caption without losing recorde
   records[1].sourceOnly.parentId = building.buildingId;
   records[1].links[0].targetId = building.buildingId;
   records[1].name = records[1].alias = records[1].sourceOnly.evidence.literal = 'GROUND FLOOR PLAN';
+  records[1].evidence[0].locator = sourceSpaceStatementLocator(records[1].sourceOnly.evidence);
   // Protocol control of the exact reviewed caption mapping, not adoption of Tower evidence as Magnolia truth.
   applyLevelSchedules(building, records);
   const storeys = structuredClone(building.storeys);
