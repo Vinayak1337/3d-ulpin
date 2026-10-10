@@ -1,0 +1,356 @@
+{
+  "task": "A4d",
+  "gates": ["GF-AGENT", "FP-LEARN-TEST"],
+  "status": "blocked_verifier_foreign_development_boundary",
+  "rounds": [
+    {
+      "round": "t1c",
+      "labelsSha256": "7ecd2721a4183a1a689782258d6690449cb5640cda2280659e3f82723754fa45",
+      "profilesSha256": "3a22f11297e292c9f2132defe9f3037fc16e0f0eac53b341b21efd55e9695bf6",
+      "tablesSubmitted": 6,
+      "fieldsSubmitted": 198,
+      "tablesAccepted": 0,
+      "tablePlansEvaluated": 0,
+      "fieldsVerified": 0,
+      "fieldsDryRunEvaluated": 0,
+      "fieldsBoundaryBlocked": 198,
+      "refusalCodes": {"ERR_ASSERTION": 198},
+      "labelledPositives": {
+        "building.sourceKey": 3,
+        "building.name": 5,
+        "building.addressLiteral": 6,
+        "building.storeyCount": 1,
+        "building.use": 2
+      },
+      "verifiedPositives": {
+        "building.sourceKey": {"columns": 0, "distinctFamilies": 0, "families": []},
+        "building.name": {"columns": 0, "distinctFamilies": 0, "families": []},
+        "building.addressLiteral": {"columns": 0, "distinctFamilies": 0, "families": []},
+        "building.storeyCount": {"columns": 0, "distinctFamilies": 0, "families": []},
+        "building.use": {"columns": 0, "distinctFamilies": 0, "families": []}
+      },
+      "expectedComparison": null,
+      "refusedLabels": {
+        "path": "E:/BhuAayam-data/task-data/a4d/verified/t1c-v1/refusals.jsonl",
+        "sha256": "d3bfe5bd6e65145096e5cfe74508a4b256fd03560a89515c85b60ee949ded0e5",
+        "shape": ["profileId", "reasonCode"]
+      },
+      "receipt": {
+        "path": "E:/BhuAayam-data/task-data/a4d/verified/t1c-v1/verification-receipt.json",
+        "sha256": "41f4a90848f28d41bc3fc59c40d4cd86c51c04450c22f167138ba989a1b86f26"
+      },
+      "verifierExitCode": 1
+    },
+    {
+      "round": "t1d",
+      "labelsSha256": "d267de96326cab764d09e08dd53418f422e6d47bd05a8c25c42ca219efa6f0e0",
+      "profilesSha256": "6078691a13d5d4794b217d6744d10c44119fbac11bde0f3b6017191f9b11d1db",
+      "tablesSubmitted": 3,
+      "fieldsSubmitted": 21,
+      "tablesAccepted": 0,
+      "tablePlansEvaluated": 0,
+      "fieldsVerified": 0,
+      "fieldsDryRunEvaluated": 0,
+      "fieldsBoundaryBlocked": 21,
+      "refusalCodes": {"ERR_ASSERTION": 21},
+      "labelledPositives":
+      {"building.storeyCount": 1, "building.heightM": 1, "building.footprint": 3, "building.sourceKey": 1},
+      "verifiedPositives": {
+        "building.storeyCount": {"columns": 0, "distinctFamilies": 0, "families": []},
+        "building.heightM": {"columns": 0, "distinctFamilies": 0, "families": []},
+        "building.footprint": {"columns": 0, "distinctFamilies": 0, "families": []},
+        "building.sourceKey": {"columns": 0, "distinctFamilies": 0, "families": []}
+      },
+      "expectedComparison": {
+        "expectedTablePlansRejected": 0,
+        "expectedFieldRefusals": 3,
+        "actual": "Entire round blocked before table validation; no MAPPING_CRS_UNVERIFIED result exists."
+      },
+      "refusedLabels": {
+        "path": "E:/BhuAayam-data/task-data/a4d/verified/t1d-v1/refusals.jsonl",
+        "sha256": "67b54a9b98b61a2bd6069c91015615a2a45b8213a387f23d6815910bf5b584e8",
+        "shape": ["profileId", "reasonCode"]
+      },
+      "receipt": {
+        "path": "E:/BhuAayam-data/task-data/a4d/verified/t1d-v1/verification-receipt.json",
+        "sha256": "7491bb51d4c4eb86ca9e77f948cd827e7ae32c9ccd9835f6b7aad2ef437dab76"
+      },
+      "verifierExitCode": 1
+    }
+  ],
+  "verifiedPositiveCounts": {
+    "building.name": {"columns": 3, "distinctFamilies": 1, "families": ["mi-d02"]},
+    "building.storeyLabel": {"columns": 3, "distinctFamilies": 1, "families": ["mi-d02"]},
+    "document.registrationNo": {"columns": 4, "distinctFamilies": 2, "families": ["mi-d03", "mi-d22"]},
+    "unit.type": {"columns": 2, "distinctFamilies": 1, "families": ["mi-d22"]},
+    "building.addressLiteral": {"columns": 2, "distinctFamilies": 1, "families": ["mi-d23"]},
+    "building.footprint": {"columns": 1, "distinctFamilies": 1, "families": ["mi-d24"]}
+  },
+  "baseline": {
+    "name": "A4c arm B",
+    "arm": "B",
+    "model": "E:/BhuAayam-data/task-data/a4c/arm-B/v1",
+    "threshold": 0.9497545957565308,
+    "pooledFields": 527,
+    "wrongCommitted": 0,
+    "correctPositiveCommitted": 0,
+    "perTargetPositives": {
+      "building.addressLiteral":
+      {"n": 2, "committed": 0, "committedCorrect": 0, "wrongCommitted": 0, "abstained": 2},
+      "building.footprint": {"n": 1, "committed": 0, "committedCorrect": 0, "wrongCommitted": 0, "abstained": 1},
+      "building.name": {"n": 3, "committed": 0, "committedCorrect": 0, "wrongCommitted": 0, "abstained": 3},
+      "building.storeyLabel": {"n": 3, "committed": 0, "committedCorrect": 0, "wrongCommitted": 0, "abstained": 3},
+      "document.registrationNo":
+      {"n": 4, "committed": 0, "committedCorrect": 0, "wrongCommitted": 0, "abstained": 4},
+      "unit.type": {"n": 2, "committed": 0, "committedCorrect": 0, "wrongCommitted": 0, "abstained": 2}
+    },
+    "unknownCommitted": 53,
+    "abstained": 474,
+    "fitExamples": 591,
+    "fitTargetCounts": {
+      "unknown": 576,
+      "building.name": 3,
+      "building.storeyLabel": 3,
+      "document.registrationNo": 4,
+      "unit.type": 2,
+      "building.addressLiteral": 2,
+      "building.footprint": 1
+    },
+    "byFamilyGroup": {
+      "Indian": {
+        "n": 527,
+        "perTarget": {
+          "building.addressLiteral":
+          {"n": 2, "committed": 0, "committedCorrect": 0, "wrongCommitted": 0, "abstained": 2},
+          "building.footprint": {"n": 1, "committed": 0, "committedCorrect": 0, "wrongCommitted": 0, "abstained": 1},
+          "building.name": {"n": 3, "committed": 0, "committedCorrect": 0, "wrongCommitted": 0, "abstained": 3},
+          "building.storeyLabel":
+          {"n": 3, "committed": 0, "committedCorrect": 0, "wrongCommitted": 0, "abstained": 3},
+          "document.registrationNo":
+          {"n": 4, "committed": 0, "committedCorrect": 0, "wrongCommitted": 0, "abstained": 4},
+          "unit.type": {"n": 2, "committed": 0, "committedCorrect": 0, "wrongCommitted": 0, "abstained": 2},
+          "unknown": {"n": 512, "committed": 53, "committedCorrect": 53, "wrongCommitted": 0, "abstained": 459}
+        },
+        "wrongCommitted": 0,
+        "correctPositiveCommitted": 0,
+        "unknownCommitted": 53,
+        "unknownCommittedCorrect": 53,
+        "abstained": 474
+      },
+      "foreign": {
+        "n": 0,
+        "perTarget": {},
+        "wrongCommitted": 0,
+        "correctPositiveCommitted": 0,
+        "unknownCommitted": 0,
+        "unknownCommittedCorrect": 0,
+        "abstained": 0
+      }
+    },
+    "baselineEvidenceSha256": "5c372436fddf34a20206a8ee442c6467b16cca0526c8b36bebb4f354c489a540"
+  },
+  "a4d": {
+    "fitExamples": null,
+    "threshold": null,
+    "wrongCommitted": null,
+    "correctPositiveCommitted": null,
+    "unknownCommitted": null,
+    "abstained": null,
+    "byFamilyGroup": null,
+    "reason": "No new labels reached verification."
+  },
+  "families": {
+    "currentlyAdmittedDev": [
+      "mi-d01",
+      "mi-d02",
+      "mi-d03",
+      "mi-d04",
+      "mi-d05",
+      "mi-d06",
+      "mi-d07",
+      "mi-d08",
+      "mi-d09",
+      "mi-d10",
+      "mi-d11",
+      "mi-d12",
+      "mi-d13",
+      "mi-d14",
+      "mi-d15",
+      "mi-d16",
+      "mi-d17",
+      "mi-d18",
+      "mi-d19",
+      "mi-d20",
+      "mi-d21",
+      "mi-d22",
+      "mi-d23",
+      "mi-d24"
+    ],
+    "pool":
+    ["smc-building-stock", "smc-sewage-plants", "smc-tax-recovery", "smc-water-charges", "smc-water-projects"],
+    "currentFoldCount": 24,
+    "proposedForeignDev": ["opf-d02", "opf-d03", "opf-d04", "opf-d05", "opf-d06", "opf-d07", "opf-d08", "opf-d09"],
+    "proposedFoldCount": 32,
+    "poolPolicy": "Pool remains in fitting for every fold, as in A4c."
+  },
+  "heldOut": {"status": "not_run_no_new_frozen_model", "counts": null, "heldOutFilesOpened": 0, "n": null},
+  "fallbackTriggers": {
+    "scope": ["Admitted verified set only; both new rounds are blocked mechanically, not", "semantically refused."],
+    "sixA4cTargets": {
+      "document.registrationNo": {"columns": 4, "distinctFamilies": 2, "families": ["mi-d03", "mi-d22"]},
+      "building.name": {"columns": 3, "distinctFamilies": 1, "families": ["mi-d02"]},
+      "building.storeyLabel": {"columns": 3, "distinctFamilies": 1, "families": ["mi-d02"]},
+      "unit.type": {"columns": 2, "distinctFamilies": 1, "families": ["mi-d22"]},
+      "building.addressLiteral": {"columns": 2, "distinctFamilies": 1, "families": ["mi-d23"]},
+      "building.footprint": {"columns": 1, "distinctFamilies": 1, "families": ["mi-d24"]}
+    },
+    "everyVerifiedPositiveTarget": {
+      "building.name": {"columns": 3, "distinctFamilies": 1, "families": ["mi-d02"]},
+      "building.storeyLabel": {"columns": 3, "distinctFamilies": 1, "families": ["mi-d02"]},
+      "document.registrationNo": {"columns": 4, "distinctFamilies": 2, "families": ["mi-d03", "mi-d22"]},
+      "unit.type": {"columns": 2, "distinctFamilies": 1, "families": ["mi-d22"]},
+      "building.addressLiteral": {"columns": 2, "distinctFamilies": 1, "families": ["mi-d23"]},
+      "building.footprint": {"columns": 1, "distinctFamilies": 1, "families": ["mi-d24"]}
+    },
+    "sixTargetsReaching12": 0,
+    "sixTargetsBelow12": 6,
+    "tData": true,
+    "tMethod": null,
+    "tMethodStatus": "not_evaluated_tData_true_and_retrain_blocked",
+    "stageB": {"verifiedPositiveExamples": 15, "required": 300, "shortfall": 285},
+    "decision": "No fallback work dispatched. Admission repair is a prerequisite to assessing the new data."
+  },
+  "freshFits": 0,
+  "heldOutRuns": 0,
+  "labelsChanged": false,
+  "labelsProduced": 0,
+  "providerCalls": 0,
+  "runtimeChanged": false,
+  "gpuUsed": false,
+  "qualification":
+  ["Boundary failure is not a judgment on teacher labels; zero pooled wrong is by", "construction."],
+  "next": [
+    ["Admit exact pinned foreign development profiles in checkBoundary; retain blind and", "privacy exclusions."],
+    [
+      "Reuse the pinned D1f prefix reader in materialize/sourceTables; current",
+      "T1_SOURCE_DENIED is the next guard."
+    ],
+    ["Extend stage_a.development_families with the pinned foreign manifest; never mark", "foreign dev as pool."],
+    "Verifier output uses ULPIN_T1_ROOT=a4d. No output-root change is needed.",
+    ["Resume unchanged labels, verify first, then one cross_fit/no-class-balance fit and", "one held-out receipt."]
+  ],
+  "baselineCommit": "5dc0c23c",
+  "codeCommit": "c618b034",
+  "availableVerifiedFitExamples": 591,
+  "run": {
+    "command": "pnpm exec tsx scripts/agent/measure-a4d.ts",
+    "exitCode": 0,
+    "statusMeaning": "Blocked checkpoint recorded, not a successful verifier or retrain.",
+    "checkCommand": "pnpm exec tsx scripts/agent/measure-a4d.ts --check",
+    "checkExitCode": 0
+  },
+  "baselineQualification":
+  ["A4c arm B is recorded, not refitted. Its Indian/foreign split uses saved scores and", "the unchanged scorer."],
+  "gateStatus": "partial_blocked_no_gate_pass",
+  "failureRecovery": {
+    "signature": "ERR_ASSERTION at checkBoundary: foreign dev family absent from Indian D8 development set.",
+    "attempts":
+    ["One unchanged verifier invocation per round; same signature, no retries or alternate", "verifier."],
+    "stopDecision": "No newly verified labels, so no repetition of the identical failed A4c arm B experiment.",
+    "fitsExecutedByMeasurement": 0,
+    "heldOutRuns": 0,
+    "boundedNext": [
+      "Repair exact-source admission under another assignment; then resume verification and",
+      "the one requested arm."
+    ],
+    "fallbackExperimentStarted": false
+  },
+  "trainerPrerequisite": {
+    "status": "not_invoked_read_only_diagnosis",
+    "file": "services/geo/geo/usp_learning/stage_a.py",
+    "functions": ["development_families", "load_examples"],
+    "nextGuard": "STAGE_A_TRAINING_SPLIT_DENIED",
+    "reason":
+    ["Only Indian D8 dev family ids are accepted for split dev; new canonical classes are", "already included."],
+    "forbiddenWorkaround": "Do not change foreign dev to pool; doing so would remove its folds."
+  },
+  "expectedT1dComparison": {
+    "expectedTablePlanRejections": 0,
+    "expectedUnverifiedFootprints": 3,
+    "expectedVerifiedFields": 18,
+    "actualBoundaryBlockedFields": 21,
+    "actualTablePlansEvaluated": 0,
+    "actualDryRunEvaluatedFields": 0,
+    "difference":
+    ["None of the teacher-predicted field outcomes was reached; all 21 blocked at profile", "admission."]
+  },
+  "safety": {
+    "labelsEdited": 0,
+    "newTeacherLabels": 0,
+    "acquisitionRequests": 0,
+    "providerCalls": 0,
+    "runtimeReads": 0,
+    "gpuUsed": false,
+    "heldOutMaterialOpened": false,
+    "existingExternalFilesModified": 0,
+    "deleted": 0,
+    "pushes": 0
+  },
+  "checks": [
+    {
+      "command": [
+        "pnpm exec tsx scripts/agent/verify-teacher-labels.ts",
+        "E:/BhuAayam-data/task-data/t1c/labels/teacher-labels-v1.jsonl",
+        "E:/BhuAayam-data/task-data/d1f/profiles/profiles.jsonl",
+        "E:/BhuAayam-data/task-data/a4d/verified/t1c-v1"
+      ],
+      "exitCode": 1,
+      "signature": "ERR_ASSERTION at checkBoundary"
+    },
+    {
+      "command": [
+        "pnpm exec tsx scripts/agent/verify-teacher-labels.ts",
+        "E:/BhuAayam-data/task-data/t1d/labels/teacher-labels-v1.jsonl",
+        "E:/BhuAayam-data/task-data/a5a/profiles/profiles.jsonl",
+        "E:/BhuAayam-data/task-data/a4d/verified/t1d-v1"
+      ],
+      "exitCode": 1,
+      "signature": "ERR_ASSERTION at checkBoundary"
+    },
+    {"command": "pnpm exec tsc -p scripts/agent/tsconfig.json", "exitCode": 0},
+    {
+      "command": "python -B -m pytest --noconftest -p no:cacheprovider services/geo/tests/test_stage_a.py",
+      "exitCode": 0,
+      "passed": 7
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig scripts/agent/tsconfig.json --test scripts/agent/a3-chunk.test.ts",
+      "exitCode": 0,
+      "passed": 4
+    },
+    {
+      "command":
+      ["pnpm exec tsx --tsconfig scripts/agent/tsconfig.json --test", "scripts/agent/verify-teacher-labels.test.ts"],
+      "exitCode": 0,
+      "passed": 3
+    },
+    {"command": "pnpm exec tsx scripts/agent/measure-a4d.ts --check", "exitCode": 0},
+    {"command": "pnpm exec tsx scripts/agent/measure-a4d.ts (overwrite control)", "exitCode": 1, "expected": true},
+    {"command": "git diff --check", "exitCode": 0},
+    {"command": "git diff staging...HEAD --check", "exitCode": 0},
+    {"command": "New-file and added-line width audit", "exitCode": 0}
+  ],
+  "environment": {
+    "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe",
+    "ULPIN_T1_ROOTForVerification": "E:/BhuAayam-data/task-data/a4d",
+    "ULPIN_T1_ROOTForTests": "E:/BhuAayam-data/task-data/a4d/checks/t1-compatibility",
+    "pythonFlags": ["-B", "PYTHONDONTWRITEBYTECODE=1"],
+    "testsPolicy": "Unchanged tests; byte-identical T1 fixture snapshots; all new outputs beneath A4d.",
+    "pytestTemp": "E:/BhuAayam-data/task-data/a4d/checks/pytest/run-v1",
+    "pytestConftest": "Disabled; shared conftest imports geo.inspection, unrelated to Stage A."
+  },
+  "artifact": {
+    "path": "E:/BhuAayam-data/task-data/a4d/measurements/result.json",
+    "sha256": "1e850568c0b63c2044a5c1dd65800b5feb2b6040f3fb5cd82ac0eede3475538a"
+  }
+}
