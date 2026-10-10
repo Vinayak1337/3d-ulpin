@@ -313,7 +313,8 @@ export class ChunkMappingService{
         "AND source_id=$3 AND operation='chunk-mapping' FOR SHARE",[jobId,caseId,sourceId])).rows[0]
         ??notFound('Chunk mapping job not found.');
       if(fingerprint(job.payload)!==fingerprint(initial.input))conflict('The mapped job changed during payload read.');
-      const {freshness}=await chunkMappingReadContextTx(client,initial.input,caseId,sourceId,jobId,job.input_fingerprint);
+      const {freshness}=await chunkMappingReadContextTx(
+        client,initial.input,caseId,sourceId,jobId,job.input_fingerprint);
       const state=(await client.query('SELECT * FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR SHARE',[jobId])).rows[0]
         ??notFound('Chunk mapping state unavailable.');
       const raw=(await client.query('SELECT state,unknown_remainder,issue_code FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE',
