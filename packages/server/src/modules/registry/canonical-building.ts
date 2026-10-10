@@ -624,6 +624,10 @@ export async function projectBuilding(
   const building = baseBuilding(dossier, frame, citations, heightValue, polygons, kind, state, proposal);
   addGeometryGaps(building, polygons, kind);
   building.parcelRefs = await projectParcelRefs(dossier);
+  building.candidates = dossier.records.flatMap(record => {
+    const body = record as typeof record & { canonicalCandidates?: NormalizedBuilding['candidates'] };
+    return body.canonicalCandidates ?? [];
+  });
   await applyRetainedClaims(building, dossier);
   applyConflictDecisions(building, retainedConflictDecisions(dossier));
   const storeys = await projectLevels(building, dossier, frame);

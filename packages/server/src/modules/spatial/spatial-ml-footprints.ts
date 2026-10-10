@@ -1,11 +1,16 @@
 import { assertSourceWorkspaceReference } from "../cases/source-workspace-policy";
 import { z } from "zod";
-import type { ImportPackage, SpatialMlComponent } from "@ulpin/contracts";
+import {
+  RetainedImagerySchema, type AreaReference, type ImportPackage, type SpatialMlComponent, type SpatialMlItem,
+} from "@ulpin/contracts";
+import type { PoolClient } from 'pg';
+import { geographicMlComponent, projectedGeographicComponents } from './spatial-ml-georeference';
 import { transaction } from "../../infrastructure/db";
 import { getArea, getPackage, ingestArea } from "../areas/areas";
 import { assertPackageDocumentAuthority } from "../areas/package-authority";
 import { AppError, conflict } from "../../infrastructure/errors";
 import { fingerprint } from "../cases/domain";
+import { localOperatorSubject } from '../usp/principal';
 import {
   getSpatialMlItemRecord,
   assertSpatialMlSourceCurrent,
@@ -30,9 +35,27 @@ export const spatialMlFootprintDraftSchema = z
       )
       .min(1)
       .max(100),
-    calibration: spatialMlCalibrationSchema,
+    rejected: z.array(z.strictObject({ componentId: z.string().min(1).max(120),
+      reason: z.string().trim().min(3).max(2000) })).max(100).optional(),
+    reason: z.string().trim().min(3).max(2000).optional(),
+    calibration: spatialMlCalibrationSchema.optional(),
+    georeference: z.literal('source_geotiff').optional(),
   })
-  .strict();
+  .strict()
+  .refine(input => Boolean(input.calibration) !== Boolean(input.georeference),
+    'Choose reviewed controls or the exact source GeoTIFF reference, never both.');
+
+async function georeferencedComponentsTx(
+  client: PoolClient, item: SpatialMlItem, pkg: ImportPackage, reference: AreaReference,
+): Promise<SpatialMlComponent[]> {
+  const imagery = RetainedImagerySchema.parse('imagery' in pkg ? pkg.imagery : undefined);
+  const chip = imagery.chips.find(value => value.sourceId === item.sourceRevisionId);
+  if (!chip || !item.result || item.state !== 'succeeded') {
+    throw new AppError(422, 'ML_GEOREFERENCE_SOURCE', 'Select completed pixels from this exact image workspace.');
+  }
+  return projectedGeographicComponents(client,
+    item.result.components.map(component => geographicMlComponent(item, chip, component)), reference);
+}
 
 /** Explicit adapter: local metre proposals -> projected native GIS -> ordinary area review. */
 export function projectedMlRings(
@@ -134,13 +157,23 @@ export async function createSpatialMlFootprintDraft(
         "ML_AREA_REFERENCE",
         "This area needs a retained projected metre reference before imagery can be placed.",
       );
-    if (input.calibration.frame !== frame?.id)
+    if (input.calibration && input.calibration.frame !== frame?.id)
       throw new AppError(
         422,
         "ML_AREA_FRAME",
         `Building controls must use this area's named metre frame: ${frame?.id || "unavailable"}.`,
       );
-    const components = deriveSpatialMlGeometry(item, input.calibration);
+    const components = input.georeference
+      ? await georeferencedComponentsTx(client, item, sourcePackage, area.reference)
+      : deriveSpatialMlGeometry(item, input.calibration!);
+    const reviewIds = [...input.selections, ...(input.rejected ?? [])].map(entry => entry.componentId);
+    if (new Set(reviewIds).size !== reviewIds.length
+      || reviewIds.some(key => !components.some(component => component.id === key))) {
+      throw new AppError(422, 'ML_REVIEW_SELECTION', 'Accept or reject each exact retained component at most once.');
+    }
+    if (input.rejected?.length && !input.reason) {
+      throw new AppError(422, 'ML_REVIEW_REASON', 'Describe the accepted candidate selection as well as rejections.');
+    }
     const selected = canonicalSelections.map((selection) => {
       const component = components.find((c) => c.id === selection.componentId);
       if (!component || !/building/i.test(component.className))
@@ -171,7 +204,9 @@ export async function createSpatialMlFootprintDraft(
       inference: item.inputFingerprint,
       raster: item.result!.raster.sha256,
       selections: canonicalSelections,
-      calibration: input.calibration,
+      rejected: input.rejected ?? [], reason: input.reason ?? null,
+      calibration: input.calibration ?? null,
+      georeference: input.georeference ?? null,
       areaId: area.id,
       worldStatus,
       reference: area.reference,
@@ -204,8 +239,16 @@ export async function createSpatialMlFootprintDraft(
       rasterSha256: item.result!.raster.sha256,
       model: item.result!.model,
       inferenceReceipt: item.result!.receipt,
-      calibration: input.calibration,
+      calibration: input.calibration ?? null,
+      georeference: input.georeference ?? null,
       selections: canonicalSelections,
+      decisions: input.reason ? [
+        ...canonicalSelections.map(selection => ({ componentId: selection.componentId, outcome: 'accepted',
+          reason: input.reason, actor: localOperatorSubject(), time: new Date().toISOString() })),
+        ...(input.rejected ?? []).map(selection => ({ ...selection, outcome: 'rejected',
+          actor: localOperatorSubject(), time: new Date().toISOString() })),
+      ] : [],
+      reviewScope: 'source_candidate_selection_only; registry recording and analytical qualification remain separate',
       target: {
         areaId: area.id,
         frame: frame.id,
@@ -215,8 +258,9 @@ export async function createSpatialMlFootprintDraft(
         origin: area.reference.origin,
         expectedRevision: input.expectedAreaRevision,
       },
-      method:
-        "reviewed pixel-to-metre similarity, then retained area origin addition",
+      method: input.georeference
+        ? 'deterministic:source-geotiff-pixel-to-area@1'
+        : "reviewed pixel-to-metre similarity, then retained area origin addition",
       authority:
         "Unreviewed model-derived footprint proposals. Height and ownership remain unknown.",
     };

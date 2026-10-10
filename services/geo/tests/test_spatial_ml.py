@@ -186,14 +186,14 @@ def test_model_readiness_refuses_missing_or_changed_artifacts(tmp_path, monkeypa
 
 
 def test_demo_profile_activation_does_not_change_the_default_registry(monkeypatch: pytest.MonkeyPatch) -> None:
-    model = next(row for row in spatial_ml._manifest()["models"] if row["id"] == "rfdetr-ramp-ka-seg-medium-b3-v1")
+    model = next(row for row in ml._manifest()["models"] if row["id"] == "rfdetr-ramp-ka-seg-medium-b3-v1")
     assert model["active"] is False
     monkeypatch.delenv("ULPIN_PROFILE", raising=False)
-    assert spatial_ml._model_active(model) is False
+    assert ml._model_active(model) is False
     monkeypatch.setenv("ULPIN_PROFILE", "demo")
-    assert spatial_ml._model_active(model) is True
+    assert ml._model_active(model) is True
     monkeypatch.setenv("ULPIN_PROFILE", "production")
-    assert spatial_ml._model_active(model) is False
+    assert ml._model_active(model) is False
     assert model["active"] is False
 
 

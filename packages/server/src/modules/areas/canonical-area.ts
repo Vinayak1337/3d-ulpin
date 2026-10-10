@@ -25,6 +25,7 @@ import {
   revalidateCanonicalSources,
 } from '../registry/canonical-building';
 import { localOperatorSubject } from '../usp/principal';
+import { addRoofprintCandidates } from '../spatial/spatial-ml-canonical-candidates';
 
 type BaseFeature = NormalizedArea['baseFeatures'][number];
 type ContextFeature = NonNullable<AreaContext['displayFeatures']>[number];
@@ -188,6 +189,7 @@ export async function canonicalArea(areaId: string): Promise<NormalizedArea> {
   if (!context.area.reference) result.gaps.push('Geographic placement unknown; no invented ENU origin.');
   await addBaseFeatures(result, context, frame);
   await addImagery(result, context);
+  await addRoofprintCandidates(result, context);
   const administration = await administrativeContext(context, frame);
   if (administration.length) {
     result.administrativeContext = administration;
