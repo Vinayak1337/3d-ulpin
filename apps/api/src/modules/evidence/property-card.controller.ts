@@ -3,8 +3,10 @@ import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { UspGeneratePropertyCardSchema, UspListPropertyCardsSchema, UspReadPropertyCardSchema, UspPropertyCardListSchema,
   UspPropertyCardRevocationSchema, UspPropertyCardSchema, UspPropertyCardVerificationSchema, UspPropertyCardViewSchema,
-  UspRevokePropertyCardSchema } from '../../../../../packages/contracts/src/usp/property-card';
-import { generatePropertyCard, readPropertyCard, resolvePropertyCard } from '@ulpin/server/modules/usp/packets/card-service';
+  UspRevokePropertyCardSchema, UspPreviewPropertyCardSchema, UspPropertyCardPreviewSchema }
+  from '../../../../../packages/contracts/src/usp/property-card';
+import { generatePropertyCard, previewPropertyCard, readPropertyCard, resolvePropertyCard }
+  from '@ulpin/server/modules/usp/packets/card-service';
 import { listPropertyCards } from '@ulpin/server/modules/usp/packets/card-listing';
 import { revokePropertyCard } from '@ulpin/server/modules/usp/packets/card-revocation';
 import { verifyPropertyCard } from '@ulpin/server/modules/usp/packets/card-verification';
@@ -32,6 +34,17 @@ export class PropertyCardController {
     const command = await readUspBody(req, UspGeneratePropertyCardSchema);
     const card = await generatePropertyCard(localRequestContext(requestId(req)), command);
     return uspEnvelope(req, card.scope, card);
+  }
+  @Post('preview') @HttpCode(200)
+  @UspJsonPost('POST_api_v1_usp_property_cards_preview',
+    'The rows a card made now from this executed plan would print. '
+      + 'A preview is not a card: nothing is stored and it has no id.',
+    UspPreviewPropertyCardSchema, UspPropertyCardPreviewSchema)
+  async preview(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    res.setHeader('Cache-Control', 'private, no-store');
+    const command = await readUspBody(req, UspPreviewPropertyCardSchema);
+    const preview = await previewPropertyCard(localRequestContext(requestId(req)), command);
+    return uspEnvelope(req, preview.scope, preview);
   }
   @Post('read') @HttpCode(200)
   @UspJsonPost('POST_api_v1_usp_property_cards_read', 'Read exact immutable card facts and separate current target revision under current access', UspReadPropertyCardSchema, UspPropertyCardViewSchema)
