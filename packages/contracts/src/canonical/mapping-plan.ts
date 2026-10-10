@@ -67,6 +67,7 @@ export const MappingV2FieldSchema = z.strictObject({
 export const MappingPlanV2Schema = z.strictObject({
   version: z.literal(MAPPING_PLAN_V2_VERSION),
   layoutFingerprint: z.string().regex(/^[a-f0-9]{64}$/),
+  layoutFingerprintVersion: z.enum(['column-types/1', 'tabular-header/2']).optional(),
   sourceKind: MappingSourceKindSchema,
   method: MappingMethodSchema,
   fields: z.array(MappingV2FieldSchema).min(1).max(256),

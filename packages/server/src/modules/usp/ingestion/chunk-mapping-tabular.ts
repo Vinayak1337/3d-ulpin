@@ -67,7 +67,7 @@ function tabularPayload(input: ChunkMappingInput, raw: StreamingVectorPayload, r
     schemaFingerprint: input.schemaFingerprint, recipeRevision: input.recipeRevision,
     converterSha256: input.converterSha256, tabular: input.tabular, records: [], mapping: {
       profile: draft.profile, plan: draft.proposal.plan, fieldSources: draft.proposal.fieldSources,
-      questions: draft.questions, metrics: { ...draft.metrics, needsInput: draft.questions.length },
+      questions: draft.questions, metrics: draft.metrics,
       rows: draft.dryRun.rows,
       sourceRows: items.map(item => item.sourceRow),
     } });
@@ -103,7 +103,7 @@ export async function acceptTabularDataSlot(
   const approved = context.approved?.receipt.plan;
   const draft = await mapper.map({ jobId: input.jobId, chunkIndex: raw.chunkIndex, headers,
     rows: items.map(item => item.cells.map(cell => cell.state === 'literal' ? cell.value : undefined)),
-    rowOffset: raw.records[0].featureIndex,
+    rowOffset: raw.records[0].featureIndex, selection: input.tabular!.selection,
     sourceRef: `source:${input.sourceId}?sheet=${input.tabular!.selection.sheet}` }, {
     context: localRequestContext('tabular-mapping'), dataPolicy: { dataClass: 'public', split: 'development' },
     memoryPath: tabularLearningPaths().memory,

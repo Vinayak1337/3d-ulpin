@@ -78,7 +78,8 @@ async function approvedRecipeTx(client:PoolClient,caseId:string,sourceId:string,
       ||fingerprint(plan.tabular)!==fingerprint(profile.tabular)||plan.workspaceRevision!==profile.workspaceRevision
       ||plan.workspaceFingerprint!==profile.workspaceFingerprint||plan.caseId!==caseId)
       conflict('The approved tabular recipe no longer belongs to this exact source context.');
-    if(!validateMappingPlanV2(plan.mapping,mappingContextFromColumnProfile(profile.profile)).success)
+    const context=mappingContextFromColumnProfile(profile.profile,profile.tabular.selection);
+    if(!validateMappingPlanV2(plan.mapping,context).success)
       conflict('The approved tabular recipe failed canonical revalidation.');
     return {receipt,profile};
   }

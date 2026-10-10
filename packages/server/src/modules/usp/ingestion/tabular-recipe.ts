@@ -27,7 +27,7 @@ function assertRecipePins(plan: TabularMappingPlan, profile: TabularSourceProfil
 /** Existing manual author/approve commands use this verifier; it grants no approval or registry authority. */
 export function validateTabularRecipe(plan: TabularMappingPlan, profile: TabularSourceProfile, bytes: Uint8Array) {
   assertRecipePins(plan, profile);
-  const context = mappingContextFromColumnProfile(profile.profile);
+  const context = mappingContextFromColumnProfile(profile.profile, profile.tabular.selection);
   const checked = validateMappingPlanV2(plan.mapping, context);
   if (!checked.success) {
     throw new AppError(422, 'MAPPING_PLAN_INVALID', 'The officer plan failed canonical verification.');
