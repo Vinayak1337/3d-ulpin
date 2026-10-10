@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { profileColumnFile, maskColumnSample } from '../../packages/server/src/modules/usp/ingestion/column-profile';
-import { developmentManifest, sourceTables, stableHash, T1_ROOT } from './t1-sources';
+import { developmentManifest, developmentProfileAssets, sourceTables, stableHash, T1_ROOT } from './t1-sources';
 import { checkBoundary, prepareTable, saveNew, type PreparedColumn } from './t1-profiles';
 import { ingestTeacherLabels } from './verify-teacher-labels';
 
@@ -45,6 +45,41 @@ test('blind IDs are rejected before opening any held-out path', () => {
   const column = prepareTable(source, sourceTables(source)[0]).profiles[0];
   assert.throws(() => checkBoundary([{ ...column, family: blind }]), /AssertionError/);
   assert.throws(() => checkBoundary([{ ...column, split: 'pool' }]), /AssertionError/);
+});
+
+test('recorded development derivatives preserve both layouts and refuse unrecorded or blind reads', () => {
+  const sources = developmentProfileAssets();
+  assert.equal(sources.length, 5);
+  const layouts = new Set<string>();
+  for (const source of sources) {
+    assert.equal(source.split, 'dev');
+    assert(!manifest.heldOut.has(source.family));
+    for (const table of sourceTables(source)) {
+      const prepared = prepareTable(source, table);
+      assert.equal(checkBoundary(prepared.profiles).heldOutMatches, 0);
+      if (source.family === 'mi-d22') layouts.add(stableHash(table.headers));
+      if (source.family === 'mi-d24') {
+        const compound = prepared.profiles.filter(column => column.inferredType === 'object');
+        assert.equal(compound.length, 2);
+        assert(compound.every(column => column.maskedSamples.every(sample => sample === '[object]')));
+      }
+      for (const column of prepared.profiles) {
+        const samples = table.rows.map(row => maskColumnSample(row[column.column - 1], column.header));
+        assert(column.maskedSamples.every(sample => samples.includes(sample)));
+      }
+    }
+  }
+  assert.equal(layouts.size, 1, 'Both TNHB files retain their matching literal-header layout.');
+  const source = sources[0];
+  assert.throws(() => sourceTables({ ...source, family: [...manifest.heldOut][0] }), /T1_SOURCE_DENIED/);
+  assert.throws(() => sourceTables({ ...source, split: 'pool' }), /T1_SOURCE_DENIED/);
+  assert.throws(() => sourceTables({ ...source, original: {
+    ...source.original, externalPath: 'E:/BhuAayam-data/not-a-recorded-derivative.csv',
+  } }), /T1_SOURCE_DENIED/);
+  const compound = sources.find(entry => entry.family === 'mi-d24')!;
+  assert.throws(() => sourceTables({ ...compound, derivedFrom: {
+    ...compound.derivedFrom!, sourcePath: 'E:/BhuAayam-data/not-a-recorded-prefix.jsonl',
+  } }), /T1_SOURCE_DENIED/);
 });
 
 test('path-based label adapter links real profile IDs without fabricating accepted labels', async () => {
