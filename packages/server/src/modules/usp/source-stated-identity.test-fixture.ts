@@ -1,7 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import type { SourceSpaceRequest } from '@ulpin/contracts';
 import { fingerprint } from '../cases/domain';
-import { SourceSpaceControl, retainedTower } from '../officer/source-spaces.test-fixture';
+import { commandSourceSpace } from '../officer/source-spaces';
+import { SourceSpaceControl, retainedTower, towerRequest } from '../officer/source-spaces.test-fixture';
+import { localRequestContext } from './principal';
+import { prepareProjectIdentityReview } from './project-identity';
+import { captureRegistrySnapshot } from './snapshots';
 
 const pins = JSON.parse(readFileSync('docs/evidence/gf-backend/k2/tower3-source-import.json', 'utf8')).documentPins;
 const sizes = [3782332, 1655334, 2448909, 1630108];
@@ -16,6 +21,7 @@ export class SourceIdentityControl {
   codes = new Map<string, any>();
   identities = new Map<string, any>();
   audit: any[] = [];
+  plans = new Map<string, any>();
   queries: string[] = [];
   sequence = 0;
   archived = false;
@@ -34,7 +40,8 @@ export class SourceIdentityControl {
   private snapshotReads(q: string, v: any[]) {
     if (q.startsWith('SELECT * FROM registry_sites')) return this.result([{ id: retainedTower.areaId,
       revision: this.db.siteRevision, frame }]);
-    if (q.startsWith('SELECT r.*,c.code')) return this.result(this.db.rows.map(row => ({ ...row,
+    if (q.startsWith('SELECT r.*,c.')) return this.result(this.db.rows
+      .filter(row => !q.includes('r.id=$1') || row.id === v[0]).map(row => ({ ...row,
       project_code: this.codes.get(row.id)?.code ?? null, project_status: this.codes.get(row.id)?.status ?? null,
       project_location: this.identities.get(row.id)?.location ?? null })));
     if (q.startsWith('SELECT s.* FROM sources')) return this.result(this.sources);
@@ -94,7 +101,8 @@ export class SourceIdentityControl {
       const rows = this.captured.get(v[0]) ?? [];
       rows.push({ namespace: v[1], object_id: v[2], revision: v[3], body_sha256: v[4], body: structuredClone(v[5]) });
       this.captured.set(v[0], rows);
-    } else if (q.startsWith('INSERT INTO usp_project_identity_reviews')) this.reviews.set(v[0], {
+    } else if (q.startsWith('INSERT INTO usp_packet_plans')) this.plans.set(`${v[0]}:${v[1]}`, structuredClone(v[5]));
+    else if (q.startsWith('INSERT INTO usp_project_identity_reviews')) this.reviews.set(v[0], {
       id: v[0], scope_id: v[1], manifest_id: v[2], operation: v[3], command_hash: v[4],
       reviewer_subject: v[5], body: v[6] });
     else if (q.startsWith('INSERT INTO usp_project_codes')) this.codes.set(v[1], {
@@ -112,8 +120,30 @@ export class SourceIdentityControl {
     else return null;
     return this.result();
   }
+  private packetReads(q: string, v: any[]) {
+    if (q.startsWith("SELECT set_config('statement_timeout'")) return this.result([{ deadline_live: true }]);
+    if (q.startsWith('SELECT id,site_id,revision,archived FROM cases')) return this.result([{ id: v[0],
+      site_id: retainedTower.areaId, revision: 1, archived: this.archived }]);
+    if (q.startsWith('SELECT id,case_id,inspection FROM sources')) {
+      return this.result(this.sources.filter(source => source.id === v[0]));
+    }
+    if (q.startsWith('SELECT body FROM usp_packet_plans')) {
+      const plan = this.plans.get(`${v[0]}:${v[1]}`);
+      return this.result(plan ? [{ body: plan }] : []);
+    }
+    if (q.startsWith('SELECT max(version)')) return this.result([{ version: Math.max(
+      ...[...this.plans.values()].filter(plan => plan.planId === v[0]).map(plan => plan.version)) }]);
+    if (q.startsWith('SELECT body FROM usp_packet_plan_')) return this.result();
+    if (q.startsWith('SELECT clock_timestamp()')) return this.result([{ live: true }]);
+    if (q.startsWith('SELECT body FROM registry_revisions')) {
+      return this.result(this.db.histories.filter(row => row.id === v[0] && row.revision === v[1]));
+    }
+    if (q.startsWith('SELECT alias FROM registry_aliases') || q.startsWith('SELECT successor_id')) return this.result();
+    if (q.startsWith('SELECT revision FROM cases')) return this.result([{ revision: 1 }]);
+    return null;
+  }
   private boundary(q: string) {
-    if (q === 'BEGIN') this.checkpoint = structuredClone({ sources: this.sources, snapshots: this.snapshots,
+    if (q.startsWith('BEGIN')) this.checkpoint = structuredClone({ sources: this.sources, snapshots: this.snapshots,
       captured: this.captured, reviews: this.reviews, receipts: this.receipts, codes: this.codes,
       identities: this.identities, audit: this.audit, sequence: this.sequence,
       rows: this.db.rows, histories: this.db.histories, siteRevision: this.db.siteRevision });
@@ -122,7 +152,7 @@ export class SourceIdentityControl {
       Object.assign(this, state);
       Object.assign(this.db, { rows, histories, siteRevision });
     }
-    if (['BEGIN', 'COMMIT', 'ROLLBACK'].includes(q) || /^(SET |SAVEPOINT|RELEASE |ROLLBACK TO)/.test(q)
+    if (q.startsWith('BEGIN') || ['COMMIT', 'ROLLBACK'].includes(q) || /^(SET |SAVEPOINT|RELEASE |ROLLBACK TO)/.test(q)
       || q.startsWith('SELECT pg_advisory')) return this.result();
     return null;
   }
@@ -130,7 +160,7 @@ export class SourceIdentityControl {
     const q = sql.replace(/\s+/g, ' ').trim();
     this.queries.push(q);
     const own = this.boundary(q) ?? this.snapshotReads(q, values) ?? this.sourceReads(q, values)
-      ?? this.identityReads(q, values) ?? this.identityWrites(q, values);
+      ?? this.identityReads(q, values) ?? this.identityWrites(q, values) ?? this.packetReads(q, values);
     return own ?? this.db.query(sql, values);
   }
   readonly pool = { connect: async () => ({ query: this.query.bind(this), release() {} }),
@@ -139,4 +169,45 @@ export class SourceIdentityControl {
     return this.sources.every(source => source.sha256
       === pins.find((pin: any) => pin.sourceId === source.id).sourceSha256);
   }
+}
+
+const globals = globalThis as unknown as { ulpinPool?: unknown };
+export const location = { anchorState: 'not_supplied' as const, parcels: [], locator: {
+  structureKind: '?' as const, structureNumber: 1, levels: ['L?'], spaceKind: '?' as const, spaceNumber: 1 } };
+export const errorCode = (code: string) => (error: any) => error.code === code;
+
+async function fixture(request: SourceSpaceRequest) {
+  const db = new SourceSpaceControl();
+  const recorded = await commandSourceSpace(retainedTower.buildingId, request, db.deps);
+  const memory = new SourceIdentityControl(db);
+  const ctx = localRequestContext(randomUUID());
+  const capture = async () => captureRegistrySnapshot(ctx, retainedTower.areaId, { kind: 'targets', pins: [{
+    ref: { namespace: 'registry_record', id: recorded.spaceId },
+    revision: db.rows.find(row => row.id === recorded.spaceId).revision,
+  }] });
+  return { db, memory, ctx, recorded, capture, request };
+}
+export type SourceFixture = Awaited<ReturnType<typeof fixture>>;
+
+export async function control(work: (f: SourceFixture) => Promise<void>, request: SourceSpaceRequest = towerRequest) {
+  const previous = process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+  const pool = globals.ulpinPool;
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'k4b-offline-protocol-control';
+  try { const f = await fixture(request); globals.ulpinPool = f.memory.pool; await work(f); }
+  finally {
+    globals.ulpinPool = pool;
+    if (previous === undefined) delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+    else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = previous;
+  }
+}
+
+export async function prepare(f: SourceFixture) {
+  const snapshot = await f.capture();
+  const review = { operation: 'assign' as const, scope: snapshot.scope, recordIds: [f.recorded.spaceId],
+    expectedVersions: { [f.recorded.spaceId]: 1 }, reason: f.request.reason,
+    evidence: [{ sourceId: f.request.space.evidence.sourceId, revision: 1,
+      locator: f.db.rows.find(row => row.id === f.recorded.spaceId).body.evidence[0].locator }], location };
+  const prepared = await prepareProjectIdentityReview(f.ctx, review as any);
+  return { review, snapshot, command: { scope: snapshot.scope, expectedManifestId: snapshot.id,
+    reviewId: prepared.reviewId, requestKey: randomUUID(), recordId: f.recorded.spaceId, expectedRecordVersion: 1 } };
 }

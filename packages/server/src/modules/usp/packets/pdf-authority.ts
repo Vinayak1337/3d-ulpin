@@ -16,15 +16,19 @@ import {documentSourceTx} from '../ingestion/document-context';
 import {registryImageRegionSourceTx,assertImageRegionCitation,imageRegionCitationId} from '../../registry/registry-image-region-evidence';
 import {assertImagePdfRgb} from './image-pdf-render';
 import {PACKET_MIXED_PDF_RECIPE,PACKET_MIXED_PDF_LIMITS,UspMixedPdfPacketPlanEntrySchema} from '../../../../../contracts/src/usp/packet-mixed-pdf';
+import {isSourceStatedTarget,sourceStatementBindingsTx} from './source-stated-binding';
 
 type RegionBinding=RegistryRegionCitation|RegistryImageRegionCitation;
+/** Bindings a stored plan already carries; a source-only record's recorded citation is re-verified from them. */
+export const plannedBindings=(plan:PdfPacketPlan)=>plan.entries.flatMap(entry=>entry.binding?[entry.binding]:[]);
 
 export function assertPdfPlanActor(ctx:RequestContext,plan:PdfPacketPlan){
   assertLocalUsp(ctx);
   if(canonical(ctx.principal)!==canonical(plan.creator)||ctx.accessViewId!==plan.accessViewId||ctx.policyVersion!==plan.policyVersion)
     throw new AppError(403,'PACKET_PLAN_ACCESS','Current access does not authorize this private plan.');
 }
-async function targetTx(client:PoolClient,ctx:RequestContext,input:PdfPacketPlanInput){
+async function targetTx(client:PoolClient,ctx:RequestContext,input:PdfPacketPlanInput,
+  recorded:readonly RegionBinding[]=[]){
   assertLocalUsp(ctx);const manifest=await scopedManifestTx(client,ctx,input.scope);
   if(manifest.selection.kind!=='targets'||manifest.selection.pins.length!==1||!equalPin(manifest.selection.pins[0],input.target))
     throw new AppError(422,'PACKET_PLAN_SELECTION','Select one exact building, floor or space snapshot.');
@@ -41,7 +45,9 @@ async function targetTx(client:PoolClient,ctx:RequestContext,input:PdfPacketPlan
   if((image||mixed)&&!['building','floor'].includes(target.kind))
     throw new AppError(422,'PACKET_IMAGE_PDF_TARGET','Image packets support exact building or floor targets.');
   const citations=RegistryDocumentCitationsSchema.parse(target.body?.documentCitations??[]);
-  const bindings=input.entries.map(entry=>{
+  const sourced=isSourceStatedTarget(target)?await sourceStatementBindingsTx(client,ctx,input,target,recorded):null;
+  const bindings=input.entries.map((entry,index)=>{
+    if(sourced)return sourced[index];
     const imageEntry=image||(mixed&&'kind' in entry&&entry.kind==='original_image_region');
     const binding=citations.find(p=>p.version===(imageEntry?'registry-image-region-citation/1':'registry-document-region-citation/1')&&p.id===entry.bindingId) as RegionBinding|undefined;
     if(binding&&(binding.target.recordId!==target.id||binding.target.revision>=target.revision||binding.purpose!==input.purpose))
@@ -73,14 +79,16 @@ async function targetTx(client:PoolClient,ctx:RequestContext,input:PdfPacketPlan
 }
 /** Discovery precedes all source/site/recording locks. Canonical-original only:
  * no parent ancestry is introduced after waiting with destination locks held. */
-export async function protectPdfPlanTx(client:PoolClient,ctx:RequestContext,input:PdfPacketPlanInput){
-  return (await protectPdfPlanInputsTx(client,ctx,[input]))[0];
+export async function protectPdfPlanTx(client:PoolClient,ctx:RequestContext,input:PdfPacketPlanInput,
+  recorded:readonly RegionBinding[]=[]){
+  return (await protectPdfPlanInputsTx(client,ctx,[input],recorded))[0];
 }
-export async function protectPdfPlanInputsTx(client:PoolClient,ctx:RequestContext,inputs:readonly PdfPacketPlanInput[]){
-  const before=[];for(const input of inputs)before.push(await targetTx(client,ctx,input));
+export async function protectPdfPlanInputsTx(client:PoolClient,ctx:RequestContext,inputs:readonly PdfPacketPlanInput[],
+  recorded:readonly RegionBinding[]=[]){
+  const before=[];for(const input of inputs)before.push(await targetTx(client,ctx,input,recorded));
   const cases=[...new Set(before.flatMap(item=>item.bindings.flatMap(binding=>binding?[binding.document.caseId.toLowerCase()]:[])))].sort();
   await lockRegistryDocumentCasesTx(client,cases,cases);
-  const after=[];for(const input of inputs)after.push(await targetTx(client,ctx,input));
+  const after=[];for(const input of inputs)after.push(await targetTx(client,ctx,input,recorded));
   if(canonical(after)!==canonical(before))conflict('The exact region context changed while acquiring protection.');
   await client.query("SELECT pg_advisory_xact_lock(hashtextextended('physical-area-recording',0))");
   for(const id of [...new Set(inputs.map(input=>input.scope.scopeId))].sort())
@@ -123,7 +131,8 @@ async function sourceAccessTx(client:PoolClient,ctx:RequestContext,siteId:string
     assertImageRegionCitation(binding,await registryImageRegionSourceTx(client,siteId,original,true));
 }
 export async function authorizePdfPlanTx(client:PoolClient,ctx:RequestContext,plan:PdfPacketPlan){
-  assertPdfPlanActor(ctx,plan);const {captured,target,bindings}=await targetTx(client,ctx,plan.input);
+  assertPdfPlanActor(ctx,plan);
+  const {captured,target,bindings}=await targetTx(client,ctx,plan.input,plannedBindings(plan));
   if(captured.body_sha256!==plan.targetBodySha256||canonical(bindings.map(binding=>binding??null))!==canonical(plan.entries.map(entry=>entry.binding)))
     conflict('The immutable PDF plan binding changed.');
   await committedTargetTx(client,plan.input,target,bindings);
@@ -132,8 +141,9 @@ export async function authorizePdfPlanTx(client:PoolClient,ctx:RequestContext,pl
 }
 /** New generation is exact-current; disclosure above preserves committed
  * historical target/crop pins while independently checking current access. */
-export async function assessPdfPlanTx(client:PoolClient,ctx:RequestContext,input:PdfPacketPlanInput){
-  const {captured,target,bindings}=await targetTx(client,ctx,input);
+export async function assessPdfPlanTx(client:PoolClient,ctx:RequestContext,input:PdfPacketPlanInput,
+  recorded:readonly RegionBinding[]=[]){
+  const {captured,target,bindings}=await targetTx(client,ctx,input,recorded);
   const current=await committedTargetTx(client,input,target,bindings);
   if(current.revision!==input.target.revision||fingerprint(current.body)!==fingerprint(target.body))
     conflict('The current target changed. Create a fresh selection.');

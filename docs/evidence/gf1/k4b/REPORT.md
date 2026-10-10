@@ -21,6 +21,8 @@ WORKS
 
 SEE IT
 - `result.json`, `api-check-final.json`, `visual-evidence.json`, `k4c-source-space-request.json` in this directory.
+- K4c housekeeping removed seven intermediate JSON files and the duplicate `refresh-pins.py`; final receipts,
+  crop scripts and this historical report are retained. Contract refresh now uses `scripts/api/refresh-contract.ts`.
 - External visual evidence: `E:/BhuAayam-data/task-data/k4b/whole-page-offline.png`, `unit-cited-region.png`,
   `level-caption.png`; paths, original binding, regions, pixels, bytes and SHA-256 are in `result.json`.
 - `packages/server/src/modules/officer/source-spaces.test.ts`: recording invariants and refusals.
@@ -84,7 +86,8 @@ Backend typecheck 0; 40 focused new/existing tests pass; OpenAPI/client regenera
 SQL provenance verifier 0; new-line/function style and diff checks pass. No Studio UI source was changed.
 Untouched LF archive at `e6d85365`: strict API check 1; diagnostic continuation identifies only the four historical
 `runtime receipt changed` failures. This is not a passing checker; no normalization or historical repin occurred.
-The earlier `3f23c925` strict archive is retained too. Final evidence/docs commit has no separate production changes.
+The earlier `3f23c925` external strict archive is retained; K4c removed its intermediate Git receipt as requested.
+Final K4b evidence/docs commit has no separate production changes.
 Recovery: new test comparison moved before canonical digest repinning; published-schema test then needed regeneration;
 P3 control expected `STALE_REVISION`, not a nonexistent CONFLICT code; test typing corrected. Final controls pass.
 Read-only H26 review found that `U` means utility; replaced the control's guessed classification with explicit `?`
