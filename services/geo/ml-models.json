@@ -99,6 +99,12 @@
       "task": "building",
       "state": "candidate",
       "active": false,
+      "activeProfiles": ["demo"],
+      "activation": {
+        "decision": "K2c lead authorisation: demo runtime only",
+        "executionProvider": "CPUExecutionProvider",
+        "scope": "test_only candidate generation; no evaluation, recalibration or default activation"
+      },
       "use": "test_only",
       "filename": "building-ramp-ka-epoch004.onnx",
       "sha256": "dbf09254c6c7246f10139432e25de1f6d538aff0a680ab01c12a89fc7532affd",

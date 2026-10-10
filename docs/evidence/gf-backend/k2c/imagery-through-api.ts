@@ -16,11 +16,11 @@ function save(name: string, value: unknown): void {
   writeFileSync(`${evidence}/${name}.json`, JSON.stringify(value) + '\n', { flag: 'wx' });
 }
 
-async function request(path: string, init?: RequestInit): Promise<any> {
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${base}${path}`, { ...init, signal: AbortSignal.timeout(120_000) });
-  const value = await response.json();
+  const value: unknown = await response.json();
   assert(response.ok, `${response.status}: ${JSON.stringify(value)}`);
-  return value;
+  return value as T;
 }
 
 function form(input: ReturnType<typeof ImageryAreaImportSchema.parse>): FormData {
@@ -42,7 +42,9 @@ async function install(): Promise<void> {
     format: 'imagery_area', clusterId, requestKey: randomUUID(),
   });
   const input = ImageryAreaImportSchema.parse(JSON.parse(readFileSync(requestPath, 'utf8')));
-  const pkg = await request('/import-packages', { method: 'POST', body: form(input) });
+  const pkg = await request<{ id: string; areaId: string; features: unknown[]; imagery: { chips: unknown[] } }>(
+    '/import-packages', { method: 'POST', body: form(input) },
+  );
   assert.equal(pkg.features.length, 0);
   assert.equal(pkg.imagery.chips.length, chips.length);
   save('imagery-import', pkg);

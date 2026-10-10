@@ -69,7 +69,7 @@ async function inspectChip(chip: PublisherChip, file: SourceBuildingFile): Promi
 
 async function inspectFiles(input: ImageryAreaImport, files: SourceBuildingFile[]): Promise<RetainedImagery> {
   const selected = frozenChips(input.clusterId);
-  if (files.length !== selected.length || files.reduce((total, file) => total + file.bytes.length, 0) > 16 * 1024**2) {
+  if (files.length !== selected.length || files.reduce((total, file) => total + file.bytes.length, 0) > 16 * 1024 ** 2) {
     throw new AppError(413, 'IMAGERY_FILES', 'Attach the complete image cluster once within the existing intake bound.');
   }
   const chips: Chip[] = [];
