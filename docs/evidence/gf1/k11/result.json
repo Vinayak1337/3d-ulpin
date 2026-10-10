@@ -1,0 +1,96 @@
+{
+ "task": "K11",
+ "gates": ["GF1", "GF4", "GF5"],
+ "base": "e434ab64",
+ "mode": "offline; protocol doubles and Git evidence only",
+ "step0": {
+  "writtenBeforeCode": true,
+  "decision": "Proceed: allocation and database constraints do not depend on location numbers; stored time exists.",
+  "numbers": {
+   "allocation": [
+    "packages/server/src/modules/usp/project-identity.ts:165-183 allocate takes record/site/review and a code factory,",
+    "not a location. It reserves a random checked code; retries only usp_project_codes_pkey collisions.",
+    "database/sql/60-usp/06-identity-schema.sql:9-16: code primary key and record_id UNIQUE; no locator uniqueness.",
+    "The state table at :33-37 has a record_id primary key and location jsonb NOT NULL, no JSON constraint/index."
+   ],
+   "readersAndWriters": [
+    ["contracts/usp/project-identity.ts:50-86", "Requires both numbers today; verticalLocator displays padding only."],
+    ["server/usp/project-identity.ts:75-111", "Review validates location/evidence; assign/correct require it today."],
+    ["server/usp/project-identity.ts:108-109", "Split uniqueness compares complete verticalLocator strings."],
+    ["server/usp/project-identity.ts:319-325", "Merge requires distinct unreserved successor records/codes, not locations."],
+    ["server/usp/project-identity.ts:254-255,311-312,323-324", "Assign/correct/split/merge store validated location JSON."],
+    ["server/usp/project-identity.ts:148-160", "checkedReview parses the stored command and verifies its hash."],
+    ["server/usp/project-identity.ts:389-390", "Resolve parses snapshot identity.location and prints verticalLocator."],
+    ["server/usp/source-stated-identity.ts:12-16", "Checks unknown kinds/level/anchor, not numbers today."],
+    ["server/usp/snapshots.ts:74-77,132-134", "Copies state JSON into captured identity; no number calculation."],
+    ["server/usp/ingestion/document-association-targets.ts:19,67-68,151,178-179",
+     "Copies location into target fingerprint and locks state; no number calculation."],
+    ["server/usp/packets/plan-authority.ts:155-165; pdf-authority.ts:151-160",
+     "Copies state into current identity for equality/integrity; does not require individual numbers."],
+    ["server/usp/packets/card-projection.ts:44-46", "Parses then prints verticalLocator with parcels suppressed."],
+    ["server/usp/packets/card-verification.ts", "Reprojects facts and checks immutable hashes; no number allocation."],
+    ["server/usp/exchange.ts:144-171,273-293", "CityJSON exports code; sidecar carries body including location unchanged."],
+    ["server/registry/canonical-source-identity.ts:16-31", "Reads code/version/reviewer, not location numbers."],
+    ["apps/studio/scripts/f3a-fixtures.ts:36-37; scripts/agent/r3-live.ts:26-27",
+     "Offline Studio display fixture and historical runtime driver hold 1/1; neither is an allocator."],
+    ["tests/usp-project-identity-code.test.ts; usp-project-identity-authority.test.ts; usp-property-card.test.ts",
+     "Existing known-kind display, exact-snapshot and card fixtures use numbers and must remain unchanged."],
+    ["tests/usp-packet-pdf.test.ts; scripts/usp/gf/GF-T15-live.ts",
+     "Known-kind assignment/split/merge journey fixtures require numbers; no source-only fallback there."]
+   ],
+   "conclusion": [
+    "Only schema/display and split display-string uniqueness need the numeric parts. Source-only records cannot",
+    "split or merge. Equal unqualified locations on independently assigned records do not collide. No SQL",
+    "constraint or index reads either numeric field. Legacy apps/web has no additional locator implementation."
+   ]
+  },
+  "legacy": {
+   "source": "docs/evidence/runtime/r3/result.json step3.review.location and step3.resolve.location",
+   "location": {
+    "anchorState": "not_supplied", "parcels": [],
+    "locator": {"structureKind": "?", "structureNumber": 1, "levels": ["L?"], "spaceKind": "?", "spaceNumber": 1}
+   },
+   "line": "NO-ANCHOR / ?01 / L? / ?001",
+   "preservation": [
+    "Optional numeric fields still parse existing numbers; verticalLocator retains their padding. Stored review",
+    "body/hash, identity state, receipt, captured body/hash and card facts are not rewritten. Assignment replay",
+    "returns the stored receipt before source-only validation; resolve/card verification do not run write guards."
+   ],
+   "testsToProve": [
+    "source-stated-identity.test.ts: stored numbered source-only review, state and snapshot remain readable",
+    "source-stated-identity.test.ts: stored numbered assignment receipt replays unchanged",
+    "tests/usp-project-identity-code.test.ts; tests/usp-project-identity-authority.test.ts",
+    "tests/usp-property-card.test.ts; packets/card-verification.test.ts; packets/card-listing.test.ts"
+   ]
+  },
+  "reviews": {
+   "table": "database/sql/60-usp/06-identity-schema.sql:2-8 usp_project_identity_reviews",
+   "columns": ["id", "scope_id", "manifest_id", "operation", "command_hash", "reviewer_subject", "body",
+    "consumed_at (nullable timestamptz)", "created_at (timestamptz NOT NULL DEFAULT now())"],
+   "used": [
+    "project-identity.ts:219-227 finish stores usp_project_identity_audit with review_id, operation and receipt",
+    "body, stores usp_command_receipts whose body names reviewId, then sets reviews.consumed_at=now().",
+    "Audit operation is assign/correct/etc.; its receipt operation is project_identity_assign/etc.",
+    "checkedReview :150-159 refuses consumed_at, hash mismatch, different scope/manifest/subject/operation,",
+    "record ids/versions or predecessor/successor order. Codes/state/lineage also reference review_id."
+   ],
+   "body": [
+    "The parsed client command: operation, scope, recordIds, expectedVersions, reason, evidence and optional",
+    "location(s), predecessor/successor ids and transferredGeometry. List only operation/reason/bound scope,",
+    "this record's expected version and command hash; omit evidence/location/other participant details."
+   ]
+  },
+  "access": [
+   "K8 building-snapshots.ts:15-24 finds a building in an unarchived area; :39-48 filters stored manifests by",
+   "site, accessViewId and policyVersion before LIMIT. assertLocalUsp checks the configured local subject.",
+   "Apply the same manifest access/policy rule to review reads, with a recorded registry record on a site",
+   "of an unarchived map area. No readable manifest for that site means the same NOT_FOUND as absent record.",
+   "No identity review read is published today. canonical-source-identity.ts:31 embeds the assigned actor",
+   "in canonical proposedCode.method (R3 step3.readBack), so an assigned reviewer is indirectly already public",
+   "to the local operator. This route deliberately omits reviewer subject: it is not needed to resume writes.",
+   "Listing checks stored manifests, not current cited documents; subsequent assignment keeps all exact-scope",
+   "and document guards. expectedManifestId is the original body.scope.manifestId, never the review's twin",
+   "snapshot or the first building snapshot listed (docs/evidence/gf1/k8b/result.json duplicateSnapshots)."
+  ]
+ }
+}
