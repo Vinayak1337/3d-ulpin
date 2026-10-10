@@ -34,6 +34,7 @@ REFERENCE = 0.5
 IOU_THRESHOLD = 0.5
 SCORE_STEP = 0.05
 IOU_BINS = ((0.0, 0.1), (0.1, 0.3), (0.3, 0.5))
+SMALL_BINS = ("[0,16)", "[16,64)", "[64,128)")
 WORKERS = 12
 
 _PRODUCTION: Any = None
@@ -368,19 +369,28 @@ def parity(curve: list[dict], receipt: dict) -> dict[str, Any]:
     }
 
 
+def share_below_reference(bins: dict[str, dict], labels: tuple[str, ...]) -> float | None:
+    chosen = [bins[label] for label in labels if label in bins]
+    below = sum(entry["missed_with_raw_instance_below_050"] for entry in chosen)
+    return safe_ratio(below, sum(entry["missed_at_050"] for entry in chosen))
+
+
 def conclusion(bins: dict[str, dict], chosen: dict | None, reference: dict) -> str:
-    missed = sum(entry["missed_at_050"] for entry in bins.values())
-    below = sum(entry["missed_with_raw_instance_below_050"] for entry in bins.values())
+    everything = tuple(bins)
+    overall = share_below_reference(bins, everything)
+    small = share_below_reference(bins, SMALL_BINS)
+    evidence = (
+        f"{overall:.0%} of the missed truths have a raw instance at IoU >= 0.5 scoring under 0.5 "
+        f"({small:.0%} of those under 128 px)."
+    )
     if chosen is None or chosen["threshold"] == REFERENCE:
-        return (
-            f"No operating point beats 0.5 under the preregistered rule; {below} of {missed} missed truths "
-            "have a below-threshold raw instance, but no threshold gains recall within the precision floor."
-        )
+        return f"No operating point beats 0.5 under the preregistered rule. {evidence}"
     gain = chosen["recall"] - reference["recall"]
+    small_recall = ", ".join(f"{label} {chosen['recall_by_size_bin'][label]:.3f}" for label in SMALL_BINS)
     return (
-        f"Below-threshold detections exist ({below} of {missed} missed truths have a raw instance at IoU >= 0.5), "
-        f"so a DEV operating point of {chosen['threshold']:.2f} raises recall by {gain:.4f} "
-        f"at precision {chosen['precision']:.4f}."
+        f"Below-threshold detections exist: {evidence} A DEV operating point of {chosen['threshold']:.2f} raises "
+        f"recall by {gain:.4f} to {chosen['recall']:.4f} at precision {chosen['precision']:.4f}, but recall under "
+        f"128 px stays low ({small_recall}): most missed small roofs stay missed at this point."
     )
 
 
