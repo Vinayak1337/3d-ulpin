@@ -105,6 +105,7 @@ export function checkBoundary(profiles: PreparedColumn[]) {
     assert(['dev', 'pool'].includes(profile.split));
     assert(!heldOut.has(profile.family));
     assert(profile.split === 'dev' ? development.has(profile.family) : !allFamilies.has(profile.family));
+    if (profile.family.startsWith('opf-')) assert(profile.split === 'dev' && development.has(profile.family));
     assert.equal(profile.profileId, stableHash([profile.family, profile.file, profile.sheet, profile.column]));
     assert(profile.maskedSamples.length <= 10 && profile.neighbourHeaders.length <= 4);
     assert(profile.emptyCount >= 0 && profile.emptyCount <= profile.cellCount);
