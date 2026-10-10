@@ -1,11 +1,10 @@
 import assert from 'node:assert/strict';
-import { randomUUID } from 'node:crypto';
 import { ChunkMappingStatusSchema,
   ChunkMappingChunkResponseSchema } from '../../packages/contracts/src/usp/chunk-mapping';
 import { TabularSourceProfileSchema } from '../../packages/contracts/src/usp/ingestion';
-import { buildings, areas, mappingRoute, mappingPins, sourceRoute, r1, r2, originalPins, committed } from './inputs';
+import { buildings, areas, mappingRoute, mappingPins, sourceRoute, r1, originalPins, committed } from './inputs';
 import { building, site, type Context } from './context';
-import { check, object, list, text, ok, knownK6, contract, type Step } from './read';
+import { check, object, list, text, ok, knownK6, type Step } from './read';
 
 export async function tables(context: Context): Promise<Step> {
   return check(context.reader, 'tables', 'Retained TNHB mapping, freshness and questions', 'P3.4/A3d',
@@ -86,26 +85,6 @@ export async function register(context: Context): Promise<Step> {
     });
 }
 
-export async function identity(context: Context): Promise<Step> {
-  return check(context.reader, 'identity', 'Recorded unit project code', 'K6/P5.5',
-    'Unknown remains blocked by K6; a reviewed code must resolve to this record', async () => {
-      const data = await building(context, r2.inputs.buildingId);
-      const space = data.levels.flatMap(level => level.spaces).find(space => space.spaceId === r2.step2.record.spaceId);
-      assert(space, 'Recorded unit absent');
-      if (space.proposedCode.state === 'unknown') {
-        assert.equal(space.proposedCode.value, null);
-        return { state: 'blocked', observed: { state: 'unknown', fixTask: 'K6',
-          precondition: 'Snapshot refused in R2; check mode cannot attempt a new snapshot',
-          priorStatus: 409, priorCode: 'STALE_REVISION', refusalEvidence: 'docs/evidence/runtime/r2/result.json' } };
-      }
-      assert.equal(space.proposedCode.state, 'reviewed');
-      assert(space.proposedCode.value, 'Reviewed code is empty');
-      // Exact P3 resolution requires POST + snapshot scope. Legacy GET resolve is not that authority.
-      return { state: 'fail', observed: { state: space.proposedCode.state, code: space.proposedCode.value,
-        reason: 'Cannot verify exact P3 resolution: published P3 resolver is POST-only; check mode sends no POST' } };
-    });
-}
-
 export async function geometry(context: Context): Promise<Step> {
   return check(context.reader, 'geometry', 'Real reviewed prism prerequisites', 'P5.2/K4',
     'Placed reviewed geometry, cited heights and nonempty prisms; otherwise skipped', async () => {
@@ -146,27 +125,6 @@ export async function exchange(context: Context): Promise<Step> {
       const objects = Object.keys(object(cityjson.CityObjects)).length;
       assert(vertices > 0 && objects > 0, 'Empty CityJSON is not a pass');
       return { observed: { vertices, objects } };
-    });
-}
-
-export async function card(context: Context): Promise<Step> {
-  return check(context.reader, 'card', 'Discover recorded unit card', 'K8',
-    'Skipped until snapshot listing unblocks K7; unknown-card GET probes routing only', async () => {
-      const route = committed<{ route: string }>('docs/evidence/gf4/k5/result.json').route.replace(/^GET /, '');
-      // Technical unknown UUID for the requested route probe; never a fabricated property/card record.
-      const read = await context.reader.get(route, { cardId: randomUUID(), revision: 1 });
-      const envelope = object(read.body);
-      const error = envelope.error;
-      const details = error && typeof error === 'object' ? object(error) : envelope;
-      const message = typeof details.message === 'string' ? details.message : '';
-      let routeAvailability = 'undecidable';
-      if (read.status === 404 && message.includes('Cannot GET')) routeAvailability = 'framework_404_route_absent';
-      else if (read.status === 404 && read.code === 'NOT_FOUND') routeAvailability = 'route_own_404_unknown_card';
-      return { state: 'skipped', observed: { missing: 'K8 readable snapshot scopes; K7 card listing is POST-only',
-        unblocks: 'K7 POST /api/v1/usp/property-cards/list (not sent in check mode)',
-        verificationGetPublished: Boolean(contract.paths[route]?.get), routeProbeStatus: read.status,
-        routeProbeCode: read.code, tokenKind: 'technical unknown card UUID',
-        routeAvailability, cardDiscovered: false, cardVerified: false } };
     });
 }
 

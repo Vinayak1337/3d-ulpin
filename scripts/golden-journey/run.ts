@@ -2,18 +2,19 @@ import assert from 'node:assert/strict';
 import { constants, copyFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { repo } from './inputs';
-import { Reader, type Step, type State } from './read';
+import { Reader, readMode, POST_READS, type Step, type State } from './read';
 import type { Context } from './context';
 import { doctor, installedStep, canonical, roofprints, storeys, recorded } from './story';
-import { tables, register, identity, geometry, exchange, card, invariants } from './govern';
+import { tables, register, geometry, exchange, invariants } from './govern';
+import { identity, card } from './identity-card';
 
 function options(args: string[]) {
-  assert(!args.includes('--write'), 'Write mode is not built; check mode sends GET requests only.');
+  assert(!args.includes('--write'), `Write mode is not built; check mode ${readMode}.`);
   assert.deepEqual(args, ['--profile', 'demo'], 'Use --profile demo; no other profile or mode is built.');
 }
 
 function table(steps: Step[]) {
-  console.log('STEP         STATE     MS     PROMPT / FIX');
+  console.log(`STEP         STATE     MS     PROMPT / FIX — ${readMode}`);
   for (const step of steps) {
     console.log(`${step.id.padEnd(12)} ${step.state.padEnd(9)} ${String(step.ms).padEnd(6)} ${step.promptId}`);
   }
@@ -58,7 +59,7 @@ async function main() {
   const summary: Record<State, number> = { pass: 0, fail: 0, blocked: 0, skipped: 0 };
   steps.forEach(step => summary[step.state]++);
   const result = { servedCommit: context.servedCommit, startedAt, totalMs: Math.round(performance.now() - started),
-    steps, summary };
+    mode: readMode, namedPostReads: POST_READS, steps, summary };
   const date = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date(startedAt));
   const directory = join(repo, 'docs/evidence/gf5', date.replaceAll('-', ''));
   saveJourney(directory, result);
