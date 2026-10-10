@@ -16,6 +16,11 @@ export function initialAnswers(profile: TableProfile, mapping: ChunkMapping): Of
   }));
 }
 
+/** The proposal with the officer's edits on top; a column the officer has not edited follows the mapped chunks. */
+export function officerAnswers(profile: TableProfile, mapping: ChunkMapping, edits: OfficerAnswers): OfficerAnswers {
+  return { ...initialAnswers(profile, mapping), ...edits };
+}
+
 export function unansweredColumns(profile: TableProfile, answers: OfficerAnswers) {
   return profile.profile.columns.flatMap((column, index) => {
     const answer = answers[column.name];

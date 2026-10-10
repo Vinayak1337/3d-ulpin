@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import controls from '../../../../../../docs/evidence/gf-agent/ui/f2b/responses.json';
-import { columnRows, learnerTotals, mergeMetrics } from './model';
+import { columnRows, learnerTotals, mergeMetrics, reviewMapping } from './model';
 import type { ChunkMapping, Metrics, TableProfile } from './types';
 
 const profile = controls.files[0]!.profile as TableProfile;
@@ -30,6 +30,33 @@ describe('table column presentation', () => {
 
   it('never invents a proposal or zero confidence before a chunk arrives', () => {
     expect(columnRows(profile).every((row) => row.target === 'unknown' && row.confidence === null)).toBe(true);
+  });
+});
+
+describe('review across chunks', () => {
+  function chunk(chunkIndex: number, questions: ChunkMapping['questions']) {
+    const copy = structuredClone(mapping);
+    copy.metrics.chunkIndex = chunkIndex;
+    copy.questions = structuredClone(questions);
+    return copy;
+  }
+
+  it('keeps questions asked only in the first chunk and takes the plan from the latest', () => {
+    const latest = chunk(2, []);
+    latest.fieldSources[0]!.source = 'memory';
+    const review = reviewMapping([latest, chunk(0, mapping.questions), chunk(1, [])])!;
+    expect(review.questions).toEqual(mapping.questions);
+    expect(review.fieldSources).toEqual(latest.fieldSources);
+    expect(review.plan).toEqual(latest.plan);
+    expect(columnRows(profile, review).filter((row) => row.question)).toHaveLength(mapping.questions.length);
+  });
+
+  it('reads the same review from a server that repeats questions; the first occurrence wins', () => {
+    const repeated = chunk(1, mapping.questions);
+    repeated.questions[0]!.reason = 'A later wording of the same question.';
+    const review = reviewMapping([chunk(0, mapping.questions), repeated, chunk(2, mapping.questions)])!;
+    expect(review.questions).toEqual(mapping.questions);
+    expect(reviewMapping([])).toBeUndefined();
   });
 });
 

@@ -18,6 +18,23 @@ export function columnRows(profile: TableProfile, mapping?: ChunkMapping) {
   });
 }
 
+type Question = ChunkMapping['questions'][number];
+
+/**
+ * One review per job from all of its mapped chunks: the plan and field sources of the latest chunk, and each
+ * question from the first chunk that raises it. The server asks once per layout, so later chunks may carry none.
+ */
+export function reviewMapping(mappings: ChunkMapping[]): ChunkMapping | undefined {
+  const ordered = [...mappings].sort((left, right) => left.metrics.chunkIndex - right.metrics.chunkIndex);
+  const latest = ordered.at(-1);
+  if (!latest) return undefined;
+  const questions = new Map<string, Question>();
+  for (const question of ordered.flatMap((mapping) => mapping.questions)) {
+    if (!questions.has(question.sourceField)) questions.set(question.sourceField, question);
+  }
+  return { ...latest, questions: [...questions.values()] };
+}
+
 export function learnerTotals(chunks: Metrics[]) {
   return chunks.reduce((total, chunk) => ({
     teacherCalls: total.teacherCalls + chunk.teacherCalls,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import controls from '../../../../../../docs/evidence/gf-agent/ui/f2b/responses.json';
-import { fillUnknownAnswers, initialAnswers, recipeBody, targetOptions,
+import { fillUnknownAnswers, initialAnswers, officerAnswers, recipeBody, targetOptions,
   unansweredColumns, unansweredUnknownColumns } from './recipe';
 import type { ChunkMapping, TableProfile } from './types';
 
@@ -37,6 +37,19 @@ describe('shared unknown reason', () => {
     const before = structuredClone(answers);
     expect(() => fillUnknownAnswers(profile, answers, ' \n ')).toThrow('Give a reason');
     expect(answers).toEqual(before);
+  });
+});
+
+describe('officer answers over mapped chunks', () => {
+  it('clears an unedited target when its question arrives later and keeps the officer edits', () => {
+    const asked = mapping.questions[0]!.sourceField;
+    const edited = profile.profile.columns.find((column) => column.name !== asked)!.name;
+    const edits = { [edited]: { target: 'unknown' as const, reason } };
+    const proposed = mapping.plan.fields.find((field) => field.sourceField === asked)!.target;
+    expect(officerAnswers(profile, { ...mapping, questions: [] }, edits)[asked]!.target).toBe(proposed);
+    const answers = officerAnswers(profile, mapping, edits);
+    expect(answers[asked]).toEqual({ target: '', reason: '' });
+    expect(answers[edited]).toEqual(edits[edited]);
   });
 });
 
