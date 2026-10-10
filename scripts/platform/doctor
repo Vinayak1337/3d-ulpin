@@ -70,7 +70,8 @@ async function doctor() {
       if (!paths.ULPIN_DOCUMENT_OCR_PYTHON) console.log('INFO Local document OCR unavailable (paths not configured).');
       else {
         const hindi = existsSync(join(paths.ULPIN_DOCUMENT_OCR_TESSDATA, 'hin.traineddata'));
-        console.log(`PASS Local document OCR paths available; English only; Hindi ${hindi ? 'present' : 'unavailable'}.`);
+        const languages = hindi ? 'eng+hin' : 'eng; Hindi unavailable';
+        console.log(`PASS Local document OCR paths available; ${languages} assets (runner uses eng).`);
       }
     } catch { console.log('INFO Local document OCR unavailable (invalid or missing local assets).'); }
   }
