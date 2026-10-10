@@ -194,7 +194,50 @@ For every lane a ceiling stays (bytes, records, pages, pixels, points). At the c
 ## 11. What does not bend
 Originals immutable, every candidate cites original and locator. Unknown stays unknown (no assumed CRS, no height 0, no invented unit, parcel, floor or owner). Official parcel ULPINs are their issuer's assertions; application identities are assigned only after review. Model and teacher outputs are candidates (`pseudo_label`, never evaluation truth). Private files never leave for a provider. One job authority, one registry, one gateway, one conversion contract.
 
-## 12. Decisions for the owner
-1. **Size targets for the presentation** (they set which ceilings are raised and measured): proposed one file ≤ 1 GB, a vector layer ≤ 500,000 features, a table ≤ 1 million rows, a raster ≤ 2 GB, a point cloud ≤ 1 GB.
-2. **Automatic waves with officer override** (proposed), or the officer always picks the anchor files by hand before anything is read.
-3. **May a judge's file go to the Sarvam teacher** as a masked column profile? If not, a new layout stops at the officer question.
+## 12. Decisions (owner, 11 October, about 01:15 IST: "those decisions by you are good")
+1. **Size targets for the presentation:** one file ≤ 1 GB, a vector layer ≤ 500,000 features, a table ≤ 1 million rows, a raster ≤ 2 GB, a point cloud ≤ 1 GB. These are the ceilings that are raised and measured.
+2. **Waves are automatic**, with the officer's pin as the override. Nobody picks anchor files by hand before reading starts.
+3. **A file nobody has seen before may go to the Sarvam teacher as a masked column profile** (names of columns, types and shape; no cell value, no contact line), through the gateway and under its money caps. Lead's reading of the owner's answer, to be corrected if wrong. It does not go when its stated licence is `restricted` or it is marked as holding personal data: private files never leave for a provider (section 11).
+
+## 13. The automatic run: from a dropped batch to a property card
+
+**Owner, 11 October, about 01:15 IST:** "we need to make it as automated as can be, including property card and everything".
+
+**The rule: the system prepares everything, the officer decides once.** Every step that needs no judgement runs by itself, in order, as soon as its inputs exist. Every step that is a decision is prepared in full (the draft, the checks, the preview of what would be printed) and waits in one place, so that the officer's work for a whole batch is: answer the questions the files themselves cannot answer, then confirm what is ready in one action. Nothing is recorded and no card is made before that confirmation: section 11 stands (lead's reading; a run that issues with no officer at all would change a data rule of `AGENTS.md` and is an owner decision of its own, not built).
+
+### 13.1 The chain, and who moves each step
+The steps exist today as separate commands, each asked for by hand **(read: the published route list; the audit task AU1 checks every precondition)**. The run calls them in order through the scheduler's lane `prepare`, each with its own idempotency key, so a restart continues and nothing runs twice.
+
+| Step | Exists as | Moved by |
+|---|---|---|
+| 1 Candidate with geometry, keys and citations | part pipeline (section 6) | automatic |
+| 2 Links to registers, documents, plans | linking (section 7) | automatic; a single exact match is proposed, anything else is held |
+| 3 What is present and what is missing | `…/sources/:id/sufficiency` | automatic |
+| 4 Draft record | import package, registry draft, `usp/proposals` | automatic (prepared, not committed) |
+| 5 **The record** | `…/review`, `…/commit` | **officer: the one confirmation** |
+| 6 Identity | `usp/identity/reviews`, `assign` | automatic after 5, named on the confirmation screen before it is given |
+| 7 Rights and claims | `usp/rights/declarations/prepare`, `proposal`, `review`, `accept` | prepared automatically from linked register rows and document claims; accepted inside the confirmation only when one source supports it and nothing conflicts; otherwise held as a question |
+| 8 Evidence packet | `usp/packets/plans/create`, `confirm`, `execute` | created automatically from the citations; confirmed by the same confirmation; executed automatically |
+| 9 Property card | `usp/property-cards/preview`, `generate` | preview automatic and shown **in** the confirmation ("this is what the card will print"); generated automatically after it |
+
+### 13.2 The target ledger and the readiness rule
+- One more additive table beside section 2's: `usp_intake_targets` — one row per thing that can receive a card (a building candidate, later a unit): `target_id`, `case_id`, `anchor_item_id` and locator, `stage` (1 to 9), `readiness` (`preparing | ready | needs_answer | held | confirmed | carded`), `blocked_by` (codes), and the id and version of each prepared artefact (draft, review, identity review, declaration, plan, preview hash).
+- **Ready is decided by rules, never by a model.** A target is `ready` when: its geometry is valid and its CRS is stated; every link it uses is a single exact match with no conflict; every fact the card would print cites a source and a locator; the sufficiency read says the required facts are present; the layout its values came through is approved (13.3); and each step up to the preview succeeded under current pins. Anything else is `needs_answer` (the officer can supply it) or `held` (the files disagree), with the reason in words.
+- A change to an input (a later file, a correction) moves only the targets that used it back to `preparing`, by the pins of section 2. The others keep their place.
+
+### 13.3 What is left for the officer, counted
+1. **One approval per new layout**, not per row: when the mapping plan of a file came from the learner or the teacher, the officer approves the plan once for the whole file. A layout the memory already holds as approved needs none.
+2. **Answers** only the officer can give: a missing CRS, two parcels matching one key, which of two conflicting registers stands. Each is one question with the evidence beside it; none has a default answer.
+3. **One confirmation** of everything `ready`, with the count, the exceptions and the card previews. It commits the records, gives the identities, accepts the supported declarations, confirms the packet plans; the run then executes the plans and makes the cards.
+The tray shows the three counts ("2 layouts to approve, 5 questions, 1,640 ready") from the first minute, so the officer starts on them while reading continues.
+
+### 13.4 What the run never does
+Resolve a conflict, choose among several matches, assume a CRS, a height, a floor count, a unit, an owner or a right, accept a teacher's mapping without 13.3.1, or make a card for a target that is not `confirmed`. An estimate stays labelled an estimate and never enters a measurement, a right, a packet or a card as fact.
+
+### 13.5 Build order (after tiers A to D of section 10; the same dates still hold for them)
+| Tier | By | What | Check |
+|---|---|---|---|
+| **AU1 audit** | 11 Oct | every step of 13.1 as the code has it: its command, what it requires, what it pins, which input only an officer can give, what the Studio does today, where the chain breaks for a building that came from a streamed part | a table per step with file and line; the list of breaks |
+| **E1 Prepare** | 17 Oct | `usp_intake_targets`, the readiness rule, the lane `prepare` calling steps 3, 4 and the previews of 7 to 9 | the NYC pack's buildings reach `ready` or a stated reason with no request from a person |
+| **E2 Confirm** | 19 Oct | the one confirmation (bulk, all or nothing per target), then steps 6, 8, 9 by themselves | from "confirm" to a card with a working verification link, no further request; a held target is untouched |
+| **E3 Screen** | 20 Oct | the three counts in the tray, the questions, the confirmation with card previews, the list of cards | `$ui-design-check`; nothing shown that a record does not hold |
