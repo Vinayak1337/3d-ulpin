@@ -12,13 +12,24 @@
           "packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts:201-203 accepted memory, tabular-header/2",
           "packages/server/src/modules/usp/ingestion/mapping-teacher.ts:636-647 accepted memory, column-types/1"
         ],
-        "observable": ["metrics.layout", "metrics.memoryHits", "proposal.memoryReasonCode", "fieldSources[].source"]
+        "observable": [
+          "metrics.layout",
+          "metrics.memoryHits",
+          "proposal.memoryReasonCode",
+          "fieldSources[].source"
+        ]
       },
       {
         "stage": "student",
-        "code": ["packages/server/src/modules/usp/ingestion/mapping-teacher.ts:648-649 (callStudent 539, plan 560)"],
-        "observable": ["fieldSources[].source=student", "metrics.studentFields", "proposal.studentReasonCode",
-          "metrics.learnerVersion"],
+        "code": [
+          "packages/server/src/modules/usp/ingestion/mapping-teacher.ts:648-649 (callStudent 539, plan 560)"
+        ],
+        "observable": [
+          "fieldSources[].source=student",
+          "metrics.studentFields",
+          "proposal.studentReasonCode",
+          "metrics.learnerVersion"
+        ],
         "gap": "Per-field probability is not emitted; abstention is observable only as a field not sourced student."
       },
       {
@@ -28,8 +39,12 @@
           "packages/server/src/modules/usp/ingestion/mapping-teacher.ts:444-483 one call, one bounded repair",
           "packages/server/src/modules/model-gateway/gateway.ts:54-69 replay: no reservation, dispatch or charge"
         ],
-        "observable": ["fieldSources[].source=teacher|unanswered", "metrics.teacherCalls (attempts)",
-          "proposal.replayed", "proposal.validationCodes"],
+        "observable": [
+          "fieldSources[].source=teacher|unanswered",
+          "metrics.teacherCalls (attempts)",
+          "proposal.replayed",
+          "proposal.validationCodes"
+        ],
         "gap": "The set of fields sent to the teacher is not emitted; observed by a test-side spy on the injected",
         "gapRemedy": "RoutingOptions.teacher dependency (wraps proposeMappingWithTeacher). No production change."
       },
@@ -40,12 +55,21 @@
           "packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts:167-173 plan check and dry-run",
           "packages/server/src/modules/usp/ingestion/mapping-teacher.ts:660-680 executeTeacherMappingDryRun"
         ],
-        "observable": ["proposal.issues[].code", "proposal.state", "dryRun.rows[].fields[].issueCode"]
+        "observable": [
+          "proposal.issues[].code",
+          "proposal.state",
+          "dryRun.rows[].fields[].issueCode"
+        ]
       },
       {
         "stage": "officer questions",
-        "code": ["packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts:61-76 mappingQuestions, 186-194"],
-        "observable": ["draft.questions", "metrics.needsInput"]
+        "code": [
+          "packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts:61-76 mappingQuestions, 186-194"
+        ],
+        "observable": [
+          "draft.questions",
+          "metrics.needsInput"
+        ]
       },
       {
         "stage": "officer answers and approval",
@@ -55,8 +79,12 @@
           "packages/server/src/modules/usp/ingestion/service.ts:225-268 decide approve, then queueApprovedTabular",
           "packages/server/src/modules/usp/ingestion/chunk-mapping.ts:246 job route approved_recipe"
         ],
-        "observable": ["usp_mapping_recipes body state/approval", "operations manual-author:, manual-approve:",
-          "outbox recipe.changed", "jobs payload route"]
+        "observable": [
+          "usp_mapping_recipes body state/approval",
+          "operations manual-author:, manual-approve:",
+          "outbox recipe.changed",
+          "jobs payload route"
+        ]
       },
       {
         "stage": "accepted memory and learning",
@@ -66,8 +94,11 @@
           "packages/server/src/modules/usp/ingestion/chunk-mapping-learning.ts:111-121 examples and officer memory",
           "packages/server/src/modules/usp/ingestion/chunk-mapping-learning.ts:89-109 one stage_a online fit"
         ],
-        "observable": ["accepted-plans.jsonl lineage officer", "approvals/<id>-<rev>/learner/vN/metrics.json",
-          "operations manual-learn:"]
+        "observable": [
+          "accepted-plans.jsonl lineage officer",
+          "approvals/<id>-<rev>/learner/vN/metrics.json",
+          "operations manual-learn:"
+        ]
       },
       {
         "stage": "deterministic executor",
@@ -76,15 +107,31 @@
           "packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts:123-138 officerProposal",
           "packages/server/src/modules/usp/ingestion/mapping-executor.ts:347 executeMappingPlanV2"
         ],
-        "observable": ["fieldSources[].source=officer", "plan.method reviewer:<hash>", "dryRun.rows (draft rows)"]
+        "observable": [
+          "fieldSources[].source=officer",
+          "plan.method reviewer:<hash>",
+          "dryRun.rows (draft rows)"
+        ]
       }
     ],
-    "productOrderNote": "In the product, learning and the officer memory write run inside the approved job before its chunks are mapped with the approved plan; both follow approval.",
-    "networkObservable": "No product counter for provider network calls; a test-side spy on globalThis.fetch counts them.",
+    "productOrderNote": [
+      "In the product, learning and the officer memory write run inside the approved job before its chunks are mapped",
+      "with the approved plan; both follow approval."
+    ],
+    "networkObservable": [
+      "No product counter for provider network calls; a test-side spy on globalThis.fetch counts them."
+    ],
     "productionChanges": "none",
     "executed": {
-      "means": "After approval the approved_recipe job maps every chunk with the officer plan; executeMappingPlanV2 yields draft rows whose cells are candidate, unknown, null, absent or needs_input, published as mapping slots and mapping.chunk events. Nothing reaches the registry.",
-      "dryRunBeforeApproval": "The same executor also runs as the verifier's dry-run on a proposal; those rows carry teacher or student sources, never officer, and are not execution.",
+      "means": [
+        "After approval the approved_recipe job maps every chunk with the officer plan; executeMappingPlanV2 yields",
+        "draft rows whose cells are candidate, unknown, null, absent or needs_input, published as mapping slots and",
+        "mapping.chunk events. Nothing reaches the registry."
+      ],
+      "dryRunBeforeApproval": [
+        "The same executor also runs as the verifier's dry-run on a proposal; those rows carry teacher or student",
+        "sources, never officer, and are not execution."
+      ],
       "refusals": {
         "TABULAR_REGISTRY_UNQUALIFIED": "decide execute on an approved manual-tabular recipe (service.ts:251-253)",
         "RECIPE_STATE": "approve on a non-proposed recipe or execute on a non-approved one",
@@ -94,15 +141,33 @@
       }
     },
     "recordedControl": {
-      "replayKey": "teacherReplayKey(profileHash) = hash({template mapping-teacher/2.1, profileHash, model sarvam-105b}); profileHash is the column profile of the fields the student left to the teacher (mapping-teacher.ts:103-108, 407).",
-      "accepted": "recordings.ts:93-106: version teacher-recording/1, allowed adapterKind, replayKey recomputed, response hash-pinned, no semanticError, validation.success true, parsedPlan present; adapter.ts ReplayAdapter checks source hashes and response hash.",
-      "a2Labels": "A2 controls ran ControlAdapter/ControlLedger with replayed=true and replayPaidAdmissions=0; recordings carried adapterKind control.",
-      "thisControl": "Authored from T1b verified pseudo-labels; adapterKind control, labelled recorded_software_control; replayed through ReplayAdapter restricted to control recordings. The product runtime replays sarvam recordings only (runtime.ts:49), so this control cannot reach the demo.",
+      "replayKey": [
+        "teacherReplayKey(profileHash) = hash({template mapping-teacher/2.1, profileHash, model sarvam-105b});",
+        "profileHash is the column profile of the fields the student left to the teacher (mapping-teacher.ts:103-108,",
+        "407)."
+      ],
+      "accepted": [
+        "recordings.ts:93-106: version teacher-recording/1, allowed adapterKind, replayKey recomputed, response",
+        "hash-pinned, no semanticError, validation.success true, parsedPlan present; adapter.ts ReplayAdapter checks",
+        "source hashes and response hash."
+      ],
+      "a2Labels": [
+        "A2 controls ran ControlAdapter/ControlLedger with replayed=true and replayPaidAdmissions=0; recordings",
+        "carried adapterKind control."
+      ],
+      "thisControl": [
+        "Authored from T1b verified pseudo-labels; adapterKind control, labelled recorded_software_control; replayed",
+        "through ReplayAdapter restricted to control recordings. The product runtime replays sarvam recordings only",
+        "(runtime.ts:49), so this control cannot reach the demo."
+      ],
       "labelFile": "E:/BhuAayam-data/task-data/t1b/labels/teacher-labels-v2.jsonl",
       "labelFileSha256": "3679d316bee96fa860f7311e5ee6ed9985d9f465b2aaae341e44834695f3f0d6",
       "labelLinesCopied": [181, 182, 183, 184, 185],
       "verifierReceipt": "docs/evidence/gf-agent/t1b/verify.json (193 verified, 0 rejected; pseudo_label)",
-      "methodCaveat": "An accepted teacher plan always carries method model:sarvam-105b@2026-10-10 (mapping-teacher.ts:251). That string comes from production; the recording's adapterKind and this receipt say control."
+      "methodCaveat": [
+        "An accepted teacher plan always carries method model:sarvam-105b@2026-10-10 (mapping-teacher.ts:251). That",
+        "string comes from production; the recording's adapterKind and this receipt say control."
+      ]
     },
     "tables": {
       "file1": {
@@ -120,8 +185,404 @@
         "rows": 8,
         "chunks": 1
       },
-      "why": "Public PMC development family mi-d23 with the same five headers; address (label line 182) is a verified positive; four 16-row chunks; institution names and site addresses only. The sheet names differ, so the tabular layout fingerprints differ: file 2 is not expected to hit memory, and no match is arranged.",
+      "why": [
+        "Public PMC development family mi-d23 with the same five headers; address (label line 182) is a verified",
+        "positive; four 16-row chunks; institution names and site addresses only. The sheet names differ, so the",
+        "tabular layout fingerprints differ: file 2 is not expected to hit memory, and no match is arranged."
+      ],
       "split": "development; held-out files and folders not opened"
     }
-  }
+  },
+  "part1": {
+    "runs": [
+      "E:/BhuAayam-data/task-data/c1/runs/c074dcab-9ccb-40d3-876b-2ebb9974e4e5",
+      "E:/BhuAayam-data/task-data/c1/runs/bfc64c6d-47ae-4564-8d27-4ecbe283bbcd"
+    ],
+    "equalCountersAcrossRuns": true,
+    "checksPassed": 37,
+    "checksFailed": 0,
+    "counterOrder": [
+      "providerNetworkCalls",
+      "replayHits",
+      "replayMisses",
+      "memoryReuses",
+      "studentCommitsPositive",
+      "studentCommitsUnknown",
+      "teacherFields",
+      "teacherAttempts",
+      "verifierRefusals",
+      "questions",
+      "officerAnswers",
+      "executedRows"
+    ],
+    "chunks": [
+      {
+        "id": "file1/proposal_only/0",
+        "seq": 2,
+        "trace": [
+          "memory:miss MAPPING_MEMORY_MISS",
+          "student:4 committed, 1 abstained",
+          "teacher:1 fields asked, 1 attempts, replayed",
+          "verifier:needs_input TEACHER_UNCERTAIN",
+          "questions:5",
+          "executor:0 officer rows"
+        ],
+        "counters": [0, 1, 0, 0, 0, 4, 1, 1, 0, 5, 5, 0],
+        "cells": {
+          "cells": 80,
+          "candidate": 0,
+          "needsInput": 80,
+          "unknown": 0,
+          "absent": 0,
+          "null": 0,
+          "conflicting": 0
+        }
+      },
+      {
+        "id": "file1/approved_recipe/0",
+        "seq": 6,
+        "trace": [
+          "memory:bypassed by the approved plan",
+          "student:not consulted",
+          "teacher:not asked",
+          "verifier:candidate no codes",
+          "questions:0",
+          "executor:16 officer rows"
+        ],
+        "counters": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16],
+        "cells": {
+          "cells": 80,
+          "candidate": 16,
+          "needsInput": 0,
+          "unknown": 64,
+          "absent": 0,
+          "null": 0,
+          "conflicting": 0
+        }
+      },
+      {
+        "id": "file1/approved_recipe/1",
+        "seq": 7,
+        "trace": [
+          "memory:bypassed by the approved plan",
+          "student:not consulted",
+          "teacher:not asked",
+          "verifier:candidate no codes",
+          "questions:0",
+          "executor:16 officer rows"
+        ],
+        "counters": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16],
+        "cells": {
+          "cells": 80,
+          "candidate": 16,
+          "needsInput": 0,
+          "unknown": 64,
+          "absent": 0,
+          "null": 0,
+          "conflicting": 0
+        }
+      },
+      {
+        "id": "file1/approved_recipe/2",
+        "seq": 8,
+        "trace": [
+          "memory:bypassed by the approved plan",
+          "student:not consulted",
+          "teacher:not asked",
+          "verifier:candidate no codes",
+          "questions:0",
+          "executor:16 officer rows"
+        ],
+        "counters": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16],
+        "cells": {
+          "cells": 80,
+          "candidate": 16,
+          "needsInput": 0,
+          "unknown": 64,
+          "absent": 0,
+          "null": 0,
+          "conflicting": 0
+        }
+      },
+      {
+        "id": "file1/approved_recipe/3",
+        "seq": 9,
+        "trace": [
+          "memory:bypassed by the approved plan",
+          "student:not consulted",
+          "teacher:not asked",
+          "verifier:candidate no codes",
+          "questions:0",
+          "executor:8 officer rows"
+        ],
+        "counters": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8],
+        "cells": {
+          "cells": 40,
+          "candidate": 8,
+          "needsInput": 0,
+          "unknown": 32,
+          "absent": 0,
+          "null": 0,
+          "conflicting": 0
+        }
+      },
+      {
+        "id": "file1/proposal_only/1",
+        "seq": 10,
+        "trace": [
+          "memory:hit",
+          "student:not consulted",
+          "teacher:not asked",
+          "verifier:candidate no codes",
+          "questions:0",
+          "executor:0 officer rows"
+        ],
+        "counters": [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        "cells": {
+          "cells": 80,
+          "candidate": 16,
+          "needsInput": 0,
+          "unknown": 64,
+          "absent": 0,
+          "null": 0,
+          "conflicting": 0
+        }
+      },
+      {
+        "id": "file1/proposal_only/2",
+        "seq": 11,
+        "trace": [
+          "memory:hit",
+          "student:not consulted",
+          "teacher:not asked",
+          "verifier:candidate no codes",
+          "questions:0",
+          "executor:0 officer rows"
+        ],
+        "counters": [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        "cells": {
+          "cells": 80,
+          "candidate": 16,
+          "needsInput": 0,
+          "unknown": 64,
+          "absent": 0,
+          "null": 0,
+          "conflicting": 0
+        }
+      },
+      {
+        "id": "file1/proposal_only/3",
+        "seq": 12,
+        "trace": [
+          "memory:hit",
+          "student:not consulted",
+          "teacher:not asked",
+          "verifier:candidate no codes",
+          "questions:0",
+          "executor:0 officer rows"
+        ],
+        "counters": [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+        "cells": {
+          "cells": 40,
+          "candidate": 8,
+          "needsInput": 0,
+          "unknown": 32,
+          "absent": 0,
+          "null": 0,
+          "conflicting": 0
+        }
+      },
+      {
+        "id": "file2/proposal_only/0",
+        "seq": 13,
+        "trace": [
+          "memory:miss MAPPING_MEMORY_MISS",
+          "student:0 committed, 5 abstained",
+          "teacher:5 fields asked, 1 attempts, not replayed",
+          "verifier:needs_input TEACHER_REPLAY_UNAVAILABLE",
+          "questions:5",
+          "executor:0 officer rows"
+        ],
+        "counters": [0, 0, 1, 0, 0, 0, 0, 1, 0, 5, 0, 0],
+        "cells": {
+          "cells": 40,
+          "candidate": 0,
+          "needsInput": 40,
+          "unknown": 0,
+          "absent": 0,
+          "null": 0,
+          "conflicting": 0
+        }
+      }
+    ],
+    "perFile": {
+      "file1/proposal_only": [0, 1, 0, 3, 0, 4, 1, 1, 0, 5, 5, 0],
+      "file1/approved_recipe": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 56],
+      "file2/proposal_only": [0, 0, 1, 0, 0, 0, 0, 1, 0, 5, 0, 0]
+    },
+    "officer": {
+      "authoredSeq": 3,
+      "approvedSeq": 4,
+      "refusal": "TABULAR_REGISTRY_UNQUALIFIED",
+      "answers": 5,
+      "corrections": 1,
+      "state": "approved",
+      "subject": "local-os:c1-worker-test-review",
+      "provenance": "server_configured_local_operator",
+      "queuedRoute": "approved_recipe"
+    },
+    "learning": {
+      "seq": 5,
+      "parentVersion": "v43",
+      "version": "v44",
+      "partialFitCalls": 1,
+      "checkpoints": 1,
+      "memoryLines": 1,
+      "modelSha256": "798a9585dd2b1d73566e0903c17bcfc27855828cdd3c1996586f4b04804b6af7"
+    },
+    "committedPrecision": {
+      "correct": 3,
+      "denominator": 4,
+      "against": "verified T1b pseudo-label, not truth"
+    },
+    "controls": [
+      {
+        "name": "control removed",
+        "state": "needs_input",
+        "method": "model:stage-a@v43",
+        "validationCodes": [],
+        "trace": [
+          "memory:miss MAPPING_MEMORY_MISS",
+          "student:4 committed, 1 abstained",
+          "teacher:1 fields asked, 1 attempts, not replayed",
+          "verifier:needs_input TEACHER_REPLAY_UNAVAILABLE,TEACHER_UNCERTAIN",
+          "questions:5",
+          "executor:0 officer rows"
+        ],
+        "counters": [0, 0, 1, 0, 0, 4, 0, 1, 0, 5, 0, 0]
+      },
+      {
+        "name": "control altered with a literal",
+        "state": "needs_input",
+        "method": "model:mapping-router@1",
+        "validationCodes": [
+          "MAPPING_TEACHER_SCHEMA_INVALID"
+        ],
+        "trace": [
+          "memory:miss MAPPING_MEMORY_MISS",
+          "student:4 committed, 1 abstained",
+          "teacher:1 fields asked, 2 attempts, replayed",
+          "verifier:needs_input MAPPING_TEACHER_SCHEMA_INVALID,TEACHER_INVALID_PLAN,TEACHER_UNCERTAIN",
+          "questions:5",
+          "executor:0 officer rows"
+        ],
+        "counters": [0, 2, 0, 0, 0, 4, 1, 2, 1, 5, 0, 0]
+      }
+    ],
+    "assertions": [
+      "pass: file1 chunk 0: memory misses",
+      "pass: file1 chunk 0: the teacher is asked and the replay answers from the control",
+      "pass: file1 chunk 0: questions remain for the officer",
+      "pass: no provider network call in the run",
+      "pass: file1/proposal_only/chunk-0: no teacher attempt for a student-committed field",
+      "pass: file1/proposal_only/chunk-0: every question follows a verifier issue",
+      "pass: file1/approved_recipe/chunk-0: no teacher attempt for a student-committed field",
+      "pass: file1/approved_recipe/chunk-0: every question follows a verifier issue",
+      "pass: file1/approved_recipe/chunk-1: no teacher attempt for a student-committed field",
+      "pass: file1/approved_recipe/chunk-1: every question follows a verifier issue",
+      "pass: file1/approved_recipe/chunk-2: no teacher attempt for a student-committed field",
+      "pass: file1/approved_recipe/chunk-2: every question follows a verifier issue",
+      "pass: file1/approved_recipe/chunk-3: no teacher attempt for a student-committed field",
+      "pass: file1/approved_recipe/chunk-3: every question follows a verifier issue",
+      "pass: file1/proposal_only/chunk-1: no teacher attempt for a student-committed field",
+      "pass: file1/proposal_only/chunk-1: every question follows a verifier issue",
+      "pass: file1/proposal_only/chunk-1: a memory answer reaches neither student nor teacher",
+      "pass: file1/proposal_only/chunk-2: no teacher attempt for a student-committed field",
+      "pass: file1/proposal_only/chunk-2: every question follows a verifier issue",
+      "pass: file1/proposal_only/chunk-2: a memory answer reaches neither student nor teacher",
+      "pass: file1/proposal_only/chunk-3: no teacher attempt for a student-committed field",
+      "pass: file1/proposal_only/chunk-3: every question follows a verifier issue",
+      "pass: file1/proposal_only/chunk-3: a memory answer reaches neither student nor teacher",
+      "pass: file2/proposal_only/chunk-0: no teacher attempt for a student-committed field",
+      "pass: file2/proposal_only/chunk-0: every question follows a verifier issue",
+      "pass: nothing executed before approval",
+      "pass: no memory write and no learning before approval",
+      "pass: approval is recorded for the configured local subject",
+      "pass: approval queues the approved_recipe chunk job",
+      "pass: registry execution refuses",
+      "pass: exactly one learning update after approval",
+      "pass: learning steps the version once",
+      "pass: accepted memory is written at learning",
+      "pass: the executor runs every file1 chunk after learning with the officer plan",
+      "pass: file1 later chunks: memory answers, teacher attempts 0, no new question",
+      "pass: control removed: replay miss ends in needs_input, nothing executed",
+      "pass: control altered with a literal: the verifier refuses it, nothing executed"
+    ]
+  },
+  "counterNotes": {
+    "providerNetworkCalls": "calls seen by a test-side spy on globalThis.fetch, which also throws",
+    "replayHits": "control recordings served by ReplayAdapter (one per teacher attempt)",
+    "replayMisses": "replay lookups with no accepted recording",
+    "memoryReuses": "metrics.memoryHits of the chunk",
+    "studentCommitsPositive": "student-sourced fields with a target other than unknown",
+    "studentCommitsUnknown": "student-sourced fields committed as unknown",
+    "teacherFields": "metrics.teacherFields: fields whose final source is the teacher",
+    "teacherAttempts": "metrics.teacherCalls: teacher attempts, a repair included; replayed, so no paid call",
+    "verifierRefusals": "teacher plans refused by validateTeacherOutput (MAPPING_TEACHER_* codes)",
+    "questions": "draft.questions after deduplication",
+    "officerAnswers": "reviewer answers recorded against the cold chunk's questions",
+    "executedRows": "draft rows from the approved_recipe job, every field sourced officer"
+  },
+  "recordings": {
+    "where": "Outside Git: the product recorder refuses paths inside the repository.",
+    "control": {
+      "path": "E:/BhuAayam-data/task-data/c1/recordings/control/teacher-220665a3-c916-48aa-917c-2d44744cd492.jsonl",
+      "sha256": "7d22d0b9e3fcf941334d117ce250f048089d57295ed8b8d6182efdc8d6a6ba9f",
+      "adapterKind": "control",
+      "fieldsAsked": [
+        "4|longitude"
+      ],
+      "answer": "4|longitude -> unknown, high (label line 184); tokens 0, cost 0",
+      "writtenBy": "scripts/agent/measure-c1.ts record, through TeacherRecordings and the product recorder"
+    },
+    "tampered": {
+      "path": "E:/BhuAayam-data/task-data/c1/recordings/tampered/teacher-b3210239-dfa0-4765-8268-d10984ebb04d.jsonl",
+      "sha256": "ff186a2d467a60272183f7cb5deaaa78708db71b6719fd4e7f00d9306f8a36e5",
+      "change": "operation gains value C1-CONTROL-LITERAL; response and record hashes recomputed so replay accepts it"
+    },
+    "file2Labels": "label lines 186-190 carry the same five targets for file 2; no recording was made for its profile"
+  },
+  "notShown": [
+    "No Sarvam answer: the teacher is a recorded software control built from development pseudo-labels.",
+    "No live PostgreSQL or object storage: SQL and S3 are test doubles ported from the A3b protocol test.",
+    "No falling paid-call curve: one table family, one approval, replay only; no paid admissions at all.",
+    "No accuracy against truth: committed-field precision 3/4 is measured against a verified pseudo-label.",
+    [
+      "No teacher-sourced positive field executed: the control answered longitude as unknown; the executed address",
+      "came from the officer correcting the student."
+    ],
+    "The v44 learner abstains on every file 2 field, so file 2 shows no student transfer.",
+    "Order inside a chunk is asserted from the data each stage emits; order across steps from a test-side event log."
+  ],
+  "agC1": [
+    "Proven offline: memory -> student -> teacher (recorded control, replayed) -> verifier -> officer questions ->",
+    "review and approval -> deterministic executor (draft rows; the registry refuses) -> accepted memory and one",
+    "partial_fit, with later chunks answered from memory and no teacher; waiting for a live run: a real Sarvam answer,",
+    "live PostgreSQL, and a teacher-sourced positive field executed."
+  ],
+  "checks": {
+    "pnpm exec tsc -p scripts/agent/tsconfig.json": 0,
+    "pnpm typecheck:backend": 0,
+    "tsx --test scripts/agent/measure-c1.test.ts": "0 (1 pass)",
+    "tsx --test a3b-wiring a3e-unanswered mapping-{routing,memory,executor,plan-v2}": "0 (25 pass)",
+    "measure-c1.ts run twice": "0 and 0, equal counters",
+    "git diff --check": 0,
+    "new lines over 120 characters": 0
+  },
+  "sideEffects": [
+    "The neighbour tests wrote new uniquely named scratch files at their default paths outside c1:",
+    "task-data/a3b/controls/d2686096-*, task-data/a3e/controls/ebf19fde-*/accepted-plans.jsonl,",
+    "task-data/a4/memory/routing-test-2039b1b3*.jsonl and test-*.jsonl. No existing file was changed; none was",
+    "deleted."
+  ]
 }
