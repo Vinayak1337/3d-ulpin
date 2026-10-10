@@ -34,15 +34,56 @@ export type PostData<P extends keyof paths> = PostOf<P> extends { responses: { 2
   ? JsonOf<R> extends { data: infer Data } ? Data : never
   : never;
 
+type CardPage = CardListResponse['content']['application/json']['data'];
+
+/** The card read of one listed snapshot: the page its scope answered, or null when that read failed. */
+export interface SnapshotCardRead {
+  createdAt: string;
+  page: Pick<CardPage, 'items' | 'truncated'> | null;
+}
+
 /** What the registry lists as the cards of one unit, and how far the search for them went. */
 export interface UnitCards {
-  /** When the snapshot whose scope listed the cards was created; null when no scope tried lists a card. */
+  /** When the newest snapshot whose scope lists a card was created; null when no scope read lists one. */
   snapshotCreatedAt: string | null;
+  /** Every card revision the snapshots read list for the unit, once each, newest snapshot first. */
   cards: ListedCard[];
-  /** The server holds more cards under that scope than the page it returned. */
+  /** The server holds more cards under one of those scopes than the page it returned. */
   truncated: boolean;
-  /** With no card listed: false when the building has snapshots the search did not try (older, or unreadable). */
+  /** False when the building has snapshots that were not read: `unlisted` ones, or ones whose card read failed. */
   searchedAll: boolean;
+  /** The building has snapshots the listing did not return: older than its one page, or unreadable. */
+  unlisted: boolean;
+  /** How many snapshots the listing returned. */
+  snapshots: number;
+  /** How many of those snapshots' card reads failed. */
+  unread: number;
+}
+
+/**
+ * The card reads of the listed snapshots as one list. A scope lists every card of a unit it holds, so the same
+ * revision arrives under several snapshots: it is kept once, where the newest snapshot lists it. A failed read
+ * is counted, never dropped, and leaves the search short.
+ */
+export function mergeUnitCards(
+  reads: readonly SnapshotCardRead[], listing: Pick<BuildingSnapshots, 'truncated' | 'unreadable'>,
+): UnitCards {
+  const listed = new Map<string, ListedCard>();
+  for (const card of reads.flatMap((read) => read.page?.items ?? [])) {
+    const key = `${card.cardId}:${card.revision}`;
+    if (!listed.has(key)) listed.set(key, card);
+  }
+  const unread = reads.filter((read) => !read.page).length;
+  const unlisted = listing.truncated || listing.unreadable > 0;
+  return {
+    snapshotCreatedAt: reads.find((read) => read.page?.items.length)?.createdAt ?? null,
+    cards: [...listed.values()],
+    truncated: reads.some((read) => read.page?.truncated),
+    searchedAll: !unlisted && unread === 0,
+    unlisted,
+    snapshots: reads.length,
+    unread,
+  };
 }
 
 /** Published identifier resolver; keeps ULPIN and registry associations on the backend. */
@@ -225,24 +266,33 @@ const buildingSnapshotsQuery = (buildingId: string) => ({
   staleTime: 60_000,
 });
 
-/** Passes each listed scope on unchanged, newest first, and stops at the first that lists a card of the unit. */
+/**
+ * Passes each scope of the listing's one page on unchanged, newest first and one read at a time. A read that
+ * fails is kept as failed; when every read fails the first failure is thrown, so nothing is answered as empty.
+ */
 async function listUnitCards(snapshots: BuildingSnapshots, spaceId: string, signal: AbortSignal): Promise<UnitCards> {
-  for (const snapshot of snapshots.items) {
-    const page = unwrap(await api.POST('/api/v1/usp/property-cards/list', {
-      body: { scope: snapshot.scope, target: { namespace: UNIT_NAMESPACE, id: spaceId }, limit: CARD_PAGE_SIZE },
-      signal,
-    })).data;
-    if (page.items.length) {
-      return { snapshotCreatedAt: snapshot.createdAt, cards: page.items, truncated: page.truncated, searchedAll: true };
+  const reads: SnapshotCardRead[] = [];
+  let failure: unknown = null;
+  for (const { scope, createdAt } of snapshots.items) {
+    try {
+      const page = unwrap(await api.POST('/api/v1/usp/property-cards/list', {
+        body: { scope, target: { namespace: UNIT_NAMESPACE, id: spaceId }, limit: CARD_PAGE_SIZE }, signal,
+      })).data;
+      reads.push({ createdAt, page });
+    } catch (error) {
+      if (signal.aborted) throw error;
+      failure ??= error;
+      reads.push({ createdAt, page: null });
     }
   }
-  const searchedAll = !snapshots.truncated && snapshots.unreadable === 0;
-  return { snapshotCreatedAt: null, cards: [], truncated: false, searchedAll };
+  if (failure && reads.every((read) => !read.page)) throw failure;
+  return mergeUnitCards(reads, snapshots);
 }
 
 /**
- * The property cards the registry lists for one recorded unit. The snapshots of a building are read once and
- * shared by its units; a refusal of either read fails the query and is never answered as an empty list.
+ * The property cards the registry lists for one recorded unit, across the snapshots the listing returns. The
+ * snapshots of a building are read once and shared by its units. A refusal of the listing, or of every card
+ * read, fails the query; a card read that fails beside one that answers is counted in the answer.
  */
 export function useUnitCards(
   buildingId: string | null | undefined, spaceId: string | null | undefined, enabled = true,

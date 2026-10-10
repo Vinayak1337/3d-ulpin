@@ -1,10 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import controls from '../../../../../../docs/evidence/gf1/ui/f3a/responses.json';
-import { evidenceRef, recordedFloors, sourceLabelGaps, type BuildingCanonical } from './model';
+import type { RegisterRecord } from '../../../api/queries';
+import { evidenceRef, floorIdentifier, recordedFloors, sourceLabelGaps, type BuildingCanonical } from './model';
 
 const withoutCode = controls.withoutCode as BuildingCanonical;
 const withCode = controls.withCode as BuildingCanonical;
 const unknown = { text: 'Unknown', known: false };
+type Space = BuildingCanonical['levels'][number]['spaces'][number];
+
+/** The recorded unit of the control building after `change` is applied to a copy of its space. */
+function unitWith(change: (space: Space) => void) {
+  const level = structuredClone(withoutCode.levels[0]!);
+  change(level.spaces[0]!);
+  return recordedFloors([level])[0]!.units[0]!;
+}
 
 describe('recorded floors and units', () => {
   it('shows a recorded floor by its literal, with unknown heights and no number from the label', () => {
@@ -26,6 +35,46 @@ describe('recorded floors and units', () => {
     const assigned = withCode.levels[0]!.spaces[0]!.proposedCode;
     expect(assigned.state).toBe('reviewed');
     expect(recordedFloors(withCode.levels)[0]!.units[0]!.code).toBe(assigned.value);
+  });
+
+  it.each([
+    ['absent', 'Not recorded'], ['unknown', 'Unknown'], ['withheld', 'Withheld'], ['conflicting', 'Conflicting'],
+  ] as const)('prints a kind and an area the record states as %s in words, never as a zero', (state, text) => {
+    const unit = unitWith((space) => {
+      space.kind = { ...space.kind, value: null, state };
+      space.areaM2 = { ...space.areaM2!, value: null, state };
+    });
+    expect(unit.kind).toEqual({ text, known: false });
+    expect(unit.area).toEqual({ text, known: false });
+    expect(`${unit.kind.text} ${unit.area.text}`).not.toMatch(/\d/);
+  });
+
+  it('prints a recorded kind and area as the record gives them, and says when the read omits the area', () => {
+    const recorded = unitWith((space) => {
+      space.kind = { ...space.kind, value: 'unit', state: 'reviewed' };
+      space.areaM2 = { ...space.areaM2!, value: 71.5, state: 'reviewed' };
+    });
+    expect(recorded.kind).toEqual({ text: 'unit', known: true });
+    expect(recorded.area).toEqual({ text: '71.50 m²', known: true });
+    const said = unitWith((space) => { space.kind = { ...space.kind, value: 'unknown', state: 'reviewed' }; });
+    expect(said.kind).toEqual(unknown);
+    const omitted = unitWith((space) => { delete space.areaM2; });
+    expect(omitted.area).toEqual({ text: 'Not reported', known: false });
+  });
+
+  it('prints a floor identifier only as the register read states it, and says in words when it states none', () => {
+    const [floor] = recordedFloors(withoutCode.levels);
+    const entry = { id: floor!.registerId, identifier: 'READ-STATED:F001' } as RegisterRecord;
+    const other = { id: 'another-record', identifier: 'READ-STATED:F002' } as RegisterRecord;
+    expect(floor!.registerId).toBe(withoutCode.levels[0]!.registryFloorId);
+    expect(floorIdentifier({ records: [other, entry], failed: false }, floor!.registerId))
+      .toEqual({ text: 'READ-STATED:F001', known: true });
+    expect(floorIdentifier({ records: [other], failed: false }, floor!.registerId))
+      .toEqual({ text: 'The register read states no identifier for this floor.', known: false });
+    expect(floorIdentifier({ records: undefined, failed: false }, floor!.registerId))
+      .toEqual({ text: 'Reading the register…', known: false });
+    expect(floorIdentifier({ records: undefined, failed: true }, floor!.registerId))
+      .toEqual({ text: 'The register could not be read, so no identifier is shown.', known: false });
   });
 
   it('lists a floor linked to a schedule row once, under that row, with only its recorded units', () => {

@@ -20,8 +20,8 @@ export function ReviewFacts({ review }: { review: ReviewedAssignment }) {
     <DescriptionList items={[
       { label: 'Reason', value: <p className={styles.reason}>{review.reason}</p> },
       { label: 'Recorded', value: review.createdAt ? formatDateTime(review.createdAt) : NO_TIME },
-      { label: 'Review', value: <p className={styles.answered}>{review.reviewId}</p> },
-      { label: 'Bound to snapshot', value: <p className={styles.answered}>{review.expectedManifestId}</p> },
+      { label: 'Review', value: <CopyableId id={review.reviewId} name="review id" /> },
+      { label: 'Bound to snapshot', value: <CopyableId id={review.expectedManifestId} name="snapshot id" /> },
       { label: 'At record revision', value: review.expectedRecordVersion },
     ]} />
   );
@@ -53,7 +53,8 @@ function Assigned({ code, flow }: { code: string | null; flow: AssignFlow }) {
       {code ? <p className="ul-help">Read from the record of this unit.</p> : null}
       {receipt ? (
         <p className={styles.answered}>
-          Receipt {receipt.receiptId} · committed {formatDateTime(receipt.committedAt)}
+          Receipt <CopyableId id={receipt.receiptId} name="receipt id" />
+          {' · '}committed {formatDateTime(receipt.committedAt)}
         </p>
       ) : null}
     </>

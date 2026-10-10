@@ -22,6 +22,8 @@
   color: var(--ui-ink-soft);
   overflow-wrap: anywhere;
 }
+/* An answered id with its copy control sits in the line of its label. */
+.answered :global(.ul-code) { vertical-align: middle; margin: 0 var(--ui-space-1); }
 .reason { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .answeredList { display: grid; gap: var(--ui-space-1); min-width: 0; }
 /* The state and the reason code of a card row that is not available, under its value. */
