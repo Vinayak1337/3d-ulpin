@@ -2,7 +2,7 @@
 
 Owner decision, 10 October 2026. This is the one place that says how the lead spawns workers, what it does when one stops, and what happens when a limit is hit. It replaces the worker lines in earlier settings. Task-file content and review rules stay in [00-STANDARDS](00-STANDARDS.md) §9 and §11 and in [SPRINT-SELECTION](SPRINT-SELECTION.md) §3.
 
-**The rule in one line:** spawn **codex workers first**. When they hit their limit (every codex account limited), use the **Claude worker**. When both are limited, the lead's own subagents carry on until a limit comes back.
+**The rule in one line:** spawn **codex workers first**. When they hit their limit (every codex account limited), use the **Claude worker**. **Owner decision, 10 October 2026, 22:54: new tasks go only to these two spawners.** The lead's own desktop subagents get no new task; one that is already running finishes the task it has. When both are limited, the task waits for the soonest reset on a timer.
 
 ## 1. The loop
 
@@ -27,7 +27,7 @@ Always use the first spawner in this list that isn't limited.
 | --- | --- | --- | --- |
 | 1 | **pi codex-pool** (bash worker) | `gpt-6.1-sol`, effort `high` or `xhigh` | Several accounts. The pool moves to the next account when one hits its limit. The spawner is limited only when **every** account is. |
 | 2 | **Claude Code CLI** (bash worker) | `haiku`, `sonnet` or `opus`, with the effort the task needs (§3) | Runs on **the account the terminal CLI is logged in to** (`claude auth status`). Limited when the CLI prints "You've hit your … limit · resets …". |
-| 3 | **The lead's own subagents** (Agent tool) | Sonnet or Opus | Run on the lead's own session account. Fallback only, for when spawners 1 and 2 are both limited. |
+| 3 | **The lead's own subagents** (Agent tool) | Sonnet or Opus | Run on the lead's own session account. **Not used for new tasks since the owner's decision of 10 October, 22:54**; a subagent already running finishes its task. |
 
 - **Codex first, then Claude.** While any codex account is ready, new tasks go to codex workers only. The Claude CLI takes over when every codex account is limited.
 - **Two Claude accounts.** The terminal CLI has its own login, separate from the account the lead's session runs on (checked on 10 October). Each has its own limit. The launcher strips the lead session's `CLAUDE*` and `ANTHROPIC*` environment variables, so a CLI worker always uses the terminal login. To change that account, the owner runs `claude auth login` in a terminal; the lead never signs in or out.
@@ -53,7 +53,7 @@ Do these in order, as soon as the first limit is seen:
    - **Claude:** the reset time is in the limit message the worker printed.
 2. **Start a timer** as a background task for the **soonest** reset of the limited spawner: `pool-watch.sh` for codex, `claude-watch.sh` for Claude. It wakes the lead when the limit is back. A background job lasts 2 hours at most, so for a later reset, chain a second timer when the first returns.
 3. **Re-dispatch the stopped task through the next spawner** in §2, from its checkpoint (§5).
-4. **If both bash spawners are limited,** the lead spawns its own subagents. They pick the work up where the bash workers left it and carry on.
+4. **If both bash spawners are limited,** the task waits: its checkpoint stays in its worktree, and the timer of step 2 wakes the lead at the soonest reset. The lead does not spawn its own subagents for it (owner decision, 10 October, 22:54).
 5. **When a timer wakes the lead** and a bash spawner is back:
    - safely stop each of its own subagents (§5);
    - re-dispatch that work through the bash spawner that came back;
