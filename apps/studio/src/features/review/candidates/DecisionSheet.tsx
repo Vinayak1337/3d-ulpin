@@ -31,10 +31,11 @@ export function DecisionSheet({ itemId, decisions, areaRevision, titleOf, onRemo
     record.mutate(plan.body, {
       onSuccess: (result) => {
         // A request with rejections only records the decisions and creates no draft package.
-        const outcome = result.package
-          ? `Draft package ${result.package.id.slice(0, 8)} holds the accepted roofprint; it is not in the registry.`
-          : 'No draft package was created.';
-        onRecorded(`Recorded ${decisions.length} decision${decisions.length === 1 ? '' : 's'}. ${outcome}`);
+        const count = `${decisions.length} decision${decisions.length === 1 ? '' : 's'}`;
+        const message = result.package
+          ? `Recorded ${count} in draft package ${result.package.id.slice(0, 8)}; registry recording is still needed.`
+          : `Recorded ${count}; rejected candidates stay in the record without a draft package.`;
+        onRecorded(message);
       },
     });
   };

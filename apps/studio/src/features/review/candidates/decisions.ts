@@ -7,12 +7,14 @@ export type AttachLevelBody = Extract<
   Schemas['POST_buildings_buildingId_candidates_Request_application_json'],
   { action: 'attach_level' }
 >;
+export type RejectRoomBody = Extract<
+  Schemas['POST_buildings_buildingId_candidates_Request_application_json'],
+  { action: 'reject' }
+>;
 
 /** The API refuses reasons shorter than this. */
 export const MIN_REASON_LENGTH = 3;
 export const NO_REVIEWED_LEVELS = 'No reviewed levels yet — a level schedule is needed first';
-export const REJECTION_NEEDS_ACCEPTANCE = 'The review command records a rejection only together with at least one '
-  + 'accepted candidate from the same image. Accept one candidate of this image to record both.';
 
 export interface StagedDecision {
   candidateId: string;
@@ -38,10 +40,7 @@ function acceptedReason(accepted: readonly StagedDecision[]): string {
   return [...new Set(accepted.map((decision) => decision.reason.trim()))].join('; ');
 }
 
-/**
- * The footprint-draft command for the decisions staged on one image. The API needs at least one accepted
- * candidate; a rejection alone is refused here instead of being sent.
- */
+/** Decisions on one image; rejections alone record reasons without creating a draft package. */
 export function footprintDecisionPlan(input: {
   requestKey: string;
   packageRevision: number;
@@ -50,22 +49,20 @@ export function footprintDecisionPlan(input: {
 }): DecisionPlan {
   const accepted = input.decisions.filter((decision) => decision.outcome === 'accepted');
   const rejected = input.decisions.filter((decision) => decision.outcome === 'rejected');
-  if (!accepted.length) return { ok: false, reason: REJECTION_NEEDS_ACCEPTANCE };
-  return {
-    ok: true,
-    body: {
-      requestKey: input.requestKey,
-      expectedRevision: input.packageRevision,
-      expectedAreaRevision: input.areaRevision,
-      georeference: 'source_geotiff',
-      selections: accepted.map((decision) => ({
-        componentId: decision.candidateId,
-        subject: subjectOf(decision.candidateId),
-      })),
-      rejected: rejected.map((decision) => ({ componentId: decision.candidateId, reason: decision.reason.trim() })),
-      reason: acceptedReason(accepted),
-    },
+  if (!input.decisions.length) return { ok: false, reason: 'Stage a decision first.' };
+  const body: FootprintDraftBody = {
+    requestKey: input.requestKey,
+    expectedRevision: input.packageRevision,
+    expectedAreaRevision: input.areaRevision,
+    georeference: 'source_geotiff',
+    selections: accepted.map((decision) => ({
+      componentId: decision.candidateId,
+      subject: subjectOf(decision.candidateId),
+    })),
+    rejected: rejected.map((decision) => ({ componentId: decision.candidateId, reason: decision.reason.trim() })),
   };
+  if (accepted.length) body.reason = acceptedReason(accepted);
+  return { ok: true, body };
 }
 
 export interface LevelChoice {
@@ -100,6 +97,21 @@ export function attachLevelBody(input: {
     expectedCanonicalRevision: input.canonicalRevision,
     candidateId: input.candidateId,
     levelId: input.levelId,
+    reason: input.reason.trim(),
+  };
+}
+
+export function rejectRoomBody(input: {
+  requestKey: string;
+  canonicalRevision: string;
+  candidateId: string;
+  reason: string;
+}): RejectRoomBody {
+  return {
+    action: 'reject',
+    requestKey: input.requestKey,
+    expectedCanonicalRevision: input.canonicalRevision,
+    candidateId: input.candidateId,
     reason: input.reason.trim(),
   };
 }
