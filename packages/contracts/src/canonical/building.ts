@@ -135,6 +135,77 @@ function addPrismIssue(v: PrismBounds, ctx: z.RefinementCtx): void {
   }
 }
 
+export const LevelScheduleRowSchema = z.strictObject({
+  levelId: z.uuid(), order: z.number().int().nonnegative(), labelLiteral: z.string().trim().min(1).max(500),
+  kind: z.enum(['basement', 'stilt', 'podium', 'floor', 'mezzanine', 'terrace', 'roof', 'other']),
+  lowerM: number.nullable(), upperM: number.nullable(),
+  heightSource: z.enum(['stated', 'derived', 'unknown']),
+  verticalReference: z.string().trim().min(1).max(200).nullable(),
+  statedHeightM: number.positive().optional(), citations: z.array(BuildingCitationSchema).min(1).max(20),
+}).superRefine((row, ctx) => {
+  if (row.heightSource === 'unknown' && (row.lowerM !== null || row.upperM !== null || row.statedHeightM)) {
+    ctx.addIssue({ code: 'custom', message: 'Unknown heights must remain null, without a typical height.' });
+  }
+  if (row.heightSource === 'stated' && (row.lowerM === null || row.upperM === null || !row.verticalReference)) {
+    ctx.addIssue({ code: 'custom', message: 'Stated limits require both bounds and a cited vertical reference.' });
+  }
+  if (row.lowerM !== null && row.upperM !== null && row.lowerM >= row.upperM) {
+    ctx.addIssue({ code: 'custom', message: 'Level limits require lowerM < upperM.' });
+  }
+});
+export const LevelPrismAssessmentSchema = z.strictObject({
+  method: z.literal('prism/2'), analyticalEligibility: z.literal('not_assessed'),
+  state: z.enum(['not_assessed', 'ok', 'unsupported']),
+  heightState: z.enum(['unknown', 'known']), reason: z.string().optional(),
+  prism: z.strictObject({ lowerM: z.string(), upperM: z.string(), heightM: z.string(),
+    verticalReference: z.string(), volumeM3: number, volumeM3Exact: z.string() }).nullable(),
+});
+const scheduleFields = {
+  state: z.enum(['reviewed', 'conflicting']), levels: z.array(LevelScheduleRowSchema).max(150),
+  alternatives: z.array(z.strictObject({ labelLiteral: z.string().trim().min(1).max(500),
+    citations: z.array(BuildingCitationSchema).min(1).max(20),
+    levels: z.array(LevelScheduleRowSchema).max(150) })).min(2).max(10).optional(),
+  statedBase: z.strictObject({ valueM: number, verticalReference: z.string().trim().min(1).max(200),
+    citations: z.array(BuildingCitationSchema).min(1).max(20) }).optional(),
+};
+function checkSchedule(v: { state: string; levels: { levelId: string; order: number }[];
+  alternatives?: unknown[] }, ctx: z.RefinementCtx): void {
+  if ((v.state === 'reviewed' && (!v.levels.length || v.alternatives))
+    || (v.state === 'conflicting' && (v.levels.length || !v.alternatives))) {
+    ctx.addIssue({ code: 'custom', message: 'Review listed levels or retain conflicting alternatives without selection.' });
+  }
+  if (new Set(v.levels.map(row => row.levelId)).size !== v.levels.length
+    || new Set(v.levels.map(row => row.order)).size !== v.levels.length) {
+    ctx.addIssue({ code: 'custom', message: 'Level identities and inventory order must be unique.' });
+  }
+}
+export const LevelScheduleContentSchema = z.strictObject(scheduleFields).superRefine(checkSchedule);
+export const LevelScheduleSchema = z.strictObject({ ...scheduleFields,
+  buildingId: z.uuid(), revision: z.number().int().positive(), proposalId: z.uuid(),
+  decision: z.strictObject({ actor: id, reason: z.string().trim().min(3).max(2000), at: z.string().datetime() }),
+  prisms: z.record(z.string(), LevelPrismAssessmentSchema),
+}).superRefine(checkSchedule);
+export const LevelScheduleProposalSchema = z.strictObject({
+  proposalId: z.uuid(), buildingId: z.uuid(), recordRevision: z.number().int().positive(),
+  state: z.literal('candidate'), content: LevelScheduleContentSchema,
+  actor: id, at: z.string().datetime(),
+});
+const scheduleCommand = { requestKey: z.uuid(), expectedCanonicalRevision: z.string().regex(/^[a-f0-9]{64}$/) };
+export const LevelScheduleRequestSchema = z.discriminatedUnion('action', [
+  z.strictObject({ ...scheduleCommand, action: z.literal('propose'), content: LevelScheduleContentSchema }),
+  z.strictObject({ ...scheduleCommand, action: z.literal('review'), proposalId: z.uuid(),
+    reason: z.string().trim().min(3).max(2000) }),
+]);
+export const LevelScheduleReceiptSchema = z.strictObject({
+  requestKey: z.uuid(), buildingId: z.uuid(), recordRevision: z.number().int().positive(),
+  action: z.enum(['propose', 'review']), proposal: LevelScheduleProposalSchema, schedule: LevelScheduleSchema.nullable(),
+});
+export type LevelScheduleRow = z.infer<typeof LevelScheduleRowSchema>;
+export type LevelSchedule = z.infer<typeof LevelScheduleSchema>;
+export type LevelScheduleContent = z.infer<typeof LevelScheduleContentSchema>;
+export type LevelScheduleRequest = z.infer<typeof LevelScheduleRequestSchema>;
+export type LevelScheduleReceipt = z.infer<typeof LevelScheduleReceiptSchema>;
+
 export const BuildingStoreySchema = z.strictObject({
   levelId: id,
   label: buildingValueSchema(z.string()),
@@ -160,6 +231,11 @@ export const BuildingLevelSchema = z.strictObject({
   lowerM: buildingValueSchema(number, 'm'),
   upperM: buildingValueSchema(number, 'm'),
   spaces: z.array(BuildingSpaceSchema),
+  kind: LevelScheduleRowSchema.shape.kind.optional(),
+  heightSource: LevelScheduleRowSchema.shape.heightSource.optional(),
+  heightState: BuildingValueStateSchema.optional(),
+  roomCandidateIds: z.array(id).optional(),
+  prismAssessment: LevelPrismAssessmentSchema.optional(),
 });
 const conflictValue = buildingValueSchema(z.union([z.string(), number, z.boolean()]));
 export const BuildingConflictSchema = z.strictObject({
@@ -276,6 +352,8 @@ export const NormalizedBuildingSchema = z.strictObject({
   storeyLabel: buildingValueSchema(z.string()),
   storeys: buildingValueSchema(z.array(BuildingStoreySchema)),
   levels: z.array(BuildingLevelSchema),
+  levelSchedule: LevelScheduleSchema.optional(),
+  levelScheduleProposals: z.array(LevelScheduleProposalSchema).optional(),
   conflicts: z.array(BuildingConflictSchema),
   conflictDecisions: z.array(BuildingConflictDecisionSchema).optional(),
   resolvedConflicts: z.array(BuildingConflictDecisionSchema).optional(),

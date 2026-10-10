@@ -7,6 +7,7 @@ import { z } from 'zod';
 import {
   BuildingConflictDecisionRequestSchema, BuildingConflictDecisionSchema,
   BuildingPlanCandidateRequestSchema, BuildingPlanCandidateReceiptSchema,
+  LevelScheduleRequestSchema, LevelScheduleReceiptSchema,
 } from '@ulpin/contracts';
 import { PrivateSpatialGuard } from '../spatial/private-spatial.guard';
 import { jsonBody, wireResponse } from '../intake/wire-schemas';
@@ -72,6 +73,25 @@ export class OfficerController {
       throw new AppError(422, 'CANDIDATE_KEY', 'Match Idempotency-Key to the candidate request key.');
     }
     return this.service.candidates(uuid.parse(buildingId), input);
+  }
+
+  @Post('buildings/:buildingId/level-schedules')
+  @UseGuards(PrivateSpatialGuard)
+  @HttpCode(201)
+  @Header('Cache-Control', 'private, no-store')
+  @ApiOperation({ operationId: 'POST_api_v1_buildings_buildingId_level_schedules',
+    summary: 'Propose or review a cited geometry-free level schedule, retaining conflicts' })
+  @ApiParam({ name: 'buildingId', schema: { type: 'string', format: 'uuid' } })
+  @ApiHeader({ name: 'Idempotency-Key', required: true, schema: { type: 'string', format: 'uuid' } })
+  @jsonBody(LevelScheduleRequestSchema)
+  @wireResponse(201, LevelScheduleReceiptSchema)
+  async levelSchedule(@Param('buildingId') buildingId: string, @Req() req: Request) {
+    if (queryUrl(req).search) throw new AppError(422, 'LEVEL_SCHEDULE_QUERY', 'This command accepts no query fields.');
+    const input = await body(req, LevelScheduleRequestSchema);
+    if (uuid.parse(req.header('idempotency-key')) !== input.requestKey) {
+      throw new AppError(422, 'LEVEL_SCHEDULE_KEY', 'Match Idempotency-Key to the schedule request key.');
+    }
+    return this.service.levelSchedule(uuid.parse(buildingId), input);
   }
 
   @Get('work-queue')

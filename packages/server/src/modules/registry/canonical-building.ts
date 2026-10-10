@@ -29,6 +29,7 @@ import { SOURCE_BUILDING_GAP } from '../usp/ingestion/source-building-values';
 import { rasterSourceTx } from '../usp/ingestion/raster-window';
 import { AppError, notFound } from '../../infrastructure/errors';
 import { localOperatorSubject } from '../usp/principal';
+import { applyLevelSchedules } from './canonical-level-schedule';
 
 export const ENU_METHOD = 'deterministic:wgs84-surface-to-enu@1';
 const WGS84_A = 6378137;
@@ -231,7 +232,7 @@ function visitCitationPins(value: unknown, pins: Map<string, string>): void {
 }
 
 /** Every citation's source pin; throws when one source has two different hashes inside the projection. */
-function collectCitationPins(projection: unknown): Map<string, string> {
+export function collectCanonicalCitationPins(projection: unknown): Map<string, string> {
   const pins = new Map<string, string>();
   visitCitationPins(projection, pins);
   return pins;
@@ -239,7 +240,7 @@ function collectCitationPins(projection: unknown): Map<string, string> {
 
 /** Recheck complete cited source access after assembly; one lookup per immutable original, no byte reads or writes. */
 export async function revalidateCanonicalSources(projection: unknown, siteId: string): Promise<void> {
-  const pins = collectCitationPins(projection);
+  const pins = collectCanonicalCitationPins(projection);
   const current = await canonicalCitations([...pins.keys()].map(sourceRevisionId => ({ sourceRevisionId })), siteId);
   if (current.some(citation => pins.get(citation.sourceId) !== citation.sourceSha256)) throw sourceChanged();
 }
@@ -642,6 +643,7 @@ export async function projectBuilding(
   if (storeys.length) {
     building.storeys = canonicalValue(storeys, 'reviewed', [], 'deterministic:recorded-level-schedule-projection@1');
   }
+  applyLevelSchedules(building, dossier.records);
   return finishBuilding(building);
 }
 
