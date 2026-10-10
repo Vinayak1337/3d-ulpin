@@ -1,0 +1,56 @@
+{
+  "task": "D2",
+  "base": "e4623944",
+  "qualification": "Step 0 inspection only; no runtime or provider call.",
+  "step0": {
+    "pageText": {
+      "reader": "documents.ts:61 readDocumentResult(input, resultHash, readObject)",
+      "product": "document-results/<jobId>/<resultSha256>.json; accepted source-document/1 result",
+      "authority": "source.inspection.documentAccepted jobId/sha256; assertDocumentInputTx and assertDocumentAcceptedResultTx",
+      "storedRead": true,
+      "native": "native.parts carry page text and character spans, but no spatial boxes or page frame",
+      "ocr": "ocr.items carry text and sourcePageBoxes in pdf_display_page_top_left_points; ocr.sourcePageFrame supplies dimensions and rotation",
+      "productHash": "accepted result SHA-256; OCR execution.candidateSha256 additionally pins the pre-envelope OCR product",
+      "existingDependencies": "transaction reaches source/job/accepted-attempt pins; pages supplies frames only; add a bounded stored-text read dependency",
+      "cost": "one accepted-result object read, no extraction; existing DocumentPagesService.pages still invokes bounded native page inspection",
+      "limits": "Native boxed citations cannot be checked spatially from native.parts today; report no_region_text, never use whole-page text for a box.",
+      "missingProduct": "No accepted stored result means not_checked; malformed or changed stored authority must refuse, not silently abstain."
+    },
+    "pythonRule": [
+      "scripts/usp/learning/storey_quote_verifier.py:27 normalise: NFKC, collapse Python whitespace runs to one space, strip.",
+      "scripts/usp/learning/storey_quote_verifier.py:42 region_text: join retained lines in order; retain only strict positive-area intersections with bbox (boxes_intersect:38); unknown page returns None.",
+      "scripts/usp/learning/storey_quote_verifier.py:60 number_is_in_quote: every NFKC Unicode decimal digit group in str(valueLiteral) must occur as a complete digit group in the quote.",
+      "scripts/usp/learning/storey_quote_verifier.py:67 verify_item: source hash mismatch or missing quote fails first; then region substring; then number groups."
+    ],
+    "snapshots": {
+      "literals": {
+        "version": "source-document-proposals/1",
+        "method": "caller_supplied_provisional",
+        "provenanceAuthority": "caller_supplied_unverified",
+        "quotationVerification": "not_machine_verified",
+        "unresolvedFirst": "quote_truth"
+      },
+      "reparsed": "document-proposals.ts storedSchema -> load -> read/history/replay/selected; decisionStoredSchema reparses originalProposal on save/read/history",
+      "storage": "Existing operations.result JSONB wrapper, hashed in full; no migration needed.",
+      "compatibilityDecision": "Keep /1 schema; add /2 union for snapshots/views, broaden history verification enum, and allow checked originalProposal in decision snapshots without adding defaults to old payloads."
+    },
+    "agent": {
+      "result": "StoreyAgentResult: state, output, code?, attempts, replayed, partsHash, method; unavailable output=null",
+      "facts": "StoreyOutput: storeyCount/basementCount value+expression; floorExpressions expression+scope; labels label+kind; heights statedValue+statedUnit; unitCounts value+scope; each has citations partId+quote",
+      "citationResolution": "StoreyPart maps partId to page/text; external retained page store resolves its line box; StoreyPageStore TypeScript shape currently omits box/frame",
+      "fits": "fieldRole, quote, lineQuote, locator, declaredMethod, status, reasons; packet conflicts and unknowns have explicit homes",
+      "missing": "No typed parsed value/value literal, height unit, label kind or fact scope in proposal input. Add valueLiteral for numeric verification; do not hide parsed values in reasons.",
+      "provenanceGap": "replayed does not distinguish genuine provider replay from recorded software control; caller must supply trusted recording-kind metadata, not infer control from replayed alone."
+    },
+    "callers": {
+      "route": "apps/api/src/modules/ingestion/document-proposals.controller.ts -> DocumentProposalsService.save",
+      "studio": "No document-proposals caller found under apps/studio; register uses document readings, not proposal packets.",
+      "scripts": "A5 candidates.py creates packet files, write=none; D08 evidence records historical manual HTTP saves; no current script caller found.",
+      "impact": "Read saved.packet rather than echo input: proposals may shrink, rejected may grow, conflicts must retain references to refused entries; decisions select only retained proposals.",
+      "requiredRoute": false
+    },
+    "decision": "Proceed: accepted stored OCR can be read by the server today; no new page-text store or migration."
+  },
+  "safety": {"providerDispatches": 0, "runtimeRequests": 0, "sqlAgainstRunningDatabase": 0},
+  "knownCheck": "tests/usp-packet-image-pdf-recovery.test.ts is excluded: environment failure owned by another worker."
+}
