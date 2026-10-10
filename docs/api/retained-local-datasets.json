@@ -111,6 +111,313 @@
     ]
   },
   {
+    "id": "t1-municipal-unlabelled-pool-20261010",
+    "classification": "test_only",
+    "split": "pool",
+    "originKind": "official_issuing_portal_original_html_tables",
+    "issuer": "Surat Municipal Corporation",
+    "geography": "Surat, Gujarat, India",
+    "manifest": "E:/BhuAayam-data/datasets/messy-india-pool/manifest-v2.json",
+    "guide": "docs/evidence/gf-agent/t1/prep.json",
+    "profiledFamilies": 5,
+    "profiledFiles": 5,
+    "acquiredOriginals": 6,
+    "horizontalCrs": null,
+    "verticalReference": null,
+    "terms": {
+      "state": "unconfirmed",
+      "licence": null,
+      "scope": "All six public responses; no explicit open licence or training grant verified"
+    },
+    "content": {
+      "externalRoot": "E:/BhuAayam-data/datasets/messy-india-pool",
+      "repositoryBytesVerified": false,
+      "originalHashesVerified": true,
+      "formats": [
+        "HTML source-native tables"
+      ]
+    },
+    "items": [
+      {
+        "family": "smc-building-stock",
+        "title": "High-rise and commercial building counts by zone",
+        "originalUrl": "https://www.suratmunicipal.gov.in/Departments/TownPlanningBuildingStatistics",
+        "acquiredAt": "2026-10-10T00:23:23.660191+00:00",
+        "pathRelativeToExternalRoot": "originals/smc-building-stock-7ff83846b56b.html",
+        "sha256": "7ff83846b56b006026f921f6df1a2ca78a2f77d5cebf277da30286a2d91fe18f",
+        "bytes": 100351,
+        "profileStatus": "profiled"
+      },
+      {
+        "family": "smc-tax-recovery",
+        "title": "Property-tax demand and recovery by category and financial year",
+        "originalUrl": "https://www.suratmunicipal.gov.in/Departments/PropertyTaxRecoveryStatistics",
+        "acquiredAt": "2026-10-10T00:20:32.610956+00:00",
+        "pathRelativeToExternalRoot": "originals/smc-tax-recovery-6cb0a801d581.html",
+        "sha256": "6cb0a801d5811f42d1eb395b68d51a3d85c406eb457a35aa4ccd78e51aa69097",
+        "bytes": 92570,
+        "profileStatus": "profiled"
+      },
+      {
+        "family": "smc-water-projects",
+        "title": "Water-supply project history across published years",
+        "originalUrl": "https://www.suratmunicipal.gov.in/Departments/HydraulicHome",
+        "acquiredAt": "2026-10-10T00:20:32.266331+00:00",
+        "pathRelativeToExternalRoot": "originals/smc-water-projects-399bc57267f6.html",
+        "sha256": "399bc57267f6584ce496bd55d0202390c64dbc411a732e6a8eb2ace012a585f7",
+        "bytes": 127303,
+        "profileStatus": "profiled"
+      },
+      {
+        "family": "smc-sewage-plants",
+        "title": "Sewage-treatment plant names and design capacities",
+        "originalUrl": "https://www.suratmunicipal.gov.in/Departments/DrainageTreatmentPlants",
+        "acquiredAt": "2026-10-10T00:23:23.595342+00:00",
+        "pathRelativeToExternalRoot": "originals/smc-sewage-plants-ebf1dfee2b1f.html",
+        "sha256": "ebf1dfee2b1f39a34412cb7650427398a2294f03fe79b6b37ab706abe399a5ac",
+        "bytes": 101721,
+        "profileStatus": "profiled"
+      },
+      {
+        "family": "smc-water-charges",
+        "title": "Water/sewerage tariffs by carpet area, connection size and usage",
+        "originalUrl": "https://www.suratmunicipal.gov.in/Departments/HydraulicUserCharges",
+        "acquiredAt": "2026-10-10T01:12:52.080182+00:00",
+        "pathRelativeToExternalRoot": "originals/smc-water-charges-b6aecd61e639.html",
+        "sha256": "b6aecd61e639b0afd877ce63fb112ed155a075f131f273fed26433a60882e446",
+        "bytes": 126192,
+        "profileStatus": "profiled"
+      },
+      {
+        "family": "smc-waste-collection",
+        "title": "Solid-waste collection modes, vehicles, trips and daily quantities",
+        "originalUrl": "https://www.suratmunicipal.gov.in/Departments/SolidWasteManagementStatistics",
+        "acquiredAt": "2026-10-10T00:24:18.541708+00:00",
+        "pathRelativeToExternalRoot": "originals/smc-waste-collection-99345b491a5b.html",
+        "sha256": "99345b491a5b8144bdf9b61b3f28205f8b0e50beba8430e14616765538984c5d",
+        "bytes": 1003719,
+        "profileStatus": "excluded_NATIVE_HTML_LIMIT"
+      }
+    ],
+    "apiInstallation": "not-installed",
+    "runtimeVerified": false,
+    "limitations": [
+      "Unlabelled development only; distinct schema/topics, not independent publishers or evaluation truth.",
+      "Acquisition times use retained curl response UTC modification times; all six observed HTTP 200.",
+      "Publisher spans are not expanded; no private rows, targets, measurements or rights are invented.",
+      "Native 2000-cell limit excludes solid waste even after selecting one table; originals retained.",
+      "No teacher calls, labels, training, registry import or GF-AGENT accuracy qualification."
+    ]
+  },
+  {
+    "id": "d1-messy-india-development-20261010",
+    "classification": "test_only",
+    "originKind": "mixed_official_original_tables_and_OpenCity_publisher_csv_derivatives_test_only",
+    "issuer": "Ministry of Panchayati Raj / LGD; Bihar RERA; RBI; OpenCity; TNHB; Pune Municipal Corporation; Microsoft",
+    "geography": "India; original operational registry context remains separate from national/state/city aggregate development tables",
+    "manifest": "fixtures/usp/D8-messy-india/manifest.json",
+    "manifestSha256": "a4d7be15b399012fcb9877382dcb3e5de3880cbfc1634fac57213c791afa07a7",
+    "manifestHashScope": "Exact UTF-8 metadata bytes; original files use exact-byte hashes",
+    "guide": "fixtures/usp/D8-messy-india/README.md",
+    "sourceCount": 37,
+    "sourceFamilies": 24,
+    "totalOriginalBytes": 133387445,
+    "horizontalCrs": null,
+    "verticalReference": null,
+    "content": {
+      "externalRoot": "E:/BhuAayam-data/datasets/messy-india",
+      "itemsPointer": "/assets",
+      "formats": [
+        "CSV",
+        "XLSX",
+        "HTML source-native table",
+        "JSON source-native table",
+        "Gzip-compressed GeoJSONL; derivative CSV is not a native publisher CSV"
+      ],
+      "repositoryBytesVerified": false,
+      "smallDevelopmentCopy": "fixtures/usp/D8-messy-india/dev/lgd-districts.csv",
+      "developmentCopiesDirectory": "fixtures/usp/D8-messy-india/dev/d1b",
+      "additionalDevelopmentCopies": 26,
+      "propertyDevelopmentCopiesDirectory": "fixtures/usp/D8-messy-india/dev/d1c",
+      "propertyDevelopmentCopies": 4,
+      "propertyDerivativeCopies": 4,
+      "derivativeIndex": "fixtures/usp/D8-messy-india/dev/d1c/derivatives.json"
+    },
+    "terms": {
+      "state": "unconfirmed",
+      "reference": "Per-source resource URLs and independent Bihar filing manual, p11 section17, in manifest",
+      "limitations": "Public local development approved; no resource-specific redistribution, ML or launch grant asserted"
+    },
+    "apiInstallation": "not-installed",
+    "standingInstallation": false,
+    "runtimeVerified": false,
+    "limitations": [
+      "D1d: three unlabelled property-relevant development families; five native originals and recorded CSV derivatives.",
+      "Pune institutional-site inventories are not verified building identities; Microsoft predictions stay test_only.",
+      "Prerequisite blocked: two new heldout families/files, four columns and two scorable positive targets.",
+      "D1b adds 26 development CSV/XLSX originals in 18 families; 23 CSVs are OpenCity-published originals, potentially transcriptions/derivatives, NOT issuing-authority exports. Development test_only, never official registry facts.",
+      "Three new development XLSX originals are RBI publications. Unit captions include hectares; no silently inferred conversions, field targets or rights.",
+      "Five historical dev originals are HTML tables, not qualified CSV/XLSX import inputs; legacy HTML remains external because of unrelated contact/bank sections.",
+      "Development dictionaries are optional; expanded unsupported meanings remain undocumented. Publisher table descriptions support only their explicit scope.",
+      "Originals unchanged; absent script/date/floor/CRS/injection cases stay listed in missingCapabilities. Staff/contact, pseudocode and survey-export candidates are retained outside Git but excluded.",
+      "D8 is acquisition metadata in usp-data-pack/1 style, not the strict D0-D7 application DTO; no live CSV/XLSX import, teacher/model run, officer review or GF-AGENT runtime pass."
+    ]
+  },
+  {
+    "id": "d1-messy-india-heldout-20261010",
+    "classification": "test_only",
+    "originKind": "official_issuing_portal_blind_layout_holdout",
+    "issuer": "Gurugram Metropolitan Development Authority; Office of the Registrar General & Census Commissioner, India; Reserve Bank of India",
+    "geography": "India; per-source details evaluator-only",
+    "manifest": "fixtures/usp/D8-messy-india/heldout.json",
+    "manifestSha256": "5accd9267497ff89f1e579d2d48d70325aa0cf8df93219300967618e9c679bf1",
+    "sourceCount": 7,
+    "additionalEvaluatorOnly": {
+      "sources": 2,
+      "families": 2,
+      "columns": 4,
+      "scorable": 2,
+      "positiveTargets": 2,
+      "sourceListSha256": "9a1aba1349b91280976db11f60406d64ec84b334431635bd1c04736c58961e47",
+      "qualification": "Candidate research semantics only; not official property, measurement or registry truth."
+    },
+    "families": [
+      {
+        "id": "mi-h01",
+        "publisher": "Gurugram Metropolitan Development Authority",
+        "fileCount": 1,
+        "caseNames": [
+          "GIS_attributes",
+          "declared_projected_crs"
+        ]
+      },
+      {
+        "id": "mi-h02",
+        "publisher": "Gurugram Metropolitan Development Authority",
+        "fileCount": 1,
+        "caseNames": [
+          "GIS_attributes",
+          "declared_projected_crs"
+        ]
+      },
+      {
+        "id": "mi-h03",
+        "publisher": "Office of the Registrar General & Census Commissioner, India",
+        "fileCount": 1,
+        "caseNames": [
+          "publisher_documented_column_descriptions",
+          "merged_header_cells",
+          "multi_row_headers",
+          "multiple_worksheets",
+          "empty_worksheets"
+        ]
+      },
+      {
+        "id": "mi-h04",
+        "publisher": "Reserve Bank of India",
+        "fileCount": 1,
+        "caseNames": [
+          "publisher_documented_column_descriptions",
+          "merged_header_cells",
+          "multiple_worksheets"
+        ]
+      },
+      {
+        "id": "mi-h05",
+        "publisher": "Reserve Bank of India",
+        "fileCount": 1,
+        "caseNames": [
+          "publisher_documented_column_descriptions",
+          "merged_header_cells",
+          "multi_row_headers"
+        ]
+      }
+    ],
+    "content": {
+      "externalRoot": "E:/BhuAayam-data/datasets/messy-india",
+      "repositoryBytesVerified": false,
+      "metadataAccess": "evaluator_only; original URLs, schemas, meanings and exact pins deliberately only in heldout.json"
+    },
+    "terms": {
+      "state": "unconfirmed",
+      "limitations": "Local development only; public endpoint is not a redistribution/training grant"
+    },
+    "apiInstallation": "not-installed",
+    "standingInstallation": false,
+    "runtimeVerified": false,
+    "limitations": [
+      "Five whole publisher/schema families, including three new tabular families with exact publisher hierarchical column descriptions and document URLs. Not an expanded canonical/legal dictionary or model accuracy claim.",
+      "Never expose heldout originals, URLs, schema/meanings or supporting publication documents to teachers or use them for calibration; exact details only in heldout.json."
+    ]
+  },
+  {
+    "id": "d2-rera-storey-source-truth-20261010",
+    "classification": "test_only",
+    "originKind": "official_registry_literals_and_public_sanction_documents",
+    "issuer": "Bihar RERA, Haryana RERA and document issuing municipal/area authorities; public registry submitters",
+    "geography": "Bihar and Haryana, India; no geographic placement inferred",
+    "manifest": "docs/evidence/usp/finale/GF-DATA/storey-truth/project-split.json",
+    "manifestSha256": "cf7037929e74c431adc92789fcc0f928fd5d33cd58c130017de5ea343320c9e9",
+    "guide": "docs/evidence/usp/finale/GF-DATA/storey-truth/README.md",
+    "sourceCount": 19,
+    "totalOriginalBytes": 54291037,
+    "content": {
+      "externalRoot": "E:/BhuAayam-data/datasets/rera-storeys",
+      "truthRoot": "docs/evidence/usp/finale/GF-DATA/storey-truth",
+      "buildingOrGroupRecords": 11,
+      "projectCount": 8,
+      "newExtraProjectPdfs": 6,
+      "repositoryBytesVerified": false,
+      "pins": "Per-record sources contain original URL, authority retrieval date, exact hash/size/path and page or HTML-cell locator"
+    },
+    "partition": {
+      "demoProjects": 2,
+      "extraDevelopmentProjects": 3,
+      "extraHoldoutProjects": 3,
+      "allocationUnit": "whole project, including all tower/page/revision relatives"
+    },
+    "horizontalCrs": null,
+    "verticalReference": "building_relative drawing labels only; global datum unknown",
+    "terms": {
+      "state": "unconfirmed",
+      "limitations": "Owner-approved public local development; no source-specific launch/redistribution/training grant"
+    },
+    "apiInstallation": "not-installed",
+    "standingInstallation": false,
+    "runtimeVerified": false,
+    "limitations": [
+      "Registry literals are independent of extraction PDFs; PDF visual quote observations remain candidates needing quote verification.",
+      "Tower 3 keeps its same-sheet G+41/G+42 conflict; independently keyed registry storey/unit/basement truth is unknown.",
+      "Unkeyed villas/blocks and repeated inventory categories are not forced into a canonical building/unit association or guessed total.",
+      "No teacher sees holdout documents/truth; no OCR/model evaluation, current sanction/as-built/rights or registry admission claim."
+    ]
+  },
+  {
+    "id": "d1-d2-public-acquisition-ledger-20261010",
+    "classification": "test_only",
+    "originKind": "public_source_acquisition_and_bounded_discovery_receipts",
+    "issuer": "Bihar RERA; Haryana RERA; MoPR / OGD; NWIC / GSI; GMDA",
+    "manifest": "docs/evidence/usp/finale/GF-DATA/acquisitions.json",
+    "manifestSha256": "32f1b0934d50b6fb20a5fa54d9e3b3e54cf44fbcbcbae2924fa7bfb38f4ae0c4",
+    "sourceCount": 39,
+    "content": {
+      "itemsPointer": "/acquisitions",
+      "blindItemsPointer": "/teacherBlindAcquisitions",
+      "repositoryBytesVerified": false,
+      "scope": "HTTP response originals including discovery/transport attempts; not 39 admitted dataset files; reused copies separately carry lineage"
+    },
+    "terms": {
+      "state": "unconfirmed",
+      "limitations": "Public access and acquisition are not reuse, ML or publication grants"
+    },
+    "apiInstallation": "not-installed",
+    "standingInstallation": false,
+    "runtimeVerified": false,
+    "limitations": [
+      "OGD API connection failures, unsupported GMDA pagination and initial Bihar urllib TLS failures retained; Windows system-trusted admitted registry/PDF/pagination inputs selected without source edits."
+    ]
+  },
+  {
     "manifest": "/Users/vinayak/.codex/task-data/ai03b-nyc-streamed/receipt.json",
     "manifestSha256": "ce1c4cb35d642682cb3e49bbcbb84137910fd6673716e954e8f577df2b0a9f3d",
     "guide": "docs/api/README.md#streamed-source-profiles-and-recipes-ai-03b",
@@ -3205,5 +3512,89 @@
       "recovery": "Publisher polygon correction or independent expert source-image boundary review under an agreed annotation policy."
     },
     "scoringPolicy": "Use scoringMask == 1; all-zero source RGB pixels are a conservative analysis ignore mask, not authoritative missing-data truth. Preserve empty scenes, holes/partial buildings and ignored/positive pixel counts."
+  },
+  {
+    "id": "d1b-messy-india-acquisition-ledger-20261010",
+    "classification": "test_only",
+    "originKind": "public_source_acquisition_and_privacy_screening_receipts",
+    "issuer": "OpenCity / Oorvani Foundation; Reserve Bank of India; Office of the Registrar General & Census Commissioner, India",
+    "geography": "India",
+    "manifest": "docs/evidence/usp/finale/GF-DATA/D1b/acquisitions.json",
+    "manifestSha256": "a6e297da0f5737487cf68eaf4698d4013710aeefbd9d63d3c7904611bfde968f",
+    "guide": "docs/evidence/usp/finale/GF-DATA/D1b/HANDOFF.md",
+    "sourceCount": 29,
+    "content": {
+      "developmentItemsPointer": "/admittedDevelopmentAcquisitions",
+      "blindSummaryPointer": "/teacherBlindAcquisitions",
+      "excludedItemsPointer": "/excludedDevelopmentCandidates",
+      "externalRoot": "E:/BhuAayam-data/datasets/messy-india",
+      "repositoryBytesVerified": false
+    },
+    "terms": {
+      "state": "unconfirmed",
+      "limitations": "Portal/publication access and observed license labels do not establish upstream redistribution or ML permission."
+    },
+    "apiInstallation": "not-installed",
+    "standingInstallation": false,
+    "runtimeVerified": false,
+    "limitations": [
+      "29 admitted tabular originals; discovery/support/tooling responses and five excluded candidate originals are NOT counted as admitted datasets.",
+      "All exact heldout URLs, pins, column descriptions and supporting originals remain exclusively in heldout.json; ledger exposes permitted summary only.",
+      "No application/runtime/teacher/model/DB changes."
+    ]
+  },
+  {
+    "id": "p2-cubicasa5k-test100-20261011",
+    "classification": "test_only",
+    "originKind": "public_research_dataset_slice",
+    "issuer": "Aalto University / CubiCasa; Kalervo, Ylioinas, Haikio, Karhu, Kannala (2019)",
+    "originalUrl": "https://zenodo.org/records/2613548",
+    "version": "Zenodo 2613548 v1.0; publisher test.txt; code c34440266665a11f4484eb06cd2e4b7d72ad76c1",
+    "geography": "Foreign, mostly Finnish marketing plans; individual sites undisclosed",
+    "horizontalCrs": null,
+    "verticalReference": null,
+    "units": "Source-image pixels; no metric or survey qualification",
+    "manifest": "docs/evidence/gf-ai/plans/raster/20261011-tower3/cubicasa-acquisition.json",
+    "guide": "docs/evidence/gf-ai/plans/raster/20261011-tower3/README.md",
+    "terms": {
+      "state": "publisher_metadata_observed",
+      "license": "CC-BY-NC-SA-4.0",
+      "reference": "https://zenodo.org/records/2613548",
+      "codeModelLicense": "CC-BY-NC-4.0",
+      "attribution": "Kalervo, Ylioinas, Häikiö, Karhu, Kannala / Aalto University / CubiCasa (2019)",
+      "scope": "Foreign test-only noncommercial diagnostics; retain attribution/share-alike; no operational admission"
+    },
+    "content": {
+      "externalRoot": "E:/BhuAayam-data/datasets/cubicasa5k/p2-test-20261011",
+      "originalPairsRetained": 100,
+      "originalBytes": 42938141,
+      "formats": [
+        "publisher F1_scaled.png",
+        "publisher model.svg"
+      ],
+      "repositoryBytesVerified": false,
+      "privateManifestSha256": "7a8fc5f76d9d0421b13fedb75d62961efd88b653cf97746cdc7482781ce5357c"
+    },
+    "partition": {
+      "trainingItems": 0,
+      "diagnosticTestItems": 100,
+      "selectionSha256": "83b48fd309647f60024f9c98e6fcbd161cfc1c47c39a5fc798fdb85148954eeb",
+      "selection": "First 100 publisher test paths excluding two prior feasibility plans; all architectural category",
+      "checkpointPopulationOverlap": "unaudited; not a fresh independent final holdout"
+    },
+    "labelProvenance": {
+      "origin": "Publisher human SVG annotations; retained deterministic integer polygon transfer",
+      "modelOrTeacherTargets": false
+    },
+    "apiInstallation": "not-installed",
+    "standingInstallation": false,
+    "runtimeVerified": false,
+    "modelInferenceRun": true,
+    "modelEvaluation": "docs/evidence/gf-ai/plans/raster/20261011-tower3/cubicasa-result.json",
+    "limitations": [
+      "Range-selected unchanged ZIP members only; full 5.47 GB archive not downloaded or whole-archive verified",
+      "No fine-tuning, threshold search, Indian accuracy, canonical records, ownership, rights or deployment claim",
+      "Interrupted-file original acquisition times remain unknown; resumed bytes verified by CRC and SHA"
+    ]
   }
 ]
