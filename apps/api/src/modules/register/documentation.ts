@@ -246,10 +246,12 @@ export const preparedDetailsReceipt = object({ caseId: str, package: importPacka
 export const workQueue = object({ total: integer, page: integer, pageSize: integer,
   items: array(object({ id: str, kind: str, name: str, areaId: nullable(str), areaName: nullable(str),
     dataKind: nullable(str), buildingId: nullable(str), sourceCount: integer, updatedAt: str,
+    tableSourceIds: array(str),
     state: nullable(str), jobStatus: nullable(str), recordedHistory: bool, currentRecorded: bool,
     provenance: object({ classification: str, basis: str }, ['classification', 'basis']) },
     ['id', 'kind', 'name', 'areaId', 'areaName', 'dataKind', 'buildingId', 'sourceCount', 'updatedAt',
-      'state', 'jobStatus', 'recordedHistory', 'provenance'])) }, ['total', 'page', 'pageSize', 'items']);
+      'state', 'jobStatus', 'recordedHistory', 'provenance'])) },
+  ['total', 'page', 'pageSize', 'items']);
 export const revisions = object({ featureId: str, currentRevision: integer,
   revisions: array(object({ revision: integer, createdAt: str, areaRevision: integer,
     packageId: nullable(str), body: physicalFeature }, ['revision', 'createdAt', 'areaRevision', 'packageId', 'body'])),

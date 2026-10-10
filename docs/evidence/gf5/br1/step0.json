@@ -1,0 +1,105 @@
+{
+  "task": "BR1",
+  "base": "39ed2dbb677dddd7310889c2cf970adb0e1c0639",
+  "demo": "http://127.0.0.1:3194; GET only; serves 18b5e74c, not this branch",
+  "C7": {
+    "producer": "packages/server/src/modules/officer/building-ledger.ts:137-139,175-178",
+    "sql": [
+      "SELECT record_id,revision,created_at FROM registry_revisions",
+      "WHERE record_id=ANY($1::uuid[]) ORDER BY created_at DESC LIMIT 201"
+    ],
+    "storage": [
+      "database/sql/10-registry/registry.sql:15-19: body jsonb is stored on each immutable registry revision.",
+      "body.kind and body.name hold the historical kind and name; RegistryKind is parcel|building|floor|space.",
+      "There is no actor column. Actor references are strings nested in revision body decisions/command receipts.",
+      "body.sourceOnly.decision.actor identifies the creation decision for source-only floor/space revision 1.",
+      "Building receipts/decisions bind actors to recordRevision; later bodies carry earlier decisions too.",
+      "Never select an actor merely because it occurs somewhere in the body; match its explicit revision binding.",
+      "Space revision 2 carries its revision-1 creation actor, but holds no actor for the identity assignment."
+    ],
+    "tower3": {
+      "entries": 8,
+      "kindAndNameStored": 8,
+      "anyNestedActorStored": 7,
+      "noNestedActor": 1,
+      "actorBoundToThisRevision": 6,
+      "actorNullForThisRevision": 2,
+      "boundActors": "selection-demo-runtime",
+      "nullEntries": ["building revision 1", "space revision 2"]
+    },
+    "GETs": [
+      "/api/v1/buildings/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/ledger: 200, eight registry entries",
+      "/api/v1/registry/6f95d04e-2067-4ac8-a3c2-6cc21ea46325: 200, five building revision bodies",
+      "/api/v1/registry/614ca200-1f3d-48ac-b7db-d1b893b352a1: 200, floor revision 1 body",
+      "/api/v1/registry/46b7265e-ca88-402d-83df-065cf7c45140: 200, space revision 2 and 1 bodies"
+    ],
+    "contract": "packages/contracts/src/building-ledger.ts:38-43, BuildingLedger.history.registry",
+    "schema": "apps/api/src/modules/register/building-ledger.documentation.ts:20-22, buildingLedgerDocumentation",
+    "actorForm": "String references, as SourceStatedRecordSchema.sourceOnly.decision and registry bodies publish.",
+    "implementation": "Read historical body, not current registry_records; no other row supplies actor/kind/name."
+  },
+  "C12": {
+    "producer": "packages/server/src/modules/officer/officer.ts:582-597, buildingDossier.missing",
+    "adviceSentences": [
+      {
+        "line": 586,
+        "absence": "A linked detailed representation changed.",
+        "advice": "Review its source association before using it for this property."
+      },
+      {
+        "line": 590,
+        "text": "No source-linked detailed spaces have been recorded for this property. Add its plans and sections."
+      }
+    ],
+    "consumers": [
+      "Studio RegisterPage.tsx:297-299 and map/inspector/BuildingInspector.tsx:142 render the strings.",
+      "officer-investigations.ts:152,353,592,646 passes missing to snapshots, JSON/CSV/HTML exports.",
+      "scripts/verify-officer.ts:134 checks length; :445-447 matches 'linked detailed representation changed'.",
+      "recorded-building-reads.test.ts:82-83 compares ledger missing arrays, unrelated to these advice strings.",
+      "The substring assertion matches the absence half retained by this change; no consumer needs editing."
+    ],
+    "GETs": [
+      "Tower 3 register: 200, spaces present, two missing sentences (no detailed-space sentence).",
+      "Magnolia e8777ffc-9409-4129-bacf-f680160d8795 register: 200, the detailed-space advice is present.",
+      "Magnolia sources include bihar-magnolia-sanctioned-layout-original.pdf, profile pdf-reference-v2."
+    ],
+    "decision": [
+      "Remove advice only. The read holds PDF-reference sources, not a plan classification/review-to-space count.",
+      "Do not assert N plan sources or that none is reviewed into spaces; state the absence alone."
+    ],
+    "contract": "packages/contracts/src/officer.ts:193, BuildingDossier.missing: string[]",
+    "schema": "apps/api/src/modules/register/documentation.ts:223,272, registerSnapshot/officerExport.missing"
+  },
+  "B3": {
+    "producer": "packages/server/src/modules/officer/work-queue.ts:15-55, readWorkQueue",
+    "query": "No source join; correlated sources count already uses sources.case_id=c.id.",
+    "profile": "tabular-manual-v1",
+    "confirmedFromServer": "packages/server/src/modules/usp/ingestion/service.ts:119, format selects table profile",
+    "storage": "sources.id,case_id,profile,created_at (database/sql/01-core/core.sql:15-30)",
+    "GETs": [
+      "/api/v1/work-queue: 200, 11 rows; no tableSourceIds published",
+      "/api/v1/cases/1ada7796-4e8f-4a19-9b7f-4414e80114c4: 200, one table source",
+      "/api/v1/cases/4ad9cb6d-56c0-445e-a9b6-357d1dc1d452: 200, five table sources",
+      "/api/v1/cases/6d183fef-bcaf-40f6-90dc-2694bc9873a5: 200, no source"
+    ],
+    "contract": [
+      "Existing internal WorkItem is packages/server/src/shared/work-queue.ts (outside owned paths; unchanged).",
+      "Add packages/contracts/src/work-queue.ts for tableSourceIds and extend the owned producer return type."
+    ],
+    "schema": "apps/api/src/modules/register/documentation.ts:246-252, workQueue",
+    "order": "sources.created_at DESC, sources.id DESC for equal timestamps; all retained table sources"
+  },
+  "C8": "Server never published /api/v1/work-board; absent from docs/api/openapi.json; demo GET 404 NOT_FOUND.",
+  "K2": "Server never published /api/v1/buildings/{buildingId}/residents; absent from OpenAPI; demo GET 404.",
+  "draftOrigins": [
+    "packages/api-client/src/draft/index.ts:80 WorkBoard, :300 BuildingResidents are aspirational client types.",
+    "apps/studio/src/api/queries.ts:99,149 calls getDraft with these literal routes; not generated paths."
+  ],
+  "ownedContractFiles": [
+    "packages/contracts/src/building-ledger.ts",
+    "packages/contracts/src/officer.ts (missing remains string[]; no contract edit needed)",
+    "packages/contracts/src/work-queue.ts (new additive table-source interface; direct type import)"
+  ],
+  "stopRule": "No column/migration. Missing actor of building r1 and space r2 stays null; no DB connection made.",
+  "baselineTests": { "officer": 25, "passed": 25, "exitCode": 0 }
+}
