@@ -37,6 +37,12 @@ def test_owner_colon_with_space_is_detected_without_requiring_a_following_word_b
     assert helper().OWNER_RISK.search("owner: [withheld]")
 
 
+def test_task_local_credential_path_is_rejected_before_any_read() -> None:
+    module = helper()
+    with pytest.raises(ValueError, match="D1F_INPUT_PATH_DENIED"):
+        module.checked_task_path(module.TASK_ROOT / ".env")
+
+
 def test_quoted_native_geometry_prefix_is_byte_identical_and_never_overwritten(tmp_path: Path) -> None:
     directory = DATA_ROOT / "opf-d07"
     if not directory.is_dir():

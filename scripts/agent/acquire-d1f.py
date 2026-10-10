@@ -51,6 +51,14 @@ def checked_copy(source: Path, destination: Path, expected: str) -> Row:
     return {"externalPath": destination.as_posix(), "sha256": expected, "bytes": destination.stat().st_size}
 
 
+def checked_task_path(path: Path) -> Path:
+    denied = any(part.lower().startswith(".env") or part.lower() in ("heldout", "evaluator", "runtime")
+                 for part in path.parts)
+    if denied or not path.resolve().is_relative_to(TASK_ROOT.resolve()):
+        raise ValueError("D1F_INPUT_PATH_DENIED")
+    return path
+
+
 def download(spec: Row, path: Path) -> Row:
     policy = urllib.robotparser.RobotFileParser()
     policy.parse(Path(spec["robotsPath"]).read_text(encoding="utf-8").splitlines())
@@ -147,18 +155,18 @@ def retained_download(spec: Row) -> Row:
         if previous[key] != spec[key]:
             raise ValueError("D1F_RECOVERY_LINEAGE_CHANGED")
     recorded = previous["download"]
-    source = Path(recorded["externalPath"])
+    source = checked_task_path(Path(recorded["externalPath"]))
     if not source.resolve().is_relative_to((TASK_ROOT / "provisional").resolve()):
         raise ValueError("D1F_RECOVERY_PATH_DENIED")
-    if digest(source) != recorded["sha256"]:
+    if source.stat().st_size != recorded["bytes"] or digest(source) != recorded["sha256"]:
         raise ValueError("D1F_RECOVERY_BYTES_CHANGED")
     return recorded
 
 
 def validate_spec(spec: Row) -> None:
     for key in ("metadataPath", "robotsPath", "retainedReceipt"):
-        if key in spec and not Path(spec[key]).resolve().is_relative_to(TASK_ROOT.resolve()):
-            raise ValueError("D1F_INPUT_PATH_DENIED")
+        if key in spec:
+            checked_task_path(Path(spec[key]))
     for key in ("id", "receiptId", "family"):
         if key in spec and not re.fullmatch(r"[a-z0-9-]+", spec[key]):
             raise ValueError("D1F_OUTPUT_PATH_DENIED")
@@ -197,9 +205,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("spec", type=Path)
     args = parser.parse_args()
-    if not args.spec.resolve().is_relative_to(TASK_ROOT.resolve()):
-        raise ValueError("D1F_SPEC_PATH_DENIED")
-    specs = json.loads(args.spec.read_bytes())
+    specs = json.loads(checked_task_path(args.spec).read_bytes())
     for spec in specs:
         print(json.dumps(acquire(spec)))
 
