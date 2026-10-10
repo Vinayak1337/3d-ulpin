@@ -10,6 +10,7 @@ import { documentProfileFormats, documentLimitMiB } from "../../shared/document-
 import { areaSceneAssets } from "../spatial/scene-assets";
 import { usesGeographicNeighbours } from "../../shared/neighbour-scenario-policy";
 import { randomUUID } from "node:crypto";
+import { recordCommittedExteriorsTx } from './exterior-records';
 import { redactDerivative } from '../usp/ingest/redact';
 import type { PoolClient } from "pg";
 import type {
@@ -1426,6 +1427,7 @@ export async function commitPackage(
           ],
         );
     }
+    await recordCommittedExteriorsTx(client, pkg.areaId, pkg.features);
     await client.query(
       "UPDATE map_areas SET revision=revision+1,extent=$2,geographic_extent=$3 WHERE id=$1",
       [
