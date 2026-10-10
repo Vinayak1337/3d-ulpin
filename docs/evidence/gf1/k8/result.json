@@ -1,0 +1,165 @@
+{
+ "format": "Text longer than one line is stored as an array of lines.",
+ "task": "K8",
+ "gates": [
+  "GF1",
+  "GF4"
+ ],
+ "scope": "offline protocol evidence only; no runtime request, no database",
+ "route": "GET /api/v1/buildings/{buildingId}/snapshots?limit=",
+ "base": "e387b37d",
+ "step0": {
+  "writtenBeforeCode": true,
+  "readFrom": "the code at staging e387b37d; nothing was requested from a runtime or a database",
+  "building": [
+   [
+    "buildingId is the id the building reads use: a physical_features row whose body kind is 'building'",
+    "(officer/building-ledger.ts:106-110, officer/consolidated-register.ts:70-74,",
+    "registry/canonical-building.ts:769)."
+   ],
+   [
+    "Its site is map_areas.site_id of its area. map_areas.site_id is UNIQUE (database/sql/20-area/area.sql),",
+    "so a site has one area, and that area can hold several buildings."
+   ]
+  ],
+  "snapshot": [
+   [
+    "usp_snapshots has one writer, captureRegistrySnapshotTx (usp/snapshots.ts:150-204); scope_id is the site",
+    "(database/sql/60-usp/03-f1-schema.sql)."
+   ],
+   [
+    "snapshotRows (snapshots.ts:70-148) captures every physical_features row of the site with revision > 0",
+    "(:90-97) whatever the selection: a 'targets' selection only requires its pins to be among those rows",
+    "(:161-168)."
+   ],
+   [
+    "Each captured row is a manifest member { pin: { ref: { namespace, id }, revision }, bodySha256, bodyRef,",
+    "authority } (:56, :170-178). A feature has namespace 'area_feature' and its own id."
+   ]
+  ],
+  "rule": [
+   [
+    "A snapshot is of this building when both hold: usp_snapshots.scope_id equals the building's site id, and",
+    "the stored manifest lists a member whose pin ref is { namespace: 'area_feature', id: buildingId }."
+   ],
+   [
+    "The member revision is not compared. The list says which recorded snapshots hold the building, each at",
+    "the revision it captured; newest-first order is the only statement about recency."
+   ]
+  ],
+  "canTheStoredBodyTell": [
+   "Yes. Members are listed by reference in the stored body, so the read needs no containsBuilding field and",
+   "adds none."
+  ],
+  "siteSnapshotWithoutTheBuilding": [
+   [
+    "Omitted. It was captured when the building was not recorded (absent, or still at revision 0), so its",
+    "scope cannot answer a read about this building: resolveRegistryTarget answers target_not_in_snapshot for",
+    "it. Listing it would hand the client a scope the next read refuses."
+   ],
+   [
+    "The member test is part of the page statement, so an omitted snapshot takes no page slot and does not",
+    "move 'truncated'."
+   ],
+   "A building still at revision 0 answers 200 with no items, because no capture can list it."
+  ],
+  "authority": {
+   "building": [
+    "The ledger's root rule (building-ledger.ts:106-110): revision >= 0, kind 'building', area not archived.",
+    "Otherwise AppError 404 NOT_FOUND 'Building not found.', the code and message the ledger, register and",
+    "canonical reads answer."
+   ],
+   "localUsp": [
+    "assertLocalUsp(ctx) before any statement, as readManifest does (snapshots.ts:219): 403 USP_LOCAL_ONLY."
+   ],
+   "manifest": [
+    "readManifest answers 403 USP_ACCESS_CHANGED when the manifest accessViewId or policyVersion differs from",
+    "the caller's (snapshots.ts:229-231). The listing puts both equalities in the page statement: such a",
+    "snapshot is not selected, takes no page slot and is counted nowhere."
+   ],
+   "notInTheManifest": [
+    "The manifest stores no subject. Subject, case and original checks belong to the cited documents (below)."
+   ]
+  },
+  "documentAssertion": {
+   "called": false,
+   "why": [
+    "readManifest also runs assertSnapshotDocumentsTx (snapshots.ts:206-216) over every captured source of",
+    "the one snapshot it reads. Run per listed snapshot it would let one cited source fail a list of several,",
+    "so the listing reads the stored manifest only."
+   ],
+   "noLongerRefuses": [
+    "A moved-on case revision, reader or policy pin: with pins 'retained' the stored input is located, not",
+    "required to be current (ingestion/document-authority.ts:65-66, K6)."
+   ],
+   "canStillRefuseARetainedSnapshotWhen": [
+    "413 USP_SCOPE_LIMIT: more than 2000 captured sources (snapshots.ts:209).",
+    "409 USP_REVISION_UNAVAILABLE: a stored source body no longer matches its stored hash (:211).",
+    [
+     "403 DOCUMENT_DENIED: the source row is gone while marked or copied, its original marker was removed, it",
+     "is bound to another subject or access, or its case is missing or archived (document-authority.ts:44,",
+     ":50, :53, :74, :82; document-context.ts:30, :62-63)."
+    ],
+    [
+     "409 STALE_REVISION: the case, revision, hash, object key or byte count of the source row changed, or its",
+     "copied lineage changed (document-authority.ts:45-47, :71-72, :75-76)."
+    ],
+    [
+     "409 DOCUMENT_STAGE_UNAVAILABLE: a marked original has no accepted extraction receipt, or the receipt job",
+     "is missing or did not succeed (:56, :60-61)."
+    ],
+    [
+     "422 DOCUMENT_INPUT_INTEGRITY or DOCUMENT_SOURCE_INTEGRITY: the stored job input or the original receipt",
+     "fails its hash comparison (:63-64; document-context.ts:31, :64-67)."
+    ],
+    "404 NOT_FOUND: the source is no longer in its case (document-context.ts:28).",
+    [
+     "409 *_CANONICAL_SOURCE_REQUIRED: the source is a protected OBJ, glTF, KML, CityGML, GeoParquet, DXF or",
+     "IFC original (document-authority.ts:28-41)."
+    ],
+    [
+     "A source-stated original of another site, or one whose original access or bytes changed",
+     "(source-stated-snapshots.ts:73-81)."
+    ]
+   ],
+   "effectOnTheList": [
+    "Such a snapshot is listed with its counts, not dropped. A client that passes its scope on can still",
+    "receive one of these refusals from readManifest, the identity resolve read or the card list; that answer",
+    "names the document condition."
+   ],
+   "count": [
+    "documentResultNotCurrent is the number of members whose stored documentResult.current is false: the",
+    "freshness written at capture (K6), not a fresh check."
+   ]
+  },
+  "storedBodyThatFailsTheSchema": [
+   "Skipped and counted. A selected row whose body fails UspSnapshotManifestSchema, or whose stored scope",
+   "does not name its own row (id, scope_id, digest), is left out of items and counted in a top-level",
+   "'unreadable' number. Items keep one shape, so items[n].scope can always be passed on. Only rows the page",
+   "statement selected are counted (same site, access view, policy and member), so the number reveals no",
+   "hidden snapshot."
+  ],
+  "controller": [
+   [
+    "A new BuildingSnapshotsController in the register module (apps/api/src/modules/register), rooted at",
+    "api/v1/buildings beside BuildingLedgerController, with its line in that module's operation-manifest.json",
+    "and its entry in register.module.ts."
+   ],
+   [
+    "Why there: the path is a building path, and the building's own check must answer the neighbouring 404",
+    "body. Register controllers answer through the global ApiExceptionFilter ({ error: { code, message,",
+    "requestId } }); the USP controllers add EvidenceExceptionFilter, whose body carries 'retryable' and",
+    "would differ from the ledger, register and canonical 404."
+   ],
+   [
+    "The USP admission lives in no controller: it is assertLocalUsp(ctx) in the domain function, with ctx",
+    "from localRequestContext (usp/principal.ts), built from the request id as the USP controllers build it."
+   ],
+   [
+    "The response is the plain document, as the other building reads answer. A USP envelope carries one",
+    "scope; this read answers several."
+   ]
+  ],
+  "decisionForTheLead": "None blocks the read: the stored manifest supports it as specified."
+ }
+}
