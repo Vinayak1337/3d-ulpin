@@ -56,9 +56,10 @@ export function staleReasons(responses: (Freshness | undefined)[]): string[] | n
   return [...reasons].map((reason) => STALE_REASON_WORDS[reason]);
 }
 
-/** A result from an earlier case state stays readable; its answers get no shared reason and no approval. */
+/** A result from an earlier case state stays readable; nothing can be written from it. */
 export function reviewControls(stale: boolean, recipeState: Recipe['state'] | undefined, answering: boolean) {
-  return { approve: !stale && recipeState === 'proposed' && !answering, sharedReason: !stale };
+  return { approve: !stale && recipeState === 'proposed' && !answering, sharedReason: !stale, record: !stale,
+    replay: !stale };
 }
 
 export function learnerTotals(chunks: Metrics[]) {

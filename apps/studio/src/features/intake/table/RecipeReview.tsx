@@ -11,7 +11,7 @@ import styles from './Table.module.css';
 export function RecipeReview({ profile, mapping, job, stale, onApproved }: {
   profile: TableProfile; mapping: ChunkMapping; job: MappingJob; stale: boolean; onApproved: () => void;
 }) {
-  const review = useRecipeReview(profile, mapping, job, onApproved);
+  const review = useRecipeReview(profile, mapping, job, stale, onApproved);
   const { current, confirmation, history, record } = review;
   const controls = reviewControls(stale, current?.state, review.open);
   const eligible = job.route === 'proposal_only' && mapping.questions.length > 0 &&
@@ -30,21 +30,24 @@ export function RecipeReview({ profile, mapping, job, stale, onApproved }: {
         </Button></div> : null}
         {eligible && review.open ? <AnswerForm profile={profile} mapping={mapping} answers={review.answers}
           change={review.change} markUnknown={controls.sharedReason ? review.markUnknown : null}
-          record={review.propose} pending={record.isPending} /> : null}
-        <RecipeActions review={review} job={job} approvable={controls.approve} />
+          record={review.propose} pending={record.isPending} canRecord={controls.record} /> : null}
+        <RecipeActions review={review} job={job} controls={controls} />
         {record.error && !confirmation ? <TableRefusal error={record.error} /> : null}
         {history.data ? <RecipeHistory revisions={history.data} /> : null}
       </div>
-      {confirmation ? <RecipeConfirmation confirmation={confirmation} pending={record.isPending} error={record.error}
-        confirm={() => record.mutate(confirmation)} close={() => review.setConfirmation(null)} /> : null}
+      {confirmation && !stale ? <RecipeConfirmation confirmation={confirmation} pending={record.isPending}
+        error={record.error} confirm={() => record.mutate(confirmation)}
+        close={() => review.setConfirmation(null)} /> : null}
     </section>
   );
 }
 
-function RecipeActions({ review, job, approvable }: {
-  review: ReturnType<typeof useRecipeReview>; job: MappingJob; approvable: boolean;
+function RecipeActions({ review, job, controls }: {
+  review: ReturnType<typeof useRecipeReview>; job: MappingJob; controls: ReturnType<typeof reviewControls>;
 }) {
   const { current, record } = review;
+  const waiting = current?.state === 'approved' && job.route !== 'approved_recipe';
+  const replayable = controls.replay && waiting && Boolean(review.replay);
   const approve = () => {
     if (!current) return;
     record.reset();
@@ -52,10 +55,10 @@ function RecipeActions({ review, job, approvable }: {
       requestKey: crypto.randomUUID() });
   };
   return <>
-    {approvable ? (
+    {controls.approve ? (
       <div><Button variant="primary" onClick={approve}>Approve mapping</Button></div>
     ) : null}
-    {current?.state === 'approved' && job.route !== 'approved_recipe' && review.replay ? (
+    {replayable ? (
       <div><Button disabled={record.isPending} onClick={() => record.mutate(review.replay!)}>
         Retry approved mapping job
       </Button></div>

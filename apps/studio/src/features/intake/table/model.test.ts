@@ -72,10 +72,12 @@ describe('result freshness', () => {
   it('a stale result names its reasons and hides approve; a current result shows it', () => {
     const stale = staleReasons(responsesOf(fresh.stale));
     expect(stale).toEqual(['case advanced']);
-    expect(reviewControls(Boolean(stale), 'proposed', false)).toEqual({ approve: false, sharedReason: false });
+    expect(reviewControls(Boolean(stale), 'proposed', false))
+      .toEqual({ approve: false, sharedReason: false, record: false, replay: false });
     const current = staleReasons([...responsesOf(fresh.files[0]!), undefined]);
     expect(current).toBeNull();
-    expect(reviewControls(Boolean(current), 'proposed', false)).toEqual({ approve: true, sharedReason: true });
+    expect(reviewControls(Boolean(current), 'proposed', false))
+      .toEqual({ approve: true, sharedReason: true, record: true, replay: true });
     expect(reviewControls(false, 'proposed', true).approve).toBe(false);
   });
 
