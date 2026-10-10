@@ -1,8 +1,8 @@
 # Pinned demo runtime
 
 The demo API and dispatcher run from `E:/Projects/ulpin-wt/demo`, a detached, unedited checkout.
-Current reviewed staging commit: `fbe525f7` (10 October 2026; R3 rollout, K5 revocation table applied first,
-document runtimes rebuilt).
+Current reviewed staging commit: `83965a21` (10 October 2026; R4 rollout, K8 snapshot listing and J1a journey,
+no schema step pending, document runtimes rebuilt).
 Loopback API: `http://127.0.0.1:3194`; external demo configuration stays outside every checkout.
 Only the runtime owner explicitly named in a task file may roll this checkout forward.
 Worker worktrees must never serve the demo: lazy imports would mix unreviewed changes into running processes.
