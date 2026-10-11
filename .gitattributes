@@ -72,3 +72,133 @@ docs/evidence/usp/nest-migration/runtime-source/d07-source-review-20261005.json 
 
 # Exact bytes of the scoped document-proposal runtime receipt survive Windows checkouts.
 docs/evidence/usp/nest-migration/runtime-source/d08-document-proposals-20261005.json -text
+
+# FX2: exact raw-file pins; normalized API producers and the isolation harness need no EOL rule.
+# CRLF pins retain CRLF blobs; confirmed LF constituents retain their existing index bytes.
+docs/evidence/usp/cityjson-admission-readiness-runtime.json -text
+docs/evidence/usp/cityjson-admission-runtime.json -text
+docs/evidence/usp/cityjson-reference-runtime.json -text
+docs/evidence/usp/reference-document-enrollment/runtime.json -text
+scripts/usp/desktop-gltf-read.py -text
+services/geo/geo/__init__.py -text
+database/sql/** text eol=lf
+apps/api/src/modules/ingestion/private-mvt.controller.ts text eol=lf
+apps/api/src/modules/spatial/private-spatial.guard.ts text eol=lf
+docs/evidence/usp/cityjson-api-runtime.json text eol=lf
+docs/evidence/usp/cityjson-draft-runtime.json text eol=lf
+docs/evidence/usp/cityjson-validation-runtime.json text eol=lf
+docs/evidence/usp/current-runtime-20261003.json text eol=lf
+docs/evidence/usp/document-association-preview-runtime.json text eol=lf
+docs/evidence/usp/document-authority-correction.json text eol=lf
+docs/evidence/usp/ingest-04a-sufficiency-runtime.json text eol=lf
+docs/evidence/usp/nest-migration/runtime-source/d04-private-roi-20261005.json text eol=lf
+docs/evidence/usp/nest-migration/runtime-source/d04-source-claims-20261005.json text eol=lf
+docs/evidence/usp/nest-migration/runtime-source/d05-manual-mapping-20261005.json text eol=lf
+docs/evidence/usp/nest-migration/runtime-source/d07-source-batch-20261005.json text eol=lf
+docs/evidence/usp/nest-migration/runtime-source/d07-source-review-20261005.json text eol=lf
+docs/evidence/usp/nest-migration/runtime-source/d08-document-proposals-20261005.json text eol=lf
+docs/evidence/usp/nest-migration/runtime-source/phase-2b-2026-09-26.json text eol=lf
+docs/evidence/usp/nest-migration/runtime-source/source-evidence-history-20261005.json text eol=lf
+docs/evidence/usp/private-mvt-runtime.json text eol=lf
+docs/evidence/usp/projected-vector-runtime.json text eol=lf
+docs/evidence/usp/reviewed-document-links-runtime.json text eol=lf
+docs/evidence/usp/semantic-chunks-runtime.json text eol=lf
+docs/evidence/usp/whole-page-ocr-runtime.json text eol=lf
+packages/contracts/src/canonical/mapping-plan.ts text eol=lf
+packages/contracts/src/canonical/targets.ts text eol=lf
+packages/contracts/src/packet-region.ts text eol=lf
+packages/contracts/src/registry-cityjson-validation.ts text eol=lf
+packages/contracts/src/usp/adaptive-mapping.ts text eol=lf
+packages/contracts/src/usp/chunk-mapping.ts text eol=lf
+packages/contracts/src/usp/citygml-ingestion.ts text eol=lf
+packages/contracts/src/usp/document-ingestion.ts text eol=lf
+packages/contracts/src/usp/dxf-ingestion.ts text eol=lf
+packages/contracts/src/usp/geoparquet-ingestion.ts text eol=lf
+packages/contracts/src/usp/gltf-ingestion.ts text eol=lf
+packages/contracts/src/usp/ifc-ingestion.ts text eol=lf
+packages/contracts/src/usp/ingestion.ts text eol=lf
+packages/contracts/src/usp/kml-ingestion.ts text eol=lf
+packages/contracts/src/usp/obj-ingestion.ts text eol=lf
+packages/contracts/src/usp/private-mvt.ts text eol=lf
+packages/contracts/src/usp/projected-vector.ts text eol=lf
+packages/contracts/src/usp/semantic-chunks.ts text eol=lf
+packages/contracts/src/usp/streamed-profile.ts text eol=lf
+packages/contracts/src/usp/streaming-vector.ts text eol=lf
+packages/server/src/infrastructure/db.ts text eol=lf
+packages/server/src/infrastructure/storage.ts text eol=lf
+packages/server/src/modules/registry/cityjson-draft.ts text eol=lf
+packages/server/src/modules/registry/cityjson-validation.ts text eol=lf
+packages/server/src/modules/usp/ingest/redact.ts text eol=lf
+packages/server/src/modules/usp/ingestion/adaptive-mapping-service.ts text eol=lf
+packages/server/src/modules/usp/ingestion/adaptive-mapping.ts text eol=lf
+packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts text eol=lf
+packages/server/src/modules/usp/ingestion/chunk-mapping-learning.ts text eol=lf
+packages/server/src/modules/usp/ingestion/chunk-mapping-normalizer.ts text eol=lf
+packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts text eol=lf
+packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts text eol=lf
+packages/server/src/modules/usp/ingestion/chunk-mapping.ts text eol=lf
+packages/server/src/modules/usp/ingestion/citygml-config.ts text eol=lf
+packages/server/src/modules/usp/ingestion/citygml-processor.ts text eol=lf
+packages/server/src/modules/usp/ingestion/citygml-worker.ts text eol=lf
+packages/server/src/modules/usp/ingestion/citygml.ts text eol=lf
+packages/server/src/modules/usp/ingestion/column-profile.ts text eol=lf
+packages/server/src/modules/usp/ingestion/document-archive.ts text eol=lf
+packages/server/src/modules/usp/ingestion/document-model.ts text eol=lf
+packages/server/src/modules/usp/ingestion/document-native.ts text eol=lf
+packages/server/src/modules/usp/ingestion/document-ocr.ts text eol=lf
+packages/server/src/modules/usp/ingestion/dxf-config.ts text eol=lf
+packages/server/src/modules/usp/ingestion/dxf-processor.ts text eol=lf
+packages/server/src/modules/usp/ingestion/dxf-worker.ts text eol=lf
+packages/server/src/modules/usp/ingestion/dxf.ts text eol=lf
+packages/server/src/modules/usp/ingestion/events.ts text eol=lf
+packages/server/src/modules/usp/ingestion/geoparquet-config.ts text eol=lf
+packages/server/src/modules/usp/ingestion/geoparquet-processor.ts text eol=lf
+packages/server/src/modules/usp/ingestion/geoparquet-worker.ts text eol=lf
+packages/server/src/modules/usp/ingestion/geoparquet.ts text eol=lf
+packages/server/src/modules/usp/ingestion/gltf-config.ts text eol=lf
+packages/server/src/modules/usp/ingestion/gltf-processor.ts text eol=lf
+packages/server/src/modules/usp/ingestion/gltf-worker.ts text eol=lf
+packages/server/src/modules/usp/ingestion/gltf.ts text eol=lf
+packages/server/src/modules/usp/ingestion/ifc-config.ts text eol=lf
+packages/server/src/modules/usp/ingestion/ifc-processor.ts text eol=lf
+packages/server/src/modules/usp/ingestion/ifc-worker.ts text eol=lf
+packages/server/src/modules/usp/ingestion/ifc.ts text eol=lf
+packages/server/src/modules/usp/ingestion/kml-config.ts text eol=lf
+packages/server/src/modules/usp/ingestion/kml-processor.ts text eol=lf
+packages/server/src/modules/usp/ingestion/kml-worker.ts text eol=lf
+packages/server/src/modules/usp/ingestion/kml.ts text eol=lf
+packages/server/src/modules/usp/ingestion/mapping-executor.ts text eol=lf
+packages/server/src/modules/usp/ingestion/mapping-memory.ts text eol=lf
+packages/server/src/modules/usp/ingestion/mapping-plan-v2.ts text eol=lf
+packages/server/src/modules/usp/ingestion/mapping-teacher.ts text eol=lf
+packages/server/src/modules/usp/ingestion/obj-config.ts text eol=lf
+packages/server/src/modules/usp/ingestion/obj-processor.ts text eol=lf
+packages/server/src/modules/usp/ingestion/obj-worker.ts text eol=lf
+packages/server/src/modules/usp/ingestion/obj.ts text eol=lf
+packages/server/src/modules/usp/ingestion/projected-publication.ts text eol=lf
+packages/server/src/modules/usp/ingestion/projected-vector.ts text eol=lf
+packages/server/src/modules/usp/ingestion/registry.ts text eol=lf
+packages/server/src/modules/usp/ingestion/semantic-chunks.ts text eol=lf
+packages/server/src/modules/usp/ingestion/semantic-display.ts text eol=lf
+packages/server/src/modules/usp/ingestion/service.ts text eol=lf
+packages/server/src/modules/usp/ingestion/streamed-mapping.ts text eol=lf
+packages/server/src/modules/usp/ingestion/streamed-profile-inventory.ts text eol=lf
+packages/server/src/modules/usp/ingestion/streamed-profile-worker.ts text eol=lf
+packages/server/src/modules/usp/ingestion/streamed-profile.ts text eol=lf
+packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts text eol=lf
+packages/server/src/modules/usp/ingestion/streaming-vector-validation.ts text eol=lf
+packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts text eol=lf
+packages/server/src/modules/usp/ingestion/streaming-vector.ts text eol=lf
+packages/server/src/modules/usp/ingestion/tabular-recipe.ts text eol=lf
+packages/server/src/modules/usp/ingestion/tabular-source.ts text eol=lf
+packages/server/src/modules/usp/ingestion/unit-table.ts text eol=lf
+packages/server/src/modules/usp/jobs.ts text eol=lf
+packages/server/src/modules/usp/tiles/bounds.ts text eol=lf
+packages/server/src/modules/usp/tiles/capacity.ts text eol=lf
+packages/server/src/modules/usp/tiles/compiler.ts text eol=lf
+packages/server/src/modules/usp/tiles/grid.ts text eol=lf
+packages/server/src/modules/usp/tiles/publication.ts text eol=lf
+packages/server/src/modules/usp/tiles/service.ts text eol=lf
+packages/server/src/modules/usp/tiles/storage.ts text eol=lf
+scripts/usp/desktop-obj-read.py text eol=lf
+services/geo/geo/native_obj.py text eol=lf
