@@ -16,7 +16,7 @@ it('routes map originals to intake, binary maps to direct import and tables to t
 });
 
 it('keeps a question distinct from state and renders unknown counts without zero', () => {
-  const item = controls.manifest.items[0] as IntakeItem;
+  const item = { ...controls.manifest.items[0], plan: null } as IntakeItem;
   expect(stateWords(item.state)).toBe('File checked');
   expect(placementWords(item.placement)).toBe('Needs an answer');
   expect(isSettled(item)).toBe(true);

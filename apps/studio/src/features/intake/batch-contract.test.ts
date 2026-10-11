@@ -13,11 +13,13 @@ type MethodPath<Method extends 'get' | 'post'> = {
 
 const reads = [
   '/api/v1/work-queue', '/api/v1/cases/{caseId}', '/api/v1/ingestion/cases/{caseId}/intake',
-  '/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/profile', '/api/v1/ingestion/cases/{caseId}/events',
+  '/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}', '/api/v1/ingestion/cases/{caseId}/targets',
+  '/api/v1/ingestion/cases/{caseId}/events',
 ] as const satisfies ReadonlyArray<MethodPath<'get'>>;
 const writes = [
   '/api/v1/cases', '/api/v1/ingestion/cases/{caseId}/sources',
   '/api/v1/ingestion/cases/{caseId}/intake/items',
+  '/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/approve',
 ] as const satisfies ReadonlyArray<MethodPath<'post'>>;
 
 it('pins every typed path called by the intake screen and drop', () => {
@@ -32,14 +34,17 @@ it('validates real retained profiles and the batch manifest against the publishe
       .get.responses['200'].content['application/json'].schema.$ref.split('/').at(-1);
     expect(validate(readSchema, profile)).toEqual([]);
   }
-  expect(validate('GET_ingestion_cases_caseId_intake_Response_200_application_json', controls.manifest)).toEqual([]);
+  // Historic E3a receipt predates E1b. Keep its evidence unchanged; explicitly adapt the added nullable projection.
+  const manifest = { ...controls.manifest, items: controls.manifest.items.map(item => ({ ...item, plan: null })) };
+  expect(validate('GET_ingestion_cases_caseId_intake_Response_200_application_json', manifest)).toEqual([]);
 });
 
-it('states the exact contract gaps rather than obtaining layout facts from an alternate read', () => {
+it('uses the published plan projection and never profile-private destination suggestions', () => {
   const item = openapi.components.schemas.GET_ingestion_cases_caseId_intake_Response_200_application_json
     .properties.items.items;
   const resolved = item.$ref ? openapi.components.schemas[item.$ref.split('/').at(-1)] : item;
   expect(resolved.properties.planRef).toBeUndefined();
+  expect(resolved.required).toContain('plan');
   for (const profile of controls.profiles) {
     expect(profile).not.toHaveProperty('suggestedIdField');
     expect(profile).not.toHaveProperty('suggestedTitle');
