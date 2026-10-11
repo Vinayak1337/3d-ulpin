@@ -251,6 +251,8 @@ test('a bound batch proposes its site area; an unbound batch proposes a new area
 test('an area the normalizer refuses becomes the officer question in its words; outages do not', () => {
   const refused = 'Features exceed 50 km from the retained area origin; select the matching map area.';
   assert.equal(officerQuestion(new AppError(422, 'AREA_PROCESSING', refused)), refused);
+  const uncovered = 'The selected analysis CRS does not cover this area; use its appropriate UTM zone and hemisphere.';
+  assert.equal(officerQuestion(new AppError(422, 'AREA_PROCESSING', uncovered)), uncovered);
   assert.equal(officerQuestion(new AppError(403, 'AREA_SOURCE_DENIED', 'other')),
     "Use an area of this batch's site or place the file in a separate intake batch.");
   assert.equal(officerQuestion(new AppError(503, 'AREA_PROCESSING', 'unavailable')), null);

@@ -16,7 +16,7 @@ class IntakeRunTestModule {}
 const id = '10000000-0000-4000-8000-000000000001';
 const request = (body: unknown) => Object.assign(Readable.from([Buffer.from(JSON.stringify(body))]), { headers: {} });
 
-test('target filters are single, bounded and strict: duplicate cursors or ignored query fields cannot change a read', () => {
+test('target filters are strict: duplicate cursors or ignored query fields cannot change a read', () => {
   assert.deepEqual(intakeTargetQuery('/api/v1/ingestion/cases/x/targets'), {});
   assert.deepEqual(intakeTargetQuery(`/targets?readiness=ready&cursor=${id}`),
     { readiness: 'ready', cursor: id });
