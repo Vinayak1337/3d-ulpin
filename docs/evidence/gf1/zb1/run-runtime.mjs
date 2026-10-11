@@ -6,7 +6,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 const target = process.argv[2];
 if (!target || existsSync(target)) throw new Error('Supply a new immutable runtime receipt path.');
 const order = process.argv[3] ?? 'building-first';
-if (process.argv.length > 4 || !['building-first', 'parks-first', 'final'].includes(order)) {
+if (process.argv.length > 4 || !['building-first', 'parks-first', 'final', 'refusal-control'].includes(order)) {
   throw new Error('Only an immutable receipt path and a bounded walk order are accepted.');
 }
 const nonce = randomBytes(8).toString('hex');

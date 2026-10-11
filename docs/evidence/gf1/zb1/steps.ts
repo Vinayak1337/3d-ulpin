@@ -6,6 +6,8 @@ import { closePool, migrate, query } from '../../../../packages/server/src/infra
 import { sql } from '../../../../packages/server/src/infrastructure/sql-loader';
 import { sha256 } from '../../../../packages/server/src/infrastructure/storage';
 import { startHttp, stopHttp } from '../kn2/http';
+import { readArea } from './area-read';
+import { refusalControl } from './refusal-control';
 import { startSandbox, stopSandbox } from '../aq1/sandbox';
 import { idle, prepareJobs, reviews, startDispatcher, stopDispatcher } from './jobs';
 import { confirm, drop, folder, layers, makeCase, manifest, packageRead, targets } from './http-walk';
@@ -53,6 +55,30 @@ async function buildingFirst() {
   const final = await observation(caseId, parks);
   results.buildingFirst = { caseId, buildings, cards, parks, initial, final,
     waitedAfterDraftMs: Date.now() - Date.parse(parks.draftedAt), noManualReviewRequest: true };
+  if (process.env.ULPIN_ZB1_ORDER === 'final') await recordLayers(caseId, parks, final);
+}
+
+async function recordLayers(caseId: string, parks: Awaited<ReturnType<typeof drop>>,
+  final: Awaited<ReturnType<typeof observation>>) {
+  if (!final.entry.reviewFingerprint) {
+    results.parksRecording = { notConfirmed: true, observation: final };
+    return;
+  }
+  const recorded = await confirm(caseId, parks.packageId, 0);
+  const area = await readArea(final.package.areaId);
+  assert.equal(area.buildings, 1661);
+  assert.equal(area.publicLand, 41);
+  results.parksRecording = { recorded, area, targetsListed: 0 };
+  const roads = await drop(caseId, layers[2]);
+  await idle(caseId);
+  const observationRead = await observation(caseId, roads);
+  if (!observationRead.entry.reviewFingerprint) {
+    results.roadsRecording = { notConfirmed: true, observation: observationRead };
+    return;
+  }
+  results.roadsRecording = { roads, observation: observationRead,
+    recorded: await confirm(caseId, roads.packageId, 0), targetsListed: 0 };
+  Object.assign(results.roadsRecording!, { area: await readArea(final.package.areaId) });
 }
 
 async function parksFirst() {
@@ -75,7 +101,8 @@ async function main() {
     await startSandbox();
     await startHttp();
     startDispatcher();
-    if (process.env.ULPIN_ZB1_ORDER === 'parks-first') await parksFirst();
+    if (process.env.ULPIN_ZB1_ORDER === 'refusal-control') results.refusalControl = await refusalControl();
+    else if (process.env.ULPIN_ZB1_ORDER === 'parks-first') await parksFirst();
     else await buildingFirst();
   } catch (error: any) {
     failures.push({ code: error.code, message: error.message, stack: error.stack?.split('\n') });

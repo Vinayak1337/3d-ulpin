@@ -84,7 +84,8 @@ function reviewed(buildings: boolean): ImportPackage {
 }
 
 for (const buildings of [false, true]) {
-  test(`review refusal publishes code and words with ${buildings ? 'a building' : 'no building'}, then clears`, async () => {
+  const targetDescription = buildings ? 'a building' : 'no building';
+  test(`review refusal publishes code and words with ${targetDescription}, then clears`, async () => {
     process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'review-outcome-protocol';
     const control = protocol(buildings);
     assert.equal((await page(control)).packages[0].reviewRefusal, null);
@@ -93,6 +94,9 @@ for (const buildings of [false, true]) {
     assert.equal(control.item.placement, 'on_map');
     assert.equal(control.item.limit_reason, message);
     assert.deepEqual((await page(control)).packages[0].reviewRefusal, refusal);
+    const itemEvents = control.calls.filter(call => call.sql.startsWith('SELECT item_id AS')).length;
+    await holdPackageTargetsTx(control.client, caseId, packageId, refusal.code, refusal.message);
+    assert.equal(control.calls.filter(call => call.sql.startsWith('SELECT item_id AS')).length, itemEvents);
     if (buildings) {
       assert.equal(control.target.readiness, 'held');
       assert.equal(control.target.reason, message);

@@ -100,5 +100,6 @@ export async function confirm(caseId: string, packageId: string, buildingCount: 
   const pkg = await packageRead(packageId);
   assert.equal(pkg.state, 'COMMITTED');
   return { pressedAt, completedAt: new Date().toISOString(), confirmation: completed,
-    observedPackageFeatures: pkg.features.length, recordedFeatures: pkg.features.filter(row => row.revision > 0).length };
+    observedPackageFeatures: pkg.features.length,
+    recordedFeatures: pkg.features.filter(row => row.revision > 0).length };
 }
