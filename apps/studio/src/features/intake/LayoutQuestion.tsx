@@ -1,56 +1,63 @@
 import { useState } from 'react';
+import { ApiError } from '@ulpin/api-client';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
-import type { GetResponse } from '@ulpin/api-client';
-import { useTableProfile } from './table/queries';
-import { fieldWords } from './batch-model';
+import type { IntakeItem } from './batch-model';
+import { approveLayout, useBatchRecipe } from './batch-queries';
+import { changedLayoutWords, latestRecipe, layoutLines, noLayoutWords } from './layout-model';
+import type { Recipe } from './layout-model';
 import styles from './Batch.module.css';
 
-type Profile = GetResponse<'/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/profile'>;
-type MapProfile = Extract<Profile, { version: 'manual-geojson/1' }>;
-
-/** The published profile lacks destination suggestions, so this question cannot author a layout yet. */
-export function LayoutQuestion({ caseId, sourceId, name }: { caseId: string; sourceId: string; name: string }) {
-  const profile = useTableProfile(caseId, sourceId);
-  return <section className={styles.question} aria-label={`Layout question for ${name}`}>
-    <h2 className="ul-heading">Available layout fields · {name}</h2>
-    {profile.isPending ? <Skeleton /> : null}
-    {profile.error ? <Banner tone="danger">{profile.error.message}</Banner> : null}
-    {profile.data?.version === 'manual-geojson/1' ? <>
-      <LayoutFields profile={profile.data} />
-      <Banner tone="warning">
-        The profile does not supply an area name or naming scope. A layout cannot be proposed here yet.
-        The batch also does not supply its current layout, so it cannot be reviewed or approved here.
-      </Banner>
-      <Button variant="primary" disabled title="The profile and batch do not supply the required layout details.">
-        Propose layout
-      </Button>
-    </> : null}
-    {profile.data && profile.data.version !== 'manual-geojson/1' ?
-      <p>This question is only available for retained map files.</p> : null}
-  </section>;
+/** Read and approve only. The officer's layout question is a separate task. */
+export function LayoutQuestion({ caseId, item, refresh }: {
+  caseId: string; item: IntakeItem; refresh: () => void;
+}) {
+  const query = useBatchRecipe(caseId, item.plan?.recipeId ?? '');
+  const receipt = latestRecipe(query.data ?? []);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [changed, setChanged] = useState(false);
+  const approve = async (shown: Recipe) => {
+    setBusy(true);
+    setError('');
+    setChanged(false);
+    try {
+      await approveLayout(caseId, shown);
+      await query.refetch();
+      refresh();
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : 'The server gave no answer. Refresh before approving.');
+      if (failure instanceof ApiError && failure.status === 409) {
+        setChanged(true);
+        await query.refetch();
+        refresh();
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+  return <LayoutPanel item={item} receipt={receipt} pending={query.isPending} readError={query.error?.message}
+    busy={busy} changed={changed} error={error} approve={() => receipt && void approve(receipt)} />;
 }
 
-function LayoutFields({ profile }: { profile: MapProfile }) {
-  const [identifier, setIdentifier] = useState('');
-  return <div className={styles.fields}>
-    <label className="ul-field">
-      <span className="ul-label">Field identifying each feature</span>
-      <select className="ul-input" value={identifier} onChange={(event) => setIdentifier(event.target.value)}>
-        <option value="">Choose a field</option>
-        {profile.paths.filter((field) => field.literalIdEligible).map((field) => (
-          <option key={field.path} value={field.path}>{fieldWords(field.path)}</option>
-        ))}
-      </select>
-      <span className="ul-help">No suggested identifier is supplied by this profile.</span>
-    </label>
-    <div className="ul-field">
-      <span className="ul-label">Layout available here</span>
-      <span>Buildings only</span>
-      <span className="ul-help">This is a layout option, not a finding about this file.</span>
-    </div>
-    <div className="ul-field">
-      <span className="ul-label">Area name</span>
-      <span>Not known</span>
-    </div>
-  </div>;
+function LayoutPanel({ item, receipt, pending, readError, busy, changed, error, approve }: {
+  item: IntakeItem; receipt?: Recipe; pending: boolean; readError?: string;
+  busy: boolean; changed: boolean; error: string; approve: () => void;
+}) {
+  return <section className={styles.question} aria-label={`Layout for ${item.name}`}>
+    <h2 className="ul-heading">Layout · {item.name}</h2>
+    {!item.plan ? <p>{noLayoutWords}</p> : <>
+      {pending ? <Skeleton /> : null}
+      {readError ? <Banner tone="danger">{readError}</Banner> : null}
+      {changed ? <Banner tone="warning">{changedLayoutWords}</Banner> : null}
+      {error ? <p role="alert">{error}</p> : null}
+      {receipt ? <>
+        <p className="ul-help">Revision {receipt.revision} · {receipt.state}</p>
+        {layoutLines(receipt, item.plan.origin).map((line, index) => <p key={index}>{line}</p>)}
+        {receipt.state === 'proposed' ? <Button variant="primary" onClick={approve}
+          disabled={busy || Boolean(readError)}>{busy ? 'Approving layout…' : 'Approve layout'}</Button>
+          : <p>This layout is {receipt.state === 'approved' ? 'approved' : 'executed'} and is read-only.</p>}
+      </> : null}
+      {!pending && !readError && !receipt ? <p>Layout: not supplied by the record</p> : null}
+    </>}
+  </section>;
 }

@@ -28,12 +28,6 @@
   gap: var(--ui-space-4);
 }
 
-.fields {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-  gap: var(--ui-space-4);
-}
-
 .tray {
   overflow-x: auto;
   min-width: 0;
@@ -66,4 +60,8 @@
 
 .question > button {
   justify-self: start;
+}
+
+.question p {
+  overflow-wrap: anywhere;
 }
