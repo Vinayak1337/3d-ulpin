@@ -828,7 +828,9 @@ export async function ingestArea(input: {
             ],
             method: "native_parse",
           },
-          sourceReference: normalized.reference,
+          sourceReference: ["gpkg", "shapefile_zip"].includes(input.format)
+            ? candidate.sourceReference
+            : normalized.reference,
           id,
           identifier,
           areaId: areaRow.id,
