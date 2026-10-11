@@ -1,7 +1,7 @@
 import type { PoolClient } from 'pg';
 import { StreamedMapOriginalReceiptSchema, STREAMING_VECTOR_LIMITS as limits,
   type StreamingVectorInput, type StreamedMapOriginalReceipt } from '@ulpin/contracts/usp';
-import { conflict } from '../../../infrastructure/errors';
+import { AppError, conflict } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 
 type Slot = {
@@ -70,6 +70,9 @@ export async function writeSealedMapReceiptTx(client: PoolClient, input: Streami
     accepted,quarantined,published,result_sha256 FROM usp_streaming_vector_slots
     WHERE job_id=$1 AND source_revision=$2 ORDER BY chunk_index`, [input.jobId, input.sourceRevision])).rows;
   const receipt = sealedMapReceipt(input, closure, slots);
+  if (receipt.reference.coordinateUnit !== 'degree')
+    throw new AppError(422, 'STREAMING_SOURCE_CRS',
+      'The large GeoJSON reader supports longitude/latitude CRS84 only; its declared system is unsupported.');
   if (state.sealed_chunks !== receipt.parts || state.next_publish_index !== receipt.parts
     || state.records !== receipt.features || state.accepted !== receipt.accepted
     || state.quarantined !== receipt.quarantined) conflict('The reader totals differ from its sealed manifest.');

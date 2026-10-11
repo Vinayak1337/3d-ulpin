@@ -50,7 +50,9 @@ export function packageDifference(named: IntakeConfirm['packages'][number], pkg:
 async function assertPackagesTx(client: PoolClient, caseId: string, input: IntakeConfirm) {
   for (const named of input.packages) {
     const row = (await client.query(`SELECT p.body FROM import_packages p WHERE p.id=$1 AND EXISTS (
-      SELECT 1 FROM usp_intake_items i WHERE i.plan_ref->>'packageId'=p.id::text
+      SELECT 1 FROM usp_intake_items i WHERE (i.plan_ref->>'packageId'=p.id::text
+        OR EXISTS (SELECT 1 FROM usp_intake_parts part WHERE part.item_id=i.item_id
+          AND part.state='published' AND part.result_ref->>'packageId'=p.id::text))
         AND i.case_id=$2) FOR UPDATE OF p`,
     [named.packageId, caseId])).rows[0];
     const difference = packageDifference(named, row?.body);

@@ -75,6 +75,9 @@ test('source reference states omission assumption but never labels a projected C
     const ref = streamedSourceReference({ crs: { type: 'name', properties: { name } } });
     assert.equal(ref.sourceCrs, name);
     assert.equal(ref.coordinateUnit, 'unknown');
+    const retained = source();
+    retained.inspection.streamedMapReceipt.reference = ref;
+    assert(!isRetainedMapOriginal(retained));
   }
   assert.equal(streamedSourceReference({ crs: null }).sourceCrs, null);
   assert.equal(streamedSourceReference({ crs: { type: 'name', properties: {
@@ -98,6 +101,12 @@ test('receipt SQL write occurs only after closed state and exact source authorit
   await assert.rejects(writeSealedMapReceiptTx(client as any, input, closure));
   assert.equal(writes, 0);
   state = 'completed_with_rejections';
+  for (const name of ['EPSG:2958', 'EPSG:3857']) {
+    await assert.rejects(writeSealedMapReceiptTx(client as any, input, { ...closure,
+      metadata: { crs: { type: 'name', properties: { name } } } }),
+    (error: any) => error.code === 'STREAMING_SOURCE_CRS' && error.status === 422);
+  }
+  assert.equal(writes, 0);
   await writeSealedMapReceiptTx(client as any, input, closure);
   assert.equal(writes, 1);
 });

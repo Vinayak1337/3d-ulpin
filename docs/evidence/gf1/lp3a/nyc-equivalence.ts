@@ -23,6 +23,11 @@ import { StreamedProfileService } from '../../../../packages/server/src/modules/
 import { runStreamedProfileJob } from '../../../../packages/server/src/modules/usp/ingestion/streamed-profile-worker';
 import { StreamedMappingService } from '../../../../packages/server/src/modules/usp/ingestion/streamed-mapping';
 import type { ProvedAreaPartInput } from '../../../../packages/server/src/modules/usp/ingestion/proved-area-part';
+import { ChunkMappingService } from '../../../../packages/server/src/modules/usp/ingestion/chunk-mapping';
+import { runChunkMappingJob } from '../../../../packages/server/src/modules/usp/ingestion/chunk-mapping-worker';
+import { draftIntakePartTx } from '../../../../packages/server/src/modules/usp/ingestion/intake-part-draft';
+import { registerIntakeItemTx } from '../../../../packages/server/src/modules/usp/ingestion/intake-ledger';
+import { listIntakeTargets } from '../../../../packages/server/src/modules/usp/ingestion/intake-targets';
 
 const path = 'E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson';
 const bytes = readFileSync(path), digest = sha256(bytes);
@@ -116,7 +121,11 @@ async function originalFixture() {
       object_key,status,inspection) VALUES($1,$2,$1,1,$3,'large-original-v1','application/octet-stream',
       $4,$5,$6,'needs_input',$7)`, [sourceId, caseId, origin.name, bytes.length, digest, objectKey, {
       status: 'needs_input', largeOriginal: { operatorSubject: localOperatorSubject(), verifiedBytes: bytes.length,
-        verifiedSha256: digest, provenance: { issuer: published.issuer, originalUrl: origin.url } },
+        verifiedSha256: digest, uploadId: randomUUID(), objectEtag: `"${digest}"`, conversion: 'unsupported',
+        bundleCompleteness: 'single_original_only_archive_dependencies_not_assessed',
+        provenance: { issuer: published.issuer, originalUrl: origin.url, acquiredAt: '2026-09-27T00:00:00.000Z',
+          permissionReference: 'Publisher terms retained; foreign test only, permission unconfirmed.',
+          limitations: ['Disposable equivalence control, not operational admission.'], state: 'caller_declared' } },
     }]);
   });
   const current = (await query('SELECT revision FROM cases WHERE id=$1', [caseId])).rows[0].revision;
@@ -196,16 +205,28 @@ function comparedFeature(feature: ImportPackage['features'][number]) {
     sourceReference: feature.sourceReference, height, semantics: feature.semantics,
     worldStatus: feature.worldStatus, representation: feature.representation };
 }
-async function walk() {
-  const baseline = await ingestArea({ bytes, filename: origin.name, format: 'geojson',
-    namespace: `lp3a-bounded-${randomUUID()}`, name: 'NYC bounded equivalence control',
-    mapping: { kind: 'building', idField: 'doitt_id', geometryRole: 'unknown' } });
+async function mappedFixture() {
   const fixture = await originalFixture();
   const features = await publishPureFixture(fixture.input), approved = await layout(fixture);
+  await transaction(async client => {
+    const source = (await client.query('SELECT * FROM sources WHERE id=$1', [fixture.sourceId])).rows[0];
+    await registerIntakeItemTx(client, source);
+  });
+  const mapped = await new ChunkMappingService().enqueue(fixture.caseId, fixture.sourceId,
+    { requestKey: randomUUID(), expectedCaseRevision: fixture.current, expectedSourceRevision: 1,
+      sourceSha256: digest, rawJobId: fixture.reader.jobId, profileJobId: approved.plan.profileJobId,
+      profileGeneration: approved.plan.profileGeneration, profileHash: approved.plan.profileHash });
+  await runChunkMappingJob(mapped.jobId);
+  const mapping = await new ChunkMappingService().status(fixture.caseId, fixture.sourceId, mapped.jobId);
+  assert.equal(mapping.unknownRemainder, false);
+  assert.equal(mapping.sealedChunks, 17);
   const input: ProvedAreaPartInput = { sourceId: fixture.sourceId, sourceRevision: 1, sourceSha256: digest,
     readerVersion: 'geojson-stream/2', layoutHash: approved.planHash, cutIndex: 0, features,
     destination: { namespace: `lp3a-proved-${randomUUID()}`, name: 'NYC proved equivalence control' } };
-  const pkg = await transaction(client => ingestProvedAreaPart(input, client));
+  const pkg = await transaction(client => draftIntakePartTx(client, fixture.sourceId, mapped.jobId, input));
+  return { fixture, features, input, pkg, mapped };
+}
+function comparePackages(baseline: ImportPackage, pkg: ImportPackage) {
   assert.equal(pkg.features.length, 1661);
   assert.deepEqual(pkg.features.map(comparedFeature), baseline.features.map(comparedFeature));
   const quarantine = (value: ImportPackage) => {
@@ -214,6 +235,8 @@ async function walk() {
   };
   assert.deepEqual(quarantine(pkg), quarantine(baseline));
   assert.equal(pkg.quarantine!.rejections[0].featureIndex, 1322);
+}
+async function proveReplay({ fixture, mapped, input, pkg }: Awaited<ReturnType<typeof mappedFixture>>) {
   let writes = 0;
   const replay = await transaction(client => {
     const run = client.query.bind(client);
@@ -221,23 +244,50 @@ async function walk() {
       if (/^(INSERT|UPDATE|DELETE)/i.test(text.trim())) writes++;
       return run(text, values);
     }) as typeof client.query;
-    return ingestProvedAreaPart(input, client).finally(() => { client.query = run as typeof client.query; });
+    return draftIntakePartTx(client, fixture.sourceId, mapped.jobId, input)
+      .finally(() => { client.query = run as typeof client.query; });
   });
   assert.equal(replay.id, pkg.id);
   assert.equal(writes, 0);
+  return writes;
+}
+async function proveRelations({ fixture, input, pkg, features }: Awaited<ReturnType<typeof mappedFixture>>,
+  writes: number) {
   const sources = Number((await query('SELECT count(*)::int n FROM sources WHERE case_id=$1',
     [fixture.caseId])).rows[0].n);
   assert.equal(sources, 1);
-  assert.equal((await query('SELECT case_id FROM import_packages WHERE id=$1', [pkg.id])).rows[0].case_id, fixture.caseId);
+  const packageRow = (await query('SELECT case_id FROM import_packages WHERE id=$1', [pkg.id])).rows[0];
+  assert.equal(packageRow.case_id, fixture.caseId);
+  const page = await listIntakeTargets(fixture.caseId, undefined, undefined);
+  assert(page.packages.some(value => value.packageId === pkg.id && value.anchorItemId === fixture.sourceId));
+  assert.equal(page.counts.preparing, 1661);
+  const item = (await query('SELECT plan_ref,parts_done FROM usp_intake_items WHERE item_id=$1',
+    [fixture.sourceId])).rows[0];
+  assert.equal(item.plan_ref, null);
+  assert.equal(item.parts_done, 1);
   const changed = { ...input, cutIndex: 1, features: [{ ...features[0], rawBytes: Buffer.from('changed') }] };
   await assert.rejects(transaction(client => ingestProvedAreaPart(changed, client)), /raw feature bytes differ/);
   Object.assign(proof, { compared: pkg.features.length, quarantinedIndex: 1322, rawParts: 17,
     comparedFields: Object.keys(comparedFeature(pkg.features[0])), comparedQuarantine: true,
     replay: { samePackage: true, SQLWrites: writes }, originalSourceRows: sources,
+    intakeParts: Number((await query('SELECT count(*)::int n FROM usp_intake_parts WHERE item_id=$1',
+      [fixture.sourceId])).rows[0].n),
+    intakeTargets: Number((await query('SELECT count(*)::int n FROM usp_intake_targets WHERE anchor_item_id=$1',
+      [fixture.sourceId])).rows[0].n),
     packageInIntakeCase: true, badRawHashRefused: true, requests,
+    packageListedFromParts: true, planPackageId: null, targetsPreparing: page.counts.preparing,
     issuerMeaning: 'Harness chooses doitt_id as key and source geometry as building exterior; '
       + 'no height or name field.',
     objectStore: 'CAR-pattern in-memory loopback S3 protocol store, not MinIO or production throughput.' });
+}
+async function walk() {
+  const baseline = await ingestArea({ bytes, filename: origin.name, format: 'geojson',
+    namespace: `lp3a-bounded-${randomUUID()}`, name: 'NYC bounded equivalence control',
+    mapping: { kind: 'building', idField: 'doitt_id', geometryRole: 'unknown' } });
+  const controls = await mappedFixture();
+  comparePackages(baseline, controls.pkg);
+  const writes = await proveReplay(controls);
+  await proveRelations(controls, writes);
 }
 async function main() {
   ownedBox();

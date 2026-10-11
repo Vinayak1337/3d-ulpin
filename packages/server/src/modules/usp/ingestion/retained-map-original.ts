@@ -15,7 +15,8 @@ export function isRetainedMapOriginal(source: {
     const upload = object(inspection?.largeOriginal);
     if (!parsed.success) return false;
     const receipt = parsed.data;
-    return receipt.sourceId === source.id && receipt.sourceRevision === source.revision
+    return receipt.reference.coordinateUnit === 'degree'
+      && receipt.sourceId === source.id && receipt.sourceRevision === source.revision
       && receipt.sourceBytes === Number(source.bytes) && receipt.sourceSha256 === source.sha256
       && upload?.verifiedSha256 === receipt.sourceSha256 && upload?.verifiedBytes === receipt.sourceBytes;
   }
