@@ -87,7 +87,9 @@ test('OBJ status derives complete counts from the retained actual native artifac
     assert.equal(summary.status,name==='no_material.obj'?'inspected_local':'inspected_partial');
   }
 });
-test('OBJ canonical intake retains complete/partial native context and rejects revoked disclosure',async()=>{
+test('OBJ canonical intake retains complete/partial native context and rejects revoked disclosure',
+  {skip:process.env.ULPIN_OBJ_LOCAL_PROCESS==='1'?false:
+    'needs ULPIN_OBJ_LOCAL_PROCESS=1 and ULPIN_OBJ_PROFILE / ULPIN_OBJ_PROFILE_SHA256 (native bridge)'},async()=>{
   assert(present,'Retained unchanged OBJ originals are required.');
   assert.equal(process.env.ULPIN_OBJ_LOCAL_PROCESS,'1','Explicit current-profile admission is required.');
   for(const sourceName of ['no_material.obj','missing_material_file.obj'])await isolated(async f=>{
