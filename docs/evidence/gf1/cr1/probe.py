@@ -21,6 +21,9 @@ def baseline(path: str, name: str) -> types.ModuleType:
     source = subprocess.check_output(["git", "show", f"{BASE}:{path}"], cwd=ROOT).decode("utf-8")
     module = types.ModuleType(f"geo.cr1_baseline_{name}")
     module.__package__ = "geo"
+    sys.modules[module.__name__] = module
+    if name == "inspection":
+        source = source.replace("from .area import ", "from .cr1_baseline_area import ")
     exec(compile(source, path, "exec"), module.__dict__)
     return module
 
@@ -58,6 +61,12 @@ def main() -> None:
     nyc_request = payload(json.loads(NYC.read_bytes()), "doitt_id", "building")
     old = old_area.normalize_area(nyc_request)
     current = normalize_area(nyc_request)
+    control = {"format": "geojson", "data": {"type": "FeatureCollection", "features": [
+        {"type": "Feature", "id": "control", "properties": {}, "geometry": {"type": "Polygon",
+         "coordinates": [[[77, 28], [77.0001, 28], [77.0001, 28.0001], [77, 28.0001], [77, 28]]]}}]},
+        "mapping": {"kind": "building"}}
+    before_control = old_area.normalize_area(control)
+    after_control = normalize_area(control)
     result = {"baseCommit": BASE, "path": str(DA5), "bytes": len(raw),
               "sha256": hashlib.sha256(raw).hexdigest(), "declaration": source["crs"],
               "normalizerRefusal": refusal(lambda: old_area.normalize_area(request)),
@@ -69,11 +78,15 @@ def main() -> None:
                   "inspectionWords": refusal(lambda: old_inspection.inspect_gis({
                       "base64": base64.b64encode(json.dumps(undeclared).encode()).decode()})),
                   "actionable": "Reports bounds but not missing declaration; clarify only this failure."},
+              "undeclaredWholeOutput": {"input": "Synthetic bounded polygon; no declaration",
+                                        "before": digest(before_control), "after": digest(after_control),
+                                        "identical": before_control == after_control},
               "nycWholeOutput": {"path": str(NYC), "features": len(old["features"]),
                                  "canonical": "UTF-8, sorted keys, compact separators, ensure_ascii=False",
                                  "before": digest(old), "after": digest(current), "identical": old == current}}
     print(json.dumps(result))
     assert old == current
+    assert before_control == after_control
 
 
 if __name__ == "__main__":
