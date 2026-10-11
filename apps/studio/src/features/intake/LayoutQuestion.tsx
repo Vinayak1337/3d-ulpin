@@ -1,63 +1,70 @@
 import { useState } from 'react';
-import { ApiError } from '@ulpin/api-client';
+import { useQueryClient } from '@tanstack/react-query';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
 import type { IntakeItem } from './batch-model';
-import { approveLayout, useBatchRecipe } from './batch-queries';
-import { changedLayoutWords, latestRecipe, layoutLines, noLayoutWords } from './layout-model';
+import { recipeKey, useBatchRecipe } from './batch-queries';
+import { changedLayoutWords, latestRecipe, layoutLines, recipeStateWords } from './layout-model';
 import type { Recipe } from './layout-model';
+import { needsLayoutAnswer } from './question-model';
+import { LayoutAnswer } from './LayoutAnswer';
+import { useLayoutCommand } from './useLayoutCommand';
 import styles from './Batch.module.css';
 
-/** Read and approve only. The officer's layout question is a separate task. */
 export function LayoutQuestion({ caseId, item, refresh }: {
   caseId: string; item: IntakeItem; refresh: () => void;
 }) {
-  const query = useBatchRecipe(caseId, item.plan?.recipeId ?? '');
-  const receipt = latestRecipe(query.data ?? []);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  const [changed, setChanged] = useState(false);
-  const approve = async (shown: Recipe) => {
-    setBusy(true);
-    setError('');
-    setChanged(false);
-    try {
-      await approveLayout(caseId, shown);
-      await query.refetch();
-      refresh();
-    } catch (failure) {
-      setError(failure instanceof Error ? failure.message : 'The server gave no answer. Refresh before approving.');
-      if (failure instanceof ApiError && failure.status === 409) {
-        setChanged(true);
-        await query.refetch();
-        refresh();
-      }
-    } finally {
-      setBusy(false);
-    }
+  const cache = useQueryClient();
+  const refreshLayout = () => {
+    refresh();
+    void cache.invalidateQueries({ queryKey: recipeKey(caseId) }, { cancelRefetch: false });
   };
-  return <LayoutPanel item={item} receipt={receipt} pending={query.isPending} readError={query.error?.message}
-    busy={busy} changed={changed} error={error} approve={() => receipt && void approve(receipt)} />;
-}
-
-function LayoutPanel({ item, receipt, pending, readError, busy, changed, error, approve }: {
-  item: IntakeItem; receipt?: Recipe; pending: boolean; readError?: string;
-  busy: boolean; changed: boolean; error: string; approve: () => void;
-}) {
+  const command = useLayoutCommand(caseId, item.sourceId ?? '', refreshLayout);
+  const query = useBatchRecipe(caseId, item.plan?.recipeId ?? command.state.receipt?.id ?? '');
+  const receipt = latestRecipe([...(query.data ?? []), ...(command.state.receipt ? [command.state.receipt] : [])]);
+  const [editingRevision, setEditingRevision] = useState<number | null>(null);
+  const editing = editingRevision !== null && !command.state.changed
+    && (!command.state.receipt || command.state.receipt.revision <= editingRevision);
+  const answer = needsLayoutAnswer(item) && !receipt || editing
+    || command.state.uncertain && command.state.phase === 'author';
+  const authored = command.state.authored && receipt?.planHash === command.state.receipt?.planHash;
+  const origin = authored ? 'officer' : item.plan?.origin ?? null;
   return <section className={styles.question} aria-label={`Layout for ${item.name}`}>
     <h2 className="ul-heading">Layout · {item.name}</h2>
-    {!item.plan ? <p>{noLayoutWords}</p> : <>
-      {pending ? <Skeleton /> : null}
-      {readError ? <Banner tone="danger">{readError}</Banner> : null}
-      {changed ? <Banner tone="warning">{changedLayoutWords}</Banner> : null}
-      {error ? <p role="alert">{error}</p> : null}
-      {receipt ? <>
-        <p className="ul-help">Revision {receipt.revision} · {receipt.state}</p>
-        {layoutLines(receipt, item.plan.origin).map((line, index) => <p key={index}>{line}</p>)}
-        {receipt.state === 'proposed' ? <Button variant="primary" onClick={approve}
-          disabled={busy || Boolean(readError)}>{busy ? 'Approving layout…' : 'Approve layout'}</Button>
-          : <p>This layout is {receipt.state === 'approved' ? 'approved' : 'executed'} and is read-only.</p>}
-      </> : null}
-      {!pending && !readError && !receipt ? <p>Layout: not supplied by the record</p> : null}
+    {command.state.changed ? <Banner tone="warning">{changedLayoutWords}</Banner> : null}
+    {answer && item.sourceId ? <LayoutAnswer key={editingRevision ?? 'new'} caseId={caseId} sourceId={item.sourceId}
+      receipt={editing ? receipt : undefined} command={command} /> : <>
+      {query.isPending && (item.plan || command.state.receipt) ? <Skeleton /> : null}
+      {query.error ? <Banner tone="danger">{query.error.message}</Banner> : null}
+      {receipt ? <LayoutReview receipt={receipt} origin={origin} command={command}
+        readFailed={Boolean(query.error)} change={() => setEditingRevision(receipt.revision)} /> : null}
+      {!receipt && !query.error && !item.plan ? <p>{item.limitReason ?? 'Layout: not supplied by the record'}</p> : null}
     </>}
   </section>;
+}
+
+function LayoutReview({ receipt, origin, command, readFailed, change }: {
+  receipt: Recipe; origin: NonNullable<IntakeItem['plan']>['origin'];
+  command: ReturnType<typeof useLayoutCommand>; readFailed: boolean; change: () => void;
+}) {
+  const locked = command.state.busy || command.state.uncertain;
+  const proposed = receipt.state === 'proposed';
+  return <>
+    <p className="ul-help">Revision {receipt.revision}</p>
+    {layoutLines(receipt, origin).map((line, index) => <p key={index}>{line}</p>)}
+    <p>{recipeStateWords(receipt.state)}</p>
+    {command.state.error ? <p role="alert">{command.state.error}</p> : null}
+    {command.state.uncertain ? <p>The outcome is not known. Send the same approval again;
+      its layout and request stay unchanged.</p> : null}
+    {proposed || command.state.uncertain ? <div className="ul-row">
+      <Button variant="primary" disabled={command.state.busy || readFailed}
+        onClick={() => void command.approve(receipt)}>{approveWords(command.state.busy, command.state.uncertain)}</Button>
+      <Button variant="soft" disabled={locked || readFailed || !proposed} onClick={change}>Change</Button>
+    </div> : null}
+  </>;
+}
+
+function approveWords(busy: boolean, uncertain: boolean): string {
+  if (busy) return 'Approving layout…';
+  if (uncertain) return 'Send same approval again';
+  return 'Approve layout';
 }
