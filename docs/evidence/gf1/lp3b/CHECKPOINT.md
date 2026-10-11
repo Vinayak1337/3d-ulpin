@@ -22,8 +22,10 @@ No loop or delayed polling was used to disguise the missing authority. No automa
 
 One additional contract edge: `packages/contracts/src/usp/intake.ts:74` keeps `partsPlanned` positive or null.
 A sealed file with every feature rejected/duplicated/oversized has zero cuts; L3.7's final planned count 0 is not
-representable. Only descriptions are owned. Decide whether such a file rests `not_understood` with null planned
-count or widen the count schema in a separately assigned seam. The classifier currently keeps that count null.
+representable. `database/sql/95-ingestion/intake-ledger.sql:24` also requires positive planned counts;
+`:37` requires done <= planned when planned is non-null. Both are outside ownership (contract: descriptions only).
+Decide whether a zero-cut file rests `not_understood` with null planned count or assign those count-schema seams.
+The classifier currently keeps the zero-cut planned count null.
 
 ## Delivered independently
 
