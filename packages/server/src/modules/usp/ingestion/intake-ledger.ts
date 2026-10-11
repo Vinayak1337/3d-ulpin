@@ -3,6 +3,8 @@ import { INTAKE_CARD_VERSION, IntakeItemSchema, type IntakeCard } from '@ulpin/c
 import { fingerprint } from '../../cases/domain';
 import { intakeSizeClass, intakeWave } from './intake-probe';
 import type { IntakeSourceRow } from './intake-context';
+import { notFound } from '../../../infrastructure/errors';
+import { appendIntakeItemTx } from './events';
 
 /** Metadata registration only. It adds/changes no source and deliberately does not advance case revision. */
 export async function registerIntakeItemTx(client: PoolClient, source: IntakeSourceRow) {
@@ -25,6 +27,33 @@ export function intakeItem(row: any) {
     limitReason: row.limit_reason, pinnedByOfficer: row.pinned_by_officer,
     createdAt: new Date(row.created_at).toISOString(), updatedAt: new Date(row.updated_at).toISOString(),
   });
+}
+
+export type IntakeDraftState = {
+  state: 'probed' | 'planned' | 'reading' | 'read';
+  placement: 'undecided' | 'needs_answer' | 'on_map';
+  planRef: Record<string, unknown> | null;
+  recordsSeen: number;
+  limitReason: string | null;
+};
+
+/** One tray transition and one refresh event; replaying an unchanged transition publishes nothing. */
+export async function writeIntakeDraftTx(client: PoolClient, caseId: string, itemId: string,
+  next: IntakeDraftState) {
+  const current = await readIntakeDraftTx(client, caseId, itemId);
+  if (fingerprint(current) === fingerprint(next)) return;
+  await client.query(`UPDATE usp_intake_items SET state=$3,placement=$4,plan_ref=$5,records_seen=$6,
+    limit_reason=$7,updated_at=now() WHERE case_id=$1 AND item_id=$2`,
+  [caseId, itemId, next.state, next.placement, next.planRef, next.recordsSeen, next.limitReason]);
+  await appendIntakeItemTx(client, caseId, itemId);
+}
+
+/** The durable completion projection is also hashed by the shared job result validator. */
+export async function readIntakeDraftTx(client: PoolClient, caseId: string, itemId: string): Promise<IntakeDraftState> {
+  const row = (await client.query(`SELECT state,placement,plan_ref,records_seen,limit_reason FROM usp_intake_items
+    WHERE case_id=$1 AND item_id=$2 FOR UPDATE`, [caseId, itemId])).rows[0] ?? notFound('Intake draft not found.');
+  return { state: row.state, placement: row.placement, planRef: row.plan_ref,
+    recordsSeen: Number(row.records_seen), limitReason: row.limit_reason };
 }
 
 function sourceCode(value: unknown): string | null {
