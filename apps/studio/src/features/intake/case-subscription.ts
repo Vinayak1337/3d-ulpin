@@ -23,6 +23,7 @@ interface Connection {
   failures: number;
   status: LiveStatus;
   timer: ReturnType<typeof setInterval> | null;
+  closed: () => void;
 }
 
 /** One page-local, ref-counted transport per case. It holds notifications only, never domain facts. */
@@ -31,7 +32,7 @@ export function createCaseSubscriptions(read = readCaseStream) {
   const subscribe = (caseId: string, consumer: Consumer) => {
     let connection = connections.get(caseId);
     if (!connection) {
-      connection = newConnection();
+      connection = newConnection(() => connections.delete(caseId));
       connections.set(caseId, connection);
     }
     connection.consumers.add(consumer);
@@ -45,8 +46,10 @@ export function createCaseSubscriptions(read = readCaseStream) {
       connection.consumers.delete(consumer);
       if (connection.consumers.size) return;
       if (connection.timer) clearInterval(connection.timer);
+      connection.timer = null;
       connection.abort?.abort();
-      connections.delete(caseId);
+      // An immediate remount must wait for this reader's cancellation to settle.
+      if (!connection.abort) connection.closed();
     };
   };
   const reconnect = (caseId: string) => {
@@ -59,9 +62,9 @@ export function createCaseSubscriptions(read = readCaseStream) {
   return { subscribe, reconnect };
 }
 
-function newConnection(): Connection {
+function newConnection(closed: () => void): Connection {
   return { state: initialStream(), consumers: new Set(), abort: null, lastActivity: Date.now(), failed: false,
-    reconnecting: false, failures: 0, status: { disconnected: false, error: '' }, timer: null };
+    reconnecting: false, failures: 0, status: { disconnected: false, error: '' }, timer: null, closed };
 }
 
 function tick(caseId: string, connection: Connection, read: typeof readCaseStream) {
@@ -99,6 +102,8 @@ function connect(caseId: string, connection: Connection, read: typeof readCaseSt
     if (!abort.signal.aborted) failed(connection, error);
   }).finally(() => {
     if (connection.abort === abort) connection.abort = null;
+    if (!connection.consumers.size) connection.closed();
+    else if (abort.signal.aborted) connect(caseId, connection, read);
   });
 }
 

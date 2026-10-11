@@ -52,6 +52,28 @@ it('two consumers open one stream, resync reconnects at head, and only the last 
   expect(run.maximum()).toBe(1);
 });
 
+it('an immediate effect remount waits for the old transport cancellation before reopening', async () => {
+  const finishes: (() => void)[] = [];
+  let readers = 0;
+  let maximum = 0;
+  const read: typeof readCaseStream = () => new Promise(resolve => {
+    readers++;
+    maximum = Math.max(maximum, readers);
+    finishes.push(() => { readers--; resolve(); });
+  });
+  const subscriptions = createCaseSubscriptions(read);
+  const consumer = { refresh: vi.fn(), unsettled: () => true, status: vi.fn() };
+  subscriptions.subscribe('case', consumer)();
+  const leave = subscriptions.subscribe('case', consumer);
+  expect(finishes).toHaveLength(1);
+  finishes[0]!();
+  await new Promise(resolve => setTimeout(resolve, 0));
+  expect(finishes).toHaveLength(2);
+  expect(maximum).toBe(1);
+  leave();
+  finishes[1]!();
+});
+
 it('errors retry from head and two failed reconnects show a banner; success clears the streak', async () => {
   const run = harness();
   const tray = run.consumer();
