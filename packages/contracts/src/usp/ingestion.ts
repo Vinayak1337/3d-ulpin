@@ -24,7 +24,7 @@ export const SourceProfileSchema = z.strictObject({
   version: z.literal(INGESTION_VERSION), source: SourcePinSchema,
   caseId: id, workspaceRevision: z.number().int().nonnegative(), workspaceFingerprint: hash,
   format: z.literal('geojson'), featureCount: revision,
-  crs: z.strictObject({value: z.string(), evidence: z.string(), unit: z.literal('degree')}),
+  crs: z.strictObject({value: z.string(), evidence: z.string(), unit: z.string().min(1).max(80)}),
   geometryTypes: z.array(z.string()),
   paths: z.array(z.strictObject({
     path: SourcePathSchema, types: z.array(z.enum(['string', 'number', 'boolean', 'object', 'array'])),

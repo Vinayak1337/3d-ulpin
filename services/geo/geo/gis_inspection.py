@@ -4,6 +4,8 @@ import json
 import math
 import re
 
+from pyproj import CRS
+
 from .native_gis import _raw, _gpkg, _shapefile
 from .validation import InputError
 
@@ -109,7 +111,9 @@ def inspect_gis(data):
         raise InputError("Source coordinate reference declarations conflict; separate or correct the layers.")
     if format == "arcgis" and not crs and row_crs and all(row_crs):
         crs, evidence = row_crs[0], "Consistent ArcGIS feature spatial references"
-    base.update({"format": format, "layers": base.get("layers", []), "layer": base.get("layer"), "sourceCrs": crs, "crsEvidence": evidence, "geometryTypes": sorted(types)})
+    base.update({"format": format, "layers": base.get("layers", []), "layer": base.get("layer"), "sourceCrs": crs, "crsEvidence": evidence,
+                 "crsUnit": CRS.from_user_input(crs).axis_info[0].unit_name if crs else None,
+                 "geometryTypes": sorted(types)})
     fields, id_field, name_field = _fields(rows)
     quarantine = None
     if rejected:

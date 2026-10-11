@@ -211,3 +211,20 @@ def test_feature_ids_ingest_without_attribute_mapping_and_keep_source_identity()
     result = normalize_area({"format": "geojson", "data": source, "mapping": {"kind": "building", "nameField": "name"}, "worldStatus": "synthetic"})
     assert [feature["sourceKey"] for feature in result["features"]] == ["retained-0", "retained-1"]
     assert [feature["name"] for feature in result["features"]] == ["Same name", "Same name"]
+
+
+@pytest.mark.parametrize("code,unit", [("EPSG:2958", "metre"), ("EPSG:4326", "degree"),
+                                     ("EPSG:2263", "US survey foot")])
+def test_inspection_publishes_the_resolved_horizontal_unit(code, unit):
+    source = geojson()
+    source["crs"] = {"type": "name", "properties": {"name": code}}
+    assert json_inspect(source)["crsUnit"] == unit
+
+
+def test_undeclared_and_legacy_crs84_keep_evidence_and_degree_unit():
+    source = geojson()
+    assert json_inspect(source)["crsUnit"] == "degree"
+    assert json_inspect(source)["crsEvidence"] == "RFC 7946 GeoJSON longitude/latitude"
+    source["crs"] = {"type": "name", "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"}}
+    assert json_inspect(source)["crsUnit"] == "degree"
+    assert json_inspect(source)["crsEvidence"] == "Declared OGC CRS84"

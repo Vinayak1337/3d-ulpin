@@ -168,3 +168,36 @@ test('opening geometry admission preserves the polygon fingerprint pinned by the
   const stored = ca0.runtime.progress.find((step: any) => step.completed === '1 retained original is probed');
   assert.equal(inventory.schemaFingerprint, stored.result.schemaFingerprint);
 });
+
+
+test('declared projected units profile and stated-kind geometry compile; old building geometry refuses', () => {
+  const bytes = Buffer.from(JSON.stringify(fixture));
+  const inspection = { format: 'geojson', sourceSha256: sha256(bytes), featureCount: 2,
+    sourceCrs: 'EPSG:2958', crsEvidence: 'Declared in the file', crsUnit: 'metre',
+    geometryTypes: ['Polygon'], fields: [{ name: 'doitt_id' }, { name: 'height_ft' }] } as GisInspection;
+  const inventory = inspectedProfile(bytes, inspection);
+  assert.deepEqual(inventory.crs, { value: 'EPSG:2958', evidence: 'Declared in the file', unit: 'metre' });
+  const source = { ...profile(), crs: inventory.crs };
+  assert.equal(compileMapping(MappingPlanSchema.parse(stated('parcel')), source).kind, 'parcel');
+  assert.throws(() => compileMapping(MappingPlanSchema.parse(legacy), source), {
+    code: 'MAPPING_CRS', status: 422,
+    message: 'The older building layout reads longitude and latitude only. '
+      + "State the kind of feature so the layout reads the file's declared coordinate system.",
+  });
+  const { crsUnit: _unit, ...old } = inspection;
+  assert.throws(() => inspectedProfile(bytes, old), /Check the file again/);
+  assert.equal(inspectedProfile(bytes, { ...old, sourceCrs: 'EPSG:4326' }).crs.unit, 'degree');
+});
+
+test('adding a degree unit leaves the old undeclared and CRS84 crs and fingerprint bytes unchanged', () => {
+  const bytes = Buffer.from(JSON.stringify(fixture));
+  for (const evidence of ['Declared OGC CRS84', 'RFC 7946 GeoJSON longitude/latitude']) {
+    const inspection = { format: 'geojson', sourceSha256: sha256(bytes), featureCount: 2,
+      sourceCrs: 'EPSG:4326', crsEvidence: evidence, geometryTypes: ['Polygon'],
+      fields: [{ name: 'doitt_id' }, { name: 'height_ft' }] } as GisInspection;
+    const old = inspectedProfile(bytes, inspection);
+    const fresh = inspectedProfile(bytes, { ...inspection, crsUnit: 'degree' });
+    assert.equal(JSON.stringify(old.crs), JSON.stringify(fresh.crs));
+    assert.equal(old.schemaFingerprint, fresh.schemaFingerprint);
+  }
+});
