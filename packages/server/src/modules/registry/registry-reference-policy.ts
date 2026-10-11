@@ -1,3 +1,5 @@
+import { isRetainedMapOriginal } from '../usp/ingestion/retained-map-original';
+
 /** Native reference documents may evidence a manually reviewed party/use claim,
  * never coordinates or verified levels. The caller also checks site membership
  * and existence of the exact retained document part. */
@@ -24,12 +26,14 @@ export function permitsReferenceRecordSource(source: {
     Number.isInteger(source.inspection.partCount) && (source.inspection.partCount ?? 0) > 0;
 }
 
-/** Only a record claim may cite an interpreted native map feature; the caller proves its committed observation. */
+/** Record-only map receipt admission; the caller separately proves its committed, same-site observation. */
 export function permitsFeatureRecordSource(source: {
   status?: string;
   profile?: string;
-  inspection?: { status?: string } | null;
+  sha256?: string;
+  inspection?: { status?: string; manualProfile?: unknown; gis?: unknown } | null;
 }, purpose: "record" | "geometry" | "right"): boolean {
-  return purpose === "record" && source.status === "inspected" && source.inspection?.status === "interpreted" &&
-    ["geojson-area-v2", "arcgis-area-v2", "gpkg-area-v2", "shapefile_zip-area-v2"].includes(source.profile || "");
+  return purpose === "record" && (isRetainedMapOriginal(source) || source.status === "inspected" &&
+    source.inspection?.status === "interpreted" &&
+    ["geojson-area-v2", "arcgis-area-v2", "gpkg-area-v2", "shapefile_zip-area-v2"].includes(source.profile || ""));
 }

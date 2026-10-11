@@ -121,6 +121,27 @@ test('geometry purpose remains EVIDENCE_UNAVAILABLE after record-purpose admissi
   assert(!fixture.state.saved);
 });
 
+test('retained map original needs_input admits committed same-site record evidence without rewriting its receipt',
+  async () => {
+    const fixture = control();
+    Object.assign(fixture.source, { profile: 'geojson-manual-v1', status: 'needs_input',
+      inspection: { manualProfile: { version: 'manual-geojson/1', format: 'geojson' },
+        gis: { sourceSha256: fixture.source.sha256 } } });
+    await fixture.run();
+    assert(fixture.state.saved);
+    assert.equal(fixture.source.status, 'needs_input');
+    assert.equal(fixture.state.queries.filter(sql => sql.includes('FROM external_identifiers')).length, 1);
+  });
+
+for (const profile of ['large-original-v1', 'document-original-v1']) {
+  test(`${profile} needs_input remains unavailable at detailed review`, async () => {
+    const fixture = control();
+    Object.assign(fixture.source, { profile, status: 'needs_input' });
+    await assert.rejects(() => fixture.run(), { status: 422, code: 'EVIDENCE_UNAVAILABLE' });
+    assert(!fixture.state.saved);
+  });
+}
+
 test('admitted native feature still undergoes the unchanged source frame check', async () => {
   const fixture = control();
   fixture.source.inspection.frame = { id: 'OTHER', horizontalUnit: 'm', verticalUnit: 'm', benchmark: 'unknown' };
