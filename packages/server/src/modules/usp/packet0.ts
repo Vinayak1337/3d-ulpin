@@ -1,4 +1,6 @@
 import { randomUUID } from 'node:crypto';
+import type { NativeRecordReference } from '@ulpin/contracts';
+import { decodedRecordExtract } from './packets/feature-extract';
 import type { PoolClient } from 'pg';
 import {
   UspPacket0ReceiptSchema, UspPacket0RequestSchema, UspExactPartResultSchema,
@@ -12,7 +14,7 @@ import { assertLocalUsp, readManifest, readRegistryEvidenceBytes,
   readSnapshotBody, resolveRegistryTarget,assertSnapshotDocumentsTx } from './snapshots';
 
 export type Packet0Line = { pointer: EvidencePointer; sourceSha256: string; excerpt: string | null;
-  reasonCode: string | null };
+  reasonCode: string | null; method?: 'verbatim' | 'decoded_record'; decodedRecord?: NativeRecordReference };
 
 export function selectExactPart(parts: unknown, locator: EvidencePointer['locator']): string | null {
   if (locator.kind !== 'verbatim' || !Array.isArray(parts)) return null;
@@ -45,10 +47,42 @@ export function renderPacket0(target: { id: string; label: string }, lines: read
     ])].join('\n') + '\n';
 }
 
+async function nativePacketLine(ctx: RequestContext, scope: SnapshotScope, pointer: EvidencePointer,
+  bytes: Uint8Array, source: Record<string, any>): Promise<Packet0Line> {
+  const manifest = await readManifest(ctx, scope);
+  const target = manifest.members.find(member => member.pin.ref.namespace === 'registry_record'
+    && canonical(member.pin.ref) === canonical(pointer.target));
+  if (!target || pointer.origin !== 'direct' || pointer.purpose !== 'record'
+    || pointer.assetRevision || pointer.partRevision || pointer.locator.kind !== 'verbatim')
+    throw new AppError(403, 'USP_PACKET_SCOPE', 'Use a direct feature citation of a captured recorded target.');
+  const resolved = await resolveRegistryTarget(ctx, scope, target.pin);
+  if (resolved.state !== 'available' || !resolved.data.evidence.some(link => canonical(link) === canonical(pointer)))
+    throw new AppError(403, 'USP_PACKET_SCOPE', 'The native citation is not linked to this recorded target.');
+  const key = pointer.locator.locator.slice('feature '.length);
+  const observations: Record<string, any>[] = [];
+  for (const member of manifest.members) {
+    if (member.pin.ref.namespace !== 'area_feature') continue;
+    const row = await readSnapshotBody(ctx, scope, member.pin);
+    if (fingerprint(row) !== member.bodySha256) conflict('The captured native observation changed.');
+    if (row.record_id === target.pin.ref.id && row.body?.sourceRevisionId === pointer.sourceRevision.ref.id
+      && row.body?.sourceKey === key && !Object.hasOwn(row.body.properties ?? {}, 'spatialExtraction'))
+      observations.push(row.body);
+  }
+  if (observations.length !== 1 || !/^feature \S(.*\S)?$/.test(pointer.locator.locator))
+    throw new AppError(422, 'PACKET_PLAN_NATIVE_POSITION_UNAVAILABLE', 'One exact committed observation is required.');
+  const decoded = await decodedRecordExtract(Buffer.from(bytes), {
+    name: source.name, sha256: source.sha256, bytes: Number(source.bytes), profile: source.profile,
+    status: source.status, inspection: source.inspection,
+  }, observations[0]);
+  return { pointer, sourceSha256: source.sha256, reasonCode: null, ...decoded };
+}
+
 async function packetLine(ctx: RequestContext, scope: SnapshotScope, pointer: EvidencePointer): Promise<Packet0Line> {
   const original = await readRegistryEvidenceBytes(ctx, scope, pointer);
   const source = await readSnapshotBody(ctx, scope, pointer.sourceRevision);
   const locator = pointer.locator;
+  if (['gpkg-area-v2', 'shapefile_zip-area-v2'].includes(source.profile))
+    return nativePacketLine(ctx, scope, pointer, original.bytes, source);
   const parts = source.inspection?.referenceParts;
   // Verifying original bytes does not make a broad/ambiguous extract property-scoped.
   const supported = locator.kind === 'verbatim' && (
@@ -64,7 +98,8 @@ export async function readExactPart(ctx: RequestContext, scope: SnapshotScope, p
   const line = await packetLine(ctx, scope, pointer);
   return UspExactPartResultSchema.parse(line.excerpt === null
     ? { state: 'unavailable', reasonCode: line.reasonCode }
-    : { state: 'available', data: { pointer, sourceSha256: line.sourceSha256, text: line.excerpt } });
+    : { state: 'available', data: { pointer, sourceSha256: line.sourceSha256, text: line.excerpt,
+      ...(line.method ? { method: line.method, decodedRecord: line.decodedRecord } : {}) } });
 }
 
 /** Shared PACK0 artifact writer; authority and selected lines are server-owned.
