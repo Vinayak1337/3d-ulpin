@@ -1,0 +1,536 @@
+{
+  "schemaVersion": "da5-small-declared-crs/1",
+  "task": "DA5",
+  "gate": "GF1 data prerequisite",
+  "status": "acquired_inspected_not_runtime_qualified",
+  "baseCommit": "92b4d921bb62bb970669c6f3061c6bea5ca82b07",
+  "recordedAtIst": "2026-10-11T10:56:42.845057+05:30",
+  "externalRoot": "E:/BhuAayam-data/datasets/map-formats",
+  "pathMeaning": "Asset, receipt and page paths are relative to externalRoot.",
+  "scope": "Unchanged publisher export; local read-only inspection; no conversion or import.",
+  "originalCount": 1,
+  "totalOriginalBytes": 157817,
+  "fileFetchLimit": 3,
+  "fileFetches": [
+    {
+      "attempt": 1,
+      "originalUrl": "https://hub.arcgis.com/api/download/v1/items/d3ce4685d04343c1a8f9abc7e34f4984/geojson?layers=0",
+      "sourcePage": "https://open.niagarafalls.ca/datasets/d3ce4685d04343c1a8f9abc7e34f4984_0",
+      "features": 675,
+      "declaredCrsName": "EPSG:2958",
+      "finalPublicUrlParts": [
+        "https://stg-arcgisazurecdataprod9.az.arcgis.com/exportfiles-25688-15102/",
+        "Niagara_Falls_City_Facilities_-1557959704070259873.geojson"
+      ],
+      "filename": "Niagara_Falls_City_Facilities_-1557959704070259873.geojson",
+      "status": 200,
+      "acquiredAtIst": "2026-10-11T10:52:49.592654+05:30",
+      "bytes": 586756,
+      "sha256": "ccd9fc4b21a2422ce07d4380d671c805b0d32da228a176e7735ed64eea9ad803",
+      "disposition": "excluded_privacy_not_kept",
+      "reason": "Personal dedications in PropName; excluded new checkpoint discarded. Pre-task originals untouched."
+    },
+    {
+      "attempt": 2,
+      "originalUrl": "https://hub.arcgis.com/api/download/v1/items/f657095d520a421a93f0eec753027c29/geojson?layers=0",
+      "sourcePage": "https://open.niagarafalls.ca/datasets/f657095d520a421a93f0eec753027c29_0",
+      "finalPublicUrlParts": [
+        "https://stg-arcgisazurecdataprod9.az.arcgis.com/exportfiles-25688-15098/",
+        "Niagara_Falls_Condominiums_7254610803234545967.geojson"
+      ],
+      "filename": "Niagara_Falls_Condominiums_7254610803234545967.geojson",
+      "status": 200,
+      "acquiredAtIst": "2026-10-11T10:53:46.685207+05:30",
+      "bytes": 157817,
+      "sha256": "dece86e3bc85a2529fbca07cf31e4c0f4e74275ed10b9989684f18191f2e002c",
+      "disposition": "retained_test_only",
+      "path": "niagara-falls/Niagara_Falls_Condominiums_7254610803234545967.geojson"
+    }
+  ],
+  "pagesRead": [
+    {
+      "url": "https://open.niagarafalls.ca",
+      "status": 200,
+      "readAtIst": "2026-10-11T10:51:11.320351+05:30",
+      "path": "discovery/da5/niagara-portal.response",
+      "bytes": 158683,
+      "sha256": "3ae9389cf99f5de2d23dd2f303240b30621f75e729b084e4a64190c71085d63d"
+    },
+    {
+      "url": "https://open.niagarafalls.ca/pages/terms-of-use",
+      "status": 200,
+      "readAtIst": "2026-10-11T10:51:12.996314+05:30",
+      "path": "discovery/da5/niagara-terms.response",
+      "bytes": 158605,
+      "sha256": "aefc6fe9dbe609b7cee491b2fb4afdc9ce9e17b4db709b184ee63eb052137f7c"
+    },
+    {
+      "status": 200,
+      "readAtIst": "2026-10-11T10:51:13.612004+05:30",
+      "path": "discovery/da5/niagara-catalogue.response",
+      "bytes": 59,
+      "sha256": "3c184fc00570de7e47ad41a95a13f74e042b3c9991168d4bc76770988b155f67",
+      "urlParts": [
+        "https://www.arcgis.com/sharing/rest/search?q=%28owner%3ANiagaraFallsOpenData+OR+orgid%3ACsIkGU6Db4CZ",
+        "ClB6%29+%28parks+OR+facilities+OR+buildings%29&f=json&num=100"
+      ]
+    },
+    {
+      "url": "https://www.arcgis.com/sharing/rest/content/items/0e4764a531e84b7182cfaf3c4da7e8f4?f=json",
+      "status": 200,
+      "readAtIst": "2026-10-11T10:51:25.089226+05:30",
+      "path": "discovery/da5/niagara-footprint-item.response",
+      "bytes": 4433,
+      "sha256": "befce450726d24b97e6a0006ef200add661010e510e6362dfeae28f5a2102eca"
+    },
+    {
+      "status": 200,
+      "readAtIst": "2026-10-11T10:51:26.494916+05:30",
+      "path": "discovery/da5/niagara-search.response",
+      "bytes": 813427,
+      "sha256": "1a01a0831723134cbcfd7b1c1bfa93548516c9cb777d25ec1ec34dcb29cf6dd4",
+      "urlParts": [
+        "https://www.arcgis.com/sharing/rest/search?q=Niagara+Falls+%28parks+OR+facilities+OR+municipal+build",
+        "ings%29&f=json&num=100"
+      ]
+    },
+    {
+      "status": 200,
+      "readAtIst": "2026-10-11T10:51:36.481695+05:30",
+      "path": "discovery/da5/niagara-org-catalogue.response",
+      "bytes": 449686,
+      "sha256": "1f998c63db3a088b448c2286bbca4bbdf8e03f3dfe17e203069a1458cbe56023",
+      "urlParts": [
+        "https://www.arcgis.com/sharing/rest/search?q=orgid%3AoMFQlUUrLd1Uh1bd+type%3A%22Feature+Service%22&f",
+        "=json&num=100"
+      ]
+    },
+    {
+      "url": "https://www.arcgis.com/sharing/rest/content/items/62ef94db9f584cd19d9822a621dcd2c0/data?f=json",
+      "status": 200,
+      "readAtIst": "2026-10-11T10:51:48.965729+05:30",
+      "path": "discovery/da5/niagara-terms-data.response",
+      "bytes": 6966,
+      "sha256": "c38ce3c5f6f52831c2c255b8aa3512b8d80a001219ed3ffeef13ed5e0a0f9655"
+    },
+    {
+      "status": 200,
+      "readAtIst": "2026-10-11T10:51:50.026982+05:30",
+      "path": "discovery/da5/facilities-layer.response",
+      "bytes": 13694,
+      "sha256": "c37a05d7dbf5fdb2f5109e7d1eff53716dbd9927a76b5c65fc81f4f362de5b67",
+      "urlParts": [
+        "https://services9.arcgis.com/oMFQlUUrLd1Uh1bd/arcgis/rest/services/Niagara_Falls_City_Facilities/Fea",
+        "tureServer/0?f=pjson"
+      ]
+    },
+    {
+      "status": 200,
+      "readAtIst": "2026-10-11T10:51:50.487294+05:30",
+      "path": "discovery/da5/parks-layer.response",
+      "bytes": 155,
+      "sha256": "317c9a20b62cc2a479547f95e8ae130c911ea0452f05d6254350cfa82db81cc8",
+      "urlParts": [
+        "https://services9.arcgis.com/oMFQlUUrLd1Uh1bd/arcgis/rest/services/Niagara_Falls_Community_Parks_and",
+        "_Trail_Lands/FeatureServer/0?f=pjson"
+      ]
+    },
+    {
+      "url": "https://www.arcgis.com/sharing/rest/content/items/768454489e19403abeeb1a869eb88b37?f=json",
+      "status": 200,
+      "readAtIst": "2026-10-11T10:51:50.855453+05:30",
+      "path": "discovery/da5/parks-item.response",
+      "bytes": 4455,
+      "sha256": "8cc46ce892b87d7b046160966bc826ed1df71a8471078f95ff40bfdd845c9844"
+    },
+    {
+      "url": "https://open.niagarafalls.ca/datasets/768454489e19403abeeb1a869eb88b37_0",
+      "status": 200,
+      "readAtIst": "2026-10-11T10:51:52.521556+05:30",
+      "path": "discovery/da5/parks-page.response",
+      "bytes": 158726,
+      "sha256": "1bdf1a3056e16de443e8ee6beb513cd39a6f152525fe37aecaad91dead50594c"
+    },
+    {
+      "url": "https://www.arcgis.com/sharing/rest/content/items/d3ce4685d04343c1a8f9abc7e34f4984?f=json",
+      "status": 200,
+      "readAtIst": "2026-10-11T10:52:13.980805+05:30",
+      "path": "discovery/da5/facilities-item.response",
+      "bytes": 4391,
+      "sha256": "557c75bbacbc44844240435b79908034f4fcd69b08caf54cc573458e2dd3a045"
+    },
+    {
+      "url": "https://open.niagarafalls.ca/datasets/d3ce4685d04343c1a8f9abc7e34f4984_0",
+      "status": 200,
+      "readAtIst": "2026-10-11T10:52:15.881096+05:30",
+      "path": "discovery/da5/facilities-page.response",
+      "bytes": 159103,
+      "sha256": "bf9f887a5b07868475454793b9a0a9ce0d1d41ab0896b655ee66e0896d87eaef"
+    },
+    {
+      "status": 200,
+      "readAtIst": "2026-10-11T10:52:17.241802+05:30",
+      "path": "discovery/da5/facilities-count.response",
+      "bytes": 15,
+      "sha256": "e0ea9eab4e77890a6839cd0470bb9d0edf65105c7644e12bf72ee78859bfe55e",
+      "urlParts": [
+        "https://services9.arcgis.com/oMFQlUUrLd1Uh1bd/arcgis/rest/services/Niagara_Falls_City_Facilities/Fea",
+        "tureServer/0/query?where=1%3D1&returnCountOnly=true&f=json"
+      ]
+    },
+    {
+      "url": "https://hub.arcgis.com/api/download/v1/items/d3ce4685d04343c1a8f9abc7e34f4984/geojson?layers=0",
+      "status": 200,
+      "method": "HEAD",
+      "readAtIst": "2026-10-11T10:52:21.868116+05:30",
+      "bytes": "586756",
+      "filename": null,
+      "finalPublicUrlParts": [
+        "https://stg-arcgisazurecdataprod9.az.arcgis.com/exportfiles-25688-15102/",
+        "Niagara_Falls_City_Facilities_-1557959704070259873.geojson"
+      ]
+    },
+    {
+      "url": "https://www.arcgis.com/sharing/rest/content/items/f657095d520a421a93f0eec753027c29?f=json",
+      "status": 200,
+      "readAtIst": "2026-10-11T10:53:13.596863+05:30",
+      "path": "discovery/da5/condo-item.response",
+      "bytes": 4886,
+      "sha256": "d39f67f19283fe779c112077cd012f0a564ba300f787c2587f6cf2deeb694715"
+    },
+    {
+      "status": 200,
+      "readAtIst": "2026-10-11T10:53:14.681485+05:30",
+      "path": "discovery/da5/condo-layer.response",
+      "bytes": 15356,
+      "sha256": "b34362ea8e6b0c8b7c64a82fa922d6d1ad69bb77225b9af93ef706ef51ba01b8",
+      "urlParts": [
+        "https://services9.arcgis.com/oMFQlUUrLd1Uh1bd/arcgis/rest/services/Niagara_Falls_Condominiums/Featur",
+        "eServer/0?f=pjson"
+      ]
+    },
+    {
+      "status": 200,
+      "readAtIst": "2026-10-11T10:53:15.636635+05:30",
+      "path": "discovery/da5/condo-count.response",
+      "bytes": 15,
+      "sha256": "4bca982ea7378a4f536be21c533cd950101b4a3fe07b9a59f95d997c21030bef",
+      "urlParts": [
+        "https://services9.arcgis.com/oMFQlUUrLd1Uh1bd/arcgis/rest/services/Niagara_Falls_Condominiums/Featur",
+        "eServer/0/query?where=1%3D1&returnCountOnly=true&f=json"
+      ]
+    },
+    {
+      "url": "https://open.niagarafalls.ca/datasets/f657095d520a421a93f0eec753027c29_0",
+      "status": 200,
+      "path": "discovery/da5/condo-page.response",
+      "bytes": 158977,
+      "sha256": "71adbbd9c193ae7b7375c2ce6f6c19ce29a99e9dea7615cd74b0d92d58170c44",
+      "readAtIst": "2026-10-11T10:53:38.578493+05:30"
+    }
+  ],
+  "urlPartsMeaning": "Concatenate in order to recover the exact read URL.",
+  "assets": [
+    {
+      "attempt": 2,
+      "originalUrl": "https://hub.arcgis.com/api/download/v1/items/f657095d520a421a93f0eec753027c29/geojson?layers=0",
+      "sourcePage": "https://open.niagarafalls.ca/datasets/f657095d520a421a93f0eec753027c29_0",
+      "finalPublicUrlParts": [
+        "https://stg-arcgisazurecdataprod9.az.arcgis.com/exportfiles-25688-15098/",
+        "Niagara_Falls_Condominiums_7254610803234545967.geojson"
+      ],
+      "filename": "Niagara_Falls_Condominiums_7254610803234545967.geojson",
+      "status": 200,
+      "acquiredAtIst": "2026-10-11T10:53:46.685207+05:30",
+      "bytes": 157817,
+      "sha256": "dece86e3bc85a2529fbca07cf31e4c0f4e74275ed10b9989684f18191f2e002c",
+      "issuer": "City of Niagara Falls",
+      "licence": {
+        "name": "Open Government Licence - Niagara Falls 1.0",
+        "textUrl": "https://open.niagarafalls.ca/pages/terms-of-use",
+        "textDataUrl": "https://www.arcgis.com/sharing/rest/content/items/62ef94db9f584cd19d9822a621dcd2c0/data?f=json",
+        "permission": "confirmed issuer terms for attributed reuse; foreign local test_only",
+        "attribution": "Contains information licensed under the Open Government Licence–Niagara Falls."
+      },
+      "geography": "Niagara Falls, Ontario, Canada",
+      "classification": "test_only",
+      "crs": {
+        "type": "name",
+        "properties": {
+          "name": "EPSG:2958"
+        }
+      },
+      "verticalReference": null,
+      "portalGeneratedExport": true,
+      "coordinateSystemSelection": "Portal default; no spatialRefId, outSR or coordinate-system option requested.",
+      "privacyBasis": "All 155 rows screened; development/address names and plan URLs, no personal data found.",
+      "disposition": "retained_test_only",
+      "externalRoot": "E:/BhuAayam-data/datasets/map-formats",
+      "path": "niagara-falls/Niagara_Falls_Condominiums_7254610803234545967.geojson",
+      "receiptPath": "niagara-falls/Niagara_Falls_Condominiums_7254610803234545967.geojson.receipt.json",
+      "receiptSha256": "694ac8b752a2cfdc6c1454a3811db630e13a5956d403a028b52455db3ade9459",
+      "inspection": {
+        "path": "niagara-falls/Niagara_Falls_Condominiums_7254610803234545967.geojson",
+        "bytes": 157817,
+        "sha256": "dece86e3bc85a2529fbca07cf31e4c0f4e74275ed10b9989684f18191f2e002c",
+        "type": "FeatureCollection",
+        "crs": {
+          "type": "name",
+          "properties": {
+            "name": "EPSG:2958"
+          }
+        },
+        "crsMemberLiteral": "\"crs\":{\"type\":\"name\",\"properties\":{\"name\":\"EPSG:2958\"}}",
+        "projectedDeclaration": true,
+        "features": 155,
+        "geometryCounts": {
+          "Polygon": 152,
+          "MultiPolygon": 3,
+          "null": 0
+        },
+        "properties": {
+          "AREA_SQM": {
+            "types": ["number"],
+            "present": 155,
+            "null": 0,
+            "emptyString": 0,
+            "nonempty": 155,
+            "distinctNonempty": 155,
+            "differentNonemptyOnEveryFeature": true,
+            "sample": [4841.73779297, 25094.60400391, 16684.50146484]
+          },
+          "CONDO_ID": {
+            "types": ["integer", "null"],
+            "present": 155,
+            "null": 2,
+            "emptyString": 0,
+            "nonempty": 153,
+            "distinctNonempty": 152,
+            "differentNonemptyOnEveryFeature": false,
+            "sample": [173, 174, 175]
+          },
+          "CONLEVELS": {
+            "types": ["null", "string"],
+            "present": 155,
+            "null": 11,
+            "emptyString": 0,
+            "nonempty": 144,
+            "distinctNonempty": 11,
+            "differentNonemptyOnEveryFeature": false,
+            "sample": ["1", "1", "1"]
+          },
+          "CONNOUNITS": {
+            "types": ["null", "string"],
+            "present": 155,
+            "null": 6,
+            "emptyString": 0,
+            "nonempty": 149,
+            "distinctNonempty": 76,
+            "differentNonemptyOnEveryFeature": false,
+            "sample": ["13", "73", "52"]
+          },
+          "CONREGDATE": {
+            "types": ["null", "string"],
+            "present": 155,
+            "null": 22,
+            "emptyString": 0,
+            "nonempty": 133,
+            "distinctNonempty": 119,
+            "differentNonemptyOnEveryFeature": false,
+            "sample": [
+              "Tue, 01 Mar 2005 00:00:00 GMT",
+              "Thu, 01 Jun 1972 00:00:00 GMT",
+              "Wed, 01 Dec 1976 00:00:00 GMT"
+            ]
+          },
+          "LENGTH_M": {
+            "types": ["number"],
+            "present": 155,
+            "null": 0,
+            "emptyString": 0,
+            "nonempty": 155,
+            "distinctNonempty": 155,
+            "differentNonemptyOnEveryFeature": true,
+            "sample": [298.5725073, 855.83429487, 564.72727835]
+          },
+          "NAME": {
+            "types": ["null", "string"],
+            "present": 155,
+            "null": 5,
+            "emptyString": 0,
+            "nonempty": 150,
+            "distinctNonempty": 149,
+            "differentNonemptyOnEveryFeature": false,
+            "sample": ["JONES CREEK MANSIONS", "VILLAGE NORTH", "RAINBOW VILLAGE"]
+          },
+          "OBJECTID": {
+            "types": ["integer"],
+            "present": 155,
+            "null": 0,
+            "emptyString": 0,
+            "nonempty": 155,
+            "distinctNonempty": 155,
+            "differentNonemptyOnEveryFeature": true,
+            "sample": [1, 2, 3]
+          },
+          "PID": {
+            "types": ["integer", "null"],
+            "present": 155,
+            "null": 3,
+            "emptyString": 0,
+            "nonempty": 152,
+            "distinctNonempty": 151,
+            "differentNonemptyOnEveryFeature": false,
+            "sample": [741, 776, 1045]
+          },
+          "STATUS": {
+            "types": ["string"],
+            "present": 155,
+            "null": 0,
+            "emptyString": 0,
+            "nonempty": 155,
+            "distinctNonempty": 3,
+            "differentNonemptyOnEveryFeature": false,
+            "sample": ["REGISTERED", "REGISTERED", "REGISTERED"]
+          },
+          "TYPE": {
+            "types": ["string"],
+            "present": 155,
+            "null": 0,
+            "emptyString": 0,
+            "nonempty": 155,
+            "distinctNonempty": 6,
+            "differentNonemptyOnEveryFeature": false,
+            "sample": ["RESIDENTIAL", "RESIDENTIAL", "RESIDENTIAL"]
+          },
+          "URL": {
+            "types": ["null", "string"],
+            "present": 155,
+            "null": 35,
+            "emptyString": 0,
+            "nonempty": 120,
+            "distinctNonempty": 120,
+            "differentNonemptyOnEveryFeature": false,
+            "sample": [
+              "http://map.niagarafalls.ca/drawing/condominiumPlans/Plan80/NSCPLAN80.pdf",
+              "http://map.niagarafalls.ca/drawing/condominiumPlans/Plan1/NSCPLAN1.pdf",
+              "http://map.niagarafalls.ca/drawing/condominiumPlans/Plan6/NSCPLAN6.pdf"
+            ]
+          },
+          "conNo": {
+            "types": ["null", "string"],
+            "present": 155,
+            "null": 1,
+            "emptyString": 0,
+            "nonempty": 154,
+            "distinctNonempty": 153,
+            "differentNonemptyOnEveryFeature": false,
+            "sample": ["NSVLCP080", "NSCP001", "NSCP006"]
+          }
+        },
+        "coordinateExtremaAsWritten": {
+          "minX": 649726.0876,
+          "maxX": 659573.8631,
+          "minY": 4767147.0001,
+          "maxY": 4778143.4699
+        }
+      }
+    }
+  ],
+  "candidateIdentifierCounts": [
+    {"property": "AREA_SQM", "distinctNonempty": 155, "features": 155},
+    {"property": "LENGTH_M", "distinctNonempty": 155, "features": 155},
+    {"property": "OBJECTID", "distinctNonempty": 155, "features": 155}
+  ],
+  "identifierQualification":
+    "Counts only; OBJECTID, AREA_SQM and LENGTH_M are all distinct 155/155. No property chosen.",
+  "privacy": {
+    "rowsScreened": 155,
+    "propertyNamesScreened": 13,
+    "sampleRowsRecorded": 3,
+    "finding": "NAME values name developments or addresses, not persons; no contact lines or personal remarks found.",
+    "contactPatternMatches": 0,
+    "freeTextPersonRemarkFields": 0,
+    "excludedAttempt": 1,
+    "excludedFinding": "Personal dedications in facility labels; excluded original not kept."
+  },
+  "licenceRead": {
+    "name": "Open Government Licence - Niagara Falls 1.0",
+    "textUrl": "https://open.niagarafalls.ca/pages/terms-of-use",
+    "textDataUrl": "https://www.arcgis.com/sharing/rest/content/items/62ef94db9f584cd19d9822a621dcd2c0/data?f=json",
+    "version": "1.0",
+    "updatedLiteral": "November, 2022",
+    "reuse": "Copy, modify, publish, translate, adapt, distribute for lawful purposes, with attribution.",
+    "exemptions": "Personal information, unauthorized third-party rights and official symbols are excluded.",
+    "warranty": "As is; no warranty or endorsement; terms re-read for this dataset."
+  },
+  "difficultInput": {
+    "source": "same retained file",
+    "nullCondoId": 2,
+    "nullPid": 3,
+    "nullConNo": 1,
+    "multiPolygonFeatures": 3,
+    "qualification": "Nulls and multipart geometries preserved; no chosen identifier."
+  },
+  "checks": {
+    "boundedInspection": {
+      "command": "See report reader command",
+      "exitCode": 0
+    },
+    "projectedCrs": {
+      "method": "Offline pyproj CRS.is_projected from literal declaration only",
+      "pyproj": "3.8.0",
+      "proj": "9.8.1",
+      "network": false,
+      "result": true
+    },
+    "initialReaderFailures": [
+      "Default Python lacks pyproj; no installation attempted.",
+      "Existing geo interpreter exposed inspect.py stdlib shadowing; renamed to read-original.py."
+    ],
+    "additiveCatalogueAndSourceIndex": {
+      "method": "Remove DA5 entry/section and compare with base; explicit UTF-8 Git-export snapshots.",
+      "exitCode": 0,
+      "initialFailure": "Windows Git subprocess replaced Unicode in baseline; shell-export UTF-8 comparison passed."
+    },
+    "diffWhitespace": {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    "newFileLineLength": {
+      "command": "awk 'length>120 {print FILENAME\": \"FNR}' docs/evidence/gf1/da5/*",
+      "exitCode": 0,
+      "linesOver120": 0
+    },
+    "contractRefresh": {
+      "commandParts": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts",
+        "92b4d921bb62bb970669c6f3061c6bea5ca82b07"
+      ],
+      "baseCommit": "92b4d921bb62bb970669c6f3061c6bea5ca82b07",
+      "exitCode": 0,
+      "changedPin": "docs/api/datasets.json only; generated OpenAPI content unchanged"
+    },
+    "apiCheck": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py",
+      "exitCode": 0,
+      "operations": 310,
+      "namedSchemas": 351
+    }
+  },
+  "safety": {
+    "preExistingOriginalsChanged": false,
+    "conversions": 0,
+    "runtimeImports": 0,
+    "productChanges": 0,
+    "providerCalls": 0,
+    "uploads": 0,
+    "credentialsOrFormsUsed": false,
+    "learningOrHeldOutPathsRead": false
+  },
+  "gaps": [
+    "Condominium property parcels, not surveyed building footprints; source includes application-stage parcels.",
+    "No Indian operational, accuracy, rights, building identity, learning or GF1 runtime qualification."
+  ],
+  "next": "Lead reviews bytes and evidence; declared-CRS bounded intake work is separate."
+}

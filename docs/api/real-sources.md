@@ -1,5 +1,24 @@
 # Official source index and retained dataset catalogue
 
+## DA5 small GeoJSON with a declared projected coordinate system — 11 October 2026 IST
+
+- **`Niagara_Falls_Condominiums_7254610803234545967.geojson`:** City of Niagara Falls,
+  [publisher-default GeoJSON][da5-export], 157,817 bytes, unchanged under
+  `E:/BhuAayam-data/datasets/map-formats/niagara-falls/`, with a sibling receipt.
+  Foreign `test_only`; [Open Government Licence–Niagara Falls 1.0][da5-terms] re-read for this dataset.
+  [File table and screening](../evidence/gf1/da5/report.md) and
+  [exact URLs, receipts, property types and counts](../evidence/gf1/da5/result.json) record original bytes.
+  FeatureCollection with 155 features: 152 Polygon, 3 MultiPolygon, 0 null.
+  Literal member: `"crs":{"type":"name","properties":{"name":"EPSG:2958"}}`; no CRS option requested.
+  These are condominium property parcels, including application-stage parcels, not surveyed building footprints.
+  OBJECTID, AREA_SQM and LENGTH_M each have 155 distinct non-empty values on 155 features; no identifier chosen.
+  All property rows screened; development/address names and plan URLs, no personal data found.
+  Two file fetches: the first facility export was excluded for personal dedications and not kept.
+  Pre-existing originals unchanged; no conversion, import, upload, provider, learning or GF1 runtime qualification.
+
+[da5-export]: https://hub.arcgis.com/api/download/v1/items/f657095d520a421a93f0eec753027c29/geojson?layers=0
+[da5-terms]: https://open.niagarafalls.ca/pages/terms-of-use
+
 ## DA3 NYC publisher height-field metadata — 11 October 2026 IST
 
 - **`Metadata_BuildingFootprints.md`:** NYC Office of Technology and Innovation (OTI),
