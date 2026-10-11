@@ -9398,6 +9398,41 @@
         "Dataset-scope geometry descriptions are weaker than expanded column dictionaries.",
         "Whole-file screening and closed disposition precede profile dispatch."
       ]
+    },
+    {
+      "id": "da1-authority-map-format-originals-20261011",
+      "classification": "test_only",
+      "originKind": "foreign_authority_issuing_portal_generated_exports",
+      "issuer": "Tweed Shire Council; City of Niagara Falls; Halifax Regional Municipality",
+      "geography": "Australia and Canada; exact per-original geography in evidence manifest",
+      "manifest": "docs/evidence/gf1/da1/result.json",
+      "guide": "docs/evidence/gf1/da1/report.md",
+      "sourceCount": 5,
+      "sourceFamilies": 3,
+      "totalOriginalBytes": 134673921,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/datasets/map-formats",
+        "itemsPointer": "/assets",
+        "formats": ["Shapefile ZIP", "GeoPackage", "KMZ", "GeoJSON"],
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "state": "confirmed",
+        "reference": "Per-original issuer licence links and attribution in evidence manifest",
+        "limitations": "Tweed CC BY version unstated; Niagara Falls and Halifax OGL 1.0; test_only."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "Unchanged portal-generated originals; no local conversion, filtering or import.",
+        "ZIP/GPKG each contain 88 buildings and meet the preferred small-input bounds.",
+        "GeoJSON bands: Niagara Falls 26660992 bytes/42247 features; Halifax 107832285 bytes/172409 features.",
+        "Projected CRS declarations remain literal; vertical references are null/unqualified.",
+        "No Indian operational records, survey accuracy, ownership, labels or provider calls.",
+        "Existing learning splits are unchanged; Halifax format inspection is not learning authorization.",
+        "Kitchener notes contain person names; excluded original and control artifacts are not assets."
+      ]
     }
   ],
   "offlineLearningCorpus": {

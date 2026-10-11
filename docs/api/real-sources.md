@@ -1,5 +1,34 @@
 # Official source index and retained dataset catalogue
 
+## DA1 authority map originals — 11 October 2026 IST
+
+Five unchanged issuing-portal exports cover the six requested GF1 input kinds, all foreign `test_only`.
+Originals and per-file receipts stay under `E:/BhuAayam-data/datasets/map-formats/`, outside Git.
+[Measured table and dispositions](../evidence/gf1/da1/report.md) and
+[exact URLs, paths, SHA-256, counts, fields, CRS and licences](../evidence/gf1/da1/result.json)
+record native bytes; no conversion, filtering, upload, registry import, model or provider call occurred.
+
+- **Tweed Shire Council:** [Council Buildings item](https://www.arcgis.com/home/item.html?id=e54a8e9268364411b68775528f73f423).
+  Publisher Shapefile ZIP (12,849 bytes), GeoPackage (151,552 bytes), KMZ (16,243 bytes): 88 buildings each.
+  ZIP/GPKG explicitly declare EPSG:28356; KMZ has KML coordinate semantics, no explicit EPSG declaration.
+  CC BY, version unstated; attribute Tweed Shire Council. ZIP and GPKG also meet the preferred small-input bounds.
+- **City of Niagara Falls:** [2018 footprints](https://www.arcgis.com/home/item.html?id=0e4764a531e84b7182cfaf3c4da7e8f4).
+  Offered GeoJSON: 26,660,992 bytes, 42,247 Polygon features, stated EPSG:2958.
+  [Open Government Licence–Niagara Falls 1.0](https://open.niagarafalls.ca/pages/terms-of-use).
+- **Halifax Regional Municipality:** [Building Polygons layer 0](https://www.arcgis.com/home/item.html?id=1f73c9ad861a4fd9998c097d3544c08e).
+  Offered GeoJSON: 107,832,285 bytes, 172,409 features, stated EPSG:3857; Polygon/MultiPolygon/null preserved.
+  [Open Government Licence–Halifax 1.0](https://data-hrm.hub.arcgis.com/pages/open-data-licence).
+  Publisher coverage includes rooflines, pedways and podiums as well as footprints; not survey or rights evidence.
+
+[Ten-minute India-first search](../evidence/gf1/da1/india-search.json) found no eligible unauthenticated original.
+SOI/Bhuvan login or permission and Pune purpose/CAPTCHA routes require owner action; none was bypassed.
+Existing Google libkml examples are software demonstrations, not authority records, and were not duplicated.
+Kitchener's large GeoJSON was excluded after free-text notes revealed person names; no personal values are in evidence.
+Excluded bytes remain isolated outside Git, unchanged, and are not qualified inputs or provider material.
+Existing Halifax/Kitchener learning-family splits remain untouched: format inspection is not training authorization.
+No GF1 runtime gate is passed. The pre-existing contract check fails on runtime-receipt CRLF/pins;
+lead-owned pin/EOL refresh is required after integration, not performed in this acquisition scope.
+
 ## D1f documented property-table acquisition — 10 October 2026 UTC
 
 Foreign government CSV exports and publisher metadata are retained outside Git, `test_only` and development-only.
