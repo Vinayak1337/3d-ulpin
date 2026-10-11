@@ -27,7 +27,7 @@ Module({ imports: [SpatialModule, AiModule] })(ValidationApp);
 // Concrete migration risk: wildcard scene URLs and disabled body parsing must
 // reach the intended native method and reject invalid input before service IO.
 // This check creates no operational records and never calls storage, DB or a provider.
-test('native spatial/AI routes publish all 28 operations and enforce non-stateful transport boundaries', async () => {
+test('native spatial/AI routes publish all 33 operations and enforce non-stateful transport boundaries', async () => {
   const app = await NestFactory.create(ValidationApp, { bodyParser: false, logger: false });
   let port = 0;
   app.use((request: any, response: any, next: () => void) =>
@@ -81,13 +81,27 @@ test('native spatial/AI routes publish all 28 operations and enforce non-statefu
     const operations = Object.values(doc.paths).flatMap((entry: any) =>
       Object.values(entry).filter((operation: any) => operation?.operationId)) as any[];
     const ledger = JSON.parse(await readFile(new URL('../docs/orchestration/nestjs-operation-ledger.json', import.meta.url), 'utf8'));
-    const expected = ledger.operations.filter((operation: any) => operation.batch === 'NEST-13').map((operation: any) => operation.operationId).sort();
+    const addedIds = [
+      'POST_api_v1_spatial_ml_source_batches',
+      'GET_api_v1_spatial_ml_items_itemId_source_reviews',
+      'GET_api_v1_spatial_ml_items_itemId_source_reviews_context',
+      'GET_api_v1_spatial_ml_items_itemId_source_reviews_reviewId',
+      'POST_api_v1_spatial_ml_items_itemId_source_reviews',
+    ];
+    const published = JSON.parse(await readFile(new URL('../docs/api/openapi.json', import.meta.url), 'utf8'));
+    const added = Object.entries(published.paths).flatMap(([path, entry]: [string, any]) =>
+      Object.entries(entry).filter(([,operation]: [string, any]) => addedIds.includes(operation?.operationId))
+        .map(([method, operation]: [string, any]) => ({ path, method: method.toUpperCase(),
+          operationId: operation.operationId })));
+    assert.equal(added.length, addedIds.length);
+    const baselines = ledger.operations.filter((operation: any) => operation.batch === 'NEST-13').concat(added);
+    const expected = baselines.map((operation: any) => operation.operationId).sort();
     assert.deepEqual(operations.map(operation => operation.operationId).sort(), expected);
     for (const operation of operations) assert.ok(Object.keys(operation.responses).length, operation.operationId);
     const documented = Object.entries(doc.paths).flatMap(([path, entry]: [string, any]) =>
       Object.entries(entry).filter(([,operation]: [string, any]) => operation?.operationId)
         .map(([method, operation]: [string, any]) => ({ path, method: method.toUpperCase(), operationId: operation.operationId })));
-    for (const baseline of ledger.operations.filter((operation: any) => operation.batch === 'NEST-13')) {
+    for (const baseline of baselines) {
       const current = documented.find((operation: any) => operation.operationId === baseline.operationId);
       assert.equal(current?.method, baseline.method, baseline.operationId);
       assert.equal(current?.path, baseline.path, baseline.operationId);
