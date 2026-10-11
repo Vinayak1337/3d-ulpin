@@ -1,0 +1,12 @@
+export function intakeRefreshFrame(data: unknown) {
+  if (!data || typeof data !== 'object') return false;
+  if ('kind' in data && (data.kind === 'ready' || data.kind === 'resync')) return true;
+  if (!('change' in data) || !data.change || typeof data.change !== 'object') return false;
+  return 'kind' in data.change && ['intake.item', 'intake.target', 'recipe.changed'].includes(String(data.change.kind));
+}
+
+export const INTAKE_SILENCE_MS = 5000;
+
+export function silenceDelay(lastEventAt: number, now: number) {
+  return Math.max(INTAKE_SILENCE_MS - (now - lastEventAt), 0);
+}
