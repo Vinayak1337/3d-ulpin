@@ -1,0 +1,212 @@
+{
+  "baseCommit": "8d234b153b122007d827e88d6197916487a65895",
+  "path": "E:\\BhuAayam-data\\datasets\\map-formats\\niagara-falls\\Niagara_Falls_Condominiums_7254610803234545967.geojson",
+  "bytes": 157817,
+  "sha256": "dece86e3bc85a2529fbca07cf31e4c0f4e74275ed10b9989684f18191f2e002c",
+  "declaration": {
+    "type": "name",
+    "properties": {
+      "name": "EPSG:2958"
+    }
+  },
+  "normalizerRefusal": "GeoJSON requires an RFC 7946 FeatureCollection in longitude/latitude EPSG:4326, without a crs override.",
+  "inspectionRefusal": "Projected or unknown GeoJSON CRS overrides are unsupported; use a native GIS source with declared CRS.",
+  "undeclaredOutsideDegrees": {
+    "input": "Synthetic Point [500000, 3100000], no crs; pure functions only",
+    "check": "_geometry.position geographic bounds, fatal InputError, not quarantine",
+    "normalizerWords": "Feature control longitude/latitude are outside geographic bounds.",
+    "inspectionWords": "Source feature longitude/latitude are outside geographic bounds.",
+    "actionable": "Reports bounds but not missing declaration; clarify only this failure."
+  },
+  "nycWholeOutput": {
+    "path": "E:\\BhuAayam-data\\datasets\\nyc-10013\\files\\buildings-original.geojson",
+    "features": 1661,
+    "canonical": "UTF-8, sorted keys, compact separators, ensure_ascii=False",
+    "before": "3d3da39563073c3204acd8eb2cd36408e19a3a7ace8490a7652cfda01ebca0fc",
+    "after": "3d3da39563073c3204acd8eb2cd36408e19a3a7ace8490a7652cfda01ebca0fc",
+    "identical": true
+  },
+  "c6": [
+    {
+      "path": "packages/server/src/modules/usp/ingestion/registry.ts",
+      "lines": [
+        11,
+        35,
+        53
+      ],
+      "needs": "Degree-only manual profile and conversion: accept resolved declared horizontal CRS and report its native unit; do not let recipes select CRS."
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/adaptive-mapping.ts",
+      "lines": [
+        36
+      ],
+      "needs": "Degree-only profile guard: same declared-CRS qualification as inspection/profile."
+    },
+    {
+      "path": "packages/contracts/src/usp/document-ingestion.ts",
+      "lines": [
+        185,
+        186
+      ],
+      "needs": "Manual GIS profile hardcodes EPSG:4326 and two evidence strings: widen contract before using projected inspection in manual intake."
+    },
+    {
+      "path": "packages/api-client/src/schema.d.ts",
+      "lines": [
+        66969,
+        66971
+      ],
+      "needs": "Generated manual profile mirrors degree-only contract; regenerate after contract change."
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-text.ts",
+      "lines": [
+        99,
+        103,
+        109
+      ],
+      "needs": "Head probe records EPSG/URN names but does not resolve them; use authoritative resolved CRS before exposing geographic extent. Never equate projected bbox to degrees."
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/streaming-vector.ts",
+      "lines": [
+        115,
+        121,
+        122
+      ],
+      "needs": "Copies profile sourceCrs/evidence but leaves globalPlacement not_qualified: normalized batches must retain original declaration and use canonical transform before placement."
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts",
+      "lines": [
+        127,
+        153,
+        156,
+        215
+      ],
+      "needs": "Frames top-level metadata without CRS resolution and refuses feature crs; next streaming task must resolve collection CRS once, never infer it per chunk."
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/streaming-vector-validation.ts",
+      "lines": [
+        10
+      ],
+      "needs": "Topology-only PostGIS GeoJSON read has implicit SRID 4326; validation is planar, not a coordinate transform or degree qualification."
+    },
+    {
+      "path": "packages/server/src/modules/usp/tiles/compiler.ts",
+      "lines": [
+        25
+      ],
+      "needs": "Tile input transform declares EPSG:4326: feed only normalized geographic observations, never native projected originals."
+    },
+    {
+      "path": "packages/server/src/modules/usp/tiles/grid.ts",
+      "lines": [
+        11,
+        15,
+        16
+      ],
+      "needs": "Degree/WebMercator grid: keep unchanged, feed normalized geographic bounds only."
+    },
+    {
+      "path": "packages/contracts/src/usp/private-mvt.ts",
+      "lines": [
+        21
+      ],
+      "needs": "Tile contract is normalized EPSG:4326, not the original CRS; keep distinction."
+    },
+    {
+      "path": "packages/contracts/src/canonical/building.ts",
+      "lines": [
+        423
+      ],
+      "needs": "Scene placement EPSG:4326 contract is normalized output, not raw GeoJSON; no change needed."
+    },
+    {
+      "path": "packages/server/src/modules/spatial/spatial-ml-georeference.ts",
+      "lines": [
+        48
+      ],
+      "needs": "Sets input geographic geometry SRID4326: retain normalized-only input."
+    },
+    {
+      "path": "packages/server/src/modules/areas/areas.ts",
+      "lines": [
+        530,
+        540,
+        560,
+        746,
+        874,
+        949,
+        1595
+      ],
+      "needs": "Direct import forwards explicit sourceCrs only when supplied; stores normalized.reference and warnings; geographic_geometry SRID4326 applies to normalized output, not original. No degree-only refusal found here."
+    },
+    {
+      "path": "packages/server/src/modules/spatial/legacy/core-legacy-adapter.ts",
+      "lines": [
+        137,
+        138
+      ],
+      "needs": "Legacy display frame assumes normalized geographicRepresentation is CRS84; never use sourceGeometry there."
+    },
+    {
+      "path": "packages/server/src/modules/spatial/legacy/area-compat-adapter.ts",
+      "lines": [
+        46,
+        50
+      ],
+      "needs": "Same normalized-only degree display boundary; no change needed."
+    },
+    {
+      "path": "apps/studio/src/features/intake/AddFilesDialog.tsx",
+      "lines": [
+        38,
+        186,
+        325
+      ],
+      "needs": "No independent degree/4326 declaration check found; browser counts kinds, server inspection is authority. Its manual-profile route needs the contract/profile changes above."
+    },
+    {
+      "path": "apps/studio/src/features/map/overlays.ts",
+      "lines": [
+        26,
+        131,
+        134
+      ],
+      "needs": "Imagery bounds and anchors are geographic, scene inputs local metres; no raw GeoJSON CRS reinterpretation found. Keep normalized-only boundary."
+    }
+  ],
+  "c6Search": "rg GeoJSON/FeatureCollection/crs/4326/CRS84/longitude/latitude over packages and apps TypeScript; normalized-only consumers listed separately; tests and frozen apps/web are not intake authorities.",
+  "runtimePlan": {
+    "cb1": "CB1 uses nonce tmpfs PostGIS plus in-memory HTTP object storage and Python pure-function HTTP stand-in; CR1 uses the actual FastAPI geo image instead.",
+    "commands": [
+      "docker build --file services/geo/Dockerfile --tag ulpin-cr1-geo:<nonce> services/geo",
+      "docker run --detach --pull never --name ulpin-cr1-geo-<nonce> --label io.ulpin.task=CR1 --label io.ulpin.nonce=<nonce> --publish 127.0.0.1::8000 --env GEO_SERVICE_TOKEN --env PROJ_NETWORK=OFF ulpin-cr1-geo:<nonce>",
+      "docker run --detach --pull never --name ulpin-cr1-db-<nonce> --label io.ulpin.task=CR1 --label io.ulpin.nonce=<nonce> --publish 127.0.0.1::5432 --tmpfs /var/lib/postgresql/data --env POSTGRES_USER=cr1_control --env POSTGRES_DB=cr1_<nonce> --env POSTGRES_PASSWORD <pinned PostGIS digest from compose.yaml>",
+      "node --require ./scripts/platform/isolated-env.cjs --import tsx docs/evidence/gf1/cr1/steps.ts"
+    ],
+    "secrets": "Fresh nonce-box secrets only, passed in process environment, never printed or recorded.",
+    "cleanup": "Verify nonce/task labels and remove only our two named containers; assert our nonce absent, not global container/volume/network equality."
+  },
+  "baselineChecks": {
+    "targeted": {
+      "command": "cd services/geo && E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe -B -m pytest tests/test_area.py tests/test_gis_inspection.py -q",
+      "exit": 0,
+      "passed": 77
+    },
+    "fullCollection": {
+      "command": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe -B -m pytest services/geo -q",
+      "exit": 2,
+      "errors": 5,
+      "reason": "Absent fitz and torch in existing environment; extra geo/ test modules collected when passing services/geo."
+    },
+    "configuredSuite": {
+      "command": "cd services/geo && E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe -B -m pytest -o addopts=\"\" --ignore=tests/test_learning_lora.py --ignore=tests/test_packet_regions.py --ignore=tests/test_source_ocr_candidate.py",
+      "exit": 1,
+      "counts": "See baseline run summary; dependency omissions and pre-existing assertions are not CR1 changes."
+    }
+  }
+}

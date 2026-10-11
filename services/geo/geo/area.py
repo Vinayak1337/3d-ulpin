@@ -59,16 +59,41 @@ def _text(value, label, limit=256):
     return value.strip()
 
 
-def _crs(value, label):
-    if not isinstance(value, str) or not re.fullmatch(r"EPSG:[1-9][0-9]{2,5}", value, re.IGNORECASE):
+def _crs(value, label, named=False):
+    if not named and (not isinstance(value, str)
+                      or not re.fullmatch(r"EPSG:[1-9][0-9]{2,5}", value, re.IGNORECASE)):
         raise InputError(f"{label} requires an explicit EPSG code, for example EPSG:32643.")
+    if named and (not isinstance(value, str) or not value.strip()):
+        raise InputError(f"{label} requires nonempty coordinate reference system text.")
     try:
-        result = CRS.from_user_input(value.upper())
+        result = CRS.from_user_input(value if named else value.upper())
     except CRSError:
-        raise InputError(f"{label} is not a recognized EPSG coordinate reference system.") from None
-    if len(result.axis_info) != 2 or not (result.is_projected or result.is_geographic):
+        description = "coordinate reference system" if named else "EPSG coordinate reference system"
+        raise InputError(f"{label} is not a recognized {description}.") from None
+    if result.is_compound or len(result.axis_info) != 2 or not (result.is_projected or result.is_geographic):
         raise InputError(f"{label} must be a two-dimensional horizontal CRS.")
     return result
+
+
+def _geojson_crs(source: dict) -> tuple[CRS, str | None]:
+    """Resolve only the collection's exact named declaration; never infer from coordinates."""
+    if "crs" not in source:
+        return CRS.from_epsg(4326), None
+    member = source["crs"]
+    declared = json.dumps(member, ensure_ascii=False, separators=(",", ":"))
+    label = f"The file's crs member declares {declared}; its name"
+    if (not isinstance(member, dict) or set(member) != {"type", "properties"}
+            or member.get("type") != "name" or not isinstance(member.get("properties"), dict)
+            or set(member["properties"]) != {"name"}):
+        raise InputError(f"The file's crs member declares {declared}; requires the 2008 named CRS form.")
+    name = member["properties"]["name"]
+    result = _crs(name, label, named=True)
+    if result.to_authority() is None:
+        raise InputError(f"{label} must resolve to an authority:code coordinate reference system.")
+    # Preserve the existing CRS84 normalization result, including its EPSG:4326 reference.
+    if name == "urn:ogc:def:crs:OGC:1.3:CRS84":
+        result = CRS.from_epsg(4326)
+    return result, name
 
 
 def _analysis_crs(value):
@@ -93,7 +118,7 @@ class GeometryRejected(InputError):
         self.vertices, self.code = vertices, code
 
 
-def _geometry(raw, label="geometry", geographic=False, topology=True):
+def _geometry(raw, label="geometry", geographic=False, topology=True, undeclared=False):
     """Validate before GEOS, so unsupported dimensions cannot be silently discarded."""
     if not isinstance(raw, dict) or "crs" in raw:
         raise InputError(f"{label} requires a geometry object without a per-feature CRS override.")
@@ -106,6 +131,8 @@ def _geometry(raw, label="geometry", geographic=False, topology=True):
             raise InputError(f"{label} requires exactly two coordinates; Z/M values are unsupported and will not be dropped.")
         x, y = (_number(v, label + " coordinate") for v in value)
         if geographic and not (-180 <= x <= 180 and -90 <= y <= 90):
+            if undeclared:
+                raise InputError("The file declares no coordinate system and its coordinates are not longitude and latitude.")
             raise InputError(f"{label} longitude/latitude are outside geographic bounds.")
         count += 1
         if count > MAX_FEATURE_VERTICES:
@@ -289,17 +316,17 @@ def normalize_area(data):
     if not isinstance(reference, dict):
         raise InputError("reference must be an object.")
     source_crs = None
-    legacy_geojson_crs = False
+    geojson_crs_name = None
     if data["format"] == "geojson":
-        # Socrata's unchanged NYC export declares CRS84, whose x/y order is
-        # explicitly longitude/latitude. This is a recognized legacy declaration,
-        # not permission to reinterpret projected GeoJSON as EPSG:4326.
-        legacy_geojson_crs = source.get("crs") == {"type": "name", "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"}}
-        if source.get("type") != "FeatureCollection" or "crs" in source and not legacy_geojson_crs:
-            raise InputError("GeoJSON requires an RFC 7946 FeatureCollection in longitude/latitude EPSG:4326, without a crs override.")
-        source_crs = CRS.from_epsg(4326)
-        if reference.get("sourceCrs") and not _crs(reference["sourceCrs"], "sourceCrs").equals(source_crs):
-            raise InputError("RFC GeoJSON input is EPSG:4326; projected data must use an explicit source adapter.")
+        if source.get("type") != "FeatureCollection":
+            raise InputError("GeoJSON requires a FeatureCollection.")
+        source_crs, geojson_crs_name = _geojson_crs(source)
+        if reference.get("sourceCrs") or geojson_crs_name is not None and "sourceCrs" in reference:
+            specified = _crs(reference["sourceCrs"], "sourceCrs", named=geojson_crs_name is not None)
+            if not specified.equals(source_crs, ignore_axis_order=geojson_crs_name is not None):
+                if geojson_crs_name is not None:
+                    raise InputError("Explicit sourceCrs conflicts with the file's crs member.")
+                raise InputError("RFC GeoJSON input is EPSG:4326; projected data must use an explicit source adapter.")
     else:
         if source.get("exceededTransferLimit"):
             raise InputError("ArcGIS transfer is incomplete; retrieve and reconcile all pages before normalization.")
@@ -315,8 +342,13 @@ def normalize_area(data):
     collection_reference = source_crs is not None
     rows = _list(source.get("features"), "Source features", 1, MAX_FEATURES)
     prepared, warnings, keys, total_vertices, rejected = [], [], set(), 0, []
-    if legacy_geojson_crs:
+    if geojson_crs_name == "urn:ogc:def:crs:OGC:1.3:CRS84":
         warnings.append("Recognized the source's legacy OGC CRS84 declaration as longitude/latitude WGS84. Original bytes retain that declaration; normalized geographic geometry uses RFC 7946 coordinates.")
+    elif geojson_crs_name is not None:
+        authority = ":".join(source_crs.to_authority())
+        warnings.append(f"The source declares `{geojson_crs_name}`; read as `{authority}`, "
+                        "coordinates in the order written (x, y). Original bytes keep that declaration; "
+                        "normalized geographic geometry uses RFC 7946 coordinates.")
     for index, feature in enumerate(rows):
         if not isinstance(feature, dict) or "crs" in feature:
             raise InputError("Each source feature must be an object without a CRS override.")
@@ -368,7 +400,10 @@ def normalize_area(data):
         try:
             if data["format"] == "arcgis":
                 parsed = _arcgis_geometry(original, geographic=source_crs.equals(CRS.from_epsg(4326)))
-            geometry, count = _geometry(parsed, f"Feature {source_key}", geographic=source_crs.equals(CRS.from_epsg(4326)))
+            geographic_source = (source_crs.is_geographic if data["format"] == "geojson"
+                                 else source_crs.equals(CRS.from_epsg(4326)))
+            geometry, count = _geometry(parsed, f"Feature {source_key}", geographic=geographic_source,
+                                        undeclared=data["format"] == "geojson" and geojson_crs_name is None)
             if fields["kind"] in ("building", "parcel", "public_land") and geometry.geom_type not in ("Polygon", "MultiPolygon"):
                 raise GeometryRejected(f"{fields['kind']} requires Polygon or MultiPolygon geometry.", count, "GEOMETRY_KIND")
         except GeometryRejected as error:
