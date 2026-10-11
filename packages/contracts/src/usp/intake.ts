@@ -114,7 +114,8 @@ export const IntakeConfirmedPackageSchema = z.strictObject({
   packageId: uuid, revision: z.number().int().positive(), reviewFingerprint: hash,
 });
 export const IntakeConfirmSchema = z.strictObject({
-  requestKey: uuid, acknowledgement: z.string().trim().min(1).max(500),
+  requestKey: uuid, acknowledgement: z.string().min(1).max(500)
+    .refine(value => value.trim().length > 0, 'Use a non-blank acknowledgement in the officer\'s words.'),
   packages: z.array(IntakeConfirmedPackageSchema).min(1).max(100)
     .refine(rows => new Set(rows.map(row => row.packageId)).size === rows.length, 'Name each package once.'),
   targets: z.array(uuid).max(INTAKE_TARGET_LIMITS.confirmationTargets)

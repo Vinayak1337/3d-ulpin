@@ -800,7 +800,7 @@
       "responseStatus": 202,
       "transportProfile": "json",
       "maxBodyBytes": 32768,
-      "runtimeEvidence": "docs/evidence/gf1/e1/runtime.json",
+      "runtimeEvidence": "docs/evidence/gf1/e1/controls-runtime.json",
       "batch": "E1"
     },
     {
@@ -814,7 +814,7 @@
       "responseStatus": 200,
       "transportProfile": "json",
       "maxBodyBytes": 32768,
-      "runtimeEvidence": "docs/evidence/gf1/e1/runtime.json",
+      "runtimeEvidence": "docs/evidence/gf1/e1/controls-runtime.json",
       "batch": "E1"
     }
   ]

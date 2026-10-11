@@ -44,6 +44,16 @@ test('the stored list is bounded and cannot contain commands to resolve conflict
   assert(!IntakeConfirmSchema.safeParse({ ...input, targets: [other, other] }).success);
 });
 
+test('the stored acknowledgement preserves the officer words so a whitespace change is a different input', () => {
+  const input = { requestKey: id, acknowledgement: '  Protocol acknowledgement  ',
+    packages: [named], targets: [other] };
+  const parsed = IntakeConfirmSchema.parse(input);
+  assert.equal(parsed.acknowledgement, input.acknowledgement);
+  assert.notEqual(parsed.acknowledgement,
+    IntakeConfirmSchema.parse({ ...input, acknowledgement: input.acknowledgement.trim() }).acknowledgement);
+  assert(!IntakeConfirmSchema.safeParse({ ...input, acknowledgement: '   ' }).success);
+});
+
 test('two matches remain conflicting: the run does not resolve them or pick the first citation', () => {
   const pointer = { legacyLocator: 'feature protocol-key' };
   assert.equal(intakeTargetCitation([pointer], pointer.legacyLocator), pointer);
