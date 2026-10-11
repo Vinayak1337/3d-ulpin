@@ -11,11 +11,12 @@ const hash = z.string().regex(/^[a-f0-9]{64}$/);
 const revision = z.number().int().positive();
 const text = z.string().min(1).max(150).refine(v => v.trim() === v && !/[\u0000-\u001f]/.test(v));
 export const INGESTION_VERSION = 'manual-geojson/1' as const;
-export const ConversionIdSchema = z.enum(['literal_identifier@1', 'literal_text@1', 'geojson_polygon@1']);
+export const ConversionIdSchema = z.enum(['literal_identifier@1', 'literal_text@1', 'geojson_polygon@1',
+  'geojson_geometry@1']);
 /** Paths are inventory tokens, never expressions or values. Membership is checked by the server. */
 export const SourcePathSchema = z.string().max(512).regex(/^\/features\/\*\/(?:id|geometry|properties\/(?:[^~\/]|~[01])+)$/);
 export const MappingOperationSchema = z.strictObject({
-  target: LegacyMappingTargetSchema,
+  target: z.union([LegacyMappingTargetSchema, z.enum(['feature.sourceKey', 'feature.geometry', 'feature.name'])]),
   sourcePath: SourcePathSchema, conversionId: ConversionIdSchema,
 });
 export const SourcePinSchema = z.strictObject({sourceId: id, familyId: id, sourceRevision: revision, sourceSha256: hash, schemaFingerprint: hash});
@@ -35,6 +36,7 @@ export const SourceProfileSchema = z.strictObject({
 export const MappingPlanSchema = z.strictObject({
   version: z.literal(INGESTION_VERSION), mode: z.literal('manual_mapping'), source: SourcePinSchema,
   caseId: id, workspaceRevision: z.number().int().nonnegative(), workspaceFingerprint: hash,
+  kind: z.enum(['building', 'parcel', 'road', 'public_land', 'utility']).optional(),
   heightField: z.string().min(1).max(80).refine(value => value.trim() === value).optional(),
   heightUnit: z.enum(['m', 'ft']).optional(),
   heightMeaning: z.string().trim().min(1).max(500).optional(),
@@ -45,15 +47,18 @@ export const MappingPlanSchema = z.strictObject({
     ctx.addIssue({code: 'custom', path: ['heightField'],
       message: 'A height mapping requires its field, source unit (m or ft), and meaning together; no unit is guessed.'});
   const targets = plan.operations.map(op => op.target);
-  if (new Set(targets).size !== targets.length || !targets.includes('building.sourceKey') || !targets.includes('building.geometry'))
-    ctx.addIssue({code: 'custom', path: ['operations'], message: 'Choose one source key and one building geometry; each target occurs once.'});
+  const prefix = plan.kind === undefined ? 'building' : 'feature';
+  if (new Set(targets).size !== targets.length || !targets.includes(`${prefix}.sourceKey`)
+    || !targets.includes(`${prefix}.geometry`) || targets.some(target => !target.startsWith(`${prefix}.`)))
+    ctx.addIssue({code: 'custom', path: ['operations'],
+      message: `Choose one ${prefix} source key and geometry; use ${prefix} targets only, each once.`});
 });
 export const MappingDestinationSchema = z.discriminatedUnion('kind', [
   z.strictObject({kind: z.literal('new_area'), namespace: text, name: text}),
   z.strictObject({kind: z.literal('existing_area'), areaId: id, expectedAreaRevision: z.number().int().nonnegative(), referenceFingerprint: hash, namespace: text, name: text}),
 ]);
 export const AuthorMappingSchema = z.strictObject({
-  requestKey: id, expectedRecipeRevision: z.number().int().nonnegative(), plan: MappingPlanSchema, destination: MappingDestinationSchema,
+  requestKey: id, expectedRecipeRevision: z.number().int().nonnegative(), plan: MappingPlanSchema, destination: MappingDestinationSchema.optional(),
 });
 export const MappingDecisionSchema = z.strictObject({requestKey: id, expectedRecipeRevision: revision});
 export const MappingReceiptSchema = z.strictObject({

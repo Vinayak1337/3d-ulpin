@@ -1,14 +1,15 @@
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
-import type { MapArea } from '@ulpin/contracts';
-import { MappingPlanSchema, type MappingDestination, type MappingPlan, type MappingReceipt,
+import { MappingPlanSchema, type MappingPlan, type MappingReceipt,
   type SourceProfile } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import { localOperatorSubject } from '../principal';
 import { claimUspJobAttempt, assertUspJobAttemptTx, acceptUspJobAttempt, type UspJobAttempt } from '../jobs';
-import { getArea, getPackage } from '../../areas/areas';
+import { getPackage } from '../../areas/areas';
+import { intakeDestination, intakeCaseArea } from './intake-destination';
+export { intakeDestination } from './intake-destination';
 import { ManualIngestionService } from './service';
 import { AdaptiveMappingService } from './adaptive-mapping-service';
 import { compileMapping } from './registry';
@@ -21,7 +22,7 @@ const manual = new ManualIngestionService();
 const adaptive = new AdaptiveMappingService();
 type Origin = 'memory' | 'teacher' | 'officer';
 type Proposal = { plan: MappingPlan; origin: Origin };
-const noLayout = 'No approved layout matches this file. An officer chooses the identifier field.';
+const noLayout = 'No approved layout matches this file. An officer states what each feature is and which field identifies it.';
 const otherSite = "Use an area of this batch's site or place the file in a separate intake batch.";
 
 function memoryPlan(profile: SourceProfile, remembered: MappingReceipt | null): MappingPlan | null {
@@ -31,6 +32,7 @@ function memoryPlan(profile: SourceProfile, remembered: MappingReceipt | null): 
   const parsed = MappingPlanSchema.safeParse({ version: profile.version, mode: 'manual_mapping',
     source: profile.source, caseId: profile.caseId, workspaceRevision: profile.workspaceRevision,
     workspaceFingerprint: profile.workspaceFingerprint, operations: remembered.plan.operations,
+    ...(remembered.plan.kind === undefined ? {} : { kind: remembered.plan.kind }),
     ...(remembered.plan.heightField === undefined ? {} : { heightField: remembered.plan.heightField,
       heightUnit: remembered.plan.heightUnit, heightMeaning: remembered.plan.heightMeaning }) });
   if (!parsed.success) return null;
@@ -90,21 +92,6 @@ async function preparedProposal(input: IntakeDraftInput, attempt: UspJobAttempt,
   return proposal;
 }
 
-/** A case already bound to a site proposes that site's one area; only an unbound case proposes a new one. */
-export function intakeDestination(gis: { suggestedTitle: string; suggestedNamespace: string },
-  area: MapArea | null): MappingDestination {
-  const named = { name: gis.suggestedTitle, namespace: gis.suggestedNamespace };
-  if (!area) return { kind: 'new_area', ...named };
-  return { kind: 'existing_area', areaId: area.id, expectedAreaRevision: area.revision,
-    referenceFingerprint: fingerprint(area.reference || null), ...named };
-}
-
-async function caseArea(input: IntakeDraftInput, attempt: UspJobAttempt): Promise<MapArea | null> {
-  const row = await pinned(input, attempt, async client => (await client.query(
-    'SELECT a.id FROM cases c JOIN map_areas a ON a.site_id=c.site_id WHERE c.id=$1', [input.caseId])).rows[0]);
-  return row ? getArea(row.id) : null;
-}
-
 /** The refusals an officer answers: the file belongs elsewhere, or the area cannot hold it. */
 export function officerQuestion(error: unknown): string | null {
   if (!(error instanceof AppError)) return null;
@@ -125,7 +112,8 @@ async function proposeRecipe(input: IntakeDraftInput, attempt: UspJobAttempt): P
   try {
     return await manual.author(input.caseId, input.sourceId, {
       requestKey: intakeDraftKey(input.itemId, 0, 'author'), expectedRecipeRevision: 0, plan: proposal.plan,
-      destination: intakeDestination(gis, await caseArea(input, attempt)),
+      destination: intakeDestination(gis, await intakeCaseArea(input.caseId, (sql, values) =>
+        pinned(input, attempt, async client => (await client.query(sql, values)).rows[0]))),
     }) as MappingReceipt;
   } catch (error) {
     // An officer may author/approve while the permitted proposal call is in flight.
