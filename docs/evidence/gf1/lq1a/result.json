@@ -1,0 +1,25 @@
+{
+  "task": "LQ1a",
+  "gate": ["GF1", "GF5"],
+  "status": "UI delivered; live journey partial, stopped by rule (a)",
+  "delivered": ["latest recipe lines and proposal origin", "displayed-revision approval with 409 reload", "approved/executed read-only", "no-plan closed sentence, no author action", "package link through targets-page areaId or Package prepared", "mounted IntakeRunPanel", "reviewed zero-count package eligibility", "zero-target confirmation with nonblank acknowledgement", "resync/error automatic reconnection and delayed banner", "empty reason/action cells and batch dialog wording"],
+  "verification": {
+    "baseline": {"studioTypecheck": 2, "studioTest": 1, "studioPassed": 389, "studioFailed": 1, "cause": "historic E3a fixture lacked new nullable plan"},
+    "final": {"studioTypecheck": 0, "studioTest": 0, "studioTests": 402, "studioTestFiles": 61, "apiClientTests": 2, "uiTests": 7, "sceneTests": 44, "diffCheck": 0, "skillScan": 0, "studioRetargetedScan": 0},
+    "live": "runtime-second.json: retention/enrolment/helper author all 201; no page errors; original unchanged; owned containers gone; stopped at null item.plan",
+    "browserControls": "control-qualified.json: exit 0, 409/read-only/package-link/zero-target checks, keyboard/contrast/200% review",
+    "bodyEquality": "layout-model.test.ts evaluates unchanged E1b chooseLayout and compares its author body to controls-second.json authorBody exactly",
+    "responseSchemas": "batch-contract.test.ts validates unmodified stopped live manifest, recipe history and author body",
+    "notQualified": ["live approval and package progression", "area drawing without invented heights", "first-100 cards/timings", "last-row priority", "PDF and verification", "confirmation reload persistence", "real zero-building package confirmation", "a second difficult real input"]
+  },
+  "gaps": [
+    {"code":"AUTHOR_PLAN_NOT_PUBLISHED","evidence":"service.ts:202-228 author emits recipe.changed without queueIntakeDraftTx; intake-ledger.ts:19-34 projects only stored plan_ref; completed no-layout worker is not requeued","action":"Separate backend task publishes/requeues authored layout. No UI event-payload or inspection-SQL workaround."},
+    {"code":"ONE_CASE_EVENT_READER","evidence":"events.ts:14,108-112 allows perCase:1; batch page plus run panel attempt two subscriptions and one returns 429 INGESTION_STREAM_LIMIT","action":"Separately authorized shared stream seam or revised backend allowance; run/** beyond A5 is not owned."},
+    {"code":"LAYOUT_QUESTION_NEXT_TASK","evidence":"No-plan state deliberately has no author action","action":"LQ1b after destination/field question contract"}
+  ],
+  "limitations": {"caseSuggestions":"Only first work-queue page. SourceCaseFields has no search; an officer can type an exact case ID not listed, or create a case. No table helper changed.", "connections":2, "packageSummaries":"Targets contract lists at most 100 packages; an unlisted prepared package gets no guessed area link."},
+  "designReport": "design-check.md",
+  "runtimeReport": "runtime.json",
+  "attempts": "attempts.json",
+  "scope": "Only owned intake paths and lq1a evidence changed since merge baseline. Within run only model.ts, Confirm.tsx, Packages.tsx, model.test.ts. No backend, contracts, client, scene, area, table, web changes. No push."
+}

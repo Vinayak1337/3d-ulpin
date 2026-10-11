@@ -13,7 +13,7 @@
       "heightField": "Height field", "heightUnit": "Height metres or feet", "heightMeaning": "Height stored meaning",
       "tabular": "additional member name on tabular recipes", "mapping": "additional member name on tabular recipes", "decisions": "additional member name on tabular recipes"
     },
-    "destinationCoverage": {"kind": "new or existing area", "name": "Area stored name", "namespace": "additional destination member name and value", "areaId": "additional destination member name and value", "expectedAreaRevision": "additional destination member name and value", "referenceFingerprint": "additional destination member name and value"},
+    "destinationCoverage": {"kind": "new or existing area", "name": "Area stored name", "namespace": "additional destination member name", "areaId": "additional destination member name", "expectedAreaRevision": "additional destination member name", "referenceFingerprint": "additional destination member name"},
     "origin": "Only item.plan.origin: memory = Remembered from an approved layout of the same columns; teacher = Proposed by the model; officer = Written by an officer; null = not supplied by the record. Do not infer from authoredBy.",
     "missingLines": "Absent name/height say not stated. Tabular mapping has no GeoJSON identifier line and null destination: not supplied by the record. Unknown future members are listed by name."
   },
@@ -26,6 +26,7 @@
     "events": {"recipe.changed": "author, approve, execute; invalidate manifest, all displayed recipe histories, targets", "intake.item": "probe and worker ledger transitions; same invalidations", "intake.target": "target progress; same invalidations", "ready": "read current facts", "resync": "set head cursor, refetch once, reconnect automatically"},
     "fallback": "Only unsettled tray items: quiet reads no faster than 5 seconds. Errors close and reconnect from head on next 5-second tick. Banner after two consecutive failed reconnects, clear on success. Run panel independently keeps its own stream and fallback.",
     "connections": 2,
+    "runtimeAudit": "Confirmed two subscriptions collide with events.ts:14,108-112 perCase:1: one reader returns 429 INGESTION_STREAM_LIMIT (The bounded local event reader allowance is occupied.). No seam exposes run frames to the parent without changing run/**; leave two per scope and report it.",
     "suspectedBlocker": "service.ts author lines 202-228 saves receipt and emits recipe.changed but never calls queueIntakeDraftTx. Initial worker can already have completed with plan null. Manifest projects only stored plan_ref (intake-ledger.ts:19-34); event payload cannot replace it. Author after no-layout completion therefore cannot reach item.plan without backend change. Verify exact request on disposable runtime; stop affected walk if confirmed."
   },
   "approval": {
@@ -52,7 +53,19 @@
       {"code":"MAPPING_IDENTITY","status":422,"words":["Source identity must be complete, unique, nonempty literal text.","Choose a source attribute or retained Feature.id."]},
       {"code":"MAPPING_NAME","status":422,"words":"A name mapping requires a complete text attribute; null and absent values stay distinct in the profile."}
     ],
-    "otherValidation": "registry.ts parses retained bytes (INVALID_JSON, UNSUPPORTED_PROFILE, RECORD_LIMIT, EMPTY_SOURCE, SOURCE_PROFILE, UNSUPPORTED_GEOMETRY); tabular-recipe.ts validates tabular pins/mapping for tabular receipts. Infrastructure/storage errors remain errors, not decisions.",
+    "otherRefusals": [
+      {"code":"FILE_SIZE","status":413,"words":"The request body exceeds 2097152 bytes."},
+      {"code":"INCOMPLETE_BODY","status":400,"words":"The request body was interrupted."},
+      {"code":"INVALID_JSON","status":400,"words":"The request body must be valid JSON."},
+      {"code":"DUPLICATE_RECORD","status":409,"words":"This record already exists. Refresh before retrying."},
+      {"code":"SERVICE_UNAVAILABLE","status":503,"words":"A local service could not complete this operation. Check service health and retry."},
+      {"code":"STALE_REVISION","status":409,"words":"The tabular source, selection or workspace changed; author a current recipe."},
+      {"code":"MAPPING_TABULAR_ORDER","status":422,"words":"Keep officer decisions in the pinned source-column order."},
+      {"code":"MAPPING_OFFICER_REASON","status":422,"words":"Each field requires one explicit officer decision and reason."},
+      {"code":"MAPPING_PLAN_INVALID","status":422,"words":"The officer plan failed canonical verification."},
+      {"code":"MAPPING_DRY_RUN","status":422,"words":"A selected field exceeds the existing ten-percent issue bound."}
+    ],
+    "otherValidation": "GeoJSON approval compiles the already retained profile; registry inventory parsing errors are retention-time, not fresh inventory reads at approval. Tabular approval additionally validates source selection and its dry run; this task does not change the table path. Standard schema failure text is path-qualified Zod issues joined with semicolons. Infrastructure failures remain errors, not decisions.",
     "staleUI": "On any 409 re-read latest recipe and current facts; say The layout changed. Read the current layout before approving it. Approved/executed read-only."
   },
   "nycHarness": {
