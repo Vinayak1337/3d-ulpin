@@ -64505,53 +64505,85 @@
                               ]
                             },
                             "provenance": {
-                              "type": "object",
-                              "properties": {
-                                "issuer": {
-                                  "type": "string",
-                                  "minLength": 1,
-                                  "maxLength": 500
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "issuer": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 500
+                                    },
+                                    "originalUrl": {
+                                      "type": "string",
+                                      "maxLength": 2048,
+                                      "format": "uri"
+                                    },
+                                    "acquiredAt": {
+                                      "type": "string",
+                                      "format": "date-time",
+                                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                                    },
+                                    "permissionReference": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 2048
+                                    },
+                                    "limitations": {
+                                      "maxItems": 20,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 2000
+                                      }
+                                    },
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "caller_declared"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "issuer",
+                                    "originalUrl",
+                                    "acquiredAt",
+                                    "permissionReference",
+                                    "limitations",
+                                    "state"
+                                  ],
+                                  "additionalProperties": false
                                 },
-                                "originalUrl": {
-                                  "type": "string",
-                                  "maxLength": 2048,
-                                  "format": "uri"
-                                },
-                                "acquiredAt": {
-                                  "type": "string",
-                                  "format": "date-time",
-                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                                },
-                                "permissionReference": {
-                                  "type": "string",
-                                  "minLength": 1,
-                                  "maxLength": 2048
-                                },
-                                "limitations": {
-                                  "maxItems": 20,
-                                  "type": "array",
-                                  "items": {
-                                    "type": "string",
-                                    "minLength": 1,
-                                    "maxLength": 2000
-                                  }
-                                },
-                                "state": {
-                                  "type": "string",
-                                  "enum": [
-                                    "caller_declared"
-                                  ]
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "origin": {
+                                      "type": "string",
+                                      "enum": [
+                                        "not_stated"
+                                      ]
+                                    },
+                                    "acquiredAt": {
+                                      "type": "string",
+                                      "format": "date-time",
+                                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                                    },
+                                    "state": {
+                                      "type": "string",
+                                      "enum": [
+                                        "not_stated"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "origin",
+                                    "acquiredAt",
+                                    "state"
+                                  ],
+                                  "additionalProperties": false
                                 }
-                              },
-                              "required": [
-                                "issuer",
-                                "originalUrl",
-                                "acquiredAt",
-                                "permissionReference",
-                                "limitations",
-                                "state"
-                              ],
-                              "additionalProperties": false
+                              ]
                             },
                             "conversion": {
                               "type": "string",
@@ -66063,53 +66095,85 @@
                         ]
                       },
                       "provenance": {
-                        "type": "object",
-                        "properties": {
-                          "issuer": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 500
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "issuer": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 500
+                              },
+                              "originalUrl": {
+                                "type": "string",
+                                "maxLength": 2048,
+                                "format": "uri"
+                              },
+                              "acquiredAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                              },
+                              "permissionReference": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 2048
+                              },
+                              "limitations": {
+                                "maxItems": 20,
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 2000
+                                }
+                              },
+                              "state": {
+                                "type": "string",
+                                "enum": [
+                                  "caller_declared"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "issuer",
+                              "originalUrl",
+                              "acquiredAt",
+                              "permissionReference",
+                              "limitations",
+                              "state"
+                            ],
+                            "additionalProperties": false
                           },
-                          "originalUrl": {
-                            "type": "string",
-                            "maxLength": 2048,
-                            "format": "uri"
-                          },
-                          "acquiredAt": {
-                            "type": "string",
-                            "format": "date-time",
-                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                          },
-                          "permissionReference": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 2048
-                          },
-                          "limitations": {
-                            "maxItems": 20,
-                            "type": "array",
-                            "items": {
-                              "type": "string",
-                              "minLength": 1,
-                              "maxLength": 2000
-                            }
-                          },
-                          "state": {
-                            "type": "string",
-                            "enum": [
-                              "caller_declared"
-                            ]
+                          {
+                            "type": "object",
+                            "properties": {
+                              "origin": {
+                                "type": "string",
+                                "enum": [
+                                  "not_stated"
+                                ]
+                              },
+                              "acquiredAt": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                              },
+                              "state": {
+                                "type": "string",
+                                "enum": [
+                                  "not_stated"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "origin",
+                              "acquiredAt",
+                              "state"
+                            ],
+                            "additionalProperties": false
                           }
-                        },
-                        "required": [
-                          "issuer",
-                          "originalUrl",
-                          "acquiredAt",
-                          "permissionReference",
-                          "limitations",
-                          "state"
-                        ],
-                        "additionalProperties": false
+                        ]
                       },
                       "conversion": {
                         "type": "string",
@@ -370580,46 +370644,71 @@
                 "pattern": "^[a-f0-9]{64}$"
               },
               "provenance": {
-                "type": "object",
-                "properties": {
-                  "issuer": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 500
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "issuer": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "originalUrl": {
+                        "type": "string",
+                        "maxLength": 2048,
+                        "format": "uri"
+                      },
+                      "acquiredAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "permissionReference": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2048
+                      },
+                      "limitations": {
+                        "maxItems": 20,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 2000
+                        }
+                      }
+                    },
+                    "required": [
+                      "issuer",
+                      "originalUrl",
+                      "acquiredAt",
+                      "permissionReference",
+                      "limitations"
+                    ],
+                    "additionalProperties": false
                   },
-                  "originalUrl": {
-                    "type": "string",
-                    "maxLength": 2048,
-                    "format": "uri"
-                  },
-                  "acquiredAt": {
-                    "type": "string",
-                    "format": "date-time",
-                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                  },
-                  "permissionReference": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 2048
-                  },
-                  "limitations": {
-                    "maxItems": 20,
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "minLength": 1,
-                      "maxLength": 2000
-                    }
+                  {
+                    "type": "object",
+                    "properties": {
+                      "origin": {
+                        "type": "string",
+                        "enum": [
+                          "not_stated"
+                        ]
+                      },
+                      "acquiredAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      }
+                    },
+                    "required": [
+                      "origin",
+                      "acquiredAt"
+                    ],
+                    "additionalProperties": false
                   }
-                },
-                "required": [
-                  "issuer",
-                  "originalUrl",
-                  "acquiredAt",
-                  "permissionReference",
-                  "limitations"
-                ],
-                "additionalProperties": false
+                ]
               },
               "profile": {
                 "type": "string",
@@ -370674,46 +370763,71 @@
                 "pattern": "^[a-f0-9]{64}$"
               },
               "provenance": {
-                "type": "object",
-                "properties": {
-                  "issuer": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 500
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "issuer": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 500
+                      },
+                      "originalUrl": {
+                        "type": "string",
+                        "maxLength": 2048,
+                        "format": "uri"
+                      },
+                      "acquiredAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "permissionReference": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 2048
+                      },
+                      "limitations": {
+                        "maxItems": 20,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 2000
+                        }
+                      }
+                    },
+                    "required": [
+                      "issuer",
+                      "originalUrl",
+                      "acquiredAt",
+                      "permissionReference",
+                      "limitations"
+                    ],
+                    "additionalProperties": false
                   },
-                  "originalUrl": {
-                    "type": "string",
-                    "maxLength": 2048,
-                    "format": "uri"
-                  },
-                  "acquiredAt": {
-                    "type": "string",
-                    "format": "date-time",
-                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                  },
-                  "permissionReference": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 2048
-                  },
-                  "limitations": {
-                    "maxItems": 20,
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "minLength": 1,
-                      "maxLength": 2000
-                    }
+                  {
+                    "type": "object",
+                    "properties": {
+                      "origin": {
+                        "type": "string",
+                        "enum": [
+                          "not_stated"
+                        ]
+                      },
+                      "acquiredAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      }
+                    },
+                    "required": [
+                      "origin",
+                      "acquiredAt"
+                    ],
+                    "additionalProperties": false
                   }
-                },
-                "required": [
-                  "issuer",
-                  "originalUrl",
-                  "acquiredAt",
-                  "permissionReference",
-                  "limitations"
-                ],
-                "additionalProperties": false
+                ]
               },
               "profile": {
                 "type": "string",
@@ -391917,7 +392031,6 @@
                 }
               },
               "semanticEvidence": {
-                "minItems": 2,
                 "maxItems": 3,
                 "type": "array",
                 "items": {
@@ -391964,6 +392077,13 @@
                   ],
                   "additionalProperties": false
                 }
+              },
+              "basis": {
+                "type": "string",
+                "enum": [
+                  "publisher_cited",
+                  "officer_stated"
+                ]
               },
               "version": {
                 "type": "string",
@@ -392138,7 +392258,6 @@
                     }
                   },
                   "semanticEvidence": {
-                    "minItems": 2,
                     "maxItems": 3,
                     "type": "array",
                     "items": {
@@ -392185,6 +392304,13 @@
                       ],
                       "additionalProperties": false
                     }
+                  },
+                  "basis": {
+                    "type": "string",
+                    "enum": [
+                      "publisher_cited",
+                      "officer_stated"
+                    ]
                   },
                   "version": {
                     "type": "string",
@@ -392328,7 +392454,6 @@
                     }
                   },
                   "semanticEvidence": {
-                    "minItems": 2,
                     "maxItems": 3,
                     "type": "array",
                     "items": {
@@ -392375,6 +392500,13 @@
                       ],
                       "additionalProperties": false
                     }
+                  },
+                  "basis": {
+                    "type": "string",
+                    "enum": [
+                      "publisher_cited",
+                      "officer_stated"
+                    ]
                   },
                   "version": {
                     "type": "string",
@@ -392627,7 +392759,6 @@
                 }
               },
               "semanticEvidence": {
-                "minItems": 2,
                 "maxItems": 3,
                 "type": "array",
                 "items": {
@@ -392674,6 +392805,13 @@
                   ],
                   "additionalProperties": false
                 }
+              },
+              "basis": {
+                "type": "string",
+                "enum": [
+                  "publisher_cited",
+                  "officer_stated"
+                ]
               },
               "version": {
                 "type": "string",

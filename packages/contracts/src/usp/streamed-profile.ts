@@ -44,7 +44,8 @@ const SemanticEvidenceSchema=z.strictObject({target:LegacyMappingTargetSchema,
 const mappingPlanFields={mode:z.literal('streamed_mapping'),source:SourcePinSchema,caseId:id,caseRevision:z.number().int().nonnegative(),
   rawJobId:id,profileJobId:id,profileGeneration:z.number().int().nonnegative(),profileHash:hash,
   operations:z.array(StreamedOperationSchema).min(2).max(3),
-  semanticEvidence:z.array(SemanticEvidenceSchema).min(2).max(3),
+  semanticEvidence:z.array(SemanticEvidenceSchema).max(3),
+  basis:z.enum(['publisher_cited','officer_stated']).optional(),
 };
 const MappingPlanBaseSchema=z.strictObject(mappingPlanFields);
 const reviewPlan=(plan:z.infer<typeof MappingPlanBaseSchema>,ctx:z.RefinementCtx)=>{
@@ -55,6 +56,11 @@ const reviewPlan=(plan:z.infer<typeof MappingPlanBaseSchema>,ctx:z.RefinementCtx
     ctx.addIssue({code:'custom',path:['profileHash'],message:'The exact profile generation must be pinned.'});
   const meanings={'building.sourceKey':'building_source_identity','building.name':'building_name',
     'building.geometry':'building_footprint'} as const;
+  if(plan.basis==='officer_stated'){
+    if(plan.semanticEvidence.length!==0)
+      ctx.addIssue({code:'custom',path:['semanticEvidence'],message:'An officer-stated layout carries no publisher citations.'});
+    return;
+  }
   if(plan.semanticEvidence.length!==plan.operations.length||plan.operations.some(op=>
     plan.semanticEvidence.filter(item=>item.target===op.target&&item.sourcePath===op.sourcePath
       &&item.meaning===meanings[op.target]).length!==1))

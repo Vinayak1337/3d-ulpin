@@ -1,0 +1,152 @@
+{
+  "task": "PV1",
+  "gate": "GF1",
+  "baseCommit": "6442f20d5720d6913ba73e833c4304006fa48db7",
+  "uploadWithoutCitation": true,
+  "officerStatedLargeLayout": true,
+  "storedPlanHashesUnchanged": true,
+  "publisherCitedFormsPreserved": true,
+  "input": {
+    "path": "E:/BhuAayam-data/datasets/nyc-second-area/nyc-office-of-technology-and-innovation/5zhs-2jue-box-w74.025-s40.700-e73.940-n40.800.geojson",
+    "bytes": 43263076,
+    "sha256": "0d4dd71eb16d0e5a6f87e7702402098a9f4235aa85dc2461c0154c4f187c4489"
+  },
+  "purpose": "Foreign test_only; permission unconfirmed.",
+  "unstated": {
+    "uploadId": "aa560f12-71cd-411f-90ce-76f766f0405e",
+    "sourceId": "4679736e-5725-42e1-b4c1-8518b96b8fa5",
+    "caseId": "7f9ca8fa-e3a1-4416-88aa-be0061b4ded3",
+    "parts": 6,
+    "bytes": 43263076,
+    "provenance": {
+      "origin": "not_stated",
+      "acquiredAt": "2026-10-11T10:24:21.328Z",
+      "state": "not_stated"
+    },
+    "reader": {
+      "jobId": "bf3831ff-34dd-4d43-a663-cae680bd6f5b",
+      "status": "completed_with_rejections",
+      "records": 48686,
+      "accepted": 48683,
+      "quarantined": 3,
+      "chunks": 487,
+      "unknownRemainder": false
+    },
+    "profile": {
+      "jobId": "855f6ef5-8db3-49fd-b9f3-15599ac754ff",
+      "status": "sealed",
+      "generation": 487,
+      "accepted": 48683,
+      "quarantined": 3,
+      "paths": 16,
+      "unknownRemainder": false,
+      "reference": {
+        "sourceCrs": null,
+        "evidence": null,
+        "globalPlacement": "not_qualified"
+      }
+    },
+    "layout": {
+      "recipeId": "e8c49d07-031b-45b3-abed-7d97a431b9bd",
+      "state": "approved",
+      "basis": "officer_stated",
+      "semanticEvidence": [],
+      "planHash": "1b175ea37666d140be693f38fd3ce47964df241b0a2590ea2e6b51ffb350de64",
+      "approval": {
+        "subject": "pv1-runtime-control",
+        "at": "2026-10-11T10:26:18.578Z",
+        "planHash": "1b175ea37666d140be693f38fd3ce47964df241b0a2590ea2e6b51ffb350de64",
+        "provenance": "server_configured_local_operator"
+      },
+      "operations": [
+        {
+          "target": "building.sourceKey",
+          "sourcePath": "/features/*/properties/doitt_id",
+          "conversionId": "literal_identifier@1"
+        },
+        {
+          "target": "building.geometry",
+          "sourcePath": "/features/*/geometry",
+          "conversionId": "geojson_polygon@1"
+        }
+      ],
+      "noMappingOrPackageRequested": true
+    },
+    "negative": {
+      "absentBasisEmptyCitations": {
+        "code": "INVALID_INPUT",
+        "message": "plan.semanticEvidence: Each operation needs matching issuer meaning evidence.",
+        "requestId": "bc215fd5-c446-4cb9-ae84-3e173e669d80"
+      },
+      "publisherCitedOrigin": {
+        "code": "STREAMED_MAPPING_PROVENANCE",
+        "message": "This layout cites the publisher, and this file's origin is not stated. State the layout as the officer's own.",
+        "requestId": "8756c958-eee9-411f-8717-676d1786a195"
+      }
+    }
+  },
+  "citedCompatibility": {
+    "parts": 6,
+    "bytes": 43263076,
+    "storedEvidenceByteIdentical": true,
+    "officerStatementApproved": true,
+    "reader": {
+      "jobId": "6c112700-478d-40df-8194-0917d242ceb0",
+      "status": "completed_with_rejections",
+      "records": 48686,
+      "accepted": 48683,
+      "quarantined": 3,
+      "chunks": 487,
+      "unknownRemainder": false
+    },
+    "profile": {
+      "jobId": "88514131-483b-445e-957f-b5c45dd81aa2",
+      "status": "sealed",
+      "generation": 487,
+      "accepted": 48683,
+      "quarantined": 3,
+      "paths": 16,
+      "unknownRemainder": false,
+      "reference": {
+        "sourceCrs": null,
+        "evidence": null,
+        "globalPlacement": "not_qualified"
+      }
+    },
+    "recipeId": "620e14be-b861-4e50-adb2-32d93976b8c8"
+  },
+  "hashProof": {
+    "before": "d716e352d5348beefe249bd9ea9f7eca4d3c8a306ab892b880407bf5ae55a373",
+    "after": "d716e352d5348beefe249bd9ea9f7eca4d3c8a306ab892b880407bf5ae55a373",
+    "bytesUnchanged": true
+  },
+  "counts": {
+    "providers": 0,
+    "packages": 0,
+    "records": 0,
+    "mappingJobs": 0
+  },
+  "originalHashUnchanged": true,
+  "ownedNonce": "6ae7fd809cb5c9b1",
+  "ownedNonceGone": true,
+  "runtimeExit": 0,
+  "standing": "Only a layout was approved. Source-native chunks remain candidates; no mapping, package, registry or card was made.",
+  "manualStarts": "Reader and profile started manually by existing HTTP requests, not automatic intake.",
+  "scopeLimits": [
+    "Existing reader/profile/mapper limits unchanged; buildings, polygon outlines and text identifiers only.",
+    "No mapping/package or automatic-start qualification here; those belong to LP3b.",
+    "No Studio implementation change or browser interaction qualification; generated union typecheck passed.",
+    "Runtime exercised v1 six-part upload; v2 provenance publication uses the same tested helper, but v2 storage was not walked.",
+    "No new publisher-rendering reader found; officer statements do not enter tabular learning."
+  ],
+  "evidence": {
+    "step0": "step0.json",
+    "runtime": "runtime.json",
+    "hash": "unchanged-plan-hash.json",
+    "contractsAndOwnership": "contract-and-ownership.json",
+    "checks": "checks.json",
+    "attempts": "attempts.json"
+  },
+  "blockers": [],
+  "next": "Lead merges with LP3b protected author/approve additions, then walks automatic mapping/package preparation from the officer-stated layout."
+}

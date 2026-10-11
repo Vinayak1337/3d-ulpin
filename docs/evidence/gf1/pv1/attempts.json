@@ -1,0 +1,18 @@
+{
+  "task": "PV1",
+  "attempts": [{
+    "stage": "step0 pure hash capture",
+    "signature": "Pre-schema and post-schema JSON key order differed",
+    "cause": "Existing Zod schema orders fields; fingerprint sorts object keys recursively. The probe incorrectly required byte equality before constructing the stored parsed receipt.",
+    "comparison": "Capture parsed baseline receipt before building, prove deep equality/hash now and exact parse bytes/hash after optional basis change.",
+    "result": "Stored receipt capture succeeds; unchanged-plan-hash.json proves exact baseline bytes and hash after change."
+  }, {
+    "receipt": "runtime-attempt1.json",
+    "signature": "Final count assertion saw mappingjobs rather than mappingJobs",
+    "classification": "Harness SQL alias; all six HTTP walk milestones succeeded",
+    "cause": "PostgreSQL folds unquoted identifiers to lowercase; observed counts were providers=packages=records=mappingjobs=0.",
+    "comparison": "Quote only the camel-case count alias and compare again on one fresh owned nonce. Add canonical published response equality to raw part helper.",
+    "criterion": "Same successful two-origin uploads and layouts; final zero counts and runtime exit zero",
+    "stop": "One bounded fresh runtime; preserve first receipt; no product or worker/storage change"
+  }]
+}

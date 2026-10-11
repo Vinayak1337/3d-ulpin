@@ -5284,6 +5284,13 @@ export interface components {
                             limitations: string[];
                             /** @enum {string} */
                             state: "caller_declared";
+                        } | {
+                            /** @enum {string} */
+                            origin: "not_stated";
+                            /** Format: date-time */
+                            acquiredAt: string;
+                            /** @enum {string} */
+                            state: "not_stated";
                         };
                         /** @enum {string} */
                         conversion: "unsupported";
@@ -5601,6 +5608,13 @@ export interface components {
                         limitations: string[];
                         /** @enum {string} */
                         state: "caller_declared";
+                    } | {
+                        /** @enum {string} */
+                        origin: "not_stated";
+                        /** Format: date-time */
+                        acquiredAt: string;
+                        /** @enum {string} */
+                        state: "not_stated";
                     };
                     /** @enum {string} */
                     conversion: "unsupported";
@@ -66040,6 +66054,11 @@ export interface components {
                 acquiredAt: string;
                 permissionReference: string;
                 limitations: string[];
+            } | {
+                /** @enum {string} */
+                origin: "not_stated";
+                /** Format: date-time */
+                acquiredAt: string;
             };
             /** @enum {string} */
             profile?: "large-original/1";
@@ -66060,6 +66079,11 @@ export interface components {
                 acquiredAt: string;
                 permissionReference: string;
                 limitations: string[];
+            } | {
+                /** @enum {string} */
+                origin: "not_stated";
+                /** Format: date-time */
+                acquiredAt: string;
             };
             /** @enum {string} */
             profile: "large-original/2";
@@ -70098,6 +70122,8 @@ export interface components {
                     meaning: "building_source_identity" | "building_name" | "building_footprint";
                 }[];
                 /** @enum {string} */
+                basis?: "publisher_cited" | "officer_stated";
+                /** @enum {string} */
                 version: "streamed-mapping/1";
                 /** @enum {string} */
                 scope: "accepted_source_features";
@@ -70148,6 +70174,8 @@ export interface components {
                     meaning: "building_source_identity" | "building_name" | "building_footprint";
                 }[];
                 /** @enum {string} */
+                basis?: "publisher_cited" | "officer_stated";
+                /** @enum {string} */
                 version: "streamed-mapping/1";
                 /** @enum {string} */
                 scope: "accepted_source_features";
@@ -70189,6 +70217,8 @@ export interface components {
                     /** @enum {string} */
                     meaning: "building_source_identity" | "building_name" | "building_footprint";
                 }[];
+                /** @enum {string} */
+                basis?: "publisher_cited" | "officer_stated";
                 /** @enum {string} */
                 version: "streamed-prefix-mapping/1";
                 /** @enum {string} */
@@ -70255,6 +70285,8 @@ export interface components {
                     /** @enum {string} */
                     meaning: "building_source_identity" | "building_name" | "building_footprint";
                 }[];
+                /** @enum {string} */
+                basis?: "publisher_cited" | "officer_stated";
                 /** @enum {string} */
                 version: "streamed-prefix-mapping/1";
                 /** @enum {string} */
