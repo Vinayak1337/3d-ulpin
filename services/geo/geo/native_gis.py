@@ -302,6 +302,10 @@ def _decoded_fields(parsed: dict, reference: dict) -> dict:
     actual = {**feature["nativeRecord"], "idField": reference.get("idField")}
     if actual != reference:
         return {"status": "unavailable", "code": "PACKET_PLAN_NATIVE_REFERENCE_MISMATCH"}
+    # JSON numbers cross into JavaScript; never publish a rounded 64-bit integer as a decoded value.
+    if any(isinstance(value, int) and not isinstance(value, bool) and abs(value) > 9007199254740991
+           for value in feature["attributes"].values()):
+        return {"status": "unavailable", "code": "PACKET_PLAN_NATIVE_FIELD_UNSUPPORTED"}
     value = feature["attributes"].get(reference["idField"])
     if isinstance(value, bool) or not isinstance(value, (str, int, float)) or str(value).strip() == "":
         return {"status": "unavailable", "code": "PACKET_PLAN_NATIVE_KEY_MISMATCH"}

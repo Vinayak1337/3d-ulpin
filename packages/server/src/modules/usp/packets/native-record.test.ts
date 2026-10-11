@@ -42,11 +42,12 @@ for (const input of nativeInputs) {
       assert.equal(execution.packet.status, 'complete');
     }));
 
-  test(`${input.format}: a changed position never searches by key`, async () => withNativeFeaturePlan(input, async store => {
-    const reference = store.features[0].body.sourceReference.nativeRecord;
-    reference.position++;
-    await assert.rejects(() => assess(store), { code: 'PACKET_PLAN_NATIVE_KEY_MISMATCH' });
-  }));
+  test(`${input.format}: a changed position never searches by key`, async () =>
+    withNativeFeaturePlan(input, async store => {
+      const reference = store.features[0].body.sourceReference.nativeRecord;
+      reference.position++;
+      await assert.rejects(() => assess(store), { code: 'PACKET_PLAN_NATIVE_KEY_MISMATCH' });
+    }));
 
   test(`${input.format}: changed committed key is refused`, async () => withNativeFeaturePlan(input, async store => {
     store.features[0].body.sourceKey += ' altered';
@@ -56,6 +57,16 @@ for (const input of nativeInputs) {
     store.record.body.evidence[0].locator = locator;
     await assert.rejects(() => assess(store), { code: 'PACKET_PLAN_NATIVE_KEY_MISMATCH' });
   }));
+
+  if (input.format === 'gpkg') test('Unsafe decoded integer refuses rather than publishing a rounded value',
+    async () => withNativeFeaturePlan(input, async store => {
+      const faultyDecoder: typeof realNativeDecoder = async (bytes, reference) => {
+        const decoded = await realNativeDecoder(bytes, reference);
+        return { ...decoded, fields: { ...decoded.fields, integer_precision_control: 9007199254740992 } };
+      };
+      await assert.rejects(() => decodedRecordExtract(store.original, store.source, store.features[0].body,
+        faultyDecoder), { code: 'PACKET_PLAN_NATIVE_FIELD_UNSUPPORTED' });
+    }));
 
   test(`${input.format}: changed retained bytes refuse before native decoding`,
     async () => withNativeFeaturePlan(input, async store => {

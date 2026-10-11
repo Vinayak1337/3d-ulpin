@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from geo.native_gis import (
-    _gpkg, _gpkg_position, _shapefile, decode_native_record, normalize_native,
+    _decoded_fields, _gpkg, _gpkg_position, _shapefile, decode_native_record, normalize_native,
 )
 from geo.validation import InputError
 
@@ -69,3 +69,15 @@ def test_rowid_shadowing_does_not_select_an_attribute_as_a_position():
         connection.execute("CREATE TABLE control (rowid TEXT, _rowid_ TEXT)")
         columns = connection.execute("PRAGMA table_info(control)").fetchall()
         assert _gpkg_position(connection, "control", columns) == ("oid", "rowid")
+
+
+def test_unsafe_integer_protocol_control_refuses_before_json_can_round_it():
+    parsed = _gpkg((ROOT / INPUTS[1][1]).read_bytes(), None, None)
+    feature = parsed["features"][0]
+    reference = {**feature["nativeRecord"], "idField": "OBJECTID"}
+    assert _decoded_fields(parsed, reference)["status"] == "available"
+    # Parser-output fault control only; no original, geometry or recorded feature is changed.
+    feature["attributes"]["integer_precision_control"] = 9007199254740993
+    assert _decoded_fields(parsed, reference) == {
+        "status": "unavailable", "code": "PACKET_PLAN_NATIVE_FIELD_UNSUPPORTED",
+    }

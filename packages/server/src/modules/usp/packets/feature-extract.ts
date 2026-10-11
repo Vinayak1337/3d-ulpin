@@ -79,8 +79,9 @@ function decodedFieldText(fields: Record<string, unknown>): string[] {
   return Object.entries(fields).map(([name, value]) => {
     // JSON escapes control characters so a field value cannot impersonate a citation heading.
     if (value !== null && !['string', 'number', 'boolean'].includes(typeof value)
-      || typeof value === 'number' && !Number.isFinite(value))
-      throw new AppError(422, 'PACKET_PLAN_NATIVE_FIELD_UNSUPPORTED', 'A decoded field is not a finite scalar.');
+      || typeof value === 'number' && (!Number.isFinite(value)
+        || Number.isInteger(value) && !Number.isSafeInteger(value)))
+      throw new AppError(422, 'PACKET_PLAN_NATIVE_FIELD_UNSUPPORTED', 'A decoded field is not an exact finite scalar.');
     return `${JSON.stringify(name)}: ${JSON.stringify(value)}`;
   });
 }
