@@ -22,7 +22,9 @@ for (const row of [...lf, ...step0.table.filter(row => crlf.includes(row[0]))]) 
   if (hash(git('show', ':' + path)) !== expected) throw Error('Unexpected index bytes: ' + path);
   const working = readFileSync(path);
   const observed = hash(working);
-  if (observed !== expected && (crlf.includes(path) || observed !== row[2])) {
+  // Another checkout may hold CRLF where the audited one held LF: line endings alone are not a change.
+  const lfOnly = hash(Buffer.from(working.toString('latin1').replaceAll('\r\n', '\n'), 'latin1'));
+  if (observed !== expected && (crlf.includes(path) || (observed !== row[2] && lfOnly !== expected))) {
     throw Error('Uncommitted or unexpected working bytes: ' + path);
   }
 }
