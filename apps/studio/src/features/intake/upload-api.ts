@@ -1,4 +1,4 @@
-import { api, unwrap, type Schemas, type paths } from '@ulpin/api-client';
+import { api, unwrap, type paths } from '@ulpin/api-client';
 import type { UploadCreate, UploadGuard, UploadReceipt } from './upload-model';
 
 type PartRoute = paths['/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/parts/{partNumber}'];
@@ -17,8 +17,7 @@ export function uploadTransport(caseId: string) {
       { params: { path: { caseId } } })).case.revision,
     create: async (body: UploadCreate) => unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/uploads', {
       params: { path: { caseId } },
-      // PV1's fixed additive provenance branch. Remove this assertion when its generated type lands.
-      body: body as unknown as Schemas['POST_ingestion_cases_caseId_uploads_Request_application_json'],
+      body,
     })),
     status: async (receipt: UploadReceipt) => unwrap(await api.GET(
       '/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}', { params: { path: path(receipt) } })),
