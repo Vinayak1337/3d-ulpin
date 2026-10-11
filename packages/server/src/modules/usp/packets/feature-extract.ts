@@ -1,7 +1,9 @@
 import { isDeepStrictEqual } from 'node:util';
-import { NativeRecordReferenceSchema, type NativeRecordReference } from '@ulpin/contracts';
+import { NativeRecordReferenceSchema, SourceRangeReferenceSchema,
+  type NativeRecordReference, type SourceRangeReference } from '@ulpin/contracts';
+import { STREAMING_VECTOR_LIMITS } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
-import { sha256 } from '../../../infrastructure/storage';
+import { readObjectRange, sha256 } from '../../../infrastructure/storage';
 import { areaGeo } from '../../areas/areas';
 import { permitsDecodedFeatureCitation } from '../../registry/registry-reference-policy';
 
@@ -116,6 +118,80 @@ export async function decodedRecordExtract(original: Buffer,
   if (!decoded.fields || !Object.keys(decoded.fields).length || excerpt.length > 16000)
     throw new AppError(422, 'PACKET_PLAN_NATIVE_EXCERPT_BOUND', 'The decoded record exceeds the exact excerpt bound.');
   return { excerpt, method: 'decoded_record' as const, decodedRecord: record };
+}
+
+export function observedFeatureExtract(bytes: Uint8Array, observation: Record<string, any> | null) {
+  if (!observation) return null;
+  const excerpt = featurePropertiesExtract(Buffer.from(bytes), observation.sourceFeatureIndex);
+  return checkedFeatureProperties(excerpt, observation);
+}
+
+function checkedFeatureProperties(excerpt: string | null, observation: Record<string, any>) {
+  if (excerpt === null || !excerpt.length || excerpt.length > 16000) return null;
+  const original = JSON.parse(excerpt);
+  for (const [name, value] of Object.entries(observation.properties ?? {}))
+    if (Object.hasOwn(original, name) && !isDeepStrictEqual(value, original[name])) return null;
+  return excerpt;
+}
+
+const rangeMismatch = () => new AppError(422, 'PACKET_PLAN_RANGE_MISMATCH',
+  'The exact feature range does not match its retained import-time observation.');
+
+function assertFeatureRangeBound(range: SourceRangeReference) {
+  if (range.byteEnd - range.byteStart > STREAMING_VECTOR_LIMITS.featureBytes)
+    throw new AppError(422, 'PACKET_PLAN_RANGE_BOUND', 'The feature span exceeds the reader\'s 1 MiB bound.');
+}
+
+export function capturedSourceRange(observation: Record<string, any> | null, sourceBytes: number) {
+  const reference = observation?.sourceReference?.sourceRange;
+  if (reference === undefined) return null;
+  const parsed = SourceRangeReferenceSchema.safeParse(reference);
+  if (!parsed.success || parsed.data.featureIndex !== observation?.sourceFeatureIndex
+    || !Number.isSafeInteger(sourceBytes) || parsed.data.byteEnd > sourceBytes) throw rangeMismatch();
+  assertFeatureRangeBound(parsed.data);
+  return parsed.data;
+}
+
+/** Decode only the verified Feature bytes; the returned text is never reserialized. */
+export function featureRangeExtract(bytes: Uint8Array, range: SourceRangeReference,
+  observation: Record<string, any>): string | null {
+  assertFeatureRangeBound(range);
+  if (range.featureIndex !== observation.sourceFeatureIndex
+    || bytes.length !== range.byteEnd - range.byteStart || sha256(bytes) !== range.rawSha256)
+    throw rangeMismatch();
+  let excerpt: string;
+  try {
+    const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    const feature = JSON.parse(text);
+    if (!feature || Array.isArray(feature) || feature.type !== 'Feature' || text[0] !== '{'
+      || text.at(-1) !== '}') throw rangeMismatch();
+    const properties = objectMembers(text, 0).filter(member => member.name === 'properties');
+    if (properties.length !== 1 || text[properties[0].start] !== '{') throw rangeMismatch();
+    excerpt = text.slice(properties[0].start, properties[0].end);
+  } catch {
+    throw rangeMismatch();
+  }
+  const checked = checkedFeatureProperties(excerpt, observation);
+  if (checked === null && excerpt.length <= 16000) throw rangeMismatch();
+  return checked;
+}
+
+export async function readFeatureRangeBytes(source: { object_key: string; bytes: number | string },
+  range: SourceRangeReference, read: typeof readObjectRange = readObjectRange) {
+  try {
+    return await read(source.object_key, range.byteStart, range.byteEnd, Number(source.bytes),
+      Date.now() + 30000, new AbortController().signal);
+  } catch (error) {
+    if (error instanceof AppError && error.code === 'SOURCE_INTEGRITY') throw rangeMismatch();
+    throw error;
+  }
+}
+
+export async function readFeatureRange(source: { object_key: string; bytes: number | string },
+  observation: Record<string, any>, read: typeof readObjectRange = readObjectRange) {
+  const range = capturedSourceRange(observation, Number(source.bytes));
+  if (!range) throw rangeMismatch();
+  return featureRangeExtract(await readFeatureRangeBytes(source, range, read), range, observation);
 }
 
 /** The source's own words: the properties object of element N, with its original spelling and whitespace. */
