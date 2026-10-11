@@ -14,7 +14,8 @@ export function partWork(lag, timings) {
     const total = (names) => calls.filter((call) => names.includes(call.name))
       .reduce((sum, call) => sum + call.ms, 0);
     return {
-      x: part.buildingsBefore, y: total(['setBuildings', 'drainBuildingQueue']),
+      x: part.buildingsBefore, y: total(['setBuildings', 'drainBuildingQueue', 'setBase', 'drainBaseQueue']),
+      buildingOnly: part.count === part.buildings,
       buildingBuildMs: total(['addBuilding']), treeRefreshMs: total(['buildDressing']),
       baseRebuilds: calls.filter((call) => call.name === 'setBase' && call.rebuilt).length,
     };
@@ -47,13 +48,14 @@ export function frameProfile(frame, timings, samples) {
   const sampled = samples.filter((sample) => sample.at >= from && sample.at < frame.at);
   const groups = {};
   const leaves = {};
-  const named = ['setBase', 'addBuilding', 'buildDressing', 'renderFrame'];
+  const named = ['setBase', 'drainBaseQueue', 'addBuilding', 'buildDressing', 'renderFrame'];
   for (const sample of sampled) {
     const group = named.find((name) => sample.stack.includes(name)) ?? sample.stack[0];
     groups[group] = (groups[group] ?? 0) + sample.ms;
     leaves[sample.stack[0]] = (leaves[sample.stack[0]] ?? 0) + sample.ms;
   }
-  const selected = calls.filter((call) => ['setBase', 'drainBuildingQueue', 'renderFrame'].includes(call.name));
+  const selected = calls.filter((call) =>
+    ['setBase', 'drainBaseQueue', 'drainBuildingQueue', 'renderFrame'].includes(call.name));
   return {
     at: frame.at, gapMs: frame.ms, groupsMs: groups,
     topSelf: Object.entries(leaves).sort((a, b) => b[1] - a[1]).slice(0, 3),
@@ -73,9 +75,10 @@ function matchedSamples(samples, anchors, offsetMs) {
 }
 
 export function alignSamples(samples, timings) {
-  const names = ['setBase', 'setBuildings', 'drainBuildingQueue', 'renderFrame'];
+  const names = ['setBase', 'setBuildings', 'drainBaseQueue', 'drainBuildingQueue', 'renderFrame'];
   const groups = names.map((name) => ({
-    samples: samples.filter((sample) => names.find((candidate) => sample.stack.includes(candidate)) === name),
+    samples: samples.filter((sample) =>
+      names.find((candidate) => sample.stack.includes(candidate)) === name),
     anchors: timings.calls.filter((call) => call.name === name && call.ms > 2).sort((a, b) => a.at - b.at),
   }));
   let best = { offsetMs: 0, matchedMs: 0 };
@@ -90,8 +93,8 @@ export function alignSamples(samples, timings) {
 export function taskProfile(task, timings, samples) {
   const end = task.at + task.ms;
   const calls = timings.calls.filter((call) => call.at < end && call.at + call.ms > task.at);
-  const selected = calls.filter((call) => ['setBase', 'drainBuildingQueue', 'renderFrame', 'setBuildings']
-    .includes(call.name));
+  const selected = calls.filter((call) =>
+    ['setBase', 'drainBaseQueue', 'drainBuildingQueue', 'renderFrame', 'setBuildings'].includes(call.name));
   const scene = samples.filter((sample) => sample.at >= task.at && sample.at <= end);
   const groups = {};
   for (const sample of scene) for (const name of new Set(sample.stack)) {
@@ -104,7 +107,7 @@ export function taskProfile(task, timings, samples) {
     topSelf: frameProfile({ at: end, ms: task.ms }, timings, samples).topSelf,
     overlappingCalls: selected.map((call) => ({ name: call.name, at: call.at, ms: call.ms })),
     topSceneOrLoader: Object.entries(groups).filter(([name]) =>
-      /setBase|renderFrame|drainBuildingQueue|inflate|decodeBlock|getTileOrStrip|readTiff/.test(name))
+      /setBase|renderFrame|drainBaseQueue|drainBuildingQueue|inflate|decodeBlock|getTileOrStrip|readTiff/.test(name))
       .sort((a, b) => b[1] - a[1]).slice(0, 3),
     sceneOrStudioAttributable: selected.length > 0 || scene.some((sample) => sample.urls.some((url) =>
       /apps\/studio\/src|packages\/scene\/src|\/src\/(features|api|portal|app)\//.test(url))),

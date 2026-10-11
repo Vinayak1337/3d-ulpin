@@ -102,9 +102,14 @@ export async function instrumentModules(root) {
   wrap(SceneEngine.prototype, 'setBuildings', function (args) {
     return { before: this.buildingBounds.size, after: args[0].length };
   });
-  for (const name of ['setBase', 'fitGroundAndShadow', 'buildDressing', 'clearEntries']) {
+  wrap(SceneEngine.prototype, 'setBase', (args) => ({ inputs: args[0].length }));
+  for (const name of ['fitGroundAndShadow', 'buildDressing', 'clearEntries']) {
     wrap(SceneEngine.prototype, name);
   }
+  wrap(SceneEngine.prototype, 'addBaseEntry', (args) => ({ id: args[0].id }));
+  wrap(SceneEngine.prototype, 'drainBaseQueue', function () {
+    return { queued: this.baseQueue.size };
+  });
   wrap(SceneEngine.prototype, 'addBuilding', (args) => ({ id: args[0].id }));
   wrap(SceneEngine.prototype, 'drainBuildingQueue', function () {
     return { queued: this.buildingQueue.size };
@@ -121,7 +126,8 @@ export async function instrumentModules(root) {
         if (probe.active) {
           probe.lastRender = performance.now();
           probe.calls.push({
-            name: 'renderFrame', at, ms: probe.lastRender - at, buildings: this.buildingBounds.size,
+            name: 'renderFrame', at, ms: probe.lastRender - at, buildings: this.drawnBuildings().count,
+            pending: this.drawnBuildings().pending, basePending: this.baseQueue.size,
           });
         }
       };

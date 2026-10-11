@@ -1,4 +1,4 @@
-// LV0 measuring algorithm, redirected to LV1-owned outputs: node docs/evidence/gf5/lv1/measure.mjs
+// LV2 measurement algorithm, redirected to LV3-owned outputs; also count deferred base work.
 // Starts only an owned Vite dev server; no API, Docker, database, provider, or GPU operation.
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -69,7 +69,8 @@ function profileSummary(profile) {
 function summarize(probe, profile, input) {
   const chunks = probe.parts.filter((part) => part.type === 'chunk');
   const finalCount = chunks.reduce((sum, part) => sum + part.buildings, 0);
-  const firstFinalDraw = probe.calls.find((call) => call.name === 'renderFrame' && call.buildings === finalCount);
+  const firstFinalDraw = probe.calls.find((call) => call.name === 'renderFrame'
+    && call.buildings === finalCount && !call.pending);
   const drawAt = firstFinalDraw.at + firstFinalDraw.ms;
   const frames = probe.frames.filter((frame) => frame.at >= chunks[0].at && frame.at <= drawAt + 17)
     .map((frame) => frame.ms);
@@ -91,6 +92,7 @@ function summarize(probe, profile, input) {
       over100: frames.filter((ms) => ms > 100).length,
     },
     startToLastDrawMs: drawAt - probe.start,
+    lastPartToEverythingDrawnMs: drawAt - chunks.at(-1).at,
     streamWindow: { from: chunks[0].at, to: drawAt, ms: drawAt - chunks[0].at },
     startToCompleteMs: probe.parts.find((part) => part.type === 'complete').at - probe.start,
     heap: probe.heap, chunks, longTasks: probe.tasks, cpu: profileSummary(profile),
@@ -152,7 +154,8 @@ async function runBrowser() {
       // Sender completion is not renderer completion; capture the entire arrived scene.
       await page.waitForFunction(() => {
         const expected = window.__lv0.parts.reduce((sum, part) => sum + (part.buildings || 0), 0);
-        return window.__lv0.failed || window.__ulpinScene?.drawnBuildings().count === expected;
+        const drawn = window.__ulpinScene?.drawnBuildings();
+        return window.__lv0.failed || drawn?.count === expected && !drawn.pending;
       }, null, { timeout: 180000 });
     }
     await page.waitForFunction(() => !window.__ulpinScene.flight);
