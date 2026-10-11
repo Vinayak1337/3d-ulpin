@@ -127,7 +127,7 @@ test('memory-path author finds the running draft job and does not enroll another
     await new ManualIngestionService().author(control.caseId, control.source.id, input);
     assert.equal(control.jobs.size, 1);
     assert.equal(control.jobs.get(jobId!)!.status, 'running');
-    // The actual worker's origin projection is proved separately by the HTTP memory walk.
+    // Full origin read-back is checked separately; AQ1 evidence retains its blocked destination outcome.
   }));
 
 test('over-limit author leaves the queue-written waiting reason and emits the item after recipe.changed', () =>

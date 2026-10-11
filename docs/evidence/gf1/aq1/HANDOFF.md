@@ -8,7 +8,8 @@ COMMITS 1677bada — fix(ingestion): an authored map layout queues the batch row
         e13b6555 — fix(ingestion): four live pages per batch, with words that say which bound was met
         4483fd34 — chore(ingestion): AQ1 regenerated contract and test follow-up
         8034164b — docs(usp): AQ1 evidence, an officer's layout reaches the row
-        The final evidence commit records the unchanged five-layer rerun.
+        0a29bf3a — docs(usp): AQ1 evidence, an officer's layout reaches the row; five layers rerun
+        A final comment-only follow-up qualifies the memory control's blocked read-back.
 CHECKS Backend typecheck, isolated ingestion/area-binding/packet/manual/event checks, API generate/check, contract refresh/client generation, Python API checker, strict harness typecheck and diff check: exit 0. Counts, commands and qualification: checks.json.
 NEXT   The Studio may use result.json to resume its approval walk after integration. Assign the existing-destination memory seam separately if fresh unbound repeated originals must propose into an existing area.
 
