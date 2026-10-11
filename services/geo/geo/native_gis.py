@@ -71,6 +71,25 @@ def _field_names(mapping):
     return sorted(set([mapping[key] for key in ("idField", "nameField", "heightField") if mapping.get(key)] + mapping.get("identifierFields", []) + selected_semantic_fields(mapping)))
 
 
+def _quote(name: str) -> str:
+    return '"' + name.replace('"', '""') + '"'
+
+
+def _gpkg_position(connection: sqlite3.Connection, layer: str, columns: list) -> tuple[str, str]:
+    primary = [entry for entry in columns if entry[5]]
+    if len(primary) == 1 and primary[0][2].upper() == "INTEGER":
+        return primary[0][1], "integer_primary_key"
+    for name in ("_rowid_", "rowid", "oid"):
+        if name.lower() not in {entry[1].lower() for entry in columns}:
+            try:
+                connection.execute(f"SELECT {name} FROM {_quote(layer)} LIMIT 0")
+                return name, "rowid"
+            except sqlite3.Error:
+                continue
+    raise InputError("GeoPackage table has no accessible rowid or single integer primary key; "
+                     "a stable decoded-record citation is unavailable for this table.")
+
+
 def _gpkg(raw, layer, selected):
     # selected=None is bounded metadata inspection through the same native reader.
     inspecting = selected is None
@@ -114,15 +133,21 @@ def _gpkg(raw, layer, selected):
                 raise InputError("GeoPackage requires a two-dimensional EPSG reference.")
             if srs[2] and str(srs[2]).lower() != "undefined" and not CRS.from_wkt(srs[2]).equals(reference):
                 raise InputError("GeoPackage EPSG and WKT declarations conflict; correct the source metadata.")
-            quote = lambda name: '"' + name.replace('"', '""') + '"'
-            available = {entry[1] for entry in connection.execute(f"PRAGMA table_info({quote(layer)})")}
+            columns = connection.execute(f"PRAGMA table_info({_quote(layer)})").fetchall()
+            available = {entry[1] for entry in columns}
+            position_field, position_kind = _gpkg_position(connection, layer, columns)
+            encoding = connection.execute("PRAGMA encoding").fetchone()[0]
             if inspecting:
                 selected = sorted(available - {column})
                 if len(selected) > 256:
                     raise InputError("GIS inspection supports at most 256 attribute fields.")
             if any(name not in available for name in selected):
                 raise InputError("A mapped field is absent from the selected GeoPackage layer.")
-            records = connection.execute(f"SELECT {','.join(quote(name) for name in [column] + selected)} FROM {quote(layer)} LIMIT {MAX_FEATURES + 1}").fetchall()
+            names_sql = ','.join(_quote(name) for name in [column] + selected + [position_field])
+            records = connection.execute(
+                f"SELECT {names_sql} FROM {_quote(layer)} ORDER BY {_quote(position_field)} "
+                f"LIMIT {MAX_FEATURES + 1}"
+            ).fetchall()
             if not 1 <= len(records) <= MAX_FEATURES:
                 raise InputError("GeoPackage selected layer must have 1–2000 features; no partial layer is imported.")
             features, originals, count = [], [], 0
@@ -149,7 +174,14 @@ def _gpkg(raw, layer, selected):
                 count += vertices
                 if count > MAX_VERTICES:
                     raise InputError("GeoPackage layer exceeds 100,000 vertices.")
-                features.append({"attributes": dict(zip(selected, record[1:])), "geometry": _arcgis(geometry)})
+                position = record[-1]
+                if not isinstance(position, int) or abs(position) > 9007199254740991:
+                    raise InputError("GeoPackage record position must be a safe integer.")
+                native_record = {"format": "gpkg", "table": layer, "position": position,
+                                 "positionKind": position_kind, "positionField": position_field,
+                                 "encoding": encoding, "readerVersion": "native-gis-v2"}
+                features.append({"attributes": dict(zip(selected, record[1:-1])),
+                                 "geometry": _arcgis(geometry), "nativeRecord": native_record})
                 originals.append(geometry)
             return {"layers": names, "layer": layer, "features": features, "geometries": originals, "epsg": epsg} if inspecting else (features, originals, epsg, layer)
         except CRSError:
@@ -211,7 +243,7 @@ def _shapefile(raw, layer, selected):
                 if any(name not in fields for name in selected):
                     raise InputError("A mapped field is absent from the Shapefile DBF.")
                 features, originals, count = [], [], 0
-                for item in reader.iterShapeRecords():
+                for position, item in enumerate(reader.iterShapeRecords()):
                     if item.shape.shapeType == 5:
                         starts = list(item.shape.parts) + [len(item.shape.points)]
                         rings = [[list(point) for point in item.shape.points[starts[i]:starts[i + 1]]] for i in range(len(starts) - 1)]
@@ -232,7 +264,11 @@ def _shapefile(raw, layer, selected):
                         raise InputError("Shapefile exceeds 100,000 total vertices.")
                     attributes = item.record.as_dict()
                     selected_values = {name: attributes[name].isoformat() if hasattr(attributes[name], "isoformat") else attributes[name] for name in selected}
-                    features.append({"attributes": selected_values, "geometry": _arcgis(geometry)})
+                    native_record = {"format": "shapefile_zip", "member": names[layer + ".dbf"],
+                                     "position": position, "positionKind": "sequence", "encoding": encoding,
+                                     "readerVersion": "native-gis-v2"}
+                    features.append({"attributes": selected_values, "geometry": _arcgis(geometry),
+                                     "nativeRecord": native_record})
                     originals.append(geometry)
                 if len(features) != reader.numRecords:
                     raise InputError("Deleted/missing Shapefile records cannot silently disappear; supply a consistent source export.")
@@ -243,7 +279,53 @@ def _shapefile(raw, layer, selected):
         raise InputError("Shapefile archive could not be parsed with its declared companions and encoding.") from None
 
 
+def decode_shapefile_record(raw: bytes, reference: dict) -> dict:
+    member = reference.get("member", "")
+    if not isinstance(member, str) or not member.lower().endswith(".dbf"):
+        raise InputError("Decoded Shapefile record requires its exact DBF member.")
+    parsed = _shapefile(raw, member[:-4], None)
+    return _decoded_fields(parsed, reference)
+
+
+def decode_gpkg_record(raw: bytes, reference: dict) -> dict:
+    parsed = _gpkg(raw, reference.get("table"), None)
+    return _decoded_fields(parsed, reference)
+
+
+def _decoded_fields(parsed: dict, reference: dict) -> dict:
+    # Select by the retained position only, never by a source-key search.
+    matches = [feature for feature in parsed.get("features", [])
+               if feature["nativeRecord"]["position"] == reference.get("position")]
+    if len(matches) != 1:
+        return {"status": "unavailable", "code": "PACKET_PLAN_NATIVE_POSITION_UNAVAILABLE"}
+    feature = matches[0]
+    actual = {**feature["nativeRecord"], "idField": reference.get("idField")}
+    if actual != reference:
+        return {"status": "unavailable", "code": "PACKET_PLAN_NATIVE_REFERENCE_MISMATCH"}
+    # JSON numbers cross into JavaScript; never publish a rounded 64-bit integer as a decoded value.
+    if any(isinstance(value, int) and not isinstance(value, bool) and abs(value) > 9007199254740991
+           for value in feature["attributes"].values()):
+        return {"status": "unavailable", "code": "PACKET_PLAN_NATIVE_FIELD_UNSUPPORTED"}
+    value = feature["attributes"].get(reference["idField"])
+    if isinstance(value, bool) or not isinstance(value, (str, int, float)) or str(value).strip() == "":
+        return {"status": "unavailable", "code": "PACKET_PLAN_NATIVE_KEY_MISMATCH"}
+    return {"status": "available", "decodedRecord": actual, "fields": feature["attributes"],
+            "sourceKey": str(value).strip()}
+
+
+def decode_native_record(data: dict) -> dict:
+    raw = _raw(data)
+    reference = data.get("nativeRecord")
+    if not isinstance(reference, dict) or reference.get("format") != data.get("format"):
+        raise InputError("Decoded native record requires a matching import-time reference.")
+    decoder = decode_gpkg_record if data["format"] == "gpkg" else decode_shapefile_record
+    result = decoder(raw, reference)
+    return {**result, "sourceSha256": hashlib.sha256(raw).hexdigest()}
+
+
 def normalize_native(data):
+    if data.get("operation") == "decode_record":
+        return decode_native_record(data)
     from .area import normalize_area
     mapping = data.get("mapping")
     if not isinstance(mapping, dict):
@@ -255,8 +337,11 @@ def normalize_native(data):
     canonical.pop("base64", None)
     result = normalize_area(canonical)
     for feature in result["features"]:
-        feature["sourceGeometry"] = originals[feature["sourceFeatureIndex"]]
-    result["adapter"] = {"format": data["format"], "version": "native-gis-v1", "layer": layer, "sourceSha256": hashlib.sha256(raw).hexdigest(),
+        index = feature["sourceFeatureIndex"]
+        feature["sourceGeometry"] = originals[index]
+        feature["sourceReference"] = {**result["reference"], "nativeRecord": {
+            **features[index]["nativeRecord"], "idField": mapping["idField"]}}
+    result["adapter"] = {"format": data["format"], "version": "native-gis-v2", "layer": layer, "sourceSha256": hashlib.sha256(raw).hexdigest(),
                          "sourceUnits": CRS.from_epsg(epsg).axis_info[0].unit_name}
     result["warnings"].append("Native container bytes remain the source asset. Decoded geometry and normalized arrays are derivatives; no files, rows, dimensions or companion parts were silently discarded.")
     return result

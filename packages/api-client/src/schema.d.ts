@@ -40673,6 +40673,32 @@ export interface components {
                     };
                     sourceSha256: string;
                     text: string;
+                    /** @enum {string} */
+                    method?: "verbatim" | "decoded_record";
+                    decodedRecord?: {
+                        position: number;
+                        encoding: string;
+                        idField: string;
+                        /** @enum {string} */
+                        readerVersion: "native-gis-v2";
+                        /** @enum {string} */
+                        format: "shapefile_zip";
+                        member: string;
+                        /** @enum {string} */
+                        positionKind: "sequence";
+                    } | {
+                        position: number;
+                        encoding: string;
+                        idField: string;
+                        /** @enum {string} */
+                        readerVersion: "native-gis-v2";
+                        /** @enum {string} */
+                        format: "gpkg";
+                        table: string;
+                        /** @enum {string} */
+                        positionKind: "rowid" | "integer_primary_key";
+                        positionField: string;
+                    };
                 };
             } | {
                 /** @enum {string} */
@@ -43992,6 +44018,32 @@ export interface components {
                     state: "included" | "omitted_optional" | "blocked_required_context";
                     reasonCode: string | null;
                     entrySha256: string;
+                    /** @enum {string} */
+                    method?: "verbatim" | "decoded_record";
+                    decodedRecord?: {
+                        position: number;
+                        encoding: string;
+                        idField: string;
+                        /** @enum {string} */
+                        readerVersion: "native-gis-v2";
+                        /** @enum {string} */
+                        format: "shapefile_zip";
+                        member: string;
+                        /** @enum {string} */
+                        positionKind: "sequence";
+                    } | {
+                        position: number;
+                        encoding: string;
+                        idField: string;
+                        /** @enum {string} */
+                        readerVersion: "native-gis-v2";
+                        /** @enum {string} */
+                        format: "gpkg";
+                        table: string;
+                        /** @enum {string} */
+                        positionKind: "rowid" | "integer_primary_key";
+                        positionField: string;
+                    };
                 }[];
                 /** @enum {string} */
                 requiredContext: "available" | "blocked";
@@ -45816,6 +45868,32 @@ export interface components {
                         state: "included" | "omitted_optional" | "blocked_required_context";
                         reasonCode: string | null;
                         entrySha256: string;
+                        /** @enum {string} */
+                        method?: "verbatim" | "decoded_record";
+                        decodedRecord?: {
+                            position: number;
+                            encoding: string;
+                            idField: string;
+                            /** @enum {string} */
+                            readerVersion: "native-gis-v2";
+                            /** @enum {string} */
+                            format: "shapefile_zip";
+                            member: string;
+                            /** @enum {string} */
+                            positionKind: "sequence";
+                        } | {
+                            position: number;
+                            encoding: string;
+                            idField: string;
+                            /** @enum {string} */
+                            readerVersion: "native-gis-v2";
+                            /** @enum {string} */
+                            format: "gpkg";
+                            table: string;
+                            /** @enum {string} */
+                            positionKind: "rowid" | "integer_primary_key";
+                            positionField: string;
+                        };
                     }[];
                     /** @enum {string} */
                     requiredContext: "available" | "blocked";

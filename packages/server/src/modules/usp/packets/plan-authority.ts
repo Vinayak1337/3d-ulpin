@@ -1,6 +1,8 @@
 import type { PoolClient } from 'pg';
 import { isDeepStrictEqual } from 'node:util';
-import { featurePropertiesExtract } from './feature-extract';
+import { featurePropertiesExtract, decodedRecordExtract, decodeNativeRecord,
+  type NativeRecordDecoder } from './feature-extract';
+import { permitsDecodedFeatureCitation } from '../../registry/registry-reference-policy';
 import { isRetainedMapOriginal } from '../ingestion/retained-map-original';
 import type { RequestContext, TargetPin, EvidencePointer, DeclarationEvidence } from '@ulpin/contracts/usp';
 import { z } from 'zod';
@@ -170,7 +172,7 @@ function observedFeatureExtract(bytes: Uint8Array, observation: Record<string, a
   return excerpt;
 }
 export async function assessPlanTx(client: PoolClient, ctx: RequestContext, input: PacketPlanInput,
-  readBytes: typeof readObject = readObject, shared?: SharedAuthority) {
+  readBytes: typeof readObject = readObject, shared?: SharedAuthority, decode: NativeRecordDecoder = decodeNativeRecord) {
   assertLocalUsp(ctx);
   const manifest = await scopedManifestTx(client, ctx, input.scope);
   if (manifest.selection.kind !== 'targets' || manifest.selection.pins.length !== 1
@@ -243,10 +245,13 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
     const supported = !pointer.assetRevision && !pointer.partRevision && locator.kind === 'verbatim' && (
       source.body.profile === 'text-reference-v2' && /^line [1-9][0-9]*$/.test(locator.locator)
       || source.body.profile === 'csv-reference-v2' && /^CSV row [1-9][0-9]*$/.test(locator.locator));
+    const nativeSupported = ['shapefile_zip-area-v2', 'gpkg-area-v2'].includes(source.body.profile)
+      && source.body.status === 'inspected' && source.body.inspection?.status === 'interpreted';
     const featureSupported = target.kind === 'building' && !pointer.assetRevision && !pointer.partRevision
       && locator.kind === 'verbatim' && /^feature \S(.*\S)?$/.test(locator.locator)
-      && (isRetainedMapOriginal(source.body) || source.body.profile === 'geojson-area-v2'
+      && (nativeSupported || isRetainedMapOriginal(source.body) || source.body.profile === 'geojson-area-v2'
       && source.body.status === 'inspected' && source.body.inspection?.status === 'interpreted');
+    let citation: Pick<PacketPlanEntry, 'method' | 'decodedRecord'> = {};
     let excerpt = supported ? selectExactPart(source.body.inspection?.referenceParts, locator) : null;
     if (featureSupported && !reasonCode) {
       let bytes = featureBytes.get(id);
@@ -258,7 +263,20 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
         verifiedBytes.add(id);
       }
       const observation = await capturedFeatureTx(client, input, manifest, pointer);
-      excerpt = observedFeatureExtract(bytes, observation);
+      if (nativeSupported) {
+        if (!permitsDecodedFeatureCitation(source.body, observation?.sourceReference?.nativeRecord)) {
+          reasonCode = 'PACKET_PLAN_NATIVE_POSITION_UNAVAILABLE';
+        } else {
+          const decoded = await decodedRecordExtract(Buffer.from(bytes), {
+            name: source.body.name, sha256: source.body.sha256, bytes: Number(source.body.bytes),
+            profile: source.body.profile, status: source.body.status, inspection: source.body.inspection,
+          }, observation, decode);
+          excerpt = decoded.excerpt;
+          citation = { method: decoded.method, decodedRecord: decoded.decodedRecord };
+        }
+      } else {
+        excerpt = observedFeatureExtract(bytes, observation);
+      }
     }
     if (!reasonCode && excerpt === null) reasonCode = 'exact_extract_unavailable';
     if (!reasonCode && !verifiedBytes.has(id)) {
@@ -267,8 +285,8 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
         throw new AppError(422, 'PACKET_PLAN_ORIGINAL_INTEGRITY', 'The selected original does not match its byte receipt.');
       verifiedBytes.add(id);
     }
-    if (!reasonCode) lines.push({ pointer, sourceSha256: source.body.sha256, excerpt, reasonCode: null });
-    const body = { selection, sourceSha256: source.body.sha256, sourceBytes: Number(source.body.bytes),
+    if (!reasonCode) lines.push({ pointer, sourceSha256: source.body.sha256, excerpt, reasonCode: null, ...citation });
+    const body = { selection, sourceSha256: source.body.sha256, sourceBytes: Number(source.body.bytes), ...citation,
       sourceBodySha256: source.body_sha256, evidenceSha256: fingerprint(pointer),
       excerptSha256: !reasonCode && excerpt !== null ? sha256(excerpt) : null, targetPath: [input.target], applicabilitySha256,
       state: reasonCode ? selection.required ? 'blocked_required_context' : 'omitted_optional' : 'included', reasonCode };
