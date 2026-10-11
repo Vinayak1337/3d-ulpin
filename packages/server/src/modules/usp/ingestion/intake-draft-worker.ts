@@ -1,24 +1,28 @@
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
-import { MappingPlanSchema, type MappingPlan, type MappingReceipt, type SourceProfile } from '@ulpin/contracts/usp';
+import type { MapArea } from '@ulpin/contracts';
+import { MappingPlanSchema, type MappingDestination, type MappingPlan, type MappingReceipt,
+  type SourceProfile } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import { localOperatorSubject } from '../principal';
 import { claimUspJobAttempt, assertUspJobAttemptTx, acceptUspJobAttempt, type UspJobAttempt } from '../jobs';
-import { getPackage } from '../../areas/areas';
+import { getArea, getPackage } from '../../areas/areas';
 import { ManualIngestionService } from './service';
 import { AdaptiveMappingService } from './adaptive-mapping-service';
 import { compileMapping } from './registry';
 import { IntakeDraftInputSchema, assertIntakeDraftTx, intakeDraftKey, queueIntakeDraftTx,
   type IntakeDraftInput } from './intake-draft';
 import { readIntakeDraftTx, writeIntakeDraftTx, type IntakeDraftState } from './intake-ledger';
+import { createIntakeTargetsTx } from './intake-targets';
 
 const manual = new ManualIngestionService();
 const adaptive = new AdaptiveMappingService();
 type Origin = 'memory' | 'teacher' | 'officer';
 type Proposal = { plan: MappingPlan; origin: Origin };
 const noLayout = 'No approved layout matches this file. An officer chooses the identifier field.';
+const otherSite = "Use an area of this batch's site or place the file in a separate intake batch.";
 
 function memoryPlan(profile: SourceProfile, remembered: MappingReceipt | null): MappingPlan | null {
   if (!remembered || !['approved', 'executed'].includes(remembered.state)
@@ -84,6 +88,29 @@ async function preparedProposal(input: IntakeDraftInput, attempt: UspJobAttempt,
   return proposal;
 }
 
+/** A case already bound to a site proposes that site's one area; only an unbound case proposes a new one. */
+export function intakeDestination(gis: { suggestedTitle: string; suggestedNamespace: string },
+  area: MapArea | null): MappingDestination {
+  const named = { name: gis.suggestedTitle, namespace: gis.suggestedNamespace };
+  if (!area) return { kind: 'new_area', ...named };
+  return { kind: 'existing_area', areaId: area.id, expectedAreaRevision: area.revision,
+    referenceFingerprint: fingerprint(area.reference || null), ...named };
+}
+
+async function caseArea(input: IntakeDraftInput, attempt: UspJobAttempt): Promise<MapArea | null> {
+  const row = await pinned(input, attempt, async client => (await client.query(
+    'SELECT a.id FROM cases c JOIN map_areas a ON a.site_id=c.site_id WHERE c.id=$1', [input.caseId])).rows[0]);
+  return row ? getArea(row.id) : null;
+}
+
+/** The refusals an officer answers: the file belongs elsewhere, or the area cannot hold it. */
+export function officerQuestion(error: unknown): string | null {
+  if (!(error instanceof AppError)) return null;
+  if (error.code === 'AREA_SOURCE_DENIED') return otherSite;
+  if (error.code === 'AREA_PROCESSING' && error.status === 422) return error.message.slice(0, 2000);
+  return null;
+}
+
 async function proposeRecipe(input: IntakeDraftInput, attempt: UspJobAttempt): Promise<MappingReceipt | null> {
   const profile = await manual.inspect(input.caseId, input.sourceId);
   const proposal = await preparedProposal(input, attempt, profile);
@@ -96,7 +123,7 @@ async function proposeRecipe(input: IntakeDraftInput, attempt: UspJobAttempt): P
   try {
     return await manual.author(input.caseId, input.sourceId, {
       requestKey: intakeDraftKey(input.itemId, 0, 'author'), expectedRecipeRevision: 0, plan: proposal.plan,
-      destination: { kind: 'new_area', name: gis.suggestedTitle, namespace: gis.suggestedNamespace },
+      destination: intakeDestination(gis, await caseArea(input, attempt)),
     }) as MappingReceipt;
   } catch (error) {
     // An officer may author/approve while the permitted proposal call is in flight.
@@ -127,12 +154,15 @@ async function transition(input: IntakeDraftInput, attempt: UspJobAttempt, recei
   const from = receipt ? await origin(input, attempt, receipt) : null;
   const pkg = packageId ? await getPackage(packageId) : null;
   if (pkg && !pkg.sourceRevisionIds.includes(input.sourceId)) conflict('The draft package cites a different source.');
-  await pinned(input, attempt, async client => writeIntakeDraftTx(client, input.caseId, input.itemId, {
-    state, placement: pkg ? 'on_map' : receipt ? 'undecided' : 'needs_answer',
-    planRef: receipt ? { recipeId: receipt.id, recipeRevision: receipt.revision, recipeState: receipt.state,
-      origin: from, ...(pkg ? { packageId: pkg.id } : {}) } : null,
-    recordsSeen: pkg?.features.length ?? 0, limitReason: receipt ? null : noLayout,
-  }));
+  await pinned(input, attempt, async client => {
+    await writeIntakeDraftTx(client, input.caseId, input.itemId, {
+      state, placement: pkg ? 'on_map' : receipt ? 'undecided' : 'needs_answer',
+      planRef: receipt ? { recipeId: receipt.id, recipeRevision: receipt.revision, recipeState: receipt.state,
+        origin: from, ...(pkg ? { packageId: pkg.id } : {}) } : null,
+      recordsSeen: pkg?.features.length ?? 0, limitReason: receipt ? null : noLayout,
+    });
+    if (state === 'read' && pkg) await createIntakeTargetsTx(client, input.caseId, input.itemId, pkg, input.sourceId);
+  });
 }
 
 async function advance(input: IntakeDraftInput, attempt: UspJobAttempt) {
@@ -178,17 +208,17 @@ async function complete(input: IntakeDraftInput, attempt: UspJobAttempt) {
 
 async function fail(input: IntakeDraftInput, attempt: UspJobAttempt, error: unknown) {
   const code = error instanceof AppError ? error.code : 'INTAKE_DRAFT_FAILED';
+  const question = officerQuestion(error);
   await transaction(async client => {
     // Source changes must terminate the job without rewriting the item or any recipe.
     const { lockSourceCaseDestinationTx } = await import('../../cases/source-case-lock');
     await lockSourceCaseDestinationTx(client, input.caseId);
     await client.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE', [input.caseId]);
     await assertUspJobAttemptTx(client, attempt);
-    if (code === 'AREA_SOURCE_DENIED') {
+    if (question) {
       const current = await readIntakeDraftTx(client, input.caseId, input.itemId);
       await writeIntakeDraftTx(client, input.caseId, input.itemId, { ...current, state: 'planned',
-        placement: 'needs_answer',
-        limitReason: "Use an area of this batch's site or place the file in a separate intake batch.",
+        placement: 'needs_answer', limitReason: question,
       });
     }
     await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND number=$2",

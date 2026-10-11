@@ -748,6 +748,74 @@
       "transportProfile": "json",
       "runtimeEvidence": "pending",
       "batch": "IN1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/targets",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_targets",
+      "disposition": "added",
+      "nativeController": "intake-run",
+      "requestSchema": "IntakeTargetQuerySchema query",
+      "responseSchema": "IntakeTargetPageSchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "docs/evidence/gf1/e1/runtime.json",
+      "batch": "E1"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/confirmations",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_confirmations",
+      "disposition": "added",
+      "nativeController": "intake-run",
+      "requestSchema": "IntakeConfirmSchema",
+      "responseSchema": "IntakeConfirmationSchema",
+      "responseStatus": 202,
+      "transportProfile": "json",
+      "maxBodyBytes": 32768,
+      "runtimeEvidence": "docs/evidence/gf1/e1/runtime.json",
+      "batch": "E1"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ingestion/cases/{caseId}/confirmations/{confirmationId}",
+      "operationId": "GET_api_v1_ingestion_cases_caseId_confirmations_confirmationId",
+      "disposition": "added",
+      "nativeController": "intake-run",
+      "requestSchema": null,
+      "responseSchema": "IntakeConfirmationSchema",
+      "responseStatus": 200,
+      "transportProfile": "none",
+      "runtimeEvidence": "docs/evidence/gf1/e1/runtime.json",
+      "batch": "E1"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/confirmations/{confirmationId}/retry",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_confirmations_confirmationId_retry",
+      "disposition": "added",
+      "nativeController": "intake-run",
+      "requestSchema": "IntakeRunControlSchema",
+      "responseSchema": "IntakeConfirmationSchema",
+      "responseStatus": 202,
+      "transportProfile": "json",
+      "maxBodyBytes": 32768,
+      "runtimeEvidence": "docs/evidence/gf1/e1/controls-runtime.json",
+      "batch": "E1"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/targets/{targetId}/priority",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_targets_targetId_priority",
+      "disposition": "added",
+      "nativeController": "intake-run",
+      "requestSchema": "IntakeRunControlSchema",
+      "responseSchema": "IntakeTargetSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "maxBodyBytes": 32768,
+      "runtimeEvidence": "docs/evidence/gf1/e1/controls-runtime.json",
+      "batch": "E1"
     }
   ]
 }

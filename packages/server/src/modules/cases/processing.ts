@@ -15,6 +15,7 @@ import {runStreamingVectorJob} from '../usp/ingestion/streaming-vector-worker';
 import {runChunkMappingJob} from '../usp/ingestion/chunk-mapping-worker';
 import {runStreamedProfileJob} from '../usp/ingestion/streamed-profile-worker';
 import {runIntakeDraftJob} from '../usp/ingestion/intake-draft-worker';
+import {runNextIntakeRunJob} from '../usp/ingestion/intake-run-worker';
 import {runRasterWindowJob} from '../usp/ingestion/raster-window-worker';
 import {runPointBatchJob} from '../usp/ingestion/point-batch-worker';
 import {runIFCJob} from '../usp/ingestion/ifc-worker';
@@ -33,6 +34,7 @@ let streamingVectorWorker:Promise<void>|undefined;
 let chunkMappingWorker:Promise<void>|undefined;
 let streamedProfileWorker:Promise<void>|undefined;
 let intakeDraftWorker:Promise<void>|undefined;
+let intakeRunWorker:Promise<void>|undefined;
 let rasterWindowWorker:Promise<void>|undefined;
 let ifcWorker:Promise<void>|undefined;
 let dxfWorker:Promise<void>|undefined;
@@ -306,6 +308,13 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
         if(!intakeDraftWorker)intakeDraftWorker=runIntakeDraftJob(job.id)
           .catch(()=>{/* The fenced attempt and durable draft state own recovery. */})
           .finally(()=>{intakeDraftWorker=undefined;});
+        return;
+      }
+      if(job.operation==='intake-run'){
+        // The run picks its own next job, so a target an officer opened goes first.
+        if(!intakeRunWorker)intakeRunWorker=runNextIntakeRunJob()
+          .catch(()=>{/* The fenced attempt and the stored target state own recovery. */})
+          .finally(()=>{intakeRunWorker=undefined;});
         return;
       }
       if(job.operation==='streamed-profile'){
