@@ -261,10 +261,11 @@ async function proveRelations({ fixture, input, pkg, features }: Awaited<ReturnT
   const page = await listIntakeTargets(fixture.caseId, undefined, undefined);
   assert(page.packages.some(value => value.packageId === pkg.id && value.anchorItemId === fixture.sourceId));
   assert.equal(page.counts.preparing, 1661);
-  const item = (await query('SELECT plan_ref,parts_done FROM usp_intake_items WHERE item_id=$1',
+  const item = (await query('SELECT plan_ref,parts_done,records_seen FROM usp_intake_items WHERE item_id=$1',
     [fixture.sourceId])).rows[0];
   assert.equal(item.plan_ref, null);
   assert.equal(item.parts_done, 1);
+  assert.equal(Number(item.records_seen), 1662);
   const changed = { ...input, cutIndex: 1, features: [{ ...features[0], rawBytes: Buffer.from('changed') }] };
   await assert.rejects(transaction(client => ingestProvedAreaPart(changed, client)), /raw feature bytes differ/);
   Object.assign(proof, { compared: pkg.features.length, quarantinedIndex: 1322, rawParts: 17,
@@ -275,7 +276,8 @@ async function proveRelations({ fixture, input, pkg, features }: Awaited<ReturnT
     intakeTargets: Number((await query('SELECT count(*)::int n FROM usp_intake_targets WHERE anchor_item_id=$1',
       [fixture.sourceId])).rows[0].n),
     packageInIntakeCase: true, badRawHashRefused: true, requests,
-    packageListedFromParts: true, planPackageId: null, targetsPreparing: page.counts.preparing,
+    packageListedFromParts: true, planPackageId: null, recordsSeen: Number(item.records_seen),
+    targetsPreparing: page.counts.preparing,
     issuerMeaning: 'Harness chooses doitt_id as key and source geometry as building exterior; '
       + 'no height or name field.',
     objectStore: 'CAR-pattern in-memory loopback S3 protocol store, not MinIO or production throughput.' });

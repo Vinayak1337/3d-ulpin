@@ -68,6 +68,7 @@ export async function draftIntakePartTx(client: PoolClient, itemId: string, mapp
   input: ProvedAreaPartInput) {
   const lookup = (await client.query('SELECT case_id FROM usp_intake_items WHERE item_id=$1', [itemId])).rows[0]
     ?? notFound('The intake item is unavailable.');
+  await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`intake-parts-case:${lookup.case_id}`]);
   const { source } = await intakeSourceTx(client, lookup.case_id, input.sourceId);
   if (!isRetainedMapOriginal(source)) conflict('The file is still being read.');
   await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`intake-parts:${itemId}`]);

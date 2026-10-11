@@ -1,0 +1,25 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const read = name => JSON.parse(readFileSync(new URL(name, import.meta.url), 'utf8'));
+const proof = read('parts-checkpoint-final.json');
+assert.equal(proof.runtime.exit, 0);
+assert.equal(proof.ownedBoxGone, true);
+const result = proof.runtime.evidence;
+assert.equal(result.compared, 1661);
+assert.equal(result.quarantinedIndex, 1322);
+assert.equal(result.replay.SQLWrites, 0);
+assert.equal(result.originalSourceRows, 1);
+assert.equal(result.intakeParts, 1);
+assert.equal(result.intakeTargets, 1661);
+assert.equal(result.packageListedFromParts, true);
+assert.equal(result.planPackageId, null);
+assert.equal(result.originalUnchanged, true);
+assert.equal(result.recordsSeen, 1662);
+const da6 = read('measure-da6.json');
+assert.equal(da6.features, 48686);
+assert.equal(da6.bytes, 43263076);
+assert.equal(da6.sha256, '0d4dd71eb16d0e5a6f87e7702402098a9f4235aa85dc2461c0154c4f187c4489');
+assert.equal(da6.cuts.length, 25);
+assert.equal(da6.cuts.reduce((sum, cut) => sum + cut.features, 0), 48686);
+console.log(JSON.stringify({ task: 'LP3a', savedInternalProof: 'passed', automaticIntake: 'not_built',
+  gatePassed: false, next: 'CHECKPOINT.md', qualification: 'Saved evidence check, not a fresh runtime gate.' }));
