@@ -1,59 +1,77 @@
 import { useEffect, useRef, useState } from 'react';
-import type { RefObject } from 'react';
-import { INTAKE_SILENCE_MS, intakeRefreshFrame, silenceDelay } from './batch-events';
+import { INTAKE_SILENCE_MS, batchFrame, reconnectFailures, silenceDelay } from './batch-events';
+import { runEventPath } from './run/events';
+import { initialStream, type StreamState } from './table/events';
 
-/** Events invalidate records. A quiet, unfinished batch is read at most once per five seconds. */
-export function useBatchStream(caseId: string, unsettled: boolean, refetch: () => unknown) {
-  const refresh = useRef(refetch);
-  refresh.current = refetch;
-  const lastEvent = useRef(Date.now());
-  const cursor = useRef('0');
-  const [disconnected, setDisconnected] = useState(false);
-  const [attempt, setAttempt] = useState(0);
-  useEffect(() => openBatchStream(caseId, cursor, lastEvent, refresh, setDisconnected), [caseId, attempt]);
-  useEffect(() => {
-    if (!unsettled) return;
-    let timer: ReturnType<typeof setTimeout>;
-    const check = () => {
-      const delay = silenceDelay(lastEvent.current, Date.now());
-      if (delay === 0) {
-        lastEvent.current = Date.now();
-        void refresh.current();
-      }
-      timer = setTimeout(check, delay || INTAKE_SILENCE_MS);
-    };
-    timer = setTimeout(check, INTAKE_SILENCE_MS);
-    return () => clearTimeout(timer);
-  }, [caseId, unsettled]);
-  return { disconnected, reconnect: () => setAttempt((value) => value + 1) };
+interface Connection {
+  state: StreamState;
+  stream: EventSource | null;
+  lastActivity: number;
+  reconnecting: boolean;
+  failures: number;
 }
 
-function openBatchStream(caseId: string, cursor: RefObject<string>, lastEvent: RefObject<number>,
-  refresh: RefObject<() => unknown>, disconnected: (value: boolean) => void) {
-  const stream = new EventSource(`/api/v1/ingestion/cases/${caseId}/events?cursor=${cursor.current}`);
+/** Two independent subscribers remain: this tray/layout stream and the run panel's stream. */
+export function useBatchStream(caseId: string, unsettled: boolean, refetch: () => unknown) {
+  const current = useRef({ unsettled, refetch });
+  current.current = { unsettled, refetch };
+  const [disconnected, setDisconnected] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => startBatchUpdates(caseId, () => current.current, setDisconnected), [caseId, attempt]);
+  return { disconnected, reconnect: () => setAttempt(value => value + 1) };
+}
+
+export function startBatchUpdates(caseId: string, current: () => { unsettled: boolean; refetch: () => unknown },
+  disconnected: (value: boolean) => void) {
+  const connection: Connection = { state: initialStream(), stream: null, lastActivity: Date.now(),
+    reconnecting: false, failures: 0 };
+  const refresh = () => {
+    connection.lastActivity = Date.now();
+    void current().refetch();
+  };
+  const connect = () => connectBatch(caseId, connection, refresh, disconnected);
+  disconnected(false);
+  connect();
+  const timer = window.setInterval(() => {
+    if (!connection.stream) connect();
+    if (current().unsettled && silenceDelay(connection.lastActivity, Date.now()) === 0) refresh();
+  }, INTAKE_SILENCE_MS);
+  return () => {
+    window.clearInterval(timer);
+    connection.stream?.close();
+  };
+}
+
+function connectBatch(caseId: string, connection: Connection, refresh: () => void,
+  disconnected: (value: boolean) => void) {
+  const stream = new EventSource(runEventPath(caseId, connection.state.cursor));
+  connection.stream = stream;
+  stream.onopen = () => {
+    connection.failures = 0;
+    disconnected(false);
+  };
+  const fail = () => {
+    stream.close();
+    connection.stream = null;
+    connection.state.cursor = '0';
+    connection.failures = reconnectFailures(connection.failures, connection.reconnecting);
+    connection.reconnecting = true;
+    disconnected(connection.failures >= 2);
+  };
+  stream.onerror = fail;
   const apply = (event: MessageEvent) => {
     try {
-      const data: unknown = JSON.parse(event.data);
-      if (event.lastEventId) cursor.current = event.lastEventId;
-      if (intakeRefreshFrame(data)) {
-        lastEvent.current = Date.now();
-        void refresh.current();
-      }
-      if (event.type === 'resync') {
-        const head = (data as { headCursor?: unknown }).headCursor;
-        if (typeof head === 'string' && /^\d+$/.test(head)) cursor.current = head;
+      const frame = batchFrame(connection.state, event.lastEventId, JSON.parse(event.data), event.type);
+      connection.state = frame.state;
+      if (frame.refresh) refresh();
+      if (frame.reconnect) {
         stream.close();
-        disconnected(true);
+        connection.stream = null;
+        connection.reconnecting = true;
       }
     } catch {
-      stream.close();
-      disconnected(true);
+      fail();
     }
   };
-  stream.onopen = () => disconnected(false);
-  stream.onerror = () => disconnected(true);
-  for (const kind of ['ready', 'ingestion.change', 'resync']) {
-    stream.addEventListener(kind, apply as EventListener);
-  }
-  return () => stream.close();
+  for (const kind of ['ready', 'ingestion.change', 'resync']) stream.addEventListener(kind, apply as EventListener);
 }

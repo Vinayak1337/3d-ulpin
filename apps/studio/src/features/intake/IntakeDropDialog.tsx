@@ -43,7 +43,7 @@ export function IntakeDropDialog({ files, remainingFiles, openCaseId, onBack, on
 }
 
 export function DropOutcomes({ rows }: { rows: FileOutcome[] }) {
-  return <DataTable caption="Files sent to the intake" rows={rows}
+  return <DataTable caption="Files added to the batch" rows={rows}
     rowKey={(row) => String(rows.indexOf(row))} columns={[
     { header: 'File', cell: (row) => row.name },
     { header: 'Size', numeric: true, cell: (row) => `${row.sizeBytes.toLocaleString('en-IN')} bytes` },

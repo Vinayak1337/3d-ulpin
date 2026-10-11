@@ -239,7 +239,7 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
             <Icon icon={FileArrowUp} size={32} />
             <span className="ul-heading">Drop files here, or choose files</span>
             <span className="ul-help">
-              GeoJSON goes through the intake. GeoPackage and shapefile ZIP use direct import.
+              GeoJSON is kept unchanged and checked in a batch. GeoPackage and shapefile ZIP use direct import.
               CSV and XLSX keep their table import; other files need a case upload.
             </span>
             <input ref={input} type="file" multiple className="ul-visually-hidden" onChange={(event) => void add(event.target.files)} />
@@ -254,7 +254,7 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
               rowKey={(f) => `${f.file.name}-${f.file.size}-${f.file.lastModified}`}
               columns={[
                 { header: 'File', cell: (f) => <span className="ul-id">{f.file.name}</span> },
-                { header: 'Detected', cell: (f) => (f.state === 'ready' ? formatLabel(f.inspection!.format) : f.state === 'inspecting' ? 'Reading…' : f.state === 'intake' ? 'Map file · intake' : f.state === 'not-gis' ? 'Document or table' : <span className="ul-error"><Icon icon={Warning} size={16} />{f.error}</span>) },
+                { header: 'Detected', cell: (f) => (f.state === 'ready' ? formatLabel(f.inspection!.format) : f.state === 'inspecting' ? 'Reading…' : f.state === 'intake' ? 'Map file · batch' : f.state === 'not-gis' ? 'Document or table' : <span className="ul-error"><Icon icon={Warning} size={16} />{f.error}</span>) },
                 { header: 'CRS', cell: (f) => (f.inspection ? (f.inspection.sourceCrs ?? <Badge tone="warning" icon={Warning}>CRS unverified</Badge>) : '—') },
                 { header: 'Contents', numeric: true, cell: (f) => f.via === 'demo' && f.inspection?.demoContents ? f.inspection.demoContents : (f.inspection?.featureCount === null || f.inspection?.featureCount === undefined ? '—' : `${formatCount(f.inspection.featureCount)} features`) },
                 { header: 'Mapping', cell: (f) => {

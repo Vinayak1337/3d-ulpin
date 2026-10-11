@@ -1,11 +1,15 @@
 import { Button, DataTable } from '@ulpin/ui';
+import { Link } from 'react-router';
+import type { Package } from './run/model';
 import { countWords, crsWords, familyWords, formatWords, placementWords, sizeClassWords,
-  stateWords } from './batch-model';
+  stateWords, packagePath } from './batch-model';
 import type { IntakeItem } from './batch-model';
 import styles from './Batch.module.css';
 
-export function IntakeTray({ items, choose }: { items: IntakeItem[]; choose: (item: IntakeItem) => void }) {
-  return <div className={styles.tray} tabIndex={0} role="region" aria-label="Intake tray">
+export function IntakeTray({ items, packages, choose }: {
+  items: IntakeItem[]; packages: readonly Package[]; choose: (item: IntakeItem) => void;
+}) {
+  return <div className={styles.tray} tabIndex={0} role="region" aria-label="Files in this batch">
     <DataTable caption="Files in this batch" rows={items} rowKey={(item) => item.itemId} columns={[
       { header: 'File', cell: (item) => item.name },
       { header: 'Contents', cell: (item) => <>
@@ -20,14 +24,20 @@ export function IntakeTray({ items, choose }: { items: IntakeItem[]; choose: (it
       { header: 'Coordinate system', cell: (item) => crsWords(item.card) },
       { header: 'Extent as stated', cell: (item) => item.card?.extent.native?.join(', ') ?? 'Not known' },
       { header: 'Placement', cell: (item) => placementWords(item.placement) },
-      { header: 'Reason', cell: (item) => item.limitReason ?? 'Not known' },
-      { header: 'Next step', cell: (item) => {
-        if (item.placement === 'needs_answer' && item.sourceId && item.format === 'geojson') {
-          return <Button variant="soft" onClick={() => choose(item)}>View layout fields</Button>;
-        }
-        if (item.state === 'read' && item.placement === 'on_map') return 'Package link not supplied';
-        return 'No action here';
-      } },
+      { header: 'Reason', cell: (item) => item.limitReason ?? null },
+      { header: 'Next step', cell: (item) => <NextStep item={item} packages={packages} choose={choose} /> },
     ]} />
+  </div>;
+}
+
+function NextStep({ item, packages, choose }: {
+  item: IntakeItem; packages: readonly Package[]; choose: (item: IntakeItem) => void;
+}) {
+  const path = packagePath(item, packages);
+  const packageStep = path ? <Link to={path}>Open package</Link> : <span>Package prepared</span>;
+  return <div className={styles.stack}>
+    {item.plan?.packageId ? packageStep : null}
+    {item.sourceId && (item.plan || item.placement === 'needs_answer' && item.format === 'geojson') ?
+      <Button variant="soft" onClick={() => choose(item)}>View layout</Button> : null}
   </div>;
 }

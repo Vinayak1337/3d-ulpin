@@ -1,4 +1,5 @@
 import type { GetResponse } from '@ulpin/api-client';
+import type { Package } from './run/model';
 
 export type IntakeManifest = GetResponse<'/api/v1/ingestion/cases/{caseId}/intake'>;
 export type IntakeItem = IntakeManifest['items'][number];
@@ -14,6 +15,12 @@ const placements: Record<IntakeItem['placement'], string> = {
   waiting_for_anchor: 'Waiting for a matching map record', needs_answer: 'Needs an answer',
   not_understood: 'Not understood',
 };
+
+export function packagePath(item: Pick<IntakeItem, 'plan'>, packages: readonly Package[]): string | null {
+  const packageId = item.plan?.packageId;
+  const pkg = packages.find(row => row.packageId === packageId);
+  return pkg ? `/studio/areas/${pkg.areaId}?package=${pkg.packageId}` : null;
+}
 
 export function stateWords(state: IntakeItem['state']) {
   return states[state];
@@ -33,7 +40,7 @@ export function countWords(value: number | null | undefined) {
 }
 
 export function fieldWords(path: string) {
-  if (path === '/features/*/id') return 'Feature identifier';
+  if (path === '/features/*/id') return 'id';
   return path.replace(/^\/features\/\*\/properties\//, '').replace(/~1/g, '/').replace(/~0/g, '~');
 }
 

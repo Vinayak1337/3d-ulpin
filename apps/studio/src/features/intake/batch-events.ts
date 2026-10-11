@@ -1,3 +1,16 @@
+import { runFrame } from './run/events';
+import type { StreamState } from './table/events';
+
+export function batchFrame(state: StreamState, id: string, data: unknown, kind: string) {
+  const frame = runFrame(state, id, data, kind);
+  return { ...frame, refresh: kind !== 'ingestion.change'
+    || (frame.state.sequence !== state.sequence && intakeRefreshFrame(data)) };
+}
+
+export function reconnectFailures(previous: number, wasReconnect: boolean): number {
+  return wasReconnect ? previous + 1 : previous;
+}
+
 export function intakeRefreshFrame(data: unknown) {
   if (!data || typeof data !== 'object') return false;
   if ('kind' in data && (data.kind === 'ready' || data.kind === 'resync')) return true;
