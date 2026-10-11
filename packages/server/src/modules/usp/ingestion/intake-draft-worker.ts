@@ -21,7 +21,7 @@ const manual = new ManualIngestionService();
 const adaptive = new AdaptiveMappingService();
 type Origin = 'memory' | 'teacher' | 'officer';
 type Proposal = { plan: MappingPlan; origin: Origin };
-const noLayout = 'No approved layout matches this file. An officer chooses the identifier field.';
+const noLayout = 'No approved layout matches this file. An officer states what each feature is and which field identifies it.';
 const otherSite = "Use an area of this batch's site or place the file in a separate intake batch.";
 
 function memoryPlan(profile: SourceProfile, remembered: MappingReceipt | null): MappingPlan | null {
@@ -31,6 +31,7 @@ function memoryPlan(profile: SourceProfile, remembered: MappingReceipt | null): 
   const parsed = MappingPlanSchema.safeParse({ version: profile.version, mode: 'manual_mapping',
     source: profile.source, caseId: profile.caseId, workspaceRevision: profile.workspaceRevision,
     workspaceFingerprint: profile.workspaceFingerprint, operations: remembered.plan.operations,
+    ...(remembered.plan.kind === undefined ? {} : { kind: remembered.plan.kind }),
     ...(remembered.plan.heightField === undefined ? {} : { heightField: remembered.plan.heightField,
       heightUnit: remembered.plan.heightUnit, heightMeaning: remembered.plan.heightMeaning }) });
   if (!parsed.success) return null;

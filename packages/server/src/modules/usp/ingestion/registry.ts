@@ -9,9 +9,14 @@ export const CONVERSIONS = [
   {id: 'literal_identifier@1', target: 'building.sourceKey', inputUnit: 'not_applicable', outputUnit: 'not_applicable', semantics: 'Copy a complete, unique source string verbatim. No trimming, coercion or generated identity.'},
   {id: 'literal_text@1', target: 'building.name', inputUnit: 'not_applicable', outputUnit: 'not_applicable', semantics: 'Read a complete source text attribute through the existing area normalizer; original attributes remain retained.'},
   {id: 'geojson_polygon@1', target: 'building.geometry', inputUnit: 'degree', outputUnit: 'm', semantics: 'Use unchanged RFC 7946/recognized OGC CRS84 polygons in the existing canonical-area-officer-v1 normalizer. CRS evidence comes from inspection; the retained destination frame governs projection. Geometry role stays unknown.'},
+  {id: 'literal_identifier@1', target: 'feature.sourceKey', inputUnit: 'not_applicable', outputUnit: 'not_applicable', semantics: 'Copy the unique source identifier for the kind explicitly stated in the layout.'},
+  {id: 'literal_text@1', target: 'feature.name', inputUnit: 'not_applicable', outputUnit: 'not_applicable', semantics: 'Read source text through the existing area normalizer for the stated kind.'},
+  {id: 'geojson_geometry@1', target: 'feature.geometry', inputUnit: 'degree', outputUnit: 'm', semantics: 'Use unchanged GeoJSON geometry through the existing area normalizer; the stated kind governs compatible geometry. Geometry role stays unknown.'},
 ] as const;
+const geometryTypes = ['Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon'];
+const polygonKinds = ['building', 'parcel', 'public_land'];
 export const limitations = [
-  'Only bounded GeoJSON building polygons are supported by this manual profile; other formats and target concepts are unsupported.',
+  'Only bounded GeoJSON is supported by this manual profile; the layout states one kind for the whole file.',
   'Height is unknown unless the layout states a field, its source unit and its meaning. Geometry role, floor levels, ownership and official issuance remain unknown.',
   'This synchronous manual path does not qualify queued streaming, model proposals, held-out accuracy, PII egress or GF-AGENT.',
 ];
@@ -34,8 +39,8 @@ export function inspectedProfile(bytes: Uint8Array, inspection: GisInspection) {
   if (inspection.format !== 'geojson' || inspection.sourceSha256 !== sha256(bytes) || inspection.featureCount !== rows.length
     || inspection.sourceCrs !== 'EPSG:4326' || !inspection.crsEvidence)
     throw new AppError(422, 'SOURCE_PROFILE', 'The inspected source does not match the supported GeoJSON profile.');
-  if (inspection.geometryTypes.some(type => !['Polygon', 'MultiPolygon'].includes(type)))
-    throw new AppError(422, 'UNSUPPORTED_GEOMETRY', 'This recipe supports building polygons only; no geometry role is inferred.');
+  if (inspection.geometryTypes.some(type => !geometryTypes.includes(type)))
+    throw new AppError(422, 'UNSUPPORTED_GEOMETRY', 'Choose point, line or polygon GeoJSON geometry supported by the area normalizer; no geometry role is inferred.');
   const entries: {path: string; get: (row: Feature) => {present: boolean; value: unknown}}[] = [
     {path: '/features/*/geometry', get: row => ({present: Object.hasOwn(row, 'geometry'), value: row.geometry})},
     ...(rows.some(row => Object.hasOwn(row, 'id')) ? [{path: '/features/*/id', get: (row: Feature) => ({present: Object.hasOwn(row, 'id'), value: row.id})}] : []),
@@ -65,18 +70,23 @@ function heightMapping(plan: MappingPlan, profile: SourceProfile): Partial<Mappi
   return {heightField: field, heightUnit: plan.heightUnit, heightMeaning: plan.heightMeaning};
 }
 export function compileMapping(plan: MappingPlan, profile: SourceProfile): Mapping {
-  const mapping: Mapping = {kind: 'building', geometryRole: 'unknown', ...heightMapping(plan, profile)};
+  const kind = plan.kind ?? 'building';
+  const accepted = polygonKinds.includes(kind) ? ['Polygon', 'MultiPolygon'] : geometryTypes;
+  const refused = profile.geometryTypes.filter(type => !accepted.includes(type));
+  if (refused.length) throw new AppError(422, 'MAPPING_GEOMETRY_KIND',
+    `The layout states ${kind}, which does not accept ${refused.join(', ')} geometry. Choose a compatible kind; no kind is inferred.`);
+  const mapping: Mapping = {kind, geometryRole: 'unknown', ...heightMapping(plan, profile)};
   for (const operation of plan.operations) {
     const definition = CONVERSIONS.find(item => item.id === operation.conversionId && item.target === operation.target);
     const path = profile.paths.find(item => item.path === operation.sourcePath);
     if (!definition || !path) throw new AppError(422, 'MAPPING_PATH', 'Choose an inspected source path and compatible registry conversion.');
-    if (operation.target === 'building.geometry') {
+    if (operation.target === 'building.geometry' || operation.target === 'feature.geometry') {
       if (operation.sourcePath !== '/features/*/geometry') throw new AppError(422, 'MAPPING_GEOMETRY', 'Geometry must reference the retained GeoJSON feature geometry.');
     } else {
       const prefix = '/features/*/properties/';
       const field = operation.sourcePath.startsWith(prefix) ? unescape(operation.sourcePath.slice(prefix.length)) : undefined;
       if (field && (field.length > 80 || field.trim() !== field)) throw new AppError(422, 'MAPPING_FIELD', 'The existing area adapter cannot map this field name verbatim.');
-      if (operation.target === 'building.sourceKey') {
+      if (operation.target === 'building.sourceKey' || operation.target === 'feature.sourceKey') {
         if (!path.literalIdEligible) throw new AppError(422, 'MAPPING_IDENTITY', 'Source identity must be complete, unique, nonempty literal text.');
         if (operation.sourcePath !== '/features/*/id' && !field) throw new AppError(422, 'MAPPING_IDENTITY', 'Choose a source attribute or retained Feature.id.');
         if (field) mapping.idField = field;

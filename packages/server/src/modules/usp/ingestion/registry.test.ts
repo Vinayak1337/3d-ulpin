@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
-import { MappingPlanSchema, SourceProfileSchema } from '@ulpin/contracts/usp';
+import { MappingPlanSchema, SourceProfileSchema, StreamedPrefixMappingPlanSchema } from '@ulpin/contracts/usp';
 import type { GisInspection } from '@ulpin/contracts';
 import { fingerprint } from '../../cases/domain';
 import { sha256 } from '../../../infrastructure/storage';
 import { compileMapping, inspectedProfile } from './registry';
+import { legacyPlanToV2, mappingContextFromGisProfile } from './mapping-plan-v2';
 
 const id = '10000000-0000-4000-8000-000000000001';
 const pin = { sourceId: id, familyId: id, sourceRevision: 1, sourceSha256: 'a'.repeat(64),
@@ -88,4 +89,53 @@ test('the same feet fixture normalizes equally through a layout and direct mappi
   assert.equal(layout.features[0].height.unit, 'm');
   assert.equal(layout.features[1].height.value, null);
   assert.equal(layout.features[1].height.state, 'unknown');
+});
+
+function stated(kind: string) {
+  return { ...legacy, kind, operations: [
+    { target: 'feature.sourceKey', sourcePath: '/features/*/properties/doitt_id',
+      conversionId: 'literal_identifier@1' },
+    { target: 'feature.geometry', sourcePath: '/features/*/geometry', conversionId: 'geojson_geometry@1' },
+  ] };
+}
+
+test('stated kind requires generic targets; line roads compile and line buildings are refused with words', () => {
+  const source = { ...profile(), geometryTypes: ['LineString'] };
+  assert.deepEqual(compileMapping(MappingPlanSchema.parse(stated('road')), source), {
+    kind: 'road', geometryRole: 'unknown', idField: 'doitt_id',
+  });
+  assert.throws(() => compileMapping(MappingPlanSchema.parse(stated('building')), source),
+    /building, which does not accept LineString/);
+  assert(!MappingPlanSchema.safeParse({ ...legacy, kind: 'road' }).success);
+  assert(!MappingPlanSchema.safeParse({ ...stated('road'), kind: undefined }).success);
+  const height = MappingPlanSchema.parse({ ...stated('building'), ...statedHeight });
+  assert.equal(compileMapping(height, profile()).heightUnit, 'ft');
+});
+
+test('the legacy building adapter refuses stated kinds and generic targets instead of creating building facts', () => {
+  const plan = MappingPlanSchema.parse(stated('road'));
+  const context = mappingContextFromGisProfile(profile());
+  assert.throws(() => legacyPlanToV2(plan, context, 'reviewer:fixture'),
+    { status: 422, code: 'LEGACY_BUILDING_MAPPING_ONLY' });
+  assert.throws(() => legacyPlanToV2({ ...plan, kind: undefined }, context, 'reviewer:fixture'),
+    { status: 422, code: 'LEGACY_BUILDING_MAPPING_ONLY' });
+  assert(!StreamedPrefixMappingPlanSchema.shape.operations.safeParse(plan.operations).success);
+  assert(StreamedPrefixMappingPlanSchema.shape.operations.safeParse(legacy.operations).success);
+});
+
+test('opening geometry admission preserves the polygon fingerprint pinned by the saved CA0 profile', t => {
+  const python = 'E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe';
+  const path = 'E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson';
+  if (!existsSync(python) || !existsSync(path)) return t.skip('The unchanged NYC pack/interpreter is unavailable.');
+  const bytes = readFileSync(path);
+  const code = 'import sys,json;sys.path.insert(0,"services/geo");from geo.gis_inspection import inspect_gis;'
+    + 'print(json.dumps(inspect_gis(json.load(sys.stdin))))';
+  const result = spawnSync(python, ['-B', '-c', code], { encoding: 'utf8', timeout: 30000,
+    input: JSON.stringify({ base64: bytes.toString('base64') }),
+    env: { ...process.env, PROJ_NETWORK: 'OFF', PYTHONDONTWRITEBYTECODE: '1' } });
+  assert.equal(result.status, 0, result.stderr);
+  const inventory = inspectedProfile(bytes, JSON.parse(result.stdout));
+  const ca0 = JSON.parse(readFileSync('docs/evidence/gf1/ca0/runtime-06.json', 'utf8'));
+  const stored = ca0.runtime.progress.find((step: any) => step.completed === '1 retained original is probed');
+  assert.equal(inventory.schemaFingerprint, stored.result.schemaFingerprint);
 });
