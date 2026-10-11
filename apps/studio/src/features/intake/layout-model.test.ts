@@ -7,7 +7,7 @@ import targets from '../../../../../docs/evidence/gf1/e3b/targets.json';
 import walkCapture from '../../../../../docs/evidence/gf1/lq1a/controls-second.json';
 import { packagePath } from './batch-model';
 import type { IntakeItem } from './batch-model';
-import { approvalBody, latestRecipe, layoutLines, noLayoutWords, type Recipe } from './layout-model';
+import { approvalBody, latestRecipe, layoutLines, recipeStateWords, type Recipe } from './layout-model';
 import type { Package } from './run/model';
 
 type MapRecipe = Extract<Recipe, { plan: { version: 'manual-geojson/1' } }>;
@@ -30,8 +30,9 @@ it('shows each proposal origin from the item, never infers one from an author', 
     expect(layoutLines(receipt, origin as NonNullable<IntakeItem['plan']>['origin'])).toContain(words);
   }
   expect(layoutLines(receipt, null)).toContain('Proposal origin: not supplied by the record');
-  expect(noLayoutWords).toBe('This file needs an officer to say which field identifies each feature. '
-    + 'That question is not on this screen yet.');
+  expect(recipeStateWords('approved')).toBe('Approved; the file is being read.');
+  expect(recipeStateWords('executed')).toBe("This layout has prepared the file's package and can no longer be changed.");
+  expect(recipeStateWords('proposed')).toBe('Proposed; read the layout before using it.');
 });
 
 it('states literal fields, absent name/height and all otherwise unrepresented plan members', () => {
@@ -40,11 +41,11 @@ it('states literal fields, absent name/height and all otherwise unrepresented pl
   expect(lines).toContain('Name: not stated');
   expect(lines).toContain('Height: not stated');
   expect(lines).toContain('Area: Test destination · new area');
-  expect(lines).toContain('Operation: building.geometry from /features/*/geometry using geojson_polygon@1');
-  expect(lines).toContain('This destination also states: namespace');
+  expect(lines).toContain('Each feature is: a building (the older layout form states nothing else)');
+  expect(lines.join('\n')).not.toMatch(/Operation:|namespace|sha256|literal_identifier|geojson_polygon/);
   const extended = { ...receipt, plan: { ...receipt.plan, futureMember: 'test control' } };
   expect(layoutLines(extended, 'officer').join('\n')).toContain('futureMember');
-  expect(lines.join('\n')).toContain('version, mode, source, caseId, workspaceRevision, workspaceFingerprint');
+  expect(lines.join('\n')).not.toContain('This layout also states:');
 });
 
 it('shows escaped property names, Feature.id, height units/meaning and an existing destination exactly', () => {
@@ -56,8 +57,7 @@ it('shows escaped property names, Feature.id, height units/meaning and an existi
   expect(layoutLines(named, 'officer')).toContain('Name: name/label~');
   expect(layoutLines(named, 'officer')).toContain('Height: height, in feet: Test meaning, not a statement about NYC');
   expect(layoutLines(named, 'officer')).toContain('Area: Test destination · existing area');
-  expect(layoutLines(named, 'officer')).toContain('This destination also states: namespace, areaId, '
-    + 'expectedAreaRevision, referenceFingerprint');
+  expect(layoutLines(named, 'officer').join('\n')).not.toMatch(/referenceFingerprint|areaId|namespace/);
   if (named.plan.version !== 'manual-geojson/1') throw new Error('Wrong test format');
   const metres = { ...named, plan: { ...named.plan, heightUnit: 'm' as const } };
   expect(layoutLines(metres, 'officer').join('\n')).toContain('in metres:');

@@ -1,29 +1,28 @@
+import { ApiError } from '@ulpin/api-client';
 import { afterEach, expect, it, vi } from 'vitest';
-import { startBatchUpdates } from './useBatchStream';
+import { createCaseSubscriptions } from './case-subscription';
+import { readCaseStream, takeFrames, type CaseFrame } from './stream-reader';
 
-class Stream {
-  static instances: Stream[] = [];
-  closed = false;
-  onopen = () => {};
-  onerror = () => {};
-  handlers = new Map<string, (event: unknown) => void>();
-  constructor(readonly url: string) { Stream.instances.push(this); }
-  close() { this.closed = true; }
-  addEventListener(kind: string, handler: (event: unknown) => void) { this.handlers.set(kind, handler); }
-  emit(kind: string, data: unknown, id = '') {
-    this.handlers.get(kind)?.({ type: kind, data: JSON.stringify(data), lastEventId: id });
-  }
-}
-
-function begin(unsettled = false) {
+function harness() {
   vi.useFakeTimers();
-  Stream.instances = [];
-  vi.stubGlobal('EventSource', Stream);
-  vi.stubGlobal('window', { setInterval, clearInterval });
-  const refetch = vi.fn();
-  const disconnected = vi.fn();
-  const stop = startBatchUpdates('case', () => ({ unsettled, refetch }), disconnected);
-  return { refetch, disconnected, stop };
+  const streams: { path: string; signal: AbortSignal; opened: () => void; frame: (value: CaseFrame) => void;
+    fail: (error: unknown) => void }[] = [];
+  let open = 0;
+  let maximum = 0;
+  const read: typeof readCaseStream = (path, signal, opened, frame) => new Promise((resolve, reject) => {
+    open++;
+    maximum = Math.max(maximum, open);
+    let active = true;
+    const close = () => {
+      if (active) open--;
+      active = false;
+    };
+    streams.push({ path, signal, opened, frame, fail: error => { close(); reject(error); } });
+    signal.addEventListener('abort', () => { close(); resolve(); }, { once: true });
+  });
+  const subscriptions = createCaseSubscriptions(read);
+  const consumer = () => ({ refresh: vi.fn(), unsettled: () => true, status: vi.fn() });
+  return { streams, subscriptions, consumer, maximum: () => maximum, open: () => open };
 }
 
 afterEach(() => {
@@ -31,59 +30,81 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-it('resync reads once and automatically reconnects at its head without a disconnected banner', () => {
-  const run = begin();
-  const stream = Stream.instances[0]!;
-  expect(stream.url).toBe('/api/v1/ingestion/cases/case/events');
-  stream.emit('resync', { kind: 'resync', headCursor: '71' });
-  expect(run.refetch).toHaveBeenCalledTimes(1);
-  expect(stream.closed).toBe(true);
-  vi.advanceTimersByTime(5000);
-  expect(Stream.instances[1]!.url).toBe('/api/v1/ingestion/cases/case/events?cursor=71');
-  expect(run.disconnected).not.toHaveBeenCalledWith(true);
-  run.stop();
-  vi.advanceTimersByTime(10000);
-  expect(Stream.instances).toHaveLength(2);
+it('two consumers open one stream, resync reconnects at head, and only the last leave closes it', async () => {
+  const run = harness();
+  const tray = run.consumer();
+  const cards = run.consumer();
+  const leaveTray = run.subscriptions.subscribe('case', tray);
+  const leaveCards = run.subscriptions.subscribe('case', cards);
+  expect(run.streams).toHaveLength(1);
+  run.streams[0]!.opened();
+  run.streams[0]!.frame({ kind: 'resync', id: '', data: { kind: 'resync', headCursor: '71' } });
+  expect(tray.refresh).toHaveBeenCalledTimes(1);
+  expect(cards.refresh).toHaveBeenCalledTimes(1);
+  await vi.advanceTimersByTimeAsync(5000);
+  expect(run.streams[1]!.path).toBe('/api/v1/ingestion/cases/case/events?cursor=71');
+  leaveTray();
+  expect(run.open()).toBe(1);
+  leaveCards();
+  expect(run.open()).toBe(0);
+  await vi.advanceTimersByTimeAsync(10000);
+  expect(run.streams).toHaveLength(2);
+  expect(run.maximum()).toBe(1);
 });
 
-it('errors reconnect from head; only two failed reconnects show a banner, success clears it', () => {
-  const run = begin();
-  Stream.instances[0]!.onerror();
-  expect(Stream.instances[0]!.closed).toBe(true);
-  vi.advanceTimersByTime(5000);
-  Stream.instances[1]!.onerror();
-  expect(run.disconnected).not.toHaveBeenCalledWith(true);
-  vi.advanceTimersByTime(5000);
-  Stream.instances[2]!.onerror();
-  expect(run.disconnected).toHaveBeenLastCalledWith(true);
-  vi.advanceTimersByTime(5000);
-  expect(Stream.instances[3]!.url).toBe('/api/v1/ingestion/cases/case/events');
-  Stream.instances[3]!.onopen();
-  expect(run.disconnected).toHaveBeenLastCalledWith(false);
-  Stream.instances[3]!.onerror();
-  expect(run.disconnected).toHaveBeenLastCalledWith(false);
-  vi.advanceTimersByTime(5000);
-  Stream.instances[4]!.onerror();
-  expect(run.disconnected).toHaveBeenLastCalledWith(false);
-  vi.advanceTimersByTime(5000);
-  Stream.instances[5]!.onerror();
-  expect(run.disconnected).toHaveBeenLastCalledWith(true);
-  run.stop();
+it('errors retry from head and two failed reconnects show a banner; success clears the streak', async () => {
+  const run = harness();
+  const tray = run.consumer();
+  const leave = run.subscriptions.subscribe('case', tray);
+  run.streams[0]!.fail(new Error('lost'));
+  await vi.advanceTimersByTimeAsync(5000);
+  run.streams[1]!.fail(new Error('lost'));
+  await vi.advanceTimersByTimeAsync(5000);
+  expect(tray.status).not.toHaveBeenCalledWith(expect.objectContaining({ disconnected: true }));
+  run.streams[2]!.fail(new Error('lost'));
+  await vi.advanceTimersByTimeAsync(5000);
+  expect(tray.status).toHaveBeenLastCalledWith({ disconnected: true, error: '' });
+  expect(run.streams[3]!.path).toBe('/api/v1/ingestion/cases/case/events');
+  run.streams[3]!.opened();
+  expect(tray.status).toHaveBeenLastCalledWith({ disconnected: false, error: '' });
+  leave();
 });
 
-it('reads on recipe/item/target notifications, deduplicates frames, and bounds quiet fallback', () => {
-  const run = begin(true);
-  const stream = Stream.instances[0]!;
-  stream.emit('ready', { kind: 'ready' }, '10');
+it('429 words are displayed as supplied, and even a waiting question keeps bounded reads while refused', async () => {
+  const run = harness();
+  const tray = { ...run.consumer(), unsettled: () => false };
+  const leave = run.subscriptions.subscribe('case', tray);
+  const words = 'The bounded local event reader allowance is occupied.';
+  run.streams[0]!.fail(new ApiError(429, '', { error: { code: 'INGESTION_STREAM_LIMIT', message: words } }));
+  await vi.advanceTimersByTimeAsync(4999);
+  expect(tray.refresh).not.toHaveBeenCalled();
+  await vi.advanceTimersByTimeAsync(1);
+  expect(tray.status).toHaveBeenLastCalledWith({ disconnected: true, error: words });
+  expect(tray.refresh).toHaveBeenCalledTimes(1);
+  leave();
+});
+
+it('reads on recipe/item/target notifications, deduplicates frames and bounds quiet fallback', async () => {
+  const run = harness();
+  const tray = run.consumer();
+  const leave = run.subscriptions.subscribe('case', tray);
   for (const [index, kind] of ['recipe.changed', 'intake.item', 'intake.target'].entries()) {
-    const frame = { kind: 'change', sequence: String(index + 1), change: { kind } };
-    stream.emit('ingestion.change', frame, String(index + 11));
-    stream.emit('ingestion.change', frame, String(index + 11));
+    const frame = { kind: 'ingestion.change', id: String(index + 11),
+      data: { kind: 'change', sequence: String(index + 1), change: { kind } } };
+    run.streams[0]!.frame(frame);
+    run.streams[0]!.frame(frame);
   }
-  expect(run.refetch).toHaveBeenCalledTimes(4);
-  vi.advanceTimersByTime(4999);
-  expect(run.refetch).toHaveBeenCalledTimes(4);
-  vi.advanceTimersByTime(1);
-  expect(run.refetch).toHaveBeenCalledTimes(5);
-  run.stop();
+  expect(tray.refresh).toHaveBeenCalledTimes(3);
+  await vi.advanceTimersByTimeAsync(5000);
+  expect(tray.refresh).toHaveBeenCalledTimes(4);
+  leave();
+});
+
+it('parses complete SSE frames and preserves a chunk boundary; refused HTTP reads retain exact error words', async () => {
+  const parsed = takeFrames(': heartbeat\n\nevent: ready\nid: 12\ndata: {"kind":"ready"}\n\nevent: resync\n');
+  expect(parsed.frames).toEqual([{ kind: 'ready', id: '12', data: { kind: 'ready' } }]);
+  expect(parsed.remaining).toBe('event: resync\n');
+  vi.stubGlobal('fetch', vi.fn(async () => Response.json({ error: { message: 'Reader occupied.' } }, { status: 429 })));
+  await expect(readCaseStream('/events', new AbortController().signal, vi.fn(), vi.fn()))
+    .rejects.toMatchObject({ status: 429, message: 'Reader occupied.' });
 });
