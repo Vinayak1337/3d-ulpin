@@ -34,9 +34,27 @@ export function intakeDraftKey(itemId: string, revision: number, phase: string):
 
 /** A refusal is tray metadata, not permission to use a different reader or split an original. */
 export function intakeDraftLimit(item: DraftItem, source: IntakeSourceRow): string | null {
+  const format = item.card?.format;
   const count = source.inspection?.manualProfile?.featureCount;
-  if (Number(source.bytes) > 16 * 1024 * 1024)
+  if (format === 'geopackage' || format === 'gpkg')
+    return 'This GeoPackage can be imported through POST /api/v1/import-packages with format=gpkg '
+      + 'and one selected layer within 16 MiB and 2000 features; intake recipe drafting and '
+      + 'decoded binary-record citations for its card are not built.';
+  if (format === 'shapefile' || format === 'shapefile_zip'
+    || format === 'zip' && item.card?.members.some(member => member.format === 'shapefile'))
+    return 'This shapefile needs its matching .shp/.shx/.dbf/.prj set in a ZIP for '
+      + 'POST /api/v1/import-packages with format=shapefile_zip and one selected set within 16 MiB '
+      + 'and 2000 features; intake recipe drafting and decoded binary-record citations for its card are not built.';
+  if (format === 'kml' || format === 'kmz')
+    return 'This KML/KMZ has a native-inspection route at POST /api/v1/ingestion/cases/:caseId/kml '
+      + 'within 16 MiB; no area-import adapter or intake recipe drafts its map package or card.';
+  if (Number(source.bytes) > 16 * 1024 * 1024) {
+    if (format === 'geojson' || source.profile === 'geojson-manual-v1')
+      return `This GeoJSON original has ${Number(source.bytes)} bytes, above the 16777216-byte intake drafting `
+        + 'and POST /api/v1/import-packages bound; /api/v1/ingestion/cases/:caseId/uploads can retain it, '
+        + 'but no package or card is drafted from this oversized original.';
     return `Drafting accepts at most 16777216 bytes; this original has ${Number(source.bytes)} bytes.`;
+  }
   if (Number.isSafeInteger(count) && count > 2000)
     return `Drafting accepts at most 2000 features; this receipt has ${count} features.`;
   if (source.profile !== 'geojson-manual-v1' || source.inspection?.manualProfile?.version !== 'manual-geojson/1'
