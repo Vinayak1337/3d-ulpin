@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import test from 'node:test';
 import { commitPackage } from './areas';
-import { fingerprint } from '../cases/domain';
+import { canonical, fingerprint } from '../cases/domain';
 import { sha256 } from '../../infrastructure/storage';
 import { captureRegistrySnapshotTx } from '../usp/snapshots';
 import { localRequestContext } from '../usp/principal';
@@ -27,9 +27,14 @@ function packageControl() {
     parts: [], features: [feature], extent: area.extent, geographicExtent: area.geographic_extent,
     review: { packageRevision: 1, areaRevision: 0, inputFingerprint: '' } };
   function pinReview() {
+    const extent = [-255, -255, 257, 257];
     pkg.review = { packageRevision: pkg.revision, areaRevision: area.revision,
-      inputFingerprint: sha256(JSON.stringify({ features: pkg.features, associations: [], reference: area.reference,
-        areaRevision: area.revision, packageRevision: pkg.revision, validator: 'area-check-officer-v1' })) };
+      scope: { validator: 'area-check-officer-v2', marginMetres: 255, extent, contextCount: 0,
+        unqualifiedInScope: 0, areaRevisionAtReview: area.revision },
+      inputFingerprint: sha256(canonical({ features: pkg.features, associations: [], reference: area.reference,
+        context: [], extent, marginMetres: 255, packageRevision: pkg.revision, validator: 'area-check-officer-v2' })) };
+    pkg.reviewDependencyPins = { reference: sha256(canonical(area.reference)),
+      ownFeatures: sha256(canonical(pkg.features)), associations: sha256(canonical([])), context: [] };
   }
   pinReview();
   const queries: string[] = [], history: any[][] = [], captures: any[][] = [];
@@ -38,6 +43,8 @@ function packageControl() {
     queries.push(sql);
     let rows: any[] = [];
     if (sql.startsWith('SELECT DISTINCT ON(q.namespace')) rows = [];
+    else if (sql.includes('AS unqualified_count')) rows = [{ unqualified_count: 0 }];
+    else if (sql.startsWith('WITH bounds')) rows = [];
     else if (sql.includes('FROM import_packages')) rows = [{ body: structuredClone(pkg) }];
     else if (sql.includes('FROM sources')) {
       rows = sql.includes('JOIN cases') ? [] : [{ id: sourceId, status: 'interpreted', profile: 'area-geojson-v2' }];
@@ -114,9 +121,9 @@ test('reviewed native package records after physical history and before area bum
   });
 
 test('stale review, changed physical baseline and missing acknowledgement never reach registry recording', async () => {
-  for (const change of ['site', 'physical', 'fingerprint', 'acknowledgement']) {
+  for (const change of ['reference', 'physical', 'fingerprint', 'acknowledgement']) {
     const control = packageControl();
-    if (change === 'site') control.area.revision++;
+    if (change === 'reference') (control.area as any).reference = { analysisCrs: 'EPSG:32618', origin: [0, 0] };
     if (change === 'physical') { control.pkg.features[0].revision = 3; control.pinReview(); }
     if (change === 'fingerprint') control.pkg.review.inputFingerprint = 'changed';
     await memoryPool(control, () => assert.rejects(() => commitPackage(control.pkg.id, 1,

@@ -1338,7 +1338,7 @@ export async function createPackageCorrection(id: string, requestKey: string) {
       revision: 1,
       state: "READY_FOR_REVIEW",
       createdAt: new Date().toISOString(),
-      name: `Correction Â· ${original.name}`,
+      name: `Correction · ${original.name}`,
     };
     delete next.review;
     delete next.acknowledgement;
@@ -1505,7 +1505,7 @@ export async function commitPackage(
     if (isGeometryFreePackage(raw.body)) {
       return commitSourceBuildingsTx(client, raw.body, expectedRevision, acknowledgement);
     }
-    const pkg = raw.body as ImportPackage & {
+    const pkg = raw.body as ReviewPinnedPackage & {
       extent: Normalized["extent"];
       geographicExtent: Normalized["extent"];
     };
@@ -1523,42 +1523,20 @@ export async function commitPackage(
         pkg.areaId,
       ])
     ).rows[0];
-    if (areaRow.revision !== pkg.review.areaRevision)
-      conflict("Area neighbours changed; review the proposed update again.");
+    if (pkg.review.scope?.validator !== PACKAGE_REVIEW_VALIDATOR || !pkg.reviewDependencyPins) {
+      conflict("This review uses the previous review scope; review again before recording.");
+    }
     if (!acknowledgement.trim())
       throw new AppError(
         422,
         "ACKNOWLEDGEMENT_REQUIRED",
         "Acknowledge that these are physical observations and describe unresolved findings.",
       );
-    const current = (
-        await client.query(
-          "SELECT body FROM physical_features WHERE area_id=$1 AND revision>0 ORDER BY identifier",
-          [pkg.areaId],
-        )
-      ).rows.map((r) => r.body as PhysicalFeature),
-      replaced = new Set(pkg.features.map((f) => f.id));
-    const effective = await withNeighbours(
-      [...current.filter((f) => !replaced.has(f.id)), ...pkg.features],
-      areaFrom(areaRow),
-      client,
-    );
-    if (
-      sha256(
-        JSON.stringify({
-          features: effective,
-          associations: await checkAssociations(
-            effective.map((f) => f.id),
-            client,
-          ),
-          reference: areaRow.reference,
-          areaRevision: areaRow.revision,
-          packageRevision: pkg.revision,
-          validator: "area-check-officer-v1",
-        }),
-      ) !== pkg.review.inputFingerprint
-    )
-      conflict("The review fingerprint no longer matches.");
+    const area = areaFrom(areaRow);
+    const snapshot = await effectiveFeatures(pkg, area, client);
+    if (packageReviewFingerprint(pkg, area, snapshot, pkg.revision) !== pkg.review.inputFingerprint) {
+      conflict(await reviewPinDifference(pkg.reviewDependencyPins, reviewDependencies(pkg, area, snapshot), client));
+    }
     for (const feature of pkg.features) {
       const stored = (
         await client.query(
