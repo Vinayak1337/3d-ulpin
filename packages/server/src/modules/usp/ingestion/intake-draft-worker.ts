@@ -136,6 +136,7 @@ async function preparedProposal(input: IntakeDraftInput, attempt: UspJobAttempt,
 export function officerQuestion(error: unknown): string | null {
   if (!(error instanceof AppError)) return null;
   if (error.code === 'AREA_SOURCE_DENIED') return otherSite;
+  if (error.code === 'SOURCE_ALREADY_IN_AREA' && error.status === 409) return error.message.slice(0, 2000);
   if (error.code === 'AREA_PROCESSING' && error.status === 422) return error.message.slice(0, 2000);
   return null;
 }
