@@ -13,7 +13,9 @@ const body = questionBody(profile, { ...blankChoices, kind: 'building',
 it('authors once then approves the returned revision; a known approval failure leaves a proposed receipt', async () => {
   const states: LayoutCommandState[] = [];
   const author = vi.fn(async () => receipt);
-  const approve = vi.fn(async () => { throw new ApiError(422, '', { error: { code: 'TEST', message: 'Refused approval.' } }); });
+  const approve = vi.fn(async () => {
+    throw new ApiError(422, '', { error: { code: 'TEST', message: 'Refused approval.' } });
+  });
   const command = createLayoutCommand({ author, approve }, state => states.push(state), vi.fn(), () => 'approval-key');
   await command.use(body);
   expect(author).toHaveBeenCalledTimes(1);
@@ -42,7 +44,9 @@ it('uncertain approval resends its same key and receipt without authoring again'
   const changed = vi.fn();
   const command = createLayoutCommand({ author, approve }, changed, vi.fn(), () => 'same-key');
   await command.use(body);
-  expect(changed).toHaveBeenLastCalledWith(expect.objectContaining({ uncertain: true, receipt, phase: 'approve' }));
+  expect(changed).toHaveBeenLastCalledWith(expect.objectContaining({
+    uncertain: true, receipt, phase: 'approve',
+  }));
   await command.approve(receipt);
   expect(author).toHaveBeenCalledTimes(1);
   expect(approve.mock.calls.map(call => call[1])).toEqual([

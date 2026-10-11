@@ -72,7 +72,7 @@ export function questionBody(profile: MapProfile, choices: Choices, revision: nu
 function heightMembers(profile: MapProfile, choices: Choices) {
   if (!choices.height) return {};
   if (!heightPaths(profile).some(path => path.path === choices.height) || !choices.unit
-    || !choices.meaning.trim() || choices.meaning.trim().length > 500) return null;
+    || !choices.meaning.trim() || choices.meaning.length > 500) return null;
   return { heightField: fieldWords(choices.height), heightUnit: choices.unit, heightMeaning: choices.meaning };
 }
 
@@ -80,7 +80,8 @@ export function choicesFromRecipe(receipt: Recipe): Choices {
   const plan = receipt.plan;
   if (plan.version !== 'manual-geojson/1') return { ...blankChoices };
   const prefix = plan.kind === undefined ? 'building' : 'feature';
-  const path = (name: string) => plan.operations.find(operation => operation.target === `${prefix}.${name}`)?.sourcePath;
+  const path = (name: string) => plan.operations
+    .find(operation => operation.target === `${prefix}.${name}`)?.sourcePath;
   const height = plan.heightField ? propertyPrefix + plan.heightField.replaceAll('~', '~0').replaceAll('/', '~1') : '';
   return { kind: plan.kind ?? 'building', identifier: path('sourceKey') ?? '', name: path('name') ?? '',
     height, unit: plan.heightUnit ?? '', meaning: plan.heightMeaning ?? '' };

@@ -37,7 +37,8 @@ export function LayoutQuestion({ caseId, item, refresh }: {
       {query.error ? <Banner tone="danger">{query.error.message}</Banner> : null}
       {receipt ? <LayoutReview receipt={receipt} origin={origin} command={command}
         readFailed={Boolean(query.error)} change={() => setEditingRevision(receipt.revision)} /> : null}
-      {!receipt && !query.error && !item.plan ? <p>{item.limitReason ?? 'Layout: not supplied by the record'}</p> : null}
+      {!receipt && !query.error && !item.plan ?
+        <p>{item.limitReason ?? 'Layout: not supplied by the record'}</p> : null}
     </>}
   </section>;
 }
@@ -57,7 +58,9 @@ function LayoutReview({ receipt, origin, command, readFailed, change }: {
       its layout and request stay unchanged.</p> : null}
     {proposed || command.state.uncertain ? <div className="ul-row">
       <Button variant="primary" disabled={command.state.busy || readFailed}
-        onClick={() => void command.approve(receipt)}>{approveWords(command.state.busy, command.state.uncertain)}</Button>
+        onClick={() => void command.approve(receipt)}>
+        {approveWords(command.state.busy, command.state.uncertain)}
+      </Button>
       <Button variant="soft" disabled={locked || readFailed || !proposed} onClick={change}>Change</Button>
     </div> : null}
   </>;

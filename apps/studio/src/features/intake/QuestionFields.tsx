@@ -33,7 +33,8 @@ function KindField(props: Props) {
         aria-label="What is each feature in this file?"
         onChange={event => props.choose('kind', event.target.value)}>
         <option value="">Choose what each feature is</option>
-        {kinds.map(kind => <option key={kind} value={kind} disabled={Boolean(kindRefusal(kind, props.profile.geometryTypes))}>
+        {kinds.map(kind => <option key={kind} value={kind}
+          disabled={Boolean(kindRefusal(kind, props.profile.geometryTypes))}>
           {kindWords[kind]}
         </option>)}
       </select>
@@ -58,7 +59,9 @@ function IdentifierField(props: Props) {
       every feature needs a different, non-empty text value.</p> : null}
     {refused.length ? <details>
       <summary>Fields that cannot identify each feature</summary>
-      <ul>{refused.map(path => <li key={path.path}>{fieldWords(path.path)}: repeats, has blanks, or is not text</li>)}</ul>
+      <ul>{refused.map(path => <li key={path.path}>
+        {fieldWords(path.path)}: repeats, has blanks, or is not text
+      </li>)}</ul>
     </details> : null}
     <ChoiceError {...props} field="identifier" />
   </div>;

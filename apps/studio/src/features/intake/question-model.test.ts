@@ -43,9 +43,10 @@ it('includes chosen name and all three height facts, never a height without unit
       conversionId: 'literal_text@1' });
   }
   expect(questionBody(profile, { ...selected, unit: 'm', meaning: '  ' }, 0, key)).toBeNull();
+  expect(questionBody(profile, { ...selected, unit: 'm', meaning: `a${' '.repeat(500)}` }, 0, key)).toBeNull();
 });
 
-it('disables outline kinds for lines with supported words, allows road/utility, and does not coerce identifiers', () => {
+it('disables outline kinds for lines, allows road/utility, and never coerces identifiers', () => {
   const line = { ...profile, geometryTypes: ['LineString'] };
   for (const kind of ['building', 'parcel', 'public_land'] as const) {
     expect(kindRefusal(kind, line.geometryTypes)).toBe(`This file holds lines; ${kindWords[kind]} must be an outline.`);
