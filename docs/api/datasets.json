@@ -9569,6 +9569,40 @@
         "No portal column list retained; uppercase attribute to pack lowercase name mapping remains unverified.",
         "Missing-unit stop applied; no CRS-derived unit, conversion, altered value, provider call or runtime gate."
       ]
+    },
+    {
+      "id": "da4-nyc-oti-second-area-buildings-20261011",
+      "classification": "test_only",
+      "originKind": "foreign_authority_issuing_portal_generated_export",
+      "issuer": "City of New York Office of Technology and Innovation (OTI)",
+      "geography": "Manhattan, New York City, New York, United States; foreign development only",
+      "manifest": "docs/evidence/gf1/da4/result.json",
+      "guide": "docs/evidence/gf1/da4/report.md",
+      "sourceCount": 1,
+      "sourceFamilies": 1,
+      "totalOriginalBytes": 1175483,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/datasets/nyc-second-area/nyc-office-of-technology-and-innovation",
+        "itemsPointer": "/assets/0",
+        "formats": ["GeoJSON"],
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "state": "unconfirmed",
+        "reference": "https://opendata.cityofnewyork.us/overview/#termsofuse",
+        "limitations": "Dataset licence not stated; linked Terms of Use are not a licence grant; local test_only."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "Dataset 5zhs-2jue: one unchanged portal GeoJSON response, 1417 MultiPolygon features, declared OGC CRS84.",
+        "Rectangle west -74.003, south 40.732, east -73.992, north 40.740; strictly north of first pack extent.",
+        "No doitt_id building keys in common with the first pack; one count request and one file fetch.",
+        "Columns differ: seven additional string-valued paths; the first layout will not be proposed for this file.",
+        "All 1417 height_roof values are strings; no numeric parsing, unit inference or height interpretation.",
+        "No conversion, column selection, changed original, import, upload, provider call or runtime gate."
+      ]
     }
   ],
   "offlineLearningCorpus": {

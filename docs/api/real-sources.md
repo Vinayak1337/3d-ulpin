@@ -1,5 +1,24 @@
 # Official source index and retained dataset catalogue
 
+## DA4 NYC second-area buildings — 11 October 2026 IST
+
+- **Dataset `5zhs-2jue`, BUILDING:** NYC Office of Technology and Innovation (OTI),
+  [issuing portal](https://data.cityofnewyork.us/d/5zhs-2jue), one unchanged resource GeoJSON response,
+  1,175,483 bytes, 1,417 MultiPolygon features, declared OGC CRS84; foreign `test_only`.
+  Retained under `E:/BhuAayam-data/datasets/nyc-second-area/nyc-office-of-technology-and-innovation/`,
+  with a sibling receipt. [Report](../evidence/gf1/da4/report.md) and
+  [exact query URLs, bounds, hashes and fingerprints](../evidence/gf1/da4/result.json) record the finding.
+  The [documented query](https://dev.socrata.com/docs/functions/within_box.html) selects rectangle
+  west -74.003, south 40.732, east -73.992, north 40.740, strictly north of the first pack's extent.
+  One count request answered 1,417, then one file fetch; no additional rectangle or export fetched.
+  **Columns differ:** construction_year, last_status_type, mappluto_bbl, name, objectid, shape_area and
+  shape_length are additional string-valued paths. The first file's remembered layout will not be proposed.
+  No `doitt_id` keys in common. All height_roof values are strings; numeric zero/negative counts do not parse them.
+  Dataset licence **not stated, permission unconfirmed** (`licenseId: null` in portal metadata).
+  Publisher-linked [Terms of Use](https://opendata.cityofnewyork.us/overview/#termsofuse) are not a licence grant.
+  No selection/removal of columns, conversion, altered original, import, upload, provider call or runtime gate.
+  No existing NYC dataset directory changed. Owner permission review remains necessary before broader use.
+
 ## DA3 NYC publisher height-field metadata — 11 October 2026 IST
 
 - **`Metadata_BuildingFootprints.md`:** NYC Office of Technology and Innovation (OTI),

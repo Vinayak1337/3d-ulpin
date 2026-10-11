@@ -1,0 +1,408 @@
+{
+  "task": "DA4",
+  "gate": "GF1 data prerequisite",
+  "status": "retained_columns_differ_stop",
+  "baseCommit": "6f6a9eb3dd8a6944774b7e62b8cc7e653b14d11b",
+  "assets": [
+    {
+      "file": "5zhs-2jue-box-w74.003-s40.732-e73.992-n40.740.geojson",
+      "format": "GeoJSON",
+      "issuer": "City of New York Office of Technology and Innovation (OTI)",
+      "datasetId": "5zhs-2jue",
+      "originalUrl": "https://data.cityofnewyork.us/resource/5zhs-2jue.geojson?%24where=within_box%28the_geom%2C40.740%2C-74.003%2C40.732%2C-73.992%29&%24limit=2000",
+      "queryDocumentation": "https://dev.socrata.com/docs/functions/within_box.html",
+      "formatDocumentation": "https://dev.socrata.com/docs/formats/geojson.html",
+      "datasetApiDocumentation": "https://dev.socrata.com/foundry/data.cityofnewyork.us/5zhs-2jue",
+      "acquiredAtIst": "2026-10-11T10:49:00.143165+05:30",
+      "bytes": 1175483,
+      "sha256": "4a5735dd57c0ad1e4971c853837230056ce148cfbde4cab41c6873d3a2112e9e",
+      "licence": {
+        "name": "not stated, permission unconfirmed",
+        "url": null,
+        "permissionState": "unconfirmed",
+        "portalMetadataUrl": "https://data.cityofnewyork.us/api/views/5zhs-2jue.json",
+        "licenseId": null,
+        "publisherLinkedTerms": {
+          "name": "Terms of Use",
+          "url": "https://opendata.cityofnewyork.us/overview/#termsofuse",
+          "source": "DA3 retained publisher metadata; not a dataset licence grant"
+        }
+      },
+      "geography": {
+        "place": "Manhattan, New York City, New York, United States",
+        "rectangle": [
+          -74.003,
+          40.732,
+          -73.992,
+          40.74
+        ],
+        "coordinateOrder": "west,south,east,north",
+        "coordinateUnits": "degree",
+        "foreign": true
+      },
+      "sourceCrs": {
+        "declaredName": "urn:ogc:def:crs:OGC:1.3:CRS84",
+        "sourceLocator": "/crs/properties/name",
+        "verticalReference": null
+      },
+      "purpose": "test_only",
+      "retainedPath": "E:/BhuAayam-data/datasets/nyc-second-area/nyc-office-of-technology-and-innovation/5zhs-2jue-box-w74.003-s40.732-e73.992-n40.740.geojson",
+      "http": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/vnd.geo+json; charset=UTF-8",
+          "Content-Length": null,
+          "Last-Modified": "Mon, 05 Oct 2026 22:54:29 GMT",
+          "ETag": "W/\"aW5kaWEuNjA3MjRfMl8xNjR4NHJKc3NaQVBfMTV3WmtrcjFUVWlWall1ODQ---gziqJoz0l_Z6_Ud2jLCPaa_Nj8gff4Q--gzip--gzip\""
+        }
+      },
+      "countRequest": {
+        "url": "https://data.cityofnewyork.us/resource/5zhs-2jue.json?%24select=count%28%2A%29&%24where=within_box%28the_geom%2C40.740%2C-74.003%2C40.732%2C-73.992%29",
+        "answer": [
+          {
+            "count": "1417"
+          }
+        ]
+      },
+      "fileFetchNumber": 1,
+      "fileFetchesTotal": 1,
+      "bytesUnchanged": true,
+      "noAccountTokenLoginOrUpload": true
+    }
+  ],
+  "first": {
+    "retainedPath": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+    "bytes": 1103282,
+    "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+    "featureCount": 1662,
+    "boundingBox": [
+      -74.014238892183,
+      40.713672513704,
+      -73.994438791934,
+      40.728887061137
+    ],
+    "schemaFingerprint": "e27f2b29af7483c178b6fc8d8ad439d6f347db32ccba785d84b47c9688cbf638"
+  },
+  "second": {
+    "featureCount": 1417,
+    "boundingBox": [
+      -74.002996787755,
+      40.732001369785,
+      -73.991997601055,
+      40.740001459498
+    ],
+    "schemaFingerprint": "e9b0eeee7699a39a3f325868bd9f6742c886b9277d7a272194eef4bf46d901cc",
+    "geometryTypes": {
+      "MultiPolygon": 1417
+    },
+    "height": {
+      "property": "height_roof",
+      "present": 1417,
+      "null": 0,
+      "absent": 0,
+      "zero": 0,
+      "negative": 0,
+      "number": 0,
+      "string": 1417,
+      "otherNonNull": 0
+    }
+  },
+  "separation": {
+    "side": "north",
+    "coordinateUnits": "degree",
+    "queryRectangleGap": 0.003112938862997794,
+    "extentGap": 0.0031143086480014404,
+    "rectangleSharesNoPointWithFirstExtent": true,
+    "secondExtentSharesNoPointWithFirstExtent": true
+  },
+  "columns": {
+    "verdict": "different",
+    "differences": [
+      {
+        "path": "/features/*/properties/construction_year",
+        "firstTypes": null,
+        "secondTypes": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/last_status_type",
+        "firstTypes": null,
+        "secondTypes": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/mappluto_bbl",
+        "firstTypes": null,
+        "secondTypes": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/name",
+        "firstTypes": null,
+        "secondTypes": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/objectid",
+        "firstTypes": null,
+        "secondTypes": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/shape_area",
+        "firstTypes": null,
+        "secondTypes": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/shape_length",
+        "firstTypes": null,
+        "secondTypes": [
+          "string"
+        ]
+      }
+    ],
+    "firstCrs": {
+      "value": "EPSG:4326",
+      "evidence": "Declared OGC CRS84",
+      "unit": "degree"
+    },
+    "secondCrs": {
+      "value": "EPSG:4326",
+      "evidence": "Declared OGC CRS84",
+      "unit": "degree"
+    },
+    "firstGeometryTypes": [
+      "MultiPolygon"
+    ],
+    "secondGeometryTypes": [
+      "MultiPolygon"
+    ],
+    "firstPaths": [
+      {
+        "path": "/features/*/geometry",
+        "types": [
+          "object"
+        ]
+      },
+      {
+        "path": "/features/*/properties/base_bbl",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/bin",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/doitt_id",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/feature_code",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/geom_source",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/ground_elevation",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/height_roof",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/last_edited_date",
+        "types": [
+          "string"
+        ]
+      }
+    ],
+    "secondPaths": [
+      {
+        "path": "/features/*/geometry",
+        "types": [
+          "object"
+        ]
+      },
+      {
+        "path": "/features/*/properties/base_bbl",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/bin",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/construction_year",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/doitt_id",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/feature_code",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/geom_source",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/ground_elevation",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/height_roof",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/last_edited_date",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/last_status_type",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/mappluto_bbl",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/name",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/objectid",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/shape_area",
+        "types": [
+          "string"
+        ]
+      },
+      {
+        "path": "/features/*/properties/shape_length",
+        "types": [
+          "string"
+        ]
+      }
+    ]
+  },
+  "buildingKeys": {
+    "property": "doitt_id",
+    "layoutEvidence": "docs/evidence/gf1/e1b/steps.ts:222",
+    "firstUnique": 1662,
+    "secondUnique": 1417,
+    "inCommon": 0
+  },
+  "fingerprintExecution": {
+    "method": "Unchanged product function bodies evaluated in an isolated VM through tsx.",
+    "registryPath": "packages/server/src/modules/usp/ingestion/registry.ts",
+    "sourceSha256": "a02918e909b8517d6abe91c8069a1a1b3e7a3ce77a1fe893e0469c13afc16885",
+    "functionSha256": "fa7cafeb460a02446a4977f38f2d3e10bd91027db2f3f329b99f14bed6fcd2a3",
+    "version": "manual-geojson/1",
+    "database": false,
+    "server": false,
+    "credentialsRead": false,
+    "inspectionInputs": "Raw declared CRS84, sorted geometry type and field-name inventories; no validity claim.",
+    "excludedImports": "storage.ts transitively loads .env; only its SHA-256 primitive is supplied locally.",
+    "excludedLimitations": "Empty limitations supplied; limitations are not a schemaFingerprint input."
+  },
+  "access": {
+    "account": false,
+    "login": false,
+    "token": false,
+    "upload": false,
+    "providerCalls": 0,
+    "needsOwner": [],
+    "metadataUrl": "https://data.cityofnewyork.us/api/views/5zhs-2jue.json",
+    "portalLicenseId": null,
+    "discoveryUrls": [
+      "https://dev.socrata.com/foundry/data.cityofnewyork.us/5zhs-2jue",
+      "https://dev.socrata.com/docs/functions/within_box.html",
+      "https://dev.socrata.com/docs/formats/geojson.html",
+      "https://data.cityofnewyork.us/d/5zhs-2jue"
+    ],
+    "geojsonForm": "SODA resource GeoJSON retains string-valued numbers and declared CRS84, like the first file.",
+    "selectedColumns": false,
+    "fileFetches": 1,
+    "additionalRectangleOrExportFetch": false
+  },
+  "qualifications": [
+    "Foreign test_only; permission unconfirmed.",
+    "No conversion, import, upload or runtime gate.",
+    "Numeric height counts do not parse strings; no field unit or height meaning inferred."
+  ],
+  "verification": {
+    "initialCheckoutClean": true,
+    "fx2RefreshExitCode": 0,
+    "inspectorCommand": "pnpm exec tsx docs/evidence/gf1/da4/inspect.ts",
+    "inspectorExitCode": 0,
+    "apiCheckCommand": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py",
+    "apiCheckBeforePinRefreshExitCode": 1,
+    "beforeRefreshFinding": "Expected producer-changed refusal for the newly edited datasets.json.",
+    "apiCheckExitCode": 0,
+    "apiOperations": 310,
+    "namedSchemas": 351,
+    "pinRefreshCommand": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts",
+    "pinRefreshBaseArgument": "6f6a9eb3dd8a6944774b7e62b8cc7e653b14d11b",
+    "pinRefreshExitCode": 0,
+    "repinned": ["docs/api/datasets.json"],
+    "openapiContentDiff": false,
+    "gitDiffCheckExitCode": 0,
+    "inspectorLinesOver120": 0,
+    "longEvidenceLines": "Only exact URLs, retained paths and HTTP header literals exceed 120 characters.",
+    "fullGisInspection": "Not run; system Python has no shapely. Fingerprint inputs read raw inventories only."
+  }
+}
