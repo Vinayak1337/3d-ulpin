@@ -9638,6 +9638,40 @@
         "All 1417 height_roof values are strings; no numeric parsing, unit inference or height interpretation.",
         "No conversion, column selection, changed original, import, upload, provider call or runtime gate."
       ]
+    },
+    {
+      "id": "da6-nyc-oti-large-crs84-buildings-20261011",
+      "classification": "test_only",
+      "originKind": "foreign_authority_issuing_portal_generated_export",
+      "issuer": "City of New York Office of Technology and Innovation (OTI)",
+      "geography": "New York City, New York, United States; foreign development only",
+      "manifest": "docs/evidence/gf1/da6/result.json",
+      "guide": "docs/evidence/gf1/da6/report.md",
+      "sourceCount": 1,
+      "sourceFamilies": 1,
+      "totalOriginalBytes": 43263076,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/datasets/nyc-second-area/nyc-office-of-technology-and-innovation",
+        "itemsPointer": "/assets/0",
+        "formats": ["GeoJSON"],
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "state": "unconfirmed",
+        "reference": "https://opendata.cityofnewyork.us/overview/#termsofuse",
+        "limitations": "Portal licence re-read: not stated, permission unconfirmed; local test_only."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "One unchanged dataset 5zhs-2jue response: 48686 MultiPolygon features, declared OGC CRS84, null geometry 0.",
+        "Rectangle west -74.025, south 40.700, east -73.940, north 40.800; two counts then one file fetch.",
+        "Returned count equals portal count; 50000 requested limit, no clipping, stitching or local subset.",
+        "48686 distinct doitt_id values, 0 repeated; overlaps first pack 1662 and DA4 file 1417 keys.",
+        "Product manual profile refuses RECORD_LIMIT; independent streamed column hash matches DA4, not a profile.",
+        "No existing original changed, conversion, import, upload, provider call or runtime gate."
+      ]
     }
   ],
   "offlineLearningCorpus": {

@@ -1,6 +1,25 @@
 # Official source index and retained dataset catalogue
 
-<<<<<<< HEAD
+## DA6 large NYC CRS84 original — 11 October 2026 IST
+
+- **Dataset `5zhs-2jue`, BUILDING:** NYC Office of Technology and Innovation (OTI),
+  [issuing portal](https://data.cityofnewyork.us/d/5zhs-2jue), one unchanged resource GeoJSON response:
+  43,263,076 bytes, 48,686 MultiPolygon features, null geometry 0, top-level declared OGC CRS84.
+  Retained under `E:/BhuAayam-data/datasets/nyc-second-area/nyc-office-of-technology-and-innovation/`,
+  with a sibling receipt; foreign NYC `test_only`. [Report](../evidence/gf1/da6/report.md) and
+  [exact URLs, rectangle, counts, hashes and literal declaration](../evidence/gf1/da6/result.json).
+  Same [within_box interface](https://dev.socrata.com/docs/functions/within_box.html) as DA4;
+  rectangle west -74.025, south 40.700, east -73.940, north 40.800, `$limit=50000`.
+  Two counts (54,067 then 48,686) sized the rectangle; one file fetch returned all 48,686 counted features.
+  48,686 distinct `doitt_id` values, 0 repeated; shares 1,662 first-pack keys and 1,417 DA4 keys.
+  Product manual profile refuses the whole file as `RECORD_LIMIT` (2,000 features maximum).
+  Independent streamed property/type inventory and comparable hash match DA4; **not a product profile**.
+  All fifteen property paths have non-null string type; 47,875 explicit null `name` values are not absent.
+  [Portal metadata](https://data.cityofnewyork.us/api/views/5zhs-2jue.json) re-read `licenseId: null`:
+  licence **not stated, permission unconfirmed**; DA4's publisher-linked terms remain no licence grant.
+  No existing original changed, conversion, clipping, stitching, subset, import, upload or provider call.
+  No geometry validity, large-file product execution, operational claim, learning or runtime gate qualified.
+
 ## DA4 NYC second-area buildings — 11 October 2026 IST
 
 - **Dataset `5zhs-2jue`, BUILDING:** NYC Office of Technology and Innovation (OTI),
@@ -19,7 +38,6 @@
   Publisher-linked [Terms of Use](https://opendata.cityofnewyork.us/overview/#termsofuse) are not a licence grant.
   No selection/removal of columns, conversion, altered original, import, upload, provider call or runtime gate.
   No existing NYC dataset directory changed. Owner permission review remains necessary before broader use.
-=======
 ## DA5 small GeoJSON with a declared projected coordinate system — 11 October 2026 IST
 
 - **`Niagara_Falls_Condominiums_7254610803234545967.geojson`:** City of Niagara Falls,
@@ -38,7 +56,6 @@
 
 [da5-export]: https://hub.arcgis.com/api/download/v1/items/f657095d520a421a93f0eec753027c29/geojson?layers=0
 [da5-terms]: https://open.niagarafalls.ca/pages/terms-of-use
->>>>>>> task/da5-small-file-declared-crs
 
 ## DA3 NYC publisher height-field metadata — 11 October 2026 IST
 
