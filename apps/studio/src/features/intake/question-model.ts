@@ -42,6 +42,14 @@ export function kindRefusal(kind: Kind, types: readonly string[]): string | null
   return 'The record does not state geometry this kind can use.';
 }
 
+export function identifierPaths(profile: MapProfile): MapProfile['paths'] {
+  return profile.paths.filter(path => path.literalIdEligible || path.integerIdEligible === true);
+}
+
+export function identifierWords(path: MapProfile['paths'][number]): string {
+  return fieldWords(path.path) + (path.integerIdEligible === true ? ' (whole number)' : '');
+}
+
 export function heightPaths(profile: MapProfile): MapProfile['paths'] {
   return profile.paths.filter(path => path.path.startsWith(propertyPrefix) && path.types.length > 0
     && path.types.every(type => ['number', 'string'].includes(type)));
@@ -50,14 +58,16 @@ export function heightPaths(profile: MapProfile): MapProfile['paths'] {
 export function questionBody(profile: MapProfile, choices: Choices, revision: number,
   requestKey: string): AuthorBody | null {
   if (!choices.kind || kindRefusal(choices.kind, profile.geometryTypes)) return null;
-  if (!profile.paths.some(path => path.path === choices.identifier && path.literalIdEligible)) return null;
+  const identifier = identifierPaths(profile).find(path => path.path === choices.identifier);
+  if (!identifier) return null;
   if (choices.name && !profile.paths.some(path => path.path === choices.name && path.literalTextEligible)) return null;
   if (!profile.paths.some(path => path.path === '/features/*/geometry')) return null;
   const height = heightMembers(profile, choices);
   if (height === null) return null;
   const operations = [
     { target: 'feature.sourceKey' as const, sourcePath: choices.identifier,
-      conversionId: 'literal_identifier@1' as const },
+      conversionId: identifier.integerIdEligible === true
+        ? 'literal_integer_identifier@1' as const : 'literal_identifier@1' as const },
     { target: 'feature.geometry' as const, sourcePath: '/features/*/geometry',
       conversionId: 'geojson_geometry@1' as const },
   ];

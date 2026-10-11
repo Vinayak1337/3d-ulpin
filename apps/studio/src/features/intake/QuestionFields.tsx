@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import { fieldWords } from './batch-model';
-import { heightPaths, kindRefusal, kindWords } from './question-model';
+import { heightPaths, identifierPaths, identifierWords, kindRefusal, kindWords } from './question-model';
 import type { Choices, Kind, MapProfile } from './question-model';
 import styles from './Batch.module.css';
 
@@ -50,17 +50,17 @@ function KindField(props: Props) {
 }
 
 function IdentifierField(props: Props) {
-  const paths = props.profile.paths.filter(path => path.literalIdEligible);
-  const refused = props.profile.paths.filter(path => !path.literalIdEligible && path.path !== '/features/*/geometry');
+  const paths = identifierPaths(props.profile);
+  const refused = props.profile.paths.filter(path => !paths.includes(path) && path.path !== '/features/*/geometry');
   return <div className={styles.stack}>
     <FieldChoice label="Which field identifies each one?" value={props.choices.identifier} paths={paths}
-      choose={value => props.choose('identifier', value)} />
+      choose={value => props.choose('identifier', value)} words={identifierWords} />
     {!paths.length ? <p>No field of this file can identify its features:
-      every feature needs a different, non-empty text value.</p> : null}
+      every feature needs a different, non-empty text value or whole number.</p> : null}
     {refused.length ? <details>
       <summary>Fields that cannot identify each feature</summary>
       <ul>{refused.map(path => <li key={path.path}>
-        {fieldWords(path.path)}: repeats, has blanks, or is not text
+        {fieldWords(path.path)}: repeats, has blanks, or is neither text nor a whole number
       </li>)}</ul>
     </details> : null}
     <ChoiceError {...props} field="identifier" />
@@ -91,13 +91,16 @@ function HeightFields(props: Props) {
   </div>;
 }
 
-function FieldChoice({ label, value, paths, choose, optional = false }: {
+function FieldChoice({ label, value, paths, choose, optional = false, words }: {
   label: string; value: string; paths: MapProfile['paths']; choose: (value: string) => void; optional?: boolean;
+  words?: (path: MapProfile['paths'][number]) => string;
 }) {
   return <label className="ul-field"><span className="ul-label">{label}</span>
     <select className="ul-input" value={value} aria-label={label} onChange={event => choose(event.target.value)}>
       <option value="">{optional ? 'Not stated' : 'Choose a field'}</option>
-      {paths.map(path => <option key={path.path} value={path.path}>{fieldWords(path.path)}</option>)}
+      {paths.map(path => <option key={path.path} value={path.path}>
+        {words ? words(path) : fieldWords(path.path)}
+      </option>)}
     </select>
   </label>;
 }
