@@ -2,9 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { z } from 'zod';
 import type { ImportPackage } from '@ulpin/contracts';
+import type { Pool, PoolClient } from 'pg';
 import { IntakeConfirmSchema, type PropertyCardVerification } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
-import { intakeConfirmationReason, packageDifference } from './intake-confirmations';
+import { confirmIntake, intakeConfirmationReason, packageDifference } from './intake-confirmations';
 import { intakeRunKey } from './intake-run';
 import { assertIntakeCardVerified, intakeCardVerificationPin,
   intakeRunRefusal, intakeTargetCitation } from './intake-run-worker';
@@ -32,6 +33,34 @@ test('confirmation rejects a changed revision or fingerprint rather than choosin
   assert.match(packageDifference(named, { ...pkg, revision: 3 })!, /revision 3, not 2/);
   assert.match(packageDifference({ ...named, reviewFingerprint: 'b'.repeat(64) }, pkg)!, /another review/);
   assert.match(packageDifference(named, { ...pkg, review: undefined })!, /no review/);
+});
+
+test('a confirmation still refuses a package whose intake item belongs to another case', async () => {
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'e1-protocol-operator';
+  const globals = globalThis as unknown as { ulpinPool?: Pool };
+  const previous = globals.ulpinPool;
+  let checkedMembership = false;
+  const client = { release() {}, query: async (sql: string, values: unknown[] = []) => {
+    if (sql.startsWith('SELECT id,revision,archived')) return { rows: [{ id, revision: 0, archived: false }] };
+    if (sql.startsWith('SELECT confirmation_id,input_sha256')) return { rows: [] };
+    if (sql.startsWith('SELECT p.body FROM import_packages')) {
+      assert.match(sql, /usp_intake_items/);
+      assert.match(sql, /i\.case_id=\$2/);
+      assert.deepEqual(values, [named.packageId, other]);
+      checkedMembership = true;
+      return { rows: [] };
+    }
+    assert(['BEGIN', 'ROLLBACK'].includes(sql), sql);
+    return { rows: [] };
+  } } as unknown as PoolClient;
+  globals.ulpinPool = { connect: async () => client } as unknown as Pool;
+  try {
+    await assert.rejects(confirmIntake(other, { requestKey: id, packages: [named], targets: [],
+      acknowledgement: 'Fixture physical observations only.' }), { code: 'INTAKE_CONFIRMATION_STALE' });
+    assert(checkedMembership);
+  } finally {
+    globals.ulpinPool = previous;
+  }
 });
 
 test('the stored list is bounded and cannot contain commands to resolve conflicts or assume facts', () => {

@@ -30,7 +30,9 @@ function memoryPlan(profile: SourceProfile, remembered: MappingReceipt | null): 
     || remembered.plan.source.schemaFingerprint !== profile.source.schemaFingerprint) return null;
   const parsed = MappingPlanSchema.safeParse({ version: profile.version, mode: 'manual_mapping',
     source: profile.source, caseId: profile.caseId, workspaceRevision: profile.workspaceRevision,
-    workspaceFingerprint: profile.workspaceFingerprint, operations: remembered.plan.operations });
+    workspaceFingerprint: profile.workspaceFingerprint, operations: remembered.plan.operations,
+    ...(remembered.plan.heightField === undefined ? {} : { heightField: remembered.plan.heightField,
+      heightUnit: remembered.plan.heightUnit, heightMeaning: remembered.plan.heightMeaning }) });
   if (!parsed.success) return null;
   try {
     compileMapping(parsed.data, profile);

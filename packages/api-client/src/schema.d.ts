@@ -65033,6 +65033,10 @@ export interface components {
                 caseId: string;
                 workspaceRevision: number;
                 workspaceFingerprint: string;
+                heightField?: string;
+                /** @enum {string} */
+                heightUnit?: "m" | "ft";
+                heightMeaning?: string;
                 operations: {
                     /** @enum {string} */
                     target: "building.sourceKey" | "building.name" | "building.geometry";
@@ -65194,6 +65198,10 @@ export interface components {
                 caseId: string;
                 workspaceRevision: number;
                 workspaceFingerprint: string;
+                heightField?: string;
+                /** @enum {string} */
+                heightUnit?: "m" | "ft";
+                heightMeaning?: string;
                 operations: {
                     /** @enum {string} */
                     target: "building.sourceKey" | "building.name" | "building.geometry";
@@ -65399,6 +65407,10 @@ export interface components {
                 caseId: string;
                 workspaceRevision: number;
                 workspaceFingerprint: string;
+                heightField?: string;
+                /** @enum {string} */
+                heightUnit?: "m" | "ft";
+                heightMeaning?: string;
                 operations: {
                     /** @enum {string} */
                     target: "building.sourceKey" | "building.name" | "building.geometry";
@@ -69148,6 +69160,10 @@ export interface components {
                 caseId: string;
                 workspaceRevision: number;
                 workspaceFingerprint: string;
+                heightField?: string;
+                /** @enum {string} */
+                heightUnit?: "m" | "ft";
+                heightMeaning?: string;
                 operations: {
                     /** @enum {string} */
                     target: "building.sourceKey" | "building.name" | "building.geometry";
@@ -69540,6 +69556,10 @@ export interface components {
                     caseId: string;
                     workspaceRevision: number;
                     workspaceFingerprint: string;
+                    heightField?: string;
+                    /** @enum {string} */
+                    heightUnit?: "m" | "ft";
+                    heightMeaning?: string;
                     operations: {
                         /** @enum {string} */
                         target: "building.sourceKey" | "building.name" | "building.geometry";

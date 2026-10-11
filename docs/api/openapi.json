@@ -365866,6 +365866,23 @@
                     "type": "string",
                     "pattern": "^[a-f0-9]{64}$"
                   },
+                  "heightField": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "heightUnit": {
+                    "type": "string",
+                    "enum": [
+                      "m",
+                      "ft"
+                    ]
+                  },
+                  "heightMeaning": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  },
                   "operations": {
                     "minItems": 2,
                     "maxItems": 3,
@@ -366692,6 +366709,23 @@
                   "workspaceFingerprint": {
                     "type": "string",
                     "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "heightField": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "heightUnit": {
+                    "type": "string",
+                    "enum": [
+                      "m",
+                      "ft"
+                    ]
+                  },
+                  "heightMeaning": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
                   },
                   "operations": {
                     "minItems": 2,
@@ -367690,6 +367724,23 @@
                     "workspaceFingerprint": {
                       "type": "string",
                       "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "heightField": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80
+                    },
+                    "heightUnit": {
+                      "type": "string",
+                      "enum": [
+                        "m",
+                        "ft"
+                      ]
+                    },
+                    "heightMeaning": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
                     },
                     "operations": {
                       "minItems": 2,
@@ -386956,6 +387007,23 @@
                 "type": "string",
                 "pattern": "^[a-f0-9]{64}$"
               },
+              "heightField": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "heightUnit": {
+                "type": "string",
+                "enum": [
+                  "m",
+                  "ft"
+                ]
+              },
+              "heightMeaning": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
               "operations": {
                 "minItems": 2,
                 "maxItems": 3,
@@ -388858,6 +388926,23 @@
                   "workspaceFingerprint": {
                     "type": "string",
                     "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "heightField": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "heightUnit": {
+                    "type": "string",
+                    "enum": [
+                      "m",
+                      "ft"
+                    ]
+                  },
+                  "heightMeaning": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
                   },
                   "operations": {
                     "minItems": 2,
