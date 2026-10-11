@@ -1,0 +1,262 @@
+{
+  "task": "AU4",
+  "status": "proposal only; nothing implemented or measured",
+  "scope": "GF1/GF2: bounded table rows and native document quotes accompany a building batch",
+  "chain": "chain.json items 1-8; paths aliases are declared there",
+  "smallestBuild": [
+    "Receive map, table and document originals in one case; register/probe every receipt, no new case per file.",
+    "Read <=16 MiB tables with existing raw/mapping jobs; PDF extraction already queues at retain.",
+    "Choose an explicit table sheet/header when unknown; do not guess workbook selection from metadata-only probe.",
+    "Make cited attachment proposals against map candidates before confirmation, not registry mutations.",
+    "Show exact-key outcomes and full reading coverage; officer answers questions then confirms the pinned batch once.",
+    "Record maps; stage4 applies only those accepted citation additions through registry correction/review/commit.",
+    "Re-pin resulting record revision, build an exact excerpt packet and print its row/page citation on the card.",
+    "Citations only: no automatic floor/unit creation, field overwrites, ownership, rights, dimensions or issuance."
+  ],
+  "reuse": [
+    {
+      "functions": "ManualIngestionService.retain, inspectAny; inspectTabularSource; readStreamingTabular",
+      "at": "ingestion/service.ts:117-200;ingestion/tabular-source.ts:182-199",
+      "moreAt": "ingestion/streaming-vector-reader.ts:169-203",
+      "change": "Narrow same-site batch-table admission/read context, not global removal of workspace locks."
+    },
+    {
+      "functions": "StreamingVectorService.enqueue, ChunkMappingService.enqueue, TabularChunkMapper.map",
+      "at": "ingestion/streaming-vector.ts:129-163;ingestion/chunk-mapping.ts:218-267",
+      "moreAt": "ingestion/chunk-mapping-agent.ts:153-214;ingestion/chunk-mapping-tabular.ts:19-43,105-139",
+      "change": "Queue from intake publication; project existing row/sourceRow/hash slots into attachment candidates."
+    },
+    {
+      "functions": "DocumentIngestionService.retain, runDocumentJob, extractSourceDocument, readDocumentResult",
+      "at": "ingestion/documents.ts:91-130;ingestion/document-worker.ts:17-83",
+      "moreAt": "ingestion/document-native.ts:62-106;ingestion/documents.ts:60-86",
+      "change": "Send native_only explicitly (API defaults propose); project UUID/hash/page/spans, no provider needed."
+    },
+    {
+      "functions": "mapParentKey, exactIdentifier, validateFusionAssociations",
+      "at": "ingestion/mapping-executor.ts:165-183",
+      "moreAt": "ingestion/source-fusion-associations-projection.ts:21-29,190-246",
+      "change": "Reuse literal/grounded-quote checks, not the provider request or recorded-target-only adapter."
+    },
+    {
+      "functions": "createRegistryDraft, amendRegistryDocumentCitationsTx, prepareRegistryReview, commitRegistryReview",
+      "at": "registry/registry.ts:314-369,675-735,837-897",
+      "moreAt": "registry/registry-document-evidence.ts:610-637,800-848",
+      "change": "Extend citation authority with exact table-row variant and confirmation-authorized additions."
+    },
+    {
+      "functions": "captureRegistrySnapshotTx, resolveRegistryTarget, create/confirm/executePacketPlan",
+      "at": "usp/snapshots.ts:106-113,178-207,443-451;usp/packets/plan-authority.ts:195-274",
+      "change": "Capture/validate committed row and native-part bindings; no fake legacy CSV row locator."
+    },
+    {
+      "functions": "confirmIntake, carrySteps, intakeTargetReadiness, generatePropertyCard, card projection",
+      "at": "ingestion/intake-confirmations.ts:95-115;ingestion/intake-run-worker.ts:203-217,275-305",
+      "moreAt": "ingestion/intake-targets.ts:49-60;usp/packets/card-projection.ts:75-114",
+      "change": "Add evidence-ready dependency and real stage4 before snapshot; project only included cited excerpts."
+    }
+  ],
+  "keysAndJobs": {
+    "existingJobs": ["streaming-vector", "chunk-mapping", "document-extraction", "intake-run"],
+    "newJob": "One intake-evidence job type through existing dispatcher/jobs, not another broker or authority.",
+    "why": "Bounded closing pass needs both sides and source completion; retries must not run a provider again.",
+    "enqueueKey": "stable UUID from caseId + sourceId/revision/hash + reader + accepted result + keyProfileHash",
+    "matchKey": [
+      "caseId/siteId + namespace + declared key kind + typed literal value + exact-key/1 profile hash",
+      "No lowercasing, transliteration, punctuation stripping, number coercion or filename/name similarity.",
+      "No address-only or party-name match; names indexed only as present, never a person lookup.",
+      "Officer chooses map source field and table source-column id; document quote must contain that exact literal.",
+      "Map sourceKey is an original feature locator, not an official ULPIN or necessarily a registry identifier.",
+      "First version is exact literal identity only; broader normalisation/spatial linking is explicitly deferred."
+    ],
+    "candidatePin": [
+      "anchor item, package id/revision/review fingerprint, feature id/sourceKey, map source revision/hash",
+      "table raw/mapping job input hashes, accepted slot/raw/result hashes, schema/recipe/converter hashes",
+      "table sheet, header rows, physical sourceRow, positional column id, cell state, literal/quote hash",
+      "document source/job/fence/input/result hashes, part UUID/text hash, native unit hash/page/character spans"
+    ],
+    "durability": [
+      "One additive migration beside intake tables: key index and immutable proposal/coverage manifests.",
+      "Foreign keys point to existing originals/slots/jobs/targets; no copied registry or imported-part forgery.",
+      "Indexed lookup per key, symmetric on late anchor arrival; closing pass finds duplicates/conflicts.",
+      "Existing transactional publication/event pattern; SSE contains ids/counts, never literal rows or source text.",
+      "Bound processing to existing source limits; per-transaction chunks <=16 rows or12 selected document parts."
+    ],
+    "operationKeys": [
+      "receive: client UUID per original; retain/probe/raw/mapping each deterministic derivative UUID",
+      "close: source-result manifest hash + key profile + anchor inventory hash",
+      "stage4: confirmationId + targetId + linkManifestHash + draft/amend/review/commit operation name",
+      "snapshot/plan/confirm/execute/card: existing intakeRunKey with final reviewed record revision pinned"
+    ],
+    "replay": "Same key + same input replays; changed digest refuses409; job publication uses existing attempt fence."
+  },
+  "outcomes": {
+    "denominator": "One eligible row or quoted native part/key assertion, not one field and not one building.",
+    "matched": "Exactly one target, closed coverage, no duplicate-key or cited fact conflict; still a proposal.",
+    "no_match": "Closed coverage and zero exact targets, including explicit missing key; never unread rows.",
+    "several": "More than one target for the exact key; all candidates retained, none selected.",
+    "conflicting": "Duplicate key assertions or incompatible selected values/targets; alternatives remain quoted.",
+    "precedence": "conflicting > several > matched > no_match; each eligible assertion belongs to exactly one count.",
+    "coverage": "Separate read/eligible/keyless/unread/failed counts; partial job means totals incomplete, not zero.",
+    "questionUnit": "Group by source layout/key/conflict group, not repeat a question for every identical row.",
+    "cardCounts": "Show cited assertion count separately from records/card count; deduplicate exact citation pins."
+  },
+  "officerQuestions": [
+    "Which literal sheet and header rows? Which column and map field mean the same identifier namespace?",
+    "What does a key mean and where is it scoped? Do not invent a key when these sources share none.",
+    "What are issuer/origin/licence/privacy states? Unknown provenance permits local reading only.",
+    "For several/no-match/conflicting: select an exact target with both citations, reject, or explicitly exclude.",
+    "For G+41/G+42, units or floor meanings: retain alternatives and unknowns; no winner chosen by a model.",
+    "Has all relevant input been read? Confirm named exclusions and their reasons, or keep targets preparing.",
+    "Confirm listed targets, exact rows/pages/quotes and card preview; acknowledgement explicitly covers citations."
+  ],
+  "confirmationPins": [
+    "Retained original manifest sealed by ids/revisions/hashes/byte sizes; included and explicitly excluded sources.",
+    "Actor/access/site context, expected target set and candidate feature pins; package review fingerprints.",
+    "Source reading coverage + job/result/slot/fence pins; layout/recipe/schema/key-profile versions and hashes.",
+    "Exact accepted link proposal ids/digest with table row/cell or document part/page/quote selectors.",
+    "All conflict/ambiguity decisions/reasons; append-only citation authorisation and expected record mapping.",
+    "Officer acknowledgement, reason/expiry and stable keys; no right or issuance authorisation.",
+    "Post-record record revision/body hash derives from pinned package commit and is stored as stage3 artefact.",
+    "Stage4 adds only selected citations; unexpected findings/movement stops target, no implied fresh approval.",
+    "After correction commit, replace target's record pin with returned revision/body hash before snapshot5.",
+    "If no accepted attachments, stage4 stores explicit no_additions and leaves revision1; never an implicit skip."
+  ],
+  "oneConfirmationSequence": [
+    "Receive/probe/read/map/close links automatically; ask only unresolved selections or provenance/layout questions.",
+    "Officer answers recipe questions through existing approval, then one batch confirmation authorises recording.",
+    "Run stage3 commits map packages; stage4 maps pinned feature target to its resulting recorded id/revision.",
+    "Stage4 creates correction, appends citations, requests technical review and commits under that confirmation.",
+    "No per-row confirm, no second officer press for routine exact additions; errors remain stopped and visible.",
+    "Snapshot5 uses latest reviewed revision (often2); stage6 remains not_applicable for exterior building identity.",
+    "Plan7 includes feature and accepted row/native-page quotes; confirm/execute/card8 uses same authorisation.",
+    "Card prints source name/revision/hash, sheet/row or page/part locator and exact excerpt, with packet link.",
+    "Do not label source statements as ownership, dimensions or verified registry facts; printable profile limits stay."
+  ],
+  "readinessAndLateArrival": [
+    "Any possibly relevant evidence item still reading -> preparing for that source-dependent target group.",
+    "Closed exact single proposals with approved recipe and no questions may be ready; plural/conflict needs_answer.",
+    "No shared key is an honest no_match; may confirm explicit exclusion, never auto-invent an anchor.",
+    "Waiting key proposals are reconsidered symmetrically on anchor arrival; order must not change final outcome.",
+    "New source is outside an existing sealed confirmation. Never silently extend its scope or overwrite a card.",
+    "Late file prepares a citation-only correction confirmation for affected recorded targets, no package recommit.",
+    "Late correction confirmation is additive: confirm already recorded targets, not E1's uncommitted packages.",
+    "Only citing targets re-pin; produce new packet/card after review, preserve old artefacts/history."
+  ],
+  "preservedLimits": {
+    "at": "contracts/ingestion.ts:71-76,156-193;contracts/document-ingestion.ts:5-10",
+    "moreAt": "contracts/chunk-mapping.ts:4-14;contracts/intake.ts:114-131;ingestion/document-worker.ts:20-34",
+    "rules": [
+      "Table16 MiB/2000 data rows/256 columns/1-5 headers; no million-row or large workbook claim.",
+      "Original document16 MiB, native10 MiB/250000 chars/10000 parts/4096chars per part/result4 MiB.",
+      "OCR explicit local selection page1-8, one global OCR;120s document job/90s local OCR budget unchanged.",
+      "Raw/mapping/document histories, active jobs, memory/disk reservations and original-upload quotas unchanged.",
+      "Confirmation <=100 targets/100 packages; existing draft-target cap2000 and snapshot scope limits stay.",
+      "Originals immutable, exact-source/actor/site checks, stale409, accepted attempt fences and object hashes stay.",
+      "Table regional units remain needs_input without sourced factor; unknown/formula cells never acquire values.",
+      "No provider/GPU required; existing case_original teacher refusal and global gateway money/privacy guards stay.",
+      "Large retained but unsupported table/PDF remains kept-not-read with reason; no size-limit bypass.",
+      "No stage4 bulk evidence write to unlisted targets; map package recording behaviour remains as E1 defines."
+    ]
+  },
+  "tasks": [
+    {
+      "order": 1,
+      "id": "AU4-B1",
+      "workerHours": [6, 9],
+      "deliver": "Batch intake/attachment/coverage/confirmation/citation contracts, private routes, additive schema.",
+      "files": [
+        "packages/contracts/src/usp/intake.ts",
+        "packages/contracts/src/usp/ingestion.ts",
+        "packages/contracts/src/registry-document-evidence.ts",
+        "packages/contracts/src/usp/packets.ts",
+        "packages/contracts/src/usp/index.ts",
+        "apps/api/src/modules/ingestion/ingestion.controller.ts",
+        "apps/api/src/modules/ingestion/intake-run.controller.ts",
+        "apps/api/src/modules/ingestion/documents.controller.ts",
+        "apps/api/src/modules/ingestion/ingestion.controller.test.ts",
+        "database/sql/95-ingestion/intake-evidence.sql",
+        "database/manifest.json",
+        "packages/server/src/modules/usp/ingestion/intake-migration.ts",
+        "docs/api/openapi.json",
+        "packages/api-client/src/schema.d.ts"
+      ],
+      "check": "Published contract generation/check; nullable coverage and strict confirmation pins; no live services."
+    },
+    {
+      "order": 2,
+      "id": "AU4-B2",
+      "workerHours": [12, 17],
+      "deliver": "Automatic same-case retention/read orchestration, exact-key candidates, closure and counts.",
+      "files": [
+        "packages/server/src/modules/usp/ingestion/service.ts",
+        "packages/server/src/modules/usp/ingestion/intake-service.ts",
+        "packages/server/src/modules/usp/ingestion/intake-ledger.ts",
+        "packages/server/src/modules/usp/ingestion/intake-evidence.ts",
+        "packages/server/src/modules/usp/ingestion/intake-evidence-worker.ts",
+        "packages/server/src/modules/usp/ingestion/intake-evidence.test.ts",
+        "packages/server/src/modules/usp/ingestion/source-fusion-associations-projection.ts",
+        "packages/server/src/modules/usp/ingestion/events.ts",
+        "packages/server/src/modules/cases/processing.ts"
+      ],
+      "check": "Good real exact key or prerequisite; real no-match/conflict; order-independent candidate closure.",
+      "guard": "Own event seam exclusively; new worker remains in existing job authority, no new queue/store service."
+    },
+    {
+      "order": 3,
+      "id": "AU4-B3",
+      "workerHours": [18, 28],
+      "deliver": "Citation authority, stage4/re-pin, excerpt cards and late citation-only correction confirmation.",
+      "files": [
+        "packages/server/src/modules/registry/registry-document-evidence.ts",
+        "packages/server/src/modules/registry/registry-table-evidence.ts",
+        "packages/server/src/modules/registry/registry-metadata.ts",
+        "packages/server/src/modules/registry/registry.ts",
+        "packages/server/src/modules/usp/ingestion/intake-targets.ts",
+        "packages/server/src/modules/usp/ingestion/intake-confirmations.ts",
+        "packages/server/src/modules/usp/ingestion/intake-run-worker.ts",
+        "packages/server/src/modules/usp/snapshots.ts",
+        "packages/server/src/modules/usp/packets/plan-authority.ts",
+        "packages/server/src/modules/usp/packets/plan-citation-authority.ts",
+        "packages/server/src/modules/usp/packets/card-projection.ts",
+        "packages/server/src/modules/usp/packets/card-projection.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-run.test.ts"
+      ],
+      "check": "No pre-review registry write; exact excerpt; stale/cross-site refusal; revision2 before snapshot."
+    },
+    {
+      "order": 4,
+      "id": "AU4-B4",
+      "workerHours": [8, 12],
+      "deliver": "Studio one-case drop, questions/counts/confirmation and cited-card journey; runtime evidence.",
+      "files": [
+        "apps/studio/src/features/intake/AddFilesDialog.tsx",
+        "apps/studio/src/features/intake/BatchEvidence.tsx",
+        "apps/studio/src/features/intake/BatchConfirmation.tsx",
+        "apps/studio/src/features/intake/table/retain.ts",
+        "apps/studio/src/features/intake/table/useRetainTable.ts",
+        "apps/studio/src/features/intake/table/StartJobs.tsx",
+        "apps/studio/src/features/intake/table/TablePage.tsx",
+        "docs/evidence/gf1/au4-build/**"
+      ],
+      "check": "ui-design-check; nonce-only HTTP rehearsal good/difficult real inputs, no fabricated shared key.",
+      "guard": "One runtime/DB owner; <=30min setup, nonce ownership cleanup, no machine-wide inventory assertion."
+    }
+  ],
+  "estimate": {
+    "workerHours": [44, 66],
+    "initialBatchWithoutLateCorrectionHours": [40, 58],
+    "lateCitationOnlyConfirmationHoursIncluded": [4, 8],
+    "qualification": "Engineering estimate; assumes admissible real sources and existing runtime recipes.",
+    "dependencies": "Tasks1 ->2 ->3 ->4, no shared-path writers; no worker dispatched by this audit.",
+    "pathCheck": "New helper/SQL/UI/test filenames proposed; existing contract/loader/dispatcher paths checked."
+  },
+  "measurement": {
+    "performed": false,
+    "reason": "Optional; no verified NYC table+PDF exact-key pair established in permitted development inputs.",
+    "dataRead": "Catalogue/README metadata only; no original table/PDF opened, no key relationship inferred.",
+    "prerequisite": "Owner names admissible dev/test_only table/PDF; verify shared literal from unchanged originals.",
+    "negativeControl": "Permitted unrelated register/PDF can prove no_match only, not a successful building tie.",
+    "safety": "No PostgreSQL/storage/container created or inspected; no provider/GPU/credentials/acquisitions."
+  }
+}
