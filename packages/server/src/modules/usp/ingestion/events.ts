@@ -11,7 +11,7 @@ import { localRequestContext, localOperatorSubject } from '../principal';
 import { appendUspOutboxTx } from '../outbox';
 
 export const INGESTION_EVENT_LIMITS = Object.freeze({
-  connections: 4, perOperator: 2, perCase: 1, page: 32, replay: 256, sources: 256,
+  connections: 16, perOperator: 8, perCase: 4, page: 32, replay: 256, sources: 256,
   eventBytes: 1024, frameBytes: 2048, bufferBytes: 4096, pollMs: 500, heartbeatMs: 10000,
   durationMs: 60000, writeMs: 2000, statementMs: 2000, readMs: 6000, reads: 121,
 });
@@ -106,10 +106,13 @@ export class IngestionResync extends AppError {
 
 const active = new Set<IngestionBinding>();
 export function reserveIngestionReader(binding: IngestionBinding): () => void {
+  if ([...active].filter(item => item.caseId === binding.caseId).length >= INGESTION_EVENT_LIMITS.perCase)
+    throw new AppError(429, 'INGESTION_STREAM_LIMIT',
+      `At most ${INGESTION_EVENT_LIMITS.perCase} pages can follow one batch live. Close another page that shows this batch; this page keeps what it has already shown.`);
   if (active.size >= INGESTION_EVENT_LIMITS.connections
-    || [...active].filter(item => item.subject === binding.subject).length >= INGESTION_EVENT_LIMITS.perOperator
-    || [...active].filter(item => item.caseId === binding.caseId).length >= INGESTION_EVENT_LIMITS.perCase)
-    throw new AppError(429, 'INGESTION_STREAM_LIMIT', 'The bounded local event reader allowance is occupied.');
+    || [...active].filter(item => item.subject === binding.subject).length >= INGESTION_EVENT_LIMITS.perOperator)
+    throw new AppError(429, 'INGESTION_STREAM_LIMIT',
+      `At most ${INGESTION_EVENT_LIMITS.perOperator} pages can follow batches live for one operator. Close one of them.`);
   active.add(binding);
   return () => { active.delete(binding); };
 }
