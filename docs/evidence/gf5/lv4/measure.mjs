@@ -30,43 +30,7 @@ function percentile(values, fraction) {
   return sorted[Math.max(0, Math.ceil(sorted.length * fraction) - 1)] ?? null;
 }
 
-function profileSummary(profile) {
-  const nodes = new Map(profile.nodes.map((node) => [node.id, node]));
-  const parents = new Map();
-  for (const node of profile.nodes) for (const child of node.children || []) parents.set(child, node.id);
-  const groups = {};
-  const functions = {};
-  const totalUs = profile.timeDeltas.reduce((sum, delta) => sum + delta, 0);
-  function category(stack) {
-    if (stack.some((node) => node.callFrame.functionName === 'setBuildings')) return 'setBuildings';
-    if (stack.some((node) => node.callFrame.functionName === 'setBase')) return 'setBase';
-    if (stack.some((node) => node.callFrame.functionName === 'setQueryData')) return 'setQueryData';
-    if (stack.some((node) => /toFootprints|toBase/.test(node.callFrame.functionName))) return 'conversion';
-    if (stack.some((node) => /react-dom|react_jsx|react\.js/.test(node.callFrame.url))) return 'React';
-    return 'other';
-  }
-  profile.samples.forEach((id, index) => {
-    const stack = [];
-    for (let current = id; current; current = parents.get(current)) stack.push(nodes.get(current));
-    const group = category(stack);
-    const delta = profile.timeDeltas[index];
-    groups[group] = (groups[group] || 0) + delta;
-    const leaf = nodes.get(id).callFrame;
-    const url = leaf.url.replace(/^http:\/\/127\.0\.0\.1:\d+\//, '').replace(/\?.*$/, '');
-    const module = url.replace(/^@fs\/.*?\/a2\//, '');
-    const key = `${leaf.functionName || '(anonymous)'} ${module}:${leaf.lineNumber + 1}`;
-    functions[key] = (functions[key] || 0) + delta;
-  });
-  const shares = (entries) => entries.map(([name, us]) => ({ name, ms: us / 1000, percent: 100 * us / totalUs }));
-  return {
-    totalMs: totalUs / 1000,
-    groups: shares(Object.entries(groups)),
-    topSelfFunctions: shares(Object.entries(functions).sort((a, b) => b[1] - a[1]).slice(0, 35)),
-    denominator: 'All sampled main-thread time, including idle; groups exclusive by ancestor priority.',
-  };
-}
-
-function summarize(probe, profile, input) {
+function summarize(probe, input) {
   const chunks = probe.parts.filter((part) => part.type === 'chunk');
   const finalCount = chunks.reduce((sum, part) => sum + part.buildings, 0);
   const firstFinalDraw = probe.calls.find((call) => call.name === 'renderFrame'
@@ -96,7 +60,8 @@ function summarize(probe, profile, input) {
     streamWindow: { from: chunks[0].at, to: drawAt, ms: drawAt - chunks[0].at },
     startToCompleteMs: probe.parts.find((part) => part.type === 'complete').at - probe.start,
     heap: probe.heap, chunks, programs: probe.programs,
-    firstPartDrawAt: probe.firstPartDrawAt, pageLoadToFirstPartDrawnMs: probe.firstPartDrawAt,
+    firstPartDrawAt: probe.firstPartDrawAt,
+    firstPartDrawMeaning: 'First rendered frame with any first-part base ids; full-part completion is in raw acks.',
     warmUp: probe.warmUp,
     longTasks: probe.tasks,
     rawTimingFile: `${scratch}/timings.json`, rawCpuFile: `${scratch}/cpu.cpuprofile`,
@@ -221,7 +186,7 @@ await freePort(port);
 const server = startServer({ root, scratch, port, python });
 try {
   await server.ready;
-  const { probe, profile } = await runBrowser();
+  const { probe } = await runBrowser();
   const bytes = await readFile(pack);
   const git = await new Promise((accept) => {
     const child = spawn('git', ['rev-parse', 'HEAD']);
@@ -230,7 +195,7 @@ try {
     child.once('exit', () => accept(text.trim()));
   });
   const input = { path: pack, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex'), git };
-  const result = summarize(probe, profile, input);
+  const result = summarize(probe, input);
   await writeEvidence(`${evidence}/${capture}.json`, result);
   process.env.LV4_CAPTURE = capture;
   await import('./analyze.mjs');

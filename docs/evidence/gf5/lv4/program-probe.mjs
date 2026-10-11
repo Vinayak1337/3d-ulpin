@@ -1,42 +1,66 @@
-// Installed from instrumentModules before the import mounts its engine. Never changes render state.
-export function probePrograms(engine, probe) {
+// Installed before the import mounts its engine. Never changes render state.
+const describe = (program) => ({
+  id: program.id, name: program.name, type: program.type, cacheKey: program.cacheKey,
+});
+
+function recordPrograms(renderer, probe, programs, seen, phase) {
+  for (const candidate of renderer.info.programs) {
+    if (seen.has(candidate.id)) continue;
+    seen.add(candidate.id);
+    programs.events.push({ at: performance.now(), part: probe.parts.at(-1)?.sequence ?? null,
+      phase, ...describe(candidate) });
+  }
+}
+
+function instrumentCompile(renderer, probe, record) {
+  const compile = renderer.compile;
+  renderer.compile = function (...args) {
+    const at = performance.now();
+    try {
+      return compile.apply(this, args);
+    } finally {
+      record('compile');
+      probe.calls.push({ name: 'compile', at, ms: performance.now() - at });
+    }
+  };
+}
+
+function objectKind(engine, material, object, owner) {
+  if (material.isMeshDepthMaterial) return 'shadow depth';
+  if (object.isInstancedMesh) return 'tree';
+  if (object.userData.entry) return 'building prism';
+  if (object.userData.overlay) return 'overlay';
+  if (material === engine.m.pad) return 'pad';
+  if (object.isLine) return 'kerb/lane/edge line';
+  return owner;
+}
+
+function instrumentDraw(engine, programs, record) {
   const renderer = engine.renderer;
-  const programs = probe.programs = { initial: [], events: [], uses: [], frames: [], final: [] };
-  const seen = new Set();
   const names = new Map(Object.entries(engine.m).map(([name, material]) => [material, name]));
-  const describe = (program) => ({
-    id: program.id, name: program.name, type: program.type, cacheKey: program.cacheKey,
-  });
-  programs.initial = renderer.info.programs.map(describe);
   const original = renderer.renderBufferDirect;
   const materialPrograms = new WeakMap();
   renderer.renderBufferDirect = function (camera, scene, geometry, material, object, group) {
-    const first = !materialPrograms.has(material);
-    const at = first ? performance.now() : 0;
+    const used = materialPrograms.get(material) ?? new Set();
+    const at = performance.now();
     const result = original.call(this, camera, scene, geometry, material, object, group);
     const program = renderer.properties.get(material).currentProgram;
-    if (first && program) {
-      materialPrograms.set(material, program.id);
+    if (program && !used.has(program.id)) {
+      used.add(program.id);
+      materialPrograms.set(material, used);
       const owner = names.get(material) ?? material.type;
-      let kind = owner;
-      if (material.isMeshDepthMaterial) kind = 'shadow depth';
-      else if (object.isInstancedMesh) kind = 'tree';
-      else if (object.userData.entry) kind = 'building prism';
-      else if (object.userData.overlay) kind = 'overlay';
-      else if (material === engine.m.pad) kind = 'pad';
-      else if (object.isLine) kind = 'kerb/lane/edge line';
-      programs.uses.push({ at, ms: performance.now() - at, material: owner, kind,
+      programs.uses.push({ at, ms: performance.now() - at, material: owner,
+        kind: objectKind(engine, material, object, owner),
         objectType: object.type, attributes: Object.keys(geometry.attributes),
         receiveShadow: object.receiveShadow, ...describe(program) });
     }
-    for (const candidate of renderer.info.programs) {
-      if (seen.has(candidate.id)) continue;
-      seen.add(candidate.id);
-      programs.events.push({ at: performance.now(), part: probe.parts.at(-1)?.sequence ?? null,
-        ...describe(candidate) });
-    }
+    record('render');
     return result;
   };
+}
+
+function instrumentFrames(engine, probe, programs) {
+  const renderer = engine.renderer;
   const originalFrame = engine.renderFrame;
   engine.renderFrame = (now) => {
     const at = performance.now();
@@ -53,4 +77,15 @@ export function probePrograms(engine, probe) {
     programs.final = after;
     if (engine.programWarmUp) probe.warmUp = { ...engine.programWarmUp };
   };
+}
+
+export function probePrograms(engine, probe) {
+  const renderer = engine.renderer;
+  const programs = probe.programs = { initial: [], events: [], uses: [], frames: [], final: [] };
+  const seen = new Set();
+  programs.initial = renderer.info.programs.map(describe);
+  const record = (phase) => recordPrograms(renderer, probe, programs, seen, phase);
+  instrumentCompile(renderer, probe, record);
+  instrumentDraw(engine, programs, record);
+  instrumentFrames(engine, probe, programs);
 }

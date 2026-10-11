@@ -2,7 +2,20 @@ import { readFile } from 'node:fs/promises';
 import { writeEvidence } from './evidence-json.mjs';
 
 const directory = 'docs/evidence/gf5/lv4';
-const load = async (name) => JSON.parse(await readFile(`${directory}/${name}.json`, 'utf8'));
+const load = async (name) => {
+  const run = JSON.parse(await readFile(`${directory}/${name}.json`, 'utf8'));
+  if (!run.programs) {
+    const timings = JSON.parse(await readFile(run.rawTimingFile, 'utf8'));
+    run.programs = timings.programs;
+    run.programs.stallTable = run.tasks.map((task) => ({
+      taskAt: task.at, taskMs: task.ms, topSelf: task.topSelf,
+      frame: run.programs.frames.find((frame) => frame.at < task.at + task.ms
+        && frame.at + frame.ms > task.at),
+      firstUses: run.programs.uses.filter((use) => use.at >= task.at && use.at < task.at + task.ms),
+    }));
+  }
+  return run;
+};
 const headless = await load('lv4-before');
 const headed = await load('lv4-before-headed');
 const inventory = headless.programs.final.map((program) => {
@@ -51,8 +64,8 @@ await writeEvidence(`${directory}/step0.json`, {
     withoutExtension: 'After 10 ms isReady returns true unconditionally; first uniform/attribute access can block.',
     shadows: 'No depth preparation for these non-node materials. Three depth variants first appear on part 9.',
     depthPlan: 'Compile BackSide BasicDepthPacking proxies with ordinary/instanced/instanceColor attributes.',
-    depthContext: 'Same light/shadow counts, no fog, linear render-target output; retain materials until renderer teardown.',
-    background: 'Internal sky program is already drawn at metadata, before first feature part; not reproduced as a shader.',
+    depthContext: 'Same light/shadow counts, no fog, linear output; retain materials until engine disposal.',
+    background: 'Internal sky program is already drawn at metadata, before first feature part; not reproduced.',
   },
   limits: [
     'Probe times first material use and program creation without changing any render state.',

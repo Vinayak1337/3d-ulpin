@@ -1,0 +1,19 @@
+{
+  "signature": "Initial warm-up: headed keys use shadow type 2 but real keys use 1; software first draw delayed 692.4 ms.",
+  "baseline": {"headless":"initial-attempt.json:lv4-after","headed":"initial-attempt.json:lv4-headed"},
+  "diagnosis": [
+    "Three 0.186.1 converts PCFSoftShadowMap (2) to PCFShadowMap (1) on its first ordinary render.",
+    "Constructor-time synchronous compile preceded that normalization only on the parallel path.",
+    "Without KHR, compileAsync adds a 10 ms sleep per object but its isReady performs no readiness check."
+  ],
+  "hypothesis": "Wait for the already-requested initial frame on the parallel path; remove ineffective sleeps on fallback.",
+  "oneChange": "Use normalized real shadow state, and renderer.compile plus the real uniform link check once per frame.",
+  "success": "Zero late programs and shader stalls; first and final draw delay versus unchanged baseline at most 200 ms.",
+  "stop": "If this bounded change fails the delay criterion, stop under rule (d); no second warm-up approach.",
+  "stateSafety": "No material, light, shadow, geometry or draw-order setting is changed by the repair.",
+  "result": "Zero late programs and stream long tasks at 1x; first visible frame +214.6 ms software, +131.8 ms GPU.",
+  "decision": "Conservative stop under (d) on the first visible frame; no second tuning approach.",
+  "timingDefinition": "Whole-part completion is separately timed at acknowledgement, not the first partial frame.",
+  "wholePartDeltaMs": {"headless":-238.8,"headed":108},
+  "checkpoint": "Final disposal cleanup has tests and parity, but no further timed run after this stop."
+}
