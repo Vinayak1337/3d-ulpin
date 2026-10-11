@@ -35,7 +35,9 @@ export function confirmablePackages(page: TargetPage): Package[] {
   return page.packages.filter(pkg => pkg.state !== 'COMMITTED' && pkg.reviewFingerprint && pkg.counts.ready > 0);
 }
 
-export function chooseReady(targets: readonly Target[], packages: readonly Package[]): Target[] {
+type ChoiceTarget = Pick<Target, 'targetId' | 'packageId' | 'readiness'>;
+
+export function chooseReady<T extends ChoiceTarget>(targets: readonly T[], packages: readonly Package[]): T[] {
   const permitted = new Set(packages.filter(pkg => pkg.reviewFingerprint && pkg.state !== 'COMMITTED')
     .map(pkg => pkg.packageId));
   const unique = new Map(targets.filter(target => target.readiness === 'ready' && permitted.has(target.packageId))
@@ -43,7 +45,7 @@ export function chooseReady(targets: readonly Target[], packages: readonly Packa
   return [...unique.values()].slice(0, INTAKE_TARGET_LIMITS.confirmationTargets);
 }
 
-export function confirmBody(page: TargetPage, choice: readonly Target[], acknowledgement: string,
+export function confirmBody(page: TargetPage, choice: readonly ChoiceTarget[], acknowledgement: string,
   requestKey: string): ConfirmBody {
   const packages = confirmablePackages(page);
   return {
@@ -54,7 +56,7 @@ export function confirmBody(page: TargetPage, choice: readonly Target[], acknowl
   };
 }
 
-export function confirmationIds(targets: readonly Target[]): string[] {
+export function confirmationIds(targets: readonly Pick<Target, 'confirmationId'>[]): string[] {
   return [...new Set(targets.flatMap(target => target.confirmationId ? [target.confirmationId] : []))];
 }
 
@@ -63,7 +65,8 @@ export function countsLine(counts: TargetPage['counts']): string {
     .map(readiness => `${counts[readiness]} ${readinessLabels[readiness].toLowerCase()}`).join(' · ');
 }
 
-export function shouldRefetch(progress: readonly Target[], lastActivity: number, now: number): boolean {
+export function shouldRefetch(progress: readonly Pick<Target, 'readiness'>[], lastActivity: number,
+  now: number): boolean {
   return progress.some(target => !['carded', 'stopped'].includes(target.readiness)) && now - lastActivity >= 5000;
 }
 

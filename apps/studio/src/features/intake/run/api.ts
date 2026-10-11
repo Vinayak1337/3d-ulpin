@@ -1,10 +1,21 @@
 import { api, unwrap, ApiError } from '@ulpin/api-client';
-import type { Confirmation, ConfirmBody, Readiness, Target, TargetPage } from './model';
+import { chooseReady, confirmablePackages, INTAKE_TARGET_LIMITS,
+  type Confirmation, type ConfirmBody, type Readiness, type Target, type TargetPage } from './model';
 
 export async function readTargets(caseId: string, readiness?: Readiness, cursor?: string): Promise<TargetPage> {
   return unwrap(await api.GET('/api/v1/ingestion/cases/{caseId}/targets', {
     params: { path: { caseId }, query: { ...(readiness ? { readiness } : {}), ...(cursor ? { cursor } : {}) } },
   })) as TargetPage;
+}
+
+export async function readFirstReady(caseId: string): Promise<Target[]> {
+  let page = await readTargets(caseId, 'ready');
+  let choice = chooseReady(page.items, confirmablePackages(page));
+  while (page.nextCursor && choice.length < INTAKE_TARGET_LIMITS.confirmationTargets) {
+    page = await readTargets(caseId, 'ready', page.nextCursor);
+    choice = chooseReady([...choice, ...page.items], confirmablePackages(page));
+  }
+  return choice;
 }
 
 export async function readConfirmation(caseId: string, confirmationId: string): Promise<Confirmation> {

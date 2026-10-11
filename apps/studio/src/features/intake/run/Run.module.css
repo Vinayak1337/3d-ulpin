@@ -16,6 +16,12 @@
   gap: var(--ui-space-3);
 }
 
+.targetList {
+  max-height: 48vh;
+  overflow-y: auto;
+  padding: var(--ui-space-2);
+}
+
 .package,
 .target {
   border-bottom: 1px solid var(--ui-divider);

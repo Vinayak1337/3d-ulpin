@@ -1,4 +1,5 @@
-import { countsLine, type Package, type Target } from './model';
+import { CopyableId } from '../../identity/CopyableId';
+import { countsLine, type Package } from './model';
 import styles from './Run.module.css';
 
 const findingWords: Record<string, string> = {
@@ -21,28 +22,27 @@ export function Findings({ counts }: { counts: Package['findingCounts'] }) {
   </ul>;
 }
 
-export function PackageDetails({ pkg, targets, confirming = false }: {
-  pkg: Package; targets: readonly Target[]; confirming?: boolean;
+export function PackageDetails({ pkg, reasons = [], confirming = false }: {
+  pkg: Package; reasons?: readonly string[]; confirming?: boolean;
 }) {
-  const reasons = [...new Set(targets.filter(target => target.packageId === pkg.packageId)
-    .flatMap(target => target.reason ? [target.reason] : []))];
   return <div className={styles.package}>
-    <h3 className="studio-heading">Package <span className="ul-mono">{pkg.packageId}</span></h3>
+    <h3 className="studio-heading">Package <CopyableId id={pkg.packageId} name="package identifier" /></h3>
     <p className="ul-help">Revision {pkg.revision}</p>
     <p>{confirming ? `${pkg.counts.ready} ready buildings will be recorded.` : countsLine(pkg.counts)}</p>
     <Findings counts={pkg.findingCounts} />
-    {!pkg.reviewFingerprint ? <>
+    {pkg.state === 'COMMITTED' ? <p>This package is already recorded.</p> : null}
+    {!pkg.reviewFingerprint && pkg.state !== 'COMMITTED' ? <>
       <p>Not ready to confirm: this package has no review of its current revision.</p>
       {reasons.map(reason => <p key={reason}>{reason}</p>)}
     </> : null}
   </div>;
 }
 
-export function Packages({ packages, targets, truncated }: {
-  packages: readonly Package[]; targets: readonly Target[]; truncated: boolean;
+export function Packages({ packages, reasons, truncated }: {
+  packages: readonly Package[]; reasons: Record<string, string[]>; truncated: boolean;
 }) {
   return <div className={styles.stack}>
-    {packages.map(pkg => <PackageDetails key={pkg.packageId} pkg={pkg} targets={targets} />)}
+    {packages.map(pkg => <PackageDetails key={pkg.packageId} pkg={pkg} reasons={reasons[pkg.packageId]} />)}
     {truncated ? <p>More packages belong to this batch than this read lists. Only the listed packages can be
       named in this confirmation.</p> : null}
   </div>;

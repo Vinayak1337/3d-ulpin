@@ -6,7 +6,7 @@ import styles from './Run.module.css';
 export function ArtefactLinks({ target, onOpen }: { target: Target; onOpen?: () => void }) {
   const { record, card, verification } = target.artefacts;
   return <span className={styles.links}>
-    {record ? <Link className="ul-btn" to={`/studio/records/${record.id}`} onClick={onOpen}>
+    {record ? <Link className="ul-btn" to={`/studio/properties/${target.featureId}/register`} onClick={onOpen}>
       Open record
     </Link> : null}
     {card ? <>
