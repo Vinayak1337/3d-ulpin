@@ -12,7 +12,7 @@ export const CONVERSIONS = [
 ] as const;
 export const limitations = [
   'Only bounded GeoJSON building polygons are supported by this manual profile; other formats and target concepts are unsupported.',
-  'Height, geometry role, floor levels, ownership and official issuance are unknown. No height or regional-unit conversion is qualified without retained unit and meaning evidence.',
+  'Height is unknown unless the layout states a field, its source unit and its meaning. Geometry role, floor levels, ownership and official issuance remain unknown.',
   'This synchronous manual path does not qualify queued streaming, model proposals, held-out accuracy, PII egress or GF-AGENT.',
 ];
 const escape = (key: string) => key.replaceAll('~', '~0').replaceAll('/', '~1');
@@ -54,8 +54,17 @@ export function inspectedProfile(bytes: Uint8Array, inspection: GisInspection) {
   return {version: INGESTION_VERSION, format: 'geojson' as const, featureCount: rows.length, crs, geometryTypes: inspection.geometryTypes,
     paths, limitations, schemaFingerprint: sha256(JSON.stringify({version: INGESTION_VERSION, crs, geometryTypes: inspection.geometryTypes, paths: paths.map(p => ({path: p.path, types: p.types}))}))};
 }
+function heightMapping(plan: MappingPlan, profile: SourceProfile): Partial<Mapping> {
+  if (plan.heightField === undefined) return {};
+  if (!plan.heightUnit || !plan.heightMeaning?.trim())
+    throw new AppError(422, 'MAPPING_HEIGHT', 'State the height field, its source unit and its meaning together.');
+  const path = profile.paths.find(item => item.path === `/features/*/properties/${escape(plan.heightField!)}`);
+  if (!path || path.types.some(type => !['number', 'string'].includes(type)))
+    throw new AppError(422, 'MAPPING_HEIGHT', 'Choose an inspected numeric or text height attribute; null and absent values remain unknown.');
+  return {heightField: plan.heightField, heightUnit: plan.heightUnit, heightMeaning: plan.heightMeaning};
+}
 export function compileMapping(plan: MappingPlan, profile: SourceProfile): Mapping {
-  const mapping: Mapping = {kind: 'building', geometryRole: 'unknown'};
+  const mapping: Mapping = {kind: 'building', geometryRole: 'unknown', ...heightMapping(plan, profile)};
   for (const operation of plan.operations) {
     const definition = CONVERSIONS.find(item => item.id === operation.conversionId && item.target === operation.target);
     const path = profile.paths.find(item => item.path === operation.sourcePath);
