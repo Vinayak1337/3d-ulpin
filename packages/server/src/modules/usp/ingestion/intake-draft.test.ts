@@ -187,6 +187,65 @@ for (const [name, modify] of [
     assert(intakeDraftLimit(item(), src));
   });
 }
+test('a GeoPackage refusal names its direct route, bounds and missing recipe/citation support', async () => {
+  const fixture = protocol();
+  fixture.src.profile = 'large-original-v1';
+  fixture.src.inspection = {};
+  fixture.tray.card = { format: 'geopackage', family: 'vector', crs: { state: 'absent' } } as DraftItem['card'];
+  const expected = 'This GeoPackage can be imported through POST /api/v1/import-packages with format=gpkg '
+    + 'and one selected layer within 16 MiB and 2000 features; intake recipe drafting and '
+    + 'decoded binary-record citations for its card are not built.';
+  assert.equal(intakeDraftLimit(fixture.tray, fixture.src), expected);
+  await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+  assert.equal(fixture.state.projection.limit_reason, expected);
+  assert.equal(fixture.jobs.length, 0);
+});
+
+test('a grouped shapefile ZIP names the existing selected-set import without claiming intake fan-out', async () => {
+  const fixture = protocol();
+  fixture.src.profile = 'large-original-v1';
+  fixture.src.inspection = {};
+  fixture.tray.family = 'archive';
+  fixture.tray.card = {
+    format: 'zip', family: 'archive', members: [{ format: 'shapefile' }],
+  } as DraftItem['card'];
+  const expected = 'This shapefile needs its matching .shp/.shx/.dbf/.prj set in a ZIP for '
+    + 'POST /api/v1/import-packages with format=shapefile_zip and one selected set within 16 MiB '
+    + 'and 2000 features; intake recipe drafting and decoded binary-record citations for its card are not built.';
+  assert.equal(intakeDraftLimit(fixture.tray, fixture.src), expected);
+  assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
+  assert.equal(fixture.state.events, 0, 'Archive roots have no automatic draft transition today.');
+  assert.equal(fixture.jobs.length, 0);
+});
+
+test('a KML refusal distinguishes its native inspection route from an unbuilt map-package adapter', async () => {
+  const fixture = protocol();
+  fixture.src.profile = 'kml-native-v1';
+  fixture.src.inspection = {};
+  fixture.tray.card = { format: 'kml', family: 'vector', crs: { state: 'absent' } } as DraftItem['card'];
+  const expected = 'This KML/KMZ has a native-inspection route at POST /api/v1/ingestion/cases/:caseId/kml '
+    + 'within 16 MiB; no area-import adapter or intake recipe drafts its map package or card.';
+  assert.equal(intakeDraftLimit(fixture.tray, fixture.src), expected);
+  await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+  assert.equal(fixture.state.projection.limit_reason, expected);
+  assert.equal(fixture.jobs.length, 0);
+});
+
+test('oversized GeoJSON names retention only and does not promise a larger direct import', async () => {
+  const fixture = protocol();
+  fixture.src.profile = 'large-original-v1';
+  fixture.src.bytes = 16777217;
+  fixture.src.inspection = {};
+  fixture.tray.card = { format: 'geojson', family: 'vector', crs: { state: 'absent' } } as DraftItem['card'];
+  const expected = 'This GeoJSON original has 16777217 bytes, above the 16777216-byte intake drafting '
+    + 'and POST /api/v1/import-packages bound; /api/v1/ingestion/cases/:caseId/uploads can retain it, '
+    + 'but no package or card is drafted from this oversized original.';
+  assert.equal(intakeDraftLimit(fixture.tray, fixture.src), expected);
+  await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+  assert.equal(fixture.state.projection.limit_reason, expected);
+  assert.equal(fixture.jobs.length, 0);
+});
+
 test('draft scope refuses a missing or conflicting CRS', () => {
   const tray = item();
   tray.card = null;
