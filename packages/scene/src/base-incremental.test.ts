@@ -106,6 +106,7 @@ describe('base whole-list incremental reconciliation', () => {
     engine.setBase(inputs);
     draw(engine);
     const batch = { inputs: new Map(), parcel: null, roadKerbs: null, sidewalkKerbs: null, lanes: null };
+    synchronous.baseInputs = inputs;
     for (const input of inputs) synchronous.addBaseEntry(input, batch);
     synchronous.rebuildBaseLines(batch);
     synchronous.refreshBase();
@@ -120,6 +121,19 @@ describe('base whole-list incremental reconciliation', () => {
       expect(entry.mesh.geometry.getAttribute('position').array)
         .toEqual(reference.mesh.geometry.getAttribute('position').array);
     }
+  });
+
+  it('keeps derived land order equal to the wanted list without rebuilding unchanged surfaces', () => {
+    const engine = fixture();
+    const first = feature('first', 'public_land');
+    const second = feature('second', 'public_land');
+    engine.setBase([first, second]);
+    draw(engine);
+    const build = vi.spyOn(engine, 'addBaseEntry');
+    engine.setBase([second, first]);
+    expect(engine.lands.map((land: { id: string }) => land.id)).toEqual(['second', 'first']);
+    expect(build).not.toHaveBeenCalled();
+    expect(engine.baseQueue.size).toBe(0);
   });
 
   it('retains old surfaces and line batches when a new part arrives', () => {

@@ -490,7 +490,7 @@ export class SceneEngine {
     for (const input of wanted.values()) if (!this.baseEntries.has(input.id)) arriving.push(input);
     for (const batch of this.replaceBaseQueue(arriving)) dirty.add(batch);
     for (const batch of dirty) this.rebuildBaseLines(batch);
-    if (dirty.size) this.refreshBase();
+    if (dirty.size || !this.baseQueue.size) this.refreshBase();
     if (this.baseQueue.size) this.notifyDrain = true;
     this.requestRender();
   }
@@ -514,7 +514,7 @@ export class SceneEngine {
   }
 
   private refreshBase() {
-    this.updateBaseDerived([...this.baseEntries.values()].map((entry) => entry.input));
+    this.updateBaseDerived(this.baseInputs.filter((input) => this.baseEntries.has(input.id)));
     this.apply();
     this.followArrivedContent();
   }
