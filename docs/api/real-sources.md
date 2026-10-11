@@ -1,5 +1,6 @@
 # Official source index and retained dataset catalogue
 
+<<<<<<< HEAD
 ## DA4 NYC second-area buildings — 11 October 2026 IST
 
 - **Dataset `5zhs-2jue`, BUILDING:** NYC Office of Technology and Innovation (OTI),
@@ -18,6 +19,26 @@
   Publisher-linked [Terms of Use](https://opendata.cityofnewyork.us/overview/#termsofuse) are not a licence grant.
   No selection/removal of columns, conversion, altered original, import, upload, provider call or runtime gate.
   No existing NYC dataset directory changed. Owner permission review remains necessary before broader use.
+=======
+## DA5 small GeoJSON with a declared projected coordinate system — 11 October 2026 IST
+
+- **`Niagara_Falls_Condominiums_7254610803234545967.geojson`:** City of Niagara Falls,
+  [publisher-default GeoJSON][da5-export], 157,817 bytes, unchanged under
+  `E:/BhuAayam-data/datasets/map-formats/niagara-falls/`, with a sibling receipt.
+  Foreign `test_only`; [Open Government Licence–Niagara Falls 1.0][da5-terms] re-read for this dataset.
+  [File table and screening](../evidence/gf1/da5/report.md) and
+  [exact URLs, receipts, property types and counts](../evidence/gf1/da5/result.json) record original bytes.
+  FeatureCollection with 155 features: 152 Polygon, 3 MultiPolygon, 0 null.
+  Literal member: `"crs":{"type":"name","properties":{"name":"EPSG:2958"}}`; no CRS option requested.
+  These are condominium property parcels, including application-stage parcels, not surveyed building footprints.
+  OBJECTID, AREA_SQM and LENGTH_M each have 155 distinct non-empty values on 155 features; no identifier chosen.
+  All property rows screened; development/address names and plan URLs, no personal data found.
+  Two file fetches: the first facility export was excluded for personal dedications and not kept.
+  Pre-existing originals unchanged; no conversion, import, upload, provider, learning or GF1 runtime qualification.
+
+[da5-export]: https://hub.arcgis.com/api/download/v1/items/f657095d520a421a93f0eec753027c29/geojson?layers=0
+[da5-terms]: https://open.niagarafalls.ca/pages/terms-of-use
+>>>>>>> task/da5-small-file-declared-crs
 
 ## DA3 NYC publisher height-field metadata — 11 October 2026 IST
 

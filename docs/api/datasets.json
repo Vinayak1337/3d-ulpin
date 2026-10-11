@@ -9536,6 +9536,41 @@
       ]
     },
     {
+      "id": "da5-niagara-small-declared-crs-geojson-20261011",
+      "classification": "test_only",
+      "originKind": "foreign_authority_issuing_portal_generated_export",
+      "issuer": "City of Niagara Falls",
+      "geography": "Niagara Falls, Ontario, Canada; foreign development only",
+      "manifest": "docs/evidence/gf1/da5/result.json",
+      "guide": "docs/evidence/gf1/da5/report.md",
+      "sourceCount": 1,
+      "sourceFamilies": 1,
+      "totalOriginalBytes": 157817,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/datasets/map-formats",
+        "itemsPointer": "/assets/0",
+        "formats": ["GeoJSON"],
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "state": "confirmed",
+        "reference": "https://open.niagarafalls.ca/pages/terms-of-use",
+        "limitations": "Open Government Licence - Niagara Falls 1.0 re-read for this dataset; attributed test_only."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "Unchanged portal-default GeoJSON; 157817 bytes, 155 features: 152 Polygon, 3 MultiPolygon, 0 null.",
+        "Top-level crs names EPSG:2958; projected declaration inspected, no conversion or import.",
+        "Condominium property parcels include application-stage records; not surveyed building footprints.",
+        "OBJECTID, AREA_SQM and LENGTH_M each distinct non-empty 155/155; no identifier chosen.",
+        "Missing/repeated parcel keys and nulls preserved; no persons, contacts or personal remarks found.",
+        "Two file fetches; facility export excluded for personal dedications and not kept.",
+        "No Indian operational, accuracy, rights, learning, provider or GF1 runtime qualification."
+      ]
+    },
+    {
       "id": "da3-nyc-oti-building-field-metadata-20261011",
       "classification": "test_only",
       "originKind": "foreign_authority_public_metadata",
