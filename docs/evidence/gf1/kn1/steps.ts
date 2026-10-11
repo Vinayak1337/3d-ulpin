@@ -164,7 +164,7 @@ function bytes(name: string) {
   return original;
 }
 
-async function tickJob(jobId: string, allowRefusal = false) {
+async function tickJob(jobId: string) {
   let timer: ReturnType<typeof setTimeout>;
   const completion = new Promise<void>((resolve, reject) => {
     timer = setTimeout(() => reject(new Error('Dispatcher exceeded the 90-second observation bound.')), 90000);
@@ -174,7 +174,7 @@ async function tickJob(jobId: string, allowRefusal = false) {
     await dispatchTick();
     await completion;
     const job = (await query('SELECT operation,status,error,payload FROM jobs WHERE id=$1', [jobId])).rows[0];
-    if (!allowRefusal) assert.equal(job.status, 'succeeded', JSON.stringify(job));
+    assert.equal(job.status, 'succeeded', JSON.stringify(job));
     return job;
   } finally {
     clearTimeout(timer!);
@@ -182,12 +182,12 @@ async function tickJob(jobId: string, allowRefusal = false) {
   }
 }
 
-async function drainJobs(allowRefusal = false) {
+async function drainJobs() {
   const jobs = [];
   for (let index = 0; index < 30; index++) {
     const queued = (await query(`SELECT id FROM jobs WHERE status='queued' ORDER BY created_at,id LIMIT 1`)).rows[0];
     if (!queued) return jobs;
-    jobs.push(await tickJob(queued.id, allowRefusal));
+    jobs.push(await tickJob(queued.id));
   }
   throw new Error('Dispatcher exceeded the 30-job bounded walk.');
 }

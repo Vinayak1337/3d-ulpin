@@ -3,7 +3,8 @@
 Branch: `task/kn1-layout-states-kind-and-height`, base `217f46f2`.
 Product commits: `ad4502f3`, `755ce429`, `a9fbd0d6`; harness/contract: `7d755cfe`.
 
-**Missing:** K1/K3/K4 kind support and the five-package automatic intake walk require compatibility guards in two unowned files.
+**Missing:** K1/K3/K4 kind support and the five-package automatic intake walk require compatibility guards
+in two unowned files.
 
 - `packages/contracts/src/usp/streamed-profile.ts:57`: keep streamed-prefix operations/semantic targets on the
   legacy building target schema; widening the shared bounded-manual operation otherwise breaks its meanings map.
