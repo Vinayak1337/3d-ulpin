@@ -11,7 +11,7 @@ export function isRetainedMapOriginal(source: {
 }): boolean {
   const inspection = object(source.inspection);
   if (source.profile === 'large-original-v1') {
-    const parsed = StreamedMapOriginalReceiptSchema.safeParse(inspection?.streamedMapOriginal);
+    const parsed = StreamedMapOriginalReceiptSchema.safeParse(inspection?.streamedMapReceipt);
     const upload = object(inspection?.largeOriginal);
     if (!parsed.success) return false;
     const receipt = parsed.data;

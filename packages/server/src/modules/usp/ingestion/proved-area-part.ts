@@ -113,7 +113,7 @@ export async function prepareProvedAreaPartTx(client: PoolClient, input: ProvedA
   if (!latest || !isRetainedMapOriginal(source) || source.profile !== 'large-original-v1'
     || source.revision !== input.sourceRevision || source.sha256 !== input.sourceSha256)
     conflict('The exact sealed retained original changed before part import.');
-  const receipt = StreamedMapOriginalReceiptSchema.parse(source.inspection.streamedMapOriginal);
+  const receipt = StreamedMapOriginalReceiptSchema.parse(source.inspection.streamedMapReceipt);
   const { plan, mapping } = await approvedPartLayoutTx(client, input, source);
   if (plan.rawJobId !== receipt.rawJobId || input.readerVersion !== receipt.readerVersion)
     conflict('The approved layout and receipt name different raw readers.');

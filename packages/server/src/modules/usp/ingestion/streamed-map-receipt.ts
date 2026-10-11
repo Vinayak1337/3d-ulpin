@@ -73,6 +73,6 @@ export async function writeSealedMapReceiptTx(client: PoolClient, input: Streami
   if (state.sealed_chunks !== receipt.parts || state.next_publish_index !== receipt.parts
     || state.records !== receipt.features || state.accepted !== receipt.accepted
     || state.quarantined !== receipt.quarantined) conflict('The reader totals differ from its sealed manifest.');
-  await client.query(`UPDATE sources SET inspection=jsonb_set(inspection,'{streamedMapOriginal}',$2::jsonb)
+  await client.query(`UPDATE sources SET inspection=jsonb_set(inspection,'{streamedMapReceipt}',$2::jsonb)
     WHERE id=$1`, [input.sourceId, JSON.stringify(receipt)]);
 }
