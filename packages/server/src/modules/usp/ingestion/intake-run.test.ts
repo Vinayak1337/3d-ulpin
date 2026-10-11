@@ -66,6 +66,7 @@ test('a product refusal stops, while infrastructure faults are retried by the au
   assert.deepEqual(intakeRunRefusal(new AppError(409, 'USP_STALE_TARGET', 'Pin moved.')),
     { code: 'USP_STALE_TARGET', message: 'Pin moved.' });
   assert.equal(intakeRunRefusal(new AppError(503, 'UNAVAILABLE', 'Timeout.')), null);
+  assert.equal(intakeRunRefusal(new AppError(408, 'BODY_TIMEOUT', 'Timeout.')), null);
   assert.equal(intakeRunRefusal(new Error('Socket closed.')), null);
   const invalid = z.string().safeParse(0);
   assert(!invalid.success);

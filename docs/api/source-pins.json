@@ -435,7 +435,7 @@
     "packages/server/src/modules/usp/ingestion/intake-migration.ts": "0541d76c97bbf39f8d9e9799c2e66f4b97a01b2c021d88f01b16294ae714541f",
     "packages/server/src/modules/usp/ingestion/intake-parquet.ts": "8c74542f3c67a817db5c700daff31555af7630afb28c350b35bddee44fb25a32",
     "packages/server/src/modules/usp/ingestion/intake-probe.ts": "8588ec84efa7f3929c32ef5c550b16ba3677446ee33cae7a06d59283ab9205ab",
-    "packages/server/src/modules/usp/ingestion/intake-run-worker.ts": "c80ca6ffd243ed11cae8ae6fa4af4b4f97e6aa01b4f1a0b422b23f6f9bbdf5d3",
+    "packages/server/src/modules/usp/ingestion/intake-run-worker.ts": "5736684077a0a81bcf18c45dbf304977c2602d8460121c902d46e0b5626b687e",
     "packages/server/src/modules/usp/ingestion/intake-run.ts": "eaabcea72bd8a0e3b5de904bc9a654e85b9de1e4953a948cf66a0b80cf2f2248",
     "packages/server/src/modules/usp/ingestion/intake-service.ts": "575ed101f2b04d667c1968e389ab77251d4e40ff774de732c3d1b6a4a72ddd25",
     "packages/server/src/modules/usp/ingestion/intake-signatures.ts": "6dfba02f227a6c02ff1b56bcb2e917ae0b678552b4219c1690462488ae6be208",

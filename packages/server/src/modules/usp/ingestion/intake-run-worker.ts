@@ -41,7 +41,9 @@ function refuse(code: string, message: string): never {
 /** A refusal is the product saying no; anything else is the infrastructure, which the authority retries. */
 export function intakeRunRefusal(error: unknown): { code: string; message: string } | null {
   if (error instanceof ZodError) return { code: 'INTAKE_RUN_INPUT', message: error.issues[0]?.message ?? 'Invalid.' };
-  if (error instanceof AppError && error.status < 500) return { code: error.code, message: error.message };
+  if (error instanceof AppError && error.status < 500 && error.status !== 408) {
+    return { code: error.code, message: error.message };
+  }
   return null;
 }
 
