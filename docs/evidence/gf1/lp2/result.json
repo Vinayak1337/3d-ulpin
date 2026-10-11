@@ -1,0 +1,41 @@
+{
+  "task":"LP2","gate":"GF1","status":"qualified_for_new_bounded_geojson_imports_not_large_source_admission",
+  "base":"b5155c2fcd3cfdcb0793526e8bed17bb1b85a9e0","implementation":"1d0e6e04",
+  "proof":{"readerTriples":{"nyc":1662,"niagaraFirst":1000,"niagaraLast":1000},"acceptedNycExcerptComparisons":1661,"fixtureByteComparisons":2,"postgresRecordedBuildings":1661,"rangeVerifiedCards":3,"wholeVerifiedCards":3,"pairedByteIdenticalCards":3,"directPacketsIdentical":3,"unframedFallbackFeatures":1661,"providers":0},
+  "inputs":[
+    {"name":"NYC buildings","bytes":1103282,"sha256":"107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e","use":"import and record; index 1322 quarantined for documented self-intersection; indexes 0,1620,1661 to cards"},
+    {"name":"Niagara Falls","bytes":26660992,"sha256":"31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521","use":"bytes only; first/last 1000 triples; final-feature pure extraction"},
+    {"name":"Halifax","bytes":107832285,"sha256":"d94886859416fa97c160e11dd5785b73bf064e47e92b5916f3d64b301f62cff9","use":"bytes only; final-feature pure extraction"}
+  ],
+  "costs":[
+    {"name":"NYC","wholeMs":11.434,"rangeMs":0.284,"rangeBytes":885,"wholePeakRssKiB":181228,"rangePeakRssKiB":177504},
+    {"name":"Niagara Falls","wholeMs":204.913,"rangeMs":0.289,"rangeBytes":700,"wholePeakRssKiB":230224,"rangePeakRssKiB":161848},
+    {"name":"Halifax","wholeMs":868.834,"rangeMs":0.316,"rangeBytes":826,"wholePeakRssKiB":531804,"rangePeakRssKiB":151780}
+  ],
+  "costQualification":"One fresh-process pure-function sample per file; peak RSS includes module startup; range measurement loads only span; equal final excerpts independently checked; no statistics/throughput promise.",
+  "runtime":"runtime-final.json","firstRuntime":"runtime.json","runtimeQualification":"Own nonce-labelled tmpfs PostgreSQL plus CAR-pattern in-memory loopback S3 with exact HTTP ranges; six actual issued cards. Paired plan/hash, packet, card content and seeded PDF use shared issued metadata, not independent identical issuance.",
+  "integrity":{"whole":"whole count/hash against receipt at every assessment","range":"retained/live receipt key/count/revision/access plus exact span hash, from import bytes whose whole receipt hash was verified/computed; no rehash outside range","notProved":"same-size corruption outside the range; real large-original admission; MinIO throughput"},
+  "checks":[
+    {"command":"git status --short (first)","exit":0,"result":"clean"},
+    {"command":"node docs/evidence/gf1/fx2/refresh.mjs --refresh","exit":0},
+    {"command":"isolated preload pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf1/lp2/measure.ts <0|1|2>","exit":0},
+    {"command":"isolated preload pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/areas/source-range.test.ts","exit":0,"tests":4},
+    {"command":"isolated preload pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/packets/*.test.ts packages/server/src/modules/registry/feature-reference.test.ts packages/server/src/modules/areas/retained-case-binding.test.ts packages/server/src/modules/areas/native-review.test.ts packages/server/src/modules/areas/exterior-records.test.ts packages/server/src/modules/areas/exterior-records-commit.test.ts packages/server/src/modules/usp/ingestion/intake-run.test.ts","exit":0,"tests":166,"skips":0},
+    {"command":"isolated preload pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf1/lp2/nyc-equivalence.ts","exit":0},
+    {"command":"node docs/evidence/gf1/lp2/run-runtime.mjs docs/evidence/gf1/lp2/runtime.json","exit":0},
+    {"command":"node docs/evidence/gf1/lp2/run-runtime.mjs docs/evidence/gf1/lp2/runtime-final.json","exit":0},
+    {"command":"isolated preload pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf1/lp2/locate-cost-ranges.ts","exit":0},
+    {"command":"isolated preload pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf1/lp2/measure-range.ts <0|1|2>","exit":0},
+    {"command":"isolated preload pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf1/lp2/compare-cost-excerpts.ts","exit":0},
+    {"command":"pnpm typecheck:backend","exit":0},
+    {"command":"isolated preload pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts","exit":0},
+    {"command":"isolated preload pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check","exit":0},
+    {"command":"isolated preload pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts b5155c2fcd3cfdcb0793526e8bed17bb1b85a9e0","exit":0},
+    {"command":"PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py","exit":0},
+    {"command":"git diff --check","exit":0},
+    {"command":"awk new TS/MJS file line lengths >120","exit":0,"violations":0},
+    {"command":"node docs/evidence/gf1/lp2/check.mjs","exit":0}
+  ],
+  "preload":"NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false",
+  "gaps":["large-original-v1 remains ineligible; next task supplies exact receipt and locator from reader records","no existing features backfilled","card projection/verification and registry eligibility require no map I/O changes","original downloads remain whole; native decoded records unchanged","API source pins must regenerate on integration; additive interface reference already rides existing import-package responses"]
+}
