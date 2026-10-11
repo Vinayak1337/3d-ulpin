@@ -171,6 +171,8 @@ async function countsTx(client: PoolClient, caseId: string) {
   const packages = new Map<string, PackageCounts>();
   const drafted = (await client.query(`SELECT p.id AS package_id,min(i.item_id::text) AS anchor_item_id
     FROM usp_intake_items i JOIN import_packages p ON p.id::text=i.plan_ref->>'packageId'
+      OR EXISTS (SELECT 1 FROM usp_intake_parts part WHERE part.item_id=i.item_id
+        AND part.state='published' AND part.result_ref->>'packageId'=p.id::text)
     WHERE i.case_id=$1 GROUP BY p.id ORDER BY p.id`, [caseId])).rows;
   for (const row of drafted) packages.set(row.package_id,
     { anchorItemId: row.anchor_item_id, counts: emptyCounts() });

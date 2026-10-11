@@ -1,0 +1,12 @@
+✔ import locators equal reader records on real bytes: E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson (5718.8914ms)
+✔ import locators equal reader records on real bytes: E:/BhuAayam-data/datasets/map-formats/niagara-falls/Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson (128625.7262ms)
+✔ quarantine does not renumber accepted indexes; one unpaired candidate discards all ranges (4643.1408ms)
+✔ valid JSON not framed by reader gets no ranges, without rejecting the import input (13.3981ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 140169.9426

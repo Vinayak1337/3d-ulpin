@@ -3,7 +3,8 @@ import { INTAKE_CARD_VERSION, IntakeItemSchema, IntakeItemPlanSchema, type Intak
 import { fingerprint } from '../../cases/domain';
 import { intakeSizeClass, intakeWave } from './intake-probe';
 import type { IntakeSourceRow } from './intake-context';
-import { notFound } from '../../../infrastructure/errors';
+import { conflict, notFound } from '../../../infrastructure/errors';
+import type { ImportPackage } from '@ulpin/contracts';
 import { appendIntakeItemTx } from './events';
 
 /** Metadata registration only. It adds/changes no source and deliberately does not advance case revision. */
@@ -63,6 +64,34 @@ export async function readIntakeDraftTx(client: PoolClient, caseId: string, item
     WHERE case_id=$1 AND item_id=$2 FOR UPDATE`, [caseId, itemId])).rows[0] ?? notFound('Intake draft not found.');
   return { state: row.state, placement: row.placement, planRef: row.plan_ref,
     recordsSeen: Number(row.records_seen), limitReason: row.limit_reason };
+}
+
+/** A cut and its package are one transaction. Large items never put one package ID in their plan. */
+export async function publishIntakePartTx(client: PoolClient, itemId: string, partIndex: number,
+  pkg: ImportPackage, locator: Record<string, unknown>, counts: Record<string, unknown>) {
+  const item = (await client.query('SELECT * FROM usp_intake_items WHERE item_id=$1 FOR UPDATE', [itemId])).rows[0]
+    ?? notFound('The intake item is unavailable.');
+  if (item.parent_item_id || !pkg.sourceRevisionIds.includes(item.source_id))
+    conflict('The package does not belong to this original intake item.');
+  const prior = (await client.query('SELECT * FROM usp_intake_parts WHERE item_id=$1 AND part_index=$2 FOR UPDATE',
+    [itemId, partIndex])).rows[0];
+  const result = { packageId: pkg.id };
+  if (prior) {
+    if (prior.state !== 'published' || fingerprint(prior.locator) !== fingerprint(locator)
+      || fingerprint(prior.counts) !== fingerprint(counts) || fingerprint(prior.result_ref) !== fingerprint(result))
+      conflict('The retained package part differs from its exact replay.');
+    return;
+  }
+  const next = Number((await client.query('SELECT count(*)::int n FROM usp_intake_parts WHERE item_id=$1',
+    [itemId])).rows[0].n);
+  if (partIndex !== next) conflict('An intake package part cannot skip the original cut order.');
+  if (!Number.isSafeInteger(counts.recordsSeen) || Number(counts.recordsSeen) < 0)
+    conflict('The published package part needs the exact closed reader count.');
+  await client.query(`INSERT INTO usp_intake_parts(item_id,part_index,locator,state,counts,result_ref)
+    VALUES($1,$2,$3,'published',$4,$5)`, [itemId, partIndex, locator, counts, result]);
+  await client.query(`UPDATE usp_intake_items SET parts_done=parts_done+1,state='reading',placement='on_map',
+    records_seen=GREATEST(records_seen,$2),updated_at=now() WHERE item_id=$1`, [itemId, counts.recordsSeen]);
+  await appendIntakeItemTx(client, item.case_id, itemId);
 }
 
 function sourceCode(value: unknown): string | null {

@@ -12,6 +12,7 @@ import {assertStreamingInputTx,lockStreamingRowsTx} from './streaming-vector';
 import {readStreamingFeatures,readStreamingTabular,sourceRecord,tabularSourceRecord,
   type SourceFeature} from './streaming-vector-reader';
 import {validateStreamingTopology} from './streaming-vector-validation';
+import {writeSealedMapReceiptTx} from './streamed-map-receipt';
 
 type Slot={chunkIndex:number;firstFeatureIndex:number;lastFeatureIndex:number|null;records:number;accepted:number;quarantined:number;
   status:'ready'|'quarantined';bytes:number;ref:{key:string;sha256:string;bytes:number}|null;issueCode:string|null;resultSha256:string};
@@ -226,6 +227,7 @@ export async function runStreamingVectorJob(jobId:string){
         const state=(await client.query('SELECT quarantined FROM usp_streaming_vector_imports WHERE job_id=$1',[jobId])).rows[0];
         const status=state.quarantined?'completed_with_rejections':'completed';
         await client.query('UPDATE usp_streaming_vector_imports SET state=$2,issue_code=NULL,updated_at=now() WHERE job_id=$1',[jobId,status]);
+        if(input.framing==='feature-collection')await writeSealedMapReceiptTx(client,input,result);
         await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
           sourceRevision:input.sourceRevision,jobId,status},input.subject);
       });

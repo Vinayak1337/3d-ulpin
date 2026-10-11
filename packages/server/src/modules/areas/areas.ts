@@ -46,6 +46,8 @@ import { originalAttempt } from "../cases/original-attempt";
 import { checkAssociations, enrichFindings } from "../officer/officer";
 import { localOperatorSubject } from "../usp/principal";
 import { assertPackageDocumentAuthority } from "./package-authority";
+import type { ProvedAreaPartInput } from "../usp/ingestion/proved-area-part";
+import { assertProvedPartBounds } from "../usp/ingestion/intake-package-cuts";
 
 export type Mapping = {
   idField?: string;
@@ -404,7 +406,7 @@ export async function importedGeojsonRanges(bytes: Uint8Array, data: unknown,
   }
 }
 
-export async function ingestArea(input: {
+type AreaImportInput = {
   bytes: Uint8Array;
   filename: string;
   format: "geojson" | "arcgis" | "gpkg" | "shapefile_zip";
@@ -429,7 +431,9 @@ export async function ingestArea(input: {
     page: number;
     receipt: Record<string, unknown>;
   };
-}, externalClient?: PoolClient): Promise<ImportPackage> {
+};
+
+export async function ingestArea(input: AreaImportInput, externalClient?: PoolClient): Promise<ImportPackage> {
   const run = externalClient ? externalClient.query.bind(externalClient) : query;
   if (input.bytes.length > 16 * 1024 * 1024 || !input.bytes.length)
     throw new AppError(
@@ -446,15 +450,7 @@ export async function ingestArea(input: {
     throw new AppError(422, "INVALID_JSON", "Choose valid native GIS JSON.");
   }
   const seedKey = `${input.namespace}:${input.name}`;
-  const existingArea = input.areaId
-    ? await getArea(input.areaId, externalClient)
-    : (await run("SELECT * FROM map_areas WHERE seed_key=$1", [seedKey]))
-        .rows[0];
-  const area = existingArea
-    ? "siteId" in existingArea
-      ? (existingArea as MapArea)
-      : areaFrom(existingArea)
-    : undefined;
+  const area = await importAreaDestination(input, externalClient);
   const digest = sha256(input.bytes);
   const operationKey = sha256(
     JSON.stringify({
@@ -510,7 +506,96 @@ export async function ingestArea(input: {
     area.revision !== input.expectedAreaRevision
   )
     conflict("Area changed; refresh before importing.");
-  const normalized = await areaGeo<Normalized>("normalize", {
+  const normalized = await normalizeAreaImport(input, data, area);
+  const quarantine=gisQuarantine(normalized.disposition,digest);
+  if(!normalized.features.length)
+    throw new AppError(422,'GIS_ALL_GEOMETRIES_REJECTED','No source geometries were accepted. The original was not imported and no area or records were created.',{quarantine:quarantine?{...quarantine,message:quarantine.message.replace('Original retained unchanged','Original not imported')}:undefined});
+  const retained = input.retainedOriginal
+    ? (await run("SELECT id,case_id,sha256,object_key FROM sources WHERE id=$1 FOR SHARE", [input.retainedOriginal.sourceId])).rows[0]
+    : undefined;
+  if (input.retainedOriginal && (!externalClient || !retained || retained.sha256 !== digest || digest !== input.retainedOriginal.sourceSha256))
+    conflict("The retained GIS original does not match this transaction's source pin.");
+  const sourceRanges = input.format === "geojson"
+    ? await importedGeojsonRanges(input.bytes, data, normalized.features)
+    : new Map<number, SourceRangeReference>();
+  return persistPreparedAreaImport(input, {
+    area, seedKey, digest, operationKey, normalized, quarantine, retained, sourceRanges,
+  }, externalClient);
+}
+
+/** Internal streamed import only. The caller's transaction also publishes its intake part and targets. */
+export async function ingestProvedAreaPart(input: ProvedAreaPartInput, client: PoolClient): Promise<ImportPackage> {
+  const { prepareProvedAreaPartTx, provedPartOperationKey } = await import("../usp/ingestion/proved-area-part");
+  const operationKey = provedPartOperationKey(input);
+  const part = await prepareProvedAreaPartTx(client, input);
+  assertProvedPartBounds(part.features, part.ranges, part.metadata);
+  const importSignature = sha256(JSON.stringify({ operationKey, destination: input.destination,
+    featureIndexes: input.features.map(feature => feature.featureIndex) }));
+  const prior = (await client.query("SELECT body FROM import_packages WHERE operation_key=$1", [operationKey])).rows[0];
+  if (prior) {
+    if (prior.body.importSignature !== importSignature) conflict("This cut index already names different features or a destination.");
+    return assertPackageDocumentAuthority(client, prior.body);
+  }
+  const adapter: AreaImportInput = {
+    ...input.destination, bytes: new Uint8Array(), filename: part.source.name, format: "geojson", mapping: part.mapping,
+    retainedOriginal: { sourceId: input.sourceId, sourceSha256: input.sourceSha256 },
+  };
+  const area = await importAreaDestination(adapter, client);
+  const data = { ...part.metadata, type: "FeatureCollection", features: part.features };
+  const normalized = await normalizeAreaImport(adapter, data, area);
+  remapProvedPartIndexes(normalized, part.features, [...part.ranges.keys()]);
+  const quarantine = gisQuarantine(normalized.disposition, input.sourceSha256);
+  if (!normalized.features.length)
+    throw new AppError(422, "GIS_ALL_GEOMETRIES_REJECTED", "No geometries in this proved part were accepted.", { quarantine });
+  return persistPreparedAreaImport(adapter, {
+    area, seedKey: `${adapter.namespace}:${adapter.name}`, digest: input.sourceSha256, operationKey,
+    normalized, quarantine, retained: part.source, sourceRanges: part.ranges, provedPart: { importSignature },
+  }, client);
+}
+
+function remapProvedPartIndexes(normalized: Normalized, features: Record<string, unknown>[], indexes: number[]) {
+  const globalIndex = (local: number | undefined) => {
+    if (local === undefined || !Number.isSafeInteger(local) || indexes[local] === undefined)
+      conflict("The normalizer did not retain this proved part's exact feature pairing.");
+    return indexes[local];
+  };
+  for (const candidate of normalized.features) {
+    const feature = features[candidate.sourceFeatureIndex!];
+    if (!feature || !isDeepStrictEqual(feature.geometry, candidate.sourceGeometry))
+      conflict("The normalized geometry differs from its proved raw feature.");
+    const properties = feature.properties as Record<string, unknown> | null;
+    for (const [name, value] of Object.entries(candidate.properties))
+      if (!isDeepStrictEqual(properties?.[name], value)) conflict("The normalized properties lost their raw pairing.");
+    candidate.sourceFeatureIndex = globalIndex(candidate.sourceFeatureIndex);
+  }
+  for (const rejection of normalized.disposition?.rejections ?? [])
+    rejection.featureIndex = globalIndex(rejection.featureIndex);
+}
+
+type PreparedAreaImport = {
+  area?: MapArea;
+  seedKey: string;
+  digest: string;
+  operationKey: string;
+  normalized: Normalized;
+  quarantine: ReturnType<typeof gisQuarantine>;
+  retained?: Record<string, any>;
+  sourceRanges: Map<number, SourceRangeReference>;
+  provedPart?: { importSignature: string };
+};
+
+async function importAreaDestination(input: Pick<AreaImportInput, "areaId" | "namespace" | "name">,
+  externalClient?: PoolClient) {
+  const run = externalClient ? externalClient.query.bind(externalClient) : query;
+  const existingArea = input.areaId
+    ? await getArea(input.areaId, externalClient)
+    : (await run("SELECT * FROM map_areas WHERE seed_key=$1", [`${input.namespace}:${input.name}`])).rows[0];
+  if (!existingArea) return undefined;
+  return "siteId" in existingArea ? existingArea as MapArea : areaFrom(existingArea);
+}
+
+async function normalizeAreaImport(input: AreaImportInput, data: unknown, area?: MapArea) {
+  return areaGeo<Normalized>("normalize", {
     format: input.format,
     data,
     ...(["gpkg", "shapefile_zip"].includes(input.format)
@@ -533,17 +618,12 @@ export async function ingestArea(input: {
         ? { reference: { sourceCrs: input.sourceCrs } }
         : {}),
   });
-  const quarantine=gisQuarantine(normalized.disposition,digest);
-  if(!normalized.features.length)
-    throw new AppError(422,'GIS_ALL_GEOMETRIES_REJECTED','No source geometries were accepted. The original was not imported and no area or records were created.',{quarantine:quarantine?{...quarantine,message:quarantine.message.replace('Original retained unchanged','Original not imported')}:undefined});
-  const retained = input.retainedOriginal
-    ? (await run("SELECT id,case_id,sha256,object_key FROM sources WHERE id=$1 FOR SHARE", [input.retainedOriginal.sourceId])).rows[0]
-    : undefined;
-  if (input.retainedOriginal && (!externalClient || !retained || retained.sha256 !== digest || digest !== input.retainedOriginal.sourceSha256))
-    conflict("The retained GIS original does not match this transaction's source pin.");
-  const sourceRanges = input.format === "geojson"
-    ? await importedGeojsonRanges(input.bytes, data, normalized.features)
-    : new Map<number, SourceRangeReference>();
+}
+
+/** Shared persistence of normalized candidates; a proved part never stores its temporary collection. */
+async function persistPreparedAreaImport(input: AreaImportInput, prepared: PreparedAreaImport,
+  externalClient?: PoolClient): Promise<ImportPackage> {
+  const { area, seedKey, digest, operationKey, normalized, quarantine, retained, sourceRanges } = prepared;
   const sourceId = retained?.id || randomUUID(),
     objectKey = retained?.object_key || `areas/${sourceId}/${digest}`;
   const utilityCandidates = normalized.features.filter(
@@ -607,7 +687,11 @@ export async function ingestArea(input: {
           [operationKey],
         )
       ).rows[0];
-      if (prior) return assertPackageDocumentAuthority(client, prior.body);
+      if (prior) {
+        if (prepared.provedPart && prior.body.importSignature !== prepared.provedPart.importSignature)
+          conflict("This cut index already names different features or a destination.");
+        return assertPackageDocumentAuthority(client, prior.body);
+      }
       let areaRow = area
         ? (
             await client.query(
@@ -699,7 +783,7 @@ export async function ingestArea(input: {
           normalized.reference,
         ]);
       }
-      const caseId = randomUUID(),
+      const caseId = prepared.provedPart ? retained!.case_id : randomUUID(),
         packageId = randomUUID();
       const site = (
         await client.query(
@@ -708,7 +792,7 @@ export async function ingestArea(input: {
         )
       ).rows[0];
       await bindRetainedCaseTx(client, retained?.case_id, site);
-      await client.query(
+      if (!prepared.provedPart) await client.query(
         "INSERT INTO cases(id,name,description,frame,site_id,archived) VALUES($1,$2,$3,$4,$5,$6)",
         [
           caseId,
@@ -949,7 +1033,7 @@ export async function ingestArea(input: {
         warnings: [...normalized.warnings, ...(quarantine?[quarantine.message]:[]), ...(input.derivedObservation ? ["Derived ML footprint proposals: review the retained original, model receipt and documented controls. Height and ownership are unknown; this draft is not survey evidence or statutory acceptance."] : [])],
         createdAt: new Date().toISOString(),
         sourceHash: digest,
-        importSignature: sha256(
+        importSignature: prepared.provedPart?.importSignature || sha256(
           JSON.stringify({
             namespace: input.namespace,
             format: input.format,
