@@ -9534,6 +9534,41 @@
         "Historical people and firm names occur; no OCR, private filing, upload or provider use.",
         "No conversion, automatic key tie, learning authorization, runtime gate or operational qualification."
       ]
+    },
+    {
+      "id": "da3-nyc-oti-building-field-metadata-20261011",
+      "classification": "test_only",
+      "originKind": "foreign_authority_public_metadata",
+      "issuer": "City of New York Office of Technology and Innovation (OTI)",
+      "geography": "New York City, New York, United States; foreign development only",
+      "manifest": "docs/evidence/gf1/da3/result.json",
+      "guide": "docs/evidence/gf1/da3/report.md",
+      "sourceCount": 1,
+      "sourceFamilies": 1,
+      "totalOriginalBytes": 12973,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-office-of-technology-and-innovation",
+        "itemsPointer": "/assets/0",
+        "formats": ["Markdown"],
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "state": "unconfirmed",
+        "reference": "https://opendata.cityofnewyork.us/overview/#termsofuse",
+        "limitations": "Terms of Use linked by publisher; no licence grant stated; local test_only."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "Metadata_BuildingFootprints.md: unchanged official repository bytes; metadata date literal 10/09/2025.",
+        "HEIGHT_ROOF states roof above ground elevation, not sea level; no field unit stated.",
+        "GROUND_ELEVATION states lowest elevation at ground; conditional NAVD88 reference, no field unit.",
+        "Pack dataset matched by existing profile SHA-256; source-info omits the buildings download.",
+        "Exact bytes match a retained copy recorded before pack assembly; nearest historical revision unverified.",
+        "No portal column list retained; uppercase attribute to pack lowercase name mapping remains unverified.",
+        "Missing-unit stop applied; no CRS-derived unit, conversion, altered value, provider call or runtime gate."
+      ]
     }
   ],
   "offlineLearningCorpus": {

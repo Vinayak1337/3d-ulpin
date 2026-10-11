@@ -1,5 +1,25 @@
 # Official source index and retained dataset catalogue
 
+## DA3 NYC publisher height-field metadata — 11 October 2026 IST
+
+- **`Metadata_BuildingFootprints.md`:** NYC Office of Technology and Innovation (OTI),
+  [official repository bytes][da3-metadata], 12,973 bytes, unchanged under
+  `E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-office-of-technology-and-innovation/`, with a sibling receipt.
+  Foreign `test_only`; [Terms of Use][da3-terms] linked in section 1, not fetched;
+  licence **not stated, permission unconfirmed**. [Words and gaps](../evidence/gf1/da3/report.md) and
+  [exact URLs, hashes, counts and locators](../evidence/gf1/da3/result.json) retain the negative finding.
+  Section 3 `HEIGHT_ROOF` says roof above ground elevation, not sea level, but **no field unit is stated**.
+  `GROUND_ELEVATION` says lowest elevation at ground, with a conditional NAVD88 reference, but no field unit.
+  The pack hash matches dataset `5zhs-2jue` in the existing demo profile; its source-info omits buildings provenance.
+  Metadata date literal `10/09/2025`; bytes equal a retained copy recorded before pack assembly.
+  Nearest historical revision and portal spelling correspondence remain unverified; no case-folding guess.
+  Search stopped on missing unit. Pack literals: 1,662 present, 0 null/absent/zero/negative; no conversion or import.
+  Older feet statements below are historical claims, not field-unit evidence from this retained document.
+  No originals changed, provider call, upload, learning authorization or GF1 runtime qualification.
+
+[da3-metadata]: https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md
+[da3-terms]: https://opendata.cityofnewyork.us/overview/#termsofuse
+
 ## DA2 NYC building-linked originals — 11 October 2026 IST
 
 Three unchanged NYC Landmarks Preservation Commission (LPC) originals are foreign `test_only`, local development only.
