@@ -3,7 +3,8 @@
   "base": "41776251",
   "before": { "tests": 33, "pass": 24, "fail": 9, "skipped": 0, "exit": 1 },
   "history_method": "git log -S on each named SQL, operation, setting or guard; git show on source-pin change",
-  "history_limit": "No historical passing test run was executed or inferred from a commit. Some prerequisites existed when their tests were added; no later causal product commit exists for those failures. Origin and later relevant history are distinguished below.",
+  "history_limit": "No historical passing run is established; some prerequisites predate their tests.",
+  "history_origin_note": "Origin commits and later changes are distinguished; no causal later commit is invented.",
   "failures": [
     {
       "id": 1,
@@ -29,7 +30,7 @@
         }
       ],
       "classification": "environment",
-      "proof": "The test stops at its own absent native-execution admission before product I/O; no passing test supplies a local admission value, so skip unless ULPIN_GLTF_LOCAL_PROCESS=1 (also requires ULPIN_GLTF_PROFILE and ULPIN_GLTF_PROFILE_SHA256)."
+      "proof": "Absent native admission fails before product I/O; no passing test sets a safe local value."
     },
     {
       "id": 2,
@@ -55,18 +56,21 @@
         }
       ],
       "classification": "environment",
-      "proof": "The absent test-only execution admission fails before product code; no passing test sets it locally, so skip unless ULPIN_OBJ_LOCAL_PROCESS=1 (also requires ULPIN_OBJ_PROFILE and ULPIN_OBJ_PROFILE_SHA256)."
+      "proof": "Absent native admission fails before product I/O; no passing test sets a safe local value."
     },
     {
       "id": 3,
-      "name": "exact complete and partial OBJ metadata evaluate/read/replay through existing sufficiency while spatial tasks remain unqualified",
+      "name_prefix": "exact complete and partial OBJ metadata evaluate/read/replay",
       "file_note": "The task table lists obj-ingestion.test.ts, but the actual test is in sufficiency-mesh.test.ts.",
       "failure": {
         "at": "tests/sufficiency-mesh.test.ts:94",
         "assertion": "decisions.map(outcome) equals complete, complete, park, reject_for_3d, park",
         "actual": ["complete", "park", "park", "reject_for_3d", "park"]
       },
-      "product": "packages/server/src/modules/usp/ingestion/obj.ts:26,81-82,124; packages/server/src/modules/usp/ingestion/sufficiency-mesh.ts:52",
+      "product": [
+        "packages/server/src/modules/usp/ingestion/obj.ts:26,81-82,124",
+        "packages/server/src/modules/usp/ingestion/sufficiency-mesh.ts:52"
+      ],
       "history": [
         {
           "hash": "60dca45a",
@@ -88,17 +92,21 @@
         }
       ],
       "classification": "product_defect",
-      "proof": "The exact immutable accepted fixture reader hash matches current LF-normalized reader bytes but not this checkout's CRLF bytes; replacing its pins or expecting park would weaken the test, and no post-pass semantic reader change is established."
+      "proof": "The immutable receipt matches LF bytes, not current CRLF bytes; altering its pins weakens the test.",
+      "causal_limit": "No post-pass semantic reader change is established; classification is conservative."
     },
     {
       "id": 4,
-      "name": "mesh originals survive unavailable processing; protected markers and final access/result changes refuse; existing policies stay intact",
+      "name_prefix": "mesh originals survive unavailable processing",
       "failure": {
         "at": "tests/sufficiency-mesh.test.ts:114",
         "assertion": "unavailable.decisions[1].nextAction === configure_reader",
         "actual": "retry_extraction"
       },
-      "product": "packages/server/src/modules/usp/ingestion/sufficiency-mesh.ts:52-54; packages/server/src/modules/usp/ingestion/obj.ts:26,81-82,124",
+      "product": [
+        "packages/server/src/modules/usp/ingestion/sufficiency-mesh.ts:52-54",
+        "packages/server/src/modules/usp/ingestion/obj.ts:26,81-82,124"
+      ],
       "history": [
         {
           "hash": "645e36ec",
@@ -114,7 +122,7 @@
         }
       ],
       "classification": "product_defect",
-      "proof": "The same LF/CRLF reader-pin mismatch makes status stale before the injected unavailable tools are called, so the expected outage policy is never reached; no test or immutable receipt is changed."
+      "proof": "The same reader mismatch bypasses the injected tool outage; altering accepted pins weakens the test."
     },
     {
       "id": 5,
@@ -125,17 +133,25 @@
         "actual_count": 33,
         "expected_count": 28
       },
-      "product": "apps/api/src/modules/spatial/spatial-ml-source-review.controller.ts:32,38,43,54; apps/api/src/modules/spatial/spatial-ml.controller.ts:58",
+      "product": [
+        "apps/api/src/modules/spatial/spatial-ml-source-review.controller.ts:32,38,43,54",
+        "apps/api/src/modules/spatial/spatial-ml.controller.ts:58"
+      ],
       "history": [
+        { "hash": "04fa4002", "subject": "feat(spatial): queue private source-only PDF pixel batches",
+          "search": "POST_api_v1_spatial_ml_source_batches", "role": "Controller operation origin." },
         { "hash": "6f816cdc", "subject": "feat(api): register and publish source-only spatial batches",
-          "search": "POST_api_v1_spatial_ml_source_batches" },
+          "search": "POST_api_v1_spatial_ml_source_batches", "role": "Operation manifest publication." },
+        { "hash": "6f4b70b1", "subject": "feat(spatial): retain source candidate inspection decisions",
+          "search": "GET_api_v1_spatial_ml_items_itemId_source_reviews_context",
+          "role": "Context, exact read and review controller operation origins." },
         { "hash": "ae0a78b7", "subject": "feat(api): wire and publish source candidate review endpoints",
-          "search": "GET_api_v1_spatial_ml_items_itemId_source_reviews_context" },
+          "search": "SpatialSourceReviewsController", "role": "Controller registration in spatial.module.ts." },
         { "hash": "225aa3d7", "subject": "feat(evidence): discover private saved source history",
           "search": "GET_api_v1_spatial_ml_items_itemId_source_reviews" }
       ],
       "classification": "stale_control",
-      "proof": "The five added operations are published in docs/api/openapi.json and current controllers, while the old migration ledger still describes only the original 28."
+      "proof": "Five added operations appear in current OpenAPI and controllers, not the old 28-operation ledger."
     },
     {
       "id": 6,
@@ -150,16 +166,23 @@
           "search": "SELECT operation FROM jobs WHERE id=$1" }
       ],
       "classification": "stale_control",
-      "proof": "A later PDF-specific cancellation guard reads the existing fixture job's operation; its real table answer is job.operation (cityjson-validation), which the fixed SQL control has not admitted."
+      "proof": "The PDF guard reads fixture job.operation (cityjson-validation); the fixed SQL control omits it."
     },
     {
       "id": 7,
-      "name": "reference/citation gates serialize the reproduced inversion; stale aggregates and USP replay retain their boundaries",
+      "name_prefix": "reference/citation gates serialize the reproduced inversion",
       "failure": {
         "at": "tests/registry-document-lock-order.test.ts:150",
-        "throw": "Unexpected commit SQL: SELECT DISTINCT ON(id) id,revision,body FROM usp_declaration_revisions WHERE site_id=$1 ORDER BY id,revision DESC LIMIT 11"
+        "throw": "Unexpected commit SQL",
+        "sql": [
+          "SELECT DISTINCT ON(id) id,revision,body FROM usp_declaration_revisions",
+          "    WHERE site_id=$1 ORDER BY id,revision DESC LIMIT 11"
+        ]
       },
-      "product": "packages/server/src/modules/usp/declarations/projection.ts:22-23; packages/server/src/modules/usp/snapshots.ts:108",
+      "product": [
+        "packages/server/src/modules/usp/declarations/projection.ts:22-23",
+        "packages/server/src/modules/usp/snapshots.ts:108"
+      ],
       "history": [
         { "hash": "1dbee2ce", "subject": "feat(usp): add reviewed immutable share declarations",
           "search": "SELECT DISTINCT ON(id) id,revision,body FROM usp_declaration_revisions",
@@ -171,16 +194,19 @@
         }
       ],
       "classification": "stale_control",
-      "proof": "Site snapshots now read declarations, but the fixture has no declarations; admitting only the exact site SELECT with [] preserves the fixture and all lock-order assertions."
+      "proof": "Snapshots now read declarations; this fixture has none, so only the exact site SELECT gets []."
     },
     {
       "id": 8,
-      "name": "private route exposes strict schema without a listener; transport pins exact document, no-store and bounded body",
+      "name_prefix": "private route exposes strict schema without a listener",
       "failure": {
         "at": "tests/survey-report-controller.test.ts:35",
         "throw": "LOCAL_OPERATOR_CONFIGURATION"
       },
-      "product": "apps/api/src/modules/evidence/survey-report.controller.ts:45; packages/server/src/modules/usp/principal.ts:24-28",
+      "product": [
+        "apps/api/src/modules/evidence/survey-report.controller.ts:45",
+        "packages/server/src/modules/usp/principal.ts:24-28"
+      ],
       "history": [
         { "hash": "e007bb49", "subject": "Require configured local process attribution",
           "search": "ULPIN_LOCAL_OPERATOR_SUBJECT",
@@ -192,7 +218,8 @@
         }
       ],
       "classification": "environment",
-      "proof": "The stubbed controller request has no configured subject; passing controller tests such as apps/api/src/modules/register/conflict-decision.controller.test.ts:117-145 set and restore a test-only subject in try/finally."
+      "proof": "The request has no subject; passing controller tests set and restore test-only subjects.",
+      "pattern": "apps/api/src/modules/register/conflict-decision.controller.test.ts:117-145"
     },
     {
       "id": 9,
@@ -206,11 +233,12 @@
       "history": [
         { "hash": "d0d950b6", "subject": "feat(agent): route mapping through memory, student, then teacher",
           "search": "ULPIN_PROFILE_PYTHON",
-          "role": "Configured interpreter prerequisite predates this test; no later causal interpreter-setting change found."
+          "role": "Interpreter prerequisite predates this test; no later causal setting change found."
         }
       ],
       "classification": "environment",
-      "proof": "The unchanged isolated test passes (1 pass, 0 skips, exit 0) with ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe; the named file exists."
+      "proof": "The unchanged isolated test passes with the named Python (1 pass, 0 skips); its file exists.",
+      "interpreter": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe"
     }
   ],
   "reader_probe": {
