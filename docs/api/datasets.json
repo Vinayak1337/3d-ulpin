@@ -9433,6 +9433,107 @@
         "Existing learning splits are unchanged; Halifax format inspection is not learning authorization.",
         "Kitchener notes contain person names; excluded original and control artifacts are not assets."
       ]
+    },
+    {
+      "id": "da2-nyc-lpc-linked-table-20261011",
+      "classification": "test_only",
+      "originKind": "foreign_authority_issuing_portal_generated_export",
+      "issuer": "New York City Landmarks Preservation Commission (LPC)",
+      "geography": "Manhattan, New York City, New York, United States; foreign development only",
+      "manifest": "docs/evidence/gf1/da2/result.json",
+      "guide": "docs/evidence/gf1/da2/report.md",
+      "sourceCount": 1,
+      "sourceFamilies": 1,
+      "totalOriginalBytes": 87352,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission",
+        "itemsPointer": "/assets/0",
+        "formats": ["CSV"],
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "state": "unconfirmed",
+        "reference": "Per-original issuer terms URL and access finding in evidence manifest",
+        "limitations": "Not stated, permission unconfirmed; terms page HTTP 403; local test_only."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "Authority export of 753 selected rows and nine columns, not the full dataset; no local filtering.",
+        "BIN matches: 612 buildings with one row, 33 with several, 1017 with none; 60 unmatched rows.",
+        "Pack contains 1662 features, not the task's stated 1661; all retained features counted.",
+        "BBL also published literally; repeated building BBLs preclude automatic one-target claims.",
+        "Owner/developer, architect, building names and notes excluded by URL column selection.",
+        "No conversion, join output, upload, provider call, learning authorization or operational qualification."
+      ]
+    },
+    {
+      "id": "da2-nyc-lpc-holland-plaza-report-20261011",
+      "classification": "test_only",
+      "originKind": "foreign_authority_public_designation_report",
+      "issuer": "New York City Landmarks Preservation Commission (LPC)",
+      "geography": "Manhattan, New York City, New York, United States; foreign development only",
+      "manifest": "docs/evidence/gf1/da2/result.json",
+      "guide": "docs/evidence/gf1/da2/report.md",
+      "sourceCount": 1,
+      "sourceFamilies": 1,
+      "totalOriginalBytes": 3676385,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission",
+        "itemsPointer": "/assets/1",
+        "formats": ["PDF"],
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "state": "unconfirmed",
+        "reference": "Per-original issuer terms URL and access finding in evidence manifest",
+        "limitations": "Not stated, permission unconfirmed; terms page HTTP 403; local test_only."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "2537.pdf: unchanged authority public history/designation report; 18 pages with native text.",
+        "No key literal; names the building by 75 Varick Street and Manhattan Tax Map Block 226, Lot 1.",
+        "Related pack BIN 1002934 and BBL 1002260001 are NOT stated in the report or composed from parts.",
+        "Historical people and firm names occur; no private application/filing, upload or provider use.",
+        "Address citation needs officer review; no automatic key tie, runtime gate or rights claim."
+      ]
+    },
+    {
+      "id": "da2-nyc-lpc-soho-extension-report-20261011",
+      "classification": "test_only",
+      "originKind": "foreign_authority_public_designation_report",
+      "issuer": "New York City Landmarks Preservation Commission (LPC)",
+      "geography": "Manhattan, New York City, New York, United States; foreign development only",
+      "manifest": "docs/evidence/gf1/da2/result.json",
+      "guide": "docs/evidence/gf1/da2/report.md",
+      "sourceCount": 1,
+      "sourceFamilies": 1,
+      "totalOriginalBytes": 10071817,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission",
+        "itemsPointer": "/assets/2",
+        "formats": ["PDF"],
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "state": "unconfirmed",
+        "reference": "Per-original issuer terms URL and access finding in evidence manifest",
+        "limitations": "Not stated, permission unconfirmed; terms page HTTP 403; local test_only."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "2362.pdf: unchanged authority public district designation report; 207 pages with native text.",
+        "No key literal; PDF page 53 names 275 Canal Street and Manhattan Tax Map Block 209, Lot 35.",
+        "Related pack BIN 1002696 and BBL 1002090035 are NOT stated in the report or composed from parts.",
+        "590926 extracted text characters exceed AU4's proposed 250000-character native-reading cap.",
+        "Historical people and firm names occur; no OCR, private filing, upload or provider use.",
+        "No conversion, automatic key tie, learning authorization, runtime gate or operational qualification."
+      ]
     }
   ],
   "offlineLearningCorpus": {
