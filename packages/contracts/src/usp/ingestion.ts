@@ -12,7 +12,7 @@ const revision = z.number().int().positive();
 const text = z.string().min(1).max(150).refine(v => v.trim() === v && !/[\u0000-\u001f]/.test(v));
 export const INGESTION_VERSION = 'manual-geojson/1' as const;
 export const ConversionIdSchema = z.enum(['literal_identifier@1', 'literal_text@1', 'geojson_polygon@1',
-  'geojson_geometry@1']);
+  'geojson_geometry@1', 'literal_integer_identifier@1']);
 /** Paths are inventory tokens, never expressions or values. Membership is checked by the server. */
 export const SourcePathSchema = z.string().max(512).regex(/^\/features\/\*\/(?:id|geometry|properties\/(?:[^~\/]|~[01])+)$/);
 export const MappingOperationSchema = z.strictObject({
@@ -29,7 +29,7 @@ export const SourceProfileSchema = z.strictObject({
   paths: z.array(z.strictObject({
     path: SourcePathSchema, types: z.array(z.enum(['string', 'number', 'boolean', 'object', 'array'])),
     values: z.number().int().nonnegative(), explicitNull: z.number().int().nonnegative(), absent: z.number().int().nonnegative(),
-    literalIdEligible: z.boolean(), literalTextEligible: z.boolean(),
+    literalIdEligible: z.boolean(), literalTextEligible: z.boolean(), integerIdEligible: z.boolean().optional(),
   })),
   limitations: z.array(z.string()),
 });
