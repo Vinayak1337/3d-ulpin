@@ -7,6 +7,7 @@ import { DropOutcomes } from './IntakeDropDialog';
 import { IntakeTray } from './IntakeTray';
 import { LayoutQuestion } from './LayoutQuestion';
 import { isSettled } from './batch-model';
+import { needsLayoutAnswer } from './question-model';
 import type { IntakeItem } from './batch-model';
 import { recipeKey, useBatchPackages, useIntakeManifest } from './batch-queries';
 import { IntakeRunPanel } from './run';
@@ -56,12 +57,12 @@ function IntakeBatch({ caseId }: { caseId: string }) {
     <p className="ul-help">Originals stay unchanged. These files prepare drafts; recording needs your confirmation.</p>
     <BatchRecords batch={batch} choose={setSelected} />
     {stream.disconnected ? <Banner tone="warning">
-      Live updates are disconnected. Unfinished files are checked no more than once every five seconds.
+      {stream.error || 'Live updates are disconnected.'} The batch is checked no more than once every five seconds.
       <Button variant="soft" onClick={stream.reconnect}>Reconnect updates</Button>
     </Banner> : null}
     <FilesNotAdded state={state} />
-    {current?.sourceId && (current.plan || current.placement === 'needs_answer') ?
-      <LayoutQuestion key={`${current.itemId}:${current.plan?.recipeId ?? ''}`} caseId={caseId}
+    {current?.sourceId && (current.plan || needsLayoutAnswer(current)) ?
+      <LayoutQuestion key={current.itemId} caseId={caseId}
         item={current} refresh={refresh} /> : null}
     <section id="intake-run-panel" aria-label="Batch recording and cards">
       <IntakeRunPanel caseId={caseId} />

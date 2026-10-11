@@ -1,6 +1,7 @@
 import { Button, DataTable } from '@ulpin/ui';
 import { Link } from 'react-router';
 import type { Package } from './run/model';
+import { needsLayoutAnswer } from './question-model';
 import { countWords, crsWords, familyWords, formatWords, placementWords, sizeClassWords,
   stateWords, packagePath } from './batch-model';
 import type { IntakeItem } from './batch-model';
@@ -37,7 +38,7 @@ function NextStep({ item, packages, choose }: {
   const packageStep = path ? <Link to={path}>Open package</Link> : <span>Package prepared</span>;
   return <div className={styles.stack}>
     {item.plan?.packageId ? packageStep : null}
-    {item.sourceId && (item.plan || item.placement === 'needs_answer' && item.format === 'geojson') ?
+    {item.sourceId && (item.plan || needsLayoutAnswer(item)) ?
       <Button variant="soft" onClick={() => choose(item)}>View layout</Button> : null}
   </div>;
 }
