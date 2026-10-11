@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import {
   CANONICAL_TARGETS,
   canonicalTarget,
+  LegacyMappingTargetSchema,
   MappingPlanV2Schema,
   MappingLayoutFieldSchema,
   type MappingPlanV2,
@@ -14,6 +15,7 @@ import {
   type SourceProfile,
   type StreamedProfileGeneration,
 } from '@ulpin/contracts/usp';
+import { AppError } from '../../../infrastructure/errors';
 import { UNIT_TABLE } from './unit-table';
 
 export const ENUM_TABLES = {
@@ -374,6 +376,9 @@ export function legacyPlanToV2(
   context: MappingValidationContext,
   method: MappingPlanV2['method'],
 ): MappingPlanV2 {
+  if (Object.hasOwn(raw, 'kind') || raw.operations.some(operation => operation.target.startsWith('feature.')))
+    throw new AppError(422, 'LEGACY_BUILDING_MAPPING_ONLY',
+      'The legacy building adapter does not accept a stated kind or feature targets; use the bounded area layout.');
   const plan = MappingPlanSchema.parse(raw);
   return {
     version: 'mapping-plan/2',
@@ -384,7 +389,7 @@ export function legacyPlanToV2(
       const operation = plan.operations.find((item) => item.sourcePath === field.name);
       return {
         sourceField: field.name,
-        target: operation?.target ?? 'unknown',
+        target: operation ? LegacyMappingTargetSchema.parse(operation.target) : 'unknown',
         operation: { kind: 'copy' },
         confidence: operation ? 1 : 0,
         rationale: operation
