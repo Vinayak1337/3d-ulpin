@@ -1,0 +1,580 @@
+{
+  "task": "LV4",
+  "gate": "GF5 / M2",
+  "status": "stopped under rule (d); checkpoint, not a gate pass",
+  "finalSourceGit": "512f6fc499382549670cafe04e1143c9f09d9b9d",
+  "input": {
+    "path": "E:/BhuAayam-data/datasets/nyc-10013/nyc-10013-multimodal.zip",
+    "bytes": 14621643,
+    "sha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da",
+    "git": "e5f93562fd25af323ae3fd4585dc1dc3caca6bcd"
+  },
+  "runs": {
+    "lv4-before": {
+      "recordedGit": "8de6e4adab5d4181b6b9a0f58a76897255fffbd4",
+      "environment": {
+        "browser": "HeadlessChrome/153.0.8010.12",
+        "pixelRatio": 1,
+        "cpuThrottleRate": 1,
+        "gpuRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "parallelShaderCompile": false
+      },
+      "programs": {
+        "beforeFeatureStream": 2,
+        "createdDuringFeatureStream": 11,
+        "firstPartDrawn": 3,
+        "everythingDrawn": 13,
+        "createdAfterFirstDrawn": 10,
+        "late": [
+          {"id":3,"type":"LineBasicMaterial","keyHash":"0d5601ec51359b3a"},
+          {"id":4,"type":"MeshStandardMaterial","keyHash":"7ac17ab809f2e09f"},
+          {"id":5,"type":"LineBasicMaterial","keyHash":"c464519096538d4b"},
+          {"id":6,"type":"MeshStandardMaterial","keyHash":"3b4b266ee85103b1"},
+          {"id":7,"type":"MeshStandardMaterial","keyHash":"21e97cc7699d9d01"},
+          {"id":8,"type":"MeshStandardMaterial","keyHash":"f4480ed037a32b7a"},
+          {"id":9,"type":"MeshDepthMaterial","keyHash":"0e6c9479adc93a7f"},
+          {"id":10,"type":"MeshDepthMaterial","keyHash":"20b394232c949633"},
+          {"id":11,"type":"MeshDepthMaterial","keyHash":"d82bf29903b2c024"},
+          {"id":12,"type":"MeshStandardMaterial","keyHash":"43c659e7542ea24b"}
+        ],
+        "final": [
+          {"type":"ShaderMaterial","keyHash":"bb27966df1a8ce09","name":"BackgroundMaterial"},
+          {"type":"MeshStandardMaterial","keyHash":"b5afd408682c2a38","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"72e2ac76c33f50d8","name":""},
+          {"type":"LineBasicMaterial","keyHash":"0d5601ec51359b3a","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"7ac17ab809f2e09f","name":""},
+          {"type":"LineBasicMaterial","keyHash":"c464519096538d4b","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"3b4b266ee85103b1","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"21e97cc7699d9d01","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"f4480ed037a32b7a","name":""},
+          {"type":"MeshDepthMaterial","keyHash":"0e6c9479adc93a7f","name":""},
+          {"type":"MeshDepthMaterial","keyHash":"20b394232c949633","name":""},
+          {"type":"MeshDepthMaterial","keyHash":"d82bf29903b2c024","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"43c659e7542ea24b","name":""}
+        ]
+      },
+      "pageLoadToFirstFeatureFrameMs": 18329.1,
+      "pageLoadToFirstPartFullyDrawnMs": 18972.2,
+      "firstArrivalToFirstDrawnMs": 41.4,
+      "lastArrivalToEverythingDrawnMs": 204.5,
+      "warmUp": null,
+      "sceneOrStudioLongTasks": 2,
+      "allLongTasksOver50": 2,
+      "topThreeSelf": [["onFirstUse",403.157],["WebGLShader",3.322],["EdgesGeometry",3.22]],
+      "topThreeInclusive": [["renderFrame",454.088],["engine.renderFrame",454.088],["WebGLRenderer.render",431.239]],
+      "longestTask": {
+        "at": 20732.2,
+        "ms": 239,
+        "topInclusive": [
+          ["renderFrame",239.058],
+          ["engine.renderFrame",239.058],
+          ["WebGLRenderer.render",228.941],
+          ["renderObject",227.231],
+          ["renderObjects",226.969]
+        ],
+        "topSelf": [["onFirstUse",218.173],["WebGLShader",2.407],["f4",1.587]],
+        "overlappingCalls":
+        [{"name":"drainBaseQueue","at":20732.2,"ms":9.5},{"name":"renderFrame","at":20732.2,"ms":238.9}],
+        "topSceneOrLoader": [["renderFrame",239.058],["engine.renderFrame",239.058],["drainBaseQueue",10.117]],
+        "sceneOrStudioAttributable": true,
+        "decoderDuringStream": false
+      },
+      "profilesPath": "E:/BhuAayam-data/task-data/lv4/analysis-1791687676573/lv4-before-long-tasks.json",
+      "rawTimingFile": "E:/BhuAayam-data/task-data/lv4/run-1791685636898/timings.json",
+      "rawCpuFile": "E:/BhuAayam-data/task-data/lv4/run-1791685636898/cpu.cpuprofile",
+      "frames": {"count":152,"p50Ms":16.7,"p95Ms":283.3,"longestMs":483.3,"over50":62,"over100":45}
+    },
+    "lv4-before-headed": {
+      "recordedGit": "8de6e4adab5d4181b6b9a0f58a76897255fffbd4",
+      "environment": {
+        "browser": "Chrome/154.0.0.0",
+        "pixelRatio": 1,
+        "cpuThrottleRate": 1,
+        "gpuRenderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "parallelShaderCompile": true
+      },
+      "programs": {
+        "beforeFeatureStream": 2,
+        "createdDuringFeatureStream": 11,
+        "firstPartDrawn": 3,
+        "everythingDrawn": 13,
+        "createdAfterFirstDrawn": 10,
+        "late": [
+          {"id":3,"type":"LineBasicMaterial","keyHash":"0d5601ec51359b3a"},
+          {"id":4,"type":"MeshStandardMaterial","keyHash":"7ac17ab809f2e09f"},
+          {"id":5,"type":"LineBasicMaterial","keyHash":"c464519096538d4b"},
+          {"id":6,"type":"MeshStandardMaterial","keyHash":"3b4b266ee85103b1"},
+          {"id":7,"type":"MeshStandardMaterial","keyHash":"21e97cc7699d9d01"},
+          {"id":8,"type":"MeshStandardMaterial","keyHash":"f4480ed037a32b7a"},
+          {"id":9,"type":"MeshDepthMaterial","keyHash":"0e6c9479adc93a7f"},
+          {"id":10,"type":"MeshDepthMaterial","keyHash":"20b394232c949633"},
+          {"id":11,"type":"MeshDepthMaterial","keyHash":"d82bf29903b2c024"},
+          {"id":12,"type":"MeshStandardMaterial","keyHash":"43c659e7542ea24b"}
+        ],
+        "final": [
+          {"type":"ShaderMaterial","keyHash":"bb27966df1a8ce09","name":"BackgroundMaterial"},
+          {"type":"MeshStandardMaterial","keyHash":"b5afd408682c2a38","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"72e2ac76c33f50d8","name":""},
+          {"type":"LineBasicMaterial","keyHash":"0d5601ec51359b3a","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"7ac17ab809f2e09f","name":""},
+          {"type":"LineBasicMaterial","keyHash":"c464519096538d4b","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"3b4b266ee85103b1","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"21e97cc7699d9d01","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"f4480ed037a32b7a","name":""},
+          {"type":"MeshDepthMaterial","keyHash":"0e6c9479adc93a7f","name":""},
+          {"type":"MeshDepthMaterial","keyHash":"20b394232c949633","name":""},
+          {"type":"MeshDepthMaterial","keyHash":"d82bf29903b2c024","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"43c659e7542ea24b","name":""}
+        ]
+      },
+      "pageLoadToFirstFeatureFrameMs": 18653,
+      "pageLoadToFirstPartFullyDrawnMs": 18779.2,
+      "firstArrivalToFirstDrawnMs": 72.8,
+      "lastArrivalToEverythingDrawnMs": 67.4,
+      "warmUp": null,
+      "sceneOrStudioLongTasks": 2,
+      "allLongTasksOver50": 2,
+      "topThreeSelf": [["onFirstUse",165.872],["addVertex",2.602],["WebGLShader",2.534]],
+      "topThreeInclusive": [["renderFrame",202.208],["engine.renderFrame",202.208],["WebGLRenderer.render",182.78]],
+      "longestTask": {
+        "at": 19652,
+        "ms": 105,
+        "topInclusive": [
+          ["renderFrame",103.589],
+          ["engine.renderFrame",103.589],
+          ["WebGLRenderer.render",96.13],
+          ["renderObjects",94.149],
+          ["renderScene",94.149]
+        ],
+        "topSelf": [["onFirstUse",87.026],["buildSideFaces",1.975],["WebGLProgram",1.556]],
+        "overlappingCalls":
+        [{"name":"drainBaseQueue","at":19652,"ms":7.3},{"name":"renderFrame","at":19652,"ms":105.1}],
+        "topSceneOrLoader": [["renderFrame",103.589],["engine.renderFrame",103.589],["drainBaseQueue",7.459]],
+        "sceneOrStudioAttributable": true,
+        "decoderDuringStream": false
+      },
+      "profilesPath": "E:/BhuAayam-data/task-data/lv4/analysis-1791687676573/lv4-before-headed-long-tasks.json",
+      "rawTimingFile": "E:/BhuAayam-data/task-data/lv4/run-1791685674117/timings.json",
+      "rawCpuFile": "E:/BhuAayam-data/task-data/lv4/run-1791685674117/cpu.cpuprofile",
+      "frames": {"count":404,"p50Ms":6.7,"p95Ms":19.9,"longestMs":108.5,"over50":2,"over100":2}
+    },
+    "lv4-after": {
+      "recordedGit": "e5f93562fd25af323ae3fd4585dc1dc3caca6bcd",
+      "environment": {
+        "browser": "HeadlessChrome/153.0.8010.12",
+        "pixelRatio": 1,
+        "cpuThrottleRate": 1,
+        "gpuRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "parallelShaderCompile": false
+      },
+      "programs": {
+        "beforeFeatureStream": 4,
+        "createdDuringFeatureStream": 9,
+        "firstPartDrawn": 13,
+        "everythingDrawn": 13,
+        "createdAfterFirstDrawn": 0,
+        "late": [],
+        "final": [
+          {"type":"ShaderMaterial","keyHash":"bb27966df1a8ce09","name":"BackgroundMaterial"},
+          {"type":"MeshStandardMaterial","keyHash":"b5afd408682c2a38","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"72e2ac76c33f50d8","name":""},
+          {"type":"LineBasicMaterial","keyHash":"0d5601ec51359b3a","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"7ac17ab809f2e09f","name":""},
+          {"type":"LineBasicMaterial","keyHash":"c464519096538d4b","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"3b4b266ee85103b1","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"21e97cc7699d9d01","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"f4480ed037a32b7a","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"43c659e7542ea24b","name":""},
+          {"type":"MeshDepthMaterial","keyHash":"0e6c9479adc93a7f","name":""},
+          {"type":"MeshDepthMaterial","keyHash":"20b394232c949633","name":""},
+          {"type":"MeshDepthMaterial","keyHash":"d82bf29903b2c024","name":""}
+        ]
+      },
+      "pageLoadToFirstFeatureFrameMs": 18543.7,
+      "pageLoadToFirstPartFullyDrawnMs": 18733.4,
+      "firstArrivalToFirstDrawnMs": 166.1,
+      "lastArrivalToEverythingDrawnMs": 220.1,
+      "warmUp": {
+        "startedAt": 18242.2,
+        "endedAt": 18531.4,
+        "settled": true,
+        "outcome": "ready",
+        "parallel": false,
+        "elapsedMs": 289.2,
+        "finishedBeforeFirstPartArrived": false,
+        "longestObservedTaskDuringWarmInterval": {
+          "at": 18297.2,
+          "ms": 50,
+          "topInclusive": [
+            ["compileSerial",44.565],
+            ["onFirstUse",38.382],
+            ["WebGLProgram.getUniforms",38.382],
+            ["initializeProgram",38.382],
+            ["renderer.compile",6.183]
+          ],
+          "topSelf": [["onFirstUse",38.382],["(garbage collector)",3.149],["(program)",3.096]],
+          "overlappingCalls": [
+            {"name":"drainBuildingQueue","at":18345.1,"ms":0},
+            {"name":"drainBaseQueue","at":18345.1,"ms":0},
+            {"name":"renderFrame","at":18345.1,"ms":0.8}
+          ],
+          "topSceneOrLoader": [],
+          "sceneOrStudioAttributable": true,
+          "decoderDuringStream": false
+        },
+        "longestTaskWithWarmUpSamples": {
+          "at": 18297.2,
+          "ms": 50,
+          "topInclusive": [
+            ["compileSerial",44.565],
+            ["onFirstUse",38.382],
+            ["WebGLProgram.getUniforms",38.382],
+            ["initializeProgram",38.382],
+            ["renderer.compile",6.183]
+          ],
+          "topSelf": [["onFirstUse",38.382],["(garbage collector)",3.149],["(program)",3.096]],
+          "overlappingCalls": [
+            {"name":"drainBuildingQueue","at":18345.1,"ms":0},
+            {"name":"drainBaseQueue","at":18345.1,"ms":0},
+            {"name":"renderFrame","at":18345.1,"ms":0.8}
+          ],
+          "topSceneOrLoader": [],
+          "sceneOrStudioAttributable": true,
+          "decoderDuringStream": false
+        },
+        "maximumMeasuredCompileCallMs": 6.1,
+        "overlapLimit": "Initial ordinary rendering also occurs in the warm interval; it is not a warm carrier render.",
+        "compileCallsDuringInterval": 24,
+        "fallback": "One compile and uniform/attribute link check per rAF"
+      },
+      "sceneOrStudioLongTasks": 0,
+      "allLongTasksOver50": 0,
+      "topThreeSelf": [],
+      "topThreeInclusive": [],
+      "longestTask": null,
+      "profilesPath": "E:/BhuAayam-data/task-data/lv4/analysis-1791687676573/lv4-after-long-tasks.json",
+      "rawTimingFile": "E:/BhuAayam-data/task-data/lv4/run-1791686155639/timings.json",
+      "rawCpuFile": "E:/BhuAayam-data/task-data/lv4/run-1791686155639/cpu.cpuprofile",
+      "frames": {"count":151,"p50Ms":33.4,"p95Ms":300,"longestMs":500,"over50":63,"over100":38}
+    },
+    "lv4-headed": {
+      "recordedGit": "e5f93562fd25af323ae3fd4585dc1dc3caca6bcd",
+      "environment": {
+        "browser": "Chrome/154.0.0.0",
+        "pixelRatio": 1,
+        "cpuThrottleRate": 1,
+        "gpuRenderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "parallelShaderCompile": true
+      },
+      "programs": {
+        "beforeFeatureStream": 13,
+        "createdDuringFeatureStream": 0,
+        "firstPartDrawn": 13,
+        "everythingDrawn": 13,
+        "createdAfterFirstDrawn": 0,
+        "late": [],
+        "final": [
+          {"type":"ShaderMaterial","keyHash":"bb27966df1a8ce09","name":"BackgroundMaterial"},
+          {"type":"MeshStandardMaterial","keyHash":"b5afd408682c2a38","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"72e2ac76c33f50d8","name":""},
+          {"type":"LineBasicMaterial","keyHash":"0d5601ec51359b3a","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"7ac17ab809f2e09f","name":""},
+          {"type":"LineBasicMaterial","keyHash":"c464519096538d4b","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"3b4b266ee85103b1","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"21e97cc7699d9d01","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"f4480ed037a32b7a","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"43c659e7542ea24b","name":""},
+          {"type":"MeshDepthMaterial","keyHash":"0e6c9479adc93a7f","name":""},
+          {"type":"MeshDepthMaterial","keyHash":"20b394232c949633","name":""},
+          {"type":"MeshDepthMaterial","keyHash":"d82bf29903b2c024","name":""}
+        ]
+      },
+      "pageLoadToFirstFeatureFrameMs": 18784.8,
+      "pageLoadToFirstPartFullyDrawnMs": 18887.2,
+      "firstArrivalToFirstDrawnMs": 68.5,
+      "lastArrivalToEverythingDrawnMs": 68.4,
+      "warmUp": {
+        "startedAt": 18595.6,
+        "endedAt": 18771.7,
+        "settled": true,
+        "outcome": "ready",
+        "parallel": true,
+        "elapsedMs": 176.1,
+        "finishedBeforeFirstPartArrived": false,
+        "longestObservedTaskDuringWarmInterval": {
+          "at": 18596.3,
+          "ms": 94,
+          "topInclusive": [
+            ["engine.renderFrame",64.253],
+            ["renderFrame",64.253],
+            ["WebGLRenderer.render",62.734],
+            ["renderer.renderBufferDirect",58.14],
+            ["renderObject",58.14]
+          ],
+          "topSelf": [["onFirstUse",51.622],["WebGLShader",6.721],["getExtension",4.677]],
+          "overlappingCalls": [
+            {"name":"renderFrame","at":18597,"ms":0},
+            {"name":"drainBuildingQueue","at":18617.7,"ms":0.1},
+            {"name":"drainBaseQueue","at":18617.8,"ms":0},
+            {"name":"renderFrame","at":18617.6,"ms":63.1}
+          ],
+          "topSceneOrLoader": [["engine.renderFrame",64.253],["renderFrame",64.253]],
+          "sceneOrStudioAttributable": true,
+          "decoderDuringStream": false
+        },
+        "longestTaskWithWarmUpSamples": {
+          "at": 18596.3,
+          "ms": 94,
+          "topInclusive": [
+            ["engine.renderFrame",64.253],
+            ["renderFrame",64.253],
+            ["WebGLRenderer.render",62.734],
+            ["renderer.renderBufferDirect",58.14],
+            ["renderObject",58.14]
+          ],
+          "topSelf": [["onFirstUse",51.622],["WebGLShader",6.721],["getExtension",4.677]],
+          "overlappingCalls": [
+            {"name":"renderFrame","at":18597,"ms":0},
+            {"name":"drainBuildingQueue","at":18617.7,"ms":0.1},
+            {"name":"drainBaseQueue","at":18617.8,"ms":0},
+            {"name":"renderFrame","at":18617.6,"ms":63.1}
+          ],
+          "topSceneOrLoader": [["engine.renderFrame",64.253],["renderFrame",64.253]],
+          "sceneOrStudioAttributable": true,
+          "decoderDuringStream": false
+        },
+        "maximumMeasuredCompileCallMs": 13,
+        "overlapLimit": "Initial ordinary rendering also occurs in the warm interval; it is not a warm carrier render.",
+        "compileCallsDuringInterval": 4,
+        "fallback": "KHR polling"
+      },
+      "sceneOrStudioLongTasks": 0,
+      "allLongTasksOver50": 0,
+      "topThreeSelf": [],
+      "topThreeInclusive": [],
+      "longestTask": null,
+      "profilesPath": "E:/BhuAayam-data/task-data/lv4/analysis-1791687676573/lv4-headed-long-tasks.json",
+      "rawTimingFile": "E:/BhuAayam-data/task-data/lv4/run-1791686128688/timings.json",
+      "rawCpuFile": "E:/BhuAayam-data/task-data/lv4/run-1791686128688/cpu.cpuprofile",
+      "frames": {"count":408,"p50Ms":7.5,"p95Ms":19.9,"longestMs":44.4,"over50":0,"over100":0}
+    },
+    "lv4-throttled": {
+      "recordedGit": "2b348923e7faa4247094857790c0788b35bb857e",
+      "environment": {
+        "browser": "HeadlessChrome/153.0.8010.12",
+        "pixelRatio": 1,
+        "cpuThrottleRate": 4,
+        "gpuRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "parallelShaderCompile": false
+      },
+      "programs": {
+        "beforeFeatureStream": 3,
+        "createdDuringFeatureStream": 10,
+        "firstPartDrawn": 13,
+        "everythingDrawn": 13,
+        "createdAfterFirstDrawn": 0,
+        "late": [],
+        "final": [
+          {"type":"ShaderMaterial","keyHash":"bb27966df1a8ce09","name":"BackgroundMaterial"},
+          {"type":"MeshStandardMaterial","keyHash":"b5afd408682c2a38","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"72e2ac76c33f50d8","name":""},
+          {"type":"LineBasicMaterial","keyHash":"0d5601ec51359b3a","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"7ac17ab809f2e09f","name":""},
+          {"type":"LineBasicMaterial","keyHash":"c464519096538d4b","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"3b4b266ee85103b1","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"21e97cc7699d9d01","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"f4480ed037a32b7a","name":""},
+          {"type":"MeshStandardMaterial","keyHash":"43c659e7542ea24b","name":""},
+          {"type":"MeshDepthMaterial","keyHash":"0e6c9479adc93a7f","name":""},
+          {"type":"MeshDepthMaterial","keyHash":"20b394232c949633","name":""},
+          {"type":"MeshDepthMaterial","keyHash":"d82bf29903b2c024","name":""}
+        ]
+      },
+      "pageLoadToFirstFeatureFrameMs": 19411,
+      "pageLoadToFirstPartFullyDrawnMs": 34128,
+      "firstArrivalToFirstDrawnMs": 623,
+      "lastArrivalToEverythingDrawnMs": 38102.1,
+      "warmUp": {
+        "startedAt": 18547.8,
+        "endedAt": 19361.7,
+        "settled": true,
+        "outcome": "ready",
+        "parallel": false,
+        "elapsedMs": 813.9,
+        "finishedBeforeFirstPartArrived": false,
+        "longestObservedTaskDuringWarmInterval": {
+          "at": 18323.7,
+          "ms": 228,
+          "topInclusive": [
+            ["performWorkOnRoot",215.527],
+            ["performSyncWorkOnRoot",215.527],
+            ["flushSyncWorkAcrossRoots_impl",215.527],
+            ["processRootScheduleInMicrotask",215.527],
+            ["runWithFiberInDEV",212.465]
+          ],
+          "topSelf": [["getContext",23.816],["resize",18.36],["(garbage collector)",12.247]],
+          "overlappingCalls": [],
+          "topSceneOrLoader": [["readTiff",1.637]],
+          "sceneOrStudioAttributable": true,
+          "decoderDuringStream": false
+        },
+        "longestTaskWithWarmUpSamples": {
+          "at": 18323.7,
+          "ms": 228,
+          "topInclusive": [
+            ["performWorkOnRoot",215.527],
+            ["performSyncWorkOnRoot",215.527],
+            ["flushSyncWorkAcrossRoots_impl",215.527],
+            ["processRootScheduleInMicrotask",215.527],
+            ["runWithFiberInDEV",212.465]
+          ],
+          "topSelf": [["getContext",23.816],["resize",18.36],["(garbage collector)",12.247]],
+          "overlappingCalls": [],
+          "topSceneOrLoader": [["readTiff",1.637]],
+          "sceneOrStudioAttributable": true,
+          "decoderDuringStream": false
+        },
+        "maximumMeasuredCompileCallMs": 16.9,
+        "overlapLimit": "Initial ordinary rendering also occurs in the warm interval; it is not a warm carrier render.",
+        "compileCallsDuringInterval": 24,
+        "fallback": "One compile and uniform/attribute link check per rAF"
+      },
+      "sceneOrStudioLongTasks": 353,
+      "allLongTasksOver50": 354,
+      "topThreeSelf": [
+        ["bindVertexArrayObject",3823.741],
+        ["renderer.renderBufferDirect",3052.33],
+        ["WebGLRenderer.renderBufferDirect",2971.967]
+      ],
+      "topThreeInclusive":
+      [["renderFrame",41200.551],["engine.renderFrame",41192.716],["WebGLRenderer.render",33765.264]],
+      "longestTask": {
+        "at": 85387.6,
+        "ms": 232,
+        "topInclusive": [
+          ["renderFrame",226.754],
+          ["engine.renderFrame",226.754],
+          ["WebGLRenderer.render",181.003],
+          ["renderObject",144.871],
+          ["renderer.renderBufferDirect",110.948]
+        ],
+        "topSelf": [["bindVertexArrayObject",18.725],["(anonymous)",18.24],["WebGLRenderer.renderBufferDirect",16.533]],
+        "overlappingCalls": [
+          {"name":"drainBuildingQueue","at":85388,"ms":47.5},
+          {"name":"drainBaseQueue","at":85435.5,"ms":0},
+          {"name":"renderFrame","at":85388,"ms":231}
+        ],
+        "topSceneOrLoader": [["renderFrame",226.754],["engine.renderFrame",226.754],["drainBuildingQueue",44.204]],
+        "sceneOrStudioAttributable": true,
+        "decoderDuringStream": false
+      },
+      "profilesPath": "E:/BhuAayam-data/task-data/lv4/analysis-1791687676573/lv4-throttled-long-tasks.json",
+      "rawTimingFile": "E:/BhuAayam-data/task-data/lv4/run-1791686323176/timings.json",
+      "rawCpuFile": "E:/BhuAayam-data/task-data/lv4/run-1791686323176/cpu.cpuprofile",
+      "frames": {"count":552,"p50Ms":116.7,"p95Ms":216.7,"longestMs":450,"over50":449,"over100":303}
+    }
+  },
+  "comparisons": [
+    {
+      "before": "lv4-before",
+      "after": "lv4-after",
+      "firstDrawDeltaMs": 214.6,
+      "firstWholePartDeltaMs": -238.8,
+      "arrivedToFirstDrawDeltaMs": 124.7,
+      "finalDrawDeltaMs": 15.6
+    },
+    {
+      "before": "lv4-before-headed",
+      "after": "lv4-headed",
+      "firstDrawDeltaMs": 131.8,
+      "firstWholePartDeltaMs": 108,
+      "arrivedToFirstDrawDeltaMs": -4.3,
+      "finalDrawDeltaMs": 1
+    }
+  ],
+  "criteria": {
+    "zeroLatePrograms": true,
+    "criterion3aHeaded": true,
+    "criterion3aSoftware": true,
+    "fourTimes": {
+      "lv3Before": 327,
+      "after": 353,
+      "topThreeSelf": [
+        ["bindVertexArrayObject",3823.741],
+        ["renderer.renderBufferDirect",3052.33],
+        ["WebGLRenderer.renderBufferDirect",2971.967]
+      ]
+    },
+    "firstVisibleFeatureDelayPassed": false,
+    "firstWholePartDelayPassed": true,
+    "finalDrawDelayPassed": true,
+    "parityPassed": true
+  },
+  "parity": {
+    "rect": {"x":12,"y":68,"width":1416,"height":632},
+    "imageryCheck": {
+      "profile": {"width":768,"height":768,"bands":4,"projectedCSTypeGeoKey":3857},
+      "comparedBytes": 2359296,
+      "differentBytes": 0,
+      "transferredSourceBytes": 0,
+      "workerPicture": "E:/BhuAayam-data/task-data/lv4/parity-1791686641200/imagery-worker.png",
+      "referencePicture": "E:/BhuAayam-data/task-data/lv4/parity-1791686641200/imagery-reference.png",
+      "pixels": {"meanAbsoluteError255":0,"changedFraction":0},
+      "qualification": "Real NYC raster, explicitly on, worker versus prior synchronous raster loop at the same pose."
+    },
+    "identicalApplicationIds": true,
+    "identicalBounds": true,
+    "identicalBaseBounds": true,
+    "sourceGit": "512f6fc499382549670cafe04e1143c9f09d9b9d",
+    "drawn": 1662,
+    "scene": {
+      "bounds": [[181.222351,0,-1701.498779],[1853.974609,173.817413,-22.512215]],
+      "baseBounds": [[0,0,-1553.399323],[1868.713832,0,0]],
+      "identicalSourceBaseIds": true,
+      "baseCount": 701,
+      "baseBatches": 8,
+      "padBatches": 50,
+      "imagery": []
+    },
+    "pixels": {"meanAbsoluteError255":0.003785,"changedFraction":0.000174},
+    "screenshot": "E:/BhuAayam-data/task-data/lv4/parity-1791686641200/final.png",
+    "qualification": "Fixed-id replay against LV3 after-capture, assets present, same pose and preferences.",
+    "reference": "E:/BhuAayam-data/task-data/lv3/parity-1791684998911/final.png"
+  },
+  "step0TableFile": "docs/evidence/gf5/lv4/step0.json:tables",
+  "shaderSources": [
+    "packages/scene/node_modules/three/src/renderers/webgl/WebGLPrograms.js getParameters/getProgramCacheKey",
+    "packages/scene/node_modules/three/src/renderers/WebGLRenderer.js compile/compileAsync",
+    "packages/scene/node_modules/three/src/renderers/webgl/WebGLProgram.js onFirstUse/isReady",
+    "packages/scene/node_modules/three/src/renderers/webgl/WebGLShadowMap.js getDepthMaterial"
+  ],
+  "boundedComparison": {
+    "ledger": "bounded-change.json",
+    "initialAttempt": "initial-attempt.json",
+    "result":
+    "Exact keys and zero stream shader stalls after one bounded change; headless page-to-first draw +214.6 ms.",
+    "stop": "Rule (d): +214.6 ms exceeds the +200 ms bound after the one allowed change. No second tuning approach.",
+    "next": "Review this checkpoint; constructor begins only after metadata, not during upload/probe."
+  },
+  "qualification": [
+    "Timed final runs precede disposal cleanup in the same helper; final-source parity and all package tests pass.",
+    "Cleanup releases retained depth carriers and cancels a disposed engine; no further timed run after the stop.",
+    "Development StrictMode constructs two engines; pre-cleanup timings include compilation from both.",
+    "A full final-source timing receipt is therefore still needed before integration; none is claimed here.",
+    "Page-load timing uses the navigation performance clock; normalization/server timing variance is included.",
+    "Conservative stop uses first visible feature frame (+214.6 ms), not a later first whole-part acknowledgement.",
+    "Whole-part acknowledgement improves by 238.8 ms headless and grows by 108 ms headed; both are also reported.",
+    "Warm-up finishes after the first part arrives in all final runs; queues correctly wait for readiness.",
+    "The initial sky/background program is an ordinary pre-feature render, never a drawn warm carrier.",
+    "Scene bindings, appearance and anchors are unchanged; same-key depth entries are retired with the engine.",
+    "At 4x no renderer or tree optimization was attempted; detailed task profiles stay outside Git."
+  ],
+  "checks": [
+    {"command":"pnpm studio:typecheck","exitCode":0},
+    {"command":"pnpm studio:test","exitCode":0,"scene":44,"studio":367,"apiClient":2,"ui":7},
+    {"command":"node docs/evidence/gf5/lv4/parity.mjs","exitCode":0},
+    {"command":"node docs/evidence/gf5/lv4/results.mjs","exitCode":0},
+    {"command":"git diff --check","exitCode":0},
+    {"command":"Owned ports 5234/5235 freePort checks and browser tasklist checks","exitCode":0}
+  ]
+}

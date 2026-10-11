@@ -7,6 +7,7 @@ import type { FootprintInput } from './types';
 function engineFixture() {
   const material = new MeshBasicMaterial();
   const engine = Object.assign(Object.create(SceneEngine.prototype), {
+    programWarmUp: { settled: true },
     entries: new Map(), buildingBounds: new Map(), buildingInputs: new Map(), buildingEntries: new Map(),
     buildingQueue: new Map(), baseQueue: new Map(), renderedBuildings: new Set(), renderChanges: new Map(),
     drawWaiters: new Set(),
@@ -41,6 +42,26 @@ function draw(engine: ReturnType<typeof engineFixture>) {
 afterEach(() => vi.restoreAllMocks());
 
 describe('whole-list incremental building reconciliation', () => {
+  it('waits for warm-up and resumes after readiness, rejection or timeout without early acknowledgement', async () => {
+    for (const outcome of ['ready', 'failed', 'timeout']) {
+      const engine = engineFixture();
+      engine.programWarmUp = { settled: false, outcome: 'pending' };
+      engine.setBuildings([building('a')]);
+      let completed = false;
+      const waiting = engine.waitForDrawn(['a']).then((drawn) => { completed = drawn; });
+      draw(engine);
+      await Promise.resolve();
+      expect(engine.buildingInputs.size).toBe(0);
+      expect(engine.buildingQueue.size).toBe(1);
+      expect(completed).toBe(false);
+      engine.programWarmUp = { settled: true, outcome };
+      draw(engine);
+      await waiting;
+      expect(engine.buildingInputs.has('a')).toBe(true);
+      expect(completed).toBe(true);
+    }
+  });
+
   it('retains the exact mesh for the same object and an own-field-identical object', () => {
     const engine = engineFixture();
     const input = building('a');

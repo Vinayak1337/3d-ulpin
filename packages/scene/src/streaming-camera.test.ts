@@ -6,6 +6,7 @@ import type { BaseFeatureInput, FootprintInput } from './types';
 function fixture(reducedMotion = false) {
   const material = new MeshBasicMaterial();
   const engine = Object.assign(Object.create(SceneEngine.prototype), {
+    programWarmUp: { settled: true },
     state: { mode: 'area' }, options: { reducedMotion }, cameraKey: '', flight: null,
     baseBox: new Box3(), arrivedBox: new Box3(), arrivalBounds: new Map(), framedBox: null,
     buildingInputs: new Map(), buildingQueue: new Map(), buildingBounds: new Map(),

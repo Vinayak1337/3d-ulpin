@@ -8,6 +8,7 @@ function imageMesh(role?: 'ground'): Mesh {
   // Exercise the engine's actual overlay builder without a browser/WebGL renderer.
   const overlays = new Group();
   const engine = Object.assign(Object.create(SceneEngine.prototype), {
+    programWarmUp: { settled: true },
     overlays,
     renderer: { capabilities: { getMaxAnisotropy: () => 1 } },
     requestRender: vi.fn(),
