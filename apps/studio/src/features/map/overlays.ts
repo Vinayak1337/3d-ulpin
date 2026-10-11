@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import type { NormalizedArea } from '@ulpin/contracts/canonical-scene';
 import type { ImageOverlayInput, LocalXY, OverlayInput } from '@ulpin/scene';
+import { imageryRefusal, type ImageryReply } from './imagery-pixels';
 
 /** A supplemental dataset as the area context lists it (imagery, point cloud, elevation). */
 export interface SupplementalDataset {
@@ -80,24 +81,55 @@ async function readTiff(url: string, signal: AbortSignal) {
   return image;
 }
 
+async function decodeImagery(bytes: ArrayBuffer, signal: AbortSignal): Promise<ImageryReply> {
+  signal.throwIfAborted();
+  const worker = new Worker(new URL('./imagery.worker.ts', import.meta.url), { type: 'module' });
+  return new Promise((resolve, reject) => {
+    const finish = (reply?: ImageryReply, error?: unknown) => {
+      signal.removeEventListener('abort', abort);
+      worker.terminate();
+      if (error !== undefined) reject(error);
+      else resolve(reply!);
+    };
+    const abort = () => finish(undefined, signal.reason ?? new DOMException('Aborted', 'AbortError'));
+    signal.addEventListener('abort', abort, { once: true });
+    worker.onmessage = (event: MessageEvent<ImageryReply>) => {
+      if (signal.aborted) abort();
+      else finish(event.data);
+    };
+    worker.onerror = (event) => finish(undefined, new Error(event.message));
+    worker.onmessageerror = () => finish(undefined, new Error('overlay could not be loaded'));
+    try {
+      worker.postMessage(bytes, [bytes]);
+    } catch (error) {
+      finish(undefined, error);
+    }
+  });
+}
+
+async function readImagery(url: string, signal: AbortSignal): Promise<HTMLCanvasElement> {
+  const response = await fetchOverlay(url, signal);
+  const reply = await decodeImagery(await response.arrayBuffer(), signal);
+  signal.throwIfAborted();
+  if ('error' in reply) throw new Error(reply.error);
+  const refusal = imageryRefusal(reply.profile);
+  if (refusal) throw new Error(refusal);
+  if (!reply.rgba) throw new Error('overlay could not be loaded');
+  const canvas = document.createElement('canvas');
+  canvas.width = reply.profile.width;
+  canvas.height = reply.profile.height;
+  const ctx = canvas.getContext('2d')!;
+  const pixels = ctx.createImageData(canvas.width, canvas.height);
+  pixels.data.set(reply.rgba);
+  ctx.putImageData(pixels, 0, 0);
+  return canvas;
+}
+
 /** Official imagery draped where it covers: corners from its recorded geographic bounds. */
 async function imageryOverlay(d: SupplementalDataset, ref: AreaReference, signal: AbortSignal): Promise<LoadedOverlay | null> {
   const utm = utmZone(ref.analysisCrs);
   if (!d.originalUrl || !d.bounds4326 || !utm || !ref.origin || !/^EPSG:32[67]\d{2}$/.test(ref.analysisCrs ?? '')) return null;
-  const image = await readTiff(d.originalUrl, signal);
-  const width = image.getWidth(), height = image.getHeight();
-  const raster = (await image.readRasters({ interleave: true })) as unknown as Uint8Array;
-  const bands = image.getSamplesPerPixel();
-  if (![3, 4].includes(bands) || image.getGeoKeys().ProjectedCSTypeGeoKey !== 3857) throw new Error("Only the verified Web Mercator RGB/RGBA imagery profile is supported");
-  const canvas = document.createElement('canvas');
-  canvas.width = width; canvas.height = height;
-  const ctx = canvas.getContext('2d')!;
-  const pixels = ctx.createImageData(width, height);
-  for (let i = 0, j = 0; i < width * height; i++, j += bands) {
-    pixels.data[i * 4] = raster[j]!; pixels.data[i * 4 + 1] = raster[j + 1]!; pixels.data[i * 4 + 2] = raster[j + 2]!;
-    pixels.data[i * 4 + 3] = bands > 3 ? raster[j + 3]! : 255;
-  }
-  ctx.putImageData(pixels, 0, 0);
+  const canvas = await readImagery(d.originalUrl, signal);
   // CanvasTexture already flips source rows for UV north-up; do not flip twice.
   const [west, south, east, north] = d.bounds4326;
   const local = (lon: number, lat: number): [number, number] => {

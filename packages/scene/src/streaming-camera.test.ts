@@ -10,7 +10,7 @@ function fixture(reducedMotion = false) {
     baseBox: new Box3(), arrivedBox: new Box3(), arrivalBounds: new Map(), framedBox: null,
     buildingInputs: new Map(), buildingQueue: new Map(), buildingBounds: new Map(),
     baseInputs: [], baseNeedsDraw: false, base: new Group(), kerbs: new Group(), raised: [],
-    baseEntries: new Map(), baseBatches: new Set(), lands: [],
+    baseEntries: new Map(), baseBatches: new Set(), baseQueue: new Map(), lands: [],
     anchors: new Map(), anchorSizes: new Map(), m: { road: material, kerb: material },
     container: { clientWidth: 1440, clientHeight: 900 }, camera: new PerspectiveCamera(45),
     controls: { target: new Vector3(), update: vi.fn() },

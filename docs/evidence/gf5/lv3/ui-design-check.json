@@ -1,0 +1,19 @@
+{
+  "scope": "apps/studio/src/features/map imagery loading only; no screen, component or CSS edits",
+  "Blocking": [],
+  "Design system": [],
+  "Checked, no issue": [
+    "Manual review of overlays.ts, imagery.worker.ts and imagery-pixels.ts: no layout, token or control changes.",
+    "Existing caption, attribution, source coverage note and refusal wording retained.",
+    "Raster row order, RGBA values, north-up corners and canvas texture input retained.",
+    "No invented display values, format expansion, theme switch or changes to keyboard/zoom behavior.",
+    "Fixed-pose parity against LV2 passes with assets present; imagery is off in the frozen reference.",
+    "Separate real NYC imagery-visible comparison against the prior synchronous loop has zero pixel error."
+  ],
+  "references": ["AGENTS.md", "docs/design-system/map-and-3d.md#base-scene"],
+  "scan": {
+    "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs staging",
+    "exitCode": 0,
+    "result": "No candidates; mechanical scanner covers apps/web only, so Studio was reviewed manually."
+  }
+}

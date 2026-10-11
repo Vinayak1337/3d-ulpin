@@ -1,0 +1,69 @@
+{
+  "rect": {
+    "x": 12,
+    "y": 68,
+    "width": 1416,
+    "height": 632
+  },
+  "imageryCheck": {
+    "profile": {
+      "width": 768,
+      "height": 768,
+      "bands": 4,
+      "projectedCSTypeGeoKey": 3857
+    },
+    "comparedBytes": 2359296,
+    "differentBytes": 0,
+    "transferredSourceBytes": 0,
+    "workerPicture": "E:/BhuAayam-data/task-data/lv3/parity-1791684998911/imagery-worker.png",
+    "referencePicture": "E:/BhuAayam-data/task-data/lv3/parity-1791684998911/imagery-reference.png",
+    "pixels": {
+      "meanAbsoluteError255": 0,
+      "changedFraction": 0
+    },
+    "qualification": "Real NYC raster, explicitly on, worker versus prior synchronous raster loop at the same pose."
+  },
+  "identicalApplicationIds": true,
+  "identicalBounds": true,
+  "identicalBaseBounds": true,
+  "sourceGit": "ff6cdc48630802b0a7b2e77dbcb6bd184c30b74a",
+  "drawn": 1662,
+  "scene": {
+    "bounds": [
+      [
+        181.22235107421875,
+        1.3784756061635149e-15,
+        -1701.498779296875
+      ],
+      [
+        1853.974609375,
+        173.81741333007812,
+        -22.51221466064453
+      ]
+    ],
+    "baseBounds": [
+      [
+        0,
+        0,
+        -1553.3993228916079
+      ],
+      [
+        1868.7138322830433,
+        0,
+        0
+      ]
+    ],
+    "identicalSourceBaseIds": true,
+    "baseCount": 701,
+    "baseBatches": 8,
+    "padBatches": 47,
+    "imagery": []
+  },
+  "pixels": {
+    "meanAbsoluteError255": 0.02840242020071992,
+    "changedFraction": 0.0008872380748051205
+  },
+  "screenshot": "E:/BhuAayam-data/task-data/lv3/parity-1791684998911/final.png",
+  "qualification": "Fixed-id replay against LV2, assets present and decoded; imagery is off by default in both.",
+  "reference": "E:/BhuAayam-data/task-data/lv1/parity-1791666304729/final.png"
+}

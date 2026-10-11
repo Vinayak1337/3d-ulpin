@@ -8,7 +8,8 @@ function engineFixture() {
   const material = new MeshBasicMaterial();
   const engine = Object.assign(Object.create(SceneEngine.prototype), {
     entries: new Map(), buildingBounds: new Map(), buildingInputs: new Map(), buildingEntries: new Map(),
-    buildingQueue: new Map(), renderedBuildings: new Set(), renderChanges: new Map(), drawWaiters: new Set(),
+    buildingQueue: new Map(), baseQueue: new Map(), renderedBuildings: new Set(), renderChanges: new Map(),
+    drawWaiters: new Set(),
     storeyBuildings: new Map(), footprintPolygons: new Map(), pads: new Map(), buildings: new Group(),
     padBatches: new Map(), pendingPads: new Map(),
     dressing: new Group(), trees: new Group(), detail: new Group(), anchors: new Map(),
