@@ -1,0 +1,65 @@
+{
+  "task": "LQ1a",
+  "gate": ["GF1", "GF5"],
+  "baseline": {"branch": "task/lq1a-batch-follows-to-cards", "mergedHead": "6f5e4183", "refresh": "passed", "typecheckExit": 2, "failure": "E3a's historic item fixture predates required nullable plan; adapt the owned test, leave historic evidence unchanged."},
+  "recipe": {
+    "contract": "packages/contracts/src/usp/ingestion.ts:35-67,124-137",
+    "typedRead": "GetResponse<'/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}'> is an array of GeoJSON or tabular receipts; select greatest revision, not first element.",
+    "receiptMembers": ["id", "revision", "state", "plan", "destination", "planHash", "authoredBy", "authoredAt", "approval", "execution"],
+    "planCoverage": {
+      "version": "additional member name", "mode": "additional member name", "source": "additional member name (sourceId, familyId, sourceRevision, sourceSha256, schemaFingerprint)",
+      "caseId": "additional member name", "workspaceRevision": "additional member name", "workspaceFingerprint": "additional member name",
+      "operations": "identifier and name lines; remaining operation targets, paths and conversion IDs named explicitly",
+      "heightField": "Height field", "heightUnit": "Height metres or feet", "heightMeaning": "Height stored meaning",
+      "tabular": "additional member name on tabular recipes", "mapping": "additional member name on tabular recipes", "decisions": "additional member name on tabular recipes"
+    },
+    "destinationCoverage": {"kind": "new or existing area", "name": "Area stored name", "namespace": "additional destination member name and value", "areaId": "additional destination member name and value", "expectedAreaRevision": "additional destination member name and value", "referenceFingerprint": "additional destination member name and value"},
+    "origin": "Only item.plan.origin: memory = Remembered from an approved layout of the same columns; teacher = Proposed by the model; officer = Written by an officer; null = not supplied by the record. Do not infer from authoredBy.",
+    "missingLines": "Absent name/height say not stated. Tabular mapping has no GeoJSON identifier line and null destination: not supplied by the record. Unknown future members are listed by name."
+  },
+  "lifecycle": {
+    "references": ["packages/server/src/modules/usp/ingestion/service.ts:202-228,234-281", "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts:154-190", "packages/server/src/modules/usp/ingestion/intake-ledger.ts:19-64", "docs/evidence/gf1/ca0/HANDOFF.md"],
+    "noRecipe": "probed / needs_answer / plan null, stored reason No approved layout matches this file. An officer chooses the identifier field.",
+    "proposed": "worker transition: planned / undecided, plan proposed, origin retained",
+    "approved": "approve queues worker; planned / undecided then reading / undecided",
+    "executed": "worker executes itself; read / on_map, plan executed with packageId; targets created and package areaId published",
+    "events": {"recipe.changed": "author, approve, execute; invalidate manifest, all displayed recipe histories, targets", "intake.item": "probe and worker ledger transitions; same invalidations", "intake.target": "target progress; same invalidations", "ready": "read current facts", "resync": "set head cursor, refetch once, reconnect automatically"},
+    "fallback": "Only unsettled tray items: quiet reads no faster than 5 seconds. Errors close and reconnect from head on next 5-second tick. Banner after two consecutive failed reconnects, clear on success. Run panel independently keeps its own stream and fallback.",
+    "connections": 2,
+    "suspectedBlocker": "service.ts author lines 202-228 saves receipt and emits recipe.changed but never calls queueIntakeDraftTx. Initial worker can already have completed with plan null. Manifest projects only stored plan_ref (intake-ledger.ts:19-34); event payload cannot replace it. Author after no-layout completion therefore cannot reach item.plan without backend change. Verify exact request on disposable runtime; stop affected walk if confirmed."
+  },
+  "approval": {
+    "route": "POST /api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/approve",
+    "body": {"requestKey": "fresh UUID retained for this press", "expectedRecipeRevision": "positive integer from displayed latest receipt"},
+    "authority": "PrivateSpatialGuard loopback checks; configured local operator, not authenticated human roles. localRequestContext roles ['operator']; source actor must equal configured subject. UI never supplies identity.",
+    "refusals": [
+      {"code":"HOST_DENIED","status":403,"words":"Forbidden host."},
+      {"code":"LOCAL_DEMO_ONLY","status":403,"words":"This single-operator demonstration is available only on localhost."},
+      {"code":"ORIGIN_DENIED","status":403,"words":"The request did not originate from the local workbench."},
+      {"code":"CROSS_ORIGIN_READ","status":403,"words":"Cross-origin spatial reads are not allowed."},
+      {"code":"LOCAL_OPERATOR_CONFIGURATION","status":503,"words":"Set ULPIN_LOCAL_OPERATOR_SUBJECT to a valid local process attribution subject (1–256 characters, no surrounding whitespace or ASCII control characters). The historical default cannot be used for new attribution."},
+      {"code":"NOT_FOUND","status":404,"words":["Source workspace not found.","Manual recipe not found.","Retained source not found in this workspace."]},
+      {"code":"SOURCE_OPERATOR","status":403,"words":"This source belongs to another local context."},
+      {"code":"UNSUPPORTED_PROFILE","status":422,"words":"Retain a supported original through the manual receipt operation."},
+      {"code":"SOURCE_INTEGRITY","status":422,"words":"The retained original failed its byte/hash check."},
+      {"code":"STALE_REVISION","status":409,"words":["This source case is now associated with a package or property; reopen its current context.","This request key already names different manual mapping inputs.","This source revision has been superseded; author a recipe for the current original.","Source bytes, schema, revision or workspace changed; inspect and author a current recipe.","The recipe and receipt formats differ.","The destination revision or reference changed; author a current recipe.","This destination already exists; pin its current area and reference explicitly.","The recipe changed; refresh before approval or execution.","The recipe content changed after authoring."]},
+      {"code":"RECIPE_STATE","status":409,"words":"Only a current proposed recipe can be approved and only an approved manual recipe can execute once."},
+      {"code":"INVALID_INPUT","status":422,"words":"Body/UUID/schema validation details are returned by the shared exception filter; display verbatim."},
+      {"code":"MAPPING_HEIGHT","status":422,"words":["State the height field, its source unit and its meaning together.","Choose an inspected numeric or text height attribute; null and absent values remain unknown."]},
+      {"code":"MAPPING_PATH","status":422,"words":"Choose an inspected source path and compatible registry conversion."},
+      {"code":"MAPPING_GEOMETRY","status":422,"words":"Geometry must reference the retained GeoJSON feature geometry."},
+      {"code":"MAPPING_FIELD","status":422,"words":"The existing area adapter cannot map this field name verbatim."},
+      {"code":"MAPPING_IDENTITY","status":422,"words":["Source identity must be complete, unique, nonempty literal text.","Choose a source attribute or retained Feature.id."]},
+      {"code":"MAPPING_NAME","status":422,"words":"A name mapping requires a complete text attribute; null and absent values stay distinct in the profile."}
+    ],
+    "otherValidation": "registry.ts parses retained bytes (INVALID_JSON, UNSUPPORTED_PROFILE, RECORD_LIMIT, EMPTY_SOURCE, SOURCE_PROFILE, UNSUPPORTED_GEOMETRY); tabular-recipe.ts validates tabular pins/mapping for tabular receipts. Infrastructure/storage errors remain errors, not decisions.",
+    "staleUI": "On any 409 re-read latest recipe and current facts; say The layout changed. Read the current layout before approving it. Approved/executed read-only."
+  },
+  "nycHarness": {
+    "reference": "docs/evidence/gf1/e1b/steps.ts:215-228 chooseLayout",
+    "authorRoute": "POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/recipes",
+    "authorBody": {"requestKey":"randomUUID()","expectedRecipeRevision":0,"plan":{"version":"inspected.version","mode":"manual_mapping","source":"inspected.source","caseId":"caseId","workspaceRevision":"inspected.workspaceRevision","workspaceFingerprint":"inspected.workspaceFingerprint","operations":[{"target":"building.sourceKey","sourcePath":"/features/*/properties/doitt_id","conversionId":"literal_identifier@1"},{"target":"building.geometry","sourcePath":"/features/*/geometry","conversionId":"geojson_polygon@1"}]},"destination":{"kind":"new_area","name":"source.inspection.gis.suggestedTitle","namespace":"source.inspection.gis.suggestedNamespace"}},
+    "approveCall": "manual.decide(caseId, authored.id, {requestKey: randomUUID(), expectedRecipeRevision: authored.revision}, 'approve'); walk approval is UI only.",
+    "safety": "Only the declared author helper obtains destination from inspection SQL, exactly as harness; product never does. No height fields. Unchanged buildings original SHA-256 107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e; 1662 retained, 1661 accepted. Gateway disabled."
+  }
+}
