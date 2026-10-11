@@ -61,15 +61,17 @@ async function priorJobTx(client: PoolClient, input: IntakeDraftInput): Promise<
     if (prior.payload.sourcePin !== input.sourcePin) conflict('The retained intake source changed.');
     return prior.id;
   }
-  const active = (await client.query(`SELECT id FROM jobs WHERE source_id=$1 AND operation='intake-draft'
+  const active = (await client.query(`SELECT id,payload FROM jobs WHERE source_id=$1 AND operation='intake-draft'
     AND status IN ('queued','running') ORDER BY created_at LIMIT 1`, [input.sourceId])).rows[0];
+  if (active && active.payload.sourcePin !== input.sourcePin) conflict('The retained intake source changed.');
   return active?.id ?? null;
 }
 
 /** Caller holds the case; enrollment and probe/approval publication share its transaction. */
-export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourceRow): Promise<string | null> {
-  // Other intake formats retain their existing behavior and need no draft-specific query.
-  if (source.profile !== 'geojson-manual-v1') return null;
+export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourceRow,
+  publishedCard?: IntakeCard): Promise<string | null> {
+  // Nonvector readers keep their own behavior. Unsupported vectors receive a reason, never another reader.
+  if (source.profile !== 'geojson-manual-v1' && publishedCard?.family !== 'vector') return null;
   const item = await draftItemTx(client, source.id);
   if (!item || item.parent_item_id || item.family !== 'vector'
     || !['probed', 'planned', 'reading'].includes(item.state)) return null;

@@ -57,33 +57,63 @@ function input() {
     sourcePin: intakeSourcePin(source(), binding), recipeRevision: 0,
     subject: binding.subject, accessSha256: binding.access });
 }
+type Protocol = {
+  src: IntakeSourceRow;
+  tray: DraftItem;
+  jobs: any[];
+  state: { recipeRevision: number; events: number; projection: Record<string, any> };
+};
+function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | null {
+  const { src, tray, jobs, state } = fixture;
+  if (sql.startsWith('SELECT * FROM usp_intake_items')) return [tray];
+  if (sql.startsWith('SELECT id,revision,archived FROM cases')) return [{ id: caseId, revision: 0, archived: false }];
+  if (sql.startsWith('SELECT * FROM sources')) return [src];
+  if (sql.startsWith('SELECT max(revision)')) return [{ revision: src.revision }];
+  if (sql.startsWith('SELECT revision FROM usp_mapping_recipes'))
+    return state.recipeRevision ? [{ revision: state.recipeRevision }] : [];
+  if (sql.startsWith('SELECT * FROM usp_job_metadata') || sql.startsWith('SELECT pg_advisory')) return [];
+  if (sql.startsWith('SELECT state,placement,plan_ref')) return [state.projection];
+  if (sql.startsWith('SELECT item_id AS')) return [{ itemId: sourceId, state: tray.state,
+    family: 'vector', format: 'geojson', sizeClass: 'S', wave: 1, pinnedByOfficer: false }];
+  if (sql.startsWith('SELECT revision FROM cases')) return [{ revision: 0 }];
+  if (sql.includes('FROM jobs') && sql.includes('status IN'))
+    return jobs.filter(job => ['queued', 'running'].includes(job.status));
+  if (sql.startsWith('SELECT id,payload FROM jobs') || sql.startsWith('SELECT * FROM jobs'))
+    return jobs.filter(row => row.id === values[0]);
+  return null;
+}
+function protocolWrite(sql: string, values: any[], fixture: Protocol): any[] | null {
+  const { tray, jobs, state } = fixture;
+  if (sql.startsWith('INSERT INTO jobs')) {
+    jobs.push({ id: values[0], status: 'queued', case_id: values[1], source_id: values[2], operation: 'intake-draft',
+      case_revision: values[3], input_fingerprint: values[4], payload: values[5] });
+    return [];
+  }
+  if (sql.startsWith('UPDATE usp_intake_items SET state=')) {
+    state.projection = { state: values[2], placement: values[3], plan_ref: values[4],
+      records_seen: values[5], limit_reason: values[6] };
+    tray.state = values[2];
+    return [];
+  }
+  if (sql.startsWith('UPDATE usp_outbox_streams')) return [{ sequence: '1' }];
+  if (sql.startsWith('INSERT INTO usp_outbox(')) {
+    state.events++;
+    return [];
+  }
+  if (sql.startsWith('INSERT INTO usp_outbox_streams') || sql.startsWith('INSERT INTO usp_job_metadata')) return [];
+  return null;
+}
 function protocol() {
-  const src = source();
-  const tray = item();
-  const jobs: any[] = [];
+  const fixture: Protocol = { src: source(), tray: item(), jobs: [], state: { recipeRevision: 0, events: 0,
+    projection: { state: 'probed', placement: 'undecided', plan_ref: null, records_seen: 0, limit_reason: null } } };
   const statements: string[] = [];
   const client = { query: async (sql: string, values: any[]) => {
     statements.push(sql);
-    if (sql.startsWith('INSERT INTO jobs')) {
-      jobs.push({ id: values[0], case_id: values[1], source_id: values[2], operation: 'intake-draft',
-        case_revision: values[3], input_fingerprint: values[4], payload: values[5] });
-      return { rows: [], rowCount: 1 };
-    }
-    if (sql.startsWith('SELECT * FROM usp_intake_items')) return { rows: [tray] };
-    if (sql.startsWith('SELECT id,revision,archived FROM cases'))
-      return { rows: [{ id: caseId, revision: 0, archived: false }] };
-    if (sql.startsWith('SELECT * FROM sources')) return { rows: [src] };
-    if (sql.startsWith('SELECT max(revision)')) return { rows: [{ revision: src.revision }] };
-    if (sql.startsWith('SELECT revision FROM usp_mapping_recipes')
-      || sql.startsWith('SELECT * FROM usp_job_metadata')) return { rows: [] };
-    if (sql.startsWith('SELECT id,payload FROM jobs') || sql.startsWith('SELECT * FROM jobs'))
-      return { rows: jobs.filter(row => row.id === values[0]) };
-    if (sql.includes('FROM jobs') && sql.includes('status IN')) return { rows: jobs };
-    if (sql.startsWith('SELECT pg_advisory') || sql.startsWith('INSERT INTO usp_job_metadata'))
-      return { rows: [], rowCount: 1 };
-    throw new Error(`Unexpected protocol SQL: ${sql}`);
+    const rows = protocolRead(sql, values, fixture) ?? protocolWrite(sql, values, fixture);
+    if (!rows) throw new Error(`Unexpected protocol SQL: ${sql}`);
+    return { rows, rowCount: rows.length };
   } } as unknown as PoolClient;
-  return { client, src, tray, jobs, statements };
+  return { client, statements, ...fixture };
 }
 
 test('deterministic keys replay and distinguish proposal, approval revision and execution', () => {
@@ -97,6 +127,29 @@ test('repeated enqueue enrolls one existing job authority input', async () => {
   assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src), first);
   assert.equal(fixture.jobs.length, 1);
   assert.equal(fixture.statements.filter(sql => sql.startsWith('INSERT INTO usp_job_metadata')).length, 1);
+});
+test('approval during an active proposal retains one job, then its next revision can enroll', async () => {
+  const fixture = protocol();
+  const first = await queueIntakeDraftTx(fixture.client, fixture.src);
+  fixture.state.recipeRevision = 2;
+  assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src), first);
+  assert.equal(fixture.jobs.length, 1);
+  fixture.jobs[0].status = 'succeeded';
+  assert.notEqual(await queueIntakeDraftTx(fixture.client, fixture.src), first);
+  assert.equal(fixture.jobs.length, 2);
+});
+test('unsupported large vector writes one limit reason/event and never enrolls another reader', async () => {
+  const fixture = protocol();
+  fixture.src.profile = 'large-original-v1';
+  fixture.src.bytes = 16777217;
+  const card = { ...fixture.tray.card, family: 'vector' } as NonNullable<DraftItem['card']>;
+  assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, card), null);
+  assert.equal(fixture.state.projection.placement, 'needs_answer');
+  assert.match(fixture.state.projection.limit_reason, /16777216.*16777217/);
+  assert.equal(fixture.state.events, 1);
+  await queueIntakeDraftTx(fixture.client, fixture.src, card);
+  assert.equal(fixture.state.events, 1);
+  assert.equal(fixture.jobs.length, 0);
 });
 test('unregistered and child items do not enqueue', async () => {
   const fixture = protocol();

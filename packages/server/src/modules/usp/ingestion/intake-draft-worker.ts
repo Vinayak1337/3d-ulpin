@@ -91,14 +91,28 @@ async function proposeRecipe(input: IntakeDraftInput, attempt: UspJobAttempt): P
   const { source } = await pinned(input, attempt, client => assertIntakeDraftTx(client, input));
   const gis = source.inspection?.gis;
   if (!gis?.suggestedTitle || !gis?.suggestedNamespace) return null;
-  return await manual.author(input.caseId, input.sourceId, {
-    requestKey: intakeDraftKey(input.itemId, 0, 'author'), expectedRecipeRevision: 0, plan: proposal.plan,
-    destination: { kind: 'new_area', name: gis.suggestedTitle, namespace: gis.suggestedNamespace },
-  }) as MappingReceipt;
+  const existing = await recipe(input, attempt);
+  if (existing) return existing;
+  try {
+    return await manual.author(input.caseId, input.sourceId, {
+      requestKey: intakeDraftKey(input.itemId, 0, 'author'), expectedRecipeRevision: 0, plan: proposal.plan,
+      destination: { kind: 'new_area', name: gis.suggestedTitle, namespace: gis.suggestedNamespace },
+    }) as MappingReceipt;
+  } catch (error) {
+    // An officer may author/approve while the permitted proposal call is in flight.
+    if (!(error instanceof AppError) || error.code !== 'STALE_REVISION') throw error;
+    const winner = await recipe(input, attempt);
+    if (!winner) throw error;
+    return winner;
+  }
 }
 
-async function origin(input: IntakeDraftInput, attempt: UspJobAttempt): Promise<Origin> {
+async function origin(input: IntakeDraftInput, attempt: UspJobAttempt, receipt: MappingReceipt): Promise<Origin> {
   return pinned(input, attempt, async client => {
+    const authored = (await client.query(`SELECT result FROM operations WHERE case_id=$1
+      AND operation_key=$2 AND kind='manual-mapping'`,
+    [input.caseId, `manual-author:${intakeDraftKey(input.itemId, 0, 'author')}`])).rows[0]?.result;
+    if (authored?.id !== receipt.id || authored.planHash !== receipt.planHash) return 'officer';
     const state = await readIntakeDraftTx(client, input.caseId, input.itemId);
     if (state.planRef?.origin === 'memory' || state.planRef?.origin === 'teacher') return state.planRef.origin;
     const row = (await client.query(
@@ -110,7 +124,7 @@ async function origin(input: IntakeDraftInput, attempt: UspJobAttempt): Promise<
 
 async function transition(input: IntakeDraftInput, attempt: UspJobAttempt, receipt: MappingReceipt | null,
   state: IntakeDraftState['state'], packageId?: string) {
-  const from = receipt ? await origin(input, attempt) : null;
+  const from = receipt ? await origin(input, attempt, receipt) : null;
   const pkg = packageId ? await getPackage(packageId) : null;
   if (pkg && !pkg.sourceRevisionIds.includes(input.sourceId)) conflict('The draft package cites a different source.');
   await pinned(input, attempt, async client => writeIntakeDraftTx(client, input.caseId, input.itemId, {

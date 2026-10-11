@@ -122,7 +122,7 @@ export class IntakeService {
         await saveIntakeCardTx(client, initial.itemId, citeIntakeReceipt(probed.card, fresh.source));
         await childrenTx(client, caseId, initial.itemId, probed.card);
         await notifyTx(client, fresh.source);
-        await queueIntakeDraftTx(client, fresh.source);
+        await queueIntakeDraftTx(client, fresh.source, probed.card);
       } else {
         await client.query(`UPDATE usp_intake_items SET state=CASE WHEN card IS NULL THEN $2 ELSE state END,
           limit_reason=CASE WHEN card IS NULL THEN $3 ELSE limit_reason END,updated_at=now() WHERE item_id=$1`,
