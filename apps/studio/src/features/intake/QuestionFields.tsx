@@ -30,6 +30,7 @@ function KindField(props: Props) {
   return <div className={styles.stack}>
     <label className="ul-field"><span className="ul-label">What is each feature in this file?</span>
       <select className="ul-input" value={props.choices.kind} aria-describedby={help}
+        aria-label="What is each feature in this file?"
         onChange={event => props.choose('kind', event.target.value)}>
         <option value="">Choose what each feature is</option>
         {kinds.map(kind => <option key={kind} value={kind} disabled={Boolean(kindRefusal(kind, props.profile.geometryTypes))}>
@@ -69,7 +70,7 @@ function HeightFields(props: Props) {
       choose={value => props.choose('height', value)} optional />
     {props.choices.height ? <>
       <label className="ul-field"><span className="ul-label">Height unit</span>
-        <select className="ul-input" value={props.choices.unit} required
+        <select className="ul-input" value={props.choices.unit} required aria-label="Height unit"
           onChange={event => props.choose('unit', event.target.value)}>
           <option value="">Choose the source unit</option>
           <option value="m">Metres</option><option value="ft">Feet</option>
@@ -77,6 +78,7 @@ function HeightFields(props: Props) {
       </label>
       <label className="ul-field"><span className="ul-label">What the height means</span>
         <textarea className="ul-input" value={props.choices.meaning} rows={3} required maxLength={500}
+          aria-label="What the height means"
           onChange={event => props.choose('meaning', event.target.value)} />
       </label>
     </> : null}
@@ -90,7 +92,7 @@ function FieldChoice({ label, value, paths, choose, optional = false }: {
   label: string; value: string; paths: MapProfile['paths']; choose: (value: string) => void; optional?: boolean;
 }) {
   return <label className="ul-field"><span className="ul-label">{label}</span>
-    <select className="ul-input" value={value} onChange={event => choose(event.target.value)}>
+    <select className="ul-input" value={value} aria-label={label} onChange={event => choose(event.target.value)}>
       <option value="">{optional ? 'Not stated' : 'Choose a field'}</option>
       {paths.map(path => <option key={path.path} value={path.path}>{fieldWords(path.path)}</option>)}
     </select>

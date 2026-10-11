@@ -150,9 +150,19 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
         continue;
       }
       const via: 'demo' | 'local' = demo?.data ? 'demo' : 'local';
-      const result = demo?.data ? demo : GIS.test(item.file.name)
-        ? await api.POST('/api/v1/import-packages/inspect', { body: body as never, bodySerializer: (b) => b as unknown as FormData })
-        : demo!;
+      let result;
+      try {
+        result = demo?.data ? demo : GIS.test(item.file.name)
+          ? await api.POST('/api/v1/import-packages/inspect', { body: body as never,
+            bodySerializer: (b) => b as unknown as FormData })
+          : demo!;
+      } catch (error) {
+        const words = error instanceof ApiError ? error.message
+          : 'This file could not be checked: the server did not answer. Try again.';
+        setFiles((current) => current.map((file) => file.file === item.file
+          ? { ...file, state: 'failed', error: words } : file));
+        continue;
+      }
       setFiles((current) => current.map((f) => (f.file !== item.file ? f
         : result.data ? { ...f, state: 'ready', inspection: result.data, via } : { ...f, state: 'failed', error: new ApiError(result.response.status, '', result.error).message })));
       if (result.data) {
