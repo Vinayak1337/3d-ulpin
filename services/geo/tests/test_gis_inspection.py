@@ -13,6 +13,7 @@ from geo.gis_inspection import inspect_gis
 from geo.native_gis import MAX_BYTES, MAX_EXPANDED
 from geo.validation import InputError
 from test_native_adapters import gpkg, shapefile_zip
+from test_area import CRS_DECLARATION_REFUSALS
 
 
 def inspect(raw, **extra):
@@ -69,9 +70,53 @@ def test_geojson_and_accepted_crs84_have_evidence_for_wgs84():
     source = geojson()
     assert json_inspect(source)["sourceCrs"] == "EPSG:4326"
     source["crs"] = {"type": "name", "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"}}
-    assert json_inspect(source)["crsEvidence"] == "Declared OGC CRS84"
-    source["crs"]["properties"]["name"] = "EPSG:32643"
-    with pytest.raises(InputError):
+    assert json_inspect(source)["crsEvidence"] == (
+        "Declared in the file's crs member: `urn:ogc:def:crs:OGC:1.3:CRS84`")
+    assert json_inspect(source)["sourceCrs"] == "EPSG:4326"
+
+
+@pytest.mark.parametrize("name,code", [
+    ("EPSG:2958", "EPSG:2958"), ("urn:ogc:def:crs:EPSG::2958", "EPSG:2958"),
+    ("EPSG:3857", "EPSG:3857"), ("EPSG:4269", "EPSG:4269"),
+])
+def test_inspection_reads_named_horizontal_geojson_declaration(name, code):
+    source = geojson()
+    source["crs"] = {"type": "name", "properties": {"name": name}}
+    if CRS.from_user_input(code).is_projected:
+        for feature in source["features"]:
+            feature["geometry"]["coordinates"] = [500000, 3100000]
+    raw = json.dumps(source).encode()
+    result = inspect(raw)
+    assert result["sourceCrs"] == code
+    assert result["crsEvidence"] == f"Declared in the file's crs member: `{name}`"
+    assert result["sourceSha256"] == hashlib.sha256(raw).hexdigest()
+    assert result["featureCount"] == len(source["features"])
+
+
+@pytest.mark.parametrize("member,words", CRS_DECLARATION_REFUSALS)
+def test_inspection_refuses_bad_declaration_with_literal_and_reason(member, words):
+    source = geojson()
+    source["crs"] = member
+    with pytest.raises(InputError, match=words) as caught:
+        json_inspect(source)
+    assert json.dumps(member, ensure_ascii=False, separators=(",", ":")) in str(caught.value)
+
+
+def test_undeclared_geojson_outside_degrees_explains_missing_declaration():
+    source = geojson()
+    source["features"][0]["geometry"]["coordinates"] = [500000, 3100000]
+    with pytest.raises(InputError, match="The file declares no coordinate system"):
+        json_inspect(source)
+
+
+@pytest.mark.parametrize("level", ["feature", "geometry"])
+def test_inspection_refuses_feature_or_geometry_crs(level):
+    source = geojson()
+    target = source["features"][0]
+    if level == "geometry":
+        target = target["geometry"]
+    target["crs"] = {"type": "name", "properties": {"name": "EPSG:4326"}}
+    with pytest.raises(InputError, match="CRS override"):
         json_inspect(source)
 
 
