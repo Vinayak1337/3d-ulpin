@@ -12,24 +12,30 @@ from .validation import InputError
 
 class _IntegerToken(int):
     """Keep the spelling at the JSON reader boundary, before a number loses its token."""
+    token: str
+
     def __new__(cls, token: str) -> "_IntegerToken":
         result = super().__new__(cls, token)
         result.token = token
         return result
 
 
-def _integer_ids(values: list) -> bool:
-    return bool(values and all(isinstance(value, _IntegerToken)
-                and re.fullmatch(r"-?(?:0|[1-9][0-9]*)", value.token)
-                and value.token != "-0" and abs(value) <= 9007199254740991 for value in values)
-                and len(set(values)) == len(values))
+def _integer_ids(values: list[object]) -> bool:
+    if not values or not all(
+        isinstance(value, _IntegerToken)
+        and re.fullmatch(r"-?(?:0|[1-9][0-9]*)", value.token)
+        and value.token != "-0" and abs(value) <= 9007199254740991
+        for value in values
+    ):
+        return False
+    return len(set(values)) == len(values)
 
 
 def _eligible_ids(values):
     return bool(values and all(isinstance(value, (str, int, float)) and not isinstance(value, bool) and (not isinstance(value, float) or math.isfinite(value)) and str(value).strip() and len(str(value)) <= 256 for value in values) and len({str(value).strip() for value in values}) == len(values))
 
 
-def _fields(rows, integer_tokens=False):
+def _fields(rows, integer_tokens: bool = False):
     names = sorted({name for row in rows for name in row})
     if len(names) > 256:
         raise InputError("GIS inspection supports at most 256 attribute fields.")
@@ -131,8 +137,9 @@ def inspect_gis(data):
     if format == "arcgis" and not crs and row_crs and all(row_crs):
         crs, evidence = row_crs[0], "Consistent ArcGIS feature spatial references"
     base.update({"format": format, "layers": base.get("layers", []), "layer": base.get("layer"), "sourceCrs": crs, "crsEvidence": evidence,
-                 "crsUnit": CRS.from_user_input(crs).axis_info[0].unit_name if crs else None,
                  "geometryTypes": sorted(types)})
+    if format == "geojson":
+        base["crsUnit"] = CRS.from_user_input(crs).axis_info[0].unit_name
     fields, id_field, name_field = _fields(rows, integer_tokens=format == "geojson")
     quarantine = None
     if rejected:

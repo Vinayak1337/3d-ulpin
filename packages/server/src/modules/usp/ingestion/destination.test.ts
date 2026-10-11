@@ -26,13 +26,14 @@ test('only this file own new-area naming scope gets the duplicate refusal and th
     (error: AppError) => error.status === 409 && error.code === 'SOURCE_ALREADY_IN_AREA'
       && error.message === words && officerQuestion(error) === words);
   await assert.rejects(destination(client(true), area, false, 'b'.repeat(64)), {
-    code: 'STALE_REVISION', message: 'This destination already exists; pin its current area and reference explicitly.',
+    code: 'STALE_REVISION',
+    message: 'This destination already exists; pin its current area and reference explicitly.',
   });
   await assert.rejects(destination(client(true), area), { code: 'STALE_REVISION' });
   await destination(client(false), area, false, hash);
 });
 
-test('executing a duplicate acquires the existing seed lock before checking, without changing the destination', async () => {
+test('executing a duplicate keeps the seed-lock order and destination', async () => {
   calls.length = 0;
   await assert.rejects(destination(client(true), area, true, hash), { code: 'SOURCE_ALREADY_IN_AREA' });
   assert.match(calls[0], /pg_advisory_xact_lock/);
