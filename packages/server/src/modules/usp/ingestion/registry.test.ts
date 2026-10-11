@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 import { MappingPlanSchema, SourceProfileSchema, StreamedPrefixMappingPlanSchema } from '@ulpin/contracts/usp';
+import { validateAdaptiveMapping } from './adaptive-mapping';
 import type { GisInspection } from '@ulpin/contracts';
 import { fingerprint } from '../../cases/domain';
 import { sha256 } from '../../../infrastructure/storage';
@@ -117,10 +118,38 @@ test('the legacy building adapter refuses stated kinds and generic targets inste
   const context = mappingContextFromGisProfile(profile());
   assert.throws(() => legacyPlanToV2(plan, context, 'reviewer:fixture'),
     { status: 422, code: 'LEGACY_BUILDING_MAPPING_ONLY' });
-  assert.throws(() => legacyPlanToV2({ ...plan, kind: undefined }, context, 'reviewer:fixture'),
+  const { kind: _kind, ...genericWithoutKind } = plan;
+  assert.throws(() => legacyPlanToV2(genericWithoutKind, context, 'reviewer:fixture'),
+    { status: 422, code: 'LEGACY_BUILDING_MAPPING_ONLY' });
+  assert.throws(() => legacyPlanToV2({ ...legacy, kind: 'building' }, context, 'reviewer:fixture'),
     { status: 422, code: 'LEGACY_BUILDING_MAPPING_ONLY' });
   assert(!StreamedPrefixMappingPlanSchema.shape.operations.safeParse(plan.operations).success);
   assert(StreamedPrefixMappingPlanSchema.shape.operations.safeParse(legacy.operations).success);
+});
+
+test('the kind/geometry matrix follows the existing normalizer, without broadening adaptive proposals', () => {
+  const geometryTypes = ['Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon'];
+  for (const type of geometryTypes) {
+    const source = { ...profile(), geometryTypes: [type] };
+    for (const kind of ['building', 'parcel', 'public_land', 'road', 'utility']) {
+      const plan = MappingPlanSchema.parse(stated(kind));
+      const accepts = ['road', 'utility'].includes(kind) || ['Polygon', 'MultiPolygon'].includes(type);
+      if (accepts) assert.equal(compileMapping(plan, source).kind, kind);
+      else assert.throws(() => compileMapping(plan, source), { code: 'MAPPING_GEOMETRY_KIND' });
+    }
+    const adaptive = validateAdaptiveMapping({ decision: 'propose', reason: 'none', operations: legacy.operations }, source);
+    assert.equal(adaptive.status, ['Polygon', 'MultiPolygon'].includes(type) ? 'proposed' : 'needs_input');
+  }
+  assert.equal(validateAdaptiveMapping({ decision: 'propose', reason: 'none',
+    operations: stated('building').operations }, profile()).status, 'needs_input');
+  // Protocol fixtures check admission itself: the reader's declared inventory is the authority here.
+  const bytes = Buffer.from(JSON.stringify(fixture));
+  for (const type of geometryTypes) {
+    const inspection = { format: 'geojson', sourceSha256: sha256(bytes), featureCount: 2,
+      sourceCrs: 'EPSG:4326', crsEvidence: 'Protocol fixture', geometryTypes: [type],
+      fields: [{ name: 'doitt_id' }, { name: 'height_ft' }] } as GisInspection;
+    assert.deepEqual(inspectedProfile(bytes, inspection).geometryTypes, [type]);
+  }
 });
 
 test('opening geometry admission preserves the polygon fingerprint pinned by the saved CA0 profile', t => {
