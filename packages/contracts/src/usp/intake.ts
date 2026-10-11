@@ -73,3 +73,57 @@ export const IntakeManifestSchema = z.strictObject({ caseId: z.string().uuid(), 
 export type IntakeCard = z.infer<typeof IntakeCardSchema>;
 export type IntakeMemberCard = z.infer<typeof IntakeMemberCardSchema>;
 export type IntakeMember = z.infer<typeof IntakeMemberSchema>;
+
+export const INTAKE_TARGET_LIMITS = Object.freeze({ draftTargets: 2000, confirmationTargets: 100, page: 200 });
+export const IntakeTargetReadinessSchema = z.enum([
+  'preparing', 'ready', 'needs_answer', 'held', 'confirmed', 'recorded', 'carded', 'stopped',
+]);
+const uuid = z.string().uuid();
+const code = z.string().regex(/^[A-Z][A-Z0-9_]{0,127}$/);
+const at = z.string().datetime();
+const pinned = z.strictObject({ id: uuid, revision: z.number().int().nonnegative() });
+export const IntakeTargetArtefactsSchema = z.strictObject({
+  record: pinned.optional(),
+  snapshot: z.strictObject({ id: uuid, digest: hash }).optional(),
+  identity: z.string().min(1).max(256).optional(),
+  plan: z.strictObject({ id: uuid, version: z.number().int().positive(), sha256: hash }).optional(),
+  planConfirmation: z.strictObject({ id: uuid }).optional(),
+  packet: z.strictObject({ id: uuid }).optional(),
+  card: pinned.optional(),
+  verification: z.literal('consistent').optional(),
+});
+export const IntakeTargetSchema = z.strictObject({
+  targetId: uuid, caseId: uuid, anchorItemId: uuid, packageId: uuid, featureId: uuid, locator: text,
+  kind: z.literal('building'), stage: z.number().int().min(1).max(8), readiness: IntakeTargetReadinessSchema,
+  blockedBy: z.array(code).max(16), reason: z.string().min(1).max(2000).nullable(), confirmationId: uuid.nullable(),
+  priorityAt: at.nullable(), artefacts: IntakeTargetArtefactsSchema, updatedAt: at,
+});
+const tally = z.number().int().nonnegative();
+export const IntakeTargetCountsSchema = z.strictObject({ preparing: tally, ready: tally, needs_answer: tally, held: tally,
+  confirmed: tally, recorded: tally, carded: tally, stopped: tally });
+export const IntakeTargetPageSchema = z.strictObject({
+  caseId: uuid, items: z.array(IntakeTargetSchema).max(INTAKE_TARGET_LIMITS.page),
+  counts: IntakeTargetCountsSchema, nextCursor: uuid.nullable(),
+});
+export const IntakeConfirmedPackageSchema = z.strictObject({
+  packageId: uuid, revision: z.number().int().positive(), reviewFingerprint: hash,
+});
+export const IntakeConfirmSchema = z.strictObject({
+  requestKey: uuid, acknowledgement: z.string().trim().min(1).max(500),
+  packages: z.array(IntakeConfirmedPackageSchema).min(1).max(100)
+    .refine(rows => new Set(rows.map(row => row.packageId)).size === rows.length, 'Name each package once.'),
+  targets: z.array(uuid).max(INTAKE_TARGET_LIMITS.confirmationTargets)
+    .refine(ids => new Set(ids).size === ids.length, 'Name each target once.'),
+});
+export const IntakeConfirmationSchema = z.strictObject({
+  confirmationId: uuid, caseId: uuid, requestKey: uuid, subject: z.string().min(1).max(256),
+  acknowledgement: z.string().min(1).max(500), packages: z.array(IntakeConfirmedPackageSchema).min(1).max(100),
+  targets: z.array(uuid).max(INTAKE_TARGET_LIMITS.confirmationTargets), reason: z.string().min(1).max(512),
+  expiresAt: at, createdAt: at, progress: z.array(IntakeTargetSchema).max(INTAKE_TARGET_LIMITS.confirmationTargets),
+  counts: z.strictObject({ recorded: tally, carded: tally, stopped: tally }),
+});
+export type IntakeTargetReadiness = z.infer<typeof IntakeTargetReadinessSchema>;
+export type IntakeTargetArtefacts = z.infer<typeof IntakeTargetArtefactsSchema>;
+export type IntakeTarget = z.infer<typeof IntakeTargetSchema>;
+export type IntakeConfirm = z.infer<typeof IntakeConfirmSchema>;
+export type IntakeConfirmation = z.infer<typeof IntakeConfirmationSchema>;

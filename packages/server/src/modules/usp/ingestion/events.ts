@@ -73,6 +73,26 @@ export async function appendIntakeItemTx(client: PoolClient, caseId: string, ite
   return appendCaseIngestionTx(client, caseId, {kind: 'intake.item', ...row});
 }
 
+/** Bulk target writes still publish one intake.target per row, with contiguous sequences in the same transaction. */
+export async function appendIntakeTargetsTx(client: PoolClient, caseId: string,
+  rows: readonly { target_id: string; readiness: string; stage: number }[]) {
+  if (!rows.length) return;
+  const binding = ingestionBinding(caseId);
+  const current = (await client.query('SELECT revision FROM cases WHERE id=$1', [caseId])).rows[0]
+    ?? notFound('Source case not found.');
+  const bodies = rows.map(row => JSON.stringify(CaseIngestionOutboxSchema.parse({
+    version: CASE_INGESTION_VERSION, caseId, caseRevision: current.revision,
+    change: {kind: 'intake.target', targetId: row.target_id, readiness: row.readiness, stage: row.stage},
+  })));
+  await client.query('INSERT INTO usp_outbox_streams(stream_id) VALUES($1) ON CONFLICT DO NOTHING', [binding.streamId]);
+  const head = (await client.query(`UPDATE usp_outbox_streams SET last_sequence=last_sequence+$2
+    WHERE stream_id=$1 RETURNING last_sequence::text AS sequence`, [binding.streamId, rows.length])).rows[0];
+  await client.query(`INSERT INTO usp_outbox(stream_id,sequence,body)
+    SELECT $1,$2::bigint-$3::bigint+ordinal,body::jsonb
+    FROM unnest($4::text[]) WITH ORDINALITY AS events(body,ordinal)`,
+  [binding.streamId, head.sequence, rows.length, bodies]);
+}
+
 type EventPage = {head: bigint; context: string; caseRevision: number; events: CaseIngestionEvent[]};
 type ResyncReason = Exclude<CaseIngestionControl['reason'], 'connected' | 'context_changed' | 'duration_limit'>;
 export class IngestionResync extends AppError {

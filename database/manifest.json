@@ -2657,6 +2657,48 @@
         "path": "packages/server/src/modules/usp/ingestion/intake-migration.ts",
         "function": "migrateIntakeLedgerTx"
       }
+    },
+    {
+      "id": "ingestion.intake.targets",
+      "source": {
+        "path": "database/sql/95-ingestion/intake-targets.sql",
+        "function": "migrateIntakeLedgerTx",
+        "kind": "authored-sql",
+        "task": "E1",
+        "acceptedBase": "3126d3ec"
+      },
+      "file": "sql/95-ingestion/intake-targets.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp.lock",
+      "condition": "always; additive IF NOT EXISTS",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 56,
+      "sha256": "3bdc96532a89f88dbd5950bd9bd5559a5b343c2e44e27504bfc47b4df73b376a",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "869e2914b9ae4f21820297ebe40c81a9a27b82bda72aee2ee6f7fd0ef7d84011"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "521cfe238eaf840e3991affca1195228d1ed05964b76011c53419462ad009e7c"
+        },
+        {
+          "ordinal": 3,
+          "sha256": "4c3ae2cc4899715aadd4a6c72cfb99fc12a569ae6abe00ac33e989ad30b95419"
+        },
+        {
+          "ordinal": 4,
+          "sha256": "64a40bd13759d9bcc429f90875aeb2c9aaeb48d73d7b9b4a512e731420f2c579"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/ingestion/intake-migration.ts",
+        "function": "migrateIntakeLedgerTx"
+      }
     }
   ],
   "plannedButAbsent": []
