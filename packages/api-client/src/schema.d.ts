@@ -64964,8 +64964,7 @@ export interface components {
             crs: {
                 value: string;
                 evidence: string;
-                /** @enum {string} */
-                unit: "degree";
+                unit: string;
             };
             geometryTypes: string[];
             paths: {
@@ -64976,6 +64975,7 @@ export interface components {
                 absent: number;
                 literalIdEligible: boolean;
                 literalTextEligible: boolean;
+                integerIdEligible?: boolean;
             }[];
             limitations: string[];
         } | {
@@ -65097,7 +65097,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
                 }[];
             };
             destination?: {
@@ -65263,7 +65263,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
                 }[];
             };
             destination: {
@@ -65473,7 +65473,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
                 }[];
             };
             destination: {
@@ -69227,7 +69227,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
                 }[];
             } | null;
             validationErrors: string[];
@@ -69624,7 +69624,7 @@ export interface components {
                         target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                         sourcePath: string;
                         /** @enum {string} */
-                        conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1";
+                        conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
                     }[];
                 } | null;
                 validationErrors: string[];

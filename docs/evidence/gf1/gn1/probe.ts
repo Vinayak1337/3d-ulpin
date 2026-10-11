@@ -34,7 +34,7 @@ function refusal(work: () => unknown) {
   }
 }
 
-function plan(inventory: ReturnType<typeof inspectedProfile>, kind?: 'parcel') {
+function plan(inventory: ReturnType<typeof inspectedProfile>, kind?: 'parcel', integer = false) {
   const id = randomUUID();
   const { schemaFingerprint, ...fields } = inventory;
   const profile = SourceProfileSchema.parse({ ...fields, caseId: id, workspaceRevision: 0,
@@ -45,14 +45,31 @@ function plan(inventory: ReturnType<typeof inspectedProfile>, kind?: 'parcel') {
     source: profile.source, caseId: id, workspaceRevision: 0, workspaceFingerprint: profile.workspaceFingerprint,
     ...(kind ? { kind } : {}), operations: [
       { target: `${prefix}.sourceKey`, sourcePath: '/features/*/properties/OBJECTID',
-        conversionId: 'literal_identifier@1' },
+        conversionId: integer ? 'literal_integer_identifier@1' : 'literal_identifier@1' },
       { target: `${prefix}.geometry`, sourcePath: '/features/*/geometry',
         conversionId: kind ? 'geojson_geometry@1' : 'geojson_polygon@1' },
     ] });
   return refusal(() => compileMapping(parsed, profile));
 }
 
+function afterProof(records: Record<string, unknown>[]) {
+  const before = JSON.parse(readFileSync('docs/evidence/gf1/gn1/before.json', 'utf8'));
+  for (const index of [1, 2]) {
+    assert.equal(JSON.stringify(records[index].crs), JSON.stringify(before.records[index].crs));
+    assert.equal(records[index].schemaFingerprint, before.records[index].schemaFingerprint);
+  }
+  assert.equal(records[0].integerEligible, true);
+  assert.equal(records[0].integerParcelRefusal, null);
+  console.log(JSON.stringify({ records, oldCrsObjectsAndFingerprintsUnchanged: true,
+    projectedParcelCompiles: true, integerEligible: true }));
+}
+
 function main() {
+  if (!process.argv.includes('--after')) {
+    const revision = spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' });
+    assert.equal(revision.stdout.trim(), '814807ca489208ac9a8e31005f138f3a20ee4a1a',
+      'The before capture is immutable. Use --after on the task code.');
+  }
   const records = files.map(path => {
     const bytes = readFileSync(path);
     const inspected = inspection(bytes);
@@ -65,13 +82,19 @@ function main() {
     }
     const inventory = inspectedProfile(bytes, inspected);
     return { path, crs: inventory.crs, schemaFingerprint: inventory.schemaFingerprint,
-      features: inventory.featureCount, paths: inventory.paths.map(item => ({ path: item.path, types: item.types })) };
+      features: inventory.featureCount, paths: inventory.paths.map(item => ({ path: item.path, types: item.types })),
+      ...(path === files[0] ? { integerParcelRefusal: plan(inventory, 'parcel', true),
+        integerEligible: inventory.paths.find(item => item.path.endsWith('/OBJECTID'))?.integerIdEligible } : {}) };
   });
   const duplicate = new AppError(409, 'STALE_REVISION',
     'This destination already exists; pin its current area and reference explicitly.');
+  if (process.argv.includes('--after')) {
+    afterProof(records);
+    return;
+  }
   console.log(JSON.stringify({ baseCommit: '814807ca489208ac9a8e31005f138f3a20ee4a1a', records,
     duplicateBefore: { code: duplicate.code, words: duplicate.message, rowReason: officerQuestion(duplicate),
-      workerEffect: 'fail stores no waiting reason; job failed, row retains earlier planned/probed state.' } }));
+      workerEffect: 'fail stores no waiting reason; job stale, row retains earlier planned/probed state.' } }));
 }
 
 main();
