@@ -1,0 +1,239 @@
+{
+  "task": "AU3",
+  "gate": "GF1 / GF5",
+  "status": "Proposal only; no product file changed.",
+  "scope": [
+    "Smallest complete path for the three retained NYC S-class files, not a claim of2GB raster/1GB point support.",
+    "Display context only: no property fact, model call, GPU, record, measurement, identity or card from a surface.",
+    "Reuse existing originals, usp_intake_items/parts/holding_extent, canonical jobs and scene overlay calls.",
+    "No second queue, broker, source authority or SQL table. Three tasks with disjoint file ownership."
+  ],
+  "basis": "chain.json details: admission, rasterReader, pointReader, placement, rasterLimits, pointLimits",
+  "commonSteps": [
+    {
+      "step": 1,
+      "action": "Batch page retains these three non-vector files into the same case through POST .../sources.",
+      "reuse": "RasterWindowService.retain / PointBatchService.retain byte/hash/lineage authority, not area import.",
+      "change": ["Extract retain-only helpers; dedicated routes keep existing first-job behavior.",
+        "sources delegates TIFF/LASF by bounded bytes, not extension alone, and returns a canonical receipt union.",
+        "Unknown issuer/acquisition/licence/vertical reference stay explicit unknown/null; no pack-specific values.",
+        "After successful retention, server enrols and probes with IntakeService.register; no browser follow-up."]
+    },
+    {
+      "step": 2,
+      "action": "After probe, automatically queue part zero through raster-window or point-batch authority.",
+      "reuse": "queueIntakeDraftTx stays vector-only; add surface hook in IntakeService.publish.",
+      "change": ["intake-surface.ts reuses enqueueTx logic, extracted for internal pinned enrolment.",
+        "dispatchTick admits wave2 planned parts round-robin, one per file, respecting active caps.",
+        "No HTTP request for another window/batch. Native reading may proceed unplaced if no anchor exists.",
+        "Defer first surface job until wave1 area binding is stable: siteId is a context pin."]
+    },
+    {
+      "step": 3,
+      "action": "First native part supplies header metadata today's probe missed, without an officer question.",
+      "reuse": "read_raster_window / read_point_batch metadata and source/window/batch locators.",
+      "change": ["Cite accepted result on card; preserve probe evidence, never claim it saw the VLR/IFD.",
+        "Use affine/dimensions for whole raster extent, header sourceBounds for points, not sample bounds.",
+        "Plan256-pixel windows or8192-point batches in usp_intake_parts. Store plan/reader version and counts.",
+        "Source CRS/coordinates unchanged; stated vertical reference remains unqualified."]
+    },
+    {
+      "step": 4,
+      "action": "Resolve batch area/reference and validate transformed extent before publishing map coordinates.",
+      "reuse": ["intakeDestination, bindRetainedCaseTx, source-pin, pyproj",
+        "registry/canonical-building.ts:canonicalFrame and geographicPointToEnu (read-only helpers)"],
+      "change": ["Stated CRS and deterministic transform agree with the area's reference/coverage: no question.",
+        "Use issuing CRS axes/units, named source->4326 operation, then geographicPointToEnu(canonicalFrame(area)).",
+        "Publish geographic holding extent and local display corners/XY, citing original and exact part locator.",
+        "No overlap, absent/conflicting CRS, ambiguous/no batch area or unavailable transform: one placement question.",
+        "Question: 'Which stated CRS and batch area place this file?' Show source evidence and choices.",
+        "While unanswered read native bounded parts off-map; never guess datum/zone from coordinate ranges.",
+        "Question answer persists one reviewed placement decision, not ownership or a geometry qualification.",
+        "On area/context change re-enrol under fresh pins; old accepted results stay retained and stale.",
+        "Never remove site/frame/access pins to make a premature read current; batch has one site."]
+    },
+    {
+      "step": 5,
+      "action": "Each accepted part persists display receipt and refresh in the same acceptance transaction.",
+      "reuse": "runRasterWindowJob/runPointBatchJob, acceptUspJobAttempt, existing reader changed events/outbox.",
+      "change": ["Native artifact and bounded display artifact are staged and verified before SQL acceptance locks.",
+        "Point preview uses separate authenticated internal display response,256KiB cap, from verified native records.",
+        "Preview pins native artifact/layout and area transform; Python grids accepted records, not a source reread.",
+        "The150s job deadline covers both native and preview steps; no extra preview fields in capped native reply.",
+        "Acceptance writes usp_intake_parts result_ref/counts/state and updates item reading(n/m)/read/read_to_limit.",
+        "Existing raster-window.changed/point-batch.changed names the completed job: no geometry in events.",
+        "Dispatcher admits next planned part after completion; failure becomes quarantined/failed_part, visible.",
+        "GET .../intake/items/:id/parts?after=:cursor lists accepted parts; .../parts/:n/display reads one.",
+        "Display read enforces source/access/accepted fence and projection pins, never arbitrary URLs."]
+    },
+    {
+      "step": 6,
+      "action": "Studio subscribes once per batch, pulls unseen accepted parts at its own pace, then draws.",
+      "reuse": "case ingestion stream, useOverlays helpers, imagery.worker, SceneView overlays and engine.setOverlays.",
+      "change": ["Draw arriving extent after placement resolves, then accepted image windows/grid previews.",
+        "Keep retained originals with unsupported/over-limit cards even when none is placeable.",
+        "Overlay identity=item/reader/part; replace changed parts. Add scene diff-by-id, not full rebuild.",
+        "A bounded client queue and frame budget pace fetch/upload; slow browser leaves accepted parts on server.",
+        "No development transport, mock area, file-name assumptions or raw LAZ decoding in browser."]
+    }
+  ],
+  "jobIdentity": {
+    "operations": ["raster-window", "point-batch"],
+    "newOperation": null,
+    "partKey": "SHA256(originalSha256 + readerSha256 + canonicalLocator + nativeProfileVersion)",
+    "requestKey": "UUID(hash(intake-surface/1 + itemId + sourceRevision + partKey + contextPin)), as intakeDraftKey.",
+    "replay": ["Same source/part/enrolment pin resolves to same job/fence; never reread on refresh.",
+      "Store key in part locator/plan, use existing operations receipts and canonical registerUspJobInputTx.",
+      "Display key pins area/reference fingerprint and preview version; changed frame invalidates display.",
+      "Re-enrolment after context change uses a fresh context-keyed enrolment, never rewrites prior accepted pins."]
+  },
+  "files": [
+    {
+      "file": "nyc-10013-ortho-2018.tif",
+      "steps": ["Common1-3: retain/profile, automatically read first native window, plan nine256x256 parts.",
+        "Common4: transform source3857 corners to batch reference on server; extent overlap is display placement only.",
+        "Common5-6: accepted RGBA windows appear under vector anchors as each completes, source alpha gaps retained."],
+      "reused": ["RasterWindowService, read_raster_window, nativeRasterWindow, acceptUspJobAttempt, ImageOverlayInput"],
+      "endpoint": "GET .../intake/items/:id/parts/:n/display: local corners and accepted private artifact URL.",
+      "pixelsFrom": "GET .../sources/:id/raster-windows/jobs/:jobId/artifact; decode only that256 window.",
+      "progress": "Arriving source extent then nine image quads; not a new pyramid/COG or complete image blob.",
+      "officer": "No placement question after metadata supplies stated CRS and extent agrees; otherwise common step4.",
+      "allocationWorkerHours": 14,
+      "tasks": ["SURFACE-BACKEND", "SURFACE-MAP", "SURFACE-DROP"],
+      "limits": "rasterOfficerLimits"
+    },
+    {
+      "file": "nyc-10013-dem-2017.tif",
+      "steps": ["Common1-3: signature-only probe is not a missing-CRS question; first native window finds2263.",
+        "Plan sixteen windows with clipped right/bottom edges; use affine to recover whole source extent.",
+        "Common4: transform horizontal ftUS source coordinates by named operation into batch local metres.",
+        "Common5-6: draw masked single-band scalar windows, not Web Mercator RGB and not a measured terrain mesh."],
+      "reused": ["Same raster reader/job as orthophoto; imagery.worker gains an accepted scalar-preview mode."],
+      "endpoint": "Same display GET and accepted raster-window /artifact endpoints as orthophoto.",
+      "progress": ["Flat scalar image windows, transparent nodata; legend: native samples, vertical tie unqualified.",
+        "Per-window relative intensity is a display operation, recorded as such; no sample silently becomes metres.",
+        "No elevation displacement, building base adjustment, building height, storey count or registry write."],
+      "officer": "No horizontal-placement question when native metadata states CRS/extent and agrees; otherwise one.",
+      "vertical": "No vertical question for flat preview; physical terrain/height use remains out of scope.",
+      "allocationWorkerHours": 12,
+      "tasks": ["SURFACE-BACKEND", "SURFACE-MAP", "SURFACE-DROP"],
+      "limits": "rasterOfficerLimits"
+    },
+    {
+      "file": "nyc-10013-lidar-2017.laz",
+      "steps": ["Common1-3: retain unchanged records; first native batch finds6347+5703; plan211 batches.",
+        "Common4: actual server6347->batch transform, not the browser's current same-zone exception.",
+        "For each native8192-point batch, extend point_batch.py with bounded min/max-return cell preview.",
+        "Common5-6: native .bin stays exact evidence; display grid/thinned preview are separate derivatives."],
+      "reused": ["PointBatchService, read_point_batch, nativePointBatch, acceptUspJobAttempt, PointOverlayInput"],
+      "endpoint": "GET .../intake/items/:id/parts/:n/display points to private accepted preview, not raw .bin.",
+      "progress": ["Up to2048 preview cells/points per part; stable cell grid clipped to declared source bounds.",
+        "Keep min/max returns and classification/withheld coverage separate; no grid fill or roof/ground inference.",
+        "Use point scene call for thinned preview with qualified displayZ only when a named tie exists.",
+        "Without vertical tie draw flat coloured image-overlay cells, explicit display plane; native Z retained.",
+        "No percentile subtraction as ground. Known NAVD88 alone does not qualify area-relative heights."],
+      "officer": "No horizontal question if native CRS/extent agrees; otherwise step4; no height fact approved.",
+      "allocationWorkerHours": 18,
+      "tasks": ["SURFACE-BACKEND", "SURFACE-MAP", "SURFACE-DROP"],
+      "limits": "pointOfficerLimits"
+    }
+  ],
+  "rasterOfficerLimits": [
+    "We read retained originals up to16MiB, with at most100million pixels and1-4 numeric bands of one sample type.",
+    "The upload request stays17MiB including its form;64 raster originals and256MiB total are held in this runtime.",
+    "A part is at most256x256 pixels,2MiB native samples,4MiB TIFF and32KiB receipt, with pixel starts<=100000.",
+    "Different masks or nodata per band and unsupported sample types stay refused without truncating the original.",
+    "At most32 window jobs per original and2 queued/running raster jobs; rest ends read_to_limit, kept but not read.",
+    "Native request100s,whole job150s,reads30s,lease180s,max3 fenced attempts and6MiB reader reply remain finite.",
+    "Probe remains64KiB head/tail with2s budget; metadata it misses can be cited from the first native read.",
+    "Browser previews remain below16million pixels, but decode one256 window at a time; no whole-file allocation.",
+    "Point/raster S3 retains connect5s/read30s with2 retries; no provider cost. Unsupported outcomes stay visible."
+  ],
+  "pointOfficerLimits": [
+    "We read originals up to16MiB and5million points, compressed LAS1.4 format6,30-byte records without extras only.",
+    "The request stays17MiB;64 point originals and256MiB total are held, and at most2 point jobs run or wait together.",
+    "Each part has at most8192 points,512KiB native artifact and32KiB receipt; start/count must fit the source.",
+    "Replace32 historical jobs with611 unique planned parts per original, enough for the existing5million-point limit.",
+    "Each display preview is at most2048 cells/points and256KiB; thinning never alters native original or artifact.",
+    "Native request100s,job150s,read30s,lease180s,max3 attempts,731820B native reply remain finite.",
+    "Preview gets its own256KiB response; native731820B reply and720KiB base64 string caps do not grow.",
+    "Probe64KiB head/tail2s and S3 connect5s/read30s/retries2 stay; unread or failed parts remain visible and retained."
+  ],
+  "costAndDeferredWork": [
+    "No provider charge/GPU. Estimate44 worker-hours (24 backend+12 map+8 drop); range36-56 for integration risk.",
+    "Smallest build keeps original16MiB native ceiling;2GB/1GB targets need a separate large-read build.",
+    "Each native part spools/hashes whole original:9 image,16 DEM,211 LAZ reads without a later snapshot cache.",
+    "11.1MB LAZ: about2.34GB source I/O;0.774s*211=163s is extrapolation, not measured whole-file time.",
+    "No COG pyramid, COPC octree traversal, scratch cache, GPU chips, height qualification or cards here.",
+    "The large transport still starts above16MiB: v1<=128MiB,v2<=7GiB,8MiB parts, existing quotas/deadlines stay.",
+    "Large originals can be retained but native reading stays denied; never silently upgrade profiles."
+  ],
+  "tasks": [
+    {
+      "id": "SURFACE-BACKEND", "workerHours": 24,
+      "needsBatchPage": false,
+      "work": "Retain/probe/plan/automatic part dispatch, accepted display reads and one placement decision; no UI.",
+      "files": [
+        "packages/contracts/src/usp/ingestion.ts",
+        "packages/contracts/src/usp/raster-window.ts",
+        "packages/contracts/src/usp/point-batch.ts",
+        "packages/contracts/src/usp/intake.ts",
+        "packages/contracts/src/usp/index.ts",
+        "packages/server/src/modules/usp/ingestion/service.ts",
+        "packages/server/src/modules/usp/ingestion/raster-window.ts",
+        "packages/server/src/modules/usp/ingestion/point-batch.ts",
+        "packages/server/src/modules/usp/ingestion/intake-service.ts",
+        "packages/server/src/modules/usp/ingestion/intake-ledger.ts",
+        "packages/server/src/modules/usp/ingestion/intake-surface.ts (new helper, not a service)",
+        "packages/server/src/modules/usp/ingestion/raster-window-worker.ts",
+        "packages/server/src/modules/usp/ingestion/point-batch-worker.ts",
+        "packages/server/src/modules/usp/ingestion/raster-publication.ts",
+        "packages/server/src/modules/usp/ingestion/point-publication.ts",
+        "packages/server/src/modules/usp/jobs.ts",
+        "packages/server/src/modules/cases/processing.ts",
+        "apps/api/src/modules/ingestion/ingestion.controller.ts",
+        "services/geo/geo/raster_window.py",
+        "services/geo/geo/point_batch.py",
+        "services/geo/geo/api.py",
+        "docs/api/openapi.json (generated)",
+        "packages/api-client/src/schema.d.ts (generated)"
+      ],
+      "accept": ["Three actual files retained in one case without post-probe requests;9/16/211 unique parts complete.",
+        "Card/progress/display reads cite exact original and locator; hash unchanged; replay writes no second part.",
+        "DEM unknown vertical state retained; area binding never makes old context pin silently current.",
+        "One difficult real input is the DEM's out-of-head IFD: do not mistake probe ignorance for absent source CRS."]
+    },
+    {
+      "id": "SURFACE-MAP", "workerHours": 12,
+      "needsBatchPage": false,
+      "dependsOn": ["SURFACE-BACKEND display contract"],
+      "work": "Pull accepted surface parts, frame-budgeted incremental overlays, explicit unknown/preview states.",
+      "files": [
+        "apps/studio/src/features/map/overlays.ts",
+        "apps/studio/src/features/map/imagery.worker.ts",
+        "apps/studio/src/features/map/imagery-pixels.ts",
+        "apps/studio/src/features/map/MapWorkspace.tsx",
+        "apps/studio/src/features/map/intake-surfaces.ts (new map subscriber)",
+        "packages/scene/src/engine.ts"
+      ],
+      "accept": ["Real retained artifacts, not demo IDs: each appears progressively in the batch's frame.",
+        "Unknown vertical tie drawn only as labelled flat context; no record height/base change.",
+        "Measure frame budget on actual pack, tab reopening/replay does not duplicate overlays; ui-design-check."]
+    },
+    {
+      "id": "SURFACE-DROP", "workerHours": 8,
+      "needsBatchPage": true,
+      "dependsOn": ["SURFACE-BACKEND receipt contract", "current GeoJSON intake-page work"],
+      "work": "Extend the one product batch page/drop, not the development transport; retain every file together.",
+      "files": [
+        "apps/studio/src/features/intake/AddFilesDialog.tsx",
+        "apps/studio/src/features/intake/surface/retain.ts (new front-door client)",
+        "apps/studio/src/features/intake/surface/BatchSurfaces.tsx (new card/progress/placement view)"
+      ],
+      "accept": ["Normal Studio drops all three plus vectors into one case; no /api/demo route or browser decode.",
+        "No reading/next-part button; no placement question when metadata/reference agree.",
+        "Show one question for genuinely missing/conflicting CRS/frame, readable limits and kept unread originals.",
+        "Use already-regenerated API types; no owned-file overlap with map/backend task; ui-design-check."]
+    }
+  ]
+}

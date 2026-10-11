@@ -1,0 +1,14 @@
+{
+  "task": "AU3",
+  "nonce": "f492a0e6bf5878e2",
+  "container": "ulpin-au3-tmp-f492a0e6bf5878e2",
+  "startedAt": "2026-10-11T04:22:36.726Z",
+  "image": "postgis/postgis@sha256:01a6a70e41e6c4467c8f55f6063555ed72db2d6662cd0d571040d42eadaeb6f6",
+  "readyAfterSeconds": 1,
+  "runtime": { "exit": 0, "signal": null },
+  "outputProjection": "result.json",
+  "normalization": "Successful stdout projected once; duplicate WKT and repeated card/status fields omitted for Git.",
+  "removed": "ulpin-au3-tmp-f492a0e6bf5878e2",
+  "remainingOwned": "",
+  "finishedAt": "2026-10-11T04:22:49.076Z"
+}
