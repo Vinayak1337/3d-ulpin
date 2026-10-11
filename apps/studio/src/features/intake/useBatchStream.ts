@@ -48,6 +48,7 @@ function connectBatch(caseId: string, connection: Connection, refresh: () => voi
   connection.stream = stream;
   stream.onopen = () => {
     connection.failures = 0;
+    connection.reconnecting = false;
     disconnected(false);
   };
   const fail = () => {

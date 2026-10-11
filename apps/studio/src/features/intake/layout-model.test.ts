@@ -4,6 +4,7 @@ import ts from 'typescript';
 import { expect, it } from 'vitest';
 import controls from '../../../../../docs/evidence/gf1/e3a/controls-qualified.json';
 import targets from '../../../../../docs/evidence/gf1/e3b/targets.json';
+import walkCapture from '../../../../../docs/evidence/gf1/lq1a/controls-second.json';
 import { packagePath } from './batch-model';
 import type { IntakeItem } from './batch-model';
 import { approvalBody, latestRecipe, layoutLines, noLayoutWords, type Recipe } from './layout-model';
@@ -14,7 +15,8 @@ const profile = controls.profiles[0]!;
 const plan = { version: 'manual-geojson/1', mode: 'manual_mapping', source: profile.source,
   caseId: profile.caseId, workspaceRevision: profile.workspaceRevision,
   workspaceFingerprint: profile.workspaceFingerprint, operations: [
-    { target: 'building.sourceKey', sourcePath: '/features/*/properties/doitt_id', conversionId: 'literal_identifier@1' },
+    { target: 'building.sourceKey', sourcePath: '/features/*/properties/doitt_id',
+      conversionId: 'literal_identifier@1' },
     { target: 'building.geometry', sourcePath: '/features/*/geometry', conversionId: 'geojson_polygon@1' },
   ] };
 const receipt = { id: targets.packages[0]!.packageId, revision: 1, state: 'proposed', plan,
@@ -39,7 +41,7 @@ it('states literal fields, absent name/height and all otherwise unrepresented pl
   expect(lines).toContain('Height: not stated');
   expect(lines).toContain('Area: Test destination · new area');
   expect(lines).toContain('Operation: building.geometry from /features/*/geometry using geojson_polygon@1');
-  expect(lines).toContain('Destination namespace: test_only');
+  expect(lines).toContain('This destination also states: namespace');
   const extended = { ...receipt, plan: { ...receipt.plan, futureMember: 'test control' } };
   expect(layoutLines(extended, 'officer').join('\n')).toContain('futureMember');
   expect(lines.join('\n')).toContain('version, mode, source, caseId, workspaceRevision, workspaceFingerprint');
@@ -54,6 +56,8 @@ it('shows escaped property names, Feature.id, height units/meaning and an existi
   expect(layoutLines(named, 'officer')).toContain('Name: name/label~');
   expect(layoutLines(named, 'officer')).toContain('Height: height, in feet: Test meaning, not a statement about NYC');
   expect(layoutLines(named, 'officer')).toContain('Area: Test destination · existing area');
+  expect(layoutLines(named, 'officer')).toContain('This destination also states: namespace, areaId, '
+    + 'expectedAreaRevision, referenceFingerprint');
   if (named.plan.version !== 'manual-geojson/1') throw new Error('Wrong test format');
   const metres = { ...named, plan: { ...named.plan, heightUnit: 'm' as const } };
   expect(layoutLines(metres, 'officer').join('\n')).toContain('in metres:');
@@ -89,15 +93,24 @@ it('pins the unchanged E1b author body and approve call, with no height', async 
   const code = ts.transpile(source.slice(start, end), { target: ts.ScriptTarget.ES2022 });
   let authored: unknown;
   let decision: unknown;
-  const manual = { inspect: async () => profile, author: async (_case: string, _source: string, body: unknown) => {
+  let inspected = profile;
+  let requestKey = receipt.id;
+  const manual = { inspect: async () => inspected, author: async (_case: string, _source: string, body: unknown) => {
     authored = body;
     return receipt;
   }, decide: async (...args: unknown[]) => { decision = args; } };
   const gis = { suggestedTitle: 'Test destination', suggestedNamespace: 'test_only' };
   const choose = new Function('manual', 'query', 'randomUUID', `${code}; return chooseLayout;`)(
-    manual, async () => ({ rows: [{ inspection: { gis } }] }), () => receipt.id);
+    manual, async () => ({ rows: [{ inspection: { gis } }] }), () => requestKey);
   await choose(profile.caseId, profile);
   expect(authored).toEqual({ requestKey: receipt.id, expectedRecipeRevision: 0,
     plan, destination: receipt.destination });
   expect(decision).toEqual([profile.caseId, receipt.id, approvalBody(receipt, receipt.id), 'approve']);
+  // The HTTP helper's captured live request is exactly the existing harness body, not merely an equivalent recipe.
+  inspected = walkCapture.profile;
+  requestKey = walkCapture.authorBody.requestKey;
+  gis.suggestedTitle = walkCapture.authorBody.destination.name;
+  gis.suggestedNamespace = walkCapture.authorBody.destination.namespace;
+  await choose(inspected.caseId, inspected);
+  expect(authored).toEqual(walkCapture.authorBody);
 });

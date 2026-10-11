@@ -29,8 +29,8 @@ export function layoutLines(receipt: Recipe, origin: NonNullable<IntakeItem['pla
   const plan = receipt.plan;
   const lines = fieldLines(plan);
   const destination = receipt.destination;
-  lines.push(destination ? `Area: ${destination.name} · ${destination.kind === 'new_area' ? 'new area' : 'existing area'}`
-    : `Area: ${notSupplied}`);
+  const areaKind = destination?.kind === 'new_area' ? 'new area' : 'existing area';
+  lines.push(destination ? `Area: ${destination.name} · ${areaKind}` : `Area: ${notSupplied}`);
   lines.push(origin ? origins[origin] : `Proposal origin: ${notSupplied}`);
   const covered = new Set(['operations', 'heightField', 'heightUnit', 'heightMeaning']);
   const members = Object.keys(plan).filter(name => !covered.has(name));
@@ -40,8 +40,8 @@ export function layoutLines(receipt: Recipe, origin: NonNullable<IntakeItem['pla
       `Operation: ${operation.target} from ${fieldWords(operation.sourcePath)} using ${operation.conversionId}`));
   }
   if (destination) {
-    lines.push(...Object.entries(destination).filter(([name]) => !['kind', 'name'].includes(name))
-      .map(([name, value]) => `Destination ${name}: ${value}`));
+    const members = Object.keys(destination).filter(name => !['kind', 'name'].includes(name));
+    if (members.length) lines.push(`This destination also states: ${members.join(', ')}`);
   }
   return lines;
 }

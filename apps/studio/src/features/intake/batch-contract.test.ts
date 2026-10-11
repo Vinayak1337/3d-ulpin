@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { expect, it } from 'vitest';
 import type { paths } from '@ulpin/api-client';
 import controls from '../../../../../docs/evidence/gf1/e3a/controls-qualified.json';
+import live from '../../../../../docs/evidence/gf1/lq1a/controls-second.json';
 import { createContractValidator } from '../../local/contract';
 
 const openapi = JSON.parse(readFileSync(resolve(import.meta.dirname, '../../../../../docs/api/openapi.json'), 'utf8'));
@@ -37,6 +38,19 @@ it('validates real retained profiles and the batch manifest against the publishe
   // Historic E3a receipt predates E1b. Keep its evidence unchanged; explicitly adapt the added nullable projection.
   const manifest = { ...controls.manifest, items: controls.manifest.items.map(item => ({ ...item, plan: null })) };
   expect(validate('GET_ingestion_cases_caseId_intake_Response_200_application_json', manifest)).toEqual([]);
+});
+
+it('validates the unmodified live manifest, recipe history and author body from the stopped walk', () => {
+  for (const [path, method, status, body] of [
+    ['/api/v1/ingestion/cases/{caseId}/intake', 'get', '200', live.manifest],
+    ['/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}', 'get', '200', live.recipeHistory],
+  ] as const) {
+    const schema = openapi.paths[path][method].responses[status].content['application/json'].schema;
+    expect(validate(schema.$ref.split('/').at(-1), body)).toEqual([]);
+  }
+  const author = openapi.paths['/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/recipes']
+    .post.requestBody.content['application/json'].schema;
+  expect(validate(author.$ref.split('/').at(-1), live.authorBody)).toEqual([]);
 });
 
 it('uses the published plan projection and never profile-private destination suggestions', () => {

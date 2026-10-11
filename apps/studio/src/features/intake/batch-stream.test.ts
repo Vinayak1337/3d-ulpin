@@ -60,6 +60,14 @@ it('errors reconnect from head; only two failed reconnects show a banner, succes
   expect(Stream.instances[3]!.url).toBe('/api/v1/ingestion/cases/case/events');
   Stream.instances[3]!.onopen();
   expect(run.disconnected).toHaveBeenLastCalledWith(false);
+  Stream.instances[3]!.onerror();
+  expect(run.disconnected).toHaveBeenLastCalledWith(false);
+  vi.advanceTimersByTime(5000);
+  Stream.instances[4]!.onerror();
+  expect(run.disconnected).toHaveBeenLastCalledWith(false);
+  vi.advanceTimersByTime(5000);
+  Stream.instances[5]!.onerror();
+  expect(run.disconnected).toHaveBeenLastCalledWith(true);
   run.stop();
 });
 
