@@ -226,17 +226,20 @@ export async function geographicGeometry(
 ): Promise<AreaGeometry> {
   return geographicGeometryInArea(geometry, await getArea(areaId));
 }
-async function geographicGeometryInArea(
-  geometry: AreaGeometry,
-  area: Awaited<ReturnType<typeof getArea>>,
-): Promise<AreaGeometry> {
+function geographicReference(area: Awaited<ReturnType<typeof getArea>>) {
   if (!area.reference)
     throw new AppError(
       422,
       "PLACEMENT_REQUIRED",
       "This area has no geographic placement.",
     );
-  const ref = area.reference;
+  return area.reference;
+}
+async function geographicGeometryInArea(
+  geometry: AreaGeometry,
+  area: Awaited<ReturnType<typeof getArea>>,
+): Promise<AreaGeometry> {
+  const ref = geographicReference(area);
   const r = await query(
     "SELECT ST_AsGeoJSON(ST_Transform(ST_SetSRID(ST_Translate(ST_GeomFromGeoJSON($1),$2::double precision,$3::double precision),$4::integer),4326),9,0) value",
     [
@@ -247,32 +250,57 @@ async function geographicGeometryInArea(
   );
   return JSON.parse(r.rows[0].value);
 }
+async function findingGeographicGeometries(findings: AreaFinding[], areaId: string) {
+  const indices = findings.flatMap((finding, index) => finding.geometry ? [index] : []);
+  const placed = new Map<number, AreaGeometry>();
+  if (!indices.length) return placed;
+  const ref = geographicReference(await getArea(areaId));
+  for (let offset = 0; offset < indices.length; offset += 500) {
+    const batch = indices.slice(offset, offset + 500);
+    const result = await query<{ ord: string; value: string }>(
+      "SELECT t.ord, ST_AsGeoJSON(ST_Transform(ST_SetSRID(ST_Translate(ST_GeomFromGeoJSON(t.g),"
+        + "$2::double precision,$3::double precision),$4::integer),4326),9,0) value "
+        + "FROM unnest($1::text[]) WITH ORDINALITY AS t(g,ord) ORDER BY t.ord",
+      [batch.map((index) => JSON.stringify(findings[index].geometry)),
+        ...ref.origin, Number(ref.analysisCrs.split(":")[1])],
+    );
+    if (result.rows.length !== batch.length)
+      throw new Error("Finding geometry transform returned an unexpected number of rows.");
+    const seen = new Set<number>();
+    for (const row of result.rows) {
+      const position = Number(row.ord) - 1;
+      if (!Number.isInteger(position) || position < 0 || position >= batch.length || seen.has(position))
+        throw new Error("Finding geometry transform returned an invalid ordinal.");
+      seen.add(position);
+      placed.set(batch[position], JSON.parse(row.value));
+    }
+  }
+  return placed;
+}
 export async function enrichFindings(
   findings: AreaFinding[],
   features: PhysicalFeature[],
   areaId: string,
 ) {
-  return Promise.all(
-    findings.map(async (f) => ({
+  const positions = new Map(features.map((feature, index) => [feature.id, index]));
+  const placed = await findingGeographicGeometries(findings, areaId);
+  return findings.map((f, index) => {
+    const participants = [...new Set(f.featureIds)]
+      .flatMap((id) => positions.has(id) ? [positions.get(id)!] : [])
+      .sort((left, right) => left - right)
+      .map((position) => features[position]);
+    return {
       ...f,
-      geographicGeometry: f.geometry
-        ? await geographicGeometry(f.geometry, areaId)
-        : undefined,
-      participants: features.filter((p) => f.featureIds.includes(p.id)),
-      evidence:
-        f.evidence ??
-        features
-          .filter((p) => f.featureIds.includes(p.id))
-          .flatMap((p) => p.evidence),
-      inputRevisions: features
-        .filter((p) => f.featureIds.includes(p.id))
-        .map((p) => ({
-          featureId: p.id,
-          revision: p.revision,
-          sourceRevisionId: p.sourceRevisionId,
-        })),
-    })),
-  );
+      geographicGeometry: placed.get(index),
+      participants,
+      evidence: f.evidence ?? participants.flatMap((p) => p.evidence),
+      inputRevisions: participants.map((p) => ({
+        featureId: p.id,
+        revision: p.revision,
+        sourceRevisionId: p.sourceRevisionId,
+      })),
+    };
+  });
 }
 const recordFrom = (r: any): RegistryRecord => ({
   ...r.body,
