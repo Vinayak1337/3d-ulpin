@@ -10,6 +10,11 @@ import { documentProfileFormats, documentLimitMiB } from "../../shared/document-
 import { areaSceneAssets } from "../spatial/scene-assets";
 import { usesGeographicNeighbours } from "../../shared/neighbour-scenario-policy";
 import { randomUUID } from "node:crypto";
+import { Readable } from "node:stream";
+import { isDeepStrictEqual } from "node:util";
+import { STREAMING_VECTOR_LIMITS } from "@ulpin/contracts/usp";
+import type { SourceRangeReference } from "@ulpin/contracts";
+import { readStreamingFeatures } from "../usp/ingestion/streaming-vector-reader";
 import { recordCommittedExteriorsTx } from './exterior-records';
 import { redactDerivative } from '../usp/ingest/redact';
 import type { PoolClient } from "pg";
@@ -364,6 +369,36 @@ export async function bindRetainedCaseTx(client: PoolClient, caseId: string | un
   await client.query('UPDATE cases SET site_id=$2, updated_at=now() WHERE id=$1', [caseId, site.id]);
 }
 
+/** All-or-none locators: never pair accepted ordinals or reserialized features with original bytes. */
+export async function importedGeojsonRanges(bytes: Uint8Array, data: unknown,
+  candidates: Pick<NormalizedFeature, "sourceFeatureIndex" | "sourceGeometry" | "properties">[]) {
+  const ranges = new Map<number, SourceRangeReference>();
+  const rows = (data as { features?: unknown[] })?.features;
+  if (!Array.isArray(rows)) return ranges;
+  try {
+    await readStreamingFeatures(Readable.from([Buffer.from(bytes)]), "feature-collection", async item => {
+      if (!isDeepStrictEqual(item.feature, rows[item.index])) throw new Error("Feature pairing changed");
+      ranges.set(item.index, { format: "geojson", featureIndex: item.index,
+        byteStart: item.start, byteEnd: item.end, rawSha256: sha256(item.raw),
+        readerVersion: STREAMING_VECTOR_LIMITS.version });
+    });
+    if (ranges.size !== rows.length) throw new Error("Feature count changed");
+    const indexes = new Set<number>();
+    for (const candidate of candidates) {
+      const index = candidate.sourceFeatureIndex;
+      if (index === undefined || !ranges.has(index) || indexes.has(index)) throw new Error("Missing index");
+      indexes.add(index);
+      const row = rows[index] as { geometry?: unknown; properties?: Record<string, unknown> };
+      if (!isDeepStrictEqual(row.geometry, candidate.sourceGeometry)) throw new Error("Geometry pairing changed");
+      for (const [name, value] of Object.entries(candidate.properties))
+        if (!isDeepStrictEqual(row.properties?.[name], value)) throw new Error("Properties pairing changed");
+    }
+    return ranges;
+  } catch {
+    return new Map<number, SourceRangeReference>();
+  }
+}
+
 export async function ingestArea(input: {
   bytes: Uint8Array;
   filename: string;
@@ -501,6 +536,9 @@ export async function ingestArea(input: {
     : undefined;
   if (input.retainedOriginal && (!externalClient || !retained || retained.sha256 !== digest || digest !== input.retainedOriginal.sourceSha256))
     conflict("The retained GIS original does not match this transaction's source pin.");
+  const sourceRanges = input.format === "geojson"
+    ? await importedGeojsonRanges(input.bytes, data, normalized.features)
+    : new Map<number, SourceRangeReference>();
   const sourceId = retained?.id || randomUUID(),
     objectKey = retained?.object_key || `areas/${sourceId}/${digest}`;
   const utilityCandidates = normalized.features.filter(
@@ -830,7 +868,9 @@ export async function ingestArea(input: {
           },
           sourceReference: ["gpkg", "shapefile_zip"].includes(input.format)
             ? (candidate.sourceReference ?? normalized.reference)
-            : normalized.reference,
+            : { ...normalized.reference,
+                ...(sourceRanges.has(candidate.sourceFeatureIndex!)
+                  ? { sourceRange: sourceRanges.get(candidate.sourceFeatureIndex!) } : {}) },
           id,
           identifier,
           areaId: areaRow.id,
