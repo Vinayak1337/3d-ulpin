@@ -78,7 +78,9 @@ async function isolated(work:(f:ReturnType<typeof fixture>)=>Promise<void>,confi
 
 // One actual accepted supervisor invocation per unchanged retained format.
 // All database/object operations below are explicit in-memory protocol doubles.
-test('glTF canonical producer/consumer keeps exact originals and partial companions; refusals make no writes',async()=>{
+test('glTF canonical producer/consumer keeps exact originals and partial companions; refusals make no writes',
+  {skip:process.env.ULPIN_GLTF_LOCAL_PROCESS==='1'?false:
+    'needs ULPIN_GLTF_LOCAL_PROCESS=1 and ULPIN_GLTF_PROFILE / ULPIN_GLTF_PROFILE_SHA256 (native bridge)'},async()=>{
   assert(present,'Retained Box originals are required; no replacement source is generated.');
   assert.equal(process.env.ULPIN_GLTF_LOCAL_PROCESS,'1','Explicit current-profile native bridge admission is required.');
   for(const sourceName of ['Box.glb','Box.gltf'])await isolated(async f=>{

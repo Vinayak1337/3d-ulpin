@@ -1,0 +1,252 @@
+{
+  "task": "FX1",
+  "base": "41776251",
+  "before": { "tests": 33, "pass": 24, "fail": 9, "skipped": 0, "exit": 1 },
+  "history_method": "git log -S on each named SQL, operation, setting or guard; git show on source-pin change",
+  "history_limit": "No historical passing run is established; some prerequisites predate their tests.",
+  "history_origin_note": "Origin commits and later changes are distinguished; no causal later commit is invented.",
+  "failures": [
+    {
+      "id": 1,
+      "name": "glTF canonical producer/consumer keeps exact originals and partial companions; refusals make no writes",
+      "failure": {
+        "at": "tests/gltf-ingestion.test.ts:83",
+        "assertion": "ULPIN_GLTF_LOCAL_PROCESS === '1'",
+        "actual": "undefined"
+      },
+      "product": "packages/server/src/modules/usp/ingestion/gltf-config.ts:34-35",
+      "history": [
+        {
+          "hash": "11c31877",
+          "subject": "feat(ingestion): add bounded private glTF native intake leaves",
+          "search": "ULPIN_GLTF_PROFILE",
+          "role": "Origin of required product profile, before the test; no later setting change found."
+        },
+        {
+          "hash": "e1b3272e",
+          "subject": "test(ingestion): verify canonical glTF flow with retained graphics originals",
+          "search": "ULPIN_GLTF_LOCAL_PROCESS",
+          "role": "Test-only explicit native execution admission; product does not consume this variable."
+        }
+      ],
+      "classification": "environment",
+      "proof": "Absent native admission fails before product I/O; no passing test sets a safe local value."
+    },
+    {
+      "id": 2,
+      "name": "OBJ canonical intake retains complete/partial native context and rejects revoked disclosure",
+      "failure": {
+        "at": "tests/obj-ingestion.test.ts:92",
+        "assertion": "ULPIN_OBJ_LOCAL_PROCESS === '1'",
+        "actual": "undefined"
+      },
+      "product": "packages/server/src/modules/usp/ingestion/obj-config.ts:34-35",
+      "history": [
+        {
+          "hash": "60dca45a",
+          "subject": "Add bounded private OBJ intake and native runtime adapter",
+          "search": "ULPIN_OBJ_PROFILE",
+          "role": "Origin of required product profile, before the test; no later setting change found."
+        },
+        {
+          "hash": "5b4be645",
+          "subject": "Check real OBJ canonical intake and private disclosure controls",
+          "search": "ULPIN_OBJ_LOCAL_PROCESS",
+          "role": "Test-only explicit native execution admission; product does not consume this variable."
+        }
+      ],
+      "classification": "environment",
+      "proof": "Absent native admission fails before product I/O; no passing test sets a safe local value."
+    },
+    {
+      "id": 3,
+      "name_prefix": "exact complete and partial OBJ metadata evaluate/read/replay",
+      "file_note": "The task table lists obj-ingestion.test.ts, but the actual test is in sufficiency-mesh.test.ts.",
+      "failure": {
+        "at": "tests/sufficiency-mesh.test.ts:94",
+        "assertion": "decisions.map(outcome) equals complete, complete, park, reject_for_3d, park",
+        "actual": ["complete", "park", "park", "reject_for_3d", "park"]
+      },
+      "product": [
+        "packages/server/src/modules/usp/ingestion/obj.ts:26,81-82,124",
+        "packages/server/src/modules/usp/ingestion/sufficiency-mesh.ts:52"
+      ],
+      "history": [
+        {
+          "hash": "60dca45a",
+          "subject": "Add bounded private OBJ intake and native runtime adapter",
+          "search": "export const objReaderSha",
+          "role": "Raw physical-byte reader hash origin; unchanged since introduction, before this test."
+        },
+        {
+          "hash": "53c85dd3",
+          "subject": "fix(ingestion): the native family's reads survive a later file",
+          "search": "compareSourcePins(objInput",
+          "role": "Later product change since test addition; relaxes case revision only, retains exact reader equality."
+        },
+        {
+          "hash": "645e36ec",
+          "subject": "feat(ingestion): assess retained mesh task sufficiency",
+          "search": "state=row.stale",
+          "role": "Stale status precedence introduced with this test."
+        }
+      ],
+      "classification": "product_defect",
+      "proof": "The immutable receipt matches LF bytes, not current CRLF bytes; altering its pins weakens the test.",
+      "causal_limit": "No post-pass semantic reader change is established; classification is conservative."
+    },
+    {
+      "id": 4,
+      "name_prefix": "mesh originals survive unavailable processing",
+      "failure": {
+        "at": "tests/sufficiency-mesh.test.ts:114",
+        "assertion": "unavailable.decisions[1].nextAction === configure_reader",
+        "actual": "retry_extraction"
+      },
+      "product": [
+        "packages/server/src/modules/usp/ingestion/sufficiency-mesh.ts:52-54",
+        "packages/server/src/modules/usp/ingestion/obj.ts:26,81-82,124"
+      ],
+      "history": [
+        {
+          "hash": "645e36ec",
+          "subject": "feat(ingestion): assess retained mesh task sufficiency",
+          "search": "state=row.stale",
+          "role": "Stale status prevents the injected tool outage from being reached; introduced with this test."
+        },
+        {
+          "hash": "53c85dd3",
+          "subject": "fix(ingestion): the native family's reads survive a later file",
+          "search": "compareSourcePins(objInput",
+          "role": "Later product change; not proven causal because exact reader comparison also preceded it."
+        }
+      ],
+      "classification": "product_defect",
+      "proof": "The same reader mismatch bypasses the injected tool outage; altering accepted pins weakens the test."
+    },
+    {
+      "id": 5,
+      "name": "native spatial/AI routes publish all 28 operations and enforce non-stateful transport boundaries",
+      "failure": {
+        "at": "tests/nest-spatial-api.test.ts:85",
+        "assertion": "published operation IDs equal retired NEST-13 ledger IDs",
+        "actual_count": 33,
+        "expected_count": 28
+      },
+      "product": [
+        "apps/api/src/modules/spatial/spatial-ml-source-review.controller.ts:32,38,43,54",
+        "apps/api/src/modules/spatial/spatial-ml.controller.ts:58"
+      ],
+      "history": [
+        { "hash": "04fa4002", "subject": "feat(spatial): queue private source-only PDF pixel batches",
+          "search": "POST_api_v1_spatial_ml_source_batches", "role": "Controller operation origin." },
+        { "hash": "6f816cdc", "subject": "feat(api): register and publish source-only spatial batches",
+          "search": "POST_api_v1_spatial_ml_source_batches", "role": "Operation manifest publication." },
+        { "hash": "6f4b70b1", "subject": "feat(spatial): retain source candidate inspection decisions",
+          "search": "GET_api_v1_spatial_ml_items_itemId_source_reviews_context",
+          "role": "Context, exact read and review controller operation origins." },
+        { "hash": "ae0a78b7", "subject": "feat(api): wire and publish source candidate review endpoints",
+          "search": "SpatialSourceReviewsController", "role": "Controller registration in spatial.module.ts." },
+        { "hash": "225aa3d7", "subject": "feat(evidence): discover private saved source history",
+          "search": "GET_api_v1_spatial_ml_items_itemId_source_reviews" }
+      ],
+      "classification": "stale_control",
+      "proof": "Five added operations appear in current OpenAPI and controllers, not the old 28-operation ledger."
+    },
+    {
+      "id": 6,
+      "name": "canonical cancellation reaches actual current-authority status; stored error text is allowlisted",
+      "failure": {
+        "at": "tests/registry-cityjson-validation.test.ts:182",
+        "throw": "Unexpected technical SQL: SELECT operation FROM jobs WHERE id=$1"
+      },
+      "product": "packages/server/src/modules/usp/jobs.ts:231-232",
+      "history": [
+        { "hash": "f1892c12", "subject": "feat(packets): queue confirmed PDF execution with fenced atomic acceptance",
+          "search": "SELECT operation FROM jobs WHERE id=$1" }
+      ],
+      "classification": "stale_control",
+      "proof": "The PDF guard reads fixture job.operation (cityjson-validation); the fixed SQL control omits it."
+    },
+    {
+      "id": 7,
+      "name_prefix": "reference/citation gates serialize the reproduced inversion",
+      "failure": {
+        "at": "tests/registry-document-lock-order.test.ts:150",
+        "throw": "Unexpected commit SQL",
+        "sql": [
+          "SELECT DISTINCT ON(id) id,revision,body FROM usp_declaration_revisions",
+          "    WHERE site_id=$1 ORDER BY id,revision DESC LIMIT 11"
+        ]
+      },
+      "product": [
+        "packages/server/src/modules/usp/declarations/projection.ts:22-23",
+        "packages/server/src/modules/usp/snapshots.ts:108"
+      ],
+      "history": [
+        { "hash": "1dbee2ce", "subject": "feat(usp): add reviewed immutable share declarations",
+          "search": "SELECT DISTINCT ON(id) id,revision,body FROM usp_declaration_revisions",
+          "role": "Added declaration rows to snapshot projection after this test."
+        },
+        { "hash": "77597977", "subject": "feat(usp): a snapshot of targets holds the targets and what they stand on",
+          "search": "SELECT DISTINCT ON(id) id,revision,body FROM usp_declaration_revisions",
+          "role": "Later scoped-query extension; the site query still has the exact text above."
+        }
+      ],
+      "classification": "stale_control",
+      "proof": "Snapshots now read declarations; this fixture has none, so only the exact site SELECT gets []."
+    },
+    {
+      "id": 8,
+      "name_prefix": "private route exposes strict schema without a listener",
+      "failure": {
+        "at": "tests/survey-report-controller.test.ts:35",
+        "throw": "LOCAL_OPERATOR_CONFIGURATION"
+      },
+      "product": [
+        "apps/api/src/modules/evidence/survey-report.controller.ts:45",
+        "packages/server/src/modules/usp/principal.ts:24-28"
+      ],
+      "history": [
+        { "hash": "e007bb49", "subject": "Require configured local process attribution",
+          "search": "ULPIN_LOCAL_OPERATOR_SUBJECT",
+          "role": "Required before this controller test was added; no later causal subject-setting change found."
+        },
+        { "hash": "5a49fc63", "subject": "Add private literal LP360 survey report inspection",
+          "search": "localRequestContext",
+          "role": "Controller calls subject-bound context; introduced with this test."
+        }
+      ],
+      "classification": "environment",
+      "proof": "The request has no subject; passing controller tests set and restore test-only subjects.",
+      "pattern": "apps/api/src/modules/register/conflict-decision.controller.test.ts:117-145"
+    },
+    {
+      "id": 9,
+      "name": "case-original routing still invokes the existing local learner without training",
+      "failure": {
+        "at": "tests/tabular-admission.test.ts:358",
+        "assertion": "draft.proposal.studentReasonCode === null",
+        "actual": "STUDENT_UNAVAILABLE"
+      },
+      "product": "packages/server/src/modules/usp/ingestion/mapping-teacher.ts:737-741,749",
+      "history": [
+        { "hash": "d0d950b6", "subject": "feat(agent): route mapping through memory, student, then teacher",
+          "search": "ULPIN_PROFILE_PYTHON",
+          "role": "Interpreter prerequisite predates this test; no later causal setting change found."
+        }
+      ],
+      "classification": "environment",
+      "proof": "The unchanged isolated test passes with the named Python (1 pass, 0 skips); its file exists.",
+      "interpreter": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe"
+    }
+  ],
+  "reader_probe": {
+    "retained": "c2591f28100a7857db3769313f249193d4e6808103afc8d16504db022bca00a7",
+    "physical_current": "781caeec7f81004339455ae8fec8842a8cc59987a76ac40defc9494c0bf0c2e2",
+    "current_lf_normalized": "c2591f28100a7857db3769313f249193d4e6808103afc8d16504db022bca00a7",
+    "files": ["services/geo/geo/native_obj.py", "scripts/usp/desktop-obj-read.py"],
+    "source_changes_since_test_addition": "git diff 645e36ec..HEAD -- these two paths is empty",
+    "qualification": "Diagnosis only; no file, accepted pin, profile, original or product byte was modified."
+  }
+}
