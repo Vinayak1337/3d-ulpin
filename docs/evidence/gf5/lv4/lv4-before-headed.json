@@ -1,0 +1,1167 @@
+{
+  "git": "8de6e4adab5d4181b6b9a0f58a76897255fffbd4",
+  "input": {
+    "path": "E:/BhuAayam-data/datasets/nyc-10013/nyc-10013-multimodal.zip",
+    "bytes": 14621643,
+    "sha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da",
+    "git": "8de6e4adab5d4181b6b9a0f58a76897255fffbd4"
+  },
+  "environment": {
+    "browser": "Chrome/154.0.0.0",
+    "pixelRatio": 1,
+    "cpuThrottleRate": 1,
+    "gpuRenderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "parallelShaderCompile": true
+  },
+  "frames": {"count":404,"p50Ms":6.7,"p95Ms":19.9,"longestMs":108.5,"over50":2,"over100":2},
+  "startToLastDrawMs": 21352.5,
+  "lastPartToEverythingDrawnMs": 67.4,
+  "streamWindow": {"from":18580.2,"to":22925.8,"ms":4345.6},
+  "startToCompleteMs": 21503.4,
+  "heap": {"startBytes":141248286,"endBytes":271419098},
+  "chunks": [
+    {
+      "type": "chunk",
+      "at": 18580.2,
+      "count": 96,
+      "buildings": 0,
+      "sequence": 2,
+      "listenerMs": 6.4,
+      "twoFramesMs": 31.2,
+      "intervalMs": null,
+      "buildingsBefore": 0,
+      "sceneApplyMs": 0,
+      "baseApplyMs": 1.5
+    },
+    {
+      "type": "chunk",
+      "at": 18853.9,
+      "count": 96,
+      "buildings": 0,
+      "sequence": 3,
+      "listenerMs": 6.4,
+      "twoFramesMs": 24.2,
+      "intervalMs": 273.7,
+      "buildingsBefore": 0,
+      "sceneApplyMs": 0,
+      "baseApplyMs": 0.9
+    },
+    {
+      "type": "chunk",
+      "at": 19041.6,
+      "count": 96,
+      "buildings": 0,
+      "sequence": 4,
+      "listenerMs": 3,
+      "twoFramesMs": 59.2,
+      "intervalMs": 187.7,
+      "buildingsBefore": 0,
+      "sceneApplyMs": 0,
+      "baseApplyMs": 0.5
+    },
+    {
+      "type": "chunk",
+      "at": 19218.6,
+      "count": 96,
+      "buildings": 0,
+      "sequence": 5,
+      "listenerMs": 3,
+      "twoFramesMs": 17.1,
+      "intervalMs": 177,
+      "buildingsBefore": 0,
+      "sceneApplyMs": 0,
+      "baseApplyMs": 0.3
+    },
+    {
+      "type": "chunk",
+      "at": 19336.5,
+      "count": 96,
+      "buildings": 0,
+      "sequence": 6,
+      "listenerMs": 3,
+      "twoFramesMs": 16.8,
+      "intervalMs": 117.9,
+      "buildingsBefore": 0,
+      "sceneApplyMs": 0,
+      "baseApplyMs": 0.2
+    },
+    {
+      "type": "chunk",
+      "at": 19460.1,
+      "count": 96,
+      "buildings": 0,
+      "sequence": 7,
+      "listenerMs": 3,
+      "twoFramesMs": 21.8,
+      "intervalMs": 123.6,
+      "buildingsBefore": 0,
+      "sceneApplyMs": 0,
+      "baseApplyMs": 0.4
+    },
+    {
+      "type": "chunk",
+      "at": 19600.9,
+      "count": 96,
+      "buildings": 0,
+      "sequence": 8,
+      "listenerMs": 3.3,
+      "twoFramesMs": 25.8,
+      "intervalMs": 140.8,
+      "buildingsBefore": 0,
+      "sceneApplyMs": 0,
+      "baseApplyMs": 0.6
+    },
+    {
+      "type": "chunk",
+      "at": 19859.3,
+      "count": 96,
+      "buildings": 67,
+      "sequence": 9,
+      "listenerMs": 2.2,
+      "twoFramesMs": 112.3,
+      "intervalMs": 258.4,
+      "buildingsBefore": 0,
+      "sceneApplyMs": 0,
+      "baseApplyMs": 1.2
+    },
+    {
+      "type": "chunk",
+      "at": 20079.5,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 10,
+      "listenerMs": 1.5,
+      "twoFramesMs": 19.2,
+      "intervalMs": 220.2,
+      "buildingsBefore": 67,
+      "sceneApplyMs": 0.2,
+      "baseApplyMs": 0
+    },
+    {
+      "type": "chunk",
+      "at": 20198,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 11,
+      "listenerMs": 1.7,
+      "twoFramesMs": 19,
+      "intervalMs": 118.5,
+      "buildingsBefore": 163,
+      "sceneApplyMs": 0.2,
+      "baseApplyMs": 0
+    },
+    {
+      "type": "chunk",
+      "at": 20328.6,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 12,
+      "listenerMs": 1.5,
+      "twoFramesMs": 19,
+      "intervalMs": 130.6,
+      "buildingsBefore": 259,
+      "sceneApplyMs": 0.2,
+      "baseApplyMs": 0
+    },
+    {
+      "type": "chunk",
+      "at": 20482.2,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 13,
+      "listenerMs": 2.4,
+      "twoFramesMs": 27.2,
+      "intervalMs": 153.6,
+      "buildingsBefore": 355,
+      "sceneApplyMs": 0.2,
+      "baseApplyMs": 0
+    },
+    {
+      "type": "chunk",
+      "at": 20633.9,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 14,
+      "listenerMs": 1.6,
+      "twoFramesMs": 26.7,
+      "intervalMs": 151.7,
+      "buildingsBefore": 451,
+      "sceneApplyMs": 0.1,
+      "baseApplyMs": 0
+    },
+    {
+      "type": "chunk",
+      "at": 20801.6,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 15,
+      "listenerMs": 1.5,
+      "twoFramesMs": 23.6,
+      "intervalMs": 167.7,
+      "buildingsBefore": 547,
+      "sceneApplyMs": 0.1,
+      "baseApplyMs": 0
+    },
+    {
+      "type": "chunk",
+      "at": 20948.8,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 16,
+      "listenerMs": 1.6,
+      "twoFramesMs": 26,
+      "intervalMs": 147.2,
+      "buildingsBefore": 643,
+      "sceneApplyMs": 0.1,
+      "baseApplyMs": 0
+    },
+    {
+      "type": "chunk",
+      "at": 21103.9,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 17,
+      "listenerMs": 1.7,
+      "twoFramesMs": 25.8,
+      "intervalMs": 155.1,
+      "buildingsBefore": 739,
+      "sceneApplyMs": 0.1,
+      "baseApplyMs": 0
+    },
+    {
+      "type": "chunk",
+      "at": 21275.6,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 18,
+      "listenerMs": 1.7,
+      "twoFramesMs": 28.1,
+      "intervalMs": 171.7,
+      "buildingsBefore": 835,
+      "sceneApplyMs": 0.1,
+      "baseApplyMs": 0
+    },
+    {
+      "type": "chunk",
+      "at": 21445.5,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 19,
+      "listenerMs": 1.8,
+      "twoFramesMs": 34.1,
+      "intervalMs": 169.9,
+      "buildingsBefore": 931,
+      "sceneApplyMs": 0.1,
+      "baseApplyMs": 0
+    },
+    {
+      "type": "chunk",
+      "at": 21636.4,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 20,
+      "listenerMs": 1.8,
+      "twoFramesMs": 33.8,
+      "intervalMs": 190.9,
+      "buildingsBefore": 1027,
+      "sceneApplyMs": 0.1,
+      "baseApplyMs": 0
+    },
+    {
+      "type": "chunk",
+      "at": 21818.9,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 21,
+      "listenerMs": 2.9,
+      "twoFramesMs": 37,
+      "intervalMs": 182.5,
+      "buildingsBefore": 1123,
+      "sceneApplyMs": 0.2,
+      "baseApplyMs": 0
+    },
+    {
+      "type": "chunk",
+      "at": 22013.2,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 22,
+      "listenerMs": 1.9,
+      "twoFramesMs": 34.4,
+      "intervalMs": 194.3,
+      "buildingsBefore": 1219,
+      "sceneApplyMs": 0.2,
+      "baseApplyMs": 0
+    },
+    {
+      "type": "chunk",
+      "at": 22211.3,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 23,
+      "listenerMs": 1.8,
+      "twoFramesMs": 34.5,
+      "intervalMs": 198.1,
+      "buildingsBefore": 1315,
+      "sceneApplyMs": 0.1,
+      "baseApplyMs": 0
+    },
+    {
+      "type": "chunk",
+      "at": 22407.3,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 24,
+      "listenerMs": 1.8,
+      "twoFramesMs": 38.9,
+      "intervalMs": 196,
+      "buildingsBefore": 1411,
+      "sceneApplyMs": 0.1,
+      "baseApplyMs": 0
+    },
+    {
+      "type": "chunk",
+      "at": 22634,
+      "count": 96,
+      "buildings": 96,
+      "sequence": 25,
+      "listenerMs": 1.9,
+      "twoFramesMs": 42.9,
+      "intervalMs": 226.7,
+      "buildingsBefore": 1507,
+      "sceneApplyMs": 0.2,
+      "baseApplyMs": 0
+    },
+    {
+      "type": "chunk",
+      "at": 22858.4,
+      "count": 59,
+      "buildings": 59,
+      "sequence": 26,
+      "listenerMs": 1.5,
+      "twoFramesMs": 41.7,
+      "intervalMs": 224.4,
+      "buildingsBefore": 1603,
+      "sceneApplyMs": 0.2,
+      "baseApplyMs": 0
+    }
+  ],
+  "programs": {
+    "initial": [],
+    "events": [
+      {
+        "at": 18499.7,
+        "part": 1,
+        "id": 0,
+        "name": "BackgroundMaterial",
+        "type": "ShaderMaterial",
+        "cacheKey":
+        "0,1,highp,srgb,false,,uv,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,8520705,srgb,onBeforeCompile() {}"
+      },
+      {
+        "at": 18551.8,
+        "part": 1,
+        "id": 1,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,onBeforeCompile() {}"
+      },
+      {
+        "at": 18652.9,
+        "part": 2,
+        "id": 2,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,surface-paving"
+      },
+      {
+        "at": 18779.1,
+        "part": 2,
+        "id": 3,
+        "name": "",
+        "type": "LineBasicMaterial",
+        "cacheKey":
+        "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,8520707,srgb,onBeforeCompile() {}"
+      },
+      {
+        "at": 19099.7,
+        "part": 4,
+        "id": 4,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,surface-water"
+      },
+      {
+        "at": 19141.3,
+        "part": 4,
+        "id": 5,
+        "name": "",
+        "type": "LineBasicMaterial",
+        "cacheKey":
+        "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,8389635,srgb,onBeforeCompile() {}"
+      },
+      {
+        "at": 19697.1,
+        "part": 8,
+        "id": 6,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,surface-grass"
+      },
+      {
+        "at": 19728,
+        "part": 8,
+        "id": 7,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388611,8520707,srgb,onBeforeCompile() {}"
+      },
+      {
+        "at": 19757.1,
+        "part": 8,
+        "id": 8,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388609,8520707,srgb,onBeforeCompile() {}"
+      },
+      {
+        "at": 19890.2,
+        "part": 9,
+        "id": 9,
+        "name": "",
+        "type": "MeshDepthMaterial",
+        "cacheKey":
+        "depth,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,false,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,3200,8388611,8532992,srgb,onBeforeCompile() {}"
+      },
+      {
+        "at": 19894.3,
+        "part": 9,
+        "id": 10,
+        "name": "",
+        "type": "MeshDepthMaterial",
+        "cacheKey":
+        "depth,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,false,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,3200,8388609,8532992,srgb,onBeforeCompile() {}"
+      },
+      {
+        "at": 19897.4,
+        "part": 9,
+        "id": 11,
+        "name": "",
+        "type": "MeshDepthMaterial",
+        "cacheKey":
+        "depth,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,false,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,3200,8388608,8532992,srgb,onBeforeCompile() {}"
+      },
+      {
+        "at": 19971.1,
+        "part": 9,
+        "id": 12,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8389632,8520707,srgb,facade2-true-true-false-false"
+      }
+    ],
+    "uses": [
+      {
+        "at": 18492.3,
+        "ms": 7.3,
+        "material": "ShaderMaterial",
+        "kind": "ShaderMaterial",
+        "objectType": "Mesh",
+        "attributes": ["position","uv"],
+        "receiveShadow": false,
+        "id": 0,
+        "name": "BackgroundMaterial",
+        "type": "ShaderMaterial",
+        "cacheKey":
+        "0,1,highp,srgb,false,,uv,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,8520705,srgb,onBeforeCompile() {}"
+      },
+      {
+        "at": 18499.8,
+        "ms": 52,
+        "material": "ground",
+        "kind": "ground",
+        "objectType": "Mesh",
+        "attributes": ["position","normal","uv"],
+        "receiveShadow": true,
+        "id": 1,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,onBeforeCompile() {}"
+      },
+      {
+        "at": 18619.2,
+        "ms": 33.6,
+        "material": "sidewalk",
+        "kind": "sidewalk",
+        "objectType": "Mesh",
+        "attributes": ["position","uv","normal"],
+        "receiveShadow": true,
+        "id": 2,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,surface-paving"
+      },
+      {
+        "at": 18772.7,
+        "ms": 6.4,
+        "material": "kerbEdge",
+        "kind": "kerb/lane/edge line",
+        "objectType": "LineSegments",
+        "attributes": ["position"],
+        "receiveShadow": false,
+        "id": 3,
+        "name": "",
+        "type": "LineBasicMaterial",
+        "cacheKey":
+        "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,8520707,srgb,onBeforeCompile() {}"
+      },
+      {
+        "at": 19064.4,
+        "ms": 0.2,
+        "material": "road",
+        "kind": "road",
+        "objectType": "Mesh",
+        "attributes": ["position","uv","normal"],
+        "receiveShadow": true,
+        "id": 2,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,surface-paving"
+      },
+      {
+        "at": 19064.7,
+        "ms": 35,
+        "material": "water",
+        "kind": "water",
+        "objectType": "Mesh",
+        "attributes": ["position","uv","normal"],
+        "receiveShadow": true,
+        "id": 4,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,surface-water"
+      },
+      {
+        "at": 19134.9,
+        "ms": 6.4,
+        "material": "kerb",
+        "kind": "kerb/lane/edge line",
+        "objectType": "LineSegments",
+        "attributes": ["position"],
+        "receiveShadow": false,
+        "id": 5,
+        "name": "",
+        "type": "LineBasicMaterial",
+        "cacheKey":
+        "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,8389635,srgb,onBeforeCompile() {}"
+      },
+      {
+        "at": 19662.2,
+        "ms": 34.9,
+        "material": "publicLand",
+        "kind": "publicLand",
+        "objectType": "Mesh",
+        "attributes": ["position","uv","normal"],
+        "receiveShadow": true,
+        "id": 6,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,surface-grass"
+      },
+      {
+        "at": 19697.8,
+        "ms": 0.1,
+        "material": "court",
+        "kind": "court",
+        "objectType": "Mesh",
+        "attributes": ["position","uv","normal"],
+        "receiveShadow": true,
+        "id": 2,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,surface-paving"
+      },
+      {
+        "at": 19698.1,
+        "ms": 29.9,
+        "material": "crown",
+        "kind": "tree",
+        "objectType": "Mesh",
+        "attributes": ["position","normal","uv"],
+        "receiveShadow": true,
+        "id": 7,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388611,8520707,srgb,onBeforeCompile() {}"
+      },
+      {
+        "at": 19728.1,
+        "ms": 29,
+        "material": "trunk",
+        "kind": "tree",
+        "objectType": "Mesh",
+        "attributes": ["position","normal","uv"],
+        "receiveShadow": true,
+        "id": 8,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388609,8520707,srgb,onBeforeCompile() {}"
+      },
+      {
+        "at": 19885.3,
+        "ms": 4.9,
+        "material": "MeshDepthMaterial",
+        "kind": "shadow depth",
+        "objectType": "Mesh",
+        "attributes": ["position","normal","uv"],
+        "receiveShadow": true,
+        "id": 9,
+        "name": "",
+        "type": "MeshDepthMaterial",
+        "cacheKey":
+        "depth,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,false,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,3200,8388611,8532992,srgb,onBeforeCompile() {}"
+      },
+      {
+        "at": 19897.7,
+        "ms": 0.1,
+        "material": "pad",
+        "kind": "pad",
+        "objectType": "Mesh",
+        "attributes": ["position","normal"],
+        "receiveShadow": true,
+        "id": 1,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,onBeforeCompile() {}"
+      },
+      {
+        "at": 19899.8,
+        "ms": 71.3,
+        "material": "bldg",
+        "kind": "building prism",
+        "objectType": "Mesh",
+        "attributes": ["position","uv","normal","color","aSeed"],
+        "receiveShadow": true,
+        "id": 12,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8389632,8520707,srgb,facade2-true-true-false-false"
+      },
+      {
+        "at": 19971.3,
+        "ms": 0.1,
+        "material": "edge",
+        "kind": "kerb/lane/edge line",
+        "objectType": "LineSegments",
+        "attributes": ["position"],
+        "receiveShadow": false,
+        "id": 3,
+        "name": "",
+        "type": "LineBasicMaterial",
+        "cacheKey":
+        "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,8520707,srgb,onBeforeCompile() {}"
+      }
+    ],
+    "frames": [
+      {
+        "at": 18475.7,
+        "ms": 76.2,
+        "part": 1,
+        "created": [
+          {
+            "id": 0,
+            "name": "BackgroundMaterial",
+            "type": "ShaderMaterial",
+            "cacheKey":
+            "0,1,highp,srgb,false,,uv,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,8520705,srgb,onBeforeCompile() {}"
+          },
+          {
+            "id": 1,
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "cacheKey":
+            "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,onBeforeCompile() {}"
+          }
+        ]
+      },
+      {
+        "at": 18611.4,
+        "ms": 41.6,
+        "part": 2,
+        "created": [
+          {
+            "id": 2,
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "cacheKey":
+            "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,surface-paving"
+          }
+        ]
+      },
+      {
+        "at": 18765.4,
+        "ms": 13.8,
+        "part": 2,
+        "created": [
+          {
+            "id": 3,
+            "name": "",
+            "type": "LineBasicMaterial",
+            "cacheKey":
+            "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,8520707,srgb,onBeforeCompile() {}"
+          }
+        ]
+      },
+      {
+        "at": 19059.7,
+        "ms": 41,
+        "part": 4,
+        "created": [
+          {
+            "id": 4,
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "cacheKey":
+            "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,surface-water"
+          }
+        ]
+      },
+      {
+        "at": 19129,
+        "ms": 12.4,
+        "part": 4,
+        "created": [
+          {
+            "id": 5,
+            "name": "",
+            "type": "LineBasicMaterial",
+            "cacheKey":
+            "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,8389635,srgb,onBeforeCompile() {}"
+          }
+        ]
+      },
+      {
+        "at": 19652,
+        "ms": 105.1,
+        "part": 8,
+        "created": [
+          {
+            "id": 6,
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "cacheKey":
+            "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,surface-grass"
+          },
+          {
+            "id": 7,
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "cacheKey":
+            "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388611,8520707,srgb,onBeforeCompile() {}"
+          },
+          {
+            "id": 8,
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "cacheKey":
+            "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388609,8520707,srgb,onBeforeCompile() {}"
+          }
+        ]
+      },
+      {
+        "at": 19871.3,
+        "ms": 100.3,
+        "part": 9,
+        "created": [
+          {
+            "id": 9,
+            "name": "",
+            "type": "MeshDepthMaterial",
+            "cacheKey":
+            "depth,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,false,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,3200,8388611,8532992,srgb,onBeforeCompile() {}"
+          },
+          {
+            "id": 10,
+            "name": "",
+            "type": "MeshDepthMaterial",
+            "cacheKey":
+            "depth,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,false,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,3200,8388609,8532992,srgb,onBeforeCompile() {}"
+          },
+          {
+            "id": 11,
+            "name": "",
+            "type": "MeshDepthMaterial",
+            "cacheKey":
+            "depth,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,false,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,3200,8388608,8532992,srgb,onBeforeCompile() {}"
+          },
+          {
+            "id": 12,
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "cacheKey":
+            "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8389632,8520707,srgb,facade2-true-true-false-false"
+          }
+        ]
+      }
+    ],
+    "final": [
+      {
+        "id": 0,
+        "name": "BackgroundMaterial",
+        "type": "ShaderMaterial",
+        "cacheKey":
+        "0,1,highp,srgb,false,,uv,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,8520705,srgb,onBeforeCompile() {}"
+      },
+      {
+        "id": 1,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,onBeforeCompile() {}"
+      },
+      {
+        "id": 2,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,surface-paving"
+      },
+      {
+        "id": 3,
+        "name": "",
+        "type": "LineBasicMaterial",
+        "cacheKey":
+        "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,8520707,srgb,onBeforeCompile() {}"
+      },
+      {
+        "id": 4,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,surface-water"
+      },
+      {
+        "id": 5,
+        "name": "",
+        "type": "LineBasicMaterial",
+        "cacheKey":
+        "basic,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,8389635,srgb,onBeforeCompile() {}"
+      },
+      {
+        "id": 6,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,surface-grass"
+      },
+      {
+        "id": 7,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388611,8520707,srgb,onBeforeCompile() {}"
+      },
+      {
+        "id": 8,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388609,8520707,srgb,onBeforeCompile() {}"
+      },
+      {
+        "id": 9,
+        "name": "",
+        "type": "MeshDepthMaterial",
+        "cacheKey":
+        "depth,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,false,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,3200,8388611,8532992,srgb,onBeforeCompile() {}"
+      },
+      {
+        "id": 10,
+        "name": "",
+        "type": "MeshDepthMaterial",
+        "cacheKey":
+        "depth,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,false,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,3200,8388609,8532992,srgb,onBeforeCompile() {}"
+      },
+      {
+        "id": 11,
+        "name": "",
+        "type": "MeshDepthMaterial",
+        "cacheKey":
+        "depth,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,false,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,3200,8388608,8532992,srgb,onBeforeCompile() {}"
+      },
+      {
+        "id": 12,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8389632,8520707,srgb,facade2-true-true-false-false"
+      }
+    ],
+    "firstDrawn": [
+      {
+        "id": 0,
+        "name": "BackgroundMaterial",
+        "type": "ShaderMaterial",
+        "cacheKey":
+        "0,1,highp,srgb,false,,uv,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,0,8520705,srgb,onBeforeCompile() {}"
+      },
+      {
+        "id": 1,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,onBeforeCompile() {}"
+      },
+      {
+        "id": 2,
+        "name": "",
+        "type": "MeshStandardMaterial",
+        "cacheKey":
+        "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,surface-paving"
+      }
+    ],
+    "stallTable": [
+      {
+        "taskAt": 19652,
+        "taskMs": 105,
+        "topSelf": [["onFirstUse",87.026],["buildSideFaces",1.975],["WebGLProgram",1.556]],
+        "frame": {
+          "at": 19652,
+          "ms": 105.1,
+          "part": 8,
+          "created": [
+            {
+              "id": 6,
+              "name": "",
+              "type": "MeshStandardMaterial",
+              "cacheKey":
+              "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,surface-grass"
+            },
+            {
+              "id": 7,
+              "name": "",
+              "type": "MeshStandardMaterial",
+              "cacheKey":
+              "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388611,8520707,srgb,onBeforeCompile() {}"
+            },
+            {
+              "id": 8,
+              "name": "",
+              "type": "MeshStandardMaterial",
+              "cacheKey":
+              "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388609,8520707,srgb,onBeforeCompile() {}"
+            }
+          ]
+        },
+        "firstUses": [
+          {
+            "at": 19662.2,
+            "ms": 34.9,
+            "material": "publicLand",
+            "kind": "publicLand",
+            "objectType": "Mesh",
+            "attributes": ["position","uv","normal"],
+            "receiveShadow": true,
+            "id": 6,
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "cacheKey":
+            "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,surface-grass"
+          },
+          {
+            "at": 19697.8,
+            "ms": 0.1,
+            "material": "court",
+            "kind": "court",
+            "objectType": "Mesh",
+            "attributes": ["position","uv","normal"],
+            "receiveShadow": true,
+            "id": 2,
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "cacheKey":
+            "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,surface-paving"
+          },
+          {
+            "at": 19698.1,
+            "ms": 29.9,
+            "material": "crown",
+            "kind": "tree",
+            "objectType": "Mesh",
+            "attributes": ["position","normal","uv"],
+            "receiveShadow": true,
+            "id": 7,
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "cacheKey":
+            "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388611,8520707,srgb,onBeforeCompile() {}"
+          },
+          {
+            "at": 19728.1,
+            "ms": 29,
+            "material": "trunk",
+            "kind": "tree",
+            "objectType": "Mesh",
+            "attributes": ["position","normal","uv"],
+            "receiveShadow": true,
+            "id": 8,
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "cacheKey":
+            "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388609,8520707,srgb,onBeforeCompile() {}"
+          }
+        ]
+      },
+      {
+        "taskAt": 19871.1,
+        "taskMs": 100,
+        "topSelf": [["onFirstUse",78.846],["addVertex",2.602],["(anonymous)",2.125]],
+        "frame": {
+          "at": 19871.3,
+          "ms": 100.3,
+          "part": 9,
+          "created": [
+            {
+              "id": 9,
+              "name": "",
+              "type": "MeshDepthMaterial",
+              "cacheKey":
+              "depth,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,false,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,3200,8388611,8532992,srgb,onBeforeCompile() {}"
+            },
+            {
+              "id": 10,
+              "name": "",
+              "type": "MeshDepthMaterial",
+              "cacheKey":
+              "depth,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,false,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,3200,8388609,8532992,srgb,onBeforeCompile() {}"
+            },
+            {
+              "id": 11,
+              "name": "",
+              "type": "MeshDepthMaterial",
+              "cacheKey":
+              "depth,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,false,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,3200,8388608,8532992,srgb,onBeforeCompile() {}"
+            },
+            {
+              "id": 12,
+              "name": "",
+              "type": "MeshStandardMaterial",
+              "cacheKey":
+              "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8389632,8520707,srgb,facade2-true-true-false-false"
+            }
+          ]
+        },
+        "firstUses": [
+          {
+            "at": 19885.3,
+            "ms": 4.9,
+            "material": "MeshDepthMaterial",
+            "kind": "shadow depth",
+            "objectType": "Mesh",
+            "attributes": ["position","normal","uv"],
+            "receiveShadow": true,
+            "id": 9,
+            "name": "",
+            "type": "MeshDepthMaterial",
+            "cacheKey":
+            "depth,highp,srgb-linear,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,false,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,3200,8388611,8532992,srgb,onBeforeCompile() {}"
+          },
+          {
+            "at": 19897.7,
+            "ms": 0.1,
+            "material": "pad",
+            "kind": "pad",
+            "objectType": "Mesh",
+            "attributes": ["position","normal"],
+            "receiveShadow": true,
+            "id": 1,
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "cacheKey":
+            "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8388608,8520707,srgb,onBeforeCompile() {}"
+          },
+          {
+            "at": 19899.8,
+            "ms": 71.3,
+            "material": "bldg",
+            "kind": "building prism",
+            "objectType": "Mesh",
+            "attributes": ["position","uv","normal","color","aSeed"],
+            "receiveShadow": true,
+            "id": 12,
+            "name": "",
+            "type": "MeshStandardMaterial",
+            "cacheKey":
+            "physical,STANDARD,,highp,srgb,false,,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,,,false,0,,0,1,0,0,0,1,0,0,1,0,0,0,0,1,0,0,0,0,8389632,8520707,srgb,facade2-true-true-false-false"
+          }
+        ]
+      }
+    ]
+  },
+  "firstPartDrawAt": 18653,
+  "pageLoadToFirstPartDrawnMs": 18653,
+  "rawTimingFile": "E:/BhuAayam-data/task-data/lv4/run-1791685674117/timings.json",
+  "rawCpuFile": "E:/BhuAayam-data/task-data/lv4/run-1791685674117/cpu.cpuprofile",
+  "measurementLimits": [
+    "rAF intervals are frame gaps, not GPU durations; Chromium runs headless at 1440 x 900.",
+    "CPU sampling and hooks add overhead; development build, not a production benchmark.",
+    "React fiber flags count renders; shared reconciler CPU is not attributable per component.",
+    "Last draw is first render with all buildings, before grow-in completes; not a GPU readback fence."
+  ],
+  "tasks": [
+    {
+      "at": 19652,
+      "ms": 105,
+      "topInclusive": [
+        ["renderFrame",103.589],
+        ["engine.renderFrame",103.589],
+        ["WebGLRenderer.render",96.13],
+        ["renderObjects",94.149],
+        ["renderScene",94.149]
+      ],
+      "topSelf": [["onFirstUse",87.026],["buildSideFaces",1.975],["WebGLProgram",1.556]],
+      "overlappingCalls": [{"name":"drainBaseQueue","at":19652,"ms":7.3},{"name":"renderFrame","at":19652,"ms":105.1}],
+      "topSceneOrLoader": [["renderFrame",103.589],["engine.renderFrame",103.589],["drainBaseQueue",7.459]],
+      "sceneOrStudioAttributable": true,
+      "decoderDuringStream": false
+    },
+    {
+      "at": 19871.1,
+      "ms": 100,
+      "topInclusive": [
+        ["renderFrame",98.619],
+        ["engine.renderFrame",98.619],
+        ["WebGLRenderer.render",86.65],
+        ["renderObject",82.705],
+        ["renderer.renderBufferDirect",82.294]
+      ],
+      "topSelf": [["onFirstUse",78.846],["addVertex",2.602],["(anonymous)",2.125]],
+      "overlappingCalls": [
+        {"name":"drainBuildingQueue","at":19871.3,"ms":5},
+        {"name":"drainBaseQueue","at":19876.3,"ms":6.4},
+        {"name":"renderFrame","at":19871.3,"ms":100.3}
+      ],
+      "topSceneOrLoader": [["renderFrame",98.619],["engine.renderFrame",98.619],["drainBuildingQueue",6.288]],
+      "sceneOrStudioAttributable": true,
+      "decoderDuringStream": false
+    }
+  ],
+  "sampleAlignment": {"offsetMs":184,"matchedMs":2781.995}
+}
