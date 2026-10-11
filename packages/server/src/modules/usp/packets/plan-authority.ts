@@ -1,6 +1,6 @@
 import type { PoolClient } from 'pg';
-import { isDeepStrictEqual } from 'node:util';
-import { featurePropertiesExtract, decodedRecordExtract, decodeNativeRecord,
+import { observedFeatureExtract, capturedSourceRange, readFeatureRangeBytes, featureRangeExtract,
+  decodedRecordExtract, decodeNativeRecord,
   type NativeRecordDecoder } from './feature-extract';
 import { permitsDecodedFeatureCitation } from '../../registry/registry-reference-policy';
 import { isRetainedMapOriginal } from '../ingestion/retained-map-original';
@@ -12,7 +12,7 @@ import {protectPdfPlanTx,authorizePdfPlanTx,assertPdfPlanActor,plannedBindings} 
 import { UspPacketPlanEntrySchema } from '../../../../../contracts/src/usp/packets';
 import { canonical, fingerprint } from '../../cases/domain';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
-import { readObject, sha256 } from '../../../infrastructure/storage';
+import { readObject, readObjectRange, sha256 } from '../../../infrastructure/storage';
 import { assertLocalUsp } from '../snapshots';
 import { scopedManifestTx } from '../commands';
 import { assertDeclarationEvidenceTx, assertPopulationTx, declarationEvidence, equalPin } from '../declarations/authority';
@@ -162,17 +162,32 @@ async function capturedFeatureTx(client: PoolClient, input: PacketPlanInput,
   if (matches.length !== 1 || Object.hasOwn(matches[0].properties ?? {}, 'spatialExtraction')) return null;
   return matches[0];
 }
-function observedFeatureExtract(bytes: Uint8Array, observation: Record<string, any> | null) {
-  if (!observation) return null;
-  const excerpt = featurePropertiesExtract(Buffer.from(bytes), observation.sourceFeatureIndex);
-  if (excerpt === null || !excerpt.length || excerpt.length > 16000) return null;
-  const original = JSON.parse(excerpt);
-  for (const [name, value] of Object.entries(observation.properties ?? {}))
-    if (Object.hasOwn(original, name) && !isDeepStrictEqual(value, original[name])) return null;
-  return excerpt;
+/** Whole-read sources count once; range-only sources count each distinct requested span once. */
+export class PlanSourceReadBudget {
+  private total = 0;
+  private readonly sources = new Map<string, { whole: boolean; bytes: number; ranges: Set<string> }>();
+  charge(id: string, sourceBytes: number, range: { byteStart: number; byteEnd: number } | null) {
+    const source = this.sources.get(id) ?? { whole: false, bytes: 0, ranges: new Set<string>() };
+    if (source.whole) return;
+    const previous = source.bytes;
+    if (range) {
+      const key = `${range.byteStart}:${range.byteEnd}`;
+      if (source.ranges.has(key)) return;
+      source.ranges.add(key);
+      source.bytes += range.byteEnd - range.byteStart;
+    } else {
+      source.whole = true;
+      source.bytes = sourceBytes;
+    }
+    this.total += source.bytes - previous;
+    if (!Number.isSafeInteger(this.total) || this.total > 64 * 1024 * 1024)
+      throw new AppError(413, 'PACKET_PLAN_SOURCE_LIMIT', 'The selected reads exceed the 64 MiB recipe bound.');
+    this.sources.set(id, source);
+  }
 }
 export async function assessPlanTx(client: PoolClient, ctx: RequestContext, input: PacketPlanInput,
-  readBytes: typeof readObject = readObject, shared?: SharedAuthority, decode: NativeRecordDecoder = decodeNativeRecord) {
+  readBytes: typeof readObject = readObject, shared?: SharedAuthority, decode: NativeRecordDecoder = decodeNativeRecord,
+  readRange: typeof readObjectRange = readObjectRange) {
   assertLocalUsp(ctx);
   const manifest = await scopedManifestTx(client, ctx, input.scope);
   if (manifest.selection.kind !== 'targets' || manifest.selection.pins.length !== 1
@@ -200,10 +215,11 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
   const entries: PacketPlanEntry[] = [], lines: Packet0Line[] = [];
   const bindings = [...(target.body?.evidence ?? []), ...(target.body?.rights ?? [])
     .map((r: { evidence?: { sourceId: string; locator: string } }) => r.evidence).filter(Boolean)];
-  let totalBytes = 0;
+  const budget = new PlanSourceReadBudget();
   const sources = new Map<string, Awaited<ReturnType<typeof capturedTx>>>();
   const verifiedBytes = new Set<string>();
   const featureBytes = new Map<string, Uint8Array>();
+  const rangeBytes = new Map<string, Uint8Array>();
   for (const selection of input.entries) {
     const pointer = selection.pointer;
     if (canonical(pointer.target) !== canonical(input.target.ref))
@@ -212,9 +228,6 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
     let source = sources.get(id);
     if (!source) {
       source = await capturedTx(client, input.scope.manifestId, pointer.sourceRevision); sources.set(id, source);
-      totalBytes += Number(source.body.bytes);
-      if (!Number.isSafeInteger(totalBytes) || totalBytes > 64 * 1024 * 1024)
-        throw new AppError(413, 'PACKET_PLAN_SOURCE_LIMIT', 'The selected sources exceed the 64 MiB recipe bound.');
     }
     await assertDeclarationEvidenceTx(client, ctx, input.scope, [{
       pointer: { ...pointer, assetRevision: null, partRevision: null }, sha256: source.body.sha256, bytes: Number(source.body.bytes),
@@ -253,7 +266,20 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
       && source.body.status === 'inspected' && source.body.inspection?.status === 'interpreted');
     let citation: Pick<PacketPlanEntry, 'method' | 'decodedRecord'> = {};
     let excerpt = supported ? selectExactPart(source.body.inspection?.referenceParts, locator) : null;
-    if (featureSupported && !reasonCode) {
+    const observation = featureSupported ? await capturedFeatureTx(client, input, manifest, pointer) : null;
+    const range = featureSupported && !nativeSupported
+      ? capturedSourceRange(observation, Number(source.body.bytes)) : null;
+    budget.charge(id, Number(source.body.bytes), range);
+    if (featureSupported && !reasonCode && range) {
+      const key = `${id}:${range.byteStart}:${range.byteEnd}`;
+      let bytes = rangeBytes.get(key);
+      if (!bytes) {
+        bytes = await readFeatureRangeBytes({ object_key: source.body.object_key, bytes: source.body.bytes },
+          range, readRange);
+        rangeBytes.set(key, bytes);
+      }
+      excerpt = featureRangeExtract(bytes, range, observation!);
+    } else if (featureSupported && !reasonCode) {
       let bytes = featureBytes.get(id);
       if (!bytes) {
         bytes = await readBytes(source.body.object_key);
@@ -262,7 +288,6 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
         featureBytes.set(id, bytes);
         verifiedBytes.add(id);
       }
-      const observation = await capturedFeatureTx(client, input, manifest, pointer);
       if (nativeSupported) {
         if (!permitsDecodedFeatureCitation(source.body, observation?.sourceReference?.nativeRecord)) {
           reasonCode = 'PACKET_PLAN_NATIVE_POSITION_UNAVAILABLE';
@@ -279,7 +304,7 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
       }
     }
     if (!reasonCode && excerpt === null) reasonCode = 'exact_extract_unavailable';
-    if (!reasonCode && !verifiedBytes.has(id)) {
+    if (!reasonCode && !range && !verifiedBytes.has(id)) {
       const bytes = await readBytes(source.body.object_key);
       if (bytes.length !== Number(source.body.bytes) || sha256(bytes) !== source.body.sha256)
         throw new AppError(422, 'PACKET_PLAN_ORIGINAL_INTEGRITY', 'The selected original does not match its byte receipt.');

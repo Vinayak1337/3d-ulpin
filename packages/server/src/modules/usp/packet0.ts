@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { NativeRecordReference } from '@ulpin/contracts';
-import { decodedRecordExtract } from './packets/feature-extract';
+import { decodedRecordExtract, readFeatureRange } from './packets/feature-extract';
+import { isRetainedMapOriginal } from './ingestion/retained-map-original';
 import type { PoolClient } from 'pg';
 import {
   UspPacket0ReceiptSchema, UspPacket0RequestSchema, UspExactPartResultSchema,
@@ -10,7 +11,7 @@ import { query, transaction } from '../../infrastructure/db';
 import { canonical, fingerprint } from '../cases/domain';
 import { AppError, conflict } from '../../infrastructure/errors';
 import { putOriginal, readObject, sha256 } from '../../infrastructure/storage';
-import { assertLocalUsp, readManifest, readRegistryEvidenceBytes,
+import { assertLocalUsp, readManifest, readRegistryEvidence, readRegistryEvidenceBytes,
   readSnapshotBody, resolveRegistryTarget,assertSnapshotDocumentsTx } from './snapshots';
 
 export type Packet0Line = { pointer: EvidencePointer; sourceSha256: string; excerpt: string | null;
@@ -60,8 +61,8 @@ export function renderPacket0(target: { id: string; label: string }, lines: read
     ])].join('\n') + '\n';
 }
 
-async function nativePacketLine(ctx: RequestContext, scope: SnapshotScope, pointer: EvidencePointer,
-  bytes: Uint8Array, source: Record<string, any>): Promise<Packet0Line> {
+async function packetFeatureObservation(ctx: RequestContext, scope: SnapshotScope, pointer: EvidencePointer,
+  required = true) {
   const manifest = await readManifest(ctx, scope);
   const target = manifest.members.find(member => member.pin.ref.namespace === 'registry_record'
     && canonical(member.pin.ref) === canonical(pointer.target));
@@ -81,18 +82,43 @@ async function nativePacketLine(ctx: RequestContext, scope: SnapshotScope, point
       && row.body?.sourceKey === key && !Object.hasOwn(row.body.properties ?? {}, 'spatialExtraction'))
       observations.push(row.body);
   }
-  if (observations.length !== 1 || !/^feature \S(.*\S)?$/.test(pointer.locator.locator))
+  if (observations.length !== 1 || !/^feature \S(.*\S)?$/.test(pointer.locator.locator)) {
+    if (!required) return null;
     throw new AppError(422, 'PACKET_PLAN_NATIVE_POSITION_UNAVAILABLE', 'One exact committed observation is required.');
+  }
+  return observations[0];
+}
+
+async function nativePacketLine(ctx: RequestContext, scope: SnapshotScope, pointer: EvidencePointer,
+  bytes: Uint8Array, source: Record<string, any>): Promise<Packet0Line> {
+  const observation = await packetFeatureObservation(ctx, scope, pointer);
   const decoded = await decodedRecordExtract(Buffer.from(bytes), {
     name: source.name, sha256: source.sha256, bytes: Number(source.bytes), profile: source.profile,
     status: source.status, inspection: source.inspection,
-  }, observations[0]);
+  }, observation);
   return { pointer, sourceSha256: source.sha256, reasonCode: null, ...decoded };
 }
 
 async function packetLine(ctx: RequestContext, scope: SnapshotScope, pointer: EvidencePointer): Promise<Packet0Line> {
-  const original = await readRegistryEvidenceBytes(ctx, scope, pointer);
   const source = await readSnapshotBody(ctx, scope, pointer.sourceRevision);
+  if ((isRetainedMapOriginal(source) || source.profile === 'geojson-area-v2'
+    && source.status === 'inspected' && source.inspection?.status === 'interpreted')
+    && pointer.locator.kind === 'verbatim' && /^feature \S(.*\S)?$/.test(pointer.locator.locator)) {
+    const observation = await packetFeatureObservation(ctx, scope, pointer, false);
+    if (observation?.sourceReference?.sourceRange !== undefined) {
+      const before = await readRegistryEvidence(ctx, scope, pointer, 'original');
+      if (before.state !== 'available' || before.data.asset.sha256 !== source.sha256
+        || before.data.bytes !== Number(source.bytes))
+        throw new AppError(404, 'USP_EVIDENCE_UNAVAILABLE', 'The exact original is unavailable.');
+      const excerpt = await readFeatureRange({ object_key: source.object_key, bytes: source.bytes }, observation);
+      const after = await readRegistryEvidence(ctx, scope, pointer, 'original');
+      if (after.state !== 'available' || canonical(before) !== canonical(after))
+        throw new AppError(404, 'USP_EVIDENCE_UNAVAILABLE', 'The exact original is unavailable.');
+      return { pointer, sourceSha256: source.sha256, excerpt,
+        reasonCode: excerpt === null ? 'exact_extract_unavailable' : null };
+    }
+  }
+  const original = await readRegistryEvidenceBytes(ctx, scope, pointer);
   const locator = pointer.locator;
   if (['gpkg-area-v2', 'shapefile_zip-area-v2'].includes(source.profile))
     return nativePacketLine(ctx, scope, pointer, original.bytes, source);
