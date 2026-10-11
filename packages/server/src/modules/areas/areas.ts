@@ -1,4 +1,4 @@
-import { requireQualifiedGeometryRecords } from '../usp/geometry';
+import { splitPackageReviewGeometry, requireQualifiedGeometryRecords } from '../usp/geometry';
 import {
   assertSourceBuildingPackageAuthorityTx, commitSourceBuildingsTx, isGeometryFreePackage,
   lockSourceBuildingCasesTx, reviewSourceBuildings,
@@ -1246,13 +1246,18 @@ export async function reviewPackage(id: string, expectedRevision: number) {
     area = await getArea(pkg.areaId);
   if (pkg.revision !== expectedRevision) conflict();
   const features = await effectiveFeatures(pkg, area);
-  await requireQualifiedGeometryRecords('FIND', 'area_feature', features);
-  const associations = await checkAssociations(features.map((f) => f.id));
+  const admission = await splitPackageReviewGeometry(features, pkg);
+  await requireQualifiedGeometryRecords('FIND', 'area_feature', admission.requireQualification);
+  const checkFeatures = admission.checkFeatures;
+  const checkLinks = await checkAssociations(checkFeatures.map(feature => feature.id));
   const result = await areaGeo<{ findings: AreaFinding[]; coverage: string[] }>(
     "check",
-    { features, associations, reference: area.reference },
+    { features: checkFeatures, associations: checkLinks, reference: area.reference },
   );
-  result.findings = await enrichFindings(result.findings, features, area.id);
+  result.coverage.push(...admission.coverage);
+  result.findings = await enrichFindings(result.findings, checkFeatures, area.id);
+  // Omitted neighbours still participate in the unchanged recording fingerprint.
+  const associations = await checkAssociations(features.map(feature => feature.id));
   for (const question of pkg.questions.filter(
     (q) => q.kind === "conflicting_claims" && !q.answer,
   ))
