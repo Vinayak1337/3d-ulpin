@@ -18,6 +18,7 @@ import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { areaGeo, getArea, ingestArea } from '../../areas/areas';
 import { localOperatorSubject } from '../principal';
 import { compileMapping, geojsonInventory, inspectedProfile } from './registry';
+import { authoredIntakeDestination } from './intake-destination';
 import { appendCaseIngestionTx } from './events';
 import { inspectTabularSource, assertTabularPin } from './tabular-source';
 import { validateTabularRecipe, officerTabularPlan } from './tabular-recipe';
@@ -208,14 +209,17 @@ export class ManualIngestionService {
     return transaction(async client=>{
       await lockSourceCaseDestinationTx(client,caseId);
       const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);if(replay)return replay;
-      await validate(client,input.plan,scope);if(input.destination)await destination(client,input.destination);
+      const validated=await validate(client,input.plan,scope);
+      const actualDestination=input.destination===undefined
+        ? await authoredIntakeDestination(caseId,validated.row.inspection?.gis) : input.destination;
+      if(actualDestination)await destination(client,actualDestination);
       const priorRow=(await client.query('SELECT body FROM usp_mapping_recipes WHERE source_id=$1 FOR UPDATE',
         [sourceId])).rows[0];
       const prior=priorRow?.body as AnyMappingReceipt|undefined;
       if((prior?.revision||0)!==input.expectedRecipeRevision || prior?.state==='executed')conflict('The recipe changed or already executed; refresh before editing.');
       const receipt=AnyMappingReceiptSchema.parse({id:prior?.id||randomUUID(),revision:(prior?.revision||0)+1,
-        state:'proposed',plan:input.plan,destination:input.destination,
-        planHash:fingerprint({plan:input.plan,destination:input.destination}),authoredBy:subject,
+        state:'proposed',plan:input.plan,destination:actualDestination,
+        planHash:fingerprint({plan:input.plan,destination:actualDestination}),authoredBy:subject,
         authoredAt:new Date().toISOString(),approval:null,execution:null});
       if(prior)await save(client,receipt);
       else {

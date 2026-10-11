@@ -58,7 +58,7 @@ export const MappingDestinationSchema = z.discriminatedUnion('kind', [
   z.strictObject({kind: z.literal('existing_area'), areaId: id, expectedAreaRevision: z.number().int().nonnegative(), referenceFingerprint: hash, namespace: text, name: text}),
 ]);
 export const AuthorMappingSchema = z.strictObject({
-  requestKey: id, expectedRecipeRevision: z.number().int().nonnegative(), plan: MappingPlanSchema, destination: MappingDestinationSchema,
+  requestKey: id, expectedRecipeRevision: z.number().int().nonnegative(), plan: MappingPlanSchema, destination: MappingDestinationSchema.optional(),
 });
 export const MappingDecisionSchema = z.strictObject({requestKey: id, expectedRecipeRevision: revision});
 export const MappingReceiptSchema = z.strictObject({
