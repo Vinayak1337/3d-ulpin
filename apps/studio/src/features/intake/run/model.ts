@@ -31,8 +31,26 @@ export const stageWords: Record<number, string> = {
   7: 'Make the evidence plan and packet', 8: 'Make and verify the property card',
 };
 
+export function hasNoBuildings(pkg: Package): boolean {
+  return Object.values(pkg.counts).every(count => count === 0);
+}
+
+export function confirmationWords(chosen: number): string {
+  if (chosen === 0) return 'These packages will be recorded in the register. '
+    + 'No building is chosen, so no card is made now.';
+  return `These packages will be recorded in the register. The ${chosen} chosen buildings will then `
+    + 'get a snapshot, an evidence plan and packet, and a property card made and verified without another press. '
+    + 'Every other ready building of these packages will be recorded without a card.';
+}
+
+export function confirmingPackageWords(pkg: Package): string {
+  if (hasNoBuildings(pkg)) return 'No building in this package; its features will be recorded.';
+  return `${pkg.counts.ready} ready buildings will be recorded.`;
+}
+
 export function confirmablePackages(page: TargetPage): Package[] {
-  return page.packages.filter(pkg => pkg.state !== 'COMMITTED' && pkg.reviewFingerprint && pkg.counts.ready > 0);
+  return page.packages.filter(pkg => pkg.state !== 'COMMITTED' && pkg.reviewFingerprint
+    && (pkg.counts.ready > 0 || hasNoBuildings(pkg)));
 }
 
 type ChoiceTarget = Pick<Target, 'targetId' | 'packageId' | 'readiness'>;

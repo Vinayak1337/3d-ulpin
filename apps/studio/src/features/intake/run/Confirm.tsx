@@ -1,7 +1,7 @@
 import { useId } from 'react';
 import { Button, Panel } from '@ulpin/ui';
 import { PackageDetails } from './Packages';
-import { confirmablePackages, INTAKE_TARGET_LIMITS, type Target, type TargetPage } from './model';
+import { confirmablePackages, confirmationWords, INTAKE_TARGET_LIMITS, type Target, type TargetPage } from './model';
 import styles from './Run.module.css';
 
 interface Props {
@@ -20,11 +20,9 @@ export function Confirm(props: Props) {
   const helpId = useId();
   const packages = confirmablePackages(props.page);
   const locked = props.busy || props.uncertain;
-  const allowed = packages.length > 0 && props.choice.length > 0 && props.acknowledgement.trim().length > 0;
+  const allowed = packages.length > 0 && props.acknowledgement.trim().length > 0;
   return <Panel title="One confirmation" className={styles.stack}>
-    <p>These packages will be recorded in the register. The {props.choice.length} chosen buildings will then
-      get a snapshot, an evidence plan and packet, and a property card made and verified without another press.
-      Every other ready building of these packages will be recorded without a card.</p>
+    <p>{confirmationWords(props.choice.length)}</p>
     {packages.map(pkg => <PackageDetails key={pkg.packageId} pkg={pkg} confirming />)}
     <p>Recording cannot be undone. If a building stops, completed steps are kept. A card proves what the
       record cites, not ownership or a right. Buildings do not receive a space identity.</p>
@@ -41,8 +39,8 @@ export function Confirm(props: Props) {
       onClick={props.press}>
       {pressLabel(props.busy, props.uncertain)}
     </Button>
-    {!allowed && !props.uncertain ? <p className="ul-help">Choose ready buildings and type your acknowledgement
-      before confirming. Only packages with a current review can be recorded.</p> : null}
+    {!allowed && !props.uncertain ? <p className="ul-help">Type your acknowledgement before confirming.
+      Only packages with a current review and ready buildings or no buildings can be recorded.</p> : null}
     {props.stale ? <p className="ul-help">The current batch could not be read. Refresh it before confirming.</p> : null}
   </Panel>;
 }

@@ -1,5 +1,5 @@
 import { CopyableId } from '../../identity/CopyableId';
-import { countsLine, type Package } from './model';
+import { confirmingPackageWords, countsLine, type Package } from './model';
 import styles from './Run.module.css';
 
 const findingWords: Record<string, string> = {
@@ -28,7 +28,7 @@ export function PackageDetails({ pkg, reasons = [], confirming = false }: {
   return <div className={styles.package}>
     <h3 className="studio-heading">Package <CopyableId id={pkg.packageId} name="package identifier" /></h3>
     <p className="ul-help">Revision {pkg.revision}</p>
-    <p>{confirming ? `${pkg.counts.ready} ready buildings will be recorded.` : countsLine(pkg.counts)}</p>
+    <p>{confirming ? confirmingPackageWords(pkg) : countsLine(pkg.counts)}</p>
     <Findings counts={pkg.findingCounts} />
     {pkg.state === 'COMMITTED' ? <p>This package is already recorded.</p> : null}
     {!pkg.reviewFingerprint && pkg.state !== 'COMMITTED' ? <>
