@@ -1,0 +1,93 @@
+{
+  "task": "GN1",
+  "nonce": "ba586b56f73828ed",
+  "containers": [
+    "ulpin-gn1-db-ba586b56f73828ed",
+    "ulpin-gn1-geo-ba586b56f73828ed"
+  ],
+  "startedAt": "2026-10-11T09:27:19.458Z",
+  "postgresImage": "postgis/postgis@sha256:01a6a70e41e6c4467c8f55f6063555ed72db2d6662cd0d571040d42eadaeb6f6",
+  "geoImage": "ulpin-gn1-geo:ba586b56f73828ed",
+  "geoImageId": "sha256:7ef6b7d8ea50457c2bcb56c53b9466c5748bbbfd896f21713b9ae73b319b58b7",
+  "geoSources": [
+    {
+      "path": "services/geo/geo/area.py",
+      "sha256": "fb83b2f070a05d60ac14233bedf9087c45a6762ffc87e004aca41f182fdf19bb",
+      "builtSourceMatches": true
+    },
+    {
+      "path": "services/geo/geo/gis_inspection.py",
+      "sha256": "050c59d707a88ae08561eb7853d17e1b1082790b2d2e8986756ab393d6ce76a5",
+      "builtSourceMatches": true
+    }
+  ],
+  "readyAfterSeconds": 0,
+  "runtime": {
+    "exit": 1,
+    "signal": null,
+    "progress": [],
+    "evidence": {
+      "task": "GN1",
+      "results": {
+        "http": [
+          {
+            "method": "POST",
+            "route": "/api/v1/source-cases",
+            "status": 201
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/{caseId}/sources",
+            "status": 201
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/{caseId}/intake/items",
+            "status": 201
+          },
+          {
+            "method": "GET",
+            "route": "/api/v1/ingestion/cases/{caseId}/intake",
+            "status": 200
+          }
+        ]
+      },
+      "failures": [
+        {
+          "code": "ERR_ASSERTION",
+          "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'undecided'\n- 'needs_answer'\n",
+          "stack": [
+            "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+            "+ actual - expected",
+            "",
+            "+ 'undecided'",
+            "- 'needs_answer'",
+            "",
+            "    at da5 (E:\\Projects\\ulpin-wt\\d1\\docs\\evidence\\gf1\\gn1\\steps.ts:219:10)",
+            "    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+            "    at async main (E:\\Projects\\ulpin-wt\\d1\\docs\\evidence\\gf1\\gn1\\steps.ts:336:5)"
+          ]
+        }
+      ],
+      "inputs": {
+        "da5": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/Niagara_Falls_Condominiums_7254610803234545967.geojson",
+        "nyc": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+        "da4": "E:/BhuAayam-data/datasets/nyc-second-area/nyc-office-of-technology-and-innovation/5zhs-2jue-box-w74.003-s40.732-e73.992-n40.740.geojson"
+      },
+      "hashes": {
+        "da5": "dece86e3bc85a2529fbca07cf31e4c0f4e74275ed10b9989684f18191f2e002c",
+        "nyc": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+        "da4": "4a5735dd57c0ad1e4971c853837230056ce148cfbde4cab41c6873d3a2112e9e"
+      },
+      "originalHashesUnchanged": true,
+      "providers": 0,
+      "gpu": false,
+      "storage": "KN2/CR1 in-memory S3 HTTP stand-in; not production object-store qualification.",
+      "network": "Loopback HTTP/SQL, actual built geo service; PROJ_NETWORK=OFF; gateway disabled."
+    },
+    "failure": "Child reported failure"
+  },
+  "failure": "Child reported failure",
+  "ownedNonceGone": true,
+  "finishedAt": "2026-10-11T09:27:30.191Z"
+}

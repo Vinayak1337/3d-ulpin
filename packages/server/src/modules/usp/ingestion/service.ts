@@ -98,7 +98,8 @@ async function validate(client: PoolClient,
   if(current.version!=='manual-geojson/1')conflict('The recipe and receipt formats differ.');
   return {row,bytes,mapping:compileMapping(plan,current)};
 }
-async function destination(client: PoolClient, value: MappingDestination, executing = false) {
+export async function destination(client: PoolClient, value: MappingDestination, executing = false,
+  sourceSha256?: string) {
   // Match ingestArea's seed-lock -> area-lock order before any lock upgrade.
   if (executing) await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`${value.namespace}:${value.name}`]);
   if (value.kind === 'existing_area') {
@@ -106,8 +107,13 @@ async function destination(client: PoolClient, value: MappingDestination, execut
     const area = await getArea(value.areaId,client);
     if (area.revision !== value.expectedAreaRevision || fingerprint(area.reference || null) !== value.referenceFingerprint)
       conflict('The destination revision or reference changed; author a current recipe.');
-  } else if ((await client.query('SELECT id FROM map_areas WHERE seed_key=$1',[`${value.namespace}:${value.name}`])).rowCount) {
-    conflict('This destination already exists; pin its current area and reference explicitly.');
+  } else {
+    const existing = (await client.query('SELECT id,name FROM map_areas WHERE seed_key=$1',
+      [`${value.namespace}:${value.name}`])).rows[0];
+    if (existing && sourceSha256 && value.namespace === `file:${sourceSha256}`)
+      throw new AppError(409, 'SOURCE_ALREADY_IN_AREA',
+        `This file is already the source of the area “${existing.name}”. Open that area; nothing new is prepared from a second copy.`);
+    if (existing) conflict('This destination already exists; pin its current area and reference explicitly.');
   }
 }
 async function save(client: PoolClient, receipt: AnyMappingReceipt) {
@@ -212,7 +218,7 @@ export class ManualIngestionService {
       const validated=await validate(client,input.plan,scope);
       const actualDestination=input.destination===undefined
         ? await authoredIntakeDestination(caseId,validated.row.inspection?.gis) : input.destination;
-      if(actualDestination)await destination(client,actualDestination);
+      if(actualDestination)await destination(client,actualDestination,false,validated.row.sha256);
       const priorRow=(await client.query('SELECT body FROM usp_mapping_recipes WHERE source_id=$1 FOR UPDATE',
         [sourceId])).rows[0];
       const prior=priorRow?.body as AnyMappingReceipt|undefined;
@@ -257,7 +263,7 @@ export class ManualIngestionService {
       const plan=receipt.plan.version==='manual-tabular/1'
         ?TabularMappingPlanSchema.parse(receipt.plan):MappingPlanSchema.parse(receipt.plan);
       const validated=await validate(client,plan,scope);
-      if(receipt.destination)await destination(client,receipt.destination,action==='execute');
+      if(receipt.destination)await destination(client,receipt.destination,action==='execute',validated.row.sha256);
       const planHash=fingerprint({plan,destination:receipt.destination});
       if(planHash!==receipt.planHash)conflict('The recipe content changed after authoring.');
       const now=new Date().toISOString();

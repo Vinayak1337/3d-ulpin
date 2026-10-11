@@ -365515,9 +365515,8 @@
                   },
                   "unit": {
                     "type": "string",
-                    "enum": [
-                      "degree"
-                    ]
+                    "minLength": 1,
+                    "maxLength": 80
                   }
                 },
                 "required": [
@@ -365575,6 +365574,9 @@
                       "type": "boolean"
                     },
                     "literalTextEligible": {
+                      "type": "boolean"
+                    },
+                    "integerIdEligible": {
                       "type": "boolean"
                     }
                   },
@@ -366225,7 +366227,8 @@
                             "literal_identifier@1",
                             "literal_text@1",
                             "geojson_polygon@1",
-                            "geojson_geometry@1"
+                            "geojson_geometry@1",
+                            "literal_integer_identifier@1"
                           ]
                         }
                       },
@@ -367091,7 +367094,8 @@
                             "literal_identifier@1",
                             "literal_text@1",
                             "geojson_polygon@1",
-                            "geojson_geometry@1"
+                            "geojson_geometry@1",
+                            "literal_integer_identifier@1"
                           ]
                         }
                       },
@@ -368129,7 +368133,8 @@
                               "literal_identifier@1",
                               "literal_text@1",
                               "geojson_polygon@1",
-                              "geojson_geometry@1"
+                              "geojson_geometry@1",
+                              "literal_integer_identifier@1"
                             ]
                           }
                         },
@@ -387434,7 +387439,8 @@
                         "literal_identifier@1",
                         "literal_text@1",
                         "geojson_polygon@1",
-                        "geojson_geometry@1"
+                        "geojson_geometry@1",
+                        "literal_integer_identifier@1"
                       ]
                     }
                   },
@@ -389377,7 +389383,8 @@
                             "literal_identifier@1",
                             "literal_text@1",
                             "geojson_polygon@1",
-                            "geojson_geometry@1"
+                            "geojson_geometry@1",
+                            "literal_integer_identifier@1"
                           ]
                         }
                       },

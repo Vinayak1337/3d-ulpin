@@ -8,6 +8,8 @@ export interface GisInspection {
   layer: string | null;
   sourceCrs: string | null;
   crsEvidence: string | null;
+  /** Horizontal unit named by the resolved CRS; older inspections may omit it. */
+  crsUnit?: string | null;
   featureCount: number | null;
   geometryTypes: string[];
   fields: {
@@ -15,9 +17,12 @@ export interface GisInspection {
     complete: boolean;
     unique: boolean;
     idEligible: boolean;
+    /** Complete, unique safe integer tokens in the unchanged GeoJSON bytes, not parsed floats. */
+    integerIdEligible?: boolean;
   }[];
   /** True only for complete, unique retained top-level GeoJSON Feature.id values. */
   featureIdEligible: boolean;
+  featureIntegerIdEligible?: boolean;
   suggestedIdField: string | null;
   suggestedNameField: string | null;
   suggestedTitle: string;

@@ -4,15 +4,38 @@ import json
 import math
 import re
 
+from pyproj import CRS
+
 from .native_gis import _raw, _gpkg, _shapefile
 from .validation import InputError
+
+
+class _IntegerToken(int):
+    """Keep the spelling at the JSON reader boundary, before a number loses its token."""
+    token: str
+
+    def __new__(cls, token: str) -> "_IntegerToken":
+        result = super().__new__(cls, token)
+        result.token = token
+        return result
+
+
+def _integer_ids(values: list[object]) -> bool:
+    if not values or not all(
+        isinstance(value, _IntegerToken)
+        and re.fullmatch(r"-?(?:0|[1-9][0-9]*)", value.token)
+        and value.token != "-0" and abs(value) <= 9007199254740991
+        for value in values
+    ):
+        return False
+    return len(set(values)) == len(values)
 
 
 def _eligible_ids(values):
     return bool(values and all(isinstance(value, (str, int, float)) and not isinstance(value, bool) and (not isinstance(value, float) or math.isfinite(value)) and str(value).strip() and len(str(value)) <= 256 for value in values) and len({str(value).strip() for value in values}) == len(values))
 
 
-def _fields(rows):
+def _fields(rows, integer_tokens: bool = False):
     names = sorted({name for row in rows for name in row})
     if len(names) > 256:
         raise InputError("GIS inspection supports at most 256 attribute fields.")
@@ -24,7 +47,8 @@ def _fields(rows):
         normalized = [str(value).strip() for value in values] if scalar else []
         unique = bool(complete and len(set(normalized)) == len(rows))
         id_eligible = bool(len(name) <= 80 and name.strip() == name and _eligible_ids(values))
-        fields.append({"name": name, "complete": bool(complete), "unique": unique, "idEligible": id_eligible})
+        fields.append({"name": name, "complete": bool(complete), "unique": unique, "idEligible": id_eligible,
+                       **({"integerIdEligible": _integer_ids(values)} if integer_tokens else {})})
     ids = [field["name"] for field in fields if field["idEligible"] and (field["name"].lower() in ("id", "fid", "oid", "objectid", "globalid") or field["name"].lower().endswith("_id") or re.search(r"[a-z0-9](?:Id|ID)$", field["name"]))]
     labels = [field["name"] for field in fields if field["complete"] and len(field["name"]) <= 80 and re.search(r"(^|_)(name|title|label)$", field["name"], re.I) and all(isinstance(row.get(field["name"]), str) and len(row[field["name"]]) <= 2048 for row in rows)]
     return fields, ids[0] if len(ids) == 1 else None, labels[0] if len(labels) == 1 else None
@@ -48,7 +72,8 @@ def inspect_gis(data):
         evidence = "GeoPackage spatial reference" if format == "gpkg" else "Shapefile .prj companion"
     else:
         try:
-            source = json.loads(raw.decode("utf-8-sig"), parse_constant=lambda _: (_ for _ in ()).throw(ValueError()))
+            source = json.loads(raw.decode("utf-8-sig"), parse_int=_IntegerToken,
+                                parse_constant=lambda _: (_ for _ in ()).throw(ValueError()))
         except (UnicodeError, ValueError, RecursionError):
             raise InputError("Choose a valid GeoJSON, ArcGIS JSON, GeoPackage or Shapefile ZIP source.") from None
         if not isinstance(source, dict) or not isinstance(source.get("features"), list):
@@ -68,7 +93,9 @@ def inspect_gis(data):
             evidence = "ArcGIS spatialReference" if crs else None
         features = source["features"]
         if format == "geojson":
-            base["featureIdEligible"] = _eligible_ids([feature.get("id") if isinstance(feature, dict) else None for feature in features])
+            values = [feature.get("id") if isinstance(feature, dict) else None for feature in features]
+            base["featureIdEligible"] = _eligible_ids(values)
+            base["featureIntegerIdEligible"] = _integer_ids(values)
         if not 1 <= len(features) <= MAX_FEATURES:
             raise InputError("Choose a complete layer with 1–2000 features.")
     rows, types, vertices, row_crs, rejected = [], set(), 0, [], []
@@ -109,8 +136,11 @@ def inspect_gis(data):
         raise InputError("Source coordinate reference declarations conflict; separate or correct the layers.")
     if format == "arcgis" and not crs and row_crs and all(row_crs):
         crs, evidence = row_crs[0], "Consistent ArcGIS feature spatial references"
-    base.update({"format": format, "layers": base.get("layers", []), "layer": base.get("layer"), "sourceCrs": crs, "crsEvidence": evidence, "geometryTypes": sorted(types)})
-    fields, id_field, name_field = _fields(rows)
+    base.update({"format": format, "layers": base.get("layers", []), "layer": base.get("layer"), "sourceCrs": crs, "crsEvidence": evidence,
+                 "geometryTypes": sorted(types)})
+    if format == "geojson":
+        base["crsUnit"] = CRS.from_user_input(crs).axis_info[0].unit_name
+    fields, id_field, name_field = _fields(rows, integer_tokens=format == "geojson")
     quarantine = None
     if rejected:
         for row in rejected:

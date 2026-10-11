@@ -1,0 +1,75 @@
+{
+  "task": "GN1",
+  "baseCommit": "814807ca489208ac9a8e31005f138f3a20ee4a1a",
+  "baseline": "before.json",
+  "refusalsInOrder": [
+    {
+      "path": "packages/server/src/modules/usp/ingestion/registry.ts",
+      "line": 40,
+      "code": "SOURCE_PROFILE",
+      "words": "The inspected source does not match the supported GeoJSON profile.",
+      "stage": "retain DA5: CRS inspection succeeds; degree-only batch profile refuses"
+    },
+    {
+      "path": "packages/contracts/src/usp/ingestion.ts",
+      "line": 26,
+      "code": "INVALID_INPUT",
+      "words": "Invalid input: expected \"degree\"",
+      "stage": "After relaxing CRS guard, projected unit would fail contract; static schema check"
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/registry.ts",
+      "line": 94,
+      "code": "MAPPING_IDENTITY",
+      "words": "Source identity must be complete, unique, nonempty literal text.",
+      "stage": "Pure mechanical degree-guard bypass exposes integer field refusal; bytes not modified"
+    },
+    {
+      "path": "packages/contracts/src/usp/ingestion.ts",
+      "line": 14,
+      "code": "INVALID_INPUT",
+      "words": "Conversion literal_integer_identifier@1 is absent from the conversion enum",
+      "stage": "Static contract check; no integer conversion exists"
+    }
+  ],
+  "covered": "G1/G2 cover these stops. No further pure-path refusal found; full runtime must check protected intake files.",
+  "profileStorage": {
+    "path": "service.ts:56-60, retain:181-189",
+    "meaning": "manualProfile inventory and GIS inspection stored in sources.inspection on retain. profile(row,scope) reads stored inventory and adds current source/workspace pins; never reparses original bytes on read. validate checks byte hash and compiles that same stored profile.",
+    "implication": "New retained sources get unit/facts. Old profiles keep their stored degree/unit and fingerprint, absent integerIdEligible means unestablished. Missing-unit GIS inspection can default only EPSG:4326. No profile/validate edit needed if integer facts are stored by inspection at retain."
+  },
+  "rawTokens": {
+    "choice": "Python json.loads parse_int callback retains literal token on an int subclass; parse_float keeps floats. Publish optional integerIdEligible for each field and featureIntegerIdEligible for top-level IDs. Reject -0 by its token, not value; 007 is invalid JSON and inspection refuses it.",
+    "normalizerKeys": {
+      "7": "7",
+      "7.0": "7.0",
+      "7e0": "7.0",
+      "-0": "0",
+      "\"7\"": "7"
+    },
+    "why": "No new JSON lexer. Plain safe integer tokens parse as Python ints and JavaScript safe integers; str(raw_key) and JavaScript decimal spelling equal token. Fractions/exponents/negative zero cannot receive eligibility. Profile stores the inspection fact bound to original hash; fingerprint excludes eligibility facts."
+  },
+  "memory": {
+    "stored": "usp_mapping_recipes.source_id -> sources.inspection.manualProfile",
+    "exactQuery": "SELECT body FROM usp_mapping_recipes WHERE state IN ('approved','executed') AND body->'approval'->>'subject'=$1 AND body->'plan'->'source'->>'schemaFingerprint'=$2 ORDER BY body->'approval'->>'at' DESC,id DESC LIMIT 1",
+    "existingRefusals": "memoryPlan refuses absent/nonapproved/wrong-officer/different-fingerprint receipts, invalid plan schema, and compileMapping 422 (identity not complete unique, bad fields/kind/height). Approval never transferred.",
+    "fallback": "At most newest 50 owned approved/executed map receipts joined to their stored old manualProfile. Test containment before temporary repin of remembered source fingerprint, allowing unchanged memoryPlan to compile against current source."
+  },
+  "duplicate": {
+    "current": {
+      "code": "STALE_REVISION",
+      "words": "This destination already exists; pin its current area and reference explicitly.",
+      "rowReason": null,
+      "workerEffect": "fail stores no waiting reason; job failed, row retains earlier planned/probed state."
+    },
+    "paths": [
+      "service.ts:100-111 destination",
+      "intake-draft-worker.ts:89-95 officerQuestion",
+      "intake-draft-worker.ts:209-233 fail"
+    ],
+    "owningDestinationSeam": "destination needs the source hash at its two existing call sites to distinguish this file scope from arbitrary existing destinations. No author workflow or queue behavior changes; isolate those argument additions in the destination deliverable."
+  },
+  "archive": "document-ingestion.ts:185-186 admits only EPSG:4326 and its two established evidence strings for archived GeoJSON. A projected GeoJSON inside a ZIP remains unsupported by that archive/manual profile; untouched.",
+  "wireGap": "apps/api/src/modules/intake/wire-schemas.ts:230-239 hand-defines GIS inspection without additive crsUnit/eligibility members. Not owned; no edit. Main batch SourceProfile contract is generated from owned ingestion.ts. Report unadvertised optional GIS members to lead.",
+  "baselineCounts": "Focused geo and KN2-style ingestion commands recorded in checks at handoff; no provider/runtime writes for step 0."
+}

@@ -6,7 +6,7 @@ import { ingestionBinding } from './events';
 import { intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { IntakeDraftInputSchema, intakeDraftKey, intakeDraftLimit, queueIntakeDraftTx,
   assertIntakeDraftTx, type DraftItem } from './intake-draft';
-import { intakeDestination, officerQuestion, proposeIntakeLayout } from './intake-draft-worker';
+import { intakeDestination, officerQuestion, proposeIntakeLayout, lookupIntakeMemory } from './intake-draft-worker';
 import type { MapArea } from '@ulpin/contracts';
 import { AppError } from '../../../infrastructure/errors';
 import { registerUspJobInputTx } from '../jobs';
@@ -345,4 +345,80 @@ test('an area the normalizer refuses becomes the officer question in its words; 
     "Use an area of this batch's site or place the file in a separate intake batch.");
   assert.equal(officerQuestion(new AppError(503, 'AREA_PROCESSING', 'unavailable')), null);
   assert.equal(officerQuestion(new Error('timeout')), null);
+});
+
+function storedInventory() {
+  const { source, caseId: _case, workspaceRevision: _revision, workspaceFingerprint: _workspace, ...fields } = profile;
+  return { ...fields, schemaFingerprint: source.schemaFingerprint };
+}
+function broaderProfile() {
+  const next = structuredClone(profile);
+  next.source.schemaFingerprint = 'b'.repeat(64);
+  next.paths.push({ path: '/features/*/properties/extra', types: ['string'], values: 1,
+    explicitNull: 0, absent: 0, literalIdEligible: false, literalTextEligible: true });
+  return next;
+}
+
+test('exact remembered layout takes priority without inspecting contained-source candidates', async () => {
+  let calls = 0;
+  const result = await lookupIntakeMemory(profile, binding.subject, async (sql, values) => {
+    calls++;
+    assert.match(sql, /LIMIT 1/);
+    assert.deepEqual(values, [binding.subject, profile.source.schemaFingerprint]);
+    return [{ body: remembered }];
+  });
+  assert.equal(result?.id, remembered.id);
+  assert.equal(calls, 1);
+});
+
+test('contained old profile permits more columns, repins operations, and never carries approval to a plan', async () => {
+  const next = broaderProfile();
+  const result = await lookupIntakeMemory(next, binding.subject, async (sql, values) => {
+    if (values.length === 2) return [];
+    assert.match(sql, /LIMIT 50/);
+    assert.match(sql, /LEFT JOIN sources/);
+    assert.deepEqual(values, [binding.subject]);
+    return [{ body: remembered, manual_profile: storedInventory() }];
+  });
+  assert(result);
+  const proposal = await proposeIntakeLayout(next, result, caseId, async () => {
+    throw new Error('Contained approved memory must not request a provider.');
+  });
+  assert.equal(proposal?.origin, 'memory');
+  assert.deepEqual(proposal?.plan.source, next.source);
+  assert(!('approval' in proposal!.plan));
+  assert.equal(remembered.plan.source.schemaFingerprint, hash);
+});
+
+test('memory refuses missing/changed old columns, changed CRS/types, unreadable source, and other officer', async () => {
+  const next = broaderProfile();
+  const inventory = storedInventory();
+  const scenarios = [
+    { current: { ...next, paths: next.paths.filter(path => !path.path.endsWith('/id')) }, old: inventory },
+    { current: { ...next, paths: next.paths.map(path => path.path.endsWith('/id')
+      ? { ...path, types: ['number'] as ('number')[] } : path) }, old: inventory },
+    { current: { ...next, crs: { ...next.crs, unit: 'metre' } }, old: inventory },
+    { current: { ...next, geometryTypes: ['MultiPolygon'] }, old: inventory },
+    { current: next, old: null },
+    { current: next, old: { ...inventory, version: 'unreadable' } },
+  ];
+  for (const scenario of scenarios) {
+    const result = await lookupIntakeMemory(scenario.current, binding.subject, async (_sql, values) =>
+      values.length === 2 ? [] : [{ body: remembered, manual_profile: scenario.old }]);
+    assert.equal(result, null);
+  }
+  const other = { ...remembered, approval: { ...remembered.approval!, subject: 'another-officer' } };
+  assert.equal(await lookupIntakeMemory(next, binding.subject, async (_sql, values) =>
+    values.length === 2 ? [] : [{ body: other, manual_profile: inventory }]), null);
+  next.paths.find(path => path.path.endsWith('/id'))!.literalIdEligible = false;
+  assert.equal(await lookupIntakeMemory(next, binding.subject, async (_sql, values) =>
+    values.length === 2 ? [] : [{ body: remembered, manual_profile: inventory }]), null);
+});
+
+test('contained-source lookup examines only the 50 newest, not a usable 51st receipt', async () => {
+  const next = broaderProfile();
+  const unusable = { body: remembered, manual_profile: null };
+  const result = await lookupIntakeMemory(next, binding.subject, async (_sql, values) => values.length === 2 ? []
+    : [...Array.from({ length: 50 }, () => unusable), { body: remembered, manual_profile: storedInventory() }]);
+  assert.equal(result, null);
 });
