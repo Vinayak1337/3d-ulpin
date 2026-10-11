@@ -23,6 +23,10 @@ export const router = createBrowserRouter([
             path: 'work/cases/:caseId/tables/:sourceId',
             lazy: async () => ({ Component: (await import('../features/intake/table/TablePage')).TablePage }),
           },
+          {
+            path: 'work/cases/:caseId/intake',
+            lazy: async () => ({ Component: (await import('../features/intake/BatchPage')).BatchPage }),
+          },
           // The map pulls in Three.js; load it only when a map route opens.
           {
             path: 'map',

@@ -3,14 +3,20 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import ts from 'typescript';
 import { describe, expect, it } from 'vitest';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { Confirm } from './Confirm';
+import { PackageDetails } from './Packages';
 import captured from '../../../../../../docs/evidence/gf1/e3b/targets.json';
 import saved from '../../../../../../docs/evidence/gf1/e3b/confirmation.json';
-import { chooseReady, confirmBody, confirmationIds, confirmablePackages, countsLine, readinessWords,
+import { chooseReady, confirmBody, confirmationIds, confirmablePackages, confirmationWords,
+  confirmingPackageWords, countsLine, readinessWords,
   stageWords, shouldRefetch, waitingReason, type TargetPage, type Readiness, type Confirmation } from './model';
 
 const { choiceIds, ...sample } = captured;
 const page = sample as TargetPage;
 const key = saved.requestKey;
+const zeroCounts = () => Object.fromEntries(Object.keys(page.counts).map(key => [key, 0])) as TargetPage['counts'];
 const choices = choiceIds.map(targetId => ({ targetId, packageId: page.packages[0]!.packageId,
   readiness: 'ready' as const }));
 
@@ -66,6 +72,39 @@ it('has one plain sentence for every readiness and words for each stage', () => 
   expect(Object.values(stageWords)).toEqual(['Read the source', 'Draft the package', 'Record in the register',
     'Link supporting records', 'Keep a snapshot of the record', 'Check whether an identity applies',
     'Make the evidence plan and packet', 'Make and verify the property card']);
+});
+
+it('names a reviewed zero-count package with no target, but never a package with buildings and none ready', () => {
+  const empty = { ...page.packages[0]!, counts: zeroCounts() };
+  const zeroPage = { ...page, packages: [empty], items: [] };
+  expect(confirmablePackages(zeroPage)).toEqual([empty]);
+  expect(confirmBody(zeroPage, [], saved.acknowledgement, key)).toEqual({ requestKey: key,
+    acknowledgement: saved.acknowledgement, packages: [{ packageId: empty.packageId,
+      revision: empty.revision, reviewFingerprint: empty.reviewFingerprint }], targets: [] });
+  const held = { ...empty, counts: { ...empty.counts, held: 1 } };
+  expect(confirmablePackages({ ...zeroPage, packages: [held] })).toEqual([]);
+  expect(confirmablePackages({ ...zeroPage, packages: [{ ...empty, reviewFingerprint: null }] })).toEqual([]);
+  expect(confirmablePackages({ ...zeroPage, packages: [{ ...empty, state: 'COMMITTED' }] })).toEqual([]);
+});
+
+it('enables zero-selection confirmation only with packages and nonblank acknowledgement, with exact sentences', () => {
+  expect(confirmationWords(0)).toBe('These packages will be recorded in the register. '
+    + 'No building is chosen, so no card is made now.');
+  const empty = { ...page.packages[0]!, counts: zeroCounts() };
+  expect(confirmingPackageWords(empty)).toBe('No building in this package; its features will be recorded.');
+  const props = { page: { ...page, packages: [empty] }, choice: [], acknowledgement: saved.acknowledgement,
+    setAcknowledgement: () => {}, press: () => {}, busy: false, uncertain: false, stale: false, error: '' };
+  const enabled = renderToStaticMarkup(createElement(Confirm, props));
+  expect(enabled).toContain(confirmationWords(0));
+  expect(enabled).not.toContain('disabled=""');
+  expect(renderToStaticMarkup(createElement(Confirm, { ...props, acknowledgement: '   ' })))
+    .toContain('disabled=""');
+  expect(renderToStaticMarkup(createElement(Confirm, { ...props, page: { ...page, packages: [] } })))
+    .toContain('disabled=""');
+  const details = renderToStaticMarkup(createElement(PackageDetails, { pkg: empty, confirming: true }));
+  expect(details).toContain(confirmingPackageWords(empty));
+  expect(details).not.toContain('0 ready buildings will be recorded');
+  expect(confirmationWords(1)).toContain('The 1 chosen buildings');
 });
 
 describe('the quiet-stream refetch rule', () => {

@@ -1,0 +1,12 @@
+{
+  "task": "LQ1B",
+  "container": "ulpin-lq1b-tmp-5efec3e020029d02",
+  "startedAt": "2026-10-11T09:23:23.746Z",
+  "image": "postgis/postgis@sha256:01a6a70e41e6c4467c8f55f6063555ed72db2d6662cd0d571040d42eadaeb6f6",
+  "readyAfterSeconds": 1,
+  "published": "127.0.0.1:50072",
+  "failure": "Unexpected token '\u001b', \"\u001b[2m2:53:3\"... is not valid JSON",
+  "removed": "ulpin-lq1b-tmp-5efec3e020029d02",
+  "ownedContainerGone": true,
+  "finishedAt": "2026-10-11T09:24:47.983Z"
+}

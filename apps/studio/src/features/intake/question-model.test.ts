@@ -1,0 +1,106 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import ts from 'typescript';
+import { expect, it } from 'vitest';
+import captured from '../../../../../docs/evidence/gf1/lq1a/controls-second.json';
+import { answerSummary, blankChoices, choicesFromRecipe, heightPaths, kindRefusal, kindWords,
+  needsLayoutAnswer, questionBody } from './question-model';
+import type { Choices, Kind, MapProfile } from './question-model';
+import { layoutLines, type Recipe } from './layout-model';
+import type { IntakeItem } from './batch-model';
+
+const profile = captured.profile as MapProfile;
+const receipt = captured.authored as Recipe;
+const choices: Choices = { ...blankChoices, kind: 'building', identifier: '/features/*/properties/doitt_id' };
+const key = captured.authorBody.requestKey;
+
+it('starts without required choices and makes a kind layout for each officer-chosen kind, never a destination', () => {
+  expect(questionBody(profile, blankChoices, 0, key)).toBeNull();
+  for (const kind of Object.keys(kindWords) as Kind[]) {
+    const body = questionBody(profile, { ...choices, kind }, 0, key)!;
+    expect(body).not.toHaveProperty('destination');
+    expect(body.plan).toMatchObject({ kind, source: profile.source, operations: [
+      { target: 'feature.sourceKey', sourcePath: choices.identifier, conversionId: 'literal_identifier@1' },
+      { target: 'feature.geometry', sourcePath: '/features/*/geometry', conversionId: 'geojson_geometry@1' },
+    ] });
+    expect(body.plan).not.toHaveProperty('heightField');
+  }
+});
+
+it('includes chosen name and all three height facts, never a height without unit or meaning', () => {
+  const selected = { ...choices, name: choices.identifier, height: '/features/*/properties/height_roof' };
+  expect(heightPaths(profile).map(path => path.path)).toContain(selected.height);
+  expect(questionBody(profile, selected, 0, key)).toBeNull();
+  expect(questionBody(profile, { ...selected, unit: 'm' }, 0, key)).toBeNull();
+  expect(questionBody(profile, { ...selected, meaning: 'Test control' }, 0, key)).toBeNull();
+  for (const unit of ['m', 'ft'] as const) {
+    const body = questionBody(profile, { ...selected, unit, meaning: 'Test control height above ground' }, 2, key)!;
+    expect(body).toMatchObject({ expectedRecipeRevision: 2, plan: { heightField: 'height_roof', heightUnit: unit,
+      heightMeaning: 'Test control height above ground' } });
+    if (body.plan.version !== 'manual-geojson/1') throw new Error('Wrong test format');
+    expect(body.plan.operations[2]).toEqual({ target: 'feature.name', sourcePath: selected.name,
+      conversionId: 'literal_text@1' });
+  }
+  expect(questionBody(profile, { ...selected, unit: 'm', meaning: '  ' }, 0, key)).toBeNull();
+  expect(questionBody(profile, { ...selected, unit: 'm', meaning: `a${' '.repeat(500)}` }, 0, key)).toBeNull();
+});
+
+it('disables outline kinds for lines, allows road/utility, and never coerces identifiers', () => {
+  const line = { ...profile, geometryTypes: ['LineString'] };
+  for (const kind of ['building', 'parcel', 'public_land'] as const) {
+    expect(kindRefusal(kind, line.geometryTypes)).toBe(`This file holds lines; ${kindWords[kind]} must be an outline.`);
+    expect(questionBody(line, { ...choices, kind }, 0, key)).toBeNull();
+  }
+  expect(kindRefusal('road', line.geometryTypes)).toBeNull();
+  expect(kindRefusal('utility', ['Point'])).toBeNull();
+  expect(kindRefusal('road', [])).not.toBeNull();
+  const numeric = { ...profile, paths: profile.paths.map(path => path.path === choices.identifier
+    ? { ...path, literalIdEligible: false, types: ['number'] as const } : path) };
+  expect(questionBody(numeric as MapProfile, choices, 0, key)).toBeNull();
+  const noIdentifier = { ...profile, paths: profile.paths.map(path => ({ ...path, literalIdEligible: false })) };
+  expect(questionBody(noIdentifier, choices, 0, key)).toBeNull();
+});
+
+it('asks only for the stored no-layout reason, not a bound/unsupported reason or a filename', () => {
+  const item = captured.manifest.items[0] as IntakeItem;
+  expect(needsLayoutAnswer({ ...item, name: 'not-a-map.pdf' })).toBe(true);
+  expect(needsLayoutAnswer({ ...item, limitReason: 'Drafting accepts at most 2000 features.' })).toBe(false);
+  expect(needsLayoutAnswer({ ...item, limitReason: 'No reader is available.' })).toBe(false);
+  expect(needsLayoutAnswer({ ...item, placement: 'undecided' })).toBe(false);
+});
+
+it('states only chosen answers in the summary and reads feature targets in the review', () => {
+  expect(answerSummary(choices)).toBe('Each feature is a building, identified by doitt_id. '
+    + 'Name: not stated. Height: not stated. It goes to this batch\'s area, '
+    + 'or to a new area named after the file if the batch has none.');
+  const body = questionBody(profile, choices, 7, key)!;
+  const stated = { ...receipt, plan: body.plan } as Recipe;
+  expect(layoutLines(stated, 'teacher')).toContain('Each feature is: a building');
+  expect(layoutLines(stated, 'teacher')).toContain('Identifier: doitt_id');
+  expect(choicesFromRecipe(stated)).toEqual(choices);
+  expect(questionBody(profile, choicesFromRecipe(stated), stated.revision, key)?.expectedRecipeRevision)
+    .toBe(stated.revision);
+  const named = questionBody(profile, { ...choices, name: choices.identifier }, 1, key)!;
+  expect(layoutLines({ ...receipt, plan: named.plan } as Recipe, 'officer')).toContain('Name: doitt_id');
+});
+
+it('matches KN2 layout author body member for member for the same profile and building choice', async () => {
+  const source = readFileSync(resolve(import.meta.dirname, '../../../../../docs/evidence/gf1/kn2/steps.ts'), 'utf8');
+  const start = source.indexOf('async function layout(');
+  const end = source.indexOf('async function legacyBytes(', start);
+  const code = ts.transpile(source.slice(start, end), { target: ts.ScriptTarget.ES2022 });
+  let authored: unknown;
+  const http = async (method: string, path: string, _route: string, _schema: unknown, body: unknown) => {
+    if (method === 'GET') return profile;
+    if (path.endsWith('/recipes')) {
+      authored = body;
+      return { ...receipt, plan: (body as { plan: unknown }).plan, planHash: 'test-control-hash' };
+    }
+    return receipt;
+  };
+  const layout = new Function('intakeHttp', 'AnySourceProfileSchema', 'AnyMappingReceiptSchema', 'fingerprint',
+    'randomUUID', 'assert', `${code}; return layout;`)(http, {}, {}, () => 'test-control-hash', () => key, assert);
+  await layout(profile.caseId, profile, {}, 'building', false);
+  expect(questionBody(profile, choices, 0, key)).toEqual(authored);
+});
