@@ -1,0 +1,22 @@
+{
+  "task": "CA6",
+  "branch": "task/ca6-findings-in-one-read",
+  "baseline": "35c9400e",
+  "cause": "Confirmed: officer.ts:250-278 runs a Promise.all over findings, calling geographicGeometry for each geometry. That wrapper at :223-228 calls getArea, whose implementation at areas.ts:150-153 reads listAreas(true, client, true) and finds one area in memory. Each geometry therefore requires one complete area-list/statistics read and one single transform, so CA5's 1803 geometry-bearing findings entail 3606 statements queued behind eight connections; the default five-second acquisition deadline fails at finding index 255. The same enrichment filters the full feature array three times per finding for participants, evidence and revision pins. The repair bounds transformation batches, reuses one area read and one feature-position map; no pool change is needed.",
+  "areaRead": {
+    "at": "areas.ts:135-153",
+    "reads": "All map_areas, including archived areas, sorted by reference availability and creation time. Each row computes a positive-revision physical-feature count including explicit block-group members; a second correlated aggregate classifies observed/synthetic/mixed state; administrative-unit memberships are joined and JSON-aggregated. The true readOnly flag suppresses the legacy INSERT from registry_sites, so this is one expensive SELECT, not a write.",
+    "change": "None: call getArea once, not once per finding."
+  },
+  "callers": [
+    {"function": "geographicGeometry", "at": "officer.ts:259", "caller": "enrichFindings", "protects": "Finding overlay placement; replaced by bounded sequential batches using the identical transform expression"},
+    {"function": "geographicGeometry", "at": "officer.ts:774", "caller": "createBlockGroup", "protects": "One supplied group boundary; single-geometry behaviour remains unchanged"},
+    {"function": "enrichFindings", "at": "areas.ts:1258", "caller": "reviewPackage", "protects": "Admission review finding overlays and participant/evidence/revision projections; signature/result unchanged"},
+    {"function": "enrichFindings", "at": "areas.ts:1500", "caller": "runAreaCheck", "protects": "Recorded analytical finding overlays; qualification gate unchanged"}
+  ],
+  "referenceRule": "geographicGeometryInArea:232-237 alone currently checks reference and raises 422 PLACEMENT_REQUIRED, message 'This area has no geographic placement.'. Extract that same rule once for both the single transform and batched enrichment; never duplicate it.",
+  "ordering": "SQL WITH ORDINALITY indexes each batch from 1; put parsed results back by ord, rejecting row-count mismatch. Participants must remain in feature-array order, not featureIds order; deduplicate finding IDs as filter naturally does. Missing feature IDs contribute nothing. No-geometry findings still receive geographicGeometry:undefined, preserving the old result shape without reading an area.",
+  "baselineEvidence": {"receipt": "../ca5/runtime-default.json", "defaultReviewFailedMs": 6196.977, "comparisonReviewWithReadBackMs": 39992.352, "comparisonEnrichmentWindowMs": 37648.779},
+  "verification": "Fake-client regressions for zero geometry, 1201 geometries/three sequential batches, order/evidence, missing reference and short result; CA5 admission tests; default-profile isolated PostgreSQL with all non-contact findings and every tenth contact compared against sequential unchanged single transforms; native commit and second hydrography layer; memory native contract check.",
+  "safety": "CA5 tmpfs nonce-owned PostGIS runner, pull never, loopback port, no new volumes, no other runtime access, immutable original hashes before/after, generated secrets never recorded; no forbidden folders or .env reads; no provider, GPU or qualification writes."
+}
