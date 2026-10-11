@@ -7,6 +7,7 @@ import {
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TilesRenderer } from '3d-tiles-renderer';
 import { presetFor } from './camera';
+import { startProgramWarmUp, type ProgramWarmUp } from './warm-programs';
 import { FLAT_THICKNESS_M, boundsOf, buildingLook, hasKnownHeight, prismGeometry, shapesFor } from './geometry';
 import type { BuildingLook } from './geometry';
 import { enhanceFacade, enhanceSurface, facadeStyle, labelPoint, laneDashes, lookUniforms, padGeometry, paintGeometry, skyTexture, treeMeshes, type SceneLook } from './look';
@@ -138,6 +139,7 @@ export class SceneEngine {
   private readonly ground: Mesh;
   private readonly halo: Mesh;
   private readonly m: ReturnType<typeof makeMaterials>;
+  private readonly programWarmUp: ProgramWarmUp;
   private readonly spaceMaterials = new Map<string, Material>();
   private readonly resizeObserver: ResizeObserver;
   private readonly clip = new Plane(new Vector3(0, -1, 0), 0);
@@ -269,6 +271,7 @@ export class SceneEngine {
     this.resizeObserver.observe(container);
     this.resize();
     this.setLook(this.lookName);
+    this.programWarmUp = startProgramWarmUp(this.renderer, this.camera, this.scene, this.m);
   }
 
   // ------------------------------------------------------------------- look
@@ -524,6 +527,7 @@ export class SceneEngine {
   }
 
   private drainBaseQueue() {
+    if (!this.programWarmUp.settled) return;
     const started = performance.now();
     const batches = new Set<BaseBatch>();
     while (this.baseQueue.size) {
@@ -1046,6 +1050,7 @@ export class SceneEngine {
   }
 
   private drainBuildingQueue() {
+    if (!this.programWarmUp.settled) return;
     const started = performance.now();
     const added: Entry[] = [];
     while (this.buildingQueue.size) {
