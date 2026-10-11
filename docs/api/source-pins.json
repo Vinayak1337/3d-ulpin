@@ -279,7 +279,7 @@
     "packages/server/src/modules/officer/officer-operations.ts": "a19acfe04dcc10d29f8e09176ad4ad0421fd8960bea99bb8764a9fc4278f87d3",
     "packages/server/src/modules/officer/officer-preparation.ts": "97e6778326554c3631abb5c9ea5322de041bdf7ca8e667ee6c22751951417274",
     "packages/server/src/modules/officer/officer-routes.ts": "e9136b06ccc2a57232514eb18127c0d9293ed718f1bed67147ea937e80ff2eb2",
-    "packages/server/src/modules/officer/officer.ts": "9ad3aa0829c8452e8036c1668057d2f35f6fd738ac5ee6d38c1f85cddeea73ae",
+    "packages/server/src/modules/officer/officer.ts": "3dfe37a7af59e9bc2545aee8d2b7ecf4e744ba4072a629987bd75dfbc08bfdf8",
     "packages/server/src/modules/officer/register-missing.ts": "8785c04eb4f681389e33a23aeb62e13f208068f19524e5792ab2bebc23029db2",
     "packages/server/src/modules/officer/register-pdf.ts": "a698af95e54dd5b8b9fb141fd861b175d3a03d4e1752f4292ebd31221683c80d",
     "packages/server/src/modules/officer/registry-report-groups.ts": "6083dc14abb36971c5804e354965fb8cdc3b302cb6710e5e8a73483ba8733c1b",
