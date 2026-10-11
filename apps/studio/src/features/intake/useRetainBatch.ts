@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { useBeforeUnload, useNavigate } from 'react-router';
+import { useEffect, useRef, useState } from 'react';
+import { useBeforeUnload, useBlocker, useNavigate } from 'react-router';
 import type { createUploadCommand } from './upload-command';
 import { batchCase, initialOutcomes, retainBatch } from './retain-batch';
 
@@ -14,10 +14,18 @@ export function useRetainBatch(files: File[], remainingFiles: File[], mode: 'exi
   const acquiredAt = useRef(new Date().toISOString());
   const active = useRef<ReturnType<typeof createUploadCommand> | null>(null);
   useBeforeUnload(event => {
-    if (!pending) return;
+    if (!inFlight.current) return;
     event.preventDefault();
     event.returnValue = '';
   });
+  const blocker = useBlocker(() => inFlight.current);
+  useEffect(() => {
+    if (blocker.state !== 'blocked') return;
+    const { pathname, search, hash } = blocker.location;
+    blocker.reset();
+    // A document navigation invokes the browser's own leave question, including for an internal link/back.
+    window.location.assign(pathname + search + hash);
+  }, [blocker]);
   const retain = async () => {
     if (inFlight.current) return;
     inFlight.current = true;
@@ -28,6 +36,7 @@ export function useRetainBatch(files: File[], remainingFiles: File[], mode: 'exi
       created.current = id;
       const outcomes = await retainBatch(id, files, setRows, { acquiredAt: acquiredAt.current,
         active: command => { active.current = command; } });
+      inFlight.current = false;
       if (!routed) onClose();
       navigate(`/studio/work/cases/${id}/intake`, { replace: routed, state: { outcomes, remainingFiles } });
     } catch (failure) {
