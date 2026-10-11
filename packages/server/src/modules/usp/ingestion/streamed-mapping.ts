@@ -13,7 +13,7 @@ import {loadProvisionalStreamedProfileTx,loadSealedStreamedProfileTx} from './st
 
 const uuid=z.string().uuid();
 const unescape=(key:string)=>key.replaceAll('~1','/').replaceAll('~0','~');
-/** Mechanical admission only. Source meaning is separately cited and approved by the local operator. */
+/** Mechanical admission only. Meaning is publisher-cited or officer-stated; local approval remains required. */
 export function compileStreamedMapping(plan:StreamedMappingPlan,profile:StreamedProfileGeneration){
   const prefix=plan.version==='streamed-prefix-mapping/1';
   if(profile.coverage!==(prefix?'provisional':'sealed')||profile.unknownRemainder!==prefix||profile.accepted===0
@@ -65,7 +65,15 @@ async function validatePlanTx(client:PoolClient,caseId:string,sourceId:string,pr
   return profile;
 }
 export function assertStreamedIssuerEvidence(plan:StreamedMappingPlan,source:{profile:string;inspection:any}){
+  if(plan.basis==='officer_stated'){
+    if(plan.semanticEvidence.length!==0)
+      throw new AppError(422,'STREAMED_MAPPING_SEMANTICS','An officer-stated layout carries no publisher citations.');
+    return;
+  }
   const provenance=source.inspection?.largeOriginal?.provenance;
+  if(provenance?.origin==='not_stated')
+    throw new AppError(422,'STREAMED_MAPPING_PROVENANCE',
+      "This layout cites the publisher, and this file's origin is not stated. State the layout as the officer's own.");
   if(source.profile!=='large-original-v1'||!provenance?.issuer||!provenance?.originalUrl)
     throw new AppError(422,'STREAMED_MAPPING_PROVENANCE','This exact streamed recipe needs retained issuer and original provenance.');
   const sourceHost=new URL(provenance.originalUrl).hostname.toLowerCase();
