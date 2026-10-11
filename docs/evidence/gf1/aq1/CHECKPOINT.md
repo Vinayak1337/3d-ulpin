@@ -4,10 +4,10 @@ Primary steps 1–5 are complete and committed with result.json: authored layout
 
 Supplementary fresh-unbound memory publication is unqualified: its single initial job becomes stale at the existing destination guard, and actual row/refusal read-back is retained. No unowned fix or retry was made.
 
-Remaining after the first evidence commit: run KN2's five-layer harness unchanged into `docs/evidence/gf1/aq1/five-layers.json`, update result.json and the handoff with the observation, and make a second evidence commit. Do not alter KN2 or areas to make it pass.
+The first evidence commit delivered the Studio-facing result before the separate rerun. The second evidence commit records the unchanged KN2 walk: all five packages committed under one confirmation, no refusal or individual recovery, and three listed buildings carded. Nothing remains active. KN2 and areas were not changed.
 
 ```sh
-node docs/evidence/gf1/kn2/run-runtime.mjs docs/evidence/gf1/aq1/five-layers.json
+node docs/evidence/gf1/kn2/run-runtime.mjs <new-receipt.json>
 ```
 
 Current branch remains `task/aq1-answer-moves-the-item`, base recorded in result.json. No running task or owned container remains. No integration operation has been performed.
