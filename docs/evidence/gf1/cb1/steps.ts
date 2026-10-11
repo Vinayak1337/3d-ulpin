@@ -12,14 +12,26 @@ import { ingestArea, reviewPackage, commitPackage }
 import { captureRegistrySnapshot, resolveRegistryTarget }
   from '../../../../packages/server/src/modules/usp/snapshots';
 import { localRequestContext } from '../../../../packages/server/src/modules/usp/principal';
-import { createPacketPlan } from '../../../../packages/server/src/modules/usp/packets/plan-service';
+import { createPacketPlan, confirmPacketPlan, executePacketPlan }
+  from '../../../../packages/server/src/modules/usp/packets/plan-service';
+import { generatePropertyCard } from '../../../../packages/server/src/modules/usp/packets/card-service';
+import { verifyPropertyCard } from '../../../../packages/server/src/modules/usp/packets/card-verification';
+import { readExactPart, readPacket0 } from '../../../../packages/server/src/modules/usp/packet0';
+import { featurePropertiesExtract } from '../../../../packages/server/src/modules/usp/packets/feature-extract';
+import type { ImportPackage } from '../../../../packages/contracts/src';
+import type { RequestContext, TargetPin } from '../../../../packages/contracts/src/usp';
+import { isPdfPlan } from '../../../../packages/server/src/modules/usp/packets/plan-store';
+import { compareNycPostgres } from './nyc-postgres-equivalence';
 
 const root = 'E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/';
 const inputs = [
-  { format: 'shapefile_zip' as const, name: 'TSC_Buildings_OD_8831041243266425049.zip',
+  { root, format: 'shapefile_zip' as const, name: 'TSC_Buildings_OD_8831041243266425049.zip',
     idField: 'Building_N', sha256: '5e8b07aa6e6121070766a5ecbea28b8f136655ada60e58662897c422c825bf2e' },
-  { format: 'gpkg' as const, name: 'TSC_Buildings_OD_-1703359794462598529.gpkg',
+  { root, format: 'gpkg' as const, name: 'TSC_Buildings_OD_-1703359794462598529.gpkg',
     idField: 'OBJECTID', sha256: 'c1156f7a95e5d9d1d7c912aac6b764db948b523b4cb1bb719caf54f1c2e1e635' },
+  { root: 'E:/BhuAayam-data/datasets/nyc-10013/files/', format: 'geojson' as const,
+    name: 'buildings-original.geojson', idField: 'doitt_id',
+    sha256: '107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e' },
 ];
 const python = 'E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe';
 const objects = new Map<string, Buffer>();
@@ -73,10 +85,11 @@ async function serve(request: IncomingMessage, response: ServerResponse) {
       response.end();
     } else if (request.method === 'GET' && objects.has(path)) {
       const object = objects.get(path)!;
-      response.writeHead(200, { 'Content-Length': object.length });
+      response.writeHead(200, { 'Content-Length': object.length, ETag: `"${hash(object)}"` });
       response.end(object);
     } else if (request.method === 'HEAD' && objects.has(path)) {
-      response.writeHead(200, { 'Content-Length': objects.get(path)!.length });
+      response.writeHead(200, { 'Content-Length': objects.get(path)!.length,
+        ETag: `"${hash(objects.get(path)!)}"` });
       response.end();
     } else {
       response.writeHead(404);
@@ -131,8 +144,63 @@ async function recordedFeature(feature: { id: string; sourceRevisionId: string; 
   return row;
 }
 
+async function executeAndCard(ctx: RequestContext, plan: Awaited<ReturnType<typeof createPacketPlan>>, format: string) {
+  assert(!isPdfPlan(plan));
+  const confirmation = await measured(format, 'confirm', () => confirmPacketPlan(ctx, {
+    planId: plan.planId, version: plan.version, planSha256: plan.planSha256, reviewed: true,
+    guard: { mode: 'update', requestKey: randomUUID(), expectedVersion: plan.version,
+      expectedManifestId: plan.input.scope.manifestId },
+  }));
+  const execution = await measured(format, 'execute', () => executePacketPlan(ctx, {
+    planId: plan.planId, version: plan.version, confirmationId: confirmation.confirmationId,
+    guard: { mode: 'create', requestKey: randomUUID() },
+  }));
+  assert.equal(execution.packet.status, 'complete');
+  const packet = await readPacket0(ctx, execution.packet.packetId);
+  const card = await measured(format, 'card', () => generatePropertyCard(ctx, {
+    planId: plan.planId, planVersion: plan.version, cardId: null,
+    expiresAt: new Date(Date.now() + 3600000).toISOString(),
+    guard: { mode: 'create', requestKey: randomUUID() },
+  }));
+  const { report } = await measured(format, 'verification', () => verifyPropertyCard(ctx, {
+    cardId: card.cardId, revision: 1,
+  }));
+  assert.equal(report.result, 'consistent');
+  const nycByteComparison = format === 'geojson' ? await measured(format, 'legacy byte comparison',
+    () => compareNycPostgres(ctx, plan, card, packet.bytes)) : undefined;
+  return { ...(nycByteComparison ? { nycByteComparison } : {}),
+    citation: card.facts.find(fact => fact.key === 'source_citation')?.value,
+    packet: Buffer.from(packet.bytes).toString('utf8'), verification: report.result,
+    geometry: card.facts.find(fact => fact.key === 'geometry')?.state,
+    measurements: card.facts.find(fact => fact.key === 'measurements')?.state,
+    rights: card.facts.find(fact => fact.key === 'rights')?.state };
+}
+
+async function alteredPosition(ctx: RequestContext, pkg: ImportPackage, pin: TargetPin, format: string) {
+  const feature = pkg.features[0];
+  const position = feature.sourceReference!.nativeRecord!.position;
+  const update = `UPDATE physical_features SET body=jsonb_set(body,
+    '{sourceReference,nativeRecord,position}',to_jsonb($2::bigint)) WHERE id=$1`;
+  await query(update, [feature.id, position + 1]);
+  try {
+    const snapshot = await captureRegistrySnapshot(ctx, pkg.areaId, { kind: 'targets', pins: [pin] });
+    const resolved = await resolveRegistryTarget(ctx, snapshot.scope, pin);
+    assert(resolved.state === 'available');
+    let code: string | undefined;
+    await assert.rejects(() => createPacketPlan(ctx, { input: { target: pin, scope: snapshot.scope,
+      purpose: 'record_evidence', format: 'text', recipe: 'pack0-exact-text-csv/1',
+      expiresAt: new Date(Date.now() + 3600000).toISOString(), entries: [{ pointer: resolved.data.evidence[0],
+        required: true, inclusionReason: 'Altered-position control on the throwaway box',
+        review: { kind: 'direct', reviewed: true } }] }, guard: { mode: 'create', requestKey: randomUUID() } }),
+    (error: any) => { code = error.code; return code === 'PACKET_PLAN_NATIVE_KEY_MISMATCH'; });
+    return { format, code, oldPosition: position, alteredPosition: position + 1, refused: true };
+  } finally {
+    await query(update, [feature.id, position]);
+  }
+}
+
 async function walk(input: typeof inputs[number]) {
-  const bytes = readFileSync(root + input.name);
+  const bytes = readFileSync(input.root + input.name);
   assert.equal(hash(bytes), input.sha256);
   const pkg = await measured(input.format, 'import', () => ingestArea({ bytes, filename: input.name,
     format: input.format, namespace: `CB1-${input.format}`, name: `Tweed ${input.format} test_only`,
@@ -154,11 +222,16 @@ async function walk(input: typeof inputs[number]) {
     entries: [{ pointer: resolved.data.evidence[0], required: true,
       inclusionReason: 'Officer-reviewed publisher exterior', review: { kind: 'direct', reviewed: true } }],
   }, guard: { mode: 'create', requestKey: randomUUID() } }));
-  assert.equal(plan.entries[0].reasonCode, 'exact_extract_unavailable');
-  assert.equal(plan.entries[0].state, 'blocked_required_context');
+  assert.equal(plan.entries[0].state, 'included');
+  const excerpt = input.format === 'geojson' ? {
+    method: 'verbatim (implicit; no optional keys added)',
+    text: featurePropertiesExtract(bytes, pkg.features[0].sourceFeatureIndex!) }
+    : await readExactPart(ctx, snapshot.scope, resolved.data.evidence[0]);
+  const card = await executeAndCard(ctx, plan, input.format);
+  const difficult = input.format === 'geojson' ? null : await measured(input.format, 'altered position',
+    () => alteredPosition(ctx, pkg, pin, input.format));
   return { format: input.format, features: pkg.features.length, sourceReference: pkg.features[0].sourceReference,
-    plan: { state: plan.entries[0].state, code: plan.entries[0].reasonCode,
-      line: 'packets/plan-authority.ts:246-268' } };
+    plan: { state: plan.entries[0].state, sha256: plan.planSha256 }, excerpt, ...card, difficult };
 }
 
 async function main() {
@@ -173,8 +246,9 @@ async function main() {
         results.push(await walk(input));
       } catch (error: any) {
         results.push({ format: input.format, refused: error.code, message: error.message });
+        process.exitCode = 1;
       }
-      assert.equal(hash(readFileSync(root + input.name)), input.sha256);
+      assert.equal(hash(readFileSync(input.root + input.name)), input.sha256);
     }
   } finally {
     closeStorageClient();

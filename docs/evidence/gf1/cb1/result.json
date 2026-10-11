@@ -1,27 +1,71 @@
 {
-  "task": "CB1", "gate": "GF1", "status": "step0_complete_build_blocked_rule_b",
-  "works": "Reproduce both retained Tweed originals through real direct import, review, commit, record, snapshot and blocked plan on an isolated throwaway database.",
-  "seeIt": "node docs/evidence/gf1/cb1/run-runtime.mjs <new-receipt.json>",
-  "inputs": {"good": "Tweed Shire Council zipped shapefile and GeoPackage, 88 buildings each, foreign test_only, EPSG:28356", "difficult": "Existing NYC changed-original-byte and wrong-feature-position packet tests; requested native altered-position test not run because build stopped"},
-  "gaps": "No decoded-record citation, native card, post-build walk or NYC before/after byte-equality qualification.",
-  "design": ["steps.ts calls product area/snapshot/plan functions in CA0 order with direct import, using unchanged real Python readers and immutable loopback original storage.", "run-runtime.mjs adapts CAR's nonce ownership, pinned PostGIS image and tmpfs isolation; it removes only its own container and confirms machine names unchanged.", "step0.json records the method/hash audit, exact additive contract proposal and reader-pin stop; runtime.json explicitly records the unrun post-build walk."],
-  "stop": {"rule": "b", "file": "services/geo/geo/native_gis.py", "pinOwner": "usp/ingestion/document-native.ts documentReaderSha -> immutable document-extraction DocumentInput.readerSha256", "refreshCommand": null, "qualification": "Existing immutable job pins were not rewritten. New jobs capture a new aggregate; no command refreshing existing pins was found. External optional pins remain unavailable."},
+  "task": "CB1", "gate": "GF1", "status": "implemented_runtime_verified_owner_image_rebuild_pending",
+  "branch": "task/cb1-decoded-record-citation", "base": "bfc2e45d",
+  "works": "Both retained Tweed originals import 88 buildings and reach included decoded-record plans, confirmed complete packets, generated property cards and consistent verification on one CAR-isolated throwaway PostgreSQL box. Altered stored positions refuse for both formats. NYC reaches verification on that same box and remains byte-identical to original staging authority/projection/renderers under shared protocol metadata and PDF entropy.",
+  "seeIt": [
+    "node docs/evidence/gf1/cb1/run-runtime.mjs <new-receipt.json>",
+    "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS='--require ./scripts/platform/isolated-env.cjs' pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf1/cb1/nyc-equivalence.ts"
+  ],
+  "inputs": {
+    "shapefile": {"path": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_8831041243266425049.zip", "sha256": "5e8b07aa6e6121070766a5ecbea28b8f136655ada60e58662897c422c825bf2e", "idField": "Building_N", "features": 88},
+    "gpkg": {"path": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_-1703359794462598529.gpkg", "sha256": "c1156f7a95e5d9d1d7c912aac6b764db948b523b4cb1bb719caf54f1c2e1e635", "idField": "OBJECTID", "features": 88},
+    "nyc": {"path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson", "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e", "idField": "doitt_id", "importedFeatures": 1661, "byteComparisonIndices": [0, 1620]},
+    "classification": "Retained foreign test_only inputs; unchanged bytes; no acquisition or provider submission.",
+    "difficult": "Only physical_features.body.sourceReference.nativeRecord.position is changed on the owned throwaway box, then restored. Both formats refuse PACKET_PLAN_NATIVE_KEY_MISMATCH without searching by key. Tests also cover changed bytes/key, absent position, another site/profile, rowid shadowing and no stable GeoPackage integer position. A discovered Python-to-JavaScript integer rounding bug has a protocol-fault regression and now refuses unsafe decoded integers before publication."
+  },
+  "runtime": {"summary": "runtime.json", "receipt": "runtime-verified.json", "exit": 0, "passedSteps": 33,
+    "formatsVerified": 3, "alteredPositionsRefused": 2, "nycLegacyPostgresqlByteComparison": true},
+  "gaps": [
+    "Owner must rebuild the demo geo image before the new native reader is available there; no image was built or demo service used here.",
+    "Older document derivations show reader_changed until extracted again. Their immutable inputs/results/receipts and old hashes were not rewritten. Older feature observations without nativeRecord remain non-citable; no backfill.",
+    "The optional broader native-adapter/GIS-inspection pytest collection is unavailable because the supplied Python environment lacks fastapi. The new direct-reader suite passes seven tests.",
+    "NYC byte equivalence shares protocol IDs/timestamps and seeded PDF entropy. Its PostgreSQL comparison evaluates frozen staging code against the current real snapshot and issued artifacts; it is not an independently issued pre-edit PostgreSQL card."
+  ],
+  "design": [
+    "Additive nativeRecord on AreaReference and optional method/decodedRecord on text plan entries and exact excerpts; no defaults and no added GeoJSON serialized fields.",
+    "Native import preserves member/table, encoding, mapping idField and original position using sourceFeatureIndex, without renumbering accepted features around quarantine. GeoPackage reads use explicit integer-primary-key or accessible-rowid ordering and reject tables with neither.",
+    "Bounded decoders reuse existing native readers and return the selected record's decoded fields only. Retained byte length/hash, native reference/version/encoding and mapping-field source key must match; selection is by position, never by key. Non-finite/non-scalar or unsafe integer fields fail closed, never round into a claimed decoded value.",
+    "Native packet/card citations state file, member/table, record and decoded values. Excerpts start with the required decoded-field heading and reader encoding. No geometry or product-computed field enters the excerpt. Geometry/measurements remain unavailable and rights not_assessed.",
+    "Empty citation additions leave GeoJSON serialization, plan hashing and rendering unchanged. Both the captured pre-edit fixture and the same-box baseline-code comparison prove equality of plan/hash, packet, card content and controlled PDF bytes.",
+    "Runtime uses real product functions in CA0 order, nonce-labelled tmpfs PostGIS and private loopback in-memory original storage. The final run removes only its owned container; all machine container/volume/network names match before/after."
+  ],
+  "readerPins": {
+    "before": {"file": "6478be873cfb52978436a8e003e646f85ba7aaa40bdc3086fde94036f56e7ecf", "aggregate": "a33f2fbf37aad89b9a66fe97467321147ba740af7ee3bebe1714154add982d76"},
+    "after": {"file": "d57f7c1b88b1ef811bca8169b518ebd5a9ab828815fa77aa7f12c92917835306", "aggregate": "29351295ed61a84202f0aeda54c9e9560a759d584dc61b7400eaabb2f12e285a"},
+    "indexLineEndingBeforeAndAfter": "i/lf; working tree w/crlf",
+    "historicalHashHits": [
+      {"file": "docs/evidence/gf1/fx2/step0.json", "line": 7056, "meaning": "Frozen pre-build inventory hash, not a current-checkout reader constant"},
+      {"file": "docs/evidence/gf1/fx2/after.json", "line": 6954, "meaning": "Frozen recovery inventory hash, not a current-checkout reader constant"},
+      {"file": "docs/evidence/usp/reference-document-enrollment/manifest.json", "line": 741, "meaning": "Historical live-geo/native_gis.py copy"},
+      {"file": "docs/evidence/usp/reference-document-enrollment/manifest.json", "line": 806, "meaning": "Historical live-worker/native_gis.py copy"}
+    ],
+    "resolution": "Follow-up permits the immutable reader_changed/new-extraction boundary. No enforced current-checkout native reader hash constant was found. Historical inventory/live-copy hashes and immutable job pins remain untouched; FX2 recovery is not a reader-pin refresh tool. New extraction jobs capture the current aggregate automatically. Document freshness tests still enforce reader_changed.",
+    "apiRefreshTool": "scripts/api/refresh-contract.ts bfc2e45d", "apiSourcePinsRefreshed": 9
+  },
   "checks": [
-    {"command": "node docs/evidence/gf1/fx2/refresh.mjs --refresh", "exit": 0},
-    {"command": "node docs/evidence/gf1/cb1/run-runtime.mjs docs/evidence/gf1/cb1/baseline.json", "exit": 1, "kind": "harness gateway-disable assertion; summarized in attempts.json"},
-    {"command": "node docs/evidence/gf1/cb1/run-runtime.mjs docs/evidence/gf1/cb1/baseline-02.json", "exit": 1, "kind": "harness headers sent before Python computation; summarized in attempts.json"},
-    {"command": "node docs/evidence/gf1/cb1/run-runtime.mjs docs/evidence/gf1/cb1/baseline-03.json", "exit": 0, "kind": "audit recorded harness Mapping.kind error; corrected before valid baseline, summarized in attempts.json"},
-    {"command": "node docs/evidence/gf1/cb1/run-runtime.mjs docs/evidence/gf1/cb1/baseline-04.json", "exit": 0, "featuresEach": 88, "planReasonEach": "exact_extract_unavailable", "machineUnchanged": true},
-    {"command": "node docs/evidence/gf1/cb1/run-runtime.mjs /tmp/cb1-baseline-final.json", "exit": 0, "kind": "self-review harness refactor recheck", "machineUnchanged": true},
     {"command": "pnpm typecheck:backend", "exit": 0},
-    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts bfc2e45d", "exit": 0, "repinned": [], "generatedDiff": "none"},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts bfc2e45d", "exit": 0, "sourcePinsRefreshed": 9},
     {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 0, "operations": 305, "schemas": 346},
     {"command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "exit": 0},
-    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/packets/*.test.ts packages/server/src/modules/usp/packet0.test.ts", "exit": 0, "tests": 91, "pass": 91, "fail": 0, "skipped": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/packets/*.test.ts packages/server/src/modules/usp/packet0.test.ts tests/registry-feature-reference.test.ts", "exit": 0, "tests": 109, "pass": 109, "fail": 0, "skipped": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/document-*.test.ts tests/registry-document-evidence.test.ts packages/server/src/modules/usp/snapshot-retained-documents.test.ts", "exit": 0, "tests": 93, "pass": 90, "fail": 0, "skipped": 3},
+    {"command": "PYTHONPATH=services/geo PYTHONDONTWRITEBYTECODE=1 E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe -B -m pytest services/geo/tests/test_native_record_citation.py -q", "exit": 0, "pass": 7},
+    {"command": "node docs/evidence/gf1/cb1/run-runtime.mjs docs/evidence/gf1/cb1/runtime-verified.json", "exit": 0, "passedSteps": 33},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf1/cb1/nyc-equivalence.ts --receipt docs/evidence/gf1/cb1/nyc-after-final.json", "exit": 0, "records": 2, "byteIdentical": true},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf1/cb1/nyc-postgres-equivalence.ts --load-only", "exit": 0, "legacyModules": 4, "scratchRemoved": true},
+    {"command": "node --check docs/evidence/gf1/cb1/run-runtime.mjs", "exit": 0},
     {"command": "git diff --check", "exit": 0},
-    {"command": "awk length>120 on new TS/MJS files", "exit": 0, "findings": 0}
+    {"command": "awk length>120 on new TS/MJS/Python files", "exit": 0, "findings": 0}
   ],
-  "checkEnvironment": "API commands and tests used ULPIN_PROFILE=demo, REPO_DATA=false and isolated-env.cjs preload to deny checkout .env reads. Gateway explicitly disabled for runtime/tests.",
-  "safety": {"productFilesChanged": 0, "originalsChanged": false, "providers": 0, "demoAccessed": false, "imagesBuilt": false, "populatedVolumesTouched": false, "pushed": false},
-  "next": ["Provide an authorized reader-pin refresh command, or approve the immutable reader_changed/new-job transition as satisfying stop b. Resume without hand-repinning existing jobs/results.", "Then implement the proposed additive nativeRecord/method contracts, decoder/key checks, renderer/card words and tests; walk both files to cards and altered-position refusal; prove NYC plan/hash/card bytes identical.", "A native reader change requires the owner to rebuild the demo geo image; build nothing during this task."]
+  "checkEnvironment": "API commands/tests use ULPIN_PROFILE=demo, REPO_DATA=false and isolated-env.cjs preload; no checkout .env reads. This profile label does not connect the runtime to the demo: ownedBox fences the nonce-labelled throwaway DB, local stand-ins and disabled gateway.",
+  "review": {"diffReviewedAgainst": "bfc2e45d", "newFunctionsAtMost40Lines": true,
+    "forbiddenProductPathsUntouched": ["usp/ingestion/**", "usp/jobs.ts", "cases/processing.ts", "Studio", "KML", "datasets", "credentials"],
+    "noGeojsonDefaultFields": true, "noNativeKeySearchOrBackfill": true},
+  "safety": {"originalsChanged": false, "providers": 0, "demoAccessed": false, "imagesBuilt": false,
+    "populatedVolumesTouched": false, "historicalJobsResultsReceiptsRewritten": false,
+    "switchedMergedRebased": false, "pushed": false},
+  "initialEvidence": "88755d40 and b0c39519 retain the stopped Step 0, audit and valid blocked baseline; attempts.json records setup defects and bounded comparisons.",
+  "buildCommits": ["b51fc286", "8a5e2ea5", "306d5d5e", "b28f9ef3"],
+  "next": ["Owner reviews and integrates the task branch; no integration or push here.",
+    "Owner rebuilds the demo geo image. Older document derivations need re-extraction, not manual repinning."]
 }

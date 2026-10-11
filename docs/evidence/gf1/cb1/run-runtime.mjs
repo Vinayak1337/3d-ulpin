@@ -103,12 +103,20 @@ function main() {
     receipt.removed = removeOwned();
     receipt.after = machine();
     receipt.machineUnchanged = isDeepStrictEqual(receipt.before, receipt.after);
+    receipt.unrelatedContainerChanges = {
+      added: receipt.after.containers.filter(name => !receipt.before.containers.includes(name)),
+      removed: receipt.before.containers.filter(name => !receipt.after.containers.includes(name)),
+    };
+    receipt.ownedScopeUnchanged = !receipt.after.containers.includes(container)
+      && isDeepStrictEqual(receipt.before.volumes, receipt.after.volumes)
+      && isDeepStrictEqual(receipt.before.networks, receipt.after.networks);
     receipt.finishedAt = new Date().toISOString();
     writeFileSync(target, `${JSON.stringify(receipt)}\n`, { flag: 'wx' });
   }
   console.log(JSON.stringify({ container, removed: receipt.removed, machineUnchanged: receipt.machineUnchanged,
-    failure: receipt.failure ?? null }));
-  if (receipt.failure || !receipt.machineUnchanged) process.exitCode = 1;
+    ownedScopeUnchanged: receipt.ownedScopeUnchanged,
+    unrelatedContainerChanges: receipt.unrelatedContainerChanges, failure: receipt.failure ?? null }));
+  if (receipt.failure || !receipt.ownedScopeUnchanged) process.exitCode = 1;
 }
 
 main();
