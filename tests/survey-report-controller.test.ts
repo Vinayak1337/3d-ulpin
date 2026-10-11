@@ -17,6 +17,8 @@ const {SwaggerModule,DocumentBuilder}=require('@nestjs/swagger');
 class SurveyReportCheckModule{}
 test('private route exposes strict schema without a listener; transport pins exact document, no-store and bounded body',async()=>{
   const app=await NestFactory.create(SurveyReportCheckModule,{logger:false,bodyParser:false,abortOnError:false});
+  const previousSubject=process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT='survey-report-transport-control';
   try{
     const document=SwaggerModule.createDocument(app,new DocumentBuilder().build());
     const route=document.paths['/api/v1/usp/evidence/survey-report/context'].post;
@@ -38,5 +40,9 @@ test('private route exposes strict schema without a listener; transport pins exa
     const oversized=request(Buffer.alloc(SURVEY_REPORT_LIMITS.requestBytes+1,32));
     await assert.rejects(()=>controller.context(oversized,response),(e:any)=>e.status===413);oversized.destroy();assert.equal(calls,1);
     await assert.rejects(()=>controller.context(request(Buffer.from('{')),response),(e:any)=>e.code==='SURVEY_REPORT_JSON');assert.equal(calls,1);
-  }finally{await app.close();}
+  }finally{
+    if(previousSubject===undefined)delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
+    else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT=previousSubject;
+    await app.close();
+  }
 });
