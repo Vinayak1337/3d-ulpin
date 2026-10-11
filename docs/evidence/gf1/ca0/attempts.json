@@ -1,0 +1,69 @@
+{
+  "task": "CA0",
+  "acceptedAudit": "step0.json",
+  "attempts": [
+    {
+      "receipt": "runtime-01.json",
+      "signature": "Zod requestKey missing in rehearsal registration",
+      "classification": "harness protocol defect",
+      "hypothesis": "Use the existing register request, which already probes; do not call its private probe.",
+      "baseline": "No registration or automatic job completed.",
+      "successCriterion": "Automatic first job ends probed/needs_answer with no recipe.",
+      "stopCondition": "One corrected disposable run; preserve every refusal.",
+      "next": "runtime-02.json"
+    },
+    {
+      "receipt": "runtime-02.json",
+      "signature": "422 PACKET_PLAN_SELECTION",
+      "location": "packages/server/src/modules/usp/packets/plan-authority.ts:178",
+      "classification": "rehearsal selected three targets for a single-target packet recipe",
+      "hypothesis": "Capture three independent single-target snapshots, then plan the first exact target.",
+      "baseline": "1661 draft features reviewed and committed; the three-target plan was refused.",
+      "successCriterion": "Unchanged plan authority admits one exact target and its original feature.",
+      "stopCondition": "One corrected disposable run; no contract or authority repair.",
+      "next": "runtime-03.json"
+    },
+    {
+      "receipt": "runtime-03.json",
+      "signature": "422 SOURCE_INTEGRITY",
+      "location": "packages/server/src/infrastructure/storage.ts:184",
+      "classification": "memory storage adapter omitted the ETag required by the fenced card upload verifier",
+      "hypothesis": "Return a stable content ETag on memory GET/HEAD without changing bytes or the verifier.",
+      "baseline": "Plan, confirmation, packet and card preview passed; card artifact verification refused.",
+      "successCriterion": "Actual card generation verifies its original artifact stream.",
+      "stopCondition": "One corrected disposable run; no storage or card-service repair.",
+      "next": "runtime-04.json"
+    },
+    {
+      "receipt": "runtime-04.json",
+      "classification": "full chain passed; no rejected SQL; owned container removed",
+      "next": "Review found missing unsupported-vector tray reason and a possible officer/proposer race."
+    },
+    {
+      "receipt": "runtime-05.json",
+      "productionCommit": "4cba5240",
+      "classification": "production qualification passed; no rejected SQL; owned container removed",
+      "next": "Final review found re-registration could reset tray progress/reason; preserve those ledger fields."
+    },
+    {
+      "receipt": "runtime-06.json",
+      "productionCommit": "bf721803",
+      "classification": "final production qualification and registration replay passed; owned container removed",
+      "hypothesis": "Reprobing must preserve planned/read progress and a pending-answer reason, without another job.",
+      "baseline": "saveIntakeCardTx reset state/limit_reason before looking up an already completed job.",
+      "successCriterion": "Actual PostgreSQL re-registration preserves tray fields and job counts at both bookends.",
+      "stopCondition": "One bounded final qualification with explicit replay controls.",
+      "result": "needs_answer: 1 -> 1 jobs; read/on_map: 2 -> 2 jobs; all tray fields and answer reason unchanged.",
+      "next": "Delivery. No provider, GPU, schema, case-frame or officer-service change."
+    }
+  ],
+  "checkFailure": {
+    "command": "python scripts/api/check.py",
+    "signature": "API-DOC: runtime receipt changed",
+    "classification": "existing raw CRLF receipt versus LF digest",
+    "receipt": "docs/evidence/usp/cityjson-validation-runtime.json",
+    "normalizedMatches": true,
+    "receiptAndQualificationLedgerChangedByTask": false,
+    "next": "Owner of the checker/qualification receipt decides the portability repair; CA0 leaves both unchanged."
+  }
+}
