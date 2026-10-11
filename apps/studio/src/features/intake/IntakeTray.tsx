@@ -1,5 +1,6 @@
 import { Button, DataTable } from '@ulpin/ui';
-import { countWords, crsWords, familyWords, placementWords, stateWords } from './batch-model';
+import { countWords, crsWords, familyWords, formatWords, placementWords, sizeClassWords,
+  stateWords } from './batch-model';
 import type { IntakeItem } from './batch-model';
 import styles from './Batch.module.css';
 
@@ -8,11 +9,11 @@ export function IntakeTray({ items, choose }: { items: IntakeItem[]; choose: (it
     <DataTable caption="Files in this batch" rows={items} rowKey={(item) => item.itemId} columns={[
       { header: 'File', cell: (item) => item.name },
       { header: 'Contents', cell: (item) => <>
-        {familyWords(item.family)} · {item.format ?? 'Not known'}
+        {familyWords(item.family)} · {formatWords(item.format)}
       </> },
       { header: 'Size', numeric: true, cell: (item) => <>
         {item.sizeBytes == null ? 'Not known' : `${countWords(item.sizeBytes)} bytes`}
-        {item.sizeClass ? ` · ${item.sizeClass}` : ''}
+        {item.sizeClass ? ` · ${sizeClassWords(item.sizeClass)}` : ''}
       </> },
       { header: 'State', cell: (item) => stateWords(item.state) },
       { header: 'Features', numeric: true, cell: (item) => countWords(item.card?.counts.features) },

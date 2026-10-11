@@ -28,7 +28,10 @@ export function IntakeDropDialog({ files, remainingFiles, openCaseId, onBack, on
       <fieldset className={styles.fieldset} disabled={pending}>
         <legend className="ul-visually-hidden">Choose the batch</legend>
         <SourceCaseFields cases={cases} caseId={caseId} setCaseId={setCaseId} name={name} setName={setName}
-          mode={mode} setMode={(value) => { clearCreated(); setMode(value); }} locked={created} />
+          mode={mode} setMode={(value) => {
+            clearCreated();
+            setMode(value);
+          }} locked={created} />
       </fieldset>
       <DropOutcomes rows={rows} />
       {remainingFiles.length ? <p className="ul-help">
@@ -40,7 +43,8 @@ export function IntakeDropDialog({ files, remainingFiles, openCaseId, onBack, on
 }
 
 export function DropOutcomes({ rows }: { rows: FileOutcome[] }) {
-  return <DataTable caption="Files sent to the intake" rows={rows} rowKey={(row) => String(rows.indexOf(row))} columns={[
+  return <DataTable caption="Files sent to the intake" rows={rows}
+    rowKey={(row) => String(rows.indexOf(row))} columns={[
     { header: 'File', cell: (row) => row.name },
     { header: 'Size', numeric: true, cell: (row) => `${row.sizeBytes.toLocaleString('en-IN')} bytes` },
     { header: 'Outcome', cell: (row) => outcomeWords[row.state] },

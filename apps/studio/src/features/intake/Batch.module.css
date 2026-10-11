@@ -39,7 +39,31 @@
   min-width: 0;
 }
 
+.tray table {
+  min-width: 1120px;
+}
+
 .tray td {
   white-space: normal;
   overflow-wrap: anywhere;
+}
+
+.tray td:first-child {
+  min-width: 12rem;
+}
+
+.tray td:nth-child(3) {
+  white-space: nowrap;
+}
+
+.tray td:nth-child(4) {
+  min-width: 7rem;
+}
+
+.tray td:nth-child(9) {
+  min-width: 18rem;
+}
+
+.question > button {
+  justify-self: start;
 }

@@ -44,9 +44,9 @@ function LayoutFields({ profile }: { profile: MapProfile }) {
       <span className="ul-help">No suggested identifier is supplied by this profile.</span>
     </label>
     <div className="ul-field">
-      <span className="ul-label">Feature kind</span>
-      <span>Buildings</span>
-      <span className="ul-help">This retained-file layout supports buildings only.</span>
+      <span className="ul-label">Layout available here</span>
+      <span>Buildings only</span>
+      <span className="ul-help">This is a layout option, not a finding about this file.</span>
     </div>
     <div className="ul-field">
       <span className="ul-label">Area name</span>

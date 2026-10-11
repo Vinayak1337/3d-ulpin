@@ -45,6 +45,18 @@ export function familyWords(family: IntakeItem['family']) {
   return words[family];
 }
 
+export function sizeClassWords(sizeClass: IntakeItem['sizeClass']) {
+  if (!sizeClass) return 'Not known';
+  return { S: 'Small file', M: 'Medium file', L: 'Large file', XL: 'Very large file' }[sizeClass];
+}
+
+export function formatWords(format: IntakeItem['format']) {
+  if (!format) return 'Not known';
+  const words: Record<string, string> = { geojson: 'GeoJSON', gpkg: 'GeoPackage', shapefile_zip: 'Shapefile ZIP',
+    csv: 'CSV', xlsx: 'Excel workbook' };
+  return words[format] ?? format;
+}
+
 export function crsWords(card: IntakeItem['card']) {
   if (!card) return 'Not known';
   const words = { stated: 'Stated', sidecar: 'Stated in a companion file', absent: 'Not stated',

@@ -41,9 +41,8 @@ const GIS = /\.(geojson|json|gpkg|zip)$/i;
 const STEPS = ['Drop files', 'Check what we found', 'Confirm'] as const;
 
 /**
- * S2 Add files. Each GIS file is profiled by the real inspect endpoint (hash, format, CRS, fields); the
- * officer confirms the mapping; Start import sends the original to the real import endpoint. Other files
- * are listed and kept for a case upload; nothing is dropped silently.
+ * S2 Add files. GeoJSON is retained/enrolled through intake. Binary GIS keeps bounded direct import,
+ * tables keep their dialog, and the opt-in NYC profile keeps its separate development transport.
  */
 export function AddFilesDialog({ onClose, batchId, buildingId, routed = false, caseId, initialFiles }: { onClose: () => void; batchId?: string | null; buildingId?: string | null; routed?: boolean; caseId?: string; initialFiles?: File[] }) {
   if (batchId) return <SavedBatch batchId={batchId} onClose={onClose} />;
