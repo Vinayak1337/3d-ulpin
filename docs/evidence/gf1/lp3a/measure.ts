@@ -39,7 +39,8 @@ async function main() {
     accepted++;
     const count = vertices((item.feature as any).geometry.coordinates);
     if (count > 10000) { held++; return; }
-    if (cutCount && (cutCount >= 2000 || cutVertices + count > 100000 || cutBytes + item.raw.length > 16 * 1024 * 1024)) {
+    if (cutCount && (cutCount >= 2000 || cutVertices + count > 100000
+      || cutBytes + item.raw.length > 16 * 1024 * 1024)) {
       cuts++;
       cutCount = 0;
       cutVertices = 0;

@@ -75,6 +75,13 @@ export type MappingReceipt = z.infer<typeof MappingReceiptSchema>;
 export type SourceProfile = z.infer<typeof SourceProfileSchema>;
 export type MappingDestination = z.infer<typeof MappingDestinationSchema>;
 
+function boundedCollectionMetadata(value: Record<string, unknown>): boolean {
+  try {
+    return !Object.hasOwn(value, 'features')
+      && new TextEncoder().encode(JSON.stringify(value)).length <= 64 * 1024;
+  } catch { return false; }
+}
+
 /** Server-written only after semantic EOF and whole-original verification. Not registry admission. */
 export const StreamedMapOriginalReceiptSchema = z.strictObject({
   version: z.literal('streamed-map-original/1'), coverage: z.literal('sealed'), unknownRemainder: z.literal(false),
@@ -83,6 +90,8 @@ export const StreamedMapOriginalReceiptSchema = z.strictObject({
   framing: z.literal('feature-collection'), parts: z.number().int().min(1).max(4096),
   features: z.number().int().min(1).max(409600), accepted: z.number().int().nonnegative(),
   quarantined: z.number().int().nonnegative(), rawManifestSha256: hash,
+  collectionMetadata: z.record(z.string(), z.unknown()).refine(boundedCollectionMetadata,
+    'Only bounded original collection metadata belongs in the receipt.'),
   reference: z.strictObject({
     sourceCrs: z.string().min(1).max(100).nullable(), evidence: z.string().min(1).max(200),
     coordinateUnit: z.enum(['degree', 'unknown']),
