@@ -1,0 +1,27 @@
+{
+  "task": "CB1", "gate": "GF1", "status": "step0_complete_build_blocked_rule_b",
+  "works": "Reproduce both retained Tweed originals through real direct import, review, commit, record, snapshot and blocked plan on an isolated throwaway database.",
+  "seeIt": "node docs/evidence/gf1/cb1/run-runtime.mjs <new-receipt.json>",
+  "inputs": {"good": "Tweed Shire Council zipped shapefile and GeoPackage, 88 buildings each, foreign test_only, EPSG:28356", "difficult": "Existing NYC changed-original-byte and wrong-feature-position packet tests; requested native altered-position test not run because build stopped"},
+  "gaps": "No decoded-record citation, native card, post-build walk or NYC before/after byte-equality qualification.",
+  "design": ["steps.ts calls product area/snapshot/plan functions in CA0 order with direct import, using unchanged real Python readers and immutable loopback original storage.", "run-runtime.mjs adapts CAR's nonce ownership, pinned PostGIS image and tmpfs isolation; it removes only its own container and confirms machine names unchanged.", "step0.json records the method/hash audit, exact additive contract proposal and reader-pin stop; runtime.json explicitly records the unrun post-build walk."],
+  "stop": {"rule": "b", "file": "services/geo/geo/native_gis.py", "pinOwner": "usp/ingestion/document-native.ts documentReaderSha -> immutable document-extraction DocumentInput.readerSha256", "refreshCommand": null, "qualification": "Existing immutable job pins were not rewritten. New jobs capture a new aggregate; no command refreshing existing pins was found. External optional pins remain unavailable."},
+  "checks": [
+    {"command": "node docs/evidence/gf1/fx2/refresh.mjs --refresh", "exit": 0},
+    {"command": "node docs/evidence/gf1/cb1/run-runtime.mjs docs/evidence/gf1/cb1/baseline.json", "exit": 1, "kind": "harness gateway-disable assertion; summarized in attempts.json"},
+    {"command": "node docs/evidence/gf1/cb1/run-runtime.mjs docs/evidence/gf1/cb1/baseline-02.json", "exit": 1, "kind": "harness headers sent before Python computation; summarized in attempts.json"},
+    {"command": "node docs/evidence/gf1/cb1/run-runtime.mjs docs/evidence/gf1/cb1/baseline-03.json", "exit": 0, "kind": "audit recorded harness Mapping.kind error; corrected before valid baseline, summarized in attempts.json"},
+    {"command": "node docs/evidence/gf1/cb1/run-runtime.mjs docs/evidence/gf1/cb1/baseline-04.json", "exit": 0, "featuresEach": 88, "planReasonEach": "exact_extract_unavailable", "machineUnchanged": true},
+    {"command": "node docs/evidence/gf1/cb1/run-runtime.mjs /tmp/cb1-baseline-final.json", "exit": 0, "kind": "self-review harness refactor recheck", "machineUnchanged": true},
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts bfc2e45d", "exit": 0, "repinned": [], "generatedDiff": "none"},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 0, "operations": 305, "schemas": 346},
+    {"command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "exit": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/packets/*.test.ts packages/server/src/modules/usp/packet0.test.ts", "exit": 0, "tests": 91, "pass": 91, "fail": 0, "skipped": 0},
+    {"command": "git diff --check", "exit": 0},
+    {"command": "awk length>120 on new TS/MJS files", "exit": 0, "findings": 0}
+  ],
+  "checkEnvironment": "API commands and tests used ULPIN_PROFILE=demo, REPO_DATA=false and isolated-env.cjs preload to deny checkout .env reads. Gateway explicitly disabled for runtime/tests.",
+  "safety": {"productFilesChanged": 0, "originalsChanged": false, "providers": 0, "demoAccessed": false, "imagesBuilt": false, "populatedVolumesTouched": false, "pushed": false},
+  "next": ["Provide an authorized reader-pin refresh command, or approve the immutable reader_changed/new-job transition as satisfying stop b. Resume without hand-repinning existing jobs/results.", "Then implement the proposed additive nativeRecord/method contracts, decoder/key checks, renderer/card words and tests; walk both files to cards and altered-position refusal; prove NYC plan/hash/card bytes identical.", "A native reader change requires the owner to rebuild the demo geo image; build nothing during this task."]
+}

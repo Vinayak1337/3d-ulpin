@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { createServer, type Server } from 'node:http';
+import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import { performance } from 'node:perf_hooks';
 import { closePool, migrate, query } from '../../../../packages/server/src/infrastructure/db';
 import { sql } from '../../../../packages/server/src/infrastructure/sql-loader';
@@ -56,38 +56,40 @@ function geometry(operation: string, data: unknown) {
   return JSON.parse(result.stdout);
 }
 
-async function standIns() {
-  server = createServer(async (request, response) => {
-    try {
-      const chunks: Buffer[] = [];
-      for await (const value of request) chunks.push(Buffer.from(value));
-      const bytes = Buffer.concat(chunks);
-      const path = request.url!.split('?')[0];
-      if (path.startsWith('/internal/area/')) {
-        const result = geometry(path.split('/').at(-1)!, JSON.parse(bytes.toString()));
-        response.writeHead(200, { 'Content-Type': 'application/json' });
-        response.end(JSON.stringify(result));
-      } else if (request.method === 'PUT') {
-        assert(!objects.has(path), 'Original map is immutable.');
-        objects.set(path, bytes);
-        response.writeHead(200, { ETag: `"${hash(bytes)}"` });
-        response.end();
-      } else if (request.method === 'GET' && objects.has(path)) {
-        const object = objects.get(path)!;
-        response.writeHead(200, { 'Content-Length': object.length });
-        response.end(object);
-      } else if (request.method === 'HEAD' && objects.has(path)) {
-        response.writeHead(200, { 'Content-Length': objects.get(path)!.length });
-        response.end();
-      } else {
-        response.writeHead(404);
-        response.end();
-      }
-    } catch (error: any) {
-      response.writeHead(422, { 'Content-Type': 'application/json' });
-      response.end(JSON.stringify({ detail: error.message }));
+async function serve(request: IncomingMessage, response: ServerResponse) {
+  try {
+    const chunks: Buffer[] = [];
+    for await (const value of request) chunks.push(Buffer.from(value));
+    const bytes = Buffer.concat(chunks);
+    const path = request.url!.split('?')[0];
+    if (path.startsWith('/internal/area/')) {
+      const result = geometry(path.split('/').at(-1)!, JSON.parse(bytes.toString()));
+      response.writeHead(200, { 'Content-Type': 'application/json' });
+      response.end(JSON.stringify(result));
+    } else if (request.method === 'PUT') {
+      assert(!objects.has(path), 'Original map is immutable.');
+      objects.set(path, bytes);
+      response.writeHead(200, { ETag: `"${hash(bytes)}"` });
+      response.end();
+    } else if (request.method === 'GET' && objects.has(path)) {
+      const object = objects.get(path)!;
+      response.writeHead(200, { 'Content-Length': object.length });
+      response.end(object);
+    } else if (request.method === 'HEAD' && objects.has(path)) {
+      response.writeHead(200, { 'Content-Length': objects.get(path)!.length });
+      response.end();
+    } else {
+      response.writeHead(404);
+      response.end();
     }
-  });
+  } catch (error: any) {
+    response.writeHead(422, { 'Content-Type': 'application/json' });
+    response.end(JSON.stringify({ detail: error.message }));
+  }
+}
+
+async function standIns() {
+  server = createServer((request, response) => { void serve(request, response); });
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
   const address = server.address();
   assert(address && typeof address !== 'string');
@@ -120,6 +122,15 @@ async function measured<T>(format: string, step: string, work: () => Promise<T>)
   }
 }
 
+async function recordedFeature(feature: { id: string; sourceRevisionId: string; sourceKey: string }) {
+  const row = (await query(`SELECT r.id,r.revision,r.body FROM registry_records r
+    JOIN physical_features f ON f.record_id=r.id WHERE f.id=$1`, [feature.id])).rows[0];
+  assert.equal(row.revision, 1);
+  assert.deepEqual(row.body.evidence,
+    [{ sourceId: feature.sourceRevisionId, locator: `feature ${feature.sourceKey}` }]);
+  return row;
+}
+
 async function walk(input: typeof inputs[number]) {
   const bytes = readFileSync(root + input.name);
   assert.equal(hash(bytes), input.sha256);
@@ -130,14 +141,7 @@ async function walk(input: typeof inputs[number]) {
   const committed = await measured(input.format, 'commit', () => commitPackage(reviewed.id, reviewed.revision,
     'Test-only publisher exteriors; geometry, measurements and rights unassessed.'));
   assert.equal(committed.state, 'COMMITTED');
-  const record = await measured(input.format, 'record', async () => {
-    const row = (await query(`SELECT r.id,r.revision,r.body FROM registry_records r
-      JOIN physical_features f ON f.record_id=r.id WHERE f.id=$1`, [pkg.features[0].id])).rows[0];
-    assert.equal(row.revision, 1);
-    assert.deepEqual(row.body.evidence,
-      [{ sourceId: pkg.features[0].sourceRevisionId, locator: `feature ${pkg.features[0].sourceKey}` }]);
-    return row;
-  });
+  const record = await measured(input.format, 'record', () => recordedFeature(pkg.features[0]));
   const ctx = localRequestContext(randomUUID());
   const pin = { ref: { namespace: 'registry_record' as const, id: record.id }, revision: 1 };
   const snapshot = await measured(input.format, 'snapshot', () =>
