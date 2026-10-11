@@ -218,7 +218,7 @@ export class ManualIngestionService {
       const validated=await validate(client,input.plan,scope);
       const actualDestination=input.destination===undefined
         ? await authoredIntakeDestination(caseId,validated.row.inspection?.gis) : input.destination;
-      if(actualDestination)await destination(client,actualDestination,false,plan.source.sourceSha256);
+      if(actualDestination)await destination(client,actualDestination,false,input.plan.source.sourceSha256);
       const priorRow=(await client.query('SELECT body FROM usp_mapping_recipes WHERE source_id=$1 FOR UPDATE',
         [sourceId])).rows[0];
       const prior=priorRow?.body as AnyMappingReceipt|undefined;
