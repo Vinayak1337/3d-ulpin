@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { imageryRefusal, rasterToRgba, type ImageryProfile, type ImageryReply } from './imagery-pixels';
-import { useOverlays } from './overlays';
+import { useOverlays, type LoadedOverlay } from './overlays';
 
 vi.mock('@tanstack/react-query', () => ({ useQuery: (options: unknown) => options }));
 afterEach(() => vi.unstubAllGlobals());
@@ -46,7 +46,7 @@ function startOverlay(signal: AbortSignal) {
     sourceId: 'imagery', name: 'Aerial', layer: 'imagery', format: 'geotiff',
     originalUrl: '/api/imagery', bounds4326: [-74.01, 40.71, -74, 40.72],
   }], { origin: [0, 0], analysisCrs: 'EPSG:32618' }) as unknown as {
-    queryFn: (context: { signal: AbortSignal }) => Promise<{ overlays: unknown[]; warnings: string[] }>;
+    queryFn: (context: { signal: AbortSignal }) => Promise<{ overlays: LoadedOverlay[]; warnings: string[] }>;
   };
   return { bytes, result: options.queryFn({ signal }) };
 }
@@ -57,6 +57,29 @@ async function workerReady(bytes: ArrayBuffer) {
 }
 
 describe('imagery worker lifecycle', () => {
+  it('puts the returned RGBA rows on the same canvas overlay without changing its metadata', async () => {
+    const pixels = { data: new Uint8ClampedArray(8) };
+    const ctx = { createImageData: vi.fn(() => pixels), putImageData: vi.fn() };
+    const canvas = { width: 0, height: 0, getContext: vi.fn(() => ctx) };
+    vi.stubGlobal('document', { createElement: vi.fn(() => canvas) });
+    const { bytes, result } = startOverlay(new AbortController().signal);
+    const worker = await workerReady(bytes);
+    const rgba = new Uint8ClampedArray([1, 2, 3, 4, 5, 6, 7, 8]);
+    worker.onmessage!({ data: { profile: { ...verified, width: 1, height: 2 }, rgba } });
+    const loaded = await result;
+    expect(loaded.warnings).toEqual([]);
+    expect(loaded.overlays).toHaveLength(1);
+    expect(loaded.overlays[0]).toMatchObject({
+      layer: 'imagery', label: 'Aerial', caption: 'Aerial date unknown · georeferenced',
+      note: 'Aerial: georeferenced image; source coverage only.',
+      input: { id: 'imagery', kind: 'image', role: 'ground', image: canvas },
+    });
+    expect(pixels.data).toEqual(rgba);
+    expect(ctx.putImageData).toHaveBeenCalledWith(pixels, 0, 0);
+    expect(canvas.width).toBe(1);
+    expect(canvas.height).toBe(2);
+  });
+
   it('transfers the fetched bytes and raises each refusal on the main thread without adding imagery', async () => {
     const profiles = [
       { ...verified, width: 4001, height: 4000 },

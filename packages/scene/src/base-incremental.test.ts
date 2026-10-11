@@ -99,6 +99,29 @@ describe('base whole-list incremental reconciliation', () => {
     expect(engine.baseBatches.size).toBe(1);
   });
 
+  it('has the same meshes, bounds and anchors as building the full batch synchronously', () => {
+    const engine = fixture();
+    const synchronous = fixture();
+    const inputs = [feature('road'), feature('walk', 'road', 'sidewalk'), feature('parcel', 'parcel')];
+    engine.setBase(inputs);
+    draw(engine);
+    const batch = { inputs: new Map(), parcel: null, roadKerbs: null, sidewalkKerbs: null, lanes: null };
+    for (const input of inputs) synchronous.addBaseEntry(input, batch);
+    synchronous.rebuildBaseLines(batch);
+    synchronous.refreshBase();
+    expect([...engine.baseEntries.keys()]).toEqual([...synchronous.baseEntries.keys()]);
+    expect(engine.base.children.length).toBe(synchronous.base.children.length);
+    expect(engine.kerbs.children.length).toBe(synchronous.kerbs.children.length);
+    expect(engine.baseBox.equals(synchronous.baseBox)).toBe(true);
+    expect([...engine.anchors]).toEqual([...synchronous.anchors]);
+    for (const [id, entry] of engine.baseEntries) {
+      const reference = synchronous.baseEntries.get(id);
+      if (!entry.mesh) continue;
+      expect(entry.mesh.geometry.getAttribute('position').array)
+        .toEqual(reference.mesh.geometry.getAttribute('position').array);
+    }
+  });
+
   it('retains old surfaces and line batches when a new part arrives', () => {
     const engine = fixture();
     const road = feature('road');
