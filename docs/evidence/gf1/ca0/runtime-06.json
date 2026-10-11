@@ -1,0 +1,969 @@
+{
+  "task": "CA0",
+  "container": "ulpin-ca0-tmp-bc90dec99d70f69c",
+  "startedAt": "2026-10-11T01:03:56.221Z",
+  "before": {
+    "containers": [
+      "docsetu-benchmark-20261002-mongo",
+      "ulpin-demo-geo-1",
+      "ulpin-demo-minio-1",
+      "ulpin-demo-minio-init-1",
+      "ulpin-demo-postgres-1",
+      "ulpin-demo-redis-1",
+      "ulpin-demo-worker-1",
+      "ulpin-raster-worker-20260929-geo-1",
+      "ulpin-raster-worker-20260929-minio-1",
+      "ulpin-raster-worker-20260929-minio-init-1",
+      "ulpin-raster-worker-20260929-postgres-1",
+      "ulpin-raster-worker-20260929-redis-1",
+      "ulpin-raster-worker-20260929-worker-1",
+      "ulpin-reh-01-geo-1",
+      "ulpin-reh-01-minio-1",
+      "ulpin-reh-01-minio-init-1",
+      "ulpin-reh-01-postgres-1",
+      "ulpin-reh-01-redis-1",
+      "ulpin-reh-01-worker-1",
+      "ulpin-repo-geo-1",
+      "ulpin-repo-minio-1",
+      "ulpin-repo-minio-init-1",
+      "ulpin-repo-postgres-1",
+      "ulpin-repo-redis-1",
+      "ulpin-repo-worker-1",
+      "ulpin-usptest-8cd5555d8faac51d-geo-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-init-1",
+      "ulpin-usptest-8cd5555d8faac51d-postgres-1",
+      "ulpin-usptest-8cd5555d8faac51d-redis-1",
+      "ulpin-usptest-8cd5555d8faac51d-worker-1",
+      "ulpin-usptest-b050544f3d2cb99e-geo-1",
+      "ulpin-usptest-b050544f3d2cb99e-minio-1",
+      "ulpin-usptest-b050544f3d2cb99e-postgres-1",
+      "ulpin-usptest-b050544f3d2cb99e-redis-1",
+      "ulpin-usptest-b050544f3d2cb99e-worker-1"
+    ],
+    "volumes": [
+      "743d1eb1a29f4d17bafa5910c08fbb7dcc1b3e878c0edfe5630a1cb80eb4c557",
+      "docsetu-benchmark-20261002-db",
+      "ulpin-demo_minio-data",
+      "ulpin-demo_postgres-data",
+      "ulpin-demo_redis-data",
+      "ulpin-raster-worker-20260929_minio-data",
+      "ulpin-raster-worker-20260929_postgres-data",
+      "ulpin-raster-worker-20260929_redis-data",
+      "ulpin-reh-01_minio-data",
+      "ulpin-reh-01_postgres-data",
+      "ulpin-reh-01_redis-data",
+      "ulpin-repo_minio-data",
+      "ulpin-repo_postgres-data",
+      "ulpin-repo_redis-data",
+      "ulpin-usptest-8cd5555d8faac51d_minio-data",
+      "ulpin-usptest-8cd5555d8faac51d_postgres-data",
+      "ulpin-usptest-8cd5555d8faac51d_redis-data",
+      "ulpin-usptest-b050544f3d2cb99e_minio-data",
+      "ulpin-usptest-b050544f3d2cb99e_postgres-data",
+      "ulpin-usptest-b050544f3d2cb99e_redis-data"
+    ],
+    "networks": [
+      "bridge",
+      "host",
+      "none",
+      "ulpin-demo_default",
+      "ulpin-raster-worker-20260929_default",
+      "ulpin-reh-01_default",
+      "ulpin-repo_default",
+      "ulpin-usptest-8cd5555d8faac51d_default",
+      "ulpin-usptest-b050544f3d2cb99e_default"
+    ]
+  },
+  "image": "postgis/postgis@sha256:01a6a70e41e6c4467c8f55f6063555ed72db2d6662cd0d571040d42eadaeb6f6",
+  "readyAfterSeconds": 1,
+  "during": {
+    "containers": [
+      "docsetu-benchmark-20261002-mongo",
+      "ulpin-ca0-tmp-bc90dec99d70f69c",
+      "ulpin-demo-geo-1",
+      "ulpin-demo-minio-1",
+      "ulpin-demo-minio-init-1",
+      "ulpin-demo-postgres-1",
+      "ulpin-demo-redis-1",
+      "ulpin-demo-worker-1",
+      "ulpin-raster-worker-20260929-geo-1",
+      "ulpin-raster-worker-20260929-minio-1",
+      "ulpin-raster-worker-20260929-minio-init-1",
+      "ulpin-raster-worker-20260929-postgres-1",
+      "ulpin-raster-worker-20260929-redis-1",
+      "ulpin-raster-worker-20260929-worker-1",
+      "ulpin-reh-01-geo-1",
+      "ulpin-reh-01-minio-1",
+      "ulpin-reh-01-minio-init-1",
+      "ulpin-reh-01-postgres-1",
+      "ulpin-reh-01-redis-1",
+      "ulpin-reh-01-worker-1",
+      "ulpin-repo-geo-1",
+      "ulpin-repo-minio-1",
+      "ulpin-repo-minio-init-1",
+      "ulpin-repo-postgres-1",
+      "ulpin-repo-redis-1",
+      "ulpin-repo-worker-1",
+      "ulpin-usptest-8cd5555d8faac51d-geo-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-init-1",
+      "ulpin-usptest-8cd5555d8faac51d-postgres-1",
+      "ulpin-usptest-8cd5555d8faac51d-redis-1",
+      "ulpin-usptest-8cd5555d8faac51d-worker-1",
+      "ulpin-usptest-b050544f3d2cb99e-geo-1",
+      "ulpin-usptest-b050544f3d2cb99e-minio-1",
+      "ulpin-usptest-b050544f3d2cb99e-postgres-1",
+      "ulpin-usptest-b050544f3d2cb99e-redis-1",
+      "ulpin-usptest-b050544f3d2cb99e-worker-1"
+    ],
+    "volumes": [
+      "743d1eb1a29f4d17bafa5910c08fbb7dcc1b3e878c0edfe5630a1cb80eb4c557",
+      "docsetu-benchmark-20261002-db",
+      "ulpin-demo_minio-data",
+      "ulpin-demo_postgres-data",
+      "ulpin-demo_redis-data",
+      "ulpin-raster-worker-20260929_minio-data",
+      "ulpin-raster-worker-20260929_postgres-data",
+      "ulpin-raster-worker-20260929_redis-data",
+      "ulpin-reh-01_minio-data",
+      "ulpin-reh-01_postgres-data",
+      "ulpin-reh-01_redis-data",
+      "ulpin-repo_minio-data",
+      "ulpin-repo_postgres-data",
+      "ulpin-repo_redis-data",
+      "ulpin-usptest-8cd5555d8faac51d_minio-data",
+      "ulpin-usptest-8cd5555d8faac51d_postgres-data",
+      "ulpin-usptest-8cd5555d8faac51d_redis-data",
+      "ulpin-usptest-b050544f3d2cb99e_minio-data",
+      "ulpin-usptest-b050544f3d2cb99e_postgres-data",
+      "ulpin-usptest-b050544f3d2cb99e_redis-data"
+    ],
+    "networks": [
+      "bridge",
+      "host",
+      "none",
+      "ulpin-demo_default",
+      "ulpin-raster-worker-20260929_default",
+      "ulpin-reh-01_default",
+      "ulpin-repo_default",
+      "ulpin-usptest-8cd5555d8faac51d_default",
+      "ulpin-usptest-b050544f3d2cb99e_default"
+    ]
+  },
+  "published": "127.0.0.1:59520",
+  "runtime": {
+    "exit": 0,
+    "signal": null,
+    "errorCode": null,
+    "progress": [
+      {
+        "completed": "migrations",
+        "step": "migrations",
+        "person": "None",
+        "system": "nonce-owned PostGIS only",
+        "result": {
+          "bootstrap": "bootstrap.postgis then infrastructure/db.migrate()"
+        },
+        "ms": 140.84
+      },
+      {
+        "completed": "1 retained original is probed",
+        "step": "1 retained original is probed",
+        "person": "Test operator adds original",
+        "system": "retain, register, probe, dispatcher",
+        "result": {
+          "caseId": "5a3c8a0d-650d-4fba-ab79-dd032e530b9a",
+          "sourceId": "af9e0d9d-404e-4274-890c-b86fbb832f19",
+          "schemaFingerprint": "e27f2b29af7483c178b6fc8d8ad439d6f347db32ccba785d84b47c9688cbf638",
+          "job": {
+            "id": "48c2d5a0-032a-5eff-96b8-b111d84283d7",
+            "status": "succeeded",
+            "error": null,
+            "attempts": 1,
+            "logical_state": "succeeded",
+            "result_ref": {
+              "sha256": "e20b1faa724eb951831d6c5ed53cf2157574fe42767cc3b41609691c5da7adb5",
+              "assetId": "intake-draft:af9e0d9d-404e-4274-890c-b86fbb832f19",
+              "version": 1
+            }
+          },
+          "state": "probed",
+          "placement": "needs_answer",
+          "reason": "No approved layout matches this file. An officer chooses the identifier field.",
+          "recipe": null
+        },
+        "ms": 561.647
+      },
+      {
+        "completed": "2 layout chosen and approved",
+        "step": "2 layout chosen and approved",
+        "person": "Test operator chooses doitt_id and geometry, no role",
+        "system": "author then approve; no execute request",
+        "result": {
+          "recipeId": "cf30286c-4781-4dad-ad82-c5a9df7c18c0",
+          "revision": 2,
+          "state": "approved"
+        },
+        "ms": 62.074
+      },
+      {
+        "completed": "3 draft appears automatically",
+        "step": "3 draft appears automatically",
+        "person": "None",
+        "system": "dispatcher executes approved recipe and updates tray",
+        "result": {
+          "packageId": "f1a0dace-c48e-4186-8e90-6071903e4533",
+          "state": "read",
+          "placement": "on_map",
+          "accepted": 1661,
+          "quarantine": {
+            "total": 1662,
+            "message": "1661 of 1662 source features accepted; 1 skipped. INVALID_GEOMETRY: Ring Self-intersection[-74.003625525124 40.72574597286]. Original retained unchanged; no geometry repaired.",
+            "version": "gis-quarantine/1",
+            "accepted": 1661,
+            "complete": false,
+            "rejected": 1,
+            "sourceId": "af9e0d9d-404e-4274-890c-b86fbb832f19",
+            "rejections": [
+              {
+                "code": "INVALID_GEOMETRY",
+                "reason": "Ring Self-intersection[-74.003625525124 40.72574597286]",
+                "sourceKey": "751920",
+                "featureIndex": 1322
+              }
+            ],
+            "sourceSha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+            "sourceRevision": 1
+          },
+          "binding": {
+            "site_id": "82dc3b79-22fb-4082-8e1a-bd2e6653b920",
+            "frame": {
+              "id": "UNASSIGNED",
+              "benchmark": "UNASSIGNED",
+              "verticalUnit": "m",
+              "horizontalUnit": "m"
+            },
+            "context": [],
+            "revision": 1
+          },
+          "sourceIndices": [
+            {
+              "index": 0,
+              "key": "345",
+              "recordId": "65ffada9-ae35-45b9-8f80-66809ec6a13f"
+            },
+            {
+              "index": 830,
+              "key": "465811",
+              "recordId": "d2ab3784-9367-47c8-959f-baa29e15bac6"
+            },
+            {
+              "index": 1661,
+              "key": "1305944",
+              "recordId": "55d4faaf-d6f0-4652-88fa-b04683b3f299"
+            }
+          ],
+          "planRef": {
+            "origin": "officer",
+            "recipeId": "cf30286c-4781-4dad-ad82-c5a9df7c18c0",
+            "packageId": "f1a0dace-c48e-4186-8e90-6071903e4533",
+            "recipeState": "executed",
+            "recipeRevision": 3
+          }
+        },
+        "ms": 5405.733
+      },
+      {
+        "completed": "4 actual review and commit",
+        "step": "4 actual review and commit",
+        "person": "Test operator reviews publisher exteriors",
+        "system": "CA5 reviewPackage with 60000ms acquisition; CA1 commitPackage",
+        "result": {
+          "state": "COMMITTED",
+          "citedRevisionOne": 1661,
+          "findings": 1803,
+          "qualificationReceipts": 0
+        },
+        "ms": 46631.721
+      },
+      {
+        "completed": "5 snapshot, plan, packet and card",
+        "step": "5 snapshot, plan, packet and card",
+        "person": "Test operator confirms selected feature citation",
+        "system": "target capture, plan create/confirm/execute, card preview/generate",
+        "result": {
+          "manifestId": "30264d2b-810c-407c-9211-c7622401abf2",
+          "capturedSources": 1,
+          "sourceStatus": "needs_input",
+          "planId": "6f326a9a-0d74-4cb7-9be1-76d8727e57c1",
+          "included": "included",
+          "packet": "complete",
+          "cardId": "30c17bba-3e0c-4f02-a2c6-44f5a7f77ef5",
+          "facts": [
+            {
+              "key": "target",
+              "label": "Selected record",
+              "state": "available",
+              "value": "Building 345 (building); revision 1",
+              "reasonCode": null
+            },
+            {
+              "key": "identifier",
+              "label": "Registry identifier",
+              "state": "available",
+              "value": "3DU-42VGXQJ8QV8218W6NX5SK57E90:B001",
+              "reasonCode": null
+            },
+            {
+              "key": "project_identity",
+              "label": "Application identity",
+              "state": "available",
+              "value": "Identity codes are for recorded spaces only",
+              "reasonCode": null
+            },
+            {
+              "key": "vertical_locator",
+              "label": "Recorded location",
+              "state": "unavailable",
+              "value": "No captured structured location",
+              "reasonCode": "location_not_recorded"
+            },
+            {
+              "key": "parcel_assertions",
+              "label": "Parent parcel assertions",
+              "state": "unavailable",
+              "value": "No selected source-backed parcel assertion",
+              "reasonCode": "selected_parcel_evidence_unavailable"
+            },
+            {
+              "key": "source_citation",
+              "label": "Source citation",
+              "state": "available",
+              "value": "buildings-original.geojson, feature 345",
+              "reasonCode": null
+            },
+            {
+              "key": "declared_share",
+              "label": "Recorded declared share",
+              "state": "unavailable",
+              "value": "No included accepted applicability for this exact target and purpose",
+              "reasonCode": "selected_declared_share_unavailable"
+            },
+            {
+              "key": "geometry",
+              "label": "Geometry / frame / datum",
+              "state": "unavailable",
+              "value": "Not supplied by the executed text/CSV profile",
+              "reasonCode": "geometry_profile_unavailable"
+            },
+            {
+              "key": "measurements",
+              "label": "Measurements / quantities",
+              "state": "unavailable",
+              "value": "No qualified measured quantities in this profile",
+              "reasonCode": "measurements_profile_unavailable"
+            },
+            {
+              "key": "render",
+              "label": "Selected-space render",
+              "state": "unavailable",
+              "value": "Rendering is unavailable in this profile",
+              "reasonCode": "selected_space_render_unavailable"
+            },
+            {
+              "key": "rights",
+              "label": "Rights / title / issuance",
+              "state": "not_assessed",
+              "value": "No ownership, title, legality or official issuance determination",
+              "reasonCode": "rights_not_assessed"
+            }
+          ],
+          "analyticalQualification": "not granted"
+        },
+        "ms": 390.708
+      },
+      {
+        "completed": "6 allowed folder and second layout",
+        "step": "6 allowed folder and second layout",
+        "person": "None",
+        "system": "real immutable-file inventory and existing GIS profile",
+        "result": {
+          "listing": [
+            {
+              "name": "buildings-original.geojson",
+              "bytes": 1103282
+            },
+            {
+              "name": "hydrography.geojson",
+              "bytes": 2055
+            },
+            {
+              "name": "nyc-10013-dem-2017.tif",
+              "bytes": 989186
+            },
+            {
+              "name": "nyc-10013-lidar-2017.laz",
+              "bytes": 11110715
+            },
+            {
+              "name": "nyc-10013-ortho-2018.tif",
+              "bytes": 1036134
+            },
+            {
+              "name": "parks.geojson",
+              "bytes": 119417
+            },
+            {
+              "name": "roadbed.geojson",
+              "bytes": 1837922
+            },
+            {
+              "name": "sidewalk.geojson",
+              "bytes": 1854113
+            }
+          ],
+          "schemas": [
+            {
+              "name": "hydrography.geojson",
+              "bytes": 2055,
+              "sha256": "12c95a1d8d065cadbcc2b68a61f14ce91f93798fe7bc28885fb7ea062efce192",
+              "schemaFingerprint": "f4eb0592c66bb9df3c1db05b3460829be1eef8c9b786720a551c7b8bea669c76",
+              "features": 1
+            },
+            {
+              "name": "parks.geojson",
+              "bytes": 119417,
+              "sha256": "e1711a90ad63d9cbac4a9320e09b15ac91b9fa3995920ff4c06dbafd68977d13",
+              "schemaFingerprint": "c2088bc12dbd06b0eeb854d4efb4b2b165b7e668745e2413fc31495b0fb07603",
+              "features": 41
+            },
+            {
+              "name": "roadbed.geojson",
+              "bytes": 1837922,
+              "sha256": "caf05fa5c76cc3eb1d6d2fb43c494ce0bd6416b97946012adddba623e203cf7f",
+              "schemaFingerprint": "c2e0a0d3da562ae7413a1fc152c4467902746ebb880f34ebb228eafe8e1ae396",
+              "features": 446
+            },
+            {
+              "name": "sidewalk.geojson",
+              "bytes": 1854113,
+              "sha256": "5f62c00a689303b30f85c1ec82c823f80b5e59ed1878c5f6cfbd0ad5932012b9",
+              "schemaFingerprint": "c2e0a0d3da562ae7413a1fc152c4467902746ebb880f34ebb228eafe8e1ae396",
+              "features": 213
+            }
+          ],
+          "largestOther": {
+            "name": "sidewalk.geojson",
+            "bytes": 1854113
+          },
+          "sameLayout": null,
+          "gap": "No second file matches the first file's exact schema fingerprint; memory reuse is unit-tested."
+        },
+        "ms": 1175.462
+      },
+      {
+        "completed": "7 largest other real vector",
+        "step": "7 largest other real vector",
+        "person": "Test operator adds original",
+        "system": "same retained/probed draft path",
+        "result": {
+          "file": "sidewalk.geojson",
+          "bytes": 1854113,
+          "sha256": "5f62c00a689303b30f85c1ec82c823f80b5e59ed1878c5f6cfbd0ad5932012b9",
+          "state": "probed",
+          "placement": "needs_answer",
+          "reason": "No approved layout matches this file. An officer chooses the identifier field."
+        },
+        "ms": 492.837
+      }
+    ],
+    "evidence": {
+      "task": "CA0",
+      "steps": [
+        {
+          "step": "migrations",
+          "person": "None",
+          "system": "nonce-owned PostGIS only",
+          "result": {
+            "bootstrap": "bootstrap.postgis then infrastructure/db.migrate()"
+          },
+          "ms": 140.84
+        },
+        {
+          "step": "1 retained original is probed",
+          "person": "Test operator adds original",
+          "system": "retain, register, probe, dispatcher",
+          "result": {
+            "caseId": "5a3c8a0d-650d-4fba-ab79-dd032e530b9a",
+            "sourceId": "af9e0d9d-404e-4274-890c-b86fbb832f19",
+            "schemaFingerprint": "e27f2b29af7483c178b6fc8d8ad439d6f347db32ccba785d84b47c9688cbf638",
+            "job": {
+              "id": "48c2d5a0-032a-5eff-96b8-b111d84283d7",
+              "status": "succeeded",
+              "error": null,
+              "attempts": 1,
+              "logical_state": "succeeded",
+              "result_ref": {
+                "sha256": "e20b1faa724eb951831d6c5ed53cf2157574fe42767cc3b41609691c5da7adb5",
+                "assetId": "intake-draft:af9e0d9d-404e-4274-890c-b86fbb832f19",
+                "version": 1
+              }
+            },
+            "state": "probed",
+            "placement": "needs_answer",
+            "reason": "No approved layout matches this file. An officer chooses the identifier field.",
+            "recipe": null
+          },
+          "ms": 561.647
+        },
+        {
+          "step": "2 layout chosen and approved",
+          "person": "Test operator chooses doitt_id and geometry, no role",
+          "system": "author then approve; no execute request",
+          "result": {
+            "recipeId": "cf30286c-4781-4dad-ad82-c5a9df7c18c0",
+            "revision": 2,
+            "state": "approved"
+          },
+          "ms": 62.074
+        },
+        {
+          "step": "3 draft appears automatically",
+          "person": "None",
+          "system": "dispatcher executes approved recipe and updates tray",
+          "result": {
+            "packageId": "f1a0dace-c48e-4186-8e90-6071903e4533",
+            "state": "read",
+            "placement": "on_map",
+            "accepted": 1661,
+            "quarantine": {
+              "total": 1662,
+              "message": "1661 of 1662 source features accepted; 1 skipped. INVALID_GEOMETRY: Ring Self-intersection[-74.003625525124 40.72574597286]. Original retained unchanged; no geometry repaired.",
+              "version": "gis-quarantine/1",
+              "accepted": 1661,
+              "complete": false,
+              "rejected": 1,
+              "sourceId": "af9e0d9d-404e-4274-890c-b86fbb832f19",
+              "rejections": [
+                {
+                  "code": "INVALID_GEOMETRY",
+                  "reason": "Ring Self-intersection[-74.003625525124 40.72574597286]",
+                  "sourceKey": "751920",
+                  "featureIndex": 1322
+                }
+              ],
+              "sourceSha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+              "sourceRevision": 1
+            },
+            "binding": {
+              "site_id": "82dc3b79-22fb-4082-8e1a-bd2e6653b920",
+              "frame": {
+                "id": "UNASSIGNED",
+                "benchmark": "UNASSIGNED",
+                "verticalUnit": "m",
+                "horizontalUnit": "m"
+              },
+              "context": [],
+              "revision": 1
+            },
+            "sourceIndices": [
+              {
+                "index": 0,
+                "key": "345",
+                "recordId": "65ffada9-ae35-45b9-8f80-66809ec6a13f"
+              },
+              {
+                "index": 830,
+                "key": "465811",
+                "recordId": "d2ab3784-9367-47c8-959f-baa29e15bac6"
+              },
+              {
+                "index": 1661,
+                "key": "1305944",
+                "recordId": "55d4faaf-d6f0-4652-88fa-b04683b3f299"
+              }
+            ],
+            "planRef": {
+              "origin": "officer",
+              "recipeId": "cf30286c-4781-4dad-ad82-c5a9df7c18c0",
+              "packageId": "f1a0dace-c48e-4186-8e90-6071903e4533",
+              "recipeState": "executed",
+              "recipeRevision": 3
+            }
+          },
+          "ms": 5405.733
+        },
+        {
+          "step": "4 actual review and commit",
+          "person": "Test operator reviews publisher exteriors",
+          "system": "CA5 reviewPackage with 60000ms acquisition; CA1 commitPackage",
+          "result": {
+            "state": "COMMITTED",
+            "citedRevisionOne": 1661,
+            "findings": 1803,
+            "qualificationReceipts": 0
+          },
+          "ms": 46631.721
+        },
+        {
+          "step": "5 snapshot, plan, packet and card",
+          "person": "Test operator confirms selected feature citation",
+          "system": "target capture, plan create/confirm/execute, card preview/generate",
+          "result": {
+            "manifestId": "30264d2b-810c-407c-9211-c7622401abf2",
+            "capturedSources": 1,
+            "sourceStatus": "needs_input",
+            "planId": "6f326a9a-0d74-4cb7-9be1-76d8727e57c1",
+            "included": "included",
+            "packet": "complete",
+            "cardId": "30c17bba-3e0c-4f02-a2c6-44f5a7f77ef5",
+            "facts": [
+              {
+                "key": "target",
+                "label": "Selected record",
+                "state": "available",
+                "value": "Building 345 (building); revision 1",
+                "reasonCode": null
+              },
+              {
+                "key": "identifier",
+                "label": "Registry identifier",
+                "state": "available",
+                "value": "3DU-42VGXQJ8QV8218W6NX5SK57E90:B001",
+                "reasonCode": null
+              },
+              {
+                "key": "project_identity",
+                "label": "Application identity",
+                "state": "available",
+                "value": "Identity codes are for recorded spaces only",
+                "reasonCode": null
+              },
+              {
+                "key": "vertical_locator",
+                "label": "Recorded location",
+                "state": "unavailable",
+                "value": "No captured structured location",
+                "reasonCode": "location_not_recorded"
+              },
+              {
+                "key": "parcel_assertions",
+                "label": "Parent parcel assertions",
+                "state": "unavailable",
+                "value": "No selected source-backed parcel assertion",
+                "reasonCode": "selected_parcel_evidence_unavailable"
+              },
+              {
+                "key": "source_citation",
+                "label": "Source citation",
+                "state": "available",
+                "value": "buildings-original.geojson, feature 345",
+                "reasonCode": null
+              },
+              {
+                "key": "declared_share",
+                "label": "Recorded declared share",
+                "state": "unavailable",
+                "value": "No included accepted applicability for this exact target and purpose",
+                "reasonCode": "selected_declared_share_unavailable"
+              },
+              {
+                "key": "geometry",
+                "label": "Geometry / frame / datum",
+                "state": "unavailable",
+                "value": "Not supplied by the executed text/CSV profile",
+                "reasonCode": "geometry_profile_unavailable"
+              },
+              {
+                "key": "measurements",
+                "label": "Measurements / quantities",
+                "state": "unavailable",
+                "value": "No qualified measured quantities in this profile",
+                "reasonCode": "measurements_profile_unavailable"
+              },
+              {
+                "key": "render",
+                "label": "Selected-space render",
+                "state": "unavailable",
+                "value": "Rendering is unavailable in this profile",
+                "reasonCode": "selected_space_render_unavailable"
+              },
+              {
+                "key": "rights",
+                "label": "Rights / title / issuance",
+                "state": "not_assessed",
+                "value": "No ownership, title, legality or official issuance determination",
+                "reasonCode": "rights_not_assessed"
+              }
+            ],
+            "analyticalQualification": "not granted"
+          },
+          "ms": 390.708
+        },
+        {
+          "step": "6 allowed folder and second layout",
+          "person": "None",
+          "system": "real immutable-file inventory and existing GIS profile",
+          "result": {
+            "listing": [
+              {
+                "name": "buildings-original.geojson",
+                "bytes": 1103282
+              },
+              {
+                "name": "hydrography.geojson",
+                "bytes": 2055
+              },
+              {
+                "name": "nyc-10013-dem-2017.tif",
+                "bytes": 989186
+              },
+              {
+                "name": "nyc-10013-lidar-2017.laz",
+                "bytes": 11110715
+              },
+              {
+                "name": "nyc-10013-ortho-2018.tif",
+                "bytes": 1036134
+              },
+              {
+                "name": "parks.geojson",
+                "bytes": 119417
+              },
+              {
+                "name": "roadbed.geojson",
+                "bytes": 1837922
+              },
+              {
+                "name": "sidewalk.geojson",
+                "bytes": 1854113
+              }
+            ],
+            "schemas": [
+              {
+                "name": "hydrography.geojson",
+                "bytes": 2055,
+                "sha256": "12c95a1d8d065cadbcc2b68a61f14ce91f93798fe7bc28885fb7ea062efce192",
+                "schemaFingerprint": "f4eb0592c66bb9df3c1db05b3460829be1eef8c9b786720a551c7b8bea669c76",
+                "features": 1
+              },
+              {
+                "name": "parks.geojson",
+                "bytes": 119417,
+                "sha256": "e1711a90ad63d9cbac4a9320e09b15ac91b9fa3995920ff4c06dbafd68977d13",
+                "schemaFingerprint": "c2088bc12dbd06b0eeb854d4efb4b2b165b7e668745e2413fc31495b0fb07603",
+                "features": 41
+              },
+              {
+                "name": "roadbed.geojson",
+                "bytes": 1837922,
+                "sha256": "caf05fa5c76cc3eb1d6d2fb43c494ce0bd6416b97946012adddba623e203cf7f",
+                "schemaFingerprint": "c2e0a0d3da562ae7413a1fc152c4467902746ebb880f34ebb228eafe8e1ae396",
+                "features": 446
+              },
+              {
+                "name": "sidewalk.geojson",
+                "bytes": 1854113,
+                "sha256": "5f62c00a689303b30f85c1ec82c823f80b5e59ed1878c5f6cfbd0ad5932012b9",
+                "schemaFingerprint": "c2e0a0d3da562ae7413a1fc152c4467902746ebb880f34ebb228eafe8e1ae396",
+                "features": 213
+              }
+            ],
+            "largestOther": {
+              "name": "sidewalk.geojson",
+              "bytes": 1854113
+            },
+            "sameLayout": null,
+            "gap": "No second file matches the first file's exact schema fingerprint; memory reuse is unit-tested."
+          },
+          "ms": 1175.462
+        },
+        {
+          "step": "7 largest other real vector",
+          "person": "Test operator adds original",
+          "system": "same retained/probed draft path",
+          "result": {
+            "file": "sidewalk.geojson",
+            "bytes": 1854113,
+            "sha256": "5f62c00a689303b30f85c1ec82c823f80b5e59ed1878c5f6cfbd0ad5932012b9",
+            "state": "probed",
+            "placement": "needs_answer",
+            "reason": "No approved layout matches this file. An officer chooses the identifier field."
+          },
+          "ms": 492.837
+        }
+      ],
+      "processors": [
+        {
+          "operation": "inspect-gis",
+          "ms": 341.934
+        },
+        {
+          "operation": "normalize",
+          "ms": 1098.205,
+          "disposition": {
+            "total": 1662,
+            "accepted": 1661,
+            "rejected": 1,
+            "rejections": [
+              {
+                "featureIndex": 1322,
+                "sourceKey": "751920",
+                "code": "INVALID_GEOMETRY",
+                "reason": "Ring Self-intersection[-74.003625525124 40.72574597286]"
+              }
+            ]
+          },
+          "features": 1661
+        },
+        {
+          "operation": "check",
+          "ms": 745.302,
+          "findings": 1803
+        },
+        {
+          "operation": "inspect-gis",
+          "ms": 235.414
+        },
+        {
+          "operation": "inspect-gis",
+          "ms": 238.699
+        },
+        {
+          "operation": "inspect-gis",
+          "ms": 319.245
+        },
+        {
+          "operation": "inspect-gis",
+          "ms": 318.662
+        },
+        {
+          "operation": "inspect-gis",
+          "ms": 328.138
+        }
+      ],
+      "rejectedSql": [],
+      "bindings": [
+        {
+          "sql": "UPDATE cases SET site_id=$2, updated_at=now() WHERE id=$1",
+          "values": [
+            "5a3c8a0d-650d-4fba-ab79-dd032e530b9a",
+            "82dc3b79-22fb-4082-8e1a-bd2e6653b920"
+          ]
+        }
+      ],
+      "replayChecks": [
+        {
+          "sourceId": "af9e0d9d-404e-4274-890c-b86fbb832f19",
+          "state": "probed",
+          "placement": "needs_answer",
+          "reasonPreserved": true,
+          "jobsBefore": 1,
+          "jobsAfter": 1
+        },
+        {
+          "sourceId": "af9e0d9d-404e-4274-890c-b86fbb832f19",
+          "state": "read",
+          "placement": "on_map",
+          "reasonPreserved": true,
+          "jobsBefore": 2,
+          "jobsAfter": 2
+        }
+      ],
+      "hashes": {
+        "buildings-original.geojson": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+        "hydrography.geojson": "12c95a1d8d065cadbcc2b68a61f14ce91f93798fe7bc28885fb7ea062efce192",
+        "parks.geojson": "e1711a90ad63d9cbac4a9320e09b15ac91b9fa3995920ff4c06dbafd68977d13",
+        "roadbed.geojson": "caf05fa5c76cc3eb1d6d2fb43c494ce0bd6416b97946012adddba623e203cf7f",
+        "sidewalk.geojson": "5f62c00a689303b30f85c1ec82c823f80b5e59ed1878c5f6cfbd0ad5932012b9"
+      },
+      "originalHashesUnchanged": true,
+      "reviewScaffolding": [],
+      "providers": 0,
+      "gpu": false,
+      "pool": {
+        "max": 8,
+        "connectionTimeoutMillis": 60000,
+        "allowance": "CA5 long-acquisition; CA6 owns default repair"
+      },
+      "network": "Loopback SQL/storage/unchanged Python; PROJ_NETWORK=OFF; gateway disabled"
+    }
+  },
+  "removed": "ulpin-ca0-tmp-bc90dec99d70f69c",
+  "after": {
+    "containers": [
+      "docsetu-benchmark-20261002-mongo",
+      "ulpin-demo-geo-1",
+      "ulpin-demo-minio-1",
+      "ulpin-demo-minio-init-1",
+      "ulpin-demo-postgres-1",
+      "ulpin-demo-redis-1",
+      "ulpin-demo-worker-1",
+      "ulpin-raster-worker-20260929-geo-1",
+      "ulpin-raster-worker-20260929-minio-1",
+      "ulpin-raster-worker-20260929-minio-init-1",
+      "ulpin-raster-worker-20260929-postgres-1",
+      "ulpin-raster-worker-20260929-redis-1",
+      "ulpin-raster-worker-20260929-worker-1",
+      "ulpin-reh-01-geo-1",
+      "ulpin-reh-01-minio-1",
+      "ulpin-reh-01-minio-init-1",
+      "ulpin-reh-01-postgres-1",
+      "ulpin-reh-01-redis-1",
+      "ulpin-reh-01-worker-1",
+      "ulpin-repo-geo-1",
+      "ulpin-repo-minio-1",
+      "ulpin-repo-minio-init-1",
+      "ulpin-repo-postgres-1",
+      "ulpin-repo-redis-1",
+      "ulpin-repo-worker-1",
+      "ulpin-usptest-8cd5555d8faac51d-geo-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-init-1",
+      "ulpin-usptest-8cd5555d8faac51d-postgres-1",
+      "ulpin-usptest-8cd5555d8faac51d-redis-1",
+      "ulpin-usptest-8cd5555d8faac51d-worker-1",
+      "ulpin-usptest-b050544f3d2cb99e-geo-1",
+      "ulpin-usptest-b050544f3d2cb99e-minio-1",
+      "ulpin-usptest-b050544f3d2cb99e-postgres-1",
+      "ulpin-usptest-b050544f3d2cb99e-redis-1",
+      "ulpin-usptest-b050544f3d2cb99e-worker-1"
+    ],
+    "volumes": [
+      "743d1eb1a29f4d17bafa5910c08fbb7dcc1b3e878c0edfe5630a1cb80eb4c557",
+      "docsetu-benchmark-20261002-db",
+      "ulpin-demo_minio-data",
+      "ulpin-demo_postgres-data",
+      "ulpin-demo_redis-data",
+      "ulpin-raster-worker-20260929_minio-data",
+      "ulpin-raster-worker-20260929_postgres-data",
+      "ulpin-raster-worker-20260929_redis-data",
+      "ulpin-reh-01_minio-data",
+      "ulpin-reh-01_postgres-data",
+      "ulpin-reh-01_redis-data",
+      "ulpin-repo_minio-data",
+      "ulpin-repo_postgres-data",
+      "ulpin-repo_redis-data",
+      "ulpin-usptest-8cd5555d8faac51d_minio-data",
+      "ulpin-usptest-8cd5555d8faac51d_postgres-data",
+      "ulpin-usptest-8cd5555d8faac51d_redis-data",
+      "ulpin-usptest-b050544f3d2cb99e_minio-data",
+      "ulpin-usptest-b050544f3d2cb99e_postgres-data",
+      "ulpin-usptest-b050544f3d2cb99e_redis-data"
+    ],
+    "networks": [
+      "bridge",
+      "host",
+      "none",
+      "ulpin-demo_default",
+      "ulpin-raster-worker-20260929_default",
+      "ulpin-reh-01_default",
+      "ulpin-repo_default",
+      "ulpin-usptest-8cd5555d8faac51d_default",
+      "ulpin-usptest-b050544f3d2cb99e_default"
+    ]
+  },
+  "machineUnchanged": true,
+  "finishedAt": "2026-10-11T01:04:57.278Z"
+}
