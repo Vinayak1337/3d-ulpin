@@ -1,156 +1,97 @@
 {
   "task": "CA0",
-  "baseline": "23fb9765",
   "branch": "task/ca0-probed-map-file-to-draft-package",
-  "status": "stopped_after_step0",
-  "auditCommit": "68f1ff70",
+  "resumeBase": "3dca9555",
+  "acceptedAuditCommit": "5dbb862b",
+  "acceptedPriorEvidenceCommit": "3dca9555",
+  "ca5Present": true,
+  "status": "stopped_before_binding_due_to_case_revision",
   "report": {
-    "TASK": "CA0 — probed map file to draft package; GF1 blocked at the required audit.",
-    "WORKS": "No new product behavior; six audited answers identify two explicit stop conditions.",
-    "SEE IT": "node docs/evidence/gf1/ca0/verify-step0.mjs",
-    "INPUTS": "NYC buildings original hash/count verified; sidewalk is the largest other vector, listed only.",
-    "GAPS": "Retained source has no destination-site authority; intake-draft enrollment needs an unowned edit.",
+    "TASK": "CA0 — probed map file to draft package; GF1 blocked by the resume's case-revision stop rule.",
+    "WORKS": "No new product behavior; the accepted audit is preserved and the new revision reader is identified.",
+    "SEE IT": "node docs/evidence/gf1/ca0/verify-resume-stop.mjs",
+    "INPUTS": "Prior NYC buildings hash/count and sidewalk inventory stand; no runtime input consumed on resume.",
+    "GAPS": "Decision 7 can leave a pre-binding build current under a changed case frame without a revision bump.",
     "DESIGN": [
-      "step0.json traces existing intake, recipe, area, snapshot, packet and review authorities with 41 references.",
-      "verify-step0.mjs checks the source conditions and immutable input without importing product services.",
-      "No job, source-admission policy, contracts, database, area or snapshot implementation was changed."
+      "resume-stop.json traces manual workspace admission, build enqueue and revision-only completion.",
+      "verify-resume-stop.mjs verifies eight source regions without importing or executing product services.",
+      "No binding, job, admission policy, contract, database, snapshot or other runtime code was changed."
     ],
-    "COMMITS": ["68f1ff70 docs(usp): CA0 step 0, what stands between a probed map file and a draft package"],
-    "NEXT": "Resolve source-to-site binding and authorize usp/jobs.ts enrollment, then resume from this audit."
+    "NEXT": "Decide case-calculation invalidation or pure-intake eligibility before implementing the binding."
   },
-  "stop": {
-    "a": false,
-    "b": true,
-    "c": true,
-    "bReason": [
-      "Required new_area execution keeps the source in its UNASSIGNED intake case and creates a different site/case.",
-      "CA1 can store its sourceId citation, but CA2 cannot capture the source through the case-site filter.",
-      "Detailed evidence and packet authority also enforce site membership; a profile extension cannot fix it.",
-      "NYC's quarantine adds an earlier package-publication refusal under the same source-case/site condition."
-    ],
-    "cReason": "registerUspJobInputTx rejects intake-draft; its owning usp/jobs.ts is outside the task's owned paths.",
-    "productBuilt": false,
-    "runtimeExecuted": false
-  },
-  "stepTable": [
-    {
-      "step": "0 audit",
-      "person": "No product call",
-      "system": "Read-only source audit and original hash/count verification",
-      "result": "Six answers committed; stop conditions b and c confirmed statically",
-      "ms": null
-    },
-    {
-      "step": "1 retain/register/propose",
-      "person": "Not called",
-      "system": "Not run under the stop rule",
-      "result": "No automatic proposal measured; clean offline catalogue/memory cannot supply a plan by existing rules",
-      "ms": null
-    },
-    {
-      "step": "2 approve/execute",
-      "person": "Not called",
-      "system": "Not run under the stop rule",
-      "result": "No intake-draft job built; predicted NYC new_area package refusal is AREA_SOURCE_DENIED",
-      "ms": null
-    },
-    {
-      "step": "3 second-case duplicate",
-      "person": "Not called",
-      "system": "Not run under the stop rule",
-      "result": "Cross-case duplicate/memory behavior not qualified",
-      "ms": null
-    },
-    {
-      "step": "4 largest other vector",
-      "person": "No product call",
-      "system": "Allowed folder listed; sidewalk.geojson is largest other vector at 1854113 bytes",
-      "result": "Not retained, probed or drafted; no placement/reason measured",
-      "ms": null
-    },
-    {
-      "step": "5 review/commit/snapshot/plan/card",
-      "person": "Not called",
-      "system": "Not run under the stop rule; no review envelope fabricated",
-      "result": "No retained-original chain qualified; CA5 absent on base",
-      "ms": null
-    }
-  ],
-  "chainRefusals": [
-    {
-      "place": "packages/server/src/modules/areas/areas.ts:904",
-      "gate": "packages/server/src/modules/areas/package-authority.ts:26-30",
-      "condition": "Quarantine requires retained source case active and case.site_id equal to area.site_id",
-      "predicted": {"status": 403, "code": "AREA_SOURCE_DENIED"},
-      "observedOnPostgres": false
-    },
-    {
-      "place": "packages/server/src/modules/usp/snapshots.ts:192-194",
-      "condition": "c.site_id=$1 filters out the unassigned retained source",
-      "predicted": "Capture can succeed without its source member; not a thrown source error",
-      "observedOnPostgres": false
-    },
-    {
-      "place": "packages/server/src/modules/usp/packets/plan-authority.ts:22-25,211",
-      "condition": "Exact captured source body absent",
-      "predicted": {"status": 409, "code": "STALE_REVISION"},
-      "observedOnPostgres": false
-    },
-    {
-      "place": "packages/server/src/modules/usp/declarations/authority.ts:57-59",
-      "condition": "Supplying a source body still cannot bypass active-case site equality",
-      "predicted": {"status": 403, "code": "DECLARATION_SOURCE_DENIED"},
-      "observedOnPostgres": false
-    },
-    {
-      "place": "packages/server/src/modules/registry/registry.ts:585-629",
-      "condition": "Source lookup requires case.site_id equal to review site",
-      "predicted": {"status": 422, "code": "EVIDENCE_UNAVAILABLE"},
-      "observedOnPostgres": false
-    },
-    {
-      "place": "packages/server/src/modules/usp/packets/plan-authority.ts:247-248",
-      "condition": "Even an authorized manual receipt is not geojson-area-v2 inspected/interpreted",
-      "predicted": "exact_extract_unavailable; required entry blocked",
-      "observedOnPostgres": false
-    },
-    {
-      "place": "packages/server/src/modules/registry/registry-reference-policy.ts:33-34",
-      "condition": "geojson-manual-v1 needs_input/manualProfile fails native feature policy",
-      "predicted": "false for record, geometry and right purposes",
-      "observedOnPostgres": false
-    }
-  ],
-  "secondLayout": {
-    "today": "Person retains/registers, authors, approves and executes the second file; no automatic memory job.",
-    "intendedCA0": "Memory repins and proposes; the person approves this recipe; execute becomes automatic.",
-    "carryApproval": [
-      "MappingReceiptSchema (packages/contracts/src/usp/ingestion.ts:54-60) has exact per-recipe approval authority.",
-      "decide execute (service.ts:253-260) checks planHash and provenance after validating new source/workspace pins.",
-      "A layout approval grant and its lineage/pin applicability require a contract and execute-authority decision.",
-      "Equal schemaFingerprint is a proposal-reuse condition, not an authority to copy the approval."
+  "decisionStatus": {
+    "oldStopB": "Resolved in principle by authorized decision 7; no downstream site filter will be loosened.",
+    "oldStopC": "Resolved by authorized decision 8 ownership of one intake-draft enrollment branch.",
+    "newStop": "Decision 7 says to stop if a case-revision reader needs invalidation; resume stop e also applies.",
+    "newEvidence": "docs/evidence/gf1/ca0/resume-stop.json",
+    "exactReader": "packages/server/src/modules/cases/processing.ts:183-192 (ingestJob)",
+    "condition": "current.revision === job.case_revision",
+    "whyWrong": [
+      "The result frame/context is verified against the queued payload, not the newly bound case frame/context.",
+      "A same-revision pre-binding job would be marked succeeded and published to cases.current_snapshot_id.",
+      "workspace in ingestion/service.ts:27-35 does not exclude units, pending builds or current snapshots.",
+      "prepareCase in cases/domain.ts:593-596 changes frame/context with a revision bump but leaves site_id unset.",
+      "Therefore site_id null is not proof that the case has no earlier calculation frame or dependent units."
     ]
   },
+  "stepTable": [
+    {"step":"Decision 7 preflight","person":"No product call","system":"Read case revision/frame readers",
+      "result":"New mandatory revision/e stop identified before building","ms":null},
+    {"step":"1 retain/register/propose","person":"Not called","system":"Not run",
+      "result":"Automatic job not built under the stop rule","ms":null},
+    {"step":"2 approve/execute/bind","person":"Not called","system":"Not run",
+      "result":"No case binding or source mutation","ms":null},
+    {"step":"3 memory/second layout","person":"Not called","system":"Not run",
+      "result":"Memory proposal remains unimplemented","ms":null},
+    {"step":"4 difficult vector","person":"Not called","system":"Not run",
+      "result":"Prior sidewalk inventory only","ms":null},
+    {"step":"5 review/commit/plan/card","person":"Not called","system":"Not run",
+      "result":"CA5 is present; no scaffold or chain attempted","ms":null}
+  ],
+  "bindingCallerAnswer": {
+    "productionCallers": ["packages/server/src/modules/usp/ingestion/service.ts:263-267"],
+    "executeAuthority": "service.ts:247,253-260 requires approved state, exact planHash and server-recorded approval.",
+    "externalClient": "areas.ts:485 only requires a transaction client; it is not an exclusive-caller allowlist.",
+    "report": "No other production retainedOriginal caller found; binding needs safe case invalidation."
+  },
+  "otherFindings": [
+    "Document input authority explicitly fingerprints case frame/context/site; changed binding stales its pins.",
+    "Ingestion event refresh fingerprints site/frame/context/updated_at rather than relying only on revision.",
+    "Manual workspaceFingerprint excludes frame/site; changing only those fields does not invalidate that pin.",
+    "Existing-area normalization rejects unsupported analysis coverage, >50 km extent, or >50 km origin displacement.",
+    "A bound case cannot execute new_area at another site; the officer must use its site or another batch.",
+    "Cross-file layout approval remains a separate policy: remembered operations are a proposal, never approval."
+  ],
+  "retainedOriginalRefusals": {
+    "observedOnResume": [],
+    "priorStaticInventory": "Accepted step0.json answer 4; old result preserved in commit 3dca9555.",
+    "runtimeExecuted": false,
+    "note": "No predicted refusal is reported as a PostgreSQL result."
+  },
   "checks": [
-    {"command":"node docs/evidence/gf1/ca0/verify-step0.mjs","exit":0,
-      "result":"41 reference bounds, six answers, source conditions, original hash/count and vector inventory pass"},
+    {"command":"git log --oneline -4; git status --short","exit":0,
+      "result":"Rebased audit/evidence present, CA5 merged, clean worktree on the task branch"},
+    {"command":"node docs/evidence/gf1/ca0/verify-resume-stop.mjs","exit":0,
+      "result":"Eight source regions and the six accepted question IDs verified"},
+    {"command":"evidence JSON, reference bounds and <=120 character widths","exit":0},
     {"command":"git diff --check","exit":0},
-    {"command":"new evidence line-width check (<=120)","exit":0},
     {"command":"runtime/typecheck/product tests/OpenAPI generation","exit":null,
-      "result":"Not run: mandatory Step 0 stop, no product change; runtime.json and run-runtime.mjs not created"}
+      "result":"Not run: mandatory stop before product changes"}
   ],
   "safety": {
+    "productChanges": [],
     "externalDataWrites": false,
     "containerOrListenerStarted": false,
-    "machineNamesCompared": false,
     "providerCalls": 0,
     "postgresStatementsRejected": null,
+    "machineNamesCompared": false,
     "gitPush": false
   },
   "resume": [
-    "Keep committed Step 0; resolve authority binding without moving originals or weakening cross-site checks.",
-    "Assign the needed area/quarantine/snapshot seams and usp/jobs.ts enrollment to their owners.",
-    "Then implement automatic proposal/execution and exact manual-receipt admission in the originally owned files.",
-    "Run CAR-style tmpfs/loopback rehearsal and the requested before/after checks only after authorization."
+    "Keep accepted Step 0 unchanged and decide invalidation for existing units/context/builds/current snapshots.",
+    "Possible directions: revision-aware repinning/invalidation, or a governed pure-intake binding prerequisite.",
+    "Authorize any needed case-model completion changes; the existing ownership allows only its dispatcher entry.",
+    "Then implement decision 7, decision 8/job, exact retained-original predicate/admission and the real chain.",
+    "Run with CA5's longer acquisition allowance and CAR's tmpfs/loopback safeguards; no scaffolding."
   ]
 }
