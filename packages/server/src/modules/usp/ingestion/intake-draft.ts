@@ -1,12 +1,13 @@
 import { createHash } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
-import type { IntakeCard } from '@ulpin/contracts/usp';
+import { STREAMING_VECTOR_LIMITS, type IntakeCard } from '@ulpin/contracts/usp';
 import { conflict, notFound } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
-import { writeIntakeDraftTx } from './intake-ledger';
+import { writeIntakeDraftTx, writeIntakeLargeTx } from './intake-ledger';
+import { intakeLargeFailureReason } from './intake-large';
 
 const uuid = z.string().uuid();
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -94,6 +95,15 @@ export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourc
   if (!item || item.parent_item_id || item.family !== 'vector'
     || !['probed', 'planned', 'reading'].includes(item.state)) return null;
   if (publishedCard && item.plan_ref) return null;
+  if (source.profile === 'large-original-v1' && item.card?.format === 'geojson'
+    && Number(source.bytes) > STREAMING_VECTOR_LIMITS.sourceBytes) {
+    await writeIntakeLargeTx(client, item.case_id, item.item_id, {
+      state: 'probed', placement: 'not_understood', planRef: item.plan_ref,
+      partsPlanned: null, partsDone: 0, recordsSeen: 0,
+      limitReason: intakeLargeFailureReason('STREAMING_SOURCE_BUDGET', Number(source.bytes)),
+    });
+    return null;
+  }
   const reason = intakeDraftLimit(item, source);
   if (reason) {
     await writeIntakeDraftTx(client, item.case_id, item.item_id, {

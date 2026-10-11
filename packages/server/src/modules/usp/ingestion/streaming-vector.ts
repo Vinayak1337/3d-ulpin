@@ -24,6 +24,7 @@ const readerFiles=[
   'packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts',
   'packages/server/src/modules/usp/ingestion/streaming-vector-validation.ts',
   'packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts',
+  'packages/server/src/modules/usp/ingestion/streamed-map-receipt.ts',
   'packages/server/src/modules/usp/ingestion/streaming-vector.ts',
   'database/sql/95-ingestion/streaming-vector.sql',
   'packages/contracts/src/usp/ingestion.ts','packages/server/src/modules/usp/ingestion/tabular-source.ts',

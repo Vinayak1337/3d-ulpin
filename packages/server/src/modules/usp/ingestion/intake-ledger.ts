@@ -40,8 +40,8 @@ export function intakeItem(row: any) {
 }
 
 export type IntakeDraftState = {
-  state: 'probed' | 'planned' | 'reading' | 'read';
-  placement: 'undecided' | 'needs_answer' | 'on_map';
+  state: 'probed' | 'planned' | 'reading' | 'read' | 'failed_part';
+  placement: 'undecided' | 'needs_answer' | 'on_map' | 'not_understood';
   planRef: Record<string, unknown> | null;
   recordsSeen: number;
   limitReason: string | null;
@@ -64,6 +64,24 @@ export async function readIntakeDraftTx(client: PoolClient, caseId: string, item
     WHERE case_id=$1 AND item_id=$2 FOR UPDATE`, [caseId, itemId])).rows[0] ?? notFound('Intake draft not found.');
   return { state: row.state, placement: row.placement, planRef: row.plan_ref,
     recordsSeen: Number(row.records_seen), limitReason: row.limit_reason };
+}
+
+export type IntakeLargeState = IntakeDraftState & { partsPlanned: number | null; partsDone: number };
+
+/** Counters and tray state publish one refresh together; an exact replay publishes nothing. */
+export async function writeIntakeLargeTx(client: PoolClient, caseId: string, itemId: string,
+  next: IntakeLargeState) {
+  const { partsPlanned, partsDone, ...draft } = next;
+  const current = await readIntakeDraftTx(client, caseId, itemId);
+  const counters = (await client.query(`SELECT parts_planned,parts_done FROM usp_intake_items
+    WHERE case_id=$1 AND item_id=$2`, [caseId, itemId])).rows[0];
+  const countersChanged = counters.parts_planned !== partsPlanned || counters.parts_done !== partsDone;
+  const draftChanged = fingerprint(current) !== fingerprint(draft);
+  if (!countersChanged && !draftChanged) return;
+  if (countersChanged) await client.query(`UPDATE usp_intake_items SET parts_planned=$3,parts_done=$4,
+    updated_at=now() WHERE case_id=$1 AND item_id=$2`, [caseId, itemId, partsPlanned, partsDone]);
+  await writeIntakeDraftTx(client, caseId, itemId, draft);
+  if (!draftChanged) await appendIntakeItemTx(client, caseId, itemId);
 }
 
 /** A cut and its package are one transaction. Large items never put one package ID in their plan. */

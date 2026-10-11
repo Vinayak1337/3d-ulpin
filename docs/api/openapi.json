@@ -364045,6 +364045,7 @@
           },
           "partsPlanned": {
             "nullable": true,
+            "description": "Large GeoJSON: null while reading; raw parts while mapping; null while drafting until the final cut, then package cuts. Other readers retain their own planned-part count.",
             "type": "integer",
             "minimum": 0,
             "exclusiveMinimum": true,
@@ -364053,12 +364054,14 @@
           "partsDone": {
             "type": "integer",
             "minimum": 0,
-            "maximum": 9007199254740991
+            "maximum": 9007199254740991,
+            "description": "Large GeoJSON: raw parts published while reading, mapped parts while mapping, packages drafted while drafting and after completion. Other readers retain their own completed-part count."
           },
           "recordsSeen": {
             "type": "integer",
             "minimum": 0,
-            "maximum": 9007199254740991
+            "maximum": 9007199254740991,
+            "description": "Records of the file read so far; the sealed reader count stays unchanged during mapping and package drafting."
           },
           "limitReason": {
             "nullable": true,
@@ -365223,6 +365226,7 @@
                 },
                 "partsPlanned": {
                   "nullable": true,
+                  "description": "Large GeoJSON: null while reading; raw parts while mapping; null while drafting until the final cut, then package cuts. Other readers retain their own planned-part count.",
                   "type": "integer",
                   "minimum": 0,
                   "exclusiveMinimum": true,
@@ -365231,12 +365235,14 @@
                 "partsDone": {
                   "type": "integer",
                   "minimum": 0,
-                  "maximum": 9007199254740991
+                  "maximum": 9007199254740991,
+                  "description": "Large GeoJSON: raw parts published while reading, mapped parts while mapping, packages drafted while drafting and after completion. Other readers retain their own completed-part count."
                 },
                 "recordsSeen": {
                   "type": "integer",
                   "minimum": 0,
-                  "maximum": 9007199254740991
+                  "maximum": 9007199254740991,
+                  "description": "Records of the file read so far; the sealed reader count stays unchanged during mapping and package drafting."
                 },
                 "limitReason": {
                   "nullable": true,
