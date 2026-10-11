@@ -15,7 +15,7 @@
     "MAPPING_IDENTITY":["Source identity must be complete, unique, nonempty literal text.","Choose a source attribute or retained Feature.id."],
     "MAPPING_NAME":"A name mapping requires a complete text attribute; null and absent values stay distinct in the profile.",
     "MAPPING_HEIGHT":["State the height field, its source unit and its meaning together.","Choose an inspected numeric or text height attribute; null and absent values remain unknown."],
-    "MAPPING_DESTINATION_UNAVAILABLE":"Read exact sentence from intake-destination.ts; show verbatim as general error, never ask for or invent a destination."
+    "MAPPING_DESTINATION_UNAVAILABLE":"This source has no stored GIS destination suggestion. Choose a destination explicitly."
   },
   "parks":"KN2 steps.ts:34,247-248 uses parks.geojson, public_land, /features/*/id. Same retained folder, unchanged file; no numeric coercion allowed.",
   "liveCondition": {"command":"git show staging:docs/evidence/gf1/aq1/result.json", "presentAtStep0":false, "result":"fatal: path does not exist in staging", "decision":"Build/tests continue. At walk step re-check once; only if authoredLayoutReachesRow:true then merge staging once more and walk. Otherwise checkpoint and stop."},
