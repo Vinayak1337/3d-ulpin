@@ -1,63 +1,149 @@
 {
   "task": "LP1",
   "gate": "GF1",
-  "status": "stopped_rule_a",
-  "step0Commit": "40754fc1",
-  "applicationCodeChanged": false,
-  "runtimeMeasurement": null,
-  "contextExplain": null,
-  "realInputsProcessed": [],
-  "localityControl": {
-    "qualification": "Existing synthetic fixtures, diagnostic budget override; not NYC or production admission.",
-    "command": "E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe -B docs/evidence/gf1/lp1/check-locality.py",
-    "exit": 0,
-    "productionPairBudget": 20000,
-    "diagnosticPairBudget": 0,
-    "occupationBounds": [0, 0, 10, 10],
-    "publicBounds": [20, 20, 30, 30],
-    "intersectingPairs": 0,
-    "baselineFindingCodes": ["PARCEL_ASSOCIATION_REQUIRED"],
-    "diagnosticRefusal": "Officer check exceeds the bounded candidate-pair limit; split the area.",
-    "sourceFilesModified": false
+  "status": "owned_changes_complete",
+  "branch": "task/lp1-review-pins-what-it-checked",
+  "base": "5db89c411fa6077c0a7560c0646493a9ed02abe7",
+  "step0Commit": "a5f05a46",
+  "implementationCommits": ["8ff80e90", "706bd636", "302c8bca"],
+  "settledDecisions": {
+    "pairBudgetClassification": "input_scope_guard; Python unchanged",
+    "uncertaintyClassification": "explicit_association_exception",
+    "marginMetres": 255,
+    "shapely": "2.0.7",
+    "defaultMitreLimit": 5,
+    "measuredMaximumCorridorReachMetres": 254.950548,
+    "derivedMaximumCorridorReachMetres": 254.950976,
+    "marginTestAngles": 724,
+    "stopRuleETriggered": false
   },
-  "attempts": [
-    {
-      "command": "node docs/evidence/gf1/fx2/refresh.mjs --refresh",
-      "exit": 1,
-      "failure": "Unexpected index bytes: packages/server/src/modules/usp/ingestion/events.ts",
-      "decision": "Report and continue, as instructed; no retry."
+  "before": {
+    "receipt": "before-04.json",
+    "measuredBeforeApplicationChanges": true,
+    "reviewedAreaRevisions": [0, 0],
+    "packageStates": ["COMMITTED", "REVIEWED"],
+    "refusal": {
+      "status": 409,
+      "code": "STALE_REVISION",
+      "message": "Area neighbours changed; review the proposed update again."
     },
-    {
-      "command": "python -c import probe",
-      "exit": 1,
-      "failure": "Default Python lacks shapely.",
-      "decision": "Use E1's existing geometric interpreter; no environment installed or modified."
+    "countsAfterConfirmation": {"recorded": 831, "carded": 0, "stopped": 2},
+    "postRefusalPopulation": "Re-reviewed second half only to populate the baseline EXPLAIN box."
+  },
+  "after": {
+    "receipt": "after-02.json",
+    "runtimeExit": 0,
+    "reviewedAreaRevisions": [0, 0],
+    "packageStates": ["COMMITTED", "COMMITTED"],
+    "refusal": null,
+    "finalCounts": {"recorded": 1661, "carded": 4, "stopped": 0},
+    "selectedCards": 4,
+    "consistentCardVerifications": 4,
+    "confirmationCommitWallMs": 6992.342,
+    "targetToCardWallMs": [508.673, 437.045, 433.588, 444.708],
+    "fiveLayersReviewedBeforeAnyLayerCommit": true,
+    "fiveLayerReviewAreaRevisions": [0, 0, 0, 0, 0],
+    "fiveLayerStates": ["COMMITTED", "COMMITTED", "COMMITTED", "COMMITTED", "COMMITTED"],
+    "fiveLayerFeatureCounts": [1661, 1, 41, 446, 213],
+    "fiveLayerRecordedTotal": 2362,
+    "layerNames": ["buildings-original.geojson", "hydrography.geojson", "parks.geojson",
+      "roadbed.geojson", "sidewalk.geojson"],
+    "layerReviewWallMs": [2313.53, 292.722, 436.876, 1259.415, 1253.208],
+    "layerCommitWallMs": [7376.031, 58.979, 336.595, 4214.532, 2725.166],
+    "qualifiedContextCounts": [0, 0, 0, 0, 0],
+    "unqualifiedInScopeAtReview": [1661, 165, 1606, 1661, 1661],
+    "qualification": "NYC geometry remains unqualified; no analytic receipt or qualification manufactured."
+  },
+  "performanceBaseline": {
+    "receipt": "../ca6/runtime.json",
+    "buildingReviewIncludingReadBackWallMs": 2466.347,
+    "buildingProductReviewWallMs": 2210.886,
+    "buildingCommitIncludingReadBackWallMs": 7759.017,
+    "buildingProductCommitWallMs": 7724.103,
+    "qualification": "Different harness timings; no formal speedup claim or before-build rerun of CA6."
+  },
+  "contextExplain": {
+    "beforeReceipt": "before-04.json",
+    "afterReceipt": "after-02.json",
+    "sql": "context.sql",
+    "afterExecutionMs": 17.489,
+    "afterPlanningMs": 4.237,
+    "afterSpatialIndexesUsed": ["physical_local_gist", "physical_geographic_gist"],
+    "qualificationIndex": "usp_geometry_qualifications_pkey",
+    "newIndexRequired": false,
+    "bodyLoads": "Only bounded qualified context; no whole-area feature body read in review or commit.",
+    "crossAreaProbe": {
+      "rawSelectedRows": 842,
+      "crossAreaRows": 475,
+      "crossAreaRowsBeyondOwnBbox": 468,
+      "qualifiedContextRows": 0,
+      "qualification": "Actual recorded NYC selector probe, not a geometry qualification."
     },
-    {
-      "command": "E1 geometric interpreter, check-locality.py before fixture-loading correction",
-      "exit": 1,
-      "failure": "test_officer imports test_area, which needs absent fastapi.",
-      "decision": "Load only existing fixture definitions via AST; no HTTP/PDF dependencies needed for this check."
-    },
-    {
-      "command": "E1 geometric interpreter, check-locality.py after fixture-loading correction",
-      "exit": 0,
-      "decision": "Distance-independent public-pair guard reproduced; stop at rule (a)."
-    }
+    "extentQualification": "AABB widened 255 m per side, not a radius; corner distance may exceed 255 m."
+  },
+  "design": {
+    "fingerprint": "SHA-256 over the repository canonical JSON representation, validator area-check-officer-v2.",
+    "pins": ["whole own features sorted by ID at package revision", "whole area reference",
+      "qualified context IDs, revisions and qualification revision/metadata fingerprints",
+      "associations between checked features", "validator", "widened local extent", "255 m margin"],
+    "informationalOnly": ["areaRevision", "unqualifiedInScope"],
+    "contextSelection": "Indexed local/geographic spatial union plus explicit parcels and cross-area block members.",
+    "crossAreaPlacement": "Select in widened local scope; canonical qualification precedes reference projection.",
+    "exceptions": "Explicit confirmed associated parcels and existing cross-area block members remain included.",
+    "limits": {"ownFeatures": 2000, "qualifiedContextFeatures": 2000, "overflowCode": "AREA_CONTEXT_LIMIT"},
+    "retainedInputGuards": "The unchanged Python check also bounds its combined supplied set and pair/vertex work.",
+    "reviewWrite": "Re-derive the same dependencies under area lock before storing checked findings.",
+    "commit": "Re-derive dependencies under area lock; refuse changed pins with readable STALE_REVISION details.",
+    "legacy": "Pending v1 reviews are refused with review again; no backfill or migration.",
+    "documentLookup": "Exact feature revision joins physical_feature_revisions to its committed import package."
+  },
+  "regressions": [
+    "two packages reviewed at the same area revision both record",
+    "qualified context revision, qualification, entry and departure each stale and name the feature",
+    "changed unqualified context revision does not stale",
+    "only associations among checked features stale",
+    "review re-derives pins under lock before persisting",
+    "over-bound context refuses with both counts without truncation",
+    "v1 reviews require review again",
+    "own feature and context ordering do not change the canonical fingerprint",
+    "two-package document membership follows the exact committed feature revision"
   ],
-  "deferred": [
-    "NYC original split into test-only derivatives and same-confirmation baseline measurement",
-    "Qualified context SQL and EXPLAIN with recorded NYC buildings",
-    "All application changes and requested regression tests",
-    "Backend typecheck, recording/packet/intake tests and regenerated API contracts",
-    "Post-build batch and five-layer NYC runtime measurement"
+  "checks": {
+    "backendTypecheck": "passed",
+    "focusedBackendTests": {"tests": 182, "pass": 182, "fail": 0, "skipped": 0},
+    "apiRefreshBase": "5db89c411fa6077c0a7560c0646493a9ed02abe7",
+    "nativeOpenApiCheck": "passed: 310 operations, 351 named schemas; no listener opened",
+    "pythonApiCheck": "passed",
+    "marginSweep": "passed",
+    "gitDiffCheck": "passed",
+    "newSourceLineCheck": "passed: at most 120 characters; machine-generated receipts exempt"
+  },
+  "safety": {
+    "containersStarted": 6,
+    "allOwnThrowawayContainersRemoved": true,
+    "populatedVolumesRemoved": 0,
+    "originalBytesModified": 0,
+    "originalHashesUnchanged": true,
+    "secretsOrDotenvRead": false,
+    "ingestionFilesEdited": false,
+    "geoServiceFilesEdited": false,
+    "otherCheckoutsModified": false,
+    "mergeRebasePush": false
+  },
+  "history": {
+    "initialStop": "f1cf079f preserved the locality diagnostic; lead subsequently settled the supplied-input guard.",
+    "refresh": "Corrected main-checkout FX2 refresh succeeded before application work.",
+    "recovery": "recovery.json records baseline harness faults and final spatial-scope correction.",
+    "supersededAfterReceipt": "after-01.json passes recording but predates the corrected cross-area margin selector."
+  },
+  "gaps": [
+    "Qualified context movement is exercised with protocol controls, not manufactured NYC qualifications.",
+    "No Studio/UI journey was changed or exercised; runtime uses direct product worker/service calls.",
+    "Hand-written spatial API projection omits optional review.scope; its producer is outside LP1 ownership."
   ],
-  "safety": {"containersStarted": 0, "databasesTouched": 0, "originalsTouched": 0},
   "next": [
-    "Lead decides whether the officer pair guard becomes explicitly coverage-scoped or remains nonlocal.",
-    "If Python must change, its smallest change is counting public pairs only after intersection; outside LP1 paths.",
-    "Clarify R2 treatment of buffers confined to explicitly linked participants and utility miter corner reach.",
-    "After that decision, finish Step 0 runtime/EXPLAIN on unchanged application code before the build."
-  ],
-  "deploymentNote": "Future v2 deployment requires one more review for packages reviewed but not yet recorded (R7)."
+    "Lead review/integrate; no ingestion change was needed for the exercised confirmation/card path.",
+    "Add optional scope at apps/api/src/modules/spatial/spatial.openapi.ts:229-231, then regenerate at integration.",
+    "Require one fresh review for reviewed-but-unrecorded v1 packages after deployment."
+  ]
 }

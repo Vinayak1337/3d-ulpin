@@ -224,10 +224,38 @@ async function contextPlan(pkg: ImportPackage) {
   };
   visit(plan[0].Plan);
   results.context = { indexes, statementSha256: hash(Buffer.from(statement)), widenedExtent: box,
-    recordedBuildings: (await query('SELECT count(*)::int count FROM physical_features WHERE revision>0')).rows[0].count,
+    recordedBuildings: (await query('SELECT count(*)::int count FROM physical_features WHERE revision>0'))
+      .rows[0].count,
     qualifications: (await query('SELECT count(*)::int count FROM usp_geometry_qualifications')).rows[0].count,
     planPath, planNodes: nodes, executionMs: plan[0]['Execution Time'], planningMs: plan[0]['Planning Time'],
     qualification: 'NYC rows remain unqualified; view yields no context; no qualification manufactured.' };
+}
+
+async function widenedScopeProbe(pkg: ImportPackage) {
+  const area = await getArea(pkg.areaId);
+  const bounds = (await query(`SELECT ST_XMin(geometry::box3d) min_x,ST_YMin(geometry::box3d) min_y,
+    ST_XMax(geometry::box3d) max_x,ST_YMax(geometry::box3d) max_y FROM physical_features WHERE id=$1`,
+  [pkg.features[0].id])).rows[0];
+  const own = [bounds.min_x, bounds.min_y, bounds.max_x, bounds.max_y];
+  const widened = [own[0] - 255, own[1] - 255, own[2] + 255, own[3] + 255];
+  const params = [area.id, ...widened, ...(pkg as any).geographicExtent,
+    Number(area.reference!.analysisCrs.split(':')[1]), ...area.reference!.origin, [pkg.features[0].id], true];
+  const statement = readFileSync('docs/evidence/gf1/lp1/context.sql', 'utf8');
+  const selector = statement.slice(0, statement.indexOf('\nSELECT f.body'));
+  const rawRows = (await query(`${selector}
+    SELECT f.id,f.area_id,ST_Distance(ST_SetSRID(ST_Translate(ST_Transform(f.geographic_geometry,$10::integer),
+      -($11::double precision),-($12::double precision)),0),ST_MakeEnvelope($15,$16,$17,$18,0)) distance
+    FROM selected s JOIN physical_features f ON f.id=s.id ORDER BY f.id`, [...params, ...own])).rows;
+  const crossArea = rawRows.filter(row => row.area_id !== area.id);
+  const outsideOwn = crossArea.filter(row => Number(row.distance) > 1);
+  assert(outsideOwn.length > 0, 'A real cross-area feature beyond the own bbox must enter the widened selector.');
+  const qualified = (await query(statement, params)).rows;
+  assert.equal(qualified.length, 0, 'No analytic qualification is manufactured by a SQL probe.');
+  results.widenedScope = { ownExtent: own, widenedExtent: widened, rawRows: rawRows.length,
+    crossAreaRows: crossArea.length, crossAreaRowsBeyondOwnBbox: outsideOwn.length,
+    maximumCrossAreaDistanceMetres: Math.max(...crossArea.map(row => Number(row.distance))),
+    qualifiedContextRows: qualified.length,
+    qualification: 'Raw selector probe over actual recorded NYC geometry, not a geometry qualification.' };
 }
 
 async function vectorLayers() {
@@ -266,7 +294,10 @@ async function main() {
     await startControls();
     const first = await confirmationWalk();
     await contextPlan(first);
-    if (phase === 'after') await vectorLayers();
+    if (phase === 'after') {
+      await vectorLayers();
+      await widenedScopeProbe(first);
+    }
   } catch (error: any) {
     results.failure = { status: error.status, code: error.code, message: error.message,
       stack: error.stack?.split('\n') };

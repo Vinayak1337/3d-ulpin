@@ -1,34 +1,56 @@
-TASK   LP1 — A package review pins what it checked            GATE GF1
-WORKS  The locality audit and a runnable control identify the distance-independent officer pair guard.
-SEE IT E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe -B docs/evidence/gf1/lp1/check-locality.py
-INPUTS Existing synthetic officer fixtures only; no good/difficult real source was processed.
-GAPS   Stopped under rule (a); NYC baseline, EXPLAIN, implementation and post-build verification remain undone.
-DESIGN step0.json inventories 23 rule groups, revision readers and index DDL, with source lines.
-       check-locality.py reuses existing fixture definitions and executes the unchanged geometric check.
-       result.json records the diagnostic, failed dependency probes, deferred work and safety qualifications.
-COMMITS 40754fc1 docs(usp): LP1 step 0, what a review reads and what its pin covers
-        The locality evidence/checkpoint commit follows this record; see git log staging..HEAD.
-CHECKS FX2 refresh — 1, unexpected index bytes in ingestion/events.ts; no retry, as instructed.
-       Default Python geometry import probe — 1, no shapely; E1 interpreter import probe — 0.
-       First locality control — 1, fixture module imports absent fastapi; fixture-only AST load fixes it.
-       Final locality control — 0; JSON validation — 0; git diff --check — 0; new-file line check — 0.
-NEXT   Lead decides whether the public-context pair guard is coverage-scoped or must remain nonlocal.
+TASK   LP1 — A package review pins what it checked                    GATE GF1
+WORKS  Both NYC halves reviewed at area revision 0 record in one confirmation; four cards verify consistent.
+       All five vector layers reviewed at area revision 0 record in turn without re-review (2,362 features).
+SEE IT docs/evidence/gf1/lp1/result.json, before-04.json and after-02.json.
+INPUTS Immutable NYC originals, feature-order test-only halves outside Git, retained review/packet fixtures.
+GAPS   No NYC qualification was manufactured: qualified-context movement uses bounded protocol controls.
+       The hand-written API projection needs optional review.scope added by its owner; see below.
+DESIGN Canonical SHA-256 pins own whole features, reference, bounded qualified context/qualification pins,
+       checked associations, widened local extent, 255 m margin and area-check-officer-v2.
+       Re-derive under area lock at review persistence and recording. Area revision is informational.
+       Document membership follows the exact committed physical_feature_revisions row, not package JSON scans.
+COMMITS a5f05a46 Step 0 complete before application changes.
+        8ff80e90 Bounded review snapshot and coverage.
+        706bd636 Recording re-derivation and readable refusals.
+        302c8bca Exact committed-revision document membership.
+        The final API/evidence commit follows this record; see git log.
+CHECKS Backend typecheck; 182 focused tests; native and Python API checks; Shapely margin sweep; diff/line checks.
+NEXT   Lead review/integration; no merge, rebase or push performed here. Pending v1 reviews need one re-review.
 
-## Stop and resume
+## Runtime and interpretation
 
-`officer.py:297–302` increments the shared pair count for every supplied public-context feature before testing
-intersection. The diagnostic uses two existing synthetic fixture polygons with no intersection. The normal
-20,000-pair budget returns only `PARCEL_ASSOCIATION_REQUIRED`; a temporary diagnostic budget of zero refuses
-at the officer guard. The source is not edited and the budget is restored. This is not a NYC benchmark.
+- Reproduce in a new nonce-owned throwaway box:
+  `node docs/evidence/gf1/lp1/run-runtime.mjs after <new-receipt-path>`.
+- Before-build break is measured in `before-04.json`: first package committed, second refused 409 STALE_REVISION.
+- Final build receipt is `after-02.json`: 1,661 buildings recorded, four selected cards verified, no stopped targets.
+- `after-01.json` is superseded: it passed recording but predates the corrected cross-area margin selector.
+- Final layer review times: 2,313.530 / 292.722 / 436.876 / 1,259.415 / 1,253.208 ms.
+- Final layer commit times: 7,376.031 / 58.979 / 336.595 / 4,214.532 / 2,725.166 ms.
+- Existing CA6 is the before performance reference; timings differ by harness, so no formal speedup is claimed.
+- Final EXPLAIN used both existing spatial GiST indexes and the qualification primary key: 17.489 ms execution.
+- A live raw-selector probe included 468 cross-area NYC features beyond one own feature's bounding box.
+  No raw selector row was presented as qualified geometry. Scope is a box widened 255 m per side, not a radius.
+- Native normalization still rejects the original self-intersecting feature; it was not repaired or deleted.
+- All six own throwaway containers are removed. No populated volume, other checkout or ingestion file was touched.
 
-The smallest possible Python correction, if the lead requires it, moves pair counting after intersection.
-That file is outside LP1 ownership. Alternatively, explicitly treating this guard as coverage-scoped would
-permit the bounded snapshot to have different budget behaviour; that decision belongs to the lead.
+## Retained guards and migration
 
-R2 also needs clarification on explicit-participant uncertainty buffers and utility miter corner reach.
-The native normalizer caps each uncertainty at 1,000 m, while the checker merely validates nonnegative finite
-values. The buffer acts on already pinned own/associated participants; it is not an automatic context search.
+Source-native admission is unchanged; recorded corrections and the retained model roofprint remain refused.
+Document authority, recording mutex, acknowledgement, per-feature revision locks, CA1 exterior recording and
+geometry-free/source-workspace paths remain intact. Display and whole-area-check limits are unchanged.
+The Python combined supplied-set, vertex and pair guards are unchanged; qualified context is not truncated.
 
-Still missing: finish Step 0 NYC baseline/EXPLAIN, then build R1–R8, exact-package document lookup and all checks.
-No runtime or container was started. No original or credential was read or changed. Application code is unchanged.
-After a future v2 deployment, reviewed but unrecorded packages need one more review (R7).
+The lead settled pair guards as `input_scope_guard` and uncertainty as `explicit_association_exception`.
+No Python edit was made. Shapely 2.0.7 uses default mitre limit 5; the measured 254.950548 m reach fits 255 m.
+Initial stop evidence remains in commits 40754fc1/f1cf079f and the runnable locality diagnostic.
+
+Pending v1 reviews are intentionally refused with “review again”; there is no automatic backfill.
+
+## Ownership-bound API documentation follow-up
+
+`packages/contracts/src/area.ts` now declares optional review.scope and runtime responses return it.
+The native generator's hand-written `packageProjection.review` at
+`apps/api/src/modules/spatial/spatial.openapi.ts:229–231` does not infer TypeScript interface additions.
+That producer is outside LP1's owned paths and was not changed. Add the optional scope there, then regenerate
+at integration. Native generation/check already matches the current producer; four owned source pins refreshed.
+No ingestion adjustment was needed in the exercised unchanged confirmation/target-card worker flow.
