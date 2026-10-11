@@ -1,6 +1,7 @@
 import type { PoolClient } from 'pg';
 import { isDeepStrictEqual } from 'node:util';
 import { featurePropertiesExtract } from './feature-extract';
+import { isRetainedMapOriginal } from '../ingestion/retained-map-original';
 import type { RequestContext, TargetPin, EvidencePointer, DeclarationEvidence } from '@ulpin/contracts/usp';
 import { z } from 'zod';
 import type { PacketPlan, PacketPlanInput, PacketPlanEntry,AnyPacketPlan } from '../../../../../contracts/src/usp/packets';
@@ -244,8 +245,8 @@ export async function assessPlanTx(client: PoolClient, ctx: RequestContext, inpu
       || source.body.profile === 'csv-reference-v2' && /^CSV row [1-9][0-9]*$/.test(locator.locator));
     const featureSupported = target.kind === 'building' && !pointer.assetRevision && !pointer.partRevision
       && locator.kind === 'verbatim' && /^feature \S(.*\S)?$/.test(locator.locator)
-      && source.body.profile === 'geojson-area-v2' && source.body.status === 'inspected'
-      && source.body.inspection?.status === 'interpreted';
+      && (isRetainedMapOriginal(source.body) || source.body.profile === 'geojson-area-v2'
+      && source.body.status === 'inspected' && source.body.inspection?.status === 'interpreted');
     let excerpt = supported ? selectExactPart(source.body.inspection?.referenceParts, locator) : null;
     if (featureSupported && !reasonCode) {
       let bytes = featureBytes.get(id);

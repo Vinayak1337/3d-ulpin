@@ -1,0 +1,205 @@
+{
+  "task": "CA0",
+  "gate": "GF1",
+  "status": "runtime_chain_passed_with_recorded_limits",
+  "report": {
+    "TASK": "CA0 — retained probed map original to approved draft package; GF1",
+    "WORKS": "A probed GeoJSON asks for a layout; approval automatically produces its cited draft package.",
+    "SEE IT": "runtime-06.json; reproduce with run-runtime.mjs and a new receipt path.",
+    "INPUTS": "Unchanged NYC buildings-original.geojson; largest other vector sidewalk.geojson; test_only.",
+    "GAPS": "Per-recipe approval remains; no matching second buildings layout; long acquisition; checker CRLF gap.",
+    "DESIGN": "One existing dispatcher/job authority; unchanged retained receipt; site-only intake-case binding.",
+    "COMMITS": ["74e00e76", "23782d14", "7834d366", "4cba5240", "bf721803"],
+    "CHECKS": "199/199 tests; backend/runtime types and native OpenAPI pass; Python checker gap recorded.",
+    "NEXT": "Lead review/integration; CA6 default review allowance; later layout-scoped approval policy."
+  },
+  "acceptedEvidence": {
+    "step0": "step0.json",
+    "step0Commit": "5dbb862b",
+    "originalStop": "3dca9555",
+    "acceptedRevisionStop": "21684965",
+    "step0Changed": false,
+    "revisionStopResolvedBy": "Binding changes site_id and updated_at only, never frame/context/revision."
+  },
+  "runtime": {
+    "receipt": "runtime-06.json",
+    "productionCommit": "bf721803",
+    "exit": 0,
+    "machineUnchanged": true,
+    "ownedContainerRemoved": true,
+    "originalHashesUnchanged": true,
+    "providers": 0,
+    "gpu": false,
+    "rejectedSql": [],
+    "reviewScaffolding": [],
+    "connections": 8,
+    "connectionAcquisitionMs": 60000,
+    "defaultConnectionAcquisitionMs": 5000,
+    "allowanceOwner": "CA5 long-acquisition rehearsal; CA6 owns the default-review repair",
+    "totalOriginalFeatures": 1662,
+    "accepted": 1661,
+    "rejected": 1,
+    "rejection": {
+      "originalIndex": 1322,
+      "sourceKey": "751920",
+      "code": "INVALID_GEOMETRY",
+      "reason": "Ring Self-intersection[-74.003625525124 40.72574597286]"
+    },
+    "checkedOriginalIndices": [0, 830, 1661],
+    "checkedSourceKeys": ["345", "465811", "1305944"],
+    "recordedCitationRevision": 1,
+    "citedRecords": 1661,
+    "reviewFindings": 1803,
+    "geometryQualifications": 0,
+    "qualificationReceipts": 0,
+    "capturedOriginalSourcesPerTarget": 1,
+    "retainedSourceStatus": "needs_input",
+    "packet": "complete",
+    "cardSourceCitation": "buildings-original.geojson, feature 345",
+    "cardIdentityScope": "Identity codes are for recorded spaces only",
+    "rights": "not_assessed",
+    "registrationReplay": {
+      "needsAnswerStatePreserved": true,
+      "readOnMapStatePreserved": true,
+      "answerReasonPreserved": true,
+      "beforeApprovalJobCount": [1, 1],
+      "afterExecutionJobCount": [2, 2]
+    }
+  },
+  "stepTable": [
+    {
+      "step": "Retain/register/probe",
+      "person": "Test operator adds original",
+      "system": "Existing intake publication enqueues; dispatcher runs the job",
+      "result": "probed / needs_answer; no recipe",
+      "ms": 561.647
+    },
+    {
+      "step": "Choose and approve layout",
+      "person": "Test operator chooses doitt_id and geometry, no role",
+      "system": "Existing author and approve; no execute request",
+      "result": "approved revision 2; job automatically enqueued",
+      "ms": 62.074
+    },
+    {
+      "step": "Automatic draft",
+      "person": "None",
+      "system": "Dispatcher executes approved recipe; binds original case to site only",
+      "result": "read / on_map; 1661 features, one rejected; original indices preserved",
+      "ms": 5405.733
+    },
+    {
+      "step": "Review and commit",
+      "person": "Test operator reviews publisher exteriors",
+      "system": "Actual CA5 reviewPackage and CA1 commitPackage",
+      "result": "COMMITTED; 1661 exact revision-1 citations; no analytical qualification",
+      "ms": 46631.721
+    },
+    {
+      "step": "Snapshot, packet and card",
+      "person": "Test operator confirms feature citation",
+      "system": "Single-target captures; plan/create/confirm/execute; card/preview/generate",
+      "result": "captured retained original; included feature; complete packet and generated card",
+      "ms": 390.708
+    },
+    {
+      "step": "Second-layout inventory",
+      "person": "None",
+      "system": "Existing GIS inspection/profile over allowed-folder originals",
+      "result": "No second file matches the first buildings layout; memory repinning unit-tested",
+      "ms": 1175.462
+    },
+    {
+      "step": "Largest other vector",
+      "person": "Test operator adds sidewalk.geojson",
+      "system": "Same retained/probed automatic path",
+      "result": "probed / needs_answer; no recipe or fabricated building package",
+      "ms": 492.837
+    }
+  ],
+  "inputs": [
+    {
+      "path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+      "bytes": 1103282,
+      "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+      "schemaFingerprint": "e27f2b29af7483c178b6fc8d8ad439d6f347db32ccba785d84b47c9688cbf638",
+      "use": "foreign NYC test_only development original; not Indian operational evidence"
+    },
+    {
+      "path": "E:/BhuAayam-data/datasets/nyc-10013/files/sidewalk.geojson",
+      "bytes": 1854113,
+      "features": 213,
+      "sha256": "5f62c00a689303b30f85c1ec82c823f80b5e59ed1878c5f6cfbd0ad5932012b9",
+      "schemaFingerprint": "c2e0a0d3da562ae7413a1fc152c4467902746ebb880f34ebb228eafe8e1ae396",
+      "use": "largest other real vector in the allowed folder; no layout inferred"
+    }
+  ],
+  "design": {
+    "bindingMeaning": [
+      "The bound intake case's site is where its first map file was placed.",
+      "Its frame stays unassigned because the file established no vertical benchmark.",
+      "The site frame lives on the site and package case. Frame, context and revision are never replaced."
+    ],
+    "proposalOrder": ["same-operator approved/executed schema memory", "existing adaptive policy", "needs_answer"],
+    "approval": "Memory copies operations only; each new recipe remains proposed until its own approval.",
+    "job": "One active job per item under advisory locking; exact source pins and shared fenced attempts.",
+    "completion": "Immutable proposal/result checkpoints use existing operations; stable UUID request keys replay.",
+    "ledger": "probed -> planned -> reading -> read, with persisted plan_ref/count/placement refresh events.",
+    "admission": "Exact geojson-manual-v1 + manual-geojson/1 + geojson + GIS/source SHA equality; record-only.",
+    "qualification": "Receipt admission never grants geometry, heights, ownership, measurements or issuance."
+  },
+  "gaps": [
+    "No second buildings layout; memory repinning and approval nontransfer are unit-tested, not a second real run.",
+    "Teacher dispatch is policy-owned and disabled in rehearsal; no live provider behavior qualified.",
+    "Per-recipe confirmation remains; layout-scoped approval requires a later contract/check change.",
+    "The CA5 default large review timeout remains; the longer allowance is rehearsal-only, not a product repair.",
+    "Fences protect tray/result publication; manual author/execute retain their own transactions and idempotency.",
+    "No cancellation-versus-already-started manual execution race was qualified.",
+    "Other case/build workflows remain read-only; unassigned-build policy is not qualified by this task."
+  ],
+  "farAwayExistingArea": {
+    "qualification": "static only; no far-away original exists in the allowed folder",
+    "file": "services/geo/geo/area.py",
+    "lines": [398, 417],
+    "behavior": "Retained analysis CRS/origin; refuses uncovered CRS, extent or origin displacement over 50 km.",
+    "notAPlaceMatcher": true,
+    "anotherSiteBinding": "AREA_SOURCE_DENIED; choose this batch's existing area or use a separate batch."
+  },
+  "checks": {
+    "primaryBefore": {"tests": 97, "passed": 97, "exit": 0},
+    "primaryAfter": {"tests": 136, "passed": 136, "exit": 0},
+    "finalExpandedSuite": {"tests": 199, "passed": 199, "exit": 0},
+    "newTests": 39,
+    "backendTypes": 0,
+    "runtimeHarnessTypes": 0,
+    "nativeOpenApiGenerate": 0,
+    "nativeOpenApiCheck": 0,
+    "openApiOperations": 305,
+    "openApiSchemas": 346,
+    "openApiNormalizedBytesChanged": false,
+    "producerPins": 587,
+    "pythonApiCheck": {
+      "exit": 1,
+      "message": "API-DOC: runtime receipt changed",
+      "receipt": "docs/evidence/usp/cityjson-validation-runtime.json",
+      "rawMatches": false,
+      "normalizedMatches": true,
+      "receiptAndQualificationLedgerChanged": false
+    },
+    "acceptedAuditDiff": 0,
+    "diffCheck": 0
+  },
+  "refusalsAndAttempts": "attempts.json preserves all refusal codes/lines and bounded corrections.",
+  "protectedPaths": {
+    "contractsChanged": false,
+    "databaseChanged": false,
+    "snapshotsChanged": false,
+    "packageAuthorityChanged": false,
+    "officerChanged": false,
+    "caseModelChanged": false,
+    "caseProcessingChange": "dispatcher entry/import/worker slot only",
+    "apiSchemaChanged": false,
+    "originalsChanged": false,
+    "push": false
+  }
+}

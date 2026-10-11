@@ -1,0 +1,254 @@
+{
+  "task": "CA0",
+  "baseline": "23fb9765",
+  "branch": "task/ca0-probed-map-file-to-draft-package",
+  "method": "Read-only code audit; predicted refusals below are not PostgreSQL or HTTP observations.",
+  "reads": [
+    "AGENTS.md", "docs/next-steps/00-STANDARDS.md", "docs/next-steps/SPRINT-SELECTION.md:64-100",
+    "docs/next-steps/INGESTION-ARCHITECTURE.md:208-272",
+    "docs/evidence/gf1/car/run-runtime.mjs", "docs/evidence/gf1/car/steps.ts",
+    "docs/evidence/gf1/car/step0.json", "docs/evidence/gf1/car/result.json"
+  ],
+  "answers": [
+    {
+      "question": 1,
+      "registration": "POST /api/v1/ingestion/cases/:caseId/intake/items calls IntakeService.register.",
+      "receipt": "POST /api/v1/ingestion/cases/:caseId/sources calls ManualIngestionService.retain first.",
+      "bounded": [
+        "GeoJSON retain accepts nonempty bytes <=16 MiB and a whole FeatureCollection of 1-2000 features.",
+        "inspectedProfile requires EPSG:4326, CRS evidence and Polygon/MultiPolygon geometry types.",
+        "Source profile geojson-manual-v1; source and inspection status needs_input; manualProfile and gis retained.",
+        "Registration itself accepts other retained profiles; vector/probed alone does not imply recipe eligibility.",
+        "For CA0, filter the exact manual profile, current source/operator pins, bounds and nonconflicting stated CRS."
+      ],
+      "larger": [
+        "Manual retain refuses >16 MiB with 413 FILE_SIZE; it never silently selects the large-original route.",
+        "LargeOriginalService publishes large-original-v1, needs_input, inspection.largeOriginal, no manualProfile.",
+        "Both large-original/1 and /2 transports publish that source profile; neither is accepted by manual recipes."
+      ],
+      "refs": ["intake-route", "retain-route", "manual-source", "manual-retain", "inventory", "large-receipt"]
+    },
+    {
+      "question": 2,
+      "dispatcher": "packages/server/src/modules/cases/processing.ts dispatchTick is the operation registry.",
+      "model": [
+        "Tick reads queued/running jobs due by next_attempt_at, ordered by created_at, LIMIT 12.",
+        "streaming-vector and streamed-profile each use one process-local worker Promise; no named lane setting.",
+        "Each branch returns before generic geo dispatch; its fenced worker owns durable recovery.",
+        "streaming-vector enqueue inserts jobs then calls registerUspJobInputTx in the same transaction.",
+        "Shared attempts use a 180-second lease, reject a live owner and allow at most three claims.",
+        "After the attempt limit, USP_JOB_ATTEMPTS requires explicit retry; no new timer or queue is necessary."
+      ],
+      "oneActiveChoice": "A per-item pg_advisory_xact_lock and locked active-job lookup; jobs_pending is not unique.",
+      "ownershipBlocker": [
+        "registerUspJobInputTx explicitly allowlists operations and rejects intake-draft with 422 USP_JOB_OPERATION.",
+        "Its intake-draft input/scope validation needs an edit in usp/jobs.ts, which is not an owned path.",
+        "The owned processing.ts entry alone cannot enroll this operation under the required shared authority."
+      ],
+      "refs": ["dispatcher", "dispatcher-profile", "stream-enqueue", "jobs-admission", "jobs-attempts", "jobs-table"]
+    },
+    {
+      "question": 3,
+      "autonomousGeojsonProposers": [
+        {
+          "name": "proposeAdaptiveMapping / AdaptiveMappingService.propose",
+          "behavior": "Existing bounded gateway proposal, returning a manual-geojson/1 MappingPlan or abstention.",
+          "validation": "validateAdaptiveMapping constructs pinned operations and invokes compileMapping.",
+          "offline": "No provider is permitted in this task; unavailable/disabled means no plan, not guessed fields."
+        }
+      ],
+      "notEquivalent": [
+        "validateAdaptiveMapping validates supplied output; it is not an independent field-selection proposer.",
+        "proposeMapping/proposeMappingWithTeacher, lookupMappingMemory and chunk-mapping-agent produce MappingPlanV2.",
+        "StreamedMappingService authors person-supplied streamed recipes, not bounded GeoJSON MappingPlan proposals.",
+        "No other autonomous manual-geojson/1 producer found by searching server MappingPlan imports/construction."
+      ],
+      "catalogue": [
+        "getSourceCatalogEntry(id) matches an explicit catalogue id exactly; there is no uploaded-file matcher.",
+        "Entries carry provider/dataset IDs/URLs, adapter fields and optional pinned snapshot hashes.",
+        "Acquisition callers supply catalogue sourceId; nycQuery explicitly selects nyc-building-footprints.",
+        "The NYC catalogue snapshot is a different Bronx hash; the NYC 10013 input does not match it.",
+        "Manual GeoJSON receipt has no catalogue id, issuer or dataset URL field establishing that selection.",
+        "Filename or schema resemblance is not publisher identity. A clean offline run has no catalogue plan.",
+        "With no approved memory and gateway off, the prescribed no-layout needs_answer outcome is expected."
+      ],
+      "memory": "Reuse approved/executed recipes by operator and exact schemaFingerprint; repin and validate.",
+      "learnerSeam": "A GeoJSON learner proposer remains absent; no new seam is built because Step 0 stops.",
+      "refs": ["adaptive-service", "adaptive-validation", "catalogue", "catalogue-callers", "recipe-contract"]
+    },
+    {
+      "question": 4,
+      "cases": [
+        "createSourceCase inserts an UNASSIGNED frame and no site_id; its retained source remains in that case.",
+        "new_area execution creates a fresh registry_site and map_area with equal IDs and the normalized reference.",
+        "ingestArea creates a package case at area.site_id; retained packages archive that case.",
+        "retainedOriginal reuses source.id/object_key. It neither copies the source nor updates source.case_id.",
+        "No execute/ingest write attaches the original intake case to the new site; its site_id remains null.",
+        "existing_area can coincidentally share an already attached source case's site; that is not the new_area path."
+      ],
+      "readers": [
+        {
+          "name": "recordCommittedExteriorsTx (CA1)",
+          "condition": "Native observed exterior building, no spatialExtraction, nonempty source/feature evidence.",
+          "site": "Joins physical_features.record_id to registry_records and requires area.site_id=record.site_id.",
+          "result": "No source-case gate: an eligible committed reservation can store the citation at revision 1.",
+          "limit": "Storing a citation does not grant admission to that source at the site's downstream readers."
+        },
+        {
+          "name": "targetRows / snapshotSourceRowsTx (CA2)",
+          "condition": "Collects cited source IDs, then sources JOIN cases WHERE c.site_id=selected site.",
+          "result": "An unassigned/different-site source is omitted, not captured or explicitly refused here.",
+          "capture": "snapshotSourceRowsTx visits only selected rows; it cannot recover the omitted source.",
+          "exception": "source-stated pins are only for sourceOnly spaces, not this exterior building target."
+        },
+        {
+          "name": "assessPlanTx (CA4)",
+          "condition": "capturedTx requires the source body; declaration authority requires an active case at scopeId.",
+          "result": "Missing source member yields 409 STALE_REVISION before feature admission or extraction.",
+          "control": "A supplied captured body cannot bypass site equality: 403 DECLARATION_SOURCE_DENIED.",
+          "profile": "Even with site binding, the feature case requires geojson-area-v2, inspected/interpreted."
+        },
+        {
+          "name": "permitsFeatureRecordSource / evidenceChecks (CA4 detailed review)",
+          "condition": "record only, inspected/interpreted native area profile; caller first filters by case site_id.",
+          "result": "manual profile policy is false; differing case site independently gives 422 EVIDENCE_UNAVAILABLE.",
+          "limit": "Changing the owned profile policy cannot make the site-filtered query find an unassigned source."
+        },
+        {
+          "name": "evidenceChecks frame check",
+          "condition": "assertRegistrySourceFrame compares inspection.frame id/benchmark/units only if a frame exists.",
+          "result": "Runs only after evidence admission; differing case/site has already refused the source.",
+          "manual": "Manual CRS is in manualProfile/gis, not inspection.frame; no new frame inference is allowed."
+        }
+      ],
+      "earlierRefusal": [
+        "For the NYC original, CAR reports one INVALID_GEOMETRY rejection, so native ingest produces quarantine.",
+        "Before inserting the package, ingestArea calls assertPackageDocumentAuthority.",
+        "Its quarantine gate joins the retained source case and area, demanding same site and active case.",
+        "For an unassigned source/new area, predicted result is 403 AREA_SOURCE_DENIED and execute rolls back.",
+        "This is an unowned areas/package-authority.ts repair, not permission to bypass quarantine or fabricate review."
+      ],
+      "conclusion": "Stop (b): the required front-door new_area chain has no site authority for its retained source.",
+      "refs": [
+        "source-case", "retained-id", "new-site-case", "package-insert", "package-quarantine",
+        "exterior-records", "target-sources", "snapshot-capture", "source-only-exception",
+        "plan-context", "plan-profile", "declaration-site", "feature-policy", "review-evidence", "source-frame"
+      ]
+    },
+    {
+      "question": 5,
+      "actualCapture": "No retained source member is captured by this new_area target path because of answer 4.",
+      "projectionIfSiteAuthorized": [
+        "captureDocumentSourceTx spreads the entire source row and inspection, appending referenceParts.",
+        "profile=geojson-manual-v1; source.status=needs_input; inspection.profile/status repeat those values.",
+        "inspection.manualProfile.version=manual-geojson/1, format=geojson, featureCount and schemaFingerprint.",
+        "manualProfile.crs has value EPSG:4326, nonempty evidence and degree unit; geometryTypes are polygons.",
+        "inspection.gis retains sourceSha256, bytes, featureCount, sourceCrs/crsEvidence and suggestedTitle/Namespace.",
+        "inspection.actor is the configured local operator. Source id/revision/sha256/bytes/object_key remain exact.",
+        "Neither approve nor execute changes that source status/profile/inspection into inspected/interpreted.",
+        "Decision-6 policy must identify these exact receipts, not all needs_input sources or large originals."
+      ],
+      "destination": [
+        "Suggested destination values are retained in inspection.gis; no replacement naming authority is needed.",
+        "inspectGisBytes derives title from filename and namespace from SHA256 (and layer when present).",
+        "Studio AddFilesDialog sends those suggestions to direct import; bounded retain stores the same inspection."
+      ],
+      "position": "normalize_area enumerates the whole original, retaining indices after rejection; never split it.",
+      "refs": ["manual-retain", "document-capture", "gis-suggestions", "studio-destination", "normalizer-position"]
+    },
+    {
+      "question": 6,
+      "event": {
+        "kind": "intake.item",
+        "fields": ["itemId", "state", "family", "format", "sizeClass", "wave", "pinnedByOfficer"],
+        "states": ["received", "probed", "planned", "reading", "read", "read_to_limit", "failed_part", "probe_failed"]
+      },
+      "ledger": [
+        "SQL already permits required states, placement on_map/needs_answer, plan_ref JSON object and records_seen.",
+        "appendIntakeItemTx publishes those seven persisted event fields in the writing transaction.",
+        "Event means refresh; plan_ref/placement/count are not event payload fields.",
+        "IntakeItemSchema also omits plan_ref; writing internal plan_ref needs no schema change for decision 4.",
+        "Exposing plan_ref in the API later would require a separately owned contract/UI change."
+      ],
+      "schemaDecision": "No mandatory contract change found for internal jobs, recipes or ledger/event writes.",
+      "approvalCarry": [
+        "A new source's repinned recipe is proposed. Today a person must approve it, then explicitly execute it.",
+        "CA0 would remove only the explicit execute request; it would still wait for that recipe's approval.",
+        "MappingReceiptSchema has per-recipe approval: planHash and server_configured_local_operator provenance.",
+        "planHash covers source/workspace/destination pins; decide execute demands that exact hash and approved state.",
+        "Cross-file approval needs a layout-scoped approval/lineage contract and a changed execute authority check.",
+        "Equal schemaFingerprint alone cannot copy an old approval; this task must report, not build that policy."
+      ],
+      "refs": [
+        "intake-contract", "intake-event", "ledger-schema", "intake-event-write", "recipe-contract", "recipe-decide"
+      ]
+    }
+  ],
+  "stop": {
+    "a": false,
+    "b": true,
+    "c": true,
+    "decision": "Commit Step 0 and stop without product changes or runtime execution.",
+    "needed": [
+      "Decide explicit authority binding between an intake case/original and the destination site; never infer it.",
+      "Authorize the owning area/snapshot/review paths required by that decision, including quarantine admission.",
+      "Add usp/jobs.ts to ownership for intake-draft input/scope enrollment before implementing the dispatcher entry."
+    ]
+  },
+  "input": {
+    "path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+    "bytes": 1103282,
+    "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+    "use": "test_only",
+    "sourceFeatures": 1662,
+    "runtimeUsed": false,
+    "largestOtherVector": {"name": "sidewalk.geojson", "bytes": 1854113, "runtimeUsed": false},
+    "inventoryMethod": "Listed the allowed files folder; no acquisition or external-data write."
+  },
+  "refs": [
+    {"id":"intake-route","file":"apps/api/src/modules/ingestion/ingestion.controller.ts","lines":[27,33]},
+    {"id":"retain-route","file":"apps/api/src/modules/ingestion/ingestion.controller.ts","lines":[64,97]},
+    {"id":"manual-source","file":"packages/server/src/modules/usp/ingestion/service.ts","lines":[44,69]},
+    {"id":"manual-retain","file":"packages/server/src/modules/usp/ingestion/service.ts","lines":[117,190]},
+    {"id":"inventory","file":"packages/server/src/modules/usp/ingestion/registry.ts","lines":[24,56]},
+    {"id":"large-receipt","file":"packages/server/src/modules/usp/ingestion/large-original.ts","lines":[432,438]},
+    {"id":"dispatcher","file":"packages/server/src/modules/cases/processing.ts","lines":[204,231]},
+    {"id":"dispatcher-profile","file":"packages/server/src/modules/cases/processing.ts","lines":[297,308]},
+    {"id":"stream-enqueue","file":"packages/server/src/modules/usp/ingestion/streaming-vector.ts","lines":[126,162]},
+    {"id":"jobs-admission","file":"packages/server/src/modules/usp/jobs.ts","lines":[116,149]},
+    {"id":"jobs-attempts","file":"packages/server/src/modules/usp/jobs.ts","lines":[162,186]},
+    {"id":"jobs-table","file":"database/sql/01-core/core.sql","lines":[51,67]},
+    {"id":"adaptive-service","file":"packages/server/src/modules/usp/ingestion/adaptive-mapping-service.ts",
+      "lines":[27,112]},
+    {"id":"adaptive-validation","file":"packages/server/src/modules/usp/ingestion/adaptive-mapping.ts",
+      "lines":[17,74]},
+    {"id":"catalogue","file":"packages/server/src/shared/source-catalog.ts","lines":[162,166]},
+    {"id":"catalogue-callers","file":"packages/server/src/modules/areas/area-acquisitions.ts","lines":[75,135]},
+    {"id":"recipe-contract","file":"packages/contracts/src/usp/ingestion.ts","lines":[17,62]},
+    {"id":"source-case","file":"packages/server/src/modules/cases/source-cases.ts","lines":[11,22]},
+    {"id":"retained-id","file":"packages/server/src/modules/areas/areas.ts","lines":[482,488]},
+    {"id":"new-site-case","file":"packages/server/src/modules/areas/areas.ts","lines":[573,687]},
+    {"id":"package-insert","file":"packages/server/src/modules/areas/areas.ts","lines":[904,916]},
+    {"id":"package-quarantine","file":"packages/server/src/modules/areas/package-authority.ts","lines":[20,31]},
+    {"id":"exterior-records","file":"packages/server/src/modules/areas/exterior-records.ts","lines":[12,74]},
+    {"id":"target-sources","file":"packages/server/src/modules/usp/snapshots.ts","lines":[170,199]},
+    {"id":"snapshot-capture","file":"packages/server/src/modules/usp/snapshots.ts","lines":[35,46]},
+    {"id":"source-only-exception","file":"packages/server/src/modules/usp/source-stated-snapshots.ts","lines":[14,23]},
+    {"id":"plan-context","file":"packages/server/src/modules/usp/packets/plan-authority.ts","lines":[22,27]},
+    {"id":"plan-profile","file":"packages/server/src/modules/usp/packets/plan-authority.ts","lines":[243,268]},
+    {"id":"declaration-site","file":"packages/server/src/modules/usp/declarations/authority.ts","lines":[34,59]},
+    {"id":"feature-policy","file":"packages/server/src/modules/registry/registry-reference-policy.ts","lines":[27,35]},
+    {"id":"review-evidence","file":"packages/server/src/modules/registry/registry.ts","lines":[585,631]},
+    {"id":"source-frame","file":"packages/server/src/modules/registry/registry-import-evidence.ts","lines":[10,14]},
+    {"id":"document-capture","file":"packages/server/src/modules/usp/ingestion/document-authority.ts",
+      "lines":[113,117]},
+    {"id":"gis-suggestions","file":"packages/server/src/modules/cases/gis-inspection.ts","lines":[75,94]},
+    {"id":"studio-destination","file":"apps/studio/src/features/intake/AddFilesDialog.tsx","lines":[167,182]},
+    {"id":"normalizer-position","file":"services/geo/geo/area.py","lines":[320,383]},
+    {"id":"intake-contract","file":"packages/contracts/src/usp/intake.ts","lines":[14,75]},
+    {"id":"intake-event","file":"packages/contracts/src/usp/ingestion-events.ts","lines":[17,21]},
+    {"id":"ledger-schema","file":"database/sql/95-ingestion/intake-ledger.sql","lines":[14,28]},
+    {"id":"intake-event-write","file":"packages/server/src/modules/usp/ingestion/events.ts","lines":[67,75]},
+    {"id":"recipe-decide","file":"packages/server/src/modules/usp/ingestion/service.ts","lines":[235,280]}
+  ]
+}

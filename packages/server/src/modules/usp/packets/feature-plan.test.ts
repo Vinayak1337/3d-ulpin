@@ -37,6 +37,31 @@ for (const [index, key] of [[0, '345'], [1620, '1272393']] as const) {
     }));
 }
 
+test('retained original needs_input receipt admits the exact committed feature through plan and execution',
+  async () => withFeaturePlan(0, async store => {
+    Object.assign(store.source, { profile: 'geojson-manual-v1', status: 'needs_input',
+      inspection: { manualProfile: { version: 'manual-geojson/1', format: 'geojson' },
+        gis: { sourceSha256: store.source.sha256 }, referenceParts: [] } });
+    assert.equal((await assess(store)).entries[0].state, 'included');
+    const plan = await createPacketPlan(store.ctx,
+      { input: store.input(), guard: { mode: 'create', requestKey: 'retained-create' } }, store.io);
+    const confirmation = await confirmPacketPlan(store.ctx, { planId: plan.planId, version: plan.version,
+      planSha256: plan.planSha256, reviewed: true, guard: { mode: 'update', requestKey: 'retained-confirm',
+        expectedVersion: plan.version, expectedManifestId: plan.input.scope.manifestId } }, store.io);
+    const execution = await executePacketPlan(store.ctx, { planId: plan.planId, version: plan.version,
+      confirmationId: confirmation.confirmationId,
+      guard: { mode: 'create', requestKey: 'retained-execute' } }, store.io);
+    assert.equal(execution.packet.status, 'complete');
+    assert.equal(store.source.status, 'needs_input');
+  }));
+
+for (const profile of ['large-original-v1', 'document-original-v1']) {
+  test(`${profile} needs_input does not gain exact feature extraction`, async () => withFeaturePlan(0, async store => {
+    Object.assign(store.source, { profile, status: 'needs_input' });
+    assert.equal((await assess(store)).entries[0].reasonCode, 'exact_extract_unavailable');
+  }));
+}
+
 test('one changed original byte fails integrity before feature extraction',
   async () => withFeaturePlan(0, async store => {
     store.original = Buffer.from(store.original);

@@ -1,0 +1,77 @@
+{
+  "task": "CA0",
+  "resumeHead": "3dca9555",
+  "acceptedAuditCommit": "5dbb862b",
+  "ca5Present": true,
+  "status": "stopped_before_decision7_build",
+  "stopRule": "Decision 7 case-revision caveat and resume stop (e)",
+  "finding": [
+    "Decision 7 changes cases.frame and cases.site_id without advancing cases.revision.",
+    "ingestJob in cases/processing.ts marks a completed build current solely by equality of case revision.",
+    "Its result frame/context checks compare against the job's old payload, not the newly bound current case.",
+    "Consequently a queued pre-binding build can become current under the new case frame at the same revision.",
+    "The manual recipe workspace rejects mappings/packages, but not units, pending builds or current snapshots.",
+    "A source case can hold such state: addUnit and requestBuild do not require an assigned site/frame.",
+    "prepareCase already advances revision when changing frame/context, showing the existing invalidation rule.",
+    "prepareCase assigns frame/context but not site_id: the null-site binding can also overwrite a prepared frame."
+  ],
+  "reachableOrder": [
+    "Retain the GeoJSON in an unassigned case; retain increments its revision.",
+    "Add manual units through addUnit; that operation increments revision but leaves the case unassigned.",
+    "requestBuild at that revision queues a payload with the case's pre-binding frame and context.",
+    "Author and approve the manual GeoJSON recipe at the same workspace revision.",
+    "Decision 7 execution would replace case.frame and bind site_id, without changing that revision.",
+    "When the prior build completes, ingestJob compares its result to its old payload and sees equal revisions.",
+    "It marks the job succeeded and writes cases.current_snapshot_id, although the snapshot has the old frame."
+  ],
+  "qualification": "Static path audit only; no source, unit, build, package or snapshot was fabricated or run.",
+  "otherReaders": [
+    "documentCaseTx fingerprints frame/context/siteId, so changed binding stales document inputs explicitly.",
+    "The event reader hashes site_id/frame/context/updated_at and notices binding without a counter bump.",
+    "Manual workspaceFingerprint covers case id/revision and sources only, not frame/site; it misses this change.",
+    "detailFromClient returns the selected current snapshot body without comparing its frame to cases.frame."
+  ],
+  "retainedOriginalCallers": {
+    "production": ["packages/server/src/modules/usp/ingestion/service.ts:263-267"],
+    "authority": [
+      "decide requires approved state at service.ts:247 and the exact plan hash at :253-254.",
+      "Execution requires the approval's planHash and server_configured_local_operator provenance at :258-260.",
+      "areas.ts:485 demands externalClient, not caller identity; repository search found only this caller."
+    ],
+    "bindingFit": "Approved destination authority cannot ignore existing case calculation state."
+  },
+  "farCoordinates": {
+    "path": "services/geo/geo/area.py:398-417",
+    "behavior": [
+      "Existing area imports pass the area's analysis CRS and origin to the unchanged normalizer.",
+      "It refuses an uncovered CRS, a footprint extent over 50 km, or any extent edge over 50 km from the origin.",
+      "These are reference/bound checks, not a place matcher; no nearest-place selection is built."
+    ]
+  },
+  "leadDecisionNeeded": [
+    "Decide how first binding invalidates pending/current case calculations and preserves existing units/context.",
+    "Either authorize revision-aware invalidation/repinning, or define and enforce a pure-intake prerequisite.",
+    "Do not merely change the counter: consider recipe/workspace and queued-reader pins and current snapshot handling.",
+    "Assign needed domain.ts or processing.ts fixes: they are outside the allowed dispatcher-only edit."
+  ],
+  "build": {"productChanges": [], "newJobs": 0, "runtimeExecuted": false},
+  "checks": [
+    {"id":"workspace","file":"packages/server/src/modules/usp/ingestion/service.ts","lines":[27,35],
+      "contains":["SELECT id,revision FROM cases", "registry_case_feature_mappings", "import_packages"]},
+    {"id":"units","file":"packages/server/src/modules/cases/domain.ts","lines":[775,831],
+      "contains":["export async function addUnit", "await persistUnit", "await bumpCase"]},
+    {"id":"queue","file":"packages/server/src/modules/cases/domain.ts","lines":[833,899],
+      "contains":["export async function requestBuild", "frame: current.frame", "caseRevision: current.revision"]},
+    {"id":"completion","file":"packages/server/src/modules/cases/processing.ts","lines":[136,192],
+      "contains":["const input = job.payload", "fingerprint(input.frame)",
+        "const fresh = current.revision === job.case_revision", "current_snapshot_id=$2"]},
+    {"id":"prior-rule","file":"packages/server/src/modules/cases/domain.ts","lines":[593,596],
+      "contains":["SET frame=$2,context=$3,revision=revision+1"]},
+    {"id":"case-read","file":"packages/server/src/modules/cases/domain.ts","lines":[186,205],
+      "contains":["row.current_snapshot_id", "model: snapshots.rows[0]?.body ?? null"]},
+    {"id":"document-pins","file":"packages/server/src/modules/usp/ingestion/document-context.ts","lines":[21,27],
+      "contains":["context:fingerprint({frame:current.frame,context:current.context,siteId:current.site_id})"]},
+    {"id":"event-pins","file":"packages/server/src/modules/usp/ingestion/events.ts","lines":[116,120],
+      "contains":["site_id,current_snapshot_id,updated_at", "md5(frame::text)"]}
+  ]
+}
