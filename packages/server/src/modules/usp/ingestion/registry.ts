@@ -55,13 +55,14 @@ export function inspectedProfile(bytes: Uint8Array, inspection: GisInspection) {
     paths, limitations, schemaFingerprint: sha256(JSON.stringify({version: INGESTION_VERSION, crs, geometryTypes: inspection.geometryTypes, paths: paths.map(p => ({path: p.path, types: p.types}))}))};
 }
 function heightMapping(plan: MappingPlan, profile: SourceProfile): Partial<Mapping> {
-  if (plan.heightField === undefined) return {};
+  const field = plan.heightField;
+  if (field === undefined) return {};
   if (!plan.heightUnit || !plan.heightMeaning?.trim())
     throw new AppError(422, 'MAPPING_HEIGHT', 'State the height field, its source unit and its meaning together.');
-  const path = profile.paths.find(item => item.path === `/features/*/properties/${escape(plan.heightField!)}`);
+  const path = profile.paths.find(item => item.path === `/features/*/properties/${escape(field)}`);
   if (!path || path.types.some(type => !['number', 'string'].includes(type)))
     throw new AppError(422, 'MAPPING_HEIGHT', 'Choose an inspected numeric or text height attribute; null and absent values remain unknown.');
-  return {heightField: plan.heightField, heightUnit: plan.heightUnit, heightMeaning: plan.heightMeaning};
+  return {heightField: field, heightUnit: plan.heightUnit, heightMeaning: plan.heightMeaning};
 }
 export function compileMapping(plan: MappingPlan, profile: SourceProfile): Mapping {
   const mapping: Mapping = {kind: 'building', geometryRole: 'unknown', ...heightMapping(plan, profile)};

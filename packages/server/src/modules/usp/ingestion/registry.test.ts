@@ -63,6 +63,9 @@ test('height authoring refuses missing unit or meaning, unsupported units and un
   assert.throws(() => compileMapping({ ...parsed, heightField: 'not_inspected' }, profile()),
     { code: 'MAPPING_HEIGHT' });
   assert.notEqual(fingerprint(parsed), fingerprint(legacy));
+  const padded = MappingPlanSchema.parse({ ...legacy, ...statedHeight,
+    heightMeaning: `  ${statedHeight.heightMeaning}  ` });
+  assert.equal(padded.heightMeaning, statedHeight.heightMeaning, 'Meaning trims exactly as direct import does.');
 });
 
 test('the same feet fixture normalizes equally through a layout and direct mapping; null never becomes zero', t => {

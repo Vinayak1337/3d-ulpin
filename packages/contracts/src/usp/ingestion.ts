@@ -37,7 +37,7 @@ export const MappingPlanSchema = z.strictObject({
   caseId: id, workspaceRevision: z.number().int().nonnegative(), workspaceFingerprint: hash,
   heightField: z.string().min(1).max(80).refine(value => value.trim() === value).optional(),
   heightUnit: z.enum(['m', 'ft']).optional(),
-  heightMeaning: z.string().min(1).max(500).refine(value => Boolean(value.trim())).optional(),
+  heightMeaning: z.string().trim().min(1).max(500).optional(),
   operations: z.array(MappingOperationSchema).min(2).max(3),
 }).superRefine((plan, ctx) => {
   if ([plan.heightField, plan.heightUnit, plan.heightMeaning].some(value => value !== undefined)
