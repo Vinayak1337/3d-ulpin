@@ -1,7 +1,8 @@
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import type { ImportPackage, PhysicalFeature } from '@ulpin/contracts';
-import { INTAKE_TARGET_LIMITS, IntakeTargetPageSchema, IntakeTargetReadinessSchema, IntakeTargetSchema,
+import { INTAKE_TARGET_LIMITS, IntakeTargetCountsSchema, IntakeTargetPageSchema,
+  IntakeTargetReadinessSchema, IntakeTargetSchema,
   type IntakeTarget, type IntakeTargetArtefacts, type IntakeTargetReadiness } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, notFound } from '../../../infrastructure/errors';
@@ -157,12 +158,48 @@ export function intakeTargetView(row: IntakeTargetRow): IntakeTarget {
     updatedAt: row.updated_at.toISOString() });
 }
 
+type TargetCounts = z.infer<typeof IntakeTargetCountsSchema>;
+type PackageCounts = { anchorItemId: string; counts: TargetCounts };
+
+function emptyCounts(): TargetCounts {
+  return Object.fromEntries(IntakeTargetReadinessSchema.options.map(name => [name, 0])) as TargetCounts;
+}
+
 async function countsTx(client: PoolClient, caseId: string) {
-  const counts = Object.fromEntries(IntakeTargetReadinessSchema.options.map(name => [name, 0]));
-  const rows = (await client.query(`SELECT readiness,count(*)::int AS count FROM usp_intake_targets
-    WHERE case_id=$1 GROUP BY readiness`, [caseId])).rows;
-  for (const row of rows) counts[row.readiness] = row.count;
-  return counts;
+  const counts = emptyCounts();
+  const packages = new Map<string, PackageCounts>();
+  const rows = (await client.query(`SELECT package_id,min(anchor_item_id::text) AS anchor_item_id,
+    readiness,count(*)::int AS count FROM usp_intake_targets WHERE case_id=$1
+    GROUP BY package_id,readiness ORDER BY package_id,readiness`, [caseId])).rows;
+  for (const row of rows) {
+    const readiness = IntakeTargetReadinessSchema.parse(row.readiness);
+    const pkg = packages.get(row.package_id) ?? { anchorItemId: row.anchor_item_id, counts: emptyCounts() };
+    pkg.counts[readiness] = row.count;
+    counts[readiness] += row.count;
+    packages.set(row.package_id, pkg);
+  }
+  return { counts, packages };
+}
+
+/** Project review metadata in SQL: never return the body or any package features. */
+async function packageFactsTx(client: PoolClient, packages: Map<string, PackageCounts>) {
+  const ids = [...packages.keys()].slice(0, 101);
+  const rows = (await client.query(`WITH packages AS (
+    SELECT p.id,p.body->>'areaId' AS area_id,(p.body->>'revision')::int AS revision,
+      p.body->>'state' AS state,CASE WHEN p.body->'review'->'packageRevision'=p.body->'revision'
+        THEN p.body->'review' ELSE NULL END AS review
+    FROM import_packages p WHERE p.id=ANY($1::uuid[]) ORDER BY p.id LIMIT 101
+  ) SELECT id,area_id,revision,state,review->>'inputFingerprint' AS review_fingerprint,
+    CASE WHEN review IS NULL THEN NULL ELSE COALESCE((
+      SELECT jsonb_object_agg(code,count) FROM (
+        SELECT finding->>'code' AS code,count(*)::int AS count
+        FROM jsonb_array_elements(review->'findings') AS finding GROUP BY finding->>'code'
+      ) AS findings
+    ),'{}'::jsonb) END AS finding_counts FROM packages ORDER BY id`, [ids])).rows;
+  return { packages: rows.slice(0, 100).map(row => ({ packageId: row.id, areaId: row.area_id,
+    anchorItemId: packages.get(row.id)!.anchorItemId, revision: row.revision, state: row.state,
+    reviewFingerprint: row.review_fingerprint, findingCounts: row.finding_counts,
+    counts: packages.get(row.id)!.counts })), packagesTruncated: packages.size > 100 };
 }
 
 /** A page of a case's targets in id order, and its counts by readiness. */
@@ -177,8 +214,10 @@ export async function listIntakeTargets(caseIdValue: string, readiness: string |
       AND ($2::text IS NULL OR readiness=$2) AND ($3::uuid IS NULL OR target_id>$3)
       ORDER BY target_id LIMIT $4`, [caseId, filter, cursor, INTAKE_TARGET_LIMITS.page + 1])).rows;
     const page = rows.slice(0, INTAKE_TARGET_LIMITS.page);
-    return IntakeTargetPageSchema.parse({ caseId, items: page.map(intakeTargetView),
-      counts: await countsTx(client, caseId), nextCursor: rows.length > page.length ? page.at(-1).target_id : null });
+    const summary = await countsTx(client, caseId);
+    const packages = await packageFactsTx(client, summary.packages);
+    return IntakeTargetPageSchema.parse({ caseId, items: page.map(intakeTargetView), counts: summary.counts,
+      ...packages, nextCursor: rows.length > page.length ? page.at(-1).target_id : null });
   });
 }
 

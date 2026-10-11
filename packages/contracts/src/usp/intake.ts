@@ -57,6 +57,11 @@ export const IntakeMemberSchema = z.strictObject({
 export const IntakeCardSchema = z.strictObject({ ...fields, members: z.array(IntakeMemberSchema).max(2000) });
 export const IntakeRegisterSchema = z.strictObject({ sourceId: z.string().uuid(), requestKey: z.string().uuid() });
 export const IntakePinSchema = z.strictObject({ wave: z.number().int().min(1).max(4), requestKey: z.string().uuid() });
+export const IntakeItemPlanSchema = z.strictObject({
+  recipeId: z.string().uuid(), recipeRevision: z.number().int().positive(),
+  recipeState: z.enum(['proposed', 'approved', 'executed']),
+  origin: z.enum(['memory', 'teacher', 'officer']).nullable(), packageId: z.string().uuid().nullable(),
+});
 export const IntakeItemSchema = z.strictObject({
   itemId: z.string().uuid(), sourceId: z.string().uuid().nullable(), caseId: z.string().uuid(),
   parentItemId: z.string().uuid().nullable(), memberPath: text.nullable(), name: text,
@@ -64,6 +69,7 @@ export const IntakeItemSchema = z.strictObject({
   sizeBytes: z.number().int().nonnegative().nullable(),
   sizeClass: IntakeSizeClassSchema.nullable(), wave: z.number().int().min(1).max(4), state: IntakeStateSchema,
   placement: IntakePlacementSchema, card: IntakeCardSchema.nullable(), cardSha256: hash.nullable(),
+  plan: IntakeItemPlanSchema.nullable(),
   probeVersion: z.string().nullable(), partsPlanned: z.number().int().positive().nullable(),
   partsDone: z.number().int().nonnegative(), recordsSeen: z.number().int().nonnegative(),
   limitReason: z.string().nullable(), pinnedByOfficer: z.boolean(),
@@ -106,9 +112,16 @@ export const IntakeTargetQuerySchema = z.strictObject({
   readiness: IntakeTargetReadinessSchema.optional(), cursor: uuid.optional(),
 });
 export const IntakeRunControlSchema = z.strictObject({});
+export const IntakeTargetPackageSchema = z.strictObject({
+  packageId: uuid, areaId: uuid, anchorItemId: uuid, revision: z.number().int().positive(),
+  state: z.enum(['RECEIVED', 'NEEDS_INPUT', 'READY_FOR_REVIEW', 'REVIEWED', 'COMMITTED']),
+  reviewFingerprint: hash.nullable(), findingCounts: z.record(code, tally).nullable(),
+  counts: IntakeTargetCountsSchema,
+});
 export const IntakeTargetPageSchema = z.strictObject({
   caseId: uuid, items: z.array(IntakeTargetSchema).max(INTAKE_TARGET_LIMITS.page),
   counts: IntakeTargetCountsSchema, nextCursor: uuid.nullable(),
+  packages: z.array(IntakeTargetPackageSchema).max(100), packagesTruncated: z.boolean(),
 });
 export const IntakeConfirmedPackageSchema = z.strictObject({
   packageId: uuid, revision: z.number().int().positive(), reviewFingerprint: hash,
