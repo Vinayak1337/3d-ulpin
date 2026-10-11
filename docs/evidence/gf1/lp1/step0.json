@@ -1,0 +1,304 @@
+{
+  "task": "LP1",
+  "gate": "GF1",
+  "baseline": "5db89c411fa6077c0a7560c0646493a9ed02abe7",
+  "status": "stopped_rule_a",
+  "qualification": "Source audit only; no database, real-input rehearsal, EXPLAIN or performance measurement was run.",
+  "startup": {
+    "cleanWorktree": true,
+    "branch": "task/lp1-review-pins-what-it-checked",
+    "fx2RefreshExit": 1,
+    "fx2RefreshMessage": "Unexpected index bytes: packages/server/src/modules/usp/ingestion/events.ts"
+  },
+  "readFirst": [
+    "docs/evidence/gf1/au2/chain.json item 7",
+    "docs/evidence/gf1/au2/proposal.json prerequisitesInOrder[0]",
+    "docs/evidence/gf1/e1/HANDOFF.md",
+    "AGENTS.md",
+    "docs/next-steps/00-STANDARDS.md",
+    "docs/next-steps/SPRINT-SELECTION.md section 3"
+  ],
+  "stop": {
+    "rule": "a",
+    "at": "services/geo/geo/officer.py:244,297-302",
+    "finding": "The officer candidate-pair guard counts every occupation/public-context pair before intersection.",
+    "distanceMetres": null,
+    "effect": "Disjoint qualified public context anywhere in the supplied area can exhaust the shared 20,000-pair budget.",
+    "limitAt": "services/geo/geo/area.py:34; services/geo/geo/officer.py:218,298-300,362-364",
+    "refusal": "Officer check exceeds the bounded candidate-pair limit; split the area.",
+    "exampleArithmetic": "101 evidenced ground occupations times 200 disjoint public features = 20,200 pairs.",
+    "exampleQualification": "Arithmetic, not a runtime measurement and not an assertion about NYC source semantics.",
+    "decisionNeeded": "Decide whether this guard is explicitly scoped to LP1 coverage or must remain distance-independent.",
+    "smallestPossibleChange": "If locality is required in Python, move public pair counting after intersection.",
+    "changeOwnership": "services/geo/geo/officer.py is outside LP1 ownership; no change made."
+  },
+  "margin": {
+    "marginMetres": null,
+    "reason": "The distance-independent pair guard prevents approving a local margin before the lead decision.",
+    "uncertaintyAt": "services/geo/geo/officer.py:287-294; services/geo/geo/area_semantics.py:78-84",
+    "uncertainty": "The check buffers both boundaries by sum(known), validating nonnegative finite values only.",
+    "nativeAdmissionBound": "area_semantics.py:80-84 caps each normalized source uncertainty at 1,000 m.",
+    "uncertaintyQualification": "Already pinned explicit parcels only; native admission has a cap the checker lacks.",
+    "decisionNeeded": "Clarify whether R2 excludes buffers confined to already pinned explicit participants.",
+    "utilityAt": "services/geo/geo/officer.py:69-79,131-136",
+    "utility": "Rectangular width is at most 100 m; centreline buffer is width/2, at most 50 m, with miter joins.",
+    "utilityCaution": "50 m is the normal half-width, not a bound on corner reach; no margin is approved here."
+  },
+  "rules": [
+    {
+      "name": "Reference, row identity, kind, world state and source geometry validation",
+      "at": "services/geo/geo/area.py:441-468,62-81,96-147",
+      "distanceMetres": 0,
+      "local": true,
+      "notes": "Per-input validation; unique IDs concern supplied rows, not an area-wide semantic identity search."
+    },
+    {
+      "name": "Check input resource bounds",
+      "at": "services/geo/geo/area.py:30-35,450,464-468; services/geo/geo/area.py:96-147",
+      "distanceMetres": null,
+      "local": "input_scope_guard",
+      "notes": "2,000 total supplied rows, 100,000 total vertices, 10,000 vertices per row; +/-50 km local frame."
+    },
+    {
+      "name": "Horizontal candidate-pair budget",
+      "at": "services/geo/geo/area.py:492-501",
+      "distanceMetres": 0,
+      "local": true,
+      "notes": "STRtree bounding-box intersection; supported building pairs only, at most 20,000 pairs."
+    },
+    {
+      "name": "BOUNDARY_CONTACT",
+      "at": "services/geo/geo/area.py:502-508",
+      "distanceMetres": 0,
+      "local": true
+    },
+    {
+      "name": "UTILITY_HORIZONTAL_INTERSECTION and UTILITY_VERTICAL_UNRESOLVED",
+      "at": "services/geo/geo/area.py:509-510,517-518,524-527",
+      "distanceMetres": 0,
+      "local": true,
+      "notes": "Unresolved finding removed only for pairs resolved by the officer prism checks."
+    },
+    {
+      "name": "BUILDING_FOOTPRINT_OVERLAP, BUILDING_ROAD_OVERLAP, BUILDING_PUBLIC_LAND_OVERLAP",
+      "at": "services/geo/geo/area.py:511-513",
+      "distanceMetres": 0,
+      "local": true,
+      "notes": "Positive intersection area exceeds 0.000001 m2; area tolerance is not a distance margin."
+    },
+    {
+      "name": "HORIZONTAL_INTERSECTION",
+      "at": "services/geo/geo/area.py:514-515",
+      "distanceMetres": 0,
+      "local": true
+    },
+    {
+      "name": "Layer absence coverage",
+      "at": "services/geo/geo/area.py:470-477,519-521",
+      "distanceMetres": null,
+      "local": "supplied_snapshot_statement",
+      "notes": "No road/public-land/utility layer is present in this snapshot; not a claim about the whole area."
+    },
+    {
+      "name": "Association and geometry-role validation",
+      "at": "services/geo/geo/officer.py:208-218,244-252",
+      "distanceMetres": 0,
+      "local": true,
+      "notes": "At most 4,000 supplied associations; only evidenced observed ground occupation proceeds."
+    },
+    {
+      "name": "OCCUPATION_AREA_REQUIRED and OCCUPATION_EVIDENCE_REQUIRED",
+      "at": "services/geo/geo/officer.py:253-259",
+      "distanceMetres": 0,
+      "local": true
+    },
+    {
+      "name": "PARCEL_ASSOCIATION_REQUIRED, parcel quantities and OUTSIDE_CONFIRMED_PARCEL",
+      "at": "services/geo/geo/officer.py:260-286,295",
+      "distanceMetres": null,
+      "local": "explicit_association_exception",
+      "notes": "Uses whole explicitly linked parcels regardless of distance, not all nearby or all area parcels."
+    },
+    {
+      "name": "Outside-strip extension",
+      "at": "services/geo/geo/officer.py:283-286",
+      "distanceMetres": 0,
+      "local": "explicit_association_exception",
+      "notes": "Rectangular strip area/shared-edge length; contact length must exceed 0.000001 m."
+    },
+    {
+      "name": "withinDeclaredUncertainty",
+      "at": "services/geo/geo/officer.py:287-294",
+      "distanceMetres": "sum of supplied uncertainties; checker uncapped, native normalization caps each at 1,000 m",
+      "local": "explicit_association_exception_pending_margin_decision",
+      "notes": "Buffers occupation and parcel boundaries; missing uncertainty remains Unspecified, not zero."
+    },
+    {
+      "name": "Officer public-context candidate-pair budget",
+      "at": "services/geo/geo/officer.py:244,297-302",
+      "distanceMetres": null,
+      "local": false,
+      "notes": "Counts all supplied public indices before intersects; shares counter with utility prism pairs."
+    },
+    {
+      "name": "PUBLIC_CONTEXT_AREA_REQUIRED and PUBLIC_CONTEXT_EVIDENCE_REQUIRED",
+      "at": "services/geo/geo/officer.py:301-309",
+      "distanceMetres": 0,
+      "local": true
+    },
+    {
+      "name": "PUBLIC_BOUNDARY_CONTACT and OCCUPATION_PUBLIC_CONTEXT_OVERLAP",
+      "at": "services/geo/geo/officer.py:310-324",
+      "distanceMetres": 0,
+      "local": true,
+      "notes": "Uses intersecting polygons; no assumed public-land buffer or reserve width."
+    },
+    {
+      "name": "PUBLIC_CONTEXT_UNIQUE_UNION",
+      "at": "services/geo/geo/officer.py:325-329",
+      "distanceMetres": 0,
+      "local": true,
+      "notes": "Union of intersecting per-layer results for each occupation, not all public land in the area."
+    },
+    {
+      "name": "APPROVED_COMPARISON_EVIDENCE_REQUIRED and OUTSIDE_APPROVED_OUTLINE",
+      "at": "services/geo/geo/officer.py:331-348",
+      "distanceMetres": null,
+      "local": "explicit_comparison_not_supplied_by_package_review",
+      "notes": "Whole explicitly linked representations; reviewPackage passes no representationComparisons."
+    },
+    {
+      "name": "Utility profile resolution and prism support validation",
+      "at": "services/geo/geo/officer.py:53-144,181-205",
+      "distanceMetres": "widthM/2 up to 50 m, with miter joins; full own alignment for interpolation",
+      "local": "bounded_profile_pending_corner_margin",
+      "notes": "Only evidenced constant rectangular prisms analysed; circular/sloping profiles remain display-only."
+    },
+    {
+      "name": "Officer utility candidate-pair budget",
+      "at": "services/geo/geo/officer.py:350-364",
+      "distanceMetres": "intersection of resolved prism footprints",
+      "local": true,
+      "notes": "Unlike public pairs, utility pairs increment only after horizontal intersection."
+    },
+    {
+      "name": "RESTRICTION_GEOMETRY_INTERSECTION and RESTRICTION_RULE_EVIDENCE_REQUIRED",
+      "at": "services/geo/geo/officer.py:365-368",
+      "distanceMetres": "intersection of resolved footprint or supplied geometry",
+      "local": true
+    },
+    {
+      "name": "UTILITY_SEMANTICS_REQUIRED, UTILITY_PROFILE_EVIDENCE_REQUIRED, VERTICAL_REFERENCE_MISMATCH",
+      "at": "services/geo/geo/officer.py:369-377",
+      "distanceMetres": "intersection of resolved footprint or supplied geometry",
+      "local": true
+    },
+    {
+      "name": "SUPPORTED_UTILITY_PRISM_COLLISION, UTILITY_PRISM_CONTACT, UTILITY_PRISM_SEPARATED",
+      "at": "services/geo/geo/officer.py:378-391",
+      "distanceMetres": "resolved footprint intersection; 0.000001 m vertical contact tolerance",
+      "local": true,
+      "notes": "Volume tolerance 0.000001 m3; vertical prism values must remain within +/-20,000 m."
+    }
+  ],
+  "revisionReaders": [
+    {
+      "at": "packages/server/src/modules/areas/areas.ts:1296,1302-1311,1361-1362,1385-1393",
+      "reader": "Geometry package review/commit",
+      "afterR4": "Replace dependency fingerprint and commit area-revision equality; retain areaRevision as historical data."
+    },
+    {
+      "at": "packages/server/src/modules/areas/areas.ts:1115-1145",
+      "reader": "rebasePackage",
+      "afterR4": "Still valid: refreshes own per-feature baseline revisions, removes review, requires a fresh review."
+    },
+    {
+      "at": "packages/server/src/modules/usp/ingestion/source-building-review.ts:80-85,134-137,160-162",
+      "reader": "Geometry-free source review and recording",
+      "afterR4": "Unchanged by R8; retains its separate area-revision pin and fingerprint."
+    },
+    {
+      "at": "packages/server/src/modules/usp/ingestion/intake-confirmations.ts:35-47,130-131",
+      "reader": "packageDifference and stored confirmation read",
+      "afterR4": "Still valid: compares package revision and review fingerprint, never review.areaRevision."
+    },
+    {
+      "at": "packages/server/src/modules/usp/ingestion/intake-run-worker.ts:61-68,111-121,137-153,300-301",
+      "reader": "Preparation, commitOne and target continuation",
+      "afterR4": "Still valid: passes frozen package pin to commit; recorded revision must be named revision plus one."
+    },
+    {
+      "at": "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts:92-104,126",
+      "reader": "intakeDestination",
+      "afterR4": "Still valid: destination area revision pins drafting, not the later review or recording."
+    },
+    {
+      "at": "packages/server/src/modules/usp/ingestion/service.ts:100-110,266",
+      "reader": "Mapping destination checks",
+      "afterR4": "Still valid: author/approve/execute guard before preparation; does not run in E1 commitOne."
+    },
+    {
+      "at": "packages/server/src/modules/areas/areas.ts:469-471,582-586",
+      "reader": "ingestArea expectedAreaRevision checks",
+      "afterR4": "Still valid; untouched import baseline protection."
+    },
+    {
+      "at": "packages/server/src/modules/areas/areas.ts:248,1477-1499",
+      "reader": "Whole-area check staleness and checkArea expectedRevision",
+      "afterR4": "Still valid; separate whole-area check retains area-revision equality and whole-area limits."
+    },
+    {
+      "at": "apps/studio/src/features/review/candidates/commands.ts:33-38; candidates/decisions.ts:45-56",
+      "reader": "Studio package review command and roofprint-decision baseline",
+      "afterR4": "No review.areaRevision reader/comparison found in apps/studio/src; package revision still sent unchanged."
+    },
+    {
+      "at": "apps/api/src/modules/spatial/spatial.openapi.ts:229; modules/register/documentation.ts:212",
+      "reader": "Published review schemas",
+      "afterR4": "Historical areaRevision remains required; optional scope would need generator/schema review on resume."
+    },
+    {
+      "at": "packages/server/src/modules/areas/exterior-records-commit.test.ts:28-32; native-review.test.ts:117",
+      "reader": "Existing v1 review fixtures",
+      "afterR4": "R7 intentionally invalidates stored v1 reviews; fixtures expecting current acceptance must use v2."
+    }
+  ],
+  "indexes": {
+    "qualification": "DDL audit only; no live catalogue inspected.",
+    "physical_features": [
+      "physical_features_pkey: btree(id), database/sql/20-area/area.sql:32-36",
+      "physical_features_identifier_key: unique btree(identifier), area.sql:34",
+      "physical_local_gist: gist(geometry), area.sql:37",
+      "physical_geographic_gist: gist(geographic_geometry), area.sql:38"
+    ],
+    "usp_analytic_geometry": "Security-barrier view; no indexes directly on a regular view.",
+    "viewAt": "database/sql/60-usp/09-geometry-schema.sql:88-102",
+    "qualificationTableIndex": "PK(namespace,record_id,record_revision,revision), same file:30-40",
+    "exactRevisionMembershipIndex": "physical_feature_revisions PK(feature_id,revision), area.sql:39-44",
+    "possibleSpatialAccess": "physical_local_gist for same-area geometry && widened local envelope plus ST_Intersects.",
+    "explain": "Not run: stop rule (a) triggered before approving an extent/margin or starting a database.",
+    "additiveIndexDecision": "Deferred; no claim that existing index produces the required qualified-context plan."
+  },
+  "baselineBreakMeasurement": {
+    "status": "not_run_due_to_stop_rule_a",
+    "requestedOriginal": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+    "derivativesCreated": false,
+    "originalChanged": false,
+    "predictedFromCodeOnly": {
+      "at": "packages/server/src/modules/areas/areas.ts:1361-1362",
+      "status": 409,
+      "code": "STALE_REVISION",
+      "message": "Area neighbours changed; review the proposed update again.",
+      "targetsAt": "packages/server/src/modules/usp/ingestion/intake-run-worker.ts:125-153",
+      "targets": "E1 propagates the refusal to still-confirmed targets of that package."
+    }
+  },
+  "safety": {
+    "containersStarted": 0,
+    "databasesTouched": 0,
+    "originalsTouched": 0,
+    "credentialsRead": false,
+    "applicationCodeChanged": false
+  },
+  "deploymentNote": "After a future v2 deployment, packages reviewed but not yet recorded need one more review (R7)."
+}
