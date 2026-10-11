@@ -40,7 +40,8 @@ function Run({ caseId }: { caseId: string }) {
     {run.confirmations.map((query, index) => <div key={run.confirmationKeys[index]}>
       {query.isPending ? <p role="status">Reading a stored confirmation…</p> : null}
       {query.error ? <p role="alert">{failureWords(query.error)}</p> : null}
-      {query.data ? <Progress caseId={caseId} confirmation={query.data} refresh={run.refresh} onOpen={run.priority.open} /> : null}
+      {query.data ? <Progress caseId={caseId} confirmation={query.data} refresh={run.refresh}
+        onOpen={run.priority.open} /> : null}
     </div>)}
   </div>;
 }

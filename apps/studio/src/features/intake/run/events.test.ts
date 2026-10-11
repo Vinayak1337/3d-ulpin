@@ -1,6 +1,11 @@
 import { expect, it } from 'vitest';
 import { initialStream } from '../table/events';
-import { runFrame } from './events';
+import { runEventPath, runFrame } from './events';
+
+it('a new stream tails current facts, avoiding a replay-limit refusal on a large prepared batch', () => {
+  expect(runEventPath('case', '0')).toBe('/api/v1/ingestion/cases/case/events');
+  expect(runEventPath('case', '12')).toBe('/api/v1/ingestion/cases/case/events?cursor=12');
+});
 
 it('target events refetch current facts once, independent of source, and do not trust event artefacts', () => {
   const frame = { sequence: '1', change: { kind: 'intake.target', readiness: 'carded', stage: 8 } };

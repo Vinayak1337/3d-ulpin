@@ -18,10 +18,7 @@ export function useRun(caseId: string) {
   const discovery = useConfirmationDiscovery(caseId, targets.summary.data?.items,
     targets.summary.data?.nextCursor ?? null);
   const ids = [...new Set([...discovery.ids, ...storedIds])];
-  const confirmations = useQueries({ queries: ids.map(confirmationId => ({
-    queryKey: [...runKey(caseId), 'confirmation', confirmationId], retry: false,
-    queryFn: () => readConfirmation(caseId, confirmationId),
-  })) });
+  const confirmations = useStoredConfirmations(caseId, ids);
   const refresh = useCallback(() => {
     void cache.invalidateQueries({ queryKey: runKey(caseId) }, { cancelRefetch: false });
   }, [cache, caseId]);
@@ -35,11 +32,27 @@ export function useRun(caseId: string) {
   const command = useConfirmationCommand(caseId, stored, () => { setChoice([]); refresh(); });
   const progress = confirmations.flatMap(query => query.data?.progress ?? []);
   useRunStream(caseId, progress, refresh);
-  const selection = useSelection(caseId, targets.summary.data, choice, setChoice);
+  const preview = command.preview ?? targets.summary.data;
+  const selected = currentChoice(preview, choice, command.preview ? [] : targets.targets);
+  const selection = useSelection(caseId, preview, selected, setChoice);
   const priority = usePriority(caseId);
   return { targets, discovery, confirmations, confirmationKeys: ids,
-    filter, setFilter, choice, acknowledgement, setAcknowledgement,
+    filter, setFilter, choice: selected, acknowledgement, setAcknowledgement,
     refresh, command, priority, ...selection };
+}
+
+function useStoredConfirmations(caseId: string, ids: string[]) {
+  return useQueries({ queries: ids.map(confirmationId => ({
+    queryKey: [...runKey(caseId), 'confirmation', confirmationId], retry: false,
+    queryFn: () => readConfirmation(caseId, confirmationId),
+  })) });
+}
+
+function currentChoice(page: ReturnType<typeof useTargets>['summary']['data'],
+  choice: Target[], targets: readonly Target[]) {
+  const known = new Map(targets.map(target => [target.targetId, target]));
+  const candidates = choice.map(target => known.get(target.targetId) ?? target);
+  return page ? chooseReady(candidates, confirmablePackages(page)) : [];
 }
 
 function useSelection(caseId: string, page: ReturnType<typeof useTargets>['summary']['data'],

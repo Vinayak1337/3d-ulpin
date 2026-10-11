@@ -20,10 +20,12 @@ export function Progress({ caseId, confirmation, refresh, onOpen }: {
       {confirmation.progress.map(target => <li key={target.targetId} className={styles.target}>
         <details onToggle={event => { if (event.currentTarget.open) onOpen(target); }}>
           <summary>{target.locator} · {stageWords[target.stage]}</summary>
-          <p>{readinessWords[target.readiness]}</p>
-          {target.reason ? <p className={styles.reason}>{target.reason}</p> : null}
-          <ArtefactLinks target={target} onOpen={() => onOpen(target)} />
+          {target.reason && target.readiness !== 'stopped'
+            ? <p className={styles.reason}>{target.reason}</p> : null}
         </details>
+        <p>{readinessWords[target.readiness]}</p>
+        {target.readiness === 'stopped' && target.reason ? <p className={styles.reason}>{target.reason}</p> : null}
+        <ArtefactLinks target={target} onOpen={() => onOpen(target)} />
       </li>)}
     </ul>
   </Panel>;

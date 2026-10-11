@@ -1,5 +1,11 @@
 import { reduceFrame, type StreamState } from '../table/events';
 
+/** Current facts are read separately; a new connection tails the head instead of replaying the whole batch. */
+export function runEventPath(caseId: string, cursor: string): string {
+  const path = `/api/v1/ingestion/cases/${caseId}/events`;
+  return cursor === '0' ? path : `${path}?cursor=${cursor}`;
+}
+
 /** Reuse sequence/cursor validation; only a target notification (or stream control) asks for current facts. */
 export function runFrame(state: StreamState, id: string, data: unknown, kind: string) {
   const next = reduceFrame(state, id, data, '');

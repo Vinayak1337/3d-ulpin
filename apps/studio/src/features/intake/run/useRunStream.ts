@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { initialStream, type StreamState } from '../table/events';
-import { runFrame } from './events';
+import { runEventPath, runFrame } from './events';
 import { shouldRefetch, type Target } from './model';
 
 interface Connection {
@@ -30,8 +30,13 @@ export function useRunStream(caseId: string, progress: readonly Target[], refres
 }
 
 function connect(caseId: string, connection: Connection, refresh: () => void) {
-  const stream = new EventSource(`/api/v1/ingestion/cases/${caseId}/events?cursor=${connection.state.cursor}`);
+  const stream = new EventSource(runEventPath(caseId, connection.state.cursor));
   connection.stream = stream;
+  stream.onerror = () => {
+    stream.close();
+    connection.state.cursor = '0';
+    connection.stream = null;
+  };
   const apply = (event: MessageEvent) => {
     try {
       const frame = runFrame(connection.state, event.lastEventId, JSON.parse(event.data), event.type);
