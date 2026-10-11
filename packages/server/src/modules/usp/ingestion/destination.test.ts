@@ -6,8 +6,8 @@ import { officerQuestion } from './intake-draft-worker';
 import { AppError } from '../../../infrastructure/errors';
 
 const hash = 'a'.repeat(64);
-const words = 'This file is already the source of the area "Retained publisher title"; '
-  + 'nothing new is prepared from a second copy.';
+const words = 'This file is already the source of the area “Retained publisher title”. '
+  + 'Open that area; nothing new is prepared from a second copy.';
 const area = { kind: 'new_area', name: 'File name', namespace: `file:${hash}` } as const;
 const calls: string[] = [];
 function client(found: boolean) {

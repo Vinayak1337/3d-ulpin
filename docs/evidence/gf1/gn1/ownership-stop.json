@@ -1,0 +1,22 @@
+{
+  "task": "GN1",
+  "rule": "G5 and You own: service.ts author is read-only; service edits are destination only, profile/validate only if step 0 item 2 requires them",
+  "blocker": {
+    "path": "packages/server/src/modules/usp/ingestion/service.ts",
+    "lineAtBase": 215,
+    "function": "ManualIngestionService.author",
+    "existing": "if(actualDestination)await destination(client,actualDestination);",
+    "why": "destination has the destination's name and naming scope, not this source's SHA-256. Testing only the file:<hash> pattern cannot prove it is this file's own scope. Other existing destinations must keep their old refusal.",
+    "neededByOwner": "Pass input.plan.source.sourceSha256 as the fourth destination argument, using false for its third argument. The decide call should similarly forward receipt.plan.source.sourceSha256."
+  },
+  "profileValidate": "Step 0 item 2 shows stored profiles already have the needed facts; it does not justify changing profile/validate. No transaction/client side channel was added to evade the author exclusion.",
+  "delivered": "G4 destination guard, exact supplied words, officerQuestion mapping and unit tests. Runtime G4 remains false until the unowned call forwards the pin.",
+  "earlierRuntimeQualification": {
+    "runtime-attempt1.json": "Probe harness did not implement ranges; stopped before authoring.",
+    "runtime-attempt2.json": "Range fix qualified probe; new temporary call argument typo stopped authoring.",
+    "runtime-attempt3.json": "Three walks passed with temporary call forwarding; final harness gateway count named the wrong table.",
+    "runtime-with-callsite-bridge.json": "Three walks passed with temporary author/decide call forwarding. This is diagnostic evidence only, not qualification of the owned final implementation. The out-of-scope call changes were removed before handoff."
+  },
+  "history": "d43a8322 introduced both forwarding arguments; 6623a1e5 corrected the temporary author argument. The ownership correction removes both, so the net delivery changes only destination in service.ts. Commits are not rebased or hidden.",
+  "finalRuntime": "runtime.json: actual owned code, G1/G2/G3 true, G4 false at the protected author call; no new area/package/records from the duplicate."
+}

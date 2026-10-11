@@ -112,7 +112,7 @@ export async function destination(client: PoolClient, value: MappingDestination,
       [`${value.namespace}:${value.name}`])).rows[0];
     if (existing && sourceSha256 && value.namespace === `file:${sourceSha256}`)
       throw new AppError(409, 'SOURCE_ALREADY_IN_AREA',
-        `This file is already the source of the area "${existing.name}"; nothing new is prepared from a second copy.`);
+        `This file is already the source of the area “${existing.name}”. Open that area; nothing new is prepared from a second copy.`);
     if (existing) conflict('This destination already exists; pin its current area and reference explicitly.');
   }
 }
@@ -218,7 +218,7 @@ export class ManualIngestionService {
       const validated=await validate(client,input.plan,scope);
       const actualDestination=input.destination===undefined
         ? await authoredIntakeDestination(caseId,validated.row.inspection?.gis) : input.destination;
-      if(actualDestination)await destination(client,actualDestination,false,input.plan.source.sourceSha256);
+      if(actualDestination)await destination(client,actualDestination);
       const priorRow=(await client.query('SELECT body FROM usp_mapping_recipes WHERE source_id=$1 FOR UPDATE',
         [sourceId])).rows[0];
       const prior=priorRow?.body as AnyMappingReceipt|undefined;
@@ -263,7 +263,7 @@ export class ManualIngestionService {
       const plan=receipt.plan.version==='manual-tabular/1'
         ?TabularMappingPlanSchema.parse(receipt.plan):MappingPlanSchema.parse(receipt.plan);
       const validated=await validate(client,plan,scope);
-      if(receipt.destination)await destination(client,receipt.destination,action==='execute',receipt.plan.source.sourceSha256);
+      if(receipt.destination)await destination(client,receipt.destination,action==='execute');
       const planHash=fingerprint({plan,destination:receipt.destination});
       if(planHash!==receipt.planHash)conflict('The recipe content changed after authoring.');
       const now=new Date().toISOString();
