@@ -19,7 +19,7 @@ it('offers text and explicitly eligible whole numbers once in file order, with a
     literalIdEligible: false, integerIdEligible: false })) })).toEqual([]);
 });
 
-it('copies the same pins/geometry and chooses only the identifier conversion; Change preserves whole-number identity', () => {
+it('Change preserves whole-number identity and the original pins/geometry', () => {
   const choices = { ...blankChoices, kind: 'parcel' as const, identifier: integer.path };
   const body = questionBody(mixed, choices, 7, capture.authorBody.requestKey)!;
   expect(body.plan.operations[0]).toEqual({ target: 'feature.sourceKey', sourcePath: integer.path,

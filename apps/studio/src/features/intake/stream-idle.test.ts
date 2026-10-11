@@ -1,5 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest';
-import { CASE_STREAM_IDLE_MS, readCaseStream } from './stream-reader';
+import { CASE_STREAM_IDLE_MS, CaseStreamSilence, readCaseStream } from './stream-reader';
+import { createCaseSubscriptions } from './case-subscription';
 
 function stream() {
   vi.useFakeTimers();
@@ -16,7 +17,19 @@ function stream() {
   return { finished, opened, heartbeat: () => push.enqueue(new TextEncoder().encode(': keep-alive\n\n')) };
 }
 
-afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+afterEach(() => {
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
+
+it('a positively detected silent reader is visible without waiting for a second failed transport', async () => {
+  const status = vi.fn();
+  const shared = createCaseSubscriptions(async () => { throw new CaseStreamSilence(); });
+  const close = shared.subscribe('silent-case', { refresh: vi.fn(), unsettled: () => false, status });
+  await Promise.resolve();
+  expect(status).toHaveBeenLastCalledWith({ disconnected: true, error: '' });
+  close();
+});
 
 it('three missing server keep-alives cancel the actual fetch reader, not only a status banner', async () => {
   const run = stream();

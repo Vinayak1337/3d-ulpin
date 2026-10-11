@@ -65,7 +65,8 @@ export function confirmablePackages(page: TargetPage): Package[] {
 type ChoiceTarget = Pick<Target, 'targetId' | 'packageId' | 'readiness'>;
 
 export function chooseReady<T extends ChoiceTarget>(targets: readonly T[], packages: readonly Package[]): T[] {
-  const permitted = new Set(packages.filter(pkg => !pkg.reviewRefusal && pkg.reviewFingerprint && pkg.state !== 'COMMITTED')
+  const permitted = new Set(packages.filter(pkg => !pkg.reviewRefusal
+    && pkg.reviewFingerprint && pkg.state !== 'COMMITTED')
     .map(pkg => pkg.packageId));
   const unique = new Map(targets.filter(target => target.readiness === 'ready' && permitted.has(target.packageId))
     .map(target => [target.targetId, target]));

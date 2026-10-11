@@ -9,6 +9,10 @@ export interface CaseFrame {
 // Server heartbeatMs = 10,000 (ingestion/events.ts:15); three missed keep-alives end a silent transport.
 export const CASE_STREAM_IDLE_MS = 30000;
 
+export class CaseStreamSilence extends Error {
+  constructor() { super('Live batch updates stopped answering.'); }
+}
+
 /** Fetch exposes refusal status/words without opening a second event reader to diagnose EventSource.onerror. */
 export async function readCaseStream(path: string, signal: AbortSignal, opened: () => void,
   frame: (value: CaseFrame) => void): Promise<void> {
@@ -16,15 +20,16 @@ export async function readCaseStream(path: string, signal: AbortSignal, opened: 
   const ended = () => controller.abort(signal.reason);
   signal.addEventListener('abort', ended, { once: true });
   if (signal.aborted) ended();
-  let timer = setTimeout(() => controller.abort(new Error('Live batch updates stopped answering.')),
-    CASE_STREAM_IDLE_MS);
+  let timer = setTimeout(() => controller.abort(new CaseStreamSilence()), CASE_STREAM_IDLE_MS);
   const activity = () => {
     clearTimeout(timer);
-    timer = setTimeout(() => controller.abort(new Error('Live batch updates stopped answering.')),
-      CASE_STREAM_IDLE_MS);
+    timer = setTimeout(() => controller.abort(new CaseStreamSilence()), CASE_STREAM_IDLE_MS);
   };
   try {
     await receiveStream(path, controller.signal, opened, frame, activity);
+  } catch (error) {
+    if (controller.signal.reason instanceof CaseStreamSilence) throw controller.signal.reason;
+    throw error;
   } finally {
     clearTimeout(timer);
     signal.removeEventListener('abort', ended);

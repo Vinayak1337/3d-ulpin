@@ -1,7 +1,8 @@
 import { ApiError } from '@ulpin/api-client';
 import { hashFile } from './hash-file';
 import type { PartRequest, UploadTransport } from './upload-api';
-import { uploadGuard, uploadPlan, type UploadCreate, type UploadGuard, type UploadProgress, type UploadReceipt } from './upload-model';
+import { uploadGuard, uploadPlan } from './upload-model';
+import type { UploadCreate, UploadGuard, UploadProgress, UploadReceipt } from './upload-model';
 
 interface Options {
   file: File;
@@ -111,7 +112,9 @@ async function reconcilePart(context: Context, part: PartRequest) {
   const receipt = await context.transport.status(context.state.receipt!);
   context.state.receipt = receipt;
   const stored = receipt.parts.find(value => value.partNumber === part.number);
-  if (stored && (stored.requestKey !== part.headers['X-Request-Key'] || stored.sha256 !== part.headers['X-Part-Sha256']))
+  const mismatched = stored && (stored.requestKey !== part.headers['X-Request-Key']
+    || stored.sha256 !== part.headers['X-Part-Sha256']);
+  if (mismatched)
     throw new Error('The server reports a different immutable part binding. Cancel this upload.');
   // The status is a known outcome. A failed attempt advanced the receipt; only guards change, not key/hash/bytes.
   if (stored?.state === 'failed' || !stored) {
@@ -129,7 +132,8 @@ async function guarded(context: Context, send: () => Promise<UploadReceipt>): Pr
 }
 
 function waitForOfficer(context: Context, error: unknown) {
-  publish(context, { phase: 'stopped', words: error instanceof ApiError ? error.message : 'the server did not answer' });
+  const words = error instanceof ApiError ? error.message : 'the server did not answer';
+  publish(context, { phase: 'stopped', words });
   return new Promise<void>(resolve => { context.state.waiting = resolve; });
 }
 
