@@ -30,7 +30,10 @@ export function createUploadCommand(options: Options) {
     pause: options.pause ?? (() => new Promise<void>(resolve => setTimeout(resolve, 5000))), state };
   return {
     run: () => runUpload(context),
-    retry: () => { state.waiting?.(); state.waiting = null; },
+    retry: () => {
+      state.waiting?.();
+      state.waiting = null;
+    },
     cancel: () => {
       state.abort ??= cancelUpload(context).catch(error => {
         state.abort = null;

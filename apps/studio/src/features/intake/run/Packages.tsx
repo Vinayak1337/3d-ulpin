@@ -22,12 +22,15 @@ export function Findings({ counts }: { counts: Package['findingCounts'] }) {
   </ul>;
 }
 
-export function PackageDetails({ pkg, confirming = false }: {
+export function PackageDetails({ pkg, reasons = [], confirming = false }: {
   pkg: Package; reasons?: readonly string[]; confirming?: boolean;
 }) {
   return <div className={styles.package}>
     <h3 className="studio-heading">Package <CopyableId id={pkg.packageId} name="package identifier" /></h3>
-    {reviewWords(pkg) ? <p>{reviewWords(pkg)}</p> : <>
+    {reviewWords(pkg) ? <>
+      <p>{reviewWords(pkg)}</p>
+      {!pkg.reviewRefusal ? reasons.map(reason => <p key={reason}>{reason}</p>) : null}
+    </> : <>
       <p className="ul-help">Revision {pkg.revision}</p>
       <p>{confirming ? confirmingPackageWords(pkg) : countsLine(pkg.counts)}</p>
       <Findings counts={pkg.findingCounts} />
