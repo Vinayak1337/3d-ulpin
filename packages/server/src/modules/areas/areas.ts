@@ -347,6 +347,23 @@ function mergeExtent(
       ]
     : b;
 }
+/** Placement binds an intake case's site, never its calculation frame or edit counter. */
+export async function bindRetainedCaseTx(client: PoolClient, caseId: string | undefined, site: { id: string }) {
+  if (!caseId) return;
+  const row = (await client.query('SELECT id,site_id,archived,frame FROM cases WHERE id=$1 FOR UPDATE',
+    [caseId])).rows[0];
+  if (!row) notFound('Retained original case not found.');
+  if (row.archived)
+    throw new AppError(403, 'AREA_SOURCE_DENIED', "This retained original's case is archived.");
+  if (row.site_id === site.id) return;
+  if (row.site_id !== null)
+    throw new AppError(403, 'AREA_SOURCE_DENIED', 'This retained original belongs to a case of another site.');
+  if (row.frame?.id !== 'UNASSIGNED')
+    throw new AppError(403, 'AREA_SOURCE_DENIED',
+      "This retained original's case has a frame of its own; place the file from an intake case.");
+  await client.query('UPDATE cases SET site_id=$2, updated_at=now() WHERE id=$1', [caseId, site.id]);
+}
+
 export async function ingestArea(input: {
   bytes: Uint8Array;
   filename: string;
@@ -480,7 +497,7 @@ export async function ingestArea(input: {
   if(!normalized.features.length)
     throw new AppError(422,'GIS_ALL_GEOMETRIES_REJECTED','No source geometries were accepted. The original was not imported and no area or records were created.',{quarantine:quarantine?{...quarantine,message:quarantine.message.replace('Original retained unchanged','Original not imported')}:undefined});
   const retained = input.retainedOriginal
-    ? (await run("SELECT id,sha256,object_key FROM sources WHERE id=$1 FOR SHARE", [input.retainedOriginal.sourceId])).rows[0]
+    ? (await run("SELECT id,case_id,sha256,object_key FROM sources WHERE id=$1 FOR SHARE", [input.retainedOriginal.sourceId])).rows[0]
     : undefined;
   if (input.retainedOriginal && (!externalClient || !retained || retained.sha256 !== digest || digest !== input.retainedOriginal.sourceSha256))
     conflict("The retained GIS original does not match this transaction's source pin.");
@@ -647,6 +664,7 @@ export async function ingestArea(input: {
           [areaRow.site_id],
         )
       ).rows[0];
+      await bindRetainedCaseTx(client, retained?.case_id, site);
       await client.query(
         "INSERT INTO cases(id,name,description,frame,site_id,archived) VALUES($1,$2,$3,$4,$5,$6)",
         [
