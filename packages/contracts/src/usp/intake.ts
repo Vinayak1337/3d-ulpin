@@ -112,9 +112,16 @@ export const IntakeTargetQuerySchema = z.strictObject({
   readiness: IntakeTargetReadinessSchema.optional(), cursor: uuid.optional(),
 });
 export const IntakeRunControlSchema = z.strictObject({});
+export const IntakeTargetPackageSchema = z.strictObject({
+  packageId: uuid, areaId: uuid, anchorItemId: uuid, revision: z.number().int().positive(),
+  state: z.enum(['RECEIVED', 'NEEDS_INPUT', 'READY_FOR_REVIEW', 'REVIEWED', 'COMMITTED']),
+  reviewFingerprint: hash.nullable(), findingCounts: z.record(code, tally).nullable(),
+  counts: IntakeTargetCountsSchema,
+});
 export const IntakeTargetPageSchema = z.strictObject({
   caseId: uuid, items: z.array(IntakeTargetSchema).max(INTAKE_TARGET_LIMITS.page),
   counts: IntakeTargetCountsSchema, nextCursor: uuid.nullable(),
+  packages: z.array(IntakeTargetPackageSchema).max(100), packagesTruncated: z.boolean(),
 });
 export const IntakeConfirmedPackageSchema = z.strictObject({
   packageId: uuid, revision: z.number().int().positive(), reviewFingerprint: hash,
