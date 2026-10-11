@@ -69836,6 +69836,65 @@
                 "items": {
                   "type": "string"
                 }
+              },
+              "scope": {
+                "type": "object",
+                "properties": {
+                  "validator": {
+                    "type": "string",
+                    "enum": [
+                      "area-check-officer-v2"
+                    ]
+                  },
+                  "marginMetres": {
+                    "type": "number"
+                  },
+                  "extent": {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  },
+                  "contextCount": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "unqualifiedInScope": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "areaRevisionAtReview": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "validator",
+                  "marginMetres",
+                  "extent",
+                  "contextCount",
+                  "unqualifiedInScope",
+                  "areaRevisionAtReview"
+                ],
+                "additionalProperties": false
               }
             },
             "required": [
@@ -72479,6 +72538,65 @@
                 "items": {
                   "type": "string"
                 }
+              },
+              "scope": {
+                "type": "object",
+                "properties": {
+                  "validator": {
+                    "type": "string",
+                    "enum": [
+                      "area-check-officer-v2"
+                    ]
+                  },
+                  "marginMetres": {
+                    "type": "number"
+                  },
+                  "extent": {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  },
+                  "contextCount": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "unqualifiedInScope": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "areaRevisionAtReview": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "validator",
+                  "marginMetres",
+                  "extent",
+                  "contextCount",
+                  "unqualifiedInScope",
+                  "areaRevisionAtReview"
+                ],
+                "additionalProperties": false
               }
             },
             "required": [
@@ -76987,6 +77105,65 @@
                       "items": {
                         "type": "string"
                       }
+                    },
+                    "scope": {
+                      "type": "object",
+                      "properties": {
+                        "validator": {
+                          "type": "string",
+                          "enum": [
+                            "area-check-officer-v2"
+                          ]
+                        },
+                        "marginMetres": {
+                          "type": "number"
+                        },
+                        "extent": {
+                          "type": "array",
+                          "items": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          },
+                          "minItems": 4,
+                          "maxItems": 4
+                        },
+                        "contextCount": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "unqualifiedInScope": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "areaRevisionAtReview": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "validator",
+                        "marginMetres",
+                        "extent",
+                        "contextCount",
+                        "unqualifiedInScope",
+                        "areaRevisionAtReview"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "required": [
@@ -346313,6 +346490,45 @@
                     "items": {
                       "type": "string"
                     }
+                  },
+                  "scope": {
+                    "type": "object",
+                    "required": [
+                      "validator",
+                      "marginMetres",
+                      "extent",
+                      "contextCount",
+                      "unqualifiedInScope",
+                      "areaRevisionAtReview"
+                    ],
+                    "properties": {
+                      "validator": {
+                        "type": "string",
+                        "enum": [
+                          "area-check-officer-v2"
+                        ]
+                      },
+                      "marginMetres": {
+                        "type": "number"
+                      },
+                      "extent": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "minItems": 4,
+                        "maxItems": 4
+                      },
+                      "contextCount": {
+                        "type": "integer"
+                      },
+                      "unqualifiedInScope": {
+                        "type": "integer"
+                      },
+                      "areaRevisionAtReview": {
+                        "type": "integer"
+                      }
+                    }
                   }
                 }
               }
@@ -348873,6 +349089,45 @@
                     "type": "array",
                     "items": {
                       "type": "string"
+                    }
+                  },
+                  "scope": {
+                    "type": "object",
+                    "required": [
+                      "validator",
+                      "marginMetres",
+                      "extent",
+                      "contextCount",
+                      "unqualifiedInScope",
+                      "areaRevisionAtReview"
+                    ],
+                    "properties": {
+                      "validator": {
+                        "type": "string",
+                        "enum": [
+                          "area-check-officer-v2"
+                        ]
+                      },
+                      "marginMetres": {
+                        "type": "number"
+                      },
+                      "extent": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "minItems": 4,
+                        "maxItems": 4
+                      },
+                      "contextCount": {
+                        "type": "integer"
+                      },
+                      "unqualifiedInScope": {
+                        "type": "integer"
+                      },
+                      "areaRevisionAtReview": {
+                        "type": "integer"
+                      }
                     }
                   }
                 }
@@ -362618,6 +362873,45 @@
                 "type": "array",
                 "items": {
                   "type": "string"
+                }
+              },
+              "scope": {
+                "type": "object",
+                "required": [
+                  "validator",
+                  "marginMetres",
+                  "extent",
+                  "contextCount",
+                  "unqualifiedInScope",
+                  "areaRevisionAtReview"
+                ],
+                "properties": {
+                  "validator": {
+                    "type": "string",
+                    "enum": [
+                      "area-check-officer-v2"
+                    ]
+                  },
+                  "marginMetres": {
+                    "type": "number"
+                  },
+                  "extent": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  },
+                  "contextCount": {
+                    "type": "integer"
+                  },
+                  "unqualifiedInScope": {
+                    "type": "integer"
+                  },
+                  "areaRevisionAtReview": {
+                    "type": "integer"
+                  }
                 }
               }
             }

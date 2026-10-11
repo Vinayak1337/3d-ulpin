@@ -160,9 +160,11 @@ function declarationSourceIds(rows: BodyRow[]): string[] {
 
 async function featureDocumentIds(client: PoolClient, features: Record<string, any>[]) {
   if (!features.length) return [];
-  const packages = (await client.query(`SELECT case_id,body->'documentPins' AS document_pins FROM import_packages
-    WHERE EXISTS(SELECT 1 FROM jsonb_array_elements(body->'features') feature
-      WHERE feature->>'id'=ANY($1::text[]))`, [features.map(feature => feature.id)])).rows;
+  const packages = (await client.query(`SELECT case_id,body->'documentPins' AS document_pins FROM import_packages p
+    JOIN (SELECT DISTINCT r.package_id FROM jsonb_to_recordset($1::jsonb) selected(feature_id uuid,revision integer)
+      JOIN physical_feature_revisions r ON r.feature_id=selected.feature_id AND r.revision=selected.revision
+    ) committed ON committed.package_id=p.id WHERE p.state='COMMITTED'`,
+  [JSON.stringify(features.map(feature => ({ feature_id: feature.id, revision: feature.revision })))])).rows;
   return packages.flatMap(pkg => Array.isArray(pkg.document_pins)
     ? pkg.document_pins.flatMap((pin: any) => typeof pin?.sourceId === 'string' ? [pin.sourceId] : []) : []);
 }

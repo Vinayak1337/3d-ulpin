@@ -27,8 +27,9 @@ class SnapshotControl {
   sources: any[] = receipt.documentPins.map((document: any, index: number) => ({ id: document.sourceId,
     case_id: receipt.caseId, revision: document.sourceRevision, sha256: document.sourceSha256,
     bytes: [3782332, 1655334, 2448909, 1630108][index], inspection: {} }));
-  packages: any[] = [{ featureIds: [retainedTower.buildingId],
+  packages: any[] = [{ id: protocolId(9000), state: 'COMMITTED', featureIds: [retainedTower.buildingId],
     document_pins: receipt.documentPins, parts: [] }];
+  featureRevisions = [{ feature_id: retainedTower.buildingId, revision: 4, package_id: protocolId(9000) }];
   qualifications: any[] = [];
   aliases: any[] = [];
   lineage: any[] = [];
@@ -73,11 +74,15 @@ class SnapshotControl {
       return this.sources.filter(source => !values[1] || values[1].includes(source.id)).slice(0, 2001);
     }
     if (query.startsWith('SELECT * FROM sources')) return this.sources.filter(source => source.id === values[0]);
-    if (query.startsWith('SELECT case_id,body')) {
-      if (query.includes('document_pins')) return this.packages.filter(pkg =>
-        pkg.featureIds.some((id: string) => values[0].includes(id)));
-      return this.packages;
+    if (query.startsWith('SELECT case_id,body') && query.includes('document_pins')) {
+      assert(query.includes('JOIN physical_feature_revisions'));
+      assert(!query.includes("jsonb_array_elements(body->'features')"));
+      const selected = JSON.parse(values[0]);
+      const ids = this.featureRevisions.filter(row => selected.some((feature: any) =>
+        feature.feature_id === row.feature_id && feature.revision === row.revision)).map(row => row.package_id);
+      return this.packages.filter(pkg => ids.includes(pkg.id) && pkg.state === 'COMMITTED');
     }
+    if (query.startsWith('SELECT case_id,body')) return this.packages;
     if (query.startsWith('SELECT DISTINCT ON(q.')) return this.qualifications.filter(row => !values[1]
       || (row.namespace === 'registry_record' ? values[1] : values[2]).includes(row.record_id));
     if (query.startsWith('SELECT DISTINCT ON(id)')) return this.declarationRows(values);
@@ -170,6 +175,27 @@ test('space closure holds only its level, building, feature, cited/package sourc
     const site = memory.bodies.find(row => row.namespace === 'registry_site');
     assert.equal(site.revision, 0);
     assert.deepEqual(site.body, { id: memory.site.id, identifier: memory.site.identifier, frame });
+  }));
+
+test('document pins come only from the exact feature revision committed by one of two packages',
+  async () => local(async () => {
+    const { memory, selection, building } = hierarchy();
+    const otherId = protocolId(9001);
+    memory.packages.push({ id: otherId, state: 'COMMITTED', featureIds: [building.id],
+      document_pins: [receipt.documentPins[3]], parts: [] });
+    memory.featureRevisions.push({ feature_id: building.id, revision: 3, package_id: otherId });
+    const first = await memory.capture(selection);
+    const sources = first.members.filter(member => member.pin.ref.namespace === 'source_revision')
+      .map(member => member.pin.ref.id);
+    assert(sources.includes(memory.sources[2].id));
+    assert(!sources.includes(memory.sources[3].id), 'same feature ID in another package is not membership');
+    memory.features[0].revision = 5;
+    memory.featureRevisions.push({ feature_id: building.id, revision: 5, package_id: otherId });
+    const corrected = await memory.capture(selection);
+    const correctedSources = corrected.members.filter(member => member.pin.ref.namespace === 'source_revision')
+      .map(member => member.pin.ref.id);
+    assert(correctedSources.includes(memory.sources[3].id));
+    assert(!correctedSources.includes(memory.sources[2].id), 'the previous committed package is not current');
   }));
 
 test('a file in another case and an unrelated record/site revision leave the scoped digest unchanged',

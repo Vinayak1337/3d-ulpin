@@ -1,4 +1,9 @@
-import { splitPackageReviewGeometry, requireQualifiedGeometryRecords } from '../usp/geometry';
+import {
+  splitPackageReviewGeometry, requireQualifiedGeometryRecords, qualifiedGeometryRecordPins, geometryPin,
+  isQualifiedPin, PACKAGE_REVIEW_MARGIN_METRES, PACKAGE_REVIEW_VALIDATOR,
+  type PackageReviewContextPin, type PackageReviewScope,
+} from '../usp/geometry';
+import { canonical } from '../cases/domain';
 import {
   assertSourceBuildingPackageAuthorityTx, commitSourceBuildingsTx, isGeometryFreePackage,
   lockSourceBuildingCasesTx, reviewSourceBuildings,
@@ -1100,19 +1105,183 @@ async function withNeighbours(
     a.id.localeCompare(b.id),
   );
 }
-async function effectiveFeatures(pkg: ImportPackage, area: MapArea) {
-  const current = (
-    await query(
-      "SELECT body FROM physical_features WHERE area_id=$1 AND revision>0 ORDER BY identifier",
-      [pkg.areaId],
-    )
-  ).rows.map((r) => r.body as PhysicalFeature);
-  const replaced = new Set(pkg.features.map((f) => f.id));
-  return withNeighbours(
-    [...current.filter((f) => !replaced.has(f.id)), ...pkg.features],
-    area,
-  );
+// Geographic bounds prefilter indexed rows; the final predicate checks the widened local-metre box.
+const packageReviewBoundsSql = `WITH bounds AS MATERIALIZED (
+  SELECT ST_MakeEnvelope($2,$3,$4,$5,0) local_extent,
+    CASE WHEN $10::integer IS NULL THEN ST_MakeEnvelope($6,$7,$8,$9,4326) ELSE
+      ST_Expand(ST_Envelope(ST_Transform(ST_SetSRID(ST_Translate(
+        ST_Segmentize(ST_MakeEnvelope($2,$3,$4,$5,0),32),
+        $11::double precision,$12::double precision),$10::integer),4326)),0.0000001)
+    END geographic_extent
+)`;
+const packageSpatialContextSql = `SELECT id FROM physical_features
+  WHERE area_id=$1 AND revision>0 AND id<>ALL($13::uuid[])
+    AND geometry && (SELECT local_extent FROM bounds)
+    AND ST_Intersects(geometry,(SELECT local_extent FROM bounds))
+  UNION
+  SELECT id FROM physical_features
+  WHERE area_id<>$1 AND revision>0 AND id<>ALL($13::uuid[])
+    AND $14::boolean AND body->>'worldStatus' IN ('observed','planned')
+    AND geographic_geometry && (SELECT geographic_extent FROM bounds)
+    AND ST_Intersects(ST_SetSRID(ST_Translate(ST_Transform(geographic_geometry,$10::integer),
+      -($11::double precision),-($12::double precision)),0),(SELECT local_extent FROM bounds))`;
+const packageContextSql = `${packageReviewBoundsSql}, selected AS MATERIALIZED (
+  ${packageSpatialContextSql}
+  UNION
+  SELECT f.id FROM property_associations a JOIN physical_features f ON f.id=a.to_id
+  WHERE a.from_id=ANY($13::uuid[]) AND a.relationship='occupies_parcel' AND a.status='confirmed'
+    AND f.revision>0 AND f.id<>ALL($13::uuid[])
+  UNION
+  SELECT f.id FROM block_groups g JOIN block_group_memberships m ON m.group_id=g.id
+  JOIN physical_features f ON f.id=m.feature_id
+  WHERE g.area_id=$1 AND f.area_id<>$1 AND f.revision>0 AND f.id<>ALL($13::uuid[])
+)
+SELECT f.body,f.area_id,q.qualification_revision,q.metadata,
+  CASE WHEN f.area_id<>$1 AND $10::integer IS NOT NULL THEN
+    ST_AsGeoJSON(ST_Translate(ST_Transform(f.geographic_geometry,$10::integer),
+      -($11::double precision),-($12::double precision)),9,0) END local_geometry,
+  count(*) OVER() AS context_count
+FROM selected s JOIN physical_features f ON f.id=s.id
+JOIN LATERAL (SELECT qualification_revision,metadata FROM usp_analytic_geometry
+  WHERE namespace='area_feature' AND id=f.id AND revision=f.revision OFFSET 0) q ON true
+ORDER BY f.id LIMIT 2001`;
+
+const unqualifiedContextCountSql = `${packageReviewBoundsSql}, scoped AS (${packageSpatialContextSql})
+  SELECT count(*)::integer AS unqualified_count FROM scoped s JOIN physical_features f ON f.id=s.id
+  WHERE NOT EXISTS (SELECT 1 FROM usp_analytic_geometry q
+    WHERE q.namespace='area_feature' AND q.id=f.id AND q.revision=f.revision)`;
+
+type ReviewDependencyPins = {
+  reference: string;
+  ownFeatures: string;
+  associations: string;
+  context: PackageReviewContextPin[];
+};
+type ReviewPinnedPackage = ImportPackage & { reviewDependencyPins?: ReviewDependencyPins };
+type ReviewAssociations = Awaited<ReturnType<typeof checkAssociations>>;
+type ReviewContextRow = {
+  body: PhysicalFeature;
+  area_id: string;
+  local_geometry: string | null;
+  qualification_revision: number;
+  metadata: unknown;
+  context_count: number | string;
+};
+type ReviewSnapshot = {
+  features: PhysicalFeature[];
+  scope: PackageReviewScope;
+  associations: ReviewAssociations;
+};
+
+function geometryExtent(features: PhysicalFeature[], geographic = false): [number, number, number, number] {
+  const bounds: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity];
+  const visit = (coordinates: unknown) => {
+    if (!Array.isArray(coordinates)) return;
+    if (coordinates.length === 2 && coordinates.every(value => typeof value === 'number')) {
+      bounds[0] = Math.min(bounds[0], coordinates[0]);
+      bounds[1] = Math.min(bounds[1], coordinates[1]);
+      bounds[2] = Math.max(bounds[2], coordinates[0]);
+      bounds[3] = Math.max(bounds[3], coordinates[1]);
+    } else coordinates.forEach(visit);
+  };
+  for (const feature of features) {
+    visit((geographic ? feature.geographicGeometry : feature.geometry)?.coordinates);
+  }
+  if (!bounds.every(Number.isFinite)) {
+    throw new AppError(422, 'AREA_REVIEW_EXTENT', 'The package needs a finite geometry extent before review.');
+  }
+  return bounds;
 }
+
+function contextParameters(pkg: ImportPackage, area: MapArea, extent: number[]) {
+  const ownGeometry = pkg.features.filter(feature => feature.geometry !== null);
+  return [area.id, ...extent, ...geometryExtent(ownGeometry, true),
+    area.reference ? Number(area.reference.analysisCrs.split(':')[1]) : null,
+    ...(area.reference?.origin ?? [null, null]), pkg.features.map(feature => feature.id),
+    Boolean(area.reference) && usesGeographicNeighbours(ownGeometry)];
+}
+
+async function checkedAssociations(features: PhysicalFeature[], client?: PoolClient) {
+  const ids = new Set(features.map(feature => feature.id));
+  return (await checkAssociations([...ids], client))
+    .filter(link => ids.has(link.buildingId) && ids.has(link.parcelId))
+    .sort((first, second) => first.id.localeCompare(second.id));
+}
+
+async function effectiveFeatures(pkg: ImportPackage, area: MapArea, client?: PoolClient): Promise<ReviewSnapshot> {
+  if (pkg.features.length > 2000) {
+    throw new AppError(422, 'AREA_LIMIT', 'A package review supports at most 2,000 own features.');
+  }
+  const ownGeometry = pkg.features.filter(feature => feature.geometry !== null);
+  const bounds = geometryExtent(ownGeometry);
+  const margin = PACKAGE_REVIEW_MARGIN_METRES;
+  const extent: PackageReviewScope['extent'] = [bounds[0] - margin, bounds[1] - margin,
+    bounds[2] + margin, bounds[3] + margin];
+  const run = client ? client.query.bind(client) : query;
+  const rows = (await run(packageContextSql, contextParameters(pkg, area, extent))).rows as ReviewContextRow[];
+  const contextCount = Number(rows[0]?.context_count ?? rows.length);
+  if (contextCount > 2000) {
+    throw new AppError(422, 'AREA_CONTEXT_LIMIT',
+      `This package has ${pkg.features.length} own features and ${contextCount} qualified context features; `
+        + 'the context limit is 2,000. Choose a smaller review scope.',
+      { ownCount: pkg.features.length, contextCount, contextLimit: 2000 });
+  }
+  const qualified = await qualifiedGeometryRecordPins('FIND', 'area_feature', rows.map(row => row.body), client);
+  const canonicalRows = rows.filter(row => isQualifiedPin(qualified, geometryPin('area_feature', row.body)));
+  const contextPins = canonicalRows.map(row => ({ id: row.body.id, revision: row.body.revision,
+    qualification: { revision: Number(row.qualification_revision), fingerprint: sha256(canonical(row.metadata)) } }));
+  const count = (await run(unqualifiedContextCountSql, contextParameters(pkg, area, extent))).rows[0];
+  const features = [...ownGeometry, ...await projectedFeatures(canonicalRows, area)]
+    .sort((first, second) => first.id.localeCompare(second.id));
+  return { features, scope: { extent, contextPins, areaRevisionAtReview: area.revision,
+    unqualifiedInScope: Number(count?.unqualified_count ?? 0) },
+    associations: await checkedAssociations(features, client) };
+}
+
+function reviewDependencies(pkg: ImportPackage, area: MapArea, snapshot: ReviewSnapshot): ReviewDependencyPins {
+  return { reference: sha256(canonical(area.reference)),
+    ownFeatures: sha256(canonical([...pkg.features].sort((first, second) => first.id.localeCompare(second.id)))),
+    associations: sha256(canonical(snapshot.associations)),
+    context: [...snapshot.scope.contextPins].sort((first, second) => first.id.localeCompare(second.id)) };
+}
+
+function packageReviewFingerprint(pkg: ImportPackage, area: MapArea, snapshot: ReviewSnapshot, revision: number) {
+  return sha256(canonical({ features: [...pkg.features].sort((first, second) => first.id.localeCompare(second.id)),
+    packageRevision: revision, reference: area.reference,
+    context: [...snapshot.scope.contextPins].sort((first, second) => first.id.localeCompare(second.id)),
+    associations: snapshot.associations, validator: PACKAGE_REVIEW_VALIDATOR,
+    extent: snapshot.scope.extent, marginMetres: PACKAGE_REVIEW_MARGIN_METRES }));
+}
+async function reviewPinDifference(before: ReviewDependencyPins, after: ReviewDependencyPins, client: PoolClient) {
+  if (before.reference !== after.reference) return 'The area reference changed; review again.';
+  const oldPins = new Map(before.context.map(pin => [pin.id, pin]));
+  const newPins = new Map(after.context.map(pin => [pin.id, pin]));
+  const ids = [...new Set([...oldPins.keys(), ...newPins.keys()])].sort();
+  for (const id of ids) {
+    const previous = oldPins.get(id);
+    const current = newPins.get(id);
+    if (!previous) return `Recorded context feature ${id} entered the checked context; review again.`;
+    if (!current) {
+      const row = (await client.query('SELECT revision FROM physical_features WHERE id=$1', [id])).rows[0];
+      if (row && Number(row.revision) !== previous.revision) {
+        return `Recorded context feature ${id} changed from revision ${previous.revision} to ${row.revision}; `
+          + 'review again.';
+      }
+      return `Recorded context feature ${id} left the checked context or lost its geometry qualification; review again.`;
+    }
+    if (previous.revision !== current.revision) {
+      return `Recorded context feature ${id} changed from revision ${previous.revision} to ${current.revision}; `
+        + 'review again.';
+    }
+    if (canonical(previous.qualification) !== canonical(current.qualification)) {
+      return `The geometry qualification of recorded context feature ${id} changed; review again.`;
+    }
+  }
+  if (before.ownFeatures !== after.ownFeatures) return 'The package observations changed; review again.';
+  if (before.associations !== after.associations) return 'An association among the checked features changed; review again.';
+  return 'The checked extent or review validator changed; review again.';
+}
+
 export async function rebasePackage(id: string, expectedRevision: number) {
   return transaction(async (client) => {
     const pkg = await lockedPackage(client, id, expectedRevision);
@@ -1260,24 +1429,26 @@ export async function createPackageCorrection(id: string, requestKey: string) {
   });
 }
 export async function reviewPackage(id: string, expectedRevision: number) {
-  if (isGeometryFreePackage(await getPackage(id))) return reviewSourceBuildings(id, expectedRevision);
-  if ((await getPackage(id)).sourceWorkspace) throw new AppError(422, "SOURCE_WORKSPACE", "Review the derived footprint draft or assign documents to a property before recording.");
-  const pkg = await getPackage(id),
-    area = await getArea(pkg.areaId);
+  const pkg = await getPackage(id);
+  if (isGeometryFreePackage(pkg)) return reviewSourceBuildings(id, expectedRevision);
+  if (pkg.sourceWorkspace) throw new AppError(422, "SOURCE_WORKSPACE", "Review the derived footprint draft or assign documents to a property before recording.");
+  const areaRow = (await query("SELECT * FROM map_areas WHERE id=$1", [pkg.areaId])).rows[0]
+    || notFound("Map area not found.");
+  const area = areaFrom(areaRow);
   if (pkg.revision !== expectedRevision) conflict();
-  const features = await effectiveFeatures(pkg, area);
-  const admission = await splitPackageReviewGeometry(features, pkg);
+  const snapshot = await effectiveFeatures(pkg, area);
+  const admission = await splitPackageReviewGeometry(snapshot.features, pkg, snapshot.scope);
   await requireQualifiedGeometryRecords('FIND', 'area_feature', admission.requireQualification);
   const checkFeatures = admission.checkFeatures;
-  const checkLinks = await checkAssociations(checkFeatures.map(feature => feature.id));
+  const checkLinks = snapshot.associations;
   const result = await areaGeo<{ findings: AreaFinding[]; coverage: string[] }>(
     "check",
     { features: checkFeatures, associations: checkLinks, reference: area.reference },
   );
   result.coverage.push(...admission.coverage);
   result.findings = await enrichFindings(result.findings, checkFeatures, area.id);
-  // Omitted neighbours still participate in the unchanged recording fingerprint.
-  const associations = await checkAssociations(features.map(feature => feature.id));
+  const inputFingerprint = packageReviewFingerprint(pkg, area, snapshot, expectedRevision + 1);
+  const dependencies = reviewDependencies(pkg, area, snapshot);
   for (const question of pkg.questions.filter(
     (q) => q.kind === "conflicting_claims" && !q.answer,
   ))
@@ -1289,32 +1460,26 @@ export async function reviewPackage(id: string, expectedRevision: number) {
       featureIds: [question.entityId],
     });
   return transaction(async (client) => {
-    const current = await lockedPackage(client, id, expectedRevision);
-    const areaRow = (
-      await client.query("SELECT * FROM map_areas WHERE id=$1 FOR UPDATE", [
-        pkg.areaId,
-      ])
-    ).rows[0];
-    if (areaRow.revision !== area.revision)
-      conflict("Area changed during review; run a fresh check.");
+    const current = await lockedPackage(client, id, expectedRevision) as ReviewPinnedPackage;
+    const lockedArea = areaFrom((await client.query("SELECT * FROM map_areas WHERE id=$1 FOR UPDATE",
+      [pkg.areaId])).rows[0]);
+    const latest = await effectiveFeatures(current, lockedArea, client);
+    if (packageReviewFingerprint(current, lockedArea, latest, expectedRevision + 1) !== inputFingerprint) {
+      conflict(await reviewPinDifference(dependencies, reviewDependencies(current, lockedArea, latest), client));
+    }
     // Height questions only block 3D conclusions. The operator may review footprint observations independently.
     current.revision++;
     current.state = "REVIEWED";
+    current.reviewDependencyPins = dependencies;
     current.review = {
       areaRevision: area.revision,
       packageRevision: current.revision,
-      inputFingerprint: sha256(
-        JSON.stringify({
-          features,
-          associations,
-          reference: area.reference,
-          areaRevision: area.revision,
-          packageRevision: current.revision,
-          validator: "area-check-officer-v1",
-        }),
-      ),
+      inputFingerprint,
       findings: result.findings,
       coverage: result.coverage,
+      scope: { validator: PACKAGE_REVIEW_VALIDATOR, marginMetres: PACKAGE_REVIEW_MARGIN_METRES,
+        extent: snapshot.scope.extent, contextCount: snapshot.scope.contextPins.length,
+        unqualifiedInScope: snapshot.scope.unqualifiedInScope, areaRevisionAtReview: area.revision },
     };
     await savePackage(client, current);
     return current;
@@ -1342,7 +1507,7 @@ export async function commitPackage(
     if (isGeometryFreePackage(raw.body)) {
       return commitSourceBuildingsTx(client, raw.body, expectedRevision, acknowledgement);
     }
-    const pkg = raw.body as ImportPackage & {
+    const pkg = raw.body as ReviewPinnedPackage & {
       extent: Normalized["extent"];
       geographicExtent: Normalized["extent"];
     };
@@ -1360,42 +1525,20 @@ export async function commitPackage(
         pkg.areaId,
       ])
     ).rows[0];
-    if (areaRow.revision !== pkg.review.areaRevision)
-      conflict("Area neighbours changed; review the proposed update again.");
+    if (pkg.review.scope?.validator !== PACKAGE_REVIEW_VALIDATOR || !pkg.reviewDependencyPins) {
+      conflict("This review uses the previous review scope; review again before recording.");
+    }
     if (!acknowledgement.trim())
       throw new AppError(
         422,
         "ACKNOWLEDGEMENT_REQUIRED",
         "Acknowledge that these are physical observations and describe unresolved findings.",
       );
-    const current = (
-        await client.query(
-          "SELECT body FROM physical_features WHERE area_id=$1 AND revision>0 ORDER BY identifier",
-          [pkg.areaId],
-        )
-      ).rows.map((r) => r.body as PhysicalFeature),
-      replaced = new Set(pkg.features.map((f) => f.id));
-    const effective = await withNeighbours(
-      [...current.filter((f) => !replaced.has(f.id)), ...pkg.features],
-      areaFrom(areaRow),
-      client,
-    );
-    if (
-      sha256(
-        JSON.stringify({
-          features: effective,
-          associations: await checkAssociations(
-            effective.map((f) => f.id),
-            client,
-          ),
-          reference: areaRow.reference,
-          areaRevision: areaRow.revision,
-          packageRevision: pkg.revision,
-          validator: "area-check-officer-v1",
-        }),
-      ) !== pkg.review.inputFingerprint
-    )
-      conflict("The review fingerprint no longer matches.");
+    const area = areaFrom(areaRow);
+    const snapshot = await effectiveFeatures(pkg, area, client);
+    if (packageReviewFingerprint(pkg, area, snapshot, pkg.revision) !== pkg.review.inputFingerprint) {
+      conflict(await reviewPinDifference(pkg.reviewDependencyPins, reviewDependencies(pkg, area, snapshot), client));
+    }
     for (const feature of pkg.features) {
       const stored = (
         await client.query(

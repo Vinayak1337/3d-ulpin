@@ -3,7 +3,7 @@ import test from 'node:test';
 import type { ImportPackage, PhysicalFeature } from '@ulpin/contracts';
 import type { Pool } from 'pg';
 import { reviewPackage } from './areas';
-import { sha256 } from '../../infrastructure/storage';
+import { sameCanonicalGeometryPayload } from '../usp/geometry';
 import { nativeReviewFixture, recordedNeighbourFixture, retainedRoofprintFixture } from './native-review.test-fixture';
 
 const refusal = 'Spatial analysis is not assessed: changed or unqualified geometry '
@@ -23,10 +23,16 @@ function reviewControl(pkg: ImportPackage, neighbours: PhysicalFeature[] = [], q
       id, revision: 1, profile: 'area-geojson-v2', status: 'inspected',
     })) };
     if (sql.includes('FROM map_areas')) return { rows: [area] };
-    if (sql.includes('FROM physical_features')) return { rows: neighbours.map(body => ({ body })) };
+    const eligible = neighbours.filter(feature => qualified.some(record => record.id === feature.id
+      && record.revision === feature.revision && sameCanonicalGeometryPayload(record as any, feature as any)));
+    if (sql.includes('AS unqualified_count')) return { rows: [{ unqualified_count: neighbours.length - eligible.length }] };
+    if (sql.startsWith('WITH bounds')) return { rows: eligible.map(body => ({ body, area_id: pkg.areaId,
+      local_geometry: null, qualification_revision: 1, metadata: { receiptId: 'technical-qualified-control' },
+      context_count: eligible.length })) };
     if (sql.includes('FROM usp_analytic_geometry')) return { rows: qualified.map(body => ({
       id: body.id, revision: body.revision, body,
     })) };
+    if (sql.includes('FROM physical_features')) return { rows: neighbours.map(body => ({ body })) };
     if (sql.includes('FROM property_associations')) {
       associationScopes.push(values[0]);
       return { rows: [] };
@@ -91,17 +97,18 @@ test('a publisher-native package in an empty area receives an admission review w
     assert.equal(control.history.length, 1);
     assert.deepEqual(control.stored(), reviewed);
     assert.deepEqual(reviewed.features, pkg.features, 'admission never records or changes a feature');
-    assert.equal(reviewed.review?.coverage.at(-1),
+    assert.equal(reviewed.review?.coverage[1],
       '1 source-native candidate(s) checked for admission, not recorded-geometry analysis. '
         + '1 of these have no stated role; what the outline represents is unknown. '
         + '0 recorded context feature(s) assessed; recorded neighbours require canonical geometry qualification.');
     assert.deepEqual(control.checkInputs[0].features, pkg.features);
-    assert(!reviewed.review?.coverage.some(line => line.includes('were not assessed against')));
-    assert(!control.queries.some((sql: string) => sql.includes('FROM usp_analytic_geometry')));
+    assert.equal(reviewed.review?.scope?.unqualifiedInScope, 0);
+    assert.equal(reviewed.review?.scope?.validator, 'area-check-officer-v2');
+    assert(!control.queries.some(sql => sql.startsWith('SELECT body FROM physical_features WHERE area_id=')));
   });
 });
 
-test('an omitted unqualified neighbour is disclosed and still pins the full recording fingerprint', async () => {
+test('an omitted unqualified neighbour is disclosed but never pinned in the review fingerprint', async () => {
   const pkg = nativeReviewFixture();
   const neighbour = recordedNeighbourFixture();
   await memoryReview(pkg, [neighbour], async control => {
@@ -109,18 +116,17 @@ test('an omitted unqualified neighbour is disclosed and still pins the full reco
     assert.equal(reviewed.state, 'REVIEWED');
     assert.deepEqual(control.checkInputs[0].features, pkg.features);
     assert.deepEqual(control.associationScopes[0], pkg.features.map(feature => feature.id));
-    assert.deepEqual(control.associationScopes.at(-1), [neighbour.id, pkg.features[0].id]);
-    assert.equal(reviewed.review?.coverage.at(-1),
-      '1 recorded features in or beside this area hold no geometry qualification '
-        + 'and were not assessed against these candidates.');
-    const fullFingerprint = (features: PhysicalFeature[]) => sha256(JSON.stringify({
-      features, associations: [], reference: null, areaRevision: 0,
-      packageRevision: reviewed.revision, validator: 'area-check-officer-v1',
-    }));
-    assert.equal(reviewed.review?.inputFingerprint, fullFingerprint([neighbour, ...pkg.features]));
-    assert.notEqual(reviewed.review?.inputFingerprint, fullFingerprint(pkg.features));
-    assert.notEqual(reviewed.review?.inputFingerprint,
-      fullFingerprint([{ ...neighbour, revision: 2 }, ...pkg.features]));
+    assert.deepEqual(control.associationScopes.at(-1), pkg.features.map(feature => feature.id));
+    assert(reviewed.review?.coverage.some(line => line.startsWith('1 recorded feature(s) in that widened extent')));
+    assert.equal(reviewed.review?.scope?.unqualifiedInScope, 1);
+    assert.equal(reviewed.review?.scope?.contextCount, 0);
+    const originalPin = reviewed.review!.inputFingerprint;
+    const changedNeighbour = { ...neighbour, revision: 2 };
+    await memoryReview(pkg, [changedNeighbour], async changed => {
+      const next = await reviewPackage(pkg.id, pkg.revision);
+      assert.equal(next.review!.inputFingerprint, originalPin);
+      assert.deepEqual(changed.checkInputs[0].features, pkg.features);
+    });
   });
 });
 
@@ -130,13 +136,14 @@ test('only the exact qualified context payload participates in candidate checks'
   await memoryReview(pkg, [neighbour], async control => {
     const reviewed = await reviewPackage(pkg.id, pkg.revision);
     assert.deepEqual(control.checkInputs[0].features, [neighbour, ...pkg.features]);
-    assert(reviewed.review?.coverage.at(-1)?.includes('1 recorded context feature(s) assessed'));
-    assert(!reviewed.review?.coverage.some(line => line.includes('were not assessed against')));
+    assert(reviewed.review?.coverage.some(line => line.includes('1 recorded context feature(s) assessed')));
+    assert.equal(reviewed.review?.scope?.contextCount, 1);
+    assert.equal(reviewed.review?.scope?.unqualifiedInScope, 0);
   }, [neighbour]);
   await memoryReview(pkg, [{ ...neighbour, name: `${neighbour.name} changed` }], async control => {
     const reviewed = await reviewPackage(pkg.id, pkg.revision);
     assert.deepEqual(control.checkInputs[0].features, pkg.features);
-    assert(reviewed.review?.coverage.at(-1)?.startsWith('1 recorded features'));
+    assert(reviewed.review?.coverage.some(line => line.startsWith('1 recorded feature(s)')));
   }, [neighbour]);
 });
 

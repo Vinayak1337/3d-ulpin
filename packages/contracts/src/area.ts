@@ -264,6 +264,14 @@ export interface ImportPackage {
     inputFingerprint: string;
     findings: AreaFinding[];
     coverage: string[];
+    scope?: {
+      validator: "area-check-officer-v2";
+      marginMetres: number;
+      extent: [number, number, number, number];
+      contextCount: number;
+      unqualifiedInScope: number;
+      areaRevisionAtReview: number;
+    };
   };
   createdAt: string;
   acknowledgement?: string;

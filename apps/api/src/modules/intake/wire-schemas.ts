@@ -199,6 +199,9 @@ export const importPackage = z.object({
   review: z.object({
     areaRevision: z.number().int(), packageRevision: z.number().int(), inputFingerprint: z.string(),
     findings: z.array(finding), coverage: z.array(z.string()),
+    scope: z.object({validator: z.literal('area-check-officer-v2'), marginMetres: z.number(),
+      extent: z.tuple([z.number(), z.number(), z.number(), z.number()]), contextCount: z.number().int(),
+      unqualifiedInScope: z.number().int(), areaRevisionAtReview: z.number().int()}).optional(),
   }).optional(), acknowledgement: z.string().optional(),
   selectedClaimIds: z.array(uuid).optional(),
   factDecisions: z.array(z.object({claimId: uuid, reason: z.string(), time: z.string(), actor: z.string()})).optional(),

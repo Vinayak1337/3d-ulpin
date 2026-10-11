@@ -6359,6 +6359,15 @@ export interface components {
                     limitations?: string[];
                 }[];
                 coverage: string[];
+                scope?: {
+                    /** @enum {string} */
+                    validator: "area-check-officer-v2";
+                    marginMetres: number;
+                    extent: (number)[];
+                    contextCount: number;
+                    unqualifiedInScope: number;
+                    areaRevisionAtReview: number;
+                };
             };
             acknowledgement?: string;
             selectedClaimIds?: string[];
@@ -6921,6 +6930,15 @@ export interface components {
                     limitations?: string[];
                 }[];
                 coverage: string[];
+                scope?: {
+                    /** @enum {string} */
+                    validator: "area-check-officer-v2";
+                    marginMetres: number;
+                    extent: (number)[];
+                    contextCount: number;
+                    unqualifiedInScope: number;
+                    areaRevisionAtReview: number;
+                };
             };
             acknowledgement?: string;
             selectedClaimIds?: string[];
@@ -7866,6 +7884,15 @@ export interface components {
                         limitations?: string[];
                     }[];
                     coverage: string[];
+                    scope?: {
+                        /** @enum {string} */
+                        validator: "area-check-officer-v2";
+                        marginMetres: number;
+                        extent: (number)[];
+                        contextCount: number;
+                        unqualifiedInScope: number;
+                        areaRevisionAtReview: number;
+                    };
                 };
                 acknowledgement?: string;
                 selectedClaimIds?: string[];
@@ -60865,6 +60892,15 @@ export interface components {
                         limitations?: string[];
                     }[];
                     coverage: string[];
+                    scope?: {
+                        /** @enum {string} */
+                        validator: "area-check-officer-v2";
+                        marginMetres: number;
+                        extent: number[];
+                        contextCount: number;
+                        unqualifiedInScope: number;
+                        areaRevisionAtReview: number;
+                    };
                 };
             };
             item: {
@@ -61517,6 +61553,15 @@ export interface components {
                         limitations?: string[];
                     }[];
                     coverage: string[];
+                    scope?: {
+                        /** @enum {string} */
+                        validator: "area-check-officer-v2";
+                        marginMetres: number;
+                        extent: number[];
+                        contextCount: number;
+                        unqualifiedInScope: number;
+                        areaRevisionAtReview: number;
+                    };
                 };
             } | null;
             receipt: {
@@ -64462,6 +64507,15 @@ export interface components {
                     limitations?: string[];
                 }[];
                 coverage: string[];
+                scope?: {
+                    /** @enum {string} */
+                    validator: "area-check-officer-v2";
+                    marginMetres: number;
+                    extent: number[];
+                    contextCount: number;
+                    unqualifiedInScope: number;
+                    areaRevisionAtReview: number;
+                };
             };
         };
         POST_ingestion_cases_caseId_intake_items_Request_application_json: {

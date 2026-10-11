@@ -99,16 +99,31 @@ export function isSourceNativeCandidate(feature: PhysicalFeature,
     && feature.evidence.some(entry => entry.sourceRevisionId === feature.sourceRevisionId);
 }
 
-/** Admission checks use candidates and qualified recorded context; omitted neighbours still pin the full review. */
+export const PACKAGE_REVIEW_MARGIN_METRES = 255;
+export const PACKAGE_REVIEW_VALIDATOR = 'area-check-officer-v2';
+export type PackageReviewContextPin = {
+  id: string;
+  revision: number;
+  qualification: { revision: number; fingerprint: string };
+};
+export type PackageReviewScope = {
+  extent: [number, number, number, number];
+  unqualifiedInScope: number;
+  areaRevisionAtReview: number;
+  contextPins: PackageReviewContextPin[];
+};
+
+/** Admission reads own candidates and exactly the qualified, bounded context selected in canonical coordinates. */
 export async function splitPackageReviewGeometry(features: readonly PhysicalFeature[],
-  pkg: { features: readonly PhysicalFeature[]; sourceRevisionIds: readonly string[] }) {
+  pkg: { features: readonly PhysicalFeature[]; sourceRevisionIds: readonly string[] },
+  scope: PackageReviewScope) {
   const ownIds = new Set(pkg.features.map(feature => feature.id));
   const candidates = features.filter(feature => ownIds.has(feature.id) && isSourceNativeCandidate(feature, pkg));
   const candidateIds = new Set(candidates.map(feature => feature.id));
   const requireQualification = features.filter(feature => ownIds.has(feature.id) && !candidateIds.has(feature.id));
   const context = features.filter(feature => !ownIds.has(feature.id));
-  const qualified = await qualifiedGeometryRecordPins('FIND', 'area_feature', context);
-  const qualifiedContext = context.filter(feature => isQualifiedPin(qualified, geometryPin('area_feature', feature)));
+  const pins = new Map(scope.contextPins.map(pin => [pin.id, pin]));
+  const qualifiedContext = context.filter(feature => pins.get(feature.id)?.revision === feature.revision);
   const checkIds = new Set([...candidateIds, ...requireQualification.map(feature => feature.id),
     ...qualifiedContext.map(feature => feature.id)]);
   const unknownRoles = candidates.filter(feature => {
@@ -121,12 +136,17 @@ export async function splitPackageReviewGeometry(features: readonly PhysicalFeat
       + `${qualifiedContext.length} recorded context feature(s) assessed; `
       + 'recorded neighbours require canonical geometry qualification.',
   ];
-  const omitted = context.length - qualifiedContext.length;
-  if (omitted) coverage.push(
-    `${omitted} recorded features in or beside this area hold no geometry qualification `
-      + 'and were not assessed against these candidates.',
+  coverage.push(
+    'Context within 255 m of this package\'s extent was read: the farthest a modelled utility corridor '
+      + 'can reach from its line.',
+    `${scope.unqualifiedInScope} recorded feature(s) in that widened extent hold no geometry qualification `
+      + `and were not assessed; counted at area revision ${scope.areaRevisionAtReview}. `
+      + 'Later changes to these unassessed features do not change this review.',
+    'The supplied package and its context were bounded to 2,000 features each; the check\'s 2,000-row, '
+      + '100,000-vertex and 20,000-pair budgets apply to this supplied set, not the whole area.',
   );
-  return { requireQualification, checkFeatures: features.filter(feature => checkIds.has(feature.id)), coverage };
+  return { requireQualification, checkFeatures: features.filter(feature => checkIds.has(feature.id)),
+    context: qualifiedContext, contextPins: scope.contextPins, coverage };
 }
 
 /** Caller payloads cannot reuse a qualified ID/revision while changing the geometry or its inputs. */
