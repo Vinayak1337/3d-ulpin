@@ -165,7 +165,8 @@ test('an authored table layout with null destination enrolls no draft job', () =
     const plan = { version: profile.version, mode: 'manual_mapping', source: profile.source,
       caseId: profile.caseId, workspaceRevision: profile.workspaceRevision,
       workspaceFingerprint: profile.workspaceFingerprint, tabular: profile.tabular, mapping,
-      decisions: mapping.fields.map(field => ({ sourceField: field.sourceField, reason: 'Keep this column unknown.' })) };
+      decisions: mapping.fields.map(field => ({ sourceField: field.sourceField,
+        reason: 'Keep this column unknown.' })) };
     const receipt = await service.author(control.caseId, control.source.id,
       { requestKey: randomUUID(), expectedRecipeRevision: 0, plan, destination: null });
     assert.equal(receipt.destination, null);
