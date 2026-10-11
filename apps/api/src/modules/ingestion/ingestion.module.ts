@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ManualIngestionService } from '@ulpin/server/modules/usp/ingestion/service';
 import { IngestionController } from './ingestion.controller';
+import { IntakeRunController } from './intake-run.controller';
 import { LargeOriginalController } from './large-original.controller';
 import { LargeOriginalService } from '@ulpin/server/modules/usp/ingestion/large-original';
 import { IngestionEventsController } from './events.controller';
@@ -49,5 +50,5 @@ import {KMLIngestionService} from '@ulpin/server/modules/usp/ingestion/kml';
 import {DXFController} from './dxf.controller';
 import {DXFIngestionService} from '@ulpin/server/modules/usp/ingestion/dxf';
 
-@Module({controllers:[IngestionController,LargeOriginalController,IngestionEventsController,ProjectedVectorController,PrivateMvtController,DocumentsController,DocumentClaimsController,DocumentProposalsController,SufficiencyController,AdaptiveMappingController,StreamingVectorController,ChunkMappingController,StreamedProfileController,RasterWindowController,PointBatchController,CityJSONController,IFCController,DXFController,KMLController,CityGMLController,GeoParquetController,GltfController,ObjController],providers:[ManualIngestionService,LargeOriginalService,ProjectedVectorService,PrivateMvtService,SemanticChunkService,DocumentIngestionService,DocumentClaimsService,DocumentProposalsService,IngestionSufficiencyService,AdaptiveMappingService,StreamingVectorService,ChunkMappingService,StreamedProfileService,StreamedMappingService,RasterWindowService,PointBatchService,CityJSONIngestionService,IFCIngestionService,DXFIngestionService,KMLIngestionService,CityGMLIngestionService,GeoParquetIngestionService,GltfIngestionService,ObjIngestionService]})
+@Module({controllers:[IngestionController,IntakeRunController,LargeOriginalController,IngestionEventsController,ProjectedVectorController,PrivateMvtController,DocumentsController,DocumentClaimsController,DocumentProposalsController,SufficiencyController,AdaptiveMappingController,StreamingVectorController,ChunkMappingController,StreamedProfileController,RasterWindowController,PointBatchController,CityJSONController,IFCController,DXFController,KMLController,CityGMLController,GeoParquetController,GltfController,ObjController],providers:[ManualIngestionService,LargeOriginalService,ProjectedVectorService,PrivateMvtService,SemanticChunkService,DocumentIngestionService,DocumentClaimsService,DocumentProposalsService,IngestionSufficiencyService,AdaptiveMappingService,StreamingVectorService,ChunkMappingService,StreamedProfileService,StreamedMappingService,RasterWindowService,PointBatchService,CityJSONIngestionService,IFCIngestionService,DXFIngestionService,KMLIngestionService,CityGMLIngestionService,GeoParquetIngestionService,GltfIngestionService,ObjIngestionService]})
 export class IngestionModule {}

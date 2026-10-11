@@ -95,12 +95,17 @@ export const IntakeTargetArtefactsSchema = z.strictObject({
 export const IntakeTargetSchema = z.strictObject({
   targetId: uuid, caseId: uuid, anchorItemId: uuid, packageId: uuid, featureId: uuid, locator: text,
   kind: z.literal('building'), stage: z.number().int().min(1).max(8), readiness: IntakeTargetReadinessSchema,
-  blockedBy: z.array(code).max(16), reason: z.string().min(1).max(2000).nullable(), confirmationId: uuid.nullable(),
+  blockedBy: z.array(code).max(16), reason: z.string().min(1).max(2000).nullable(),
+  confirmationId: uuid.nullable(),
   priorityAt: at.nullable(), artefacts: IntakeTargetArtefactsSchema, updatedAt: at,
 });
 const tally = z.number().int().nonnegative();
 export const IntakeTargetCountsSchema = z.strictObject({ preparing: tally, ready: tally, needs_answer: tally, held: tally,
   confirmed: tally, recorded: tally, carded: tally, stopped: tally });
+export const IntakeTargetQuerySchema = z.strictObject({
+  readiness: IntakeTargetReadinessSchema.optional(), cursor: uuid.optional(),
+});
+export const IntakeRunControlSchema = z.strictObject({});
 export const IntakeTargetPageSchema = z.strictObject({
   caseId: uuid, items: z.array(IntakeTargetSchema).max(INTAKE_TARGET_LIMITS.page),
   counts: IntakeTargetCountsSchema, nextCursor: uuid.nullable(),
@@ -121,6 +126,8 @@ export const IntakeConfirmationSchema = z.strictObject({
   targets: z.array(uuid).max(INTAKE_TARGET_LIMITS.confirmationTargets), reason: z.string().min(1).max(512),
   expiresAt: at, createdAt: at, progress: z.array(IntakeTargetSchema).max(INTAKE_TARGET_LIMITS.confirmationTargets),
   counts: z.strictObject({ recorded: tally, carded: tally, stopped: tally }),
+  findingCounts: z.record(code, tally).nullable()
+    .describe('Counts from the pinned package reviews; null if any exact review is no longer available.'),
 });
 export type IntakeTargetReadiness = z.infer<typeof IntakeTargetReadinessSchema>;
 export type IntakeTargetArtefacts = z.infer<typeof IntakeTargetArtefactsSchema>;

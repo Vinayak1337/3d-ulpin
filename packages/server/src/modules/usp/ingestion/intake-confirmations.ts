@@ -64,7 +64,9 @@ async function assertTargetsTx(client: PoolClient, caseId: string, input: Intake
   for (const targetId of input.targets) {
     const row = rows.find(value => value.target_id === targetId);
     if (!row) stale(`Target ${targetId} is not in this case.`);
-    if (!packages.has(row.package_id)) stale(`Target ${targetId} belongs to a package this confirmation does not name.`);
+    if (!packages.has(row.package_id)) {
+      stale(`Target ${targetId} belongs to a package this confirmation does not name.`);
+    }
     if (row.readiness !== 'ready') stale(`Target ${targetId} is ${row.readiness}, not ready.`);
   }
 }
@@ -123,6 +125,19 @@ async function countsTx(client: PoolClient, row: IntakeConfirmationRow) {
   [row.packages.map(named => named.packageId), row.confirmation_id])).rows[0];
 }
 
+async function findingCountsTx(client: PoolClient, row: IntakeConfirmationRow) {
+  const result = (await client.query(`WITH reviewed AS (
+      SELECT p.body FROM import_packages p JOIN unnest($1::uuid[],$2::text[]) AS named(id,fingerprint)
+      ON p.id=named.id AND p.body->'review'->>'inputFingerprint'=named.fingerprint
+    ), findings AS (
+      SELECT finding->>'code' AS code,count(*)::int AS count FROM reviewed
+      CROSS JOIN LATERAL jsonb_array_elements(body->'review'->'findings') AS finding GROUP BY finding->>'code'
+    ) SELECT (SELECT count(*)::int FROM reviewed) AS reviewed_count,
+      COALESCE((SELECT jsonb_object_agg(code,count) FROM findings),'{}'::jsonb) AS counts`,
+  [row.packages.map(named => named.packageId), row.packages.map(named => named.reviewFingerprint)])).rows[0];
+  return result.reviewed_count === row.packages.length ? result.counts : null;
+}
+
 /** The record, each listed target's stage, readiness, codes and artefacts, and the counts. */
 export async function readIntakeConfirmation(caseIdValue: string, confirmationIdValue: string) {
   const caseId = uuid.parse(caseIdValue);
@@ -136,7 +151,8 @@ export async function readIntakeConfirmation(caseIdValue: string, confirmationId
     return IntakeConfirmationSchema.parse({ confirmationId, caseId, requestKey: row.request_key,
       subject: row.subject, acknowledgement: row.acknowledgement, packages: row.packages, targets: row.targets,
       reason: row.reason, expiresAt: row.expires_at.toISOString(), createdAt: row.created_at.toISOString(),
-      progress: targets.map(intakeTargetView), counts: await countsTx(client, row) });
+      progress: targets.map(intakeTargetView), counts: await countsTx(client, row),
+      findingCounts: await findingCountsTx(client, row) });
   });
 }
 

@@ -188,9 +188,10 @@ export async function prioritizeIntakeTarget(caseIdValue: string, targetIdValue:
   const targetId = uuid.parse(targetIdValue);
   return transaction(async client => {
     await intakeCaseTx(client, caseId, true);
-    const current = (await client.query(`SELECT readiness FROM usp_intake_targets WHERE target_id=$1 AND case_id=$2
-      FOR UPDATE`, [targetId, caseId])).rows[0] ?? notFound('Intake target not found.');
-    if (!['confirmed', 'recorded'].includes(current.readiness)) {
+    const current = (await client.query(`SELECT readiness,confirmation_id FROM usp_intake_targets
+      WHERE target_id=$1 AND case_id=$2 FOR UPDATE`, [targetId, caseId])).rows[0]
+      ?? notFound('Intake target not found.');
+    if (!current.confirmation_id || !['confirmed', 'recorded'].includes(current.readiness)) {
       throw new AppError(409, 'INTAKE_TARGET_NOT_WAITING',
         `This target is ${current.readiness}; only a waiting one is moved up.`);
     }

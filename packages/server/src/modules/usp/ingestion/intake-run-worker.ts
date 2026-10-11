@@ -2,7 +2,8 @@ import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { ZodError } from 'zod';
 import type { ImportPackage } from '@ulpin/contracts';
-import type { IntakeTargetArtefacts, RequestContext, SnapshotScope, TargetPin } from '@ulpin/contracts/usp';
+import type { IntakeTargetArtefacts, PropertyCardVerification,
+  RequestContext, SnapshotScope, TargetPin } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
@@ -176,7 +177,8 @@ async function snapshot(carry: Carry) {
 }
 
 async function snapshotScope(carry: Carry): Promise<SnapshotScope> {
-  const row = (await query('SELECT body FROM usp_snapshots WHERE id=$1', [carry.target.artefacts.snapshot!.id])).rows[0];
+  const row = (await query('SELECT body FROM usp_snapshots WHERE id=$1',
+    [carry.target.artefacts.snapshot!.id])).rows[0];
   return row?.body.scope ?? refuse('INTAKE_SNAPSHOT_MISSING', 'The pinned snapshot is no longer stored.');
 }
 
@@ -230,8 +232,9 @@ async function execute(carry: Carry) {
 
 async function card(carry: Carry) {
   const planned = carry.target.artefacts.plan!;
-  const generated = await carry.steps.card(carry.ctx, { planId: planned.id, planVersion: planned.version, cardId: null,
-    expiresAt: carry.confirmation.expires_at.toISOString(), guard: { mode: 'create', requestKey: key(carry, 'card') } });
+  const generated = await carry.steps.card(carry.ctx, { planId: planned.id, planVersion: planned.version,
+    cardId: null, expiresAt: carry.confirmation.expires_at.toISOString(),
+    guard: { mode: 'create', requestKey: key(carry, 'card') } });
   await step(carry, 8, 'Its property card is made; it is verified next.',
     { card: { id: generated.cardId, revision: generated.revision } });
 }
@@ -247,21 +250,30 @@ export function intakeCardVerificationPin(url: string, expected: { id: string; r
   return { cardId: match[1], revision: Number(match[2]) };
 }
 
+export function assertIntakeCardVerified(report: PropertyCardVerification) {
+  if (report.snapshot.state !== 'same_revision') {
+    refuse('USP_STALE_TARGET', 'The card target changed after it was pinned; the officer must choose its revision.');
+  }
+  if (report.result !== 'consistent' || report.lifecycle.expired !== false
+    || report.lifecycle.revocation || report.lifecycle.superseded) {
+    refuse('INTAKE_CARD_UNVERIFIED', 'The card did not verify as consistent, current and unrevoked.');
+  }
+}
+
 async function verify(carry: Carry) {
   const made = carry.target.artefacts.card!;
   const { card: stored } = await carry.steps.readCard(carry.ctx, { cardId: made.id, revision: made.revision });
   const linked = intakeCardVerificationPin(stored.resolverUrl, made);
   const { report } = await carry.steps.verify(carry.ctx, linked);
-  if (report.result !== 'consistent' || report.lifecycle.expired !== false || report.lifecycle.revocation) {
-    refuse('INTAKE_CARD_UNVERIFIED', 'The card did not verify as consistent, current and unrevoked.');
-  }
+  assertIntakeCardVerified(report);
   await step(carry, 8, `Carded: card ${made.id} revision ${made.revision} verified consistent.`,
     { verification: 'consistent' });
 }
 
 const carrySteps: [keyof IntakeTargetArtefacts, (carry: Carry) => Promise<void>][] = [
   ['snapshot', snapshot],
-  ['identity', carry => step(carry, 6, 'Identity is not applicable to a building.', { identity: identityNotApplicable })],
+  ['identity', carry => step(carry, 6, 'Identity is not applicable to a building.',
+    { identity: identityNotApplicable })],
   ['plan', plan], ['planConfirmation', confirmPlan], ['packet', execute], ['card', card], ['verification', verify],
 ];
 

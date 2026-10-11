@@ -2,11 +2,12 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { z } from 'zod';
 import type { ImportPackage } from '@ulpin/contracts';
-import { IntakeConfirmSchema } from '@ulpin/contracts/usp';
+import { IntakeConfirmSchema, type PropertyCardVerification } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import { intakeConfirmationReason, packageDifference } from './intake-confirmations';
 import { intakeRunKey } from './intake-run';
-import { intakeCardVerificationPin, intakeRunRefusal, intakeTargetCitation } from './intake-run-worker';
+import { assertIntakeCardVerified, intakeCardVerificationPin,
+  intakeRunRefusal, intakeTargetCitation } from './intake-run-worker';
 
 const id = '10000000-0000-4000-8000-000000000001';
 const other = '10000000-0000-4000-8000-000000000002';
@@ -59,6 +60,19 @@ test('a product refusal stops, while infrastructure faults are retried by the au
   const invalid = z.string().safeParse(0);
   assert(!invalid.success);
   assert.equal(intakeRunRefusal(invalid.error)?.code, 'INTAKE_RUN_INPUT');
+});
+
+test('consistency alone is insufficient: moved pins, expiry, revocation and supersession keep a target stopped', () => {
+  const report = { result: 'consistent', snapshot: { state: 'same_revision' },
+    lifecycle: { expired: false, superseded: false, revocation: null } } as PropertyCardVerification;
+  assert.doesNotThrow(() => assertIntakeCardVerified(report));
+  assert.throws(() => assertIntakeCardVerified({ ...report, snapshot: { ...report.snapshot,
+    state: 'changed_revision' } }), { code: 'USP_STALE_TARGET' });
+  for (const change of [{ expired: true }, { superseded: true },
+    { revocation: { revokedAt: '2026-01-01T00:00:00Z', reasonCode: 'protocol_control' } }]) {
+    assert.throws(() => assertIntakeCardVerified({ ...report, lifecycle: { ...report.lifecycle, ...change } }),
+      { code: 'INTAKE_CARD_UNVERIFIED' });
+  }
 });
 
 test('verification reads the exact revision from the saved card link, not a fabricated link', () => {
