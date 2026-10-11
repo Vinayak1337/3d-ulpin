@@ -75,6 +75,7 @@ export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourc
   const item = await draftItemTx(client, source.id);
   if (!item || item.parent_item_id || item.family !== 'vector'
     || !['probed', 'planned', 'reading'].includes(item.state)) return null;
+  if (publishedCard && item.plan_ref) return null;
   const reason = intakeDraftLimit(item, source);
   if (reason) {
     await writeIntakeDraftTx(client, item.case_id, item.item_id, {

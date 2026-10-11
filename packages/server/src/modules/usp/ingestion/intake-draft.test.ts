@@ -151,6 +151,16 @@ test('unsupported large vector writes one limit reason/event and never enrolls a
   assert.equal(fixture.state.events, 1);
   assert.equal(fixture.jobs.length, 0);
 });
+test('a repeated probe leaves a proposed recipe waiting, without enrolling another job', async () => {
+  const fixture = protocol();
+  fixture.tray.state = 'planned';
+  fixture.tray.plan_ref = { recipeId: caseId, recipeRevision: 1, recipeState: 'proposed', origin: 'memory' };
+  const card = { ...fixture.tray.card, family: 'vector' } as NonNullable<DraftItem['card']>;
+  assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, card), null);
+  assert.equal(fixture.tray.state, 'planned');
+  assert.equal(fixture.tray.plan_ref.recipeState, 'proposed');
+  assert.equal(fixture.jobs.length, 0);
+});
 test('unregistered and child items do not enqueue', async () => {
   const fixture = protocol();
   fixture.tray.parent_item_id = caseId;

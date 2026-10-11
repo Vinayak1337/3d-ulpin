@@ -99,7 +99,9 @@ export function citeIntakeReceipt(card: IntakeCard, source: IntakeSourceRow): In
 
 export async function saveIntakeCardTx(client: PoolClient, itemId: string, card: IntakeCard) {
   await client.query(`UPDATE usp_intake_items SET card=$2,card_sha256=$3,probe_version=$4,family=$5,format=$6,
-    wave=CASE WHEN pinned_by_officer THEN wave ELSE $7 END,state='probed',limit_reason=NULL,updated_at=now()
+    wave=CASE WHEN pinned_by_officer THEN wave ELSE $7 END,
+    state=CASE WHEN plan_ref IS NULL THEN 'probed' ELSE state END,
+    limit_reason=CASE WHEN placement='needs_answer' THEN limit_reason ELSE NULL END,updated_at=now()
     WHERE item_id=$1`,
   [itemId, card, fingerprint(card), INTAKE_CARD_VERSION, card.family, card.format, intakeWave(card)]);
 }
