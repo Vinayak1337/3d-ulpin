@@ -228,6 +228,10 @@ export class ManualIngestionService {
       }
       await remember(client,caseId,key,digest,receipt);
       await appendCaseIngestionTx(client,caseId,{kind:'recipe.changed',recipeId:receipt.id,recipeRevision:receipt.revision,sourceId,status:receipt.state},subject);
+      if(input.plan.version==='manual-geojson/1'){
+        const {queueIntakeDraftTx}=await import('./intake-draft');
+        await queueIntakeDraftTx(client,validated.row);
+      }
       return receipt;
     });
   }
