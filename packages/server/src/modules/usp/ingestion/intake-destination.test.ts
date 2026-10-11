@@ -28,7 +28,7 @@ test('destination omission inserts no default; an explicit destination and its h
     fingerprint({ plan, destination }));
 });
 
-test('authored omission and worker destination parity: unbound, site-bound, revision/reference pinned and unavailable', async () => {
+test('authored omission matches worker proposal: unbound, site-bound/pinned and unavailable', async () => {
   const globals = globalThis as unknown as { ulpinPool?: Pool };
   const prior = globals.ulpinPool;
   let bound = false;

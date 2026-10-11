@@ -365866,6 +365866,16 @@
                     "type": "string",
                     "pattern": "^[a-f0-9]{64}$"
                   },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "building",
+                      "parcel",
+                      "road",
+                      "public_land",
+                      "utility"
+                    ]
+                  },
                   "heightField": {
                     "type": "string",
                     "minLength": 1,
@@ -365891,11 +365901,23 @@
                       "type": "object",
                       "properties": {
                         "target": {
-                          "type": "string",
-                          "enum": [
-                            "building.sourceKey",
-                            "building.name",
-                            "building.geometry"
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "building.sourceKey",
+                                "building.name",
+                                "building.geometry"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "feature.sourceKey",
+                                "feature.geometry",
+                                "feature.name"
+                              ]
+                            }
                           ]
                         },
                         "sourcePath": {
@@ -365908,7 +365930,8 @@
                           "enum": [
                             "literal_identifier@1",
                             "literal_text@1",
-                            "geojson_polygon@1"
+                            "geojson_polygon@1",
+                            "geojson_geometry@1"
                           ]
                         }
                       },
@@ -366011,8 +366034,7 @@
             "required": [
               "requestKey",
               "expectedRecipeRevision",
-              "plan",
-              "destination"
+              "plan"
             ],
             "additionalProperties": false
           },
@@ -366710,6 +366732,16 @@
                     "type": "string",
                     "pattern": "^[a-f0-9]{64}$"
                   },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "building",
+                      "parcel",
+                      "road",
+                      "public_land",
+                      "utility"
+                    ]
+                  },
                   "heightField": {
                     "type": "string",
                     "minLength": 1,
@@ -366735,11 +366767,23 @@
                       "type": "object",
                       "properties": {
                         "target": {
-                          "type": "string",
-                          "enum": [
-                            "building.sourceKey",
-                            "building.name",
-                            "building.geometry"
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "building.sourceKey",
+                                "building.name",
+                                "building.geometry"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "feature.sourceKey",
+                                "feature.geometry",
+                                "feature.name"
+                              ]
+                            }
                           ]
                         },
                         "sourcePath": {
@@ -366752,7 +366796,8 @@
                           "enum": [
                             "literal_identifier@1",
                             "literal_text@1",
-                            "geojson_polygon@1"
+                            "geojson_polygon@1",
+                            "geojson_geometry@1"
                           ]
                         }
                       },
@@ -367725,6 +367770,16 @@
                       "type": "string",
                       "pattern": "^[a-f0-9]{64}$"
                     },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "building",
+                        "parcel",
+                        "road",
+                        "public_land",
+                        "utility"
+                      ]
+                    },
                     "heightField": {
                       "type": "string",
                       "minLength": 1,
@@ -367750,11 +367805,23 @@
                         "type": "object",
                         "properties": {
                           "target": {
-                            "type": "string",
-                            "enum": [
-                              "building.sourceKey",
-                              "building.name",
-                              "building.geometry"
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "building.sourceKey",
+                                  "building.name",
+                                  "building.geometry"
+                                ]
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "feature.sourceKey",
+                                  "feature.geometry",
+                                  "feature.name"
+                                ]
+                              }
                             ]
                           },
                           "sourcePath": {
@@ -367767,7 +367834,8 @@
                             "enum": [
                               "literal_identifier@1",
                               "literal_text@1",
-                              "geojson_polygon@1"
+                              "geojson_polygon@1",
+                              "geojson_geometry@1"
                             ]
                           }
                         },
@@ -387007,6 +387075,16 @@
                 "type": "string",
                 "pattern": "^[a-f0-9]{64}$"
               },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "building",
+                  "parcel",
+                  "road",
+                  "public_land",
+                  "utility"
+                ]
+              },
               "heightField": {
                 "type": "string",
                 "minLength": 1,
@@ -387032,11 +387110,23 @@
                   "type": "object",
                   "properties": {
                     "target": {
-                      "type": "string",
-                      "enum": [
-                        "building.sourceKey",
-                        "building.name",
-                        "building.geometry"
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "building.sourceKey",
+                            "building.name",
+                            "building.geometry"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "enum": [
+                            "feature.sourceKey",
+                            "feature.geometry",
+                            "feature.name"
+                          ]
+                        }
                       ]
                     },
                     "sourcePath": {
@@ -387049,7 +387139,8 @@
                       "enum": [
                         "literal_identifier@1",
                         "literal_text@1",
-                        "geojson_polygon@1"
+                        "geojson_polygon@1",
+                        "geojson_geometry@1"
                       ]
                     }
                   },
@@ -388927,6 +389018,16 @@
                     "type": "string",
                     "pattern": "^[a-f0-9]{64}$"
                   },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "building",
+                      "parcel",
+                      "road",
+                      "public_land",
+                      "utility"
+                    ]
+                  },
                   "heightField": {
                     "type": "string",
                     "minLength": 1,
@@ -388952,11 +389053,23 @@
                       "type": "object",
                       "properties": {
                         "target": {
-                          "type": "string",
-                          "enum": [
-                            "building.sourceKey",
-                            "building.name",
-                            "building.geometry"
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "building.sourceKey",
+                                "building.name",
+                                "building.geometry"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "feature.sourceKey",
+                                "feature.geometry",
+                                "feature.name"
+                              ]
+                            }
                           ]
                         },
                         "sourcePath": {
@@ -388969,7 +389082,8 @@
                           "enum": [
                             "literal_identifier@1",
                             "literal_text@1",
-                            "geojson_polygon@1"
+                            "geojson_polygon@1",
+                            "geojson_geometry@1"
                           ]
                         }
                       },
