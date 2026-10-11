@@ -33,7 +33,7 @@ function stale(message: string): never {
 
 /** The first way a named package differs from what the officer saw, or null. */
 export function packageDifference(named: IntakeConfirm['packages'][number], pkg: ImportPackage | undefined) {
-  if (!pkg) return `Package ${named.packageId} has no targets in this case.`;
+  if (!pkg) return `Package ${named.packageId} is not a drafted item of this case.`;
   if (pkg.state === 'COMMITTED') return `Package ${named.packageId} is already recorded.`;
   if (pkg.revision !== named.revision) {
     return `Package ${named.packageId} is at revision ${pkg.revision}, not ${named.revision}.`;
@@ -50,7 +50,8 @@ export function packageDifference(named: IntakeConfirm['packages'][number], pkg:
 async function assertPackagesTx(client: PoolClient, caseId: string, input: IntakeConfirm) {
   for (const named of input.packages) {
     const row = (await client.query(`SELECT p.body FROM import_packages p WHERE p.id=$1 AND EXISTS (
-      SELECT 1 FROM usp_intake_targets t WHERE t.package_id=p.id AND t.case_id=$2) FOR UPDATE OF p`,
+      SELECT 1 FROM usp_intake_items i WHERE i.plan_ref->>'packageId'=p.id::text
+        AND i.case_id=$2) FOR UPDATE OF p`,
     [named.packageId, caseId])).rows[0];
     const difference = packageDifference(named, row?.body);
     if (difference) stale(difference);

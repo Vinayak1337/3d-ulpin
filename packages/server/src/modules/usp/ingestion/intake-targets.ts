@@ -81,9 +81,10 @@ export async function createIntakeTargetsTx(client: PoolClient, caseId: string, 
     ON CONFLICT (package_id,locator) DO NOTHING RETURNING target_id,readiness,stage`,
   [caseId, itemId, pkg.id, locators.map(locator => stableUuid(`intake-target/1:${pkg.id}:${locator}`)),
     buildings.map(feature => feature.id), locators])).rows;
-  if (!inserted.length) return 0;
-  await appendIntakeTargetsTx(client, caseId, inserted);
-  await queueIntakeRunTx(client, caseId, { phase: 'prepare', packageId: pkg.id }, sourceId);
+  if (inserted.length) await appendIntakeTargetsTx(client, caseId, inserted);
+  const prepared = (await client.query(`SELECT id FROM jobs WHERE case_id=$1 AND operation='intake-run'
+    AND payload->>'phase'='prepare' AND payload->>'packageId'=$2 LIMIT 1`, [caseId, pkg.id])).rows[0];
+  if (!prepared) await queueIntakeRunTx(client, caseId, { phase: 'prepare', packageId: pkg.id }, sourceId);
   return inserted.length;
 }
 
@@ -168,15 +169,19 @@ function emptyCounts(): TargetCounts {
 async function countsTx(client: PoolClient, caseId: string) {
   const counts = emptyCounts();
   const packages = new Map<string, PackageCounts>();
+  const drafted = (await client.query(`SELECT p.id AS package_id,min(i.item_id::text) AS anchor_item_id
+    FROM usp_intake_items i JOIN import_packages p ON p.id::text=i.plan_ref->>'packageId'
+    WHERE i.case_id=$1 GROUP BY p.id ORDER BY p.id`, [caseId])).rows;
+  for (const row of drafted) packages.set(row.package_id,
+    { anchorItemId: row.anchor_item_id, counts: emptyCounts() });
   const rows = (await client.query(`SELECT package_id,min(anchor_item_id::text) AS anchor_item_id,
     readiness,count(*)::int AS count FROM usp_intake_targets WHERE case_id=$1
     GROUP BY package_id,readiness ORDER BY package_id,readiness`, [caseId])).rows;
   for (const row of rows) {
     const readiness = IntakeTargetReadinessSchema.parse(row.readiness);
-    const pkg = packages.get(row.package_id) ?? { anchorItemId: row.anchor_item_id, counts: emptyCounts() };
-    pkg.counts[readiness] = row.count;
+    const pkg = packages.get(row.package_id);
+    if (pkg) pkg.counts[readiness] = row.count;
     counts[readiness] += row.count;
-    packages.set(row.package_id, pkg);
   }
   return { counts, packages };
 }
