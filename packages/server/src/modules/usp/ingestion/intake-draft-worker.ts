@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
-import { MappingPlanSchema, type MappingPlan, type MappingReceipt,
+import { MappingPlanSchema, SourceProfileSchema, MappingReceiptSchema, type MappingPlan, type MappingReceipt,
   type SourceProfile } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
@@ -45,6 +45,48 @@ function memoryPlan(profile: SourceProfile, remembered: MappingReceipt | null): 
   }
 }
 
+type MemoryRow = { body: unknown; manual_profile?: unknown };
+type MemoryLookup = (sql: string, values: string[]) => Promise<MemoryRow[]>;
+
+function profileContained(profile: SourceProfile, stored: unknown): boolean {
+  if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return false;
+  const { schemaFingerprint: _hash, ...fields } = stored as Record<string, unknown>;
+  const parsed = SourceProfileSchema.omit({ source: true, caseId: true,
+    workspaceRevision: true, workspaceFingerprint: true }).safeParse(fields);
+  if (!parsed.success) return false;
+  const old = parsed.data;
+  if (old.version !== profile.version || fingerprint(old.crs) !== fingerprint(profile.crs)
+    || fingerprint([...old.geometryTypes].sort()) !== fingerprint([...profile.geometryTypes].sort())) return false;
+  return old.paths.every(path => profile.paths.some(current => current.path === path.path
+    && fingerprint([...current.types].sort()) === fingerprint([...path.types].sort())));
+}
+
+/** Exact memory wins. A contained stored source permits repinning operations, never its approval. */
+export async function lookupIntakeMemory(profile: SourceProfile, subject: string,
+  lookup: MemoryLookup): Promise<MappingReceipt | null> {
+  const exact = (await lookup(`SELECT body FROM usp_mapping_recipes
+    WHERE state IN ('approved','executed') AND body->'approval'->>'subject'=$1
+    AND body->'plan'->'source'->>'schemaFingerprint'=$2 ORDER BY body->'approval'->>'at' DESC,id DESC LIMIT 1`,
+  [subject, profile.source.schemaFingerprint]))[0];
+  const parsedExact = MappingReceiptSchema.safeParse(exact?.body);
+  if (parsedExact.success && memoryPlan(profile, parsedExact.data)) return parsedExact.data;
+  const recent = await lookup(`SELECT r.body,s.inspection->'manualProfile' AS manual_profile
+    FROM usp_mapping_recipes r LEFT JOIN sources s ON s.id=r.source_id AND s.profile='geojson-manual-v1'
+    WHERE r.state IN ('approved','executed') AND r.body->'approval'->>'subject'=$1
+    AND r.body->'plan'->>'version'='manual-geojson/1'
+    ORDER BY r.body->'approval'->>'at' DESC,r.id DESC LIMIT 50`, [subject]);
+  for (const candidate of recent.slice(0, 50)) {
+    const parsed = MappingReceiptSchema.safeParse(candidate.body);
+    if (!parsed.success || !profileContained(profile, candidate.manual_profile)) continue;
+    const stored = candidate.manual_profile as { schemaFingerprint?: unknown };
+    if (stored.schemaFingerprint !== parsed.data.plan.source.schemaFingerprint) continue;
+    const remembered = { ...parsed.data, plan: { ...parsed.data.plan,
+      source: { ...parsed.data.plan.source, schemaFingerprint: profile.source.schemaFingerprint } } };
+    if (memoryPlan(profile, remembered)) return remembered;
+  }
+  return null;
+}
+
 /** Reuse operations, never approval. The existing adaptive service owns every gateway policy/refusal. */
 export async function proposeIntakeLayout(profile: SourceProfile, remembered: MappingReceipt | null,
   requestKey: string, teacher = () => adaptive.propose(profile.caseId, profile.source.sourceId, {
@@ -78,10 +120,8 @@ async function preparedProposal(input: IntakeDraftInput, attempt: UspJobAttempt,
     "SELECT result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='intake-draft'",
     [input.caseId, key])).rows[0]?.result as Proposal | undefined);
   if (previous) return previous;
-  const remembered = await pinned(input, attempt, async client => (await client.query(`SELECT body
-    FROM usp_mapping_recipes WHERE state IN ('approved','executed') AND body->'approval'->>'subject'=$1
-    AND body->'plan'->'source'->>'schemaFingerprint'=$2 ORDER BY body->'approval'->>'at' DESC,id DESC LIMIT 1`,
-  [input.subject, profile.source.schemaFingerprint])).rows[0]?.body ?? null);
+  const remembered = await lookupIntakeMemory(profile, input.subject, (sql, values) =>
+    pinned(input, attempt, async client => (await client.query(sql, values)).rows));
   const proposal = await proposeIntakeLayout(profile, remembered, intakeDraftKey(input.itemId, 0, 'propose'));
   if (!proposal) return null;
   await pinned(input, attempt, async client => {
