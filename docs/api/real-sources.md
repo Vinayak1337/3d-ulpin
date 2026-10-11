@@ -1,5 +1,54 @@
 # Official source index and retained dataset catalogue
 
+## DA3 NYC publisher height-field metadata — 11 October 2026 IST
+
+- **`Metadata_BuildingFootprints.md`:** NYC Office of Technology and Innovation (OTI),
+  [official repository bytes][da3-metadata], 12,973 bytes, unchanged under
+  `E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-office-of-technology-and-innovation/`, with a sibling receipt.
+  Foreign `test_only`; [Terms of Use][da3-terms] linked in section 1, not fetched;
+  licence **not stated, permission unconfirmed**. [Words and gaps](../evidence/gf1/da3/report.md) and
+  [exact URLs, hashes, counts and locators](../evidence/gf1/da3/result.json) retain the negative finding.
+  Section 3 `HEIGHT_ROOF` says roof above ground elevation, not sea level, but **no field unit is stated**.
+  `GROUND_ELEVATION` says lowest elevation at ground, with a conditional NAVD88 reference, but no field unit.
+  The pack hash matches dataset `5zhs-2jue` in the existing demo profile; its source-info omits buildings provenance.
+  Metadata date literal `10/09/2025`; bytes equal a retained copy recorded before pack assembly.
+  Nearest historical revision and portal spelling correspondence remain unverified; no case-folding guess.
+  Search stopped on missing unit. Pack literals: 1,662 present, 0 null/absent/zero/negative; no conversion or import.
+  Older feet statements below are historical claims, not field-unit evidence from this retained document.
+  No originals changed, provider call, upload, learning authorization or GF1 runtime qualification.
+
+[da3-metadata]: https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md
+[da3-terms]: https://opendata.cityofnewyork.us/overview/#termsofuse
+
+## DA2 NYC building-linked originals — 11 October 2026 IST
+
+Three unchanged NYC Landmarks Preservation Commission (LPC) originals are foreign `test_only`, local development only.
+Each has an external receipt under `E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/`.
+[Measured files and exclusions](../evidence/gf1/da2/report.md) and
+[exact export URL, SHA-256, receipts and literal match counts](../evidence/gf1/da2/result.json) record each file.
+
+- **`gpmc-yuvp.csv`:** [Individual Landmark and Historic District Building Database](https://data.cityofnewyork.us/d/gpmc-yuvp),
+  87,352 bytes, 753 rows, nine columns. This is the portal's selected-row/column CSV export, not a local subset.
+  The URL selects Manhattan BBLs from `1001400000` through `1002409999`; no names/contact/notes fields are selected.
+  Literal `bin` matches 612 pack buildings once, 33 several times and 1,017 not at all; 60 rows match no pack building.
+  Literal `bbl` also matches `base_bbl`, but 118 BBL values repeat among 267 pack buildings; do not choose a target.
+- **`2537.pdf`:** [Holland Plaza Building designation report](https://s-media.nyc.gov/agencies/lpc/lp/2537.pdf),
+  3,676,385 bytes, 18 pages with native text. **No key literal; names the building by address and tax block/lot.**
+  Page 1 says `75 Varick Street` and `Borough of Manhattan Tax Map Block 226, Lot 1`.
+  Pack/table keys `1002934` / `1002260001` are not PDF assertions and were not composed from block/lot.
+- **`2362.pdf`:** [SoHo-Cast Iron Historic District Extension report](https://s-media.nyc.gov/agencies/lpc/lp/2362.pdf),
+  10,071,817 bytes, 207 pages with native text. **No key literal; names buildings by address and tax block/lot.**
+  PDF page 53 (printed 48) says `275 Canal Street` and `Borough of Manhattan Tax Map Block 209, Lot 35`.
+  Pack/table keys `1002696` / `1002090035` are not PDF assertions. Native text exceeds AU4's proposed character cap.
+
+Both public history/designation reports contain historical persons and firm names, not private application filings.
+The LPC's public ArcGIS map/service metadata links the PDFs; the exact linking queries are in receipts.
+Licence for each: **not stated, permission unconfirmed**; NYC terms pages returned HTTP 403, not a confirmed login need.
+Owner permission review is required before broader use. No original, receipt or report goes to a provider or upload.
+The pack has **1,662 features**, not the stated 1,661; all features are counted, and nothing in the pack was changed.
+No conversion, saved join, cleaned copy, OCR, import, learning or GF1/GF2 runtime qualification occurred.
+AU4 can walk the table's literal BIN/BBL with plural/missing outcomes; PDFs require an explicit no-key citation decision.
+
 ## DA1 authority map originals — 11 October 2026 IST
 
 Five unchanged issuing-portal exports cover the six requested GF1 input kinds, all foreign `test_only`.

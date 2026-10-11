@@ -1,0 +1,174 @@
+{
+  "schemaVersion": "da3-height-field-documentation/1",
+  "task": "DA3",
+  "gate": "GF1 data prerequisite",
+  "status": "publisher_field_unit_not_stated",
+  "baseCommit": "94e504b19367d051a6f45a15b870db44048c8cdb",
+  "recordedAtIst": "2026-10-11T10:36:01.666836+05:30",
+  "scope": "Retained authority words and read-only pack counts; no interpretation, conversion, import or runtime gate.",
+  "pack": {
+    "path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+    "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+    "bytes": 1103282,
+    "heightRoofCounts": {
+      "features": 1662,
+      "present": 1662,
+      "null": 0,
+      "absent": 0,
+      "zero": 0,
+      "negative": 0,
+      "minimumLiteral": "9",
+      "maximumLiteral": "570.26712859",
+      "valueTypes": [
+        "str"
+      ]
+    },
+    "countMeaning": "Present includes null; decimal comparison only, no measurement or conversion.",
+    "assemblyAcquiredAt": "2026-09-27T12:46:44.468690+00:00",
+    "acquisitionContext": "source-info/manifest.json assembly time; buildings fetch time not documented.",
+    "sourceInfoFinding": "README has no dictionary; manifest omits buildings provenance. Boundary is unrelated.",
+    "datasetMatch": {
+      "state": "repository_hash_link_not_pack_source_info",
+      "reference": "scripts/demo-import/nyc-profile.json /layers/0",
+      "dataset": "5zhs-2jue",
+      "issuer": "NYC Office of Technology and Innovation",
+      "finding": "Pack hash equals profile building hash; source index links this dataset to the official metadata.",
+      "originalQueryFinding": "Exact original buildings query is absent from the supplied pack."
+    }
+  },
+  "originalCount": 1,
+  "totalOriginalBytes": 12973,
+  "downloadCapBytes": 52428800,
+  "assets": [
+    {
+      "issuer": "City of New York Office of Technology and Innovation (OTI)",
+      "originalUrl":
+        "https://raw.githubusercontent.com/CityOfNewYork/nyc-geo-metadata/main/Metadata/Metadata_BuildingFootprints.md",
+      "sourcePage":
+        "https://github.com/CityOfNewYork/nyc-geo-metadata/blob/main/Metadata/Metadata_BuildingFootprints.md",
+      "acquiredAtIst": "2026-10-11T10:34:13.782389+05:30",
+      "path":
+    "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-office-of-technology-and-innovation/Metadata_BuildingFootprints.md",
+      "bytes": 12973,
+      "sha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27",
+      "receiptSuffix": ".receipt.json",
+      "receiptSha256": "18de93ad019cdfcd641fc6420ee2b8284becbf39d0612f59daf4cfef7cdaf4b2",
+      "format": "Markdown",
+      "licence": {
+        "name": "not stated, permission unconfirmed",
+        "textUrl": null,
+        "termsName": "Terms of Use",
+        "termsUrl": "https://opendata.cityofnewyork.us/overview/#termsofuse",
+        "permission": "unconfirmed",
+        "finding": "Section 1 links Terms of Use; text not fetched after missing-unit stop. No grant confirmed.",
+        "receiptFinding": "Receipt records no licence; linked terms recorded separately here."
+      },
+      "geography": "New York City, New York, United States; foreign development only",
+      "classification": "test_only",
+      "documentMetadataDateLiteral": "10/09/2025",
+      "contemporaryCopy": {
+        "repositoryPath": "fixtures/real-area/evidence/nyc-building-metadata.md",
+        "cataloguePointer": "docs/api/datasets.json /retainedOfficialTestSources",
+        "manifest": "fixtures/real-area/manifest.json",
+        "documentPointer": "/documents/0",
+        "recordedAcquiredAt": "2026-09-13T23:50:24.450967+00:00",
+        "exactBytesMatch": true,
+        "finding": "Exact bytes equal retained copy recorded before pack assembly.",
+        "gap": "No history search; nearest revision and buildings fetch date not independently established."
+      },
+      "fetchCount": 1,
+      "httpHeaders": {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Content-Length": "12973",
+        "Last-Modified": null,
+        "ETag": "\"038a8212ec4023e97aafceba2c5f51b1a4ad55617ca6092c41d796608243ff0a\""
+      }
+    }
+  ],
+  "fields": [
+    {
+      "packField": "height_roof",
+      "publisherField": "HEIGHT_ROOF",
+      "shapefileField": "HEIGHTROOF",
+      "section": "3. Attribute Information",
+      "line": 43,
+      "meaningQuote": "The height of the roof above the ground elevation, not height above sea level.",
+      "unit": null,
+      "unitFinding": "Not stated for this field; no unit inferred from horizontal CRS, accuracy or other text.",
+      "additionalQuotes": [
+        {
+          "parts": [
+            "Records where this is zero or NULL mean that this information was not available."
+          ]
+        }
+      ],
+      "verticalReferenceFinding": "Relative to ground elevation, not sea level.",
+      "nameMapping": {
+        "state": "unverified",
+        "portalColumnList": null,
+        "finding": "Attribute and Shapefile spellings only; no API-name equivalence or case-folding guess."
+      }
+    },
+    {
+      "packField": "ground_elevation",
+      "publisherField": "GROUND_ELEVATION",
+      "shapefileField": "GROUNDELEV",
+      "section": "3. Attribute Information",
+      "line": 42,
+      "meaningQuote": "Lowest Elevation at the building ground level. Calculated from LiDAR or photogrammetrically.",
+      "unit": null,
+      "unitFinding": "Not stated for this field; no unit inferred from horizontal CRS, accuracy or other text.",
+      "additionalQuotes": [
+        {
+          "parts": [
+            "Accuracy varies but when collected photogrammetrically or from modern sources ",
+            "this value is based on the [North American Vertical Datum of 1988](https://www.ngs.",
+            "noaa.gov/datums/vertical/north-american-vertical-datum-1988.shtml)"
+          ]
+        }
+      ],
+      "verticalReferenceFinding": "Conditional NAVD88 for photogrammetric/modern sources, not all pack values.",
+      "nameMapping": {
+        "state": "unverified",
+        "portalColumnList": null,
+        "finding": "Attribute and Shapefile spellings only; no API-name equivalence or case-folding guess."
+      }
+    }
+  ],
+  "stopDecision": "Meaning but no unit: stopped. No further fetch, portal lookup, history or alternate document.",
+  "needsOwner": [],
+  "exclusions": [
+    "City Employees links not opened; no login, account, form, CAPTCHA or agreement route used.",
+    "Horizontal US foot, accuracy/capture feet and imagery notes are not field-unit statements.",
+    "Prior repository feet claims and fixture conversions are not publisher evidence and do not qualify a unit."
+  ],
+  "providerCalls": 0,
+  "uploads": 0,
+  "productChanges": false,
+  "packChanges": false,
+  "runtimeGatePassed": false,
+  "leadSentence": "The publisher's document does not state unit; nothing may be stated from it.",
+  "checks": {
+    "inspector": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python docs/evidence/gf1/da3/inspect.py",
+      "exitCode": 0
+    },
+    "contractPinRefresh": {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts",
+      "baseArgument": "94e504b19367d051a6f45a15b870db44048c8cdb",
+      "exitCode": 0,
+      "repinned": ["docs/api/datasets.json"],
+      "openapiContentChanged": false
+    },
+    "apiCheck": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py",
+      "exitCode": 0,
+      "operations": 310,
+      "schemas": 351
+    },
+    "diffCheck": {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  }
+}

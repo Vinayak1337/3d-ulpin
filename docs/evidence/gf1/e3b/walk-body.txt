@@ -1,0 +1,34 @@
+async function walk() {
+  const { caseId, pkg } = await buildings();
+  const page = await intakeHttp('GET', `/api/v1/ingestion/cases/${caseId}/targets`,
+    '/api/v1/ingestion/cases/{caseId}/targets', IntakeTargetPageSchema);
+  const fs = await import('node:fs/promises');
+  await fs.writeFile('docs/evidence/gf1/e3b/targets.json', JSON.stringify({ ...page,
+    items: page.items.slice(0, 3),
+    choiceIds: page.items.slice(0, 101).map(target => target.targetId) }));
+  let finishedRun: Promise<void> | undefined;
+  afterConfirmation(() => {
+    finishedRun = (async () => {
+      for (let index = 0; index < 4; index++) {
+        const job = await nextIntakeRunJob();
+        assert(job);
+        await tickJob(job);
+      }
+    })();
+    finishedRun.catch(error => { results.dispatchFailure = error.message; });
+  });
+  const { browserWalk } = await import('./browser-walk.mjs');
+  results.screen = await browserWalk(caseId, httpEndpoint());
+  await finishedRun;
+  const final = await intakeHttp('GET', `/api/v1/ingestion/cases/${caseId}/targets`,
+    '/api/v1/ingestion/cases/{caseId}/targets', IntakeTargetPageSchema);
+  const confirmationId = final.items.find(target => target.confirmationId)?.confirmationId;
+  assert(confirmationId);
+  const confirmation = await intakeHttp('GET',
+    `/api/v1/ingestion/cases/${caseId}/confirmations/${confirmationId}`,
+    '/api/v1/ingestion/cases/{caseId}/confirmations/{confirmationId}', IntakeConfirmationSchema);
+  assert.deepEqual(confirmation.counts, { recorded: 1661, carded: 3, stopped: 0 });
+  await fs.writeFile('docs/evidence/gf1/e3b/confirmation.json', JSON.stringify(confirmation));
+  results.screenCounts = confirmation.counts;
+  await retainedHydrography(caseId, await getArea(pkg.areaId));
+}

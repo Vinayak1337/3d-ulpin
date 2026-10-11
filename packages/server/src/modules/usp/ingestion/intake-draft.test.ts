@@ -279,6 +279,20 @@ test('remembered operations are repinned to the new source and carry no approval
   assert(!('approval' in proposal!.plan));
   assert.equal(remembered.plan.source.sourceId, sourceId);
 });
+test('layout memory retains the approved height field, unit and meaning without transferring approval', async () => {
+  const next = structuredClone(profile);
+  next.paths.push({ path: '/features/*/properties/height_ft', types: ['number'], values: 1,
+    explicitNull: 0, absent: 0, literalIdEligible: false, literalTextEligible: false });
+  const height = { heightField: 'height_ft', heightUnit: 'ft' as const, heightMeaning: 'Fixture height above ground' };
+  const saved = { ...remembered, plan: { ...remembered.plan, ...height } };
+  const proposal = await proposeIntakeLayout(next, saved, caseId, async () => {
+    throw new Error('An approved matching layout must not request a teacher.');
+  });
+  assert.equal(proposal?.plan.heightField, height.heightField);
+  assert.equal(proposal?.plan.heightUnit, height.heightUnit);
+  assert.equal(proposal?.plan.heightMeaning, height.heightMeaning);
+  assert(!('approval' in proposal!.plan));
+});
 test('unapproved and different-schema memory falls back only to the permitted existing proposer', async () => {
   let calls = 0;
   const teacher = async () => {

@@ -2,7 +2,8 @@ import { z } from 'zod';
 import { CoreIdSchema, CoreSha256Schema, coreText } from '../spatial/core/scalars';
 import { UspCreateGuardSchema, UspPinnedUpdateGuardSchema, UspSnapshotScopeSchema,
   UspTargetPinSchema, UspEvidencePointerSchema, UspPrincipalSchema } from './common';
-import { UspPacket0ReceiptSchema } from './packet0';
+import { UspPacket0ReceiptSchema, UspCitationMethodSchema } from './packet0';
+import { NativeRecordReferenceSchema } from '../area';
 import {UspAnyPdfPacketPlanInputSchema,UspAnyPdfPacketPlanSchema,UspAnyPdfPacketPlanExecutionSchema} from './packet-pdf';
 
 const review = z.discriminatedUnion('kind', [
@@ -50,6 +51,10 @@ export const UspPacketPlanEntrySchema = z.strictObject({
   applicabilitySha256: CoreSha256Schema.nullable(),
   state: z.enum(['included', 'omitted_optional', 'blocked_required_context']),
   reasonCode: CoreIdSchema.nullable(), entrySha256: CoreSha256Schema,
+  method: UspCitationMethodSchema.optional(), decodedRecord: NativeRecordReferenceSchema.optional(),
+}).superRefine((entry, ctx) => {
+  if ((entry.method === 'decoded_record') !== (entry.decodedRecord !== undefined))
+    ctx.addIssue({ code: 'custom', message: 'Decoded-record entries require their import-time record reference.' });
 }).readonly();
 export const UspTextPacketPlanSchema = z.strictObject({
   planId: z.uuid(), version: z.number().int().positive(), previousVersion: z.number().int().positive().nullable(),

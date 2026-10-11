@@ -1,0 +1,53 @@
+{
+  "task": "KN1", "base": "217f46f22555295de76a53df5883ebafef40bc85",
+  "directImport": {
+    "dialog": "apps/studio/src/features/intake/AddFilesDialog.tsx:174-178 serializes kind, optional kindField, idField, optional nameField, optional heightField/heightUnit/heightMeaning. 189-191 refuses an unanswered height unit or meaning.",
+    "buildingBodyExample": {"kind":"building","idField":"fixture_id","heightField":"fixture_height","heightUnit":"ft","heightMeaning":"Fixture height above ground"},
+    "roadBodyExample": {"kind":"road","idField":"fixture_id"},
+    "examples": "Exact wire shapes with labelled fixture fields, not observed NYC facts. Optional nameField is sent only when chosen. Optional kindField is sent if a kind/type/class/category column exists.",
+    "route": "packages/server/src/modules/areas/area-routes.ts:174-224 parses mapping through areaMappingSchema (area-validation.ts:13-64). That strict schema has no kindField: a file with a detected kind column is refused today, not inferred.",
+    "normalization": "areas.ts:482 sends mapping unchanged to normalize; area.py:266-274 requires explicit kind and validates field names; 330-339 retains selected scalar attributes; 341-350 validates unique source identity (Feature.id fallback); 351 reads name or generates a display label; 365 calls _height; 372-373 requires polygons for building/parcel/public_land; 383-385 writes stated kind and retained geometry. Road/utility accept all six _geometry types (96-144).",
+    "height": "area.py:234-254: absent/null/empty height stays unknown/value null/unit m/reference \"building-relative; not aligned between features\"; nonempty value retained as originalValue and originalUnit; explicit ft converts by 0.3048; positive finite at most 20000 source units becomes source_supported in m. Meaning retained as supplied. areas.ts:824-831 adds feature-key/sourceRevisionId evidence and method native_parse. Neither path upgrades that state to reviewed or changes reference.",
+    "deferred": {
+      "kindField": "Not in Mapping nor strict areaMappingSchema nor area.py. Dialog sends it, but route refuses it. roleValues maps geometry roles, not kinds.",
+      "roleValues": "area_semantics.py:48-58 maps explicit source geometryRoleField values to known geometry roles; unmapped stays unknown.",
+      "identifierFields": "area.py:275-278 validates up to ten fields; 330 includes them in retained allowed properties; No typed identifier allocation follows from these extra retained properties. Does not choose source identity.",
+      "geometryRoleField": "area_semantics.py:48-58 reads stated roles through roleValues; unknown when not mapped. KN1 keeps geometryRole unknown.",
+      "levelReference": "area_semantics.py:59-60 retains the supplied reference literal; not a height datum conversion.",
+      "floorCountField": "area_semantics.py:61-66 reads a finite integer floor count from 0 to 300, otherwise refuses; does not create floors or units."
+    }
+  },
+  "contracts": {
+    "naming": "Absent kind: existing building.sourceKey/building.geometry/building.name only; unchanged legacy operations and hash. Stated kind: feature.sourceKey/feature.geometry/feature.name only, never building.* even for stated building. Geometry conversion geojson_geometry@1; literal identifier/text reuse existing conversion IDs. Height represented by optional heightField, heightUnit, heightMeaning directly, exactly Mapping's three facts, not an operation or a new height conversion. All three required together; heightField must be an inspected scalar attribute. No kind inference.",
+    "readersWriters": [
+      "ingestion.ts:14-42 defines operations and plan; AuthorMappingSchema and MappingReceiptSchema embed it; Any* unions include manual and separate tabular plans.",
+      "registry.ts:8-17 owns CONVERSIONS/limitations; inspectedProfile:32-55 writes geometryTypes/limitations/fingerprint; compileMapping:57-83 validates paths and translates operations.",
+      "service.ts:58-68 parses stored SourceProfile; retain:148 writes inspectedProfile; validate:98 compiles; author:202-223 parses/writes proposed plan and hash; decide:249-261 re-parses/recompiles/re-hashes; read:232 returns retained recipe revisions.",
+      "intake-draft-worker.ts:27-41 memoryPlan re-pins operations of same-schema approved layouts (does not inherit approval); proposeIntakeLayout passes manual profile to adaptive service; must also preserve optional kind and height facts.",
+      "adaptive-mapping.ts:29-69 parses profile/model output and constructs legacy building operations; explicitly polygon-only at 37. adaptive-mapping-service.ts:58 sends geometry inventory in minimized profile. Remains building-only, no new provider behavior.",
+      "streamed-mapping.ts:28 remains polygon-only, uses separate AnyStreamedMappingPlanSchema. streamed-profile-inventory.ts:9-54 accumulates geometryTypes; streamed-profile-worker.ts:26 publishes them. No streamed capability widened.",
+      "chunk-mapping.ts:89-96 parses manual MappingReceipt/plan and compiles it; chunk-mapping-normalizer.ts:109 compiles manual input for verification; chunk-mapping normalizer executes canonical MappingPlanV2 via mapping-plan-v2, not the bounded draft.",
+      "mapping-plan-v2.ts:377 parses manual plan for its legacy vector translation. mapping-executor.test.ts covers legacy translation. Generic operations must not silently become canonical building facts; this separate path stays out of scope.",
+      "tabular-source.ts:194 writes separate tabular limitations; tabular-recipe.ts and service officerTabularPlan use TabularMappingPlanSchema, not MappingPlanSchema. tabular receipt derives outer metadata only."
+    ],
+    "hash": "service.ts:219,256 fingerprints {plan,destination}; cases/domain.ts fingerprint canonicalizes object keys before SHA-256. Includes all plan pins, operations and destination; no inserted defaults permitted. Schema fingerprint separately includes version, CRS, geometryTypes, path/type pairs, not limitations or eligibility. Existing inventory schema fingerprints therefore stay unchanged.",
+    "storedCA0": "CA0 runtime-06.json saves IDs/stages but neither full mapping plan nor planHash; its throwaway database was removed. Exact historical stored bytes cannot be recovered from that receipt. Save and reparse a persisted legacy plan using CA0's doitt_id/geometry authoring path during KN1's walk; compare plan/recipe/approval/hash bytes. Historical CA0 plan requalification remains explicitly unproven."
+  },
+  "frontDoor": [
+    {"location":"service.ts:117-148", "rule":"16 MiB, complete GeoJSON FeatureCollection, 1-2000 features, existing GIS inspection, then inspectedProfile", "change":"No service change: open inspectedProfile only; bounds/CRS/integrity remain."},
+    {"location":"registry.ts:37-38", "rule":"Reject any geometry type other than Polygon/MultiPolygon", "change":"Admit the six area.py _geometry types; compileMapping refuses stated kind incompatible with observed types using explicit words."},
+    {"location":"intake-probe.ts:22", "rule":"Vector with any geometryTypes is placeable; no polygon refusal", "change":"None."},
+    {"location":"intake-draft.ts:35-72", "rule":"Retained manual GeoJSON, bytes/count/CRS; no geometry refusal", "change":"None: already accurate; unsupported format sentences stay."}
+  ],
+  "zeroBuildings": {
+    "createIntakeTargetsTx": "intake-targets.ts:74-91 inserts buildings only and returns before queue prepare on zero inserted. Move queue after conditional events, never condition on target count; stable queue authority handles once.",
+    "prepare": "intake-run-worker.ts:65-80 reviews package before target preparation; empty targets harmless, no change.",
+    "assertPackagesTx": "intake-confirmations.ts:49-56 requires a target of case. Replace with intake-item plan_ref.packageId membership of case. Keep revision/review fingerprint, case access, target guards.",
+    "commit": "intake-run-worker.ts:120-171 already iterates confirmation.packages, not targets; commitOne calls product commit then recordPackageTargetsTx. No change for zero-target success.",
+    "recordPackageTargetsTx": "intake-targets.ts:120-134 updates building-target records only; zero rows is correct. No change.",
+    "packagesList": "intake-targets.ts:189-232 countsTx derives packages solely from targets. Seed packages from case's intake items' plan_ref.packageId with emptyCounts and anchor item, then overlay grouped counts; preserve limits and SQL scalar-only package projection."
+  },
+  "reviewCommit": "areas.ts:1260-1319 reviews effective feature snapshot for any kind through unchanged check/qualification. 1321-1472 commits every physical feature/revision and advances area/package. Exterior registry recording (exterior-records.ts:12-19,48) filters native observed buildings and returns 0 when none. Road/public_land records remain physical context, no building targets/cards/CA1 registry exteriors.",
+  "heightDocumentation": "Read all pack documentation: README.txt:1-3 lists layers only; source-info/manifest.json documents LiDAR NAVD88 metres at 101, DEM unknown at 114, neither is a building height dictionary. No documented building field unit/meaning. Walk omits height; labelled small fixture tests feet parity under stop rule (c).",
+  "refresh": "FX2 --refresh succeeded; no product change outside owned paths."
+}

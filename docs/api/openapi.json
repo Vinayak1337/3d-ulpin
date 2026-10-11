@@ -69836,6 +69836,65 @@
                 "items": {
                   "type": "string"
                 }
+              },
+              "scope": {
+                "type": "object",
+                "properties": {
+                  "validator": {
+                    "type": "string",
+                    "enum": [
+                      "area-check-officer-v2"
+                    ]
+                  },
+                  "marginMetres": {
+                    "type": "number"
+                  },
+                  "extent": {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  },
+                  "contextCount": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "unqualifiedInScope": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "areaRevisionAtReview": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "validator",
+                  "marginMetres",
+                  "extent",
+                  "contextCount",
+                  "unqualifiedInScope",
+                  "areaRevisionAtReview"
+                ],
+                "additionalProperties": false
               }
             },
             "required": [
@@ -72479,6 +72538,65 @@
                 "items": {
                   "type": "string"
                 }
+              },
+              "scope": {
+                "type": "object",
+                "properties": {
+                  "validator": {
+                    "type": "string",
+                    "enum": [
+                      "area-check-officer-v2"
+                    ]
+                  },
+                  "marginMetres": {
+                    "type": "number"
+                  },
+                  "extent": {
+                    "type": "array",
+                    "items": {
+                      "anyOf": [
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  },
+                  "contextCount": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "unqualifiedInScope": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "areaRevisionAtReview": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "validator",
+                  "marginMetres",
+                  "extent",
+                  "contextCount",
+                  "unqualifiedInScope",
+                  "areaRevisionAtReview"
+                ],
+                "additionalProperties": false
               }
             },
             "required": [
@@ -76987,6 +77105,65 @@
                       "items": {
                         "type": "string"
                       }
+                    },
+                    "scope": {
+                      "type": "object",
+                      "properties": {
+                        "validator": {
+                          "type": "string",
+                          "enum": [
+                            "area-check-officer-v2"
+                          ]
+                        },
+                        "marginMetres": {
+                          "type": "number"
+                        },
+                        "extent": {
+                          "type": "array",
+                          "items": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          },
+                          "minItems": 4,
+                          "maxItems": 4
+                        },
+                        "contextCount": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "unqualifiedInScope": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "areaRevisionAtReview": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "validator",
+                        "marginMetres",
+                        "extent",
+                        "contextCount",
+                        "unqualifiedInScope",
+                        "areaRevisionAtReview"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "required": [
@@ -243675,6 +243852,132 @@
                         "type": "string",
                         "minLength": 1,
                         "maxLength": 16000
+                      },
+                      "method": {
+                        "type": "string",
+                        "enum": [
+                          "verbatim",
+                          "decoded_record"
+                        ]
+                      },
+                      "decodedRecord": {
+                        "oneOf": [
+                          {
+                            "readOnly": true,
+                            "type": "object",
+                            "properties": {
+                              "position": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "encoding": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64
+                              },
+                              "idField": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 256
+                              },
+                              "readerVersion": {
+                                "type": "string",
+                                "enum": [
+                                  "native-gis-v2"
+                                ]
+                              },
+                              "format": {
+                                "type": "string",
+                                "enum": [
+                                  "shapefile_zip"
+                                ]
+                              },
+                              "member": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 1024
+                              },
+                              "positionKind": {
+                                "type": "string",
+                                "enum": [
+                                  "sequence"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "position",
+                              "encoding",
+                              "idField",
+                              "readerVersion",
+                              "format",
+                              "member",
+                              "positionKind"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "readOnly": true,
+                            "type": "object",
+                            "properties": {
+                              "position": {
+                                "type": "integer",
+                                "minimum": -9007199254740991,
+                                "maximum": 9007199254740991
+                              },
+                              "encoding": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64
+                              },
+                              "idField": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 256
+                              },
+                              "readerVersion": {
+                                "type": "string",
+                                "enum": [
+                                  "native-gis-v2"
+                                ]
+                              },
+                              "format": {
+                                "type": "string",
+                                "enum": [
+                                  "gpkg"
+                                ]
+                              },
+                              "table": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 256
+                              },
+                              "positionKind": {
+                                "type": "string",
+                                "enum": [
+                                  "rowid",
+                                  "integer_primary_key"
+                                ]
+                              },
+                              "positionField": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 256
+                              }
+                            },
+                            "required": [
+                              "position",
+                              "encoding",
+                              "idField",
+                              "readerVersion",
+                              "format",
+                              "table",
+                              "positionKind",
+                              "positionField"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
                       }
                     },
                     "required": [
@@ -259870,6 +260173,132 @@
                         "entrySha256": {
                           "type": "string",
                           "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                        },
+                        "method": {
+                          "type": "string",
+                          "enum": [
+                            "verbatim",
+                            "decoded_record"
+                          ]
+                        },
+                        "decodedRecord": {
+                          "oneOf": [
+                            {
+                              "readOnly": true,
+                              "type": "object",
+                              "properties": {
+                                "position": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "encoding": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 64
+                                },
+                                "idField": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 256
+                                },
+                                "readerVersion": {
+                                  "type": "string",
+                                  "enum": [
+                                    "native-gis-v2"
+                                  ]
+                                },
+                                "format": {
+                                  "type": "string",
+                                  "enum": [
+                                    "shapefile_zip"
+                                  ]
+                                },
+                                "member": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 1024
+                                },
+                                "positionKind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "sequence"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "position",
+                                "encoding",
+                                "idField",
+                                "readerVersion",
+                                "format",
+                                "member",
+                                "positionKind"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "readOnly": true,
+                              "type": "object",
+                              "properties": {
+                                "position": {
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                },
+                                "encoding": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 64
+                                },
+                                "idField": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 256
+                                },
+                                "readerVersion": {
+                                  "type": "string",
+                                  "enum": [
+                                    "native-gis-v2"
+                                  ]
+                                },
+                                "format": {
+                                  "type": "string",
+                                  "enum": [
+                                    "gpkg"
+                                  ]
+                                },
+                                "table": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 256
+                                },
+                                "positionKind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "rowid",
+                                    "integer_primary_key"
+                                  ]
+                                },
+                                "positionField": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 256
+                                }
+                              },
+                              "required": [
+                                "position",
+                                "encoding",
+                                "idField",
+                                "readerVersion",
+                                "format",
+                                "table",
+                                "positionKind",
+                                "positionField"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
                         }
                       },
                       "required": [
@@ -270458,6 +270887,132 @@
                             "entrySha256": {
                               "type": "string",
                               "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+                            },
+                            "method": {
+                              "type": "string",
+                              "enum": [
+                                "verbatim",
+                                "decoded_record"
+                              ]
+                            },
+                            "decodedRecord": {
+                              "oneOf": [
+                                {
+                                  "readOnly": true,
+                                  "type": "object",
+                                  "properties": {
+                                    "position": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "encoding": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 64
+                                    },
+                                    "idField": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 256
+                                    },
+                                    "readerVersion": {
+                                      "type": "string",
+                                      "enum": [
+                                        "native-gis-v2"
+                                      ]
+                                    },
+                                    "format": {
+                                      "type": "string",
+                                      "enum": [
+                                        "shapefile_zip"
+                                      ]
+                                    },
+                                    "member": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 1024
+                                    },
+                                    "positionKind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "sequence"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "position",
+                                    "encoding",
+                                    "idField",
+                                    "readerVersion",
+                                    "format",
+                                    "member",
+                                    "positionKind"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "readOnly": true,
+                                  "type": "object",
+                                  "properties": {
+                                    "position": {
+                                      "type": "integer",
+                                      "minimum": -9007199254740991,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "encoding": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 64
+                                    },
+                                    "idField": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 256
+                                    },
+                                    "readerVersion": {
+                                      "type": "string",
+                                      "enum": [
+                                        "native-gis-v2"
+                                      ]
+                                    },
+                                    "format": {
+                                      "type": "string",
+                                      "enum": [
+                                        "gpkg"
+                                      ]
+                                    },
+                                    "table": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 256
+                                    },
+                                    "positionKind": {
+                                      "type": "string",
+                                      "enum": [
+                                        "rowid",
+                                        "integer_primary_key"
+                                      ]
+                                    },
+                                    "positionField": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 256
+                                    }
+                                  },
+                                  "required": [
+                                    "position",
+                                    "encoding",
+                                    "idField",
+                                    "readerVersion",
+                                    "format",
+                                    "table",
+                                    "positionKind",
+                                    "positionField"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
                             }
                           },
                           "required": [
@@ -345935,6 +346490,45 @@
                     "items": {
                       "type": "string"
                     }
+                  },
+                  "scope": {
+                    "type": "object",
+                    "required": [
+                      "validator",
+                      "marginMetres",
+                      "extent",
+                      "contextCount",
+                      "unqualifiedInScope",
+                      "areaRevisionAtReview"
+                    ],
+                    "properties": {
+                      "validator": {
+                        "type": "string",
+                        "enum": [
+                          "area-check-officer-v2"
+                        ]
+                      },
+                      "marginMetres": {
+                        "type": "number"
+                      },
+                      "extent": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "minItems": 4,
+                        "maxItems": 4
+                      },
+                      "contextCount": {
+                        "type": "integer"
+                      },
+                      "unqualifiedInScope": {
+                        "type": "integer"
+                      },
+                      "areaRevisionAtReview": {
+                        "type": "integer"
+                      }
+                    }
                   }
                 }
               }
@@ -348495,6 +349089,45 @@
                     "type": "array",
                     "items": {
                       "type": "string"
+                    }
+                  },
+                  "scope": {
+                    "type": "object",
+                    "required": [
+                      "validator",
+                      "marginMetres",
+                      "extent",
+                      "contextCount",
+                      "unqualifiedInScope",
+                      "areaRevisionAtReview"
+                    ],
+                    "properties": {
+                      "validator": {
+                        "type": "string",
+                        "enum": [
+                          "area-check-officer-v2"
+                        ]
+                      },
+                      "marginMetres": {
+                        "type": "number"
+                      },
+                      "extent": {
+                        "type": "array",
+                        "items": {
+                          "type": "number"
+                        },
+                        "minItems": 4,
+                        "maxItems": 4
+                      },
+                      "contextCount": {
+                        "type": "integer"
+                      },
+                      "unqualifiedInScope": {
+                        "type": "integer"
+                      },
+                      "areaRevisionAtReview": {
+                        "type": "integer"
+                      }
                     }
                   }
                 }
@@ -362241,6 +362874,45 @@
                 "items": {
                   "type": "string"
                 }
+              },
+              "scope": {
+                "type": "object",
+                "required": [
+                  "validator",
+                  "marginMetres",
+                  "extent",
+                  "contextCount",
+                  "unqualifiedInScope",
+                  "areaRevisionAtReview"
+                ],
+                "properties": {
+                  "validator": {
+                    "type": "string",
+                    "enum": [
+                      "area-check-officer-v2"
+                    ]
+                  },
+                  "marginMetres": {
+                    "type": "number"
+                  },
+                  "extent": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 4,
+                    "maxItems": 4
+                  },
+                  "contextCount": {
+                    "type": "integer"
+                  },
+                  "unqualifiedInScope": {
+                    "type": "integer"
+                  },
+                  "areaRevisionAtReview": {
+                    "type": "integer"
+                  }
+                }
               }
             }
           }
@@ -363319,6 +363991,54 @@
             "type": "string",
             "pattern": "^[a-f0-9]{64}$"
           },
+          "plan": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "recipeId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "recipeRevision": {
+                "type": "integer",
+                "minimum": 0,
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991
+              },
+              "recipeState": {
+                "type": "string",
+                "enum": [
+                  "proposed",
+                  "approved",
+                  "executed"
+                ]
+              },
+              "origin": {
+                "nullable": true,
+                "type": "string",
+                "enum": [
+                  "memory",
+                  "teacher",
+                  "officer"
+                ]
+              },
+              "packageId": {
+                "nullable": true,
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "required": [
+              "recipeId",
+              "recipeRevision",
+              "recipeState",
+              "origin",
+              "packageId"
+            ],
+            "additionalProperties": false
+          },
           "probeVersion": {
             "nullable": true,
             "type": "string"
@@ -363374,6 +364094,7 @@
           "placement",
           "card",
           "cardSha256",
+          "plan",
           "probeVersion",
           "partsPlanned",
           "partsDone",
@@ -364448,6 +365169,54 @@
                   "type": "string",
                   "pattern": "^[a-f0-9]{64}$"
                 },
+                "plan": {
+                  "nullable": true,
+                  "type": "object",
+                  "properties": {
+                    "recipeId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "recipeRevision": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "recipeState": {
+                      "type": "string",
+                      "enum": [
+                        "proposed",
+                        "approved",
+                        "executed"
+                      ]
+                    },
+                    "origin": {
+                      "nullable": true,
+                      "type": "string",
+                      "enum": [
+                        "memory",
+                        "teacher",
+                        "officer"
+                      ]
+                    },
+                    "packageId": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  },
+                  "required": [
+                    "recipeId",
+                    "recipeRevision",
+                    "recipeState",
+                    "origin",
+                    "packageId"
+                  ],
+                  "additionalProperties": false
+                },
                 "probeVersion": {
                   "nullable": true,
                   "type": "string"
@@ -364503,6 +365272,7 @@
                 "placement",
                 "card",
                 "cardSha256",
+                "plan",
                 "probeVersion",
                 "partsPlanned",
                 "partsDone",
@@ -365390,6 +366160,23 @@
                     "type": "string",
                     "pattern": "^[a-f0-9]{64}$"
                   },
+                  "heightField": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "heightUnit": {
+                    "type": "string",
+                    "enum": [
+                      "m",
+                      "ft"
+                    ]
+                  },
+                  "heightMeaning": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  },
                   "operations": {
                     "minItems": 2,
                     "maxItems": 3,
@@ -366216,6 +367003,23 @@
                   "workspaceFingerprint": {
                     "type": "string",
                     "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "heightField": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "heightUnit": {
+                    "type": "string",
+                    "enum": [
+                      "m",
+                      "ft"
+                    ]
+                  },
+                  "heightMeaning": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
                   },
                   "operations": {
                     "minItems": 2,
@@ -367214,6 +368018,23 @@
                     "workspaceFingerprint": {
                       "type": "string",
                       "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "heightField": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80
+                    },
+                    "heightUnit": {
+                      "type": "string",
+                      "enum": [
+                        "m",
+                        "ft"
+                      ]
+                    },
+                    "heightMeaning": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
                     },
                     "operations": {
                       "minItems": 2,
@@ -368454,13 +369275,139 @@
             "type": "string",
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "packages": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "packageId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "areaId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "anchorItemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": true,
+                  "maximum": 9007199254740991
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "RECEIVED",
+                    "NEEDS_INPUT",
+                    "READY_FOR_REVIEW",
+                    "REVIEWED",
+                    "COMMITTED"
+                  ]
+                },
+                "reviewFingerprint": {
+                  "nullable": true,
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "findingCounts": {
+                  "nullable": true,
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "counts": {
+                  "type": "object",
+                  "properties": {
+                    "preparing": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "ready": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "needs_answer": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "held": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "confirmed": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "recorded": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "carded": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "stopped": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "preparing",
+                    "ready",
+                    "needs_answer",
+                    "held",
+                    "confirmed",
+                    "recorded",
+                    "carded",
+                    "stopped"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "packageId",
+                "areaId",
+                "anchorItemId",
+                "revision",
+                "state",
+                "reviewFingerprint",
+                "findingCounts",
+                "counts"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "packagesTruncated": {
+            "type": "boolean"
           }
         },
         "required": [
           "caseId",
           "items",
           "counts",
-          "nextCursor"
+          "nextCursor",
+          "packages",
+          "packagesTruncated"
         ],
         "additionalProperties": false
       },
@@ -386354,6 +387301,23 @@
                 "type": "string",
                 "pattern": "^[a-f0-9]{64}$"
               },
+              "heightField": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "heightUnit": {
+                "type": "string",
+                "enum": [
+                  "m",
+                  "ft"
+                ]
+              },
+              "heightMeaning": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
               "operations": {
                 "minItems": 2,
                 "maxItems": 3,
@@ -388256,6 +389220,23 @@
                   "workspaceFingerprint": {
                     "type": "string",
                     "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "heightField": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "heightUnit": {
+                    "type": "string",
+                    "enum": [
+                      "m",
+                      "ft"
+                    ]
+                  },
+                  "heightMeaning": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
                   },
                   "operations": {
                     "minItems": 2,

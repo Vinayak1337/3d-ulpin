@@ -35,8 +35,15 @@ export const SourceProfileSchema = z.strictObject({
 export const MappingPlanSchema = z.strictObject({
   version: z.literal(INGESTION_VERSION), mode: z.literal('manual_mapping'), source: SourcePinSchema,
   caseId: id, workspaceRevision: z.number().int().nonnegative(), workspaceFingerprint: hash,
+  heightField: z.string().min(1).max(80).refine(value => value.trim() === value).optional(),
+  heightUnit: z.enum(['m', 'ft']).optional(),
+  heightMeaning: z.string().trim().min(1).max(500).optional(),
   operations: z.array(MappingOperationSchema).min(2).max(3),
 }).superRefine((plan, ctx) => {
+  if ([plan.heightField, plan.heightUnit, plan.heightMeaning].some(value => value !== undefined)
+    && (!plan.heightField || !plan.heightUnit || !plan.heightMeaning))
+    ctx.addIssue({code: 'custom', path: ['heightField'],
+      message: 'A height mapping requires its field, source unit (m or ft), and meaning together; no unit is guessed.'});
   const targets = plan.operations.map(op => op.target);
   if (new Set(targets).size !== targets.length || !targets.includes('building.sourceKey') || !targets.includes('building.geometry'))
     ctx.addIssue({code: 'custom', path: ['operations'], message: 'Choose one source key and one building geometry; each target occurs once.'});

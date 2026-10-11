@@ -1,5 +1,5 @@
 import type { PoolClient } from 'pg';
-import { INTAKE_CARD_VERSION, IntakeItemSchema, type IntakeCard } from '@ulpin/contracts/usp';
+import { INTAKE_CARD_VERSION, IntakeItemSchema, IntakeItemPlanSchema, type IntakeCard } from '@ulpin/contracts/usp';
 import { fingerprint } from '../../cases/domain';
 import { intakeSizeClass, intakeWave } from './intake-probe';
 import type { IntakeSourceRow } from './intake-context';
@@ -16,6 +16,14 @@ export async function registerIntakeItemTx(client: PoolClient, source: IntakeSou
     [source.id])).rows[0];
 }
 
+/** Unknown stored projections must not make the rest of the tray unreadable. */
+function intakePlan(value: unknown) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const stored = value as Record<string, unknown>;
+  const plan = IntakeItemPlanSchema.safeParse({ ...stored, packageId: stored.packageId ?? null });
+  return plan.success ? plan.data : null;
+}
+
 export function intakeItem(row: any) {
   return IntakeItemSchema.parse({
     itemId: row.item_id, sourceId: row.source_id, caseId: row.case_id, parentItemId: row.parent_item_id,
@@ -23,6 +31,7 @@ export function intakeItem(row: any) {
     sizeBytes: row.size_bytes === null ? null : Number(row.size_bytes), sizeClass: row.size_class,
     wave: row.wave, state: row.state,
     placement: row.placement, card: row.card, cardSha256: row.card_sha256, probeVersion: row.probe_version,
+    plan: intakePlan(row.plan_ref),
     partsPlanned: row.parts_planned, partsDone: row.parts_done, recordsSeen: Number(row.records_seen),
     limitReason: row.limit_reason, pinnedByOfficer: row.pinned_by_officer,
     createdAt: new Date(row.created_at).toISOString(), updatedAt: new Date(row.updated_at).toISOString(),

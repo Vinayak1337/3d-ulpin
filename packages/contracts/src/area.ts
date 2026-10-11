@@ -1,3 +1,26 @@
+import { z } from 'zod';
+import { STREAMING_VECTOR_LIMITS } from './usp/streaming-vector';
+
+export const SourceRangeReferenceSchema = z.strictObject({
+  format: z.literal('geojson'), featureIndex: z.number().int().safe().nonnegative(),
+  byteStart: z.number().int().safe().nonnegative(), byteEnd: z.number().int().safe().positive(),
+  rawSha256: z.string().regex(/^[a-f0-9]{64}$/), readerVersion: z.literal(STREAMING_VECTOR_LIMITS.version),
+}).refine(range => range.byteEnd > range.byteStart).readonly();
+export type SourceRangeReference = z.infer<typeof SourceRangeReferenceSchema>;
+
+const nativeRecordFields = {
+  position: z.number().int().safe(), encoding: z.string().min(1).max(64),
+  idField: z.string().min(1).max(256), readerVersion: z.literal('native-gis-v2'),
+};
+export const NativeRecordReferenceSchema = z.discriminatedUnion('format', [
+  z.strictObject({ ...nativeRecordFields, format: z.literal('shapefile_zip'),
+    member: z.string().min(1).max(1024), position: nativeRecordFields.position.nonnegative(),
+    positionKind: z.literal('sequence') }).readonly(),
+  z.strictObject({ ...nativeRecordFields, format: z.literal('gpkg'), table: z.string().min(1).max(256),
+    positionKind: z.enum(['rowid', 'integer_primary_key']), positionField: z.string().min(1).max(256) }).readonly(),
+]);
+export type NativeRecordReference = z.infer<typeof NativeRecordReferenceSchema>;
+
 /** Canonical v2 physical observations. Local geometry is NOT RFC 7946 GeoJSON. */
 export type EvidenceState =
   | "unresolved"
@@ -24,6 +47,10 @@ export type AreaGeometry =
   | { type: "Polygon"; coordinates: number[][][] }
   | { type: "MultiPolygon"; coordinates: number[][][][] };
 export interface AreaReference {
+  /** Import-time position in an unchanged native original; absent on older observations. */
+  nativeRecord?: NativeRecordReference;
+  /** Exact Feature bytes in the retained GeoJSON, as framed by the stream reader at import. */
+  sourceRange?: SourceRangeReference;
   sourceCrs: string;
   analysisCrs: string;
   origin: [number, number];
@@ -247,6 +274,14 @@ export interface ImportPackage {
     inputFingerprint: string;
     findings: AreaFinding[];
     coverage: string[];
+    scope?: {
+      validator: "area-check-officer-v2";
+      marginMetres: number;
+      extent: [number, number, number, number];
+      contextCount: number;
+      unqualifiedInScope: number;
+      areaRevisionAtReview: number;
+    };
   };
   createdAt: string;
   acknowledgement?: string;

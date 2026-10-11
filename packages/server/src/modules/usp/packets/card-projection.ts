@@ -8,7 +8,7 @@ import { canonical, fingerprint } from '../../cases/domain';
 import { conflict } from '../../../infrastructure/errors';
 import { sha256 } from '../../../infrastructure/storage';
 import { scopedManifestTx } from '../commands';
-import { selectExactPart } from '../packet0';
+import { selectExactPart, decodedRecordLabel } from '../packet0';
 import { sourceStatedCardFacts } from './card-source-facts';
 import { anchorSentence, inWords, locationSentence } from './card-wording';
 
@@ -82,7 +82,9 @@ export async function projectCardFactsTx(client: PoolClient, ctx: RequestContext
       if (source.body_sha256 !== entry.sourceBodySha256 || source.body.sha256 !== entry.sourceSha256
         || typeof source.body.name !== 'string' || !source.body.name.length)
         conflict('The included feature citation source changed.');
-      citations.push(`${source.body.name}, ${locator.locator}`);
+      citations.push(entry.method === 'decoded_record' && entry.decodedRecord
+        ? `${source.body.name}, ${decodedRecordLabel(entry.decodedRecord)}`
+        : `${source.body.name}, ${locator.locator}`);
     }
     if (citations.length) available('source_citation', 'Source citation', citations.join('; '));
   }

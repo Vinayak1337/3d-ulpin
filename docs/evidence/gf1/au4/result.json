@@ -1,0 +1,40 @@
+{
+  "task": "AU4",
+  "gate": "GF1/GF2",
+  "kind": "code_read_not_runtime",
+  "baseline": "9cb9cc3bce204a718d2c4b25fe0db81b9f49ac66",
+  "ownedPrefix": "docs/evidence/gf1/au4/",
+  "productFilesChanged": 0,
+  "chainItems": 8,
+  "chainFileLineReferences": 110,
+  "proposalFileLineReferences": 26,
+  "proposedTasks": 4,
+  "proposedWorkerHours": [44, 66],
+  "originalInputsOpened": 0,
+  "httpMeasurements": 0,
+  "runtimeGatePassed": false,
+  "providerCalls": 0,
+  "gpuJobs": 0,
+  "containersCreated": 0,
+  "refresh": {
+    "exit": 1,
+    "refusal": "Unexpected index bytes: packages/server/src/modules/usp/ingestion/events.ts",
+    "decision": "No retry or pin edits; branch baseline code audited only."
+  },
+  "checks": {
+    "jsonAndFileLineRanges": "exit0; source meaning manually checked separately",
+    "orderedDisjointTaskOwnership": "exit0",
+    "newFileLinesAtMost120": "exit0",
+    "keyLogicReview": "raw job auto-start, strict equality, accepted-result pins, stage4 absence, revision drift",
+    "runtime": "not run; optional real-input pair prerequisite not established",
+    "typecheckAndUiDesign": "not run; no product/UI changes"
+  },
+  "knownDiscrepancies": [
+    "E1 feature-only readiness and carrySteps omit table/document stage4",
+    "Mapped tables cannot execute to registry; recipe approval is mapping/learning authority only",
+    "CSV logical row N reference label does not satisfy packet's CSV row N regex",
+    "PDF drop is not retained; separate document API defaults propose, not native_only",
+    "Citation correction changes record revision; E1 artefact must re-pin before snapshot/card"
+  ],
+  "qualification": "Path/range checks do not prove semantic assertions or product runtime behaviour."
+}

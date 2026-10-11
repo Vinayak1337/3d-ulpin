@@ -228,7 +228,11 @@ export const packageProjection = {type:'object',required:['id','schemaVersion','
   warnings:{type:'array',items:{type:'string'}},createdAt:{type:'string',format:'date-time'},acknowledgement:{type:'string'},
   review:{type:'object',required:['areaRevision','packageRevision','inputFingerprint','findings','coverage'],properties:{
     areaRevision:{type:'integer'},packageRevision:{type:'integer'},inputFingerprint:{type:'string'},
-    findings:{type:'array',items:finding},coverage:{type:'array',items:{type:'string'}}}},
+    findings:{type:'array',items:finding},coverage:{type:'array',items:{type:'string'}},
+    scope:{type:'object',required:['validator','marginMetres','extent','contextCount','unqualifiedInScope','areaRevisionAtReview'],properties:{
+      validator:{type:'string',enum:['area-check-officer-v2']},marginMetres:{type:'number'},
+      extent:{type:'array',items:{type:'number'},minItems:4,maxItems:4},contextCount:{type:'integer'},
+      unqualifiedInScope:{type:'integer'},areaRevisionAtReview:{type:'integer'}}}}},
 }};
 
 export const footprintDraftResult = {

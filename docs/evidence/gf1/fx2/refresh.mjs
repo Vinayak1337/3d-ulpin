@@ -14,12 +14,16 @@ const lf = step0.table.filter(row => !crlf.includes(row[0]) && !row[0].endsWith(
   row[4].some(pin => ['index', 'both'].includes(pin.split('=')[1])));
 const refresh = process.argv.includes('--refresh');
 const proof = [];
+const indexed = new Map();
 
 // Check every path before overwriting any. Never normalize index content here.
 for (const row of [...lf, ...step0.table.filter(row => crlf.includes(row[0]))]) {
   const path = row[0];
-  const expected = crlf.includes(path) ? row[2] : row[3];
-  if (hash(git('show', ':' + path)) !== expected) throw Error('Unexpected index bytes: ' + path);
+  const expected = hash(git('show', ':' + path));
+  // A CRLF-pinned path must still hold its audited bytes. An LF path that later work changed in Git is
+  // refreshed to its current index bytes: only line endings are rewritten here, never content.
+  if (crlf.includes(path) && expected !== row[2]) throw Error('Unexpected index bytes: ' + path);
+  indexed.set(path, expected);
   const working = readFileSync(path);
   const observed = hash(working);
   // Another checkout may hold CRLF where the audited one held LF: line endings alone are not a change.
@@ -30,7 +34,7 @@ for (const row of [...lf, ...step0.table.filter(row => crlf.includes(row[0]))]) 
 }
 for (const row of [...lf, ...step0.table.filter(row => crlf.includes(row[0]))]) {
   const path = row[0];
-  const expected = crlf.includes(path) ? row[2] : row[3];
+  const expected = indexed.get(path);
   if (refresh && hash(readFileSync(path)) !== expected) {
     const output = git('checkout-index', '--temp', '--', path).toString().trim();
     const temporary = output.split('\t')[0];
@@ -49,7 +53,7 @@ if (refresh) {
   // Git's old CRLF stat entries can report false dirtiness after a byte-identical LF refresh.
   git('add', '--', ...lf.map(row => row[0]));
   for (const row of lf) {
-    if (hash(git('show', ':' + row[0])) !== row[3]) throw Error('Index changed on stat refresh: ' + row[0]);
+    if (hash(git('show', ':' + row[0])) !== indexed.get(row[0])) throw Error('Index changed on stat refresh: ' + row[0]);
   }
 }
 console.log(JSON.stringify({ refresh, lfFiles: lf.length, crlfFiles: crlf.length, proof }, null, 2));

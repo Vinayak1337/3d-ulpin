@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { ImportPackage, PhysicalFeature } from '@ulpin/contracts';
-import type { PoolClient } from 'pg';
-import { intakeTargetReadiness, targetLocator } from './intake-targets';
+import type { Pool, PoolClient } from 'pg';
+import { IntakeConfirmedPackageSchema } from '@ulpin/contracts/usp';
+import { createIntakeTargetsTx, intakeTargetReadiness, listIntakeTargets, targetLocator } from './intake-targets';
+import { packageDifference } from './intake-confirmations';
 import { appendIntakeTargetsTx } from './events';
 
 const id = '10000000-0000-4000-8000-000000000001';
@@ -32,6 +34,111 @@ test('derived footprints and packages that are not reviewable are held, not reso
   const workspace = { ...pkg, sourceWorkspace: {} } as ImportPackage;
   assert.equal(intakeTargetReadiness({ featureId: id }, workspace, review).readiness, 'held');
   assert.equal(intakeTargetReadiness({ featureId: sourceId }, pkg, review).readiness, 'held');
+});
+
+function packagePageProtocol(size: number, zeroTargets = false) {
+  const packages = Array.from({ length: size }, (_, index) => ({
+    id: `10000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+    area_id: sourceId, revision: 2, state: 'REVIEWED', review_fingerprint: 'a'.repeat(64),
+    finding_counts: { BOUNDARY_CONTACT: 1 },
+  }));
+  const calls: { sql: string; values: unknown[] }[] = [];
+  const client = { release() {}, query: async (sql: string, values: unknown[] = []) => {
+    calls.push({ sql, values });
+    if (sql.startsWith('SELECT id,revision,archived')) return { rows: [{ id, revision: 0, archived: false }] };
+    if (sql.startsWith('SELECT * FROM usp_intake_targets')) return { rows: [] };
+    if (sql.startsWith('SELECT p.id AS package_id')) return { rows: packages.map(row => ({
+      package_id: row.id, anchor_item_id: id,
+    })) };
+    if (sql.startsWith('SELECT package_id,min')) return { rows: zeroTargets ? [] : packages.map(row => ({
+      package_id: row.id, anchor_item_id: id, readiness: 'ready', count: 2,
+    })) };
+    if (sql.startsWith('WITH packages AS')) return { rows: packages.slice(0, 101) };
+    assert(['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql), sql);
+    return { rows: [] };
+  } } as unknown as PoolClient;
+  return { packages, calls, pool: { connect: async () => client } as unknown as Pool };
+}
+
+test('every target page publishes unfiltered package facts that the confirmation accepts unchanged', async () => {
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'e1-protocol-operator';
+  const globals = globalThis as unknown as { ulpinPool?: Pool };
+  const previous = globals.ulpinPool;
+  const fixture = packagePageProtocol(1);
+  globals.ulpinPool = fixture.pool;
+  try {
+    const first = await listIntakeTargets(id, undefined, undefined);
+    const next = await listIntakeTargets(id, 'held', sourceId);
+    assert.deepEqual(first.packages, next.packages);
+    assert.equal(first.packagesTruncated, false);
+    assert.equal(first.counts.ready, 2);
+    const entry = first.packages[0];
+    const named = IntakeConfirmedPackageSchema.parse({ packageId: entry.packageId,
+      revision: entry.revision, reviewFingerprint: entry.reviewFingerprint });
+    const current = { ...pkg, state: entry.state, revision: entry.revision,
+      review: { ...review, inputFingerprint: entry.reviewFingerprint!, packageRevision: entry.revision } };
+    assert.equal(packageDifference(named, current), null);
+    assert.match(packageDifference(named, { ...current, revision: 3 })!, /no|revision/);
+    assert.match(packageDifference(named, { ...current, state: 'COMMITTED' })!, /already recorded/);
+    const projections = fixture.calls.filter(call => call.sql.startsWith('WITH packages AS'));
+    assert.equal(projections.length, 2);
+    assert(projections.every(call => !/features|SELECT p\.body\b/.test(call.sql)));
+  } finally {
+    globals.ulpinPool = previous;
+  }
+});
+
+test('a case with more than 100 packages publishes the first 100 without refusing its targets', async () => {
+  const globals = globalThis as unknown as { ulpinPool?: Pool };
+  const previous = globals.ulpinPool;
+  const fixture = packagePageProtocol(101);
+  globals.ulpinPool = fixture.pool;
+  try {
+    const page = await listIntakeTargets(id, undefined, undefined);
+    assert.equal(page.packages.length, 100);
+    assert.equal(page.packagesTruncated, true);
+    assert.deepEqual(page.packages.map(row => row.packageId), fixture.packages.slice(0, 100).map(row => row.id));
+    assert.equal(page.counts.ready, 202);
+  } finally {
+    globals.ulpinPool = previous;
+  }
+});
+
+test('a drafted item with no building is listed as a confirmable package with zero counts', async () => {
+  const globals = globalThis as unknown as { ulpinPool?: Pool };
+  const previous = globals.ulpinPool;
+  const fixture = packagePageProtocol(1, true);
+  globals.ulpinPool = fixture.pool;
+  try {
+    const page = await listIntakeTargets(id, undefined, undefined);
+    assert.equal(page.items.length, 0);
+    assert.equal(page.packages.length, 1);
+    assert.equal(page.packages[0].anchorItemId, id);
+    assert(Object.values(page.packages[0].counts).every(count => count === 0));
+    assert.equal(page.packages[0].reviewFingerprint, 'a'.repeat(64));
+  } finally {
+    globals.ulpinPool = previous;
+  }
+});
+
+test('zero buildings still requests preparation; a prior prepare job prevents a second request', async () => {
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'e1-protocol-operator';
+  let prepared = false;
+  let queued = 0;
+  const client = { query: async (sql: string) => {
+    if (sql.startsWith('INSERT INTO usp_intake_targets')) return { rows: [] };
+    if (sql.startsWith('SELECT id FROM jobs WHERE case_id')) return { rows: prepared ? [{ id }] : [] };
+    if (sql.startsWith('SELECT id FROM jobs WHERE operation')) {
+      queued++;
+      prepared = true;
+      return { rows: [{ id }] };
+    }
+    throw new Error(sql);
+  } } as unknown as PoolClient;
+  const context = { ...pkg, features: [{ ...feature, kind: 'public_land' as const }] };
+  assert.equal(await createIntakeTargetsTx(client, id, sourceId, context, sourceId), 0);
+  assert.equal(await createIntakeTargetsTx(client, id, sourceId, context, sourceId), 0);
+  assert.equal(queued, 1);
 });
 
 test('bulk target events allocate contiguous sequences without replacing target ids with a count', async () => {

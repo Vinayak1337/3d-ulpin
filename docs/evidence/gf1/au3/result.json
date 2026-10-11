@@ -1,0 +1,137 @@
+{
+  "task": "AU3",
+  "gate": "GF1 / GF5",
+  "baseline": "9cb9cc3bce204a718d2c4b25fe0db81b9f49ac66",
+  "qualification": [
+    "One HTTP run; own tmpfs PostGIS and loopback in-memory S3 protocol control, not real S3 capacity.",
+    "Unchanged Python readers execute over the original bytes; harness awaits canonical workers directly.",
+    "Enqueue/metadata/artifact reads use HTTP; dispatcher selection and a Studio draw are code-read only.",
+    "Dedicated retention already queues first part. Probe does not queue one. No vector anchor was imported.",
+    "No large-file throughput, placement, measurement qualification or browser-frame claim."
+  ],
+  "box": {
+    "nonce": "f492a0e6bf5878e2",
+    "container": "ulpin-au3-tmp-f492a0e6bf5878e2",
+    "image": "postgis/postgis@sha256:01a6a70e41e6c4467c8f55f6063555ed72db2d6662cd0d571040d42eadaeb6f6",
+    "startedAt": "2026-10-11T04:22:36.726Z",
+    "finishedAt": "2026-10-11T04:22:49.076Z",
+    "readyAfterSeconds": 1,
+    "runtimeExit": 0,
+    "removed": "ulpin-au3-tmp-f492a0e6bf5878e2",
+    "remainingOwned": "",
+    "machineWideEqualityAsserted": false
+  },
+  "caseId": "e53a9cae-35f4-4fb3-8156-9bebcc0986cc",
+  "files": [
+    {
+      "file": "nyc-10013-ortho-2018.tif",
+      "bytes": 1036134,
+      "sha256": "c95ea0f53da7b9626253d1240641da8914573d51da286639b904b19268ec9716",
+      "manualSources": { "status": 422, "code": "INVALID_INPUT" },
+      "retainedRoute": "/api/v1/ingestion/cases/:caseId/rasters",
+      "sourceId": "40ebde4f-fc25-43e1-b3f8-caf811fe0def",
+      "afterProbe": {
+        "family": "raster", "format": "geotiff", "sizeClass": "S", "wave": 2,
+        "state": "probed", "placement": "undecided", "partsPlanned": null, "partsDone": 0, "recordsSeen": 0,
+        "card": {
+          "version": "intake-card/1", "depth": "structure", "formatVersion": null, "nameDisagrees": false,
+          "crs": { "state": "stated", "code": "EPSG:3857", "sidecarSha256": null },
+          "extent": { "native": null, "epsg4326": null },
+          "counts": { "features": null, "rows": null, "pages": null, "members": null, "points": null, "bands": 4 },
+          "raster": { "width": 768, "height": 768, "tiled": false }, "point": null,
+          "drawableHint": false, "probeBytesRead": 131072, "probeMs": 4.595,
+          "limits": ["First TIFF IFD only; CRS code, transform, COG qualification/overviews need native raster reader."]
+        }
+      },
+      "reader": {
+        "initialQueuedByRetain": "9e3fe24a-9b52-4db0-a946-c2a03600f52f", "initialStatus": "completed",
+        "initialThroughStatusAndNextEnqueueSeconds": 0.989,
+        "requestedJob": "02f88177-9640-40bc-8919-94c0405519d4", "status": "completed", "seconds": 0.815,
+        "timingBoundary": "Await worker through HTTP metadata and verified artifact download; not enqueue latency.",
+        "window": { "x": 0, "y": 0, "width": 256, "height": 256 },
+        "sourceWidth": 768, "sourceHeight": 768, "sourceBands": 4, "dtype": "uint8",
+        "crs": "EPSG:3857", "verticalReference": null, "verticalReferenceStatus": "unknown",
+        "globalPlacement": "not_qualified", "artifactBytes": 95494, "artifactMediaType": "image/tiff",
+        "artifactSha256": "d633f009d0044691efc38be0bf758056ba77c4ec9fef679325887b9137940829"
+      },
+      "afterReading": { "state": "probed", "placement": "undecided", "partsDone": 0, "recordsSeen": 0 }
+    },
+    {
+      "file": "nyc-10013-dem-2017.tif",
+      "bytes": 989186,
+      "sha256": "955d7f051c26cc2a26b7a1e9c00bacb9f4e96b6b5611c716d56be6d91e11d317",
+      "manualSources": { "status": 422, "code": "INVALID_INPUT" },
+      "retainedRoute": "/api/v1/ingestion/cases/:caseId/rasters",
+      "sourceId": "1ec6474a-d4ff-4baa-884b-688a7291a65e",
+      "afterProbe": {
+        "family": "raster", "format": "tiff", "sizeClass": "S", "wave": 2,
+        "state": "probed", "placement": "undecided", "partsPlanned": null, "partsDone": 0, "recordsSeen": 0,
+        "card": {
+          "version": "intake-card/1", "depth": "signature", "formatVersion": null, "nameDisagrees": false,
+          "crs": { "state": "absent", "code": null, "sidecarSha256": null },
+          "extent": { "native": null, "epsg4326": null },
+          "counts": { "features": null, "rows": null, "pages": null, "members": null, "points": null, "bands": null },
+          "raster": null, "point": null, "drawableHint": false, "probeBytesRead": 131072, "probeMs": 3.576,
+          "limits": ["First TIFF IFD outside the head; indexed raster reader needed.",
+            "Signature only; deeper structure requires the existing native reader."]
+        }
+      },
+      "reader": {
+        "initialQueuedByRetain": "0900dd3e-efa4-4227-8610-b0d4c5382d66", "initialStatus": "completed",
+        "initialThroughStatusAndNextEnqueueSeconds": 0.795,
+        "requestedJob": "e2193b33-ada4-4ad0-be91-dea0a970d725", "status": "completed", "seconds": 0.819,
+        "timingBoundary": "Await worker through HTTP metadata and verified artifact download; not enqueue latency.",
+        "window": { "x": 0, "y": 0, "width": 256, "height": 256 },
+        "sourceWidth": 832, "sourceHeight": 911, "sourceBands": 1, "dtype": "float32",
+        "crs": "EPSG:2263", "verticalReference": null, "verticalReferenceStatus": "unknown",
+        "globalPlacement": "not_qualified", "artifactBytes": 117176, "artifactMediaType": "image/tiff",
+        "artifactSha256": "deeb99596dab37dc88a08a74d9fcaf4a13a2208960e6017a1d3ac520e49940c8"
+      },
+      "afterReading": { "state": "probed", "placement": "undecided", "partsDone": 0, "recordsSeen": 0 }
+    },
+    {
+      "file": "nyc-10013-lidar-2017.laz",
+      "bytes": 11110715,
+      "sha256": "8c565f320533dcefc7ba8438682b32c0eb5e0a06b323600922b0b0b6092d6790",
+      "manualSources": { "status": 422, "code": "INVALID_INPUT" },
+      "retainedRoute": "/api/v1/ingestion/cases/:caseId/points",
+      "sourceId": "542ac29e-7501-4f60-b105-9b00453a5658",
+      "afterProbe": {
+        "family": "point_cloud", "format": "laz", "sizeClass": "S", "wave": 2,
+        "state": "probed", "placement": "undecided", "partsPlanned": null, "partsDone": 0, "recordsSeen": 0,
+        "card": {
+          "version": "intake-card/1", "depth": "structure", "formatVersion": "1.4", "nameDisagrees": false,
+          "crs": { "state": "absent", "code": null, "sidecarSha256": null },
+          "extent": { "native": [583402.5958, 4507755.5254, 583659.1058, 4508035.8954], "epsg4326": null },
+          "counts": { "features": null, "rows": null, "pages": null, "members": null,
+            "points": 1726222, "bands": null },
+          "raster": null, "point": { "format": 6, "scale": [0.01, 0.01, 0.01] },
+          "drawableHint": false, "probeBytesRead": 131072, "probeMs": 11.532,
+          "limits": ["Public LAS header only; VLR CRS and compressed chunk tables require the existing point reader."]
+        }
+      },
+      "reader": {
+        "initialQueuedByRetain": "391e337d-5612-4077-95a4-34bbfa8afe00", "initialStatus": "completed",
+        "initialThroughStatusAndNextEnqueueSeconds": 0.775,
+        "requestedJob": "830068fc-fa1c-4884-a2ca-4c2bb1479026", "status": "completed", "seconds": 0.774,
+        "timingBoundary": "Await worker through HTTP metadata and verified artifact download; not enqueue latency.",
+        "batch": { "start": 0, "count": 8192 }, "sourcePointCount": 1726222, "recordLength": 30,
+        "scale": [0.01, 0.01, 0.01], "offset": [583545.0458, 4508041.3854, 124.2091],
+        "crs": "EPSG:6347", "verticalReference": "NAVD88 height", "verticalReferenceStatus": "known",
+        "globalPlacement": "not_qualified", "artifactBytes": 245760,
+        "artifactMediaType": "application/vnd.las.point-records",
+        "artifactSha256": "83286b0b5d8edf731d469b0cce1b768ba5a9af22abcb905ab294cbbb6a8dcaec"
+      },
+      "afterReading": { "state": "probed", "placement": "undecided", "partsDone": 0, "recordsSeen": 0 }
+    }
+  ],
+  "jobsAfterProbe": { "raster-window": 2, "point-batch": 1, "intake-draft": 0 },
+  "jobsAfterReading": "Six accepted jobs: retain's three first parts plus three explicitly requested parts.",
+  "writes": { "intakeParts": 0, "physicalFeatures": 0, "registryRecords": 0 },
+  "http": { "callsRecorded": 20, "artifactsVerifiedSeparately": 3, "sourcesRefused": 3 },
+  "contract": "Successful receipts/cards/status parsed with canonical Zod schemas; no new schema was published.",
+  "originalHashesUnchanged": true,
+  "providers": 0,
+  "gpu": false,
+  "rounding": "Timings rounded to milliseconds; native coordinates to four decimals; never stored back in product."
+}
