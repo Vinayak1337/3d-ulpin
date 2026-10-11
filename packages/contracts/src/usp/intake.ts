@@ -116,6 +116,8 @@ export const IntakeTargetPackageSchema = z.strictObject({
   packageId: uuid, areaId: uuid, anchorItemId: uuid, revision: z.number().int().positive(),
   state: z.enum(['RECEIVED', 'NEEDS_INPUT', 'READY_FOR_REVIEW', 'REVIEWED', 'COMMITTED']),
   reviewFingerprint: hash.nullable(), findingCounts: z.record(code, tally).nullable(),
+  reviewRefusal: z.strictObject({ code, message: z.string().min(1).max(2000) }).nullable().optional()
+    .describe('Current review refusal; emitted as null before review or after it passes. Older pages may omit it.'),
   counts: IntakeTargetCountsSchema,
 });
 export const IntakeTargetPageSchema = z.strictObject({

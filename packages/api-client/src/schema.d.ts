@@ -65743,6 +65743,11 @@ export interface components {
                 findingCounts: {
                     [key: string]: number;
                 } | null;
+                /** @description Current review refusal; emitted as null before review or after it passes. Older pages may omit it. */
+                reviewRefusal?: {
+                    code: string;
+                    message: string;
+                } | null;
                 counts: {
                     preparing: number;
                     ready: number;

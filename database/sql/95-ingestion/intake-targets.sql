@@ -37,6 +37,19 @@ CREATE TABLE IF NOT EXISTS usp_intake_targets (
   UNIQUE(package_id, locator),
   FOREIGN KEY(anchor_item_id, case_id) REFERENCES usp_intake_items(item_id, case_id)
 );
+-- ZB1: review refusals belong to the package-linked item even when it has no building target.
+ALTER TABLE usp_intake_items
+  ADD COLUMN IF NOT EXISTS review_refusal_code text
+    CHECK(review_refusal_code IS NULL OR review_refusal_code ~ '^[A-Z][A-Z0-9_]{0,127}$'),
+  ADD COLUMN IF NOT EXISTS review_refusal_message text
+    CHECK(review_refusal_message IS NULL OR length(review_refusal_message) BETWEEN 1 AND 2000);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid='usp_intake_items'::regclass
+    AND conname='usp_intake_review_refusal_pair') THEN
+    ALTER TABLE usp_intake_items ADD CONSTRAINT usp_intake_review_refusal_pair
+      CHECK((review_refusal_code IS NULL) = (review_refusal_message IS NULL));
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS usp_intake_targets_case_idx ON usp_intake_targets(case_id, readiness, target_id);
 CREATE INDEX IF NOT EXISTS usp_intake_targets_confirmation_idx
   ON usp_intake_targets(confirmation_id) WHERE confirmation_id IS NOT NULL;

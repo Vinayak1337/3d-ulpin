@@ -369395,6 +369395,27 @@
                     "maximum": 9007199254740991
                   }
                 },
+                "reviewRefusal": {
+                  "description": "Current review refusal; emitted as null before review or after it passes. Older pages may omit it.",
+                  "nullable": true,
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "pattern": "^[A-Z][A-Z0-9_]{0,127}$"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 2000
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                },
                 "counts": {
                   "type": "object",
                   "properties": {
