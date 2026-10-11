@@ -67,6 +67,7 @@ const CAMERA_MS = 600;
 const GROW_MS = 220;
 // Leave most of a 16.7 ms frame for WebGL uploads, drawing and the browser. One building is atomic.
 const BUILDING_BUDGET_MS = 4;
+const BASE_BUDGET_MS = 4;
 // Tree avoidance needs all footprints; bound global recomputation while a long queue drains.
 const DRESSING_INTERVAL_MS = 250;
 /** Sun direction (towards the sun) in scene axes: from the south-west, high. */
@@ -112,6 +113,7 @@ export class SceneEngine {
   private baseInputs: BaseFeatureInput[] = [];
   private readonly baseEntries = new Map<string, BaseEntry>();
   private readonly baseBatches = new Set<BaseBatch>();
+  private baseQueue = new Map<string, { input: BaseFeatureInput; batch: BaseBatch }>();
   private readonly utilityMeshes = new Map<string, { input: BaseFeatureInput; mesh: Mesh }>();
   private hasSidewalks = false;
   private renderedBase = new Set<string>();
@@ -486,16 +488,52 @@ export class SceneEngine {
       if (input) this.addBaseEntry(input, entry.batch);
     }
     for (const input of wanted.values()) if (!this.baseEntries.has(input.id)) arriving.push(input);
-    if (arriving.length) {
-      const batch: BaseBatch = { inputs: new Map(), parcel: null, roadKerbs: null, sidewalkKerbs: null, lanes: null };
-      this.baseBatches.add(batch);
-      for (const input of arriving) this.addBaseEntry(input, batch);
-      dirty.add(batch);
-    }
+    for (const batch of this.replaceBaseQueue(arriving)) dirty.add(batch);
     for (const batch of dirty) this.rebuildBaseLines(batch);
-    this.updateBaseDerived(features);
+    if (dirty.size) this.refreshBase();
+    if (this.baseQueue.size) this.notifyDrain = true;
+    this.requestRender();
+  }
+
+  private replaceBaseQueue(arriving: BaseFeatureInput[]) {
+    const previousBatches = new Set([...(this.baseQueue?.values() ?? [])].map((entry) => entry.batch));
+    const queue = new Map<string, { input: BaseFeatureInput; batch: BaseBatch }>();
+    let batch: BaseBatch | undefined;
+    for (const input of arriving) {
+      const previous = this.baseQueue?.get(input.id);
+      if (previous) queue.set(input.id, { input, batch: previous.batch });
+      else {
+        batch ??= { inputs: new Map(), parcel: null, roadKerbs: null, sidewalkKerbs: null, lanes: null };
+        this.baseBatches.add(batch);
+        queue.set(input.id, { input, batch });
+      }
+    }
+    this.baseQueue = queue;
+    const pending = new Set([...queue.values()].map((entry) => entry.batch));
+    return [...previousBatches].filter((existing) => !pending.has(existing));
+  }
+
+  private refreshBase() {
+    this.updateBaseDerived([...this.baseEntries.values()].map((entry) => entry.input));
     this.apply();
     this.followArrivedContent();
+  }
+
+  private drainBaseQueue() {
+    const started = performance.now();
+    const batches = new Set<BaseBatch>();
+    while (this.baseQueue.size) {
+      const [id, pending] = this.baseQueue.entries().next().value!;
+      this.baseQueue.delete(id);
+      this.addBaseEntry(pending.input, pending.batch);
+      batches.add(pending.batch);
+      if (performance.now() - started >= BASE_BUDGET_MS) break;
+    }
+    if (!batches.size) return;
+    const pending = new Set([...this.baseQueue.values()].map((entry) => entry.batch));
+    for (const batch of batches) if (!pending.has(batch)) this.rebuildBaseLines(batch);
+    this.baseNeedsDraw = true;
+    this.refreshBase();
   }
 
   private addBaseEntry(input: BaseFeatureInput, batch: BaseBatch) {
@@ -575,7 +613,9 @@ export class SceneEngine {
     batch.roadKerbs = this.baseLines(roads, this.m.kerb, this.kerbs);
     batch.sidewalkKerbs = this.baseLines(sidewalks, this.m.kerbEdge, this.kerbs);
     batch.lanes = this.baseLines(lanes, this.m.kerb, this.kerbs);
-    if (!batch.inputs.size) this.baseBatches.delete(batch);
+    if (!batch.inputs.size && ![...this.baseQueue.values()].some((entry) => entry.batch === batch)) {
+      this.baseBatches.delete(batch);
+    }
   }
 
   private baseLines(points: number[], material: LineBasicMaterial, parent: Group, layer?: string) {
@@ -695,7 +735,7 @@ export class SceneEngine {
   /** Only ids that have reached a rendered frame; queued inputs have no pick or label. */
   drawnBuildings(): { count: number; pending: number; has: (id: string) => boolean } {
     return {
-      count: this.renderedBuildings.size, pending: this.buildingQueue.size,
+      count: this.renderedBuildings.size, pending: this.buildingQueue.size + (this.baseQueue?.size ?? 0),
       has: (id) => this.renderedBuildings.has(id),
     };
   }
@@ -721,7 +761,7 @@ export class SceneEngine {
 
   private partIsDrawn(buildings: readonly string[], base: readonly string[]): boolean {
     return buildings.every((id) => this.renderedBuildings.has(id) && !this.renderChanges.has(id))
-      && !this.baseNeedsDraw && base.every((id) => this.renderedBase.has(id));
+      && !this.baseQueue?.size && !this.baseNeedsDraw && base.every((id) => this.renderedBase.has(id));
   }
 
   private finishDraw() {
@@ -731,13 +771,13 @@ export class SceneEngine {
     }
     this.renderChanges.clear();
     if (this.baseNeedsDraw) {
-      this.renderedBase = new Set(this.baseInputs.map((input) => input.id));
+      this.renderedBase = new Set(this.baseEntries.keys());
       this.baseNeedsDraw = false;
     }
     for (const waiter of this.drawWaiters) {
       if (this.partIsDrawn(waiter.buildings, waiter.base)) waiter.finish(true);
     }
-    if (!this.buildingQueue.size && this.notifyDrain) {
+    if (!this.buildingQueue.size && !this.baseQueue?.size && this.notifyDrain) {
       this.notifyDrain = false;
       this.options.onBuildingsDrawn?.();
     }
@@ -910,6 +950,7 @@ export class SceneEngine {
   dispose(): void {
     this.disposed = true;
     this.buildingQueue.clear();
+    this.baseQueue?.clear();
     for (const waiter of this.drawWaiters) waiter.finish(false);
     this.resizeObserver.disconnect();
     const canvas = this.renderer.domElement;
@@ -1665,6 +1706,7 @@ export class SceneEngine {
     if (this.disposed) return;
     const started = performance.now();
     this.drainBuildingQueue();
+    this.drainBaseQueue();
     let animating = false;
     if (this.flight) animating = this.stepFlight(performance.now());
     this.followArrivedContent();
@@ -1677,7 +1719,8 @@ export class SceneEngine {
     this.recordFrameTime(performance.now() - started);
     this.finishDraw();
     this.options.onView?.();
-    if (animating || this.buildingQueue.size || [...this.tilesets].some((tiles) => tiles.loadProgress < 1)) {
+    if (animating || this.buildingQueue.size || this.baseQueue.size
+      || [...this.tilesets].some((tiles) => tiles.loadProgress < 1)) {
       this.requestRender();
     }
   };
