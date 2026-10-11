@@ -15,6 +15,7 @@ import { compileMapping } from './registry';
 import { IntakeDraftInputSchema, assertIntakeDraftTx, intakeDraftKey, queueIntakeDraftTx,
   type IntakeDraftInput } from './intake-draft';
 import { readIntakeDraftTx, writeIntakeDraftTx, type IntakeDraftState } from './intake-ledger';
+import { createIntakeTargetsTx } from './intake-targets';
 
 const manual = new ManualIngestionService();
 const adaptive = new AdaptiveMappingService();
@@ -153,12 +154,15 @@ async function transition(input: IntakeDraftInput, attempt: UspJobAttempt, recei
   const from = receipt ? await origin(input, attempt, receipt) : null;
   const pkg = packageId ? await getPackage(packageId) : null;
   if (pkg && !pkg.sourceRevisionIds.includes(input.sourceId)) conflict('The draft package cites a different source.');
-  await pinned(input, attempt, async client => writeIntakeDraftTx(client, input.caseId, input.itemId, {
-    state, placement: pkg ? 'on_map' : receipt ? 'undecided' : 'needs_answer',
-    planRef: receipt ? { recipeId: receipt.id, recipeRevision: receipt.revision, recipeState: receipt.state,
-      origin: from, ...(pkg ? { packageId: pkg.id } : {}) } : null,
-    recordsSeen: pkg?.features.length ?? 0, limitReason: receipt ? null : noLayout,
-  }));
+  await pinned(input, attempt, async client => {
+    await writeIntakeDraftTx(client, input.caseId, input.itemId, {
+      state, placement: pkg ? 'on_map' : receipt ? 'undecided' : 'needs_answer',
+      planRef: receipt ? { recipeId: receipt.id, recipeRevision: receipt.revision, recipeState: receipt.state,
+        origin: from, ...(pkg ? { packageId: pkg.id } : {}) } : null,
+      recordsSeen: pkg?.features.length ?? 0, limitReason: receipt ? null : noLayout,
+    });
+    if (state === 'read' && pkg) await createIntakeTargetsTx(client, input.caseId, input.itemId, pkg, input.sourceId);
+  });
 }
 
 async function advance(input: IntakeDraftInput, attempt: UspJobAttempt) {
