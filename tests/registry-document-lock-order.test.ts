@@ -134,6 +134,8 @@ test('reference/citation gates serialize the reproduced inversion; stale aggrega
         if(sql.includes('pg_advisory_xact_lock'))return {rows:[]};
         if(sql.includes('FROM usp_command_receipts'))return {rows:[]};
         if(sql.includes('FROM usp_snapshots'))return {rows:[{body:manifest}]};
+        if(sql===`SELECT DISTINCT ON(id) id,revision,body FROM usp_declaration_revisions
+    WHERE site_id=$1 ORDER BY id,revision DESC LIMIT 11`)return {rows:[]};
         if(sql.startsWith('INSERT INTO usp_snapshot'))return {rows:[]};
         if(sql.includes('FROM registry_reviews'))return {rows:[{draft_id:f.recordedDraft.id,body:structuredClone(review),committed}]};
         if(sql.includes('FROM registry_drafts'))return {rows:[structuredClone(f.recordedDraft)]};
