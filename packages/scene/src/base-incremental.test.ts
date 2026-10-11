@@ -7,6 +7,7 @@ function fixture() {
   const fill = new MeshBasicMaterial();
   const line = new LineBasicMaterial();
   const engine = Object.assign(Object.create(SceneEngine.prototype), {
+    programWarmUp: { settled: true },
     baseInputs: [], baseEntries: new Map(), baseBatches: new Set(), utilityMeshes: new Map(),
     base: new Group(), kerbs: new Group(), utilities: new Group(), trees: new Group(),
     anchors: new Map(), anchorSizes: new Map(), raised: [], lands: [], utilityInputs: [],
@@ -34,6 +35,28 @@ function draw(engine: ReturnType<typeof fixture>) {
 afterEach(() => vi.restoreAllMocks());
 
 describe('base whole-list incremental reconciliation', () => {
+  it('keeps base truth queued until warm-up settles and resumes after failure or timeout', async () => {
+    for (const outcome of ['ready', 'failed', 'timeout']) {
+      const engine = fixture();
+      engine.programWarmUp = { settled: false, outcome: 'pending' };
+      const input = feature('base');
+      engine.setBase([input]);
+      let drawn = false;
+      const waiting = engine.waitForDrawn([], [input.id]).then((result) => { drawn = result; });
+      engine.drainBaseQueue();
+      engine.finishDraw();
+      await Promise.resolve();
+      expect(engine.baseEntries.size).toBe(0);
+      expect(engine.baseQueue.size).toBe(1);
+      expect(drawn).toBe(false);
+      engine.programWarmUp = { settled: true, outcome };
+      draw(engine);
+      await waiting;
+      expect(engine.baseEntries.has(input.id)).toBe(true);
+      expect(drawn).toBe(true);
+    }
+  });
+
   it('defers surfaces, preserves batch order and lines, and acknowledges only the completed queue', async () => {
     const engine = fixture();
     const inputs = [feature('a'), feature('b'), feature('c')];

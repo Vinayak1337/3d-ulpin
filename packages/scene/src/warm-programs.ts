@@ -69,7 +69,7 @@ export function warmProgramObjects(materials: WarmMaterials): WarmObjects {
     new Mesh(facade, materials.bldg),
   ];
   for (const object of color) if (object instanceof Mesh) object.receiveShadow = true;
-  // The renderer owns its private depth material. Keep equivalent cache entries alive until renderer disposal.
+  // Retain equivalent depth cache entries until the engine disposes its building material.
   const depthMaterials = Array.from({ length: 3 }, () => new MeshDepthMaterial({ side: BackSide }));
   const depth = [
     instanced(surface, depthMaterials[0]!, true),
@@ -90,14 +90,16 @@ function depthContext(scene: Scene): Scene {
 
 function compileObjects(
   renderer: WebGLRenderer, camera: Camera, target: Scene, objects: Object3D[],
-  renderTarget: WebGLRenderTarget | null,
+  renderTarget: WebGLRenderTarget | null, parallel = true,
 ): Promise<unknown> {
   const group = new Scene();
   group.add(...objects);
   const previous = renderer.getRenderTarget();
   try {
     renderer.setRenderTarget(renderTarget);
-    return renderer.compileAsync(group, camera, target);
+    if (parallel) return renderer.compileAsync(group, camera, target);
+    renderer.compile(group, camera, target);
+    return Promise.resolve();
   } finally {
     renderer.setRenderTarget(previous);
   }
@@ -128,7 +130,7 @@ async function compileSerial(
     for (const object of batch) {
       await nextFrame();
       if (state.settled) return;
-      await compileObjects(renderer, camera, context, [object], output);
+      await compileObjects(renderer, camera, context, [object], output, false);
       if (state.settled) return;
       initializeProgram(renderer, object);
     }
@@ -137,12 +139,24 @@ async function compileSerial(
 
 async function compileParallel(
   renderer: WebGLRenderer, camera: Camera, scene: Scene, objects: WarmObjects,
-  target: WebGLRenderTarget,
+  target: WebGLRenderTarget, state: ProgramWarmUp,
 ): Promise<void> {
+  // The initial ordinary frame normalizes Three's deprecated PCFSoft type before keys are computed.
+  await nextFrame();
+  if (state.settled) return;
   await Promise.all([
     compileObjects(renderer, camera, scene, objects.color, null),
     compileObjects(renderer, camera, depthContext(scene), objects.depth, target),
   ]);
+}
+
+function retireDepthWith(source: Material, objects: Object3D[], cancel: () => void): void {
+  const retire = () => {
+    cancel();
+    for (const object of objects) ((object as Mesh).material as Material).dispose();
+    source.removeEventListener('dispose', retire);
+  };
+  source.addEventListener('dispose', retire);
 }
 
 /** One construction-time attempt, fail-open after two seconds; neither path draws the carriers. */
@@ -165,8 +179,9 @@ export function startProgramWarmUp(
     clearTimeout(timer);
   };
   const timer = setTimeout(() => settle('timeout'), 2000);
+  retireDepthWith(materials.bldg, objects.depth, () => settle('failed'));
   const work = state.parallel
-    ? compileParallel(renderer, camera, scene, objects, target)
+    ? compileParallel(renderer, camera, scene, objects, target, state)
     : compileSerial(renderer, camera, scene, objects, target, state);
   void work.then(() => settle('ready'), () => settle('failed'));
   return state;
