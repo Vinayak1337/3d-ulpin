@@ -21,14 +21,14 @@
   "stop": {
     "rule": "a",
     "at": "services/geo/geo/officer.py:244,297-302",
-    "finding": "The officer candidate-pair guard counts every occupation/public-context pair before intersection.",
+    "finding": "The officer pair guard counts every occupation/public-context pair before intersection.",
     "distanceMetres": null,
-    "effect": "Disjoint qualified public context anywhere in the supplied area can exhaust the shared 20,000-pair budget.",
-    "limitAt": "services/geo/geo/area.py:34; services/geo/geo/officer.py:218,298-300,362-364",
+    "effect": "Disjoint qualified public context anywhere in the supplied area can exhaust the 20,000-pair budget.",
+    "limitAt": ["services/geo/geo/area.py:34", "services/geo/geo/officer.py:218,298-300,362-364"],
     "refusal": "Officer check exceeds the bounded candidate-pair limit; split the area.",
     "exampleArithmetic": "101 evidenced ground occupations times 200 disjoint public features = 20,200 pairs.",
-    "exampleQualification": "Arithmetic, not a runtime measurement and not an assertion about NYC source semantics.",
-    "decisionNeeded": "Decide whether this guard is explicitly scoped to LP1 coverage or must remain distance-independent.",
+    "exampleQualification": "Arithmetic only, not a runtime measurement or a claim about NYC source semantics.",
+    "decisionNeeded": "Decide whether this guard is scoped to LP1 coverage or must remain distance-independent.",
     "smallestPossibleChange": "If locality is required in Python, move public pair counting after intersection.",
     "changeOwnership": "services/geo/geo/officer.py is outside LP1 ownership; no change made."
   },
@@ -205,7 +205,7 @@
     {
       "at": "packages/server/src/modules/areas/areas.ts:1296,1302-1311,1361-1362,1385-1393",
       "reader": "Geometry package review/commit",
-      "afterR4": "Replace dependency fingerprint and commit area-revision equality; retain areaRevision as historical data."
+      "afterR4": "Replace fingerprint and commit area-revision equality; retain historical areaRevision."
     },
     {
       "at": "packages/server/src/modules/areas/areas.ts:1115-1145",
@@ -250,12 +250,12 @@
     {
       "at": "apps/studio/src/features/review/candidates/commands.ts:33-38; candidates/decisions.ts:45-56",
       "reader": "Studio package review command and roofprint-decision baseline",
-      "afterR4": "No review.areaRevision reader/comparison found in apps/studio/src; package revision still sent unchanged."
+      "afterR4": "No review.areaRevision reader/comparison found in apps/studio/src; package revision unchanged."
     },
     {
       "at": "apps/api/src/modules/spatial/spatial.openapi.ts:229; modules/register/documentation.ts:212",
       "reader": "Published review schemas",
-      "afterR4": "Historical areaRevision remains required; optional scope would need generator/schema review on resume."
+      "afterR4": "Historical areaRevision stays required; optional scope needs generator/schema review on resume."
     },
     {
       "at": "packages/server/src/modules/areas/exterior-records-commit.test.ts:28-32; native-review.test.ts:117",

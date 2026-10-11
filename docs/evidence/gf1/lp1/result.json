@@ -1,0 +1,63 @@
+{
+  "task": "LP1",
+  "gate": "GF1",
+  "status": "stopped_rule_a",
+  "step0Commit": "40754fc1",
+  "applicationCodeChanged": false,
+  "runtimeMeasurement": null,
+  "contextExplain": null,
+  "realInputsProcessed": [],
+  "localityControl": {
+    "qualification": "Existing synthetic fixtures, diagnostic budget override; not NYC or production admission.",
+    "command": "E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe -B docs/evidence/gf1/lp1/check-locality.py",
+    "exit": 0,
+    "productionPairBudget": 20000,
+    "diagnosticPairBudget": 0,
+    "occupationBounds": [0, 0, 10, 10],
+    "publicBounds": [20, 20, 30, 30],
+    "intersectingPairs": 0,
+    "baselineFindingCodes": ["PARCEL_ASSOCIATION_REQUIRED"],
+    "diagnosticRefusal": "Officer check exceeds the bounded candidate-pair limit; split the area.",
+    "sourceFilesModified": false
+  },
+  "attempts": [
+    {
+      "command": "node docs/evidence/gf1/fx2/refresh.mjs --refresh",
+      "exit": 1,
+      "failure": "Unexpected index bytes: packages/server/src/modules/usp/ingestion/events.ts",
+      "decision": "Report and continue, as instructed; no retry."
+    },
+    {
+      "command": "python -c import probe",
+      "exit": 1,
+      "failure": "Default Python lacks shapely.",
+      "decision": "Use E1's existing geometric interpreter; no environment installed or modified."
+    },
+    {
+      "command": "E1 geometric interpreter, check-locality.py before fixture-loading correction",
+      "exit": 1,
+      "failure": "test_officer imports test_area, which needs absent fastapi.",
+      "decision": "Load only existing fixture definitions via AST; no HTTP/PDF dependencies needed for this check."
+    },
+    {
+      "command": "E1 geometric interpreter, check-locality.py after fixture-loading correction",
+      "exit": 0,
+      "decision": "Distance-independent public-pair guard reproduced; stop at rule (a)."
+    }
+  ],
+  "deferred": [
+    "NYC original split into test-only derivatives and same-confirmation baseline measurement",
+    "Qualified context SQL and EXPLAIN with recorded NYC buildings",
+    "All application changes and requested regression tests",
+    "Backend typecheck, recording/packet/intake tests and regenerated API contracts",
+    "Post-build batch and five-layer NYC runtime measurement"
+  ],
+  "safety": {"containersStarted": 0, "databasesTouched": 0, "originalsTouched": 0},
+  "next": [
+    "Lead decides whether the officer pair guard becomes explicitly coverage-scoped or remains nonlocal.",
+    "If Python must change, its smallest change is counting public pairs only after intersection; outside LP1 paths.",
+    "Clarify R2 treatment of buffers confined to explicitly linked participants and utility miter corner reach.",
+    "After that decision, finish Step 0 runtime/EXPLAIN on unchanged application code before the build."
+  ],
+  "deploymentNote": "Future v2 deployment requires one more review for packages reviewed but not yet recorded (R7)."
+}
