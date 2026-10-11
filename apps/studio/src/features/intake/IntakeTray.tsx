@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import type { Package } from './run/model';
 import { needsLayoutAnswer } from './question-model';
 import { countWords, crsWords, familyWords, formatWords, placementWords, sizeClassWords,
-  stateWords, packagePath } from './batch-model';
+  stateWords, packagePath, partProgressWords } from './batch-model';
 import type { IntakeItem } from './batch-model';
 import styles from './Batch.module.css';
 
@@ -20,7 +20,10 @@ export function IntakeTray({ items, packages, choose }: {
         {item.sizeBytes == null ? 'Not known' : `${countWords(item.sizeBytes)} bytes`}
         {item.sizeClass ? ` · ${sizeClassWords(item.sizeClass)}` : ''}
       </> },
-      { header: 'State', cell: (item) => stateWords(item.state) },
+      { header: 'State', cell: (item) => <>
+        {stateWords(item.state)}
+        {partProgressWords(item) ? <p className="ul-help">{partProgressWords(item)}</p> : null}
+      </> },
       { header: 'Features', numeric: true, cell: (item) => countWords(item.card?.counts.features) },
       { header: 'Coordinate system', cell: (item) => crsWords(item.card) },
       { header: 'Extent as stated', cell: (item) => item.card?.extent.native?.join(', ') ?? 'Not known' },
