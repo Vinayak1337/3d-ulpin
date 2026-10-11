@@ -1,0 +1,32 @@
+{
+  "task": "CR1",
+  "attempts": [
+    {
+      "receipt": "runtime-attempt1.json",
+      "signature": "ERR_MODULE_NOT_FOUND reflect-metadata",
+      "diagnosis": "Evidence directory cannot resolve apps/api private dependencies.",
+      "comparison": "Reuse existing createRequire against apps/api/package.json; real Nest controllers then start."
+    },
+    {
+      "receipt": "runtime-attempt2.json",
+      "signature": "0 !== 155 issued registry count; every HTTP step passed",
+      "diagnosis": "Harness conflated physical parcel records with building/unit registry records.",
+      "exactLine": "exterior-records.ts:12 intentionally selects feature.kind === building only.",
+      "comparison": "Count physical_features revisions separately; retain issuedRegistryRecords=0 in evidence."
+    },
+    {
+      "receipt": "runtime-attempt3.json",
+      "signature": "42703 column kind does not exist",
+      "diagnosis": "Harness queried an absent physical_features column; kind is in the JSON body.",
+      "comparison": "Use existing schema body->>kind; separate registry query is unchanged. Receipt then passes."
+    },
+    {
+      "receipt": "runtime-before-final-source-proof.json",
+      "signature": "Passed four HTTP steps and all assertions",
+      "comparison": "Final receipt rebuilds final committed source and compares image source hashes to the worktree."
+    }
+  ],
+  "unitSetup": "First non-WGS84 control attempted EPSG:4269 without an available best local operation; coordinates were infinite. Changed only the synthetic test datum/place to available ETRS89 EPSG:4258; added errcheck to test preparation. Production transform unchanged.",
+  "fullSuite": "Same baseline failures checked once before and once after as requested; no repeated rerun. Details in result.json.",
+  "ownership": "Every runtime verifies only its own nonce is gone, never global equality or unrelated removals."
+}

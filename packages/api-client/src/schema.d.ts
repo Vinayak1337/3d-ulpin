@@ -65087,19 +65087,20 @@ export interface components {
                 caseId: string;
                 workspaceRevision: number;
                 workspaceFingerprint: string;
+                /** @enum {string} */
+                kind?: "building" | "parcel" | "road" | "public_land" | "utility";
                 heightField?: string;
                 /** @enum {string} */
                 heightUnit?: "m" | "ft";
                 heightMeaning?: string;
                 operations: {
-                    /** @enum {string} */
-                    target: "building.sourceKey" | "building.name" | "building.geometry";
+                    target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1";
                 }[];
             };
-            destination: {
+            destination?: {
                 /** @enum {string} */
                 kind: "new_area";
                 namespace: string;
@@ -65252,16 +65253,17 @@ export interface components {
                 caseId: string;
                 workspaceRevision: number;
                 workspaceFingerprint: string;
+                /** @enum {string} */
+                kind?: "building" | "parcel" | "road" | "public_land" | "utility";
                 heightField?: string;
                 /** @enum {string} */
                 heightUnit?: "m" | "ft";
                 heightMeaning?: string;
                 operations: {
-                    /** @enum {string} */
-                    target: "building.sourceKey" | "building.name" | "building.geometry";
+                    target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1";
                 }[];
             };
             destination: {
@@ -65461,16 +65463,17 @@ export interface components {
                 caseId: string;
                 workspaceRevision: number;
                 workspaceFingerprint: string;
+                /** @enum {string} */
+                kind?: "building" | "parcel" | "road" | "public_land" | "utility";
                 heightField?: string;
                 /** @enum {string} */
                 heightUnit?: "m" | "ft";
                 heightMeaning?: string;
                 operations: {
-                    /** @enum {string} */
-                    target: "building.sourceKey" | "building.name" | "building.geometry";
+                    target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1";
                 }[];
             };
             destination: {
@@ -69214,16 +69217,17 @@ export interface components {
                 caseId: string;
                 workspaceRevision: number;
                 workspaceFingerprint: string;
+                /** @enum {string} */
+                kind?: "building" | "parcel" | "road" | "public_land" | "utility";
                 heightField?: string;
                 /** @enum {string} */
                 heightUnit?: "m" | "ft";
                 heightMeaning?: string;
                 operations: {
-                    /** @enum {string} */
-                    target: "building.sourceKey" | "building.name" | "building.geometry";
+                    target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1";
                 }[];
             } | null;
             validationErrors: string[];
@@ -69610,16 +69614,17 @@ export interface components {
                     caseId: string;
                     workspaceRevision: number;
                     workspaceFingerprint: string;
+                    /** @enum {string} */
+                    kind?: "building" | "parcel" | "road" | "public_land" | "utility";
                     heightField?: string;
                     /** @enum {string} */
                     heightUnit?: "m" | "ft";
                     heightMeaning?: string;
                     operations: {
-                        /** @enum {string} */
-                        target: "building.sourceKey" | "building.name" | "building.geometry";
+                        target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                         sourcePath: string;
                         /** @enum {string} */
-                        conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1";
+                        conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1";
                     }[];
                 } | null;
                 validationErrors: string[];

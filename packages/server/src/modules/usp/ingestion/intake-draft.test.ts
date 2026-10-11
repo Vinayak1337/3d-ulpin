@@ -293,6 +293,21 @@ test('layout memory retains the approved height field, unit and meaning without 
   assert.equal(proposal?.plan.heightMeaning, height.heightMeaning);
   assert(!('approval' in proposal!.plan));
 });
+test('layout memory keeps the officer stated kind, with generic targets and no prior approval', async () => {
+  const next = { ...profile, geometryTypes: ['LineString'] };
+  const saved = { ...remembered, plan: { ...remembered.plan, kind: 'road' as const, operations: [
+    { target: 'feature.sourceKey' as const, sourcePath: '/features/*/properties/id',
+      conversionId: 'literal_identifier@1' as const },
+    { target: 'feature.geometry' as const, sourcePath: '/features/*/geometry',
+      conversionId: 'geojson_geometry@1' as const },
+  ] } };
+  const proposal = await proposeIntakeLayout(next, saved, caseId, async () => {
+    throw new Error('Matching approved memory must not ask a teacher.');
+  });
+  assert.equal(proposal?.plan.kind, 'road');
+  assert.deepEqual(proposal?.plan.operations, saved.plan.operations);
+  assert(!('approval' in proposal!.plan));
+});
 test('unapproved and different-schema memory falls back only to the permitted existing proposer', async () => {
   let calls = 0;
   const teacher = async () => {

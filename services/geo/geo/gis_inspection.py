@@ -31,7 +31,7 @@ def _fields(rows):
 
 
 def inspect_gis(data):
-    from .area import _geometry, _arcgis_geometry, _spatial_reference, GeometryRejected, MAX_FEATURES, MAX_VERTICES
+    from .area import _geometry, _arcgis_geometry, _spatial_reference, _geojson_crs, GeometryRejected, MAX_FEATURES, MAX_VERTICES
     raw = _raw(data)
     layer = data.get("layer") or None
     if layer is not None and (not isinstance(layer, str) or len(layer) > 256):
@@ -55,10 +55,12 @@ def inspect_gis(data):
             raise InputError("GIS JSON requires a complete feature collection.")
         format = "geojson" if source.get("type") == "FeatureCollection" else "arcgis"
         if format == "geojson":
-            if "crs" in source and source["crs"] != {"type": "name", "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"}}:
-                raise InputError("Projected or unknown GeoJSON CRS overrides are unsupported; use a native GIS source with declared CRS.")
-            crs = "EPSG:4326"
-            evidence = "Declared OGC CRS84" if "crs" in source else "RFC 7946 GeoJSON longitude/latitude"
+            geojson_reference, geojson_crs_name = _geojson_crs(source)
+            crs = ":".join(geojson_reference.to_authority())
+            # The legacy CRS84 declaration keeps its established evidence words: stored profiles quote them.
+            evidence = ("RFC 7946 GeoJSON longitude/latitude" if geojson_crs_name is None
+                        else "Declared OGC CRS84" if geojson_crs_name == "urn:ogc:def:crs:OGC:1.3:CRS84"
+                        else f"Declared in the file's crs member: `{geojson_crs_name}`")
         else:
             if source.get("exceededTransferLimit") or source.get("hasZ") or source.get("hasM"):
                 raise InputError("ArcGIS source must be a complete, strictly 2D feature set.")
@@ -88,7 +90,10 @@ def inspect_gis(data):
         try:
             if format != "geojson":
                 geometry = _arcgis_geometry(geometry, geographic=(row_crs[-1] or crs) == "EPSG:4326")
-            parsed, count = _geometry(geometry, "Source feature", geographic=format == "geojson" or (row_crs[-1] or crs) == "EPSG:4326")
+            geographic_source = (geojson_reference.is_geographic if format == "geojson"
+                                 else (row_crs[-1] or crs) == "EPSG:4326")
+            parsed, count = _geometry(geometry, "Source feature", geographic=geographic_source,
+                                      undeclared=format == "geojson" and geojson_crs_name is None)
             types.add(parsed.geom_type)
         except GeometryRejected as error:
             count = error.vertices

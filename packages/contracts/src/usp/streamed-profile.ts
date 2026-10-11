@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import {MappingOperationSchema,SourcePathSchema,SourcePinSchema} from './ingestion';
+import {LegacyMappingTargetSchema} from '../canonical/targets';
 
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/);
 const issue=z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/);
@@ -35,12 +36,14 @@ export const StreamedProfileStatusSchema=z.strictObject({version:z.literal(STREA
   latest:StreamedProfileGenerationSchema.nullable(),issueCode:issue.nullable(),
   sourceComplete:z.boolean(),usableCoverage:z.boolean(),identityComplete:z.literal(false)});
 
-const SemanticEvidenceSchema=z.strictObject({target:MappingOperationSchema.shape.target,
+const StreamedOperationSchema=MappingOperationSchema.extend({target:LegacyMappingTargetSchema,
+  conversionId:z.enum(['literal_identifier@1','literal_text@1','geojson_polygon@1'])});
+const SemanticEvidenceSchema=z.strictObject({target:LegacyMappingTargetSchema,
   sourcePath:SourcePathSchema,issuer:z.string().min(1).max(500),
   evidenceUrl:z.url().max(2048),meaning:z.enum(['building_source_identity','building_name','building_footprint'])});
 const mappingPlanFields={mode:z.literal('streamed_mapping'),source:SourcePinSchema,caseId:id,caseRevision:z.number().int().nonnegative(),
   rawJobId:id,profileJobId:id,profileGeneration:z.number().int().nonnegative(),profileHash:hash,
-  operations:z.array(MappingOperationSchema).min(2).max(3),
+  operations:z.array(StreamedOperationSchema).min(2).max(3),
   semanticEvidence:z.array(SemanticEvidenceSchema).min(2).max(3),
 };
 const MappingPlanBaseSchema=z.strictObject(mappingPlanFields);

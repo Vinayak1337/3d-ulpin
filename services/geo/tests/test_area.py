@@ -103,11 +103,107 @@ def test_original_nyc_62_feature_snapshot_with_explicit_legacy_crs84():
         assert feature["areaM2"] > 0
 
 
-@pytest.mark.parametrize("name", ["EPSG:3857", "urn:ogc:def:crs:EPSG::32643", "unknown"])
-def test_other_declared_geojson_crs_remain_explicit_errors(name):
-    data = geojson()
+@pytest.mark.parametrize("name,code", [
+    ("EPSG:3857", 3857), ("urn:ogc:def:crs:EPSG::32643", 32643),
+    ("urn:ogc:def:crs:EPSG::2958", 2958), ("EPSG:4258", 4258),
+])
+def test_named_geojson_crs_transforms_xy_by_the_existing_rule(name, code):
+    x, y = (-79.1, 43.1) if code == 2958 else (77, 28)
+    if code == 4258:
+        x, y = 9, 50
+    converter = Transformer.from_crs(4326, code, always_xy=True, allow_ballpark=False, only_best=True)
+    coordinates = [list(converter.transform(*point, errcheck=True)) for point in ring(x, y, .0001, .0001)]
+    data = geojson({"type": "Polygon", "coordinates": [coordinates]})
     data["data"]["crs"] = {"type": "name", "properties": {"name": name}}
-    with pytest.raises(InputError):
+    before = copy.deepcopy(data)
+    result = normalize_area(data)
+    direct = Transformer.from_crs(code, 4326, always_xy=True, allow_ballpark=False, only_best=True)
+    actual = result["features"][0]["geographicGeometry"]["coordinates"][0][0]
+    assert actual == pytest.approx(direct.transform(*coordinates[0]), abs=1e-10)
+    assert result["reference"]["sourceCrs"] == f"EPSG:{code}"
+    assert result["warnings"][0] == (
+        f"The source declares `{name}`; read as `EPSG:{code}`, coordinates in the order written (x, y). "
+        "Original bytes keep that declaration; normalized geographic geometry uses RFC 7946 coordinates.")
+    assert result["features"][0]["sourceGeometry"] == before["data"]["features"][0]["geometry"]
+    assert data == before
+
+
+CRS_DECLARATION_REFUSALS = [
+    ({"type": "link", "properties": {"href": "https://invalid.example/crs"}}, "2008 named CRS form"),
+    ({"type": "name", "properties": {"name": "unknown"}}, "not a recognized coordinate reference system"),
+    ({"type": "name", "properties": {"name": "EPSG:7405"}}, "two-dimensional horizontal CRS"),
+    ({"type": "name", "properties": {"name": "EPSG:4979"}}, "two-dimensional horizontal CRS"),
+    ({"type": "name", "properties": {"name": "EPSG:5703"}}, "two-dimensional horizontal CRS"),
+    ({"type": "name", "properties": {"name": 'LOCAL_CS["control",UNIT["metre",1],'
+      'AXIS["x",EAST],AXIS["y",NORTH]]'}}, "two-dimensional horizontal CRS"),
+    (None, "2008 named CRS form"),
+    ("EPSG:2958", "2008 named CRS form"),
+    ({"type": "name", "properties": {}}, "2008 named CRS form"),
+    ({"type": "name", "properties": {"name": 2958}}, "nonempty coordinate reference system text"),
+    ({"type": "name", "properties": {"name": ""}}, "nonempty coordinate reference system text"),
+    ({"type": "name", "properties": {"name": "EPSG:2958", "extra": True}}, "2008 named CRS form"),
+    ({"type": "name", "properties": {"name": "EPSG:2958"}, "extra": True}, "2008 named CRS form"),
+]
+
+
+@pytest.mark.parametrize("member,words", CRS_DECLARATION_REFUSALS)
+def test_invalid_geojson_declaration_quotes_the_file_and_reason(member, words):
+    data = geojson()
+    data["data"]["crs"] = member
+    with pytest.raises(InputError, match=words) as caught:
+        normalize_area(data)
+    assert json.dumps(member, ensure_ascii=False, separators=(",", ":")) in str(caught.value)
+
+
+@pytest.mark.parametrize("name", ["EPSG:32643", "urn:ogc:def:crs:EPSG::32643"])
+def test_explicit_geojson_source_crs_must_agree_with_declaration(name):
+    data = geojson(polygon(500000, 3100000))
+    data["data"]["crs"] = {"type": "name", "properties": {"name": name}}
+    data["reference"] = {"sourceCrs": "EPSG:32643"}
+    assert normalize_area(data)["reference"]["sourceCrs"] == "EPSG:32643"
+    data["reference"]["sourceCrs"] = "EPSG:4326"
+    with pytest.raises(InputError, match="Explicit sourceCrs conflicts with the file's crs member."):
+        normalize_area(data)
+
+
+@pytest.mark.parametrize("name,explicit", [
+    ("EPSG:4326", "EPSG:4326"),
+    ("urn:ogc:def:crs:OGC:1.3:CRS84", "EPSG:4326"),
+    ("urn:ogc:def:crs:OGC:1.3:CRS84", "OGC:CRS84"),
+    ("EPSG:4258", "EPSG:4258"),
+])
+def test_explicit_geographic_crs_agrees_in_written_xy_order(name, explicit):
+    data = geojson(polygon(9, 50, .0001, .0001))
+    data["data"]["crs"] = {"type": "name", "properties": {"name": name}}
+    data["reference"] = {"sourceCrs": explicit}
+    assert normalize_area(data)["disposition"]["accepted"] == 1
+    data["reference"]["sourceCrs"] = "EPSG:3857"
+    with pytest.raises(InputError, match="Explicit sourceCrs conflicts with the file's crs member."):
+        normalize_area(data)
+
+
+def test_undeclared_geojson_keeps_rfc_rule_and_identical_whole_result():
+    data = geojson()
+    original = normalize_area(data)
+    data["reference"] = {"sourceCrs": "EPSG:4326"}
+    assert normalize_area(data) == original
+    data["reference"]["sourceCrs"] = "EPSG:3857"
+    with pytest.raises(InputError, match="RFC GeoJSON input is EPSG:4326"):
+        normalize_area(data)
+    data.pop("reference")
+    data["data"]["features"][0]["geometry"] = polygon(500000, 3100000)
+    with pytest.raises(InputError, match="The file declares no coordinate system"):
+        normalize_area(data)
+
+
+@pytest.mark.parametrize("level", ["feature", "geometry"])
+def test_geojson_crs_on_feature_or_geometry_is_still_refused(level):
+    data = geojson()
+    target = data["data"]["features"][0]
+    if level == "geometry":
+        target = target["geometry"]
+    target["crs"] = {"type": "name", "properties": {"name": "EPSG:4326"}}
+    with pytest.raises(InputError, match="CRS override"):
         normalize_area(data)
 
 

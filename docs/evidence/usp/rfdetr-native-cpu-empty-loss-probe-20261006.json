@@ -1375,5 +1375,109 @@
       "suppliedPermissions": "never/danger-full-access"
     },
     "privateFinalizationReceipt": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\finalization.json"
+  },
+  "repairedPilotFitExecution": {
+    "task": "D07-RFDETR-REPAIRED-PILOT-FIT-EXECUTE",
+    "state": "stopped_pre_authorization_single_attempt",
+    "rootRelease": {
+      "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\root-release.json",
+      "bytes": 4614,
+      "sha256": "fbdbf83da5fe37f5ef94184202b2d730b76f850bdbfa87dbd19b7282995d6b28"
+    },
+    "rootReleaseSha256": "fbdbf83da5fe37f5ef94184202b2d730b76f850bdbfa87dbd19b7282995d6b28",
+    "accepted": {
+      "backendSource": "af23f24be0c06bed24a0e67c2416bf39c033453e",
+      "backendIntegrated": "55a68056",
+      "launcherSource": "8ee9f544fe204f22ba8e16061b1cba86fdfd2f40",
+      "launcherIntegrated": "ed977c35",
+      "staging": "e95273e5"
+    },
+    "attempt": {
+      "containerId": "23a4cfffe3eeb2450e666bd5353907cfd636c5b0d3d50e3b65cfe0eeb3823749",
+      "containerCreated": true,
+      "containerRemoved": true,
+      "elapsedSeconds": 7.335,
+      "hostJobPeakPrivateBytes": 97091584,
+      "nativeCgroupMemoryPeakBytes": 42786816,
+      "nativePidsPeak": 6,
+      "nativeSelfRssBytes": 24084480,
+      "gpuAssigned": true,
+      "nativeBoundaryPassed": true,
+      "currentPidPreflightCreated": false,
+      "torchImported": false,
+      "modelsLoaded": 0,
+      "forwardCalls": 0,
+      "backwardCalls": 0,
+      "optimizerUpdates": 0,
+      "fitExamples": 0,
+      "evaluation": false
+    },
+    "failure": {
+      "type": "AttributeError",
+      "message": "'dict' object has no attribute 'encode'",
+      "phase": "repaired native bridge before current-PID preflight/fresh authorization",
+      "cause": "repaired bridge hashes initial['rootAssignment'] as text, but the host authorization represents rootAssignment as the pinned JSON object for root-fit-assignment.json; the bridge must consume the root-release JSON text or its pin consistently before any rerun."
+    },
+    "artifacts": {
+      "supervisorCommand": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\command.json",
+        "bytes": 2509,
+        "sha256": "bf3efa2cc9dfaddac7737fc0a791ee8246523c1c23302ebfc4d2a90fae7cf402"
+      },
+      "launcherLog": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\repaired-pilot-fit.log",
+        "bytes": 386,
+        "sha256": "67c6e282eb8ca6222d056487017800ecd9bb6ea08053f9dfa6c4a17a8afb3610"
+      },
+      "containerLog": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\repaired-pilot-fit\\container.log",
+        "bytes": 204,
+        "sha256": "d6cd6cf9b95f24a8d13ad48e882e95ce7e9b6563a7356357754e098edad3019f"
+      },
+      "nativeReceipt": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\output\\repaired-pilot-fit-native.json",
+        "bytes": 5333,
+        "sha256": "48fb9860e81fecd8b86a2f6a64dadbfb93c5b3ced69362676e86a937c12ad772"
+      },
+      "hostReceipt": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\host-receipt.json",
+        "bytes": 130953,
+        "sha256": "5156bcaf1d51731d914b8f89945eb4a5e030e6f274d43a88847b18eca4bf4176"
+      },
+      "attempt": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\attempt.json",
+        "bytes": 287,
+        "sha256": "cb2a2f6527c9f836347dfc625357d8d2fdb1d96af110c7db5f368d4bd8c6a7c7"
+      },
+      "before": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\before.json",
+        "bytes": 2415,
+        "sha256": "0fd8d0d8590cde74c18950902648a6bf9483a07ad1f812b07f0b6db6cf43fb6e"
+      },
+      "containerReadback": {
+        "path": "E:\\BhuAayam-data\\task-data\\d07-rfdetr-repaired-pilot-20261006\\launcher\\repaired-pilot-fit\\container-readback.json",
+        "bytes": 40017,
+        "sha256": "9b6e29ad069ffc3aac7a0aa736952b85bdba1c01b5c3e4244ec9c199e2040fe7"
+      }
+    },
+    "cleanup": {
+      "jobClosed": true,
+      "hostChildReaped": true,
+      "ownedContainerRemoved": true,
+      "retainedInventoryCompared": true,
+      "retainedContainers": 24,
+      "retainedVolumes": 14,
+      "runningAfter": 0,
+      "inventoryUnchanged": true
+    },
+    "claims": {
+      "fitCompleted": false,
+      "fitUnqualified": false,
+      "checkpointSaved": false,
+      "quality": false,
+      "promotion": false,
+      "retryAuthorized": false
+    },
+    "next": "Return to root; any bridge correction changes the frozen launcher/source pin and requires renewed integration acceptance and a fresh root release. Do not retry this release unchanged."
   }
 }

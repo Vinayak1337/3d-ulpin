@@ -1,0 +1,352 @@
+{
+  "task": "DA6",
+  "gate": "GF1 data prerequisite",
+  "baseCommit": "2f605e5a71cd8abb6040fc11bc40384a129b4d02",
+  "assets": [
+    {
+      "file": "5zhs-2jue-box-w74.025-s40.700-e73.940-n40.800.geojson",
+      "format": "GeoJSON",
+      "issuer": "City of New York Office of Technology and Innovation (OTI)",
+      "datasetId": "5zhs-2jue",
+      "originalUrl": "https://data.cityofnewyork.us/resource/5zhs-2jue.geojson?%24where=within_box%28the_geom%2C40.800%2C-74.025%2C40.700%2C-73.940%29&%24limit=50000",
+      "queryDocumentation": "https://dev.socrata.com/docs/functions/within_box.html",
+      "formatDocumentation": "https://dev.socrata.com/docs/formats/geojson.html",
+      "datasetApiDocumentation": "https://dev.socrata.com/foundry/data.cityofnewyork.us/5zhs-2jue",
+      "acquiredAtIst": "2026-10-11T10:59:51.111360+05:30",
+      "fetchStartedAtIst": "2026-10-11T10:59:42.674424+05:30",
+      "bytes": 43263076,
+      "sha256": "0d4dd71eb16d0e5a6f87e7702402098a9f4235aa85dc2461c0154c4f187c4489",
+      "licence": {
+        "name": "not stated, permission unconfirmed",
+        "url": null,
+        "permissionState": "unconfirmed",
+        "portalMetadataUrl": "https://data.cityofnewyork.us/api/views/5zhs-2jue.json",
+        "licenseId": null,
+        "publisherLinkedTerms": {
+          "name": "Terms of Use",
+          "url": "https://opendata.cityofnewyork.us/overview/#termsofuse",
+          "source": "DA3 retained publisher metadata, reused by DA4; not a dataset licence grant"
+        }
+      },
+      "geography": {
+        "place": "New York City, New York, United States",
+        "rectangle": [
+          -74.025,
+          40.7,
+          -73.94,
+          40.8
+        ],
+        "coordinateOrder": "west,south,east,north",
+        "coordinateUnits": "degree",
+        "foreign": true
+      },
+      "purpose": "test_only",
+      "retainedPath": "E:/BhuAayam-data/datasets/nyc-second-area/nyc-office-of-technology-and-innovation/5zhs-2jue-box-w74.025-s40.700-e73.940-n40.800.geojson",
+      "http": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/vnd.geo+json; charset=UTF-8",
+          "Content-Length": null,
+          "Last-Modified": "Mon, 05 Oct 2026 22:54:29 GMT",
+          "ETag": "W/\"aW5kaWEuNjA3MjRfMl8xNjRPcE1FVTg5Y1BGYzV5ZzVZcHIwMDhycWtILUE---gzirnDWshpraZcLPlGV8FyO0h8aWxAg--gzip--gzip\""
+        }
+      },
+      "countRequests": [
+        {
+          "rectangle": [
+            -74.025,
+            40.7,
+            -73.94,
+            40.82
+          ],
+          "where": "within_box(the_geom,40.820,-74.025,40.700,-73.940)",
+          "url": "https://data.cityofnewyork.us/resource/5zhs-2jue.json?%24select=count%28%2A%29&%24where=within_box%28the_geom%2C40.820%2C-74.025%2C40.700%2C-73.940%29",
+          "answer": [
+            {
+              "count": "54067"
+            }
+          ],
+          "observedAtIst": "2026-10-11T10:58:54.689048+05:30"
+        },
+        {
+          "rectangle": [
+            -74.025,
+            40.7,
+            -73.94,
+            40.8
+          ],
+          "where": "within_box(the_geom,40.800,-74.025,40.700,-73.940)",
+          "url": "https://data.cityofnewyork.us/resource/5zhs-2jue.json?%24select=count%28%2A%29&%24where=within_box%28the_geom%2C40.800%2C-74.025%2C40.700%2C-73.940%29",
+          "answer": [
+            {
+              "count": "48686"
+            }
+          ],
+          "observedAtIst": "2026-10-11T10:59:10.330652+05:30"
+        }
+      ],
+      "fileFetchNumber": 1,
+      "fileFetchesTotal": 1,
+      "bytesUnchanged": true,
+      "completeResponseBody": true,
+      "noAccountTokenLoginOrUpload": true,
+      "estimate": {
+        "da4Bytes": 1175483,
+        "da4Features": 1417,
+        "bytesPerFeature": 829.5575158786168,
+        "expectedBytes": 40387837.218066335
+      }
+    }
+  ],
+  "wholeFile": {
+    "oneFeatureCollection": true,
+    "topLevelType": "FeatureCollection",
+    "crs": {
+      "type": "name",
+      "properties": {
+        "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+      }
+    },
+    "crsMemberExactlyAsWritten": "\"crs\" : { \"type\": \"name\", \"properties\": { \"name\": \"urn:ogc:def:crs:OGC:1.3:CRS84\" } }",
+    "featureCount": 48686,
+    "geometryTypesIncludingNull": {
+      "null": 0,
+      "MultiPolygon": 48686
+    },
+    "noTrailingContent": true,
+    "hashMatchesReceipt": true,
+    "matchesPortalCount": true
+  },
+  "productProfile": {
+    "available": false,
+    "refusal": {
+      "code": "RECORD_LIMIT",
+      "status": 413,
+      "message": "Split this source into complete feature collections of at most 2000 records with source metadata and original lineage retained. No records were truncated.",
+      "method": "Reused DA4 productProfiler; unchanged product function rejected the whole original."
+    }
+  },
+  "independentColumns": {
+    "method": "Independent streamed path/type aggregation; comparable hash, NOT the product profile.",
+    "version": "manual-geojson/1",
+    "crs": {
+      "value": "EPSG:4326",
+      "evidence": "Declared OGC CRS84",
+      "unit": "degree"
+    },
+    "paths": [
+      {
+        "path": "/features/*/geometry",
+        "types": [
+          "object"
+        ],
+        "present": 48686,
+        "explicitNull": 0,
+        "absent": 0
+      },
+      {
+        "path": "/features/*/properties/base_bbl",
+        "types": [
+          "string"
+        ],
+        "present": 48686,
+        "explicitNull": 0,
+        "absent": 0
+      },
+      {
+        "path": "/features/*/properties/bin",
+        "types": [
+          "string"
+        ],
+        "present": 48686,
+        "explicitNull": 0,
+        "absent": 0
+      },
+      {
+        "path": "/features/*/properties/construction_year",
+        "types": [
+          "string"
+        ],
+        "present": 48686,
+        "explicitNull": 848,
+        "absent": 0
+      },
+      {
+        "path": "/features/*/properties/doitt_id",
+        "types": [
+          "string"
+        ],
+        "present": 48686,
+        "explicitNull": 0,
+        "absent": 0
+      },
+      {
+        "path": "/features/*/properties/feature_code",
+        "types": [
+          "string"
+        ],
+        "present": 48686,
+        "explicitNull": 0,
+        "absent": 0
+      },
+      {
+        "path": "/features/*/properties/geom_source",
+        "types": [
+          "string"
+        ],
+        "present": 48686,
+        "explicitNull": 38,
+        "absent": 0
+      },
+      {
+        "path": "/features/*/properties/ground_elevation",
+        "types": [
+          "string"
+        ],
+        "present": 48686,
+        "explicitNull": 58,
+        "absent": 0
+      },
+      {
+        "path": "/features/*/properties/height_roof",
+        "types": [
+          "string"
+        ],
+        "present": 48686,
+        "explicitNull": 0,
+        "absent": 0
+      },
+      {
+        "path": "/features/*/properties/last_edited_date",
+        "types": [
+          "string"
+        ],
+        "present": 48686,
+        "explicitNull": 0,
+        "absent": 0
+      },
+      {
+        "path": "/features/*/properties/last_status_type",
+        "types": [
+          "string"
+        ],
+        "present": 48686,
+        "explicitNull": 59,
+        "absent": 0
+      },
+      {
+        "path": "/features/*/properties/mappluto_bbl",
+        "types": [
+          "string"
+        ],
+        "present": 48686,
+        "explicitNull": 0,
+        "absent": 0
+      },
+      {
+        "path": "/features/*/properties/name",
+        "types": [
+          "string"
+        ],
+        "present": 48686,
+        "explicitNull": 47875,
+        "absent": 0
+      },
+      {
+        "path": "/features/*/properties/objectid",
+        "types": [
+          "string"
+        ],
+        "present": 48686,
+        "explicitNull": 0,
+        "absent": 0
+      },
+      {
+        "path": "/features/*/properties/shape_area",
+        "types": [
+          "string"
+        ],
+        "present": 48686,
+        "explicitNull": 0,
+        "absent": 0
+      },
+      {
+        "path": "/features/*/properties/shape_length",
+        "types": [
+          "string"
+        ],
+        "present": 48686,
+        "explicitNull": 0,
+        "absent": 0
+      }
+    ],
+    "fingerprint": "e9b0eeee7699a39a3f325868bd9f6742c886b9277d7a272194eef4bf46d901cc",
+    "geometryTypes": [
+      "MultiPolygon"
+    ],
+    "da4Fingerprint": "e9b0eeee7699a39a3f325868bd9f6742c886b9277d7a272194eef4bf46d901cc",
+    "comparisonWithDA4": "same as"
+  },
+  "buildingKeys": {
+    "property": "doitt_id",
+    "layoutLocator": "docs/evidence/gf1/e1b/steps.ts:222",
+    "distinctValues": 48686,
+    "valuesOccurringMoreThanOnce": 0,
+    "extraOccurrences": 0,
+    "absent": 0,
+    "null": 0,
+    "firstThreeRepeatedKeys": [],
+    "positionConvention": "Zero-based features array index; /features/<index>/properties/doitt_id.",
+    "inCommonWithFirstPack": 1662,
+    "inCommonWithDA4": 1417
+  },
+  "rawJsonIssueCounts": {},
+  "reader": {
+    "sourcePath": "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts",
+    "sourceSha256": "665ce599e4db9b5e519e710b0ffa2dd40b7ff0174169bcc5bfea15fb9c390a3c",
+    "method": "Reused product streaming JSON framing, independent column/key aggregation; no import or admission."
+  },
+  "access": {
+    "account": false,
+    "login": false,
+    "token": false,
+    "upload": false,
+    "providerCalls": 0,
+    "needsOwner": []
+  },
+  "discoveryEvidence": "docs/evidence/gf1/da6/discovery.json",
+  "documentedLimit": {
+    "url": "https://dev.socrata.com/docs/queries/limit.html",
+    "default": 1000,
+    "soda2Maximum": 50000,
+    "soda21And3Maximum": null,
+    "endpointVersion": "not established; chosen limit is within either documented maximum",
+    "chosenLimit": 50000,
+    "truncationObserved": false,
+    "pagesStitched": false
+  },
+  "qualification": [
+    "Foreign test_only; licence not stated, permission unconfirmed.",
+    "Original remains one unchanged publisher response; no conversion, derived copy or interpretation.",
+    "Independent comparable hash is not a product profile or successful large-file import.",
+    "No geometry validity, placement, accuracy, ownership, operational or runtime gate claim."
+  ],
+  "verification": {
+    "initialCheckoutClean": true,
+    "fx2RefreshExitCode": 0,
+    "inspectorCommand": "pnpm exec tsx docs/evidence/gf1/da6/inspect.ts",
+    "inspectorExitCode": 0,
+    "pinRefreshCommand": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts",
+    "pinRefreshBaseArgument": "2f605e5a71cd8abb6040fc11bc40384a129b4d02",
+    "pinRefreshExitCode": 0,
+    "repinned": ["docs/api/datasets.json"],
+    "openapiContentDiff": false,
+    "apiCheckCommand": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py",
+    "apiCheckExitCode": 0,
+    "apiOperations": 310,
+    "namedSchemas": 351,
+    "gitDiffCheckExitCode": 0,
+    "inspectorLinesOver120": 0,
+    "longEvidenceLines": "Exact URLs, paths, CRS member and verbatim product error only."
+  }
+}
