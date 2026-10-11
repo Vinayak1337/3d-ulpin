@@ -1,0 +1,99 @@
+.stack {
+  display: grid;
+  gap: var(--ui-space-4);
+  min-width: 0;
+}
+
+.list,
+.findings {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list {
+  display: grid;
+  gap: var(--ui-space-3);
+}
+
+.package,
+.target {
+  border-bottom: 1px solid var(--ui-divider);
+  padding-bottom: var(--ui-space-4);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.package h3,
+.target p {
+  margin: 0 0 var(--ui-space-2);
+}
+
+.links,
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ui-space-2);
+  align-items: center;
+}
+
+.field {
+  display: grid;
+  gap: var(--ui-space-2);
+  color: var(--ui-ink);
+}
+
+.field select,
+.field textarea {
+  width: 100%;
+  max-width: 100%;
+  min-height: calc(var(--ui-control-height) + var(--ui-space-1));
+  padding: var(--ui-space-2);
+  border: 1px solid var(--ui-line-control);
+  border-radius: var(--ui-radius-8);
+  background: var(--ui-surface);
+  color: var(--ui-ink);
+  font: inherit;
+}
+
+.field textarea {
+  resize: vertical;
+}
+
+.tick {
+  display: flex;
+  gap: var(--ui-space-3);
+  align-items: center;
+  min-height: calc(var(--ui-control-height) + var(--ui-space-1));
+  cursor: pointer;
+}
+
+.tick input {
+  width: var(--ui-space-5);
+  height: var(--ui-space-5);
+  accent-color: var(--ui-primary);
+  flex-shrink: 0;
+}
+
+.locator,
+.reason {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.stack :focus-visible {
+  outline: 2px solid var(--ui-focus);
+  outline-offset: 3px;
+}
+
+.stack summary {
+  cursor: pointer;
+  min-height: calc(var(--ui-control-height) + var(--ui-space-1));
+  display: list-item;
+  padding: var(--ui-space-2) 0;
+}
+
+.stack :global(.ul-btn) {
+  min-height: calc(var(--ui-control-height) + var(--ui-space-1));
+  white-space: normal;
+}
