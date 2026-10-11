@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -345,7 +345,10 @@ test('every case-original teacher callback refuses before the request builder is
   assert.equal(builder.mock.callCount(), 0);
 });
 
-test('case-original routing still invokes the existing local learner without training', async () => {
+test('case-original routing still invokes the existing local learner without training', {
+  skip: process.env.ULPIN_PROFILE_PYTHON && existsSync(process.env.ULPIN_PROFILE_PYTHON) ? false
+    : "needs ULPIN_PROFILE_PYTHON (a Python with the profile reader's packages)",
+}, async () => {
   const inventory = inspectTabularSource(originalBytes, selection);
   const table = readTabularSource(originalBytes, selection);
   const draft = await new TabularChunkMapper().map({ jobId: randomUUID(), chunkIndex: 0, headers: table.headers,
