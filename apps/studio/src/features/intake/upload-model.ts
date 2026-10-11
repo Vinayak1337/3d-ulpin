@@ -14,7 +14,7 @@ export interface UploadProgress {
   words?: string;
 }
 
-// Published POST uploads bytes.minimum (ingestion.ts:230,232), not a second bounded-retain maximum.
+// Published POST uploads bytes.minimum (ingestion.ts:231,233 after PV1), not a second bounded-retain maximum.
 export const LARGE_UPLOAD_MINIMUM = 16 * 1024 * 1024 + 1;
 
 export function uploadPlan(size: number, limits: UploadLimits) {

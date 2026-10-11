@@ -21,12 +21,10 @@ try {
     body: '<input type="file" aria-label="Unchanged hash input">' }));
   await page.goto(`${vite.resolvedUrls.local[0]}benchmark`);
   await page.locator('input').setInputFiles(input.retainedPath);
-  const modulePath = '/@fs/' + resolve('node_modules/.pnpm/@noble+hashes@1.8.0/node_modules/@noble/hashes/esm/sha256.js')
-    .replaceAll('\\', '/');
+  const modulePath = '/src/features/intake/hash-file.ts';
   const measure = await page.evaluate(async ({ modulePath }) => {
-    const { sha256 } = await import(/* @vite-ignore */ modulePath);
+    const { hashFile } = await import(/* @vite-ignore */ modulePath);
     const file = (document.querySelector('input') as HTMLInputElement).files![0]!;
-    const hash = sha256.create();
     let beats = 0;
     let last = performance.now();
     let longestGapMs = 0;
@@ -37,19 +35,16 @@ try {
       beats++;
     }, 16);
     const started = performance.now();
-    for (let offset = 0; offset < file.size; offset += 8388608) {
-      const bytes = new Uint8Array(await file.slice(offset, offset + 8388608).arrayBuffer());
-      hash.update(bytes);
-      await new Promise(resolve => setTimeout(resolve, 0));
-    }
+    const digest = await hashFile(file, 8388608, () => {});
     clearInterval(timer);
     const elapsedMs = performance.now() - started;
     return { bytes: file.size, elapsedMs, MiBPerSecond: file.size / 1024 ** 2 / (elapsedMs / 1000),
-      beats, longestGapMs, sha256: Array.from(hash.digest(), (byte: number) => byte.toString(16).padStart(2, '0')).join('') };
+      beats, longestGapMs, sha256: digest };
   }, { modulePath });
   if (measure.sha256 !== input.sha256) throw new Error('The unchanged input hash differed.');
   writeFileSync(output, `${JSON.stringify({ input: input.retainedPath, dependency: '@noble/hashes@1.8.0',
-    partBytes: 8388608, ...measure, hashMatches: true, mode: 'Browser hashing only; no upload or runtime' })}\n`,
+    partBytes: 8388608, ...measure, hashMatches: true,
+    mode: 'Browser module-worker hashing only; no upload or runtime' })}\n`,
     { flag: 'wx' });
   console.log(JSON.stringify(measure));
 } finally {
