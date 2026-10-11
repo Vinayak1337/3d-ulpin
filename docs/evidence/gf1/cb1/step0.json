@@ -1,0 +1,73 @@
+{
+  "task": "CB1", "gate": "GF1", "base": "bfc2e45d", "status": "stopped_before_build_under_rule_b",
+  "checkout": {"initialStatus": "clean", "branch": "task/cb1-decoded-record-citation", "fx2RefreshExit": 0},
+  "walk": {
+    "receipt": "baseline-04.json", "runner": "run-runtime.mjs", "steps": "steps.ts",
+    "command": "node docs/evidence/gf1/cb1/run-runtime.mjs <new-receipt.json>",
+    "database": "CAR pattern: pinned existing PostGIS image, nonce-labelled loopback container, tmpfs, no volume",
+    "functions": ["ingestArea", "reviewPackage", "commitPackage", "registry_records read", "captureRegistrySnapshot", "resolveRegistryTarget", "createPacketPlan"],
+    "scaffolding": "Loopback in-memory S3-compatible original map and real unchanged Python normalize_area/check_area. Product functions and migrations execute unchanged. No demo runtime, provider, external network or GPU.",
+    "inputs": [
+      {"format": "shapefile_zip", "name": "TSC_Buildings_OD_8831041243266425049.zip", "idField": "Building_N", "features": 88, "classification": "test_only", "crs": "EPSG:28356", "importMs": 629, "reviewMs": 733, "commitMs": 324, "recordMs": 1, "snapshotMs": 19, "planMs": 21, "planState": "blocked_required_context", "reasonCode": "exact_extract_unavailable"},
+      {"format": "gpkg", "name": "TSC_Buildings_OD_-1703359794462598529.gpkg", "idField": "OBJECTID", "features": 88, "classification": "test_only", "crs": "EPSG:28356", "importMs": 567, "reviewMs": 605, "commitMs": 357, "recordMs": 1, "snapshotMs": 13, "planMs": 17, "planState": "blocked_required_context", "reasonCode": "exact_extract_unavailable"}
+    ],
+    "findings": "Both imports pass before the plan; no CRS refusal. Building_N is an existing unique nonempty source field, not an invented key; the shapefile has no OBJECTID. The native adapter's case-insensitive layer is council_buildings; the GeoPackage table is Council_Buildings.",
+    "blockAt": "packages/server/src/modules/usp/packets/plan-authority.ts:246-268",
+    "cleanup": {"ownedContainerRemoved": true, "machineNamesUnchanged": true, "originalHashesUnchanged": true},
+    "earlierHarnessFaults": "attempts.json; these are harness defects, not product refusals"
+  },
+  "importAudit": {
+    "sourceReceipt": "areas/areas.ts:681-709 creates interpreted <format>-area-v2 with normalized CRS reference but no member/table/position/idField.",
+    "featureReference": "areas/areas.ts:831 overwrites each candidate's sourceReference with normalized.reference. Candidate spread retains sourceFeatureIndex (zero-based intermediate position), not a binary row locator.",
+    "contract": "contracts/src/area.ts:26-33 AreaReference has CRS/frame only; :63 optional sourceFeatureIndex; :90 optional sourceReference: AreaReference.",
+    "shapefile": "native_gis.py:166-252 returns (features, originals, epsg, layer). Each feature contains selected attributes and ArcGIS geometry. iterShapeRecords has matching SHP/DBF count and no deleted-record loss. Case-preserving selected .dbf member, record sequence position and encoding are not returned per feature.",
+    "gpkg": "native_gis.py:73-163 returns the same tuple. SELECT geometry and selected columns at :125 has LIMIT 2001 but no ORDER BY or rowid. Per-feature attributes and geometry contain no row locator. Explicit ordering and rowid/integer-primary-key selection must precede citation.",
+    "normalizer": "native_gis.py:255-274 replays features into normalize_area, preserves original geometry by sourceFeatureIndex, returns an adapter with layer/format/version/hash/units. areas.ts's Normalized type and source receipt do not preserve adapter metadata.",
+    "quarantine": "Keep original sourceFeatureIndex and nativeRecord on accepted and rejected records before validation; never derive position from the compacted accepted list."
+  },
+  "methodAudit": [
+    {"path": "usp/packets/feature-extract.ts:62-79", "change": "Keep GeoJSON original-text scanner byte-identical; add bounded native decoded-record path verifying original receipt, exact position and committed source key."},
+    {"path": "usp/packets/plan-authority.ts:149-184,243-282", "change": "Resolve exact same-target observation as today; allow interpreted native profiles only with import-time nativeRecord. Refuse key mismatch with its own code. Add optional method/binding only for decoded entries and lines before fingerprinting."},
+    {"path": "usp/packets/plan-service.ts:49-59,173-199", "change": "No independent method rewrite: assessment entries feed whole plan hash and assessment lines feed packet renderer. Existing service can preserve additions without a new authority."},
+    {"path": "usp/packet0.ts:14-46,49-71", "change": "Packet0Line/exact-part excerpt additions; text/CSV renderer branches only for decoded_record. Preserve existing CSV header, cell count, escaping and every verbatim text line. The direct packet0 exact-part reader currently handles only text/CSV reference parts, not GeoJSON features."},
+    {"path": "usp/packets/card-projection.ts:84-99", "change": "For decoded entries print file, member/table, record number and decoded values; otherwise retain exact existing source.name + locator string. Geometry, measurements and rights rows unchanged."},
+    {"path": "registry/registry-reference-policy.ts:30-38", "change": "Already admits native profiles for record-only evidence with caller's same-site exact-observation proof. Citation eligibility must additionally require nativeRecord; do not broaden geometry/right authorization."},
+    {"path": "contracts/src/usp/packets.ts:46-55", "change": "Optional method and decodedRecord on plan entry, no defaults or injection on parse."},
+    {"path": "contracts/src/usp/packet0.ts:22-25", "change": "Optional method and decodedRecord on exact excerpt; absent method denotes today's verbatim path without adding serialized keys."}
+  ],
+  "hashAudit": {
+    "entry": "plan-authority.ts:273-281 fingerprints body including selection, source receipt/body/evidence/excerpt hashes, target path, applicability and state/reason.",
+    "plan": "plan-service.ts:54-59 fingerprints complete plan body including assessment.entries; plan-store.ts:15-18 verifies whole plan and each entry.",
+    "packet": "usp/packet0.ts:76-83 hashes rendered UTF-8 bytes, not the line object; decoded-only renderer branch must preserve verbatim bytes.",
+    "optionalFieldRule": "Absent optional fields with no defaults do not enter JSON/canonical fingerprint. Explicitly inserting method:verbatim, undefined keys before a non-JSON hash, new CSV columns, new GeoJSON source-reference keys or changed labels is prohibited. No default added.",
+    "geojsonChangeNeeded": false,
+    "proofStatus": "Code audit only for proposed additions; no implementation exists. Existing GeoJSON files, citations and hash producers remain unchanged. NYC before/after plan/card byte-equality test remains required after rule b is resolved; no runtime equivalence claim."
+  },
+  "pinAudit": {
+    "nativeReader": "services/geo/geo/native_gis.py",
+    "eol": "i/lf w/crlf attr/; excluded from FX2's known-pin rewrite because its expected document aggregate pin was unavailable",
+    "fx2": "fx2/step0.json table and after.json:6952-6958 mark native_gis.py document=unavailable; .gitattributes FX2 block pins document-native.ts LF but does not pin native_gis.py's EOL.",
+    "currentConsumer": "usp/ingestion/document-native.ts:10-23 documentReaderSha hashes raw path-NUL + file bytes, including native_gis.py, area.py, gis_inspection.py, api.py and other document constituents.",
+    "storedPin": "usp/ingestion/document-context.ts:36-43 puts aggregate readerSha256 in DocumentInput; documents.ts persists canonical document-extraction job input; :48-56 and :72-76 compare current aggregate and report reader_changed/refuse derivation.",
+    "apiProducerPins": "scripts/api/refresh-contract.ts <base-ref> regenerates docs/api/openapi.json and source-pins.json from API TypeScript producers. It does not refresh native Python/document-job readerSha256.",
+    "fx2Command": "node docs/evidence/gf1/fx2/refresh.mjs --refresh restores only audited bytes and refuses changed content; it is not a reader-pin generator.",
+    "nativeReaderPinRefreshCommand": null,
+    "newJobNotRefresh": "documentInput computes a current pin for a newly requested job. That is a new derivation, not a command refreshing an existing immutable retained job/result pin. No job, receipt or external profile was rewritten or inspected outside the owned box.",
+    "search": "Searched scripts/ for native_gis/documentReaderSha/readerSha256 and refresh/repin tools; reviewed document-native.ts, document-context.ts, FX2 refresh.mjs and API refresh-contract.ts. No native aggregate pin-refresh tool found.",
+    "stopRule": "b",
+    "decision": "Required native_gis.py order/position/decode edits change the document aggregate pin. No authorized tool refreshes that pin. Stop before reader or product code changes; do not hand-repin immutable jobs or unknown external pins."
+  },
+  "smallestProposedContract": {
+    "sourceReference": "AreaReference gains nativeRecord?: NativeRecordReference (native formats only). NormalizedFeature.sourceReference keeps its existing name/type plus that optional addition.",
+    "NativeRecordReference": "{ format: 'shapefile_zip'; member: string; position: number; positionKind: 'sequence'; encoding: string; idField: string; readerVersion: 'native-gis-v2' } | { format: 'gpkg'; table: string; position: number; positionKind: 'rowid' | 'integer_primary_key'; positionField: string; encoding: string; idField: string; readerVersion: 'native-gis-v2' }",
+    "positionValidation": "Shapefile position safe integer >=0, displayed as position+1; GeoPackage position safe integer equal to SQLite rowid or stated integer primary key, displayed unchanged. No rowid/integer primary key means a blocked table with an explanatory sentence. No imported pre-change feature is backfilled.",
+    "planAndExcerpt": "method?: 'verbatim' | 'decoded_record'; decodedRecord?: NativeRecordReference. No defaults; existing GeoJSON entries omit both. Source hash remains the existing sourceSha256 field, file name comes from the retained source.",
+    "excerpt": "First line: Decoded field values of record <n> of <member or table> in <file name>; next line states reader encoding; then reader-decoded field: value lines only. No geometry, normalized fields or computed product facts.",
+    "implementation": "not started"
+  },
+  "next": [
+    "Provide the authorized native reader-pin refresh tool/command, or explicitly approve the existing immutable-job reader_changed/new-derivation transition as the required boundary for rule b. Never rewrite old immutable inputs.",
+    "Then implement native positions/decode and optional method contracts; prove NYC plan hashes/card bytes unchanged; run both Tweed files to card and an altered-position refusal.",
+    "The demo geo image needs an owner-controlled rebuild for any reader change; build nothing here."
+  ]
+}
