@@ -2,8 +2,9 @@
   "task": "LP1",
   "gate": "GF1",
   "baseline": "5db89c411fa6077c0a7560c0646493a9ed02abe7",
-  "status": "stopped_rule_a",
-  "qualification": "Source audit only; no database, real-input rehearsal, EXPLAIN or performance measurement was run.",
+  "status": "step0_complete",
+  "qualification": "Accepted source audit plus margin sweep and own-box NYC baseline/EXPLAIN before application edits.",
+  "resumedRefresh": {"exit": 0, "lfFiles": 176, "crlfFiles": 6, "apiCheckExit": 0},
   "startup": {
     "cleanWorktree": true,
     "branch": "task/lp1-review-pins-what-it-checked",
@@ -19,7 +20,7 @@
     "docs/next-steps/SPRINT-SELECTION.md section 3"
   ],
   "stop": {
-    "rule": "a",
+    "rule": "a_settled_by_L1",
     "at": "services/geo/geo/officer.py:244,297-302",
     "finding": "The officer pair guard counts every occupation/public-context pair before intersection.",
     "distanceMetres": null,
@@ -28,21 +29,25 @@
     "refusal": "Officer check exceeds the bounded candidate-pair limit; split the area.",
     "exampleArithmetic": "101 evidenced ground occupations times 200 disjoint public features = 20,200 pairs.",
     "exampleQualification": "Arithmetic only, not a runtime measurement or a claim about NYC source semantics.",
-    "decisionNeeded": "Decide whether this guard is scoped to LP1 coverage or must remain distance-independent.",
+    "decision": "L1: The pair budgets are bounds on the supplied set, not rules of the check.",
     "smallestPossibleChange": "If locality is required in Python, move public pair counting after intersection.",
     "changeOwnership": "services/geo/geo/officer.py is outside LP1 ownership; no change made."
   },
   "margin": {
-    "marginMetres": null,
-    "reason": "The distance-independent pair guard prevents approving a local margin before the lead decision.",
+    "marginMetres": 255,
+    "reason": "L2: 50 * sqrt(1 + 5^2) = 254.950976 m, rounded up for the default limited mitre join.",
+    "sweep": {"test": "packages/server/src/modules/areas/review-margin.test.py", "exit": 0,
+      "shapely": "2.0.7", "pinnedVersion": "2.0.7", "requirementsLine": 7, "defaultMitreLimit": 5.0,
+      "angles": 724, "maximumReachMetres": 254.950548, "anglesOverHalfWidth": 722},
+    "requirements": "services/geo/requirements.txt:7",
     "uncertaintyAt": "services/geo/geo/officer.py:287-294; services/geo/geo/area_semantics.py:78-84",
     "uncertainty": "The check buffers both boundaries by sum(known), validating nonnegative finite values only.",
     "nativeAdmissionBound": "area_semantics.py:80-84 caps each normalized source uncertainty at 1,000 m.",
     "uncertaintyQualification": "Already pinned explicit parcels only; native admission has a cap the checker lacks.",
-    "decisionNeeded": "Clarify whether R2 excludes buffers confined to already pinned explicit participants.",
+    "decision": "L3: uncertainty buffers select no rows; explicitly associated parcels are already pinned at any distance.",
     "utilityAt": "services/geo/geo/officer.py:69-79,131-136",
     "utility": "Rectangular width is at most 100 m; centreline buffer is width/2, at most 50 m, with miter joins.",
-    "utilityCaution": "50 m is the normal half-width, not a bound on corner reach; no margin is approved here."
+    "utilityCaution": "50 m is the half-width, not the corner reach; L2 approves 255 m, verified by the sweep."
   },
   "rules": [
     {
@@ -63,7 +68,7 @@
       "name": "Horizontal candidate-pair budget",
       "at": "services/geo/geo/area.py:492-501",
       "distanceMetres": 0,
-      "local": true,
+      "local": "input_scope_guard",
       "notes": "STRtree bounding-box intersection; supported building pairs only, at most 20,000 pairs."
     },
     {
@@ -130,15 +135,15 @@
       "name": "withinDeclaredUncertainty",
       "at": "services/geo/geo/officer.py:287-294",
       "distanceMetres": "sum of supplied uncertainties; checker uncapped, native normalization caps each at 1,000 m",
-      "local": "explicit_association_exception_pending_margin_decision",
+      "local": "explicit_association_exception",
       "notes": "Buffers occupation and parcel boundaries; missing uncertainty remains Unspecified, not zero."
     },
     {
       "name": "Officer public-context candidate-pair budget",
       "at": "services/geo/geo/officer.py:244,297-302",
       "distanceMetres": null,
-      "local": false,
-      "notes": "Counts all supplied public indices before intersects; shares counter with utility prism pairs."
+      "local": "input_scope_guard",
+      "notes": "L1: The pair budgets are bounds on the supplied set, not rules of the check."
     },
     {
       "name": "PUBLIC_CONTEXT_AREA_REQUIRED and PUBLIC_CONTEXT_EVIDENCE_REQUIRED",
@@ -171,14 +176,14 @@
       "name": "Utility profile resolution and prism support validation",
       "at": "services/geo/geo/officer.py:53-144,181-205",
       "distanceMetres": "widthM/2 up to 50 m, with miter joins; full own alignment for interpolation",
-      "local": "bounded_profile_pending_corner_margin",
+      "local": true,
       "notes": "Only evidenced constant rectangular prisms analysed; circular/sloping profiles remain display-only."
     },
     {
       "name": "Officer utility candidate-pair budget",
       "at": "services/geo/geo/officer.py:350-364",
       "distanceMetres": "intersection of resolved prism footprints",
-      "local": true,
+      "local": "input_scope_guard",
       "notes": "Unlike public pairs, utility pairs increment only after horizontal intersection."
     },
     {
@@ -264,7 +269,7 @@
     }
   ],
   "indexes": {
-    "qualification": "DDL audit only; no live catalogue inspected.",
+    "qualification": "Live catalogue and EXPLAIN ANALYZE in before-04.json; own nonce database, 1,661 recorded buildings.",
     "physical_features": [
       "physical_features_pkey: btree(id), database/sql/20-area/area.sql:32-36",
       "physical_features_identifier_key: unique btree(identifier), area.sql:34",
@@ -276,15 +281,23 @@
     "qualificationTableIndex": "PK(namespace,record_id,record_revision,revision), same file:30-40",
     "exactRevisionMembershipIndex": "physical_feature_revisions PK(feature_id,revision), area.sql:39-44",
     "possibleSpatialAccess": "physical_local_gist for same-area geometry && widened local envelope plus ST_Intersects.",
-    "explain": "Not run: stop rule (a) triggered before approving an extent/margin or starting a database.",
-    "additiveIndexDecision": "Deferred; no claim that existing index produces the required qualified-context plan."
+    "explain": "before-04.json runtime.evidence.results.context; context.sql is the measured statement.",
+    "executionMs": 17.418,
+    "plan": "Broad NYC extent chooses spatial-filter sequential scans; per-id qualification uses existing primary keys.",
+    "additiveIndexDecision": "No new index: local/geographic GiST already serve the two spatial predicates.",
+    "qualificationNote": "NYC context is unqualified, so no qualification was manufactured to exercise view output."
   },
   "baselineBreakMeasurement": {
-    "status": "not_run_due_to_stop_rule_a",
+    "status": "measured_before_changes",
+    "receipt": "docs/evidence/gf1/lp1/before-04.json",
+    "reviewedAreaRevisions": [0, 0],
+    "packageStatesAfterConfirmation": ["COMMITTED", "REVIEWED"],
+    "counts": {"recorded": 831, "carded": 0, "stopped": 2},
+    "derivativeKind": "test_only feature-order halves, 831 original features each, outside Git",
     "requestedOriginal": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
-    "derivativesCreated": false,
+    "derivativesCreated": true,
     "originalChanged": false,
-    "predictedFromCodeOnly": {
+    "measuredRefusal": {
       "at": "packages/server/src/modules/areas/areas.ts:1361-1362",
       "status": 409,
       "code": "STALE_REVISION",
@@ -294,9 +307,9 @@
     }
   },
   "safety": {
-    "containersStarted": 0,
-    "databasesTouched": 0,
-    "originalsTouched": 0,
+    "containersStarted": 4,
+    "databasesTouched": "Four own nonce tmpfs throwaways only; each removed and verified gone",
+    "originalsTouched": "Original read only; unchanged SHA-256 verified after each run",
     "credentialsRead": false,
     "applicationCodeChanged": false
   },
