@@ -25,6 +25,18 @@ export function selectExactPart(parts: unknown, locator: EvidencePointer['locato
     ? matches[0].text : null;
 }
 
+export function decodedRecordLabel(record: NativeRecordReference): string {
+  const member = record.format === 'gpkg' ? record.table : record.member;
+  const number = record.format === 'gpkg' ? record.position : record.position + 1;
+  return `${member}, record ${number}, decoded values`;
+}
+
+function packetLocator(line: Packet0Line): string {
+  const locator = JSON.stringify(line.pointer.locator);
+  return line.method === 'decoded_record' && line.decodedRecord
+    ? `${locator}; ${decodedRecordLabel(line.decodedRecord)}` : locator;
+}
+
 function csvCell(value: string) {
   const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
   return `"${safe.replaceAll('"', '""')}"`;
@@ -34,7 +46,7 @@ export function renderPacket0(target: { id: string; label: string }, lines: read
   if (format === 'csv') {
     const rows = [['target_id', 'target_label', 'source_revision', 'source_sha256', 'locator', 'excerpt', 'state'],
       ...lines.map(line => [target.id, target.label, line.pointer.sourceRevision.ref.id,
-        line.sourceSha256, JSON.stringify(line.pointer.locator), line.excerpt ?? '', line.reasonCode ?? 'available'])];
+        line.sourceSha256, packetLocator(line), line.excerpt ?? '', line.reasonCode ?? 'available'])];
     return rows.map(row => row.map(csvCell).join(',')).join('\r\n') + '\r\n';
   }
   return [`Scoped property evidence packet`, `Target: ${target.label} (${target.id})`,
@@ -42,8 +54,9 @@ export function renderPacket0(target: { id: string; label: string }, lines: read
     ...lines.flatMap(line => [
       `Source revision: ${line.pointer.sourceRevision.ref.id}@${line.pointer.sourceRevision.revision}`,
       `SHA-256: ${line.sourceSha256}`,
-      `Locator: ${JSON.stringify(line.pointer.locator)}`,
-      line.excerpt === null ? `Unavailable exact extract: ${line.reasonCode}` : `Exact extract: ${line.excerpt}`,
+      `Locator: ${packetLocator(line)}`,
+      line.excerpt === null ? `Unavailable exact extract: ${line.reasonCode}`
+        : `${line.method === 'decoded_record' ? 'Decoded values extract' : 'Exact extract'}: ${line.excerpt}`,
     ])].join('\n') + '\n';
 }
 
