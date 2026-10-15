@@ -1,0 +1,453 @@
+{
+ "task": "AD1",
+ "step": 0,
+ "code": "staging 8dccefd3 (before any AD1 change)",
+ "receipt": "E:/BhuAayam-data/task-data/ad1/step0-receipt-2.json",
+ "box": {
+  "container": "ulpin-ad1-tmp-9e0747425f8a29b0",
+  "ownedContainerGone": true,
+  "originalHashesUnchanged": true,
+  "providers": 0,
+  "network": "Loopback tmpfs SQL, memory object storage, product Python offline"
+ },
+ "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+ "method": "Cold visit of /studio/areas/{id} in headless Chromium (SwiftShader WebGL) against the Vite dev server and the in-process API. Requests from the Chrome DevTools network domain (ms from the document request, encoded bytes). Drawing from the scene engine drawnBuildings() polled every 100 ms. Page blocks from PerformanceObserver longtask entries. Server time from the product pool with every statement timed, then EXPLAIN (ANALYZE, BUFFERS) of the heaviest.",
+ "screens": {
+  "buildings1661": {
+   "areaId": "a254490a-0653-467d-a6bd-4e78467fd989",
+   "recorded": [
+    {
+     "kind": "building",
+     "count": 1661
+    }
+   ],
+   "server": {
+    "context": {
+     "ms": 672,
+     "bytes": 27888049,
+     "features": 1661,
+     "statements": 7,
+     "top": [
+      {
+       "sql": "SELECT body FROM import_packages WHERE area_id=$1 ORDER BY created_at DESC LIMIT 30",
+       "count": 1,
+       "totalMs": 452,
+       "explain": {
+        "executionMs": 0.015,
+        "planningMs": 0.031,
+        "node": "Limit",
+        "rows": 1,
+        "sharedHit": 1,
+        "sharedRead": 0
+       }
+      },
+      {
+       "sql": "SELECT * FROM sources WHERE id=$1",
+       "count": 1,
+       "totalMs": 6,
+       "explain": {
+        "executionMs": 0.017,
+        "planningMs": 0.042,
+        "node": "Index Scan",
+        "rows": 1,
+        "sharedHit": 2,
+        "sharedRead": 0
+       }
+      },
+      {
+       "sql": "SELECT * FROM sources WHERE id=ANY($1::uuid[]) ORDER BY id",
+       "count": 1,
+       "totalMs": 4,
+       "explain": {
+        "executionMs": 0.022,
+        "planningMs": 0.183,
+        "node": "Index Scan",
+        "rows": 1,
+        "sharedHit": 2,
+        "sharedRead": 0
+       }
+      },
+      {
+       "sql": "SELECT id,revision FROM physical_features WHERE area_id=$1",
+       "count": 1,
+       "totalMs": 3,
+       "explain": {
+        "executionMs": 0.663,
+        "planningMs": 0.169,
+        "node": "Seq Scan",
+        "rows": 1661,
+        "sharedHit": 371,
+        "sharedRead": 0
+       }
+      }
+     ]
+    },
+    "buildingReads": {
+     "sampled": 20,
+     "ms": 14312,
+     "perBuildingMs": 716,
+     "statementsPerBuilding": 31,
+     "top": [
+      {
+       "sql": "SELECT body FROM import_packages WHERE body->'features' @> $1::jsonb ORDER BY created_at DESC LIMIT 30",
+       "count": 20,
+       "totalMs": 7563,
+       "explain": {
+        "executionMs": 22.367,
+        "planningMs": 0.094,
+        "node": "Limit",
+        "rows": 1,
+        "sharedHit": 884,
+        "sharedRead": 0
+       }
+      },
+      {
+       "sql": "SELECT 1 FROM import_packages WHERE body->>'geometryFree'='true' AND body->'sourceRevisionIds' ? $1 LIMIT 1",
+       "count": 60,
+       "totalMs": 1535,
+       "explain": {
+        "executionMs": 39.265,
+        "planningMs": 0.068,
+        "node": "Limit",
+        "rows": 0,
+        "sharedHit": 1736,
+        "sharedRead": 0
+       }
+      },
+      {
+       "sql": "SELECT * FROM sources WHERE id=ANY($1::uuid[]) ORDER BY id",
+       "count": 20,
+       "totalMs": 90,
+       "explain": {
+        "executionMs": 0.012,
+        "planningMs": 0.026,
+        "node": "Index Scan",
+        "rows": 1,
+        "sharedHit": 2,
+        "sharedRead": 0
+       }
+      },
+      {
+       "sql": "SELECT * FROM sources WHERE id=$1",
+       "count": 80,
+       "totalMs": 72,
+       "explain": {
+        "executionMs": 0.01,
+        "planningMs": 0.022,
+        "node": "Index Scan",
+        "rows": 1,
+        "sharedHit": 2,
+        "sharedRead": 0
+       }
+      }
+     ],
+     "projectedAreaBuildingsMs": 297153,
+     "note": "canonical-area.ts projects every building through canonicalBuilding, four at a time."
+    }
+   },
+   "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+   "expectedBuildings": 1661,
+   "firstFootprintsMs": null,
+   "wholeAreaMs": null,
+   "drawnBuildings": 0,
+   "pending": 0,
+   "longestTaskMs": 476,
+   "tasksOver200Ms": [
+    {
+     "startMs": 937,
+     "durationMs": 476
+    }
+   ],
+   "requests": [
+    {
+     "route": "/api/v1/areas",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 1873,
+     "ms": 51,
+     "bytes": 1059
+    },
+    {
+     "route": "/api/v1/workspace-capabilities",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 1875,
+     "ms": 11,
+     "bytes": 459
+    },
+    {
+     "route": "/api/v1/areas/{id}/context",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 1875,
+     "ms": 991,
+     "bytes": 27888391
+    },
+    {
+     "route": "/api/v1/areas/{id}/canonical",
+     "method": "GET",
+     "status": null,
+     "startedMs": 2962,
+     "ms": 109,
+     "bytes": null,
+     "failure": "net::ERR_ABORTED"
+    },
+    {
+     "route": "/api/v1/areas/{id}/canonical",
+     "method": "GET",
+     "status": null,
+     "startedMs": 2974,
+     "ms": null,
+     "bytes": null
+    }
+   ],
+   "mainWords": "Tools\n\nEnhanced view\n\nEPSG:4326\nN\n10 m",
+   "console": [],
+   "screenshot": "E:/BhuAayam-data/task-data/ad1/9e0747425f8a29b0/buildings1661.png"
+  },
+  "demoArea2148": {
+   "areaId": "a254490a-0653-467d-a6bd-4e78467fd989",
+   "recorded": [
+    {
+     "kind": "building",
+     "count": 1661
+    },
+    {
+     "kind": "public_land",
+     "count": 41
+    },
+    {
+     "kind": "road",
+     "count": 446
+    }
+   ],
+   "server": {
+    "context": {
+     "refusal": {
+      "code": "AREA_LIMIT",
+      "message": "This block and its explicit group members exceed 2,000 features. Choose a smaller bounded group."
+     }
+    }
+   },
+   "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+   "expectedBuildings": 1661,
+   "firstFootprintsMs": null,
+   "wholeAreaMs": null,
+   "drawnBuildings": 0,
+   "pending": 0,
+   "longestTaskMs": 471,
+   "tasksOver200Ms": [
+    {
+     "startMs": 393,
+     "durationMs": 471
+    }
+   ],
+   "requests": [
+    {
+     "route": "/api/v1/areas",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 1064,
+     "ms": 50,
+     "bytes": 1081
+    },
+    {
+     "route": "/api/v1/workspace-capabilities",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 1065,
+     "ms": 10,
+     "bytes": 459
+    },
+    {
+     "route": "/api/v1/areas/{id}/context",
+     "method": "GET",
+     "status": 422,
+     "startedMs": 1066,
+     "ms": 492,
+     "bytes": 541
+    }
+   ],
+   "mainWords": "This area could not be opened\n\nThis block and its explicit group members exceed 2,000 features. Choose a smaller bounded group.\n\nBack to Batches",
+   "console": [
+    "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)"
+   ],
+   "screenshot": "E:/BhuAayam-data/task-data/ad1/9e0747425f8a29b0/demoArea2148.png"
+  },
+  "niagara": {
+   "areaId": "c6f1208a-8bc3-4768-a689-816425fb40ec",
+   "recorded": [
+    {
+     "kind": "parcel",
+     "count": 155
+    }
+   ],
+   "server": {
+    "context": {
+     "ms": 220,
+     "bytes": 1878859,
+     "features": 155,
+     "statements": 6,
+     "top": [
+      {
+       "sql": "SELECT body FROM import_packages WHERE area_id=$1 ORDER BY created_at DESC LIMIT 30",
+       "count": 1,
+       "totalMs": 23,
+       "explain": {
+        "executionMs": 0.017,
+        "planningMs": 0.038,
+        "node": "Limit",
+        "rows": 1,
+        "sharedHit": 1,
+        "sharedRead": 0
+       }
+      },
+      {
+       "sql": "SELECT * FROM sources WHERE id=ANY($1::uuid[]) ORDER BY id",
+       "count": 1,
+       "totalMs": 1,
+       "explain": {
+        "executionMs": 0.015,
+        "planningMs": 0.106,
+        "node": "Index Scan",
+        "rows": 1,
+        "sharedHit": 2,
+        "sharedRead": 0
+       }
+      },
+      {
+       "sql": "SELECT id,revision FROM physical_features WHERE area_id=$1",
+       "count": 1,
+       "totalMs": 1,
+       "explain": {
+        "executionMs": 0.267,
+        "planningMs": 0.031,
+        "node": "Seq Scan",
+        "rows": 155,
+        "sharedHit": 379,
+        "sharedRead": 0
+       }
+      },
+      {
+       "sql": "SELECT * FROM sources WHERE id=$1",
+       "count": 1,
+       "totalMs": 1,
+       "explain": {
+        "executionMs": 0.023,
+        "planningMs": 0.153,
+        "node": "Index Scan",
+        "rows": 1,
+        "sharedHit": 2,
+        "sharedRead": 0
+       }
+      }
+     ]
+    },
+    "buildingReads": {
+     "sampled": 0,
+     "ms": 0,
+     "perBuildingMs": 0,
+     "statementsPerBuilding": 0,
+     "top": [],
+     "projectedAreaBuildingsMs": 0,
+     "note": "canonical-area.ts projects every building through canonicalBuilding, four at a time."
+    }
+   },
+   "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+   "expectedBuildings": 0,
+   "firstFootprintsMs": null,
+   "wholeAreaMs": 14,
+   "drawnBuildings": 0,
+   "pending": 0,
+   "longestTaskMs": 478,
+   "tasksOver200Ms": [
+    {
+     "startMs": 299,
+     "durationMs": 478
+    }
+   ],
+   "requests": [
+    {
+     "route": "/api/v1/areas",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 922,
+     "ms": 60,
+     "bytes": 1792
+    },
+    {
+     "route": "/api/v1/workspace-capabilities",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 923,
+     "ms": 5,
+     "bytes": 459
+    },
+    {
+     "route": "/api/v1/areas/{id}/context",
+     "method": "GET",
+     "status": 200,
+     "startedMs": 923,
+     "ms": 307,
+     "bytes": 1879199
+    },
+    {
+     "route": "/api/v1/areas/{id}/canonical",
+     "method": "GET",
+     "status": null,
+     "startedMs": 1259,
+     "ms": 30,
+     "bytes": null,
+     "failure": "net::ERR_ABORTED"
+    },
+    {
+     "route": "/api/v1/areas/{id}/canonical",
+     "method": "GET",
+     "status": null,
+     "startedMs": 1268,
+     "ms": null,
+     "bytes": null
+    }
+   ],
+   "mainWords": "Tools\n\nEnhanced view\n\nEPSG:2958\nN\n1 km",
+   "console": [],
+   "screenshot": "E:/BhuAayam-data/task-data/ad1/9e0747425f8a29b0/niagara.png"
+  }
+ },
+ "drawingWaitsFor": "GET /api/v1/areas/{id}/context (MapPage.tsx:40 renders nothing but a skeleton or the refusal until it answers), then GET /api/v1/areas/{id}/canonical: building footprints come only from it (canonicalScene.ts useAreaCanonical -> toSceneInputs). Base features (parks, roads) are drawn from the context features (useBuildingScene.ts toBase).",
+ "causes": [
+  {
+   "id": "canonical-per-building",
+   "where": [
+    "packages/server/src/modules/areas/canonical-area.ts:42-47 projectBuildings",
+    "packages/server/src/modules/registry/canonical-building.ts:762-790 canonicalBuilding",
+    "packages/server/src/modules/officer/officer.ts:419-427 buildingDossier packages read"
+   ],
+   "what": "The area projection runs the full single-building reader for every building, four at a time: 716 ms and 31 statements per building, including two area-scope listings, the building dossier and one source access transaction per citation. The heaviest statement is the dossier's import_packages features containment read: 378 ms per building on the pool (22 ms execution; the rest is transferring and parsing the 1,661-feature package body once per building), then the geometry-free source check, 60 calls 1,535 ms.",
+   "projectedMsAt1661": 297153,
+   "observed": "GET /canonical had not answered after 90 s at 1,661; nothing was drawn."
+  },
+  {
+   "id": "context-area-limit",
+   "where": [
+    "packages/server/src/modules/areas/areas.ts:230-235 loadAreaFeatures",
+    "apps/studio/src/features/map/MapPage.tsx:40-50"
+   ],
+   "what": "At 2,148 features the context read refuses AREA_LIMIT (2,000) in 492 ms and the area screen shows \"This area could not be opened\"; the canonical read (which also reads the context) is never requested."
+  },
+  {
+   "id": "abandoned-projections",
+   "where": [
+    "packages/server/src/modules/areas/canonical-area.ts:178-210 canonicalArea"
+   ],
+   "what": "A canonical read keeps running on the server after the page leaves; the abandoned 1,661 projections held the pool, so Niagara's canonical read (155 parcels) also did not answer within 90 s. Removing the per-building reads removes this too."
+  }
+ ],
+ "notCauses": [
+  "The context read itself: 7 statements, 672 ms on the server and 991 ms in the browser at 1,661, but 27,888,391 bytes (full feature bodies). Within the 3 s target; recorded, not changed here.",
+  "The one page block over 200 ms (about 470 ms) happens at 300-940 ms, before the first API request, on every screen including Niagara: Studio start-up under the dev server, not the drawing.",
+  "No SQL statement over 40 ms execution; no index is missing for these reads."
+ ],
+ "niagaraLocation": "Degrees (EPSG:4326 GeoJSON); the area records analysis CRS EPSG:2958 (scale bar label). The canonical read projects the recorded WGS84 geometry to local ENU metres around the area anchor (canonical-building.ts:126 geographicToEnu).",
+ "workBoard": "Not called by the area screen or its shell (no such request in any visit). BatchesPage.tsx:24 calls useWorkBoard (queries.ts:200, GET /api/v1/work-board through getDraft, which reads a 404 as no board). The API serves no work-board route; the work list is GET /api/v1/work-queue (apps/api/src/modules/register/officer.controller.ts:117)."
+}

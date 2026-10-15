@@ -7,7 +7,7 @@ import { createSourceWorkspace, sourceWorkspaceForCase } from '../cases/source-w
 import { SOURCE_CATALOG, acquireSource, importAcquisition, probeAcquisition } from './area-acquisitions';
 import { bindExternalIdentifier, resolveAreaIdentifier } from './area-resolver';
 import {
-  addFact, answerQuestion, areaContext, areaGeo, attachDocument, commitPackage,
+  AREA_DISPLAY_LIMIT, addFact, answerQuestion, areaContext, areaGeo, attachDocument, commitPackage,
   copyCaseDocuments, createPackageCorrection, getPackage, ingestArea, listAreas,
   rebasePackage, reviewPackage, runAreaCheck, type DocumentFile,
 } from './areas';
@@ -26,7 +26,8 @@ export class AreaIntakeService {
   sourceWorkspaceForCase = sourceWorkspaceForCase;
   catalog() { return SOURCE_CATALOG; }
   listAreas = listAreas;
-  context = areaContext;
+  /** The HTTP context read is the area screen's display read: bounded to the display limit. */
+  context(id: string) { return areaContext(id, AREA_DISPLAY_LIMIT); }
   retiredScenario = areaScenarioRetired;
   resolve = resolveAreaIdentifier;
   bindIdentifier(input: z.output<typeof externalIdentifierSchema>) { return bindExternalIdentifier(input); }

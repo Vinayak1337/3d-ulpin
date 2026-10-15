@@ -14,7 +14,7 @@ import { AddFilesDialog } from '../intake/AddFilesDialog';
 import { DeleteDialog } from '../manage/DeleteDialog';
 import { UnitCardDialog } from '../identity/UnitCardDialog';
 import { useSpaceWorkflow } from '../workflow/useWorkflow';
-import { polygonsOf, undrawnNote } from './footprints';
+import { drawnCountNote, polygonsOf, undrawnNote } from './footprints';
 import { useCanonicalFootprints } from './canonicalScene';
 import { findingVolume, useBuildingScene } from './useBuildingScene';
 import { PlanCheck, type MapPlanCheck } from './PlanCheck';
@@ -121,6 +121,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const { base, footprints, detail } = useBuildingScene(context.features, feature, model, ledger, colour, drawn.footprints);
   const [mapView, setMapView] = useMapView();
   const drawnIds = useMemo(() => new Set(footprints.map((f) => f.id)), [footprints]);
+  const sceneIds = useMemo(() => new Set([...footprints, ...base].map((f) => f.id)), [footprints, base]);
   const baseKinds = useMemo(() => new Set(base.map((f) => f.kind)), [base]);
   const supplemental = (context as unknown as { supplementalDatasets?: SupplementalDataset[] }).supplementalDatasets;
   const overlayQuery = useOverlays(context.area.id, supplemental, context.area.reference as AreaReference | null);
@@ -159,6 +160,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     mapView.look === 'enhanced' ? 'Enhanced view' : null,
     ...visibleOverlays.map((o) => o.caption),
     ...(retainedShown ? imageryAttribution(drawn.area?.imagery ?? []) : []),
+    drawn.pending ? null : drawnCountNote(context.features, sceneIds),
     undrawnNote(context.features),
     ...(overlayQuery.data?.warnings ?? []),
   ].filter(Boolean);
