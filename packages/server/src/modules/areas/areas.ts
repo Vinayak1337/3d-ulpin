@@ -270,7 +270,10 @@ export async function areaContext(id: string, limit = AREA_FEATURE_LIMIT): Promi
   const currentFeatures = features;
   const proposalIds=new Set(packages.displayFeatures.map(feature=>feature.id));
   const displayFeatures=[...currentFeatures.filter(feature=>!proposalIds.has(feature.id)),...packages.displayFeatures];
-  if(displayFeatures.length>limit)throw new AppError(422,'AREA_LIMIT',`Choose an area with at most ${limit.toLocaleString('en-US')} display features.`);
+  if (displayFeatures.length > limit) {
+    const most = limit.toLocaleString("en-US");
+    throw new AppError(422, "AREA_LIMIT", `Choose an area with at most ${most} display features.`);
+  }
   const latestCheck = checks.rows[0]?.body as AreaCheck | undefined;
   if (latestCheck) latestCheck.stale = await checkIsStale(latestCheck, currentFeatures, area);
   return {
