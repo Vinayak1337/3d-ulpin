@@ -156,6 +156,19 @@ export function polygonsOf(geometry: AreaFeature['geometry']): MultiPolygon {
 }
 
 /**
+ * How many of the area's recorded features the map draws, from the real counts, so a feature that is not drawn is
+ * always counted. A proposal not yet recorded is not counted.
+ */
+export function drawnCountNote(features: AreaFeature[], drawnIds: ReadonlySet<string>): string | null {
+  const recorded = features.filter((feature) => feature.revision > 0);
+  if (!recorded.length) return null;
+  const drawn = recorded.filter((feature) => drawnIds.has(feature.id)).length;
+  const total = recorded.length.toLocaleString('en-IN');
+  if (drawn === recorded.length) return `All ${total} recorded features are drawn.`;
+  return `${drawn.toLocaleString('en-IN')} of ${total} recorded features are drawn.`;
+}
+
+/**
  * Features recorded as lines or points, or without geometry, have no area to draw; the map says how many it
  * leaves out. Buildings without geometry are listed by name instead.
  */

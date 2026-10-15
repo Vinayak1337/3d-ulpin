@@ -212,33 +212,51 @@ async function projectedFeatures(
   }
   return features;
 }
+/** Checks, exports and other analytical reads of an area stay bounded to this many features. */
+const AREA_FEATURE_LIMIT = 2000;
+/** The area screen's display reads (context and canonical projection) draw up to this many features. */
+export const AREA_DISPLAY_LIMIT = 10000;
 async function loadAreaFeatures(
   area: MapArea,
   client?: PoolClient,
+  limit = AREA_FEATURE_LIMIT,
 ): Promise<PhysicalFeature[]> {
   const sql = `SELECT f.body,f.area_id,CASE WHEN f.area_id<>$1 AND $2::integer IS NOT NULL THEN ST_AsGeoJSON(ST_Translate(ST_Transform(f.geographic_geometry,$2::integer),-($3::double precision),-($4::double precision)),9,0) END local_geometry
     FROM physical_features f WHERE f.revision>0 AND (f.area_id=$1 OR EXISTS (
       SELECT 1 FROM block_group_memberships m JOIN block_groups g ON g.id=m.group_id WHERE m.feature_id=f.id AND g.area_id=$1
-    )) ORDER BY f.identifier LIMIT 2001`;
+    )) ORDER BY f.identifier LIMIT $5`;
   const values = [
     area.id,
     area.reference ? Number(area.reference.analysisCrs.split(":")[1]) : null,
     ...(area.reference?.origin ?? [null, null]),
+    limit + 1,
   ];
   const rows = (await (client ? client.query(sql, values) : query(sql, values)))
     .rows;
-  if (rows.length > 2000)
+  if (rows.length > limit)
     throw new AppError(
       422,
       "AREA_LIMIT",
-      "This block and its explicit group members exceed 2,000 features. Choose a smaller bounded group.",
+      `This block and its explicit group members exceed ${limit.toLocaleString("en-US")} features. ` +
+        "Choose a smaller bounded group.",
     );
   return projectedFeatures(rows, area);
 }
-export async function areaContext(id: string): Promise<AreaContext> {
+/** Whether the latest check still describes the area; a check of an earlier area revision is stale as it stands. */
+async function checkIsStale(check: AreaCheck, features: PhysicalFeature[], area: MapArea): Promise<boolean> {
+  if (check.areaRevision !== area.revision) return true;
+  const effective = await withNeighbours(features, area);
+  return check.inputFingerprint !== sha256(JSON.stringify({
+    features: effective,
+    associations: await checkAssociations(effective.map((f) => f.id)),
+    reference: area.reference,
+    validator: "area-check-officer-v1",
+  }));
+}
+export async function areaContext(id: string, limit = AREA_FEATURE_LIMIT): Promise<AreaContext> {
   const area = await getArea(id);
   const [features, packages, checks] = await Promise.all([
-    loadAreaFeatures(area),
+    loadAreaFeatures(area, undefined, limit),
     transaction(async client => {
       const rows = await client.query("SELECT body FROM import_packages WHERE area_id=$1 ORDER BY created_at DESC LIMIT 30", [id]);
       for (const row of rows.rows) await assertAreaPackageAuthority(client, row.body);
@@ -252,22 +270,9 @@ export async function areaContext(id: string): Promise<AreaContext> {
   const currentFeatures = features;
   const proposalIds=new Set(packages.displayFeatures.map(feature=>feature.id));
   const displayFeatures=[...currentFeatures.filter(feature=>!proposalIds.has(feature.id)),...packages.displayFeatures];
-  if(displayFeatures.length>2000)throw new AppError(422,'AREA_LIMIT','Choose an area with at most 2,000 display features.');
+  if(displayFeatures.length>limit)throw new AppError(422,'AREA_LIMIT',`Choose an area with at most ${limit.toLocaleString('en-US')} display features.`);
   const latestCheck = checks.rows[0]?.body as AreaCheck | undefined;
-  if (latestCheck) {
-    const effective = await withNeighbours(currentFeatures, area);
-    latestCheck.stale =
-      latestCheck.areaRevision !== area.revision ||
-      latestCheck.inputFingerprint !==
-        sha256(
-          JSON.stringify({
-            features: effective,
-            associations: await checkAssociations(effective.map((f) => f.id)),
-            reference: area.reference,
-            validator: "area-check-officer-v1",
-          }),
-        );
-  }
+  if (latestCheck) latestCheck.stale = await checkIsStale(latestCheck, currentFeatures, area);
   return {
     area,
     features: currentFeatures,

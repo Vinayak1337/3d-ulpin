@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import context from '../../local/data/nyc-bronx-context.json';
 import type { AreaContext } from '../../api/queries';
-import { polygonsOf, toBase, toFootprints, undrawnNote } from './footprints';
+import { drawnCountNote, polygonsOf, toBase, toFootprints, undrawnNote } from './footprints';
 
 describe('toFootprints on the derived NYC OTI area', () => {
   const footprints = toFootprints((context as unknown as AreaContext).features);
@@ -26,6 +26,22 @@ describe('undrawnNote', () => {
   });
   it('is silent when every feature is drawn', () => {
     expect(undrawnNote([polygon] as never)).toBeNull();
+  });
+});
+
+describe('drawnCountNote', () => {
+  const at = (id: string, revision: number) => ({ id, revision }) as never;
+  it('counts the recorded features the map draws and those it does not', () => {
+    expect(drawnCountNote([at('a', 1), at('b', 1), at('c', 2)], new Set(['a', 'c'])))
+      .toBe('2 of 3 recorded features are drawn.');
+  });
+  it('says when all are drawn, grouping thousands, and leaves out proposals not yet recorded', () => {
+    const ids = Array.from({ length: 2148 }, (_, index) => `f${index}`);
+    expect(drawnCountNote([...ids.map((id) => at(id, 1)), at('p', 0)], new Set(ids)))
+      .toBe('All 2,148 recorded features are drawn.');
+  });
+  it('is silent when nothing is recorded', () => {
+    expect(drawnCountNote([at('p', 0)], new Set())).toBeNull();
   });
 });
 
