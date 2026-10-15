@@ -2,7 +2,7 @@ import { ApiError } from '@ulpin/api-client';
 import { batchFrame, INTAKE_SILENCE_MS, reconnectFailures, silenceDelay } from './batch-events';
 import { runEventPath } from './run/events';
 import { initialStream, type StreamState } from './table/events';
-import { readCaseStream, type CaseFrame } from './stream-reader';
+import { CaseStreamSilence, readCaseStream, type CaseFrame } from './stream-reader';
 
 export interface LiveStatus {
   disconnected: boolean;
@@ -113,7 +113,8 @@ function failed(connection: Connection, error: unknown) {
   connection.failures = reconnectFailures(connection.failures, connection.reconnecting);
   connection.reconnecting = true;
   const words = error instanceof ApiError ? error.message : '';
-  publish(connection, { disconnected: Boolean(words) || connection.failures >= 2, error: words });
+  const disconnected = error instanceof CaseStreamSilence || Boolean(words) || connection.failures >= 2;
+  publish(connection, { disconnected, error: words });
 }
 
 function publish(connection: Connection, status: LiveStatus) {

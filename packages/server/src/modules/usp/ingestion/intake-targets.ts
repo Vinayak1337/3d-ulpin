@@ -7,7 +7,7 @@ import { INTAKE_TARGET_LIMITS, IntakeTargetCountsSchema, IntakeTargetPageSchema,
 import { transaction } from '../../../infrastructure/db';
 import { AppError, notFound } from '../../../infrastructure/errors';
 import { isSourceNativeCandidate } from '../geometry';
-import { appendCaseIngestionTx, appendIntakeTargetsTx } from './events';
+import { appendCaseIngestionTx, appendIntakeItemTx, appendIntakeTargetsTx } from './events';
 import { intakeCaseTx } from './intake-context';
 import { queueIntakeRunTx, stableUuid } from './intake-run';
 
@@ -88,8 +88,31 @@ export async function createIntakeTargetsTx(client: PoolClient, caseId: string, 
   return inserted.length;
 }
 
+/** The package-linked row carries a review refusal without changing its state or placement. */
+async function reviewOutcomeTx(client: PoolClient, packageId: string, refusal: {
+  code: string; message: string;
+} | null): Promise<number> {
+  const rows = (await client.query(`UPDATE usp_intake_items SET review_refusal_code=$2,
+    review_refusal_message=$3,limit_reason=CASE WHEN $2::text IS NOT NULL THEN $3
+      WHEN limit_reason=review_refusal_message THEN NULL ELSE limit_reason END,updated_at=now()
+    WHERE plan_ref->>'packageId'=$1 AND (review_refusal_code IS DISTINCT FROM $2
+      OR review_refusal_message IS DISTINCT FROM $3)
+    RETURNING item_id,case_id`, [packageId, refusal?.code ?? null, refusal?.message ?? null])).rows;
+  for (const row of rows) await appendIntakeItemTx(client, row.case_id, row.item_id);
+  return rows.length;
+}
+
+/** A passed review with no target row to publish still tells the page, through the package's own rows. */
+async function publishPackageItemsTx(client: PoolClient, packageId: string) {
+  const rows = (await client.query(`SELECT item_id,case_id FROM usp_intake_items
+    WHERE plan_ref->>'packageId'=$1 ORDER BY item_id`, [packageId])).rows;
+  for (const row of rows) await appendIntakeItemTx(client, row.case_id, row.item_id);
+}
+
 /** Decide every open target of a reviewed package in one statement. */
 export async function prepareIntakeTargetsTx(client: PoolClient, pkg: ImportPackage) {
+  const current = pkg.review?.packageRevision === pkg.revision;
+  const published = current ? await reviewOutcomeTx(client, pkg.id, null) : 0;
   const rows = (await client.query(`SELECT target_id,case_id,feature_id FROM usp_intake_targets
     WHERE package_id=$1 AND readiness=ANY($2) ORDER BY target_id FOR UPDATE`, [pkg.id, open])).rows;
   const decided = rows.map(row => ({ id: row.target_id as string,
@@ -99,6 +122,7 @@ export async function prepareIntakeTargetsTx(client: PoolClient, pkg: ImportPack
     WHERE t.target_id=d.id RETURNING t.target_id,t.readiness,t.stage`,
   [decided.map(row => row.id), decided.map(row => row.readiness), decided.map(row => row.reason)])).rows;
   if (changed.length) await appendIntakeTargetsTx(client, rows[0].case_id, changed);
+  if (current && !changed.length && !published) await publishPackageItemsTx(client, pkg.id);
   return decided;
 }
 
@@ -108,6 +132,7 @@ export async function holdPackageTargetsTx(client: PoolClient, caseId: string, p
   const rows = (await client.query(`UPDATE usp_intake_targets SET readiness='held',reason=$3,blocked_by=ARRAY[$2],
     updated_at=now() WHERE package_id=$1 AND readiness=ANY($4) RETURNING target_id,readiness,stage`,
   [packageId, code, message.slice(0, 2000), open])).rows;
+  await reviewOutcomeTx(client, packageId, { code, message });
   await appendIntakeTargetsTx(client, caseId, rows);
 }
 
@@ -196,18 +221,24 @@ async function packageFactsTx(client: PoolClient, packages: Map<string, PackageC
   const rows = (await client.query(`WITH packages AS (
     SELECT p.id,p.body->>'areaId' AS area_id,(p.body->>'revision')::int AS revision,
       p.body->>'state' AS state,CASE WHEN p.body->'review'->'packageRevision'=p.body->'revision'
-        THEN p.body->'review' ELSE NULL END AS review
-    FROM import_packages p WHERE p.id=ANY($1::uuid[]) ORDER BY p.id LIMIT 101
-  ) SELECT id,area_id,revision,state,review->>'inputFingerprint' AS review_fingerprint,
+        THEN p.body->'review' ELSE NULL END AS review,
+      CASE WHEN i.review_refusal_code IS NULL THEN NULL ELSE jsonb_build_object(
+        'code',i.review_refusal_code,'message',i.review_refusal_message) END AS review_refusal
+    FROM import_packages p LEFT JOIN usp_intake_items i ON i.item_id=ANY($2::uuid[])
+      AND i.plan_ref->>'packageId'=p.id::text
+    WHERE p.id=ANY($1::uuid[]) ORDER BY p.id LIMIT 101
+  ) SELECT id,area_id,revision,state,review_refusal,review->>'inputFingerprint' AS review_fingerprint,
     CASE WHEN review IS NULL THEN NULL ELSE COALESCE((
       SELECT jsonb_object_agg(code,count) FROM (
         SELECT finding->>'code' AS code,count(*)::int AS count
         FROM jsonb_array_elements(review->'findings') AS finding GROUP BY finding->>'code'
       ) AS findings
-    ),'{}'::jsonb) END AS finding_counts FROM packages ORDER BY id`, [ids])).rows;
+    ),'{}'::jsonb) END AS finding_counts FROM packages ORDER BY id`,
+  [ids, ids.map(id => packages.get(id)!.anchorItemId)])).rows;
   return { packages: rows.slice(0, 100).map(row => ({ packageId: row.id, areaId: row.area_id,
     anchorItemId: packages.get(row.id)!.anchorItemId, revision: row.revision, state: row.state,
     reviewFingerprint: row.review_fingerprint, findingCounts: row.finding_counts,
+    reviewRefusal: row.review_refusal ?? null,
     counts: packages.get(row.id)!.counts })), packagesTruncated: packages.size > 100 };
 }
 

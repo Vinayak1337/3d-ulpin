@@ -12,7 +12,7 @@ const revision = z.number().int().positive();
 const text = z.string().min(1).max(150).refine(v => v.trim() === v && !/[\u0000-\u001f]/.test(v));
 export const INGESTION_VERSION = 'manual-geojson/1' as const;
 export const ConversionIdSchema = z.enum(['literal_identifier@1', 'literal_text@1', 'geojson_polygon@1',
-  'geojson_geometry@1']);
+  'geojson_geometry@1', 'literal_integer_identifier@1']);
 /** Paths are inventory tokens, never expressions or values. Membership is checked by the server. */
 export const SourcePathSchema = z.string().max(512).regex(/^\/features\/\*\/(?:id|geometry|properties\/(?:[^~\/]|~[01])+)$/);
 export const MappingOperationSchema = z.strictObject({
@@ -24,12 +24,12 @@ export const SourceProfileSchema = z.strictObject({
   version: z.literal(INGESTION_VERSION), source: SourcePinSchema,
   caseId: id, workspaceRevision: z.number().int().nonnegative(), workspaceFingerprint: hash,
   format: z.literal('geojson'), featureCount: revision,
-  crs: z.strictObject({value: z.string(), evidence: z.string(), unit: z.literal('degree')}),
+  crs: z.strictObject({value: z.string(), evidence: z.string(), unit: z.string().min(1).max(80)}),
   geometryTypes: z.array(z.string()),
   paths: z.array(z.strictObject({
     path: SourcePathSchema, types: z.array(z.enum(['string', 'number', 'boolean', 'object', 'array'])),
     values: z.number().int().nonnegative(), explicitNull: z.number().int().nonnegative(), absent: z.number().int().nonnegative(),
-    literalIdEligible: z.boolean(), literalTextEligible: z.boolean(),
+    literalIdEligible: z.boolean(), literalTextEligible: z.boolean(), integerIdEligible: z.boolean().optional(),
   })),
   limitations: z.array(z.string()),
 });
@@ -218,12 +218,13 @@ const caseRevision = z.number().int().nonnegative();
 const url = z.string().url().max(2048).refine(value => /^https?:\/\//.test(value));
 const LargeUploadProvenanceSchema = z.strictObject({issuer: z.string().min(1).max(500), originalUrl: url, acquiredAt: z.string().datetime(),
   permissionReference: z.string().min(1).max(2048), limitations: z.array(z.string().min(1).max(2000)).max(20)});
+const UnstatedUploadProvenanceSchema = z.strictObject({origin: z.literal('not_stated'), acquiredAt: z.string().datetime()});
 const LargeUploadCreateBaseSchema = z.strictObject({
   requestKey: id, expectedCaseRevision: caseRevision,
   filename: z.string().min(1).max(150).refine(value => value.trim() === value && !/[\u0000-\u001f\/\\]/.test(value)),
   mediaType: z.enum(['application/zip', 'application/octet-stream']),
   sha256: hash,
-  provenance: LargeUploadProvenanceSchema,
+  provenance: z.union([LargeUploadProvenanceSchema, UnstatedUploadProvenanceSchema]),
 });
 export const LargeUploadCreateSchema = z.union([
   LargeUploadCreateBaseSchema.extend({profile:z.literal('large-original/1').optional(),
@@ -238,7 +239,8 @@ export const LargeOriginalEvidenceSchema = z.strictObject({
   uploadId: id, operatorSubject: z.string(), objectEtag: z.string(), verifiedSha256: hash,
   verifiedBytes: z.number().int().positive().max(LARGE_ORIGINAL_V2_LIMITS.maxOriginalBytes),
   receiptVersion: z.enum(['large-original/1','large-original/2']).optional(),
-  provenance: LargeUploadProvenanceSchema.extend({state: z.literal('caller_declared')}),
+  provenance: z.union([LargeUploadProvenanceSchema.extend({state: z.literal('caller_declared')}),
+    UnstatedUploadProvenanceSchema.extend({state: z.literal('not_stated')})]),
   conversion: z.literal('unsupported'), bundleCompleteness: z.literal('single_original_only_archive_dependencies_not_assessed'),
 });
 export const LargeUploadStatusSchema = z.strictObject({

@@ -1,0 +1,543 @@
+{
+  "task": "GN1",
+  "nonce": "024f86f5f67b3997",
+  "containers": [
+    "ulpin-gn1-db-024f86f5f67b3997",
+    "ulpin-gn1-geo-024f86f5f67b3997"
+  ],
+  "startedAt": "2026-10-11T09:53:59.104Z",
+  "postgresImage": "postgis/postgis@sha256:01a6a70e41e6c4467c8f55f6063555ed72db2d6662cd0d571040d42eadaeb6f6",
+  "geoImage": "ulpin-gn1-geo:024f86f5f67b3997",
+  "geoImageId": "sha256:07817576d97951184cf9d19fb530aac5e2bd0d5a13ac7d98ccf5ccc5cd3033f8",
+  "geoSources": [
+    {
+      "path": "services/geo/geo/area.py",
+      "sha256": "fb83b2f070a05d60ac14233bedf9087c45a6762ffc87e004aca41f182fdf19bb",
+      "builtSourceMatches": true
+    },
+    {
+      "path": "services/geo/geo/gis_inspection.py",
+      "sha256": "9cea501845fbc0e5227def67b0fd079e1f5aa8f7ee2f5a88fd5add7616b028fb",
+      "builtSourceMatches": true
+    }
+  ],
+  "readyAfterSeconds": 0,
+  "runtime": {
+    "exit": 0,
+    "signal": null,
+    "progress": [
+      {
+        "completed": "DA5 projected parcels",
+        "count": 155
+      },
+      {
+        "completed": "NYC -> DA4 contained profile memory",
+        "count": 1417
+      },
+      {
+        "completed": "NYC duplicate copy",
+        "newRecords": 0,
+        "g4": false
+      }
+    ],
+    "evidence": {
+      "task": "GN1",
+      "results": {
+        "da5Initial": {
+          "itemId": "ae1a8b6e-dbb9-4157-8183-5d6c79955d43",
+          "sourceId": "ae1a8b6e-dbb9-4157-8183-5d6c79955d43",
+          "caseId": "38df2c97-1a6e-47b3-aeff-fac51fbdd2ed",
+          "parentItemId": null,
+          "memberPath": null,
+          "name": "Niagara_Falls_Condominiums_7254610803234545967.geojson",
+          "family": "vector",
+          "format": "geojson",
+          "sizeBytes": 157817,
+          "sizeClass": "S",
+          "wave": 1,
+          "state": "probed",
+          "placement": "needs_answer",
+          "card": {
+            "version": "intake-card/1",
+            "family": "vector",
+            "format": "geojson",
+            "formatVersion": null,
+            "detectedBy": "bytes",
+            "nameDisagrees": false,
+            "depth": "structure",
+            "encoding": "utf-8",
+            "crs": {
+              "state": "stated",
+              "code": "EPSG:2958",
+              "sidecarSha256": null
+            },
+            "extent": {
+              "native": null,
+              "epsg4326": null
+            },
+            "counts": {
+              "features": 155,
+              "rows": null,
+              "pages": null,
+              "members": null,
+              "points": null,
+              "bands": null
+            },
+            "geometryTypes": [
+              "MultiPolygon",
+              "Polygon"
+            ],
+            "layers": [],
+            "sheets": [],
+            "columns": [
+              {
+                "name": "OBJECTID",
+                "inferredType": "number",
+                "sampledNonEmpty": 16
+              },
+              {
+                "name": "PID",
+                "inferredType": "number",
+                "sampledNonEmpty": 16
+              },
+              {
+                "name": "CONDO_ID",
+                "inferredType": "number",
+                "sampledNonEmpty": 16
+              },
+              {
+                "name": "NAME",
+                "inferredType": "text",
+                "sampledNonEmpty": 14
+              },
+              {
+                "name": "conNo",
+                "inferredType": "text",
+                "sampledNonEmpty": 16
+              },
+              {
+                "name": "TYPE",
+                "inferredType": "text",
+                "sampledNonEmpty": 16
+              },
+              {
+                "name": "STATUS",
+                "inferredType": "text",
+                "sampledNonEmpty": 16
+              },
+              {
+                "name": "CONREGDATE",
+                "inferredType": "text",
+                "sampledNonEmpty": 16
+              },
+              {
+                "name": "CONLEVELS",
+                "inferredType": "number",
+                "sampledNonEmpty": 16
+              },
+              {
+                "name": "CONNOUNITS",
+                "inferredType": "number",
+                "sampledNonEmpty": 16
+              },
+              {
+                "name": "URL",
+                "inferredType": "text",
+                "sampledNonEmpty": 16
+              },
+              {
+                "name": "AREA_SQM",
+                "inferredType": "number",
+                "sampledNonEmpty": 16
+              },
+              {
+                "name": "LENGTH_M",
+                "inferredType": "number",
+                "sampledNonEmpty": 16
+              }
+            ],
+            "limits": [
+              "Complete head values only; whole-file count unknown; truncated values not repaired.",
+              "Count cited from retained receipt; its accepted coverage is not a recomputed raw-file total."
+            ],
+            "probeBytesRead": 131072,
+            "probeMs": 8.302,
+            "drawableHint": false,
+            "delimiter": null,
+            "encrypted": null,
+            "raster": null,
+            "point": null,
+            "citations": [
+              {
+                "locator": "source.inspection:retained_count",
+                "sha256": "dece86e3bc85a2529fbca07cf31e4c0f4e74275ed10b9989684f18191f2e002c"
+              },
+              {
+                "locator": "source.inspection:retained_crs",
+                "sha256": "dece86e3bc85a2529fbca07cf31e4c0f4e74275ed10b9989684f18191f2e002c"
+              },
+              {
+                "locator": "source.inspection:retained_geometry_types",
+                "sha256": "dece86e3bc85a2529fbca07cf31e4c0f4e74275ed10b9989684f18191f2e002c"
+              }
+            ],
+            "members": []
+          },
+          "cardSha256": "20bf7413c21dae617ee712011d2b1f8386bf521a56064976724905e32c948e77",
+          "plan": null,
+          "probeVersion": "intake-card/1",
+          "partsPlanned": null,
+          "partsDone": 0,
+          "recordsSeen": 0,
+          "limitReason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "pinnedByOfficer": false,
+          "createdAt": "2026-10-11T09:54:07.056Z",
+          "updatedAt": "2026-10-11T09:54:07.144Z"
+        },
+        "da5": {
+          "caseId": "38df2c97-1a6e-47b3-aeff-fac51fbdd2ed",
+          "source": {
+            "sourceId": "ae1a8b6e-dbb9-4157-8183-5d6c79955d43",
+            "familyId": "ae1a8b6e-dbb9-4157-8183-5d6c79955d43",
+            "sourceRevision": 1,
+            "sourceSha256": "dece86e3bc85a2529fbca07cf31e4c0f4e74275ed10b9989684f18191f2e002c",
+            "schemaFingerprint": "55174f4e8d6574597335110c3db923d6981edae5491656277e6c48a1829dcab5"
+          },
+          "crs": {
+            "value": "EPSG:2958",
+            "evidence": "Declared in the file's crs member: `EPSG:2958`",
+            "unit": "metre"
+          },
+          "crsUnitInInspection": "metre",
+          "integerEligibility": true,
+          "all155KeysAsSourceDigits": true,
+          "kindOfficerStated": "parcel",
+          "recipeId": "3d5a4a18-8e20-41f5-b6e4-bb535be698bf",
+          "preparedPackage": "ccc284f0-28ac-489e-9fc3-f4b112cb4589",
+          "areaId": "c1bd25b9-2e91-4f09-a448-17a85400dbc1",
+          "state": "COMMITTED",
+          "physicalRecords": 155,
+          "readyBuildingTargets": 0,
+          "reference": {
+            "sourceCrs": "EPSG:2958",
+            "analysisCrs": "EPSG:32617",
+            "origin": [
+              649725.8133829064,
+              4767147.936926401
+            ],
+            "anchor": [
+              -79.16182333394151,
+              43.042265686487326
+            ],
+            "transformVersion": "area-native-v1 / pyproj 3.6.1 / PROJ 9.3.0 / unavailable until proj_trans is called",
+            "verticalReference": "building-relative; not aligned between features"
+          },
+          "geographicExtent": [
+            -79.16101883167528,
+            43.040644980164004,
+            -79.04074191660973,
+            43.14004728100516
+          ],
+          "multipart": [
+            {
+              "sourceKey": "79",
+              "sourceParts": 2,
+              "localParts": 2,
+              "geographicParts": 2
+            },
+            {
+              "sourceKey": "88",
+              "sourceParts": 2,
+              "localParts": 2,
+              "geographicParts": 2
+            },
+            {
+              "sourceKey": "153",
+              "sourceParts": 2,
+              "localParts": 2,
+              "geographicParts": 2
+            }
+          ],
+          "warnings": [
+            "The source declares `EPSG:2958`; read as `EPSG:2958`, coordinates in the order written (x, y). Original bytes keep that declaration; normalized geographic geometry uses RFC 7946 coordinates.",
+            "Local geometry uses metres in the retained area frame and is not RFC GeoJSON. Building-relative heights do not establish shared elevation or legal rights."
+          ],
+          "confirmationId": "097d284f-e8f1-49eb-8737-a0b8ab333eeb",
+          "cardMeaning": "Physical parcel records only, not issued building/unit cards."
+        },
+        "nycDa4": {
+          "first": {
+            "caseId": "2b9a3368-5c57-45cc-a775-8c4e1834ff1f",
+            "source": {
+              "sourceId": "b5c4e33c-9238-4102-bdea-c882c5798d66",
+              "familyId": "b5c4e33c-9238-4102-bdea-c882c5798d66",
+              "sourceRevision": 1,
+              "sourceSha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+              "schemaFingerprint": "e27f2b29af7483c178b6fc8d8ad439d6f347db32ccba785d84b47c9688cbf638"
+            },
+            "recipeId": "a91ab98a-ebd5-4d48-95f7-3f86fe1f1ee7",
+            "approval": {
+              "subject": "gn1-runtime-control",
+              "at": "2026-10-11T09:54:09.414Z",
+              "planHash": "871be9d6d35ffc8e30075d8c05efb063d6c7597bb2f6a913f7f3993ac32b4d0a",
+              "provenance": "server_configured_local_operator"
+            },
+            "areaId": "895ccbb2-8fc3-41b5-828b-95452b9c3896",
+            "areaName": "buildings original",
+            "physicalRecords": 1661,
+            "rawFeatures": 1662
+          },
+          "second": {
+            "caseId": "a02174c5-6579-4678-a3d7-258e3dc99447",
+            "source": {
+              "sourceId": "b9cfb2bb-aa53-45e0-b27d-9a0fc21f0d40",
+              "familyId": "b9cfb2bb-aa53-45e0-b27d-9a0fc21f0d40",
+              "sourceRevision": 1,
+              "sourceSha256": "4a5735dd57c0ad1e4971c853837230056ce148cfbde4cab41c6873d3a2112e9e",
+              "schemaFingerprint": "e9b0eeee7699a39a3f325868bd9f6742c886b9277d7a272194eef4bf46d901cc"
+            },
+            "areaId": "2657100a-bfed-4d8e-808c-6ebe994dd36b",
+            "rawFeatures": 1417,
+            "physicalRecords": 1417,
+            "readyBuildingTargets": 1417
+          },
+          "extraColumns": 7,
+          "differentFingerprints": true,
+          "origin": "memory",
+          "proposedBeforeOfficerApproval": true,
+          "newSourcePins": true,
+          "operationsAndStatedKindUnchanged": true,
+          "approvalNotInherited": true,
+          "laterExplicitOfficerApproval": true,
+          "oldCrsObjectsAndFingerprintsUnchanged": true
+        },
+        "duplicate": {
+          "caseId": "27b9a017-1d04-400e-8050-ff6d4468a675",
+          "refusal": {
+            "status": 409,
+            "code": "STALE_REVISION",
+            "message": "This destination already exists; pin its current area and reference explicitly.",
+            "requestId": "d83aa1bc-f131-49e6-963c-1a3e35d4664a"
+          },
+          "row": {
+            "state": "probed",
+            "placement": "undecided",
+            "limitReason": null
+          },
+          "before": {
+            "areas": 3,
+            "packages": 3,
+            "records": 3233
+          },
+          "after": {
+            "areas": 3,
+            "packages": 3,
+            "records": 3233
+          },
+          "newAreas": 0,
+          "newPackages": 0,
+          "newPhysicalRecords": 0,
+          "waitingReasonEqualsRefusal": false,
+          "jobStatus": "stale",
+          "noRecipePrepared": true,
+          "g4": false,
+          "blockedBy": "service.ts author destination call is read-only and supplies no source hash. The destination guard cannot prove this file owns file:<sha256> without that pin."
+        },
+        "g1": true,
+        "g2": true,
+        "g3": true,
+        "g4": false,
+        "http": [
+          {
+            "method": "POST",
+            "route": "/api/v1/source-cases",
+            "status": 201
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/{caseId}/sources",
+            "status": 201
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/{caseId}/intake/items",
+            "status": 201
+          },
+          {
+            "method": "GET",
+            "route": "/api/v1/ingestion/cases/{caseId}/intake",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/recipes",
+            "status": 201
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/approve",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "route": "/api/v1/ingestion/cases/{caseId}/intake",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "route": "/api/v1/ingestion/cases/{caseId}/targets",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/{caseId}/confirmations",
+            "status": 202
+          },
+          {
+            "method": "GET",
+            "route": "/api/v1/import-packages/{packageId}",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "route": "/api/v1/areas/{areaId}/context",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/source-cases",
+            "status": 201
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/{caseId}/sources",
+            "status": 201
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/{caseId}/intake/items",
+            "status": 201
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/recipes",
+            "status": 201
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/approve",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "route": "/api/v1/ingestion/cases/{caseId}/targets",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/{caseId}/confirmations",
+            "status": 202
+          },
+          {
+            "method": "GET",
+            "route": "/api/v1/import-packages/{packageId}",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "route": "/api/v1/areas/{areaId}/context",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/source-cases",
+            "status": 201
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/{caseId}/sources",
+            "status": 201
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/{caseId}/intake/items",
+            "status": 201
+          },
+          {
+            "method": "GET",
+            "route": "/api/v1/ingestion/cases/{caseId}/intake",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/approve",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "route": "/api/v1/ingestion/cases/{caseId}/targets",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/{caseId}/confirmations",
+            "status": 202
+          },
+          {
+            "method": "GET",
+            "route": "/api/v1/import-packages/{packageId}",
+            "status": 200
+          },
+          {
+            "method": "GET",
+            "route": "/api/v1/areas/{areaId}/context",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/source-cases",
+            "status": 201
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/{caseId}/sources",
+            "status": 201
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/{caseId}/intake/items",
+            "status": 201
+          },
+          {
+            "method": "GET",
+            "route": "/api/v1/ingestion/cases/{caseId}/intake",
+            "status": 200
+          },
+          {
+            "method": "POST",
+            "route": "/api/v1/ingestion/cases/27b9a017-1d04-400e-8050-ff6d4468a675/sources/27654213-10c5-4d8d-bc73-060d0b336dd7/recipes",
+            "status": 409
+          }
+        ]
+      },
+      "failures": [],
+      "inputs": {
+        "da5": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/Niagara_Falls_Condominiums_7254610803234545967.geojson",
+        "nyc": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+        "da4": "E:/BhuAayam-data/datasets/nyc-second-area/nyc-office-of-technology-and-innovation/5zhs-2jue-box-w74.003-s40.732-e73.992-n40.740.geojson"
+      },
+      "hashes": {
+        "da5": "dece86e3bc85a2529fbca07cf31e4c0f4e74275ed10b9989684f18191f2e002c",
+        "nyc": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+        "da4": "4a5735dd57c0ad1e4971c853837230056ce148cfbde4cab41c6873d3a2112e9e"
+      },
+      "originalHashesUnchanged": true,
+      "providers": 0,
+      "gpu": false,
+      "storage": "KN2/CR1 in-memory S3 HTTP stand-in; not production object-store qualification.",
+      "network": "Loopback HTTP/SQL, actual built geo service; PROJ_NETWORK=OFF; gateway disabled."
+    }
+  },
+  "ownedNonceGone": true,
+  "finishedAt": "2026-10-11T09:54:44.770Z"
+}

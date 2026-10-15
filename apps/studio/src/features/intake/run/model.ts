@@ -31,6 +31,12 @@ export const stageWords: Record<number, string> = {
   7: 'Make the evidence plan and packet', 8: 'Make and verify the property card',
 };
 
+export function reviewWords(pkg: Package): string | null {
+  if (pkg.reviewRefusal) return pkg.reviewRefusal.message;
+  if (!pkg.reviewFingerprint && pkg.state !== 'COMMITTED') return 'Its review has not run yet.';
+  return null;
+}
+
 export function hasNoBuildings(pkg: Package): boolean {
   return Object.values(pkg.counts).every(count => count === 0);
 }
@@ -49,14 +55,15 @@ export function confirmingPackageWords(pkg: Package): string {
 }
 
 export function confirmablePackages(page: TargetPage): Package[] {
-  return page.packages.filter(pkg => pkg.state !== 'COMMITTED' && pkg.reviewFingerprint
+  return page.packages.filter(pkg => !pkg.reviewRefusal && pkg.state !== 'COMMITTED' && pkg.reviewFingerprint
     && (pkg.counts.ready > 0 || hasNoBuildings(pkg)));
 }
 
 type ChoiceTarget = Pick<Target, 'targetId' | 'packageId' | 'readiness'>;
 
 export function chooseReady<T extends ChoiceTarget>(targets: readonly T[], packages: readonly Package[]): T[] {
-  const permitted = new Set(packages.filter(pkg => pkg.reviewFingerprint && pkg.state !== 'COMMITTED')
+  const permitted = new Set(packages.filter(pkg => !pkg.reviewRefusal
+    && pkg.reviewFingerprint && pkg.state !== 'COMMITTED')
     .map(pkg => pkg.packageId));
   const unique = new Map(targets.filter(target => target.readiness === 'ready' && permitted.has(target.packageId))
     .map(target => [target.targetId, target]));

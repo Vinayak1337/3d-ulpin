@@ -22,6 +22,12 @@ export function packagePath(item: Pick<IntakeItem, 'plan'>, packages: readonly P
   return pkg ? `/studio/areas/${pkg.areaId}?package=${pkg.packageId}` : null;
 }
 
+export function partProgressWords(item: Pick<IntakeItem, 'state' | 'partsPlanned' | 'partsDone' | 'recordsSeen'>) {
+  if (item.partsPlanned !== null) return `${countWords(item.partsDone)} of ${countWords(item.partsPlanned)} parts`;
+  if (item.state === 'reading') return `Reading: ${countWords(item.recordsSeen)} records so far`;
+  return null;
+}
+
 export function stateWords(state: IntakeItem['state']) {
   return states[state];
 }

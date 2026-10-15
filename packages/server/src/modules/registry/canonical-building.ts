@@ -263,7 +263,7 @@ function footprintKind(role: PhysicalFeature['geometryRole']): FootprintKind {
   return null;
 }
 
-function buildingState(feature: PhysicalFeature, proposal: boolean): BuildingValueState {
+export function buildingState(feature: PhysicalFeature, proposal: boolean): BuildingValueState {
   const evidenceState = feature.semantics?.evidenceState;
   if (proposal || evidenceState === 'unresolved') return 'candidate';
   return evidenceState ?? 'source_supported';
@@ -276,7 +276,7 @@ function heightMethod(height: PhysicalFeature['height']): string {
   return 'source_literal';
 }
 
-function projectHeight(feature: PhysicalFeature, citations: BuildingCitation[]): Value<number> {
+export function projectHeight(feature: PhysicalFeature, citations: BuildingCitation[]): Value<number> {
   const { height } = feature;
   if (height.value === null) return canonicalValue<number>(null, 'unknown', citations, 'source_literal', 'm');
   const state: BuildingValueState = height.state === 'unresolved' ? 'candidate' : height.state;

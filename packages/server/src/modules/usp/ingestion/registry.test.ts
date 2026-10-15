@@ -168,3 +168,70 @@ test('opening geometry admission preserves the polygon fingerprint pinned by the
   const stored = ca0.runtime.progress.find((step: any) => step.completed === '1 retained original is probed');
   assert.equal(inventory.schemaFingerprint, stored.result.schemaFingerprint);
 });
+
+
+test('declared projected units profile and stated-kind geometry compile; old building geometry refuses', () => {
+  const bytes = Buffer.from(JSON.stringify(fixture));
+  const inspection = { format: 'geojson', sourceSha256: sha256(bytes), featureCount: 2,
+    sourceCrs: 'EPSG:2958', crsEvidence: 'Declared in the file', crsUnit: 'metre',
+    geometryTypes: ['Polygon'], fields: [{ name: 'doitt_id' }, { name: 'height_ft' }] } as GisInspection;
+  const inventory = inspectedProfile(bytes, inspection);
+  assert.deepEqual(inventory.crs, { value: 'EPSG:2958', evidence: 'Declared in the file', unit: 'metre' });
+  const source = { ...profile(), crs: inventory.crs };
+  assert.equal(compileMapping(MappingPlanSchema.parse(stated('parcel')), source).kind, 'parcel');
+  assert.throws(() => compileMapping(MappingPlanSchema.parse(legacy), source), {
+    code: 'MAPPING_CRS', status: 422,
+    message: 'The older building layout reads longitude and latitude only. '
+      + "State the kind of feature so the layout reads the file's declared coordinate system.",
+  });
+  const { crsUnit: _unit, ...old } = inspection;
+  assert.throws(() => inspectedProfile(bytes, old), /Check the file again/);
+  assert.equal(inspectedProfile(bytes, { ...old, sourceCrs: 'EPSG:4326' }).crs.unit, 'degree');
+});
+
+test('integer conversion is feature-only, requires the inspected fact, and never broadens text identity', () => {
+  const source = profile();
+  const path = source.paths.find(item => item.path.endsWith('/doitt_id'))!;
+  path.types = ['number'];
+  path.literalIdEligible = false;
+  path.integerIdEligible = true;
+  const plan = MappingPlanSchema.parse(stated('parcel'));
+  plan.operations[0].conversionId = 'literal_integer_identifier@1';
+  assert.equal(compileMapping(plan, source).idField, 'doitt_id');
+  assert.throws(() => compileMapping(MappingPlanSchema.parse(stated('parcel')), source),
+    /nonempty literal text/);
+  assert.throws(() => compileMapping({ ...plan, kind: undefined, operations: plan.operations.map(op => ({
+    ...op, target: op.target.replace('feature.', 'building.') as typeof op.target,
+  })) }, source), { code: 'MAPPING_PATH' });
+  path.integerIdEligible = false;
+  assert.throws(() => compileMapping(plan, source), /unique whole-number tokens/);
+  delete path.integerIdEligible;
+  assert.throws(() => compileMapping(plan, source), /unique whole-number tokens/);
+  assert.throws(() => compileMapping(plan, profile()), /unique whole-number tokens/);
+});
+
+test('additive integer eligibility does not enter the schema fingerprint', () => {
+  const bytes = Buffer.from(JSON.stringify(fixture));
+  const inspection = { format: 'geojson', sourceSha256: sha256(bytes), featureCount: 2,
+    sourceCrs: 'EPSG:4326', crsEvidence: 'Fixture CRS declaration', geometryTypes: ['Polygon'],
+    fields: [{ name: 'doitt_id' }, { name: 'height_ft' }] } as GisInspection;
+  const old = inspectedProfile(bytes, inspection);
+  const fresh = inspectedProfile(bytes, { ...inspection,
+    fields: inspection.fields.map(field => ({ ...field, integerIdEligible: false })) });
+  assert.equal(old.schemaFingerprint, fresh.schemaFingerprint);
+  assert(!('integerIdEligible' in old.paths[1]));
+  assert.equal(fresh.paths[1].integerIdEligible, false);
+});
+
+test('adding a degree unit leaves the old undeclared and CRS84 crs and fingerprint bytes unchanged', () => {
+  const bytes = Buffer.from(JSON.stringify(fixture));
+  for (const evidence of ['Declared OGC CRS84', 'RFC 7946 GeoJSON longitude/latitude']) {
+    const inspection = { format: 'geojson', sourceSha256: sha256(bytes), featureCount: 2,
+      sourceCrs: 'EPSG:4326', crsEvidence: evidence, geometryTypes: ['Polygon'],
+      fields: [{ name: 'doitt_id' }, { name: 'height_ft' }] } as GisInspection;
+    const old = inspectedProfile(bytes, inspection);
+    const fresh = inspectedProfile(bytes, { ...inspection, crsUnit: 'degree' });
+    assert.equal(JSON.stringify(old.crs), JSON.stringify(fresh.crs));
+    assert.equal(old.schemaFingerprint, fresh.schemaFingerprint);
+  }
+});

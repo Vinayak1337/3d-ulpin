@@ -5284,6 +5284,13 @@ export interface components {
                             limitations: string[];
                             /** @enum {string} */
                             state: "caller_declared";
+                        } | {
+                            /** @enum {string} */
+                            origin: "not_stated";
+                            /** Format: date-time */
+                            acquiredAt: string;
+                            /** @enum {string} */
+                            state: "not_stated";
                         };
                         /** @enum {string} */
                         conversion: "unsupported";
@@ -5601,6 +5608,13 @@ export interface components {
                         limitations: string[];
                         /** @enum {string} */
                         state: "caller_declared";
+                    } | {
+                        /** @enum {string} */
+                        origin: "not_stated";
+                        /** Format: date-time */
+                        acquiredAt: string;
+                        /** @enum {string} */
+                        state: "not_stated";
                     };
                     /** @enum {string} */
                     conversion: "unsupported";
@@ -64970,8 +64984,7 @@ export interface components {
             crs: {
                 value: string;
                 evidence: string;
-                /** @enum {string} */
-                unit: "degree";
+                unit: string;
             };
             geometryTypes: string[];
             paths: {
@@ -64982,6 +64995,7 @@ export interface components {
                 absent: number;
                 literalIdEligible: boolean;
                 literalTextEligible: boolean;
+                integerIdEligible?: boolean;
             }[];
             limitations: string[];
         } | {
@@ -65103,7 +65117,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
                 }[];
             };
             destination?: {
@@ -65269,7 +65283,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
                 }[];
             };
             destination: {
@@ -65479,7 +65493,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
                 }[];
             };
             destination: {
@@ -65748,6 +65762,11 @@ export interface components {
                 reviewFingerprint: string | null;
                 findingCounts: {
                     [key: string]: number;
+                } | null;
+                /** @description Current review refusal; emitted as null before review or after it passes. Older pages may omit it. */
+                reviewRefusal?: {
+                    code: string;
+                    message: string;
                 } | null;
                 counts: {
                     preparing: number;
@@ -66046,6 +66065,11 @@ export interface components {
                 acquiredAt: string;
                 permissionReference: string;
                 limitations: string[];
+            } | {
+                /** @enum {string} */
+                origin: "not_stated";
+                /** Format: date-time */
+                acquiredAt: string;
             };
             /** @enum {string} */
             profile?: "large-original/1";
@@ -66066,6 +66090,11 @@ export interface components {
                 acquiredAt: string;
                 permissionReference: string;
                 limitations: string[];
+            } | {
+                /** @enum {string} */
+                origin: "not_stated";
+                /** Format: date-time */
+                acquiredAt: string;
             };
             /** @enum {string} */
             profile: "large-original/2";
@@ -69233,7 +69262,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
                 }[];
             } | null;
             validationErrors: string[];
@@ -69630,7 +69659,7 @@ export interface components {
                         target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                         sourcePath: string;
                         /** @enum {string} */
-                        conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1";
+                        conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
                     }[];
                 } | null;
                 validationErrors: string[];
@@ -70104,6 +70133,8 @@ export interface components {
                     meaning: "building_source_identity" | "building_name" | "building_footprint";
                 }[];
                 /** @enum {string} */
+                basis?: "publisher_cited" | "officer_stated";
+                /** @enum {string} */
                 version: "streamed-mapping/1";
                 /** @enum {string} */
                 scope: "accepted_source_features";
@@ -70154,6 +70185,8 @@ export interface components {
                     meaning: "building_source_identity" | "building_name" | "building_footprint";
                 }[];
                 /** @enum {string} */
+                basis?: "publisher_cited" | "officer_stated";
+                /** @enum {string} */
                 version: "streamed-mapping/1";
                 /** @enum {string} */
                 scope: "accepted_source_features";
@@ -70195,6 +70228,8 @@ export interface components {
                     /** @enum {string} */
                     meaning: "building_source_identity" | "building_name" | "building_footprint";
                 }[];
+                /** @enum {string} */
+                basis?: "publisher_cited" | "officer_stated";
                 /** @enum {string} */
                 version: "streamed-prefix-mapping/1";
                 /** @enum {string} */
@@ -70261,6 +70296,8 @@ export interface components {
                     /** @enum {string} */
                     meaning: "building_source_identity" | "building_name" | "building_footprint";
                 }[];
+                /** @enum {string} */
+                basis?: "publisher_cited" | "officer_stated";
                 /** @enum {string} */
                 version: "streamed-prefix-mapping/1";
                 /** @enum {string} */

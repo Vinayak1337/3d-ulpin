@@ -1,0 +1,75 @@
+{
+  "task": "PV1",
+  "checks": [
+    {
+      "command": "node docs/evidence/gf1/fx2/refresh.mjs --refresh",
+      "exit": 0
+    },
+    {
+      "command": "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/*.test.ts packages/server/src/modules/areas/retained-case-binding.test.ts packages/server/src/modules/usp/packets/*.test.ts tests/manual-ingestion.test.ts tests/manual-plan-later-receipt.test.ts tests/adaptive-mapping.test.ts tests/streaming-later-receipt.test.ts apps/api/src/modules/ingestion/intake-run.controller.test.ts",
+      "before": {
+        "exit": 0,
+        "pass": 257,
+        "fail": 0
+      },
+      "after": {
+        "exit": 0,
+        "pass": 266,
+        "fail": 0
+      }
+    },
+    {
+      "command": "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/large-original-provenance.test.ts tests/large-original.test.ts",
+      "exit": 0,
+      "pass": 7
+    },
+    {
+      "command": "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/streamed-mapping-basis.test.ts",
+      "exit": 0,
+      "pass": 6
+    },
+    {
+      "command": "pnpm typecheck:backend",
+      "exit": 0
+    },
+    {
+      "command": "pnpm studio:typecheck",
+      "exit": 0
+    },
+    {
+      "command": "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts",
+      "exit": 0,
+      "operations": 310,
+      "namedSchemas": 351
+    },
+    {
+      "command": "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm studio:api-types",
+      "exit": 0
+    },
+    {
+      "command": "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts 6442f20d5720d6913ba73e833c4304006fa48db7",
+      "exit": 0
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe -B scripts/api/check.py",
+      "exit": 0
+    },
+    {
+      "command": "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf1/pv1/probe.ts --after",
+      "exit": 0
+    },
+    {
+      "command": "node docs/evidence/gf1/pv1/run-runtime.mjs docs/evidence/gf1/pv1/runtime.json",
+      "exit": 0,
+      "receipt": "runtime.json"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ]
+}

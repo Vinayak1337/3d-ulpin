@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { NormalizedArea } from '@ulpin/contracts/canonical-scene';
-import { canonicalFootprints, undrawnBuildings } from './canonicalScene';
+import type { NormalizedArea, NormalizedBuilding } from '@ulpin/contracts/canonical-scene';
+import { canonicalFootprints, undrawnBuildings, withExploredBuilding } from './canonicalScene';
 
 const ring = [[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]];
 const value = (state: string, v: unknown) => ({
@@ -55,5 +55,20 @@ describe('undrawnBuildings', () => {
     const drawn = canonicalFootprints(area).footprints;
     const onlyDrawn = { ...area, buildings: area.buildings.slice(0, 2) } as NormalizedArea;
     expect(undrawnBuildings(onlyDrawn, drawn)).toEqual([]);
+  });
+});
+
+describe('withExploredBuilding', () => {
+  const own = { ...summary('b2', 'reviewed'), revisionId: 'own', heightM: value('source_supported', 12),
+    frame: area.frame } as unknown as NormalizedBuilding;
+  it("takes the explored building's summary from its own record", () => {
+    const explored = withExploredBuilding(area, own);
+    expect(explored.buildings.map((b) => b.revisionId)).toEqual(['r1', 'own', 'r1']);
+    expect(explored.buildings[1]!.heightM.value).toBe(12);
+  });
+  it('adds no building the area does not list, and uses no record of another frame', () => {
+    expect(withExploredBuilding(area, { ...own, buildingId: 'b9' } as NormalizedBuilding)).toBe(area);
+    expect(withExploredBuilding(area, { ...own, frame: { areaId: 'area-2' } } as unknown as NormalizedBuilding))
+      .toBe(area);
   });
 });

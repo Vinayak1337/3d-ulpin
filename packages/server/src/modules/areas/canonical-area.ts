@@ -4,23 +4,25 @@ import {
   SourceAdministrativeContextSchema,
   type AreaContext,
   type AreaFrame,
+  type BuildingCitation,
   type BuildingValueState,
   type NormalizedArea,
-  type NormalizedBuilding,
   type PhysicalFeature,
 } from '@ulpin/contracts';
-import { areaContext } from './areas';
+import { AREA_DISPLAY_LIMIT, areaContext } from './areas';
 import { query } from '../../infrastructure/db';
 import { AppError } from '../../infrastructure/errors';
 import {
   assertCanonicalAreaScope,
-  canonicalBuilding,
+  buildingState,
   canonicalCitations,
+  canonicalFeatureName,
   canonicalFrame,
   canonicalValue,
   geographicToEnu,
   geographicPointToEnu,
   ENU_METHOD,
+  projectHeight,
   projectionDigest,
   revalidateCanonicalSources,
 } from '../registry/canonical-building';
@@ -28,37 +30,17 @@ import { localOperatorSubject } from '../usp/principal';
 import { addRoofprintCandidates } from '../spatial/spatial-ml-canonical-candidates';
 
 type BaseFeature = NormalizedArea['baseFeatures'][number];
+type BuildingSummary = NormalizedArea['buildings'][number];
 type ContextFeature = NonNullable<AreaContext['displayFeatures']>[number];
+type FeatureCitations = Map<string, { evidence: BuildingCitation[]; height: BuildingCitation[] }>;
 
-const BUILDING_BATCH_SIZE = 4;
 const NO_TILESET_GAP =
   'No qualified overlay/tileset supplied by the area context; presentation scene assets are not analytical tilesets.';
+const SUMMARY_GAP = "Area building summaries show each recorded feature's own name, footprint and height; "
+  + "its retained claims, levels and parcels are in the building's own record.";
 
 function contextFeatures(context: AreaContext): ContextFeature[] {
   return context.displayFeatures ?? context.features;
-}
-
-/** Bound concurrent use of the existing register reader (no competing graph/SQL authority). */
-async function projectBuildings(context: AreaContext): Promise<NormalizedBuilding[]> {
-  const buildings: NormalizedBuilding[] = [];
-  const features = contextFeatures(context).filter(feature => feature.kind === 'building');
-  for (let start = 0; start < features.length; start += BUILDING_BATCH_SIZE) {
-    const batch = features.slice(start, start + BUILDING_BATCH_SIZE);
-    buildings.push(...await Promise.all(batch.map(feature => canonicalBuilding(feature.id, 'current', context))));
-  }
-  return buildings;
-}
-
-function summarizeBuilding(building: NormalizedBuilding): NormalizedArea['buildings'][number] {
-  return {
-    buildingId: building.buildingId,
-    revisionId: building.revisionId,
-    recordState: building.recordState,
-    name: building.name,
-    footprint: building.footprint,
-    heightM: building.heightM,
-    heightState: building.heightState,
-  };
 }
 
 function isUnrecordedProposal(feature: ContextFeature): boolean {
@@ -70,17 +52,56 @@ function footprintState(feature: ContextFeature, hasPolygons: boolean): Building
   return isUnrecordedProposal(feature) ? 'candidate' : 'source_supported';
 }
 
+/**
+ * Every feature's citations from one read per cited original: an area cites few originals across many features,
+ * so the citations of all features are read together and split back in order.
+ */
+async function areaCitations(features: readonly ContextFeature[], siteId: string): Promise<FeatureCitations> {
+  const entries = features.flatMap(feature => [...feature.evidence, ...(feature.height.evidence ?? [])]);
+  const citations = await canonicalCitations(entries, siteId);
+  const result: FeatureCitations = new Map();
+  let offset = 0;
+  for (const feature of features) {
+    const evidence = citations.slice(offset, offset + feature.evidence.length);
+    offset += evidence.length;
+    const height = citations.slice(offset, offset + (feature.height.evidence?.length ?? 0));
+    offset += height.length;
+    result.set(feature.id, { evidence, height });
+  }
+  return result;
+}
+
+/** One building of the area from its own recorded feature, content-addressed by what it shows. */
+function summarizeBuilding(feature: ContextFeature, frame: AreaFrame, citations: FeatureCitations): BuildingSummary {
+  const proposal = isUnrecordedProposal(feature);
+  const cited = citations.get(feature.id)!;
+  const polygons = geographicToEnu(feature.geographicGeometry, frame);
+  const state = buildingState(feature, proposal);
+  const heightM = projectHeight(feature, cited.height);
+  const summary: BuildingSummary = {
+    buildingId: feature.id,
+    revisionId: 'pending',
+    recordState: proposal ? 'candidate' : 'reviewed',
+    name: canonicalFeatureName(feature, cited.evidence),
+    footprint: canonicalValue(polygons, polygons ? state : 'unknown', cited.evidence, ENU_METHOD, 'm'),
+    heightM,
+    heightState: heightM.state,
+  };
+  summary.revisionId = projectionDigest(summary);
+  for (const value of [summary.name, summary.footprint, summary.heightM]) value.revisionId = summary.revisionId;
+  return summary;
+}
+
 function bandState(band: PhysicalFeature['verticalExtent']): BuildingValueState {
   if (band?.evidenceState === 'unresolved') return 'candidate';
   return band?.evidenceState ?? 'unknown';
 }
 
-async function projectBaseFeature(
+function projectBaseFeature(
   feature: ContextFeature,
-  context: AreaContext,
   frame: AreaFrame,
-): Promise<{ base: BaseFeature; hasPolygons: boolean }> {
-  const citations = await canonicalCitations(feature.evidence, context.area.siteId);
+  citations: BuildingCitation[],
+): { base: BaseFeature; hasPolygons: boolean } {
   const polygons = geographicToEnu(feature.geographicGeometry, frame);
   const band = feature.verticalExtent;
   const state = bandState(band);
@@ -96,9 +117,9 @@ async function projectBaseFeature(
   return { base, hasPolygons: polygons !== null };
 }
 
-async function addBaseFeatures(result: NormalizedArea, context: AreaContext, frame: AreaFrame): Promise<void> {
-  for (const feature of contextFeatures(context).filter(item => item.kind !== 'building')) {
-    const { base, hasPolygons } = await projectBaseFeature(feature, context, frame);
+function addBaseFeatures(result: NormalizedArea, features: ContextFeature[], citations: FeatureCitations): void {
+  for (const feature of features.filter(item => item.kind !== 'building')) {
+    const { base, hasPolygons } = projectBaseFeature(feature, result.frame, citations.get(feature.id)!.evidence);
     result.baseFeatures.push(base);
     if (!hasPolygons) {
       result.gaps.push(`${feature.id}: non-polygon context retained in source; no guessed ribbon width or area.`);
@@ -177,22 +198,24 @@ async function addImagery(result: NormalizedArea, context: AreaContext): Promise
 
 export async function canonicalArea(areaId: string): Promise<NormalizedArea> {
   localOperatorSubject();
-  const context = await areaContext(areaId);
+  const context = await areaContext(areaId, AREA_DISPLAY_LIMIT);
   const frame = canonicalFrame(context.area);
   await assertCanonicalAreaScope(context.area);
-  const buildings = await projectBuildings(context);
+  const features = contextFeatures(context);
+  const citations = await areaCitations(features, context.area.siteId);
   const result: NormalizedArea = {
     schemaVersion: 'normalized-building/1',
     revisionId: 'pending',
     frame,
-    buildings: buildings.map(summarizeBuilding),
+    buildings: features.filter(feature => feature.kind === 'building')
+      .map(feature => summarizeBuilding(feature, frame, citations)),
     baseFeatures: [],
     overlays: [],
     tilesets: [],
-    gaps: [NO_TILESET_GAP],
+    gaps: [NO_TILESET_GAP, SUMMARY_GAP],
   };
   if (!context.area.reference) result.gaps.push('Geographic placement unknown; no invented ENU origin.');
-  await addBaseFeatures(result, context, frame);
+  addBaseFeatures(result, features, citations);
   await addImagery(result, context);
   await addRoofprintCandidates(result, context);
   const administration = await administrativeContext(context, frame);
