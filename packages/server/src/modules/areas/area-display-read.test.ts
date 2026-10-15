@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import type { PhysicalFeature } from '@ulpin/contracts';
 import { AREA_DISPLAY_LIMIT, areaContext } from './areas';
+import { canonicalArea } from './canonical-area';
 
 const nyc = JSON.parse(readFileSync('docs/evidence/gf-backend/k1/nyc-import.json', 'utf8'));
 const kinds = ['building', 'public_land', 'road'] as const;
@@ -78,3 +79,18 @@ test('the display read refuses beyond its own bound instead of dropping features
   });
 }));
 
+test('the canonical area summarizes every recorded building without a read per building', async () =>
+  memory(async control => {
+    control.features = demoFeatures(control.area.id);
+    const area = await canonicalArea(control.area.id);
+    assert.equal(area.buildings.length, 1661);
+    assert.equal(area.baseFeatures.filter(feature => feature.kind === 'public_land').length, 41);
+    assert.equal(area.baseFeatures.filter(feature => feature.kind === 'road').length, 446);
+    const building = area.buildings[0];
+    assert.equal(building.recordState, 'reviewed');
+    assert.equal(building.heightM.value, nyc.features[0].height.value);
+    assert.equal(building.heightM.method, 'deterministic:international-foot-to-metre@1');
+    assert.ok(building.footprint.value?.length);
+    assert.equal(building.footprint.revisionId, building.revisionId);
+    assert(control.statements.length < 40, `${control.statements.length} statements for 2,148 features`);
+  }));

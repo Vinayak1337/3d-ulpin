@@ -19,20 +19,31 @@ export interface CanonicalFootprints {
 
 const NONE: CanonicalFootprints = { footprints: [], undrawn: [] };
 
-/** The explored building's own record, only while it is the revision the area record lists. */
-function matchingBuildings(area: NormalizedArea, building: NormalizedBuilding | undefined): NormalizedBuilding[] {
-  const summary = area.buildings.find((candidate) => candidate.buildingId === building?.buildingId);
-  return building && summary?.revisionId === building.revisionId ? [building] : [];
+/**
+ * The area record with the explored building's summary taken from that building's own record, so the scene draws
+ * it storey by storey from the record it was read from. A building the area does not list, or one read in another
+ * frame, is not used.
+ */
+export function withExploredBuilding(area: NormalizedArea, building: NormalizedBuilding | undefined): NormalizedArea {
+  if (!building || JSON.stringify(building.frame) !== JSON.stringify(area.frame)) return area;
+  if (!area.buildings.some((summary) => summary.buildingId === building.buildingId)) return area;
+  const { buildingId, revisionId, recordState, name, footprint, heightM, heightState } = building;
+  const own = { buildingId, revisionId, recordState, name, footprint, heightM, heightState };
+  return {
+    ...area,
+    buildings: area.buildings.map((summary) => (summary.buildingId === buildingId ? own : summary)),
+  };
 }
 
 /** Scene footprints through the contracts adapter; a candidate stays a candidate in the scene. */
 export function canonicalFootprints(area: NormalizedArea, building?: NormalizedBuilding): CanonicalFootprints {
-  const inputs = toSceneInputs(area, matchingBuildings(area, building));
+  const explored = withExploredBuilding(area, building);
+  const inputs = toSceneInputs(explored, explored === area ? [] : [building!]);
   const footprints = inputs.footprints.map((footprint) => ({
     ...footprint,
     candidate: inputs.styles[footprint.id]?.candidate === true,
   }));
-  return { footprints, undrawn: undrawnBuildings(area, footprints) };
+  return { footprints, undrawn: undrawnBuildings(explored, footprints) };
 }
 
 /** The recorded name, or the building's id when the record has none. */
