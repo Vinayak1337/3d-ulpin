@@ -1,5 +1,5 @@
 import { CopyableId } from '../../identity/CopyableId';
-import { confirmingPackageWords, countsLine, type Package } from './model';
+import { confirmingPackageWords, countsLine, reviewWords, type Package } from './model';
 import styles from './Run.module.css';
 
 const findingWords: Record<string, string> = {
@@ -27,14 +27,15 @@ export function PackageDetails({ pkg, reasons = [], confirming = false }: {
 }) {
   return <div className={styles.package}>
     <h3 className="studio-heading">Package <CopyableId id={pkg.packageId} name="package identifier" /></h3>
-    <p className="ul-help">Revision {pkg.revision}</p>
-    <p>{confirming ? confirmingPackageWords(pkg) : countsLine(pkg.counts)}</p>
-    <Findings counts={pkg.findingCounts} />
-    {pkg.state === 'COMMITTED' ? <p>This package is already recorded.</p> : null}
-    {!pkg.reviewFingerprint && pkg.state !== 'COMMITTED' ? <>
-      <p>Not ready to confirm: this package has no review of its current revision.</p>
-      {reasons.map(reason => <p key={reason}>{reason}</p>)}
-    </> : null}
+    {reviewWords(pkg) ? <>
+      <p>{reviewWords(pkg)}</p>
+      {!pkg.reviewRefusal ? reasons.map(reason => <p key={reason}>{reason}</p>) : null}
+    </> : <>
+      <p className="ul-help">Revision {pkg.revision}</p>
+      <p>{confirming ? confirmingPackageWords(pkg) : countsLine(pkg.counts)}</p>
+      <Findings counts={pkg.findingCounts} />
+      {pkg.state === 'COMMITTED' ? <p>This package is already recorded.</p> : null}
+    </>}
   </div>;
 }
 
