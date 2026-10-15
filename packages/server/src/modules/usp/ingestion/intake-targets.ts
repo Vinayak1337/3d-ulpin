@@ -91,7 +91,7 @@ export async function createIntakeTargetsTx(client: PoolClient, caseId: string, 
 /** The package-linked row carries a review refusal without changing its state or placement. */
 async function reviewOutcomeTx(client: PoolClient, packageId: string, refusal: {
   code: string; message: string;
-} | null) {
+} | null): Promise<number> {
   const rows = (await client.query(`UPDATE usp_intake_items SET review_refusal_code=$2,
     review_refusal_message=$3,limit_reason=CASE WHEN $2::text IS NOT NULL THEN $3
       WHEN limit_reason=review_refusal_message THEN NULL ELSE limit_reason END,updated_at=now()
@@ -99,11 +99,20 @@ async function reviewOutcomeTx(client: PoolClient, packageId: string, refusal: {
       OR review_refusal_message IS DISTINCT FROM $3)
     RETURNING item_id,case_id`, [packageId, refusal?.code ?? null, refusal?.message ?? null])).rows;
   for (const row of rows) await appendIntakeItemTx(client, row.case_id, row.item_id);
+  return rows.length;
+}
+
+/** A passed review with no target row to publish still tells the page, through the package's own rows. */
+async function publishPackageItemsTx(client: PoolClient, packageId: string) {
+  const rows = (await client.query(`SELECT item_id,case_id FROM usp_intake_items
+    WHERE plan_ref->>'packageId'=$1 ORDER BY item_id`, [packageId])).rows;
+  for (const row of rows) await appendIntakeItemTx(client, row.case_id, row.item_id);
 }
 
 /** Decide every open target of a reviewed package in one statement. */
 export async function prepareIntakeTargetsTx(client: PoolClient, pkg: ImportPackage) {
-  if (pkg.review?.packageRevision === pkg.revision) await reviewOutcomeTx(client, pkg.id, null);
+  const current = pkg.review?.packageRevision === pkg.revision;
+  const published = current ? await reviewOutcomeTx(client, pkg.id, null) : 0;
   const rows = (await client.query(`SELECT target_id,case_id,feature_id FROM usp_intake_targets
     WHERE package_id=$1 AND readiness=ANY($2) ORDER BY target_id FOR UPDATE`, [pkg.id, open])).rows;
   const decided = rows.map(row => ({ id: row.target_id as string,
@@ -113,6 +122,7 @@ export async function prepareIntakeTargetsTx(client: PoolClient, pkg: ImportPack
     WHERE t.target_id=d.id RETURNING t.target_id,t.readiness,t.stage`,
   [decided.map(row => row.id), decided.map(row => row.readiness), decided.map(row => row.reason)])).rows;
   if (changed.length) await appendIntakeTargetsTx(client, rows[0].case_id, changed);
+  if (current && !changed.length && !published) await publishPackageItemsTx(client, pkg.id);
   return decided;
 }
 

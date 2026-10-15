@@ -49,6 +49,9 @@ type Target = { target_id: string; case_id: string; feature_id: string; stage: n
 
 function projection(sql: string, buildings: boolean, item: Item, target: Target) {
   if (sql.startsWith('SELECT target_id,case_id,feature_id')) return { rows: buildings ? [target] : [] };
+  if (sql.startsWith('SELECT item_id,case_id FROM usp_intake_items')) {
+    return { rows: [{ item_id: caseId, case_id: caseId }] };
+  }
   if (sql.startsWith('SELECT item_id AS')) return { rows: [{ itemId: caseId, state: item.state,
     family: 'vector', format: 'geojson', sizeClass: 'S', wave: 1, pinnedByOfficer: false }] };
   if (sql.startsWith('SELECT id,revision,archived')) return { rows: [{ id: caseId, revision: 0, archived: false }] };
@@ -122,6 +125,45 @@ test('an incomplete review cannot clear a refusal, and passing review preserves 
   await prepareIntakeTargetsTx(control.client, reviewed(false));
   assert.equal(control.item.review_refusal_code, null);
   assert.equal(control.item.limit_reason, 'A different retained limit remains.');
+});
+
+function itemEvents(control: ReturnType<typeof protocol>) {
+  return control.calls.filter(call => call.sql.startsWith('SELECT item_id AS')).length;
+}
+
+function targetEvents(control: ReturnType<typeof protocol>) {
+  const bulk = 'UPDATE usp_outbox_streams SET last_sequence=last_sequence+$2';
+  return control.calls.filter(call => call.sql.startsWith(bulk)).length;
+}
+
+test('a package with no building whose review passes tells the page once', async () => {
+  const control = protocol(false);
+  await prepareIntakeTargetsTx(control.client, reviewed(false));
+  assert.equal(itemEvents(control), 1);
+  assert.equal(targetEvents(control), 0);
+});
+
+test('a package with buildings whose review passes publishes its targets and no item event', async () => {
+  const control = protocol(true);
+  await prepareIntakeTargetsTx(control.client, reviewed(true));
+  assert.equal(control.target.readiness, 'ready');
+  assert.equal(targetEvents(control), 1);
+  assert.equal(itemEvents(control), 0);
+});
+
+test('a package with no building that had a refusal and now passes publishes one item event, not two', async () => {
+  const control = protocol(false);
+  await holdPackageTargetsTx(control.client, caseId, packageId, refusal.code, refusal.message);
+  const held = itemEvents(control);
+  await prepareIntakeTargetsTx(control.client, reviewed(false));
+  assert.equal(itemEvents(control) - held, 1);
+});
+
+test('a package whose review is not current publishes nothing', async () => {
+  const control = protocol(false);
+  await prepareIntakeTargetsTx(control.client, { ...reviewed(false), revision: 3 });
+  assert.equal(itemEvents(control), 0);
+  assert.equal(targetEvents(control), 0);
 });
 
 test('the additive nullable refusal member accepts only the code and words', () => {
