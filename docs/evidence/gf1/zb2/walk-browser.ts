@@ -42,8 +42,7 @@ async function parksStep(page: Page, url: string, scratch: string, result: Resul
   const loadsBefore = result.loads;
   await answer(page, 'building', '/features/*/properties/doitt_id');
   await openPackage(page);
-  await page.getByRole('button', { name: 'Choose the first 100 ready', exact: true }).click({ timeout: 300000 });
-  await page.getByText('100 buildings chosen for a card.', { exact: true }).waitFor({ timeout: 120000 });
+  await chooseHundred(page);
   await offerPackage(page, 'I reviewed the NYC test_only buildings for recording.');
   const startedAt = new Date().toISOString();
   await page.getByRole('button', { name: recordName, exact: true }).click();
@@ -68,6 +67,17 @@ async function openPackage(page: Page) {
   await page.getByRole('link', { name: 'Open package', exact: true }).first().waitFor({ timeout: 120000 });
   const reviewWords = await page.getByText('Its review has not run yet.').count();
   return { at: new Date().toISOString(), reviewNotRunYetShown: reviewWords > 0 };
+}
+
+/** Buildings become ready in turn; the officer's button is pressed again until a hundred are chosen. */
+async function chooseHundred(page: Page) {
+  const choose = page.getByRole('button', { name: 'Choose the first 100 ready', exact: true });
+  const status = page.getByText('100 buildings chosen for a card.', { exact: true });
+  for (let attempt = 0; attempt < 60 && !(await status.count()); attempt += 1) {
+    await choose.click({ timeout: 300000 });
+    await page.waitForTimeout(5000);
+  }
+  await status.waitFor({ timeout: 5000 });
 }
 
 async function offerPackage(page: Page, words: string) {
