@@ -97,7 +97,8 @@ async function recordFromPanel(page: Page, scratch: string, name: string) {
 }
 
 async function frames(page: Page) {
-  const text: string = await page.evaluate(() => (window as any).__eventFrames.map((frame: any) => frame.text).join(''));
+  const text: string = await page.evaluate(() => (window as any).__eventFrames
+    .map((frame: any) => frame.text).join(''));
   return text.split('\n\n').filter(frame => frame.includes('event: ingestion.change'))
     .map(frame => JSON.parse(/data: (.*)/.exec(frame)![1]))
     .map(event => ({ sequence: event.sequence, kind: event.change.kind, at: event.createdAt })).slice(-6);
