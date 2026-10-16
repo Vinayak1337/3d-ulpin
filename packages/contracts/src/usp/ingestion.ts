@@ -33,10 +33,18 @@ export const SourceProfileSchema = z.strictObject({
   })),
   limitations: z.array(z.string()),
 });
+export const LayoutKindSchema = z.enum(['building', 'parcel', 'road', 'public_land', 'utility']);
+/** A layout without a kind is the older building layout; one with a kind uses feature targets. Any file size. */
+export function layoutTargetsIssue(kind: string | undefined, targets: string[]): string | null {
+  const prefix = kind === undefined ? 'building' : 'feature';
+  return new Set(targets).size !== targets.length || !targets.includes(`${prefix}.sourceKey`)
+    || !targets.includes(`${prefix}.geometry`) || targets.some(target => !target.startsWith(`${prefix}.`))
+    ? `Choose one ${prefix} source key and geometry; use ${prefix} targets only, each once.` : null;
+}
 export const MappingPlanSchema = z.strictObject({
   version: z.literal(INGESTION_VERSION), mode: z.literal('manual_mapping'), source: SourcePinSchema,
   caseId: id, workspaceRevision: z.number().int().nonnegative(), workspaceFingerprint: hash,
-  kind: z.enum(['building', 'parcel', 'road', 'public_land', 'utility']).optional(),
+  kind: LayoutKindSchema.optional(),
   heightField: z.string().min(1).max(80).refine(value => value.trim() === value).optional(),
   heightUnit: z.enum(['m', 'ft']).optional(),
   heightMeaning: z.string().trim().min(1).max(500).optional(),
@@ -46,12 +54,8 @@ export const MappingPlanSchema = z.strictObject({
     && (!plan.heightField || !plan.heightUnit || !plan.heightMeaning))
     ctx.addIssue({code: 'custom', path: ['heightField'],
       message: 'A height mapping requires its field, source unit (m or ft), and meaning together; no unit is guessed.'});
-  const targets = plan.operations.map(op => op.target);
-  const prefix = plan.kind === undefined ? 'building' : 'feature';
-  if (new Set(targets).size !== targets.length || !targets.includes(`${prefix}.sourceKey`)
-    || !targets.includes(`${prefix}.geometry`) || targets.some(target => !target.startsWith(`${prefix}.`)))
-    ctx.addIssue({code: 'custom', path: ['operations'],
-      message: `Choose one ${prefix} source key and geometry; use ${prefix} targets only, each once.`});
+  const message = layoutTargetsIssue(plan.kind, plan.operations.map(op => op.target));
+  if (message) ctx.addIssue({code: 'custom', path: ['operations'], message});
 });
 export const MappingDestinationSchema = z.discriminatedUnion('kind', [
   z.strictObject({kind: z.literal('new_area'), namespace: text, name: text}),
