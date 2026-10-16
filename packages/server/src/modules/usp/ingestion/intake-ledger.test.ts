@@ -21,6 +21,13 @@ test('the item publishes stored recipe facts before and after execution, not a l
   assert.equal(intakeItem({ ...row, plan_ref: { ...approved, origin: null } }).plan?.origin, null);
 });
 
+test('the item names the streamed profile job its read joined, and null when it joined none', () => {
+  const jobId = '10000000-0000-4000-8000-000000000002';
+  assert.equal(intakeItem({ ...row, plan_ref: null, streamed_profile_job_id: jobId }).streamedProfileJobId, jobId);
+  assert.equal(intakeItem({ ...row, plan_ref: null, streamed_profile_job_id: null }).streamedProfileJobId, null);
+  assert.equal(intakeItem({ ...row, plan_ref: null }).streamedProfileJobId, null);
+});
+
 test('an absent or unrecognized stored plan never makes the item read throw', () => {
   for (const plan_ref of [null, undefined, {}, { unrelated: id },
     { recipeId: id, recipeRevision: 0, recipeState: 'executed', origin: 'officer' },

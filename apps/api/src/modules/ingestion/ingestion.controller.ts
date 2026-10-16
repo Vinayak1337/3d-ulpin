@@ -3,7 +3,7 @@ import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { z } from 'zod';
 import { AnyAuthorMappingSchema, MappingDecisionSchema,
-  AnyMappingReceiptSchema, AnySourceProfileSchema } from '@ulpin/contracts/usp';
+  AnyMappingReceiptSchema, AnySourceProfileSchema, StreamedMappingReceiptSchema } from '@ulpin/contracts/usp';
 import { ManualIngestionService } from '@ulpin/server/modules/usp/ingestion/service';
 import { IntakeService } from '@ulpin/server/modules/usp/ingestion/intake-service';
 import { IntakeRegisterSchema, IntakePinSchema, IntakeItemSchema, IntakeManifestSchema, IntakeLargeRetrySchema,
@@ -124,7 +124,8 @@ export class IngestionController {
   @Get('cases/:caseId/recipes/:recipeId')
   @param('caseId') @param('recipeId')
   @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_recipes_recipeId',summary:'Read the retained recipe and decision revision history'})
-  @wireResponse(200,z.array(AnyMappingReceiptSchema))
+  // A large file's streamed author and approve write their revisions to the same history.
+  @wireResponse(200,z.array(z.union([...AnyMappingReceiptSchema.options,StreamedMappingReceiptSchema])))
   history(@Param('caseId') caseId:string,@Param('recipeId') recipeId:string){return this.ingestion.read(caseId,recipeId);}
 
   @Post('cases/:caseId/recipes/:recipeId/approve')

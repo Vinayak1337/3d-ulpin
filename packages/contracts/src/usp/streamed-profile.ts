@@ -31,8 +31,9 @@ export const StreamedProfileGenerationSchema=z.strictObject({version:z.literal(S
   quarantineLocators:z.array(StreamedProfileLocatorSchema).max(STREAMED_PROFILE_LIMITS.quarantineLocators),
   reference:z.strictObject({sourceCrs:z.string().max(100).nullable(),evidence:z.string().max(200).nullable(),
     unit:z.string().min(1).max(80).nullable().optional(),globalPlacement:z.literal('not_qualified')})});
+/** caseRevision is the revision the inventory was queued at; a streamed layout pins it, not the case's current one. */
 export const StreamedProfileStatusSchema=z.strictObject({version:z.literal(STREAMED_PROFILE_LIMITS.version),
-  jobId:id,rawJobId:id,caseId:id,sourceId:id,sourceRevision:z.number().int().positive(),sourceSha256:hash,
+  jobId:id,rawJobId:id,caseId:id,caseRevision:z.number().int().nonnegative(),sourceId:id,sourceRevision:z.number().int().positive(),sourceSha256:hash,
   status:z.enum(['queued','running','sealed','failed','stale']),nextRawIndex:z.number().int().nonnegative(),
   latest:StreamedProfileGenerationSchema.nullable(),issueCode:issue.nullable(),
   sourceComplete:z.boolean(),usableCoverage:z.boolean(),identityComplete:z.literal(false)});

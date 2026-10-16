@@ -75,6 +75,9 @@ export const IntakeItemSchema = z.strictObject({
   sizeClass: IntakeSizeClassSchema.nullable(), wave: z.number().int().min(1).max(4), state: IntakeStateSchema,
   placement: IntakePlacementSchema, card: IntakeCardSchema.nullable(), cardSha256: hash.nullable(),
   plan: IntakeItemPlanSchema.nullable(),
+  streamedProfileJobId: z.string().uuid().nullable().describe(
+    'Large GeoJSON: the streamed profile job whose sealed inventory the layout question is answered from; '
+    + 'null otherwise.'),
   probeVersion: z.string().nullable(),
   partsPlanned: z.number().int().positive().nullable().describe(
     'Large GeoJSON: null while reading; raw parts while mapping; null while drafting until the final cut, '

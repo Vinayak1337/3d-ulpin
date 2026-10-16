@@ -14,8 +14,12 @@ import { assertIngestionBinding, appendCaseIngestionTx, appendIntakeItemTx } fro
 import { queueIntakeDraftTx } from './intake-draft';
 
 const uuid = z.string().uuid();
-const itemSelect = `SELECT i.*,coalesce(s.name,i.member_path) name FROM usp_intake_items i
-  LEFT JOIN sources s ON s.id=i.source_id`;
+// A large GeoJSON names its source's latest streamed profile in the same read; every other item names none.
+const itemSelect = `SELECT i.*,coalesce(s.name,i.member_path) name,profile.job_id streamed_profile_job_id
+  FROM usp_intake_items i LEFT JOIN sources s ON s.id=i.source_id
+  LEFT JOIN LATERAL (SELECT p.job_id FROM usp_streamed_profile_imports p WHERE p.case_id=i.case_id
+    AND p.source_id=i.source_id AND i.parent_item_id IS NULL AND s.profile='large-original-v1'
+    AND i.card->>'format'='geojson' ORDER BY p.created_at DESC LIMIT 1) profile ON true`;
 const defaults = { transaction, read: readObjectRange, probe: probeOriginal };
 
 async function itemContextTx(client: PoolClient, caseId: string, itemId: string) {

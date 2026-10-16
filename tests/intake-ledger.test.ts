@@ -326,3 +326,25 @@ test('a failed or budget-limited probe publishes the state stored in its write t
     }
   });
 });
+
+test('the manifest names a large item\'s streamed profile job from its one item read; others name none', async () => {
+  await configured(async () => {
+    const f = fixture();
+    await f.service.register(f.caseId, { sourceId: f.sourceId, requestKey: randomUUID() });
+    const large = f.rows.get(f.sourceId);
+    const member = { ...large, item_id: randomUUID(), source_id: null, parent_item_id: f.sourceId,
+      member_path: 'member.geojson', name: 'member.geojson' };
+    f.rows.set(member.item_id, member);
+    // The fake stands in for the joined column the item read returns; it decides nothing itself.
+    large.streamed_profile_job_id = randomUUID();
+    f.queries.length = 0;
+    const manifest = await f.service.manifest(f.caseId);
+    assert.deepEqual(Object.fromEntries(manifest.items.map(item => [item.itemId, item.streamedProfileJobId])),
+      { [f.sourceId]: large.streamed_profile_job_id, [member.item_id]: null });
+    const reads = f.queries.filter(sql => sql.includes('usp_streamed_profile_imports'));
+    assert.equal(reads.length, 1);
+    assert.ok(reads[0].startsWith('SELECT i.*'));
+    delete large.streamed_profile_job_id;
+    assert.equal((await f.service.one(f.caseId, f.sourceId)).streamedProfileJobId, null);
+  });
+});

@@ -32,7 +32,7 @@ export function intakeItem(row: any) {
     sizeBytes: row.size_bytes === null ? null : Number(row.size_bytes), sizeClass: row.size_class,
     wave: row.wave, state: row.state,
     placement: row.placement, card: row.card, cardSha256: row.card_sha256, probeVersion: row.probe_version,
-    plan: intakePlan(row.plan_ref),
+    plan: intakePlan(row.plan_ref), streamedProfileJobId: row.streamed_profile_job_id ?? null,
     partsPlanned: row.parts_planned, partsDone: row.parts_done, recordsSeen: Number(row.records_seen),
     limitReason: row.limit_reason, pinnedByOfficer: row.pinned_by_officer,
     createdAt: new Date(row.created_at).toISOString(), updatedAt: new Date(row.updated_at).toISOString(),

@@ -1,10 +1,12 @@
 import { ApiError } from '@ulpin/api-client';
 import { approvalBody, type Recipe } from './layout-model';
 import type { AuthorBody } from './question-model';
+import type { StreamedAuthorBody } from './streamed-question-model';
 
 type Decision = ReturnType<typeof approvalBody>;
+export type LayoutBody = AuthorBody | StreamedAuthorBody;
 export interface LayoutTransport {
-  author: (body: AuthorBody) => Promise<Recipe>;
+  author: (body: LayoutBody) => Promise<Recipe>;
   approve: (receipt: Recipe, body: Decision) => Promise<Recipe>;
 }
 export interface LayoutCommandState {
@@ -18,7 +20,7 @@ export interface LayoutCommandState {
   changed: boolean;
 }
 interface Pending {
-  author: AuthorBody | null;
+  author: LayoutBody | null;
   receipt: Recipe | null;
   approval: Decision | null;
 }
@@ -68,7 +70,7 @@ function commandActions(run: () => Promise<void>, pending: () => Pending | null,
   setPending: (value: Pending) => void, state: () => LayoutCommandState,
   publish: (update: Partial<LayoutCommandState>) => void) {
   return {
-    use: async (body: AuthorBody) => {
+    use: async (body: LayoutBody) => {
       if (state().busy) return;
       if (!pending()) {
         setPending({ author: structuredClone(body), receipt: null, approval: null });

@@ -362947,6 +362947,13 @@
             ],
             "additionalProperties": false
           },
+          "streamedProfileJobId": {
+            "nullable": true,
+            "description": "Large GeoJSON: the streamed profile job whose sealed inventory the layout question is answered from; null otherwise.",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
           "probeVersion": {
             "nullable": true,
             "type": "string"
@@ -363006,6 +363013,7 @@
           "card",
           "cardSha256",
           "plan",
+          "streamedProfileJobId",
           "probeVersion",
           "partsPlanned",
           "partsDone",
@@ -364128,6 +364136,13 @@
                   ],
                   "additionalProperties": false
                 },
+                "streamedProfileJobId": {
+                  "nullable": true,
+                  "description": "Large GeoJSON: the streamed profile job whose sealed inventory the layout question is answered from; null otherwise.",
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
                 "probeVersion": {
                   "nullable": true,
                   "type": "string"
@@ -364187,6 +364202,7 @@
                 "card",
                 "cardSha256",
                 "plan",
+                "streamedProfileJobId",
                 "probeVersion",
                 "partsPlanned",
                 "partsDone",
@@ -367952,6 +367968,595 @@
                 "execution",
                 "plan",
                 "destination"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": true,
+                  "maximum": 9007199254740991
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "proposed",
+                    "approved"
+                  ]
+                },
+                "plan": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "enum": [
+                            "streamed_mapping"
+                          ]
+                        },
+                        "source": {
+                          "type": "object",
+                          "properties": {
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "familyId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "schemaFingerprint": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "sourceId",
+                            "familyId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "schemaFingerprint"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "caseId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "caseRevision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "rawJobId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "profileJobId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "profileGeneration": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "profileHash": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "building",
+                            "parcel",
+                            "road",
+                            "public_land",
+                            "utility"
+                          ]
+                        },
+                        "operations": {
+                          "minItems": 2,
+                          "maxItems": 3,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "target": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "building.sourceKey",
+                                      "building.name",
+                                      "building.geometry"
+                                    ]
+                                  },
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "feature.sourceKey",
+                                      "feature.geometry",
+                                      "feature.name"
+                                    ]
+                                  }
+                                ]
+                              },
+                              "sourcePath": {
+                                "type": "string",
+                                "maxLength": 512,
+                                "pattern": "^\\/features\\/\\*\\/(?:id|geometry|properties\\/(?:[^~\\/]|~[01])+)$"
+                              },
+                              "conversionId": {
+                                "type": "string",
+                                "enum": [
+                                  "literal_identifier@1",
+                                  "literal_text@1",
+                                  "geojson_polygon@1",
+                                  "geojson_geometry@1",
+                                  "literal_integer_identifier@1"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "target",
+                              "sourcePath",
+                              "conversionId"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "semanticEvidence": {
+                          "maxItems": 3,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "target": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "building.sourceKey",
+                                      "building.name",
+                                      "building.geometry"
+                                    ]
+                                  },
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "feature.sourceKey",
+                                      "feature.geometry",
+                                      "feature.name"
+                                    ]
+                                  }
+                                ]
+                              },
+                              "sourcePath": {
+                                "type": "string",
+                                "maxLength": 512,
+                                "pattern": "^\\/features\\/\\*\\/(?:id|geometry|properties\\/(?:[^~\\/]|~[01])+)$"
+                              },
+                              "issuer": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 500
+                              },
+                              "evidenceUrl": {
+                                "type": "string",
+                                "maxLength": 2048,
+                                "format": "uri"
+                              },
+                              "meaning": {
+                                "type": "string",
+                                "enum": [
+                                  "building_source_identity",
+                                  "building_name",
+                                  "building_footprint",
+                                  "feature_source_identity",
+                                  "feature_name",
+                                  "feature_geometry"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "target",
+                              "sourcePath",
+                              "issuer",
+                              "evidenceUrl",
+                              "meaning"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "basis": {
+                          "type": "string",
+                          "enum": [
+                            "publisher_cited",
+                            "officer_stated"
+                          ]
+                        },
+                        "version": {
+                          "type": "string",
+                          "enum": [
+                            "streamed-mapping/1"
+                          ]
+                        },
+                        "scope": {
+                          "type": "string",
+                          "enum": [
+                            "accepted_source_features"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "mode",
+                        "source",
+                        "caseId",
+                        "caseRevision",
+                        "rawJobId",
+                        "profileJobId",
+                        "profileGeneration",
+                        "profileHash",
+                        "operations",
+                        "semanticEvidence",
+                        "version",
+                        "scope"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "enum": [
+                            "streamed_mapping"
+                          ]
+                        },
+                        "source": {
+                          "type": "object",
+                          "properties": {
+                            "sourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "familyId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "sourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "sourceSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "schemaFingerprint": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "sourceId",
+                            "familyId",
+                            "sourceRevision",
+                            "sourceSha256",
+                            "schemaFingerprint"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "caseId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "caseRevision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "rawJobId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "profileJobId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "profileGeneration": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "profileHash": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "building",
+                            "parcel",
+                            "road",
+                            "public_land",
+                            "utility"
+                          ]
+                        },
+                        "operations": {
+                          "minItems": 2,
+                          "maxItems": 3,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "target": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "building.sourceKey",
+                                      "building.name",
+                                      "building.geometry"
+                                    ]
+                                  },
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "feature.sourceKey",
+                                      "feature.geometry",
+                                      "feature.name"
+                                    ]
+                                  }
+                                ]
+                              },
+                              "sourcePath": {
+                                "type": "string",
+                                "maxLength": 512,
+                                "pattern": "^\\/features\\/\\*\\/(?:id|geometry|properties\\/(?:[^~\\/]|~[01])+)$"
+                              },
+                              "conversionId": {
+                                "type": "string",
+                                "enum": [
+                                  "literal_identifier@1",
+                                  "literal_text@1",
+                                  "geojson_polygon@1",
+                                  "geojson_geometry@1",
+                                  "literal_integer_identifier@1"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "target",
+                              "sourcePath",
+                              "conversionId"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "semanticEvidence": {
+                          "maxItems": 3,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "target": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "building.sourceKey",
+                                      "building.name",
+                                      "building.geometry"
+                                    ]
+                                  },
+                                  {
+                                    "type": "string",
+                                    "enum": [
+                                      "feature.sourceKey",
+                                      "feature.geometry",
+                                      "feature.name"
+                                    ]
+                                  }
+                                ]
+                              },
+                              "sourcePath": {
+                                "type": "string",
+                                "maxLength": 512,
+                                "pattern": "^\\/features\\/\\*\\/(?:id|geometry|properties\\/(?:[^~\\/]|~[01])+)$"
+                              },
+                              "issuer": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 500
+                              },
+                              "evidenceUrl": {
+                                "type": "string",
+                                "maxLength": 2048,
+                                "format": "uri"
+                              },
+                              "meaning": {
+                                "type": "string",
+                                "enum": [
+                                  "building_source_identity",
+                                  "building_name",
+                                  "building_footprint",
+                                  "feature_source_identity",
+                                  "feature_name",
+                                  "feature_geometry"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "target",
+                              "sourcePath",
+                              "issuer",
+                              "evidenceUrl",
+                              "meaning"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "basis": {
+                          "type": "string",
+                          "enum": [
+                            "publisher_cited",
+                            "officer_stated"
+                          ]
+                        },
+                        "version": {
+                          "type": "string",
+                          "enum": [
+                            "streamed-prefix-mapping/1"
+                          ]
+                        },
+                        "scope": {
+                          "type": "string",
+                          "enum": [
+                            "observed_prefix_and_later_compatible_features"
+                          ]
+                        },
+                        "prefix": {
+                          "type": "object",
+                          "properties": {
+                            "throughRawChunkIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 4096
+                            },
+                            "rawResultSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "recordsSeen": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "accepted": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "throughRawChunkIndex",
+                            "rawResultSha256",
+                            "recordsSeen",
+                            "accepted"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "mode",
+                        "source",
+                        "caseId",
+                        "caseRevision",
+                        "rawJobId",
+                        "profileJobId",
+                        "profileGeneration",
+                        "profileHash",
+                        "operations",
+                        "semanticEvidence",
+                        "version",
+                        "scope",
+                        "prefix"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "planHash": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "authoredBy": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                },
+                "authoredAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "approval": {
+                  "nullable": true,
+                  "type": "object",
+                  "properties": {
+                    "subject": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 300
+                    },
+                    "at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "planHash": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "provenance": {
+                      "type": "string",
+                      "enum": [
+                        "server_configured_local_operator"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "subject",
+                    "at",
+                    "planHash",
+                    "provenance"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "id",
+                "revision",
+                "state",
+                "plan",
+                "planHash",
+                "authoredBy",
+                "authoredAt",
+                "approval"
               ],
               "additionalProperties": false
             }
@@ -390191,6 +390796,11 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           },
+          "caseRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
           "sourceId": {
             "type": "string",
             "format": "uuid",
@@ -390529,6 +391139,7 @@
           "jobId",
           "rawJobId",
           "caseId",
+          "caseRevision",
           "sourceId",
           "sourceRevision",
           "sourceSha256",
