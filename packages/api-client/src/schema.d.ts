@@ -64011,8 +64011,11 @@ export interface components {
                 packageId: string | null;
             } | null;
             probeVersion: string | null;
+            /** @description Large GeoJSON: null while reading; raw parts while mapping; null while drafting until the final cut, then package cuts. Other readers retain their own planned-part count. */
             partsPlanned: number | null;
+            /** @description Large GeoJSON: raw parts published while reading, mapped parts while mapping, packages drafted while drafting and after completion. Other readers retain their own completed-part count. */
             partsDone: number;
+            /** @description Records of the file read so far; the sealed reader count stays unchanged during mapping and package drafting. */
             recordsSeen: number;
             limitReason: string | null;
             pinnedByOfficer: boolean;
@@ -64203,8 +64206,11 @@ export interface components {
                     packageId: string | null;
                 } | null;
                 probeVersion: string | null;
+                /** @description Large GeoJSON: null while reading; raw parts while mapping; null while drafting until the final cut, then package cuts. Other readers retain their own planned-part count. */
                 partsPlanned: number | null;
+                /** @description Large GeoJSON: raw parts published while reading, mapped parts while mapping, packages drafted while drafting and after completion. Other readers retain their own completed-part count. */
                 partsDone: number;
+                /** @description Records of the file read so far; the sealed reader count stays unchanged during mapping and package drafting. */
                 recordsSeen: number;
                 limitReason: string | null;
                 pinnedByOfficer: boolean;

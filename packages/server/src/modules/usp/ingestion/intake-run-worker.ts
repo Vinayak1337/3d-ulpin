@@ -15,6 +15,7 @@ import { confirmPacketPlan, createPacketPlan, executePacketPlan } from '../packe
 import { localOperatorSubject, localRequestContext } from '../principal';
 import { captureRegistrySnapshotTx, resolveRegistryTarget } from '../snapshots';
 import { intakeCaseTx } from './intake-context';
+import { queueIntakeLargePackageTx } from './intake-large';
 import { ingestionBinding } from './events';
 import { packageDifference, readConfirmationRow, type IntakeConfirmationRow } from './intake-confirmations';
 import { IntakeRunInputSchema, intakeRunKey, intakeRunSubject, nextIntakeRunJob, queueIntakeRunTx,
@@ -70,11 +71,17 @@ async function prepare(run: Run, packageId: string) {
   } catch (error) {
     const refusal = intakeRunRefusal(error);
     if (!refusal) throw error;
-    await pinned(run, client => holdPackageTargetsTx(client, run.input.caseId, packageId,
-      refusal.code, refusal.message));
+    await pinned(run, async client => {
+      await holdPackageTargetsTx(client, run.input.caseId, packageId, refusal.code, refusal.message);
+      await queueIntakeLargePackageTx(client, packageId);
+    });
     return;
   }
-  await pinned(run, client => prepareIntakeTargetsTx(client, pkg));
+  // A finished review lets a large file waiting at eight unreviewed packages draft its next cut.
+  await pinned(run, async client => {
+    await prepareIntakeTargetsTx(client, pkg);
+    await queueIntakeLargePackageTx(client, packageId);
+  });
 }
 
 function assertRunBinding(input: IntakeRunInput) {

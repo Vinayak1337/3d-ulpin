@@ -243,8 +243,17 @@ test('oversized GeoJSON names retention only and does not promise a larger direc
     + 'and POST /api/v1/import-packages bound; /api/v1/ingestion/cases/:caseId/uploads can retain it, '
     + 'but no package or card is drafted from this oversized original.';
   assert.equal(intakeDraftLimit(fixture.tray, fixture.src), expected);
-  await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
-  assert.equal(fixture.state.projection.limit_reason, expected);
+  // Within the reader's ceiling the file goes to its own chain of large-file steps instead of this sentence.
+  const handed: string[] = [];
+  const query = fixture.client.query.bind(fixture.client);
+  fixture.client.query = (async (sql: string, values: any[]) => {
+    if (!sql.startsWith('SELECT item_id,case_id,state,placement')) return query(sql, values);
+    handed.push(sql);
+    return { rows: [], rowCount: 0 };
+  }) as typeof fixture.client.query;
+  assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
+  assert.equal(handed.length, 1);
+  assert.equal(fixture.state.projection.limit_reason, null);
   assert.equal(fixture.jobs.length, 0);
 });
 

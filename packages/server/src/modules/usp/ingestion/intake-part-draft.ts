@@ -4,21 +4,16 @@ import { ingestProvedAreaPart } from '../../areas/areas';
 import { fingerprint } from '../../cases/domain';
 import { ChunkMappingService } from './chunk-mapping';
 import { intakeSourceTx } from './intake-context';
-import { publishIntakePartTx } from './intake-ledger';
+import { publishIntakePartTx, unfinishedIntakePackagesTx } from './intake-ledger';
 import { createIntakeTargetsTx } from './intake-targets';
 import type { ProvedAreaPartInput } from './proved-area-part';
 import { isRetainedMapOriginal } from './retained-map-original';
 
 export const INTAKE_UNFINISHED_PACKAGE_LIMIT = 8;
 
-/** Reviewed/committed packages have finished drafting. Admission and publication share the item lock. */
+/** Admission and publication share the item lock. */
 export async function assertIntakePackagePressureTx(client: PoolClient, itemId: string) {
-  const row = (await client.query(`SELECT count(*)::int n FROM usp_intake_parts part
-    LEFT JOIN import_packages p ON p.id::text=part.result_ref->>'packageId'
-    WHERE part.item_id=$1 AND (part.state IN ('queued','running') OR (part.state='published'
-      AND p.state<>'COMMITTED'
-      AND p.body->'review'->'packageRevision' IS DISTINCT FROM p.body->'revision'))`, [itemId])).rows[0];
-  if (Number(row.n) >= INTAKE_UNFINISHED_PACKAGE_LIMIT)
+  if (await unfinishedIntakePackagesTx(client, itemId) >= INTAKE_UNFINISHED_PACKAGE_LIMIT)
     throw new AppError(429, 'INTAKE_PACKAGE_PRESSURE', 'Eight packages of this file are still being prepared.');
 }
 
@@ -63,9 +58,10 @@ async function assertObservedCut(input: ProvedAreaPartInput, caseId: string, map
   }
 }
 
-/** Sealed-only safe door: no targets exist before whole-file verification and global key closure. */
+/** Sealed-only safe door: no targets exist before whole-file verification and global key closure.
+ * `held` is the fold's count of features too large for any package, up to this cut's last feature. */
 export async function draftIntakePartTx(client: PoolClient, itemId: string, mappingJobId: string,
-  input: ProvedAreaPartInput) {
+  input: ProvedAreaPartInput, held = 0) {
   const lookup = (await client.query('SELECT case_id FROM usp_intake_items WHERE item_id=$1', [itemId])).rows[0]
     ?? notFound('The intake item is unavailable.');
   await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`intake-parts-case:${lookup.case_id}`]);
@@ -86,7 +82,7 @@ export async function draftIntakePartTx(client: PoolClient, itemId: string, mapp
   if (!prior) await assertIntakePackagePressureTx(client, itemId);
   const pkg = await ingestProvedAreaPart(input, client);
   const counts = { recordsSeen, features: input.features.length, accepted: pkg.features.length,
-    quarantined: pkg.quarantine?.rejected ?? 0,
+    quarantined: pkg.quarantine?.rejected ?? 0, held,
     rawBytes: input.features.reduce((sum, feature) => sum + feature.rawBytes.byteLength, 0) };
   await publishIntakePartTx(client, itemId, input.cutIndex, pkg, locator, counts);
   if (!prior) await createIntakeTargetsTx(client, item.case_id, itemId, pkg, input.sourceId);

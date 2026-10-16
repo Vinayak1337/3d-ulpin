@@ -70,8 +70,15 @@ export const IntakeItemSchema = z.strictObject({
   sizeClass: IntakeSizeClassSchema.nullable(), wave: z.number().int().min(1).max(4), state: IntakeStateSchema,
   placement: IntakePlacementSchema, card: IntakeCardSchema.nullable(), cardSha256: hash.nullable(),
   plan: IntakeItemPlanSchema.nullable(),
-  probeVersion: z.string().nullable(), partsPlanned: z.number().int().positive().nullable(),
-  partsDone: z.number().int().nonnegative(), recordsSeen: z.number().int().nonnegative(),
+  probeVersion: z.string().nullable(),
+  partsPlanned: z.number().int().positive().nullable().describe(
+    'Large GeoJSON: null while reading; raw parts while mapping; null while drafting until the final cut, '
+    + 'then package cuts. Other readers retain their own planned-part count.'),
+  partsDone: z.number().int().nonnegative().describe(
+    'Large GeoJSON: raw parts published while reading, mapped parts while mapping, packages drafted while drafting '
+    + 'and after completion. Other readers retain their own completed-part count.'),
+  recordsSeen: z.number().int().nonnegative().describe(
+    'Records of the file read so far; the sealed reader count stays unchanged during mapping and package drafting.'),
   limitReason: z.string().nullable(), pinnedByOfficer: z.boolean(),
   createdAt: z.string().datetime(), updatedAt: z.string().datetime(),
 });

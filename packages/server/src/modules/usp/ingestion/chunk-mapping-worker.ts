@@ -14,6 +14,7 @@ import {assertChunkMappingInputTx} from './chunk-mapping';
 import {TabularChunkMapper} from './chunk-mapping-agent';
 import {acceptTabularDataSlot} from './chunk-mapping-tabular';
 import {candidateKeyHashes,normalizeMappedChunk,type KeyRow} from './chunk-mapping-normalizer';
+import {queueIntakeLargeTx} from './intake-large';
 
 const rawService=new StreamingVectorService(),adaptive=new AdaptiveMappingService();
 type Stored={payload:ChunkMappingPayload;bytes:number;hash:string;key:string};
@@ -147,6 +148,7 @@ async function terminal(input:ChunkMappingInput,attempt:UspJobAttempt,code:strin
       [input.jobId,stale?'stale':'failed',code]);
     if(!stale)await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.changed',sourceId:input.sourceId,
       sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status:'failed'},input.subject);
+    await queueIntakeLargeTx(client,input.sourceId);
   });
 }
 async function retry(input:ChunkMappingInput,attempt:UspJobAttempt,code:string){
@@ -232,7 +234,9 @@ async function complete(input:ChunkMappingInput,attempt:UspJobAttempt){
       if(state?.sealed_chunks!==sealed.chunks||state.next_publish_index!==sealed.chunks
         ||state.records!==sealed.records||state.unknown_remainder||raw?.unknown_remainder)
         conflict('The complete mapped manifest is not published.');
-    },client=>assertChunkMappingInputTx(client,input).then(()=>{}),client=>finishChunkMappingTx(client,input));
+    },client=>assertChunkMappingInputTx(client,input).then(()=>{}),async client=>{
+      await finishChunkMappingTx(client,input);await queueIntakeLargeTx(client,input.sourceId);
+    });
 }
 
 async function claimFailure(input:ChunkMappingInput,error:unknown){
@@ -277,6 +281,7 @@ async function claimFailure(input:ChunkMappingInput,error:unknown){
       [input.jobId,stale?'stale':'failed',code]);
     if(!stale)await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.changed',sourceId:input.sourceId,
       sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status:'failed'},input.subject);
+    await queueIntakeLargeTx(client,input.sourceId);
   });
 }
 
