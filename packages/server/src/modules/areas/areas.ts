@@ -89,7 +89,7 @@ type Normalized = {
 };
 export async function areaGeo<T>(
   operation: "normalize" | "check" | "extract" | "crop" | "profile" | "inspect-gis" | "inspect-archive-member"
-    | "build-prisms",
+    | "build-prisms" | "resolve-geojson-crs",
   input: unknown,
   maxResultBytes?: number,
 ): Promise<T> {

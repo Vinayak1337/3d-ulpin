@@ -101,9 +101,11 @@ export const StreamedMapOriginalReceiptSchema = z.strictObject({
   quarantined: z.number().int().nonnegative(), rawManifestSha256: hash,
   collectionMetadata: z.record(z.string(), z.unknown()).refine(boundedCollectionMetadata,
     'Only bounded original collection metadata belongs in the receipt.'),
+  /** `sourceCrs` is the declaration as the file writes it; `authority` the code it resolves to, when not degrees. */
   reference: z.strictObject({
     sourceCrs: z.string().min(1).max(100).nullable(), evidence: z.string().min(1).max(200),
-    coordinateUnit: z.enum(['degree', 'unknown']),
+    coordinateUnit: z.string().min(1).max(80),
+    authority: z.string().regex(/^[A-Za-z][A-Za-z0-9_]*:[A-Za-z0-9_.-]+$/).max(100).optional(),
   }),
 }).superRefine((receipt, ctx) => {
   if (receipt.accepted + receipt.quarantined !== receipt.features)

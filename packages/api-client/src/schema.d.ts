@@ -70016,6 +70016,7 @@ export interface components {
                     explicitNull: number;
                     absent: number;
                     unknown: number;
+                    integers?: number;
                 }[];
                 geometryTypes: string[];
                 quarantineLocators: {
@@ -70028,6 +70029,7 @@ export interface components {
                 reference: {
                     sourceCrs: string | null;
                     evidence: string | null;
+                    unit?: string | null;
                     /** @enum {string} */
                     globalPlacement: "not_qualified";
                 };
@@ -70074,6 +70076,7 @@ export interface components {
                 explicitNull: number;
                 absent: number;
                 unknown: number;
+                integers?: number;
             }[];
             geometryTypes: string[];
             quarantineLocators: {
@@ -70086,6 +70089,7 @@ export interface components {
             reference: {
                 sourceCrs: string | null;
                 evidence: string | null;
+                unit?: string | null;
                 /** @enum {string} */
                 globalPlacement: "not_qualified";
             };
@@ -70115,22 +70119,22 @@ export interface components {
                 profileJobId: string;
                 profileGeneration: number;
                 profileHash: string;
+                /** @enum {string} */
+                kind?: "building" | "parcel" | "road" | "public_land" | "utility";
                 operations: {
-                    /** @enum {string} */
-                    target: "building.sourceKey" | "building.name" | "building.geometry";
+                    target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
                 }[];
                 semanticEvidence: {
-                    /** @enum {string} */
-                    target: "building.sourceKey" | "building.name" | "building.geometry";
+                    target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     issuer: string;
                     /** Format: uri */
                     evidenceUrl: string;
                     /** @enum {string} */
-                    meaning: "building_source_identity" | "building_name" | "building_footprint";
+                    meaning: "building_source_identity" | "building_name" | "building_footprint" | "feature_source_identity" | "feature_name" | "feature_geometry";
                 }[];
                 /** @enum {string} */
                 basis?: "publisher_cited" | "officer_stated";
@@ -70167,22 +70171,22 @@ export interface components {
                 profileJobId: string;
                 profileGeneration: number;
                 profileHash: string;
+                /** @enum {string} */
+                kind?: "building" | "parcel" | "road" | "public_land" | "utility";
                 operations: {
-                    /** @enum {string} */
-                    target: "building.sourceKey" | "building.name" | "building.geometry";
+                    target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
                 }[];
                 semanticEvidence: {
-                    /** @enum {string} */
-                    target: "building.sourceKey" | "building.name" | "building.geometry";
+                    target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     issuer: string;
                     /** Format: uri */
                     evidenceUrl: string;
                     /** @enum {string} */
-                    meaning: "building_source_identity" | "building_name" | "building_footprint";
+                    meaning: "building_source_identity" | "building_name" | "building_footprint" | "feature_source_identity" | "feature_name" | "feature_geometry";
                 }[];
                 /** @enum {string} */
                 basis?: "publisher_cited" | "officer_stated";
@@ -70211,22 +70215,22 @@ export interface components {
                 profileJobId: string;
                 profileGeneration: number;
                 profileHash: string;
+                /** @enum {string} */
+                kind?: "building" | "parcel" | "road" | "public_land" | "utility";
                 operations: {
-                    /** @enum {string} */
-                    target: "building.sourceKey" | "building.name" | "building.geometry";
+                    target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
                 }[];
                 semanticEvidence: {
-                    /** @enum {string} */
-                    target: "building.sourceKey" | "building.name" | "building.geometry";
+                    target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     issuer: string;
                     /** Format: uri */
                     evidenceUrl: string;
                     /** @enum {string} */
-                    meaning: "building_source_identity" | "building_name" | "building_footprint";
+                    meaning: "building_source_identity" | "building_name" | "building_footprint" | "feature_source_identity" | "feature_name" | "feature_geometry";
                 }[];
                 /** @enum {string} */
                 basis?: "publisher_cited" | "officer_stated";
@@ -70279,22 +70283,22 @@ export interface components {
                 profileJobId: string;
                 profileGeneration: number;
                 profileHash: string;
+                /** @enum {string} */
+                kind?: "building" | "parcel" | "road" | "public_land" | "utility";
                 operations: {
-                    /** @enum {string} */
-                    target: "building.sourceKey" | "building.name" | "building.geometry";
+                    target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
                 }[];
                 semanticEvidence: {
-                    /** @enum {string} */
-                    target: "building.sourceKey" | "building.name" | "building.geometry";
+                    target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     issuer: string;
                     /** Format: uri */
                     evidenceUrl: string;
                     /** @enum {string} */
-                    meaning: "building_source_identity" | "building_name" | "building_footprint";
+                    meaning: "building_source_identity" | "building_name" | "building_footprint" | "feature_source_identity" | "feature_name" | "feature_geometry";
                 }[];
                 /** @enum {string} */
                 basis?: "publisher_cited" | "officer_stated";

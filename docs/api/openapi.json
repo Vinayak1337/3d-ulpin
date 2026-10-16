@@ -391508,6 +391508,11 @@
                       "type": "integer",
                       "minimum": 0,
                       "maximum": 9007199254740991
+                    },
+                    "integers": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
                     }
                   },
                   "required": [
@@ -391583,6 +391588,12 @@
                     "nullable": true,
                     "type": "string",
                     "maxLength": 200
+                  },
+                  "unit": {
+                    "nullable": true,
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
                   },
                   "globalPlacement": {
                     "type": "string",
@@ -391817,6 +391828,11 @@
                   "type": "integer",
                   "minimum": 0,
                   "maximum": 9007199254740991
+                },
+                "integers": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
                 }
               },
               "required": [
@@ -391892,6 +391908,12 @@
                 "nullable": true,
                 "type": "string",
                 "maxLength": 200
+              },
+              "unit": {
+                "nullable": true,
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
               },
               "globalPlacement": {
                 "type": "string",
@@ -392020,6 +392042,16 @@
                 "type": "string",
                 "pattern": "^[a-f0-9]{64}$"
               },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "building",
+                  "parcel",
+                  "road",
+                  "public_land",
+                  "utility"
+                ]
+              },
               "operations": {
                 "minItems": 2,
                 "maxItems": 3,
@@ -392028,11 +392060,23 @@
                   "type": "object",
                   "properties": {
                     "target": {
-                      "type": "string",
-                      "enum": [
-                        "building.sourceKey",
-                        "building.name",
-                        "building.geometry"
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "building.sourceKey",
+                            "building.name",
+                            "building.geometry"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "enum": [
+                            "feature.sourceKey",
+                            "feature.geometry",
+                            "feature.name"
+                          ]
+                        }
                       ]
                     },
                     "sourcePath": {
@@ -392045,7 +392089,9 @@
                       "enum": [
                         "literal_identifier@1",
                         "literal_text@1",
-                        "geojson_polygon@1"
+                        "geojson_polygon@1",
+                        "geojson_geometry@1",
+                        "literal_integer_identifier@1"
                       ]
                     }
                   },
@@ -392064,11 +392110,23 @@
                   "type": "object",
                   "properties": {
                     "target": {
-                      "type": "string",
-                      "enum": [
-                        "building.sourceKey",
-                        "building.name",
-                        "building.geometry"
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "building.sourceKey",
+                            "building.name",
+                            "building.geometry"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "enum": [
+                            "feature.sourceKey",
+                            "feature.geometry",
+                            "feature.name"
+                          ]
+                        }
                       ]
                     },
                     "sourcePath": {
@@ -392091,7 +392149,10 @@
                       "enum": [
                         "building_source_identity",
                         "building_name",
-                        "building_footprint"
+                        "building_footprint",
+                        "feature_source_identity",
+                        "feature_name",
+                        "feature_geometry"
                       ]
                     }
                   },
@@ -392247,6 +392308,16 @@
                     "type": "string",
                     "pattern": "^[a-f0-9]{64}$"
                   },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "building",
+                      "parcel",
+                      "road",
+                      "public_land",
+                      "utility"
+                    ]
+                  },
                   "operations": {
                     "minItems": 2,
                     "maxItems": 3,
@@ -392255,11 +392326,23 @@
                       "type": "object",
                       "properties": {
                         "target": {
-                          "type": "string",
-                          "enum": [
-                            "building.sourceKey",
-                            "building.name",
-                            "building.geometry"
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "building.sourceKey",
+                                "building.name",
+                                "building.geometry"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "feature.sourceKey",
+                                "feature.geometry",
+                                "feature.name"
+                              ]
+                            }
                           ]
                         },
                         "sourcePath": {
@@ -392272,7 +392355,9 @@
                           "enum": [
                             "literal_identifier@1",
                             "literal_text@1",
-                            "geojson_polygon@1"
+                            "geojson_polygon@1",
+                            "geojson_geometry@1",
+                            "literal_integer_identifier@1"
                           ]
                         }
                       },
@@ -392291,11 +392376,23 @@
                       "type": "object",
                       "properties": {
                         "target": {
-                          "type": "string",
-                          "enum": [
-                            "building.sourceKey",
-                            "building.name",
-                            "building.geometry"
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "building.sourceKey",
+                                "building.name",
+                                "building.geometry"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "feature.sourceKey",
+                                "feature.geometry",
+                                "feature.name"
+                              ]
+                            }
                           ]
                         },
                         "sourcePath": {
@@ -392318,7 +392415,10 @@
                           "enum": [
                             "building_source_identity",
                             "building_name",
-                            "building_footprint"
+                            "building_footprint",
+                            "feature_source_identity",
+                            "feature_name",
+                            "feature_geometry"
                           ]
                         }
                       },
@@ -392443,6 +392543,16 @@
                     "type": "string",
                     "pattern": "^[a-f0-9]{64}$"
                   },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "building",
+                      "parcel",
+                      "road",
+                      "public_land",
+                      "utility"
+                    ]
+                  },
                   "operations": {
                     "minItems": 2,
                     "maxItems": 3,
@@ -392451,11 +392561,23 @@
                       "type": "object",
                       "properties": {
                         "target": {
-                          "type": "string",
-                          "enum": [
-                            "building.sourceKey",
-                            "building.name",
-                            "building.geometry"
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "building.sourceKey",
+                                "building.name",
+                                "building.geometry"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "feature.sourceKey",
+                                "feature.geometry",
+                                "feature.name"
+                              ]
+                            }
                           ]
                         },
                         "sourcePath": {
@@ -392468,7 +392590,9 @@
                           "enum": [
                             "literal_identifier@1",
                             "literal_text@1",
-                            "geojson_polygon@1"
+                            "geojson_polygon@1",
+                            "geojson_geometry@1",
+                            "literal_integer_identifier@1"
                           ]
                         }
                       },
@@ -392487,11 +392611,23 @@
                       "type": "object",
                       "properties": {
                         "target": {
-                          "type": "string",
-                          "enum": [
-                            "building.sourceKey",
-                            "building.name",
-                            "building.geometry"
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "enum": [
+                                "building.sourceKey",
+                                "building.name",
+                                "building.geometry"
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "feature.sourceKey",
+                                "feature.geometry",
+                                "feature.name"
+                              ]
+                            }
                           ]
                         },
                         "sourcePath": {
@@ -392514,7 +392650,10 @@
                           "enum": [
                             "building_source_identity",
                             "building_name",
-                            "building_footprint"
+                            "building_footprint",
+                            "feature_source_identity",
+                            "feature_name",
+                            "feature_geometry"
                           ]
                         }
                       },
@@ -392748,6 +392887,16 @@
                 "type": "string",
                 "pattern": "^[a-f0-9]{64}$"
               },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "building",
+                  "parcel",
+                  "road",
+                  "public_land",
+                  "utility"
+                ]
+              },
               "operations": {
                 "minItems": 2,
                 "maxItems": 3,
@@ -392756,11 +392905,23 @@
                   "type": "object",
                   "properties": {
                     "target": {
-                      "type": "string",
-                      "enum": [
-                        "building.sourceKey",
-                        "building.name",
-                        "building.geometry"
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "building.sourceKey",
+                            "building.name",
+                            "building.geometry"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "enum": [
+                            "feature.sourceKey",
+                            "feature.geometry",
+                            "feature.name"
+                          ]
+                        }
                       ]
                     },
                     "sourcePath": {
@@ -392773,7 +392934,9 @@
                       "enum": [
                         "literal_identifier@1",
                         "literal_text@1",
-                        "geojson_polygon@1"
+                        "geojson_polygon@1",
+                        "geojson_geometry@1",
+                        "literal_integer_identifier@1"
                       ]
                     }
                   },
@@ -392792,11 +392955,23 @@
                   "type": "object",
                   "properties": {
                     "target": {
-                      "type": "string",
-                      "enum": [
-                        "building.sourceKey",
-                        "building.name",
-                        "building.geometry"
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "building.sourceKey",
+                            "building.name",
+                            "building.geometry"
+                          ]
+                        },
+                        {
+                          "type": "string",
+                          "enum": [
+                            "feature.sourceKey",
+                            "feature.geometry",
+                            "feature.name"
+                          ]
+                        }
                       ]
                     },
                     "sourcePath": {
@@ -392819,7 +392994,10 @@
                       "enum": [
                         "building_source_identity",
                         "building_name",
-                        "building_footprint"
+                        "building_footprint",
+                        "feature_source_identity",
+                        "feature_name",
+                        "feature_geometry"
                       ]
                     }
                   },
