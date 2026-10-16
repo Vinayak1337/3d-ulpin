@@ -8,10 +8,8 @@ export type Inventory = NonNullable<ProfileStatus['latest']>;
 export type InventoryPath = Inventory['paths'][number];
 export type StreamedAuthorBody =
   Schemas['POST_ingestion_cases_caseId_sources_sourceId_streamed_profile_jobs_jobId_recipes_Request_application_json'];
-export interface CasePin {
-  caseId: string;
-  caseRevision: number;
-}
+/** The case revision the inventory was queued at, as its status publishes it; the server refuses any other. */
+export type CasePin = Pick<ProfileStatus, 'caseId' | 'caseRevision'>;
 const geometryPath = '/features/*/geometry';
 const propertyPrefix = '/features/*/properties/';
 

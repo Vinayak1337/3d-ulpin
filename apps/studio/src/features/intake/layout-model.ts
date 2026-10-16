@@ -4,10 +4,8 @@ import { fieldWords } from './batch-model';
 import { kindWords } from './question-model';
 
 export type RecipeHistory = GetResponse<'/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}'>;
-type StreamedRecipe =
-  GetResponse<'/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streamed-profile/jobs/{jobId}/recipes/{recipeId}'>;
-/** The history route also returns a large file's streamed receipts; its published type names only the others. */
-export type Recipe = RecipeHistory[number] | StreamedRecipe;
+/** The history publishes a large file's streamed receipts beside the manual and tabular ones. */
+export type Recipe = RecipeHistory[number];
 type Decision = Schemas['POST_ingestion_cases_caseId_recipes_recipeId_approve_Request_application_json'];
 
 export const changedLayoutWords = 'The layout changed. Read the current layout before approving it.';

@@ -2,7 +2,6 @@ import { Banner, Skeleton } from '@ulpin/ui';
 import type { IntakeItem } from './batch-model';
 import type { Recipe } from './layout-model';
 import type { Choices } from './question-model';
-import { useSourceCase } from './table/queries';
 import { useStreamedProfile } from './streamed-queries';
 import { inventoryWords, streamedIdentifierPaths, streamedIdentifierWords, streamedNamePaths, streamedQuestionBody,
   streamedSummary, type Inventory } from './streamed-question-model';
@@ -17,18 +16,17 @@ export function StreamedLayoutAnswer({ caseId, item, receipt, command }: {
   caseId: string; item: IntakeItem; receipt?: Recipe; command: Command;
 }) {
   const status = useStreamedProfile(caseId, item.sourceId ?? '', item.streamedProfileJobId ?? '', item.updatedAt);
-  const sourceCase = useSourceCase(caseId);
   const waiting = status.data ? inventoryWords(status.data) : null;
   const inventory = waiting ? null : status.data?.latest;
-  const caseRevision = sourceCase.data?.case.revision;
+  // The inventory's own case revision: the case may have advanced since it was queued.
+  const pin = status.data;
   return <>
-    {status.isPending || sourceCase.isPending ? <Skeleton /> : null}
+    {status.isPending ? <Skeleton /> : null}
     {status.error ? <Banner tone="danger">{status.error.message}</Banner> : null}
-    {sourceCase.error ? <Banner tone="danger">{sourceCase.error.message}</Banner> : null}
     {waiting ? <p>{waiting}</p> : null}
-    {inventory && caseRevision !== undefined ? <AnswerForm receipt={receipt} command={command}
+    {inventory && pin ? <AnswerForm receipt={receipt} command={command}
       summary={streamedSummary} help={() => noHeight}
-      body={choices => streamedQuestionBody(inventory, choices, { caseId, caseRevision }, receipt?.revision ?? 0, '')}
+      body={choices => streamedQuestionBody(inventory, choices, pin, receipt?.revision ?? 0, '')}
       fields={(choices, choose) => <StreamedFields inventory={inventory} choices={choices} choose={choose}
         error={command.state.error} concern={command.state.concern} />} /> : null}
   </>;

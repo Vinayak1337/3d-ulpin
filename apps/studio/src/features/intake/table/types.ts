@@ -23,4 +23,6 @@ export type RecipeBody = Extract<
   { destination: null }
 >;
 export type Recipe = Schemas['POST_ingestion_cases_caseId_sources_sourceId_recipes_Response_201_application_json'];
-export type RecipeHistory = GetResponse<'/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}'>;
+export type PublishedRecipeHistory = GetResponse<'/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}'>;
+/** A table reads only its own tabular revisions; readRecipe refuses a history holding any other. */
+export type RecipeHistory = Recipe[];

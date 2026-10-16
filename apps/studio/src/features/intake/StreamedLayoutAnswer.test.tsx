@@ -14,8 +14,16 @@ import { createLayoutCommand } from './layout-command';
 import { layoutLines, type Recipe } from './layout-model';
 import { blankChoices, choicesFromRecipe, needsLayoutAnswer, type Choices, type Kind } from './question-model';
 import { tableKey } from './table/queries';
+import type { Command } from './LayoutAnswer';
+import { StreamedLayoutAnswer } from './StreamedLayoutAnswer';
 import { inventoryWords, streamedIdentifierPaths, streamedIdentifierWords, streamedNamePaths, streamedQuestionBody,
   streamedSummary, type Inventory, type ProfileStatus } from './streamed-question-model';
+
+// The real body is kept; the spy only records the pin the answer hands it.
+vi.mock('./streamed-question-model', async original => {
+  const real = await original<typeof import('./streamed-question-model')>();
+  return { ...real, streamedQuestionBody: vi.fn(real.streamedQuestionBody) };
+});
 
 // The OBJECTID counts and the generation are LR3's sealed Niagara inventory. Every other value below is an
 // in-memory test control, not a dataset record.
@@ -48,9 +56,15 @@ const choices: Choices = { ...blankChoices, kind: 'building', identifier: field(
 const root = resolve(import.meta.dirname, '../../../../..');
 const openapi = JSON.parse(readFileSync(resolve(root, 'docs/api/openapi.json'), 'utf8'));
 const validate = createContractValidator(openapi);
-const authorSchema = openapi.paths[
+const ref = (schema: { $ref: string }) => schema.$ref.split('/').at(-1)!;
+const authorSchema = ref(openapi.paths[
   '/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streamed-profile/jobs/{jobId}/recipes']
-  .post.requestBody.content['application/json'].schema.$ref.split('/').at(-1);
+  .post.requestBody.content['application/json'].schema);
+const historySchema = ref(openapi.paths['/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}']
+  .get.responses['200'].content['application/json'].schema);
+const statusSchema = ref(openapi.paths[
+  '/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streamed-profile/jobs/{jobId}']
+  .get.responses['200'].content['application/json'].schema);
 
 /** One named function of a repository source file, transpiled as written (the KN2 test's method). */
 function sourceFunction<T>(path: string, name: string, end: string): T {
@@ -138,16 +152,55 @@ it('keeps the server\'s words for a refused author and reviews the streamed rece
   expect(choicesFromRecipe(receipt)).toEqual(choices);
 });
 
-function panel(item: IntakeItem, status?: Partial<ProfileStatus>) {
+it('publishes a streamed receipt in the recipe history and the inventory\'s own case revision', () => {
+  const body = streamedQuestionBody(inventory, choices, pin, 0, key)!;
+  const receipt = { id: key, revision: 1, state: 'proposed', plan: body.plan, planHash: hash,
+    authoredBy: 'test-control', authoredAt: '2026-10-17T00:00:00.000Z', approval: null };
+  expect(validate(historySchema, [receipt])).toEqual([]);
+  const status = { version: 'streamed-profile/1', jobId: inventory.jobId, rawJobId: inventory.rawJobId,
+    caseId: pin.caseId, caseRevision: pin.caseRevision, sourceId: inventory.source.sourceId, sourceRevision: 1,
+    sourceSha256: 'a'.repeat(64), status: 'sealed', nextRawIndex: 1, latest: inventory, issueCode: null,
+    sourceComplete: true, usableCoverage: true, identityComplete: false };
+  expect(validate(statusSchema, status)).toEqual([]);
+  const { caseRevision: _, ...unpinned } = status;
+  expect(validate(statusSchema, unpinned)).not.toEqual([]);
+});
+
+/** A case advanced past the inventory: its current revision is not the one the server accepts. */
+const advanced = pin.caseRevision + 2;
+function seeded(item: IntakeItem, status?: Partial<ProfileStatus>) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  client.setQueryData(['source-case', item.caseId], { case: { revision: pin.caseRevision } });
+  client.setQueryData(['source-case', item.caseId], { case: { revision: advanced } });
   client.setQueryData([...tableKey(item.caseId, item.sourceId!), 'profile'], captured.profile);
   client.setQueryData(['streamed-profile', item.caseId, item.sourceId, item.streamedProfileJobId, item.updatedAt],
-    { status: 'sealed', latest: inventory, ...status });
-  return renderToStaticMarkup(<QueryClientProvider client={client}>
+    { status: 'sealed', latest: inventory, caseId: pin.caseId, caseRevision: pin.caseRevision, ...status });
+  return client;
+}
+
+function panel(item: IntakeItem, status?: Partial<ProfileStatus>) {
+  return renderToStaticMarkup(<QueryClientProvider client={seeded(item, status)}>
     <LayoutQuestion caseId={item.caseId} item={item} refresh={vi.fn()} />
   </QueryClientProvider>);
 }
+
+it('pins the inventory\'s case revision after the case has advanced', () => {
+  const item = { ...captured.manifest.items[0], streamedProfileJobId: niagara.jobId } as IntakeItem;
+  const plan = streamedQuestionBody(inventory, choices, pin, 0, key)!.plan;
+  const receipt = { id: key, revision: 1, state: 'proposed', plan, planHash: hash, authoredBy: 'test-control',
+    authoredAt: '2026-10-17T00:00:00.000Z', approval: null } as Recipe;
+  const command = { state: { busy: false, uncertain: false, error: '', concern: '' } } as unknown as Command;
+  const spy = vi.mocked(streamedQuestionBody);
+  spy.mockClear();
+  const html = renderToStaticMarkup(<QueryClientProvider client={seeded(item)}>
+    <StreamedLayoutAnswer caseId={item.caseId} item={item} receipt={receipt} command={command} />
+  </QueryClientProvider>);
+  expect(html).toContain('Use this layout');
+  expect(spy).toHaveBeenCalled();
+  for (const result of spy.mock.results) {
+    expect(result.value?.plan.caseRevision).toBe(pin.caseRevision);
+  }
+  expect(spy.mock.results.some(result => result.value)).toBe(true);
+});
 
 it('answers a large item from its streamed inventory and leaves a small item on its retained profile', () => {
   const small = { ...captured.manifest.items[0], streamedProfileJobId: null } as IntakeItem;
