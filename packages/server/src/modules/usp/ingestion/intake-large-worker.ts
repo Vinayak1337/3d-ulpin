@@ -266,7 +266,7 @@ async function stopItemTx(client: PoolClient, input: IntakeLargeInput, reason = 
  * refuses, rests the row. */
 async function fail(input: IntakeLargeInput, attempt: UspJobAttempt, error: unknown) {
   const code = error instanceof AppError ? error.code : 'INTAKE_LARGE_STEP_FAILED';
-  const refusal = intakeLargePartRefusal(code);
+  const refusal = intakeLargePartRefusal(error);
   await transaction(async client => {
     // A changed source must not block the terminal marker, so the source pins are not asserted here.
     await lockSourceCaseDestinationTx(client, input.caseId);

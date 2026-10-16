@@ -160,12 +160,30 @@ test('known terminal failures and an unenumerated infrastructure failure never e
 });
 
 test('an identifier written with a decimal point rests the row at its part in plain words', () => {
-  const sentence = intakeLargePartRefusal('PART_INTEGER_IDENTIFIER');
+  const sentence = intakeLargePartRefusal(new AppError(422, 'PART_INTEGER_IDENTIFIER', 'Not read.'));
   assert.equal(sentence, 'The identifier field holds a value written with a decimal point. '
     + 'This file must write whole-number identifiers as digits only; nothing more was prepared from it.');
   assert.doesNotMatch(sentence!, /[A-Z]+_[A-Z_]+|job|worker/);
   for (const code of ['PART_CUT_BOUND', 'STALE_REVISION', '__proto__', 'toString'])
-    assert.equal(intakeLargePartRefusal(code), null);
+    assert.equal(intakeLargePartRefusal(new AppError(409, code, 'Changed.')), null);
+});
+
+test('the map service refusing a part for what the file holds rests the row at once in its words', () => {
+  const words = 'Feature 7 has a position of 4 numbers; a position takes two coordinates and may add a height, '
+    + 'and a fourth (M) value is unsupported and will not be dropped.';
+  const sentence = intakeLargePartRefusal(new AppError(422, 'AREA_PROCESSING', words));
+  assert.equal(sentence, `A part of this file could not be read as a map: ${words.slice(0, -1)}; `
+    + 'nothing more was prepared from it.');
+  assert.doesNotMatch(sentence!, /[A-Z]+_[A-Z_]+|job|worker/);
+  assert.equal(intakeLargePartRefusal(new AppError(422, 'GIS_ALL_GEOMETRIES_REJECTED', 'No geometries.')),
+    'No feature in a part of this file has an outline that can be read; nothing more was prepared from it.');
+});
+
+test('a fault of the map service is retried: an unavailable service, a timeout or an unknown error', () => {
+  const timeout = new DOMException('The operation was aborted due to timeout', 'TimeoutError');
+  for (const error of [new AppError(503, 'AREA_PROCESSING', 'The area processor could not complete this operation.'),
+    timeout, new TypeError('fetch failed'), new AppError(413, 'AREA_RESULT_LIMIT', 'Too large.'), 'text'])
+    assert.equal(intakeLargePartRefusal(error), null);
 });
 
 test('hold summaries use only nonzero clauses and no illustrative count', () => {

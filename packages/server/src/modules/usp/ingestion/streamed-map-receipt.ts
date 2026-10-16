@@ -30,6 +30,17 @@ export function streamedSourceReference(metadata: Record<string, unknown>): Stre
     coordinateUnit: degree ? 'degree' : 'unknown' };
 }
 
+/** CR1's resolver words each refusal of a declaration this way (`services/geo/geo/area.py` `_geojson_crs`). */
+const RESOLVER_REFUSAL = "The file's crs member declares ";
+
+/** Only the resolver's own refusal of the declaration (a 422 in its words) names the coordinate system; another
+ * failure of the call is a fault the reader retries under its own code. */
+function resolverFailure(error: unknown) {
+  if (!(error instanceof AppError) || error.status !== 422) return error;
+  if (error.message.startsWith(RESOLVER_REFUSAL)) return new AppError(422, 'STREAMING_SOURCE_CRS', error.message);
+  return new Error('The coordinate system resolution failed.');
+}
+
 /** CR1's resolution in the geo service decides; nothing is resolved or transformed here. A file that declares
  * nothing, and the legacy degree declarations, keep the reference they had before. */
 export async function resolveStreamedReference(metadata: Record<string, unknown>,
@@ -38,11 +49,7 @@ export async function resolveStreamedReference(metadata: Record<string, unknown>
   if (!Object.hasOwn(metadata, 'crs')) return legacy;
   let resolved: Resolved;
   try { resolved = await resolve({ crs: metadata.crs }); }
-  catch (error) {
-    if (error instanceof AppError && error.status === 422)
-      throw new AppError(422, 'STREAMING_SOURCE_CRS', error.message);
-    throw error;
-  }
+  catch (error) { throw resolverFailure(error); }
   if (legacy.coordinateUnit === 'degree' && resolved.unit === 'degree') return legacy;
   if (!resolved.declared || resolved.declared.length > 100)
     throw new AppError(422, 'STREAMING_SOURCE_CRS', 'The declared coordinate system name exceeds 100 characters.');
