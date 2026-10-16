@@ -84,8 +84,14 @@ async function acceptSlot(input:AnyStreamingInput,attempt:UspJobAttempt,slot:Slo
   });
 }
 
+/** CR1's words for a refused declaration stay beside where its receipt would be, for the officer's row. */
+async function keepCrsRefusalTx(client:PoolClient,input:AnyStreamingInput,words:string){
+  await client.query(`UPDATE sources SET inspection=jsonb_set(inspection,'{streamedMapRefusal}',$2::jsonb)
+    WHERE id=$1 AND profile='large-original-v1'`,[input.sourceId,JSON.stringify({rawJobId:input.jobId,words})]);
+}
+
 async function terminal(input:AnyStreamingInput,attempt:UspJobAttempt,code:string,
-  nextIndex:number,nextFeatureIndex:number,stale=false){
+  nextIndex:number,nextFeatureIndex:number,stale=false,words:string|null=null){
   await transaction(async client=>{
     if(stale)await lockStreamingRowsTx(client,input.caseId,input.sourceId);
     else await assertStreamingInputTx(client,input);
@@ -108,6 +114,7 @@ async function terminal(input:AnyStreamingInput,attempt:UspJobAttempt,code:strin
       [input.jobId,stale?'stale':'failed',code]);
     if(!stale)await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
       sourceRevision:input.sourceRevision,jobId:input.jobId,status:'failed'},input.subject);
+    if(words)await keepCrsRefusalTx(client,input,words);
     await queueIntakeLargeTx(client,input.sourceId);
   });
 }
@@ -240,10 +247,11 @@ export async function runStreamingVectorJob(jobId:string){
     const code=error instanceof AppError?error.code:'STREAMING_WORKER_ERROR';
     const structural=error instanceof AppError&&[413,422].includes(error.status);
     const stale=error instanceof AppError&&[403,404,409].includes(error.status);
+    const words=code==='STREAMING_SOURCE_CRS'?(error as AppError).message:null;
     try{
       if(structural){
         // A later bad value keeps the accepted prefix. No guessed boundary or completion count is recorded.
-        await flush();await terminal(input,attempt,code,nextIndex,nextFeatureIndex);
+        await flush();await terminal(input,attempt,code,nextIndex,nextFeatureIndex,false,words);
       }else if(stale)await terminal(input,attempt,'STREAMING_CONTEXT_STALE',nextIndex,nextFeatureIndex,true);
       else if(attempt.number>=3)await terminal(input,attempt,code,nextIndex,nextFeatureIndex);
       else await retry(input,attempt,code);

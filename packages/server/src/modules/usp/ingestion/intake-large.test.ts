@@ -123,9 +123,13 @@ test('phase counters mean raw parts, mapped parts and finally package cuts, not 
 });
 
 test('CRS, size and feature ceiling refusals use literal metadata and the existing limits', () => {
-  assert.equal(intakeLargeFailureReason('STREAMING_SOURCE_CRS', 1, 'EPSG:2958'),
-    'This file declares the coordinate system EPSG:2958. '
-    + 'Large files are read in longitude and latitude only for now; nothing was prepared from it.');
+  const words = 'The file\'s crs member declares {"type":"name","properties":{"name":"EPSG:99999"}}; its name is not a '
+    + 'recognized coordinate reference system.';
+  assert.equal(intakeLargeFailureReason('STREAMING_SOURCE_CRS', 1, words), 'The file\'s crs member declares '
+    + '{"type":"name","properties":{"name":"EPSG:99999"}}; its name is not a recognized coordinate reference system; '
+    + 'nothing was prepared from it.');
+  assert.equal(intakeLargeFailureReason('STREAMING_SOURCE_CRS', 1),
+    'The coordinate system this file declares could not be resolved; nothing was prepared from it.');
   assert.equal(intakeLargeFailureReason('STREAMING_SOURCE_BUDGET', 129 * 1024 ** 2),
     `This file is 129 MiB. A map file is read in parts up to ${limits.sourceBytes / 1024 ** 2} MiB for now; `
     + 'nothing was prepared from it.');

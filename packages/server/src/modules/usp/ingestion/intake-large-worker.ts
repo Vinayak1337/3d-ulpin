@@ -11,8 +11,8 @@ import { acceptUspJobAttempt, assertUspJobAttemptTx, claimUspJobAttempt, heartbe
 import { ChunkMappingService } from './chunk-mapping';
 import { intakeCaseArea, intakeDestination } from './intake-destination';
 import { assertIntakeDraftTx } from './intake-draft';
-import { INTAKE_LARGE_STOPPED, IntakeLargeInputSchema, intakeLargeAtRest, intakeLargeCrsRefusal, intakeLargeCutKey,
-  intakeLargeEnd, intakeLargePhase, intakeLargePlan, intakeLargeProjection, intakeLargeRefusedCrs,
+import { INTAKE_LARGE_STOPPED, IntakeLargeInputSchema, intakeLargeAtRest, intakeLargeCutKey, intakeLargeEnd,
+  intakeLargeFailureContext, intakeLargePhase, intakeLargePlan, intakeLargeProjection,
   intakeLargeRequestKey, intakeLargeRows, largeStateKey, queueIntakeLargeTx, type IntakeLargeInput
 } from './intake-large';
 import { readIntakeDraftTx, writeIntakeLargeTx } from './intake-ledger';
@@ -50,10 +50,8 @@ async function pinned<T>(input: IntakeLargeInput, attempt: UspJobAttempt,
 async function publishTx(client: PoolClient, input: IntakeLargeInput, state: State) {
   if (intakeLargeAtRest(state.item)) return;
   const rows = intakeLargeRows(state.store, state.source), phase = intakeLargePhase(rows);
-  const bytes = Number(state.source.bytes);
-  const refused = phase === 'start' ? intakeLargeRefusedCrs(state.item.card) : null;
-  await writeIntakeLargeTx(client, input.caseId, input.itemId, refused ? intakeLargeCrsRefusal(refused, bytes)
-    : intakeLargeProjection(phase, rows, state.store, { bytes, declaredCrs: state.item.card?.crs.code ?? null }));
+  await writeIntakeLargeTx(client, input.caseId, input.itemId,
+    intakeLargeProjection(phase, rows, state.store, intakeLargeFailureContext(state.store, state.source)));
 }
 
 /** Every step ends here: the row shows its stored state and the transaction queues the next state's job. */
@@ -247,7 +245,6 @@ async function step(input: IntakeLargeInput, attempt: UspJobAttempt) {
   });
   if (state.key !== input.stateKey || intakeLargeAtRest(state.item)) return complete(input, attempt, false);
   const phase = intakeLargePhase(intakeLargeRows(state.store, state.source));
-  if (phase === 'start' && intakeLargeRefusedCrs(state.item.card)) return complete(input, attempt, true);
   if (phase === 'start' || phase === 'read' && !state.store.profile) await startReaders(input, attempt, state);
   if (phase === 'map' && !state.store.mapping) await startMapping(input, attempt, state);
   if (phase === 'draft' && state.store.unreviewed < INTAKE_UNFINISHED_PACKAGE_LIMIT) await draft(input, attempt);

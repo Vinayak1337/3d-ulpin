@@ -12,7 +12,6 @@ import { readIntakeDraftTx, unfinishedIntakePackagesTx, writeIntakeLargeTx,
   type IntakeLargeState } from './intake-ledger';
 import { stableUuid } from './intake-run';
 import { isRetainedMapOriginal } from './retained-map-original';
-import { streamedSourceReference } from './streamed-map-receipt';
 
 export const INTAKE_LARGE_LAYOUT_QUESTION = 'No approved layout matches this file. '
   + 'An officer states what each feature is and which field identifies it.';
@@ -35,8 +34,7 @@ const terminalSentences: Readonly<Record<string, string>> = {
   STORAGE_TIMEOUT: 'Reading the retained file did not finish in time',
   STREAMING_CONTEXT_STALE: "This file's retained source or private access changed while it was read",
   STREAMING_ATTEMPTS_EXHAUSTED: 'Reading this file could not finish after the allowed retries',
-  STREAMING_SOURCE_CRS:
-    'This file is not in longitude and latitude, the only coordinates large files are read in for now',
+  STREAMING_SOURCE_CRS: 'The coordinate system this file declares could not be resolved',
   STREAMING_WORKER_ERROR: 'Reading this file could not finish',
   STREAMED_PROFILE_BODY_BUDGET: 'The field inventory of this file is larger than can be kept for now',
   STREAMED_PROFILE_PATH_BUDGET: 'This file has more field paths than can be inventoried for now',
@@ -63,8 +61,9 @@ const terminalSentences: Readonly<Record<string, string>> = {
   STREAMED_MAPPING_SEMANTICS: "The layout's field evidence does not match this file's issuing portal",
 };
 
-/** No internal code, hash or exception text becomes the officer's explanation. */
-export function intakeLargeFailureReason(code: string, bytes: number, declaredCrs: string | null = null): string {
+/** No internal code, hash or exception text becomes the officer's explanation. A declaration the coordinate
+ * system resolution refuses is explained in that resolution's own words, which quote the declaration as written. */
+export function intakeLargeFailureReason(code: string, bytes: number, crsWords: string | null = null): string {
   if (code === 'STREAMING_SOURCE_BUDGET') {
     const size = Number((bytes / 1024 ** 2).toFixed(3));
     const ceiling = limits.sourceBytes / 1024 ** 2;
@@ -75,29 +74,12 @@ export function intakeLargeFailureReason(code: string, bytes: number, declaredCr
     return `This file has more than ${limits.chunks * limits.chunkFeatures} features, `
       + 'the most a map file may have for now' + nothing;
   }
-  if (code === 'STREAMING_SOURCE_CRS' && declaredCrs !== null) {
-    return `This file declares the coordinate system ${declaredCrs}. `
-      + 'Large files are read in longitude and latitude only for now' + nothing;
-  }
+  if (code === 'STREAMING_SOURCE_CRS' && crsWords !== null) return crsWords.replace(/\.$/, '') + nothing;
   const sentence = Object.hasOwn(terminalSentences, code) ? terminalSentences[code]
     : 'This file could not be read and interpreted completely';
   return sentence + nothing;
 }
 
-/** The reader checks a stated system only after it seals, where its refusal cannot end the read. A card that
- * states a system other than longitude/latitude therefore refuses the file before any reader starts. */
-export function intakeLargeRefusedCrs(card: IntakeCard | null): string | null {
-  const code = card?.crs.state === 'stated' ? card.crs.code : null;
-  if (!code) return null;
-  const reference = streamedSourceReference({ crs: { type: 'name', properties: { name: code } } });
-  return reference.coordinateUnit === 'degree' ? null : code;
-}
-
-/** Nothing was read from a refused file; its row names the system as the file states it. */
-export function intakeLargeCrsRefusal(code: string, bytes: number): IntakeLargeState {
-  return { state: 'failed_part', placement: 'not_understood', planRef: null, partsPlanned: null, partsDone: 0,
-    recordsSeen: 0, limitReason: intakeLargeFailureReason('STREAMING_SOURCE_CRS', bytes, code) };
-}
 
 export type IntakeLargePhase = 'start' | 'read' | 'question' | 'layout' | 'map' | 'draft' | 'end' | 'failure';
 type ReaderRow = {
@@ -334,7 +316,7 @@ export async function retryIntakeLargeItem(caseValue: string, itemValue: string,
     await client.query(`INSERT INTO operations(case_id,operation_key,kind,payload_hash,result)
       VALUES($1,$2,'intake-large-retry',$3,$4)`, [caseId, key, digest, { itemId, retry }]);
     await writeIntakeLargeTx(client, caseId, itemId, intakeLargeProjection(phase, rows, state.store,
-      { bytes: Number(state.source.bytes), declaredCrs: state.item.card?.crs.code ?? null }));
+      intakeLargeFailureContext(state.store, state.source)));
     const jobId = await queueIntakeLargeTx(client, row.source_id) ?? conflict('This file cannot be queued again.');
     const result = IntakeLargeRetryResultSchema.parse({ itemId, retry, jobId });
     await client.query(`UPDATE operations SET result=$3 WHERE case_id=$1 AND operation_key=$2
@@ -364,14 +346,24 @@ export function intakeLargePlan(recipe: IntakeLargeStore['recipe']) {
     origin: 'officer', packageId: null } : null;
 }
 
+type IntakeLargeFailure = { bytes: number; crsWords: string | null };
+
+/** The file's size, and the words the reader kept when this reader job refused the file's declared system. */
+export function intakeLargeFailureContext(store: IntakeLargeStore, source: IntakeLargeSource): IntakeLargeFailure {
+  const refusal = source.inspection?.streamedMapRefusal;
+  const kept = Boolean(store.reader) && refusal?.rawJobId === store.reader?.job_id
+    && typeof refusal?.words === 'string';
+  return { bytes: Number(source.bytes), crsWords: kept ? refusal.words : null };
+}
+
 /** What the row says in each state of the stored rows; only the drafting step writes the end. */
 export function intakeLargeProjection(phase: IntakeLargePhase, rows: IntakeLargeRows, store: IntakeLargeStore,
-  failure: { bytes: number; declaredCrs: string | null }): IntakeLargeState {
+  failure: IntakeLargeFailure): IntakeLargeState {
   const numbers = intakeLargeNumbers(phase, rows), planRef = intakeLargePlan(store.recipe);
   if (phase === 'failure') {
     const code = [rows.reader, rows.profile, rows.mapping].find(row => row && failed(row.state))?.issue_code;
     return { state: 'failed_part', placement: 'not_understood', planRef, ...numbers,
-      limitReason: intakeLargeFailureReason(code ?? 'STREAMING_WORKER_ERROR', failure.bytes, failure.declaredCrs) };
+      limitReason: intakeLargeFailureReason(code ?? 'STREAMING_WORKER_ERROR', failure.bytes, failure.crsWords) };
   }
   if (phase === 'question') return { state: 'probed', placement: 'needs_answer', planRef: null, ...numbers,
     limitReason: INTAKE_LARGE_LAYOUT_QUESTION };
