@@ -220,27 +220,43 @@ export function useAreas() {
   }, staleTime: 60_000 });
 }
 
+/**
+ * How often a live area is read again. Both reads are large (the context of the demo area is tens of megabytes),
+ * and React Query never overlaps them: an interval tick while the previous read of the same query is still
+ * running joins that read instead of starting another (query-core `Query.fetch`: a fetch that is not idle is
+ * returned as is unless `cancelRefetch` is asked, and the interval never asks it).
+ */
+export const AREA_LIVE_REFRESH_MS = 5000;
+
+export const areaContextQuery = (areaId: string | undefined, live: boolean) => ({
+  queryKey: queryKeys.areaContext(areaId ?? ''),
+  enabled: Boolean(areaId) && !isDemoId(areaId),
+  queryFn: async () => unwrap(await api.GET('/api/v1/areas/{areaId}/context', {
+    params: { path: { areaId: areaId! } },
+  })),
+  staleTime: 60_000,
+  refetchInterval: live && !isDemoId(areaId) ? AREA_LIVE_REFRESH_MS : false as const,
+});
+
 /** `live`: an import into this area is streaming, so poll until it settles (SSE replaces this later). */
 export function useAreaContext(areaId: string | undefined, live = false) {
   useDemoAreaStream(areaId);
-  return useQuery({
-    queryKey: queryKeys.areaContext(areaId ?? ''),
-    enabled: Boolean(areaId) && !isDemoId(areaId),
-    queryFn: async () => unwrap(await api.GET('/api/v1/areas/{areaId}/context', { params: { path: { areaId: areaId! } } })),
-    staleTime: 60_000,
-    refetchInterval: live && !isDemoId(areaId) ? 700 : false,
-  });
+  return useQuery(areaContextQuery(areaId, live));
 }
+
+export const areaCanonicalQuery = (areaId: string | undefined, live: boolean) => ({
+  queryKey: queryKeys.areaCanonical(areaId ?? ''),
+  enabled: Boolean(areaId) && !isDemoId(areaId),
+  queryFn: async ({ signal }: { signal: AbortSignal }) => unwrap(await api.GET('/api/v1/areas/{areaId}/canonical', {
+    params: { path: { areaId: areaId! } }, signal,
+  })),
+  staleTime: 60_000,
+  refetchInterval: live ? AREA_LIVE_REFRESH_MS : false as const,
+});
 
 /** The canonical area record in local metres: what the scene draws. Locally uploaded areas have none. */
 export function useAreaCanonical(areaId: string | undefined, live = false) {
-  return useQuery({
-    queryKey: queryKeys.areaCanonical(areaId ?? ''),
-    enabled: Boolean(areaId) && !isDemoId(areaId),
-    queryFn: async ({ signal }) => unwrap(await api.GET('/api/v1/areas/{areaId}/canonical', { params: { path: { areaId: areaId! } }, signal })),
-    staleTime: 60_000,
-    refetchInterval: live ? 700 : false,
-  });
+  return useQuery(areaCanonicalQuery(areaId, live));
 }
 
 /** The canonical record of one building: state, gaps, levels and spaces. */
