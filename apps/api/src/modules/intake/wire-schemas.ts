@@ -208,8 +208,11 @@ export const importPackage = z.object({
   sourceHash: z.string().optional(), importSignature: z.string().optional(),
   extent: extent.optional(), geographicExtent: extent.optional(),
 });
+const displayFeature = physicalFeature.extend({
+  displayState: z.literal('unrecorded_proposal').optional(), proposalPackageId: uuid.optional(),
+});
 export const areaContext = z.object({
-  displayFeatures:z.array(physicalFeature.extend({displayState:z.literal('unrecorded_proposal').optional(),proposalPackageId:uuid.optional()})).optional(),
+  displayFeatures:z.array(displayFeature).optional(),
   area: mapArea, features: z.array(physicalFeature), packages: z.array(importPackage),
   latestCheck: nullable(areaCheck),
   parcelAssociations: z.array(z.object({
@@ -226,6 +229,17 @@ export const areaContext = z.object({
     featureId: uuid, featureRevision: z.number().int(), url: z.string(), sha256: z.string(), frame: z.string(),
     position: z.tuple([z.number(), z.number(), z.number()]), heading: z.number(), provenance: z.string(), purpose: z.literal('presentation'),
   })).optional(),
+});
+/** The context route's answer: one feature list without unread geometry, and package summaries. */
+export const areaContextResponse = areaContext.omit({features: true, displayFeatures: true, packages: true}).extend({
+  displayFeatures: z.array(
+    displayFeature.omit({sourceGeometry: true, geographicGeometry: true, sourceReference: true}),
+  ),
+  packages: z.array(importPackage.pick({id: true, state: true}).extend({
+    quarantine: z.object({
+      message: GisQuarantineSchema.shape.message, sourceSha256: GisQuarantineSchema.shape.sourceSha256,
+    }).nullable(),
+  })),
 });
 export const gisInspection = z.object({
   quarantine:GisQuarantineSchema.optional(),

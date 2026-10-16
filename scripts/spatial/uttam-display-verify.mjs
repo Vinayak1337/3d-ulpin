@@ -66,11 +66,11 @@ try{
  const get=async path=>{const response=await context.request.get(base+'/api/v1'+path,{timeout:60000});assert.equal(response.status(),200,path);return response.json();};
  const source=await get(`/areas/${areaId}/context`);
  assert.equal(source.area.id,areaId);
- const buildings=source.features.filter(feature=>feature.kind==='building');
- const roads=source.features.filter(feature=>feature.kind==='road');
+ const buildings=source.displayFeatures.filter(feature=>feature.kind==='building');
+ const roads=source.displayFeatures.filter(feature=>feature.kind==='road');
  assert.equal(buildings.length,113,'Saved source building count');
  assert.equal(roads.length,35,'Saved source road count');
- const worlds=[...new Set(source.features.map(feature=>feature.worldStatus))];
+ const worlds=[...new Set(source.displayFeatures.map(feature=>feature.worldStatus))];
  assert(worlds.includes('observed'),'Uttam must retain observed source world');
  const descriptorPath=`/spatial/core/areas/${areaId}/scene/observed/descriptor.json`;
  const descriptor=await get(descriptorPath);
@@ -86,7 +86,7 @@ try{
  const roadRepresentations=descriptor.snapshot.representations.filter(rep=>roadIds.includes(rep.entityId));
  assert.equal(roadRepresentations.length,35);
  assert(roadRepresentations.every(rep=>rep.geometry.type==='LineString'));
- const before={context:digest(source),descriptor:digest(descriptor),readDigest:descriptor.readDigest,sourceCount:descriptor.sourceCount,documentCount:descriptor.documentCount,buildings:113,roads:35,sourceRevisionIds:[...new Set(source.features.map(feature=>feature.sourceRevisionId))].sort()};
+ const before={context:digest(source),descriptor:digest(descriptor),readDigest:descriptor.readDigest,sourceCount:descriptor.sourceCount,documentCount:descriptor.documentCount,buildings:113,roads:35,sourceRevisionIds:[...new Set(source.displayFeatures.map(feature=>feature.sourceRevisionId))].sort()};
  assert(before.sourceRevisionIds.length>0&&before.sourceRevisionIds.every(id=>typeof id==='string'&&id.length>0));
  report.source={areaName:source.area.name,world:'observed',before};
  pass('Actual saved source has 113 unknown-height building outlines and 35 recorded road LineStrings',{buildings:113,roads:35,unknownHeights:113,sourceCount:descriptor.sourceCount});
@@ -161,7 +161,7 @@ try{
  pass('Roads layer toggles 35→0→35 actual overlays on one unchanged camera/runtime',{canvasChanges:true,buildingFeaturesRemain113:true});
 
  const afterSource=await get(`/areas/${areaId}/context`),afterDescriptor=await get(descriptorPath);
- const after={context:digest(afterSource),descriptor:digest(afterDescriptor),readDigest:afterDescriptor.readDigest,sourceCount:afterDescriptor.sourceCount,documentCount:afterDescriptor.documentCount,buildings:afterSource.features.filter(feature=>feature.kind==='building').length,roads:afterSource.features.filter(feature=>feature.kind==='road').length,sourceRevisionIds:[...new Set(afterSource.features.map(feature=>feature.sourceRevisionId))].sort()};
+ const after={context:digest(afterSource),descriptor:digest(afterDescriptor),readDigest:afterDescriptor.readDigest,sourceCount:afterDescriptor.sourceCount,documentCount:afterDescriptor.documentCount,buildings:afterSource.displayFeatures.filter(feature=>feature.kind==='building').length,roads:afterSource.displayFeatures.filter(feature=>feature.kind==='road').length,sourceRevisionIds:[...new Set(afterSource.displayFeatures.map(feature=>feature.sourceRevisionId))].sort()};
  assert.deepEqual(after,before);
  assert.deepEqual(report.blockedWrites,[]);assert.deepEqual(report.errors,[]);assert.deepEqual(report.badResponses,[]);
  assert(report.geometryRequests.length>0,'Actual compiled GLBs must load');

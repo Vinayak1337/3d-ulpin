@@ -29,10 +29,21 @@ type Feature = (typeof nycContext.features)[number];
 
 export const derivedAreas = [...lakeAreas, ...nycAreas, swissArea];
 export const derivedContexts: Record<string, Json> = {
-  [lakeContext.area.id]: lakeContext as unknown as Json,
-  [nycContext.area.id]: nycContext as unknown as Json,
-  [swissContext.area.id]: swissContext as unknown as Json,
+  [lakeContext.area.id]: contextAnswer(lakeContext),
+  [nycContext.area.id]: contextAnswer(nycContext),
+  [swissContext.area.id]: contextAnswer(swissContext),
 };
+
+/**
+ * A context fixture as the context route answers it: its features as the one display list, without the geometry
+ * and reference no reader reads. The fixtures hold no import packages, so their empty list is kept as it is.
+ */
+function contextAnswer({ features, ...context }: { features: Json[] } & Json): Json {
+  const displayFeatures = features.map(
+    ({ sourceGeometry, geographicGeometry, sourceReference, ...feature }) => feature,
+  );
+  return { ...context, displayFeatures };
+}
 
 /**
  * Building registers. The Swiss floor has its own derived register; an NYC footprint has no floors or

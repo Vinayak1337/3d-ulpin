@@ -73193,669 +73193,6 @@
       "GET_areas_areaId_context_Response_200_application_json": {
         "type": "object",
         "properties": {
-          "displayFeatures": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "sourceFeatureIndex": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 9007199254740991
-                },
-                "id": {
-                  "type": "string",
-                  "format": "uuid",
-                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                },
-                "identifier": {
-                  "type": "string"
-                },
-                "areaId": {
-                  "type": "string",
-                  "format": "uuid",
-                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                },
-                "revision": {
-                  "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991
-                },
-                "sourceRevisionId": {
-                  "type": "string",
-                  "format": "uuid",
-                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                },
-                "datasetNamespace": {
-                  "type": "string"
-                },
-                "sourceKey": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "kind": {
-                  "type": "string",
-                  "enum": [
-                    "building",
-                    "parcel",
-                    "road",
-                    "public_land",
-                    "utility"
-                  ]
-                },
-                "geometry": {
-                  "nullable": true,
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "enum": [
-                        "GeometryCollection",
-                        "Point",
-                        "MultiPoint",
-                        "LineString",
-                        "MultiLineString",
-                        "Polygon",
-                        "MultiPolygon"
-                      ]
-                    },
-                    "coordinates": {
-                      "anyOf": [
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "array",
-                            "items": {
-                              "type": "number"
-                            }
-                          }
-                        },
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "array",
-                            "items": {
-                              "type": "array",
-                              "items": {
-                                "type": "number"
-                              }
-                            }
-                          }
-                        },
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "array",
-                            "items": {
-                              "type": "array",
-                              "items": {
-                                "type": "array",
-                                "items": {
-                                  "type": "number"
-                                }
-                              }
-                            }
-                          }
-                        }
-                      ]
-                    },
-                    "geometries": {
-                      "type": "array",
-                      "items": {
-                        "description": "Recursive AreaGeometry member."
-                      }
-                    }
-                  },
-                  "required": [
-                    "type"
-                  ],
-                  "additionalProperties": false
-                },
-                "geographicGeometry": {
-                  "nullable": true,
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "enum": [
-                        "GeometryCollection",
-                        "Point",
-                        "MultiPoint",
-                        "LineString",
-                        "MultiLineString",
-                        "Polygon",
-                        "MultiPolygon"
-                      ]
-                    },
-                    "coordinates": {
-                      "anyOf": [
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "array",
-                            "items": {
-                              "type": "number"
-                            }
-                          }
-                        },
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "array",
-                            "items": {
-                              "type": "array",
-                              "items": {
-                                "type": "number"
-                              }
-                            }
-                          }
-                        },
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "array",
-                            "items": {
-                              "type": "array",
-                              "items": {
-                                "type": "array",
-                                "items": {
-                                  "type": "number"
-                                }
-                              }
-                            }
-                          }
-                        }
-                      ]
-                    },
-                    "geometries": {
-                      "type": "array",
-                      "items": {
-                        "description": "Recursive AreaGeometry member."
-                      }
-                    }
-                  },
-                  "required": [
-                    "type"
-                  ],
-                  "additionalProperties": false
-                },
-                "sourceGeometry": {
-                  "description": "Retained source-specific or processor-specific value."
-                },
-                "placement": {
-                  "type": "string",
-                  "enum": [
-                    "unknown"
-                  ]
-                },
-                "sourceReference": {
-                  "type": "object",
-                  "properties": {
-                    "sourceCrs": {
-                      "type": "string"
-                    },
-                    "analysisCrs": {
-                      "type": "string"
-                    },
-                    "origin": {
-                      "type": "array",
-                      "items": {
-                        "anyOf": [
-                          {
-                            "type": "number"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ]
-                      },
-                      "minItems": 2,
-                      "maxItems": 2
-                    },
-                    "anchor": {
-                      "type": "array",
-                      "items": {
-                        "anyOf": [
-                          {
-                            "type": "number"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ]
-                      },
-                      "minItems": 2,
-                      "maxItems": 2
-                    },
-                    "transformVersion": {
-                      "type": "string"
-                    },
-                    "verticalReference": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "sourceCrs",
-                    "analysisCrs",
-                    "origin",
-                    "anchor",
-                    "transformVersion",
-                    "verticalReference"
-                  ],
-                  "additionalProperties": false
-                },
-                "height": {
-                  "type": "object",
-                  "properties": {
-                    "state": {
-                      "type": "string",
-                      "enum": [
-                        "unknown",
-                        "unresolved",
-                        "estimated",
-                        "source_supported",
-                        "reviewed"
-                      ]
-                    },
-                    "value": {
-                      "nullable": true,
-                      "type": "number"
-                    },
-                    "unit": {
-                      "type": "string",
-                      "enum": [
-                        "m"
-                      ]
-                    },
-                    "meaning": {
-                      "type": "string"
-                    },
-                    "reference": {
-                      "type": "string"
-                    },
-                    "evidence": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "sourceRevisionId": {
-                            "type": "string",
-                            "format": "uuid",
-                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                          },
-                          "page": {
-                            "type": "integer",
-                            "minimum": -9007199254740991,
-                            "maximum": 9007199254740991
-                          },
-                          "row": {
-                            "type": "integer",
-                            "minimum": -9007199254740991,
-                            "maximum": 9007199254740991
-                          },
-                          "partId": {
-                            "type": "string",
-                            "format": "uuid",
-                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                          },
-                          "featureId": {
-                            "type": "string"
-                          },
-                          "jsonPointer": {
-                            "type": "string"
-                          },
-                          "region": {
-                            "type": "object",
-                            "properties": {
-                              "x": {
-                                "type": "number"
-                              },
-                              "y": {
-                                "type": "number"
-                              },
-                              "width": {
-                                "type": "number"
-                              },
-                              "height": {
-                                "type": "number"
-                              },
-                              "unit": {
-                                "type": "string",
-                                "enum": [
-                                  "normalized"
-                                ]
-                              }
-                            },
-                            "required": [
-                              "x",
-                              "y",
-                              "width",
-                              "height",
-                              "unit"
-                            ],
-                            "additionalProperties": false
-                          }
-                        },
-                        "required": [
-                          "sourceRevisionId"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "claimId": {
-                      "type": "string",
-                      "format": "uuid",
-                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                    },
-                    "method": {
-                      "type": "string"
-                    },
-                    "originalValue": {
-                      "description": "Retained source-specific or processor-specific value."
-                    },
-                    "originalUnit": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "state",
-                    "value",
-                    "unit",
-                    "meaning",
-                    "reference"
-                  ],
-                  "additionalProperties": false
-                },
-                "worldStatus": {
-                  "type": "string",
-                  "enum": [
-                    "observed",
-                    "planned",
-                    "hypothetical",
-                    "synthetic"
-                  ]
-                },
-                "properties": {
-                  "type": "object",
-                  "additionalProperties": {
-                    "description": "Retained source-specific or processor-specific value."
-                  }
-                },
-                "areaM2": {
-                  "nullable": true,
-                  "type": "number"
-                },
-                "evidence": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "sourceRevisionId": {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                      },
-                      "page": {
-                        "type": "integer",
-                        "minimum": -9007199254740991,
-                        "maximum": 9007199254740991
-                      },
-                      "row": {
-                        "type": "integer",
-                        "minimum": -9007199254740991,
-                        "maximum": 9007199254740991
-                      },
-                      "partId": {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                      },
-                      "featureId": {
-                        "type": "string"
-                      },
-                      "jsonPointer": {
-                        "type": "string"
-                      },
-                      "region": {
-                        "type": "object",
-                        "properties": {
-                          "x": {
-                            "type": "number"
-                          },
-                          "y": {
-                            "type": "number"
-                          },
-                          "width": {
-                            "type": "number"
-                          },
-                          "height": {
-                            "type": "number"
-                          },
-                          "unit": {
-                            "type": "string",
-                            "enum": [
-                              "normalized"
-                            ]
-                          }
-                        },
-                        "required": [
-                          "x",
-                          "y",
-                          "width",
-                          "height",
-                          "unit"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [
-                      "sourceRevisionId"
-                    ],
-                    "additionalProperties": false
-                  }
-                },
-                "representation": {
-                  "type": "string",
-                  "enum": [
-                    "physical_exterior",
-                    "physical_context"
-                  ]
-                },
-                "geometryRole": {
-                  "type": "string"
-                },
-                "semantics": {
-                  "type": "object",
-                  "properties": {
-                    "geometryRole": {
-                      "type": "string"
-                    },
-                    "evidenceState": {
-                      "type": "string"
-                    },
-                    "levelReference": {
-                      "type": "string"
-                    },
-                    "sourceDate": {
-                      "type": "string"
-                    },
-                    "validFrom": {
-                      "type": "string"
-                    },
-                    "validTo": {
-                      "type": "string"
-                    },
-                    "horizontalUncertaintyM": {
-                      "type": "number"
-                    },
-                    "approvalStatus": {
-                      "type": "string"
-                    },
-                    "floorCount": {
-                      "type": "number"
-                    },
-                    "assetId": {
-                      "type": "string"
-                    }
-                  },
-                  "additionalProperties": false
-                },
-                "verticalExtent": {
-                  "type": "object",
-                  "properties": {
-                    "lower": {
-                      "type": "number"
-                    },
-                    "upper": {
-                      "type": "number"
-                    },
-                    "unit": {
-                      "type": "string",
-                      "enum": [
-                        "m"
-                      ]
-                    },
-                    "reference": {
-                      "type": "string"
-                    },
-                    "evidenceState": {
-                      "type": "string"
-                    },
-                    "evidence": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "sourceRevisionId": {
-                            "type": "string",
-                            "format": "uuid",
-                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                          },
-                          "page": {
-                            "type": "integer",
-                            "minimum": -9007199254740991,
-                            "maximum": 9007199254740991
-                          },
-                          "row": {
-                            "type": "integer",
-                            "minimum": -9007199254740991,
-                            "maximum": 9007199254740991
-                          },
-                          "partId": {
-                            "type": "string",
-                            "format": "uuid",
-                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                          },
-                          "featureId": {
-                            "type": "string"
-                          },
-                          "jsonPointer": {
-                            "type": "string"
-                          },
-                          "region": {
-                            "type": "object",
-                            "properties": {
-                              "x": {
-                                "type": "number"
-                              },
-                              "y": {
-                                "type": "number"
-                              },
-                              "width": {
-                                "type": "number"
-                              },
-                              "height": {
-                                "type": "number"
-                              },
-                              "unit": {
-                                "type": "string",
-                                "enum": [
-                                  "normalized"
-                                ]
-                              }
-                            },
-                            "required": [
-                              "x",
-                              "y",
-                              "width",
-                              "height",
-                              "unit"
-                            ],
-                            "additionalProperties": false
-                          }
-                        },
-                        "required": [
-                          "sourceRevisionId"
-                        ],
-                        "additionalProperties": false
-                      }
-                    }
-                  },
-                  "required": [
-                    "lower",
-                    "upper",
-                    "unit",
-                    "reference",
-                    "evidenceState",
-                    "evidence"
-                  ],
-                  "additionalProperties": false
-                },
-                "utilityProfile": {
-                  "type": "object",
-                  "additionalProperties": {
-                    "description": "Retained source-specific or processor-specific value."
-                  }
-                },
-                "displayState": {
-                  "type": "string",
-                  "enum": [
-                    "unrecorded_proposal"
-                  ]
-                },
-                "proposalPackageId": {
-                  "type": "string",
-                  "format": "uuid",
-                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                }
-              },
-              "required": [
-                "id",
-                "identifier",
-                "areaId",
-                "revision",
-                "sourceRevisionId",
-                "datasetNamespace",
-                "sourceKey",
-                "name",
-                "kind",
-                "geometry",
-                "geographicGeometry",
-                "sourceGeometry",
-                "height",
-                "worldStatus",
-                "properties",
-                "areaM2",
-                "evidence",
-                "representation"
-              ],
-              "additionalProperties": false
-            }
-          },
           "area": {
             "type": "object",
             "properties": {
@@ -74036,3316 +73373,6 @@
               "administrativeUnits"
             ],
             "additionalProperties": false
-          },
-          "features": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "sourceFeatureIndex": {
-                  "type": "integer",
-                  "minimum": 0,
-                  "maximum": 9007199254740991
-                },
-                "id": {
-                  "type": "string",
-                  "format": "uuid",
-                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                },
-                "identifier": {
-                  "type": "string"
-                },
-                "areaId": {
-                  "type": "string",
-                  "format": "uuid",
-                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                },
-                "revision": {
-                  "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991
-                },
-                "sourceRevisionId": {
-                  "type": "string",
-                  "format": "uuid",
-                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                },
-                "datasetNamespace": {
-                  "type": "string"
-                },
-                "sourceKey": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "kind": {
-                  "type": "string",
-                  "enum": [
-                    "building",
-                    "parcel",
-                    "road",
-                    "public_land",
-                    "utility"
-                  ]
-                },
-                "geometry": {
-                  "nullable": true,
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "enum": [
-                        "GeometryCollection",
-                        "Point",
-                        "MultiPoint",
-                        "LineString",
-                        "MultiLineString",
-                        "Polygon",
-                        "MultiPolygon"
-                      ]
-                    },
-                    "coordinates": {
-                      "anyOf": [
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "array",
-                            "items": {
-                              "type": "number"
-                            }
-                          }
-                        },
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "array",
-                            "items": {
-                              "type": "array",
-                              "items": {
-                                "type": "number"
-                              }
-                            }
-                          }
-                        },
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "array",
-                            "items": {
-                              "type": "array",
-                              "items": {
-                                "type": "array",
-                                "items": {
-                                  "type": "number"
-                                }
-                              }
-                            }
-                          }
-                        }
-                      ]
-                    },
-                    "geometries": {
-                      "type": "array",
-                      "items": {
-                        "description": "Recursive AreaGeometry member."
-                      }
-                    }
-                  },
-                  "required": [
-                    "type"
-                  ],
-                  "additionalProperties": false
-                },
-                "geographicGeometry": {
-                  "nullable": true,
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string",
-                      "enum": [
-                        "GeometryCollection",
-                        "Point",
-                        "MultiPoint",
-                        "LineString",
-                        "MultiLineString",
-                        "Polygon",
-                        "MultiPolygon"
-                      ]
-                    },
-                    "coordinates": {
-                      "anyOf": [
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "number"
-                          }
-                        },
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "array",
-                            "items": {
-                              "type": "number"
-                            }
-                          }
-                        },
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "array",
-                            "items": {
-                              "type": "array",
-                              "items": {
-                                "type": "number"
-                              }
-                            }
-                          }
-                        },
-                        {
-                          "type": "array",
-                          "items": {
-                            "type": "array",
-                            "items": {
-                              "type": "array",
-                              "items": {
-                                "type": "array",
-                                "items": {
-                                  "type": "number"
-                                }
-                              }
-                            }
-                          }
-                        }
-                      ]
-                    },
-                    "geometries": {
-                      "type": "array",
-                      "items": {
-                        "description": "Recursive AreaGeometry member."
-                      }
-                    }
-                  },
-                  "required": [
-                    "type"
-                  ],
-                  "additionalProperties": false
-                },
-                "sourceGeometry": {
-                  "description": "Retained source-specific or processor-specific value."
-                },
-                "placement": {
-                  "type": "string",
-                  "enum": [
-                    "unknown"
-                  ]
-                },
-                "sourceReference": {
-                  "type": "object",
-                  "properties": {
-                    "sourceCrs": {
-                      "type": "string"
-                    },
-                    "analysisCrs": {
-                      "type": "string"
-                    },
-                    "origin": {
-                      "type": "array",
-                      "items": {
-                        "anyOf": [
-                          {
-                            "type": "number"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ]
-                      },
-                      "minItems": 2,
-                      "maxItems": 2
-                    },
-                    "anchor": {
-                      "type": "array",
-                      "items": {
-                        "anyOf": [
-                          {
-                            "type": "number"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ]
-                      },
-                      "minItems": 2,
-                      "maxItems": 2
-                    },
-                    "transformVersion": {
-                      "type": "string"
-                    },
-                    "verticalReference": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "sourceCrs",
-                    "analysisCrs",
-                    "origin",
-                    "anchor",
-                    "transformVersion",
-                    "verticalReference"
-                  ],
-                  "additionalProperties": false
-                },
-                "height": {
-                  "type": "object",
-                  "properties": {
-                    "state": {
-                      "type": "string",
-                      "enum": [
-                        "unknown",
-                        "unresolved",
-                        "estimated",
-                        "source_supported",
-                        "reviewed"
-                      ]
-                    },
-                    "value": {
-                      "nullable": true,
-                      "type": "number"
-                    },
-                    "unit": {
-                      "type": "string",
-                      "enum": [
-                        "m"
-                      ]
-                    },
-                    "meaning": {
-                      "type": "string"
-                    },
-                    "reference": {
-                      "type": "string"
-                    },
-                    "evidence": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "sourceRevisionId": {
-                            "type": "string",
-                            "format": "uuid",
-                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                          },
-                          "page": {
-                            "type": "integer",
-                            "minimum": -9007199254740991,
-                            "maximum": 9007199254740991
-                          },
-                          "row": {
-                            "type": "integer",
-                            "minimum": -9007199254740991,
-                            "maximum": 9007199254740991
-                          },
-                          "partId": {
-                            "type": "string",
-                            "format": "uuid",
-                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                          },
-                          "featureId": {
-                            "type": "string"
-                          },
-                          "jsonPointer": {
-                            "type": "string"
-                          },
-                          "region": {
-                            "type": "object",
-                            "properties": {
-                              "x": {
-                                "type": "number"
-                              },
-                              "y": {
-                                "type": "number"
-                              },
-                              "width": {
-                                "type": "number"
-                              },
-                              "height": {
-                                "type": "number"
-                              },
-                              "unit": {
-                                "type": "string",
-                                "enum": [
-                                  "normalized"
-                                ]
-                              }
-                            },
-                            "required": [
-                              "x",
-                              "y",
-                              "width",
-                              "height",
-                              "unit"
-                            ],
-                            "additionalProperties": false
-                          }
-                        },
-                        "required": [
-                          "sourceRevisionId"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "claimId": {
-                      "type": "string",
-                      "format": "uuid",
-                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                    },
-                    "method": {
-                      "type": "string"
-                    },
-                    "originalValue": {
-                      "description": "Retained source-specific or processor-specific value."
-                    },
-                    "originalUnit": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "state",
-                    "value",
-                    "unit",
-                    "meaning",
-                    "reference"
-                  ],
-                  "additionalProperties": false
-                },
-                "worldStatus": {
-                  "type": "string",
-                  "enum": [
-                    "observed",
-                    "planned",
-                    "hypothetical",
-                    "synthetic"
-                  ]
-                },
-                "properties": {
-                  "type": "object",
-                  "additionalProperties": {
-                    "description": "Retained source-specific or processor-specific value."
-                  }
-                },
-                "areaM2": {
-                  "nullable": true,
-                  "type": "number"
-                },
-                "evidence": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "sourceRevisionId": {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                      },
-                      "page": {
-                        "type": "integer",
-                        "minimum": -9007199254740991,
-                        "maximum": 9007199254740991
-                      },
-                      "row": {
-                        "type": "integer",
-                        "minimum": -9007199254740991,
-                        "maximum": 9007199254740991
-                      },
-                      "partId": {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                      },
-                      "featureId": {
-                        "type": "string"
-                      },
-                      "jsonPointer": {
-                        "type": "string"
-                      },
-                      "region": {
-                        "type": "object",
-                        "properties": {
-                          "x": {
-                            "type": "number"
-                          },
-                          "y": {
-                            "type": "number"
-                          },
-                          "width": {
-                            "type": "number"
-                          },
-                          "height": {
-                            "type": "number"
-                          },
-                          "unit": {
-                            "type": "string",
-                            "enum": [
-                              "normalized"
-                            ]
-                          }
-                        },
-                        "required": [
-                          "x",
-                          "y",
-                          "width",
-                          "height",
-                          "unit"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [
-                      "sourceRevisionId"
-                    ],
-                    "additionalProperties": false
-                  }
-                },
-                "representation": {
-                  "type": "string",
-                  "enum": [
-                    "physical_exterior",
-                    "physical_context"
-                  ]
-                },
-                "geometryRole": {
-                  "type": "string"
-                },
-                "semantics": {
-                  "type": "object",
-                  "properties": {
-                    "geometryRole": {
-                      "type": "string"
-                    },
-                    "evidenceState": {
-                      "type": "string"
-                    },
-                    "levelReference": {
-                      "type": "string"
-                    },
-                    "sourceDate": {
-                      "type": "string"
-                    },
-                    "validFrom": {
-                      "type": "string"
-                    },
-                    "validTo": {
-                      "type": "string"
-                    },
-                    "horizontalUncertaintyM": {
-                      "type": "number"
-                    },
-                    "approvalStatus": {
-                      "type": "string"
-                    },
-                    "floorCount": {
-                      "type": "number"
-                    },
-                    "assetId": {
-                      "type": "string"
-                    }
-                  },
-                  "additionalProperties": false
-                },
-                "verticalExtent": {
-                  "type": "object",
-                  "properties": {
-                    "lower": {
-                      "type": "number"
-                    },
-                    "upper": {
-                      "type": "number"
-                    },
-                    "unit": {
-                      "type": "string",
-                      "enum": [
-                        "m"
-                      ]
-                    },
-                    "reference": {
-                      "type": "string"
-                    },
-                    "evidenceState": {
-                      "type": "string"
-                    },
-                    "evidence": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "sourceRevisionId": {
-                            "type": "string",
-                            "format": "uuid",
-                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                          },
-                          "page": {
-                            "type": "integer",
-                            "minimum": -9007199254740991,
-                            "maximum": 9007199254740991
-                          },
-                          "row": {
-                            "type": "integer",
-                            "minimum": -9007199254740991,
-                            "maximum": 9007199254740991
-                          },
-                          "partId": {
-                            "type": "string",
-                            "format": "uuid",
-                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                          },
-                          "featureId": {
-                            "type": "string"
-                          },
-                          "jsonPointer": {
-                            "type": "string"
-                          },
-                          "region": {
-                            "type": "object",
-                            "properties": {
-                              "x": {
-                                "type": "number"
-                              },
-                              "y": {
-                                "type": "number"
-                              },
-                              "width": {
-                                "type": "number"
-                              },
-                              "height": {
-                                "type": "number"
-                              },
-                              "unit": {
-                                "type": "string",
-                                "enum": [
-                                  "normalized"
-                                ]
-                              }
-                            },
-                            "required": [
-                              "x",
-                              "y",
-                              "width",
-                              "height",
-                              "unit"
-                            ],
-                            "additionalProperties": false
-                          }
-                        },
-                        "required": [
-                          "sourceRevisionId"
-                        ],
-                        "additionalProperties": false
-                      }
-                    }
-                  },
-                  "required": [
-                    "lower",
-                    "upper",
-                    "unit",
-                    "reference",
-                    "evidenceState",
-                    "evidence"
-                  ],
-                  "additionalProperties": false
-                },
-                "utilityProfile": {
-                  "type": "object",
-                  "additionalProperties": {
-                    "description": "Retained source-specific or processor-specific value."
-                  }
-                }
-              },
-              "required": [
-                "id",
-                "identifier",
-                "areaId",
-                "revision",
-                "sourceRevisionId",
-                "datasetNamespace",
-                "sourceKey",
-                "name",
-                "kind",
-                "geometry",
-                "geographicGeometry",
-                "sourceGeometry",
-                "height",
-                "worldStatus",
-                "properties",
-                "areaM2",
-                "evidence",
-                "representation"
-              ],
-              "additionalProperties": false
-            }
-          },
-          "packages": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "imagery": {
-                  "type": "object",
-                  "properties": {
-                    "clusterId": {
-                      "type": "string",
-                      "minLength": 1,
-                      "maxLength": 120
-                    },
-                    "classification": {
-                      "type": "string",
-                      "enum": [
-                        "test_only"
-                      ]
-                    },
-                    "analyticalEligibility": {
-                      "type": "string",
-                      "enum": [
-                        "not_assessed"
-                      ]
-                    },
-                    "chips": {
-                      "minItems": 1,
-                      "maxItems": 64,
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "chipId": {
-                            "type": "string",
-                            "format": "uuid",
-                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                          },
-                          "sourceId": {
-                            "type": "string",
-                            "format": "uuid",
-                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                          },
-                          "sourceSha256": {
-                            "type": "string",
-                            "pattern": "^[a-f0-9]{64}$"
-                          },
-                          "sourceCrs": {
-                            "type": "string",
-                            "enum": [
-                              "EPSG:4326"
-                            ]
-                          },
-                          "affine": {
-                            "type": "array",
-                            "items": {
-                              "anyOf": [
-                                {
-                                  "type": "number"
-                                },
-                                {
-                                  "type": "number"
-                                },
-                                {
-                                  "type": "number"
-                                },
-                                {
-                                  "type": "number"
-                                },
-                                {
-                                  "type": "number"
-                                },
-                                {
-                                  "type": "number"
-                                }
-                              ]
-                            },
-                            "minItems": 6,
-                            "maxItems": 6
-                          },
-                          "width": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "exclusiveMinimum": true,
-                            "maximum": 256
-                          },
-                          "height": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "exclusiveMinimum": true,
-                            "maximum": 256
-                          },
-                          "originalUrl": {
-                            "type": "string",
-                            "format": "uri"
-                          },
-                          "acquiredAt": {
-                            "type": "string"
-                          },
-                          "licence": {
-                            "type": "string",
-                            "enum": [
-                              "CC-BY-NC-4.0"
-                            ]
-                          },
-                          "upstreamConditions": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 1000
-                          }
-                        },
-                        "required": [
-                          "chipId",
-                          "sourceId",
-                          "sourceSha256",
-                          "sourceCrs",
-                          "affine",
-                          "width",
-                          "height",
-                          "originalUrl",
-                          "acquiredAt",
-                          "licence",
-                          "upstreamConditions"
-                        ],
-                        "additionalProperties": false
-                      }
-                    }
-                  },
-                  "required": [
-                    "clusterId",
-                    "classification",
-                    "analyticalEligibility",
-                    "chips"
-                  ],
-                  "additionalProperties": false
-                },
-                "geometryFree": {
-                  "type": "boolean",
-                  "enum": [
-                    true
-                  ]
-                },
-                "administrativeContext": {
-                  "type": "object",
-                  "properties": {
-                    "sourceId": {
-                      "type": "string",
-                      "format": "uuid",
-                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                    },
-                    "sourceCrs": {
-                      "type": "string"
-                    },
-                    "units": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string",
-                            "format": "uuid",
-                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                          },
-                          "sourceKey": {
-                            "type": "string"
-                          },
-                          "kind": {
-                            "type": "string",
-                            "enum": [
-                              "sector"
-                            ]
-                          },
-                          "name": {
-                            "type": "string"
-                          },
-                          "rings": {
-                            "type": "array",
-                            "items": {
-                              "type": "array",
-                              "items": {
-                                "type": "array",
-                                "items": {
-                                  "anyOf": [
-                                    {
-                                      "type": "number"
-                                    },
-                                    {
-                                      "type": "number"
-                                    }
-                                  ]
-                                },
-                                "minItems": 2,
-                                "maxItems": 2
-                              }
-                            }
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "sourceKey",
-                          "kind",
-                          "name",
-                          "rings"
-                        ],
-                        "additionalProperties": false
-                      }
-                    }
-                  },
-                  "required": [
-                    "sourceId",
-                    "sourceCrs",
-                    "units"
-                  ],
-                  "additionalProperties": false
-                },
-                "documentPins": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "sourceId": {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                      },
-                      "sourceRevision": {
-                        "type": "integer",
-                        "minimum": -9007199254740991,
-                        "maximum": 9007199254740991
-                      },
-                      "sourceSha256": {
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "sourceId",
-                      "sourceRevision",
-                      "sourceSha256"
-                    ],
-                    "additionalProperties": false
-                  }
-                },
-                "sourceMetadata": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "key": {
-                        "type": "string"
-                      },
-                      "filename": {
-                        "type": "string"
-                      },
-                      "sourceSha256": {
-                        "type": "string"
-                      },
-                      "originalUrl": {
-                        "type": "string"
-                      },
-                      "issuer": {
-                        "type": "string"
-                      },
-                      "acquiredAt": {
-                        "type": "string"
-                      },
-                      "permission": {
-                        "type": "string",
-                        "enum": [
-                          "unconfirmed"
-                        ]
-                      },
-                      "classification": {
-                        "type": "string",
-                        "enum": [
-                          "test_only"
-                        ]
-                      }
-                    },
-                    "required": [
-                      "key",
-                      "filename",
-                      "sourceSha256",
-                      "originalUrl",
-                      "issuer",
-                      "acquiredAt",
-                      "permission",
-                      "classification"
-                    ],
-                    "additionalProperties": false
-                  }
-                },
-                "quarantine": {
-                  "type": "object",
-                  "properties": {
-                    "total": {
-                      "type": "integer",
-                      "minimum": 1,
-                      "maximum": 2000
-                    },
-                    "accepted": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 2000
-                    },
-                    "rejected": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 2000
-                    },
-                    "rejections": {
-                      "maxItems": 2000,
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "featureIndex": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "maximum": 9007199254740991
-                          },
-                          "sourceKey": {
-                            "nullable": true,
-                            "type": "string",
-                            "maxLength": 256
-                          },
-                          "code": {
-                            "type": "string",
-                            "enum": [
-                              "INVALID_GEOMETRY",
-                              "GEOMETRY_KIND"
-                            ]
-                          },
-                          "reason": {
-                            "type": "string",
-                            "minLength": 1,
-                            "maxLength": 500
-                          }
-                        },
-                        "required": [
-                          "featureIndex",
-                          "sourceKey",
-                          "code",
-                          "reason"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "version": {
-                      "type": "string",
-                      "enum": [
-                        "gis-quarantine/1"
-                      ]
-                    },
-                    "sourceSha256": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{64}$"
-                    },
-                    "sourceId": {
-                      "type": "string",
-                      "format": "uuid",
-                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                    },
-                    "sourceRevision": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "exclusiveMinimum": true,
-                      "maximum": 9007199254740991
-                    },
-                    "message": {
-                      "type": "string",
-                      "minLength": 1,
-                      "maxLength": 1000
-                    },
-                    "complete": {
-                      "type": "boolean",
-                      "enum": [
-                        false
-                      ]
-                    }
-                  },
-                  "required": [
-                    "total",
-                    "accepted",
-                    "rejected",
-                    "rejections",
-                    "version",
-                    "sourceSha256",
-                    "message",
-                    "complete"
-                  ],
-                  "additionalProperties": false
-                },
-                "id": {
-                  "type": "string",
-                  "format": "uuid",
-                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                },
-                "schemaVersion": {
-                  "type": "string",
-                  "enum": [
-                    "ulpin-canonical/2"
-                  ]
-                },
-                "areaId": {
-                  "type": "string",
-                  "format": "uuid",
-                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                },
-                "name": {
-                  "type": "string"
-                },
-                "datasetNamespace": {
-                  "type": "string"
-                },
-                "revision": {
-                  "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991
-                },
-                "state": {
-                  "type": "string",
-                  "enum": [
-                    "RECEIVED",
-                    "NEEDS_INPUT",
-                    "READY_FOR_REVIEW",
-                    "REVIEWED",
-                    "COMMITTED"
-                  ]
-                },
-                "sourceRevisionIds": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                  }
-                },
-                "features": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "sourceFeatureIndex": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 9007199254740991
-                      },
-                      "id": {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                      },
-                      "identifier": {
-                        "type": "string"
-                      },
-                      "areaId": {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                      },
-                      "revision": {
-                        "type": "integer",
-                        "minimum": -9007199254740991,
-                        "maximum": 9007199254740991
-                      },
-                      "sourceRevisionId": {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                      },
-                      "datasetNamespace": {
-                        "type": "string"
-                      },
-                      "sourceKey": {
-                        "type": "string"
-                      },
-                      "name": {
-                        "type": "string"
-                      },
-                      "kind": {
-                        "type": "string",
-                        "enum": [
-                          "building",
-                          "parcel",
-                          "road",
-                          "public_land",
-                          "utility"
-                        ]
-                      },
-                      "geometry": {
-                        "nullable": true,
-                        "type": "object",
-                        "properties": {
-                          "type": {
-                            "type": "string",
-                            "enum": [
-                              "GeometryCollection",
-                              "Point",
-                              "MultiPoint",
-                              "LineString",
-                              "MultiLineString",
-                              "Polygon",
-                              "MultiPolygon"
-                            ]
-                          },
-                          "coordinates": {
-                            "anyOf": [
-                              {
-                                "type": "array",
-                                "items": {
-                                  "type": "number"
-                                }
-                              },
-                              {
-                                "type": "array",
-                                "items": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "number"
-                                  }
-                                }
-                              },
-                              {
-                                "type": "array",
-                                "items": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "number"
-                                    }
-                                  }
-                                }
-                              },
-                              {
-                                "type": "array",
-                                "items": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "array",
-                                      "items": {
-                                        "type": "number"
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            ]
-                          },
-                          "geometries": {
-                            "type": "array",
-                            "items": {
-                              "description": "Recursive AreaGeometry member."
-                            }
-                          }
-                        },
-                        "required": [
-                          "type"
-                        ],
-                        "additionalProperties": false
-                      },
-                      "geographicGeometry": {
-                        "nullable": true,
-                        "type": "object",
-                        "properties": {
-                          "type": {
-                            "type": "string",
-                            "enum": [
-                              "GeometryCollection",
-                              "Point",
-                              "MultiPoint",
-                              "LineString",
-                              "MultiLineString",
-                              "Polygon",
-                              "MultiPolygon"
-                            ]
-                          },
-                          "coordinates": {
-                            "anyOf": [
-                              {
-                                "type": "array",
-                                "items": {
-                                  "type": "number"
-                                }
-                              },
-                              {
-                                "type": "array",
-                                "items": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "number"
-                                  }
-                                }
-                              },
-                              {
-                                "type": "array",
-                                "items": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "number"
-                                    }
-                                  }
-                                }
-                              },
-                              {
-                                "type": "array",
-                                "items": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "array",
-                                      "items": {
-                                        "type": "number"
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            ]
-                          },
-                          "geometries": {
-                            "type": "array",
-                            "items": {
-                              "description": "Recursive AreaGeometry member."
-                            }
-                          }
-                        },
-                        "required": [
-                          "type"
-                        ],
-                        "additionalProperties": false
-                      },
-                      "sourceGeometry": {
-                        "description": "Retained source-specific or processor-specific value."
-                      },
-                      "placement": {
-                        "type": "string",
-                        "enum": [
-                          "unknown"
-                        ]
-                      },
-                      "sourceReference": {
-                        "type": "object",
-                        "properties": {
-                          "sourceCrs": {
-                            "type": "string"
-                          },
-                          "analysisCrs": {
-                            "type": "string"
-                          },
-                          "origin": {
-                            "type": "array",
-                            "items": {
-                              "anyOf": [
-                                {
-                                  "type": "number"
-                                },
-                                {
-                                  "type": "number"
-                                }
-                              ]
-                            },
-                            "minItems": 2,
-                            "maxItems": 2
-                          },
-                          "anchor": {
-                            "type": "array",
-                            "items": {
-                              "anyOf": [
-                                {
-                                  "type": "number"
-                                },
-                                {
-                                  "type": "number"
-                                }
-                              ]
-                            },
-                            "minItems": 2,
-                            "maxItems": 2
-                          },
-                          "transformVersion": {
-                            "type": "string"
-                          },
-                          "verticalReference": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "sourceCrs",
-                          "analysisCrs",
-                          "origin",
-                          "anchor",
-                          "transformVersion",
-                          "verticalReference"
-                        ],
-                        "additionalProperties": false
-                      },
-                      "height": {
-                        "type": "object",
-                        "properties": {
-                          "state": {
-                            "type": "string",
-                            "enum": [
-                              "unknown",
-                              "unresolved",
-                              "estimated",
-                              "source_supported",
-                              "reviewed"
-                            ]
-                          },
-                          "value": {
-                            "nullable": true,
-                            "type": "number"
-                          },
-                          "unit": {
-                            "type": "string",
-                            "enum": [
-                              "m"
-                            ]
-                          },
-                          "meaning": {
-                            "type": "string"
-                          },
-                          "reference": {
-                            "type": "string"
-                          },
-                          "evidence": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "sourceRevisionId": {
-                                  "type": "string",
-                                  "format": "uuid",
-                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                },
-                                "page": {
-                                  "type": "integer",
-                                  "minimum": -9007199254740991,
-                                  "maximum": 9007199254740991
-                                },
-                                "row": {
-                                  "type": "integer",
-                                  "minimum": -9007199254740991,
-                                  "maximum": 9007199254740991
-                                },
-                                "partId": {
-                                  "type": "string",
-                                  "format": "uuid",
-                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                },
-                                "featureId": {
-                                  "type": "string"
-                                },
-                                "jsonPointer": {
-                                  "type": "string"
-                                },
-                                "region": {
-                                  "type": "object",
-                                  "properties": {
-                                    "x": {
-                                      "type": "number"
-                                    },
-                                    "y": {
-                                      "type": "number"
-                                    },
-                                    "width": {
-                                      "type": "number"
-                                    },
-                                    "height": {
-                                      "type": "number"
-                                    },
-                                    "unit": {
-                                      "type": "string",
-                                      "enum": [
-                                        "normalized"
-                                      ]
-                                    }
-                                  },
-                                  "required": [
-                                    "x",
-                                    "y",
-                                    "width",
-                                    "height",
-                                    "unit"
-                                  ],
-                                  "additionalProperties": false
-                                }
-                              },
-                              "required": [
-                                "sourceRevisionId"
-                              ],
-                              "additionalProperties": false
-                            }
-                          },
-                          "claimId": {
-                            "type": "string",
-                            "format": "uuid",
-                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                          },
-                          "method": {
-                            "type": "string"
-                          },
-                          "originalValue": {
-                            "description": "Retained source-specific or processor-specific value."
-                          },
-                          "originalUnit": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "state",
-                          "value",
-                          "unit",
-                          "meaning",
-                          "reference"
-                        ],
-                        "additionalProperties": false
-                      },
-                      "worldStatus": {
-                        "type": "string",
-                        "enum": [
-                          "observed",
-                          "planned",
-                          "hypothetical",
-                          "synthetic"
-                        ]
-                      },
-                      "properties": {
-                        "type": "object",
-                        "additionalProperties": {
-                          "description": "Retained source-specific or processor-specific value."
-                        }
-                      },
-                      "areaM2": {
-                        "nullable": true,
-                        "type": "number"
-                      },
-                      "evidence": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "sourceRevisionId": {
-                              "type": "string",
-                              "format": "uuid",
-                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                            },
-                            "page": {
-                              "type": "integer",
-                              "minimum": -9007199254740991,
-                              "maximum": 9007199254740991
-                            },
-                            "row": {
-                              "type": "integer",
-                              "minimum": -9007199254740991,
-                              "maximum": 9007199254740991
-                            },
-                            "partId": {
-                              "type": "string",
-                              "format": "uuid",
-                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                            },
-                            "featureId": {
-                              "type": "string"
-                            },
-                            "jsonPointer": {
-                              "type": "string"
-                            },
-                            "region": {
-                              "type": "object",
-                              "properties": {
-                                "x": {
-                                  "type": "number"
-                                },
-                                "y": {
-                                  "type": "number"
-                                },
-                                "width": {
-                                  "type": "number"
-                                },
-                                "height": {
-                                  "type": "number"
-                                },
-                                "unit": {
-                                  "type": "string",
-                                  "enum": [
-                                    "normalized"
-                                  ]
-                                }
-                              },
-                              "required": [
-                                "x",
-                                "y",
-                                "width",
-                                "height",
-                                "unit"
-                              ],
-                              "additionalProperties": false
-                            }
-                          },
-                          "required": [
-                            "sourceRevisionId"
-                          ],
-                          "additionalProperties": false
-                        }
-                      },
-                      "representation": {
-                        "type": "string",
-                        "enum": [
-                          "physical_exterior",
-                          "physical_context"
-                        ]
-                      },
-                      "geometryRole": {
-                        "type": "string"
-                      },
-                      "semantics": {
-                        "type": "object",
-                        "properties": {
-                          "geometryRole": {
-                            "type": "string"
-                          },
-                          "evidenceState": {
-                            "type": "string"
-                          },
-                          "levelReference": {
-                            "type": "string"
-                          },
-                          "sourceDate": {
-                            "type": "string"
-                          },
-                          "validFrom": {
-                            "type": "string"
-                          },
-                          "validTo": {
-                            "type": "string"
-                          },
-                          "horizontalUncertaintyM": {
-                            "type": "number"
-                          },
-                          "approvalStatus": {
-                            "type": "string"
-                          },
-                          "floorCount": {
-                            "type": "number"
-                          },
-                          "assetId": {
-                            "type": "string"
-                          }
-                        },
-                        "additionalProperties": false
-                      },
-                      "verticalExtent": {
-                        "type": "object",
-                        "properties": {
-                          "lower": {
-                            "type": "number"
-                          },
-                          "upper": {
-                            "type": "number"
-                          },
-                          "unit": {
-                            "type": "string",
-                            "enum": [
-                              "m"
-                            ]
-                          },
-                          "reference": {
-                            "type": "string"
-                          },
-                          "evidenceState": {
-                            "type": "string"
-                          },
-                          "evidence": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "sourceRevisionId": {
-                                  "type": "string",
-                                  "format": "uuid",
-                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                },
-                                "page": {
-                                  "type": "integer",
-                                  "minimum": -9007199254740991,
-                                  "maximum": 9007199254740991
-                                },
-                                "row": {
-                                  "type": "integer",
-                                  "minimum": -9007199254740991,
-                                  "maximum": 9007199254740991
-                                },
-                                "partId": {
-                                  "type": "string",
-                                  "format": "uuid",
-                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                },
-                                "featureId": {
-                                  "type": "string"
-                                },
-                                "jsonPointer": {
-                                  "type": "string"
-                                },
-                                "region": {
-                                  "type": "object",
-                                  "properties": {
-                                    "x": {
-                                      "type": "number"
-                                    },
-                                    "y": {
-                                      "type": "number"
-                                    },
-                                    "width": {
-                                      "type": "number"
-                                    },
-                                    "height": {
-                                      "type": "number"
-                                    },
-                                    "unit": {
-                                      "type": "string",
-                                      "enum": [
-                                        "normalized"
-                                      ]
-                                    }
-                                  },
-                                  "required": [
-                                    "x",
-                                    "y",
-                                    "width",
-                                    "height",
-                                    "unit"
-                                  ],
-                                  "additionalProperties": false
-                                }
-                              },
-                              "required": [
-                                "sourceRevisionId"
-                              ],
-                              "additionalProperties": false
-                            }
-                          }
-                        },
-                        "required": [
-                          "lower",
-                          "upper",
-                          "unit",
-                          "reference",
-                          "evidenceState",
-                          "evidence"
-                        ],
-                        "additionalProperties": false
-                      },
-                      "utilityProfile": {
-                        "type": "object",
-                        "additionalProperties": {
-                          "description": "Retained source-specific or processor-specific value."
-                        }
-                      }
-                    },
-                    "required": [
-                      "id",
-                      "identifier",
-                      "areaId",
-                      "revision",
-                      "sourceRevisionId",
-                      "datasetNamespace",
-                      "sourceKey",
-                      "name",
-                      "kind",
-                      "geometry",
-                      "geographicGeometry",
-                      "sourceGeometry",
-                      "height",
-                      "worldStatus",
-                      "properties",
-                      "areaM2",
-                      "evidence",
-                      "representation"
-                    ],
-                    "additionalProperties": false
-                  }
-                },
-                "questions": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "kind": {
-                        "type": "string",
-                        "enum": [
-                          "missing_height",
-                          "conflicting_claims"
-                        ]
-                      },
-                      "id": {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                      },
-                      "entityId": {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                      },
-                      "property": {
-                        "type": "string"
-                      },
-                      "message": {
-                        "type": "string"
-                      },
-                      "blocks": {
-                        "type": "string"
-                      },
-                      "answer": {
-                        "type": "object",
-                        "properties": {
-                          "choice": {
-                            "type": "string",
-                            "enum": [
-                              "keep_2d",
-                              "estimate",
-                              "select_claim"
-                            ]
-                          },
-                          "value": {
-                            "type": "number"
-                          },
-                          "reason": {
-                            "type": "string"
-                          },
-                          "claimId": {
-                            "type": "string",
-                            "format": "uuid",
-                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                          }
-                        },
-                        "required": [
-                          "choice",
-                          "reason"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [
-                      "id",
-                      "entityId",
-                      "property",
-                      "message",
-                      "blocks"
-                    ],
-                    "additionalProperties": false
-                  }
-                },
-                "factCandidates": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                      },
-                      "entityId": {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                      },
-                      "property": {
-                        "type": "string"
-                      },
-                      "value": {
-                        "description": "Retained source-specific or processor-specific value."
-                      },
-                      "unit": {
-                        "type": "string"
-                      },
-                      "referenceFrameId": {
-                        "type": "string"
-                      },
-                      "evidence": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "sourceRevisionId": {
-                              "type": "string",
-                              "format": "uuid",
-                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                            },
-                            "page": {
-                              "type": "integer",
-                              "minimum": -9007199254740991,
-                              "maximum": 9007199254740991
-                            },
-                            "row": {
-                              "type": "integer",
-                              "minimum": -9007199254740991,
-                              "maximum": 9007199254740991
-                            },
-                            "partId": {
-                              "type": "string",
-                              "format": "uuid",
-                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                            },
-                            "featureId": {
-                              "type": "string"
-                            },
-                            "jsonPointer": {
-                              "type": "string"
-                            },
-                            "region": {
-                              "type": "object",
-                              "properties": {
-                                "x": {
-                                  "type": "number"
-                                },
-                                "y": {
-                                  "type": "number"
-                                },
-                                "width": {
-                                  "type": "number"
-                                },
-                                "height": {
-                                  "type": "number"
-                                },
-                                "unit": {
-                                  "type": "string",
-                                  "enum": [
-                                    "normalized"
-                                  ]
-                                }
-                              },
-                              "required": [
-                                "x",
-                                "y",
-                                "width",
-                                "height",
-                                "unit"
-                              ],
-                              "additionalProperties": false
-                            }
-                          },
-                          "required": [
-                            "sourceRevisionId"
-                          ],
-                          "additionalProperties": false
-                        }
-                      },
-                      "method": {
-                        "type": "string",
-                        "enum": [
-                          "native_parse",
-                          "ai_extraction",
-                          "human_entry",
-                          "derived"
-                        ]
-                      },
-                      "evidenceState": {
-                        "type": "string",
-                        "enum": [
-                          "unresolved",
-                          "estimated",
-                          "source_supported",
-                          "reviewed"
-                        ]
-                      },
-                      "worldStatus": {
-                        "type": "string",
-                        "enum": [
-                          "observed",
-                          "planned",
-                          "hypothetical",
-                          "synthetic"
-                        ]
-                      },
-                      "subject": {
-                        "type": "string"
-                      },
-                      "transcription": {
-                        "oneOf": [
-                          {
-                            "type": "object",
-                            "properties": {
-                              "by": {
-                                "type": "string",
-                                "enum": [
-                                  "agent"
-                                ]
-                              },
-                              "agent": {
-                                "type": "string",
-                                "minLength": 1,
-                                "maxLength": 128,
-                                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/@+-]*$"
-                              }
-                            },
-                            "required": [
-                              "by",
-                              "agent"
-                            ],
-                            "additionalProperties": false
-                          },
-                          {
-                            "type": "object",
-                            "properties": {
-                              "by": {
-                                "type": "string",
-                                "enum": [
-                                  "officer"
-                                ]
-                              }
-                            },
-                            "required": [
-                              "by"
-                            ],
-                            "additionalProperties": false
-                          }
-                        ]
-                      }
-                    },
-                    "required": [
-                      "id",
-                      "entityId",
-                      "property",
-                      "value",
-                      "evidence",
-                      "method",
-                      "evidenceState",
-                      "worldStatus"
-                    ],
-                    "additionalProperties": false
-                  }
-                },
-                "parts": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                      },
-                      "sourceRevisionId": {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                      },
-                      "locator": {
-                        "type": "string"
-                      },
-                      "text": {
-                        "type": "string"
-                      },
-                      "entityIds": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "format": "uuid",
-                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                        }
-                      },
-                      "copiedFrom": {
-                        "type": "object",
-                        "properties": {
-                          "caseId": {
-                            "type": "string",
-                            "format": "uuid",
-                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                          },
-                          "sourceRevisionId": {
-                            "type": "string",
-                            "format": "uuid",
-                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                          },
-                          "sourceHash": {
-                            "type": "string"
-                          },
-                          "sourceRevision": {
-                            "type": "integer",
-                            "minimum": -9007199254740991,
-                            "maximum": 9007199254740991
-                          },
-                          "sourceProfile": {
-                            "type": "string"
-                          },
-                          "locator": {
-                            "type": "string"
-                          },
-                          "reason": {
-                            "type": "string"
-                          },
-                          "copiedAt": {
-                            "type": "string"
-                          },
-                          "actor": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "caseId",
-                          "sourceRevisionId",
-                          "sourceHash",
-                          "sourceRevision",
-                          "sourceProfile",
-                          "locator",
-                          "reason",
-                          "copiedAt",
-                          "actor"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [
-                      "id",
-                      "sourceRevisionId",
-                      "locator",
-                      "text",
-                      "entityIds"
-                    ],
-                    "additionalProperties": false
-                  }
-                },
-                "warnings": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "createdAt": {
-                  "type": "string"
-                },
-                "sourceWorkspace": {
-                  "type": "object",
-                  "properties": {
-                    "caseId": {
-                      "type": "string",
-                      "format": "uuid",
-                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                    },
-                    "frame": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "horizontalUnit": {
-                          "type": "string",
-                          "enum": [
-                            "m"
-                          ]
-                        },
-                        "verticalUnit": {
-                          "type": "string",
-                          "enum": [
-                            "m"
-                          ]
-                        },
-                        "benchmark": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "horizontalUnit",
-                        "verticalUnit",
-                        "benchmark"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "worldStatus": {
-                      "type": "string",
-                      "enum": [
-                        "observed",
-                        "planned",
-                        "hypothetical",
-                        "synthetic"
-                      ]
-                    },
-                    "areaReferenceFingerprint": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "caseId",
-                    "frame",
-                    "worldStatus",
-                    "areaReferenceFingerprint"
-                  ],
-                  "additionalProperties": false
-                },
-                "review": {
-                  "type": "object",
-                  "properties": {
-                    "areaRevision": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "packageRevision": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "inputFingerprint": {
-                      "type": "string"
-                    },
-                    "findings": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string",
-                            "format": "uuid",
-                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                          },
-                          "category": {
-                            "type": "string",
-                            "enum": [
-                              "geometric",
-                              "coverage",
-                              "rule",
-                              "document"
-                            ]
-                          },
-                          "code": {
-                            "type": "string"
-                          },
-                          "message": {
-                            "type": "string"
-                          },
-                          "featureIds": {
-                            "type": "array",
-                            "items": {
-                              "type": "string",
-                              "format": "uuid",
-                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                            }
-                          },
-                          "areaM2": {
-                            "type": "number"
-                          },
-                          "volumeM3": {
-                            "type": "number"
-                          },
-                          "geometry": {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string",
-                                "enum": [
-                                  "GeometryCollection",
-                                  "Point",
-                                  "MultiPoint",
-                                  "LineString",
-                                  "MultiLineString",
-                                  "Polygon",
-                                  "MultiPolygon"
-                                ]
-                              },
-                              "coordinates": {
-                                "anyOf": [
-                                  {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "number"
-                                    }
-                                  },
-                                  {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "array",
-                                      "items": {
-                                        "type": "number"
-                                      }
-                                    }
-                                  },
-                                  {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "array",
-                                      "items": {
-                                        "type": "array",
-                                        "items": {
-                                          "type": "number"
-                                        }
-                                      }
-                                    }
-                                  },
-                                  {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "array",
-                                      "items": {
-                                        "type": "array",
-                                        "items": {
-                                          "type": "array",
-                                          "items": {
-                                            "type": "number"
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
-                                ]
-                              },
-                              "geometries": {
-                                "type": "array",
-                                "items": {
-                                  "description": "Recursive AreaGeometry member."
-                                }
-                              }
-                            },
-                            "required": [
-                              "type"
-                            ],
-                            "additionalProperties": false
-                          },
-                          "geographicGeometry": {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string",
-                                "enum": [
-                                  "GeometryCollection",
-                                  "Point",
-                                  "MultiPoint",
-                                  "LineString",
-                                  "MultiLineString",
-                                  "Polygon",
-                                  "MultiPolygon"
-                                ]
-                              },
-                              "coordinates": {
-                                "anyOf": [
-                                  {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "number"
-                                    }
-                                  },
-                                  {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "array",
-                                      "items": {
-                                        "type": "number"
-                                      }
-                                    }
-                                  },
-                                  {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "array",
-                                      "items": {
-                                        "type": "array",
-                                        "items": {
-                                          "type": "number"
-                                        }
-                                      }
-                                    }
-                                  },
-                                  {
-                                    "type": "array",
-                                    "items": {
-                                      "type": "array",
-                                      "items": {
-                                        "type": "array",
-                                        "items": {
-                                          "type": "array",
-                                          "items": {
-                                            "type": "number"
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
-                                ]
-                              },
-                              "geometries": {
-                                "type": "array",
-                                "items": {
-                                  "description": "Recursive AreaGeometry member."
-                                }
-                              }
-                            },
-                            "required": [
-                              "type"
-                            ],
-                            "additionalProperties": false
-                          },
-                          "participants": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "sourceFeatureIndex": {
-                                  "type": "integer",
-                                  "minimum": 0,
-                                  "maximum": 9007199254740991
-                                },
-                                "id": {
-                                  "type": "string",
-                                  "format": "uuid",
-                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                },
-                                "identifier": {
-                                  "type": "string"
-                                },
-                                "areaId": {
-                                  "type": "string",
-                                  "format": "uuid",
-                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                },
-                                "revision": {
-                                  "type": "integer",
-                                  "minimum": -9007199254740991,
-                                  "maximum": 9007199254740991
-                                },
-                                "sourceRevisionId": {
-                                  "type": "string",
-                                  "format": "uuid",
-                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                },
-                                "datasetNamespace": {
-                                  "type": "string"
-                                },
-                                "sourceKey": {
-                                  "type": "string"
-                                },
-                                "name": {
-                                  "type": "string"
-                                },
-                                "kind": {
-                                  "type": "string",
-                                  "enum": [
-                                    "building",
-                                    "parcel",
-                                    "road",
-                                    "public_land",
-                                    "utility"
-                                  ]
-                                },
-                                "geometry": {
-                                  "nullable": true,
-                                  "type": "object",
-                                  "properties": {
-                                    "type": {
-                                      "type": "string",
-                                      "enum": [
-                                        "GeometryCollection",
-                                        "Point",
-                                        "MultiPoint",
-                                        "LineString",
-                                        "MultiLineString",
-                                        "Polygon",
-                                        "MultiPolygon"
-                                      ]
-                                    },
-                                    "coordinates": {
-                                      "anyOf": [
-                                        {
-                                          "type": "array",
-                                          "items": {
-                                            "type": "number"
-                                          }
-                                        },
-                                        {
-                                          "type": "array",
-                                          "items": {
-                                            "type": "array",
-                                            "items": {
-                                              "type": "number"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "type": "array",
-                                          "items": {
-                                            "type": "array",
-                                            "items": {
-                                              "type": "array",
-                                              "items": {
-                                                "type": "number"
-                                              }
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "type": "array",
-                                          "items": {
-                                            "type": "array",
-                                            "items": {
-                                              "type": "array",
-                                              "items": {
-                                                "type": "array",
-                                                "items": {
-                                                  "type": "number"
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    "geometries": {
-                                      "type": "array",
-                                      "items": {
-                                        "description": "Recursive AreaGeometry member."
-                                      }
-                                    }
-                                  },
-                                  "required": [
-                                    "type"
-                                  ],
-                                  "additionalProperties": false
-                                },
-                                "geographicGeometry": {
-                                  "nullable": true,
-                                  "type": "object",
-                                  "properties": {
-                                    "type": {
-                                      "type": "string",
-                                      "enum": [
-                                        "GeometryCollection",
-                                        "Point",
-                                        "MultiPoint",
-                                        "LineString",
-                                        "MultiLineString",
-                                        "Polygon",
-                                        "MultiPolygon"
-                                      ]
-                                    },
-                                    "coordinates": {
-                                      "anyOf": [
-                                        {
-                                          "type": "array",
-                                          "items": {
-                                            "type": "number"
-                                          }
-                                        },
-                                        {
-                                          "type": "array",
-                                          "items": {
-                                            "type": "array",
-                                            "items": {
-                                              "type": "number"
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "type": "array",
-                                          "items": {
-                                            "type": "array",
-                                            "items": {
-                                              "type": "array",
-                                              "items": {
-                                                "type": "number"
-                                              }
-                                            }
-                                          }
-                                        },
-                                        {
-                                          "type": "array",
-                                          "items": {
-                                            "type": "array",
-                                            "items": {
-                                              "type": "array",
-                                              "items": {
-                                                "type": "array",
-                                                "items": {
-                                                  "type": "number"
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      ]
-                                    },
-                                    "geometries": {
-                                      "type": "array",
-                                      "items": {
-                                        "description": "Recursive AreaGeometry member."
-                                      }
-                                    }
-                                  },
-                                  "required": [
-                                    "type"
-                                  ],
-                                  "additionalProperties": false
-                                },
-                                "sourceGeometry": {
-                                  "description": "Retained source-specific or processor-specific value."
-                                },
-                                "placement": {
-                                  "type": "string",
-                                  "enum": [
-                                    "unknown"
-                                  ]
-                                },
-                                "sourceReference": {
-                                  "type": "object",
-                                  "properties": {
-                                    "sourceCrs": {
-                                      "type": "string"
-                                    },
-                                    "analysisCrs": {
-                                      "type": "string"
-                                    },
-                                    "origin": {
-                                      "type": "array",
-                                      "items": {
-                                        "anyOf": [
-                                          {
-                                            "type": "number"
-                                          },
-                                          {
-                                            "type": "number"
-                                          }
-                                        ]
-                                      },
-                                      "minItems": 2,
-                                      "maxItems": 2
-                                    },
-                                    "anchor": {
-                                      "type": "array",
-                                      "items": {
-                                        "anyOf": [
-                                          {
-                                            "type": "number"
-                                          },
-                                          {
-                                            "type": "number"
-                                          }
-                                        ]
-                                      },
-                                      "minItems": 2,
-                                      "maxItems": 2
-                                    },
-                                    "transformVersion": {
-                                      "type": "string"
-                                    },
-                                    "verticalReference": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "required": [
-                                    "sourceCrs",
-                                    "analysisCrs",
-                                    "origin",
-                                    "anchor",
-                                    "transformVersion",
-                                    "verticalReference"
-                                  ],
-                                  "additionalProperties": false
-                                },
-                                "height": {
-                                  "type": "object",
-                                  "properties": {
-                                    "state": {
-                                      "type": "string",
-                                      "enum": [
-                                        "unknown",
-                                        "unresolved",
-                                        "estimated",
-                                        "source_supported",
-                                        "reviewed"
-                                      ]
-                                    },
-                                    "value": {
-                                      "nullable": true,
-                                      "type": "number"
-                                    },
-                                    "unit": {
-                                      "type": "string",
-                                      "enum": [
-                                        "m"
-                                      ]
-                                    },
-                                    "meaning": {
-                                      "type": "string"
-                                    },
-                                    "reference": {
-                                      "type": "string"
-                                    },
-                                    "evidence": {
-                                      "type": "array",
-                                      "items": {
-                                        "type": "object",
-                                        "properties": {
-                                          "sourceRevisionId": {
-                                            "type": "string",
-                                            "format": "uuid",
-                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                          },
-                                          "page": {
-                                            "type": "integer",
-                                            "minimum": -9007199254740991,
-                                            "maximum": 9007199254740991
-                                          },
-                                          "row": {
-                                            "type": "integer",
-                                            "minimum": -9007199254740991,
-                                            "maximum": 9007199254740991
-                                          },
-                                          "partId": {
-                                            "type": "string",
-                                            "format": "uuid",
-                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                          },
-                                          "featureId": {
-                                            "type": "string"
-                                          },
-                                          "jsonPointer": {
-                                            "type": "string"
-                                          },
-                                          "region": {
-                                            "type": "object",
-                                            "properties": {
-                                              "x": {
-                                                "type": "number"
-                                              },
-                                              "y": {
-                                                "type": "number"
-                                              },
-                                              "width": {
-                                                "type": "number"
-                                              },
-                                              "height": {
-                                                "type": "number"
-                                              },
-                                              "unit": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "normalized"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "x",
-                                              "y",
-                                              "width",
-                                              "height",
-                                              "unit"
-                                            ],
-                                            "additionalProperties": false
-                                          }
-                                        },
-                                        "required": [
-                                          "sourceRevisionId"
-                                        ],
-                                        "additionalProperties": false
-                                      }
-                                    },
-                                    "claimId": {
-                                      "type": "string",
-                                      "format": "uuid",
-                                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                    },
-                                    "method": {
-                                      "type": "string"
-                                    },
-                                    "originalValue": {
-                                      "description": "Retained source-specific or processor-specific value."
-                                    },
-                                    "originalUnit": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "required": [
-                                    "state",
-                                    "value",
-                                    "unit",
-                                    "meaning",
-                                    "reference"
-                                  ],
-                                  "additionalProperties": false
-                                },
-                                "worldStatus": {
-                                  "type": "string",
-                                  "enum": [
-                                    "observed",
-                                    "planned",
-                                    "hypothetical",
-                                    "synthetic"
-                                  ]
-                                },
-                                "properties": {
-                                  "type": "object",
-                                  "additionalProperties": {
-                                    "description": "Retained source-specific or processor-specific value."
-                                  }
-                                },
-                                "areaM2": {
-                                  "nullable": true,
-                                  "type": "number"
-                                },
-                                "evidence": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "object",
-                                    "properties": {
-                                      "sourceRevisionId": {
-                                        "type": "string",
-                                        "format": "uuid",
-                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                      },
-                                      "page": {
-                                        "type": "integer",
-                                        "minimum": -9007199254740991,
-                                        "maximum": 9007199254740991
-                                      },
-                                      "row": {
-                                        "type": "integer",
-                                        "minimum": -9007199254740991,
-                                        "maximum": 9007199254740991
-                                      },
-                                      "partId": {
-                                        "type": "string",
-                                        "format": "uuid",
-                                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                      },
-                                      "featureId": {
-                                        "type": "string"
-                                      },
-                                      "jsonPointer": {
-                                        "type": "string"
-                                      },
-                                      "region": {
-                                        "type": "object",
-                                        "properties": {
-                                          "x": {
-                                            "type": "number"
-                                          },
-                                          "y": {
-                                            "type": "number"
-                                          },
-                                          "width": {
-                                            "type": "number"
-                                          },
-                                          "height": {
-                                            "type": "number"
-                                          },
-                                          "unit": {
-                                            "type": "string",
-                                            "enum": [
-                                              "normalized"
-                                            ]
-                                          }
-                                        },
-                                        "required": [
-                                          "x",
-                                          "y",
-                                          "width",
-                                          "height",
-                                          "unit"
-                                        ],
-                                        "additionalProperties": false
-                                      }
-                                    },
-                                    "required": [
-                                      "sourceRevisionId"
-                                    ],
-                                    "additionalProperties": false
-                                  }
-                                },
-                                "representation": {
-                                  "type": "string",
-                                  "enum": [
-                                    "physical_exterior",
-                                    "physical_context"
-                                  ]
-                                },
-                                "geometryRole": {
-                                  "type": "string"
-                                },
-                                "semantics": {
-                                  "type": "object",
-                                  "properties": {
-                                    "geometryRole": {
-                                      "type": "string"
-                                    },
-                                    "evidenceState": {
-                                      "type": "string"
-                                    },
-                                    "levelReference": {
-                                      "type": "string"
-                                    },
-                                    "sourceDate": {
-                                      "type": "string"
-                                    },
-                                    "validFrom": {
-                                      "type": "string"
-                                    },
-                                    "validTo": {
-                                      "type": "string"
-                                    },
-                                    "horizontalUncertaintyM": {
-                                      "type": "number"
-                                    },
-                                    "approvalStatus": {
-                                      "type": "string"
-                                    },
-                                    "floorCount": {
-                                      "type": "number"
-                                    },
-                                    "assetId": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "additionalProperties": false
-                                },
-                                "verticalExtent": {
-                                  "type": "object",
-                                  "properties": {
-                                    "lower": {
-                                      "type": "number"
-                                    },
-                                    "upper": {
-                                      "type": "number"
-                                    },
-                                    "unit": {
-                                      "type": "string",
-                                      "enum": [
-                                        "m"
-                                      ]
-                                    },
-                                    "reference": {
-                                      "type": "string"
-                                    },
-                                    "evidenceState": {
-                                      "type": "string"
-                                    },
-                                    "evidence": {
-                                      "type": "array",
-                                      "items": {
-                                        "type": "object",
-                                        "properties": {
-                                          "sourceRevisionId": {
-                                            "type": "string",
-                                            "format": "uuid",
-                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                          },
-                                          "page": {
-                                            "type": "integer",
-                                            "minimum": -9007199254740991,
-                                            "maximum": 9007199254740991
-                                          },
-                                          "row": {
-                                            "type": "integer",
-                                            "minimum": -9007199254740991,
-                                            "maximum": 9007199254740991
-                                          },
-                                          "partId": {
-                                            "type": "string",
-                                            "format": "uuid",
-                                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                          },
-                                          "featureId": {
-                                            "type": "string"
-                                          },
-                                          "jsonPointer": {
-                                            "type": "string"
-                                          },
-                                          "region": {
-                                            "type": "object",
-                                            "properties": {
-                                              "x": {
-                                                "type": "number"
-                                              },
-                                              "y": {
-                                                "type": "number"
-                                              },
-                                              "width": {
-                                                "type": "number"
-                                              },
-                                              "height": {
-                                                "type": "number"
-                                              },
-                                              "unit": {
-                                                "type": "string",
-                                                "enum": [
-                                                  "normalized"
-                                                ]
-                                              }
-                                            },
-                                            "required": [
-                                              "x",
-                                              "y",
-                                              "width",
-                                              "height",
-                                              "unit"
-                                            ],
-                                            "additionalProperties": false
-                                          }
-                                        },
-                                        "required": [
-                                          "sourceRevisionId"
-                                        ],
-                                        "additionalProperties": false
-                                      }
-                                    }
-                                  },
-                                  "required": [
-                                    "lower",
-                                    "upper",
-                                    "unit",
-                                    "reference",
-                                    "evidenceState",
-                                    "evidence"
-                                  ],
-                                  "additionalProperties": false
-                                },
-                                "utilityProfile": {
-                                  "type": "object",
-                                  "additionalProperties": {
-                                    "description": "Retained source-specific or processor-specific value."
-                                  }
-                                }
-                              },
-                              "required": [
-                                "id",
-                                "identifier",
-                                "areaId",
-                                "revision",
-                                "sourceRevisionId",
-                                "datasetNamespace",
-                                "sourceKey",
-                                "name",
-                                "kind",
-                                "geometry",
-                                "geographicGeometry",
-                                "sourceGeometry",
-                                "height",
-                                "worldStatus",
-                                "properties",
-                                "areaM2",
-                                "evidence",
-                                "representation"
-                              ],
-                              "additionalProperties": false
-                            }
-                          },
-                          "method": {
-                            "type": "string"
-                          },
-                          "inputRevisions": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "featureId": {
-                                  "type": "string",
-                                  "format": "uuid",
-                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                },
-                                "revision": {
-                                  "type": "integer",
-                                  "minimum": -9007199254740991,
-                                  "maximum": 9007199254740991
-                                },
-                                "sourceRevisionId": {
-                                  "type": "string",
-                                  "format": "uuid",
-                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                }
-                              },
-                              "required": [
-                                "featureId",
-                                "revision",
-                                "sourceRevisionId"
-                              ],
-                              "additionalProperties": false
-                            }
-                          },
-                          "evidence": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "sourceRevisionId": {
-                                  "type": "string",
-                                  "format": "uuid",
-                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                },
-                                "page": {
-                                  "type": "integer",
-                                  "minimum": -9007199254740991,
-                                  "maximum": 9007199254740991
-                                },
-                                "row": {
-                                  "type": "integer",
-                                  "minimum": -9007199254740991,
-                                  "maximum": 9007199254740991
-                                },
-                                "partId": {
-                                  "type": "string",
-                                  "format": "uuid",
-                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                                },
-                                "featureId": {
-                                  "type": "string"
-                                },
-                                "jsonPointer": {
-                                  "type": "string"
-                                },
-                                "region": {
-                                  "type": "object",
-                                  "properties": {
-                                    "x": {
-                                      "type": "number"
-                                    },
-                                    "y": {
-                                      "type": "number"
-                                    },
-                                    "width": {
-                                      "type": "number"
-                                    },
-                                    "height": {
-                                      "type": "number"
-                                    },
-                                    "unit": {
-                                      "type": "string",
-                                      "enum": [
-                                        "normalized"
-                                      ]
-                                    }
-                                  },
-                                  "required": [
-                                    "x",
-                                    "y",
-                                    "width",
-                                    "height",
-                                    "unit"
-                                  ],
-                                  "additionalProperties": false
-                                }
-                              },
-                              "required": [
-                                "sourceRevisionId"
-                              ],
-                              "additionalProperties": false
-                            }
-                          },
-                          "quantities": {
-                            "type": "object",
-                            "additionalProperties": {
-                              "type": "number"
-                            }
-                          },
-                          "limitations": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "category",
-                          "code",
-                          "message",
-                          "featureIds"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "coverage": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    },
-                    "scope": {
-                      "type": "object",
-                      "properties": {
-                        "validator": {
-                          "type": "string",
-                          "enum": [
-                            "area-check-officer-v2"
-                          ]
-                        },
-                        "marginMetres": {
-                          "type": "number"
-                        },
-                        "extent": {
-                          "type": "array",
-                          "items": {
-                            "anyOf": [
-                              {
-                                "type": "number"
-                              },
-                              {
-                                "type": "number"
-                              },
-                              {
-                                "type": "number"
-                              },
-                              {
-                                "type": "number"
-                              }
-                            ]
-                          },
-                          "minItems": 4,
-                          "maxItems": 4
-                        },
-                        "contextCount": {
-                          "type": "integer",
-                          "minimum": -9007199254740991,
-                          "maximum": 9007199254740991
-                        },
-                        "unqualifiedInScope": {
-                          "type": "integer",
-                          "minimum": -9007199254740991,
-                          "maximum": 9007199254740991
-                        },
-                        "areaRevisionAtReview": {
-                          "type": "integer",
-                          "minimum": -9007199254740991,
-                          "maximum": 9007199254740991
-                        }
-                      },
-                      "required": [
-                        "validator",
-                        "marginMetres",
-                        "extent",
-                        "contextCount",
-                        "unqualifiedInScope",
-                        "areaRevisionAtReview"
-                      ],
-                      "additionalProperties": false
-                    }
-                  },
-                  "required": [
-                    "areaRevision",
-                    "packageRevision",
-                    "inputFingerprint",
-                    "findings",
-                    "coverage"
-                  ],
-                  "additionalProperties": false
-                },
-                "acknowledgement": {
-                  "type": "string"
-                },
-                "selectedClaimIds": {
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "format": "uuid",
-                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                  }
-                },
-                "factDecisions": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "claimId": {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-                      },
-                      "reason": {
-                        "type": "string"
-                      },
-                      "time": {
-                        "type": "string"
-                      },
-                      "actor": {
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "claimId",
-                      "reason",
-                      "time",
-                      "actor"
-                    ],
-                    "additionalProperties": false
-                  }
-                },
-                "sourceHash": {
-                  "type": "string"
-                },
-                "importSignature": {
-                  "type": "string"
-                },
-                "extent": {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "number"
-                      },
-                      {
-                        "type": "number"
-                      },
-                      {
-                        "type": "number"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
-                  },
-                  "minItems": 4,
-                  "maxItems": 4
-                },
-                "geographicExtent": {
-                  "type": "array",
-                  "items": {
-                    "anyOf": [
-                      {
-                        "type": "number"
-                      },
-                      {
-                        "type": "number"
-                      },
-                      {
-                        "type": "number"
-                      },
-                      {
-                        "type": "number"
-                      }
-                    ]
-                  },
-                  "minItems": 4,
-                  "maxItems": 4
-                }
-              },
-              "required": [
-                "id",
-                "schemaVersion",
-                "areaId",
-                "name",
-                "datasetNamespace",
-                "revision",
-                "state",
-                "sourceRevisionIds",
-                "features",
-                "questions",
-                "factCandidates",
-                "parts",
-                "warnings",
-                "createdAt"
-              ],
-              "additionalProperties": false
-            }
           },
           "latestCheck": {
             "nullable": true,
@@ -78626,13 +74653,590 @@
               ],
               "additionalProperties": false
             }
+          },
+          "displayFeatures": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sourceFeatureIndex": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "identifier": {
+                  "type": "string"
+                },
+                "areaId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "sourceRevisionId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "datasetNamespace": {
+                  "type": "string"
+                },
+                "sourceKey": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "building",
+                    "parcel",
+                    "road",
+                    "public_land",
+                    "utility"
+                  ]
+                },
+                "geometry": {
+                  "nullable": true,
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "GeometryCollection",
+                        "Point",
+                        "MultiPoint",
+                        "LineString",
+                        "MultiLineString",
+                        "Polygon",
+                        "MultiPolygon"
+                      ]
+                    },
+                    "coordinates": {
+                      "anyOf": [
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "number"
+                          }
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "number"
+                            }
+                          }
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "geometries": {
+                      "type": "array",
+                      "items": {
+                        "description": "Recursive AreaGeometry member."
+                      }
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ],
+                  "additionalProperties": false
+                },
+                "placement": {
+                  "type": "string",
+                  "enum": [
+                    "unknown"
+                  ]
+                },
+                "height": {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "unknown",
+                        "unresolved",
+                        "estimated",
+                        "source_supported",
+                        "reviewed"
+                      ]
+                    },
+                    "value": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "unit": {
+                      "type": "string",
+                      "enum": [
+                        "m"
+                      ]
+                    },
+                    "meaning": {
+                      "type": "string"
+                    },
+                    "reference": {
+                      "type": "string"
+                    },
+                    "evidence": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "sourceRevisionId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "page": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "row": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "partId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "featureId": {
+                            "type": "string"
+                          },
+                          "jsonPointer": {
+                            "type": "string"
+                          },
+                          "region": {
+                            "type": "object",
+                            "properties": {
+                              "x": {
+                                "type": "number"
+                              },
+                              "y": {
+                                "type": "number"
+                              },
+                              "width": {
+                                "type": "number"
+                              },
+                              "height": {
+                                "type": "number"
+                              },
+                              "unit": {
+                                "type": "string",
+                                "enum": [
+                                  "normalized"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "x",
+                              "y",
+                              "width",
+                              "height",
+                              "unit"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "sourceRevisionId"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "claimId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "method": {
+                      "type": "string"
+                    },
+                    "originalValue": {
+                      "description": "Retained source-specific or processor-specific value."
+                    },
+                    "originalUnit": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "value",
+                    "unit",
+                    "meaning",
+                    "reference"
+                  ],
+                  "additionalProperties": false
+                },
+                "worldStatus": {
+                  "type": "string",
+                  "enum": [
+                    "observed",
+                    "planned",
+                    "hypothetical",
+                    "synthetic"
+                  ]
+                },
+                "properties": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "description": "Retained source-specific or processor-specific value."
+                  }
+                },
+                "areaM2": {
+                  "nullable": true,
+                  "type": "number"
+                },
+                "evidence": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "sourceRevisionId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "page": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "row": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "partId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "featureId": {
+                        "type": "string"
+                      },
+                      "jsonPointer": {
+                        "type": "string"
+                      },
+                      "region": {
+                        "type": "object",
+                        "properties": {
+                          "x": {
+                            "type": "number"
+                          },
+                          "y": {
+                            "type": "number"
+                          },
+                          "width": {
+                            "type": "number"
+                          },
+                          "height": {
+                            "type": "number"
+                          },
+                          "unit": {
+                            "type": "string",
+                            "enum": [
+                              "normalized"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "x",
+                          "y",
+                          "width",
+                          "height",
+                          "unit"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "sourceRevisionId"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "representation": {
+                  "type": "string",
+                  "enum": [
+                    "physical_exterior",
+                    "physical_context"
+                  ]
+                },
+                "geometryRole": {
+                  "type": "string"
+                },
+                "semantics": {
+                  "type": "object",
+                  "properties": {
+                    "geometryRole": {
+                      "type": "string"
+                    },
+                    "evidenceState": {
+                      "type": "string"
+                    },
+                    "levelReference": {
+                      "type": "string"
+                    },
+                    "sourceDate": {
+                      "type": "string"
+                    },
+                    "validFrom": {
+                      "type": "string"
+                    },
+                    "validTo": {
+                      "type": "string"
+                    },
+                    "horizontalUncertaintyM": {
+                      "type": "number"
+                    },
+                    "approvalStatus": {
+                      "type": "string"
+                    },
+                    "floorCount": {
+                      "type": "number"
+                    },
+                    "assetId": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "verticalExtent": {
+                  "type": "object",
+                  "properties": {
+                    "lower": {
+                      "type": "number"
+                    },
+                    "upper": {
+                      "type": "number"
+                    },
+                    "unit": {
+                      "type": "string",
+                      "enum": [
+                        "m"
+                      ]
+                    },
+                    "reference": {
+                      "type": "string"
+                    },
+                    "evidenceState": {
+                      "type": "string"
+                    },
+                    "evidence": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "sourceRevisionId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "page": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "row": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "partId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "featureId": {
+                            "type": "string"
+                          },
+                          "jsonPointer": {
+                            "type": "string"
+                          },
+                          "region": {
+                            "type": "object",
+                            "properties": {
+                              "x": {
+                                "type": "number"
+                              },
+                              "y": {
+                                "type": "number"
+                              },
+                              "width": {
+                                "type": "number"
+                              },
+                              "height": {
+                                "type": "number"
+                              },
+                              "unit": {
+                                "type": "string",
+                                "enum": [
+                                  "normalized"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "x",
+                              "y",
+                              "width",
+                              "height",
+                              "unit"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "sourceRevisionId"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "lower",
+                    "upper",
+                    "unit",
+                    "reference",
+                    "evidenceState",
+                    "evidence"
+                  ],
+                  "additionalProperties": false
+                },
+                "utilityProfile": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "description": "Retained source-specific or processor-specific value."
+                  }
+                },
+                "displayState": {
+                  "type": "string",
+                  "enum": [
+                    "unrecorded_proposal"
+                  ]
+                },
+                "proposalPackageId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "required": [
+                "id",
+                "identifier",
+                "areaId",
+                "revision",
+                "sourceRevisionId",
+                "datasetNamespace",
+                "sourceKey",
+                "name",
+                "kind",
+                "geometry",
+                "height",
+                "worldStatus",
+                "properties",
+                "areaM2",
+                "evidence",
+                "representation"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "packages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "RECEIVED",
+                    "NEEDS_INPUT",
+                    "READY_FOR_REVIEW",
+                    "REVIEWED",
+                    "COMMITTED"
+                  ]
+                },
+                "quarantine": {
+                  "nullable": true,
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1000
+                    },
+                    "sourceSha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "sourceSha256"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "id",
+                "state",
+                "quarantine"
+              ],
+              "additionalProperties": false
+            }
           }
         },
         "required": [
           "area",
-          "features",
-          "packages",
-          "latestCheck"
+          "latestCheck",
+          "displayFeatures",
+          "packages"
         ],
         "additionalProperties": false
       },

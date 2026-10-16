@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import context from '../../local/data/nyc-bronx-context.json';
-import type { AreaContext } from '../../api/queries';
+import type { AreaFeature } from '../../api/queries';
 import { drawnCountNote, polygonsOf, toBase, toFootprints, undrawnNote } from './footprints';
 
 describe('toFootprints on the derived NYC OTI area', () => {
-  const footprints = toFootprints((context as unknown as AreaContext).features);
+  const footprints = toFootprints(context.features as unknown as AreaFeature[]);
   it('draws every source building once, keyed by its record ID', () => {
     expect(footprints).toHaveLength(62);
     expect(new Set(footprints.map((f) => f.id)).size).toBe(62);
@@ -46,7 +46,7 @@ describe('drawnCountNote', () => {
 });
 
 // The shape of the live context response for a building installed without geometry; the values are test values.
-const recorded: AreaContext['features'][number] = {
+const recorded: AreaFeature = {
   id: 'building-1',
   kind: 'building',
   name: 'Test building',
@@ -63,15 +63,13 @@ const recorded: AreaContext['features'][number] = {
   worldStatus: 'planned',
   geometryRole: 'unknown',
   representation: 'physical_exterior',
-  sourceGeometry: null,
   datasetNamespace: 'test-namespace',
   sourceRevisionId: 'revision-1',
-  geographicGeometry: null,
 };
 const square = { type: 'Polygon' as const, coordinates: [[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]] };
 
 describe('scene inputs retained by feature object', () => {
-  const features = (context as unknown as AreaContext).features;
+  const features = context.features as unknown as AreaFeature[];
 
   it('returns the same footprint and base input for the same feature', () => {
     const first = toFootprints(features);

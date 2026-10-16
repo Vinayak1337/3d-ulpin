@@ -1,4 +1,6 @@
-import type { GisInspection } from '@ulpin/contracts';
+import type {
+  AreaContext, AreaContextFeature, AreaContextPackage, AreaContextResponse, GisInspection, ImportPackage,
+} from '@ulpin/contracts';
 import { query } from '../../infrastructure/db';
 import { AppError, notFound } from '../../infrastructure/errors';
 import { inspectGisBytes, validateUnmappedGisIdentity } from '../cases/gis-inspection';
@@ -18,6 +20,24 @@ import type {
   externalIdentifierSchema, packageAnswerSchema, packageFactSchema,
 } from './area-validation';
 
+type DisplayFeature = NonNullable<AreaContext['displayFeatures']>[number];
+
+/** The context route's answer: the display features without unread geometry, and package summaries. */
+export function areaContextResponse(context: AreaContext): AreaContextResponse {
+  const { features, displayFeatures = features, packages, ...rest } = context;
+  return { ...rest, displayFeatures: displayFeatures.map(contextFeature), packages: packages.map(contextPackage) };
+}
+
+function contextFeature(feature: DisplayFeature): AreaContextFeature {
+  const { sourceGeometry, geographicGeometry, sourceReference, ...sent } = feature;
+  return sent;
+}
+
+function contextPackage({ id, state, quarantine }: ImportPackage): AreaContextPackage {
+  if (!quarantine) return { id, state, quarantine: null };
+  return { id, state, quarantine: { message: quarantine.message, sourceSha256: quarantine.sourceSha256 } };
+}
+
 /** Domain orchestration for area/source intake; HTTP parsing stays in Nest. */
 export class AreaIntakeService {
   createSourceCase = createSourceCase;
@@ -27,7 +47,7 @@ export class AreaIntakeService {
   catalog() { return SOURCE_CATALOG; }
   listAreas = listAreas;
   /** The HTTP context read is the area screen's display read: bounded to the display limit. */
-  context(id: string) { return areaContext(id, AREA_DISPLAY_LIMIT); }
+  async context(id: string) { return areaContextResponse(await areaContext(id, AREA_DISPLAY_LIMIT)); }
   retiredScenario = areaScenarioRetired;
   resolve = resolveAreaIdentifier;
   bindIdentifier(input: z.output<typeof externalIdentifierSchema>) { return bindExternalIdentifier(input); }

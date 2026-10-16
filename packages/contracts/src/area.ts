@@ -309,3 +309,18 @@ export interface AreaContext {
   packages: ImportPackage[];
   latestCheck: AreaCheck | null;
 }
+/** A display feature as the context route sends it: without the geometry and reference no reader reads. */
+export type AreaContextFeature = Omit<
+  NonNullable<AreaContext["displayFeatures"]>[number], "sourceGeometry" | "geographicGeometry" | "sourceReference"
+>;
+/** An import package as the context route lists it. */
+export interface AreaContextPackage {
+  id: string;
+  state: ImportPackage["state"];
+  quarantine: { message: string; sourceSha256: string } | null;
+}
+/** The answer of GET /api/v1/areas/{areaId}/context: one feature list and package summaries. */
+export interface AreaContextResponse extends Omit<AreaContext, "features" | "displayFeatures" | "packages"> {
+  displayFeatures: AreaContextFeature[];
+  packages: AreaContextPackage[];
+}

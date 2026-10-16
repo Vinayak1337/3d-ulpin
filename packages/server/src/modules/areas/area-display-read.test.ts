@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import type { PhysicalFeature } from '@ulpin/contracts';
+import type { ImportPackage, PhysicalFeature } from '@ulpin/contracts';
+import { areaContextResponse } from './area-intake-service';
 import { AREA_DISPLAY_LIMIT, areaContext } from './areas';
 import { canonicalArea } from './canonical-area';
 
@@ -93,4 +94,32 @@ test('the canonical area summarizes every recorded building without a read per b
     assert.ok(building.footprint.value?.length);
     assert.equal(building.footprint.revisionId, building.revisionId);
     assert(control.statements.length < 40, `${control.statements.length} statements for 2,148 features`);
+  }));
+
+test('the context route sends the display features without unread geometry, and package summaries', async () =>
+  memory(async control => {
+    control.features = demoFeatures(control.area.id, [2, 1, 1]);
+    const context = await areaContext(control.area.id, AREA_DISPLAY_LIMIT);
+    const quarantine = { message: 'Two rings are not closed.', sourceSha256: 'a'.repeat(64) };
+    const [held, recorded] = [randomUUID(), randomUUID()];
+    context.packages = [
+      { id: held, state: 'NEEDS_INPUT', features: context.features, quarantine: { ...quarantine, complete: false } },
+      { id: recorded, state: 'COMMITTED', features: context.features, parts: [] },
+    ] as unknown as ImportPackage[];
+    const { displayFeatures, packages, ...rest } = areaContextResponse(context);
+    const unread = ['sourceGeometry', 'geographicGeometry', 'sourceReference'];
+    assert.deepEqual(Object.keys(rest).sort(),
+      ['area', 'latestCheck', 'parcelAssociations', 'parcelIdentifiers', 'sceneAssets']);
+    for (const key of Object.keys(rest) as (keyof typeof rest)[]) assert.equal(rest[key], context[key]);
+    assert.equal(displayFeatures.length, context.displayFeatures!.length);
+    displayFeatures.forEach((sent, index) => {
+      const full = context.displayFeatures![index] as unknown as Record<string, unknown>;
+      assert.ok(unread.every(key => key in full));
+      assert.deepEqual(Object.keys(sent), Object.keys(full).filter(key => !unread.includes(key)));
+      for (const [key, value] of Object.entries(sent)) assert.equal(value, full[key]);
+    });
+    assert.deepEqual(packages, [
+      { id: held, state: 'NEEDS_INPUT', quarantine },
+      { id: recorded, state: 'COMMITTED', quarantine: null },
+    ]);
   }));

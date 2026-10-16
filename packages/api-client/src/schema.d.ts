@@ -7047,151 +7047,6 @@ export interface components {
             featureCount?: number;
         }[];
         GET_areas_areaId_context_Response_200_application_json: {
-            displayFeatures?: {
-                sourceFeatureIndex?: number;
-                /** Format: uuid */
-                id: string;
-                identifier: string;
-                /** Format: uuid */
-                areaId: string;
-                revision: number;
-                /** Format: uuid */
-                sourceRevisionId: string;
-                datasetNamespace: string;
-                sourceKey: string;
-                name: string;
-                /** @enum {string} */
-                kind: "building" | "parcel" | "road" | "public_land" | "utility";
-                geometry: {
-                    /** @enum {string} */
-                    type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
-                    coordinates?: number[] | number[][] | number[][][] | number[][][][];
-                    geometries?: unknown[];
-                } | null;
-                geographicGeometry: {
-                    /** @enum {string} */
-                    type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
-                    coordinates?: number[] | number[][] | number[][][] | number[][][][];
-                    geometries?: unknown[];
-                } | null;
-                /** @description Retained source-specific or processor-specific value. */
-                sourceGeometry: unknown;
-                /** @enum {string} */
-                placement?: "unknown";
-                sourceReference?: {
-                    sourceCrs: string;
-                    analysisCrs: string;
-                    origin: (number)[];
-                    anchor: (number)[];
-                    transformVersion: string;
-                    verticalReference: string;
-                };
-                height: {
-                    /** @enum {string} */
-                    state: "unknown" | "unresolved" | "estimated" | "source_supported" | "reviewed";
-                    value: number | null;
-                    /** @enum {string} */
-                    unit: "m";
-                    meaning: string;
-                    reference: string;
-                    evidence?: {
-                        /** Format: uuid */
-                        sourceRevisionId: string;
-                        page?: number;
-                        row?: number;
-                        /** Format: uuid */
-                        partId?: string;
-                        featureId?: string;
-                        jsonPointer?: string;
-                        region?: {
-                            x: number;
-                            y: number;
-                            width: number;
-                            height: number;
-                            /** @enum {string} */
-                            unit: "normalized";
-                        };
-                    }[];
-                    /** Format: uuid */
-                    claimId?: string;
-                    method?: string;
-                    /** @description Retained source-specific or processor-specific value. */
-                    originalValue?: unknown;
-                    originalUnit?: string;
-                };
-                /** @enum {string} */
-                worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
-                properties: {
-                    [key: string]: unknown;
-                };
-                areaM2: number | null;
-                evidence: {
-                    /** Format: uuid */
-                    sourceRevisionId: string;
-                    page?: number;
-                    row?: number;
-                    /** Format: uuid */
-                    partId?: string;
-                    featureId?: string;
-                    jsonPointer?: string;
-                    region?: {
-                        x: number;
-                        y: number;
-                        width: number;
-                        height: number;
-                        /** @enum {string} */
-                        unit: "normalized";
-                    };
-                }[];
-                /** @enum {string} */
-                representation: "physical_exterior" | "physical_context";
-                geometryRole?: string;
-                semantics?: {
-                    geometryRole?: string;
-                    evidenceState?: string;
-                    levelReference?: string;
-                    sourceDate?: string;
-                    validFrom?: string;
-                    validTo?: string;
-                    horizontalUncertaintyM?: number;
-                    approvalStatus?: string;
-                    floorCount?: number;
-                    assetId?: string;
-                };
-                verticalExtent?: {
-                    lower: number;
-                    upper: number;
-                    /** @enum {string} */
-                    unit: "m";
-                    reference: string;
-                    evidenceState: string;
-                    evidence: {
-                        /** Format: uuid */
-                        sourceRevisionId: string;
-                        page?: number;
-                        row?: number;
-                        /** Format: uuid */
-                        partId?: string;
-                        featureId?: string;
-                        jsonPointer?: string;
-                        region?: {
-                            x: number;
-                            y: number;
-                            width: number;
-                            height: number;
-                            /** @enum {string} */
-                            unit: "normalized";
-                        };
-                    }[];
-                };
-                utilityProfile?: {
-                    [key: string]: unknown;
-                };
-                /** @enum {string} */
-                displayState?: "unrecorded_proposal";
-                /** Format: uuid */
-                proposalPackageId?: string;
-            }[];
             area: {
                 /** Format: uuid */
                 id: string;
@@ -7222,706 +7077,6 @@ export interface components {
                 dataKind?: "real" | "demonstration" | "mixed" | "empty";
                 featureCount?: number;
             };
-            features: {
-                sourceFeatureIndex?: number;
-                /** Format: uuid */
-                id: string;
-                identifier: string;
-                /** Format: uuid */
-                areaId: string;
-                revision: number;
-                /** Format: uuid */
-                sourceRevisionId: string;
-                datasetNamespace: string;
-                sourceKey: string;
-                name: string;
-                /** @enum {string} */
-                kind: "building" | "parcel" | "road" | "public_land" | "utility";
-                geometry: {
-                    /** @enum {string} */
-                    type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
-                    coordinates?: number[] | number[][] | number[][][] | number[][][][];
-                    geometries?: unknown[];
-                } | null;
-                geographicGeometry: {
-                    /** @enum {string} */
-                    type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
-                    coordinates?: number[] | number[][] | number[][][] | number[][][][];
-                    geometries?: unknown[];
-                } | null;
-                /** @description Retained source-specific or processor-specific value. */
-                sourceGeometry: unknown;
-                /** @enum {string} */
-                placement?: "unknown";
-                sourceReference?: {
-                    sourceCrs: string;
-                    analysisCrs: string;
-                    origin: (number)[];
-                    anchor: (number)[];
-                    transformVersion: string;
-                    verticalReference: string;
-                };
-                height: {
-                    /** @enum {string} */
-                    state: "unknown" | "unresolved" | "estimated" | "source_supported" | "reviewed";
-                    value: number | null;
-                    /** @enum {string} */
-                    unit: "m";
-                    meaning: string;
-                    reference: string;
-                    evidence?: {
-                        /** Format: uuid */
-                        sourceRevisionId: string;
-                        page?: number;
-                        row?: number;
-                        /** Format: uuid */
-                        partId?: string;
-                        featureId?: string;
-                        jsonPointer?: string;
-                        region?: {
-                            x: number;
-                            y: number;
-                            width: number;
-                            height: number;
-                            /** @enum {string} */
-                            unit: "normalized";
-                        };
-                    }[];
-                    /** Format: uuid */
-                    claimId?: string;
-                    method?: string;
-                    /** @description Retained source-specific or processor-specific value. */
-                    originalValue?: unknown;
-                    originalUnit?: string;
-                };
-                /** @enum {string} */
-                worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
-                properties: {
-                    [key: string]: unknown;
-                };
-                areaM2: number | null;
-                evidence: {
-                    /** Format: uuid */
-                    sourceRevisionId: string;
-                    page?: number;
-                    row?: number;
-                    /** Format: uuid */
-                    partId?: string;
-                    featureId?: string;
-                    jsonPointer?: string;
-                    region?: {
-                        x: number;
-                        y: number;
-                        width: number;
-                        height: number;
-                        /** @enum {string} */
-                        unit: "normalized";
-                    };
-                }[];
-                /** @enum {string} */
-                representation: "physical_exterior" | "physical_context";
-                geometryRole?: string;
-                semantics?: {
-                    geometryRole?: string;
-                    evidenceState?: string;
-                    levelReference?: string;
-                    sourceDate?: string;
-                    validFrom?: string;
-                    validTo?: string;
-                    horizontalUncertaintyM?: number;
-                    approvalStatus?: string;
-                    floorCount?: number;
-                    assetId?: string;
-                };
-                verticalExtent?: {
-                    lower: number;
-                    upper: number;
-                    /** @enum {string} */
-                    unit: "m";
-                    reference: string;
-                    evidenceState: string;
-                    evidence: {
-                        /** Format: uuid */
-                        sourceRevisionId: string;
-                        page?: number;
-                        row?: number;
-                        /** Format: uuid */
-                        partId?: string;
-                        featureId?: string;
-                        jsonPointer?: string;
-                        region?: {
-                            x: number;
-                            y: number;
-                            width: number;
-                            height: number;
-                            /** @enum {string} */
-                            unit: "normalized";
-                        };
-                    }[];
-                };
-                utilityProfile?: {
-                    [key: string]: unknown;
-                };
-            }[];
-            packages: {
-                imagery?: {
-                    clusterId: string;
-                    /** @enum {string} */
-                    classification: "test_only";
-                    /** @enum {string} */
-                    analyticalEligibility: "not_assessed";
-                    chips: {
-                        /** Format: uuid */
-                        chipId: string;
-                        /** Format: uuid */
-                        sourceId: string;
-                        sourceSha256: string;
-                        /** @enum {string} */
-                        sourceCrs: "EPSG:4326";
-                        affine: (number)[];
-                        width: number;
-                        height: number;
-                        /** Format: uri */
-                        originalUrl: string;
-                        acquiredAt: string;
-                        /** @enum {string} */
-                        licence: "CC-BY-NC-4.0";
-                        upstreamConditions: string;
-                    }[];
-                };
-                /** @enum {boolean} */
-                geometryFree?: true;
-                administrativeContext?: {
-                    /** Format: uuid */
-                    sourceId: string;
-                    sourceCrs: string;
-                    units: {
-                        /** Format: uuid */
-                        id: string;
-                        sourceKey: string;
-                        /** @enum {string} */
-                        kind: "sector";
-                        name: string;
-                        rings: (number)[][][];
-                    }[];
-                };
-                documentPins?: {
-                    /** Format: uuid */
-                    sourceId: string;
-                    sourceRevision: number;
-                    sourceSha256: string;
-                }[];
-                sourceMetadata?: {
-                    key: string;
-                    filename: string;
-                    sourceSha256: string;
-                    originalUrl: string;
-                    issuer: string;
-                    acquiredAt: string;
-                    /** @enum {string} */
-                    permission: "unconfirmed";
-                    /** @enum {string} */
-                    classification: "test_only";
-                }[];
-                quarantine?: {
-                    total: number;
-                    accepted: number;
-                    rejected: number;
-                    rejections: {
-                        featureIndex: number;
-                        sourceKey: string | null;
-                        /** @enum {string} */
-                        code: "INVALID_GEOMETRY" | "GEOMETRY_KIND";
-                        reason: string;
-                    }[];
-                    /** @enum {string} */
-                    version: "gis-quarantine/1";
-                    sourceSha256: string;
-                    /** Format: uuid */
-                    sourceId?: string;
-                    sourceRevision?: number;
-                    message: string;
-                    /** @enum {boolean} */
-                    complete: false;
-                };
-                /** Format: uuid */
-                id: string;
-                /** @enum {string} */
-                schemaVersion: "ulpin-canonical/2";
-                /** Format: uuid */
-                areaId: string;
-                name: string;
-                datasetNamespace: string;
-                revision: number;
-                /** @enum {string} */
-                state: "RECEIVED" | "NEEDS_INPUT" | "READY_FOR_REVIEW" | "REVIEWED" | "COMMITTED";
-                sourceRevisionIds: string[];
-                features: {
-                    sourceFeatureIndex?: number;
-                    /** Format: uuid */
-                    id: string;
-                    identifier: string;
-                    /** Format: uuid */
-                    areaId: string;
-                    revision: number;
-                    /** Format: uuid */
-                    sourceRevisionId: string;
-                    datasetNamespace: string;
-                    sourceKey: string;
-                    name: string;
-                    /** @enum {string} */
-                    kind: "building" | "parcel" | "road" | "public_land" | "utility";
-                    geometry: {
-                        /** @enum {string} */
-                        type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
-                        coordinates?: number[] | number[][] | number[][][] | number[][][][];
-                        geometries?: unknown[];
-                    } | null;
-                    geographicGeometry: {
-                        /** @enum {string} */
-                        type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
-                        coordinates?: number[] | number[][] | number[][][] | number[][][][];
-                        geometries?: unknown[];
-                    } | null;
-                    /** @description Retained source-specific or processor-specific value. */
-                    sourceGeometry: unknown;
-                    /** @enum {string} */
-                    placement?: "unknown";
-                    sourceReference?: {
-                        sourceCrs: string;
-                        analysisCrs: string;
-                        origin: (number)[];
-                        anchor: (number)[];
-                        transformVersion: string;
-                        verticalReference: string;
-                    };
-                    height: {
-                        /** @enum {string} */
-                        state: "unknown" | "unresolved" | "estimated" | "source_supported" | "reviewed";
-                        value: number | null;
-                        /** @enum {string} */
-                        unit: "m";
-                        meaning: string;
-                        reference: string;
-                        evidence?: {
-                            /** Format: uuid */
-                            sourceRevisionId: string;
-                            page?: number;
-                            row?: number;
-                            /** Format: uuid */
-                            partId?: string;
-                            featureId?: string;
-                            jsonPointer?: string;
-                            region?: {
-                                x: number;
-                                y: number;
-                                width: number;
-                                height: number;
-                                /** @enum {string} */
-                                unit: "normalized";
-                            };
-                        }[];
-                        /** Format: uuid */
-                        claimId?: string;
-                        method?: string;
-                        /** @description Retained source-specific or processor-specific value. */
-                        originalValue?: unknown;
-                        originalUnit?: string;
-                    };
-                    /** @enum {string} */
-                    worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
-                    properties: {
-                        [key: string]: unknown;
-                    };
-                    areaM2: number | null;
-                    evidence: {
-                        /** Format: uuid */
-                        sourceRevisionId: string;
-                        page?: number;
-                        row?: number;
-                        /** Format: uuid */
-                        partId?: string;
-                        featureId?: string;
-                        jsonPointer?: string;
-                        region?: {
-                            x: number;
-                            y: number;
-                            width: number;
-                            height: number;
-                            /** @enum {string} */
-                            unit: "normalized";
-                        };
-                    }[];
-                    /** @enum {string} */
-                    representation: "physical_exterior" | "physical_context";
-                    geometryRole?: string;
-                    semantics?: {
-                        geometryRole?: string;
-                        evidenceState?: string;
-                        levelReference?: string;
-                        sourceDate?: string;
-                        validFrom?: string;
-                        validTo?: string;
-                        horizontalUncertaintyM?: number;
-                        approvalStatus?: string;
-                        floorCount?: number;
-                        assetId?: string;
-                    };
-                    verticalExtent?: {
-                        lower: number;
-                        upper: number;
-                        /** @enum {string} */
-                        unit: "m";
-                        reference: string;
-                        evidenceState: string;
-                        evidence: {
-                            /** Format: uuid */
-                            sourceRevisionId: string;
-                            page?: number;
-                            row?: number;
-                            /** Format: uuid */
-                            partId?: string;
-                            featureId?: string;
-                            jsonPointer?: string;
-                            region?: {
-                                x: number;
-                                y: number;
-                                width: number;
-                                height: number;
-                                /** @enum {string} */
-                                unit: "normalized";
-                            };
-                        }[];
-                    };
-                    utilityProfile?: {
-                        [key: string]: unknown;
-                    };
-                }[];
-                questions: {
-                    /** @enum {string} */
-                    kind?: "missing_height" | "conflicting_claims";
-                    /** Format: uuid */
-                    id: string;
-                    /** Format: uuid */
-                    entityId: string;
-                    property: string;
-                    message: string;
-                    blocks: string;
-                    answer?: {
-                        /** @enum {string} */
-                        choice: "keep_2d" | "estimate" | "select_claim";
-                        value?: number;
-                        reason: string;
-                        /** Format: uuid */
-                        claimId?: string;
-                    };
-                }[];
-                factCandidates: {
-                    /** Format: uuid */
-                    id: string;
-                    /** Format: uuid */
-                    entityId: string;
-                    property: string;
-                    /** @description Retained source-specific or processor-specific value. */
-                    value: unknown;
-                    unit?: string;
-                    referenceFrameId?: string;
-                    evidence: {
-                        /** Format: uuid */
-                        sourceRevisionId: string;
-                        page?: number;
-                        row?: number;
-                        /** Format: uuid */
-                        partId?: string;
-                        featureId?: string;
-                        jsonPointer?: string;
-                        region?: {
-                            x: number;
-                            y: number;
-                            width: number;
-                            height: number;
-                            /** @enum {string} */
-                            unit: "normalized";
-                        };
-                    }[];
-                    /** @enum {string} */
-                    method: "native_parse" | "ai_extraction" | "human_entry" | "derived";
-                    /** @enum {string} */
-                    evidenceState: "unresolved" | "estimated" | "source_supported" | "reviewed";
-                    /** @enum {string} */
-                    worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
-                    subject?: string;
-                    transcription?: {
-                        /** @enum {string} */
-                        by: "agent";
-                        agent: string;
-                    } | {
-                        /** @enum {string} */
-                        by: "officer";
-                    };
-                }[];
-                parts: {
-                    /** Format: uuid */
-                    id: string;
-                    /** Format: uuid */
-                    sourceRevisionId: string;
-                    locator: string;
-                    text: string;
-                    entityIds: string[];
-                    copiedFrom?: {
-                        /** Format: uuid */
-                        caseId: string;
-                        /** Format: uuid */
-                        sourceRevisionId: string;
-                        sourceHash: string;
-                        sourceRevision: number;
-                        sourceProfile: string;
-                        locator: string;
-                        reason: string;
-                        copiedAt: string;
-                        actor: string;
-                    };
-                }[];
-                warnings: string[];
-                createdAt: string;
-                sourceWorkspace?: {
-                    /** Format: uuid */
-                    caseId: string;
-                    frame: {
-                        id: string;
-                        /** @enum {string} */
-                        horizontalUnit: "m";
-                        /** @enum {string} */
-                        verticalUnit: "m";
-                        benchmark: string;
-                    };
-                    /** @enum {string} */
-                    worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
-                    areaReferenceFingerprint: string;
-                };
-                review?: {
-                    areaRevision: number;
-                    packageRevision: number;
-                    inputFingerprint: string;
-                    findings: {
-                        /** Format: uuid */
-                        id: string;
-                        /** @enum {string} */
-                        category: "geometric" | "coverage" | "rule" | "document";
-                        code: string;
-                        message: string;
-                        featureIds: string[];
-                        areaM2?: number;
-                        volumeM3?: number;
-                        geometry?: {
-                            /** @enum {string} */
-                            type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
-                            coordinates?: number[] | number[][] | number[][][] | number[][][][];
-                            geometries?: unknown[];
-                        };
-                        geographicGeometry?: {
-                            /** @enum {string} */
-                            type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
-                            coordinates?: number[] | number[][] | number[][][] | number[][][][];
-                            geometries?: unknown[];
-                        };
-                        participants?: {
-                            sourceFeatureIndex?: number;
-                            /** Format: uuid */
-                            id: string;
-                            identifier: string;
-                            /** Format: uuid */
-                            areaId: string;
-                            revision: number;
-                            /** Format: uuid */
-                            sourceRevisionId: string;
-                            datasetNamespace: string;
-                            sourceKey: string;
-                            name: string;
-                            /** @enum {string} */
-                            kind: "building" | "parcel" | "road" | "public_land" | "utility";
-                            geometry: {
-                                /** @enum {string} */
-                                type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
-                                coordinates?: number[] | number[][] | number[][][] | number[][][][];
-                                geometries?: unknown[];
-                            } | null;
-                            geographicGeometry: {
-                                /** @enum {string} */
-                                type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
-                                coordinates?: number[] | number[][] | number[][][] | number[][][][];
-                                geometries?: unknown[];
-                            } | null;
-                            /** @description Retained source-specific or processor-specific value. */
-                            sourceGeometry: unknown;
-                            /** @enum {string} */
-                            placement?: "unknown";
-                            sourceReference?: {
-                                sourceCrs: string;
-                                analysisCrs: string;
-                                origin: (number)[];
-                                anchor: (number)[];
-                                transformVersion: string;
-                                verticalReference: string;
-                            };
-                            height: {
-                                /** @enum {string} */
-                                state: "unknown" | "unresolved" | "estimated" | "source_supported" | "reviewed";
-                                value: number | null;
-                                /** @enum {string} */
-                                unit: "m";
-                                meaning: string;
-                                reference: string;
-                                evidence?: {
-                                    /** Format: uuid */
-                                    sourceRevisionId: string;
-                                    page?: number;
-                                    row?: number;
-                                    /** Format: uuid */
-                                    partId?: string;
-                                    featureId?: string;
-                                    jsonPointer?: string;
-                                    region?: {
-                                        x: number;
-                                        y: number;
-                                        width: number;
-                                        height: number;
-                                        /** @enum {string} */
-                                        unit: "normalized";
-                                    };
-                                }[];
-                                /** Format: uuid */
-                                claimId?: string;
-                                method?: string;
-                                /** @description Retained source-specific or processor-specific value. */
-                                originalValue?: unknown;
-                                originalUnit?: string;
-                            };
-                            /** @enum {string} */
-                            worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
-                            properties: {
-                                [key: string]: unknown;
-                            };
-                            areaM2: number | null;
-                            evidence: {
-                                /** Format: uuid */
-                                sourceRevisionId: string;
-                                page?: number;
-                                row?: number;
-                                /** Format: uuid */
-                                partId?: string;
-                                featureId?: string;
-                                jsonPointer?: string;
-                                region?: {
-                                    x: number;
-                                    y: number;
-                                    width: number;
-                                    height: number;
-                                    /** @enum {string} */
-                                    unit: "normalized";
-                                };
-                            }[];
-                            /** @enum {string} */
-                            representation: "physical_exterior" | "physical_context";
-                            geometryRole?: string;
-                            semantics?: {
-                                geometryRole?: string;
-                                evidenceState?: string;
-                                levelReference?: string;
-                                sourceDate?: string;
-                                validFrom?: string;
-                                validTo?: string;
-                                horizontalUncertaintyM?: number;
-                                approvalStatus?: string;
-                                floorCount?: number;
-                                assetId?: string;
-                            };
-                            verticalExtent?: {
-                                lower: number;
-                                upper: number;
-                                /** @enum {string} */
-                                unit: "m";
-                                reference: string;
-                                evidenceState: string;
-                                evidence: {
-                                    /** Format: uuid */
-                                    sourceRevisionId: string;
-                                    page?: number;
-                                    row?: number;
-                                    /** Format: uuid */
-                                    partId?: string;
-                                    featureId?: string;
-                                    jsonPointer?: string;
-                                    region?: {
-                                        x: number;
-                                        y: number;
-                                        width: number;
-                                        height: number;
-                                        /** @enum {string} */
-                                        unit: "normalized";
-                                    };
-                                }[];
-                            };
-                            utilityProfile?: {
-                                [key: string]: unknown;
-                            };
-                        }[];
-                        method?: string;
-                        inputRevisions?: {
-                            /** Format: uuid */
-                            featureId: string;
-                            revision: number;
-                            /** Format: uuid */
-                            sourceRevisionId: string;
-                        }[];
-                        evidence?: {
-                            /** Format: uuid */
-                            sourceRevisionId: string;
-                            page?: number;
-                            row?: number;
-                            /** Format: uuid */
-                            partId?: string;
-                            featureId?: string;
-                            jsonPointer?: string;
-                            region?: {
-                                x: number;
-                                y: number;
-                                width: number;
-                                height: number;
-                                /** @enum {string} */
-                                unit: "normalized";
-                            };
-                        }[];
-                        quantities?: {
-                            [key: string]: number;
-                        };
-                        limitations?: string[];
-                    }[];
-                    coverage: string[];
-                    scope?: {
-                        /** @enum {string} */
-                        validator: "area-check-officer-v2";
-                        marginMetres: number;
-                        extent: (number)[];
-                        contextCount: number;
-                        unqualifiedInScope: number;
-                        areaRevisionAtReview: number;
-                    };
-                };
-                acknowledgement?: string;
-                selectedClaimIds?: string[];
-                factDecisions?: {
-                    /** Format: uuid */
-                    claimId: string;
-                    reason: string;
-                    time: string;
-                    actor: string;
-                }[];
-                sourceHash?: string;
-                importSignature?: string;
-                extent?: (number)[];
-                geographicExtent?: (number)[];
-            }[];
             latestCheck: {
                 /** Format: uuid */
                 id: string;
@@ -8192,6 +7347,145 @@ export interface components {
                 provenance: string;
                 /** @enum {string} */
                 purpose: "presentation";
+            }[];
+            displayFeatures: {
+                sourceFeatureIndex?: number;
+                /** Format: uuid */
+                id: string;
+                identifier: string;
+                /** Format: uuid */
+                areaId: string;
+                revision: number;
+                /** Format: uuid */
+                sourceRevisionId: string;
+                datasetNamespace: string;
+                sourceKey: string;
+                name: string;
+                /** @enum {string} */
+                kind: "building" | "parcel" | "road" | "public_land" | "utility";
+                geometry: {
+                    /** @enum {string} */
+                    type: "GeometryCollection" | "Point" | "MultiPoint" | "LineString" | "MultiLineString" | "Polygon" | "MultiPolygon";
+                    coordinates?: number[] | number[][] | number[][][] | number[][][][];
+                    geometries?: unknown[];
+                } | null;
+                /** @enum {string} */
+                placement?: "unknown";
+                height: {
+                    /** @enum {string} */
+                    state: "unknown" | "unresolved" | "estimated" | "source_supported" | "reviewed";
+                    value: number | null;
+                    /** @enum {string} */
+                    unit: "m";
+                    meaning: string;
+                    reference: string;
+                    evidence?: {
+                        /** Format: uuid */
+                        sourceRevisionId: string;
+                        page?: number;
+                        row?: number;
+                        /** Format: uuid */
+                        partId?: string;
+                        featureId?: string;
+                        jsonPointer?: string;
+                        region?: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized";
+                        };
+                    }[];
+                    /** Format: uuid */
+                    claimId?: string;
+                    method?: string;
+                    /** @description Retained source-specific or processor-specific value. */
+                    originalValue?: unknown;
+                    originalUnit?: string;
+                };
+                /** @enum {string} */
+                worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
+                properties: {
+                    [key: string]: unknown;
+                };
+                areaM2: number | null;
+                evidence: {
+                    /** Format: uuid */
+                    sourceRevisionId: string;
+                    page?: number;
+                    row?: number;
+                    /** Format: uuid */
+                    partId?: string;
+                    featureId?: string;
+                    jsonPointer?: string;
+                    region?: {
+                        x: number;
+                        y: number;
+                        width: number;
+                        height: number;
+                        /** @enum {string} */
+                        unit: "normalized";
+                    };
+                }[];
+                /** @enum {string} */
+                representation: "physical_exterior" | "physical_context";
+                geometryRole?: string;
+                semantics?: {
+                    geometryRole?: string;
+                    evidenceState?: string;
+                    levelReference?: string;
+                    sourceDate?: string;
+                    validFrom?: string;
+                    validTo?: string;
+                    horizontalUncertaintyM?: number;
+                    approvalStatus?: string;
+                    floorCount?: number;
+                    assetId?: string;
+                };
+                verticalExtent?: {
+                    lower: number;
+                    upper: number;
+                    /** @enum {string} */
+                    unit: "m";
+                    reference: string;
+                    evidenceState: string;
+                    evidence: {
+                        /** Format: uuid */
+                        sourceRevisionId: string;
+                        page?: number;
+                        row?: number;
+                        /** Format: uuid */
+                        partId?: string;
+                        featureId?: string;
+                        jsonPointer?: string;
+                        region?: {
+                            x: number;
+                            y: number;
+                            width: number;
+                            height: number;
+                            /** @enum {string} */
+                            unit: "normalized";
+                        };
+                    }[];
+                };
+                utilityProfile?: {
+                    [key: string]: unknown;
+                };
+                /** @enum {string} */
+                displayState?: "unrecorded_proposal";
+                /** Format: uuid */
+                proposalPackageId?: string;
+            }[];
+            packages: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                state: "RECEIVED" | "NEEDS_INPUT" | "READY_FOR_REVIEW" | "REVIEWED" | "COMMITTED";
+                quarantine: {
+                    message: string;
+                    sourceSha256: string;
+                } | null;
             }[];
         };
         POST_areas_areaId_scenario_Response_410_application_json: {

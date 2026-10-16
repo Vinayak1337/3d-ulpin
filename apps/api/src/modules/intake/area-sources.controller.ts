@@ -13,7 +13,7 @@ import { sourceCaseSchema } from '@ulpin/server/modules/cases/source-cases';
 import { sourceWorkspaceSchema } from '@ulpin/server/modules/cases/source-workspaces';
 import { JSON_BODY_LIMIT, MULTIPART_BODY_LIMIT, readJsonBody, readMultipartBody } from '../../common/body';
 import {
-  acquisition, acquisitionProbe, areaContext, caseDocument, externalIdentifier,
+  acquisition, acquisitionProbe, areaContextResponse, caseDocument, externalIdentifier,
   importPackage, jsonBody, mapArea, multipartBody, resolvedIdentifier, retiredBranchResponse, sourceCase,
   sourceCatalog, wireResponse,
 } from './wire-schemas';
@@ -86,7 +86,7 @@ export class AreaSourcesController {
   @HttpCode(200)
   @ApiOperation({operationId: 'GET_api_v1_areas_areaId_context', summary: 'Read area records, packages and checks'})
   @ApiParam({name: 'areaId', schema: {type: 'string', format: 'uuid'}})
-  @wireResponse(200, areaContext)
+  @wireResponse(200, areaContextResponse)
   async context(@Param('areaId') areaId: string) {
     return redactDocumentViews(await this.areas.context(areaIdSchema.parse(areaId)));
   }
