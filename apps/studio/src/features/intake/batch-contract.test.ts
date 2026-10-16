@@ -35,14 +35,19 @@ it('validates real retained profiles and the batch manifest against the publishe
       .get.responses['200'].content['application/json'].schema.$ref.split('/').at(-1);
     expect(validate(readSchema, profile)).toEqual([]);
   }
-  // Historic E3a receipt predates E1b. Keep its evidence unchanged; explicitly adapt the added nullable projection.
-  const manifest = { ...controls.manifest, items: controls.manifest.items.map(item => ({ ...item, plan: null })) };
+  // Historic E3a receipt predates E1b and ST1. Keep its evidence unchanged; explicitly adapt the added nullable
+  // projections.
+  const manifest = { ...controls.manifest, items: controls.manifest.items.map(item => ({ ...item, plan: null,
+    streamedProfileJobId: null })) };
   expect(validate('GET_ingestion_cases_caseId_intake_Response_200_application_json', manifest)).toEqual([]);
 });
 
-it('validates the unmodified live manifest, recipe history and author body from the stopped walk', () => {
+it('validates the live manifest, unmodified recipe history and author body from the stopped walk', () => {
+  // The LQ1a manifest predates ST1; only the added nullable projection is adapted.
+  const manifest = { ...live.manifest,
+    items: live.manifest.items.map(item => ({ ...item, streamedProfileJobId: null })) };
   for (const [path, method, status, body] of [
-    ['/api/v1/ingestion/cases/{caseId}/intake', 'get', '200', live.manifest],
+    ['/api/v1/ingestion/cases/{caseId}/intake', 'get', '200', manifest],
     ['/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}', 'get', '200', live.recipeHistory],
   ] as const) {
     const schema = openapi.paths[path][method].responses[status].content['application/json'].schema;

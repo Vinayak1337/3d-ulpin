@@ -63,7 +63,7 @@ it('disables outline kinds for lines, allows road/utility, and never coerces ide
 });
 
 it('asks only for the stored no-layout reason, not a bound/unsupported reason or a filename', () => {
-  const item = captured.manifest.items[0] as IntakeItem;
+  const item = { ...captured.manifest.items[0], streamedProfileJobId: null } as IntakeItem;
   expect(needsLayoutAnswer({ ...item, name: 'not-a-map.pdf' })).toBe(true);
   expect(needsLayoutAnswer({ ...item, limitReason: 'Drafting accepts at most 2000 features.' })).toBe(false);
   expect(needsLayoutAnswer({ ...item, limitReason: 'No reader is available.' })).toBe(false);

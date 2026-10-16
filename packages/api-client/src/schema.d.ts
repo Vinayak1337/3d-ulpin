@@ -64588,6 +64588,11 @@ export interface components {
                 /** Format: uuid */
                 packageId: string | null;
             } | null;
+            /**
+             * Format: uuid
+             * @description Large GeoJSON: the streamed profile job whose sealed inventory the layout question is answered from; null otherwise.
+             */
+            streamedProfileJobId: string | null;
             probeVersion: string | null;
             /** @description Large GeoJSON: null while reading; raw parts while mapping; null while drafting until the final cut, then package cuts. Other readers retain their own planned-part count. */
             partsPlanned: number | null;
@@ -64783,6 +64788,11 @@ export interface components {
                     /** Format: uuid */
                     packageId: string | null;
                 } | null;
+                /**
+                 * Format: uuid
+                 * @description Large GeoJSON: the streamed profile job whose sealed inventory the layout question is answered from; null otherwise.
+                 */
+                streamedProfileJobId: string | null;
                 probeVersion: string | null;
                 /** @description Large GeoJSON: null while reading; raw parts while mapping; null while drafting until the final cut, then package cuts. Other readers retain their own planned-part count. */
                 partsPlanned: number | null;
