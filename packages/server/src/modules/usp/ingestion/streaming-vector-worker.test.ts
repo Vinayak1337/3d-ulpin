@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { Readable } from 'node:stream';
 import type { PoolClient } from 'pg';
 import type { AnyStreamingInput } from '@ulpin/contracts/usp';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
-import { endImportTx, fencedOut } from './streaming-vector-worker';
+import { endImportTx, fencedOut, tallySetAside } from './streaming-vector-worker';
+import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 
 const caseId = '30000000-0000-4000-8000-000000000001';
 const sourceId = '30000000-0000-4000-8000-000000000002';
@@ -67,4 +69,19 @@ test('only a lost fence is swallowed; any other failure to end the job reaches t
   const check = Object.assign(new Error('new row violates check constraint'), { code: '23514' });
   for (const error of [check, new AppError(422, 'STREAMING_SOURCE_CRS', 'refused'),
     new AppError(409, 'STREAMING_REPLAY', 'other'), undefined]) assert.equal(fencedOut(error), false);
+});
+
+test('one read tallies each set-aside record under its own code and counts no accepted record', async () => {
+  const square = [[[0, 0], [1, 0], [1, 1], [0, 0]]], open = [[[0, 0], [1, 0], [1, 1], [0, 1]]];
+  const feature = (coordinates: unknown, id = '1') => `{"type":"Feature","properties":{"id":${id}},`
+    + `"geometry":{"type":"Polygon","coordinates":${JSON.stringify(coordinates)}}}`;
+  const features = [feature(square), feature(square, '9007199254740993'), feature(open),
+    feature(open, '9007199254740993'), feature(square, '123456789012345678901'), feature(open)];
+  const body = Readable.from([Buffer.from(`{"type":"FeatureCollection","features":[${features.join(',')}]}`)]);
+  const tally: Record<string, number> = {};
+  await readStreamingFeatures(body, 'feature-collection', async item => tallySetAside(tally, sourceRecord(item)));
+  assert.deepEqual(tally, { UNREPRESENTABLE_NUMBER: 3, OPEN_RING: 2 });
+  tallySetAside(tally, { featureIndex: 6, byteStart: 0, byteEnd: 2, rawSha256: 'a'.repeat(64),
+    disposition: 'quarantined', issueCode: null, feature: null });
+  assert.deepEqual(tally, { UNREPRESENTABLE_NUMBER: 3, OPEN_RING: 2, UNSTATED: 1 });
 });

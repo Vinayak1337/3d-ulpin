@@ -98,7 +98,11 @@ export const StreamedMapOriginalReceiptSchema = z.strictObject({
   sourceSha256: hash, readerVersion: z.literal('geojson-stream/2'), rawJobId: id,
   framing: z.literal('feature-collection'), parts: z.number().int().min(1).max(4096),
   features: z.number().int().min(1).max(409600), accepted: z.number().int().nonnegative(),
-  quarantined: z.number().int().nonnegative(), rawManifestSha256: hash,
+  quarantined: z.number().int().nonnegative(),
+  /** Each set-aside record counted under its reader issue code; present only when something was set aside. */
+  quarantinedByCode: z.record(z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/), z.number().int().positive())
+    .refine(codes => Object.keys(codes).length <= 64, 'At most 64 set-aside codes belong in the receipt.').optional(),
+  rawManifestSha256: hash,
   collectionMetadata: z.record(z.string(), z.unknown()).refine(boundedCollectionMetadata,
     'Only bounded original collection metadata belongs in the receipt.'),
   /** `sourceCrs` is the declaration as the file writes it; `authority` the code it resolves to, when not degrees. */
@@ -110,6 +114,11 @@ export const StreamedMapOriginalReceiptSchema = z.strictObject({
 }).superRefine((receipt, ctx) => {
   if (receipt.accepted + receipt.quarantined !== receipt.features)
     ctx.addIssue({ code: 'custom', message: 'The exact receipt dispositions must close at semantic EOF.' });
+  const codes = receipt.quarantinedByCode;
+  if (codes && (!receipt.quarantined
+    || Object.values(codes).reduce((sum, count) => sum + count, 0) !== receipt.quarantined))
+    ctx.addIssue({ code: 'custom', path: ['quarantinedByCode'],
+      message: 'The set-aside codes must count every set-aside record exactly once.' });
 });
 export type StreamedMapOriginalReceipt = z.infer<typeof StreamedMapOriginalReceiptSchema>;
 

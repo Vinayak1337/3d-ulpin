@@ -22,6 +22,13 @@ function tabularChunkRows(width:number){
   return Math.max(1,Math.min(TABULAR_LIMITS.chunkRows,Math.floor(TABULAR_LIMITS.columns/width)));
 }
 
+/** One whole read counts each set-aside record under its code; every attempt replays from byte zero. */
+export function tallySetAside(tally:Record<string,number>,record:StreamingVectorRecord){
+  if(record.disposition!=='quarantined')return;
+  const code=record.issueCode??'UNSTATED';
+  tally[code]=(tally[code]??0)+1;
+}
+
 /** A single SQL watermark is the ordered publication authority; SSE cursors stay per subscriber. */
 export async function publishStreamingPrefixTx(client:PoolClient,input:AnyStreamingInput){
   while(true){
@@ -195,6 +202,7 @@ export async function runStreamingVectorJob(jobId:string){
       sourceRevision:input.sourceRevision,jobId,status:'running'},input.subject);
   });
   let nextIndex=0,nextFeatureIndex=0,pending:StreamingVectorRecord[]=[],pendingBytes=0,lastHeartbeat=Date.now();
+  const setAside:Record<string,number>={};
   const pulse=async()=>{if(Date.now()-lastHeartbeat<30000)return;
     await heartbeatUspJobAttempt(attempt,client=>assertStreamingInputTx(client,input).then(()=>{}));lastHeartbeat=Date.now();
     await query("UPDATE jobs SET next_attempt_at=now()+interval '180 seconds' WHERE id=$1 AND status='running'",[jobId]);
@@ -221,7 +229,7 @@ export async function runStreamingVectorJob(jobId:string){
         let recordBytes=Buffer.byteLength(JSON.stringify(record));
         if(recordBytes>limits.chunkBytes-2048){record.feature=null;record.disposition='quarantined';record.issueCode='DRAFT_UNIT_BUDGET';recordBytes=Buffer.byteLength(JSON.stringify(record));}
         if(pending.length&&(pending.length>=countLimit||pendingBytes+recordBytes+2048>limits.chunkBytes))await flush();
-        pending.push(record);pendingBytes+=recordBytes;
+        tallySetAside(setAside,record);pending.push(record);pendingBytes+=recordBytes;
         if(pending.length>=countLimit)await flush();
       };
       result=input.framing==='tabular'?await readStreamingTabular(object.body,input.tabular,consume)
@@ -248,7 +256,8 @@ export async function runStreamingVectorJob(jobId:string){
         const state=(await client.query('SELECT quarantined FROM usp_streaming_vector_imports WHERE job_id=$1',[jobId])).rows[0];
         const status=state.quarantined?'completed_with_rejections':'completed';
         await client.query('UPDATE usp_streaming_vector_imports SET state=$2,issue_code=NULL,updated_at=now() WHERE job_id=$1',[jobId,status]);
-        if(input.framing==='feature-collection')await writeSealedMapReceiptTx(client,input,result,reference);
+        if(input.framing==='feature-collection')await writeSealedMapReceiptTx(client,input,
+          {...result,quarantinedByCode:setAside},reference);
         await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
           sourceRevision:input.sourceRevision,jobId,status},input.subject);
         await queueIntakeLargeTx(client,input.sourceId);

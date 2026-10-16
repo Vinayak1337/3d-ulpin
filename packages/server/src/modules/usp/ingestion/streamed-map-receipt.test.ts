@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import type { StreamingVectorInput } from '@ulpin/contracts/usp';
+import { StreamedMapOriginalReceiptSchema, type StreamingVectorInput } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import { resolveStreamedReference, sealedMapReceipt, streamedSourceReference,
   writeSealedMapReceiptTx } from './streamed-map-receipt';
@@ -15,7 +15,7 @@ const input = {
   caseId: '33333333-3333-4333-8333-333333333333', objectKey: 'retained/original',
 } as StreamingVectorInput;
 const closure = { bytes: input.sourceBytes, sha256: input.sourceSha256, features: 3,
-  metadata: { type: 'FeatureCollection' } };
+  metadata: { type: 'FeatureCollection' }, quarantinedByCode: { SELF_INTERSECTION: 1 } };
 const slots = [{ chunk_index: 0, first_feature_index: 0, last_feature_index: 2, records: 3,
   accepted: 2, quarantined: 1, published: true, result_sha256: 'b'.repeat(64) }];
 const source = () => ({ id: input.sourceId, revision: 2, bytes: 12345, sha256: input.sourceSha256,
@@ -161,4 +161,31 @@ test('a file that declares nothing or CRS84 keeps its receipt unchanged', async 
   streamedSourceReference(crs84));
   assert.deepEqual(sealedMapReceipt(input, closure, slots, streamedSourceReference({})),
     sealedMapReceipt(input, closure, slots));
+});
+
+test('the receipt counts its set-aside records by code, and the codes close at the set-aside total', () => {
+  const twoCodes = [{ ...slots[0], accepted: 0, quarantined: 3 }];
+  const receipt = sealedMapReceipt(input, { ...closure,
+    quarantinedByCode: { UNREPRESENTABLE_NUMBER: 2, SELF_INTERSECTION: 1 } }, twoCodes);
+  assert.deepEqual(receipt.quarantinedByCode, { UNREPRESENTABLE_NUMBER: 2, SELF_INTERSECTION: 1 });
+  for (const quarantinedByCode of [{ UNREPRESENTABLE_NUMBER: 1, SELF_INTERSECTION: 1 }, {}, undefined] as
+    (Record<string, number> | undefined)[])
+    assert.throws(() => sealedMapReceipt(input, { ...closure, quarantinedByCode }, twoCodes));
+  for (const quarantinedByCode of [{ UNREPRESENTABLE_NUMBER: 3, SELF_INTERSECTION: 0 }, { 'self-x': 3 }])
+    assert(!StreamedMapOriginalReceiptSchema.safeParse({ ...receipt, quarantinedByCode }).success);
+  const codes = (length: number) => Object.fromEntries(Array.from({ length }, (_, index) => [`CODE_${index}`, 1]));
+  const wide = { ...receipt, accepted: 0, quarantined: 65, features: 65 };
+  assert(StreamedMapOriginalReceiptSchema.safeParse({ ...wide, quarantinedByCode: { ...codes(64), CODE_0: 2 } })
+    .success);
+  assert(!StreamedMapOriginalReceiptSchema.safeParse({ ...wide, quarantinedByCode: codes(65) }).success);
+});
+
+test('nothing set aside writes no codes; a receipt stored before the codes still parses', () => {
+  const clean = [{ ...slots[0], accepted: 3, quarantined: 0 }];
+  const receipt = sealedMapReceipt(input, { ...closure, quarantinedByCode: {} }, clean);
+  assert(!Object.hasOwn(receipt, 'quarantinedByCode'));
+  assert(!StreamedMapOriginalReceiptSchema.safeParse({ ...receipt, quarantinedByCode: {} }).success);
+  const { quarantinedByCode: _, ...stored } = source().inspection.streamedMapReceipt;
+  assert.equal(stored.quarantined, 1);
+  assert(StreamedMapOriginalReceiptSchema.safeParse(stored).success);
 });
