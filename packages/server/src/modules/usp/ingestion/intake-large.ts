@@ -1,11 +1,15 @@
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
-import { STREAMING_VECTOR_LIMITS as limits, type IntakeCard } from '@ulpin/contracts/usp';
-import { AppError } from '../../../infrastructure/errors';
+import { IntakeLargeRetrySchema, IntakeLargeRetryResultSchema, STREAMING_VECTOR_LIMITS as limits,
+  type IntakeCard } from '@ulpin/contracts/usp';
+import { transaction } from '../../../infrastructure/db';
+import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
+import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { registerUspJobInputTx } from '../jobs';
-import { intakeSourcePin, intakeSourceTx } from './intake-context';
-import { unfinishedIntakePackagesTx, type IntakeLargeState } from './intake-ledger';
+import { intakeCaseTx, intakeSourcePin, intakeSourceTx } from './intake-context';
+import { readIntakeDraftTx, unfinishedIntakePackagesTx, writeIntakeLargeTx,
+  type IntakeLargeState } from './intake-ledger';
 import { stableUuid } from './intake-run';
 import { isRetainedMapOriginal } from './retained-map-original';
 
@@ -231,9 +235,19 @@ export async function largeStateKey(client: PoolClient, sourceId: string) {
   if (!item || !source || source.profile !== 'large-original-v1' || item.card?.format !== 'geojson'
     || Number(source.bytes) > limits.sourceBytes) return null;
   const store = await largeStoreTx(client, item, sourceId);
-  return { item, source, store, key: fingerprint({ ...keyInputs(store), unreviewed: store.unreviewed }) };
+  const retries = await intakeLargeRetriesTx(client, item);
+  // Zero retries leaves the key as it was, so stored step jobs keep their ids.
+  return { item, source, store, key: fingerprint({ ...keyInputs(store), unreviewed: store.unreviewed,
+    ...(retries ? { retries } : {}) }) };
 }
 
+async function intakeLargeRetriesTx(client: PoolClient, item: IntakeLargeItem): Promise<number> {
+  return Number((await client.query(`SELECT count(*)::int n FROM operations
+    WHERE case_id=$1 AND kind='intake-large-retry' AND result->>'itemId'=$2`,
+  [item.case_id, item.item_id])).rows[0].n);
+}
+
+/** A stopped item stays at rest for every wake-up; only an officer's retry request moves it again. */
 export function intakeLargeAtRest(item: { state: string; placement: string }): boolean {
   return item.state === 'read' && item.placement === 'on_map' || item.placement === 'not_understood';
 }
@@ -264,6 +278,53 @@ export async function queueIntakeLargeTx(client: PoolClient, sourceId: string): 
   if (inserted) await registerUspJobInputTx(client, jobId,
     { kind: 'intake', workspaceId: input.caseId, version: input.caseRevision + 1 }, sourceId, digest);
   return jobId;
+}
+
+const retryRefusals = {
+  INTAKE_RETRY_NOT_LARGE: 'Only a large map file prepared in steps can be tried again.',
+  INTAKE_RETRY_NOT_STOPPED: 'This file has not stopped, so there is nothing to try again.',
+  INTAKE_RETRY_FILE: 'This file stopped because of what it contains. Trying again would stop the same way; '
+    + 'the file itself must change.',
+} as const;
+const refuseRetry = (code: keyof typeof retryRefusals): never => {
+  throw new AppError(409, code, retryRefusals[code]);
+};
+
+/** An officer's retry of a file stopped after repeated step errors. It is stored, so the state key names a new
+ * step job; the same request answers the same result and a different body under its key is refused. */
+export async function retryIntakeLargeItem(caseValue: string, itemValue: string, raw: unknown) {
+  const caseId = uuid.parse(caseValue), itemId = uuid.parse(itemValue);
+  const request = IntakeLargeRetrySchema.parse(raw);
+  return transaction(async client => {
+    await lockSourceCaseDestinationTx(client, caseId);
+    const scope = await intakeCaseTx(client, caseId, true);
+    const key = `retry:${request.requestKey}`;
+    const digest = fingerprint({ request, itemId, access: scope.binding.access });
+    const prior = (await client.query(`SELECT payload_hash,result FROM operations
+      WHERE case_id=$1 AND operation_key=$2 AND kind='intake-large-retry'`, [caseId, key])).rows[0];
+    if (prior && prior.payload_hash !== digest) conflict('This retry request key names a different request.');
+    if (prior) return IntakeLargeRetryResultSchema.parse(prior.result);
+    const row = (await client.query('SELECT source_id FROM usp_intake_items WHERE case_id=$1 AND item_id=$2',
+      [caseId, itemId])).rows[0] ?? notFound('Intake item not found in this case.');
+    if (row.source_id) await intakeSourceTx(client, caseId, row.source_id);
+    const state = row.source_id ? await largeStateKey(client, row.source_id) : null;
+    if (!state) return refuseRetry('INTAKE_RETRY_NOT_LARGE');
+    const current = await readIntakeDraftTx(client, caseId, itemId);
+    const rows = intakeLargeRows(state.store, state.source), phase = intakeLargePhase(rows);
+    if (current.placement !== 'not_understood') refuseRetry('INTAKE_RETRY_NOT_STOPPED');
+    if (current.limitReason !== INTAKE_LARGE_STOPPED || phase === 'failure') refuseRetry('INTAKE_RETRY_FILE');
+    const retry = await intakeLargeRetriesTx(client, state.item) + 1;
+    // Stored before the wake-up: its count is part of the key that names the new step job.
+    await client.query(`INSERT INTO operations(case_id,operation_key,kind,payload_hash,result)
+      VALUES($1,$2,'intake-large-retry',$3,$4)`, [caseId, key, digest, { itemId, retry }]);
+    await writeIntakeLargeTx(client, caseId, itemId, intakeLargeProjection(phase, rows, state.store,
+      { bytes: Number(state.source.bytes), declaredCrs: state.item.card?.crs.code ?? null }));
+    const jobId = await queueIntakeLargeTx(client, row.source_id) ?? conflict('This file cannot be queued again.');
+    const result = IntakeLargeRetryResultSchema.parse({ itemId, retry, jobId });
+    await client.query(`UPDATE operations SET result=$3 WHERE case_id=$1 AND operation_key=$2
+      AND kind='intake-large-retry'`, [caseId, key, result]);
+    return result;
+  });
 }
 
 /** A finished review wakes the large file its package was cut from; other packages name no part row. */

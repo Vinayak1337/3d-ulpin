@@ -750,6 +750,19 @@
       "batch": "IN1"
     },
     {
+      "method": "POST",
+      "path": "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/retry",
+      "operationId": "POST_api_v1_ingestion_cases_caseId_intake_items_itemId_retry",
+      "disposition": "added",
+      "nativeController": "ingestion",
+      "requestSchema": "IntakeLargeRetrySchema",
+      "responseSchema": "IntakeLargeRetryResultSchema",
+      "responseStatus": 200,
+      "transportProfile": "json",
+      "runtimeEvidence": "pending",
+      "batch": "LP3d"
+    },
+    {
       "method": "GET",
       "path": "/api/v1/ingestion/cases/{caseId}/targets",
       "operationId": "GET_api_v1_ingestion_cases_caseId_targets",

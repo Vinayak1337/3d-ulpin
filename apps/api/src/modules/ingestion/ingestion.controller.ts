@@ -6,7 +6,9 @@ import { AnyAuthorMappingSchema, MappingDecisionSchema,
   AnyMappingReceiptSchema, AnySourceProfileSchema } from '@ulpin/contracts/usp';
 import { ManualIngestionService } from '@ulpin/server/modules/usp/ingestion/service';
 import { IntakeService } from '@ulpin/server/modules/usp/ingestion/intake-service';
-import { IntakeRegisterSchema, IntakePinSchema, IntakeItemSchema, IntakeManifestSchema } from '@ulpin/contracts/usp';
+import { IntakeRegisterSchema, IntakePinSchema, IntakeItemSchema, IntakeManifestSchema, IntakeLargeRetrySchema,
+  IntakeLargeRetryResultSchema } from '@ulpin/contracts/usp';
+import { retryIntakeLargeItem } from '@ulpin/server/modules/usp/ingestion/intake-large';
 import { CONVERSIONS, limitations } from '@ulpin/server/modules/usp/ingestion/registry';
 import { AppError } from '@ulpin/server/infrastructure/errors';
 import { JSON_BODY_LIMIT, MULTIPART_BODY_LIMIT, readJsonBody, readMultipartBody } from '../../common/body';
@@ -54,6 +56,15 @@ export class IngestionController {
   @jsonBody(IntakePinSchema) @wireResponse(200,IntakeItemSchema)
   async pinIntake(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
     return this.intake.pin(caseId,itemId,await readJsonBody(request,JSON_BODY_LIMIT));
+  }
+
+  @Post('cases/:caseId/intake/items/:itemId/retry')
+  @HttpCode(200) @param('caseId') @param('itemId')
+  @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_intake_items_itemId_retry',
+    summary:'Try a large file again after its preparation stopped on repeated step errors; one stored request'})
+  @jsonBody(IntakeLargeRetrySchema) @wireResponse(200,IntakeLargeRetryResultSchema)
+  async retryIntake(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
+    return retryIntakeLargeItem(caseId,itemId,await readJsonBody(request,JSON_BODY_LIMIT));
   }
 
   @Get('conversions')
