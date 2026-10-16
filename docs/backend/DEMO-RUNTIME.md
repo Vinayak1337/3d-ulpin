@@ -1,9 +1,8 @@
 # Pinned demo runtime
 
 The demo API and dispatcher run from `E:/Projects/ulpin-wt/demo`, a detached, unedited checkout.
-Current reviewed staging commit: `18b5e74c` (10 October 2026; R5c roll-out, K8b snapshot order, K11b review reads
-and K12 plan entries and card preview, no schema step pending, document runtimes rebuilt on the project-owned
-interpreter).
+Current reviewed staging commit: `99e0026e` (16 October 2026; R7 roll-out from `18b5e74c`, three additive schema
+steps applied first, document runtimes rebuilt, gateway left off).
 Loopback API: `http://127.0.0.1:3194`; external demo configuration stays outside every checkout.
 Only the runtime owner explicitly named in a task file may roll this checkout forward.
 Worker worktrees must never serve the demo: lazy imports would mix unreviewed changes into running processes.
@@ -42,6 +41,9 @@ moving the serving checkout under running processes), while the old API still an
 | Needed from commit | Migration | Command | Receipt |
 | --- | --- | --- | --- |
 | K5 part 2 merge (card revocation) | `usp_property_card_revocations_001` (one new append-only table) | `node docs/evidence/gf4/k5/run-migration.mjs` | `docs/evidence/gf4/k5/migration-receipt.json` (create-once). **Applied on the demo 10 October 2026** (`applied: true`) |
+| GK1 merge (owner's key list) | `model-gateway.schema` ordinals 7-11: `usp_model_key_marks`, three nullable ledger columns | `demo.mjs` `migrate()` (`pnpm db:migrate`, then `demo-schema.ts`) with the demo's `readDemo()` settings | `docs/evidence/runtime/r7/result.json`. **Applied on the demo 16 October 2026** by R7 |
+| IN1 merge (intake ledger) | `ingestion.intake.schema`: four new tables | the same command, inside `migrateUsp()`'s one transaction | the same receipt. **Applied 16 October 2026** by R7 |
+| E1 / ZB1 merges (intake targets) | `ingestion.intake.targets`: two new tables, two nullable columns on the new intake table | the same command and transaction | the same receipt. **Applied 16 October 2026** by R7 |
 
 The K5 runner's first run anywhere was on the demo (R3, 10 October 2026): applied, card rows unchanged, the old
 API answering throughout. A runner applies only its registered check/schema/mark steps in one transaction with
