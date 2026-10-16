@@ -1,0 +1,66 @@
+{ "phase": "niagara", "at": "2026-10-16T22:51:58.234Z", "api": "http://127.0.0.1:21026",
+"caseId": "55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6", "wallSeconds": 287.1, "stoppedAt": null, "result": { "retained": {
+"uploadId": "31163e79-71e3-482c-82b6-c81b73b079c4", "parts": 4, "partBytes": 8388608,
+"sourceId": "c7cc6ea5-5675-4c30-a058-44491d416635",
+"verifiedSha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521" }, "registered": {
+"itemId": "c7cc6ea5-5675-4c30-a058-44491d416635", "format": "geojson", "family": "vector", "sizeClass": "M",
+"sizeBytes": 26660992, "wave": 1, "cardSha256": "[omitted non-source digest]", "cardFormat": "geojson",
+"cardPresent": true, "placement": "undecided" }, "toQuestion": { "item": {
+"itemId": "c7cc6ea5-5675-4c30-a058-44491d416635", "sourceId": "c7cc6ea5-5675-4c30-a058-44491d416635",
+"caseId": "55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6", "parentItemId": null, "memberPath": null,
+"name": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson", "family": "vector", "format": "geojson",
+"sizeBytes": 26660992, "sizeClass": "M", "wave": 1, "state": "failed_part", "placement": "not_understood", "card": {
+"version": "intake-card/1", "family": "vector", "format": "geojson", "formatVersion": null, "detectedBy": "bytes",
+"nameDisagrees": false, "depth": "structure", "encoding": "utf-8", "crs": { "state": "stated", "code": "EPSG:2958",
+"sidecarSha256": null }, "extent": { "native": null, "epsg4326": null }, "counts": { "features": null, "rows": null,
+"pages": null, "members": null, "points": null, "bands": null }, "geometryTypes": [ "Polygon" ], "layers": [],
+"sheets": [], "columns": [ { "name": "OBJECTID", "inferredType": "number", "sampledNonEmpty": 16 }, {
+"name": "AvgEavElev", "inferredType": "number", "sampledNonEmpty": 16 }, { "name": "Year_coll",
+"inferredType": "number", "sampledNonEmpty": 16 }, { "name": "LENGTH_M", "inferredType": "number", "sampledNonEmpty": 16
+}, { "name": "AREA_SQM", "inferredType": "number", "sampledNonEmpty": 16 }, { "name": "Height_m",
+"inferredType": "number", "sampledNonEmpty": 16 }, { "name": "Min_Elev_m", "inferredType": "number",
+"sampledNonEmpty": 16 }, { "name": "Max_Elev_m", "inferredType": "number", "sampledNonEmpty": 16 }, {
+"name": "Avg_Elev_m", "inferredType": "number", "sampledNonEmpty": 16 } ], "limits": [
+"Complete head values only; whole-file count unknown; truncated values not repaired." ], "probeBytesRead": 131072,
+"probeMs": 7.01, "drawableHint": false, "delimiter": null, "encrypted": null, "raster": null, "point": null,
+"citations": [], "members": [] }, "cardSha256": "[omitted non-source digest]", "plan": null,
+"streamedProfileJobId": "d2274c5b-5d79-4a8a-ad40-0089906b8cdb", "probeVersion": "intake-card/1", "partsPlanned": null,
+"partsDone": 424, "recordsSeen": 42247,
+"limitReason": "This file could not be read and interpreted completely; nothing was prepared from it.",
+"pinnedByOfficer": false, "createdAt": "2026-10-16T22:47:12.181Z", "updatedAt": "2026-10-16T22:51:57.639Z" }, "trail": [
+{ "seconds": 0, "state": "probed", "placement": "undecided", "partsPlanned": null, "partsDone": 0, "recordsSeen": 0,
+"limitReason": null, "streamedProfileJobId": null, "plan": null }, { "seconds": 2, "state": "reading",
+"placement": "undecided", "partsPlanned": null, "partsDone": 3, "recordsSeen": 300, "limitReason": null,
+"streamedProfileJobId": "d2274c5b-5d79-4a8a-ad40-0089906b8cdb", "plan": null }, { "seconds": 286,
+"state": "failed_part", "placement": "not_understood", "partsPlanned": null, "partsDone": 424, "recordsSeen": 42247,
+"limitReason": "This file could not be read and interpreted completely; nothing was prepared from it.",
+"streamedProfileJobId": "d2274c5b-5d79-4a8a-ad40-0089906b8cdb", "plan": null } ], "seconds": 286 } }, "requests": [ {
+"input": "niagara", "step": "case revision", "method": "GET", "route": "/api/v1/cases/{caseId}", "status": 200,
+"seconds": 0.038, "at": "2026-10-16T22:47:11.177Z", "requestKey": null, "cacheControl": "no-store", "contract": true },
+{ "input": "niagara", "step": "create upload", "method": "POST", "route": "/api/v1/ingestion/cases/{caseId}/uploads",
+"status": 201, "seconds": 0.019, "at": "2026-10-16T22:47:11.223Z", "requestKey": "46635bd6-4e83-4aa4-866d-3b4c5f673d55",
+"caseId": "55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6", "cacheControl": "no-store", "contract": true }, { "input": "niagara",
+"step": "upload part 1", "method": "PUT",
+"route": "/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/parts/{partNumber}", "status": 200, "seconds": 0.121,
+"at": "2026-10-16T22:47:11.247Z", "requestKey": "58a64ed9-4339-4867-8783-8e41c516dd3b",
+"uploadId": "31163e79-71e3-482c-82b6-c81b73b079c4", "cacheControl": "no-store", "contract": true }, {
+"input": "niagara", "step": "upload part 2", "method": "PUT",
+"route": "/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/parts/{partNumber}", "status": 200, "seconds": 0.125,
+"at": "2026-10-16T22:47:11.373Z", "requestKey": "5055c37b-9564-47b5-9897-1ba08a24a530",
+"uploadId": "31163e79-71e3-482c-82b6-c81b73b079c4", "cacheControl": "no-store", "contract": true }, {
+"input": "niagara", "step": "upload part 3", "method": "PUT",
+"route": "/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/parts/{partNumber}", "status": 200, "seconds": 0.11,
+"at": "2026-10-16T22:47:11.503Z", "requestKey": "f9dde8a0-1327-45ec-984b-dcef4c05a89a",
+"uploadId": "31163e79-71e3-482c-82b6-c81b73b079c4", "cacheControl": "no-store", "contract": true }, {
+"input": "niagara", "step": "upload part 4", "method": "PUT",
+"route": "/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/parts/{partNumber}", "status": 200, "seconds": 0.049,
+"at": "2026-10-16T22:47:11.615Z", "requestKey": "0c216b6b-9bfa-4c9c-beea-4e223b0262ab",
+"uploadId": "31163e79-71e3-482c-82b6-c81b73b079c4", "cacheControl": "no-store", "contract": true }, {
+"input": "niagara", "step": "finalize upload", "method": "POST",
+"route": "/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/finalize", "status": 200, "seconds": 0.506,
+"at": "2026-10-16T22:47:11.665Z", "requestKey": "7d282e1b-0c0d-4716-a019-9802034e725b",
+"uploadId": "31163e79-71e3-482c-82b6-c81b73b079c4", "cacheControl": "no-store", "contract": true }, {
+"input": "niagara", "step": "register item", "method": "POST", "route": "/api/v1/ingestion/cases/{caseId}/intake/items",
+"status": 201, "seconds": 0.045, "at": "2026-10-16T22:47:12.173Z", "requestKey": "04d6093f-793d-411c-a533-6905562dbf97",
+"caseId": "55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6", "sourceId": "c7cc6ea5-5675-4c30-a058-44491d416635",
+"cacheControl": "no-store", "contract": true } ], "quietReads": 142 }

@@ -7,6 +7,7 @@ const kept = new Set([
   'c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da',
   '31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521',
   'f66bd7e9af672b75805bc1f839f2bec92dff2452595a31c4ddda5edd4dbd3c73',
+  '107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e',
   ...process.argv.slice(2),
 ]);
 const problems = [];

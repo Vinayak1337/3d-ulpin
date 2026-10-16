@@ -28,11 +28,21 @@ export function safe(text) {
     .replace(/[a-f0-9]{64,}/gi, value => kept.has(value.toLowerCase()) ? value : '[omitted non-source digest]');
 }
 
+/** A string too long for one evidence line becomes an array of its 90-character pieces, in order. */
+function fit(value) {
+  if (typeof value === 'string') return value.length > 100 ? value.match(/.{1,90}/gs) : value;
+  if (Array.isArray(value)) return value.map(fit);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, fit(entry)]));
+  }
+  return value;
+}
+
 /** JSON packed to lines of 120 characters at most; never overwrites a receipt. */
 export function save(name, value) {
   const lines = [];
   let current = '';
-  for (const line of JSON.stringify(value, null, 2).split('\n')) {
+  for (const line of JSON.stringify(fit(value), null, 2).split('\n')) {
     const token = line.trim();
     if (current && current.length + token.length + 1 > 120) {
       lines.push(current);
