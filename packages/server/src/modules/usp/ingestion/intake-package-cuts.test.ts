@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
 import { Readable } from 'node:stream';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
-import { cutMappedFeatures, INTAKE_PACKAGE_LIMITS, normalizerInputUpperBound,
+import { cutMappedFeatures, INTAKE_PACKAGE_LIMITS, IntakePackageCutter, normalizerInputUpperBound,
   type MappedPartFeature } from './intake-package-cuts';
 
 /** Protocol-only feature; never persisted, displayed or treated as an operational record. */
@@ -50,6 +50,30 @@ test('unadmittable single feature held; unresolved skipped; no simplification; o
   const wrong = protocolItem(0);
   wrong.mapped.rawSha256 = 'b'.repeat(64);
   assert.throws(() => cutMappedFeatures([wrong]));
+});
+
+test('a fold resumed after any stored cut closes the same cuts as one fold from the start', () => {
+  const positions = (index: number) => {
+    if (index % 7 === 0) return 10001;
+    return index % 5 === 0 ? 400 : 5;
+  };
+  const items = Array.from({ length: 3000 }, (_, index) => protocolItem(index, positions(index)));
+  const whole = cutMappedFeatures(items);
+  assert(whole.cuts.length > 2 && whole.held.length > 0);
+  const ids = (cuts: { index: number; features: MappedPartFeature[] }[]) =>
+    cuts.map(cut => [cut.index, cut.features.map(item => item.raw.featureIndex)]);
+  for (const [stored, cut] of whole.cuts.entries()) {
+    const last = cut.features.at(-1)!.raw.featureIndex;
+    const cutter = new IntakePackageCutter({}, { index: stored + 1, previous: last });
+    const resumed = [];
+    for (const item of items.filter(item => item.raw.featureIndex > last)) {
+      const result = cutter.consume(item);
+      if (result.cut) resumed.push(result.cut);
+    }
+    const tail = cutter.close();
+    if (tail) resumed.push(tail);
+    assert.deepEqual(ids(resumed), ids(whole.cuts.slice(stored + 1)));
+  }
 });
 
 test('serialized input bound reserves Python ASCII expansion and number spelling', () => {
