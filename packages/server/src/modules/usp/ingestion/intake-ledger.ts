@@ -84,6 +84,16 @@ export async function writeIntakeLargeTx(client: PoolClient, caseId: string, ite
   if (!draftChanged) await appendIntakeItemTx(client, caseId, itemId);
 }
 
+/** Reviewed/committed packages have finished drafting; every other drafted or running part is unfinished. */
+export async function unfinishedIntakePackagesTx(client: PoolClient, itemId: string): Promise<number> {
+  const row = (await client.query(`SELECT count(*)::int n FROM usp_intake_parts part
+    LEFT JOIN import_packages p ON p.id::text=part.result_ref->>'packageId'
+    WHERE part.item_id=$1 AND (part.state IN ('queued','running') OR (part.state='published'
+      AND p.state<>'COMMITTED'
+      AND p.body->'review'->'packageRevision' IS DISTINCT FROM p.body->'revision'))`, [itemId])).rows[0];
+  return Number(row.n);
+}
+
 /** A cut and its package are one transaction. Large items never put one package ID in their plan. */
 export async function publishIntakePartTx(client: PoolClient, itemId: string, partIndex: number,
   pkg: ImportPackage, locator: Record<string, unknown>, counts: Record<string, unknown>) {

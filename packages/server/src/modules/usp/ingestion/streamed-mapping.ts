@@ -9,6 +9,7 @@ import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
 import {localOperatorSubject} from '../principal';
 import {appendCaseIngestionTx} from './events';
+import {queueIntakeLargeTx} from './intake-large';
 import {loadProvisionalStreamedProfileTx,loadSealedStreamedProfileTx} from './streamed-profile';
 
 const uuid=z.string().uuid();
@@ -139,6 +140,7 @@ export class StreamedMappingService{
       await remember(client,caseId,key,digest,receipt);
       await appendCaseIngestionTx(client,caseId,{kind:'recipe.changed',recipeId:receipt.id,
         recipeRevision:receipt.revision,sourceId,status:'proposed'},subject);
+      await queueIntakeLargeTx(client,sourceId);
       return receipt;
     });
   }
@@ -175,6 +177,7 @@ export class StreamedMappingService{
       await save(client,approved);await remember(client,caseId,key,digest,approved);
       await appendCaseIngestionTx(client,caseId,{kind:'recipe.changed',recipeId:approved.id,
         recipeRevision:approved.revision,sourceId,status:'approved'},subject);
+      await queueIntakeLargeTx(client,sourceId);
       return approved;
     });
   }

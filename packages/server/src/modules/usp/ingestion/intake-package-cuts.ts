@@ -84,15 +84,20 @@ export function assertProvedPartBounds(features: Record<string, unknown>[], rang
   }
 }
 
-/** Bounded fold state can be carried between sealed raw payloads without retaining a whole file. */
+/** Bounded fold state can be carried between sealed raw payloads without retaining a whole file.
+ * A held feature is judged against an empty cut, so a fold resumed after a stored cut's last feature,
+ * with that cut's next index, closes the same cuts as one fold from the start. */
 export class IntakePackageCutter {
   private features: MappedPartFeature[] = [];
   private cost: Cost;
-  private previous = -1;
-  private index = 0;
+  private previous: number;
+  private index: number;
 
-  constructor(private readonly metadata: Record<string, unknown> = {}) {
+  constructor(private readonly metadata: Record<string, unknown> = {},
+    resume: { index: number; previous: number } = { index: 0, previous: -1 }) {
     this.cost = initialCost(metadata);
+    this.index = resume.index;
+    this.previous = resume.previous;
   }
 
   consume(item: MappedPartFeature): { cut?: IntakePackageCut; held?: HeldPartFeature } {

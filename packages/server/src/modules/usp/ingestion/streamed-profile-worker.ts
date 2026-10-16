@@ -11,6 +11,7 @@ import {appendCaseIngestionTx} from './events';
 import {StreamingVectorService,lockStreamingRowsTx} from './streaming-vector';
 import {advanceStreamedInventory,emptyInventory} from './streamed-profile-inventory';
 import {assertStreamedProfileInputTx,readStreamedGenerationTx,streamedGenerationHash} from './streamed-profile';
+import {queueIntakeLargeTx} from './intake-large';
 
 const rawService=new StreamingVectorService(),pause=(ms:number)=>new Promise(resolve=>setTimeout(resolve,ms));
 type RawChunk=Awaited<ReturnType<StreamingVectorService['chunk']>>;
@@ -118,6 +119,7 @@ async function seal(input:StreamedProfileInput,attempt:UspJobAttempt){
         generationHash:prepared.generationHash,coverage:'sealed',recordsSeen:prepared.recordsSeen},input.subject);
       await appendCaseIngestionTx(client,input.caseId,{kind:'streamed-profile.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status:'sealed'},input.subject);
+      await queueIntakeLargeTx(client,input.sourceId);
     });
 }
 async function fail(input:StreamedProfileInput,attempt:UspJobAttempt|null,code:string,stale=false){
@@ -140,6 +142,7 @@ async function fail(input:StreamedProfileInput,attempt:UspJobAttempt|null,code:s
       [input.jobId,stale?'stale':'failed',code]);
     await appendCaseIngestionTx(client,input.caseId,{kind:'streamed-profile.changed',sourceId:input.sourceId,
       sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status:stale?'stale':'failed'},input.subject);
+    await queueIntakeLargeTx(client,input.sourceId);
   });
 }
 async function retry(input:StreamedProfileInput,attempt:UspJobAttempt,code:string){

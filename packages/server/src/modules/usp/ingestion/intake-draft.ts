@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import { STREAMING_VECTOR_LIMITS, type IntakeCard } from '@ulpin/contracts/usp';
@@ -7,7 +6,8 @@ import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { writeIntakeDraftTx, writeIntakeLargeTx } from './intake-ledger';
-import { intakeLargeFailureReason } from './intake-large';
+import { intakeLargeFailureReason, queueIntakeLargeTx } from './intake-large';
+import { stableUuid } from './intake-run';
 
 const uuid = z.string().uuid();
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -25,12 +25,7 @@ export type DraftItem = {
 
 /** Stable keys distinguish each recipe phase, while replay sends exactly the same UUID. */
 export function intakeDraftKey(itemId: string, revision: number, phase: string): string {
-  const bytes = createHash('sha256').update(`intake-draft/1:${itemId}:${revision}:${phase}`).digest();
-  bytes[6] = (bytes[6] & 15) | 80;
-  bytes[8] = (bytes[8] & 63) | 128;
-  const value = bytes.subarray(0, 16).toString('hex');
-  return `${value.slice(0, 8)}-${value.slice(8, 12)}-${value.slice(12, 16)}-`
-    + `${value.slice(16, 20)}-${value.slice(20)}`;
+  return stableUuid(`intake-draft/1:${itemId}:${revision}:${phase}`);
 }
 
 /** A refusal is tray metadata, not permission to use a different reader or split an original. */
@@ -95,8 +90,9 @@ export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourc
   if (!item || item.parent_item_id || item.family !== 'vector'
     || !['probed', 'planned', 'reading'].includes(item.state)) return null;
   if (publishedCard && item.plan_ref) return null;
-  if (source.profile === 'large-original-v1' && item.card?.format === 'geojson'
-    && Number(source.bytes) > STREAMING_VECTOR_LIMITS.sourceBytes) {
+  if (source.profile === 'large-original-v1' && item.card?.format === 'geojson') {
+    // A large GeoJSON is read in parts by its own chain of step jobs; above the reader's ceiling it rests.
+    if (Number(source.bytes) <= STREAMING_VECTOR_LIMITS.sourceBytes) return queueIntakeLargeTx(client, source.id);
     await writeIntakeLargeTx(client, item.case_id, item.item_id, {
       state: 'probed', placement: 'not_understood', planRef: item.plan_ref,
       partsPlanned: null, partsDone: 0, recordsSeen: 0,
@@ -138,10 +134,14 @@ async function enrollDraftTx(client: PoolClient, item: DraftItem, source: Intake
   return input.jobId;
 }
 
-/** Case-first locking matches recipe execution; source pins remain exact across unrelated case edits. */
-export async function assertIntakeDraftTx(client: PoolClient, input: IntakeDraftInput) {
+export type IntakeSourcePins = Pick<IntakeDraftInput, 'itemId' | 'caseId' | 'caseRevision' | 'sourceId'
+  | 'sourceRevision' | 'sourceSha256' | 'sourcePin' | 'subject' | 'accessSha256'>;
+
+/** Case-first locking matches recipe execution; source pins remain exact across unrelated case edits.
+ * Without `lockCase` the case row is left to callers whose readers share-lock it in their own transactions. */
+export async function assertIntakeDraftTx(client: PoolClient, input: IntakeSourcePins, lockCase = true) {
   await lockSourceCaseDestinationTx(client, input.caseId);
-  const scope = await intakeCaseTx(client, input.caseId, true);
+  const scope = await intakeCaseTx(client, input.caseId, lockCase);
   const { source, binding } = await intakeSourceTx(client, input.caseId, input.sourceId);
   const latest = (await client.query(`SELECT max(revision)::int revision FROM sources
     WHERE case_id=$1 AND family_id=$2`,

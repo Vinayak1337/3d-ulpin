@@ -13,6 +13,7 @@ import {readStreamingFeatures,readStreamingTabular,sourceRecord,tabularSourceRec
   type SourceFeature} from './streaming-vector-reader';
 import {validateStreamingTopology} from './streaming-vector-validation';
 import {writeSealedMapReceiptTx} from './streamed-map-receipt';
+import {queueIntakeLargeTx} from './intake-large';
 
 type Slot={chunkIndex:number;firstFeatureIndex:number;lastFeatureIndex:number|null;records:number;accepted:number;quarantined:number;
   status:'ready'|'quarantined';bytes:number;ref:{key:string;sha256:string;bytes:number}|null;issueCode:string|null;resultSha256:string};
@@ -107,6 +108,7 @@ async function terminal(input:AnyStreamingInput,attempt:UspJobAttempt,code:strin
       [input.jobId,stale?'stale':'failed',code]);
     if(!stale)await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
       sourceRevision:input.sourceRevision,jobId:input.jobId,status:'failed'},input.subject);
+    await queueIntakeLargeTx(client,input.sourceId);
   });
 }
 
@@ -164,6 +166,7 @@ export async function runStreamingVectorJob(jobId:string){
         [jobId,stale?'stale':'failed',code]);
       if(!stale)await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,status:'failed'},input.subject);
+      await queueIntakeLargeTx(client,input.sourceId);
     });
     return;
   }
@@ -230,6 +233,7 @@ export async function runStreamingVectorJob(jobId:string){
         if(input.framing==='feature-collection')await writeSealedMapReceiptTx(client,input,result);
         await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
           sourceRevision:input.sourceRevision,jobId,status},input.subject);
+        await queueIntakeLargeTx(client,input.sourceId);
       });
   }catch(error){
     const code=error instanceof AppError?error.code:'STREAMING_WORKER_ERROR';

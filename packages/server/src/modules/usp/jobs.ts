@@ -139,6 +139,14 @@ export async function registerUspJobInputTx(client: PoolClient, jobId: string,
       ||input.caseRevision!==job.case_revision||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint
       ||inputSha256!==fingerprint(input))
       throw new AppError(422,'INTAKE_DRAFT_INPUT_SCOPE','Draft jobs must pin their retained source and intake revision.');
+  } else if(job.operation==='intake-large'){
+    const {IntakeLargeInputSchema}=await import('./ingestion/intake-large');
+    const input=IntakeLargeInputSchema.parse(job.payload);
+    if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1
+      ||input.jobId!==job.id||input.caseId!==job.case_id||input.sourceId!==job.source_id
+      ||input.caseRevision!==job.case_revision||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint
+      ||inputSha256!==fingerprint(input))
+      throw new AppError(422,'INTAKE_LARGE_INPUT_SCOPE','Large-file steps must pin their retained source and intake revision.');
   } else if(job.operation==='intake-run'){
     const {IntakeRunInputSchema,intakeRunSubject}=await import('./ingestion/intake-run');
     const input=IntakeRunInputSchema.parse(job.payload);
