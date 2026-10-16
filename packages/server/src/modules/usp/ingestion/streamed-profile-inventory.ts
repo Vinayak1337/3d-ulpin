@@ -30,7 +30,7 @@ export function advanceStreamedInventory(previous:Aggregate,records:StreamingVec
       if(!paths.has(path)){
         if(paths.size>=limits.paths||path.length>512)
           throw new AppError(413,'STREAMED_PROFILE_PATH_BUDGET','The source has more field paths than this bounded profile permits.');
-        paths.set(path,{path,types:[],values:0,explicitNull:0,absent:accepted,unknown:quarantined});
+        paths.set(path,{path,types:[],values:0,explicitNull:0,absent:accepted,unknown:quarantined,integers:0});
       }
     }
     for(const [path,item] of paths){
@@ -40,6 +40,7 @@ export function advanceStreamedInventory(previous:Aggregate,records:StreamingVec
       const kind=valueType(value);
       if(!item.types.includes(kind))item.types.push(kind);
       item.values++;
+      if(item.integers!==undefined&&Number.isSafeInteger(value))item.integers++;
     }
     const geometry=feature.geometry;
     if(geometry&&typeof geometry==='object'&&!Array.isArray(geometry))

@@ -3,11 +3,10 @@ import { isDeepStrictEqual } from 'node:util';
 import type { PoolClient } from 'pg';
 import { SourceRangeReferenceSchema, type SourceRangeReference } from '@ulpin/contracts';
 import { STREAMING_VECTOR_LIMITS as limits, StreamedMappingReceiptSchema, StreamedMapOriginalReceiptSchema,
-  type StreamingVectorRecord } from '@ulpin/contracts/usp';
+  type StreamedMappingPlan, type StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
-import type { Mapping } from '../../areas/areas';
 import { localOperatorSubject } from '../principal';
 import { isRetainedMapOriginal } from './retained-map-original';
 import { streamingContextTx, StreamingVectorService } from './streaming-vector';
@@ -53,6 +52,27 @@ export async function provePartFeature(record: StreamingVectorRecord, bytes: Uin
   return { feature, range };
 }
 
+class NumberToken { constructor(readonly source: string) {} }
+type SourceReviver = (key: string, value: unknown, context: { source?: string }) => unknown;
+const parseTokens = JSON.parse as (text: string, reviver: SourceReviver) => any;
+
+/** A whole-number key is the digits the file writes; a parsed number cannot tell `12` from `12.0`. */
+export function assertIntegerKeyTokens(plan: Pick<StreamedMappingPlan, 'operations'>, raws: Uint8Array[]) {
+  const key = plan.operations.find(op => op.target.endsWith('.sourceKey'));
+  if (key?.conversionId !== 'literal_integer_identifier@1') return;
+  const prefix = '/features/*/properties/';
+  const field = key.sourcePath.startsWith(prefix)
+    ? key.sourcePath.slice(prefix.length).replaceAll('~1', '/').replaceAll('~0', '~') : null;
+  for (const raw of raws) {
+    const feature = parseTokens(Buffer.from(raw).toString('utf8'),
+      (_name, value, context) => typeof value === 'number' ? new NumberToken(context.source ?? '') : value);
+    const token = field === null ? feature?.id : feature?.properties?.[field];
+    if (!(token instanceof NumberToken) || !/^-?(?:0|[1-9][0-9]*)$/.test(token.source) || token.source === '-0')
+      throw new AppError(422, 'PART_INTEGER_IDENTIFIER',
+        'Source identity must be complete, unique whole-number tokens within the exact integer range.');
+  }
+}
+
 async function approvedPartLayoutTx(client: PoolClient, input: ProvedAreaPartInput, source: Record<string, any>) {
   const row = (await client.query('SELECT body FROM usp_mapping_recipes WHERE case_id=$1 AND source_id=$2 FOR SHARE',
     [source.case_id, source.id])).rows[0] ?? notFound('The approved streamed layout is unavailable.');
@@ -66,15 +86,8 @@ async function approvedPartLayoutTx(client: PoolClient, input: ProvedAreaPartInp
     conflict('The proved cut requires this original\'s exact officer-approved sealed layout.');
   const { profile } = await loadSealedStreamedProfileTx(client, plan.profileJobId, plan.profileGeneration,
     plan.profileHash, plan.rawJobId, source.case_id, source.id);
-  compileStreamedMapping(plan, profile);
+  const mapping = compileStreamedMapping(plan, profile);
   assertStreamedIssuerEvidence(plan, source as { profile: string; inspection: any });
-  const mapping: Mapping = { kind: 'building', geometryRole: 'unknown' };
-  for (const op of plan.operations) {
-    if (op.sourcePath === '/features/*/id' || op.target === 'building.geometry') continue;
-    const field = op.sourcePath.slice('/features/*/properties/'.length).replaceAll('~1', '/').replaceAll('~0', '~');
-    if (op.target === 'building.sourceKey') mapping.idField = field;
-    if (op.target === 'building.name') mapping.nameField = field;
-  }
   return { plan, mapping };
 }
 
@@ -118,5 +131,6 @@ export async function prepareProvedAreaPartTx(client: PoolClient, input: ProvedA
   if (plan.rawJobId !== receipt.rawJobId || input.readerVersion !== receipt.readerVersion)
     conflict('The approved layout and receipt name different raw readers.');
   const part = await loadPartFeatures(input, source.case_id, plan.rawJobId, Number(source.bytes));
+  assertIntegerKeyTokens(plan, input.features.map(feature => feature.rawBytes));
   return { ...part, mapping, source, metadata: receipt.collectionMetadata };
 }

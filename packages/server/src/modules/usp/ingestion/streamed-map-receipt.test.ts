@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { StreamingVectorInput } from '@ulpin/contracts/usp';
-import { sealedMapReceipt, streamedSourceReference, writeSealedMapReceiptTx } from './streamed-map-receipt';
+import { AppError } from '../../../infrastructure/errors';
+import { resolveStreamedReference, sealedMapReceipt, streamedSourceReference,
+  writeSealedMapReceiptTx } from './streamed-map-receipt';
 import { isRetainedMapOriginal } from './retained-map-original';
 import { permitsFeatureRecordSource } from '../../registry/registry-reference-policy';
 import { assertIntakeSource } from './intake-context';
@@ -109,4 +111,43 @@ test('receipt SQL write occurs only after closed state and exact source authorit
   assert.equal(writes, 0);
   await writeSealedMapReceiptTx(client as any, input, closure);
   assert.equal(writes, 1);
+});
+
+const named = (name: string) => ({ type: 'name', properties: { name } });
+
+test('a declared projected system is stored as written with its resolved code, through the geo resolver', async () => {
+  const asked: unknown[] = [];
+  const reference = await resolveStreamedReference({ type: 'FeatureCollection', crs: named('EPSG:2958') },
+    async collection => {
+      asked.push(collection);
+      return { declared: 'EPSG:2958', authority: 'EPSG:2958', unit: 'metre' };
+    });
+  assert.deepEqual(asked, [{ crs: named('EPSG:2958') }]);
+  assert.deepEqual(reference, { sourceCrs: 'EPSG:2958', evidence: "Declared in the file's crs member: `EPSG:2958`",
+    coordinateUnit: 'metre', authority: 'EPSG:2958' });
+  const retained = source();
+  retained.inspection.streamedMapReceipt = sealedMapReceipt(input, closure, slots, reference);
+  assert(isRetainedMapOriginal(retained));
+});
+
+test('a declaration the geo resolver refuses stops the receipt with its words', async () => {
+  const words = 'The file\'s crs member declares {"type":"name","properties":{"name":"unknown"}}; its name is not a '
+    + 'recognized coordinate reference system.';
+  await assert.rejects(resolveStreamedReference({ crs: named('unknown') }, async () => {
+    throw new AppError(422, 'AREA_PROCESSING', words);
+  }), { status: 422, code: 'STREAMING_SOURCE_CRS', message: words });
+  await assert.rejects(resolveStreamedReference({ crs: named('EPSG:2958') }, async () => {
+    throw new AppError(503, 'AREA_PROCESSING', 'down');
+  }), { status: 503 });
+});
+
+test('a file that declares nothing or CRS84 keeps its receipt unchanged', async () => {
+  const refuse = async () => { throw new Error('not asked'); };
+  assert.deepEqual(await resolveStreamedReference({ type: 'FeatureCollection' }, refuse), streamedSourceReference({}));
+  const crs84 = { crs: named('urn:ogc:def:crs:OGC:1.3:CRS84') };
+  assert.deepEqual(await resolveStreamedReference(crs84, async () => ({
+    declared: 'urn:ogc:def:crs:OGC:1.3:CRS84', authority: 'EPSG:4326', unit: 'degree' })),
+  streamedSourceReference(crs84));
+  assert.deepEqual(sealedMapReceipt(input, closure, slots, streamedSourceReference({})),
+    sealedMapReceipt(input, closure, slots));
 });

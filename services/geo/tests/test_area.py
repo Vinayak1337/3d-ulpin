@@ -12,7 +12,7 @@ from pyproj import Transformer
 from pypdf import PdfWriter
 from shapely.geometry import shape
 
-from geo.area import check_area, extract_document, normalize_area
+from geo.area import check_area, extract_document, normalize_area, resolve_geojson_crs
 from geo.validation import InputError
 
 
@@ -153,6 +153,39 @@ def test_invalid_geojson_declaration_quotes_the_file_and_reason(member, words):
     with pytest.raises(InputError, match=words) as caught:
         normalize_area(data)
     assert json.dumps(member, ensure_ascii=False, separators=(",", ":")) in str(caught.value)
+
+
+@pytest.mark.parametrize("member,words", CRS_DECLARATION_REFUSALS)
+def test_large_file_resolution_refuses_with_the_same_words(member, words):
+    with pytest.raises(InputError, match=words) as caught:
+        resolve_geojson_crs({"collection": {"type": "FeatureCollection", "crs": member}})
+    assert json.dumps(member, ensure_ascii=False, separators=(",", ":")) in str(caught.value)
+
+
+def test_large_file_resolution_names_the_code_and_unit_the_normalizer_reads():
+    assert resolve_geojson_crs({"collection": {"crs": {"type": "name", "properties": {
+        "name": "urn:ogc:def:crs:EPSG::2958"}}}}) == {
+        "declared": "urn:ogc:def:crs:EPSG::2958", "authority": "EPSG:2958", "unit": "metre"}
+    assert resolve_geojson_crs({"collection": {"type": "FeatureCollection"}}) == {
+        "declared": None, "authority": "EPSG:4326", "unit": "degree"}
+    with pytest.raises(InputError, match="without its features"):
+        resolve_geojson_crs({"collection": {"crs": None, "features": []}})
+
+
+def test_a_proved_part_collection_is_read_in_its_declared_system():
+    """The large path sends the receipt's collection members with the part's raw features, unchanged."""
+    converter = Transformer.from_crs(4326, 2958, always_xy=True, allow_ballpark=False, only_best=True)
+    coordinates = [list(converter.transform(*point, errcheck=True)) for point in ring(-79.1, 43.1, .0001, .0001)]
+    data = geojson({"type": "Polygon", "coordinates": [coordinates]})
+    metadata = {"type": "FeatureCollection", "name": "parcels",
+                "crs": {"type": "name", "properties": {"name": "EPSG:2958"}}}
+    data["data"] = {**metadata, "type": "FeatureCollection", "features": data["data"]["features"]}
+    result = normalize_area(data)
+    direct = Transformer.from_crs(2958, 4326, always_xy=True, allow_ballpark=False, only_best=True)
+    actual = result["features"][0]["geographicGeometry"]["coordinates"][0][0]
+    assert actual == pytest.approx(direct.transform(*coordinates[0]), abs=1e-10)
+    assert result["reference"]["sourceCrs"] == "EPSG:2958"
+    assert result["features"][0]["sourceGeometry"]["coordinates"][0] == coordinates
 
 
 @pytest.mark.parametrize("name", ["EPSG:32643", "urn:ogc:def:crs:EPSG::32643"])

@@ -67,7 +67,8 @@ export function inspectedProfile(bytes: Uint8Array, inspection: GisInspection) {
   return {version: INGESTION_VERSION, format: 'geojson' as const, featureCount: rows.length, crs, geometryTypes: inspection.geometryTypes,
     paths, limitations, schemaFingerprint: sha256(JSON.stringify({version: INGESTION_VERSION, crs, geometryTypes: inspection.geometryTypes, paths: paths.map(p => ({path: p.path, types: p.types}))}))};
 }
-function heightMapping(plan: MappingPlan, profile: SourceProfile): Partial<Mapping> {
+function heightMapping(plan: Pick<MappingPlan, 'heightField' | 'heightUnit' | 'heightMeaning'>,
+  profile: Pick<SourceProfile, 'paths'>): Partial<Mapping> {
   const field = plan.heightField;
   if (field === undefined) return {};
   if (!plan.heightUnit || !plan.heightMeaning?.trim())
@@ -77,7 +78,10 @@ function heightMapping(plan: MappingPlan, profile: SourceProfile): Partial<Mappi
     throw new AppError(422, 'MAPPING_HEIGHT', 'Choose an inspected numeric or text height attribute; null and absent values remain unknown.');
   return {heightField: field, heightUnit: plan.heightUnit, heightMeaning: plan.heightMeaning};
 }
-export function compileMapping(plan: MappingPlan, profile: SourceProfile): Mapping {
+type LayoutPlan = Pick<MappingPlan, 'kind' | 'operations' | 'heightField' | 'heightUnit' | 'heightMeaning'>;
+type LayoutProfile = Pick<SourceProfile, 'paths' | 'geometryTypes' | 'crs'>;
+/** The one meaning of a layout; a large file's streamed profile reaches it through `compileStreamedMapping`. */
+export function compileMapping(plan: LayoutPlan, profile: LayoutProfile): Mapping {
   const kind = plan.kind ?? 'building';
   const accepted = polygonKinds.includes(kind) ? ['Polygon', 'MultiPolygon'] : geometryTypes;
   const refused = profile.geometryTypes.filter(type => !accepted.includes(type));

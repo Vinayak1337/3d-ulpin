@@ -12,7 +12,7 @@ import {assertStreamingInputTx,lockStreamingRowsTx} from './streaming-vector';
 import {readStreamingFeatures,readStreamingTabular,sourceRecord,tabularSourceRecord,
   type SourceFeature} from './streaming-vector-reader';
 import {validateStreamingTopology} from './streaming-vector-validation';
-import {writeSealedMapReceiptTx} from './streamed-map-receipt';
+import {resolveStreamedReference,writeSealedMapReceiptTx} from './streamed-map-receipt';
 import {queueIntakeLargeTx} from './intake-large';
 
 type Slot={chunkIndex:number;firstFeatureIndex:number;lastFeatureIndex:number|null;records:number;accepted:number;quarantined:number;
@@ -214,6 +214,7 @@ export async function runStreamingVectorJob(jobId:string){
       throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The retained original differs from its pinned hash or byte count.');
     if(!result.features)throw new AppError(422,'STREAMING_EMPTY_SOURCE','The source contains no complete features.');
     await flush();
+    const reference=input.framing==='feature-collection'?await resolveStreamedReference(result.metadata):undefined;
     await transaction(async client=>{
       await assertStreamingInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
       const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[jobId])).rows[0];
@@ -230,7 +231,7 @@ export async function runStreamingVectorJob(jobId:string){
         const state=(await client.query('SELECT quarantined FROM usp_streaming_vector_imports WHERE job_id=$1',[jobId])).rows[0];
         const status=state.quarantined?'completed_with_rejections':'completed';
         await client.query('UPDATE usp_streaming_vector_imports SET state=$2,issue_code=NULL,updated_at=now() WHERE job_id=$1',[jobId,status]);
-        if(input.framing==='feature-collection')await writeSealedMapReceiptTx(client,input,result);
+        if(input.framing==='feature-collection')await writeSealedMapReceiptTx(client,input,result,reference);
         await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
           sourceRevision:input.sourceRevision,jobId,status},input.subject);
         await queueIntakeLargeTx(client,input.sourceId);
