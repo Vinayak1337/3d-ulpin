@@ -1,0 +1,18 @@
+{ "at": "2026-10-16T22:39:39.445Z", "commit": "54d43d0bed053c803245fe82f64ffb7125eebe86", "receipt": { "command": [
+"pnpm platform:start --profile demo --create --runtime ulpin-reh-02" ], "from": "E:/Projects/ulpin-wt/ulpin-reh-02",
+"exit": 0, "seconds": 26.257, "output": [ "> 3d-ulpin@ platform:start E:\\Projects\\ulpin-wt\\ulpin-reh-02",
+"> bash scripts/platform-start.sh \"--profile\" \"demo\" \"--create\" \"--runtime\" \"ulpin-reh-02\"", "",
+"Creating/resuming the explicitly approved new ulpin-reh-02 project.",
+"Applying existing additive migrations to ulpin-reh-02 only (no seeds).",
+"ulpin-reh-02 created: storage, schema and processors are up; API and dispatcher not starte",
+"d. Build its document runtime, then start it." ], "error": null }, "outputLines": 7, "state": {
+"runtimeEntriesByName": [ "bootstrap.complete.json", "learning", "logs", "models", "ocr-paths.json", "ocr-scratch",
+"runtime.env", "tabular-paths.json" ], "volumes": [ "ulpin-reh-02_minio-data", "ulpin-reh-02_postgres-data",
+"ulpin-reh-02_redis-data" ], "containers": [ "ulpin-reh-02-worker-1 running Up 6 seconds (healthy)",
+"ulpin-reh-02-geo-1 running Up 12 seconds (healthy)", "ulpin-reh-02-minio-init-1 exited Exited (0) 12 seconds ago",
+"ulpin-reh-02-redis-1 running Up 24 seconds (healthy)", "ulpin-reh-02-postgres-1 running Up 24 seconds (healthy)",
+"ulpin-reh-02-minio-1 running Up 24 seconds (healthy)" ], "networks": [ "ulpin-reh-02_default" ], "listeners": [ {
+"LocalAddress": "127.0.0.1", "LocalPort": 21025, "OwningProcess": 29740 }, { "LocalAddress": "127.0.0.1",
+"LocalPort": 21024, "OwningProcess": 29740 }, { "LocalAddress": "127.0.0.1", "LocalPort": 21023, "OwningProcess": 29740
+}, { "LocalAddress": "127.0.0.1", "LocalPort": 21022, "OwningProcess": 29740 }, { "LocalAddress": "127.0.0.1",
+"LocalPort": 21021, "OwningProcess": 29740 } ] } }

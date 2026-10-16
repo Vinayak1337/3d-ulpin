@@ -1,0 +1,120 @@
+{ "phase": "nyc", "at": "2026-10-16T22:46:23.472Z", "api": "http://127.0.0.1:21026",
+"caseId": "55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6", "wallSeconds": 14.4, "stoppedAt": null, "result": { "registered": {
+"itemId": "460ae0f2-6097-4e79-b3bc-d6a9b9184ce7", "format": "geojson", "family": "vector", "sizeClass": "S",
+"sizeBytes": 1103282, "wave": 1, "cardSha256": "[omitted non-source digest]", "cardFormat": "geojson",
+"cardPresent": true, "placement": "undecided" }, "toQuestion": { "item": {
+"itemId": "460ae0f2-6097-4e79-b3bc-d6a9b9184ce7", "sourceId": "460ae0f2-6097-4e79-b3bc-d6a9b9184ce7",
+"caseId": "55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6", "parentItemId": null, "memberPath": null,
+"name": "buildings-original.geojson", "family": "vector", "format": "geojson", "sizeBytes": 1103282, "sizeClass": "S",
+"wave": 1, "state": "probed", "placement": "needs_answer", "card": { "version": "intake-card/1", "family": "vector",
+"format": "geojson", "formatVersion": null, "detectedBy": "bytes", "nameDisagrees": false, "depth": "structure",
+"encoding": "utf-8", "crs": { "state": "stated", "code": "EPSG:4326", "sidecarSha256": null }, "extent": {
+"native": null, "epsg4326": null }, "counts": { "features": 1662, "rows": null, "pages": null, "members": null,
+"points": null, "bands": null }, "geometryTypes": [ "MultiPolygon" ], "layers": [], "sheets": [], "columns": [ {
+"name": "base_bbl", "inferredType": "number", "sampledNonEmpty": 16 }, { "name": "ground_elevation",
+"inferredType": "number", "sampledNonEmpty": 16 }, { "name": "feature_code", "inferredType": "number",
+"sampledNonEmpty": 16 }, { "name": "height_roof", "inferredType": "number", "sampledNonEmpty": 16 }, { "name": "bin",
+"inferredType": "number", "sampledNonEmpty": 16 }, { "name": "last_edited_date", "inferredType": "text",
+"sampledNonEmpty": 16 }, { "name": "geom_source", "inferredType": "text", "sampledNonEmpty": 16 }, { "name": "doitt_id",
+"inferredType": "number", "sampledNonEmpty": 16 } ], "limits": [
+"Complete head values only; whole-file count unknown; truncated values not repaired.",
+"Count cited from retained receipt; its accepted coverage is not a recomputed raw-file total." ],
+"probeBytesRead": 131072, "probeMs": 10.742, "drawableHint": false, "delimiter": null, "encrypted": null,
+"raster": null, "point": null, "citations": [ { "locator": "source.inspection:retained_count",
+"sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e" }, {
+"locator": "source.inspection:retained_crs",
+"sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e" }, {
+"locator": "source.inspection:retained_geometry_types",
+"sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e" } ], "members": [] },
+"cardSha256": "[omitted non-source digest]", "plan": null, "streamedProfileJobId": null,
+"probeVersion": "intake-card/1", "partsPlanned": null, "partsDone": 0, "recordsSeen": 0, "limitReason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ],
+"pinnedByOfficer": false, "createdAt": "2026-10-16T22:46:09.291Z", "updatedAt": "2026-10-16T22:46:10.087Z" }, "trail": [
+{ "seconds": 0, "state": "probed", "placement": "undecided", "partsPlanned": null, "partsDone": 0, "recordsSeen": 0,
+"limitReason": null, "streamedProfileJobId": null, "plan": null }, { "seconds": 2, "state": "probed",
+"placement": "needs_answer", "partsPlanned": null, "partsDone": 0, "recordsSeen": 0, "limitReason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ],
+"streamedProfileJobId": null, "plan": null } ], "seconds": 2 }, "profile": { "featureCount": 1662, "crs": {
+"value": "EPSG:4326", "evidence": "Declared OGC CRS84", "unit": "degree" }, "geometryTypes": [ "MultiPolygon" ],
+"identifierCandidates": [ "/features/*/properties/bin", "/features/*/properties/doitt_id" ], "limitations": [ [
+"Only bounded GeoJSON is supported by this manual profile; the layout states one kind for t", "he whole file." ], [
+"Height is unknown unless the layout states a field, its source unit and its meaning. Geome",
+"try role, floor levels, ownership and official issuance remain unknown." ], [
+"This synchronous manual path does not qualify queued streaming, model proposals, held-out ",
+"accuracy, PII egress or GF-AGENT." ] ] }, "layout": { "choices": { "kind": "building",
+"identifier": "/features/*/properties/bin", "name": "", "height": "", "unit": "", "meaning": "" },
+"recipeId": "71ffd772-3bf1-4bb3-8562-45baf2a4464b", "authoredState": "proposed", "approvedState": "approved",
+"destination": { "kind": "new_area",
+"namespace": "file:107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e", "name": "buildings original" },
+"operations": [ "feature.sourceKey <- /features/*/properties/bin via literal_identifier@1",
+"feature.geometry <- /features/*/geometry via geojson_geometry@1" ] }, "toPackage": { "item": {
+"itemId": "460ae0f2-6097-4e79-b3bc-d6a9b9184ce7", "sourceId": "460ae0f2-6097-4e79-b3bc-d6a9b9184ce7",
+"caseId": "55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6", "parentItemId": null, "memberPath": null,
+"name": "buildings-original.geojson", "family": "vector", "format": "geojson", "sizeBytes": 1103282, "sizeClass": "S",
+"wave": 1, "state": "read", "placement": "on_map", "card": { "version": "intake-card/1", "family": "vector",
+"format": "geojson", "formatVersion": null, "detectedBy": "bytes", "nameDisagrees": false, "depth": "structure",
+"encoding": "utf-8", "crs": { "state": "stated", "code": "EPSG:4326", "sidecarSha256": null }, "extent": {
+"native": null, "epsg4326": null }, "counts": { "features": 1662, "rows": null, "pages": null, "members": null,
+"points": null, "bands": null }, "geometryTypes": [ "MultiPolygon" ], "layers": [], "sheets": [], "columns": [ {
+"name": "base_bbl", "inferredType": "number", "sampledNonEmpty": 16 }, { "name": "ground_elevation",
+"inferredType": "number", "sampledNonEmpty": 16 }, { "name": "feature_code", "inferredType": "number",
+"sampledNonEmpty": 16 }, { "name": "height_roof", "inferredType": "number", "sampledNonEmpty": 16 }, { "name": "bin",
+"inferredType": "number", "sampledNonEmpty": 16 }, { "name": "last_edited_date", "inferredType": "text",
+"sampledNonEmpty": 16 }, { "name": "geom_source", "inferredType": "text", "sampledNonEmpty": 16 }, { "name": "doitt_id",
+"inferredType": "number", "sampledNonEmpty": 16 } ], "limits": [
+"Complete head values only; whole-file count unknown; truncated values not repaired.",
+"Count cited from retained receipt; its accepted coverage is not a recomputed raw-file total." ],
+"probeBytesRead": 131072, "probeMs": 10.742, "drawableHint": false, "delimiter": null, "encrypted": null,
+"raster": null, "point": null, "citations": [ { "locator": "source.inspection:retained_count",
+"sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e" }, {
+"locator": "source.inspection:retained_crs",
+"sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e" }, {
+"locator": "source.inspection:retained_geometry_types",
+"sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e" } ], "members": [] },
+"cardSha256": "[omitted non-source digest]", "plan": { "recipeId": "71ffd772-3bf1-4bb3-8562-45baf2a4464b",
+"recipeRevision": 3, "recipeState": "executed", "origin": "officer", "packageId": "70c207f6-b5c7-45a0-9db2-89f9e1e85dcc"
+}, "streamedProfileJobId": null, "probeVersion": "intake-card/1", "partsPlanned": null, "partsDone": 0,
+"recordsSeen": 1661, "limitReason": null, "pinnedByOfficer": false, "createdAt": "2026-10-16T22:46:09.291Z",
+"updatedAt": "2026-10-16T22:46:18.101Z" }, "trail": [ { "seconds": 0, "state": "probed", "placement": "needs_answer",
+"partsPlanned": null, "partsDone": 0, "recordsSeen": 0, "limitReason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ],
+"streamedProfileJobId": null, "plan": null }, { "seconds": 2, "state": "reading", "placement": "undecided",
+"partsPlanned": null, "partsDone": 0, "recordsSeen": 0, "limitReason": null, "streamedProfileJobId": null, "plan": {
+"recipeState": "approved", "packageId": null } }, { "seconds": 8.1, "state": "read", "placement": "on_map",
+"partsPlanned": null, "partsDone": 0, "recordsSeen": 1661, "limitReason": null, "streamedProfileJobId": null, "plan": {
+"recipeState": "executed", "packageId": "70c207f6-b5c7-45a0-9db2-89f9e1e85dcc" } } ], "seconds": 8.1 },
+"packagesSettledSeconds": 3.2, "view": { "manifest": [ { "itemId": "460ae0f2-6097-4e79-b3bc-d6a9b9184ce7",
+"format": "geojson", "state": "read", "placement": "on_map", "reason": null, "sizeBytes": 1103282, "recordsSeen": 1661 }
+], "counts": { "preparing": 0, "ready": 1661, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0,
+"stopped": 0 }, "packages": [ { "packageId": "70c207f6-b5c7-45a0-9db2-89f9e1e85dcc",
+"areaId": "e4874150-ba45-4282-af98-61f2d50007b7", "state": "REVIEWED", "revision": 2, "counts": { "preparing": 0,
+"ready": 1661, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0, "stopped": 0 },
+"reviewed": true, "reviewRefusal": null } ], "areaFeatures": { "e4874150-ba45-4282-af98-61f2d50007b7": {
+"topLevelKeys": [ "area", "parcelAssociations", "parcelIdentifiers", "sceneAssets", "latestCheck", "displayFeatures",
+"packages" ], "count": 0, "inside": 0, "samples": [] } } } }, "requests": [ { "input": "nyc", "step": "case revision",
+"method": "GET", "route": "/api/v1/cases/{caseId}", "status": 200, "seconds": 0.031, "at": "2026-10-16T22:46:09.056Z",
+"requestKey": null, "cacheControl": "no-store", "contract": true }, { "input": "nyc", "step": "retain map file",
+"method": "POST", "route": "/api/v1/ingestion/cases/{caseId}/sources", "status": 201, "seconds": 0.183,
+"at": "2026-10-16T22:46:09.094Z", "requestKey": "edf9ba20-a2c0-4304-9d57-81d4780a6e25",
+"caseId": "55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6", "cacheControl": "no-store", "contract": true }, { "input": "nyc",
+"step": "register item", "method": "POST", "route": "/api/v1/ingestion/cases/{caseId}/intake/items", "status": 201,
+"seconds": 0.056, "at": "2026-10-16T22:46:09.280Z", "requestKey": "e583f5f2-6a0d-4c18-9829-7ebedc8f8355",
+"caseId": "55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6", "sourceId": "460ae0f2-6097-4e79-b3bc-d6a9b9184ce7",
+"cacheControl": "no-store", "contract": true }, { "input": "nyc", "step": "read profile", "method": "GET",
+"route": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/profile", "status": 200, "seconds": 0.013,
+"at": "2026-10-16T22:46:11.388Z", "requestKey": null, "cacheControl": "no-store", "contract": false }, { "input": "nyc",
+"step": "author layout", "method": "POST", "route": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/recipes",
+"status": 201, "seconds": 0.037, "at": "2026-10-16T22:46:11.425Z", "requestKey": "0320f191-bfc5-4231-95c6-f00bfd2e7280",
+"caseId": "55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6", "sourceId": "460ae0f2-6097-4e79-b3bc-d6a9b9184ce7",
+"cacheControl": "no-store", "contract": true }, { "input": "nyc", "step": "approve layout", "method": "POST",
+"route": "/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/approve", "status": 200, "seconds": 0.026,
+"at": "2026-10-16T22:46:11.466Z", "requestKey": "e9a493c2-af64-406b-a448-596e8b3980ab",
+"caseId": "55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6", "recipeId": "71ffd772-3bf1-4bb3-8562-45baf2a4464b",
+"cacheControl": "no-store", "contract": true }, { "input": "nyc", "step": "batch manifest", "method": "GET",
+"route": "/api/v1/ingestion/cases/{caseId}/intake", "status": 200, "seconds": 0.005, "at": "2026-10-16T22:46:22.846Z",
+"requestKey": null, "cacheControl": "no-store", "contract": true }, { "input": "nyc", "step": "batch packages",
+"method": "GET", "route": "/api/v1/ingestion/cases/{caseId}/targets", "status": 200, "seconds": 0.138,
+"at": "2026-10-16T22:46:22.853Z", "requestKey": null, "cacheControl": "no-store", "contract": true }, { "input": "nyc",
+"step": "area context", "method": "GET", "route": "/api/v1/areas/{areaId}/context", "status": 200, "seconds": 0.463,
+"at": "2026-10-16T22:46:22.994Z", "requestKey": null, "areaId": "e4874150-ba45-4282-af98-61f2d50007b7",
+"cacheControl": "no-store", "contract": null } ], "quietReads": 9 }

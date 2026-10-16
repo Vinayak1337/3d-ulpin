@@ -1,0 +1,39 @@
+{ "at": "2026-10-16T22:41:06.221Z", "commit": "54d43d0bed053c803245fe82f64ffb7125eebe86", "receipt": { "command": [
+"pnpm platform:doctor --profile demo --runtime ulpin-reh-02" ], "from": "E:/Projects/ulpin-wt/ulpin-reh-02", "exit": 0,
+"seconds": 5.977, "output": [ "> 3d-ulpin@ platform:doctor E:\\Projects\\ulpin-wt\\ulpin-reh-02",
+"> node scripts/platform/doctor \"--profile\" \"demo\" \"--runtime\" \"ulpin-reh-02\"", "",
+"INFO Runtime ulpin-reh-02: only its own folder, project and ports are read.", "  documentPagesConfigured: true",
+"  packetRegionsConfigured: true", "  regionProfileSha256: [omitted non-source digest]", "  regionRepoMatches: true",
+"PASS Document runtimes", "PASS Demo external configuration",
+"PASS Local document OCR paths available; eng+hin assets (runner uses eng).", "  enabled: false", "  policyHash: null",
+"  providerKeyPresent: false", "  mappingTeacherAdapter: replay", "  dailyCapPresent: false", "  providerKeysNamed: 0",
+"  providerKeysPresent: 0", "PASS Model gateway state", "  Context: desktop-linux; engine: 29.8.0",
+"PASS Docker local Linux engine and context/socket", "  23 existing volumes; 6 ulpin-reh-02 containers",
+"PASS Docker inventory readable", "PASS Existing ulpin-reh-02 volume ownership and attachments",
+"PASS postgres container healthy", "PASS postgres restart policy", "PASS minio container healthy",
+"PASS minio restart policy", "PASS redis container healthy", "PASS redis restart policy", "PASS geo container healthy",
+"PASS geo restart policy", "PASS worker container healthy", "PASS worker restart policy", "PASS DB reachable / PostGIS",
+"PASS Object store reachable (read-only)", "PASS Redis reachable", "PASS Processor /health",
+"PASS Celery worker heartbeat", "PASS API native process ownership",
+"PASS Dispatcher process ownership (liveness only)", "PASS API /api/v1/health",
+"PASS DB migrations applied (API structural admission)", "PASS API bound to the inspected ulpin-reh-02 database",
+"Doctor: all checks passed (dispatcher liveness, not a job execution proof)." ], "error": null }, "outputLines": 45,
+"state": { "runtimeEntriesByName": [ "api.process.json", "bootstrap.complete.json", "dispatcher.process.json",
+"document-ocr-934c4f99-f36c-4ab6-a2c9-a30da7717bc1-v6pzwQ", "document-runtime-paths.json", "learning", "logs", "models",
+"ocr-paths.json", "ocr-scratch", "runtime.env", "tabular-paths.json" ], "volumes": [ "ulpin-reh-02_minio-data",
+"ulpin-reh-02_postgres-data", "ulpin-reh-02_redis-data" ], "containers": [
+"ulpin-reh-02-worker-1 running Up About a minute (healthy)", "ulpin-reh-02-geo-1 running Up About a minute (healthy)",
+"ulpin-reh-02-minio-init-1 exited Exited (0) 24 seconds ago",
+"ulpin-reh-02-redis-1 running Up About a minute (healthy)",
+"ulpin-reh-02-postgres-1 running Up About a minute (healthy)",
+"ulpin-reh-02-minio-1 running Up About a minute (healthy)" ], "networks": [ "ulpin-reh-02_default" ], "listeners": [ {
+"LocalAddress": "127.0.0.1", "LocalPort": 21026, "OwningProcess": 580 }, { "LocalAddress": "127.0.0.1",
+"LocalPort": 21025, "OwningProcess": 29740 }, { "LocalAddress": "127.0.0.1", "LocalPort": 21024, "OwningProcess": 29740
+}, { "LocalAddress": "127.0.0.1", "LocalPort": 21023, "OwningProcess": 29740 }, { "LocalAddress": "127.0.0.1",
+"LocalPort": 21022, "OwningProcess": 29740 }, { "LocalAddress": "127.0.0.1", "LocalPort": 21021, "OwningProcess": 29740
+} ] }, "gpu": { "command": [ "nvidia-smi --query-compute-apps=pid,used_memory --format=csv" ],
+"from": "E:/Projects/ulpin-wt/k2/docs/evidence/runtime/reh2", "exit": 0, "seconds": 0.064, "output": [
+"pid, used_gpu_memory [MiB]", "28944, [N/A]", "1416, [N/A]", "26468, [N/A]", "9260, [N/A]", "13280, [N/A]",
+"26436, [N/A]", "6060, [N/A]", "30412, [N/A]", "13772, [N/A]", "16648, [N/A]", "4220, [N/A]", "5584, [N/A]",
+"26128, [N/A]", "20928, [N/A]", "14776, [N/A]", "15000, [N/A]", "17460, [N/A]", "28252, [N/A]", "10500, [N/A]",
+"29080, [N/A]", "4280, [N/A]", "18692, [N/A]" ], "error": null } }
