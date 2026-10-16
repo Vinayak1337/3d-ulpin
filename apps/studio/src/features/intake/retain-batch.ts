@@ -33,9 +33,16 @@ async function retainMap(caseId: string, file: File) {
   const detail = unwrap(await api.GET('/api/v1/cases/{caseId}', { params: { path: { caseId } } }));
   const body = new FormData();
   body.set('file', file);
-  body.set('format', 'geojson');
   body.set('requestKey', crypto.randomUUID());
   body.set('expectedWorkspaceRevision', String(detail.case.revision));
+  // A ZIP of layers is kept whole; enrolling it keeps each GeoJSON member as its own original and item.
+  if (/\.zip$/i.test(file.name)) {
+    return unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/intake/archives', {
+      params: { path: { caseId } }, body: body as never,
+      bodySerializer: (value) => value as unknown as FormData,
+    })).sourceId;
+  }
+  body.set('format', 'geojson');
   const profile = unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/sources', {
     params: { path: { caseId } }, body: body as never,
     bodySerializer: (value) => value as unknown as FormData,

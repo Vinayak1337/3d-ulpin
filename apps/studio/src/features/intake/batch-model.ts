@@ -28,6 +28,14 @@ export function partProgressWords(item: Pick<IntakeItem, 'state' | 'partsPlanned
   return null;
 }
 
+/**
+ * One tray row per file and per layer. A ZIP's member row that names its own original (ZF1) is that layer's
+ * item listed again, so only the layer's own item is shown; other member rows stay as the archive's contents.
+ */
+export function trayItems(items: readonly IntakeItem[]): IntakeItem[] {
+  return items.filter(item => !(item.parentItemId && item.sourceId));
+}
+
 export function stateWords(state: IntakeItem['state']) {
   return states[state];
 }
