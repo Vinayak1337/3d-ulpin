@@ -1,0 +1,52 @@
+{
+  "task": "LR1",
+  "gate": "GF1",
+  "branchedFrom": "4e87e096",
+  "environment": "cloud container; no E:/BhuAayam-data, no database or Docker; Python 3.13 with current pyproj/shapely wheels (pinned pyproj 3.6.1 has no 3.13 wheel)",
+  "counts": {
+    "ingestionTests": {
+      "command": "tsx --test usp/ingestion/*.test.ts areas/*.test.ts tests/manual-author.test.ts tests/ingestion-events.test.ts",
+      "expectedByTask": 328,
+      "before": {"tests": 198, "pass": 182, "fail": 13, "skipped": 3},
+      "after": {"tests": 208, "pass": 191, "fail": 14, "skipped": 3},
+      "beforeFailures": "13, unchanged after: E:/ data files absent (9), TEACHER_OUTPUT_IN_GIT path check (3), Python quote/OCR parity (2 counted within)",
+      "newTests": 10,
+      "newFailure": "registry.test.ts:126 asserts the streamed plan refuses feature.* targets (finding F4, not edited)"
+    },
+    "geoTests": {
+      "areaAndInspection": {"before": 137, "after": 152, "failed": 0},
+      "full": {"before": {"passed": 529, "failed": 22, "skipped": 51}, "after": {"passed": 544, "failed": 22, "skipped": 51},
+        "ignored": ["test_foreign_stage_a.py", "test_learning_lora.py", "test_packet_regions.py", "test_source_ocr_candidate.py", "test_stage_a.py"],
+        "note": "the 22 failures are identical before and after (missing data, sklearn, KML/XML and desktop-supervisor environment)"}
+    }
+  },
+  "checks": {
+    "typecheck:backend": 0, "studio:typecheck": 0,
+    "openapi generate": 0, "openapi --check": 0, "studio:api-types": 0,
+    "refresh-contract 4e87e096": 0, "scripts/api/check.py": 0, "git diff --check": 0
+  },
+  "decisions": {
+    "D1": ["packages/server/src/modules/usp/ingestion/streamed-mapping.ts:24,36,48 compileStreamedMapping calls registry.ts:84 compileMapping",
+      "packages/contracts/src/usp/ingestion.ts:36,38 LayoutKindSchema and layoutTargetsIssue shared by both plans",
+      "packages/contracts/src/usp/streamed-profile.ts:40,46 kind and feature.* targets, all five conversions",
+      "packages/server/src/modules/usp/ingestion/proved-area-part.ts:89 the compiled Mapping (kind) goes to the normaliser"],
+    "D2": ["streamed-profile-inventory.ts:33,43 whole-number count per path",
+      "streamed-mapping.ts:24 integerIdEligible when every accepted value is whole",
+      "chunk-mapping-normalizer.ts:22,36,37 digits copied, reservation unchanged",
+      "proved-area-part.ts:60,134 key token must be plain digits in the raw bytes"],
+    "D3": ["services/geo/geo/area.py:99 resolve_geojson_crs runs _geojson_crs unchanged; api.py:118 route",
+      "streamed-map-receipt.ts:35 resolveStreamedReference; refusal keeps CR1's words under STREAMING_SOURCE_CRS",
+      "packages/contracts/src/usp/ingestion.ts:107,108 receipt stores sourceCrs as written, authority and unit",
+      "streaming-vector-worker.ts:217 resolution before the receipt",
+      "retained-map-original.ts:18 a receipt counts unless its unit is unknown",
+      "streamed-profile-worker.ts:38 sealed profile carries the receipt's code and unit",
+      "transform: unchanged areas.ts:552 spreads the crs member into normalize_area for each part; no TypeScript transform"],
+    "D4": "lines and points accepted for road and utility (same normaliser); geometry the kind lacks refused with registry.ts words"
+  },
+  "findings": ["F1 chunk-mapping-normalizer.ts, registry.ts (types), retained-map-original.ts, areas.ts:92, streamed-profile-inventory.ts edited outside the owned list",
+    "F2 intake-large.ts:34,52-56,73-75 officer sentences still say longitude/latitude only, polygon, text",
+    "F3 streamed plan schema is in contracts/usp/streamed-profile.ts",
+    "F4 registry.test.ts:126 fails by design of D1; one-line flip proposed",
+    "F5 a key written 12.0 is refused at the first part, not at the layout"],
+  "notWalked": "no end-to-end run of a large projected parcel file"
+}
