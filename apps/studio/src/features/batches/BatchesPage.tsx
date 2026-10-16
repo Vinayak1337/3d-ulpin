@@ -1,36 +1,27 @@
 import type { ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { ArrowRight, CircleNotch, FilePlus, MagnifyingGlass, Stack, WarningCircle } from '@phosphor-icons/react';
-import type { WorkBoard } from '@ulpin/api-client/draft';
-import { Badge, Button, EmptyState, FilterChip, Icon, formatDateTime, formatRelative } from '@ulpin/ui';
-import { useWorkBoard, useWorkQueue, type WorkItem } from '../../api/queries';
-import { COLUMN_HEADERS, batchColumns, type BatchColumn } from './columns';
+import { Button, EmptyState, Icon, formatDateTime, formatRelative } from '@ulpin/ui';
+import { useWorkQueue, type WorkItem } from '../../api/queries';
+import { BATCH_COLUMNS, COLUMN_HEADERS, type BatchColumn } from './columns';
 import { nextAction } from './nextAction';
-import { STAGES, targetHref, type Stage } from './targets';
 import styles from './BatchesPage.module.css';
 
-type BoardItem = WorkBoard['items'][number];
-
 /**
- * S1 Batches: what, stage, next action, readiness and time in aligned columns, with count cards that
- * jump straight to the work. Stage and readiness come from the work board; without it, the next
- * action is derived from the work item alone and those two columns are not drawn.
+ * S1 Batches: what, next action and time in aligned columns. The next action is derived from the
+ * work item alone.
  */
 export function BatchesPage() {
   const [params, setParams] = useSearchParams();
   const q = params.get('q') ?? '';
-  const stage = STAGES.find((s) => s.value === params.get('stage'))?.value ?? null;
   const queue = useWorkQueue('all', q, 1);
-  const board = useWorkBoard().data;
-  const byId = new Map(board?.items.map((i) => [i.id, i]) ?? []);
-  const items = (queue.data?.items ?? []).filter((item) => !stage || byId.get(item.id)?.stage === stage);
+  const items = queue.data?.items ?? [];
 
   const update = (patch: Record<string, string | null>) => {
     const next = new URLSearchParams(params);
     for (const [key, value] of Object.entries(patch)) if (value === null || value === '') next.delete(key); else next.set(key, value);
     setParams(next, { replace: true });
   };
-  const countFor = (s: Stage) => queue.data?.items.filter((i) => byId.get(i.id)?.stage === s).length ?? 0;
 
   return (
     <div className={styles.page}>
@@ -42,32 +33,15 @@ export function BatchesPage() {
             <input type="search" aria-label="Search batches" placeholder="Search" value={q} onChange={(e) => update({ q: e.target.value })} />
           </label>
         </div>
-        {board ? (
-          <div className={styles.filters} role="group" aria-label="Filter by stage">
-            <FilterChip label="All stages" pressed={!stage} count={queue.data?.items.length} onToggle={() => update({ stage: null })} />
-            {STAGES.map((s) => <FilterChip key={s.value} label={s.label} count={countFor(s.value)} pressed={stage === s.value} onToggle={() => update({ stage: stage === s.value ? null : s.value })} />)}
-          </div>
-        ) : null}
-        <BatchesBody items={items} board={byId} columns={batchColumns(board)} pending={queue.isPending}
-          error={queue.error} retry={() => void queue.refetch()} filtered={Boolean(stage || q)} />
+        <BatchesBody items={items} pending={queue.isPending}
+          error={queue.error} retry={() => void queue.refetch()} filtered={Boolean(q)} />
       </section>
-      {board?.counts.length ? (
-        <aside className={styles.counts} aria-label="Work at a glance">
-          {board.counts.map((c) => (
-            <Link key={c.key} to={targetHref(c.target)} className={`ul-panel ${styles.count}`}>
-              <span className="ul-num">{c.value}</span>
-              <span>{c.label}</span>
-            </Link>
-          ))}
-        </aside>
-      ) : null}
     </div>
   );
 }
 
-function BatchesBody({ items, board, columns, pending, error, retry, filtered }: {
-  items: WorkItem[]; board: Map<string, BoardItem>; columns: readonly BatchColumn[]; pending: boolean;
-  error: Error | null; retry: () => void; filtered: boolean;
+function BatchesBody({ items, pending, error, retry, filtered }: {
+  items: WorkItem[]; pending: boolean; error: Error | null; retry: () => void; filtered: boolean;
 }) {
   if (pending) {
     return (
@@ -85,7 +59,7 @@ function BatchesBody({ items, board, columns, pending, error, retry, filtered }:
   }
   if (!items.length) {
     return filtered ? (
-      <EmptyState icon={Stack} title="No batches match">Clear the filter or search to see every batch.</EmptyState>
+      <EmptyState icon={Stack} title="No batches match">Clear the search to see every batch.</EmptyState>
     ) : (
       <EmptyState icon={Stack} title="No batches yet" action={<Link to="/studio/add-files" className="ul-btn ul-btn--primary"><Icon icon={FilePlus} />Add files</Link>}>
         Add plans, survey files or GIS layers to start a batch.
@@ -93,46 +67,29 @@ function BatchesBody({ items, board, columns, pending, error, retry, filtered }:
     );
   }
   return (
-    <div className={`ul-panel ${styles.table}`} role="table" aria-label="Batches" data-columns={columns.length}>
+    <div className={`ul-panel ${styles.table}`} role="table" aria-label="Batches">
       <div className={styles.row} role="row" data-head>
-        {columns.map((column) => (
+        {BATCH_COLUMNS.map((column) => (
           <span key={column} role="columnheader" className={column === 'updated' ? styles.r : undefined}>
             {COLUMN_HEADERS[column]}
           </span>
         ))}
       </div>
-      {items.map((item) => <BatchRow key={item.id} item={item} board={board.get(item.id)} columns={columns} />)}
+      {items.map((item) => <BatchRow key={item.id} item={item} />)}
     </div>
   );
 }
 
-function BatchRow({ item, board, columns }: {
-  item: WorkItem; board: BoardItem | undefined; columns: readonly BatchColumn[];
-}) {
-  const derived = nextAction(item);
-  const label = board?.nextAction.label ?? derived.label;
-  const href = board ? targetHref(board.nextAction.target) : derived.href;
-  const stage = board ? STAGES.find((s) => s.value === board.stage) : undefined;
+function BatchRow({ item }: { item: WorkItem }) {
+  const { label, href } = nextAction(item);
   const area = item.areaName === item.name ? null : item.areaName;
-  const sub = [area, board?.detail].filter(Boolean).join(' · ');
-  const ready = board?.readiness;
   const cells: Record<BatchColumn, ReactNode> = {
     batch: (
-      <span key="batch" role="cell" className={styles.what}><b>{item.name}</b>{sub ? <span>{sub}</span> : null}</span>
-    ),
-    stage: (
-      <span key="stage" role="cell">
-        {stage ? <Badge tone={stage.tone} icon={null}>{stage.label}</Badge> : null}
-      </span>
+      <span key="batch" role="cell" className={styles.what}><b>{item.name}</b>{area ? <span>{area}</span> : null}</span>
     ),
     next: (
       <span key="next" role="cell" className={styles.next}>
         {href ? <>{label}<Icon icon={ArrowRight} size={16} /></> : <span className={styles.waiting}><Icon icon={CircleNotch} size={16} className={styles.spin} />{label}</span>}
-      </span>
-    ),
-    readiness: (
-      <span key="readiness" role="cell">
-        {ready ? <Readiness met={ready.met} unknown={ready.unknown} of={ready.of} /> : null}
       </span>
     ),
     updated: (
@@ -141,22 +98,10 @@ function BatchRow({ item, board, columns }: {
       </span>
     ),
   };
-  const content = columns.map((column) => cells[column]);
+  const content = BATCH_COLUMNS.map((column) => cells[column]);
   return href
     ? <Link to={href} state={{ caseRow: item }} className={styles.row} role="row">{content}</Link>
     : <div className={styles.row} role="row">{content}</div>;
-}
-
-/** Six blocks: met, unknown (hatched), not met. No overall score. */
-function Readiness({ met, unknown, of }: { met: number; unknown: number; of: number }) {
-  return (
-    <span className={styles.ready} title={`${met} of ${of} ready${unknown ? `, ${unknown} unknown` : ''}`}>
-      <span className={styles.blocks} aria-hidden="true">
-        {Array.from({ length: of }, (_, i) => <i key={i} data-state={i < met ? 'met' : i < met + unknown ? 'unknown' : 'open'} />)}
-      </span>
-      <span className="ul-num ul-muted">{met} of {of}</span>
-    </span>
-  );
 }
 
 /** Today: 14:10. Otherwise the relative day. */
