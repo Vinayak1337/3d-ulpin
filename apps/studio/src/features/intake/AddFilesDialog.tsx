@@ -10,7 +10,7 @@ import { detectBuildingFiles, startBuildingImport, useBuildingRegister, useImpor
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import styles from './AddFilesDialog.module.css';
 import { TableImportDialog } from './table/TableImportDialog';
-import { fileRoute } from './file-route';
+import { pickedRoute } from './file-route';
 import { IntakeDropDialog } from './IntakeDropDialog';
 
 type Inspection = Schemas['POST_import_packages_inspect_Response_200_application_json'] & { demoContents?: string };
@@ -138,6 +138,7 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
     const picked = [...list].map<Picked>((file) => ({ file, state: (GIS.test(file.name) || demoImportEnabled && /\.(laz|tif|tiff)$/i.test(file.name)) ? 'inspecting' : 'not-gis' }));
     setFiles((current) => [...current, ...picked]);
     setStep(1);
+    let batched = false;
     for (const item of picked.filter((p) => p.state === 'inspecting')) {
       const body = new FormData();
       body.set('file', item.file);
@@ -145,8 +146,9 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
       const demo = demoImportEnabled
         ? await inspectDemoFile(item.file).then(data => ({ data, error: undefined, response: new Response() })).catch(error => ({ data: undefined, error: { message: error.message }, response: new Response(null, { status: 400 }) }))
         : null;
-      if (!demo?.data && fileRoute(item.file.name) === 'intake') {
+      if (!demo?.data && await pickedRoute(item.file) === 'intake') {
         setFiles((current) => current.map((file) => file.file === item.file ? { ...file, state: 'intake' } : file));
+        batched = true;
         continue;
       }
       const via: 'demo' | 'local' = demo?.data ? 'demo' : 'local';
@@ -176,7 +178,7 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
         });
       }
     }
-    if (picked.some((item) => fileRoute(item.file.name) === 'intake')) setShowIntake(true);
+    if (batched) setShowIntake(true);
   };
 
   useEffect(() => {
@@ -249,7 +251,8 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
             <Icon icon={FileArrowUp} size={32} />
             <span className="ul-heading">Drop files here, or choose files</span>
             <span className="ul-help">
-              GeoJSON is kept unchanged and checked in a batch. GeoPackage and shapefile ZIP use direct import.
+              GeoJSON files and ZIPs of GeoJSON layers are kept unchanged and checked in a batch, one item per layer.
+              GeoPackage and shapefile ZIP use direct import.
               CSV and XLSX keep their table import; other files need a case upload.
             </span>
             <input ref={input} type="file" multiple className="ul-visually-hidden" onChange={(event) => void add(event.target.files)} />

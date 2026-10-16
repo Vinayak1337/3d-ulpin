@@ -1,7 +1,8 @@
 import { expect, it } from 'vitest';
 import controls from '../../../../../docs/evidence/gf1/e3a/controls-qualified.json';
-import { countWords, crsWords, fieldWords, isSettled, placementWords, stateWords } from './batch-model';
-import { fileRoute } from './file-route';
+import { countWords, crsWords, fieldWords, isSettled, placementWords, stateWords, trayItems } from './batch-model';
+import { fileRoute, zipMemberNames, zipRoute } from './file-route';
+import { zip } from '../register/workbook';
 import { intakeRefreshFrame, silenceDelay } from './batch-events';
 import type { IntakeItem } from './batch-model';
 
@@ -13,6 +14,25 @@ it('routes map originals to intake, binary maps to direct import and tables to t
   expect(fileRoute('register.csv')).toBe('table');
   expect(fileRoute('register.xlsx')).toBe('table');
   expect(fileRoute('plan.pdf')).toBe('unsupported');
+});
+
+it('routes a ZIP of GeoJSON layers to the batch and any other ZIP to direct import', async () => {
+  const pack = (files: Record<string, string>) => new Blob([zip(files)]);
+  const layers = pack({ 'layers/': '', 'layers/roads.geojson': '{}', 'layers/blocks.json': '{}', 'README.md': '' });
+  expect(await zipMemberNames(layers)).toEqual(['layers/', 'layers/roads.geojson', 'layers/blocks.json', 'README.md']);
+  expect(await zipRoute(layers)).toBe('intake');
+  expect(await zipRoute(pack({ 'a.shp': '', 'a.shx': '', 'a.dbf': '', 'meta.json': '{}' }))).toBe('direct');
+  expect(await zipRoute(pack({ 'plan.pdf': '' }))).toBe('direct');
+  expect(await zipRoute(new Blob(['not a zip']))).toBe('direct');
+});
+
+it('lists a kept layer once: its member row under the ZIP gives way to its own item', () => {
+  const base = { ...controls.manifest.items[0], plan: null, streamedProfileJobId: null } as IntakeItem;
+  const archive = { ...base, itemId: 'a', sourceId: 'zip', parentItemId: null, memberPath: null };
+  const kept = { ...base, itemId: 'm1', sourceId: 'layer', parentItemId: 'a', memberPath: 'roads.geojson' };
+  const readme = { ...base, itemId: 'm2', sourceId: null, parentItemId: 'a', memberPath: 'README.md' };
+  const layer = { ...base, itemId: 'l', sourceId: 'layer', parentItemId: null, memberPath: null };
+  expect(trayItems([archive, kept, readme, layer]).map(item => item.itemId)).toEqual(['a', 'm2', 'l']);
 });
 
 it('keeps a question distinct from state and renders unknown counts without zero', () => {

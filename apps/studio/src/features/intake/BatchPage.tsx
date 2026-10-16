@@ -6,7 +6,7 @@ import { AddFilesDialog } from './AddFilesDialog';
 import { DropOutcomes } from './IntakeDropDialog';
 import { IntakeTray } from './IntakeTray';
 import { LayoutQuestion } from './LayoutQuestion';
-import { isSettled } from './batch-model';
+import { isSettled, trayItems } from './batch-model';
 import { needsLayoutAnswer } from './question-model';
 import type { IntakeItem } from './batch-model';
 import { recipeKey, useBatchPackages, useIntakeManifest } from './batch-queries';
@@ -32,7 +32,7 @@ function useBatchFacts(caseId: string) {
       void client.invalidateQueries({ queryKey }, { cancelRefetch: false });
     }
   };
-  const items = manifest.data?.items ?? [];
+  const items = trayItems(manifest.data?.items ?? []);
   const stream = useBatchStream(caseId, items.some((item) => !isSettled(item)), refresh);
   return { caseId, manifest, sourceCase, packages, items, stream, refresh };
 }
