@@ -3,6 +3,7 @@
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
+import { revisionLabel, treeLabel } from './processor-image-pin.mjs';
 
 export const root = fileURLToPath(new URL('../../', import.meta.url));
 export const project = 'ulpin';
@@ -50,6 +51,29 @@ export function inventory(runtime, selectedProject = project) {
       '{"project":{{json (index .Labels "com.docker.compose.project")}},"volume":{{json (index .Labels "com.docker.compose.volume")}}}'))];
   }));
   return { volumes, volumeOwners, containers };
+}
+
+/** An image's build commit and services tree labels only; it throws when the image is not on the engine. */
+export function imageLabels(runtime, ref) {
+  const labels = JSON.parse(runtime.docker('image', 'inspect', ref, '--format', '{{json .Config.Labels}}')) || {};
+  return Object.fromEntries([revisionLabel, treeLabel].filter(key => typeof labels[key] === 'string')
+    .map(key => [key, labels[key]]));
+}
+
+/** The name each container was created with and the two build labels of the image it actually runs. */
+export function processorImages(runtime, containers) {
+  return containers.filter(c => c.service === 'geo' || c.service === 'worker').map(c => {
+    const { image, id } = JSON.parse(runtime.docker('inspect', c.id, '--format',
+      '{"image":{{json .Config.Image}},"id":{{json .Image}}}'));
+    let labels = null;
+    try { labels = imageLabels(runtime, id); } catch { /* the image was removed: no labels */ }
+    return { service: c.service, image, labels };
+  });
+}
+
+/** The tree hash of services/geo, the processor image's whole build context, at a checkout's HEAD. */
+export function servicesTree(checkout = root) {
+  return command('git', ['-C', checkout, 'rev-parse', 'HEAD:services/geo']);
 }
 
 export function storageProblems(snapshot, selectedProject = project) {

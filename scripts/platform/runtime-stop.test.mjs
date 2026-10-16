@@ -99,8 +99,8 @@ test('the command line names one runtime, defaults to ulpin-demo and refuses any
   }
 });
 
-test('a compose step carries its own runtime\'s settings file and project; the demo\'s are today\'s', () => {
-  const files = ['-f', join(root, 'compose.yaml'), '-f', join(root, 'scripts/platform/demo.compose.json')];
+test('a compose step carries its own runtime\'s settings file and project, and the one processors file', () => {
+  const files = ['-f', join(root, 'compose.yaml'), '-f', join(root, 'scripts/platform/processors.compose.yaml')];
   assert.deepEqual(composeArguments('made-up-context', ['ps']), ['--context', 'made-up-context', 'compose',
     '--project-directory', root, '--env-file', demoFile, '-p', 'ulpin-demo', ...files, 'ps']);
   const rehearsal = runtimeDefinition('ulpin-reh-01');

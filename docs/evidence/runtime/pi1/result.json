@@ -1,0 +1,38 @@
+{
+  "task": "PI1",
+  "title": "One reviewed processor image, named by the commit it was built from, for the demo and every rehearsal; the doctor sees a stale one",
+  "base": "staging 85243cbb",
+  "kind": "code and tests only; no Docker engine was used, no image was built and no runtime was touched",
+  "pin": {
+    "file": "scripts/platform/processor-image.json",
+    "commit": "22003ea3d878700750fd3053e4c539616117249b",
+    "servicesTree": "dd59ed7f21fc235eddb69b86188ce4b8f4db04e4",
+    "image": "ulpin-geo:git-22003ea3d878",
+    "why": "the latest staging commit that changed services/geo; it holds c7a7e720 (resolve-geojson-crs), the REH2 blocker",
+    "built": false
+  },
+  "decisions": [
+    "Staleness is judged by the services/geo tree hash (the image's whole build context), not the commit, so a pin stays current across commits that change nothing under services/geo.",
+    "The image carries two labels: org.opencontainers.image.revision (commit) and in.bhuaayam.ulpin.services-geo-tree (tree). An image without them (demo-k3b, demo-s03) fails the doctor.",
+    "The demo no longer builds through compose: every runtime runs the pinned image and only processor-image.mjs build makes it, refusing a dirty services/geo and never building over a present tag.",
+    "demo.compose.json is removed; rehearsal.compose.yaml became processors.compose.yaml for all runtimes, with the image from ULPIN_PROCESSOR_IMAGE that demo.mjs sets from the pin. It keeps ULPIN_PROFILE=demo, which the demo's processors already have through K3b's overlay.",
+    "processor-image.mjs roll recreates only geo and worker (--no-deps --force-recreate --no-build) after bringing the stores up with --no-recreate; it refuses while the API or dispatcher runs, without the pinned image, or from a checkout whose services/geo is not the pin.",
+    "The start command is not given a new condition; the doctor reports the stale image as FAIL 'Processors run the pinned image, built from this checkout's services/geo'."
+  ],
+  "checks": {
+    "command": "node --test scripts/platform/*.test.mjs",
+    "before": { "tests": 67, "pass": 49, "fail": 15, "skipped": 3 },
+    "after": { "tests": 76, "pass": 57, "fail": 16, "skipped": 3 },
+    "newTests": "scripts/platform/processor-image.test.mjs (8) and one more in runtime-image.test.mjs; all pass",
+    "failuresNotFromThisChange": "every failing test also fails on untouched staging in this Linux session: they need E:/ paths, Windows interpreters or a configured gateway; the runtime-stop process-identity tests fail 1 or 2 of 6 on both trees from run to run"
+  },
+  "notRun": [
+    "docker compose config of processors.compose.yaml (no engine here)",
+    "the build, a roll and the doctor against a real engine: these need the runtime owner"
+  ],
+  "nextForTheRuntimeOwner": [
+    "processor-image.mjs build from a clean checkout at the pin",
+    "rehearse it: roll ulpin-reh-02 (stop, roll --runtime ulpin-reh-02, start) and retry the Niagara Falls file",
+    "roll the demo with DEMO-RUNTIME.md roll-out step 6"
+  ]
+}

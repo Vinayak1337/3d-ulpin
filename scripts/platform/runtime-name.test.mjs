@@ -43,8 +43,8 @@ test('ulpin-demo resolves to the values it was created with, and the old names s
     ocrProfileFile: join(demoFolder, 'ocr-paths-profile.json'),
     tabularFile: join(demoFolder, 'tabular-paths.json'),
     documentFile: join(demoFolder, 'document-runtime-paths.json'), modelDir: `${demoFolder}/models`,
-    servingCheckout: 'E:/Projects/ulpin-wt/demo', composeFile: 'scripts/platform/demo.compose.json',
-    processorImage: 'ulpin-geo:demo-s03', buildsProcessorImage: true,
+    servingCheckout: 'E:/Projects/ulpin-wt/demo', composeFile: 'scripts/platform/processors.compose.yaml',
+    processorImage: 'ulpin-geo:git-22003ea3d878',
   };
   for (const definition of [runtimeDefinition(), runtimeDefinition('ulpin-demo'), definedRuntime()]) {
     assert.deepEqual({ ...definition, ports: { ...definition.ports } }, expected);

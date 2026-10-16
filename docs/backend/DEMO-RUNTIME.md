@@ -19,14 +19,20 @@ Worker worktrees must never serve the demo: lazy imports would mix unreviewed ch
    It reuses the configured OCR interpreter (paths only), the existing frozen-profile builder and private ACL helper.
    If selecting an interpreter explicitly, append `--python <absolute existing interpreter file>`.
    It refuses a normal build outside `E:/Projects/ulpin-wt/demo` or while a recorded native process is running.
-6. Start both native processes from that checkout:
+6. Move the processors onto the pinned image ([The processor image](#the-processor-image)), which must already be
+   built and rehearsed: `node scripts/platform/processor-image.mjs roll`
+   It refuses unless that checkout's `services/geo` is the pinned tree, the image on the engine carries the pinned
+   commit and tree, and both native processes are stopped. It recreates `geo` and `worker` only; volumes are kept.
+   When the processors already run the pinned build of this checkout, skip this step.
+7. Start both native processes from that checkout:
    `pnpm platform:start --profile demo`
-7. Run `pnpm platform:doctor --profile demo` there. Record both process entry paths, PIDs and the served commit.
-   Require **PASS Document runtimes**, alongside the existing model-gateway and other checks described below.
-8. Prove one existing job authority is dispatched automatically; retain API and SSE receipts outside Git.
+8. Run `pnpm platform:doctor --profile demo` there. Record both process entry paths, PIDs and the served commit.
+   Require **PASS Document runtimes** and **PASS Processors run the pinned image**, alongside the existing
+   model-gateway and other checks described below.
+9. Prove one existing job authority is dispatched automatically; retain API and SSE receipts outside Git.
 
 Never edit application files in the demo checkout, copy/read credentials, use `--create`, reset/reseed,
-stop or replace containers, remove volumes, fetch unreviewed code, or use `down -v`.
+stop or replace containers (step 6's two processors aside), remove volumes, fetch unreviewed code, or use `down -v`.
 The platform start command resumes the existing project only; populated storage and external credentials remain intact.
 If doctor fails, preserve the runtime and diagnose its specific failure; do not initialise replacement storage.
 Code changes merge on staging first, then roll here in a separately authorised runtime task.
@@ -192,6 +198,35 @@ Elsewhere they run only with `--dry-run --out <absolute temporary folder>`, on a
 folder with its scratch inside it. A copy of the real override does not validate there, because its scratch
 belongs to the runtime folder; the rehearsal on a synthetic override is `docs/evidence/gf1/k9c/rehearsal.mjs`.
 
+## The processor image
+
+The demo and every rehearsal run one processor image (`geo` and `worker`), pinned in
+[`scripts/platform/processor-image.json`](../../scripts/platform/processor-image.json): the commit it is built
+from, that commit's `services/geo` tree (the image's whole build context) and the tag named by the commit,
+`ulpin-geo:git-<first 12 digits>`. All runtimes lay the same
+[`processors.compose.yaml`](../../scripts/platform/processors.compose.yaml) over `compose.yaml`; `demo.mjs` fills
+its image from the pin. No runtime's compose step builds, tags, pushes or pulls an image, the demo's included; a
+create only checks that the pinned image is on the engine with the pinned labels.
+
+1. **Pin.** When `services/**` changes on staging, the lead commits a new pin: the latest commit that changed
+   `services/geo` (`git log -1 --format=%H -- services/geo`), `git rev-parse <commit>:services/geo`, and the tag.
+   A pin that names the tag of another commit, or a tree its commit lacks, is refused.
+2. **Build, once per pin,** from any clean checkout whose `services/geo` is the pinned tree (a rehearsal's own):
+   `node scripts/platform/processor-image.mjs build`
+   It runs one `docker build` of `services/geo` with the tag and two labels, `org.opencontainers.image.revision`
+   (the commit) and `in.bhuaayam.ulpin.services-geo-tree` (the tree). It refuses changed or untracked files under
+   `services/geo`, and never builds over a present tag: the same build is reported and left, another is refused.
+3. **Rehearse** it: create a rehearsal at the roll commit, or roll an existing one (stop it, then
+   `node scripts/platform/processor-image.mjs roll --runtime ulpin-reh-NN` from its own checkout, then start it).
+4. **Roll the demo** with roll-out step 6.
+
+The doctor of a demo-profile runtime reads the image each processor container was created with and the two labels
+of the image it actually runs, and compares them with the pin and with the serving checkout's `services/geo`.
+**FAIL Processors run the pinned image** names the cause: a container on another tag, an image without labels
+(every image built before PI1, `demo-k3b` among them), an image built from other files, or a stale image, whose
+`services/geo` differs from the checkout's. When the pin itself lags the checkout's `services/geo`, that fails too.
+Only the services tree is compared, so a pin stays current across commits that change nothing under `services/geo`.
+
 ## A rehearsal runtime
 
 A rehearsal is a second runtime beside the demo, for trying a roll-out or a journey on empty storage. Its name is
@@ -208,7 +243,7 @@ What a name gives `ulpin-reh-NN`, with `ulpin-reh-01` as the example:
 | Loopback ports | `21000 + 10 × NN + k`: Postgres 21011, S3 21012 and 21013, Redis 21014, geo 21015, API 21016 |
 | Operator subject | `rehearsal-runtime-ulpin-reh-01` |
 | Serving checkout | `E:/Projects/ulpin-wt/ulpin-reh-01` |
-| Processor image | the demo's reviewed `ulpin-geo:demo-k3b`, reused; never built, tagged or pulled |
+| Processor image | the pinned image, the same as the demo's; never built, tagged or pulled by the runtime |
 
 No rehearsal port equals a demo port (3194 included) or a port of another rehearsal. The gateway is written
 disabled, and no real key goes into a rehearsal ([DEMO-GATEWAY.md](DEMO-GATEWAY.md)).
@@ -221,9 +256,10 @@ Run the commands from the rehearsal's own checkout, a worktree at a lead-reviewe
    its ports is taken. It writes the folder with new secrets, an empty `learning` folder and `ocr-scratch`, and
    `tabular-paths.json` and `ocr-paths.json`: those two name the demo's interpreter, seed, models and Tesseract
    (read, never written) and the rehearsal's own two folders. Then it brings up storage, applies the schema with
-   no seed, checks that the reviewed image is on the engine and brings up the processors. It ends there: the API
+   no seed, checks that the pinned image is on the engine with the pinned labels and brings up the processors. It ends there: the API
    and dispatcher are not started yet. Run again after a failure, it resumes and writes no file twice.
-2. Build or reuse: the processor image is reused and no command builds one. The document runtime is built:
+2. Build: the pinned processor image is built once per pin, outside any runtime ([The processor
+   image](#the-processor-image)). The document runtime is built:
    `node scripts/platform/demo-document-runtime.mjs build --runtime ulpin-reh-01`
    It writes `document-runtime-paths.json` and a new private profile directory in the rehearsal's folder.
 3. Start: `pnpm platform:start --profile demo --runtime ulpin-reh-01`
@@ -233,6 +269,6 @@ Run the commands from the rehearsal's own checkout, a worktree at a lead-reviewe
 
 Stop for one name never touches another: it goes by that runtime's own process records and project label. After
 any rehearsal step, the demo's doctor from the demo checkout must still show the same commit and process ids.
-A rehearsal runs the reviewed image as it is, so a commit that changes `services/**` is not tried by it, and its
-`models` folder starts empty. Removing a rehearsal (its folder, volumes and containers) is a separate,
+A rehearsal runs the pinned image, so a commit that changes `services/geo` is tried only once a new pin is built
+and the rehearsal rolled onto it; its doctor fails until then. Its `models` folder starts empty. Removing a rehearsal (its folder, volumes and containers) is a separate,
 owner-approved step; no script does it.
