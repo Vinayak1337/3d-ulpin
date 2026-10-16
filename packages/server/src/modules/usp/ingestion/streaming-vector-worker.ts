@@ -13,10 +13,13 @@ import {readStreamingFeatures,readStreamingTabular,sourceRecord,tabularSourceRec
   type SourceFeature} from './streaming-vector-reader';
 import {validateStreamingTopology} from './streaming-vector-validation';
 import {resolveStreamedReference,writeSealedMapReceiptTx} from './streamed-map-receipt';
-import {queueIntakeLargeTx} from './intake-large';
+import {queueIntakeLargeTx,writeIntakeLargeReadTx} from './intake-large';
+import {AREA_PROCESSOR_OPERATION} from '../../areas/areas';
 
 type Slot={chunkIndex:number;firstFeatureIndex:number;lastFeatureIndex:number|null;records:number;accepted:number;quarantined:number;
   status:'ready'|'quarantined';bytes:number;ref:{key:string;sha256:string;bytes:number}|null;issueCode:string|null;resultSha256:string};
+
+const PROGRESS_MS=2000;
 
 function tabularChunkRows(width:number){
   return Math.max(1,Math.min(TABULAR_LIMITS.chunkRows,Math.floor(TABULAR_LIMITS.columns/width)));
@@ -63,7 +66,8 @@ async function storeChunk(input:AnyStreamingInput,index:number,records:Streaming
     bytes:bytes.length,ref:{key,sha256:hash,bytes:bytes.length},issueCode:null,resultSha256:hash} satisfies Slot;
 }
 
-async function acceptSlot(input:AnyStreamingInput,attempt:UspJobAttempt,slot:Slot){
+/** `progress` also refreshes a batch row's reading counts from the slot's own transaction. */
+async function acceptSlot(input:AnyStreamingInput,attempt:UspJobAttempt,slot:Slot,progress=false){
   await transaction(async client=>{
     await assertStreamingInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
     const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
@@ -88,6 +92,7 @@ async function acceptSlot(input:AnyStreamingInput,attempt:UspJobAttempt,slot:Slo
     await client.query('UPDATE usp_streaming_vector_imports SET records=records+$2,accepted=accepted+$3,quarantined=quarantined+$4,updated_at=now() WHERE job_id=$1',
       [input.jobId,slot.records,slot.accepted,slot.quarantined]);
     await publishStreamingPrefixTx(client,input);
+    if(progress)await writeIntakeLargeReadTx(client,input.sourceId);
   });
 }
 
@@ -158,6 +163,15 @@ async function retry(input:AnyStreamingInput,attempt:UspJobAttempt,code:string){
   });
 }
 
+/** A file the reader refuses, or a processor without the operation, ends the job at once: the same bytes and the
+ * same processor image cannot pass on another attempt. Only a fault that may clear is retried. */
+export function streamingFailureKind(error:unknown):'final'|'stale'|'retry'{
+  if(!(error instanceof AppError))return 'retry';
+  if([413,422].includes(error.status)||error.code===AREA_PROCESSOR_OPERATION)return 'final';
+  if([403,404,409].includes(error.status))return 'stale';
+  return 'retry';
+}
+
 /** A lost fence is refused with the shared conflict code; any other failure to end the job is not hidden. */
 export function fencedOut(error:unknown){
   return error instanceof AppError&&error.status===409&&error.code==='STALE_REVISION';
@@ -201,7 +215,7 @@ export async function runStreamingVectorJob(jobId:string){
     await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
       sourceRevision:input.sourceRevision,jobId,status:'running'},input.subject);
   });
-  let nextIndex=0,nextFeatureIndex=0,pending:StreamingVectorRecord[]=[],pendingBytes=0,lastHeartbeat=Date.now();
+  let nextIndex=0,nextFeatureIndex=0,pending:StreamingVectorRecord[]=[],pendingBytes=0,lastHeartbeat=Date.now(),lastProgress=0;
   const setAside:Record<string,number>={};
   const pulse=async()=>{if(Date.now()-lastHeartbeat<30000)return;
     await heartbeatUspJobAttempt(attempt,client=>assertStreamingInputTx(client,input).then(()=>{}));lastHeartbeat=Date.now();
@@ -210,7 +224,9 @@ export async function runStreamingVectorJob(jobId:string){
   const flush=async()=>{
     if(!pending.length)return;
     await pulse();const slot=await storeChunk(input,nextIndex,pending);
-    await acceptSlot(input,attempt,slot);nextIndex++;pending=[];pendingBytes=0;
+    // At most one tray refresh per interval; the step writes the row again when the reader's state changes.
+    const progress=Date.now()-lastProgress>=PROGRESS_MS;if(progress)lastProgress=Date.now();
+    await acceptSlot(input,attempt,slot,progress);nextIndex++;pending=[];pendingBytes=0;
   };
   try{
     const etag=(await query('SELECT inspection FROM sources WHERE id=$1',[input.sourceId])).rows[0]?.inspection?.largeOriginal?.objectEtag;
@@ -264,14 +280,13 @@ export async function runStreamingVectorJob(jobId:string){
       });
   }catch(error){
     const code=error instanceof AppError?error.code:'STREAMING_WORKER_ERROR';
-    const structural=error instanceof AppError&&[413,422].includes(error.status);
-    const stale=error instanceof AppError&&[403,404,409].includes(error.status);
+    const kind=streamingFailureKind(error);
     const words=code==='STREAMING_SOURCE_CRS'?(error as AppError).message:null;
     try{
-      if(structural){
+      if(kind==='final'){
         // A later bad value keeps the accepted prefix. No guessed boundary or completion count is recorded.
         await flush();await terminal(input,attempt,code,nextIndex,nextFeatureIndex,false,words);
-      }else if(stale)await terminal(input,attempt,'STREAMING_CONTEXT_STALE',nextIndex,nextFeatureIndex,true);
+      }else if(kind==='stale')await terminal(input,attempt,'STREAMING_CONTEXT_STALE',nextIndex,nextFeatureIndex,true);
       else if(attempt.number>=3)await terminal(input,attempt,code,nextIndex,nextFeatureIndex);
       else await retry(input,attempt,code);
     }catch(failure){

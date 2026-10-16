@@ -3,7 +3,8 @@ import test from 'node:test';
 import type { PoolClient } from 'pg';
 import { STREAMING_VECTOR_LIMITS as limits } from '@ulpin/contracts/usp';
 import { intakeLargeFailureReason, intakeLargeHoldsReason, intakeLargeNumbers, intakeLargePhase,
-  intakeLargePartRefusal, INTAKE_LARGE_LAYOUT_QUESTION, type IntakeLargeRows } from './intake-large';
+  intakeLargePartRefusal, INTAKE_LARGE_LAYOUT_QUESTION, writeIntakeLargeReadTx, type IntakeLargeRows
+} from './intake-large';
 import { writeIntakeLargeTx, type IntakeLargeState } from './intake-ledger';
 import { queueIntakeDraftTx } from './intake-draft';
 import type { IntakeSourceRow } from './intake-context';
@@ -143,7 +144,7 @@ test('known terminal failures and an unenumerated infrastructure failure never e
     'GEOJSON_METADATA_BUDGET', 'GEOJSON_NESTING_BUDGET', 'GEOJSON_UNIT_BUDGET', 'STREAMING_CHUNK_BUDGET',
     'STREAMING_EMPTY_SOURCE', 'STREAMING_REPLAY_MISMATCH', 'STREAMING_FEATURE_INDEX', 'STREAMING_SOURCE_INTEGRITY',
     'SOURCE_INTEGRITY', 'STREAMING_CHUNK_INTEGRITY', 'STORAGE_TIMEOUT', 'STREAMING_CONTEXT_STALE',
-    'STREAMING_ATTEMPTS_EXHAUSTED', 'STREAMING_WORKER_ERROR', 'STREAMED_PROFILE_BODY_BUDGET',
+    'STREAMING_ATTEMPTS_EXHAUSTED', 'STREAMING_WORKER_ERROR', 'AREA_PROCESSOR_OPERATION', 'STREAMED_PROFILE_BODY_BUDGET',
     'STREAMED_PROFILE_PATH_BUDGET', 'STREAMED_PROFILE_GEOMETRY_BUDGET', 'STREAMED_PROFILE_QUARANTINE_BUDGET',
     'STREAMED_PROFILE_COUNTS', 'STREAMED_PROFILE_INTEGRITY', 'STREAMED_PROFILE_CONTEXT_STALE',
     'STREAMED_PROFILE_ATTEMPTS', 'STREAMED_PROFILE_SOURCE_WAIT', 'STREAMED_PROFILE_WORKER_ERROR', 'RAW_STREAM_FAILED',
@@ -260,4 +261,44 @@ test('counter and state publication emits one event; replay and counter-only cha
     state: 'failed_part', placement: 'not_understood', limitReason: intakeLargeFailureReason('GEOJSON_JSON', 1) });
   assert.equal(fixture.events(), 3);
   assert.equal(fixture.state().placement, 'not_understood');
+});
+
+/** The stored rows a reading item's state key reads, over the ledger fixture's own row and events. */
+function readingStore(initial: IntakeLargeState, reader: Record<string, unknown>) {
+  const fixture = ledger(initial);
+  const write = fixture.client.query as unknown as (sql: string, values: unknown[]) => Promise<unknown>;
+  const client = { query: async (sql: string, values: unknown[]) => {
+    const one = (row: unknown) => ({ rows: [row] });
+    if (sql.startsWith('SELECT item_id,case_id')) return one({ item_id: itemId, case_id: caseId,
+      state: fixture.state().state, placement: fixture.state().placement, card: { format: 'geojson' },
+      plan_ref: null });
+    if (sql.startsWith('SELECT id,revision,bytes')) return one({ id: itemId, revision: 1, bytes: 26660992,
+      profile: 'large-original-v1', sha256: 'a'.repeat(64), object_key: 'protocol', inspection: {} });
+    if (sql.includes('FROM usp_streaming_vector_imports')) return one(reader);
+    if (sql.includes('FROM usp_streamed_profile_imports')) return one({ job_id: itemId, state: 'running',
+      issue_code: null, sealed_generation: null });
+    if (sql.startsWith('SELECT id,revision,state FROM usp_mapping_recipes')) return { rows: [] };
+    if (sql.includes('count(*)')) return one({ n: 0 });
+    return write(sql, values);
+  } } as unknown as PoolClient;
+  return { ...fixture, client };
+}
+
+test('a reader publishing parts shows its stored counts on the row; a stopped or failed reader writes nothing', async () => {
+  const initial: IntakeLargeState = { state: 'reading', placement: 'undecided', planRef: null,
+    recordsSeen: 300, limitReason: null, partsDone: 3, partsPlanned: null };
+  const running = { job_id: itemId, state: 'running', issue_code: null, next_publish_index: 423, records: 42247,
+    quarantined: 438, sealed_chunks: null, unknown_remainder: true };
+  const reading = readingStore(initial, running);
+  await writeIntakeLargeReadTx(reading.client, itemId);
+  assert.deepEqual(reading.state(), { ...initial, recordsSeen: 42247, partsDone: 423 });
+  assert.equal(reading.events(), 1);
+  await writeIntakeLargeReadTx(reading.client, itemId);
+  assert.equal(reading.events(), 1, 'unchanged counts publish nothing');
+  const failed = readingStore(initial, { ...running, state: 'failed', issue_code: 'AREA_PROCESSOR_OPERATION' });
+  await writeIntakeLargeReadTx(failed.client, itemId);
+  assert.deepEqual(failed.state(), initial, 'the step writes the failure with its words');
+  const rested = readingStore({ ...initial, state: 'failed_part', placement: 'not_understood' }, running);
+  await writeIntakeLargeReadTx(rested.client, itemId);
+  assert.equal(rested.events(), 0);
 });
