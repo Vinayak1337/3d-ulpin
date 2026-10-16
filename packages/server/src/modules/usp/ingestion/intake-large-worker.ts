@@ -12,7 +12,7 @@ import { ChunkMappingService } from './chunk-mapping';
 import { intakeCaseArea, intakeDestination } from './intake-destination';
 import { assertIntakeDraftTx } from './intake-draft';
 import { INTAKE_LARGE_STOPPED, IntakeLargeInputSchema, intakeLargeAtRest, intakeLargeCutKey, intakeLargeEnd,
-  intakeLargeFailureContext, intakeLargePhase, intakeLargePlan, intakeLargeProjection,
+  intakeLargeFailureContext, intakeLargePartRefusal, intakeLargePhase, intakeLargePlan, intakeLargeProjection,
   intakeLargeRequestKey, intakeLargeRows, largeStateKey, queueIntakeLargeTx, type IntakeLargeInput
 } from './intake-large';
 import { readIntakeDraftTx, writeIntakeLargeTx } from './intake-ledger';
@@ -252,19 +252,21 @@ async function step(input: IntakeLargeInput, attempt: UspJobAttempt) {
 }
 
 /** Steps already done stay; the row says why nothing more is prepared. */
-async function stopItemTx(client: PoolClient, input: IntakeLargeInput) {
+async function stopItemTx(client: PoolClient, input: IntakeLargeInput, reason = INTAKE_LARGE_STOPPED) {
   const current = await readIntakeDraftTx(client, input.caseId, input.itemId);
   if (intakeLargeAtRest(current)) return;
   const counters = (await client.query('SELECT parts_planned,parts_done FROM usp_intake_items WHERE item_id=$1',
     [input.itemId])).rows[0];
   await writeIntakeLargeTx(client, input.caseId, input.itemId, { ...current, state: 'failed_part',
-    placement: 'not_understood', limitReason: INTAKE_LARGE_STOPPED, partsPlanned: counters.parts_planned,
+    placement: 'not_understood', limitReason: reason, partsPlanned: counters.parts_planned,
     partsDone: counters.parts_done });
 }
 
-/** Below the attempt limit the authority retries after 2 seconds; the last attempt rests the row. */
+/** Below the attempt limit the authority retries after 2 seconds; the last attempt, or a part the file itself
+ * refuses, rests the row. */
 async function fail(input: IntakeLargeInput, attempt: UspJobAttempt, error: unknown) {
   const code = error instanceof AppError ? error.code : 'INTAKE_LARGE_STEP_FAILED';
+  const refusal = intakeLargePartRefusal(code);
   await transaction(async client => {
     // A changed source must not block the terminal marker, so the source pins are not asserted here.
     await lockSourceCaseDestinationTx(client, input.caseId);
@@ -272,14 +274,14 @@ async function fail(input: IntakeLargeInput, attempt: UspJobAttempt, error: unkn
     await assertUspJobAttemptTx(client, attempt);
     await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND number=$2",
       [input.jobId, attempt.number]);
-    if (attempt.number < USP_JOB_LIMITS.maxAttempts) {
+    if (attempt.number < USP_JOB_LIMITS.maxAttempts && !refusal) {
       await client.query("UPDATE usp_job_metadata SET logical_state='queued',version=version+1 WHERE job_id=$1",
         [input.jobId]);
       await client.query(`UPDATE jobs SET status='queued',next_attempt_at=now()+interval '2 seconds',error=$2
         WHERE id=$1`, [input.jobId, code]);
       return;
     }
-    await stopItemTx(client, input);
+    await stopItemTx(client, input, refusal ?? INTAKE_LARGE_STOPPED);
     await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",
       [input.jobId]);
     await client.query("UPDATE jobs SET status='failed',error=$2,completed_at=now() WHERE id=$1", [input.jobId, code]);

@@ -52,11 +52,12 @@ const terminalSentences: Readonly<Record<string, string>> = {
   MAPPING_ATTEMPTS_EXHAUSTED: 'This file could not be interpreted after the allowed retries',
   MAPPING_SOURCE_WAIT: 'Interpreting this file could not finish waiting for its records',
   MAPPING_WORKER_ERROR: 'This file could not be interpreted with its approved layout',
-  STREAMED_MAPPING_GEOMETRY: "This file's geometry does not meet its approved polygon layout",
+  STREAMED_MAPPING_GEOMETRY: 'This file has geometry that the kind stated in its approved layout does not take',
   STREAMED_MAPPING_PATH: 'A field named by the layout is not in this file',
   STREAMED_MAPPING_FIELD: 'A field name in this file is longer than the layout can use',
   STREAMED_MAPPING_OPERATION: 'The layout asks for a field operation this reader cannot apply',
-  STREAMED_MAPPING_COVERAGE: 'A field required by the layout is not complete text in every accepted record',
+  STREAMED_MAPPING_COVERAGE:
+    'A field required by the layout is not complete text or a whole number in every accepted record',
   STREAMED_MAPPING_PROVENANCE: 'This file has no retained issuing portal for its layout evidence',
   STREAMED_MAPPING_SEMANTICS: "The layout's field evidence does not match this file's issuing portal",
 };
@@ -80,6 +81,15 @@ export function intakeLargeFailureReason(code: string, bytes: number, crsWords: 
   return sentence + nothing;
 }
 
+const partSentences: Readonly<Record<string, string>> = {
+  PART_INTEGER_IDENTIFIER: 'The identifier field holds a value written with a decimal point. '
+    + 'This file must write whole-number identifiers as digits only',
+};
+
+/** A part the file itself refuses rests the row at once: the same bytes cannot pass on another attempt. */
+export function intakeLargePartRefusal(code: string): string | null {
+  return Object.hasOwn(partSentences, code) ? `${partSentences[code]}; nothing more was prepared from it.` : null;
+}
 
 export type IntakeLargePhase = 'start' | 'read' | 'question' | 'layout' | 'map' | 'draft' | 'end' | 'failure';
 type ReaderRow = {

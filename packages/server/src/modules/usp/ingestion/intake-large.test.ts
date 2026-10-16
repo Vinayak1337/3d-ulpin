@@ -3,7 +3,7 @@ import test from 'node:test';
 import type { PoolClient } from 'pg';
 import { STREAMING_VECTOR_LIMITS as limits } from '@ulpin/contracts/usp';
 import { intakeLargeFailureReason, intakeLargeHoldsReason, intakeLargeNumbers, intakeLargePhase,
-  INTAKE_LARGE_LAYOUT_QUESTION, type IntakeLargeRows } from './intake-large';
+  intakeLargePartRefusal, INTAKE_LARGE_LAYOUT_QUESTION, type IntakeLargeRows } from './intake-large';
 import { writeIntakeLargeTx, type IntakeLargeState } from './intake-ledger';
 import { queueIntakeDraftTx } from './intake-draft';
 import type { IntakeSourceRow } from './intake-context';
@@ -157,6 +157,15 @@ test('known terminal failures and an unenumerated infrastructure failure never e
     assert.doesNotMatch(sentence, /[A-Z]+_[A-Z_]+|[a-f0-9]{64}|job|worker/);
     assert(sentence.endsWith('; nothing was prepared from it.'));
   }
+});
+
+test('an identifier written with a decimal point rests the row at its part in plain words', () => {
+  const sentence = intakeLargePartRefusal('PART_INTEGER_IDENTIFIER');
+  assert.equal(sentence, 'The identifier field holds a value written with a decimal point. '
+    + 'This file must write whole-number identifiers as digits only; nothing more was prepared from it.');
+  assert.doesNotMatch(sentence!, /[A-Z]+_[A-Z_]+|job|worker/);
+  for (const code of ['PART_CUT_BOUND', 'STALE_REVISION', '__proto__', 'toString'])
+    assert.equal(intakeLargePartRefusal(code), null);
 });
 
 test('hold summaries use only nonzero clauses and no illustrative count', () => {
