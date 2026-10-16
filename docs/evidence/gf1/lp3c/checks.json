@@ -1,1 +1,65 @@
-{"task":"LP3c","environment":"NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false","testCommand":"pnpm exec tsx --tsconfig apps/api/tsconfig.json --test --test-concurrency=2 $(find packages/server/src/modules/usp/ingestion packages/server/src/modules/areas packages/server/src/modules/usp/packets -name '*.test.ts') tests/manual-ingestion.test.ts tests/streaming-later-receipt.test.ts tests/usp-packet-plans.test.ts","before":{"tests":319,"pass":319,"fail":0},"after":{"exit":0,"tests":328,"pass":328,"fail":0,"durationMs":164160},"commands":[{"command":"pnpm typecheck:backend","exit":0},{"command":"pnpm studio:typecheck","exit":0},{"command":"pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts c6e5cb311255733dce3491b799c3812832ac3ff9","exit":0,"repinned":15},{"command":"pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check","exit":0,"note":"310 operations, 351 named schemas; first run before the repin said source-pins.json was stale"},{"command":"PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py","exit":0},{"command":"git diff --check","exit":0}],"contractChanged":false,"studioApiTypes":"not needed; no contract change"}
+{
+ "task": "LP3c",
+ "environment": "NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false",
+ "testCommand": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test --test-concurrency=2 $(find packages/server/src/modules/usp/ingestion packages/server/src/modules/areas packages/server/src/modules/usp/packets -name '*.test.ts') tests/manual-ingestion.test.ts tests/streaming-later-receipt.test.ts tests/usp-packet-plans.test.ts",
+ "before": {
+  "tests": 319,
+  "pass": 319,
+  "fail": 0
+ },
+ "after": {
+  "exit": 0,
+  "tests": 329,
+  "pass": 329,
+  "fail": 0,
+  "durationMs": 136236,
+  "at": "after 0aa06a85",
+  "newTest": "intake-large-steps.test.ts: a card that states a projected system is refused before its reader"
+ },
+ "commands": [
+  {
+   "command": "pnpm typecheck:backend",
+   "exit": 0
+  },
+  {
+   "command": "pnpm studio:typecheck",
+   "exit": 0
+  },
+  {
+   "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts c6e5cb311255733dce3491b799c3812832ac3ff9",
+   "exit": 0,
+   "repinned": 15,
+   "repinnedByFix": [
+    "intake-large-worker.ts",
+    "intake-large.ts"
+   ]
+  },
+  {
+   "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+   "exit": 0,
+   "note": "310 operations, 351 named schemas; first run before the repin said source-pins.json was stale"
+  },
+  {
+   "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py",
+   "exit": 0
+  },
+  {
+   "command": "git diff --check",
+   "exit": 0
+  }
+ ],
+ "contractChanged": false,
+ "studioApiTypes": "not needed; no contract change",
+ "walk": {
+  "command": "node docs/evidence/gf1/lp3c/run-runtime.mjs docs/evidence/gf1/lp3c/runtime.json",
+  "exit": 0,
+  "failure": null,
+  "ownedBoxGone": true,
+  "firstWalk": {
+   "receipt": "runtime-first.json",
+   "exit": 1,
+   "failure": "Niagara not at rest in 20 min (fixed in 0aa06a85)",
+   "ownedBoxGone": true
+  }
+ }
+}

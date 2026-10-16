@@ -399,8 +399,11 @@ async function cardEvidence(target: IntakeTarget, original: Buffer, filename: st
   return { targetId: target.targetId, locator: target.locator, cardId: made.id, citation,
     link: view.card.resolverUrl, verification: target.artefacts.verification,
     range: { featureIndex: range.featureIndex, byteStart: range.byteStart, byteEnd: range.byteEnd },
-    rangeSha256Matches: true, words,
-    packetCarriesWords: packet.bytes.toString().includes(words.replaceAll('"', '""')) };
+    rangeSha256Matches: true, words, packet: { included: packet.receipt.included.length,
+      unavailable: packet.receipt.unavailable.length,
+      // packet0 writes a text packet raw and a CSV packet with doubled quotes; its bytes are a Uint8Array.
+      carriesWords: [words, words.replaceAll('"', '""')]
+        .some(form => Buffer.from(packet.bytes).toString('utf8').includes(form)) } };
 }
 
 async function drafting(batch: Awaited<ReturnType<typeof retain>>, itemId: string, watch: Watch) {
@@ -471,8 +474,11 @@ async function walkNiagara(input: Input) {
     || row.state === 'read', 20);
   const packages = (await query('SELECT count(*)::int n FROM import_packages WHERE case_id=$1',
     [batch.caseId])).rows[0].n;
+  const readerJobs = (await query(`SELECT count(*)::int n FROM jobs WHERE source_id=$1
+    AND operation IN ('streaming-vector','streamed-profile','chunk-mapping')`, [batch.sourceId])).rows[0].n;
   evidence.niagara.final = { state: watch.item!.state, placement: watch.item!.placement,
-    sentence: watch.item!.limitReason, packages, stepJobs: await stepJobs(batch.sourceId) };
+    sentence: watch.item!.limitReason, recordsSeen: watch.item!.recordsSeen, packages, readerJobs,
+    stepJobs: await stepJobs(batch.sourceId) };
   watch.close();
 }
 

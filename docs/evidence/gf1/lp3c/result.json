@@ -1,1 +1,510 @@
-{"task":"LP3c","gate":"GF1","base":"c6e5cb311255733dce3491b799c3812832ac3ff9","status":"checkpoint_docker_desktop_failed","gatePassed":false,"largeFileToPackagesAutomatic":false,"restartDraftsNothingTwice":false,"threeCardsFromThreePackages":false,"projectedLargeFileSaysWhy":false,"qualification":"False flags are unproved, not observed failures. The walk did not start: Docker Desktop failed before the throwaway PostGIS box could be created, and the task stops on that failure.","dockerFailure":{"at":"2026-10-16T08:08:25Z","log":"%LOCALAPPDATA%/Docker/log/host/com.docker.backend.exe.log","line":"backend cancelling with error: starting services: initializing Ingest server: listening on unix://C:/Users/kvina/AppData/Local/Docker/run/sailor-ingest.sock: rename C:/Users/kvina/AppData/Local/Docker/run/sailor-ingest.sock C:/Users/kvina/AppData/Local/Docker/run/sailor-ingest.sock.stale: The file cannot be accessed by the system.","dialogActions":["Quit","Reset to factory defaults"],"dialogQuitPressedAt":"2026-10-16T08:09:45Z","notReset":true},"step4":{"approvalToFirstDraftedMs":null,"approvalToFirstReviewedMs":null,"approvalToLastDraftedMs":null,"approvalToLastReviewedMs":null,"packages":null,"finalState":null,"partsPlanned":null,"partsDone":null,"recordsSeen":null,"reason":null,"targets":{"ready":null,"held":null,"preparing":null},"maxUnreviewedAtOnce":null,"limit":8},"intakeLargeJobsCreated":null,"cutsDraftedTwice":null,"built":["intake-large registered in jobs.ts and processing.ts","largeStateKey and queueIntakeLargeTx","reader/profile start, layout question, plan proposed/approved, mapping enqueue, ordered drafting at most eight unreviewed","repeated-error and zero-cut endings","wake-ups at reader, profile, mapping, layout author/approve and package prepare"],"unitProof":{"tests":328,"pass":328,"newTests":9,"changedExistingTest":"intake-draft.test.ts oversized GeoJSON within the reader ceiling now goes to its own large-file steps"},"harness":["run-runtime.mjs","runtime.ts","processes.ts","storage.ts","http.ts","loopback.cjs"],"runtime":null,"checks":"checks.json","step0":"step0.json","resume":"CHECKPOINT.md"}
+{
+ "task": "LP3c",
+ "gate": "GF1",
+ "base": "c6e5cb311255733dce3491b799c3812832ac3ff9",
+ "status": "walked",
+ "largeFileToPackagesAutomatic": true,
+ "restartDraftsNothingTwice": true,
+ "threeCardsFromThreePackages": true,
+ "projectedLargeFileSaysWhy": true,
+ "qualification": "Actual HTTP upload/register/answer/confirm boundary; the product API and dispatcher run as their own processes; in-memory loopback S3 and the product geo Python as stand-ins.",
+ "input": {
+  "name": "DA6",
+  "bytes": 43263076,
+  "sha256": "0d4dd71eb16d0e5a6f87e7702402098a9f4235aa85dc2461c0154c4f187c4489",
+  "features": 48686,
+  "purpose": "test_only",
+  "crs": "none stated (RFC 7946 longitude/latitude)"
+ },
+ "officerSends": [
+  {
+   "at": "2026-10-16T12:45:53.904Z",
+   "route": "register"
+  },
+  {
+   "at": "2026-10-16T12:47:34.143Z",
+   "route": "layout author"
+  },
+  {
+   "at": "2026-10-16T12:47:39.197Z",
+   "route": "layout approve"
+  },
+  {
+   "at": "2026-10-16T12:54:52.684Z",
+   "route": "confirmation"
+  },
+  {
+   "at": "2026-10-16T12:55:31.823Z",
+   "route": "register"
+  }
+ ],
+ "step4": {
+  "approvedAt": "2026-10-16T12:47:39.198Z",
+  "approvalToFirstDraftedMs": 63442,
+  "approvalToFirstReviewedMs": 75033,
+  "approvalToLastDraftedMs": 416083,
+  "approvalToLastReviewedMs": 423843,
+  "packages": 25,
+  "finalState": "read",
+  "finalPlacement": "on_map",
+  "partsPlanned": 25,
+  "partsDone": 25,
+  "recordsSeen": 48686,
+  "reason": "48686 records read; 48683 in 25 packages. 3 not accepted by the reader.",
+  "featuresInPackages": 48683,
+  "targets": {
+   "ready": 48683,
+   "held": 0,
+   "preparing": 0
+  },
+  "maxUnreviewedAtOnce": 3,
+  "maxUnreviewedOnTheRow": 2,
+  "limit": 8
+ },
+ "intakeLargeJobsCreated": 58,
+ "intakeLargeAttempts": 60,
+ "intakeLargeRetried": 2,
+ "intakeLargeOpenAtEnd": 0,
+ "cutsDraftedTwice": 0,
+ "cutsOnceInOrder": true,
+ "restart": {
+  "killedAt": "2026-10-16T12:49:19.642Z",
+  "restartedAt": "2026-10-16T12:49:24.908Z",
+  "partsAtKill": 4,
+  "unreviewedAtKill": 1,
+  "openStepJobsAtKill": [
+   {
+    "id": "d7633c7e-ae65-5d17-b2a7-0191f82f1239",
+    "status": "queued",
+    "attempts": 0,
+    "next_attempt_at": "2026-10-16T12:48:42.640Z"
+   },
+   {
+    "id": "21caff21-1b3b-53d4-b0af-a6b577e03f0d",
+    "status": "queued",
+    "attempts": 0,
+    "next_attempt_at": "2026-10-16T12:48:54.088Z"
+   },
+   {
+    "id": "3b521b77-f7fa-581c-96cc-7364dde3e17e",
+    "status": "queued",
+    "attempts": 0,
+    "next_attempt_at": "2026-10-16T12:49:12.474Z"
+   },
+   {
+    "id": "ee4f1ddf-39ec-5d3d-8ae1-6926de6de72e",
+    "status": "running",
+    "attempts": 1,
+    "next_attempt_at": "2026-10-16T12:52:18.652Z"
+   },
+   {
+    "id": "1854638c-101c-5a7d-ac64-dcb9ac59c0dc",
+    "status": "queued",
+    "attempts": 0,
+    "next_attempt_at": "2026-10-16T12:48:51.559Z"
+   },
+   {
+    "id": "dc59d7a2-859a-5478-a4ca-4488cfb96653",
+    "status": "queued",
+    "attempts": 0,
+    "next_attempt_at": "2026-10-16T12:49:02.660Z"
+   },
+   {
+    "id": "010ce0c8-aa54-57c1-bd28-3d01b6e09189",
+    "status": "queued",
+    "attempts": 0,
+    "next_attempt_at": "2026-10-16T12:49:00.611Z"
+   },
+   {
+    "id": "3819be2b-3212-5b67-b2eb-99b91b27df62",
+    "status": "queued",
+    "attempts": 0,
+    "next_attempt_at": "2026-10-16T12:49:10.062Z"
+   }
+  ]
+ },
+ "cuts": [
+  {
+   "index": 0,
+   "packageId": "a6992366-5f58-42de-8bb3-539d9dac0fd0",
+   "features": 2000,
+   "first": 0,
+   "last": 1999,
+   "draftedAt": "2026-10-16T12:48:42.640Z",
+   "reviewedAt": "2026-10-16T12:48:54.231Z"
+  },
+  {
+   "index": 1,
+   "packageId": "853dbf30-4cdd-4e9c-bfb3-789faace89c6",
+   "features": 2000,
+   "first": 2000,
+   "last": 3999,
+   "draftedAt": "2026-10-16T12:48:51.559Z",
+   "reviewedAt": "2026-10-16T12:49:02.834Z"
+  },
+  {
+   "index": 2,
+   "packageId": "655f007d-af44-4a59-b031-77eaf5eb6079",
+   "features": 2000,
+   "first": 4000,
+   "last": 5999,
+   "draftedAt": "2026-10-16T12:49:00.611Z",
+   "reviewedAt": "2026-10-16T12:49:12.659Z"
+  },
+  {
+   "index": 3,
+   "packageId": "cf42c3ac-c2f8-4325-8e66-436299fbd766",
+   "features": 2000,
+   "first": 6000,
+   "last": 7999,
+   "draftedAt": "2026-10-16T12:49:10.062Z",
+   "reviewedAt": "2026-10-16T12:52:26.923Z"
+  },
+  {
+   "index": 4,
+   "packageId": "d5834d8b-2485-49ad-9164-dc2793789e12",
+   "features": 2000,
+   "first": 8000,
+   "last": 9999,
+   "draftedAt": "2026-10-16T12:49:29.982Z",
+   "reviewedAt": "2026-10-16T12:49:42.372Z"
+  },
+  {
+   "index": 5,
+   "packageId": "04a69646-662b-475a-8030-e62500fbc3ed",
+   "features": 2000,
+   "first": 10000,
+   "last": 12000,
+   "draftedAt": "2026-10-16T12:49:39.901Z",
+   "reviewedAt": "2026-10-16T12:49:52.410Z"
+  },
+  {
+   "index": 6,
+   "packageId": "a849daf8-2bf4-4171-ba2d-3e588a78fea5",
+   "features": 2000,
+   "first": 12001,
+   "last": 14000,
+   "draftedAt": "2026-10-16T12:49:50.074Z",
+   "reviewedAt": "2026-10-16T12:50:02.906Z"
+  },
+  {
+   "index": 7,
+   "packageId": "5f37bce5-bf36-44cd-bd6d-1ccb1882db40",
+   "features": 2000,
+   "first": 14001,
+   "last": 16000,
+   "draftedAt": "2026-10-16T12:50:00.512Z",
+   "reviewedAt": "2026-10-16T12:50:13.529Z"
+  },
+  {
+   "index": 8,
+   "packageId": "876b5984-bc6c-470f-989e-4bbafd4ce4a6",
+   "features": 2000,
+   "first": 16001,
+   "last": 18000,
+   "draftedAt": "2026-10-16T12:50:11.106Z",
+   "reviewedAt": "2026-10-16T12:50:23.492Z"
+  },
+  {
+   "index": 9,
+   "packageId": "3096e509-046e-4861-a7e9-c208f52366b6",
+   "features": 2000,
+   "first": 18001,
+   "last": 20000,
+   "draftedAt": "2026-10-16T12:50:21.077Z",
+   "reviewedAt": "2026-10-16T12:50:37.734Z"
+  },
+  {
+   "index": 10,
+   "packageId": "e5e2337a-bc1b-418b-91fe-ebf8eaeb6652",
+   "features": 2000,
+   "first": 20001,
+   "last": 22000,
+   "draftedAt": "2026-10-16T12:50:52.303Z",
+   "reviewedAt": "2026-10-16T12:51:05.324Z"
+  },
+  {
+   "index": 11,
+   "packageId": "d5947348-4912-4905-9fdd-8e8221b945d3",
+   "features": 2000,
+   "first": 22001,
+   "last": 24000,
+   "draftedAt": "2026-10-16T12:51:02.584Z",
+   "reviewedAt": "2026-10-16T12:51:15.990Z"
+  },
+  {
+   "index": 12,
+   "packageId": "2d884434-377d-48c3-b594-cc98d7291514",
+   "features": 2000,
+   "first": 24001,
+   "last": 26000,
+   "draftedAt": "2026-10-16T12:51:12.914Z",
+   "reviewedAt": "2026-10-16T12:51:26.615Z"
+  },
+  {
+   "index": 13,
+   "packageId": "457480b8-351c-4f06-800a-e2bb4b70059b",
+   "features": 2000,
+   "first": 26001,
+   "last": 28000,
+   "draftedAt": "2026-10-16T12:51:23.586Z",
+   "reviewedAt": "2026-10-16T12:51:37.114Z"
+  },
+  {
+   "index": 14,
+   "packageId": "19eea2f6-5e20-496f-ae30-4bdd27aabd18",
+   "features": 2000,
+   "first": 28001,
+   "last": 30000,
+   "draftedAt": "2026-10-16T12:51:34.177Z",
+   "reviewedAt": "2026-10-16T12:51:47.518Z"
+  },
+  {
+   "index": 15,
+   "packageId": "d2ad9932-39a4-40d9-9120-24cb24687c35",
+   "features": 2000,
+   "first": 30001,
+   "last": 32000,
+   "draftedAt": "2026-10-16T12:51:44.735Z",
+   "reviewedAt": "2026-10-16T12:52:02.812Z"
+  },
+  {
+   "index": 16,
+   "packageId": "778a76ef-5505-4be4-b097-c0b6c0f58ebc",
+   "features": 2000,
+   "first": 32001,
+   "last": 34000,
+   "draftedAt": "2026-10-16T12:52:15.210Z",
+   "reviewedAt": "2026-10-16T12:52:30.202Z"
+  },
+  {
+   "index": 17,
+   "packageId": "3ae61541-afb7-478d-9c59-677978fc435f",
+   "features": 2000,
+   "first": 34001,
+   "last": 36000,
+   "draftedAt": "2026-10-16T12:52:26.300Z",
+   "reviewedAt": "2026-10-16T12:52:40.363Z"
+  },
+  {
+   "index": 18,
+   "packageId": "5a56b56b-b817-437c-8ecc-af81786e19d2",
+   "features": 2000,
+   "first": 36001,
+   "last": 38000,
+   "draftedAt": "2026-10-16T12:52:37.636Z",
+   "reviewedAt": "2026-10-16T12:52:51.664Z"
+  },
+  {
+   "index": 19,
+   "packageId": "ae6194ac-41e5-48ef-b0b3-2d8cc1b793bd",
+   "features": 2000,
+   "first": 38001,
+   "last": 40001,
+   "draftedAt": "2026-10-16T12:52:48.907Z",
+   "reviewedAt": "2026-10-16T12:53:03.501Z"
+  },
+  {
+   "index": 20,
+   "packageId": "a05de554-5efb-4178-bab5-1ba4fa39d347",
+   "features": 2000,
+   "first": 40002,
+   "last": 42001,
+   "draftedAt": "2026-10-16T12:53:00.270Z",
+   "reviewedAt": "2026-10-16T12:53:14.212Z"
+  },
+  {
+   "index": 21,
+   "packageId": "e38bda26-5531-4f3a-bbc1-e9e753c35591",
+   "features": 2000,
+   "first": 42002,
+   "last": 44001,
+   "draftedAt": "2026-10-16T12:53:11.230Z",
+   "reviewedAt": "2026-10-16T12:53:30.060Z"
+  },
+  {
+   "index": 22,
+   "packageId": "75de5beb-1397-4213-aa93-a5142fd6caf1",
+   "features": 2000,
+   "first": 44002,
+   "last": 46002,
+   "draftedAt": "2026-10-16T12:53:56.401Z",
+   "reviewedAt": "2026-10-16T12:54:10.364Z"
+  },
+  {
+   "index": 23,
+   "packageId": "db2ad726-a0ef-4713-9c91-6c56b0e9f5c8",
+   "features": 2000,
+   "first": 46003,
+   "last": 48002,
+   "draftedAt": "2026-10-16T12:54:07.439Z",
+   "reviewedAt": "2026-10-16T12:54:24.051Z"
+  },
+  {
+   "index": 24,
+   "packageId": "e78dc1f5-9f51-4766-bc39-3655492ff076",
+   "features": 683,
+   "first": 48003,
+   "last": 48685,
+   "draftedAt": "2026-10-16T12:54:35.281Z",
+   "reviewedAt": "2026-10-16T12:54:43.041Z"
+  }
+ ],
+ "confirmation": {
+  "chosen": [
+   {
+    "part": 0,
+    "targetId": "dfab7f7e-a2c1-5bce-b205-84b3ce435934",
+    "pin": {
+     "packageId": "a6992366-5f58-42de-8bb3-539d9dac0fd0",
+     "revision": 2,
+     "reviewFingerprint": "3d53a5149d90ba1aea96b76117f06c75efd465819a8057cb21b2b1455a88fcb0"
+    }
+   },
+   {
+    "part": 12,
+    "targetId": "541904a5-97ed-5251-a3d0-557b1791a803",
+    "pin": {
+     "packageId": "2d884434-377d-48c3-b594-cc98d7291514",
+     "revision": 2,
+     "reviewFingerprint": "9ebb93191d6100992b8dbb2918d5c57aa3c30f7cffdfe22409197245efacd2f4"
+    }
+   },
+   {
+    "part": 24,
+    "targetId": "c9b07741-af42-59be-8d5b-deebcd7fabb1",
+    "pin": {
+     "packageId": "e78dc1f5-9f51-4766-bc39-3655492ff076",
+     "revision": 2,
+     "reviewFingerprint": "c53c7f9f820c15cc45eaf87c5d645bc48cbca3fe8b52cb1d61404d362512352e"
+    }
+   }
+  ],
+  "counts": {
+   "recorded": 4683,
+   "carded": 3,
+   "stopped": 0
+  },
+  "cardsMs": 34351,
+  "cards": [
+   {
+    "targetId": "dfab7f7e-a2c1-5bce-b205-84b3ce435934",
+    "locator": "feature 1002071",
+    "cardId": "6818a852-316b-4bc2-85c6-5b4faf6cdf1a",
+    "citation": "5zhs-2jue-box-w74.025-s40.700-e73.940-n40.800.geojson, feature 1002071",
+    "link": "http://127.0.0.1:49809/api/v1/usp/property-cards/6818a852-316b-4bc2-85c6-5b4faf6cdf1a/revisions/1",
+    "verification": "consistent",
+    "range": {
+     "featureIndex": 897,
+     "byteStart": 856482,
+     "byteEnd": 857198
+    },
+    "rangeSha256Matches": true,
+    "words": "{\"name\":null,\"base_bbl\":\"1013640034\",\"shape_area\":\"131.1953125\",\"construction_year\":\"1974\",\"ground_elevation\":\"43\",\"mappluto_bbl\":\"1013640034\",\"objectid\":\"1067004\",\"feature_code\":\"2100\",\"shape_length\":\"47.151730382311882\",\"height_roof\":\"17\",\"last_status_type\":\"Constructed\",\"bin\":\"1089031\",\"last_edited_date\":\"2017-08-10T15:24:31.000Z\",\"geom_source\":\"Other (Manual)\",\"doitt_id\":\"1002071\"}",
+    "packet": {
+     "included": 1,
+     "unavailable": 0,
+     "carriesWords": false
+    }
+   },
+   {
+    "targetId": "541904a5-97ed-5251-a3d0-557b1791a803",
+    "locator": "feature 1001202",
+    "cardId": "cccbf19e-c3f3-486b-bcbb-a6f0d0679064",
+    "citation": "5zhs-2jue-box-w74.025-s40.700-e73.940-n40.800.geojson, feature 1001202",
+    "link": "http://127.0.0.1:49809/api/v1/usp/property-cards/cccbf19e-c3f3-486b-bcbb-a6f0d0679064/revisions/1",
+    "verification": "consistent",
+    "range": {
+     "featureIndex": 24928,
+     "byteStart": 22404561,
+     "byteEnd": 22405243
+    },
+    "rangeSha256Matches": true,
+    "words": "{\"name\":null,\"base_bbl\":\"1006160005\",\"shape_area\":\"112.76953125\",\"construction_year\":\"1845\",\"ground_elevation\":\"20\",\"mappluto_bbl\":\"1006160005\",\"objectid\":\"49008\",\"feature_code\":\"2100\",\"shape_length\":\"44.162125488969131\",\"height_roof\":\"38\",\"last_status_type\":\"Constructed\",\"bin\":\"1011065\",\"last_edited_date\":\"2020-01-28T17:17:36.000Z\",\"geom_source\":\"Other (Manual)\",\"doitt_id\":\"1001202\"}",
+    "packet": {
+     "included": 1,
+     "unavailable": 0,
+     "carriesWords": false
+    }
+   },
+   {
+    "targetId": "c9b07741-af42-59be-8d5b-deebcd7fabb1",
+    "locator": "feature 1006538",
+    "cardId": "3ffd43b1-cf6b-4d18-a870-acec330bd081",
+    "citation": "5zhs-2jue-box-w74.025-s40.700-e73.940-n40.800.geojson, feature 1006538",
+    "link": "http://127.0.0.1:49809/api/v1/usp/property-cards/3ffd43b1-cf6b-4d18-a870-acec330bd081/revisions/1",
+    "verification": "consistent",
+    "range": {
+     "featureIndex": 48077,
+     "byteStart": 42663297,
+     "byteEnd": 42663982
+    },
+    "rangeSha256Matches": true,
+    "words": "{\"name\":null,\"base_bbl\":\"1008300028\",\"shape_area\":\"243.04296875\",\"construction_year\":\"1902\",\"ground_elevation\":\"44\",\"mappluto_bbl\":\"1008300028\",\"objectid\":\"1068970\",\"feature_code\":\"2100\",\"shape_length\":\"80.836792882999347\",\"height_roof\":\"69\",\"last_status_type\":\"Constructed\",\"bin\":\"1086738\",\"last_edited_date\":\"2022-05-26T17:18:59.000Z\",\"geom_source\":\"Other (Manual)\",\"doitt_id\":\"1006538\"}",
+    "packet": {
+     "included": 1,
+     "unavailable": 0,
+     "carriesWords": false
+    }
+   }
+  ],
+  "targetsAfter": {
+   "preparing": 0,
+   "ready": 44000,
+   "needs_answer": 0,
+   "held": 0,
+   "confirmed": 0,
+   "recorded": 4680,
+   "carded": 3,
+   "stopped": 0
+  },
+  "note": "One confirmation pins three packages; every ready building in them is recorded, and the three named buildings get cards.",
+  "packetProbe": "Not evidence: every card packet.carriesWords in runtime.json is false because the walk searched Uint8Array.toString() (byte numbers), a harness error fixed after this run. The receipts include one extract and none unavailable; the LP2 check is the byte-range read-back in the original, which passed."
+ },
+ "niagara": {
+  "input": {
+   "name": "Niagara",
+   "bytes": 26660992,
+   "sha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521"
+  },
+  "final": {
+   "state": "failed_part",
+   "placement": "not_understood",
+   "sentence": "This file declares the coordinate system EPSG:2958. Large files are read in longitude and latitude only for now; nothing was prepared from it.",
+   "recordsSeen": 0,
+   "packages": 0,
+   "readerJobs": 0,
+   "stepJobs": {
+    "jobs": 1,
+    "attempts": 1,
+    "succeeded": 1,
+    "retried": 0,
+    "open": 0
+   }
+  },
+  "restMs": 630
+ },
+ "firstWalk": {
+  "runtime": "runtime-first.json",
+  "progress": "progress-first.jsonl",
+  "da6": {
+   "packages": 25,
+   "cutsOnceInOrder": true,
+   "maxUnreviewedAtOnce": 2,
+   "cards": 3
+  },
+  "niagara": "Not at rest in 20 min: its reader sealed, then refused EPSG:2958 inside its acceptance; the refusal could not publish past the seal (usp_streaming_vector_imports_check1), so the job retried with no end. Fixed in 0aa06a85 by refusing before any reader starts."
+ },
+ "geometryCalls": {
+  "normalize": 26,
+  "check": 26
+ },
+ "providerCalls": 0,
+ "originalHashesUnchanged": true,
+ "ownedContainerRemoved": true,
+ "failures": [],
+ "runtime": "runtime.json",
+ "progress": "progress.jsonl",
+ "checks": "checks.json",
+ "step0": "step0.json"
+}
