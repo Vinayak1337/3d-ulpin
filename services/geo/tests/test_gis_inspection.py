@@ -101,6 +101,15 @@ def test_inspection_refuses_bad_declaration_with_literal_and_reason(member, word
     assert json.dumps(member, ensure_ascii=False, separators=(",", ":")) in str(caught.value)
 
 
+def test_inspection_reads_a_geojson_position_with_a_height_and_refuses_a_fourth_number():
+    data = geojson()
+    data["features"][0]["geometry"]["coordinates"] = [77.2, 28.6, 214.5]
+    result = json_inspect(data)
+    assert result["geometryTypes"] == ["Point"] and result["featureCount"] == 2
+    data["features"][0]["geometry"]["coordinates"] = [77.2, 28.6, 214.5, 1]
+    with pytest.raises(InputError, match="position of 4 numbers"):
+        json_inspect(data)
+
 def test_undeclared_geojson_outside_degrees_explains_missing_declaration():
     source = geojson()
     source["features"][0]["geometry"]["coordinates"] = [500000, 3100000]

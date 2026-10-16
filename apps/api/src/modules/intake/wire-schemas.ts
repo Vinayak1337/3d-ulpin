@@ -122,6 +122,7 @@ const locator = z.object({
   partId: uuid.optional(), featureId: z.string().optional(), jsonPointer: z.string().optional(),
   region: z.object({x: z.number(), y: z.number(), width: z.number(), height: z.number(), unit: z.literal('normalized')}).optional(),
 });
+const unstated = z.string().nullable().describe('The file states none; always null.');
 const physicalFeature = z.object({
   sourceFeatureIndex: z.number().int().nonnegative().optional(),
   id: uuid, identifier: z.string(), areaId: uuid, revision: z.number().int(),
@@ -134,7 +135,12 @@ const physicalFeature = z.object({
     value: nullable(z.number()), unit: z.literal('m'), meaning: z.string(), reference: z.string(),
     evidence: z.array(locator).optional(), claimId: uuid.optional(), method: z.string().optional(),
     originalValue: dynamic.optional(), originalUnit: z.string().optional(),
-  }), worldStatus: z.enum(['observed', 'planned', 'hypothetical', 'synthetic']),
+  }),
+  sourceHeights: z.object({
+    positions: z.number().int().positive(), min: z.number(), max: z.number(),
+    unit: unstated, reference: unstated, basis: z.literal('source_coordinates'),
+  }).optional(),
+  worldStatus: z.enum(['observed', 'planned', 'hypothetical', 'synthetic']),
   properties: z.record(z.string(), dynamic), areaM2: nullable(z.number()),
   evidence: z.array(locator), representation: z.enum(['physical_exterior', 'physical_context']),
   geometryRole: z.string().optional(),

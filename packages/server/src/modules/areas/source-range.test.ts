@@ -40,6 +40,17 @@ test('quarantine does not renumber accepted indexes; one unpaired candidate disc
   assert.equal((await importedGeojsonRanges(bytes, data, candidates)).size, 0);
 });
 
+test('a geometry whose positions carry heights still pairs with its raw feature', async () => {
+  const bytes = readFileSync(niagara);
+  const data = JSON.parse(bytes.toString());
+  const candidates = [0, 1, data.features.length - 1].map(sourceFeatureIndex => ({ sourceFeatureIndex,
+    sourceGeometry: JSON.parse(JSON.stringify(data.features[sourceFeatureIndex].geometry)), properties: {} }));
+  assert.equal(candidates[0].sourceGeometry.coordinates[0][0].length, 3);
+  assert.equal((await importedGeojsonRanges(bytes, data, candidates)).size, data.features.length);
+  candidates[0].sourceGeometry.coordinates[0][0] = candidates[0].sourceGeometry.coordinates[0][0].slice(0, 2);
+  assert.equal((await importedGeojsonRanges(bytes, data, candidates)).size, 0);
+});
+
 test('valid JSON not framed by reader gets no ranges, without rejecting the import input', async () => {
   const original = JSON.parse(readFileSync(nyc, 'utf8'));
   // Ordering/BOM syntax controls only; all geographical facts remain the real original.

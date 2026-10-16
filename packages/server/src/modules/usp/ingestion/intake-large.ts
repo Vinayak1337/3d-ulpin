@@ -84,11 +84,17 @@ export function intakeLargeFailureReason(code: string, bytes: number, crsWords: 
 const partSentences: Readonly<Record<string, string>> = {
   PART_INTEGER_IDENTIFIER: 'The identifier field holds a value written with a decimal point. '
     + 'This file must write whole-number identifiers as digits only',
+  GIS_ALL_GEOMETRIES_REJECTED: 'No feature in a part of this file has an outline that can be read',
 };
 
-/** A part the file itself refuses rests the row at once: the same bytes cannot pass on another attempt. */
-export function intakeLargePartRefusal(code: string): string | null {
-  return Object.hasOwn(partSentences, code) ? `${partSentences[code]}; nothing more was prepared from it.` : null;
+/** A part the file itself refuses rests the row at once: the same bytes cannot pass on another attempt. The geo
+ * service answers its refusal of the part's own content with 422 and its words; a 5xx or a timeout is a fault. */
+export function intakeLargePartRefusal(error: unknown): string | null {
+  if (!(error instanceof AppError)) return null;
+  const nothing = '; nothing more was prepared from it.';
+  if (Object.hasOwn(partSentences, error.code)) return partSentences[error.code] + nothing;
+  if (error.code !== 'AREA_PROCESSING' || error.status !== 422) return null;
+  return `A part of this file could not be read as a map: ${error.message.replace(/\.$/, '')}${nothing}`;
 }
 
 export type IntakeLargePhase = 'start' | 'read' | 'question' | 'layout' | 'map' | 'draft' | 'end' | 'failure';

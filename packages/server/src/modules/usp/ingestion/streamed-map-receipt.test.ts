@@ -141,6 +141,17 @@ test('a declaration the geo resolver refuses stops the receipt with its words', 
   }), { status: 503 });
 });
 
+test('a 422 that is not the resolver refusing the declaration is a fault the reader retries', async () => {
+  for (const words of ['Unexpected geo operation resolve-geojson-crs.',
+    'The area processor could not complete this operation.', "'collection'"]) {
+    const failure = await resolveStreamedReference({ crs: named('EPSG:2958') }, async () => {
+      throw new AppError(422, 'AREA_PROCESSING', words);
+    }).catch(error => error);
+    assert(failure instanceof Error && !(failure instanceof AppError), words);
+    assert.equal(failure.message, 'The coordinate system resolution failed.');
+  }
+});
+
 test('a file that declares nothing or CRS84 keeps its receipt unchanged', async () => {
   const refuse = async () => { throw new Error('not asked'); };
   assert.deepEqual(await resolveStreamedReference({ type: 'FeatureCollection' }, refuse), streamedSourceReference({}));
