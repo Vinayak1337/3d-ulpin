@@ -7,6 +7,7 @@ import { createServer } from 'node:net';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { command, dockerRuntime, root } from './runtime.mjs';
+import { readPin } from './processor-image-pin.mjs';
 
 export const demoRuntime = 'ulpin-demo';
 const runtimesFolder = 'E:/BhuAayam-data/runtime';
@@ -45,11 +46,11 @@ export function runtimeDefinition(name = demoRuntime, folder = runtimesFolder) {
     ocrFile: join(dir, 'ocr-paths.json'), ocrProfileFile: join(dir, 'ocr-paths-profile.json'),
     tabularFile: join(dir, 'tabular-paths.json'), documentFile: join(dir, 'document-runtime-paths.json'),
     modelDir: join(dir, 'models').replaceAll('\\', '/'),
-    // The checkout a runtime is served from, and the processors it runs. The demo builds the image its own
-    // compose file names; a rehearsal reuses the demo's reviewed image and has no build step at all.
+    // The checkout a runtime is served from, and the processors it runs: the one pinned image for the demo and
+    // every rehearsal alike. No runtime builds it; processor-image.mjs does, once per pin.
     servingCheckout: `E:/Projects/ulpin-wt/${rehearsal ? name : 'demo'}`,
-    composeFile: `scripts/platform/${rehearsal ? 'rehearsal.compose.yaml' : 'demo.compose.json'}`,
-    processorImage: rehearsal ? 'ulpin-geo:demo-k3b' : 'ulpin-geo:demo-s03', buildsProcessorImage: !rehearsal,
+    composeFile: 'scripts/platform/processors.compose.yaml',
+    processorImage: readPin().image,
   });
   definitions.add(definition);
   return definition;

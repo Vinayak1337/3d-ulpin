@@ -7,7 +7,8 @@ import { fileURLToPath } from 'node:url';
 import {
   createDemo, readDemo, definedRuntime, demoRuntime, runtimeDefinition, safeEnvironment, redact,
 } from './demo-config.mjs';
-import { dockerRuntime, engine, inventory, startProblems, root } from './runtime.mjs';
+import { dockerRuntime, engine, imageLabels, inventory, startProblems, root } from './runtime.mjs';
+import { imageProblems, readPin } from './processor-image-pin.mjs';
 import { launchProcesses, stopProcesses, waitForApi } from './processes.mjs';
 import { gatewayReport } from './demo-gateway.mjs';
 import { gatewayStateText } from './demo-gateway-state.mjs';
@@ -26,15 +27,14 @@ function execute(file, args, env, timeout = 180000) {
 const imageSteps = ['build', '--build', 'watch', 'commit', 'push', 'publish'];
 /**
  * The docker arguments of one compose step: always this runtime's settings file, project and compose
- * definition, never another's. Given a rehearsal name, a step that could build or tag an image is refused
- * here, so no caller can rebuild or retag the demo's image under a rehearsal's name.
+ * definition, never another's. A step that could build or tag an image is refused here for every runtime,
+ * the demo included: each runs the pinned image, and only processor-image.mjs builds it.
  */
 export function composeArguments(context, args, name = demoRuntime) {
   const definition = definedRuntime(name);
   const creates = args.includes('up') || args.includes('create');
-  if (!definition.buildsProcessorImage
-    && (args.some(arg => imageSteps.includes(arg)) || (creates && !args.includes('--no-build')))) {
-    throw new Error(`${definition.name} never builds or tags a processor image: it reuses the reviewed `
+  if (args.some(arg => imageSteps.includes(arg)) || (creates && !args.includes('--no-build'))) {
+    throw new Error(`${definition.name} never builds or tags a processor image: it runs the pinned `
       + `${definition.processorImage}.`);
   }
   return ['--context', context, 'compose', '--project-directory', root,
@@ -42,7 +42,9 @@ export function composeArguments(context, args, name = demoRuntime) {
     '-f', join(root, definition.composeFile), ...args];
 }
 export function demoCompose(runtime, env, args, timeout, name = demoRuntime) {
-  return execute('docker', composeArguments(runtime.context, args, name), env, timeout);
+  const definition = definedRuntime(name);
+  const pinned = { ...env, ULPIN_PROCESSOR_IMAGE: definition.processorImage };
+  return execute('docker', composeArguments(runtime.context, args, definition), pinned, timeout);
 }
 function migrate(env, definition) {
   const preload = join(root, 'scripts/platform/isolated-env.cjs');
@@ -82,21 +84,28 @@ export async function stopRuntime(name = demoRuntime, docker = localEngine) {
 }
 
 /**
- * The create steps in order. The demo's are the ones it was created with. A rehearsal never builds: where the
- * demo builds its image, a rehearsal only checks (read-only) that the demo's reviewed image is on the engine.
+ * The create steps in order, the same for every runtime. None builds: the step before the processors only
+ * checks (read-only) that the pinned image is on the engine, built from the pinned commit.
  */
 export function bootstrapSteps(name = demoRuntime) {
   const definition = definedRuntime(name);
-  const noBuild = definition.buildsProcessorImage ? [] : ['--no-build'];
   const stores = ['postgres', 'minio', 'redis'];
   return [
-    { compose: ['up', '-d', ...noBuild, '--no-recreate', '--wait', '--wait-timeout', '90', ...stores] },
+    { compose: ['up', '-d', '--no-build', '--no-recreate', '--wait', '--wait-timeout', '90', ...stores] },
     { compose: ['run', '--rm', 'minio-init'] },
     { migrate: true },
-    definition.buildsProcessorImage ? { compose: ['build', 'geo'], timeout: 900000 }
-      : { reviewedImage: definition.processorImage },
+    { pinnedImage: definition.processorImage },
     { compose: ['--profile', 'app', 'up', '-d', '--no-build', '--no-recreate', '--wait', '--wait-timeout', '120'] },
   ];
+}
+
+/** Refuses unless the pinned image is on this engine and carries the pinned commit and services tree. */
+export function assertPinnedImage(runtime, pin = readPin()) {
+  let labels;
+  try { labels = imageLabels(runtime, pin.image); }
+  catch { throw new Error(`The pinned image ${pin.image} is not on this engine; build it with processor-image.mjs.`); }
+  const problems = imageProblems(pin.image, labels, pin, pin.servicesTree);
+  if (problems.length) throw new Error(`${problems.join(' ')} Nothing was created.`);
 }
 
 function bootstrap(definition, runtime, env, compose) {
@@ -104,10 +113,7 @@ function bootstrap(definition, runtime, env, compose) {
   for (const step of bootstrapSteps(definition)) {
     if (step.compose) compose(step.compose, step.timeout);
     else if (step.migrate) migrate(env, definition);
-    else {
-      try { runtime.docker('image', 'inspect', step.reviewedImage, '--format', '{{.Id}}'); }
-      catch { throw new Error(`The reviewed image ${step.reviewedImage} is not on this engine; none is built.`); }
-    }
+    else assertPinnedImage(runtime);
   }
   const marker = { project: definition.project, schemaOnly: true, completedAt: new Date().toISOString() };
   writeFileSync(definition.marker, JSON.stringify(marker) + '\n', { flag: 'wx', mode: 0o600 });

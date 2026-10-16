@@ -3,7 +3,10 @@
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { command, dockerRuntime, engine, inventory, storageProblems, migrationReady, root, services } from './runtime.mjs';
+import {
+  command, dockerRuntime, engine, inventory, processorImages, servicesTree, storageProblems, migrationReady, root, services,
+} from './runtime.mjs';
+import { processorImageProblems, readPin } from './processor-image-pin.mjs';
 import {
   readDemo, readDemoOcrPaths, readDemoDocumentRuntime, demoRuntime, runtimeDefinition,
 } from './demo-config.mjs';
@@ -174,6 +177,15 @@ async function doctor() {
     return Object.values(reply).some(value => value?.ok === 'pong');
   }, 'resume the existing worker and verify its Redis broker connection.');
   else skip('Celery worker heartbeat');
+  // A processor image that lags the serving checkout fails here, before any job meets the old code.
+  if (demo) await attempt('Processors run the pinned image, built from this checkout\'s services/geo', () => {
+    const pin = readPin();
+    console.log(`  Pinned: ${pin.image}`);
+    const problems = processorImageProblems(processorImages(runtime, snapshot.containers), pin, servicesTree());
+    problems.forEach(problem => console.log(`  ${problem}`));
+    return problems.length === 0;
+  }, 'pin the image of this checkout\'s services/geo, build it with processor-image.mjs build, stop the runtime, '
+    + 'roll it with processor-image.mjs roll and start it (docs/backend/DEMO-RUNTIME.md).');
   if (processingOnly) { console.log('SKIP native API/dispatcher and migration admission (processing-only compatibility check)'); return; }
   if (demo) await attempt('API native process ownership', () => !!ownedProcess('api', named),
     'resume the demo launcher; do not adopt unrelated listener processes.');

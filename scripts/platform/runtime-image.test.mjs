@@ -1,70 +1,82 @@
 // No Docker command is run here: steps are compared as lists, and process records are made-up files.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runtimeDefinition } from './demo-config.mjs';
-import { assertServingCheckout, bootstrapSteps, composeArguments } from './demo.mjs';
+import { assertPinnedImage, assertServingCheckout, bootstrapSteps, composeArguments } from './demo.mjs';
+import { readPin, revisionLabel, treeLabel } from './processor-image-pin.mjs';
 import { buildDocumentRuntime, runtimeBuildFolder, switchOcrPython } from './demo-document-runtime.mjs';
 
 const rehearsals = ['ulpin-reh-01', 'ulpin-reh-02'];
-const refusal = /never builds or tags a processor image: it reuses the reviewed ulpin-geo:demo-k3b\./;
+const runtimes = ['ulpin-demo', ...rehearsals];
+const pinned = 'ulpin-geo:git-22003ea3d878';
+const refusal = /never builds or tags a processor image: it runs the pinned ulpin-geo:git-22003ea3d878\./;
 const stopped = () => null;
 
-test('given a rehearsal name, no compose step can build or tag an image', () => {
+test('for every runtime, the demo included, no compose step can build or tag an image', () => {
   const steps = [
     ['build', 'geo'], ['-f', 'made-up-overlay.json', 'build', 'geo'], ['build'], ['watch'], ['push', 'geo'],
     ['commit', 'geo', 'ulpin-geo:demo-k3b'], ['publish', 'made-up/repository'],
     ['--profile', 'app', 'up', '-d', '--build'], ['--profile', 'app', 'up', '-d', '--no-build', '--build'],
     ['run', '--build', '--rm', 'minio-init'], ['up', '-d', 'postgres'], ['--profile', 'app', 'create'],
   ];
-  for (const name of rehearsals) {
+  for (const name of runtimes) {
     for (const step of steps) assert.throws(() => composeArguments('made-up-context', step, name), refusal);
   }
-  // The demo keeps every step it has today, its own build and K3b's overlay build included.
-  for (const step of steps) assert.doesNotThrow(() => composeArguments('made-up-context', step));
+  assert.throws(() => composeArguments('made-up-context', ['build', 'geo']), refusal);
 });
 
-test('a rehearsal\'s create steps hold no build and check the reviewed image; the demo\'s steps are today\'s', () => {
-  assert.deepEqual(bootstrapSteps(), [
-    { compose: ['up', '-d', '--no-recreate', '--wait', '--wait-timeout', '90', 'postgres', 'minio', 'redis'] },
-    { compose: ['run', '--rm', 'minio-init'] },
-    { migrate: true },
-    { compose: ['build', 'geo'], timeout: 900000 },
-    { compose: ['--profile', 'app', 'up', '-d', '--no-build', '--no-recreate', '--wait', '--wait-timeout', '120'] },
-  ]);
-  for (const name of rehearsals) {
+test('every runtime\'s create steps are the same, hold no build and check the pinned image', () => {
+  for (const name of runtimes) {
     const steps = bootstrapSteps(name);
     const composed = steps.filter(step => step.compose).map(step => step.compose);
-    assert.equal(composed.length, 3);
-    assert.equal(composed.flat().some(arg => arg === 'build' || arg === '--build'), false);
-    assert.ok(composed.filter(args => args.includes('up')).every(args => args.includes('--no-build')));
-    assert.deepEqual(steps[3], { reviewedImage: 'ulpin-geo:demo-k3b' });
+    assert.deepEqual(steps, [
+      { compose: ['up', '-d', '--no-build', '--no-recreate', '--wait', '--wait-timeout', '90', 'postgres', 'minio',
+        'redis'] },
+      { compose: ['run', '--rm', 'minio-init'] },
+      { migrate: true },
+      { pinnedImage: pinned },
+      { compose: ['--profile', 'app', 'up', '-d', '--no-build', '--no-recreate', '--wait', '--wait-timeout', '120'] },
+    ]);
     for (const args of composed) assert.doesNotThrow(() => composeArguments('made-up-context', args, name));
   }
 });
 
-test('the rehearsal definition names the reviewed image with no build section; the demo\'s file is as it was', () => {
-  const rehearsal = runtimeDefinition('ulpin-reh-01');
-  assert.deepEqual([rehearsal.processorImage, rehearsal.buildsProcessorImage, rehearsal.composeFile],
-    ['ulpin-geo:demo-k3b', false, 'scripts/platform/rehearsal.compose.yaml']);
-  const lines = readFileSync(new URL('./rehearsal.compose.yaml', import.meta.url), 'utf8').split(/\r?\n/)
+test('one processors file names the pin\'s image by variable, with no build section; demo and rehearsals share it', () => {
+  for (const name of runtimes) {
+    const definition = runtimeDefinition(name);
+    assert.deepEqual([definition.processorImage, definition.composeFile],
+      [pinned, 'scripts/platform/processors.compose.yaml']);
+    assert.equal('buildsProcessorImage' in definition, false);
+  }
+  const lines = readFileSync(new URL('./processors.compose.yaml', import.meta.url), 'utf8').split(/\r?\n/)
     .filter(line => line.trim() && !line.startsWith('#'));
   const count = text => lines.filter(line => line.trim() === text).length;
-  assert.equal(count(`image: ${rehearsal.processorImage}`), 2);
+  const image = 'image: ${ULPIN_PROCESSOR_IMAGE:?Processor image pin missing}';
+  assert.equal(count(image), 2);
   assert.equal(count('pull_policy: never'), 2);
   assert.equal(count('ULPIN_PROFILE: demo'), 2);
   assert.deepEqual(lines.filter(line => /build|image:/.test(line)).map(line => line.trim()),
-    ['image: ulpin-geo:demo-k3b', 'build: !reset null', 'image: ulpin-geo:demo-k3b']);
-  const volume = [{ type: 'bind', source: '${ULPIN_DEMO_MODEL_DIR:?Demo model directory missing}',
-    target: '/models', read_only: true }];
-  const demoFile = JSON.parse(readFileSync(new URL('./demo.compose.json', import.meta.url), 'utf8'));
-  assert.deepEqual(demoFile, { services: {
-    geo: { image: 'ulpin-geo:demo-s03', volumes: volume }, worker: { image: 'ulpin-geo:demo-s03', volumes: volume },
+    [image, 'build: !reset null', image]);
+  assert.equal(existsSync(new URL('./demo.compose.json', import.meta.url)), false);
+});
+
+test('the pinned image is checked by its labels before processors are created; a stray or missing one is refused', () => {
+  const pin = readPin();
+  const engineWith = labels => ({ docker: (...args) => {
+    assert.deepEqual(args, ['image', 'inspect', pinned, '--format', '{{json .Config.Labels}}']);
+    if (labels === undefined) throw new Error('No such image');
+    return JSON.stringify(labels);
   } });
-  assert.deepEqual([runtimeDefinition().processorImage, runtimeDefinition().buildsProcessorImage],
-    ['ulpin-geo:demo-s03', true]);
+  const good = { [revisionLabel]: pin.commit, [treeLabel]: pin.servicesTree, 'made-up': 'kept out' };
+  assert.doesNotThrow(() => assertPinnedImage(engineWith(good), pin));
+  assert.throws(() => assertPinnedImage(engineWith(undefined), pin),
+    /^Error: The pinned image ulpin-geo:git-22003ea3d878 is not on this engine; build it with processor-image\.mjs\.$/);
+  assert.throws(() => assertPinnedImage(engineWith(null), pin), /carries no build commit.*Nothing was created\.$/);
+  assert.throws(() => assertPinnedImage(engineWith({ ...good, [treeLabel]: 'f'.repeat(40) }), pin),
+    /was built from 22003ea3d878, not the pinned 22003ea3d878\./);
 });
 
 test('the document runtime builder checks the named runtime\'s own checkout and its own process records', () => {
