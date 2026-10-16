@@ -1,0 +1,17 @@
+{"at":"2026-10-16T22:30:02.990Z","milestone":"upload","status":200,"ms":680}
+{"at":"2026-10-16T22:30:03.064Z","milestone":"register","status":201,"ms":74}
+{"at":"2026-10-16T22:30:03.085Z","caseId":"c3dc658a-e916-4f85-a8da-edbcc4b56869","msSinceRegister":94,"state":"probed","placement":"undecided","partsPlanned":null,"partsDone":0,"recordsSeen":0,"limitReason":null,"streamedProfileJobId":null,"plan":null}
+{"at":"2026-10-16T22:30:04.119Z","caseId":"c3dc658a-e916-4f85-a8da-edbcc4b56869","msSinceRegister":1129,"state":"reading","placement":"undecided","partsPlanned":null,"partsDone":0,"recordsSeen":0,"limitReason":null,"streamedProfileJobId":"61cf5a00-f533-4039-96ae-94bfface52df","plan":null}
+{"at":"2026-10-16T22:30:05.648Z","caseId":"c3dc658a-e916-4f85-a8da-edbcc4b56869","msSinceRegister":2657,"state":"reading","placement":"undecided","partsPlanned":null,"partsDone":3,"recordsSeen":300,"limitReason":null,"streamedProfileJobId":"61cf5a00-f533-4039-96ae-94bfface52df","plan":null}
+{"at":"2026-10-16T22:31:28.197Z","caseId":"c3dc658a-e916-4f85-a8da-edbcc4b56869","msSinceRegister":85206,"state":"probed","placement":"needs_answer","partsPlanned":null,"partsDone":423,"recordsSeen":42247,"limitReason":"No approved layout matches this file. An officer states what each feature is and which field identifies it.","streamedProfileJobId":"61cf5a00-f533-4039-96ae-94bfface52df","plan":null}
+{"at":"2026-10-16T22:31:28.205Z","milestone":"manifest at the question","status":200,"ms":7}
+{"at":"2026-10-16T22:31:28.247Z","milestone":"profile status","status":200,"ms":42}
+{"at":"2026-10-16T22:31:28.262Z","milestone":"case revision before","status":200,"ms":15}
+{"at":"2026-10-16T22:31:28.590Z","milestone":"second file retained","status":201,"ms":328}
+{"at":"2026-10-16T22:31:28.623Z","milestone":"second file registered","status":201,"ms":33}
+{"at":"2026-10-16T22:31:28.632Z","milestone":"case revision after","status":200,"ms":9}
+{"at":"2026-10-16T22:31:28.674Z","milestone":"author at the inventory revision","status":201,"ms":41}
+{"at":"2026-10-16T22:31:28.736Z","milestone":"author at the current case revision","status":409,"ms":32}
+{"at":"2026-10-16T22:31:28.795Z","milestone":"approve","status":200,"ms":39}
+{"at":"2026-10-16T22:31:28.815Z","milestone":"recipe history","status":200,"ms":20}
+{"at":"2026-10-16T22:32:47.243Z","milestone":"first package drafted","status":200,"ms":78427}
