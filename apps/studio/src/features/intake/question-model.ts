@@ -88,13 +88,15 @@ function heightMembers(profile: MapProfile, choices: Choices) {
 
 export function choicesFromRecipe(receipt: Recipe): Choices {
   const plan = receipt.plan;
-  if (plan.version !== 'manual-geojson/1') return { ...blankChoices };
+  if (plan.version !== 'manual-geojson/1' && plan.version !== 'streamed-mapping/1') return { ...blankChoices };
   const prefix = plan.kind === undefined ? 'building' : 'feature';
   const path = (name: string) => plan.operations
     .find(operation => operation.target === `${prefix}.${name}`)?.sourcePath;
+  const stated = { ...blankChoices, kind: plan.kind ?? 'building', identifier: path('sourceKey') ?? '',
+    name: path('name') ?? '' };
+  if (plan.version === 'streamed-mapping/1') return stated;
   const height = plan.heightField ? propertyPrefix + plan.heightField.replaceAll('~', '~0').replaceAll('/', '~1') : '';
-  return { kind: plan.kind ?? 'building', identifier: path('sourceKey') ?? '', name: path('name') ?? '',
-    height, unit: plan.heightUnit ?? '', meaning: plan.heightMeaning ?? '' };
+  return { ...stated, height, unit: plan.heightUnit ?? '', meaning: plan.heightMeaning ?? '' };
 }
 
 export function answerSummary(choices: Choices): string {

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { api, unwrap } from '@ulpin/api-client';
-import { type Recipe, type RecipeHistory } from './layout-model';
+import type { Recipe } from './layout-model';
 import type { AuthorBody } from './question-model';
 import type { Schemas } from '@ulpin/api-client';
 import { readTargets } from './run/api';
@@ -17,7 +17,7 @@ export function useBatchRecipe(caseId: string, recipeId: string) {
   return useQuery({ queryKey: [...recipeKey(caseId), recipeId], enabled: Boolean(recipeId), retry: false,
     queryFn: async () => unwrap(await api.GET('/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}', {
       params: { path: { caseId, recipeId } },
-    })) as RecipeHistory });
+    })) as Recipe[] });
 }
 
 export async function authorLayout(caseId: string, sourceId: string, body: AuthorBody): Promise<Recipe> {

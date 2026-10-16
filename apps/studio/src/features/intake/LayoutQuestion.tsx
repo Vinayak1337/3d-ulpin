@@ -6,7 +6,8 @@ import { recipeKey, useBatchRecipe } from './batch-queries';
 import { changedLayoutWords, latestRecipe, layoutLines, recipeStateWords } from './layout-model';
 import type { Recipe } from './layout-model';
 import { needsLayoutAnswer } from './question-model';
-import { LayoutAnswer } from './LayoutAnswer';
+import { LayoutAnswer, type Command } from './LayoutAnswer';
+import { StreamedLayoutAnswer } from './StreamedLayoutAnswer';
 import { useLayoutCommand } from './useLayoutCommand';
 import styles from './Batch.module.css';
 
@@ -31,8 +32,8 @@ export function LayoutQuestion({ caseId, item, refresh }: {
   return <section className={styles.question} aria-label={`Layout for ${item.name}`}>
     <h2 className="ul-heading">Layout · {item.name}</h2>
     {command.state.changed ? <Banner tone="warning">{changedLayoutWords}</Banner> : null}
-    {answer && item.sourceId ? <LayoutAnswer key={editingRevision ?? 'new'} caseId={caseId} sourceId={item.sourceId}
-      receipt={editing ? receipt : undefined} command={command} /> : <>
+    {answer && item.sourceId ? <Answer key={editingRevision ?? 'new'} caseId={caseId} sourceId={item.sourceId}
+      item={item} receipt={editing ? receipt : undefined} command={command} /> : <>
       {query.isPending && (item.plan || command.state.receipt) ? <Skeleton /> : null}
       {query.error ? <Banner tone="danger">{query.error.message}</Banner> : null}
       {receipt ? <LayoutReview receipt={receipt} origin={origin} command={command}
@@ -41,6 +42,16 @@ export function LayoutQuestion({ caseId, item, refresh }: {
         <p>{item.limitReason ?? 'Layout: not supplied by the record'}</p> : null}
     </>}
   </section>;
+}
+
+/** A large file names its streamed inventory; every other file answers from its retained profile. */
+function Answer({ caseId, sourceId, item, receipt, command }: {
+  caseId: string; sourceId: string; item: IntakeItem; receipt?: Recipe; command: Command;
+}) {
+  if (item.streamedProfileJobId) {
+    return <StreamedLayoutAnswer caseId={caseId} item={item} receipt={receipt} command={command} />;
+  }
+  return <LayoutAnswer caseId={caseId} sourceId={sourceId} receipt={receipt} command={command} />;
 }
 
 function LayoutReview({ receipt, origin, command, readFailed, change }: {

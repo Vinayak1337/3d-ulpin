@@ -4,17 +4,19 @@ import { heightPaths, identifierPaths, identifierWords, kindRefusal, kindWords }
 import type { Choices, Kind, MapProfile } from './question-model';
 import styles from './Batch.module.css';
 
-interface Props {
-  profile: MapProfile;
+interface Answers {
   choices: Choices;
   choose: (field: keyof Choices, value: string) => void;
   error: string;
   concern: string;
 }
+interface Props extends Answers {
+  profile: MapProfile;
+}
 
 export function QuestionFields(props: Props) {
   return <div className={styles.stack}>
-    <KindField {...props} />
+    <KindField {...props} geometryTypes={props.profile.geometryTypes} />
     <IdentifierField {...props} />
     <FieldChoice label="Which field is its name?" value={props.choices.name}
       paths={props.profile.paths.filter(path => path.literalTextEligible)}
@@ -24,7 +26,7 @@ export function QuestionFields(props: Props) {
   </div>;
 }
 
-function KindField(props: Props) {
+export function KindField(props: Answers & { geometryTypes: readonly string[] }) {
   const kinds = Object.keys(kindWords) as Kind[];
   const help = useId();
   return <div className={styles.stack}>
@@ -34,14 +36,14 @@ function KindField(props: Props) {
         onChange={event => props.choose('kind', event.target.value)}>
         <option value="">Choose what each feature is</option>
         {kinds.map(kind => <option key={kind} value={kind}
-          disabled={Boolean(kindRefusal(kind, props.profile.geometryTypes))}>
+          disabled={Boolean(kindRefusal(kind, props.geometryTypes))}>
           {kindWords[kind]}
         </option>)}
       </select>
     </label>
     <div id={help} className="ul-help">
       {kinds.map(kind => {
-        const reason = kindRefusal(kind, props.profile.geometryTypes);
+        const reason = kindRefusal(kind, props.geometryTypes);
         return reason ? <p key={kind}>{reason}</p> : null;
       })}
     </div>
@@ -91,9 +93,9 @@ function HeightFields(props: Props) {
   </div>;
 }
 
-function FieldChoice({ label, value, paths, choose, optional = false, words }: {
-  label: string; value: string; paths: MapProfile['paths']; choose: (value: string) => void; optional?: boolean;
-  words?: (path: MapProfile['paths'][number]) => string;
+export function FieldChoice<Path extends { path: string }>({ label, value, paths, choose, optional = false, words }: {
+  label: string; value: string; paths: readonly Path[]; choose: (value: string) => void; optional?: boolean;
+  words?: (path: Path) => string;
 }) {
   return <label className="ul-field"><span className="ul-label">{label}</span>
     <select className="ul-input" value={value} aria-label={label} onChange={event => choose(event.target.value)}>
@@ -105,6 +107,6 @@ function FieldChoice({ label, value, paths, choose, optional = false, words }: {
   </label>;
 }
 
-function ChoiceError({ concern, error, field }: Pick<Props, 'concern' | 'error'> & { field: string }) {
+export function ChoiceError({ concern, error, field }: Pick<Answers, 'concern' | 'error'> & { field: string }) {
   return concern === field && error ? <p role="alert">{error}</p> : null;
 }
