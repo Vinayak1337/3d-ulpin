@@ -87,6 +87,9 @@ type Normalized = {
   warnings: string[];
   disposition?: GisGeometryDisposition;
 };
+/** A processor image without the requested operation: an unavailable service, but never a transient one. */
+export const AREA_PROCESSOR_OPERATION = "AREA_PROCESSOR_OPERATION";
+
 export async function areaGeo<T>(
   operation: "normalize" | "check" | "extract" | "crop" | "profile" | "inspect-gis" | "inspect-archive-member"
     | "build-prisms" | "resolve-geojson-crs",
@@ -107,6 +110,9 @@ export async function areaGeo<T>(
   );
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
+    // The processor answers 404 for an operation it does not route; the same image cannot pass on a retry.
+    if (response.status === 404 || response.status === 405) throw new AppError(503, AREA_PROCESSOR_OPERATION,
+      `The area processor in use does not offer the ${operation} operation.`);
     throw new AppError(
       response.status === 422 ? 422 : 503,
       "AREA_PROCESSING",

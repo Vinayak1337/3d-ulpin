@@ -5,7 +5,8 @@ import type { PoolClient } from 'pg';
 import type { AnyStreamingInput } from '@ulpin/contracts/usp';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
-import { endImportTx, fencedOut, tallySetAside } from './streaming-vector-worker';
+import { endImportTx, fencedOut, streamingFailureKind, tallySetAside } from './streaming-vector-worker';
+import { resolveStreamedReference } from './streamed-map-receipt';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 
 const caseId = '30000000-0000-4000-8000-000000000001';
@@ -84,4 +85,28 @@ test('one read tallies each set-aside record under its own code and counts no ac
   tallySetAside(tally, { featureIndex: 6, byteStart: 0, byteEnd: 2, rawSha256: 'a'.repeat(64),
     disposition: 'quarantined', issueCode: null, feature: null });
   assert.deepEqual(tally, { UNREPRESENTABLE_NUMBER: 3, OPEN_RING: 2, UNSTATED: 1 });
+});
+
+test('a processor without the operation ends the read at once; its other faults are still retried', async () => {
+  process.env.GEO_URL ??= 'http://processor.invalid';
+  process.env.GEO_SERVICE_TOKEN ??= 'protocol';
+  const declared = { type: 'FeatureCollection', crs: { type: 'name', properties: { name: 'EPSG:2958' } } };
+  const answer = async (status: number, detail: string) => {
+    const original = globalThis.fetch;
+    globalThis.fetch = async () => new Response(JSON.stringify({ detail }), { status });
+    try { return await resolveStreamedReference(declared).catch(error => error); }
+    finally { globalThis.fetch = original; }
+  };
+  const missing = await answer(404, 'Unknown area operation.');
+  assert.deepEqual([missing.status, missing.code, missing.message], [503, 'AREA_PROCESSOR_OPERATION',
+    'The area processor in use does not offer the resolve-geojson-crs operation.']);
+  assert.equal(streamingFailureKind(missing), 'final');
+  assert.equal(streamingFailureKind(await answer(405, 'Method Not Allowed')), 'final');
+  const down = await answer(500, 'Internal Server Error');
+  assert.deepEqual([down.status, down.code], [503, 'AREA_PROCESSING']);
+  assert.equal(streamingFailureKind(down), 'retry');
+  assert.equal(streamingFailureKind(await answer(422, 'Unexpected geo operation resolve-geojson-crs.')), 'retry');
+  assert.equal(streamingFailureKind(new AppError(422, 'GEOJSON_JSON', 'x')), 'final');
+  assert.equal(streamingFailureKind(new AppError(409, 'STALE_REVISION', 'x')), 'stale');
+  assert.equal(streamingFailureKind(new Error('connection reset')), 'retry');
 });

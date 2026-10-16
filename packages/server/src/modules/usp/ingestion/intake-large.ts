@@ -36,6 +36,8 @@ const terminalSentences: Readonly<Record<string, string>> = {
   STREAMING_ATTEMPTS_EXHAUSTED: 'Reading this file could not finish after the allowed retries',
   STREAMING_SOURCE_CRS: 'The coordinate system this file declares could not be resolved',
   STREAMING_WORKER_ERROR: 'Reading this file could not finish',
+  AREA_PROCESSOR_OPERATION: 'The map processor in use cannot do a step this file needs. It must be updated '
+    + 'before this file can be read',
   STREAMED_PROFILE_BODY_BUDGET: 'The field inventory of this file is larger than can be kept for now',
   STREAMED_PROFILE_PATH_BUDGET: 'This file has more field paths than can be inventoried for now',
   STREAMED_PROFILE_GEOMETRY_BUDGET: 'This file has more kinds of geometry than can be inventoried for now',
@@ -292,6 +294,17 @@ export async function queueIntakeLargeTx(client: PoolClient, sourceId: string): 
   if (inserted) await registerUspJobInputTx(client, jobId,
     { kind: 'intake', workspaceId: input.caseId, version: input.caseRevision + 1 }, sourceId, digest);
   return jobId;
+}
+
+/** The reader's state key holds no counts, so no step runs while it publishes parts. Its slot transaction writes
+ * the row's stored reading counts instead; every other state stays the step's to write. */
+export async function writeIntakeLargeReadTx(client: PoolClient, sourceId: string): Promise<void> {
+  const state = await largeStateKey(client, sourceId);
+  if (!state || intakeLargeAtRest(state.item)) return;
+  const rows = intakeLargeRows(state.store, state.source);
+  if (intakeLargePhase(rows) !== 'read') return;
+  await writeIntakeLargeTx(client, state.item.case_id, state.item.item_id, intakeLargeProjection('read', rows,
+    state.store, intakeLargeFailureContext(state.store, state.source)));
 }
 
 const retryRefusals = {
