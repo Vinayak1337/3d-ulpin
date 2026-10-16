@@ -22,11 +22,11 @@ async function selection(): Promise<string> {
   return sent[0];
 }
 
-test('the dispatcher selects each operation\'s oldest job before ordering by age', async () => {
+test('the dispatcher takes the operations in turn, each one\'s oldest job first', async () => {
   const sql = (await selection()).replace(/\s+/g, ' ');
-  assert.match(sql, /SELECT DISTINCT ON \(operation\) \* FROM jobs WHERE status IN \('queued','running'\)/);
-  assert.match(sql, /operation NOT LIKE 'usp:%' AND next_attempt_at<=now\(\) ORDER BY operation,created_at\) oldest/);
-  assert.match(sql, /ORDER BY created_at LIMIT 12$/);
+  assert.match(sql, /SELECT \*, row_number\(\) OVER \(PARTITION BY operation ORDER BY created_at\) AS operation_rank/);
+  assert.match(sql, /FROM jobs WHERE status IN \('queued','running'\) AND operation NOT LIKE 'usp:%'/);
+  assert.match(sql, /AND next_attempt_at<=now\(\)\) ranked ORDER BY operation_rank, created_at LIMIT 12$/);
 });
 
 // The selection's meaning needs PostgreSQL; a temporary jobs table shadows any real one for this session only.
@@ -52,7 +52,25 @@ test('an old backlog of one operation no longer hides another operation\'s job',
       AND operation NOT LIKE 'usp:%' AND next_attempt_at<=now() ORDER BY created_at LIMIT 12`);
     assert(!before.rows.some(job => job.operation === 'intake-large'));
     const after = await client.query(sql);
-    assert.deepEqual(after.rows.map(job => job.id), ['run-0', 'profile', 'large-oldest']);
+    assert.deepEqual(after.rows.map(job => job.id), ['run-0', 'profile', 'large-oldest', 'run-1', 'large-later',
+      'run-2', 'run-3', 'run-4', 'run-5', 'run-6', 'run-7', 'run-8']);
+  } finally {
+    await client.end();
+  }
+});
+
+test('an unguarded operation alone still gets twelve parallel jobs', { skip: !database }, async () => {
+  const sql = await selection();
+  const client = new Client({ connectionString: database });
+  await client.connect();
+  try {
+    await client.query(`CREATE TEMPORARY TABLE jobs (id text PRIMARY KEY, operation text NOT NULL,
+      status text NOT NULL, next_attempt_at timestamptz NOT NULL, created_at timestamptz NOT NULL)`);
+    for (let index = 0; index < 15; index++) await client.query(
+      `INSERT INTO jobs VALUES($1,'spatial-inference','queued',now(),now()-make_interval(mins=>$2))`,
+      [`chip-${index}`, 100 - index]);
+    const after = await client.query(sql);
+    assert.deepEqual(after.rows.map(job => job.id), Array.from({ length: 12 }, (_, index) => `chip-${index}`));
   } finally {
     await client.end();
   }
