@@ -8,6 +8,7 @@ import { intakeSourcePin, intakeSourceTx } from './intake-context';
 import { unfinishedIntakePackagesTx, type IntakeLargeState } from './intake-ledger';
 import { stableUuid } from './intake-run';
 import { isRetainedMapOriginal } from './retained-map-original';
+import { streamedSourceReference } from './streamed-map-receipt';
 
 export const INTAKE_LARGE_LAYOUT_QUESTION = 'No approved layout matches this file. '
   + 'An officer states what each feature is and which field identifies it.';
@@ -77,6 +78,21 @@ export function intakeLargeFailureReason(code: string, bytes: number, declaredCr
   const sentence = Object.hasOwn(terminalSentences, code) ? terminalSentences[code]
     : 'This file could not be read and interpreted completely';
   return sentence + nothing;
+}
+
+/** The reader checks a stated system only after it seals, where its refusal cannot end the read. A card that
+ * states a system other than longitude/latitude therefore refuses the file before any reader starts. */
+export function intakeLargeRefusedCrs(card: IntakeCard | null): string | null {
+  const code = card?.crs.state === 'stated' ? card.crs.code : null;
+  if (!code) return null;
+  const reference = streamedSourceReference({ crs: { type: 'name', properties: { name: code } } });
+  return reference.coordinateUnit === 'degree' ? null : code;
+}
+
+/** Nothing was read from a refused file; its row names the system as the file states it. */
+export function intakeLargeCrsRefusal(code: string, bytes: number): IntakeLargeState {
+  return { state: 'failed_part', placement: 'not_understood', planRef: null, partsPlanned: null, partsDone: 0,
+    recordsSeen: 0, limitReason: intakeLargeFailureReason('STREAMING_SOURCE_CRS', bytes, code) };
 }
 
 export type IntakeLargePhase = 'start' | 'read' | 'question' | 'layout' | 'map' | 'draft' | 'end' | 'failure';

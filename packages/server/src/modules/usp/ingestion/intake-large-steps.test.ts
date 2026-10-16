@@ -2,10 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
 import { STREAMING_VECTOR_LIMITS as limits, type IntakeCard, type StreamingVectorInput } from '@ulpin/contracts/usp';
-import { INTAKE_LARGE_LAYOUT_QUESTION, INTAKE_LARGE_STOPPED, intakeLargeCutKey, intakeLargeEnd,
-  intakeLargeFailureReason, intakeLargePhase, intakeLargePlan, intakeLargeProjection, intakeLargeRequestKey,
-  intakeLargeRows, largeStateKey, queueIntakeLargePackageTx, queueIntakeLargeTx, type IntakeLargeSource,
-  type IntakeLargeStore } from './intake-large';
+import { INTAKE_LARGE_LAYOUT_QUESTION, INTAKE_LARGE_STOPPED, intakeLargeAtRest, intakeLargeCrsRefusal,
+  intakeLargeCutKey, intakeLargeEnd, intakeLargeFailureReason, intakeLargePhase, intakeLargePlan,
+  intakeLargeProjection, intakeLargeRefusedCrs, intakeLargeRequestKey, intakeLargeRows, largeStateKey,
+  queueIntakeLargePackageTx, queueIntakeLargeTx, type IntakeLargeSource, type IntakeLargeStore } from './intake-large';
 import { queueIntakeDraftTx } from './intake-draft';
 import type { IntakeSourceRow } from './intake-context';
 import { localOperatorSubject } from '../principal';
@@ -211,6 +211,28 @@ test('a terminal reader names its own sentence; a projected file says its declar
   assert.equal(declared.state, 'failed_part');
   assert.equal(declared.limitReason, intakeLargeFailureReason('STREAMING_SOURCE_CRS', 1, 'EPSG:2958'));
   assert.match(declared.limitReason!, /EPSG:2958/);
+});
+
+test('a card that states a projected system is refused before its reader, and the row rests saying why', async () => {
+  const stating = (crs: Partial<IntakeCard['crs']>) => ({ family: 'vector', format: 'geojson',
+    crs: { state: 'stated', code: null, sidecarSha256: null, ...crs } }) as IntakeCard;
+  assert.equal(intakeLargeRefusedCrs(stating({ code: 'EPSG:2958' })), 'EPSG:2958');
+  assert.equal(intakeLargeRefusedCrs(stating({ code: 'urn:ogc:def:crs:EPSG::2958' })), 'urn:ogc:def:crs:EPSG::2958');
+  assert.equal(intakeLargeRefusedCrs(stating({ code: 'EPSG:4326' })), null);
+  assert.equal(intakeLargeRefusedCrs(stating({})), null, 'a stated name the card cannot code is left to the reader');
+  assert.equal(intakeLargeRefusedCrs(stating({ state: 'absent' })), null);
+  assert.equal(intakeLargeRefusedCrs(stating({ state: 'conflicting', code: 'EPSG:2958' })), null);
+  assert.equal(intakeLargeRefusedCrs(null), null);
+  const refusal = intakeLargeCrsRefusal('EPSG:2958', 26660992);
+  assert.deepEqual(refusal, { state: 'failed_part', placement: 'not_understood', planRef: null,
+    partsPlanned: null, partsDone: 0, recordsSeen: 0,
+    limitReason: 'This file declares the coordinate system EPSG:2958. '
+      + 'Large files are read in longitude and latitude only for now; nothing was prepared from it.' });
+  assert.equal(intakeLargeAtRest(refusal), true);
+  const refused = store({ item: { item_id: sourceId, case_id: caseId, state: refusal.state,
+    placement: refusal.placement, card: stating({ code: 'EPSG:2958' }), plan_ref: null } });
+  assert.equal(await queueIntakeLargeTx(refused.client, sourceId), null);
+  assert.equal(refused.jobs.size, 0);
 });
 
 test('the end rests on the map with every cut counted; zero cuts rest not understood', () => {
