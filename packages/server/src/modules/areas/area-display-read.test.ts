@@ -123,3 +123,16 @@ test('the context route sends the display features without unread geometry, and 
       { id: recorded, state: 'COMMITTED', quarantine: null },
     ]);
   }));
+
+test('a feature keeps the heights its file states beside the outline in the context answer', async () =>
+  memory(async control => {
+    control.features = demoFeatures(control.area.id, [2, 0, 0]);
+    const sourceHeights = { positions: 5, min: 186.110000000001, max: 190, unit: null, reference: null,
+      basis: 'source_coordinates' as const };
+    control.features[0].sourceHeights = sourceHeights;
+    const { displayFeatures } = areaContextResponse(await areaContext(control.area.id, AREA_DISPLAY_LIMIT));
+    const [first, second] = control.features.map(feature => displayFeatures.find(sent => sent.id === feature.id)!);
+    assert.deepEqual(first.sourceHeights, sourceHeights);
+    assert.equal(first.height.value, control.features[0].height.value);
+    assert.equal('sourceHeights' in second, false);
+  }));

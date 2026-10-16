@@ -85,6 +85,16 @@ export interface AreaHeight {
   claimId?: string;
   method?: "native_parse" | "human_entry" | "derived";
 }
+/** The heights a file writes as each position's third number, kept beside the outline as written. The file states
+ * no unit or reference level for them; they never fill `height` or any measurement. */
+export interface SourceHeights {
+  positions: number;
+  min: number;
+  max: number;
+  unit: null;
+  reference: null;
+  basis: "source_coordinates";
+}
 export interface NormalizedFeature {
   /** Zero-based index in the unchanged original feature collection. */
   sourceFeatureIndex?: number;
@@ -118,6 +128,7 @@ export interface NormalizedFeature {
   geometry: AreaGeometry;
   geographicGeometry: AreaGeometry;
   height: AreaHeight;
+  sourceHeights?: SourceHeights;
   worldStatus: WorldStatus;
   properties: Record<string, unknown>;
   areaM2: number | null;

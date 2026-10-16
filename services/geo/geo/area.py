@@ -127,8 +127,23 @@ class GeometryRejected(InputError):
         self.vertices, self.code = vertices, code
 
 
-def _geometry(raw, label="geometry", geographic=False, topology=True, undeclared=False):
-    """Validate before GEOS, so unsupported dimensions cannot be silently discarded."""
+def _position_height(value, label, heights, count):
+    """A GeoJSON position's third number is its height as the file states it; every position has one or none does."""
+    if len(value) > 3:
+        raise InputError(f"{label} has a position of {len(value)} numbers; a position takes two coordinates and "
+                         "may add a height, and a fourth (M) value is unsupported and will not be dropped.")
+    if count and (len(value) == 3) != bool(heights):
+        raise InputError(f"{label} mixes positions with and without a height; every position of a feature "
+                         "has a height or none does.")
+    if len(value) == 3:
+        _number(value[2], label + " height")
+        heights.append(value[2])
+
+
+def _geometry(raw, label="geometry", geographic=False, topology=True, undeclared=False, heights=None):
+    """Validate before GEOS, so unsupported dimensions cannot be silently discarded.
+
+    Only a caller that passes `heights` reads a position's third number; it collects them as written."""
     if not isinstance(raw, dict) or "crs" in raw:
         raise InputError(f"{label} requires a geometry object without a per-feature CRS override.")
     kind, coordinates = raw.get("type"), raw.get("coordinates")
@@ -136,9 +151,11 @@ def _geometry(raw, label="geometry", geographic=False, topology=True, undeclared
 
     def position(value):
         nonlocal count
-        if not isinstance(value, list) or len(value) != 2:
+        if heights is not None and isinstance(value, list) and len(value) >= 2:
+            _position_height(value, label, heights, count)
+        elif not isinstance(value, list) or len(value) != 2:
             raise InputError(f"{label} requires exactly two coordinates; Z/M values are unsupported and will not be dropped.")
-        x, y = (_number(v, label + " coordinate") for v in value)
+        x, y = (_number(v, label + " coordinate") for v in value[:2])
         if geographic and not (-180 <= x <= 180 and -90 <= y <= 90):
             if undeclared:
                 raise InputError("The file declares no coordinate system and its coordinates are not longitude and latitude.")
@@ -290,6 +307,14 @@ def _height(properties, fields, warnings, source_key):
     return result
 
 
+def _source_heights(heights):
+    """The file's own heights, beside the outline; their unit and reference level are not stated by the file."""
+    if not heights:
+        return {}
+    return {"sourceHeights": {"positions": len(heights), "min": min(heights), "max": max(heights),
+                              "unit": None, "reference": None, "basis": "source_coordinates"}}
+
+
 def normalize_area(data):
     if isinstance(data, dict) and data.get("format") in ("gpkg", "shapefile_zip"):
         from .native_gis import normalize_native
@@ -411,8 +436,10 @@ def normalize_area(data):
                 parsed = _arcgis_geometry(original, geographic=source_crs.equals(CRS.from_epsg(4326)))
             geographic_source = (source_crs.is_geographic if data["format"] == "geojson"
                                  else source_crs.equals(CRS.from_epsg(4326)))
+            heights = [] if data["format"] == "geojson" else None
             geometry, count = _geometry(parsed, f"Feature {source_key}", geographic=geographic_source,
-                                        undeclared=data["format"] == "geojson" and geojson_crs_name is None)
+                                        undeclared=data["format"] == "geojson" and geojson_crs_name is None,
+                                        heights=heights)
             if fields["kind"] in ("building", "parcel", "public_land") and geometry.geom_type not in ("Polygon", "MultiPolygon"):
                 raise GeometryRejected(f"{fields['kind']} requires Polygon or MultiPolygon geometry.", count, "GEOMETRY_KIND")
         except GeometryRejected as error:
@@ -425,7 +452,7 @@ def normalize_area(data):
         if total_vertices > MAX_VERTICES:
             raise InputError(f"An import supports at most {MAX_VERTICES} vertices.")
         prepared.append({"sourceKey": source_key, "sourceFeatureIndex": index, "name": name, "kind": fields["kind"], "sourceGeometry": copy.deepcopy(original),
-                         "height": height, "worldStatus": world_status,
+                         "height": height, **_source_heights(heights), "worldStatus": world_status,
                          "properties": allowed, "_shape": geometry, **typed})
     if source_crs is None:
         raise InputError("ArcGIS source CRS is unknown; provide spatialReference.wkid or reference.sourceCrs.")

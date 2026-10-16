@@ -68464,6 +68464,48 @@
                   ],
                   "additionalProperties": false
                 },
+                "sourceHeights": {
+                  "type": "object",
+                  "properties": {
+                    "positions": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "min": {
+                      "type": "number"
+                    },
+                    "max": {
+                      "type": "number"
+                    },
+                    "unit": {
+                      "nullable": true,
+                      "description": "The file states none; always null.",
+                      "type": "string"
+                    },
+                    "reference": {
+                      "nullable": true,
+                      "description": "The file states none; always null.",
+                      "type": "string"
+                    },
+                    "basis": {
+                      "type": "string",
+                      "enum": [
+                        "source_coordinates"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "positions",
+                    "min",
+                    "max",
+                    "unit",
+                    "reference",
+                    "basis"
+                  ],
+                  "additionalProperties": false
+                },
                 "worldStatus": {
                   "type": "string",
                   "enum": [
@@ -69724,6 +69766,48 @@
                               "unit",
                               "meaning",
                               "reference"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "sourceHeights": {
+                            "type": "object",
+                            "properties": {
+                              "positions": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991
+                              },
+                              "min": {
+                                "type": "number"
+                              },
+                              "max": {
+                                "type": "number"
+                              },
+                              "unit": {
+                                "nullable": true,
+                                "description": "The file states none; always null.",
+                                "type": "string"
+                              },
+                              "reference": {
+                                "nullable": true,
+                                "description": "The file states none; always null.",
+                                "type": "string"
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "source_coordinates"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "positions",
+                              "min",
+                              "max",
+                              "unit",
+                              "reference",
+                              "basis"
                             ],
                             "additionalProperties": false
                           },
@@ -71166,6 +71250,48 @@
                   ],
                   "additionalProperties": false
                 },
+                "sourceHeights": {
+                  "type": "object",
+                  "properties": {
+                    "positions": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "min": {
+                      "type": "number"
+                    },
+                    "max": {
+                      "type": "number"
+                    },
+                    "unit": {
+                      "nullable": true,
+                      "description": "The file states none; always null.",
+                      "type": "string"
+                    },
+                    "reference": {
+                      "nullable": true,
+                      "description": "The file states none; always null.",
+                      "type": "string"
+                    },
+                    "basis": {
+                      "type": "string",
+                      "enum": [
+                        "source_coordinates"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "positions",
+                    "min",
+                    "max",
+                    "unit",
+                    "reference",
+                    "basis"
+                  ],
+                  "additionalProperties": false
+                },
                 "worldStatus": {
                   "type": "string",
                   "enum": [
@@ -72426,6 +72552,48 @@
                               "unit",
                               "meaning",
                               "reference"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "sourceHeights": {
+                            "type": "object",
+                            "properties": {
+                              "positions": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991
+                              },
+                              "min": {
+                                "type": "number"
+                              },
+                              "max": {
+                                "type": "number"
+                              },
+                              "unit": {
+                                "nullable": true,
+                                "description": "The file states none; always null.",
+                                "type": "string"
+                              },
+                              "reference": {
+                                "nullable": true,
+                                "description": "The file states none; always null.",
+                                "type": "string"
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "source_coordinates"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "positions",
+                              "min",
+                              "max",
+                              "unit",
+                              "reference",
+                              "basis"
                             ],
                             "additionalProperties": false
                           },
@@ -74194,6 +74362,48 @@
                             ],
                             "additionalProperties": false
                           },
+                          "sourceHeights": {
+                            "type": "object",
+                            "properties": {
+                              "positions": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991
+                              },
+                              "min": {
+                                "type": "number"
+                              },
+                              "max": {
+                                "type": "number"
+                              },
+                              "unit": {
+                                "nullable": true,
+                                "description": "The file states none; always null.",
+                                "type": "string"
+                              },
+                              "reference": {
+                                "nullable": true,
+                                "description": "The file states none; always null.",
+                                "type": "string"
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "source_coordinates"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "positions",
+                              "min",
+                              "max",
+                              "unit",
+                              "reference",
+                              "basis"
+                            ],
+                            "additionalProperties": false
+                          },
                           "worldStatus": {
                             "type": "string",
                             "enum": [
@@ -75126,6 +75336,48 @@
                     "unit",
                     "meaning",
                     "reference"
+                  ],
+                  "additionalProperties": false
+                },
+                "sourceHeights": {
+                  "type": "object",
+                  "properties": {
+                    "positions": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991
+                    },
+                    "min": {
+                      "type": "number"
+                    },
+                    "max": {
+                      "type": "number"
+                    },
+                    "unit": {
+                      "nullable": true,
+                      "description": "The file states none; always null.",
+                      "type": "string"
+                    },
+                    "reference": {
+                      "nullable": true,
+                      "description": "The file states none; always null.",
+                      "type": "string"
+                    },
+                    "basis": {
+                      "type": "string",
+                      "enum": [
+                        "source_coordinates"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "positions",
+                    "min",
+                    "max",
+                    "unit",
+                    "reference",
+                    "basis"
                   ],
                   "additionalProperties": false
                 },
@@ -76126,6 +76378,48 @@
                       ],
                       "additionalProperties": false
                     },
+                    "sourceHeights": {
+                      "type": "object",
+                      "properties": {
+                        "positions": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "min": {
+                          "type": "number"
+                        },
+                        "max": {
+                          "type": "number"
+                        },
+                        "unit": {
+                          "nullable": true,
+                          "description": "The file states none; always null.",
+                          "type": "string"
+                        },
+                        "reference": {
+                          "nullable": true,
+                          "description": "The file states none; always null.",
+                          "type": "string"
+                        },
+                        "basis": {
+                          "type": "string",
+                          "enum": [
+                            "source_coordinates"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "positions",
+                        "min",
+                        "max",
+                        "unit",
+                        "reference",
+                        "basis"
+                      ],
+                      "additionalProperties": false
+                    },
                     "worldStatus": {
                       "type": "string",
                       "enum": [
@@ -76839,6 +77133,48 @@
                             ],
                             "additionalProperties": false
                           },
+                          "sourceHeights": {
+                            "type": "object",
+                            "properties": {
+                              "positions": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "exclusiveMinimum": true,
+                                "maximum": 9007199254740991
+                              },
+                              "min": {
+                                "type": "number"
+                              },
+                              "max": {
+                                "type": "number"
+                              },
+                              "unit": {
+                                "nullable": true,
+                                "description": "The file states none; always null.",
+                                "type": "string"
+                              },
+                              "reference": {
+                                "nullable": true,
+                                "description": "The file states none; always null.",
+                                "type": "string"
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "source_coordinates"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "positions",
+                              "min",
+                              "max",
+                              "unit",
+                              "reference",
+                              "basis"
+                            ],
+                            "additionalProperties": false
+                          },
                           "worldStatus": {
                             "type": "string",
                             "enum": [
@@ -77497,6 +77833,48 @@
                           "unit",
                           "meaning",
                           "reference"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "sourceHeights": {
+                        "type": "object",
+                        "properties": {
+                          "positions": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
+                          "min": {
+                            "type": "number"
+                          },
+                          "max": {
+                            "type": "number"
+                          },
+                          "unit": {
+                            "nullable": true,
+                            "description": "The file states none; always null.",
+                            "type": "string"
+                          },
+                          "reference": {
+                            "nullable": true,
+                            "description": "The file states none; always null.",
+                            "type": "string"
+                          },
+                          "basis": {
+                            "type": "string",
+                            "enum": [
+                              "source_coordinates"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "positions",
+                          "min",
+                          "max",
+                          "unit",
+                          "reference",
+                          "basis"
                         ],
                         "additionalProperties": false
                       },
@@ -79836,6 +80214,48 @@
                           "unit",
                           "meaning",
                           "reference"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "sourceHeights": {
+                        "type": "object",
+                        "properties": {
+                          "positions": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "maximum": 9007199254740991
+                          },
+                          "min": {
+                            "type": "number"
+                          },
+                          "max": {
+                            "type": "number"
+                          },
+                          "unit": {
+                            "nullable": true,
+                            "description": "The file states none; always null.",
+                            "type": "string"
+                          },
+                          "reference": {
+                            "nullable": true,
+                            "description": "The file states none; always null.",
+                            "type": "string"
+                          },
+                          "basis": {
+                            "type": "string",
+                            "enum": [
+                              "source_coordinates"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "positions",
+                          "min",
+                          "max",
+                          "unit",
+                          "reference",
+                          "basis"
                         ],
                         "additionalProperties": false
                       },
@@ -150928,6 +151348,45 @@
                       ],
                       "additionalProperties": false
                     },
+                    "sourceHeights": {
+                      "type": "object",
+                      "properties": {
+                        "positions": {
+                          "type": "integer"
+                        },
+                        "min": {
+                          "type": "number"
+                        },
+                        "max": {
+                          "type": "number"
+                        },
+                        "unit": {
+                          "type": "string",
+                          "nullable": true,
+                          "description": "The file states none; always null."
+                        },
+                        "reference": {
+                          "type": "string",
+                          "nullable": true,
+                          "description": "The file states none; always null."
+                        },
+                        "basis": {
+                          "type": "string",
+                          "enum": [
+                            "source_coordinates"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "positions",
+                        "min",
+                        "max",
+                        "unit",
+                        "reference",
+                        "basis"
+                      ],
+                      "additionalProperties": false
+                    },
                     "worldStatus": {
                       "type": "string"
                     },
@@ -151805,6 +152264,45 @@
                     "unit",
                     "meaning",
                     "reference"
+                  ],
+                  "additionalProperties": false
+                },
+                "sourceHeights": {
+                  "type": "object",
+                  "properties": {
+                    "positions": {
+                      "type": "integer"
+                    },
+                    "min": {
+                      "type": "number"
+                    },
+                    "max": {
+                      "type": "number"
+                    },
+                    "unit": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "The file states none; always null."
+                    },
+                    "reference": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "The file states none; always null."
+                    },
+                    "basis": {
+                      "type": "string",
+                      "enum": [
+                        "source_coordinates"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "positions",
+                    "min",
+                    "max",
+                    "unit",
+                    "reference",
+                    "basis"
                   ],
                   "additionalProperties": false
                 },
@@ -153936,6 +154434,45 @@
                               ],
                               "additionalProperties": false
                             },
+                            "sourceHeights": {
+                              "type": "object",
+                              "properties": {
+                                "positions": {
+                                  "type": "integer"
+                                },
+                                "min": {
+                                  "type": "number"
+                                },
+                                "max": {
+                                  "type": "number"
+                                },
+                                "unit": {
+                                  "type": "string",
+                                  "nullable": true,
+                                  "description": "The file states none; always null."
+                                },
+                                "reference": {
+                                  "type": "string",
+                                  "nullable": true,
+                                  "description": "The file states none; always null."
+                                },
+                                "basis": {
+                                  "type": "string",
+                                  "enum": [
+                                    "source_coordinates"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "positions",
+                                "min",
+                                "max",
+                                "unit",
+                                "reference",
+                                "basis"
+                              ],
+                              "additionalProperties": false
+                            },
                             "worldStatus": {
                               "type": "string"
                             },
@@ -155062,6 +155599,45 @@
                                   ],
                                   "additionalProperties": false
                                 },
+                                "sourceHeights": {
+                                  "type": "object",
+                                  "properties": {
+                                    "positions": {
+                                      "type": "integer"
+                                    },
+                                    "min": {
+                                      "type": "number"
+                                    },
+                                    "max": {
+                                      "type": "number"
+                                    },
+                                    "unit": {
+                                      "type": "string",
+                                      "nullable": true,
+                                      "description": "The file states none; always null."
+                                    },
+                                    "reference": {
+                                      "type": "string",
+                                      "nullable": true,
+                                      "description": "The file states none; always null."
+                                    },
+                                    "basis": {
+                                      "type": "string",
+                                      "enum": [
+                                        "source_coordinates"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "positions",
+                                    "min",
+                                    "max",
+                                    "unit",
+                                    "reference",
+                                    "basis"
+                                  ],
+                                  "additionalProperties": false
+                                },
                                 "worldStatus": {
                                   "type": "string"
                                 },
@@ -155902,6 +156478,45 @@
                                 "unit",
                                 "meaning",
                                 "reference"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "sourceHeights": {
+                              "type": "object",
+                              "properties": {
+                                "positions": {
+                                  "type": "integer"
+                                },
+                                "min": {
+                                  "type": "number"
+                                },
+                                "max": {
+                                  "type": "number"
+                                },
+                                "unit": {
+                                  "type": "string",
+                                  "nullable": true,
+                                  "description": "The file states none; always null."
+                                },
+                                "reference": {
+                                  "type": "string",
+                                  "nullable": true,
+                                  "description": "The file states none; always null."
+                                },
+                                "basis": {
+                                  "type": "string",
+                                  "enum": [
+                                    "source_coordinates"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "positions",
+                                "min",
+                                "max",
+                                "unit",
+                                "reference",
+                                "basis"
                               ],
                               "additionalProperties": false
                             },
@@ -158898,6 +159513,45 @@
                                     ],
                                     "additionalProperties": false
                                   },
+                                  "sourceHeights": {
+                                    "type": "object",
+                                    "properties": {
+                                      "positions": {
+                                        "type": "integer"
+                                      },
+                                      "min": {
+                                        "type": "number"
+                                      },
+                                      "max": {
+                                        "type": "number"
+                                      },
+                                      "unit": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "description": "The file states none; always null."
+                                      },
+                                      "reference": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "description": "The file states none; always null."
+                                      },
+                                      "basis": {
+                                        "type": "string",
+                                        "enum": [
+                                          "source_coordinates"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "positions",
+                                      "min",
+                                      "max",
+                                      "unit",
+                                      "reference",
+                                      "basis"
+                                    ],
+                                    "additionalProperties": false
+                                  },
                                   "worldStatus": {
                                     "type": "string"
                                   },
@@ -160049,6 +160703,45 @@
                                     "unit",
                                     "meaning",
                                     "reference"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "sourceHeights": {
+                                  "type": "object",
+                                  "properties": {
+                                    "positions": {
+                                      "type": "integer"
+                                    },
+                                    "min": {
+                                      "type": "number"
+                                    },
+                                    "max": {
+                                      "type": "number"
+                                    },
+                                    "unit": {
+                                      "type": "string",
+                                      "nullable": true,
+                                      "description": "The file states none; always null."
+                                    },
+                                    "reference": {
+                                      "type": "string",
+                                      "nullable": true,
+                                      "description": "The file states none; always null."
+                                    },
+                                    "basis": {
+                                      "type": "string",
+                                      "enum": [
+                                        "source_coordinates"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "positions",
+                                    "min",
+                                    "max",
+                                    "unit",
+                                    "reference",
+                                    "basis"
                                   ],
                                   "additionalProperties": false
                                 },
@@ -161364,6 +162057,45 @@
                                       ],
                                       "additionalProperties": false
                                     },
+                                    "sourceHeights": {
+                                      "type": "object",
+                                      "properties": {
+                                        "positions": {
+                                          "type": "integer"
+                                        },
+                                        "min": {
+                                          "type": "number"
+                                        },
+                                        "max": {
+                                          "type": "number"
+                                        },
+                                        "unit": {
+                                          "type": "string",
+                                          "nullable": true,
+                                          "description": "The file states none; always null."
+                                        },
+                                        "reference": {
+                                          "type": "string",
+                                          "nullable": true,
+                                          "description": "The file states none; always null."
+                                        },
+                                        "basis": {
+                                          "type": "string",
+                                          "enum": [
+                                            "source_coordinates"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "positions",
+                                        "min",
+                                        "max",
+                                        "unit",
+                                        "reference",
+                                        "basis"
+                                      ],
+                                      "additionalProperties": false
+                                    },
                                     "worldStatus": {
                                       "type": "string"
                                     },
@@ -162661,6 +163393,45 @@
                             ],
                             "additionalProperties": false
                           },
+                          "sourceHeights": {
+                            "type": "object",
+                            "properties": {
+                              "positions": {
+                                "type": "integer"
+                              },
+                              "min": {
+                                "type": "number"
+                              },
+                              "max": {
+                                "type": "number"
+                              },
+                              "unit": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "The file states none; always null."
+                              },
+                              "reference": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "The file states none; always null."
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "source_coordinates"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "positions",
+                              "min",
+                              "max",
+                              "unit",
+                              "reference",
+                              "basis"
+                            ],
+                            "additionalProperties": false
+                          },
                           "worldStatus": {
                             "type": "string"
                           },
@@ -163833,6 +164604,45 @@
                                 ],
                                 "additionalProperties": false
                               },
+                              "sourceHeights": {
+                                "type": "object",
+                                "properties": {
+                                  "positions": {
+                                    "type": "integer"
+                                  },
+                                  "min": {
+                                    "type": "number"
+                                  },
+                                  "max": {
+                                    "type": "number"
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "nullable": true,
+                                    "description": "The file states none; always null."
+                                  },
+                                  "reference": {
+                                    "type": "string",
+                                    "nullable": true,
+                                    "description": "The file states none; always null."
+                                  },
+                                  "basis": {
+                                    "type": "string",
+                                    "enum": [
+                                      "source_coordinates"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "positions",
+                                  "min",
+                                  "max",
+                                  "unit",
+                                  "reference",
+                                  "basis"
+                                ],
+                                "additionalProperties": false
+                              },
                               "worldStatus": {
                                 "type": "string"
                               },
@@ -164740,6 +165550,45 @@
                   "unit",
                   "meaning",
                   "reference"
+                ],
+                "additionalProperties": false
+              },
+              "sourceHeights": {
+                "type": "object",
+                "properties": {
+                  "positions": {
+                    "type": "integer"
+                  },
+                  "min": {
+                    "type": "number"
+                  },
+                  "max": {
+                    "type": "number"
+                  },
+                  "unit": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "The file states none; always null."
+                  },
+                  "reference": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "The file states none; always null."
+                  },
+                  "basis": {
+                    "type": "string",
+                    "enum": [
+                      "source_coordinates"
+                    ]
+                  }
+                },
+                "required": [
+                  "positions",
+                  "min",
+                  "max",
+                  "unit",
+                  "reference",
+                  "basis"
                 ],
                 "additionalProperties": false
               },
@@ -167736,6 +168585,45 @@
                       ],
                       "additionalProperties": false
                     },
+                    "sourceHeights": {
+                      "type": "object",
+                      "properties": {
+                        "positions": {
+                          "type": "integer"
+                        },
+                        "min": {
+                          "type": "number"
+                        },
+                        "max": {
+                          "type": "number"
+                        },
+                        "unit": {
+                          "type": "string",
+                          "nullable": true,
+                          "description": "The file states none; always null."
+                        },
+                        "reference": {
+                          "type": "string",
+                          "nullable": true,
+                          "description": "The file states none; always null."
+                        },
+                        "basis": {
+                          "type": "string",
+                          "enum": [
+                            "source_coordinates"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "positions",
+                        "min",
+                        "max",
+                        "unit",
+                        "reference",
+                        "basis"
+                      ],
+                      "additionalProperties": false
+                    },
                     "worldStatus": {
                       "type": "string"
                     },
@@ -168578,6 +169466,45 @@
                     "unit",
                     "meaning",
                     "reference"
+                  ],
+                  "additionalProperties": false
+                },
+                "sourceHeights": {
+                  "type": "object",
+                  "properties": {
+                    "positions": {
+                      "type": "integer"
+                    },
+                    "min": {
+                      "type": "number"
+                    },
+                    "max": {
+                      "type": "number"
+                    },
+                    "unit": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "The file states none; always null."
+                    },
+                    "reference": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "The file states none; always null."
+                    },
+                    "basis": {
+                      "type": "string",
+                      "enum": [
+                        "source_coordinates"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "positions",
+                    "min",
+                    "max",
+                    "unit",
+                    "reference",
+                    "basis"
                   ],
                   "additionalProperties": false
                 },
@@ -169845,6 +170772,45 @@
                           "unit",
                           "meaning",
                           "reference"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "sourceHeights": {
+                        "type": "object",
+                        "properties": {
+                          "positions": {
+                            "type": "integer"
+                          },
+                          "min": {
+                            "type": "number"
+                          },
+                          "max": {
+                            "type": "number"
+                          },
+                          "unit": {
+                            "type": "string",
+                            "nullable": true,
+                            "description": "The file states none; always null."
+                          },
+                          "reference": {
+                            "type": "string",
+                            "nullable": true,
+                            "description": "The file states none; always null."
+                          },
+                          "basis": {
+                            "type": "string",
+                            "enum": [
+                              "source_coordinates"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "positions",
+                          "min",
+                          "max",
+                          "unit",
+                          "reference",
+                          "basis"
                         ],
                         "additionalProperties": false
                       },
@@ -171164,6 +172130,45 @@
                                   ],
                                   "additionalProperties": false
                                 },
+                                "sourceHeights": {
+                                  "type": "object",
+                                  "properties": {
+                                    "positions": {
+                                      "type": "integer"
+                                    },
+                                    "min": {
+                                      "type": "number"
+                                    },
+                                    "max": {
+                                      "type": "number"
+                                    },
+                                    "unit": {
+                                      "type": "string",
+                                      "nullable": true,
+                                      "description": "The file states none; always null."
+                                    },
+                                    "reference": {
+                                      "type": "string",
+                                      "nullable": true,
+                                      "description": "The file states none; always null."
+                                    },
+                                    "basis": {
+                                      "type": "string",
+                                      "enum": [
+                                        "source_coordinates"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "positions",
+                                    "min",
+                                    "max",
+                                    "unit",
+                                    "reference",
+                                    "basis"
+                                  ],
+                                  "additionalProperties": false
+                                },
                                 "worldStatus": {
                                   "type": "string"
                                 },
@@ -172280,6 +173285,45 @@
                         ],
                         "additionalProperties": false
                       },
+                      "sourceHeights": {
+                        "type": "object",
+                        "properties": {
+                          "positions": {
+                            "type": "integer"
+                          },
+                          "min": {
+                            "type": "number"
+                          },
+                          "max": {
+                            "type": "number"
+                          },
+                          "unit": {
+                            "type": "string",
+                            "nullable": true,
+                            "description": "The file states none; always null."
+                          },
+                          "reference": {
+                            "type": "string",
+                            "nullable": true,
+                            "description": "The file states none; always null."
+                          },
+                          "basis": {
+                            "type": "string",
+                            "enum": [
+                              "source_coordinates"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "positions",
+                          "min",
+                          "max",
+                          "unit",
+                          "reference",
+                          "basis"
+                        ],
+                        "additionalProperties": false
+                      },
                       "worldStatus": {
                         "type": "string"
                       },
@@ -173114,6 +174158,45 @@
                             "unit",
                             "meaning",
                             "reference"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "sourceHeights": {
+                          "type": "object",
+                          "properties": {
+                            "positions": {
+                              "type": "integer"
+                            },
+                            "min": {
+                              "type": "number"
+                            },
+                            "max": {
+                              "type": "number"
+                            },
+                            "unit": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "The file states none; always null."
+                            },
+                            "reference": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "The file states none; always null."
+                            },
+                            "basis": {
+                              "type": "string",
+                              "enum": [
+                                "source_coordinates"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "positions",
+                            "min",
+                            "max",
+                            "unit",
+                            "reference",
+                            "basis"
                           ],
                           "additionalProperties": false
                         },
@@ -176110,6 +177193,45 @@
                                 ],
                                 "additionalProperties": false
                               },
+                              "sourceHeights": {
+                                "type": "object",
+                                "properties": {
+                                  "positions": {
+                                    "type": "integer"
+                                  },
+                                  "min": {
+                                    "type": "number"
+                                  },
+                                  "max": {
+                                    "type": "number"
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "nullable": true,
+                                    "description": "The file states none; always null."
+                                  },
+                                  "reference": {
+                                    "type": "string",
+                                    "nullable": true,
+                                    "description": "The file states none; always null."
+                                  },
+                                  "basis": {
+                                    "type": "string",
+                                    "enum": [
+                                      "source_coordinates"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "positions",
+                                  "min",
+                                  "max",
+                                  "unit",
+                                  "reference",
+                                  "basis"
+                                ],
+                                "additionalProperties": false
+                              },
                               "worldStatus": {
                                 "type": "string"
                               },
@@ -177261,6 +178383,45 @@
                                 "unit",
                                 "meaning",
                                 "reference"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "sourceHeights": {
+                              "type": "object",
+                              "properties": {
+                                "positions": {
+                                  "type": "integer"
+                                },
+                                "min": {
+                                  "type": "number"
+                                },
+                                "max": {
+                                  "type": "number"
+                                },
+                                "unit": {
+                                  "type": "string",
+                                  "nullable": true,
+                                  "description": "The file states none; always null."
+                                },
+                                "reference": {
+                                  "type": "string",
+                                  "nullable": true,
+                                  "description": "The file states none; always null."
+                                },
+                                "basis": {
+                                  "type": "string",
+                                  "enum": [
+                                    "source_coordinates"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "positions",
+                                "min",
+                                "max",
+                                "unit",
+                                "reference",
+                                "basis"
                               ],
                               "additionalProperties": false
                             },
@@ -178576,6 +179737,45 @@
                                   ],
                                   "additionalProperties": false
                                 },
+                                "sourceHeights": {
+                                  "type": "object",
+                                  "properties": {
+                                    "positions": {
+                                      "type": "integer"
+                                    },
+                                    "min": {
+                                      "type": "number"
+                                    },
+                                    "max": {
+                                      "type": "number"
+                                    },
+                                    "unit": {
+                                      "type": "string",
+                                      "nullable": true,
+                                      "description": "The file states none; always null."
+                                    },
+                                    "reference": {
+                                      "type": "string",
+                                      "nullable": true,
+                                      "description": "The file states none; always null."
+                                    },
+                                    "basis": {
+                                      "type": "string",
+                                      "enum": [
+                                        "source_coordinates"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "positions",
+                                    "min",
+                                    "max",
+                                    "unit",
+                                    "reference",
+                                    "basis"
+                                  ],
+                                  "additionalProperties": false
+                                },
                                 "worldStatus": {
                                   "type": "string"
                                 },
@@ -179769,6 +180969,45 @@
                               "unit",
                               "meaning",
                               "reference"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "sourceHeights": {
+                            "type": "object",
+                            "properties": {
+                              "positions": {
+                                "type": "integer"
+                              },
+                              "min": {
+                                "type": "number"
+                              },
+                              "max": {
+                                "type": "number"
+                              },
+                              "unit": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "The file states none; always null."
+                              },
+                              "reference": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "The file states none; always null."
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "source_coordinates"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "positions",
+                              "min",
+                              "max",
+                              "unit",
+                              "reference",
+                              "basis"
                             ],
                             "additionalProperties": false
                           },
@@ -182037,6 +183276,45 @@
                             ],
                             "additionalProperties": false
                           },
+                          "sourceHeights": {
+                            "type": "object",
+                            "properties": {
+                              "positions": {
+                                "type": "integer"
+                              },
+                              "min": {
+                                "type": "number"
+                              },
+                              "max": {
+                                "type": "number"
+                              },
+                              "unit": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "The file states none; always null."
+                              },
+                              "reference": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "The file states none; always null."
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "source_coordinates"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "positions",
+                              "min",
+                              "max",
+                              "unit",
+                              "reference",
+                              "basis"
+                            ],
+                            "additionalProperties": false
+                          },
                           "worldStatus": {
                             "type": "string"
                           },
@@ -183163,6 +184441,45 @@
                                 ],
                                 "additionalProperties": false
                               },
+                              "sourceHeights": {
+                                "type": "object",
+                                "properties": {
+                                  "positions": {
+                                    "type": "integer"
+                                  },
+                                  "min": {
+                                    "type": "number"
+                                  },
+                                  "max": {
+                                    "type": "number"
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "nullable": true,
+                                    "description": "The file states none; always null."
+                                  },
+                                  "reference": {
+                                    "type": "string",
+                                    "nullable": true,
+                                    "description": "The file states none; always null."
+                                  },
+                                  "basis": {
+                                    "type": "string",
+                                    "enum": [
+                                      "source_coordinates"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "positions",
+                                  "min",
+                                  "max",
+                                  "unit",
+                                  "reference",
+                                  "basis"
+                                ],
+                                "additionalProperties": false
+                              },
                               "worldStatus": {
                                 "type": "string"
                               },
@@ -184003,6 +185320,45 @@
                               "unit",
                               "meaning",
                               "reference"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "sourceHeights": {
+                            "type": "object",
+                            "properties": {
+                              "positions": {
+                                "type": "integer"
+                              },
+                              "min": {
+                                "type": "number"
+                              },
+                              "max": {
+                                "type": "number"
+                              },
+                              "unit": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "The file states none; always null."
+                              },
+                              "reference": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "The file states none; always null."
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "source_coordinates"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "positions",
+                              "min",
+                              "max",
+                              "unit",
+                              "reference",
+                              "basis"
                             ],
                             "additionalProperties": false
                           },
@@ -186999,6 +188355,45 @@
                                   ],
                                   "additionalProperties": false
                                 },
+                                "sourceHeights": {
+                                  "type": "object",
+                                  "properties": {
+                                    "positions": {
+                                      "type": "integer"
+                                    },
+                                    "min": {
+                                      "type": "number"
+                                    },
+                                    "max": {
+                                      "type": "number"
+                                    },
+                                    "unit": {
+                                      "type": "string",
+                                      "nullable": true,
+                                      "description": "The file states none; always null."
+                                    },
+                                    "reference": {
+                                      "type": "string",
+                                      "nullable": true,
+                                      "description": "The file states none; always null."
+                                    },
+                                    "basis": {
+                                      "type": "string",
+                                      "enum": [
+                                        "source_coordinates"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "positions",
+                                    "min",
+                                    "max",
+                                    "unit",
+                                    "reference",
+                                    "basis"
+                                  ],
+                                  "additionalProperties": false
+                                },
                                 "worldStatus": {
                                   "type": "string"
                                 },
@@ -188150,6 +189545,45 @@
                                   "unit",
                                   "meaning",
                                   "reference"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "sourceHeights": {
+                                "type": "object",
+                                "properties": {
+                                  "positions": {
+                                    "type": "integer"
+                                  },
+                                  "min": {
+                                    "type": "number"
+                                  },
+                                  "max": {
+                                    "type": "number"
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "nullable": true,
+                                    "description": "The file states none; always null."
+                                  },
+                                  "reference": {
+                                    "type": "string",
+                                    "nullable": true,
+                                    "description": "The file states none; always null."
+                                  },
+                                  "basis": {
+                                    "type": "string",
+                                    "enum": [
+                                      "source_coordinates"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "positions",
+                                  "min",
+                                  "max",
+                                  "unit",
+                                  "reference",
+                                  "basis"
                                 ],
                                 "additionalProperties": false
                               },
@@ -189462,6 +190896,45 @@
                                       "unit",
                                       "meaning",
                                       "reference"
+                                    ],
+                                    "additionalProperties": false
+                                  },
+                                  "sourceHeights": {
+                                    "type": "object",
+                                    "properties": {
+                                      "positions": {
+                                        "type": "integer"
+                                      },
+                                      "min": {
+                                        "type": "number"
+                                      },
+                                      "max": {
+                                        "type": "number"
+                                      },
+                                      "unit": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "description": "The file states none; always null."
+                                      },
+                                      "reference": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "description": "The file states none; always null."
+                                      },
+                                      "basis": {
+                                        "type": "string",
+                                        "enum": [
+                                          "source_coordinates"
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "positions",
+                                      "min",
+                                      "max",
+                                      "unit",
+                                      "reference",
+                                      "basis"
                                     ],
                                     "additionalProperties": false
                                   },
@@ -194423,6 +195896,45 @@
                   ],
                   "additionalProperties": false
                 },
+                "sourceHeights": {
+                  "type": "object",
+                  "properties": {
+                    "positions": {
+                      "type": "integer"
+                    },
+                    "min": {
+                      "type": "number"
+                    },
+                    "max": {
+                      "type": "number"
+                    },
+                    "unit": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "The file states none; always null."
+                    },
+                    "reference": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "The file states none; always null."
+                    },
+                    "basis": {
+                      "type": "string",
+                      "enum": [
+                        "source_coordinates"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "positions",
+                    "min",
+                    "max",
+                    "unit",
+                    "reference",
+                    "basis"
+                  ],
+                  "additionalProperties": false
+                },
                 "worldStatus": {
                   "type": "string"
                 },
@@ -195739,6 +197251,45 @@
                             ],
                             "additionalProperties": false
                           },
+                          "sourceHeights": {
+                            "type": "object",
+                            "properties": {
+                              "positions": {
+                                "type": "integer"
+                              },
+                              "min": {
+                                "type": "number"
+                              },
+                              "max": {
+                                "type": "number"
+                              },
+                              "unit": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "The file states none; always null."
+                              },
+                              "reference": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "The file states none; always null."
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "source_coordinates"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "positions",
+                              "min",
+                              "max",
+                              "unit",
+                              "reference",
+                              "basis"
+                            ],
+                            "additionalProperties": false
+                          },
                           "worldStatus": {
                             "type": "string"
                           },
@@ -196794,6 +198345,45 @@
                         "unit",
                         "meaning",
                         "reference"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "sourceHeights": {
+                      "type": "object",
+                      "properties": {
+                        "positions": {
+                          "type": "integer"
+                        },
+                        "min": {
+                          "type": "number"
+                        },
+                        "max": {
+                          "type": "number"
+                        },
+                        "unit": {
+                          "type": "string",
+                          "nullable": true,
+                          "description": "The file states none; always null."
+                        },
+                        "reference": {
+                          "type": "string",
+                          "nullable": true,
+                          "description": "The file states none; always null."
+                        },
+                        "basis": {
+                          "type": "string",
+                          "enum": [
+                            "source_coordinates"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "positions",
+                        "min",
+                        "max",
+                        "unit",
+                        "reference",
+                        "basis"
                       ],
                       "additionalProperties": false
                     },
@@ -198113,6 +199703,45 @@
                                 ],
                                 "additionalProperties": false
                               },
+                              "sourceHeights": {
+                                "type": "object",
+                                "properties": {
+                                  "positions": {
+                                    "type": "integer"
+                                  },
+                                  "min": {
+                                    "type": "number"
+                                  },
+                                  "max": {
+                                    "type": "number"
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "nullable": true,
+                                    "description": "The file states none; always null."
+                                  },
+                                  "reference": {
+                                    "type": "string",
+                                    "nullable": true,
+                                    "description": "The file states none; always null."
+                                  },
+                                  "basis": {
+                                    "type": "string",
+                                    "enum": [
+                                      "source_coordinates"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "positions",
+                                  "min",
+                                  "max",
+                                  "unit",
+                                  "reference",
+                                  "basis"
+                                ],
+                                "additionalProperties": false
+                              },
                               "worldStatus": {
                                 "type": "string"
                               },
@@ -199278,6 +200907,45 @@
                       "unit",
                       "meaning",
                       "reference"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "sourceHeights": {
+                    "type": "object",
+                    "properties": {
+                      "positions": {
+                        "type": "integer"
+                      },
+                      "min": {
+                        "type": "number"
+                      },
+                      "max": {
+                        "type": "number"
+                      },
+                      "unit": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The file states none; always null."
+                      },
+                      "reference": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The file states none; always null."
+                      },
+                      "basis": {
+                        "type": "string",
+                        "enum": [
+                          "source_coordinates"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "positions",
+                      "min",
+                      "max",
+                      "unit",
+                      "reference",
+                      "basis"
                     ],
                     "additionalProperties": false
                   },
@@ -202274,6 +203942,45 @@
                           ],
                           "additionalProperties": false
                         },
+                        "sourceHeights": {
+                          "type": "object",
+                          "properties": {
+                            "positions": {
+                              "type": "integer"
+                            },
+                            "min": {
+                              "type": "number"
+                            },
+                            "max": {
+                              "type": "number"
+                            },
+                            "unit": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "The file states none; always null."
+                            },
+                            "reference": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "The file states none; always null."
+                            },
+                            "basis": {
+                              "type": "string",
+                              "enum": [
+                                "source_coordinates"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "positions",
+                            "min",
+                            "max",
+                            "unit",
+                            "reference",
+                            "basis"
+                          ],
+                          "additionalProperties": false
+                        },
                         "worldStatus": {
                           "type": "string"
                         },
@@ -203425,6 +205132,45 @@
                           "unit",
                           "meaning",
                           "reference"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "sourceHeights": {
+                        "type": "object",
+                        "properties": {
+                          "positions": {
+                            "type": "integer"
+                          },
+                          "min": {
+                            "type": "number"
+                          },
+                          "max": {
+                            "type": "number"
+                          },
+                          "unit": {
+                            "type": "string",
+                            "nullable": true,
+                            "description": "The file states none; always null."
+                          },
+                          "reference": {
+                            "type": "string",
+                            "nullable": true,
+                            "description": "The file states none; always null."
+                          },
+                          "basis": {
+                            "type": "string",
+                            "enum": [
+                              "source_coordinates"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "positions",
+                          "min",
+                          "max",
+                          "unit",
+                          "reference",
+                          "basis"
                         ],
                         "additionalProperties": false
                       },
@@ -204737,6 +206483,45 @@
                               "unit",
                               "meaning",
                               "reference"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "sourceHeights": {
+                            "type": "object",
+                            "properties": {
+                              "positions": {
+                                "type": "integer"
+                              },
+                              "min": {
+                                "type": "number"
+                              },
+                              "max": {
+                                "type": "number"
+                              },
+                              "unit": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "The file states none; always null."
+                              },
+                              "reference": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "The file states none; always null."
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "source_coordinates"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "positions",
+                              "min",
+                              "max",
+                              "unit",
+                              "reference",
+                              "basis"
                             ],
                             "additionalProperties": false
                           },
@@ -207164,6 +208949,45 @@
                         ],
                         "additionalProperties": false
                       },
+                      "sourceHeights": {
+                        "type": "object",
+                        "properties": {
+                          "positions": {
+                            "type": "integer"
+                          },
+                          "min": {
+                            "type": "number"
+                          },
+                          "max": {
+                            "type": "number"
+                          },
+                          "unit": {
+                            "type": "string",
+                            "nullable": true,
+                            "description": "The file states none; always null."
+                          },
+                          "reference": {
+                            "type": "string",
+                            "nullable": true,
+                            "description": "The file states none; always null."
+                          },
+                          "basis": {
+                            "type": "string",
+                            "enum": [
+                              "source_coordinates"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "positions",
+                          "min",
+                          "max",
+                          "unit",
+                          "reference",
+                          "basis"
+                        ],
+                        "additionalProperties": false
+                      },
                       "worldStatus": {
                         "type": "string"
                       },
@@ -208290,6 +210114,45 @@
                             ],
                             "additionalProperties": false
                           },
+                          "sourceHeights": {
+                            "type": "object",
+                            "properties": {
+                              "positions": {
+                                "type": "integer"
+                              },
+                              "min": {
+                                "type": "number"
+                              },
+                              "max": {
+                                "type": "number"
+                              },
+                              "unit": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "The file states none; always null."
+                              },
+                              "reference": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "The file states none; always null."
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "source_coordinates"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "positions",
+                              "min",
+                              "max",
+                              "unit",
+                              "reference",
+                              "basis"
+                            ],
+                            "additionalProperties": false
+                          },
                           "worldStatus": {
                             "type": "string"
                           },
@@ -209130,6 +210993,45 @@
                           "unit",
                           "meaning",
                           "reference"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "sourceHeights": {
+                        "type": "object",
+                        "properties": {
+                          "positions": {
+                            "type": "integer"
+                          },
+                          "min": {
+                            "type": "number"
+                          },
+                          "max": {
+                            "type": "number"
+                          },
+                          "unit": {
+                            "type": "string",
+                            "nullable": true,
+                            "description": "The file states none; always null."
+                          },
+                          "reference": {
+                            "type": "string",
+                            "nullable": true,
+                            "description": "The file states none; always null."
+                          },
+                          "basis": {
+                            "type": "string",
+                            "enum": [
+                              "source_coordinates"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "positions",
+                          "min",
+                          "max",
+                          "unit",
+                          "reference",
+                          "basis"
                         ],
                         "additionalProperties": false
                       },
@@ -212126,6 +214028,45 @@
                               ],
                               "additionalProperties": false
                             },
+                            "sourceHeights": {
+                              "type": "object",
+                              "properties": {
+                                "positions": {
+                                  "type": "integer"
+                                },
+                                "min": {
+                                  "type": "number"
+                                },
+                                "max": {
+                                  "type": "number"
+                                },
+                                "unit": {
+                                  "type": "string",
+                                  "nullable": true,
+                                  "description": "The file states none; always null."
+                                },
+                                "reference": {
+                                  "type": "string",
+                                  "nullable": true,
+                                  "description": "The file states none; always null."
+                                },
+                                "basis": {
+                                  "type": "string",
+                                  "enum": [
+                                    "source_coordinates"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "positions",
+                                "min",
+                                "max",
+                                "unit",
+                                "reference",
+                                "basis"
+                              ],
+                              "additionalProperties": false
+                            },
                             "worldStatus": {
                               "type": "string"
                             },
@@ -213277,6 +215218,45 @@
                               "unit",
                               "meaning",
                               "reference"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "sourceHeights": {
+                            "type": "object",
+                            "properties": {
+                              "positions": {
+                                "type": "integer"
+                              },
+                              "min": {
+                                "type": "number"
+                              },
+                              "max": {
+                                "type": "number"
+                              },
+                              "unit": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "The file states none; always null."
+                              },
+                              "reference": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "The file states none; always null."
+                              },
+                              "basis": {
+                                "type": "string",
+                                "enum": [
+                                  "source_coordinates"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "positions",
+                              "min",
+                              "max",
+                              "unit",
+                              "reference",
+                              "basis"
                             ],
                             "additionalProperties": false
                           },
@@ -214589,6 +216569,45 @@
                                   "unit",
                                   "meaning",
                                   "reference"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "sourceHeights": {
+                                "type": "object",
+                                "properties": {
+                                  "positions": {
+                                    "type": "integer"
+                                  },
+                                  "min": {
+                                    "type": "number"
+                                  },
+                                  "max": {
+                                    "type": "number"
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "nullable": true,
+                                    "description": "The file states none; always null."
+                                  },
+                                  "reference": {
+                                    "type": "string",
+                                    "nullable": true,
+                                    "description": "The file states none; always null."
+                                  },
+                                  "basis": {
+                                    "type": "string",
+                                    "enum": [
+                                      "source_coordinates"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "positions",
+                                  "min",
+                                  "max",
+                                  "unit",
+                                  "reference",
+                                  "basis"
                                 ],
                                 "additionalProperties": false
                               },

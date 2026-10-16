@@ -6020,6 +6020,17 @@ export interface components {
                     originalValue?: unknown;
                     originalUnit?: string;
                 };
+                sourceHeights?: {
+                    positions: number;
+                    min: number;
+                    max: number;
+                    /** @description The file states none; always null. */
+                    unit: string | null;
+                    /** @description The file states none; always null. */
+                    reference: string | null;
+                    /** @enum {string} */
+                    basis: "source_coordinates";
+                };
                 /** @enum {string} */
                 worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
                 properties: {
@@ -6288,6 +6299,17 @@ export interface components {
                             /** @description Retained source-specific or processor-specific value. */
                             originalValue?: unknown;
                             originalUnit?: string;
+                        };
+                        sourceHeights?: {
+                            positions: number;
+                            min: number;
+                            max: number;
+                            /** @description The file states none; always null. */
+                            unit: string | null;
+                            /** @description The file states none; always null. */
+                            reference: string | null;
+                            /** @enum {string} */
+                            basis: "source_coordinates";
                         };
                         /** @enum {string} */
                         worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
@@ -6591,6 +6613,17 @@ export interface components {
                     originalValue?: unknown;
                     originalUnit?: string;
                 };
+                sourceHeights?: {
+                    positions: number;
+                    min: number;
+                    max: number;
+                    /** @description The file states none; always null. */
+                    unit: string | null;
+                    /** @description The file states none; always null. */
+                    reference: string | null;
+                    /** @enum {string} */
+                    basis: "source_coordinates";
+                };
                 /** @enum {string} */
                 worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
                 properties: {
@@ -6859,6 +6892,17 @@ export interface components {
                             /** @description Retained source-specific or processor-specific value. */
                             originalValue?: unknown;
                             originalUnit?: string;
+                        };
+                        sourceHeights?: {
+                            positions: number;
+                            min: number;
+                            max: number;
+                            /** @description The file states none; always null. */
+                            unit: string | null;
+                            /** @description The file states none; always null. */
+                            reference: string | null;
+                            /** @enum {string} */
+                            basis: "source_coordinates";
                         };
                         /** @enum {string} */
                         worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
@@ -7196,6 +7240,17 @@ export interface components {
                             originalValue?: unknown;
                             originalUnit?: string;
                         };
+                        sourceHeights?: {
+                            positions: number;
+                            min: number;
+                            max: number;
+                            /** @description The file states none; always null. */
+                            unit: string | null;
+                            /** @description The file states none; always null. */
+                            reference: string | null;
+                            /** @enum {string} */
+                            basis: "source_coordinates";
+                        };
                         /** @enum {string} */
                         worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
                         properties: {
@@ -7421,6 +7476,17 @@ export interface components {
                     originalValue?: unknown;
                     originalUnit?: string;
                 };
+                sourceHeights?: {
+                    positions: number;
+                    min: number;
+                    max: number;
+                    /** @description The file states none; always null. */
+                    unit: string | null;
+                    /** @description The file states none; always null. */
+                    reference: string | null;
+                    /** @enum {string} */
+                    basis: "source_coordinates";
+                };
                 /** @enum {string} */
                 worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
                 properties: {
@@ -7634,6 +7700,17 @@ export interface components {
                         originalValue?: unknown;
                         originalUnit?: string;
                     };
+                    sourceHeights?: {
+                        positions: number;
+                        min: number;
+                        max: number;
+                        /** @description The file states none; always null. */
+                        unit: string | null;
+                        /** @description The file states none; always null. */
+                        reference: string | null;
+                        /** @enum {string} */
+                        basis: "source_coordinates";
+                    };
                     /** @enum {string} */
                     worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
                     properties: {
@@ -7795,6 +7872,17 @@ export interface components {
                             originalValue?: unknown;
                             originalUnit?: string;
                         };
+                        sourceHeights?: {
+                            positions: number;
+                            min: number;
+                            max: number;
+                            /** @description The file states none; always null. */
+                            unit: string | null;
+                            /** @description The file states none; always null. */
+                            reference: string | null;
+                            /** @enum {string} */
+                            basis: "source_coordinates";
+                        };
                         /** @enum {string} */
                         worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
                         properties: {
@@ -7940,6 +8028,17 @@ export interface components {
                         /** @description Retained source-specific or processor-specific value. */
                         originalValue?: unknown;
                         originalUnit?: string;
+                    };
+                    sourceHeights?: {
+                        positions: number;
+                        min: number;
+                        max: number;
+                        /** @description The file states none; always null. */
+                        unit: string | null;
+                        /** @description The file states none; always null. */
+                        reference: string | null;
+                        /** @enum {string} */
+                        basis: "source_coordinates";
                     };
                     /** @enum {string} */
                     worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
@@ -8374,6 +8473,17 @@ export interface components {
                         /** @description Retained source-specific or processor-specific value. */
                         originalValue?: unknown;
                         originalUnit?: string;
+                    };
+                    sourceHeights?: {
+                        positions: number;
+                        min: number;
+                        max: number;
+                        /** @description The file states none; always null. */
+                        unit: string | null;
+                        /** @description The file states none; always null. */
+                        reference: string | null;
+                        /** @enum {string} */
+                        basis: "source_coordinates";
                     };
                     /** @enum {string} */
                     worldStatus: "observed" | "planned" | "hypothetical" | "synthetic";
@@ -22610,6 +22720,17 @@ export interface components {
                         claimId?: string;
                         method?: string;
                     };
+                    sourceHeights?: {
+                        positions: number;
+                        min: number;
+                        max: number;
+                        /** @description The file states none; always null. */
+                        unit: string | null;
+                        /** @description The file states none; always null. */
+                        reference: string | null;
+                        /** @enum {string} */
+                        basis: "source_coordinates";
+                    };
                     worldStatus: string;
                     properties: {
                         [key: string]: unknown;
@@ -22786,6 +22907,17 @@ export interface components {
                     }[];
                     claimId?: string;
                     method?: string;
+                };
+                sourceHeights?: {
+                    positions: number;
+                    min: number;
+                    max: number;
+                    /** @description The file states none; always null. */
+                    unit: string | null;
+                    /** @description The file states none; always null. */
+                    reference: string | null;
+                    /** @enum {string} */
+                    basis: "source_coordinates";
                 };
                 worldStatus: string;
                 properties: {
@@ -23181,6 +23313,17 @@ export interface components {
                             claimId?: string;
                             method?: string;
                         };
+                        sourceHeights?: {
+                            positions: number;
+                            min: number;
+                            max: number;
+                            /** @description The file states none; always null. */
+                            unit: string | null;
+                            /** @description The file states none; always null. */
+                            reference: string | null;
+                            /** @enum {string} */
+                            basis: "source_coordinates";
+                        };
                         worldStatus: string;
                         properties: {
                             [key: string]: unknown;
@@ -23382,6 +23525,17 @@ export interface components {
                                 claimId?: string;
                                 method?: string;
                             };
+                            sourceHeights?: {
+                                positions: number;
+                                min: number;
+                                max: number;
+                                /** @description The file states none; always null. */
+                                unit: string | null;
+                                /** @description The file states none; always null. */
+                                reference: string | null;
+                                /** @enum {string} */
+                                basis: "source_coordinates";
+                            };
                             worldStatus: string;
                             properties: {
                                 [key: string]: unknown;
@@ -23557,6 +23711,17 @@ export interface components {
                                 }[];
                                 claimId?: string;
                                 method?: string;
+                            };
+                            sourceHeights?: {
+                                positions: number;
+                                min: number;
+                                max: number;
+                                /** @description The file states none; always null. */
+                                unit: string | null;
+                                /** @description The file states none; always null. */
+                                reference: string | null;
+                                /** @enum {string} */
+                                basis: "source_coordinates";
                             };
                             worldStatus: string;
                             properties: {
@@ -24134,6 +24299,17 @@ export interface components {
                                     claimId?: string;
                                     method?: string;
                                 };
+                                sourceHeights?: {
+                                    positions: number;
+                                    min: number;
+                                    max: number;
+                                    /** @description The file states none; always null. */
+                                    unit: string | null;
+                                    /** @description The file states none; always null. */
+                                    reference: string | null;
+                                    /** @enum {string} */
+                                    basis: "source_coordinates";
+                                };
                                 worldStatus: string;
                                 properties: {
                                     [key: string]: unknown;
@@ -24339,6 +24515,17 @@ export interface components {
                                 }[];
                                 claimId?: string;
                                 method?: string;
+                            };
+                            sourceHeights?: {
+                                positions: number;
+                                min: number;
+                                max: number;
+                                /** @description The file states none; always null. */
+                                unit: string | null;
+                                /** @description The file states none; always null. */
+                                reference: string | null;
+                                /** @enum {string} */
+                                basis: "source_coordinates";
                             };
                             worldStatus: string;
                             properties: {
@@ -24588,6 +24775,17 @@ export interface components {
                                     claimId?: string;
                                     method?: string;
                                 };
+                                sourceHeights?: {
+                                    positions: number;
+                                    min: number;
+                                    max: number;
+                                    /** @description The file states none; always null. */
+                                    unit: string | null;
+                                    /** @description The file states none; always null. */
+                                    reference: string | null;
+                                    /** @enum {string} */
+                                    basis: "source_coordinates";
+                                };
                                 worldStatus: string;
                                 properties: {
                                     [key: string]: unknown;
@@ -24822,6 +25020,17 @@ export interface components {
                             claimId?: string;
                             method?: string;
                         };
+                        sourceHeights?: {
+                            positions: number;
+                            min: number;
+                            max: number;
+                            /** @description The file states none; always null. */
+                            unit: string | null;
+                            /** @description The file states none; always null. */
+                            reference: string | null;
+                            /** @enum {string} */
+                            basis: "source_coordinates";
+                        };
                         worldStatus: string;
                         properties: {
                             [key: string]: unknown;
@@ -25034,6 +25243,17 @@ export interface components {
                                 claimId?: string;
                                 method?: string;
                             };
+                            sourceHeights?: {
+                                positions: number;
+                                min: number;
+                                max: number;
+                                /** @description The file states none; always null. */
+                                unit: string | null;
+                                /** @description The file states none; always null. */
+                                reference: string | null;
+                                /** @enum {string} */
+                                basis: "source_coordinates";
+                            };
                             worldStatus: string;
                             properties: {
                                 [key: string]: unknown;
@@ -25216,6 +25436,17 @@ export interface components {
                     }[];
                     claimId?: string;
                     method?: string;
+                };
+                sourceHeights?: {
+                    positions: number;
+                    min: number;
+                    max: number;
+                    /** @description The file states none; always null. */
+                    unit: string | null;
+                    /** @description The file states none; always null. */
+                    reference: string | null;
+                    /** @enum {string} */
+                    basis: "source_coordinates";
                 };
                 worldStatus: string;
                 properties: {
@@ -25793,6 +26024,17 @@ export interface components {
                         claimId?: string;
                         method?: string;
                     };
+                    sourceHeights?: {
+                        positions: number;
+                        min: number;
+                        max: number;
+                        /** @description The file states none; always null. */
+                        unit: string | null;
+                        /** @description The file states none; always null. */
+                        reference: string | null;
+                        /** @enum {string} */
+                        basis: "source_coordinates";
+                    };
                     worldStatus: string;
                     properties: {
                         [key: string]: unknown;
@@ -25966,6 +26208,17 @@ export interface components {
                     }[];
                     claimId?: string;
                     method?: string;
+                };
+                sourceHeights?: {
+                    positions: number;
+                    min: number;
+                    max: number;
+                    /** @description The file states none; always null. */
+                    unit: string | null;
+                    /** @description The file states none; always null. */
+                    reference: string | null;
+                    /** @enum {string} */
+                    basis: "source_coordinates";
                 };
                 worldStatus: string;
                 properties: {
@@ -26198,6 +26451,17 @@ export interface components {
                         }[];
                         claimId?: string;
                         method?: string;
+                    };
+                    sourceHeights?: {
+                        positions: number;
+                        min: number;
+                        max: number;
+                        /** @description The file states none; always null. */
+                        unit: string | null;
+                        /** @description The file states none; always null. */
+                        reference: string | null;
+                        /** @enum {string} */
+                        basis: "source_coordinates";
                     };
                     worldStatus: string;
                     properties: {
@@ -26448,6 +26712,17 @@ export interface components {
                                 claimId?: string;
                                 method?: string;
                             };
+                            sourceHeights?: {
+                                positions: number;
+                                min: number;
+                                max: number;
+                                /** @description The file states none; always null. */
+                                unit: string | null;
+                                /** @description The file states none; always null. */
+                                reference: string | null;
+                                /** @enum {string} */
+                                basis: "source_coordinates";
+                            };
                             worldStatus: string;
                             properties: {
                                 [key: string]: unknown;
@@ -26641,6 +26916,17 @@ export interface components {
                         claimId?: string;
                         method?: string;
                     };
+                    sourceHeights?: {
+                        positions: number;
+                        min: number;
+                        max: number;
+                        /** @description The file states none; always null. */
+                        unit: string | null;
+                        /** @description The file states none; always null. */
+                        reference: string | null;
+                        /** @enum {string} */
+                        basis: "source_coordinates";
+                    };
                     worldStatus: string;
                     properties: {
                         [key: string]: unknown;
@@ -26815,6 +27101,17 @@ export interface components {
                             }[];
                             claimId?: string;
                             method?: string;
+                        };
+                        sourceHeights?: {
+                            positions: number;
+                            min: number;
+                            max: number;
+                            /** @description The file states none; always null. */
+                            unit: string | null;
+                            /** @description The file states none; always null. */
+                            reference: string | null;
+                            /** @enum {string} */
+                            basis: "source_coordinates";
                         };
                         worldStatus: string;
                         properties: {
@@ -27392,6 +27689,17 @@ export interface components {
                                 claimId?: string;
                                 method?: string;
                             };
+                            sourceHeights?: {
+                                positions: number;
+                                min: number;
+                                max: number;
+                                /** @description The file states none; always null. */
+                                unit: string | null;
+                                /** @description The file states none; always null. */
+                                reference: string | null;
+                                /** @enum {string} */
+                                basis: "source_coordinates";
+                            };
                             worldStatus: string;
                             properties: {
                                 [key: string]: unknown;
@@ -27597,6 +27905,17 @@ export interface components {
                             }[];
                             claimId?: string;
                             method?: string;
+                        };
+                        sourceHeights?: {
+                            positions: number;
+                            min: number;
+                            max: number;
+                            /** @description The file states none; always null. */
+                            unit: string | null;
+                            /** @description The file states none; always null. */
+                            reference: string | null;
+                            /** @enum {string} */
+                            basis: "source_coordinates";
                         };
                         worldStatus: string;
                         properties: {
@@ -27846,6 +28165,17 @@ export interface components {
                                 claimId?: string;
                                 method?: string;
                             };
+                            sourceHeights?: {
+                                positions: number;
+                                min: number;
+                                max: number;
+                                /** @description The file states none; always null. */
+                                unit: string | null;
+                                /** @description The file states none; always null. */
+                                reference: string | null;
+                                /** @enum {string} */
+                                basis: "source_coordinates";
+                            };
                             worldStatus: string;
                             properties: {
                                 [key: string]: unknown;
@@ -28058,6 +28388,17 @@ export interface components {
                             }[];
                             claimId?: string;
                             method?: string;
+                        };
+                        sourceHeights?: {
+                            positions: number;
+                            min: number;
+                            max: number;
+                            /** @description The file states none; always null. */
+                            unit: string | null;
+                            /** @description The file states none; always null. */
+                            reference: string | null;
+                            /** @enum {string} */
+                            basis: "source_coordinates";
                         };
                         worldStatus: string;
                         properties: {
@@ -28481,6 +28822,17 @@ export interface components {
                         claimId?: string;
                         method?: string;
                     };
+                    sourceHeights?: {
+                        positions: number;
+                        min: number;
+                        max: number;
+                        /** @description The file states none; always null. */
+                        unit: string | null;
+                        /** @description The file states none; always null. */
+                        reference: string | null;
+                        /** @enum {string} */
+                        basis: "source_coordinates";
+                    };
                     worldStatus: string;
                     properties: {
                         [key: string]: unknown;
@@ -28682,6 +29034,17 @@ export interface components {
                             claimId?: string;
                             method?: string;
                         };
+                        sourceHeights?: {
+                            positions: number;
+                            min: number;
+                            max: number;
+                            /** @description The file states none; always null. */
+                            unit: string | null;
+                            /** @description The file states none; always null. */
+                            reference: string | null;
+                            /** @enum {string} */
+                            basis: "source_coordinates";
+                        };
                         worldStatus: string;
                         properties: {
                             [key: string]: unknown;
@@ -28857,6 +29220,17 @@ export interface components {
                             }[];
                             claimId?: string;
                             method?: string;
+                        };
+                        sourceHeights?: {
+                            positions: number;
+                            min: number;
+                            max: number;
+                            /** @description The file states none; always null. */
+                            unit: string | null;
+                            /** @description The file states none; always null. */
+                            reference: string | null;
+                            /** @enum {string} */
+                            basis: "source_coordinates";
                         };
                         worldStatus: string;
                         properties: {
@@ -29434,6 +29808,17 @@ export interface components {
                                 claimId?: string;
                                 method?: string;
                             };
+                            sourceHeights?: {
+                                positions: number;
+                                min: number;
+                                max: number;
+                                /** @description The file states none; always null. */
+                                unit: string | null;
+                                /** @description The file states none; always null. */
+                                reference: string | null;
+                                /** @enum {string} */
+                                basis: "source_coordinates";
+                            };
                             worldStatus: string;
                             properties: {
                                 [key: string]: unknown;
@@ -29639,6 +30024,17 @@ export interface components {
                             }[];
                             claimId?: string;
                             method?: string;
+                        };
+                        sourceHeights?: {
+                            positions: number;
+                            min: number;
+                            max: number;
+                            /** @description The file states none; always null. */
+                            unit: string | null;
+                            /** @description The file states none; always null. */
+                            reference: string | null;
+                            /** @enum {string} */
+                            basis: "source_coordinates";
                         };
                         worldStatus: string;
                         properties: {
@@ -29887,6 +30283,17 @@ export interface components {
                                 }[];
                                 claimId?: string;
                                 method?: string;
+                            };
+                            sourceHeights?: {
+                                positions: number;
+                                min: number;
+                                max: number;
+                                /** @description The file states none; always null. */
+                                unit: string | null;
+                                /** @description The file states none; always null. */
+                                reference: string | null;
+                                /** @enum {string} */
+                                basis: "source_coordinates";
                             };
                             worldStatus: string;
                             properties: {
@@ -30851,6 +31258,17 @@ export interface components {
                     claimId?: string;
                     method?: string;
                 };
+                sourceHeights?: {
+                    positions: number;
+                    min: number;
+                    max: number;
+                    /** @description The file states none; always null. */
+                    unit: string | null;
+                    /** @description The file states none; always null. */
+                    reference: string | null;
+                    /** @enum {string} */
+                    basis: "source_coordinates";
+                };
                 worldStatus: string;
                 properties: {
                     [key: string]: unknown;
@@ -31100,6 +31518,17 @@ export interface components {
                             claimId?: string;
                             method?: string;
                         };
+                        sourceHeights?: {
+                            positions: number;
+                            min: number;
+                            max: number;
+                            /** @description The file states none; always null. */
+                            unit: string | null;
+                            /** @description The file states none; always null. */
+                            reference: string | null;
+                            /** @enum {string} */
+                            basis: "source_coordinates";
+                        };
                         worldStatus: string;
                         properties: {
                             [key: string]: unknown;
@@ -31307,6 +31736,17 @@ export interface components {
                         }[];
                         claimId?: string;
                         method?: string;
+                    };
+                    sourceHeights?: {
+                        positions: number;
+                        min: number;
+                        max: number;
+                        /** @description The file states none; always null. */
+                        unit: string | null;
+                        /** @description The file states none; always null. */
+                        reference: string | null;
+                        /** @enum {string} */
+                        basis: "source_coordinates";
                     };
                     worldStatus: string;
                     properties: {
@@ -31557,6 +31997,17 @@ export interface components {
                                 claimId?: string;
                                 method?: string;
                             };
+                            sourceHeights?: {
+                                positions: number;
+                                min: number;
+                                max: number;
+                                /** @description The file states none; always null. */
+                                unit: string | null;
+                                /** @description The file states none; always null. */
+                                reference: string | null;
+                                /** @enum {string} */
+                                basis: "source_coordinates";
+                            };
                             worldStatus: string;
                             properties: {
                                 [key: string]: unknown;
@@ -31802,6 +32253,17 @@ export interface components {
                         }[];
                         claimId?: string;
                         method?: string;
+                    };
+                    sourceHeights?: {
+                        positions: number;
+                        min: number;
+                        max: number;
+                        /** @description The file states none; always null. */
+                        unit: string | null;
+                        /** @description The file states none; always null. */
+                        reference: string | null;
+                        /** @enum {string} */
+                        basis: "source_coordinates";
                     };
                     worldStatus: string;
                     properties: {
@@ -32379,6 +32841,17 @@ export interface components {
                             claimId?: string;
                             method?: string;
                         };
+                        sourceHeights?: {
+                            positions: number;
+                            min: number;
+                            max: number;
+                            /** @description The file states none; always null. */
+                            unit: string | null;
+                            /** @description The file states none; always null. */
+                            reference: string | null;
+                            /** @enum {string} */
+                            basis: "source_coordinates";
+                        };
                         worldStatus: string;
                         properties: {
                             [key: string]: unknown;
@@ -32584,6 +33057,17 @@ export interface components {
                         }[];
                         claimId?: string;
                         method?: string;
+                    };
+                    sourceHeights?: {
+                        positions: number;
+                        min: number;
+                        max: number;
+                        /** @description The file states none; always null. */
+                        unit: string | null;
+                        /** @description The file states none; always null. */
+                        reference: string | null;
+                        /** @enum {string} */
+                        basis: "source_coordinates";
                     };
                     worldStatus: string;
                     properties: {
@@ -32832,6 +33316,17 @@ export interface components {
                             }[];
                             claimId?: string;
                             method?: string;
+                        };
+                        sourceHeights?: {
+                            positions: number;
+                            min: number;
+                            max: number;
+                            /** @description The file states none; always null. */
+                            unit: string | null;
+                            /** @description The file states none; always null. */
+                            reference: string | null;
+                            /** @enum {string} */
+                            basis: "source_coordinates";
                         };
                         worldStatus: string;
                         properties: {
@@ -33289,6 +33784,17 @@ export interface components {
                         claimId?: string;
                         method?: string;
                     };
+                    sourceHeights?: {
+                        positions: number;
+                        min: number;
+                        max: number;
+                        /** @description The file states none; always null. */
+                        unit: string | null;
+                        /** @description The file states none; always null. */
+                        reference: string | null;
+                        /** @enum {string} */
+                        basis: "source_coordinates";
+                    };
                     worldStatus: string;
                     properties: {
                         [key: string]: unknown;
@@ -33490,6 +33996,17 @@ export interface components {
                             claimId?: string;
                             method?: string;
                         };
+                        sourceHeights?: {
+                            positions: number;
+                            min: number;
+                            max: number;
+                            /** @description The file states none; always null. */
+                            unit: string | null;
+                            /** @description The file states none; always null. */
+                            reference: string | null;
+                            /** @enum {string} */
+                            basis: "source_coordinates";
+                        };
                         worldStatus: string;
                         properties: {
                             [key: string]: unknown;
@@ -33665,6 +34182,17 @@ export interface components {
                             }[];
                             claimId?: string;
                             method?: string;
+                        };
+                        sourceHeights?: {
+                            positions: number;
+                            min: number;
+                            max: number;
+                            /** @description The file states none; always null. */
+                            unit: string | null;
+                            /** @description The file states none; always null. */
+                            reference: string | null;
+                            /** @enum {string} */
+                            basis: "source_coordinates";
                         };
                         worldStatus: string;
                         properties: {
@@ -34242,6 +34770,17 @@ export interface components {
                                 claimId?: string;
                                 method?: string;
                             };
+                            sourceHeights?: {
+                                positions: number;
+                                min: number;
+                                max: number;
+                                /** @description The file states none; always null. */
+                                unit: string | null;
+                                /** @description The file states none; always null. */
+                                reference: string | null;
+                                /** @enum {string} */
+                                basis: "source_coordinates";
+                            };
                             worldStatus: string;
                             properties: {
                                 [key: string]: unknown;
@@ -34447,6 +34986,17 @@ export interface components {
                             }[];
                             claimId?: string;
                             method?: string;
+                        };
+                        sourceHeights?: {
+                            positions: number;
+                            min: number;
+                            max: number;
+                            /** @description The file states none; always null. */
+                            unit: string | null;
+                            /** @description The file states none; always null. */
+                            reference: string | null;
+                            /** @enum {string} */
+                            basis: "source_coordinates";
                         };
                         worldStatus: string;
                         properties: {
@@ -34695,6 +35245,17 @@ export interface components {
                                 }[];
                                 claimId?: string;
                                 method?: string;
+                            };
+                            sourceHeights?: {
+                                positions: number;
+                                min: number;
+                                max: number;
+                                /** @description The file states none; always null. */
+                                unit: string | null;
+                                /** @description The file states none; always null. */
+                                reference: string | null;
+                                /** @enum {string} */
+                                basis: "source_coordinates";
                             };
                             worldStatus: string;
                             properties: {

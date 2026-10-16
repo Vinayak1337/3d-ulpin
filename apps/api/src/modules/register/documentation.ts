@@ -144,11 +144,14 @@ const areaReference = object({ sourceCrs: str, analysisCrs: str, origin: point, 
 const areaHeight = object({ state: str, value: nullable(num), unit: str, meaning: str, reference: str,
   originalValue: anyJson, originalUnit: str, evidence: array(locator), claimId: str, method: str },
   ['state', 'value', 'unit', 'meaning', 'reference']);
+const unstated = { ...nullable(str), description: 'The file states none; always null.' };
+const sourceHeights = object({ positions: integer, min: num, max: num, unit: unstated, reference: unstated,
+  basis: { type: 'string', enum: ['source_coordinates'] } }, ['positions', 'min', 'max', 'unit', 'reference', 'basis']);
 export const physicalFeature = object({ id: str, identifier: str, areaId: str, revision: integer,
   sourceRevisionId: str, datasetNamespace: str, evidence: array(locator), representation: str,
   sourceKey: str, name: str, kind: str, sourceGeometry: { type: 'object', additionalProperties: true },
   sourceReference: areaReference, geometry: areaGeometry, geographicGeometry: areaGeometry,
-  height: areaHeight, worldStatus: str, properties: { type: 'object', additionalProperties: true },
+  height: areaHeight, sourceHeights, worldStatus: str, properties: { type: 'object', additionalProperties: true },
   areaM2: nullable(num), geometryRole: str,
   semantics: object({ geometryRole: str, evidenceState: str, levelReference: str, sourceDate: str,
     validFrom: str, validTo: str, horizontalUncertaintyM: num, approvalStatus: str, floorCount: integer, assetId: str }),

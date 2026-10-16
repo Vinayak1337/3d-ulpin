@@ -120,7 +120,8 @@ def inspect_gis(data):
             geographic_source = (geojson_reference.is_geographic if format == "geojson"
                                  else (row_crs[-1] or crs) == "EPSG:4326")
             parsed, count = _geometry(geometry, "Source feature", geographic=geographic_source,
-                                      undeclared=format == "geojson" and geojson_crs_name is None)
+                                      undeclared=format == "geojson" and geojson_crs_name is None,
+                                      heights=[] if format == "geojson" else None)
             types.add(parsed.geom_type)
         except GeometryRejected as error:
             count = error.vertices

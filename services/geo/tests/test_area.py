@@ -188,6 +188,61 @@ def test_a_proved_part_collection_is_read_in_its_declared_system():
     assert result["features"][0]["sourceGeometry"]["coordinates"][0] == coordinates
 
 
+def niagara(heights=None):
+    """A projected footprint whose positions carry heights, the way the Niagara Falls file writes them."""
+    converter = Transformer.from_crs(4326, 2958, always_xy=True, allow_ballpark=False, only_best=True)
+    outline = [list(converter.transform(*point, errcheck=True)) for point in ring(-79.1, 43.1, .0001, .0001)]
+    heights = heights or [186.110000000001, 190, 188.5, 186.2, 186.110000000001]
+    data = geojson({"type": "Polygon", "coordinates": [[[*xy, z] for xy, z in zip(outline, heights)]]})
+    data["data"]["crs"] = {"type": "name", "properties": {"name": "EPSG:2958"}}
+    flat = geojson({"type": "Polygon", "coordinates": [outline]})
+    flat["data"]["crs"] = data["data"]["crs"]
+    return data, flat
+
+
+def test_a_position_with_a_height_keeps_a_two_coordinate_outline_and_its_heights_beside_it():
+    data, flat = niagara()
+    before = copy.deepcopy(data)
+    feature = normalize_area(data)["features"][0]
+    assert feature["sourceHeights"] == {"positions": 5, "min": 186.110000000001, "max": 190,
+                                        "unit": None, "reference": None, "basis": "source_coordinates"}
+    assert isinstance(feature["sourceHeights"]["max"], int)
+    assert feature["sourceGeometry"] == before["data"]["features"][0]["geometry"]
+    assert feature["height"] == {"state": "unknown", "value": None, "unit": "m",
+                                 "meaning": "height above the building's own ground level",
+                                 "reference": "building-relative; not aligned between features"}
+    assert data == before
+    without = {key: value for key, value in feature.items() if key not in ("sourceHeights", "sourceGeometry")}
+    plain = normalize_area(flat)["features"][0]
+    assert "sourceHeights" not in plain
+    assert without == {key: value for key, value in plain.items() if key != "sourceGeometry"}
+    assert "sourceHeights" not in json.dumps(normalize_area(geojson()))
+
+
+@pytest.mark.parametrize("extra,words", [
+    ([188.5, 0], r"has a position of 4 numbers; a position takes two coordinates and may add a height, "
+                 r"and a fourth \(M\) value is unsupported"),
+    ([], "mixes positions with and without a height"),
+])
+def test_a_measure_value_or_a_mix_of_heights_is_refused_in_words(extra, words):
+    data, _ = niagara()
+    coordinates = data["data"]["features"][0]["geometry"]["coordinates"][0]
+    coordinates[1] = [*coordinates[1][:2], *extra]
+    with pytest.raises(InputError, match="Feature B1 " + words):
+        normalize_area(data)
+
+
+def test_arcgis_positions_with_a_third_number_still_need_their_adapter():
+    data = arcgis()
+    for point in data["data"]["features"][0]["geometry"]["rings"][0]:
+        point.append(2)
+    with pytest.raises(InputError, match="exactly two coordinates; Z/M values are unsupported"):
+        normalize_area(data)
+    data = arcgis()
+    data["data"]["hasZ"] = True
+    with pytest.raises(InputError, match="ArcGIS Z/M feature sets require a dedicated adapter"):
+        normalize_area(data)
+
 @pytest.mark.parametrize("name", ["EPSG:32643", "urn:ogc:def:crs:EPSG::32643"])
 def test_explicit_geojson_source_crs_must_agree_with_declaration(name):
     data = geojson(polygon(500000, 3100000))
@@ -324,7 +379,7 @@ def test_invalid_heights_do_not_become_evidenced(bad_value):
 
 
 @pytest.mark.parametrize("geometry", [
-    {"type": "Point", "coordinates": [77, 28, 4]},
+    {"type": "Point", "coordinates": [77, 28, 4, 1]},
     {"type": "Point", "coordinates": [77, float("nan")]},
     {"type": "Point", "coordinates": [77, float("inf")]},
     {"type": "Point", "coordinates": [True, 28]},
