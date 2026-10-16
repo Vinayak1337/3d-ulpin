@@ -2,7 +2,7 @@ import { ledgerFromPublished } from './ledger';
 import { demoAreas, isDemoId, useDemoAreaStream } from './demo-import';
 import { keepPreviousData, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, ApiError, unwrap, type GetResponse, type paths } from '@ulpin/api-client';
-import type { BuildingImport, DocumentPages, FileDetection, ImportBatch, LevelReview, RegisterRequest, RequestState, WorkBoard, BuildingResidents } from '@ulpin/api-client/draft';
+import type { BuildingImport, DocumentPages, FileDetection, ImportBatch, LevelReview, RegisterRequest, RequestState, BuildingResidents } from '@ulpin/api-client/draft';
 
 export type WorkQueue = GetResponse<'/api/v1/work-queue'>;
 export type WorkItem = WorkQueue['items'][number];
@@ -113,7 +113,6 @@ export const queryKeys = {
   register: (buildingId: string) => ['buildings', buildingId, 'register'] as const,
   ledger: (buildingId: string) => ['buildings', buildingId, 'ledger'] as const,
   residents: (buildingId: string) => ['buildings', buildingId, 'residents'] as const,
-  workBoard: ['work-board'] as const,
   levelReview: (buildingId: string, levelId: string) => ['buildings', buildingId, 'levels', levelId, 'review'] as const,
   documentPages: (sourceId: string) => ['sources', sourceId, 'pages'] as const,
   spatialMlBatch: (batchId: string) => ['spatial-ml', 'batches', batchId] as const,
@@ -195,10 +194,6 @@ export function useImportBatch(batchId: string | null | undefined) {
     enabled: Boolean(batchId),
     queryFn: () => getDraft<ImportBatch>(`/api/v1/import-batches/${batchId}`),
   });
-}
-
-export function useWorkBoard() {
-  return useQuery({ queryKey: queryKeys.workBoard, queryFn: () => getDraft<WorkBoard>('/api/v1/work-board'), staleTime: 30_000 });
 }
 
 export function useWorkQueue(status: WorkStatusFilter, q: string, page: number) {
