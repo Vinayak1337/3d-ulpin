@@ -60,7 +60,7 @@ const canDeleteBuilding = isServed('DELETE', '/api/v1/buildings/:buildingId');
 const canDeleteArea = isServed('DELETE', '/api/v1/areas/:areaId');
 
 export function MapWorkspace({ context }: { context: AreaContext }) {
-  context = { ...context, features: context.displayFeatures ?? context.features };
+  const features = context.displayFeatures;
   const { selection, dispatch, patch } = useSelection();
   const [searchParams, setSearchParams] = useSearchParams();
   const packageId = searchParams.get('package');
@@ -100,8 +100,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     setNotice(pkg.quarantine.message);
   }, [context.packages, packageId]);
 
-  const buildings = useMemo(() => context.features.filter((f) => f.kind === 'building'), [context.features]);
-  const utilities = useMemo(() => context.features.filter((f) => f.kind === 'utility'), [context.features]);
+  const buildings = useMemo(() => features.filter((f) => f.kind === 'building'), [features]);
+  const utilities = useMemo(() => features.filter((f) => f.kind === 'utility'), [features]);
   const feature = selection.buildingId ? buildings.find((b) => b.id === selection.buildingId) ?? null : null;
   const registerQuery = useBuildingRegister(feature?.id, floorsLive);
   const register = registerQuery.data;
@@ -117,8 +117,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const findings = register?.findings ?? [];
   const finding = selection.mode === 'findings' ? findings.find((f) => f.id === selection.findingId) ?? findings[0] ?? null : null;
 
-  const drawn = useCanonicalFootprints(context.area.id, feature?.id, context.features, Boolean(packageId));
-  const { base, footprints, detail } = useBuildingScene(context.features, feature, model, ledger, colour, drawn.footprints);
+  const drawn = useCanonicalFootprints(context.area.id, feature?.id, features, Boolean(packageId));
+  const { base, footprints, detail } = useBuildingScene(features, feature, model, ledger, colour, drawn.footprints);
   const [mapView, setMapView] = useMapView();
   const drawnIds = useMemo(() => new Set(footprints.map((f) => f.id)), [footprints]);
   const sceneIds = useMemo(() => new Set([...footprints, ...base].map((f) => f.id)), [footprints, base]);
@@ -160,8 +160,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     mapView.look === 'enhanced' ? 'Enhanced view' : null,
     ...visibleOverlays.map((o) => o.caption),
     ...(retainedShown ? imageryAttribution(drawn.area?.imagery ?? []) : []),
-    drawn.pending ? null : drawnCountNote(context.features, sceneIds),
-    undrawnNote(context.features),
+    drawn.pending ? null : drawnCountNote(features, sceneIds),
+    undrawnNote(features),
     ...(overlayQuery.data?.warnings ?? []),
   ].filter(Boolean);
   // A listed picture that did not load is named by count beside the switch, never silently missing.
@@ -207,12 +207,12 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   useEffect(() => {
     if (!engine) return;
     const parcelId = register?.parcelIdentifiers[0]?.parcelId;
-    const parcel = parcelId ? context.features.find((f) => f.id === parcelId) : null;
+    const parcel = parcelId ? features.find((f) => f.id === parcelId) : null;
     const ring = parcel ? polygonsOf(parcel.geometry)[0]?.[0] : null;
     if (!ring?.length) { engine.setAnchor('parcel', null); return; }
     const xs = ring.map(([x]) => x), ys = ring.map(([, y]) => y);
     engine.setAnchor('parcel', [(Math.min(...xs) + Math.max(...xs)) / 2, Math.min(...ys) + 3, 0.3]);
-  }, [engine, register, context.features]);
+  }, [engine, register, features]);
 
   const onPick = useCallback((pick: Pick) => {
     if (pick.kind === 'building') dispatch({ type: 'pickBuilding', id: pick.id, levelId: pick.levelId });
@@ -348,7 +348,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const showRail = (selection.mode === 'building' || selection.mode === 'level') && Boolean(model?.levels.length);
   const noFloors = selection.mode === 'building' && register && !model?.levels.length
     ? noFloorsState(register, canonical) : null;
-  const namespaces = [...new Set(context.features.map((f) => f.datasetNamespace))].filter((ns) => ATTRIBUTION[ns]);
+  const namespaces = [...new Set(features.map((f) => f.datasetNamespace))].filter((ns) => ATTRIBUTION[ns]);
   const readout = [reference?.sourceCrs, groundM !== null ? `${groundM.toFixed(2)} m` : null, ledger?.siteDatum].filter(Boolean).join(' · ');
   const readoutTitle = reference
     ? `Horizontal: ${reference.analysisCrs} (source ${reference.sourceCrs}). Heights: ${reference.verticalReference}.`

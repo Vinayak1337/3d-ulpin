@@ -102,7 +102,7 @@ function Register({ register }: { register: BuildingRegister }) {
   const model = useMemo(() => buildingModel(register), [register]);
   const byId = useMemo(() => new Map((workflow ?? []).map((w) => [w.spaceId, w])), [workflow]);
   // Streamed areas carry their map layers as display features.
-  const features = context?.displayFeatures ?? context?.features ?? NO_FEATURES;
+  const features = context?.displayFeatures ?? NO_FEATURES;
   const feature = features.find((f) => f.id === property.id) ?? null;
   const canonicalScene = useCanonicalFootprints(register.area.id, property.id, features);
   const drawn = canonicalScene.footprints;

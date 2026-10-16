@@ -1,0 +1,148 @@
+{
+ "task": "AD3",
+ "gate": "GF1",
+ "status": "pass",
+ "base": "82c832b3",
+ "answer": {
+  "featureLists": [
+   "displayFeatures"
+  ],
+  "featureFieldsDropped": [
+   "sourceGeometry",
+   "geographicGeometry",
+   "sourceReference"
+  ],
+  "packageFields": [
+   "id",
+   "state",
+   "quarantine{message,sourceSha256}|null"
+  ],
+  "unchangedTopLevel": [
+   "area",
+   "parcelAssociations",
+   "parcelIdentifiers",
+   "sceneAssets",
+   "latestCheck"
+  ],
+  "projection": "areaContextResponse in packages/server/src/modules/areas/area-intake-service.ts; AreaIntakeService.context applies it; areaContext() unchanged",
+  "contract": "AreaContextResponse (packages/contracts/src/area.ts); wire schema areaContextResponse (apps/api/src/modules/intake/wire-schemas.ts) on the route; component GET_areas_areaId_context_Response_200_application_json"
+ },
+ "sizes": {
+  "how": "docs/evidence/gf1/ad3/measure.ts; compact JSON; before = the fixture with displayFeatures equal to features, as the route sent it with no proposals; after = areaContextResponse(fixture)",
+  "fixtures": [
+   {
+    "fixture": "apps/studio/src/local/data/nyc-bronx-context.json",
+    "features": 62,
+    "packages": 0,
+    "beforeBytes": 349563,
+    "afterBytes": 100316,
+    "beforePerFeature": 5638,
+    "afterPerFeature": 1618
+   },
+   {
+    "fixture": "apps/studio/src/local/data/lake-view/context.json",
+    "features": 54,
+    "packages": 0,
+    "beforeBytes": 158677,
+    "afterBytes": 47944,
+    "beforePerFeature": 2938,
+    "afterPerFeature": 888
+   },
+   {
+    "fixture": "apps/studio/src/local/data/swiss-floor-context.json",
+    "features": 1,
+    "packages": 0,
+    "beforeBytes": 11153,
+    "afterBytes": 3538,
+    "beforePerFeature": 11153,
+    "afterPerFeature": 3538
+   }
+  ],
+  "estimateFor2148": {
+   "estimate": true,
+   "features": 2148,
+   "beforeBytes": 12110424,
+   "afterBytes": 3475464,
+   "note": "An estimate from the NYC fixture's per-feature bytes. The fixtures hold no import packages; the 46.7 MB demo answer also carried up to 30 package bodies with their features, which the answer now replaces with three-field summaries, so the demo's before is larger than this estimate. The lead measures the demo area."
+  }
+ },
+ "readersChanged": {
+  "studio": [
+   "apps/studio/src/features/map/MapWorkspace.tsx",
+   "apps/studio/src/features/register/RegisterPage.tsx",
+   "apps/studio/src/features/register/RequestsPage.tsx",
+   "apps/studio/src/features/review/WorkspacePage.tsx",
+   "apps/studio/src/api/queries.ts (AreaFeature)",
+   "apps/studio/src/api/demo-import.ts (type, dead ?? fallback)",
+   "apps/studio/src/local/sources.ts (derivedContexts reshaped by contextAnswer)",
+   "apps/studio/src/features/map/{footprints,demoDraw}.test.ts (fixture typing)"
+  ],
+  "scripts": [
+   "scripts/demo-import/plugin.mjs (features: [] dropped)",
+   "scripts/ml/verify-workflow.ts",
+   "scripts/uttam-nagar/import-osm-reference.mjs",
+   "scripts/ux/verify-source-workflow.ts",
+   "scripts/ux/verify-complete-journey.mjs",
+   "scripts/ux/verify-hierarchy.mjs",
+   "scripts/verify-officer-restart.ts",
+   "scripts/spatial/studio-saved-verify.mjs",
+   "scripts/spatial/uttam-display-verify.mjs",
+   "scripts/usp/real-source-smoke.mjs (package facts read from /import-packages/{id}; area read asserts the listed state)",
+   "tests/e2e/usp-product-journey.spec.ts",
+   "tests/e2e/usp-studio-frame.spec.ts (package name from /import-packages/{id})"
+  ],
+  "notChanged": "apps/web reads its own Next route (area-routes.ts -> areaContext()), not this route. Evidence harnesses of finished gates that read a removed field (gf-backend/k2/install-through-api.ts, gf-backend/k2c/verify-canonical.ts, gf1/zb1/area-read.ts, gf1/cr1/steps.ts, gf1/gn1/steps.ts) are records, left as they are; see step0.md."
+ },
+ "checks": {
+  "typecheckBackend": {
+   "command": "pnpm typecheck:backend",
+   "exit": 0
+  },
+  "studioTypecheck": {
+   "command": "pnpm studio:typecheck",
+   "exit": 0
+  },
+  "studioTestBefore": {
+   "command": "pnpm studio:test",
+   "exit": 0,
+   "studioFiles": 69,
+   "studioTests": 438
+  },
+  "studioTestAfter": {
+   "command": "pnpm studio:test",
+   "exit": 0,
+   "studioFiles": 69,
+   "studioTests": 438
+  },
+  "areaTestsBefore": {
+   "tests": 37,
+   "pass": 32,
+   "fail": 5
+  },
+  "areaTestsAfter": {
+   "tests": 38,
+   "pass": 33,
+   "fail": 5,
+   "failNote": "the same 5 before and after: they read E:/BhuAayam-data originals absent from this session"
+  },
+  "apiCheck": {
+   "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py",
+   "exit": 0
+  },
+  "openapiCheck": {
+   "command": "openapi.ts --check",
+   "exit": 0,
+   "operations": 310,
+   "namedSchemas": 351
+  },
+  "diffCheck": {
+   "command": "git diff --check",
+   "exit": 0
+  },
+  "designScan": {
+   "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs staging",
+   "exit": 0,
+   "note": "Studio changes are data reads only; no screen, style or copy changed"
+  }
+ }
+}

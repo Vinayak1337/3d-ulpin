@@ -149,7 +149,7 @@ test('D0 map navigation, supplied levels and building switches preserve exact re
   const area = await (await request.get(`/api/v1/areas/${receipt.areaId}/context`)).json();
   for (const alias of ['B-B', 'B-A']) {
     const id = receipt.physicalFeatures[alias];
-    const name = area.features.find((feature: { id: string }) => feature.id === id).name;
+    const name = area.displayFeatures.find((feature: { id: string }) => feature.id === id).name;
     await map.getByRole('button', { name, exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`feature=${id}`));
     expect(new URL(page.url()).searchParams.has('record')).toBe(false);

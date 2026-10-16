@@ -271,7 +271,7 @@ try {
       draft = await api(`/import-packages/${draft.id}/commit`, { expectedRevision: draft.revision, acknowledgement: "Synthetic placement verification of published imagery contour only; no inferred height, parcel, survey, title or rights claim." });
     }
     assert.equal(draft.state, "COMMITTED"); await evidence("recorded-footprint", draft);
-    const context = await api(`/areas/${state.areaId}/context`), roof = context.features.find((f: any) => f.id === draft.features[0].id);
+    const context = await api(`/areas/${state.areaId}/context`), roof = context.displayFeatures.find((f: any) => f.id === draft.features[0].id);
     assert(roof); assert.equal(roof.height.value, null); assert.equal(roof.worldStatus, "synthetic");
     assert.deepEqual(vertices(geometryVertices(roof.geometry.coordinates)), state.expectedRoofVertices);
     await pass("Ordinary area review records the exact roof proposal while height remains unknown", { featureId: roof.id });

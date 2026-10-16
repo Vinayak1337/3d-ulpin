@@ -337,7 +337,7 @@ function LevelRegister({ model, selected, onSelect, datum }: {
 function CheckStage({ register, model, ledger, actions }: { register: BuildingRegister; model: BuildingModel; ledger: BuildingLedger | null | undefined; actions: BuildingAction[] }) {
   const [{ look: mapLook, layers: mapLayers }] = useMapView();
   const context = useAreaContext(register.area.id).data;
-  const features = context?.displayFeatures ?? context?.features ?? NONE;
+  const features = context?.displayFeatures ?? NONE;
   const feature = features.find((f) => f.id === register.property.id) ?? null;
   const canonicalScene = useCanonicalFootprints(register.area.id, register.property.id, features);
   const drawn = canonicalScene.footprints;

@@ -9,7 +9,7 @@ export type WorkItem = WorkQueue['items'][number];
 export type WorkStatusFilter = 'all' | 'processing' | 'recorded';
 export type Area = GetResponse<'/api/v1/areas'>[number];
 export type AreaContext = GetResponse<'/api/v1/areas/{areaId}/context'>;
-export type AreaFeature = AreaContext['features'][number];
+export type AreaFeature = AreaContext['displayFeatures'][number];
 export type Capabilities = GetResponse<'/api/v1/workspace-capabilities'>;
 /** The JSON form of the register (the endpoint also serves CSV and HTML exports). */
 export type BuildingRegister = Extract<GetResponse<'/api/v1/buildings/{buildingId}/register'>, { register: unknown }>;

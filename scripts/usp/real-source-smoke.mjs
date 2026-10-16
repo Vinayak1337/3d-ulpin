@@ -225,7 +225,7 @@ async function run() {
     assert(candidate.evidence?.some(item=>item.sourceRevisionId===sourceRevisionId && item.featureId===nativeKey));
     const area=await call(`/areas/${pkg.areaId}/context`),persisted=area.value.packages.find(item=>item.id===pkg.id);
     assert(persisted,'GIS package must be present in the area read');
-    assert.equal(persisted.sourceRevisionIds[0],sourceRevisionId);assert.equal(persisted.features[0].id,candidate.id);
+    assert.equal(persisted.state,readPackage.value.state);
     gis.persistedRead={packageStatus:readPackage.status,areaStatus:area.status,sourceRevisionId,candidateId:candidate.id,
       nativeKey:candidate.sourceKey,geometryRole:candidate.geometryRole,evidence:candidate.evidence};
     gis.download=await exactSource(sourceRevisionId,original,'original.geojson','application/geo+json');

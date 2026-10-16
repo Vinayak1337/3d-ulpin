@@ -66,7 +66,7 @@ function waitForScene(areaId: string, signal: AbortSignal): Promise<SceneEngine 
 
 /** A part with no drawable geometry needs no frame; otherwise only the engine proves completion. */
 export async function acknowledgeDemoPart(
-  areaId: string, features: AreaContext['features'], signal: AbortSignal,
+  areaId: string, features: AreaContext['displayFeatures'], signal: AbortSignal,
   acknowledge: () => void = () => { void fetch(`/api/demo/areas/${areaId}/ack`, { method: 'POST' }); },
 ): Promise<void> {
   const drawable = features.filter((feature) => {
@@ -104,7 +104,7 @@ export function useDemoAreaStream(areaId: string | undefined) {
       else client.setQueryData<AreaContext>(key, (previous) => {
         if (!previous) return previous;
         return { ...previous, area: message.area ?? previous.area,
-          displayFeatures: message.features ? [...(previous.displayFeatures ?? []), ...withCodes(message.features as NonNullable<AreaContext["displayFeatures"]>)!] : previous.displayFeatures,
+          displayFeatures: message.features ? [...previous.displayFeatures, ...withCodes(message.features as AreaContext["displayFeatures"])!] : previous.displayFeatures,
           packages: [message.package] };
       });
       client.setQueryData(['import-packages', message.package.id], message.package);

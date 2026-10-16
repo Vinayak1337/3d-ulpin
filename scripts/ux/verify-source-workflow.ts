@@ -14,10 +14,10 @@ const pass=async(name:string,details={})=>{state.checks=state.checks.filter((v:a
 const hash=(b:Uint8Array)=>createHash('sha256').update(b).digest('hex');
 async function api(p:string,value?:any,status=200){const r=await fetch(base+'/api/v1'+p,{method:value===undefined?'GET':'POST',headers:value===undefined||value instanceof FormData?undefined:{'Content-Type':'application/json'},body:value===undefined?undefined:value instanceof FormData?value:JSON.stringify(value),signal:AbortSignal.timeout(120000)});const text=await r.text();let result:any;try{result=JSON.parse(text)}catch{throw Error(p+': '+text.slice(0,300))}assert.equal(r.status,status,p+': '+JSON.stringify(result).slice(0,700));return result;}
 try {
- if(!state.initialArea){const a=await api('/areas/'+state.areaId+'/context');state.initialArea={revision:a.area.revision,featureIds:a.features.map((f:any)=>f.id).sort()};await save();}
+ if(!state.initialArea){const a=await api('/areas/'+state.areaId+'/context');state.initialArea={revision:a.area.revision,featureIds:a.displayFeatures.map((f:any)=>f.id).sort()};await save();}
  if(!state.workspace){state.workspace=await api('/source-workspaces',{requestKey:state.requestKey,areaId:state.areaId,expectedAreaRevision:state.initialArea.revision,name:'T066 fictional source-led review '+state.requestKey.slice(0,8),worldStatus:'synthetic'},201);await save();}
  let pkg=await api('/import-packages/'+state.workspace.id);assert.equal(pkg.features.length,0);assert(pkg.sourceWorkspace);state.caseId=pkg.sourceWorkspace.caseId;await save();
- const resumed=await api('/source-workspaces?caseId='+state.caseId);assert.equal(resumed.id,pkg.id);const context=await api('/areas/'+state.areaId+'/context');assert.deepEqual(context.features.map((f:any)=>f.id).sort(),state.initialArea.featureIds);
+ const resumed=await api('/source-workspaces?caseId='+state.caseId);assert.equal(resumed.id,pkg.id);const context=await api('/areas/'+state.areaId+'/context');assert.deepEqual(context.displayFeatures.map((f:any)=>f.id).sort(),state.initialArea.featureIds);
  await pass('Source-only workspace is persisted and resumable without creating or choosing a property');
  for(const key of ['building','buildingAttribution']){
   const fixture=fixtures.files.find((f:any)=>f.key===key),bytes=await readFile(fixture.file),name=fixture.file.split('/').at(-1)!;

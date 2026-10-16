@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { SceneEngine } from '@ulpin/scene';
-import type { AreaContext } from '../../api/queries';
+import type { AreaFeature } from '../../api/queries';
 import context from '../../local/data/nyc-bronx-context.json';
 import { acknowledgeDemoPart, attachDemoScene } from '../../api/demo-import';
 
-const features = (context as unknown as AreaContext).features;
+const features = context.features as unknown as AreaFeature[];
 
 describe('part acknowledgement from rendered scene progress', () => {
   it('waits for the engine to draw all buildings and base features in a part', async () => {
