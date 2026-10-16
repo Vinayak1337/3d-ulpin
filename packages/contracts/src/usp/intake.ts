@@ -62,6 +62,26 @@ export const IntakeLargeRetryResultSchema = z.strictObject({
   itemId: z.string().uuid(), jobId: z.string().uuid(),
   retry: z.number().int().positive().describe('How many officer retries this item has, this one included.'),
 });
+/** ZF1: a ZIP of map layers in a batch. Each GeoJSON member within these bounds is kept as its own child original. */
+export const ZIP_LAYER_LIMITS = Object.freeze({ archiveBytes: 16 * 1024 * 1024, memberBytes: 16 * 1024 * 1024,
+  layers: 64 });
+export const IntakeArchiveRetainSchema = z.strictObject({
+  requestKey: z.string().uuid(), expectedWorkspaceRevision: z.number().int().nonnegative(),
+});
+export const IntakeArchiveReceiptSchema = z.strictObject({
+  sourceId: z.string().uuid(), sourceRevision: z.number().int().positive(), sha256: hash,
+  bytes: z.number().int().positive().max(ZIP_LAYER_LIMITS.archiveBytes),
+});
+/** Where a child original's bytes came from: the exact archive revision, member path and directory pins. */
+export const ArchiveMemberLineageSchema = z.strictObject({
+  version: z.literal('zip-layer/1'), parentSourceId: z.string().uuid(),
+  parentSourceRevision: z.number().int().positive(), parentSha256: hash, parentItemId: z.string().uuid(),
+  memberPath: text, ordinal: z.number().int().nonnegative().max(INTAKE_PROBE_LIMITS.members),
+  memberBytes: z.number().int().positive().max(ZIP_LAYER_LIMITS.memberBytes),
+  compressedBytes: z.number().int().nonnegative(), crc32: z.number().int().nonnegative().max(0xffffffff),
+  memberSha256: hash,
+});
+export type ArchiveMemberLineage = z.infer<typeof ArchiveMemberLineageSchema>;
 export const IntakeItemPlanSchema = z.strictObject({
   recipeId: z.string().uuid(), recipeRevision: z.number().int().positive(),
   recipeState: z.enum(['proposed', 'approved', 'executed']),

@@ -1,11 +1,12 @@
-import { createInflateRaw, constants } from 'node:zlib';
+import { createInflateRaw, constants, crc32, inflateRawSync } from 'node:zlib';
 import { performance } from 'node:perf_hooks';
 import { INTAKE_PROBE_LIMITS as limits, type IntakeCard, type IntakeMember } from '@ulpin/contracts/usp';
 import { applyShapefileCompanions, applyRasterCompanions } from './intake-headers';
 import { workbookSheets } from './intake-workbook';
 
 export type IntakeRangeReader = (start: number, end: number) => Promise<Uint8Array>;
-type Entry = { name: string; size: number; compressed: number; method: number; flags: number; offset: number };
+type Entry = { name: string; size: number; compressed: number; method: number; flags: number; offset: number;
+  crc: number };
 type MemberProbe = (bytes: Uint8Array, size: number, name: string) => Promise<IntakeCard>;
 
 export function zipMemberRefusal(entry: Pick<Entry, 'name' | 'size' | 'compressed'>, depth = 0): string | null {
@@ -41,7 +42,7 @@ function directoryEntries(directory: Buffer, count: number): Entry[] {
     const nameBytes = directory.subarray(at + 46, at + 46 + names);
     if (!(flags & 2048) && nameBytes.some(byte => byte >= 128)) throw new Error('ZIP_NAME_ENCODING_UNSUPPORTED');
     const name = new TextDecoder('utf-8', { fatal: true }).decode(nameBytes);
-    entries.push({ name, flags, method: directory.readUInt16LE(at + 10),
+    entries.push({ name, flags, method: directory.readUInt16LE(at + 10), crc: directory.readUInt32LE(at + 16),
       compressed: directory.readUInt32LE(at + 20), size: directory.readUInt32LE(at + 24),
       offset: directory.readUInt32LE(at + 42) });
     at += 46 + names + extra + comment;
@@ -75,13 +76,19 @@ async function inflateHead(compressed: Uint8Array): Promise<Uint8Array> {
   });
 }
 
-async function memberHead(read: IntakeRangeReader, entry: Entry, directoryOffset: number): Promise<Uint8Array> {
+/** The member's compressed bytes start after its local header, which must agree with the directory entry. */
+async function memberDataOffset(read: IntakeRangeReader, entry: Entry, directoryOffset: number): Promise<number> {
   if (entry.offset + 30 > directoryOffset) throw new Error('ZIP_MEMBER_RANGE');
   const header = Buffer.from(await read(entry.offset, entry.offset + 30));
   if (header.readUInt32LE(0) !== 0x04034b50 || header.readUInt16LE(8) !== entry.method
     || header.readUInt16LE(6) !== entry.flags) throw new Error('ZIP_LOCAL_HEADER_INVALID');
   const offset = entry.offset + 30 + header.readUInt16LE(26) + header.readUInt16LE(28);
   if (offset + entry.compressed > directoryOffset) throw new Error('ZIP_MEMBER_RANGE');
+  return offset;
+}
+
+async function memberHead(read: IntakeRangeReader, entry: Entry, directoryOffset: number): Promise<Uint8Array> {
+  const offset = await memberDataOffset(read, entry, directoryOffset);
   // The local 30-byte header is charged to the same 64 KiB member read allowance.
   const compressed = await read(offset, offset + Math.min(entry.compressed, limits.memberHeadBytes - 30));
   if (entry.method === 0) return compressed.subarray(0, limits.memberHeadBytes);
@@ -260,4 +267,37 @@ export async function probeZip(card: IntakeCard, read: IntakeRangeReader, size: 
   const inspected = await inspectZipMembers(read, directory.entries, directory.offset, probe, depth);
   officeKind(card, inspected);
   groupSidecars(inspected, card);
+}
+
+const RANGE_BYTES = 1024 * 1024;
+
+/**
+ * Reads one whole member back out of a retained ZIP, for keeping it as its own original. The directory guards of the
+ * probe apply; the member is found by its exact path, nothing past `maxBytes` is inflated, and the result must match
+ * the directory's size and CRC-32. Errors carry a code only, never member text.
+ */
+export async function readZipMember(read: IntakeRangeReader, size: number, path: string, maxBytes: number) {
+  const tail = await read(Math.max(0, size - limits.tailBytes), size);
+  const profile = directoryProfile(Buffer.from(tail), size, 0);
+  if (profile.refusal) throw new Error(profile.refusal);
+  const directory = Buffer.from(await read(profile.offset, profile.offset + profile.bytes));
+  const entries = directoryEntries(directory, profile.count);
+  const ordinal = entries.findIndex(entry => entry.name === path);
+  const entry = entries[ordinal];
+  if (!entry || entries.filter(other => other.name === path).length !== 1) throw new Error('ZIP_MEMBER_NOT_FOUND');
+  const refusal = entry.flags & 1 ? 'ZIP_ENCRYPTED_MEMBER' : zipMemberRefusal(entry);
+  if (refusal) throw new Error(refusal);
+  if (entry.size > maxBytes || entry.compressed > maxBytes + RANGE_BYTES) throw new Error('ZIP_LAYER_SIZE');
+  if (entry.method !== 0 && entry.method !== 8) throw new Error('ZIP_COMPRESSION_UNSUPPORTED');
+  const start = await memberDataOffset(read, entry, profile.offset);
+  const chunks: Uint8Array[] = [];
+  for (let at = start; at < start + entry.compressed; at += RANGE_BYTES) {
+    chunks.push(await read(at, Math.min(start + entry.compressed, at + RANGE_BYTES)));
+  }
+  const compressed = Buffer.concat(chunks);
+  let bytes: Uint8Array;
+  try { bytes = entry.method === 0 ? compressed : inflateRawSync(compressed, { maxOutputLength: maxBytes }); }
+  catch { throw new Error('ZIP_MEMBER_INTEGRITY'); }
+  if (bytes.length !== entry.size || crc32(bytes) !== entry.crc) throw new Error('ZIP_MEMBER_INTEGRITY');
+  return { bytes, ordinal, compressedBytes: entry.compressed, crc32: entry.crc };
 }

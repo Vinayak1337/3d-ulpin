@@ -5,7 +5,7 @@ import {
   MappingDecisionSchema, MappingPlanSchema, SourceProfileSchema, TabularMappingReceiptSchema,
   AnyAuthorMappingSchema, AnyMappingReceiptSchema, AnyRetainSourceSchema, AnySourceProfileSchema,
   TabularMappingPlanSchema, type AnyMappingReceipt, type StreamedMappingReceipt, type AnySourceProfile, type TabularSourceProfile,
-  type SourceProfile, type MappingDestination,
+  type SourceProfile, type MappingDestination, type ArchiveMemberLineage,
 } from '@ulpin/contracts/usp';
 import type { GisInspection } from '@ulpin/contracts';
 import { query, transaction } from '../../../infrastructure/db';
@@ -121,8 +121,9 @@ async function save(client: PoolClient, receipt: AnyMappingReceipt) {
   await client.query('INSERT INTO usp_mapping_recipe_revisions(recipe_id,revision,body) VALUES($1,$2,$3)',[receipt.id,receipt.revision,receipt]);
 }
 export class ManualIngestionService {
-  async retain(caseIdValue: string, inputValue: unknown, file: {name:string;bytes:Uint8Array})
-    : Promise<AnySourceProfile> {
+  /** `lineage` is set only by the ZIP layer fan-out: the member's archive pins, kept beside the receipt. */
+  async retain(caseIdValue: string, inputValue: unknown, file: {name:string;bytes:Uint8Array},
+    lineage?: ArchiveMemberLineage): Promise<AnySourceProfile> {
     const caseId=uuid.parse(caseIdValue), input=AnyRetainSourceSchema.parse(inputValue), actor=localOperatorSubject();
     const profileName=input.format==='geojson'?'geojson-manual-v1':'tabular-manual-v1';
     if (!file.bytes.length || file.bytes.length>16*1024*1024)
@@ -130,7 +131,7 @@ export class ManualIngestionService {
         'Choose a nonempty original up to 16 MiB; larger sources require another qualified receipt.');
     const tabular=input.format==='geojson'?null:inspectTabularSource(file.bytes,input.selection,input);
     if(input.format==='geojson')geojsonInventory(file.bytes);
-    const hash=sha256(file.bytes),digest=fingerprint({input,name:file.name,hash,actor}),key=`manual-gis:${input.requestKey}`;
+    const hash=sha256(file.bytes),digest=fingerprint({input,name:file.name,hash,actor,...(lineage?{lineage}:{})}),key=`manual-gis:${input.requestKey}`;
     // Committed receipts/deduplication remain useful even while the processor is unavailable.
     const previous=await transaction(async client=>{
       const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);
@@ -188,7 +189,8 @@ export class ManualIngestionService {
           {profile:profileName,status:'needs_input',issues:[],
             summary:'Original retained; a pinned recipe requires review.',
             manualProfile:inventory,...(inspection?{gis:inspection}:{}),
-            ...(tabular&&'admission' in tabular.tabular?{tabularProvenance:tabular.tabular.admission}:{}),actor}]);
+            ...(tabular&&'admission' in tabular.tabular?{tabularProvenance:tabular.tabular.admission}:{}),
+            ...(lineage?{archiveMember:lineage}:{}),actor}]);
       await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);
       const fresh=await workspace(client,caseId),row=await source(client,caseId,sourceId),result=profile(row,fresh);
       await remember(client,caseId,key,digest,result);

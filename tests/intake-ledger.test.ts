@@ -49,6 +49,9 @@ class LedgerControl {
     }
     if (sql.startsWith('SELECT * FROM usp_intake_items')) return { rows: [this.rows.get(this.sourceId)] };
     if (sql.startsWith('SELECT source_id FROM usp_intake_items')) return { rows: [this.rows.get(values[0])] };
+    if (sql.startsWith('SELECT item_id,member_path')) {
+      return { rows: [...this.rows.values()].filter(row => row.parent_item_id === values[1]) };
+    }
     if (sql.startsWith('SELECT i.*')) {
       const matching = [...this.rows.values()].filter(row => !values[1] || row.item_id === values[1]);
       matching.sort((left, right) => left.wave - right.wave || left.name.localeCompare(right.name));

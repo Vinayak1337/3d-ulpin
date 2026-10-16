@@ -7,7 +7,8 @@ import { AnyAuthorMappingSchema, MappingDecisionSchema,
 import { ManualIngestionService } from '@ulpin/server/modules/usp/ingestion/service';
 import { IntakeService } from '@ulpin/server/modules/usp/ingestion/intake-service';
 import { IntakeRegisterSchema, IntakePinSchema, IntakeItemSchema, IntakeManifestSchema, IntakeLargeRetrySchema,
-  IntakeLargeRetryResultSchema } from '@ulpin/contracts/usp';
+  IntakeLargeRetryResultSchema, IntakeArchiveReceiptSchema } from '@ulpin/contracts/usp';
+import { IntakeArchiveService } from '@ulpin/server/modules/usp/ingestion/intake-zip-layers';
 import { retryIntakeLargeItem } from '@ulpin/server/modules/usp/ingestion/intake-large';
 import { CONVERSIONS, limitations } from '@ulpin/server/modules/usp/ingestion/registry';
 import { AppError } from '@ulpin/server/infrastructure/errors';
@@ -25,6 +26,7 @@ export class IngestionController {
   constructor(@Inject(ManualIngestionService) private readonly ingestion: ManualIngestionService) {}
 
   private readonly intake = new IntakeService();
+  private readonly archives = new IntakeArchiveService();
 
   @Post('cases/:caseId/intake/items')
   @HttpCode(201) @param('caseId')
@@ -33,6 +35,24 @@ export class IngestionController {
   @jsonBody(IntakeRegisterSchema) @wireResponse(201,IntakeItemSchema)
   async registerIntake(@Param('caseId') caseId:string,@Req() request:Request){
     return this.intake.register(caseId,await readJsonBody(request,JSON_BODY_LIMIT));
+  }
+
+  @Post('cases/:caseId/intake/archives')
+  @HttpCode(201) @param('caseId')
+  @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_intake_archives',
+    summary:'Retain a ZIP of map layers (at most 16 MiB) unchanged for a batch; enrolling it keeps each GeoJSON member as its own original'})
+  @multipartBody(['file','requestKey','expectedWorkspaceRevision'],{
+    requestKey:{type:'string',format:'uuid'},expectedWorkspaceRevision:{type:'integer',minimum:0},
+  })
+  @wireResponse(201,IntakeArchiveReceiptSchema)
+  async retainArchive(@Param('caseId') caseId:string,@Req() request:Request){
+    const form=await readMultipartBody(request,MULTIPART_BODY_LIMIT),file=form.get('file');
+    if(!(file instanceof File))throw new AppError(400,'MISSING_FILE','Choose a ZIP original.');
+    const allowed=new Set(['file','requestKey','expectedWorkspaceRevision']);
+    for(const key of form.keys())if(!allowed.has(key)||form.getAll(key).length!==1)throw new AppError(422,'INVALID_INPUT','Use one value for each allowed receipt field.');
+    return this.archives.retain(caseId,{requestKey:form.get('requestKey'),
+      expectedWorkspaceRevision:form.has('expectedWorkspaceRevision')?Number(form.get('expectedWorkspaceRevision')):undefined,
+    },{name:file.name,bytes:new Uint8Array(await file.arrayBuffer())});
   }
 
   @Get('cases/:caseId/intake')
