@@ -1,0 +1,67 @@
+{
+  "task": "ST1b",
+  "gate": "GF1",
+  "branch": "task/st1-large-layout-question",
+  "base": "1064fcaf",
+  "runtime": "none: code and tests only (no Docker, no database, no provider call)",
+  "defects": {
+    "casePin": {
+      "finding": "streamed-mapping.ts validatePlanTx refuses a plan whose caseRevision differs from the profile job's input caseRevision, and no route published that value; ST1's StreamedLayoutAnswer pinned the case's current revision, so a layout authored after another file joined the batch was refused with 409 'The source case revision changed.'",
+      "fix": "StreamedProfileStatusSchema gains caseRevision (the profile job input's caseRevision, the value validatePlanTx compares); statusTx fills it from input.caseRevision. The Studio pins the status it already reads (CasePin = Pick<ProfileStatus,'caseId'|'caseRevision'>) and no longer reads the source case.",
+      "server": "packages/server/src/modules/usp/ingestion/streamed-profile.ts statusTx; validatePlanTx unchanged",
+      "regression": "StreamedLayoutAnswer.test.tsx 'pins the inventory's case revision after the case has advanced': the case read is seeded at revision 9, the inventory status at 7; the authored plan pins 7. Run against the ST1 component (1064fcaf) it fails with 'expected 9 to be 7'; with this change it passes."
+    },
+    "history": {
+      "finding": "GET /api/v1/ingestion/cases/{caseId}/recipes/{recipeId} returns streamed receipts at runtime (ST1 d6) but published z.array(AnyMappingReceiptSchema) only.",
+      "fix": "The route publishes z.array(z.union([...AnyMappingReceiptSchema.options, StreamedMappingReceiptSchema])); ManualIngestionService.read is typed to match. The Studio's batch Recipe is again the history's published element type (the ST1 widening is removed).",
+      "shape": "A flat three-member union. Nesting AnyMappingReceiptSchema inside a new union re-indented the existing members (openapi.json +1444/-845); the flat union is additive only (+595/-0).",
+      "tableReader": "apps/studio table/recipe-api.ts readRecipe already refuses any revision that is not manual-tabular/1; its RecipeHistory type now names Recipe[] after that check, so the table page's types stay as before.",
+      "regression": "StreamedLayoutAnswer.test.tsx 'publishes a streamed receipt in the recipe history and the inventory's own case revision': a streamed receipt validates against the published history schema; a status validates with caseRevision and fails without it."
+    }
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "pnpm studio:typecheck", "exit": 0 },
+    { "command": "pnpm studio:test", "exit": 0,
+      "before": { "at": "1064fcaf", "tests": 444, "files": 70 },
+      "after": { "tests": 446, "passed": 446, "files": 70 } },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 0,
+      "operations": 311, "schemas": 352 },
+    { "command": "pnpm studio:api-types", "exit": 0, "note": "regenerated output equals the committed schema.d.ts" },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts 1064fcaf",
+      "exit": 0, "repinned": ["apps/api/src/modules/ingestion/ingestion.controller.ts",
+        "packages/contracts/src/usp/streamed-profile.ts",
+        "packages/server/src/modules/usp/ingestion/service.ts",
+        "packages/server/src/modules/usp/ingestion/streamed-profile.ts"] },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "exit": 0,
+      "note": "311 native operations, 352 named schemas; pins, manifests, models, dataset link valid" },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/streamed-*.test.ts packages/server/src/modules/usp/ingestion/intake-ledger.test.ts tests/intake-ledger.test.ts tests/manual-ingestion.test.ts",
+      "exit": 0, "before": { "at": "1064fcaf", "tests": 39, "passed": 39 }, "after": { "tests": 39, "passed": 39 },
+      "note": "run from the repository root with the API tsconfig; from packages/server or with the default tsconfig two files fail before any test body runs (a repository-relative evidence path; Nest parameter decorators), at 1064fcaf too" },
+    { "command": "git diff --check", "exit": 0 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs HEAD", "exit": 0,
+      "note": "the scan reads apps/web only; the Studio change is read by hand in ui-design-check.md" }
+  ],
+  "leadNotes": [
+    "packages/contracts/src/usp/streamed-profile.ts is one of the profiler files hashed into profilerSha256 (streamed-profile.ts profileFiles). Changing it moves the profiler pin, so a profile job queued before this commit answers 409 'The pinned original, reader, profiler or private access changed.' and its source needs a new inventory. Earlier changes to the same file (72f82bd, 857a47d, f080ce5) had the same effect; no runtime data exists in this task.",
+    "The SQL and the status route ran against no PostgreSQL; the status value is input.caseRevision, the same field validatePlanTx compares, read from the same job payload.",
+    "Not changed: ST1's second lead note (building.* vs feature.* targets) is not in this task."
+  ],
+  "filesChanged": [
+    "packages/contracts/src/usp/streamed-profile.ts",
+    "packages/server/src/modules/usp/ingestion/streamed-profile.ts",
+    "packages/server/src/modules/usp/ingestion/service.ts",
+    "apps/api/src/modules/ingestion/ingestion.controller.ts",
+    "docs/api/openapi.json",
+    "docs/api/source-pins.json",
+    "packages/api-client/src/schema.d.ts",
+    "apps/studio/src/features/intake/StreamedLayoutAnswer.tsx",
+    "apps/studio/src/features/intake/StreamedLayoutAnswer.test.tsx",
+    "apps/studio/src/features/intake/streamed-question-model.ts",
+    "apps/studio/src/features/intake/layout-model.ts",
+    "apps/studio/src/features/intake/table/types.ts",
+    "apps/studio/src/features/intake/table/recipe-api.ts",
+    "docs/evidence/gf1/st1b/result.json",
+    "docs/evidence/gf1/st1b/ui-design-check.md"
+  ]
+}
