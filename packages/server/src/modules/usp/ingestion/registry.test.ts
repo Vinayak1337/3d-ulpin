@@ -123,7 +123,7 @@ test('the legacy building adapter refuses stated kinds and generic targets inste
     { status: 422, code: 'LEGACY_BUILDING_MAPPING_ONLY' });
   assert.throws(() => legacyPlanToV2({ ...MappingPlanSchema.parse(legacy), kind: 'building' }, context, 'reviewer:fixture'),
     { status: 422, code: 'LEGACY_BUILDING_MAPPING_ONLY' });
-  assert(!StreamedPrefixMappingPlanSchema.shape.operations.safeParse(plan.operations).success);
+  assert(StreamedPrefixMappingPlanSchema.shape.operations.safeParse(plan.operations).success);
   assert(StreamedPrefixMappingPlanSchema.shape.operations.safeParse(legacy.operations).success);
 });
 

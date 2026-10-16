@@ -2,6 +2,7 @@ import type { PoolClient } from 'pg';
 import { StreamedMapOriginalReceiptSchema, STREAMING_VECTOR_LIMITS as limits,
   type StreamingVectorInput, type StreamedMapOriginalReceipt } from '@ulpin/contracts/usp';
 import { AppError, conflict } from '../../../infrastructure/errors';
+import { areaGeo } from '../../areas/areas';
 import { fingerprint } from '../../cases/domain';
 
 type Slot = {
@@ -9,6 +10,8 @@ type Slot = {
   accepted: number; quarantined: number; published: boolean; result_sha256: string;
 };
 type Closure = { bytes: number; sha256: string; features: number; metadata: Record<string, unknown> };
+type Reference = StreamedMapOriginalReceipt['reference'];
+type Resolved = { declared: string | null; authority: string; unit: string };
 
 /** A declaration is retained as evidence; projected coordinates never acquire degree units. */
 export function streamedSourceReference(metadata: Record<string, unknown>): StreamedMapOriginalReceipt['reference'] {
@@ -27,8 +30,29 @@ export function streamedSourceReference(metadata: Record<string, unknown>): Stre
     coordinateUnit: degree ? 'degree' : 'unknown' };
 }
 
+/** CR1's resolution in the geo service decides; nothing is resolved or transformed here. A file that declares
+ * nothing, and the legacy degree declarations, keep the reference they had before. */
+export async function resolveStreamedReference(metadata: Record<string, unknown>,
+  resolve = (collection: Record<string, unknown>) => areaGeo<Resolved>('resolve-geojson-crs', { collection })) {
+  const legacy = streamedSourceReference(metadata);
+  if (!Object.hasOwn(metadata, 'crs')) return legacy;
+  let resolved: Resolved;
+  try { resolved = await resolve({ crs: metadata.crs }); }
+  catch (error) {
+    if (error instanceof AppError && error.status === 422)
+      throw new AppError(422, 'STREAMING_SOURCE_CRS', error.message);
+    throw error;
+  }
+  if (legacy.coordinateUnit === 'degree' && resolved.unit === 'degree') return legacy;
+  if (!resolved.declared || resolved.declared.length > 100)
+    throw new AppError(422, 'STREAMING_SOURCE_CRS', 'The declared coordinate system name exceeds 100 characters.');
+  return { sourceCrs: resolved.declared, evidence: `Declared in the file's crs member: \`${resolved.declared}\``,
+    coordinateUnit: resolved.unit, authority: resolved.authority } satisfies Reference;
+}
+
 /** Ordered slot hashes prove the exact retained raw manifest, not just its feature count. */
-export function sealedMapReceipt(input: StreamingVectorInput, closure: Closure, slots: Slot[]) {
+export function sealedMapReceipt(input: StreamingVectorInput, closure: Closure, slots: Slot[],
+  reference: Reference = streamedSourceReference(closure.metadata)) {
   if (input.framing !== 'feature-collection' || closure.bytes !== input.sourceBytes
     || closure.sha256 !== input.sourceSha256 || !closure.features || !slots.length
     || slots.length > limits.chunks) conflict('The raw reader has not verified this complete map original.');
@@ -51,12 +75,13 @@ export function sealedMapReceipt(input: StreamingVectorInput, closure: Closure, 
     collectionMetadata: closure.metadata,
     rawManifestSha256: fingerprint({ readerVersion: input.version, sourceId: input.sourceId,
       sourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256, slots }),
-    reference: streamedSourceReference(closure.metadata),
+    reference,
   });
 }
 
 /** Called inside fenced result acceptance; a failed or partial reader cannot write this receipt. */
-export async function writeSealedMapReceiptTx(client: PoolClient, input: StreamingVectorInput, closure: Closure) {
+export async function writeSealedMapReceiptTx(client: PoolClient, input: StreamingVectorInput, closure: Closure,
+  reference?: Reference) {
   const source = (await client.query('SELECT * FROM sources WHERE id=$1 FOR UPDATE', [input.sourceId])).rows[0];
   if (source?.profile !== 'large-original-v1') return;
   const state = (await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE',
@@ -69,10 +94,9 @@ export async function writeSealedMapReceiptTx(client: PoolClient, input: Streami
   const slots = (await client.query(`SELECT chunk_index,first_feature_index,last_feature_index,records,
     accepted,quarantined,published,result_sha256 FROM usp_streaming_vector_slots
     WHERE job_id=$1 AND source_revision=$2 ORDER BY chunk_index`, [input.jobId, input.sourceRevision])).rows;
-  const receipt = sealedMapReceipt(input, closure, slots);
-  if (receipt.reference.coordinateUnit !== 'degree')
-    throw new AppError(422, 'STREAMING_SOURCE_CRS',
-      'The large GeoJSON reader supports longitude/latitude CRS84 only; its declared system is unsupported.');
+  const receipt = sealedMapReceipt(input, closure, slots, reference);
+  if (receipt.reference.coordinateUnit === 'unknown')
+    throw new AppError(422, 'STREAMING_SOURCE_CRS', "The file's coordinate system declaration was not resolved.");
   if (state.sealed_chunks !== receipt.parts || state.next_publish_index !== receipt.parts
     || state.records !== receipt.features || state.accepted !== receipt.accepted
     || state.quarantined !== receipt.quarantined) conflict('The reader totals differ from its sealed manifest.');

@@ -2,9 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
 import { STREAMING_VECTOR_LIMITS as limits, type IntakeCard, type StreamingVectorInput } from '@ulpin/contracts/usp';
-import { INTAKE_LARGE_LAYOUT_QUESTION, INTAKE_LARGE_STOPPED, intakeLargeAtRest, intakeLargeCrsRefusal,
-  intakeLargeCutKey, intakeLargeEnd, intakeLargeFailureReason, intakeLargePhase, intakeLargePlan,
-  intakeLargeProjection, intakeLargeRefusedCrs, intakeLargeRequestKey, intakeLargeRows, largeStateKey,
+import { INTAKE_LARGE_LAYOUT_QUESTION, INTAKE_LARGE_STOPPED, intakeLargeAtRest, intakeLargeCutKey, intakeLargeEnd,
+  intakeLargeFailureContext, intakeLargeFailureReason, intakeLargePhase, intakeLargePlan, intakeLargeProjection,
+  intakeLargeRequestKey, intakeLargeRows, largeStateKey,
   queueIntakeLargePackageTx, queueIntakeLargeTx, retryIntakeLargeItem, type IntakeLargeSource,
   type IntakeLargeStore } from './intake-large';
 import { fingerprint } from '../../cases/domain';
@@ -206,7 +206,7 @@ const retained = { ...sourceRow(), inspection: { ...sourceRow().inspection, stre
 } as StreamingVectorInput, { bytes: 43263076, sha256: hash, features: 1, metadata: { type: 'FeatureCollection' } },
 [{ chunk_index: 0, first_feature_index: 0, last_feature_index: 0, records: 1, accepted: 1, quarantined: 0,
   published: true, result_sha256: hash }]) } } as unknown as IntakeLargeSource;
-const failure = { bytes: 43263076, declaredCrs: null };
+const failure = { bytes: 43263076, crsWords: null };
 
 function project(store: IntakeLargeStore, source = retained) {
   const rows = intakeLargeRows(store, source);
@@ -237,37 +237,38 @@ test('each stored state has its row: question, proposed and approved layout, map
   assert.equal(project(drafting).planRef!.packageId, null);
 });
 
-test('a terminal reader names its own sentence; a projected file says its declared system', () => {
-  const crs = stored({ reader: { ...sealedReader(), state: 'failed', issue_code: 'STREAMING_SOURCE_CRS' },
-    profile: null });
-  const rows = intakeLargeRows(crs, retained);
-  const declared = intakeLargeProjection(intakeLargePhase(rows), rows, crs, { bytes: 1, declaredCrs: 'EPSG:2958' });
-  assert.equal(declared.placement, 'not_understood');
-  assert.equal(declared.state, 'failed_part');
-  assert.equal(declared.limitReason, intakeLargeFailureReason('STREAMING_SOURCE_CRS', 1, 'EPSG:2958'));
-  assert.match(declared.limitReason!, /EPSG:2958/);
+test('a reader that refuses the declared system rests the row in the resolution\'s own words', () => {
+  const words = 'The file\'s crs member declares {"type":"name","properties":{"name":"EPSG:99999"}}; its name is not a '
+    + 'recognized coordinate reference system.';
+  const crs = stored({ reader: { ...sealedReader(), state: 'failed', issue_code: 'STREAMING_SOURCE_CRS',
+    sealed_chunks: null, unknown_remainder: true }, profile: null });
+  const refused = (rawJobId: string) => ({ ...retained,
+    inspection: { ...retained.inspection, streamedMapRefusal: { rawJobId, words } } });
+  const rows = intakeLargeRows(crs, refused(readerJob));
+  const row = intakeLargeProjection(intakeLargePhase(rows), rows, crs,
+    intakeLargeFailureContext(crs, refused(readerJob)));
+  assert.deepEqual(row, { state: 'failed_part', placement: 'not_understood', planRef: null, partsPlanned: null,
+    partsDone: 487, recordsSeen: 48686, limitReason: words.slice(0, -1) + '; nothing was prepared from it.' });
+  assert.match(row.limitReason!, /"name":"EPSG:99999"/);
+  assert.equal(intakeLargeAtRest(row), true);
+  assert.equal(intakeLargeFailureContext(crs, refused(profileJob)).crsWords, null, 'the words of another reader');
+  assert.equal(intakeLargeProjection(intakeLargePhase(rows), rows, crs, failure).limitReason,
+    'The coordinate system this file declares could not be resolved; nothing was prepared from it.');
 });
 
-test('a card that states a projected system is refused before its reader, and the row rests saying why', async () => {
-  const stating = (crs: Partial<IntakeCard['crs']>) => ({ family: 'vector', format: 'geojson',
-    crs: { state: 'stated', code: null, sidecarSha256: null, ...crs } }) as IntakeCard;
-  assert.equal(intakeLargeRefusedCrs(stating({ code: 'EPSG:2958' })), 'EPSG:2958');
-  assert.equal(intakeLargeRefusedCrs(stating({ code: 'urn:ogc:def:crs:EPSG::2958' })), 'urn:ogc:def:crs:EPSG::2958');
-  assert.equal(intakeLargeRefusedCrs(stating({ code: 'EPSG:4326' })), null);
-  assert.equal(intakeLargeRefusedCrs(stating({})), null, 'a stated name the card cannot code is left to the reader');
-  assert.equal(intakeLargeRefusedCrs(stating({ state: 'absent' })), null);
-  assert.equal(intakeLargeRefusedCrs(stating({ state: 'conflicting', code: 'EPSG:2958' })), null);
-  assert.equal(intakeLargeRefusedCrs(null), null);
-  const refusal = intakeLargeCrsRefusal('EPSG:2958', 26660992);
-  assert.deepEqual(refusal, { state: 'failed_part', placement: 'not_understood', planRef: null,
-    partsPlanned: null, partsDone: 0, recordsSeen: 0,
-    limitReason: 'This file declares the coordinate system EPSG:2958. '
-      + 'Large files are read in longitude and latitude only for now; nothing was prepared from it.' });
-  assert.equal(intakeLargeAtRest(refusal), true);
-  const refused = store({ item: { item_id: sourceId, case_id: caseId, state: refusal.state,
-    placement: refusal.placement, card: stating({ code: 'EPSG:2958' }), plan_ref: null } });
-  assert.equal(await queueIntakeLargeTx(refused.client, sourceId), null);
-  assert.equal(refused.jobs.size, 0);
+test('a card that states a projected system starts its steps; the reader decides the declaration', async () => {
+  const stating = { family: 'vector', format: 'geojson', crs: { state: 'stated', code: 'EPSG:2958',
+    sidecarSha256: null } };
+  const fixture = store({ item: { item_id: sourceId, case_id: caseId, state: 'probed', placement: 'undecided',
+    card: stating, plan_ref: null } });
+  const state = (await largeStateKey(fixture.client, sourceId))!;
+  const rows = intakeLargeRows(state.store, state.source);
+  assert.equal(intakeLargePhase(rows), 'start');
+  assert.deepEqual(intakeLargeProjection('start', rows, state.store, failure), { state: 'reading',
+    placement: 'undecided', planRef: null, partsPlanned: null, partsDone: 0, recordsSeen: 0, limitReason: null });
+  const jobId = await queueIntakeLargeTx(fixture.client, sourceId);
+  assert.match(String(jobId), /^[0-9a-f-]{36}$/);
+  assert.equal(fixture.jobs.size, 1);
 });
 
 test('the end rests on the map with every cut counted; zero cuts rest not understood', () => {

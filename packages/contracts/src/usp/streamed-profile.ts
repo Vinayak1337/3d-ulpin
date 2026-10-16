@@ -1,6 +1,5 @@
 import {z} from 'zod';
-import {MappingOperationSchema,SourcePathSchema,SourcePinSchema} from './ingestion';
-import {LegacyMappingTargetSchema} from '../canonical/targets';
+import {LayoutKindSchema,MappingOperationSchema,SourcePathSchema,SourcePinSchema,layoutTargetsIssue} from './ingestion';
 
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/);
 const issue=z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/);
@@ -15,7 +14,9 @@ export const StreamedProfileInputSchema=z.strictObject({version:z.literal(STREAM
 export const StreamedProfilePathSchema=z.strictObject({path:SourcePathSchema,
   types:z.array(z.enum(['string','number','boolean','object','array'])).max(5),
   values:z.number().int().nonnegative(),explicitNull:z.number().int().nonnegative(),
-  absent:z.number().int().nonnegative(),unknown:z.number().int().nonnegative()});
+  absent:z.number().int().nonnegative(),unknown:z.number().int().nonnegative(),
+  /** Values that are whole numbers within the exact integer range; absent in a generation that did not count them. */
+  integers:z.number().int().nonnegative().optional()});
 export const StreamedProfileLocatorSchema=z.strictObject({featureIndex:z.number().int().nonnegative(),
   byteStart:z.number().int().nonnegative(),byteEnd:z.number().int().positive(),rawSha256:hash,issueCode:issue});
 export const StreamedProfileGenerationSchema=z.strictObject({version:z.literal(STREAMED_PROFILE_LIMITS.version),
@@ -29,33 +30,32 @@ export const StreamedProfileGenerationSchema=z.strictObject({version:z.literal(S
   geometryTypes:z.array(z.string().min(1).max(64)).max(8),
   quarantineLocators:z.array(StreamedProfileLocatorSchema).max(STREAMED_PROFILE_LIMITS.quarantineLocators),
   reference:z.strictObject({sourceCrs:z.string().max(100).nullable(),evidence:z.string().max(200).nullable(),
-    globalPlacement:z.literal('not_qualified')})});
+    unit:z.string().min(1).max(80).nullable().optional(),globalPlacement:z.literal('not_qualified')})});
 export const StreamedProfileStatusSchema=z.strictObject({version:z.literal(STREAMED_PROFILE_LIMITS.version),
   jobId:id,rawJobId:id,caseId:id,sourceId:id,sourceRevision:z.number().int().positive(),sourceSha256:hash,
   status:z.enum(['queued','running','sealed','failed','stale']),nextRawIndex:z.number().int().nonnegative(),
   latest:StreamedProfileGenerationSchema.nullable(),issueCode:issue.nullable(),
   sourceComplete:z.boolean(),usableCoverage:z.boolean(),identityComplete:z.literal(false)});
 
-const StreamedOperationSchema=MappingOperationSchema.extend({target:LegacyMappingTargetSchema,
-  conversionId:z.enum(['literal_identifier@1','literal_text@1','geojson_polygon@1'])});
-const SemanticEvidenceSchema=z.strictObject({target:LegacyMappingTargetSchema,
-  sourcePath:SourcePathSchema,issuer:z.string().min(1).max(500),
-  evidenceUrl:z.url().max(2048),meaning:z.enum(['building_source_identity','building_name','building_footprint'])});
+const SemanticEvidenceSchema=z.strictObject({target:MappingOperationSchema.shape.target,
+  sourcePath:SourcePathSchema,issuer:z.string().min(1).max(500),evidenceUrl:z.url().max(2048),
+  meaning:z.enum(['building_source_identity','building_name','building_footprint',
+    'feature_source_identity','feature_name','feature_geometry'])});
 const mappingPlanFields={mode:z.literal('streamed_mapping'),source:SourcePinSchema,caseId:id,caseRevision:z.number().int().nonnegative(),
   rawJobId:id,profileJobId:id,profileGeneration:z.number().int().nonnegative(),profileHash:hash,
-  operations:z.array(StreamedOperationSchema).min(2).max(3),
+  kind:LayoutKindSchema.optional(),operations:z.array(MappingOperationSchema).min(2).max(3),
   semanticEvidence:z.array(SemanticEvidenceSchema).max(3),
   basis:z.enum(['publisher_cited','officer_stated']).optional(),
 };
 const MappingPlanBaseSchema=z.strictObject(mappingPlanFields);
 const reviewPlan=(plan:z.infer<typeof MappingPlanBaseSchema>,ctx:z.RefinementCtx)=>{
-  const targets=plan.operations.map(op=>op.target);
-  if(new Set(targets).size!==targets.length||!targets.includes('building.sourceKey')||!targets.includes('building.geometry'))
-    ctx.addIssue({code:'custom',path:['operations'],message:'One source key and one polygon geometry operation are required.'});
+  const message=layoutTargetsIssue(plan.kind,plan.operations.map(op=>op.target));
+  if(message)ctx.addIssue({code:'custom',path:['operations'],message});
   if(plan.source.schemaFingerprint!==plan.profileHash)
     ctx.addIssue({code:'custom',path:['profileHash'],message:'The exact profile generation must be pinned.'});
   const meanings={'building.sourceKey':'building_source_identity','building.name':'building_name',
-    'building.geometry':'building_footprint'} as const;
+    'building.geometry':'building_footprint','feature.sourceKey':'feature_source_identity',
+    'feature.name':'feature_name','feature.geometry':'feature_geometry'} as const;
   if(plan.basis==='officer_stated'){
     if(plan.semanticEvidence.length!==0)
       ctx.addIssue({code:'custom',path:['semanticEvidence'],message:'An officer-stated layout carries no publisher citations.'});

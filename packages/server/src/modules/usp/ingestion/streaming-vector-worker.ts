@@ -12,7 +12,7 @@ import {assertStreamingInputTx,lockStreamingRowsTx} from './streaming-vector';
 import {readStreamingFeatures,readStreamingTabular,sourceRecord,tabularSourceRecord,
   type SourceFeature} from './streaming-vector-reader';
 import {validateStreamingTopology} from './streaming-vector-validation';
-import {writeSealedMapReceiptTx} from './streamed-map-receipt';
+import {resolveStreamedReference,writeSealedMapReceiptTx} from './streamed-map-receipt';
 import {queueIntakeLargeTx} from './intake-large';
 
 type Slot={chunkIndex:number;firstFeatureIndex:number;lastFeatureIndex:number|null;records:number;accepted:number;quarantined:number;
@@ -84,31 +84,53 @@ async function acceptSlot(input:AnyStreamingInput,attempt:UspJobAttempt,slot:Slo
   });
 }
 
+type ImportRow={records:number;sealed_chunks:number|null;next_publish_index:number};
+type Marker={index:number;featureIndex:number;attempt:number;fence:number};
+
+/** Before the seal a failure's ordered issue marker closes the published prefix (a stale end writes none). After
+ * the seal the sealed prefix stays as the seal left it: no slot past it, nothing published, its remainder known. */
+export async function endImportTx(client:PoolClient,input:AnyStreamingInput,row:ImportRow,code:string,
+  stale:boolean,marker:Marker|null){
+  const sealed=row.sealed_chunks!==null&&row.sealed_chunks===row.next_publish_index;
+  if(marker&&!sealed){
+    if(row.records!==marker.featureIndex)conflict('The terminal source position differs from the committed prefix.');
+    const hash=fingerprint({version:limits.version,jobId:input.jobId,sourceRevision:input.sourceRevision,
+      chunkIndex:marker.index,code});
+    await client.query(`INSERT INTO usp_streaming_vector_slots(job_id,source_revision,chunk_index,status,
+      first_feature_index,last_feature_index,records,accepted,quarantined,bytes,issue_code,result_sha256,attempt,fence)
+      VALUES($1,$2,$3,'quarantined',$4,NULL,0,0,0,0,$5,$6,$7,$8) ON CONFLICT DO NOTHING`,
+      [input.jobId,input.sourceRevision,marker.index,marker.featureIndex,code,hash,marker.attempt,marker.fence]);
+    await publishStreamingPrefixTx(client,input);
+  }
+  const status=stale?'stale':'failed';
+  await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",
+    [input.jobId]);
+  await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[input.jobId,status,code]);
+  await client.query(`UPDATE usp_streaming_vector_imports SET state=$2,issue_code=$3,unknown_remainder=$4,
+    updated_at=now() WHERE job_id=$1`,[input.jobId,status,code,!sealed]);
+  if(!stale)await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
+    sourceRevision:input.sourceRevision,jobId:input.jobId,status:'failed'},input.subject);
+  await queueIntakeLargeTx(client,input.sourceId);
+}
+
+/** CR1's words for a refused declaration stay beside where its receipt would be, for the officer's row. */
+async function keepCrsRefusalTx(client:PoolClient,input:AnyStreamingInput,words:string){
+  await client.query(`UPDATE sources SET inspection=jsonb_set(inspection,'{streamedMapRefusal}',$2::jsonb)
+    WHERE id=$1 AND profile='large-original-v1'`,[input.sourceId,JSON.stringify({rawJobId:input.jobId,words})]);
+}
+
 async function terminal(input:AnyStreamingInput,attempt:UspJobAttempt,code:string,
-  nextIndex:number,nextFeatureIndex:number,stale=false){
+  nextIndex:number,nextFeatureIndex:number,stale=false,words:string|null=null){
   await transaction(async client=>{
     if(stale)await lockStreamingRowsTx(client,input.caseId,input.sourceId);
     else await assertStreamingInputTx(client,input);
     await assertUspJobAttemptTx(client,attempt);
     const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
     if(!state)conflict('The streaming import state is unavailable.');
-    if(!stale){
-      if(state.records!==nextFeatureIndex)conflict('The terminal source position differs from the committed prefix.');
-      const hash=fingerprint({version:limits.version,jobId:input.jobId,sourceRevision:input.sourceRevision,chunkIndex:nextIndex,code});
-      await client.query(`INSERT INTO usp_streaming_vector_slots(job_id,source_revision,chunk_index,status,first_feature_index,last_feature_index,
-        records,accepted,quarantined,bytes,issue_code,result_sha256,attempt,fence)
-        VALUES($1,$2,$3,'quarantined',$4,NULL,0,0,0,0,$5,$6,$7,$8) ON CONFLICT DO NOTHING`,
-        [input.jobId,input.sourceRevision,nextIndex,nextFeatureIndex,code,hash,attempt.number,attempt.fence]);
-      await publishStreamingPrefixTx(client,input);
-    }
     await client.query('UPDATE usp_job_attempts SET state=$3 WHERE job_id=$1 AND number=$2',[input.jobId,attempt.number,'fenced']);
-    await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[input.jobId]);
-    await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[input.jobId,stale?'stale':'failed',code]);
-    await client.query('UPDATE usp_streaming_vector_imports SET state=$2,issue_code=$3,unknown_remainder=true,updated_at=now() WHERE job_id=$1',
-      [input.jobId,stale?'stale':'failed',code]);
-    if(!stale)await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
-      sourceRevision:input.sourceRevision,jobId:input.jobId,status:'failed'},input.subject);
-    await queueIntakeLargeTx(client,input.sourceId);
+    if(words)await keepCrsRefusalTx(client,input,words);
+    await endImportTx(client,input,state,code,stale,stale?null:{index:nextIndex,featureIndex:nextFeatureIndex,
+      attempt:attempt.number,fence:attempt.fence});
   });
 }
 
@@ -127,6 +149,11 @@ async function retry(input:AnyStreamingInput,attempt:UspJobAttempt,code:string){
     await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
       sourceRevision:input.sourceRevision,jobId:input.jobId,status:'queued'},input.subject);
   });
+}
+
+/** A lost fence is refused with the shared conflict code; any other failure to end the job is not hidden. */
+export function fencedOut(error:unknown){
+  return error instanceof AppError&&error.status===409&&error.code==='STALE_REVISION';
 }
 
 /** Dispatcher-owned bounded reader. Replays an accepted prefix from byte zero with exact hashes. */
@@ -149,24 +176,14 @@ export async function runStreamingVectorJob(jobId:string){
       const stale=code==='STREAMING_CONTEXT_STALE';
       const stillActive=(await client.query("SELECT 1 FROM usp_job_attempts WHERE job_id=$1 AND state='active' AND lease_until>now() LIMIT 1",[jobId])).rowCount;
       if(!current||!['queued','running'].includes(current.status)||stillActive)return;
+      let marker:Marker|null=null;
       if(!stale){
         await assertStreamingInputTx(client,input);
         const index=Number((await client.query('SELECT count(*)::int n FROM usp_streaming_vector_slots WHERE job_id=$1',[jobId])).rows[0].n);
-        const hash=fingerprint({version:limits.version,jobId,sourceRevision:input.sourceRevision,chunkIndex:index,code});
         const last=(await client.query('SELECT number,fence FROM usp_job_attempts WHERE job_id=$1 ORDER BY number DESC LIMIT 1',[jobId])).rows[0];
-        await client.query(`INSERT INTO usp_streaming_vector_slots(job_id,source_revision,chunk_index,status,first_feature_index,last_feature_index,
-          records,accepted,quarantined,bytes,issue_code,result_sha256,attempt,fence)
-          VALUES($1,$2,$3,'quarantined',$4,NULL,0,0,0,0,$5,$6,$7,$8) ON CONFLICT DO NOTHING`,
-          [jobId,input.sourceRevision,index,row.records,code,hash,last.number,last.fence]);
-        await publishStreamingPrefixTx(client,input);
+        marker={index,featureIndex:row.records,attempt:last.number,fence:last.fence};
       }
-      await client.query("UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1",[jobId,code==='STREAMING_CONTEXT_STALE'?'stale':'failed',code]);
-      await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[jobId]);
-      await client.query('UPDATE usp_streaming_vector_imports SET state=$2,issue_code=$3,unknown_remainder=true WHERE job_id=$1',
-        [jobId,stale?'stale':'failed',code]);
-      if(!stale)await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
-        sourceRevision:input.sourceRevision,jobId,status:'failed'},input.subject);
-      await queueIntakeLargeTx(client,input.sourceId);
+      await endImportTx(client,input,row,code,stale,marker);
     });
     return;
   }
@@ -214,6 +231,7 @@ export async function runStreamingVectorJob(jobId:string){
       throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The retained original differs from its pinned hash or byte count.');
     if(!result.features)throw new AppError(422,'STREAMING_EMPTY_SOURCE','The source contains no complete features.');
     await flush();
+    const reference=input.framing==='feature-collection'?await resolveStreamedReference(result.metadata):undefined;
     await transaction(async client=>{
       await assertStreamingInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
       const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[jobId])).rows[0];
@@ -230,7 +248,7 @@ export async function runStreamingVectorJob(jobId:string){
         const state=(await client.query('SELECT quarantined FROM usp_streaming_vector_imports WHERE job_id=$1',[jobId])).rows[0];
         const status=state.quarantined?'completed_with_rejections':'completed';
         await client.query('UPDATE usp_streaming_vector_imports SET state=$2,issue_code=NULL,updated_at=now() WHERE job_id=$1',[jobId,status]);
-        if(input.framing==='feature-collection')await writeSealedMapReceiptTx(client,input,result);
+        if(input.framing==='feature-collection')await writeSealedMapReceiptTx(client,input,result,reference);
         await appendCaseIngestionTx(client,input.caseId,{kind:'streaming-vector.changed',sourceId:input.sourceId,
           sourceRevision:input.sourceRevision,jobId,status},input.subject);
         await queueIntakeLargeTx(client,input.sourceId);
@@ -239,13 +257,17 @@ export async function runStreamingVectorJob(jobId:string){
     const code=error instanceof AppError?error.code:'STREAMING_WORKER_ERROR';
     const structural=error instanceof AppError&&[413,422].includes(error.status);
     const stale=error instanceof AppError&&[403,404,409].includes(error.status);
+    const words=code==='STREAMING_SOURCE_CRS'?(error as AppError).message:null;
     try{
       if(structural){
         // A later bad value keeps the accepted prefix. No guessed boundary or completion count is recorded.
-        await flush();await terminal(input,attempt,code,nextIndex,nextFeatureIndex);
+        await flush();await terminal(input,attempt,code,nextIndex,nextFeatureIndex,false,words);
       }else if(stale)await terminal(input,attempt,'STREAMING_CONTEXT_STALE',nextIndex,nextFeatureIndex,true);
       else if(attempt.number>=3)await terminal(input,attempt,code,nextIndex,nextFeatureIndex);
       else await retry(input,attempt,code);
-    }catch{/* A newer fence owns this job; it alone may change durable state. */}
+    }catch(failure){
+      // A newer fence owns this job; it alone may change durable state.
+      if(!fencedOut(failure))throw failure;
+    }
   }
 }

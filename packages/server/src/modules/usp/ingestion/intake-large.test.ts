@@ -3,7 +3,7 @@ import test from 'node:test';
 import type { PoolClient } from 'pg';
 import { STREAMING_VECTOR_LIMITS as limits } from '@ulpin/contracts/usp';
 import { intakeLargeFailureReason, intakeLargeHoldsReason, intakeLargeNumbers, intakeLargePhase,
-  INTAKE_LARGE_LAYOUT_QUESTION, type IntakeLargeRows } from './intake-large';
+  intakeLargePartRefusal, INTAKE_LARGE_LAYOUT_QUESTION, type IntakeLargeRows } from './intake-large';
 import { writeIntakeLargeTx, type IntakeLargeState } from './intake-ledger';
 import { queueIntakeDraftTx } from './intake-draft';
 import type { IntakeSourceRow } from './intake-context';
@@ -123,9 +123,13 @@ test('phase counters mean raw parts, mapped parts and finally package cuts, not 
 });
 
 test('CRS, size and feature ceiling refusals use literal metadata and the existing limits', () => {
-  assert.equal(intakeLargeFailureReason('STREAMING_SOURCE_CRS', 1, 'EPSG:2958'),
-    'This file declares the coordinate system EPSG:2958. '
-    + 'Large files are read in longitude and latitude only for now; nothing was prepared from it.');
+  const words = 'The file\'s crs member declares {"type":"name","properties":{"name":"EPSG:99999"}}; its name is not a '
+    + 'recognized coordinate reference system.';
+  assert.equal(intakeLargeFailureReason('STREAMING_SOURCE_CRS', 1, words), 'The file\'s crs member declares '
+    + '{"type":"name","properties":{"name":"EPSG:99999"}}; its name is not a recognized coordinate reference system; '
+    + 'nothing was prepared from it.');
+  assert.equal(intakeLargeFailureReason('STREAMING_SOURCE_CRS', 1),
+    'The coordinate system this file declares could not be resolved; nothing was prepared from it.');
   assert.equal(intakeLargeFailureReason('STREAMING_SOURCE_BUDGET', 129 * 1024 ** 2),
     `This file is 129 MiB. A map file is read in parts up to ${limits.sourceBytes / 1024 ** 2} MiB for now; `
     + 'nothing was prepared from it.');
@@ -153,6 +157,15 @@ test('known terminal failures and an unenumerated infrastructure failure never e
     assert.doesNotMatch(sentence, /[A-Z]+_[A-Z_]+|[a-f0-9]{64}|job|worker/);
     assert(sentence.endsWith('; nothing was prepared from it.'));
   }
+});
+
+test('an identifier written with a decimal point rests the row at its part in plain words', () => {
+  const sentence = intakeLargePartRefusal('PART_INTEGER_IDENTIFIER');
+  assert.equal(sentence, 'The identifier field holds a value written with a decimal point. '
+    + 'This file must write whole-number identifiers as digits only; nothing more was prepared from it.');
+  assert.doesNotMatch(sentence!, /[A-Z]+_[A-Z_]+|job|worker/);
+  for (const code of ['PART_CUT_BOUND', 'STALE_REVISION', '__proto__', 'toString'])
+    assert.equal(intakeLargePartRefusal(code), null);
 });
 
 test('hold summaries use only nonzero clauses and no illustrative count', () => {

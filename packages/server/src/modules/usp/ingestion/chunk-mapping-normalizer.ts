@@ -18,10 +18,12 @@ const unknown=(path:string|null=null):Field=>({state:'unknown',value:null,source
 export const literalTextValueValid=(value:string)=>value.length>0&&value.length<=2048&&value.trim()===value;
 const pathForProperty=(key:string)=>`/features/*/properties/${key.replaceAll('~','~0').replaceAll('/','~1')}`;
 const valueType=(value:unknown)=>Array.isArray(value)?'array':typeof value;
-const field=(feature:Record<string,unknown>,path:string):Field=>{
-  if(path==='/features/*/id')return Object.hasOwn(feature,'id')
-    ? feature.id===null?{state:'null',value:null,sourcePath:path}
-      :typeof feature.id==='string'?{state:'known',value:feature.id,sourcePath:path}:unknown(path)
+/** Text is copied as written; a whole-number key (literal_integer_identifier@1) as its digits. */
+const literal=(value:unknown,path:string,integer:boolean):Field=>value===null?{state:'null',value:null,sourcePath:path}
+  :typeof value==='string'&&!integer?{state:'known',value,sourcePath:path}
+    :integer&&Number.isSafeInteger(value)?{state:'known',value:String(value),sourcePath:path}:unknown(path);
+const field=(feature:Record<string,unknown>,path:string,integer=false):Field=>{
+  if(path==='/features/*/id')return Object.hasOwn(feature,'id')?literal(feature.id,path,integer)
     :{state:'absent',value:null,sourcePath:path};
   const prefix='/features/*/properties/';
   if(!path.startsWith(prefix))return unknown(path);
@@ -29,16 +31,17 @@ const field=(feature:Record<string,unknown>,path:string):Field=>{
   const properties=feature.properties;
   if(!properties||typeof properties!=='object'||Array.isArray(properties)||!Object.hasOwn(properties,key))
     return {state:'absent',value:null,sourcePath:path};
-  const value=(properties as Record<string,unknown>)[key];
-  return value===null?{state:'null',value:null,sourcePath:path}
-    :typeof value==='string'?{state:'known',value,sourcePath:path}:unknown(path);
+  return literal((properties as Record<string,unknown>)[key],path,integer);
 };
+const keyOperation=(plan:Plan)=>plan.operations.find(op=>op.target.endsWith('.sourceKey'))!;
+const integerKey=(plan:Plan)=>keyOperation(plan).conversionId==='literal_integer_identifier@1';
 export function candidateKeyHashes(records:StreamingVectorRecord[],plan:Plan|MappingPlanV2){
   const path=isMappingPlanV2(plan)?plan.fields.find(op=>op.target==='building.sourceKey')?.sourceField
-    :plan.operations.find(op=>op.target==='building.sourceKey')!.sourcePath;
+    :keyOperation(plan).sourcePath;
   if(!path)return [];
+  const integer=!isMappingPlanV2(plan)&&integerKey(plan);
   return [...new Set(records.filter(record=>record.disposition==='accepted').map(record=>{
-    const value=field(record.feature as Record<string,unknown>,path);
+    const value=field(record.feature as Record<string,unknown>,path,integer);
     return value.state==='known'?sha256(value.value!):null;
   }).filter((value):value is string=>value!==null))];
 }
@@ -110,8 +113,8 @@ function normalizeLegacyMappedChunk(records:StreamingVectorRecord[],plan:Plan,pr
   else compileStreamedMapping(plan,profile as StreamedProfileGeneration);
   // A chunk can observe a permitted subset; the slot names the pinned allowed inventory.
   const schemaFingerprint=profile.source.schemaFingerprint;
-  const keyPath=plan.operations.find(op=>op.target==='building.sourceKey')!.sourcePath;
-  const namePath=plan.operations.find(op=>op.target==='building.name')?.sourcePath;
+  const keyPath=keyOperation(plan).sourcePath,integer=integerKey(plan);
+  const namePath=plan.operations.find(op=>op.target.endsWith('.name'))?.sourcePath;
   const byHash=new Map(existing.map(row=>[row.source_key_sha256,{value:row.source_key,firstIndex:row.first_feature_index}]));
   const keys:KeyDecision[]=[],observations:ChunkMappingObservation[]=[];
   for(const record of records){
@@ -125,7 +128,7 @@ function normalizeLegacyMappedChunk(records:StreamingVectorRecord[],plan:Plan,pr
     }
     const feature=record.feature as Record<string,unknown>;
     issues.push(...sourceShapeIssues(feature,profile));
-    let sourceKey=field(feature,keyPath),name=namePath?field(feature,namePath):unknown();
+    let sourceKey=field(feature,keyPath,integer),name=namePath?field(feature,namePath):unknown();
     if(name.state==='known'&&!literalTextValueValid(name.value!)){
       name=unknown(namePath);issues.push('MAPPING_TEXT_INVALID');
     }

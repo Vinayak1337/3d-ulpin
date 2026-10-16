@@ -96,6 +96,15 @@ def _geojson_crs(source: dict) -> tuple[CRS, str | None]:
     return result, name
 
 
+def resolve_geojson_crs(data):
+    """CR1's resolution alone, for a large file whose collection members are read apart from its features."""
+    collection = data.get("collection") if isinstance(data, dict) else None
+    if not isinstance(collection, dict) or "features" in collection:
+        raise InputError("Resolution requires the collection's members without its features.")
+    result, name = _geojson_crs(collection)
+    return {"declared": name, "authority": ":".join(result.to_authority()), "unit": result.axis_info[0].unit_name}
+
+
 def _analysis_crs(value):
     result = _crs(value, "analysisCrs")
     code = result.to_epsg()
