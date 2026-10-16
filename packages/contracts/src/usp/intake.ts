@@ -57,6 +57,11 @@ export const IntakeMemberSchema = z.strictObject({
 export const IntakeCardSchema = z.strictObject({ ...fields, members: z.array(IntakeMemberSchema).max(2000) });
 export const IntakeRegisterSchema = z.strictObject({ sourceId: z.string().uuid(), requestKey: z.string().uuid() });
 export const IntakePinSchema = z.strictObject({ wave: z.number().int().min(1).max(4), requestKey: z.string().uuid() });
+export const IntakeLargeRetrySchema = z.strictObject({ requestKey: z.string().uuid() });
+export const IntakeLargeRetryResultSchema = z.strictObject({
+  itemId: z.string().uuid(), jobId: z.string().uuid(),
+  retry: z.number().int().positive().describe('How many officer retries this item has, this one included.'),
+});
 export const IntakeItemPlanSchema = z.strictObject({
   recipeId: z.string().uuid(), recipeRevision: z.number().int().positive(),
   recipeState: z.enum(['proposed', 'approved', 'executed']),

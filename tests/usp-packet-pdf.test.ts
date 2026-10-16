@@ -151,7 +151,7 @@ class ControlDb{
       input_fingerprint:v[4],payload:structuredClone(v[5]),status:'queued',attempts:0,error:null,created_at:new Date().toISOString()});return result();}
     if(q.startsWith('SELECT id FROM jobs WHERE operation='))return result(this.state.jobs.filter(j=>j.payload.command.planId===v[0]&&String(j.payload.command.version)===v[1]));
     if(q.startsWith('SELECT j.*')&&q.includes('FROM jobs')){const job=this.state.jobs.find(j=>j.id===v[0]),meta=this.state.jobMeta.find(j=>j.job_id===v[0]);return result(job&&meta?[{...structuredClone(job),...structuredClone(meta),id:job.id}]:[]);}
-    if(q.startsWith('SELECT * FROM jobs WHERE status'))return result(this.state.jobs.filter(j=>['queued','running'].includes(j.status)));
+    if(q.startsWith('SELECT * FROM (SELECT *, row_number() OVER (PARTITION BY operation'))return result(this.state.jobs.filter(j=>['queued','running'].includes(j.status)));
     if(q.includes('FROM jobs')){const jobs=this.state.jobs.filter(j=>j.id===v[0]);return result(jobs.map(j=>structuredClone(j)));}
     if(q.startsWith('INSERT INTO usp_job_metadata')){this.state.jobMeta.push({job_id:v[0],input_manifest_id:v[1],input_sha256:v[2],scope:structuredClone(v[3]),version:1,logical_state:'queued',result_ref:null,accepted_fence:null});return result();}
     if(q.includes('FROM usp_job_metadata'))return result(this.state.jobMeta.filter(m=>m.job_id===v[0]).map(m=>structuredClone(m)));

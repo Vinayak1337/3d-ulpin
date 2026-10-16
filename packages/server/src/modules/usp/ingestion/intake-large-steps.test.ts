@@ -5,7 +5,10 @@ import { STREAMING_VECTOR_LIMITS as limits, type IntakeCard, type StreamingVecto
 import { INTAKE_LARGE_LAYOUT_QUESTION, INTAKE_LARGE_STOPPED, intakeLargeAtRest, intakeLargeCrsRefusal,
   intakeLargeCutKey, intakeLargeEnd, intakeLargeFailureReason, intakeLargePhase, intakeLargePlan,
   intakeLargeProjection, intakeLargeRefusedCrs, intakeLargeRequestKey, intakeLargeRows, largeStateKey,
-  queueIntakeLargePackageTx, queueIntakeLargeTx, type IntakeLargeSource, type IntakeLargeStore } from './intake-large';
+  queueIntakeLargePackageTx, queueIntakeLargeTx, retryIntakeLargeItem, type IntakeLargeSource,
+  type IntakeLargeStore } from './intake-large';
+import { fingerprint } from '../../cases/domain';
+import { AppError } from '../../../infrastructure/errors';
 import { queueIntakeDraftTx } from './intake-draft';
 import type { IntakeSourceRow } from './intake-context';
 import { localOperatorSubject } from '../principal';
@@ -41,9 +44,11 @@ function store(overrides: Partial<{ item: Record<string, unknown> | null; bytes:
   unreviewed: number; partOf: string | null }> = {}) {
   const tables = { item: { item_id: sourceId, case_id: caseId, state: 'probed', placement: 'undecided',
     card: { family: 'vector', format: 'geojson', crs: { code: null } }, plan_ref: null, family: 'vector',
-    parent_item_id: null, source_id: sourceId }, bytes: 43263076, reader: null, profile: null, recipe: null,
+    parent_item_id: null, source_id: sourceId, limit_reason: null, records_seen: 0, parts_planned: null,
+    parts_done: 0 } as Record<string, unknown> | null, bytes: 43263076, reader: null, profile: null, recipe: null,
   mapping: null, parts: 0, unreviewed: 0, partOf: null, ...overrides };
   const jobs = new Map<string, Record<string, unknown>>();
+  const operations = new Map<string, { payload_hash: string; result: Record<string, unknown> }>();
   let metadata = 0;
   const one = (row: unknown) => ({ rows: row ? [row] : [], rowCount: row ? 1 : 0 });
   const client = { query: async (sql: string, values: unknown[] = []) => {
@@ -77,9 +82,39 @@ function store(overrides: Partial<{ item: Record<string, unknown> | null; bytes:
       metadata++;
       return one(null);
     }
+    if (sql.startsWith('SELECT count(*)::int n FROM operations')) return one({ n: [...operations.values()]
+      .filter(row => row.result.itemId === values[1]).length });
+    if (sql.startsWith('SELECT payload_hash,result FROM operations')) return one(operations.get(values[1] as string));
+    if (sql.startsWith('INSERT INTO operations')) {
+      operations.set(values[1] as string, { payload_hash: values[2] as string,
+        result: values[3] as Record<string, unknown> });
+      return one({});
+    }
+    if (sql.startsWith('UPDATE operations SET result')) {
+      operations.get(values[1] as string)!.result = values[2] as Record<string, unknown>;
+      return one({});
+    }
+    if (sql.startsWith('SELECT source_id FROM usp_intake_items')) return one(tables.item?.item_id === values[1]
+      && tables.item);
+    if (sql.startsWith('SELECT state,placement') || sql.startsWith('SELECT parts_planned')) return one(tables.item);
+    if (sql.startsWith('UPDATE usp_intake_items SET parts_planned')) {
+      Object.assign(tables.item!, { parts_planned: values[2], parts_done: values[3] });
+      return one({});
+    }
+    if (sql.startsWith('UPDATE usp_intake_items SET state')) {
+      Object.assign(tables.item!, { state: values[2], placement: values[3], plan_ref: values[4],
+        records_seen: values[5], limit_reason: values[6] });
+      return one({});
+    }
+    if (sql.startsWith('SELECT item_id AS')) return one({ itemId: sourceId, state: tables.item!.state,
+      family: 'vector', format: 'geojson', sizeClass: 'M', wave: 1, pinnedByOfficer: false });
+    if (sql.startsWith('SELECT revision FROM cases')) return one({ revision: 3 });
+    if (sql.startsWith('UPDATE usp_outbox_streams')) return one({ sequence: '1' });
+    if (['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql) || sql.startsWith('INSERT INTO usp_outbox')
+      || sql.startsWith('SELECT pg_advisory_xact_lock')) return one(null);
     throw new Error(`Unexpected statement: ${sql}`);
   } } as unknown as PoolClient;
-  return { client, tables, jobs, metadata: () => metadata };
+  return { client, tables, jobs, operations, metadata: () => metadata };
 }
 
 const card = { family: 'vector', format: 'geojson' } as IntakeCard;
@@ -251,4 +286,84 @@ test('a step that fails all its attempts says so in officer words', () => {
   assert.equal(INTAKE_LARGE_STOPPED, 'Preparing this file stopped after repeated errors; '
     + 'the steps already done are kept. Nothing more was prepared from it.');
   assert.doesNotMatch(INTAKE_LARGE_STOPPED, /[A-Z]+_[A-Z_]+|job|worker/);
+});
+
+/** The retry runs in its own transaction; the fixture's client answers it. */
+async function retried(fixture: ReturnType<typeof store>, requestKey: string, itemId = sourceId) {
+  const globals = globalThis as typeof globalThis & { ulpinPool?: unknown };
+  const previous = globals.ulpinPool;
+  globals.ulpinPool = { connect: async () => Object.assign(fixture.client, { release: () => {} }) };
+  try {
+    return await retryIntakeLargeItem(caseId, itemId, { requestKey });
+  } finally {
+    if (previous === undefined) delete globals.ulpinPool;
+    else globals.ulpinPool = previous;
+  }
+}
+const retryKey = '20000000-0000-4000-8000-000000000007';
+const refused = (code: string) => (error: unknown) => {
+  assert(error instanceof AppError);
+  assert.equal(error.status, 409);
+  assert.equal(error.code, code);
+  assert.doesNotMatch(error.message, /[A-Z]+_[A-Z_]+|job|worker/);
+  return true;
+};
+
+const stopped = () => store({ reader: { ...sealedReader(), state: 'running', sealed_chunks: null } });
+
+test('with no retry the state key is the key stored step jobs were named by', async () => {
+  const fixture = store();
+  assert.equal((await largeStateKey(fixture.client, sourceId))!.key, fingerprint({ version: 'intake-large/1',
+    reader: null, profile: null, recipe: null, mapping: null, parts: 0, unreviewed: 0 }));
+});
+
+test('a stopped file tried again queues one new step job; the same request again adds none', async () => {
+  const fixture = stopped();
+  const failed = await queueIntakeLargeTx(fixture.client, sourceId);
+  Object.assign(fixture.tables.item!, { state: 'failed_part', placement: 'not_understood',
+    limit_reason: INTAKE_LARGE_STOPPED });
+  assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), null);
+  const result = await retried(fixture, retryKey);
+  assert.equal(result.retry, 1);
+  assert.notEqual(result.jobId, failed);
+  assert(fixture.jobs.has(result.jobId));
+  assert.equal(fixture.jobs.size, 2);
+  assert.equal((fixture.jobs.get(result.jobId)!.payload as Record<string, unknown>).stateKey,
+    (await largeStateKey(fixture.client, sourceId))!.key);
+  assert.equal(fixture.tables.item!.placement, 'undecided');
+  assert.equal(fixture.tables.item!.limit_reason, null);
+  assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), result.jobId);
+  assert.deepEqual(await retried(fixture, retryKey), result);
+  assert.equal(fixture.jobs.size, 2);
+  assert.equal(fixture.operations.size, 1);
+});
+
+test('a retry key reused with a different request is refused before any write', async () => {
+  const fixture = stopped();
+  Object.assign(fixture.tables.item!, { state: 'failed_part', placement: 'not_understood',
+    limit_reason: INTAKE_LARGE_STOPPED });
+  await retried(fixture, retryKey);
+  const jobs = fixture.jobs.size;
+  await assert.rejects(() => retried(fixture, retryKey, readerJob), (error: unknown) => error instanceof AppError
+    && error.status === 409 && error.code === 'STALE_REVISION');
+  assert.equal(fixture.jobs.size, jobs);
+  assert.equal(fixture.operations.size, 1);
+});
+
+test('a file stopped by what it contains, a bounded file and a file not stopped are refused in words', async () => {
+  const terminal = store({ reader: { ...sealedReader(), state: 'failed', issue_code: 'STREAMING_SOURCE_CRS' } });
+  Object.assign(terminal.tables.item!, { state: 'failed_part', placement: 'not_understood',
+    limit_reason: intakeLargeFailureReason('STREAMING_SOURCE_CRS', 1) });
+  await assert.rejects(() => retried(terminal, retryKey), refused('INTAKE_RETRY_FILE'));
+  terminal.tables.item!.limit_reason = INTAKE_LARGE_STOPPED;
+  await assert.rejects(() => retried(terminal, retryKey), refused('INTAKE_RETRY_FILE'));
+  const bounded = store();
+  bounded.tables.item!.card = { family: 'vector', format: 'csv', crs: { code: null } };
+  await assert.rejects(() => retried(bounded, retryKey), refused('INTAKE_RETRY_NOT_LARGE'));
+  const running = stopped();
+  await assert.rejects(() => retried(running, retryKey), refused('INTAKE_RETRY_NOT_STOPPED'));
+  for (const fixture of [terminal, bounded, running]) {
+    assert.equal(fixture.operations.size, 0);
+    assert.equal(fixture.jobs.size, 0);
+  }
 });
