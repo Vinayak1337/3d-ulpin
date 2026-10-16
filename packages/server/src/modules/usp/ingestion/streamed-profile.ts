@@ -128,7 +128,7 @@ async function statusTx(client:PoolClient,input:StreamedProfileInput){
   const latest=sourceIntegrityFailed||state.next_raw_index===0&&state.sealed_generation===null?null:
     await readStreamedGenerationTx(client,input,state.sealed_generation??state.next_raw_index-1);
   return StreamedProfileStatusSchema.parse({version:limits.version,jobId:input.jobId,rawJobId:input.rawJobId,
-    caseId:input.caseId,sourceId:input.sourceId,sourceRevision:input.sourceRevision,sourceSha256:input.sourceSha256,
+    caseId:input.caseId,caseRevision:input.caseRevision,sourceId:input.sourceId,sourceRevision:input.sourceRevision,sourceSha256:input.sourceSha256,
     status:sourceIntegrityFailed?'failed':state.state,nextRawIndex:state.next_raw_index,latest,
     issueCode:sourceIntegrityFailed?'STREAMING_SOURCE_INTEGRITY':state.issue_code,
     sourceComplete:!sourceIntegrityFailed&&state.state==='sealed'&&latest?.coverage==='sealed',

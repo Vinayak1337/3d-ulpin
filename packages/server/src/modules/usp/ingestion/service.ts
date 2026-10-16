@@ -4,7 +4,7 @@ import { z } from 'zod';
 import {
   MappingDecisionSchema, MappingPlanSchema, SourceProfileSchema, TabularMappingReceiptSchema,
   AnyAuthorMappingSchema, AnyMappingReceiptSchema, AnyRetainSourceSchema, AnySourceProfileSchema,
-  TabularMappingPlanSchema, type AnyMappingReceipt, type AnySourceProfile, type TabularSourceProfile,
+  TabularMappingPlanSchema, type AnyMappingReceipt, type StreamedMappingReceipt, type AnySourceProfile, type TabularSourceProfile,
   type SourceProfile, type MappingDestination,
 } from '@ulpin/contracts/usp';
 import type { GisInspection } from '@ulpin/contracts';
@@ -244,7 +244,7 @@ export class ManualIngestionService {
   async read(caseIdValue:string,recipeIdValue:string) {
     const caseId=uuid.parse(caseIdValue),recipeId=uuid.parse(recipeIdValue);localOperatorSubject();
     const rows=(await query('SELECT body FROM usp_mapping_recipe_revisions WHERE recipe_id=$1 AND recipe_id IN(SELECT id FROM usp_mapping_recipes WHERE case_id=$2) ORDER BY revision',[recipeId,caseId])).rows;
-    if(!rows.length)notFound('Manual recipe not found.');return rows.map(row=>row.body) as AnyMappingReceipt[];
+    if(!rows.length)notFound('Manual recipe not found.');return rows.map(row=>row.body) as (AnyMappingReceipt|StreamedMappingReceipt)[];
   }
   async decide(caseIdValue:string,recipeIdValue:string,value:unknown,action:'approve'|'execute')
     :Promise<AnyMappingReceipt> {

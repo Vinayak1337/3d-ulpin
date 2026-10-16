@@ -65558,6 +65558,119 @@ export interface components {
             };
             /** @enum {string|null} */
             destination: null;
+        } | {
+            /** Format: uuid */
+            id: string;
+            revision: number;
+            /** @enum {string} */
+            state: "proposed" | "approved";
+            plan: {
+                /** @enum {string} */
+                mode: "streamed_mapping";
+                source: {
+                    /** Format: uuid */
+                    sourceId: string;
+                    /** Format: uuid */
+                    familyId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    schemaFingerprint: string;
+                };
+                /** Format: uuid */
+                caseId: string;
+                caseRevision: number;
+                /** Format: uuid */
+                rawJobId: string;
+                /** Format: uuid */
+                profileJobId: string;
+                profileGeneration: number;
+                profileHash: string;
+                /** @enum {string} */
+                kind?: "building" | "parcel" | "road" | "public_land" | "utility";
+                operations: {
+                    target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
+                    sourcePath: string;
+                    /** @enum {string} */
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                }[];
+                semanticEvidence: {
+                    target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
+                    sourcePath: string;
+                    issuer: string;
+                    /** Format: uri */
+                    evidenceUrl: string;
+                    /** @enum {string} */
+                    meaning: "building_source_identity" | "building_name" | "building_footprint" | "feature_source_identity" | "feature_name" | "feature_geometry";
+                }[];
+                /** @enum {string} */
+                basis?: "publisher_cited" | "officer_stated";
+                /** @enum {string} */
+                version: "streamed-mapping/1";
+                /** @enum {string} */
+                scope: "accepted_source_features";
+            } | {
+                /** @enum {string} */
+                mode: "streamed_mapping";
+                source: {
+                    /** Format: uuid */
+                    sourceId: string;
+                    /** Format: uuid */
+                    familyId: string;
+                    sourceRevision: number;
+                    sourceSha256: string;
+                    schemaFingerprint: string;
+                };
+                /** Format: uuid */
+                caseId: string;
+                caseRevision: number;
+                /** Format: uuid */
+                rawJobId: string;
+                /** Format: uuid */
+                profileJobId: string;
+                profileGeneration: number;
+                profileHash: string;
+                /** @enum {string} */
+                kind?: "building" | "parcel" | "road" | "public_land" | "utility";
+                operations: {
+                    target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
+                    sourcePath: string;
+                    /** @enum {string} */
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                }[];
+                semanticEvidence: {
+                    target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
+                    sourcePath: string;
+                    issuer: string;
+                    /** Format: uri */
+                    evidenceUrl: string;
+                    /** @enum {string} */
+                    meaning: "building_source_identity" | "building_name" | "building_footprint" | "feature_source_identity" | "feature_name" | "feature_geometry";
+                }[];
+                /** @enum {string} */
+                basis?: "publisher_cited" | "officer_stated";
+                /** @enum {string} */
+                version: "streamed-prefix-mapping/1";
+                /** @enum {string} */
+                scope: "observed_prefix_and_later_compatible_features";
+                prefix: {
+                    throughRawChunkIndex: number;
+                    rawResultSha256: string;
+                    recordsSeen: number;
+                    accepted: number;
+                };
+            };
+            planHash: string;
+            authoredBy: string;
+            /** Format: date-time */
+            authoredAt: string;
+            approval: {
+                subject: string;
+                /** Format: date-time */
+                at: string;
+                planHash: string;
+                /** @enum {string} */
+                provenance: "server_configured_local_operator";
+            } | null;
         })[];
         POST_ingestion_cases_caseId_recipes_recipeId_approve_Request_application_json: {
             /** Format: uuid */
@@ -69863,6 +69976,7 @@ export interface components {
             rawJobId: string;
             /** Format: uuid */
             caseId: string;
+            caseRevision: number;
             /** Format: uuid */
             sourceId: string;
             sourceRevision: number;
