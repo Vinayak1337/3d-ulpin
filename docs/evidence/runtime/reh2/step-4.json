@@ -1,0 +1,20 @@
+{ "at": "2026-10-16T22:40:32.732Z", "commit": "54d43d0bed053c803245fe82f64ffb7125eebe86", "receipt": { "command": [
+"node scripts/platform/demo-document-runtime.mjs build --runtime ulpin-reh-02" ],
+"from": "E:/Projects/ulpin-wt/ulpin-reh-02", "exit": 0, "seconds": 43.759, "output": [
+"Configured keys: ULPIN_DOCUMENT_PAGES_PYTHON, ULPIN_DOCUMENT_PAGES_SCRATCH, ULPIN_PACKET_R",
+"EGIONS_PYTHON, ULPIN_PACKET_REGIONS_PROFILE, ULPIN_PACKET_REGIONS_PROFILE_SHA256, ULPIN_PA", "CKET_REGIONS_SCRATCH",
+"ULPIN_PACKET_REGIONS_PROFILE_SHA256: [omitted non-source digest]",
+"document-runtime-paths.json SHA256: [omitted non-source digest]" ], "error": null }, "outputLines": 5, "state": {
+"runtimeEntriesByName": [ "bootstrap.complete.json", "document-ocr-934c4f99-f36c-4ab6-a2c9-a30da7717bc1-v6pzwQ",
+"document-runtime-paths.json", "learning", "logs", "models", "ocr-paths.json", "ocr-scratch", "runtime.env",
+"tabular-paths.json" ], "volumes": [ "ulpin-reh-02_minio-data", "ulpin-reh-02_postgres-data", "ulpin-reh-02_redis-data"
+], "containers": [ "ulpin-reh-02-worker-1 running Up 59 seconds (healthy)",
+"ulpin-reh-02-geo-1 running Up About a minute (healthy)",
+"ulpin-reh-02-minio-init-1 exited Exited (0) About a minute ago",
+"ulpin-reh-02-redis-1 running Up About a minute (healthy)",
+"ulpin-reh-02-postgres-1 running Up About a minute (healthy)",
+"ulpin-reh-02-minio-1 running Up About a minute (healthy)" ], "networks": [ "ulpin-reh-02_default" ], "listeners": [ {
+"LocalAddress": "127.0.0.1", "LocalPort": 21025, "OwningProcess": 29740 }, { "LocalAddress": "127.0.0.1",
+"LocalPort": 21024, "OwningProcess": 29740 }, { "LocalAddress": "127.0.0.1", "LocalPort": 21023, "OwningProcess": 29740
+}, { "LocalAddress": "127.0.0.1", "LocalPort": 21022, "OwningProcess": 29740 }, { "LocalAddress": "127.0.0.1",
+"LocalPort": 21021, "OwningProcess": 29740 } ] } }
