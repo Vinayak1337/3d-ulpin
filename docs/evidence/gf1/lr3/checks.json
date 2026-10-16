@@ -1,0 +1,24 @@
+{
+  "task": "LR3",
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "pnpm studio:typecheck", "exit": 0,
+      "note": "unit and reference are published as nullable strings described 'always null': openapi-fetch drops a member typed only null, which split the feature type between routes" },
+    { "command": "pnpm studio:test", "exit": 0, "tests": 438, "passed": 438, "files": 69 },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "exit": 0,
+      "note": "311 native operations, 352 named schemas; pins refreshed with refresh-contract.ts 7405ea74" },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 0,
+      "operations": 311, "schemas": 352 },
+    { "command": "backend tests (ingestion, areas, manual-author, ingestion-events, processing, usp-packet-pdf)",
+      "before": { "at": "7405ea74 (staging)", "tests": 239, "passed": 237, "skipped": 2, "failed": 0 },
+      "after": { "tests": 244, "passed": 242, "skipped": 2, "failed": 0 }, "exit": 0 },
+    { "command": "cd services/geo && python -B -m pytest tests/test_area.py tests/test_gis_inspection.py", "exit": 0,
+      "before": { "at": "7405ea74 (staging)", "passed": 152, "test_area": 94, "test_gis_inspection": 58 },
+      "after": { "passed": 157, "test_area": 98, "test_gis_inspection": 59 },
+      "interpreter": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe" },
+    { "command": "two-dimensional outputs hashed before and after (normalize and inspect)", "identical": true,
+      "inputs": ["nyc62", "geojson", "arcgis", "multipolygon", "line", "epsg2958"] },
+    { "command": "git diff --check staging...HEAD", "exit": 0 }
+  ],
+  "preExisting": "services/geo/tests/test_officer.py::test_csv_reference_rows_keep_logical_records_and_headers_without_geometry_candidates fails on staging itself (checked on a clean staging copy); not touched here."
+}
