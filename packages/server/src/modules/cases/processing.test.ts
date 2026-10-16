@@ -29,6 +29,30 @@ test('the dispatcher takes the operations in turn, each one\'s oldest job first'
   assert.match(sql, /AND next_attempt_at<=now\(\)\) ranked ORDER BY operation_rank, created_at LIMIT 12$/);
 });
 
+test('a background worker\'s error is kept in the log, not discarded', async () => {
+  const globals = globalThis as typeof globalThis & { ulpinPool?: unknown };
+  const previous = globals.ulpinPool;
+  const warned: string[] = [];
+  const warn = console.warn;
+  globals.ulpinPool = { query: async () => ({ rows: [{ id: 'pdf-1', operation: 'packet-pdf' }], rowCount: 1 }) };
+  console.warn = (line: string) => { warned.push(line); };
+  try {
+    let finished!: () => void;
+    const settled = new Promise<void>(resolve => { finished = resolve; });
+    await dispatchTick({ packetPdf: async () => {
+      setImmediate(finished);
+      throw new Error('reader attempt 1 lost its lease');
+    } });
+    await settled;
+  } finally {
+    console.warn = warn;
+    if (previous === undefined) delete globals.ulpinPool;
+    else globals.ulpinPool = previous;
+  }
+  assert.deepEqual(warned,
+    ['The packet-pdf worker dispatched from job pdf-1 ended with an error: reader attempt 1 lost its lease']);
+});
+
 // The selection's meaning needs PostgreSQL; a temporary jobs table shadows any real one for this session only.
 const database = process.env.ULPIN_DISPATCH_TEST_DATABASE_URL;
 test('an old backlog of one operation no longer hides another operation\'s job', { skip: !database }, async () => {
