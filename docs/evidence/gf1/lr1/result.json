@@ -9,7 +9,7 @@
       "expectedByTask": 328,
       "before": {"tests": 198, "pass": 182, "fail": 13, "skipped": 3},
       "after": {"tests": 208, "pass": 191, "fail": 14, "skipped": 3},
-      "beforeFailures": "13, unchanged after: E:/ data files absent (9), TEACHER_OUTPUT_IN_GIT path check (3), Python quote/OCR parity (2 counted within)",
+      "beforeFailures": "13, unchanged after: E:/ data files absent (8), TEACHER_OUTPUT_IN_GIT path check in mapping-memory (3), TypeScript and Python quote/OCR parity (2)",
       "newTests": 10,
       "newFailure": "registry.test.ts:126 asserts the streamed plan refuses feature.* targets (finding F4, not edited)"
     },
