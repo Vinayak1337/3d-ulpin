@@ -209,7 +209,10 @@ export async function ingestJob(id: string, result: unknown) {
 
 export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={}): Promise<number> {
   const pending = await query(
-    "SELECT * FROM jobs WHERE status IN ('queued','running') AND operation NOT LIKE 'usp:%' AND next_attempt_at<=now() ORDER BY created_at LIMIT 12",
+    // Each operation's oldest job, so a backlog of one operation cannot hide another operation's next job.
+    `SELECT * FROM (SELECT DISTINCT ON (operation) * FROM jobs WHERE status IN ('queued','running')
+      AND operation NOT LIKE 'usp:%' AND next_attempt_at<=now() ORDER BY operation,created_at) oldest
+    ORDER BY created_at LIMIT 12`,
   );
   await Promise.all(
     pending.rows.map(async (job) => {
