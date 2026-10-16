@@ -5,6 +5,7 @@ import type { AuthorBody } from './question-model';
 import type { Schemas } from '@ulpin/api-client';
 import { readTargets } from './run/api';
 import { runKey } from './run/useTargets';
+import type { RetryResult } from './retry-command';
 
 export const recipeKey = (caseId: string) => ['batch-recipes', caseId];
 
@@ -39,4 +40,10 @@ export function useIntakeManifest(caseId: string) {
       params: { path: { caseId } },
     })),
   });
+}
+
+export async function retryStoppedItem(caseId: string, itemId: string, requestKey: string): Promise<RetryResult> {
+  return unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/retry', {
+    params: { path: { caseId, itemId } }, body: { requestKey },
+  }));
 }

@@ -2,13 +2,16 @@ import { Button, DataTable } from '@ulpin/ui';
 import { Link } from 'react-router';
 import type { Package } from './run/model';
 import { needsLayoutAnswer } from './question-model';
+import { canRetryStopped } from './retry-command';
+import { StoppedRetry } from './StoppedRetry';
 import { countWords, crsWords, familyWords, formatWords, placementWords, sizeClassWords,
   stateWords, packagePath, partProgressWords } from './batch-model';
 import type { IntakeItem } from './batch-model';
 import styles from './Batch.module.css';
 
-export function IntakeTray({ items, packages, choose }: {
-  items: IntakeItem[]; packages: readonly Package[]; choose: (item: IntakeItem) => void;
+export function IntakeTray({ caseId, items, packages, choose, refresh }: {
+  caseId: string; items: IntakeItem[]; packages: readonly Package[]; choose: (item: IntakeItem) => void;
+  refresh: () => void;
 }) {
   return <div className={styles.tray} tabIndex={0} role="region" aria-label="Files in this batch">
     <DataTable caption="Files in this batch" rows={items} rowKey={(item) => item.itemId} columns={[
@@ -29,13 +32,15 @@ export function IntakeTray({ items, packages, choose }: {
       { header: 'Extent as stated', cell: (item) => item.card?.extent.native?.join(', ') ?? 'Not known' },
       { header: 'Placement', cell: (item) => placementWords(item.placement) },
       { header: 'Reason', cell: (item) => item.limitReason ?? null },
-      { header: 'Next step', cell: (item) => <NextStep item={item} packages={packages} choose={choose} /> },
+      { header: 'Next step', cell: (item) => <NextStep caseId={caseId} item={item} packages={packages}
+        choose={choose} refresh={refresh} /> },
     ]} />
   </div>;
 }
 
-function NextStep({ item, packages, choose }: {
-  item: IntakeItem; packages: readonly Package[]; choose: (item: IntakeItem) => void;
+function NextStep({ caseId, item, packages, choose, refresh }: {
+  caseId: string; item: IntakeItem; packages: readonly Package[]; choose: (item: IntakeItem) => void;
+  refresh: () => void;
 }) {
   const path = packagePath(item, packages);
   const packageStep = path ? <Link to={path}>Open package</Link> : <span>Package prepared</span>;
@@ -43,5 +48,6 @@ function NextStep({ item, packages, choose }: {
     {item.plan?.packageId ? packageStep : null}
     {item.sourceId && (item.plan || needsLayoutAnswer(item)) ?
       <Button variant="soft" onClick={() => choose(item)}>View layout</Button> : null}
+    {canRetryStopped(item) ? <StoppedRetry key={item.updatedAt} caseId={caseId} item={item} refresh={refresh} /> : null}
   </div>;
 }

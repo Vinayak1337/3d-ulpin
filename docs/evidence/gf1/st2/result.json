@@ -1,0 +1,36 @@
+{
+  "task": "ST2",
+  "gate": "GF1",
+  "branch": "task/st2-studio-large-retry",
+  "base": "133e0f18",
+  "runtime": "none: code and tests only (no Docker, no database, no provider call)",
+  "change": {
+    "offer": "The batch tray's Next step cell shows 'Try again' for an item with a source, placement not_understood and limitReason exactly the server's INTAKE_LARGE_STOPPED sentence. The Studio holds a copy of that sentence (as question-model.ts does for the layout question reasons); a test reads intake-large.ts and requires the two to be equal.",
+    "request": "POST /api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/retry with { requestKey }. One key per retry until its outcome is known: a lost answer or a 5xx keeps the key and the button reads 'Send same retry again'; a 4xx shows the server's words (for example INTAKE_RETRY_FILE), drops the key and refreshes the batch; a 200 shows 'Trying again from the steps already done (retry n).', refreshes the manifest, recipes and run summary, and sends nothing more.",
+    "remount": "StoppedRetry is keyed by item.updatedAt, so an item that stops again after a later change starts a new retry with a new key.",
+    "server": "unchanged; no contract, OpenAPI or api-client change (the route and its types were already published by LP3d)"
+  },
+  "checks": [
+    { "command": "pnpm --filter @ulpin/studio typecheck", "exit": 0 },
+    { "command": "pnpm --filter @ulpin/studio test", "exit": 0,
+      "before": { "at": "133e0f18", "tests": 446, "files": 70 },
+      "after": { "tests": 450, "passed": 450, "files": 71 } },
+    { "command": "git diff --check", "exit": 0 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs origin/staging", "exit": 0,
+      "note": "the scan reads apps/web only; the Studio change is read by hand in ui-design-check.md" }
+  ],
+  "leadNotes": [
+    "The task brief reached this session cut off after 'the sentence starting Preparing'; the requirements after that point were inferred from the route, its refusals and the ST1 Studio pattern. Check them against the full brief.",
+    "Not run against a live API or database: the request body and result are validated against the published OpenAPI schemas only."
+  ],
+  "filesChanged": [
+    "apps/studio/src/features/intake/retry-command.ts",
+    "apps/studio/src/features/intake/retry-command.test.tsx",
+    "apps/studio/src/features/intake/StoppedRetry.tsx",
+    "apps/studio/src/features/intake/IntakeTray.tsx",
+    "apps/studio/src/features/intake/BatchPage.tsx",
+    "apps/studio/src/features/intake/batch-queries.ts",
+    "docs/evidence/gf1/st2/result.json",
+    "docs/evidence/gf1/st2/ui-design-check.md"
+  ]
+}

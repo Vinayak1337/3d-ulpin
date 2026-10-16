@@ -34,7 +34,7 @@ function useBatchFacts(caseId: string) {
   };
   const items = manifest.data?.items ?? [];
   const stream = useBatchStream(caseId, items.some((item) => !isSettled(item)), refresh);
-  return { manifest, sourceCase, packages, items, stream, refresh };
+  return { caseId, manifest, sourceCase, packages, items, stream, refresh };
 }
 
 function IntakeBatch({ caseId }: { caseId: string }) {
@@ -75,7 +75,7 @@ function IntakeBatch({ caseId }: { caseId: string }) {
 function BatchRecords({ batch, choose }: {
   batch: ReturnType<typeof useBatchFacts>; choose: (item: IntakeItem) => void;
 }) {
-  const { manifest, sourceCase, packages, items } = batch;
+  const { caseId, manifest, sourceCase, packages, items, refresh } = batch;
   const listedPackages = packages.error ? [] : packages.data?.packages ?? [];
   return <>
     {manifest.isPending ? <Skeleton /> : null}
@@ -84,7 +84,8 @@ function BatchRecords({ batch, choose }: {
     </Banner> : null}
     {sourceCase.error ? <Banner tone="warning">{sourceCase.error.message}</Banner> : null}
     {packages.error ? <Banner tone="warning">{packages.error.message}</Banner> : null}
-    {items.length ? <IntakeTray items={items} packages={listedPackages} choose={choose} /> : null}
+    {items.length ? <IntakeTray caseId={caseId} items={items}
+      packages={listedPackages} choose={choose} refresh={refresh} /> : null}
     {!manifest.isPending && !items.length ? <p>No files are enrolled in this batch.</p> : null}
   </>;
 }
