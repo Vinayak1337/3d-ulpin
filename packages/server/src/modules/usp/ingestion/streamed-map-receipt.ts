@@ -9,7 +9,9 @@ type Slot = {
   chunk_index: number; first_feature_index: number; last_feature_index: number; records: number;
   accepted: number; quarantined: number; published: boolean; result_sha256: string;
 };
-type Closure = { bytes: number; sha256: string; features: number; metadata: Record<string, unknown> };
+/** `quarantinedByCode` is the reader's tally of its set-aside records; a receipt that sets any aside requires it. */
+type Closure = { bytes: number; sha256: string; features: number; metadata: Record<string, unknown>;
+  quarantinedByCode?: Record<string, number> };
 type Reference = StreamedMapOriginalReceipt['reference'];
 type Resolved = { declared: string | null; authority: string; unit: string };
 
@@ -79,6 +81,7 @@ export function sealedMapReceipt(input: StreamingVectorInput, closure: Closure, 
     sourceId: input.sourceId, sourceRevision: input.sourceRevision, sourceBytes: input.sourceBytes,
     sourceSha256: input.sourceSha256, readerVersion: input.version, rawJobId: input.jobId,
     framing: input.framing, parts: slots.length, features: records, accepted, quarantined,
+    ...(quarantined ? { quarantinedByCode: closure.quarantinedByCode ?? {} } : {}),
     collectionMetadata: closure.metadata,
     rawManifestSha256: fingerprint({ readerVersion: input.version, sourceId: input.sourceId,
       sourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256, slots }),
