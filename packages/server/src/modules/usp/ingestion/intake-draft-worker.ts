@@ -210,6 +210,9 @@ async function advance(input: IntakeDraftInput, attempt: UspJobAttempt) {
     await transition(input, attempt, null, 'probed');
     return;
   }
+  // A remembered layout the officer already approved for a file of this case is drafted with that approval.
+  if (current.state === 'proposed' && await origin(input, attempt, current) === 'memory')
+    current = await manual.carry(input.caseId, current.id);
   if (current.state === 'executed') {
     await transition(input, attempt, current, 'read', current.execution!.packageId);
     return;
