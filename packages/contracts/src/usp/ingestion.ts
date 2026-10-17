@@ -241,11 +241,12 @@ const LargeUploadCreateBaseSchema = z.strictObject({
   sha256: hash,
   provenance: z.union([LargeUploadProvenanceSchema, UnstatedUploadProvenanceSchema]),
 });
+/** CD1: any original of 1 byte or more, of any kind; the bounded map routes stay for their own kinds. */
 export const LargeUploadCreateSchema = z.union([
   LargeUploadCreateBaseSchema.extend({profile:z.literal('large-original/1').optional(),
-    bytes:z.number().int().min(16 * 1024 * 1024 + 1).max(LARGE_ORIGINAL_LIMITS.maxOriginalBytes)}),
+    bytes:z.number().int().min(1).max(LARGE_ORIGINAL_LIMITS.maxOriginalBytes)}),
   LargeUploadCreateBaseSchema.extend({profile:z.literal('large-original/2'),
-    bytes:z.number().int().min(16 * 1024 * 1024 + 1).max(LARGE_ORIGINAL_V2_LIMITS.maxOriginalBytes)}),
+    bytes:z.number().int().min(1).max(LARGE_ORIGINAL_V2_LIMITS.maxOriginalBytes)}),
 ]);
 export const LargeUploadGuardSchema = z.strictObject({requestKey: id, expectedRevision: revision, expectedCaseRevision: caseRevision});
 export const LargeUploadFinalizeSchema = LargeUploadGuardSchema.extend({sha256: hash});

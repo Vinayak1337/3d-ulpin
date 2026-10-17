@@ -12,7 +12,7 @@ test('large-original admission rejects unbounded bytes, object keys and unsafe f
   const input={requestKey:randomUUID(),expectedCaseRevision:0,filename:'district_nwic_geojson.zip',mediaType:'application/zip',bytes:71238839,sha256:'44c734cc72139f2447dcebfe2791cac862dc5ba265e158912d797cf3410d5c37',
     provenance:{issuer:'National Water Informatics Centre',originalUrl:'https://nwdp.nwic.gov.in/',acquiredAt:'2026-09-26T08:44:40Z',permissionReference:'https://www.nwdp.nwic.gov.in/footer/copyrightPolicy',limitations:['Opaque byte receipt only']}};
   assert.equal(LargeUploadCreateSchema.safeParse(input).success,true);
-  for(const changed of [{bytes:LARGE_ORIGINAL_LIMITS.maxOriginalBytes+1},{bytes:16*1024*1024},{filename:'../original.zip'},{filename:'original\r\n.zip'},{objectKey:'caller-selected'}])
+  for(const changed of [{bytes:LARGE_ORIGINAL_LIMITS.maxOriginalBytes+1},{bytes:0},{filename:'../original.zip'},{filename:'original\r\n.zip'},{objectKey:'caller-selected'}])
     assert.equal(LargeUploadCreateSchema.safeParse({...input,...changed}).success,false);
 });
 

@@ -18,7 +18,9 @@ const limits = { limits: Object.fromEntries(Object.entries(schema.properties.lim
 
 it('uses the published switch and part size, chooses profile at the maxima and refuses before writes', () => {
   const create = published.components.schemas.POST_ingestion_cases_caseId_uploads_Request_application_json;
-  expect(LARGE_UPLOAD_MINIMUM).toBe(create.anyOf[0]!.properties.bytes.minimum);
+  // CD1: /uploads takes any original of 1 byte or more; the map switch stays just above the bounded routes.
+  expect(create.anyOf.map(profile => profile.properties.bytes.minimum)).toEqual([1, 1]);
+  expect(LARGE_UPLOAD_MINIMUM).toBe(16 * 1024 * 1024 + 1);
   expect(uploadPlan(43263076, limits)).toEqual({ profile: 'large-original/1', partBytes: 8388608,
     parts: 6, lastPartBytes: 1320036 });
   expect(uploadPlan(limits.limits.maxOriginalBytes + 1, limits)).toMatchObject({ profile: 'large-original/2',

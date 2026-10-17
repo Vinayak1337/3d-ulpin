@@ -49,3 +49,12 @@ test('provenance forms cannot mix a publisher with not-stated origin or invent m
     state: 'caller_declared' })).success, false);
   assert.equal(LargeOriginalEvidenceSchema.safeParse(evidence({ ...cited, state: 'not_stated' })).success, false);
 });
+
+test('any original of 1 byte or more is admitted on either profile; an empty one is refused', () => {
+  const provenance = { origin: 'not_stated', acquiredAt };
+  for (const profile of ['large-original/1', 'large-original/2'] as const) {
+    for (const [filename, bytes] of [['plan.pdf', 3 * 1024], ['ortho.tif', 40 * 1024], ['note.bin', 1]] as const)
+      assert.equal(LargeUploadCreateSchema.safeParse({ ...input, profile, filename, bytes, provenance }).success, true);
+    assert.equal(LargeUploadCreateSchema.safeParse({ ...input, profile, bytes: 0, provenance }).success, false);
+  }
+});

@@ -13,7 +13,8 @@ it('routes map originals to intake, binary maps to direct import and tables to t
   expect(fileRoute('boundary.zip')).toBe('direct');
   expect(fileRoute('register.csv')).toBe('table');
   expect(fileRoute('register.xlsx')).toBe('table');
-  expect(fileRoute('plan.pdf')).toBe('unsupported');
+  for (const name of ['plan.pdf', 'ortho.tif', 'cloud.laz', 'model.ifc', 'unknown'])
+    expect(fileRoute(name)).toBe('original');
 });
 
 it('routes a shapefile ZIP to direct import and every other ZIP to the batch', async () => {
