@@ -4,6 +4,7 @@ import { IntakeLargeRetrySchema, IntakeLargeRetryResultSchema, STREAMING_VECTOR_
   type IntakeCard } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
+import { AREA_PROCESSOR_OPERATION } from '../../areas/areas';
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { registerUspJobInputTx } from '../jobs';
@@ -90,10 +91,12 @@ const partSentences: Readonly<Record<string, string>> = {
 };
 
 /** A part the file itself refuses rests the row at once: the same bytes cannot pass on another attempt. The geo
- * service answers its refusal of the part's own content with 422 and its words; a 5xx or a timeout is a fault. */
+ * service answers its refusal of the part's own content with 422 and its words; a 5xx or a timeout is a fault.
+ * A processor image without the operation is no fault that clears on a retry either. */
 export function intakeLargePartRefusal(error: unknown): string | null {
   if (!(error instanceof AppError)) return null;
   const nothing = '; nothing more was prepared from it.';
+  if (error.code === AREA_PROCESSOR_OPERATION) return terminalSentences[error.code] + nothing;
   if (Object.hasOwn(partSentences, error.code)) return partSentences[error.code] + nothing;
   if (error.code !== 'AREA_PROCESSING' || error.status !== 422) return null;
   return `A part of this file could not be read as a map: ${error.message.replace(/\.$/, '')}${nothing}`;
