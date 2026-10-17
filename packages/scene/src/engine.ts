@@ -74,6 +74,8 @@ const CAMERA_FAR = 20_000;
 const FAR_MARGIN = 1.25;
 // The fog of a large framed area starts past the framed reach and thickens over 1.4 reaches more.
 const FOG_DEPTH = 2.4;
+// The sun's shadow map covers at most this far either side of the view's target: past it, buildings cast no shadow.
+const SHADOW_HALF_MAX = 1500;
 // Leave most of a 16.7 ms frame for WebGL uploads, drawing and the browser. One building is atomic.
 const BUILDING_BUDGET_MS = 4;
 const BASE_BUDGET_MS = 4;
@@ -90,8 +92,11 @@ const GROUND_PICTURE_ORDER = -3;
 const INITIAL_STATE: SceneState = { mode: 'area', buildingId: null, levelId: null, spaceId: null, tool: 'select' };
 /** What a camera pose frames: a plan box, the height looked at and the height of what is framed. */
 type CameraTarget = { bounds: Bounds2D; focusY: number; extentY: number };
-/** The camera's depth range, the farthest the view may be zoomed out, and the framed reach the fog must clear. */
-type ClipRange = { near: number; far: number; maxDistance: number; reach: number };
+/**
+ * The camera's depth range, the farthest the view may be zoomed out, the framed reach the fog must clear, and the
+ * plan square (x, z) around the view's target that the ground must cover.
+ */
+type ClipRange = { near: number; far: number; maxDistance: number; reach: number; frame: Box3 };
 
 /**
  * The Studio scene engine: an imperative Three.js scene the React adapter drives. It renders on demand
@@ -179,6 +184,7 @@ export class SceneEngine {
   private readonly trenchGroup = new Group();
   private areaBox = new Box3();
   private framedReach = 0;
+  private frame = new Box3();
   private haloOwned = false;
   private readonly dressing = new Group();
   private readonly kerbs = new Group();
@@ -1632,14 +1638,18 @@ export class SceneEngine {
     const reach = to[0].distanceTo(to[1]) + Math.hypot(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY, extentY);
     const far = Math.max(CAMERA_FAR, reach * FAR_MARGIN);
     const large = far > CAMERA_FAR;
+    const frame = new Box3().setFromCenterAndSize(
+      new Vector3(to[1].x, 0, to[1].z), new Vector3(reach * 2, 0, reach * 2),
+    );
     const range: ClipRange = {
-      near: far * (CAMERA_NEAR / CAMERA_FAR), far, maxDistance: large ? reach : Infinity, reach: large ? reach : 0,
+      near: far * (CAMERA_NEAR / CAMERA_FAR), far, maxDistance: large ? reach : Infinity,
+      reach: large ? reach : 0, frame,
     };
     if (!animated) { this.applyClip(range); return undefined; }
     this.applyClip({
       near: Math.min(range.near, this.camera.near), far: Math.max(range.far, this.camera.far),
       maxDistance: Math.max(range.maxDistance, this.controls.maxDistance),
-      reach: Math.max(range.reach, this.framedReach),
+      reach: Math.max(range.reach, this.framedReach), frame: this.frame.clone().union(frame),
     });
     return range;
   }
@@ -1650,7 +1660,9 @@ export class SceneEngine {
     this.controls.maxDistance = range.maxDistance;
     this.camera.updateProjectionMatrix();
     this.framedReach = range.reach;
+    this.frame.copy(range.frame);
     this.fitFog();
+    this.fitGround();
   }
 
   private fitAreaPose(to: [Vector3, Vector3], box: Box3) {
@@ -1870,7 +1882,7 @@ export class SceneEngine {
     if (box.isEmpty()) return;
     const span = Math.max(box.max.x - box.min.x, box.max.z - box.min.z, 60);
     const distance = this.camera.position.distanceTo(this.controls.target);
-    const half = Math.min(Math.max(distance * 0.85, 40), span * 0.75);
+    const half = Math.min(Math.max(distance * 0.85, 40), span * 0.75, SHADOW_HALF_MAX);
     const texel = (half * 2) / this.sun.shadow.mapSize.x;
     const t = this.controls.target;
     const cx = Math.round(t.x / texel) * texel, cz = Math.round(t.z / texel) * texel;
@@ -1886,13 +1898,31 @@ export class SceneEngine {
     }
   }
 
-  /** Fog follows the buildings' span, but never starts inside the reach of a large framed area. */
+  /**
+   * Fog follows the buildings' span, but never starts inside the reach of a large framed area, and there it is
+   * complete by the far plane, so the ground does not end in a visible edge.
+   */
   private fitFog() {
     const box = this.areaBox;
     const span = box.isEmpty() ? 0 : Math.max(box.max.x - box.min.x, box.max.z - box.min.z, 60);
     const fog = this.scene.fog as Fog;
     fog.near = Math.max(span ? span * 1.4 : 260, this.framedReach);
-    fog.far = Math.max(span ? span * 3.4 : 620, this.framedReach * FOG_DEPTH);
+    fog.far = Math.max(span ? span * 3.4 : 620, Math.min(this.framedReach * FOG_DEPTH, this.camera.far));
+  }
+
+  /** The ground covers ten times the buildings' span, and the framed area out to the fog's far distance. */
+  private fitGround() {
+    const area = new Box3();
+    const box = this.areaBox;
+    if (!box.isEmpty()) {
+      const span = Math.max(box.max.x - box.min.x, box.max.z - box.min.z, 60);
+      area.setFromCenterAndSize(box.getCenter(new Vector3()).setY(0), new Vector3(span * 10, 0, span * 10));
+    }
+    if (!this.frame.isEmpty()) area.union(this.frame.clone().expandByScalar((this.scene.fog as Fog).far));
+    if (area.isEmpty()) return;
+    const centre = area.getCenter(new Vector3());
+    this.ground.position.set(centre.x, -0.01, centre.z);
+    this.ground.scale.set(area.max.x - area.min.x, area.max.z - area.min.z, 1);
   }
 
   private fitGroundAndShadow() {
@@ -1901,14 +1931,14 @@ export class SceneEngine {
     const cx = (box.min.x + box.max.x) / 2;
     const cz = (box.min.z + box.max.z) / 2;
     const span = Math.max(box.max.x - box.min.x, box.max.z - box.min.z, 60);
-    this.ground.position.set(cx, -0.01, cz);
-    this.ground.scale.set(span * 10, span * 10, 1);
     this.fitFog();
-    const d = span * 1.2;
+    this.fitGround();
+    const half = Math.min(span * 0.75, SHADOW_HALF_MAX);
+    const d = half * 1.6;
     this.sun.position.set(cx - d * 0.55, d * 0.9, cz + d * 0.6);
     this.sun.target.position.set(cx, 0, cz);
     const cam = this.sun.shadow.camera;
-    cam.left = -span * 0.75; cam.right = span * 0.75; cam.top = span * 0.75; cam.bottom = -span * 0.75;
+    cam.left = -half; cam.right = half; cam.top = half; cam.bottom = -half;
     cam.near = 1; cam.far = d * 4;
     cam.updateProjectionMatrix();
   }

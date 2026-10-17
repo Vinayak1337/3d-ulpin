@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { Box3, Fog, Group, MeshBasicMaterial, PerspectiveCamera, Vector3 } from 'three';
+import { Box3, DirectionalLight, Fog, Group, Mesh, MeshBasicMaterial, PerspectiveCamera, Vector3 } from 'three';
 import { SceneEngine } from './engine';
 import type { BaseFeatureInput, FootprintInput } from './types';
 
@@ -15,7 +15,8 @@ function fixture(reducedMotion = false) {
     anchors: new Map(), anchorSizes: new Map(), m: { road: material, kerb: material },
     container: { clientWidth: 1440, clientHeight: 900 }, camera: new PerspectiveCamera(45, 1, 0.3, 20_000),
     controls: { target: new Vector3(), update: vi.fn(), maxDistance: Infinity },
-    scene: { fog: new Fog(0, 260, 620) }, areaBox: new Box3(), framedReach: 0,
+    scene: { fog: new Fog(0, 260, 620) }, areaBox: new Box3(), framedReach: 0, frame: new Box3(),
+    ground: new Mesh(), sun: new DirectionalLight(),
     requestRender: vi.fn(), apply: vi.fn(), applyLayers: vi.fn(), applyRaise: vi.fn(),
     buildDressing: vi.fn(), buildUtilities: vi.fn(), setLook: vi.fn(),
   });
@@ -205,5 +206,58 @@ describe('camera depth range', () => {
     clock = 1200;
     expect(engine.stepFlight(clock)).toBe(false);
     expect([engine.camera.near, engine.camera.far, engine.controls.maxDistance]).toEqual([0.3, 20_000, Infinity]);
+  });
+});
+
+describe('ground and shadow follow the framed area', () => {
+  const extent = (engine: ReturnType<typeof fixture>) => new Box3().setFromCenterAndSize(
+    engine.ground.position.clone().setY(0), new Vector3(engine.ground.scale.x, 0, engine.ground.scale.y),
+  );
+  const cluster = (engine: ReturnType<typeof fixture>, x: number) => {
+    engine.areaBox.set(new Vector3(x, 0, -30), new Vector3(x + 410, 20, -20));
+    engine.fitGroundAndShadow();
+  };
+
+  it('covers a 13 km by 22 km frame and the fog beyond it when only a 500 m cluster is loaded', () => {
+    const engine = fixture(true);
+    engine.fitPlanBox(0, 0, 13_000, 22_000);
+    cluster(engine, 6_000);
+    const fog = engine.scene.fog as Fog;
+    const ground = extent(engine);
+    const wanted = new Box3(new Vector3(-fog.far, 0, -22_000 - fog.far), new Vector3(13_000 + fog.far, 0, fog.far));
+    expect(ground.containsBox(wanted)).toBe(true);
+    const shadow = engine.sun.shadow.camera;
+    expect(shadow.right).toBe(410 * 0.75);
+  });
+
+  it('keeps the shadow camera within 1.5 km of the view target however much is loaded', () => {
+    const engine = fixture(true);
+    engine.fitPlanBox(0, 0, 13_000, 22_000);
+    engine.areaBox.set(new Vector3(0, 0, -22_000), new Vector3(13_000, 30, 0));
+    engine.fitGroundAndShadow();
+    expect(engine.sun.shadow.camera.right).toBe(1_500);
+    engine.camera.position.set(0, 20_000, 0);
+    engine.followSun();
+    expect(engine.sun.shadow.camera.right).toBe(1_500);
+  });
+
+  it('leaves a small scene on its old ground and shadow, and loading more never shrinks the ground', () => {
+    const engine = fixture(true);
+    engine.areaBox.set(new Vector3(0, 0, 0), new Vector3(100, 20, 80));
+    engine.fitGroundAndShadow();
+    expect(engine.ground.position.toArray()).toEqual([50, -0.01, 40]);
+    expect(engine.ground.scale.toArray()).toEqual([1000, 1000, 1]);
+    const shadow = engine.sun.shadow.camera;
+    expect([shadow.left, shadow.right, shadow.far]).toEqual([-75, 75, 0.75 * 100 * 1.6 * 4]);
+    engine.fitPlanBox(0, 0, 100, 100);
+    const small = extent(engine);
+    engine.fitPlanBox(0, 0, 13_000, 22_000);
+    const wide = extent(engine);
+    expect(wide.containsBox(small)).toBe(true);
+    cluster(engine, 6_000);
+    const loaded = extent(engine);
+    cluster(engine, 6_400);
+    expect(extent(engine).containsBox(loaded)).toBe(true);
+    expect(extent(engine).containsBox(wide)).toBe(true);
   });
 });
