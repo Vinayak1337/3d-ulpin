@@ -1,0 +1,47 @@
+{
+  "task": "ZF2",
+  "gate": "GF1",
+  "base": "410247e4",
+  "status": "delivered_unit",
+  "qualification": "Proved on in-memory ledgers, the real probe and real repository inputs (no database, object store, processor or served HTTP walk).",
+  "tests": {
+    "server": {
+      "command": "D=packages/server/src/modules/usp/ingestion; NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false pnpm exec tsx --tsconfig apps/api/tsconfig.json --test $D/*.test.ts packages/server/src/modules/areas/*.test.ts tests/manual-author.test.ts tests/ingestion-events.test.ts packages/server/src/modules/cases/processing.test.ts tests/usp-packet-pdf.test.ts tests/intake-ledger.test.ts tests/intake-zip-layers.test.ts",
+      "before": { "tests": 267, "pass": 230, "fail": 15, "skipped": 22 },
+      "after": { "tests": 269, "pass": 232, "fail": 15, "skipped": 22 },
+      "failuresUnchanged": true,
+      "failureCause": "The same 15 tests fail before and after: they read originals under E:/BhuAayam-data or other files absent from this checkout (NYC, Niagara, OCR/quote parity, memory, PDF progress fixtures).",
+      "changed": "tests/intake-ledger.test.ts: its in-memory ledger answers the draft-state read and write the ZIP item's settlement makes; its ZIP test now also asserts that item rests read, undecided, with the N = 0 words."
+    },
+    "studio": {
+      "command": "pnpm studio:test",
+      "before": { "tests": 452, "pass": 452 },
+      "after": { "tests": 452, "pass": 452 },
+      "note": "Routing and settlement cases were added as expectations inside the two existing ZIP tests, so the test count is unchanged."
+    },
+    "typecheck": { "backend": "pnpm typecheck:backend exit 0 before and after", "studio": "pnpm studio:typecheck exit 0 before and after" },
+    "contract": "No pinned source, contract or route changed; refresh-contract and check.py not needed.",
+    "added": [
+      "intake-draft.test.ts: a ZIP with two GeoJSON layers, a CSV, a README and a directory entry gets the D1 words naming both layers and listing the CSV and README as not taken in; the item rests read/undecided, one event, a replay writes nothing, no job",
+      "intake-draft.test.ts: a ZIP with no layer (a PDF, a refused GeoJSON) gets the N = 0 words with each member's reason, never needs_answer; 300 members end with 'and <k> more' within 2000 characters",
+      "intake-draft.test.ts (existing, unchanged): a ZIP with a shapefile member keeps today's shapefile words and no transition",
+      "batch-model.test.ts: .shp and .SHP members route direct; only-CSV, only-PDF, GeoJSON ZIPs and unreadable bytes route to the batch; a read/undecided ZIP item is settled"
+    ]
+  },
+  "realInputs": {
+    "good": { "files": ["fixtures/google-uttam/01-google-building-footprints.geojson", "fixtures/google-uttam/02-osm-road-centrelines.geojson", "fixtures/google-uttam/block-boundary.geojson", "fixtures/google-uttam/README.md"], "zippedAtCheckTime": true, "words": "3 map layers in this ZIP are taken in as their own files: 01-google-building-footprints.geojson, 02-osm-road-centrelines.geojson, block-boundary.geojson. Not taken in: README.md (not a map layer).", "length": 196 },
+    "difficult": { "file": "fixtures/lake-view-complete-inputs.zip", "members": 38, "layers": 0, "wordsStart": "This ZIP holds no map layer this batch can take in. Its members: apps/web/public/scene-assets/complete-demo/kiosk.glb (not a map layer), ...", "wordsEnd": "... and 10 more.", "length": 1876 }
+  },
+  "decisions": [
+    "D1 packages/server/src/modules/usp/ingestion/intake-draft.ts:49 zipParentWords is the one place that words a ZIP's own item, from its card only: a layer is a member with format geojson and no refusalCode (the predicate of zipLayerMembers); directory entries are skipped; others carry their refusalCode or 'not a map layer'. One layer reads '1 map layer in this ZIP is taken in as its own file'.",
+    "D1 intake-draft.ts:35 listWords names whole paths within a character budget (800 layers, 900 others, 1800 when N = 0) so the words stay within limit_reason's 2000 characters; the rest end 'and <k> more'. A path is never cut; if none fits, the list reads '<k> with long paths'. A ZIP with no listed member reads 'No member of it could be listed.'",
+    "D1 intake-draft.ts:31 and :70 shapefileZip names the existing shapefile condition once; a ZIP with a shapefile member keeps today's words (intakeDraftLimit) and today's no-transition. intakeDraftLimit returns the ZIP words at :74 for any other ZIP.",
+    "D2 intake-draft.ts:118 and :149 settleZipParentTx: a probe publication of a non-shapefile ZIP card sets the ZIP's own probed item to state read, placement undecided, with the words as limit_reason. The ledger allows it (intake-ledger.sql: no transition guard) and Studio isSettled is true for read; the tray's Reason column shows limit_reason. A re-probe resets it to probed (saveIntakeCardTx) and the same publication settles it again.",
+    "D2 finding: before this change the ZIP's own item (family archive) stopped at the family gate in queueIntakeDraftTx and rested probed/undecided, so the tray waited on it; the settlement runs before that gate.",
+    "D3 apps/studio/src/features/intake/file-route.ts:41 zipRoute: any member ending .shp (any case) routes direct; every other ZIP, an unreadable one included, routes to the batch. The Add files help sentence stays true and is unchanged."
+  ],
+  "limits": [
+    "The words come from the probe card, so a layer later refused by the fan-out (ZIP_LAYER_LIMIT, ZIP_LAYER_SIZE, a failed retain) is still named as taken in on the ZIP's item; its own member row carries the refusal.",
+    "No PostgreSQL, object store, processor or served HTTP walk was run."
+  ]
+}

@@ -16,14 +16,16 @@ it('routes map originals to intake, binary maps to direct import and tables to t
   expect(fileRoute('plan.pdf')).toBe('unsupported');
 });
 
-it('routes a ZIP of GeoJSON layers to the batch and any other ZIP to direct import', async () => {
+it('routes a shapefile ZIP to direct import and every other ZIP to the batch', async () => {
   const pack = (files: Record<string, string>) => new Blob([zip(files)]);
   const layers = pack({ 'layers/': '', 'layers/roads.geojson': '{}', 'layers/blocks.json': '{}', 'README.md': '' });
   expect(await zipMemberNames(layers)).toEqual(['layers/', 'layers/roads.geojson', 'layers/blocks.json', 'README.md']);
   expect(await zipRoute(layers)).toBe('intake');
   expect(await zipRoute(pack({ 'a.shp': '', 'a.shx': '', 'a.dbf': '', 'meta.json': '{}' }))).toBe('direct');
-  expect(await zipRoute(pack({ 'plan.pdf': '' }))).toBe('direct');
-  expect(await zipRoute(new Blob(['not a zip']))).toBe('direct');
+  expect(await zipRoute(pack({ 'set/ROADS.SHP': '', 'set/ROADS.DBF': '' }))).toBe('direct');
+  expect(await zipRoute(pack({ 'register.csv': 'id\n1' }))).toBe('intake');
+  expect(await zipRoute(pack({ 'plan.pdf': '' }))).toBe('intake');
+  expect(await zipRoute(new Blob(['not a zip']))).toBe('intake');
 });
 
 it('lists a kept layer once: its member row under the ZIP gives way to its own item', () => {
@@ -33,6 +35,7 @@ it('lists a kept layer once: its member row under the ZIP gives way to its own i
   const readme = { ...base, itemId: 'm2', sourceId: null, parentItemId: 'a', memberPath: 'README.md' };
   const layer = { ...base, itemId: 'l', sourceId: 'layer', parentItemId: null, memberPath: null };
   expect(trayItems([archive, kept, readme, layer]).map(item => item.itemId)).toEqual(['a', 'm2', 'l']);
+  expect(isSettled({ ...archive, state: 'read', placement: 'undecided' })).toBe(true);
 });
 
 it('keeps a question distinct from state and renders unknown counts without zero', () => {

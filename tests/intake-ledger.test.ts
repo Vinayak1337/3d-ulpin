@@ -47,6 +47,11 @@ class LedgerControl {
       return { rows: row ? [{ itemId: row.item_id, state: row.state, family: row.family, format: row.format,
         sizeClass: row.size_class, wave: row.wave, pinnedByOfficer: row.pinned_by_officer }] : [] };
     }
+    if (sql.startsWith('SELECT state,placement,plan_ref')) {
+      const row = this.rows.get(values[1]);
+      return { rows: [{ state: row.state, placement: row.placement, plan_ref: row.plan_ref ?? null,
+        records_seen: row.records_seen, limit_reason: row.limit_reason }] };
+    }
     if (sql.startsWith('SELECT * FROM usp_intake_items')) return { rows: [this.rows.get(this.sourceId)] };
     if (sql.startsWith('SELECT source_id FROM usp_intake_items')) return { rows: [this.rows.get(values[0])] };
     if (sql.startsWith('SELECT item_id,member_path')) {
@@ -90,6 +95,9 @@ class LedgerControl {
       Object.assign(row, { card: values[1], card_sha256: values[2], probe_version: values[3], family: values[4],
         format: values[5], state: 'probed', limit_reason: null });
       if (!row.pinned_by_officer) row.wave = values[6];
+    } else if (sql.startsWith('UPDATE usp_intake_items SET state=$3')) {
+      Object.assign(this.rows.get(values[1]), { state: values[2], placement: values[3], plan_ref: values[4],
+        records_seen: String(values[5]), limit_reason: values[6] });
     } else if (sql.startsWith('UPDATE usp_intake_items SET state')) {
       const row = this.rows.get(values[0]);
       if (!row.card) Object.assign(row, { state: values[1], limit_reason: values[2] });
@@ -240,6 +248,9 @@ test('member and sheet cards keep parent authority, idempotency and unknown shee
     const member = [...f.rows.values()].find(row => row.parent_item_id);
     assert.equal(f.rows.size, 2);
     assert.equal(member.source_id, null);
+    assert.deepEqual([f.rows.get(f.sourceId).state, f.rows.get(f.sourceId).placement], ['read', 'undecided']);
+    assert.equal(f.rows.get(f.sourceId).limit_reason, 'This ZIP holds no map layer this batch can take in. '
+      + 'Its members: folder/control.csv (not a map layer).');
     assert.equal((await f.service.one(f.caseId, member.item_id)).sizeBytes, bytes.length);
     await f.service.pin(f.caseId, member.item_id, { wave: 1, requestKey: randomUUID() });
     await f.service.register(f.caseId, { ...input, requestKey: randomUUID() });
