@@ -2,11 +2,13 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import type { PhysicalFeature } from '@ulpin/contracts';
+import type { AreaCheck, PhysicalFeature } from '@ulpin/contracts';
 import { transaction } from '../../infrastructure/db';
+import { buildingDossier } from '../officer/officer';
+import { createInvestigation, updateInvestigation } from '../officer/officer-investigations';
 import { canonicalBuilding } from '../registry/canonical-building';
 import { areaProposals } from './area-display-proposals';
-import { areaContext, areaDisplayPackages, getArea } from './areas';
+import { areaContext, areaDisplayPackages, currentAreaCheckFingerprint, getArea } from './areas';
 
 const nyc = JSON.parse(readFileSync('docs/evidence/gf-backend/k1/nyc-import.json', 'utf8'));
 
@@ -33,6 +35,9 @@ class RegisterControl {
   rows: PhysicalFeature[] = [];
   /** Newest first, as the package read orders them. */
   packages: Package[] = [];
+  /** The area's check runs, oldest first, and the investigations opened. */
+  checks: AreaCheck[] = [];
+  investigations: { id: string; body: unknown }[] = [];
   source = { id: randomUUID(), case_id: randomUUID(), archived: false, site_id: this.area.site_id,
     sha256: 'a'.repeat(64), revision: 1, created_at: '2026-10-17T00:00:00Z' };
 
@@ -60,8 +65,22 @@ class RegisterControl {
       return this.rows.filter(row => values.length === 1 || row.id === values[1])
         .map(({ id, revision }) => ({ id, revision }));
     }
+    const checked = recorded.filter(row => !sql.includes("IS DISTINCT FROM 'null'::jsonb") || row.geometry !== null);
     if (sql.startsWith('SELECT f.body,f.area_id')) {
-      return recorded.slice(0, values[4]).map(body => ({ body, area_id: this.area.id, local_geometry: null }));
+      return checked.slice(0, values[4]).map(body => ({ body, area_id: this.area.id, local_geometry: null }));
+    }
+    if (sql.startsWith('SELECT count(*)::int n')) return [{ n: Math.min(checked.length, values[1]) }];
+    if (sql.includes('FROM area_check_runs')) {
+      const checks = this.checks.filter(check => sql.includes('WHERE id=$1') ? check.id === values[0]
+        : !sql.includes("status='completed'") || check.status === 'completed');
+      return checks.slice(-1).map(body => ({ body }));
+    }
+    if (sql.includes('FROM usp_analytic_geometry v')) return JSON.parse(values[0]);
+    if (sql.startsWith('INSERT INTO officer_investigations(')) {
+      this.investigations.push({ id: values[0], body: values[4] });
+    }
+    if (sql.startsWith('SELECT body FROM officer_investigations WHERE id=$1')) {
+      return this.investigations.filter(item => item.id === values[0]);
     }
     if (sql.includes('FROM import_packages WHERE area_id')) {
       const rule = ({ id, sourceKey, areaId, revision, sourceRevisionId }: PhysicalFeature) =>
@@ -172,3 +191,78 @@ test('a small area answers exactly as its whole context read does', async () => 
     assert.deepEqual(await canonicalBuilding(id), await canonicalBuilding(id, 'current', context));
   }
 }));
+
+/** A completed check of the area as it stands, holding the given input fingerprint. */
+function completeCheck(control: RegisterControl, inputFingerprint: string): AreaCheck {
+  const check: AreaCheck = { id: randomUUID(), areaId: control.area.id, areaRevision: control.area.revision,
+    status: 'completed', findings: [], coverage: [], inputFingerprint, createdAt: '2026-10-17T00:00:00Z' };
+  control.checks.push(check);
+  return check;
+}
+
+/** A recorded source-only declaration: no geometry, so no check hashes it. */
+function sourceOnly(areaId: string): PhysicalFeature {
+  return { ...buildings(areaId, 1, 1)[0], geometry: null, geographicGeometry: null } as unknown as PhysicalFeature;
+}
+
+test('a small area fingerprints its check exactly as the area check does', async () => memory(async control => {
+  control.rows = [...buildings(control.area.id, 5, 1), sourceOnly(control.area.id)];
+  const fingerprint = await currentAreaCheckFingerprint(control.area.id);
+  assert.ok(fingerprint);
+  completeCheck(control, fingerprint);
+  assert.equal((await areaContext(control.area.id)).latestCheck?.stale, false);
+  completeCheck(control, 'b'.repeat(64));
+  assert.equal((await areaContext(control.area.id)).latestCheck?.stale, true);
+}));
+
+test('a recorded building of an area grown past the limit after its check answers, the check not current',
+  async () => memory(async control => {
+    control.rows = buildings(control.area.id, 5, 1);
+    const [building] = control.rows;
+    completeCheck(control, (await currentAreaCheckFingerprint(control.area.id))!);
+    assert.equal((await buildingDossier(building.id)).check?.stale, false);
+    control.rows.push(...buildings(control.area.id, 1996, 1));
+
+    const statements = await statementsOf(control, async () => {
+      const dossier = await buildingDossier(building.id);
+      assert.equal(dossier.building.id, building.id);
+      assert.equal(dossier.check?.stale, true);
+      assert.equal((await canonicalBuilding(building.id)).recordState, 'reviewed');
+    });
+    for (const statement of statements) {
+      assert.doesNotMatch(statement.sql, /^SELECT f\.body,f\.area_id/);
+      assert.ok(statement.featureRows <= 1, `${statement.featureRows} feature rows read by ${statement.sql}`);
+    }
+    assert.ok(statements.some(statement => statement.sql.startsWith('SELECT count(*)::int n')));
+    await assert.rejects(areaContext(control.area.id), (error: any) => error.code === 'AREA_LIMIT');
+  }));
+
+test('source-only declarations past the limit leave the check current', async () => memory(async control => {
+  control.rows = buildings(control.area.id, 5, 1);
+  completeCheck(control, (await currentAreaCheckFingerprint(control.area.id))!);
+  control.rows.push(...Array.from({ length: 1996 }, () => sourceOnly(control.area.id)));
+  assert.equal((await buildingDossier(control.rows[0].id)).check?.stale, false);
+}));
+
+test('a feature changed after the check reports the check as not current', async () => memory(async control => {
+  control.rows = buildings(control.area.id, 5, 1);
+  completeCheck(control, (await currentAreaCheckFingerprint(control.area.id))!);
+  control.rows[3] = { ...control.rows[3], height: { ...control.rows[3].height, value: 99 } };
+  assert.equal((await buildingDossier(control.rows[0].id)).check?.stale, true);
+}));
+
+test('the investigation reads answer in an area past the limit, the check not current', async () =>
+  memory(async control => {
+    control.rows = buildings(control.area.id, 5, 1);
+    const [building] = control.rows;
+    const check = completeCheck(control, (await currentAreaCheckFingerprint(control.area.id))!);
+    const open = { buildingId: building.id, expectedRevision: 1, reference: 'RG2', classification: 'boundary' };
+    const opened = await createInvestigation({ ...open, checkId: check.id });
+    control.rows.push(...buildings(control.area.id, 1996, 1));
+
+    const stale = (error: any) => error.status === 409 && /stale/.test(error.message);
+    await assert.rejects(createInvestigation({ ...open, checkId: check.id }), stale);
+    const changed = (error: any) => error.status === 409 && /investigated inputs have changed/.test(error.message);
+    await assert.rejects(updateInvestigation(opened.id, 1, { status: 'READY_FOR_REVIEW', reason: 'RG2' }), changed);
+    assert.equal((await createInvestigation(open)).buildingId, building.id);
+  }));
