@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Client } from 'pg';
+import { AppError } from '../../infrastructure/errors';
 import { dispatchTick } from './processing';
 
 /** The selection dispatchTick sends, captured from a pool that holds no jobs. */
@@ -29,28 +30,38 @@ test('the dispatcher takes the operations in turn, each one\'s oldest job first'
   assert.match(sql, /AND next_attempt_at<=now\(\)\) ranked ORDER BY operation_rank, created_at LIMIT 12$/);
 });
 
-test('a background worker\'s error is kept in the log, not discarded', async () => {
+/** The lines dispatchTick warns when its packet-pdf worker throws `thrown`. */
+async function warnedFor(thrown: unknown): Promise<string[]> {
   const globals = globalThis as typeof globalThis & { ulpinPool?: unknown };
   const previous = globals.ulpinPool;
   const warned: string[] = [];
   const warn = console.warn;
   globals.ulpinPool = { query: async () => ({ rows: [{ id: 'pdf-1', operation: 'packet-pdf' }], rowCount: 1 }) };
-  console.warn = (line: string) => { warned.push(line); };
+  console.warn = (...line: unknown[]) => { warned.push(line.map(String).join(' ')); };
   try {
     let finished!: () => void;
     const settled = new Promise<void>(resolve => { finished = resolve; });
-    await dispatchTick({ packetPdf: async () => {
+    assert.equal(await dispatchTick({ packetPdf: async () => {
       setImmediate(finished);
-      throw new Error('reader attempt 1 lost its lease');
-    } });
+      throw thrown;
+    } }), 1);
     await settled;
   } finally {
     console.warn = warn;
     if (previous === undefined) delete globals.ulpinPool;
     else globals.ulpinPool = previous;
   }
-  assert.deepEqual(warned,
-    ['The packet-pdf worker dispatched from job pdf-1 ended with an error: reader attempt 1 lost its lease']);
+  assert.ok(warned.every(line => !line.includes('SECRET_MARKER_TEXT')));
+  return warned;
+}
+
+test('a background worker\'s error is kept in the log by its code, never its message', async () => {
+  const line = (code: string) => `The packet-pdf worker dispatched from job pdf-1 ended with error code ${code}`;
+  assert.deepEqual(await warnedFor(new AppError(409, 'STALE_REVISION', 'SECRET_MARKER_TEXT')),
+    [line('STALE_REVISION')]);
+  assert.deepEqual(await warnedFor(Object.assign(new Error('SECRET_MARKER_TEXT'), { code: '23514' })), [line('23514')]);
+  assert.deepEqual(await warnedFor(new Error('SECRET_MARKER_TEXT in /data/plan.pdf')), [line('Error')]);
+  assert.deepEqual(await warnedFor('SECRET_MARKER_TEXT'), [line('unknown')]);
 });
 
 // The selection's meaning needs PostgreSQL; a temporary jobs table shadows any real one for this session only.
