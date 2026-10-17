@@ -45,6 +45,8 @@ export function placementWords(placement: IntakeItem['placement']) {
 }
 
 export function isSettled(item: IntakeItem) {
+  // ZF2: once a ZIP is fanned out, its own row and each member left inside carry a reason; nothing reads them further.
+  if (item.limitReason && (item.parentItemId ? !item.sourceId : item.format === 'zip')) return true;
   if (['read', 'read_to_limit', 'failed_part', 'probe_failed'].includes(item.state)) return true;
   return ['needs_answer', 'not_understood', 'waiting_for_anchor'].includes(item.placement);
 }

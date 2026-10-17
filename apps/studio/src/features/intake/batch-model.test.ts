@@ -16,14 +16,31 @@ it('routes map originals to intake, binary maps to direct import and tables to t
   expect(fileRoute('plan.pdf')).toBe('unsupported');
 });
 
-it('routes a ZIP of GeoJSON layers to the batch and any other ZIP to direct import', async () => {
+it('routes every ZIP to the batch except a shapefile ZIP, which keeps direct import', async () => {
   const pack = (files: Record<string, string>) => new Blob([zip(files)]);
   const layers = pack({ 'layers/': '', 'layers/roads.geojson': '{}', 'layers/blocks.json': '{}', 'README.md': '' });
   expect(await zipMemberNames(layers)).toEqual(['layers/', 'layers/roads.geojson', 'layers/blocks.json', 'README.md']);
   expect(await zipRoute(layers)).toBe('intake');
   expect(await zipRoute(pack({ 'a.shp': '', 'a.shx': '', 'a.dbf': '', 'meta.json': '{}' }))).toBe('direct');
-  expect(await zipRoute(pack({ 'plan.pdf': '' }))).toBe('direct');
-  expect(await zipRoute(new Blob(['not a zip']))).toBe('direct');
+  expect(await zipRoute(pack({ 'set/A.SHP': '', 'set/A.dbf': '' }))).toBe('direct');
+  expect(await zipRoute(pack({ 'plan.pdf': '', 'dem.tif': '' }))).toBe('intake');
+  expect(await zipRoute(pack({ 'site.gpkg': '' }))).toBe('intake');
+  // Unreadable bytes join the batch too; the server reads them again and refuses them by code.
+  expect(await zipRoute(new Blob(['not a zip']))).toBe('intake');
+});
+
+it('settles a fanned-out ZIP: its own row and members left inside carry a reason', () => {
+  const base = { ...controls.manifest.items[0], plan: null, streamedProfileJobId: null, state: 'probed',
+    placement: 'undecided', limitReason: null } as IntakeItem;
+  const archive = { ...base, sourceId: 'zip', parentItemId: null, family: 'archive', format: 'zip' } as IntakeItem;
+  const member = { ...base, sourceId: null, parentItemId: 'a', memberPath: 'dem.tif' } as IntakeItem;
+  expect(isSettled(archive)).toBe(false);
+  expect(isSettled(member)).toBe(false);
+  expect(isSettled({ ...archive, limitReason: 'ZIP_LAYERS: 6 of 10 members became their own files, one item each.' }))
+    .toBe(true);
+  expect(isSettled({ ...member, limitReason: 'ZIP_MEMBER_INSIDE: this member stays inside the archive.' })).toBe(true);
+  // A dropped file's own reason does not settle it; its placement still decides.
+  expect(isSettled({ ...base, sourceId: 'g', parentItemId: null, format: 'geojson', limitReason: 'x' })).toBe(false);
 });
 
 it('lists a kept layer once: its member row under the ZIP gives way to its own item', () => {

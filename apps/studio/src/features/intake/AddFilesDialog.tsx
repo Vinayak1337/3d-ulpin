@@ -251,8 +251,8 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles }: {
             <Icon icon={FileArrowUp} size={32} />
             <span className="ul-heading">Drop files here, or choose files</span>
             <span className="ul-help">
-              GeoJSON files and ZIPs of GeoJSON layers are kept unchanged and checked in a batch, one item per layer.
-              GeoPackage and shapefile ZIP use direct import.
+              GeoJSON files and ZIPs are kept unchanged and checked in a batch; each GeoJSON layer in a ZIP becomes
+              its own item. GeoPackage and shapefile ZIP use direct import.
               CSV and XLSX keep their table import; other files need a case upload.
             </span>
             <input ref={input} type="file" multiple className="ul-visually-hidden" onChange={(event) => void add(event.target.files)} />
