@@ -124,7 +124,7 @@ function waiting(member: MemberRow): boolean {
 
 /** ZW1. The archive's own words say where its layer job stands, written in the transaction that moves the job. */
 export async function zipParentStageTx(client: PoolClient, caseId: string, itemId: string, stage: ZipLayerStage) {
-  const card = (await client.query(`SELECT * FROM usp_intake_items WHERE case_id=$1 AND item_id=$2
+  const card = (await client.query(`SELECT card FROM usp_intake_items WHERE case_id=$1 AND item_id=$2
     AND parent_item_id IS NULL`, [caseId, itemId])).rows[0]?.card;
   if (card?.format !== 'zip') return;
   const current = await readIntakeDraftTx(client, caseId, itemId);

@@ -51,7 +51,7 @@ function source(): IntakeSourceRow {
 }
 function item(): DraftItem {
   return { item_id: sourceId, source_id: sourceId, case_id: caseId, parent_item_id: null,
-    state: 'probed', family: 'vector', plan_ref: null,
+    state: 'probed', placement: 'undecided', family: 'vector', plan_ref: null,
     card: { crs: { state: 'stated' } } as DraftItem['card'] };
 }
 function input() {
@@ -96,6 +96,7 @@ function protocolWrite(sql: string, values: any[], fixture: Protocol): any[] | n
     state.projection = { state: values[2], placement: values[3], plan_ref: values[4],
       records_seen: values[5], limit_reason: values[6] };
     tray.state = values[2];
+    tray.placement = values[3];
     return [];
   }
   if (sql.startsWith('UPDATE usp_outbox_streams')) return [{ sequence: '1' }];
@@ -271,6 +272,7 @@ test('a KML refusal distinguishes its native inspection route from an unbuilt ma
   assert.equal(intakeDraftLimit(fixture.tray, fixture.src), expected);
   await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
   assert.equal(fixture.state.projection.limit_reason, expected);
+  assert.equal(fixture.state.projection.placement, 'needs_answer');
   assert.equal(fixture.jobs.length, 0);
 });
 
@@ -296,6 +298,55 @@ test('oversized GeoJSON names retention only and does not promise a larger direc
   assert.equal(handed.length, 1);
   assert.equal(fixture.state.projection.limit_reason, null);
   assert.equal(fixture.jobs.length, 0);
+});
+
+const kept = ' No reader in a batch takes this kind of file yet, so it is not on the map; '
+  + 'the original is kept with its SHA-256.';
+for (const [format, family, bytes, expected] of [
+  ['pdf', 'document', 3355443, `Kept as a PDF document (3.2 MB).${kept}`],
+  ['tiff', 'raster', 512, `Kept as a TIFF raster (512 bytes).${kept}`],
+  ['laz', 'point_cloud', 7516192768, `Kept as a LAZ point cloud (7 GB).${kept}`],
+  ['ifc', 'model3d', 421888, `Kept as an IFC 3D model (412 KB).${kept}`],
+  ['unknown', 'unknown', 421888, 'Kept (412 KB); its kind was not recognised from its first and last bytes.'],
+] as const) {
+  test(`a probed ${format} no batch reader takes rests not understood in words naming what the probe saw`,
+    async () => {
+      const fixture = protocol();
+      fixture.src.profile = 'large-original-v1';
+      fixture.src.bytes = bytes;
+      fixture.src.inspection = {};
+      fixture.tray.family = family;
+      fixture.tray.card = { format, family, crs: { state: 'not_applicable' } } as DraftItem['card'];
+      assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
+      assert.deepEqual({ ...fixture.state.projection }, { state: 'probed', placement: 'not_understood', plan_ref: null,
+        records_seen: 0, limit_reason: expected });
+      assert.equal(fixture.state.events, 1);
+      await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+      assert.equal(fixture.state.events, 1, 'An unchanged kept item is not written again.');
+      // A new probe clears the words of an unasked item; the next settlement writes the same words once.
+      fixture.state.projection.limit_reason = null;
+      await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+      assert.equal(fixture.state.projection.limit_reason, expected);
+      assert.equal(fixture.state.events, 2);
+      assert.equal(fixture.jobs.length, 0);
+    });
+}
+
+test('a kept item a later reader placed, and a table outside a large original, are left as they are', async () => {
+  const placed = protocol();
+  placed.tray.family = 'document';
+  placed.tray.placement = 'attached';
+  placed.tray.card = { format: 'pdf', family: 'document' } as DraftItem['card'];
+  await queueIntakeDraftTx(placed.client, placed.src, placed.tray.card!);
+  const table = protocol();
+  table.src.profile = 'document-original-v1';
+  table.tray.family = 'table';
+  table.tray.card = { format: 'csv', family: 'table' } as DraftItem['card'];
+  await queueIntakeDraftTx(table.client, table.src, table.tray.card!);
+  for (const fixture of [placed, table]) {
+    assert.equal(fixture.state.projection.placement, 'undecided');
+    assert.equal(fixture.state.events, 0);
+  }
 });
 
 test('draft scope refuses a missing or conflicting CRS', () => {

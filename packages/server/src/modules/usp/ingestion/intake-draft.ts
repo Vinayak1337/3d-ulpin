@@ -20,7 +20,7 @@ export const IntakeDraftInputSchema = z.strictObject({
 export type IntakeDraftInput = z.infer<typeof IntakeDraftInputSchema>;
 export type DraftItem = {
   item_id: string; case_id: string; source_id: string; parent_item_id: string | null;
-  state: string; family: string; card: IntakeCard | null; plan_ref: Record<string, any> | null;
+  state: string; placement: string; family: string; card: IntakeCard | null; plan_ref: Record<string, any> | null;
 };
 
 /** Stable keys distinguish each recipe phase, while replay sends exactly the same UUID. */
@@ -63,6 +63,37 @@ export function zipParentWords(card: IntakeCard, stage: ZipLayerStage = 'taken')
     : `${layers.length} map layers in this ZIP are${being} taken in as their own files`;
   const lead = typeof stage === 'object' ? stage.stopped : `${taken}: ${listWords(layers, 800)}.`;
   return lead + (others.length ? ` Not taken in: ${listWords(others, 900)}.` : '');
+}
+
+/** Sizes in the batch page's units: bytes, KB and MB as there, GB above them, each of 1024. */
+function sizeWords(bytes: number): string {
+  if (bytes < 1024) return `${bytes} bytes`;
+  if (bytes < 1024 ** 2) return `${Math.round(bytes / 1024)} KB`;
+  const [value, unit] = bytes < 1024 ** 3 ? [bytes / 1024 ** 2, 'MB'] : [bytes / 1024 ** 3, 'GB'];
+  return `${value.toFixed(1).replace(/\.0$/, '')} ${unit}`;
+}
+
+const keptFamilies: Record<string, string> = { document: 'document', image: 'image', raster: 'raster',
+  point_cloud: 'point cloud', model3d: '3D model', table: 'table', archive: 'archive', unknown: 'file' };
+const keptFormats: Record<string, string> = { bigtiff: 'BigTIFF', citygml: 'CityGML', cityjson: 'CityJSON',
+  gltf: 'glTF', parquet: 'Parquet', sqlite: 'SQLite' };
+
+/**
+ * NU1. A probed file no batch reader takes: no ZIP (its own words) and no table but a large original's (tables
+ * have their own layout reader). The vector family always has a reader or a refusal of its own.
+ */
+function keptOnly(card: IntakeCard, source: IntakeSourceRow): boolean {
+  if (card.family === 'table') return source.profile === 'large-original-v1';
+  return card.family !== 'vector' && card.format !== 'zip';
+}
+
+/** NU1. What the probe saw of a kept file, from its card's family and format and the original's byte count. */
+function keptWords(card: IntakeCard, bytes: number): string {
+  if (card.format === 'unknown') return `Kept (${sizeWords(bytes)}); its kind was not recognised from its first `
+    + 'and last bytes.';
+  const kind = `${keptFormats[card.format] ?? card.format.toUpperCase()} ${keptFamilies[card.family]}`;
+  return `Kept as ${/^[AEIO]/.test(kind) ? 'an' : 'a'} ${kind} (${sizeWords(bytes)}). No reader in a batch takes `
+    + 'this kind of file yet, so it is not on the map; the original is kept with its SHA-256.';
 }
 
 /** A refusal is tray metadata, not permission to use a different reader or split an original. */
@@ -122,6 +153,7 @@ async function priorJobTx(client: PoolClient, input: IntakeDraftInput): Promise<
 export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourceRow,
   publishedCard?: IntakeCard): Promise<string | null> {
   if (publishedCard?.format === 'zip' && !shapefileZip(publishedCard)) return settleZipParentTx(client, source);
+  if (publishedCard && keptOnly(publishedCard, source)) return settleKeptTx(client, source, publishedCard);
   // Nonvector readers keep their own behavior. Unsupported vectors receive a reason, never another reader.
   if (source.profile !== 'geojson-manual-v1' && publishedCard?.family !== 'vector') return null;
   const item = await draftItemTx(client, source.id);
@@ -157,6 +189,19 @@ async function settleZipParentTx(client: PoolClient, source: IntakeSourceRow): P
   if (!item || item.parent_item_id || item.state !== 'probed' || item.card?.format !== 'zip') return null;
   await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'read', placement: 'undecided',
     planRef: item.plan_ref, recordsSeen: 0, limitReason: zipParentWords(item.card) });
+  return null;
+}
+
+/**
+ * NU1. A kept file rests not understood, in words naming what the probe saw. Only an unplaced or already kept
+ * item is written, so a later reader's placement stands; a re-probe writes the same words.
+ */
+async function settleKeptTx(client: PoolClient, source: IntakeSourceRow, card: IntakeCard): Promise<null> {
+  const item = await draftItemTx(client, source.id);
+  if (!item || item.parent_item_id || item.state !== 'probed' || item.plan_ref
+    || !['undecided', 'not_understood'].includes(item.placement)) return null;
+  await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'probed', placement: 'not_understood',
+    planRef: null, recordsSeen: 0, limitReason: keptWords(card, Number(source.bytes)) });
   return null;
 }
 

@@ -151,7 +151,7 @@ class Ledger {
     if (sql.startsWith('SELECT * FROM usp_intake_items WHERE source_id')) {
       return [...this.rows.values()].filter(row => row.source_id === values[0] && !row.parent_item_id);
     }
-    if (sql.startsWith('SELECT * FROM usp_intake_items')) {
+    if (/^SELECT (?:\*|card) FROM usp_intake_items/.test(sql)) {
       const row = this.rows.get(values[1]);
       return row && !row.parent_item_id ? [row] : [];
     }
