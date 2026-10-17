@@ -302,12 +302,6 @@ export async function areaContext(id: string, limit = AREA_FEATURE_LIMIT): Promi
     latestCheck: latestCheck || null,
   };
 }
-/** Locate a feature's own existing context; display proposals remain separate from recorded features. */
-export async function areaFeatureContext(featureId: string): Promise<AreaContext> {
-  const row = (await query('SELECT area_id FROM physical_features WHERE id=$1', [featureId])).rows[0];
-  if (!row) notFound('Physical feature not found.');
-  return areaContext(row.area_id);
-}
 /** The newest packages whose proposals an area's display reads draw, each past its document authority; with
  * ruleOnly their features keep only the fields the proposal rule reads. */
 export async function areaDisplayPackages(client: PoolClient, id: string, ruleOnly = false): Promise<ImportPackage[]> {

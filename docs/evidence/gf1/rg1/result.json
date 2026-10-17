@@ -1,0 +1,53 @@
+{
+ "task": "RG1",
+ "gate": "GF1",
+ "status": "pass",
+ "base": "f56303d9",
+ "defect": "REH5 (17 October) needsCode 1: GET /api/v1/buildings/{id}/canonical went through areaFeatureContext, which read the whole area's context against the 2,000 feature limit, so every building of an area over the limit (Niagara, 41,809 reviewed proposals) answered 422 AREA_LIMIT and the register page showed the code (map-4.png).",
+ "decisions": {
+  "D1_oneFeature": {
+   "read": "packages/server/src/modules/areas/area-feature-read.ts:19 areaFeatureRead: the feature's own physical_features row (by id), its area (getArea), then in one transaction the area's display packages through areaDisplayPackages(client, area, ruleOnly) - the same newest-30 rule and per-package authority check as the window reads - and areaProposals for that one id",
+   "rule": "area-display-proposals.ts:28 areaProposals takes an optional feature id: every package still decides its source keys newest first (the seen set is built from every package's rule-only features), but the revision read becomes WHERE area_id=$1 AND id=$2 and only the package proposing that feature has its sources checked",
+   "drawnIsRead": "a feature the rule draws is read as its package holds it (displayState unrecorded_proposal, proposalPackageId), exactly as areaContext's displayFeatures; otherwise a recorded row (revision > 0) is read as recorded; otherwise feature null and canonicalBuilding answers 404 'Building not found.', as before",
+   "match": "area-feature-read.ts:14 PACKAGE_FEATURE_SQL: the one feature of the deciding package is matched inside the database by jsonb_array_elements(p.body->'features') WHERE p.id=$1 AND e.feature->>'id'=$2, so only that feature's full body is sent",
+   "cost": "the rule still needs every package's source keys, so the 30 rule-only bodies are read as the window reads read them (REH5: about 1.5 s on Niagara whatever the window holds); the database also detoasts the deciding package once to find the one feature. No package's full body is sent to the server.",
+   "divergence": "a failure of another package's source authority (403 AREA_SOURCE_DENIED, a document-authority refusal) no longer refuses this one building's read; the window reads would still refuse. The building's own package and sources pass the same checks."
+  },
+  "D2_boundedReads": [
+   "area: getArea(area_id) - the map_areas listing every area read already uses (its per-area feature count is an aggregate, unchanged)",
+   "proposal packages naming the building: the rule-only packages filtered by id (area-feature-read.ts namingPackages); the projection reads only their id, revision, factCandidates and geometryFree",
+   "recorded building: officer buildingDossier, unchanged - its own reads by building id: physical_features row, property_associations, parcels touching it (LIMIT 100), related registry records (levels, units, spaces), import packages containing it (LIMIT 30), building_preparations, registry_sites frame, external_identifiers of those parcels",
+   "source-only building: relatedRegistryRecordQuery for that building (LIMIT 1000), unchanged"
+  ],
+  "D3_candidate": "a proposal answers recordState 'candidate', footprint state candidate and the existing PROPOSAL_MISSING gaps ('Unrecorded source proposal; candidate geometry is not registry truth or analytically eligible.'); every value keeps its state (height unknown stays null). The Studio register page already maps recordState candidate to registerState.ts:64 'The server holds this building as a candidate from its sources. Nothing of it is recorded in the registry, so there is no register to open.' No action is added.",
+  "D4_smallAreas": "canonicalBuilding(id) deep-equals canonicalBuilding(id, 'current', areaContext(area)) - the former path - for a recorded building and a proposal on the NYC-shaped fixture (test 3)",
+  "D5_contract": "no response field added: recordState already distinguishes the candidate; no route or contract change. docs/api/source-pins.json repinned for the four changed producer files; openapi.json and schema.d.ts regenerated with no content change. docs/api/canonical-building.md: one sentence now says the building read loads one building, never the whole area."
+ },
+ "removed": "areas.ts areaFeatureContext (its only caller was canonicalBuilding)",
+ "tests": {
+  "file": "packages/server/src/modules/areas/area-feature-read.test.ts (in-memory pool, NYC-import-shaped test_only features, no database)",
+  "largeArea": "2,001 recorded buildings plus 2,001 reviewed proposals (synthetic, test_only; areaContext refuses AREA_LIMIT on the same fixture): a recorded building answers 200-equivalent with recordState reviewed and its own height; a proposal answers recordState candidate, footprint candidate, its own height and the proposal gap",
+  "noWholeArea": "every statement of both reads is checked: none is the whole-area feature read (SELECT f.body,f.area_id) and none reads more than one physical_features row; the proposal read's revision lookup ends WHERE area_id=$1 AND id=$2",
+  "notDrawn": "a proposal superseded by a newer package's same source key and one in a COMMITTED package answer 404 'Building not found.'; the set that answers equals the set areaProposals draws for the window reads",
+  "small": "D4 as above",
+  "againstOldCode": "with canonical-building.ts and areas.ts at f56303d9 the large-area test fails (AREA_LIMIT) and the other two pass"
+ },
+ "checks": {
+  "typecheck:backend": "exit 0",
+  "studio:typecheck": "exit 0",
+  "studio:test": "exit 0; 73 files, 469 tests passed (brief: 459; no Studio file changed)",
+  "backend before (f56303d9)": "exit 0; 282 tests, 280 pass, 0 fail, 2 skipped",
+  "backend after": "exit 0; 285 tests, 283 pass, 0 fail, 2 skipped (the 3 new tests added)",
+  "openapi --check": "exit 1 before regeneration (source-pins.json stale), exit 0 after",
+  "openapi generate": "exit 0; 314 operations, 356 named schemas",
+  "refresh-contract staging": "exit 0",
+  "studio:api-types": "exit 0",
+  "scripts/api/check.py": "exit 0; 314 native operations, 356 named schemas; pins valid",
+  "git diff --check": "exit 0"
+ },
+ "notRun": "no runtime, Docker, database or provider call; Niagara on ulpin-reh-02 not re-read",
+ "gaps": [
+  "officer buildingDossier calls currentAreaCheckFingerprint, which reads the whole area (2,000 limit) when the area holds a completed check: a recorded building in an area that grew past 2,000 after a completed check would still answer AREA_LIMIT. officer.ts is not this task's path.",
+  "the proposal read costs what one window read costs (rule-only bodies of the newest 30 packages)"
+ ]
+}

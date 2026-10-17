@@ -22,7 +22,8 @@ import {
 } from '@ulpin/contracts';
 import { buildingDossier, relatedRegistryRecordQuery } from '../officer/officer';
 import { registryDocumentSourceAccessTx } from './registry-metadata';
-import { areaFeatureContext, listAreas } from '../areas/areas';
+import { listAreas } from '../areas/areas';
+import { areaFeatureRead, contextFeatureRead, type AreaFeatureRead } from '../areas/area-feature-read';
 import { query, transaction } from '../../infrastructure/db';
 import { sourceBuildingOriginalAccessTx } from '../usp/ingestion/source-building-review';
 import { SOURCE_BUILDING_GAP } from '../usp/ingestion/source-building-values';
@@ -55,8 +56,8 @@ const CLAIM_PROPERTIES = [
 
 type CanonicalBuildingSource = Pick<
   BuildingDossier,
-  'building' | 'area' | 'records' | 'packages' | 'missing' | 'parcels' | 'parcelIdentifiers' | 'detailedScene'
->;
+  'building' | 'area' | 'records' | 'missing' | 'parcels' | 'parcelIdentifiers' | 'detailedScene'
+> & Pick<AreaFeatureRead, 'packages'>;
 type CanonicalLevel = NormalizedBuilding['levels'][number];
 type CanonicalSpace = CanonicalLevel['spaces'][number];
 type CanonicalStorey = NonNullable<NormalizedBuilding['storeys']['value']>[number];
@@ -729,28 +730,28 @@ export async function projectBuilding(
   return finishBuilding(building);
 }
 
-function proposalDossier(feature: PhysicalFeature, context: AreaContext, buildingId: string): CanonicalBuildingSource {
+function proposalDossier(feature: PhysicalFeature, read: AreaFeatureRead): CanonicalBuildingSource {
   return {
     building: feature,
-    area: context.area,
+    area: read.area,
     parcels: [],
     records: [],
     detailedScene: [],
-    packages: context.packages.filter(pack => pack.features.some(item => item.id === buildingId)),
+    packages: read.packages,
     missing: [...PROPOSAL_MISSING],
   };
 }
 
 async function sourceBuildingDossier(
-  feature: PhysicalFeature, context: AreaContext, buildingId: string,
+  feature: PhysicalFeature, read: AreaFeatureRead, buildingId: string,
 ): Promise<CanonicalBuildingSource> {
-  const dossier = proposalDossier(feature, context, buildingId);
+  const dossier = proposalDossier(feature, read);
   dossier.missing = [
     SOURCE_BUILDING_GAP, UNREVIEWED_LEVEL_SCHEDULE_GAP,
     'Current sanction/as-built status and source-to-unit association remain unqualified.',
   ];
   if (feature.revision > 0) {
-    const selection = relatedRegistryRecordQuery(buildingId, feature.revision, context.area.siteId, 1000);
+    const selection = relatedRegistryRecordQuery(buildingId, feature.revision, read.area.siteId, 1000);
     const rows = (await query(selection.sql, selection.values)).rows;
     if (rows.length > 1000) throw new AppError(422, 'CANONICAL_RECORD_LIMIT', 'Choose a smaller recorded hierarchy.');
     dossier.records = rows.map(row => ({ ...row.body, id: row.id, siteId: row.site_id,
@@ -765,27 +766,26 @@ export async function canonicalBuilding(
   retainedContext?: AreaContext,
 ): Promise<NormalizedBuilding> {
   localOperatorSubject();
-  const context = retainedContext ?? await areaFeatureContext(buildingId);
-  await assertCanonicalAreaScope(context.area);
-  const feature = (context.displayFeatures ?? context.features).find(item => item.id === buildingId);
+  const read = retainedContext ? contextFeatureRead(retainedContext, buildingId) : await areaFeatureRead(buildingId);
+  const { area, feature } = read;
+  await assertCanonicalAreaScope(area);
   if (!feature || feature.kind !== 'building') notFound('Building not found.');
-  const proposal = feature.revision === 0
-    || ('displayState' in feature && feature.displayState === 'unrecorded_proposal');
+  const proposal = feature.revision === 0 || feature.displayState === 'unrecorded_proposal';
   let dossier: CanonicalBuildingSource;
-  if (feature.geometry === null) dossier = await sourceBuildingDossier(feature, context, buildingId);
-  else if (proposal) dossier = proposalDossier(feature, context, buildingId);
+  if (feature.geometry === null) dossier = await sourceBuildingDossier(feature, read, buildingId);
+  else if (proposal) dossier = proposalDossier(feature, read);
   else dossier = await buildingDossier(buildingId);
-  if (dossier.area.revision !== context.area.revision || dossier.building.revision !== feature.revision) {
+  if (dossier.area.revision !== area.revision || dossier.building.revision !== feature.revision) {
     throw new AppError(409, 'CANONICAL_INPUT_CHANGED', 'Area or building changed during projection; read again.');
   }
-  const codes = feature.geometry === null ? await readSourceProjectCodes(dossier.records, context.area.siteId)
+  const codes = feature.geometry === null ? await readSourceProjectCodes(dossier.records, area.siteId)
     : new Map<string, SourceProjectCode>();
   const result = await projectBuilding(dossier, proposal, codes);
-  await revalidateCanonicalSources(result, context.area.siteId);
-  if ((await assertCanonicalAreaScope(context.area)).revision !== context.area.revision) {
+  await revalidateCanonicalSources(result, area.siteId);
+  if ((await assertCanonicalAreaScope(area)).revision !== area.revision) {
     throw new AppError(409, 'CANONICAL_INPUT_CHANGED', 'The area changed during projection; read again.');
   }
-  if (feature.geometry === null) await assertSourceChildRevisions(dossier.records, context.area.siteId);
+  if (feature.geometry === null) await assertSourceChildRevisions(dossier.records, area.siteId);
   if (revision !== 'current' && revision !== result.revisionId) {
     throw new AppError(404, 'CANONICAL_REVISION_NOT_FOUND', REVISION_NOT_CURRENT_MESSAGE);
   }
