@@ -4,7 +4,9 @@ import type {
 } from '@ulpin/contracts';
 import { transaction } from '../../infrastructure/db';
 import { AppError } from '../../infrastructure/errors';
-import { areaProposals, type ProposalFeature, type ProposalPackage } from './area-display-proposals';
+import {
+  areaProposals, type ProposalFeature, type ProposalPackage, type RuleCondition,
+} from './area-display-proposals';
 import { AREA_DISPLAY_LIMIT, areaDisplayPackages, getArea } from './areas';
 
 export type DisplayWindow = {
@@ -20,22 +22,32 @@ const MEMBERS = `f.revision>0 AND (f.area_id=$1 OR EXISTS (
 const LOCAL = `ST_Translate(ST_Transform(f.geographic_geometry,$2::integer),
   -($3::double precision),-($4::double precision))`;
 /** The area's unrecorded proposals, chosen by areaProposals and passed as parallel package and feature identifiers
- * from parameter $n. Their rows hold no geometry until recorded, so the geometry is the one their package holds. */
+ * from parameter $n, as their packages hold them. A draft row's outline is its package's, so it is taken from the
+ * row; a correction of a recorded feature, or a draft written before rows held outlines, is read from its package. */
 const proposed = (n: number) => `proposed AS (SELECT f.id,f.identifier,e.feature body,
-    ST_SetSRID(ST_GeomFromGeoJSON(e.feature->'geographicGeometry'),4326) geographic_geometry
+    coalesce(CASE WHEN f.revision=0 THEN f.geographic_geometry END,
+      ST_SetSRID(ST_GeomFromGeoJSON(e.feature->'geographicGeometry'),4326)) geographic_geometry
   FROM import_packages p CROSS JOIN LATERAL jsonb_array_elements(p.body->'features') e(feature)
   JOIN unnest($${n}::uuid[],$${n + 1}::uuid[]) c(package_id,feature_id)
     ON c.package_id=p.id AND c.feature_id=(e.feature->>'id')::uuid
   JOIN physical_features f ON f.id=c.feature_id WHERE p.id=ANY($${n}::uuid[]))`;
+/** The window from parameters $5 to $8 in the area's local metres, moved into EPSG:4326 once. */
+const ENVELOPE = `ST_Transform(ST_MakeEnvelope(
+    $5::double precision+$3::double precision,$6::double precision+$4::double precision,
+    $7::double precision+$3::double precision,$8::double precision+$4::double precision,$2::integer),4326)`;
+/** The package features a window read gives the proposal rule: the drafts whose outline meets the window, found by
+ * the GiST index on geographic_geometry, and every feature whose row holds no draft outline. */
+const DRAWABLE = `(e->>'id')::uuid IN (SELECT id FROM physical_features WHERE revision=0
+    AND ST_Intersects(geographic_geometry,${ENVELOPE}))
+  OR (e->>'id')::uuid IN (SELECT id FROM physical_features WHERE area_id=$1
+    AND (revision>0 OR geographic_geometry IS NULL))`;
 const SUMMARY_SQL = `WITH ${proposed(5)}, drawn AS (
     SELECT f.geographic_geometry FROM physical_features f WHERE ${MEMBERS} AND f.id<>ALL($6::uuid[])
     UNION ALL SELECT geographic_geometry FROM proposed)
   SELECT s.n feature_count,ST_XMin(s.box) min_x,ST_YMin(s.box) min_y,ST_XMax(s.box) max_x,
   ST_YMax(s.box) max_y FROM (SELECT count(*)::integer n,ST_Extent(${LOCAL}) box FROM drawn f) s`;
 // The window is moved into EPSG:4326 once, so the GiST index on geographic_geometry serves the recorded filter.
-const WINDOW_SQL = `WITH win AS (SELECT ST_Transform(ST_MakeEnvelope(
-    $5::double precision+$3::double precision,$6::double precision+$4::double precision,
-    $7::double precision+$3::double precision,$8::double precision+$4::double precision,$2::integer),4326) g),
+const WINDOW_SQL = `WITH win AS (SELECT ${ENVELOPE} g),
   ${proposed(11)}
   SELECT * FROM (SELECT f.id,f.identifier,f.body->>'kind' kind,f.body->'height' height,
       CASE WHEN f.area_id=$1 THEN f.body->'geometry' ELSE ST_AsGeoJSON(${LOCAL},9,0)::jsonb END geometry,
@@ -53,9 +65,10 @@ type WindowRow = {
 };
 
 /** One bounded read-only transaction per display read, as the area's other bounded reads, given the area's
- * proposals as the context read chooses them. */
+ * proposals as the context read chooses them; with a window, only those the window can draw. */
 async function boundedRead<T>(
   areaId: string, read: (client: PoolClient, frame: unknown[], area: MapArea, proposals: unknown[]) => Promise<T>,
+  box?: number[],
 ) {
   return transaction(async client => {
     await client.query("SET LOCAL statement_timeout='15s'");
@@ -65,13 +78,14 @@ async function boundedRead<T>(
         'This area has no reference system, so its features have no place on the map to read by window.');
     }
     const frame = [area.id, Number(area.reference.analysisCrs.split(':')[1]), ...area.reference.origin];
-    return read(client, frame, area, await chosenProposals(client, area));
+    const kept = box && { sql: DRAWABLE, values: [...frame.slice(1), ...box] };
+    return read(client, frame, area, await chosenProposals(client, area, kept));
   }, undefined, 'repeatable_read_only');
 }
 
 /** The proposals the context read would draw, as parallel package and feature identifiers. */
-async function chosenProposals(client: PoolClient, area: MapArea) {
-  const packages: ProposalPackage<ProposalFeature>[] = await areaDisplayPackages(client, area.id, true);
+async function chosenProposals(client: PoolClient, area: MapArea, kept?: RuleCondition) {
+  const packages: ProposalPackage<ProposalFeature>[] = await areaDisplayPackages(client, area.id, true, kept);
   const chosen = (await areaProposals(client, area, packages))
     .flatMap(({ packageId, features }) => features.map(feature => [packageId, feature.id]));
   return [chosen.map(([packageId]) => packageId), chosen.map(([, featureId]) => featureId)];
@@ -102,7 +116,7 @@ export async function areaDisplayWindow(areaId: string, window: DisplayWindow): 
       areaId: area.id, areaRevision: area.revision, features: page.map(windowFeature),
       next: rows.length > limit ? page[page.length - 1].identifier : null,
     };
-  });
+  }, [window.minX, window.minY, window.maxX, window.maxY]);
 }
 
 function windowFeature(row: WindowRow): AreaWindowFeature {

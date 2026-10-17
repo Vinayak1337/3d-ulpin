@@ -10,7 +10,7 @@ import {
 } from '../usp/ingestion/source-building-review';
 import type {GisGeometryDisposition} from '@ulpin/contracts';
 import {gisQuarantine} from './gis-quarantine';
-import {displayAreaProposals,PROPOSAL_RULE_BODY} from './area-display-proposals';
+import {displayAreaProposals,proposalRuleBody,type RuleCondition} from './area-display-proposals';
 import { documentProfileFormats, documentLimitMiB } from "../../shared/document-formats";
 import { areaSceneAssets } from "../spatial/scene-assets";
 import { usesGeographicNeighbours } from "../../shared/neighbour-scenario-policy";
@@ -302,12 +302,15 @@ export async function areaContext(id: string, limit = AREA_FEATURE_LIMIT): Promi
     latestCheck: latestCheck || null,
   };
 }
-/** The newest packages whose proposals an area's display reads draw, each past its document authority; with
- * ruleOnly their features keep only the fields the proposal rule reads. */
-export async function areaDisplayPackages(client: PoolClient, id: string, ruleOnly = false): Promise<ImportPackage[]> {
-  const rows = await client.query(
-    `SELECT ${ruleOnly ? PROPOSAL_RULE_BODY : "body"} body FROM import_packages WHERE area_id=$1
-    ORDER BY created_at DESC LIMIT 30`, [id]);
+/** The packages whose proposals an area's display reads draw, newest first, each past its document authority: the
+ * newest 30 whole packages, or with ruleOnly every package of the area, its features keeping only the fields the
+ * proposal rule reads and only those the condition keeps. */
+export async function areaDisplayPackages(client: PoolClient, id: string, ruleOnly = false,
+  kept?: RuleCondition): Promise<ImportPackage[]> {
+  const rows = await client.query(ruleOnly
+    ? `SELECT ${proposalRuleBody(kept?.sql)} body FROM import_packages WHERE area_id=$1 ORDER BY created_at DESC`
+    : "SELECT body FROM import_packages WHERE area_id=$1 ORDER BY created_at DESC LIMIT 30",
+    [id, ...kept?.values ?? []]);
   for (const row of rows.rows) await assertAreaPackageAuthority(client, row.body);
   return rows.rows.map(row => row.body);
 }
@@ -325,6 +328,20 @@ export async function getPackage(id: string, client?: PoolClient): Promise<Impor
     return assertAreaPackageAuthority(current,pkg);
   };
   return client?read(client):transaction(read);
+}
+/** A draft row holds no recorded geometry: its outline goes in geographic_geometry, where the window reads find it,
+ * and geometry stays empty until recording. A redraft of a feature not yet recorded takes the newer outline. */
+export async function writeDraftFeature(client: PoolClient, feature: PhysicalFeature, recordId: string | null,
+  linkedRevision?: number) {
+  const outline = JSON.stringify(feature.geographicGeometry);
+  if (linkedRevision === undefined) {
+    await client.query(`INSERT INTO physical_features(id,area_id,record_id,identifier,body,geographic_geometry)
+      VALUES($1,$2,$3,$4,$5,ST_SetSRID(ST_GeomFromGeoJSON($6),4326))`,
+    [feature.id, feature.areaId, recordId, feature.identifier, feature, outline]);
+  } else if (linkedRevision === 0) {
+    await client.query(`UPDATE physical_features SET geographic_geometry=ST_SetSRID(ST_GeomFromGeoJSON($2),4326)
+      WHERE id=$1 AND revision=0`, [feature.id, outline]);
+  }
 }
 async function savePackage(client: PoolClient, pkg: ImportPackage) {
   await assertPackageDocumentAuthority(client, pkg);
@@ -992,11 +1009,8 @@ async function persistPreparedAreaImport(input: AreaImportInput, prepared: Prepa
               : "physical_context",
         };
         features.push(feature);
+        await writeDraftFeature(client, feature, recordId, linked?.revision);
         if (!linked) {
-          await client.query(
-            "INSERT INTO physical_features(id,area_id,record_id,identifier,body) VALUES($1,$2,$3,$4,$5)",
-            [id, areaRow.id, recordId, identifier, feature],
-          );
           await client.query(
             "INSERT INTO source_feature_links(namespace,source_key,area_id,feature_id) VALUES($1,$2,$3,$4)",
             [input.namespace, candidate.sourceKey, areaRow.id, id],

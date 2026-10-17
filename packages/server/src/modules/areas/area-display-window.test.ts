@@ -7,6 +7,8 @@ import { areaDisplaySummary, areaDisplayWindow } from './area-display-window';
 
 type Row = {
   id: string; identifier: string; kind: string; height: unknown; geometry: unknown; box: number[]; revision: number;
+  /** A draft row written with its outline in geographic_geometry. */
+  outlined?: boolean;
 };
 type Source = { id: string; case_id: string; archived: boolean; site_id: string; sha256: string; revision: number };
 type Package = { id: string; state: string; datasetNamespace: string; sourceRevisionIds: string[]; parts: [];
@@ -39,7 +41,7 @@ class WindowControl {
     const source = { id: randomUUID(), case_id: randomUUID(), archived: false, site_id: this.area.site_id,
       sha256: 'a'.repeat(64), revision: 1 };
     this.sources.push(source);
-    const features = rows.map(({ box, ...row }) => ({ ...row, sourceKey: row.sourceKey ?? row.identifier,
+    const features = rows.map(({ box, outlined, ...row }) => ({ ...row, sourceKey: row.sourceKey ?? row.identifier,
       areaId: row.areaId ?? this.area.id, sourceRevisionId: source.id, geographicGeometry: row.geometry }));
     const pkg: Package = { id: randomUUID(), state, datasetNamespace: 'niagara', sourceRevisionIds: [source.id],
       parts: [], features };
@@ -67,7 +69,12 @@ class WindowControl {
       assert.match(sql, /jsonb_agg/);
       const rule = ({ id, sourceKey, areaId, revision, sourceRevisionId }: Record<string, any>) =>
         ({ id, sourceKey, areaId, revision, sourceRevisionId });
-      return this.packages.map(pkg => ({ body: { ...pkg, features: pkg.features.map(rule) } }));
+      const packages = /LIMIT 30/.test(sql) ? this.packages.slice(0, 30) : this.packages;
+      const kept = ({ id }: Record<string, any>) => {
+        const row = this.features.find(feature => feature.id === id);
+        return values.length === 1 || !row?.outlined || row.revision > 0 || meets(row.box, values.slice(4));
+      };
+      return packages.map(pkg => ({ body: { ...pkg, features: pkg.features.filter(kept).map(rule) } }));
     }
     if (sql.startsWith('SELECT id,revision FROM physical_features')) {
       return this.features.map(({ id, revision }) => ({ id, revision }));
@@ -90,7 +97,7 @@ class WindowControl {
     if (sql.includes('ST_MakeEnvelope')) {
       const [, , , , minX, minY, maxX, maxY, after, limit, packageIds, featureIds] = values;
       return this.drawn(packageIds, featureIds)
-        .filter(({ box }) => box[0] <= maxX && box[2] >= minX && box[1] <= maxY && box[3] >= minY)
+        .filter(({ box }) => meets(box, [minX, minY, maxX, maxY]))
         .filter(feature => after === null || feature.identifier > after)
         .sort((a, b) => (a.identifier < b.identifier ? -1 : 1)).slice(0, limit)
         .map(({ box, ...row }) => row);
@@ -103,6 +110,10 @@ class WindowControl {
     const rows = this.rows(sql, values);
     return { rows: structuredClone(rows), rowCount: rows.length };
   };
+}
+
+function meets(box: number[], [minX, minY, maxX, maxY]: number[]) {
+  return box[0] <= maxX && box[2] >= minX && box[1] <= maxY && box[3] >= minY;
 }
 
 async function memory(work: (control: WindowControl) => Promise<void>) {
@@ -145,7 +156,7 @@ test('a window returns only the features meeting it, keyset page by page without
       after = page.next ?? undefined;
     } while (after);
     assert.deepEqual(seen, ['b-1', 'b-2', 'b-3', 'b-4', 'b-5']);
-    const sql = control.statements.find(statement => statement.includes('ST_MakeEnvelope'))!;
+    const sql = control.statements.find(statement => statement.startsWith('WITH win'))!;
     assert.match(sql, /ST_Intersects\(f\.geographic_geometry,win\.g\)/);
     assert.doesNotMatch(sql, /ST_Intersects\(ST_Transform\(f\.geographic_geometry/);
   }));
@@ -236,3 +247,59 @@ test('a quarantined package whose cited source is unavailable refuses both reads
       await assert.rejects(read, (error: any) => error.status === 403 && error.code === 'AREA_SOURCE_DENIED');
     }
   }));
+
+/** Every proposal a window draws, page by page. */
+async function drawnInWindow(control: WindowControl, edges: Record<string, number>) {
+  const seen: AreaWindowFeature[] = [];
+  let after: string | undefined;
+  do {
+    const page = await areaDisplayWindow(control.area.id, window({ ...edges, limit: 2, ...(after ? { after } : {}) }));
+    seen.push(...page.features);
+    after = page.next ?? undefined;
+  } while (after);
+  return seen;
+}
+
+/** How many proposals each window read passed to its SQL as chosen. */
+function chosenCounts(values: unknown[][]) {
+  return values.map(args => (args[11] as string[]).length);
+}
+
+test('a window draws the same proposals from draft outlines as from package bodies, and from both mixed', async () =>
+  memory(async control => {
+    const drafts = [0, 100, 200, 300].map(x => square(`p-${x}`, x, 0, 9, 0));
+    control.features = drafts;
+    control.propose('REVIEWED', drafts);
+    const windowValues: unknown[][] = [];
+    const query = control.query;
+    control.query = async (sql, values = []) => {
+      if (sql.startsWith('WITH win')) windowValues.push(values);
+      return query(sql, values);
+    };
+    const edges = { minX: -1, minY: -1, maxX: 150, maxY: 20 };
+    const answers = [];
+    for (const outlined of [() => false, () => true, (index: number) => index % 2 === 0]) {
+      drafts.forEach((row, index) => { row.outlined = outlined(index); });
+      answers.push(await drawnInWindow(control, edges));
+    }
+    assert.deepEqual(answers[0].map(feature => [feature.identifier, feature.displayState]),
+      [['p-0', 'unrecorded_proposal'], ['p-100', 'unrecorded_proposal']]);
+    assert.deepEqual(answers[1], answers[0]);
+    assert.deepEqual(answers[2], answers[0]);
+    // The body path chooses all four for the SQL to place; the outlines leave the rule only those meeting the window.
+    assert.deepEqual(chosenCounts(windowValues), [4, 2, 3]);
+    const rule = control.statements.find(sql => sql.includes('FROM import_packages WHERE area_id'))!;
+    assert.match(rule, /ST_Intersects\(geographic_geometry,ST_Transform\(ST_MakeEnvelope/);
+  }));
+
+test('a window over 35 packages draws the proposals of the oldest', async () => memory(async control => {
+  const drafts = Array.from({ length: 35 }, (_, index) => ({ ...square(`p-${index}`, index * 100, 0, 9, 0),
+    outlined: true }));
+  control.features = drafts;
+  for (const draft of drafts) control.propose('REVIEWED', [draft]);
+  const oldest = await drawnInWindow(control, { minX: 3390, minY: -1, maxX: 3420, maxY: 20 });
+  assert.deepEqual(oldest.map(feature => feature.identifier), ['p-34']);
+  assert.equal((await drawnInWindow(control, { minX: -1, minY: -1, maxX: 3500, maxY: 20 })).length, 35);
+  const rule = control.statements.find(sql => sql.includes('FROM import_packages WHERE area_id'))!;
+  assert.doesNotMatch(rule, /LIMIT/);
+}));
