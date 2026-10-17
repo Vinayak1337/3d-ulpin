@@ -1,0 +1,17 @@
+{ "at": "2026-10-16T23:59:57.748Z", "api": "http://127.0.0.1:21026", "caseId": "55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6",
+"asReh2LeftThem": { "nycPackage": "70c207f6-b5c7-45a0-9db2-89f9e1e85dcc", "ready": 1661,
+"areaId": "e4874150-ba45-4282-af98-61f2d50007b7", "niagaraPlacement": "not_understood" }, "requests": [ {
+"route": "/api/v1/cases/55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6", "status": 200, "seconds": 0.035 }, {
+"route": "/api/v1/ingestion/cases/55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6/intake", "status": 200, "seconds": 0.016 }, {
+"route": "/api/v1/ingestion/cases/55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6/targets", "status": 200, "seconds": 0.194 }, {
+"route": "/api/v1/areas/e4874150-ba45-4282-af98-61f2d50007b7/context", "status": 200, "seconds": 0.473 } ], "case": {
+"revision": 2, "name": "REH2 presentation rehearsal test_only" }, "items": [ {
+"itemId": "460ae0f2-6097-4e79-b3bc-d6a9b9184ce7", "format": "geojson", "state": "read", "placement": "on_map",
+"reason": null, "recordsSeen": 1661 }, { "itemId": "c7cc6ea5-5675-4c30-a058-44491d416635", "format": "geojson",
+"state": "failed_part", "placement": "not_understood",
+"reason": "This file could not be read and interpreted completely; nothing was prepared from it.", "recordsSeen": 42247
+} ], "packages": [ { "packageId": "70c207f6-b5c7-45a0-9db2-89f9e1e85dcc",
+"areaId": "e4874150-ba45-4282-af98-61f2d50007b7", "state": "REVIEWED", "counts": { "preparing": 0, "ready": 1661,
+"needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0, "stopped": 0 }, "reviewed": true } ],
+"counts": { "preparing": 0, "ready": 1661, "needs_answer": 0, "held": 0, "confirmed": 0, "recorded": 0, "carded": 0,
+"stopped": 0 }, "mapFeatures": 1661, "sameAsReh2": true }
