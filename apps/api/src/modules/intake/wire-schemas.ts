@@ -1,7 +1,9 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiResponse } from '@nestjs/swagger';
 import { z } from 'zod';
-import { ClaimTranscriptionSchema, RetainedImagerySchema } from '@ulpin/contracts';
+import {
+  AreaDisplaySummarySchema, AreaDisplayWindowSchema, ClaimTranscriptionSchema, RetainedImagerySchema,
+} from '@ulpin/contracts';
 import {GisQuarantineSchema} from '@ulpin/contracts';
 import { LargeOriginalEvidenceSchema } from '@ulpin/contracts/usp';
 
@@ -247,6 +249,8 @@ export const areaContextResponse = areaContext.omit({features: true, displayFeat
     }).nullable(),
   })),
 });
+export const areaDisplaySummary = AreaDisplaySummarySchema;
+export const areaDisplayWindow = AreaDisplayWindowSchema;
 export const gisInspection = z.object({
   quarantine:GisQuarantineSchema.optional(),
   format: z.enum(['geojson', 'arcgis', 'gpkg', 'shapefile_zip']), sourceSha256: z.string(),

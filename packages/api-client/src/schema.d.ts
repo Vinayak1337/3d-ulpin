@@ -380,6 +380,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/areas/{areaId}/display-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read how many features an area draws and their local extent */
+        get: operations["GET_api_v1_areas_areaId_display_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/areas/{areaId}/display-window": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read one keyset page of the features meeting a local window */
+        get: operations["GET_api_v1_areas_areaId_display_window"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/areas/{areaId}/scenario": {
         parameters: {
             query?: never;
@@ -7587,6 +7621,31 @@ export interface components {
                     sourceSha256: string;
                 } | null;
             }[];
+        };
+        GET_areas_areaId_display_summary_Response_200_application_json: {
+            /** Format: uuid */
+            areaId: string;
+            areaRevision: number;
+            featureCount: number;
+            extent: (number)[] | null;
+            displayLimit: number;
+        };
+        GET_areas_areaId_display_window_Response_200_application_json: {
+            /** Format: uuid */
+            areaId: string;
+            areaRevision: number;
+            features: {
+                /** Format: uuid */
+                id: string;
+                identifier: string;
+                /** @enum {string} */
+                kind: "building" | "parcel" | "road" | "public_land" | "utility";
+                polygons: (number)[][][][];
+                heightM: number | null;
+                /** @enum {string} */
+                heightState: "unresolved" | "estimated" | "source_supported" | "reviewed" | "unknown";
+            }[];
+            next: string | null;
         };
         POST_areas_areaId_scenario_Response_410_application_json: {
             error: {
@@ -73786,6 +73845,237 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GET_areas_areaId_context_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_areas_areaId_display_summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                areaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_areas_areaId_display_summary_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_areas_areaId_display_window: {
+        parameters: {
+            query: {
+                limit?: number;
+                after?: string;
+                maxY: number;
+                maxX: number;
+                minY: number;
+                minX: number;
+            };
+            header?: never;
+            path: {
+                areaId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_areas_areaId_display_window_Response_200_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */

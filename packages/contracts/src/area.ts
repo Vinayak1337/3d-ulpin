@@ -335,3 +335,24 @@ export interface AreaContextResponse extends Omit<AreaContext, "features" | "dis
   displayFeatures: AreaContextFeature[];
   packages: AreaContextPackage[];
 }
+const localExtent = z.tuple([z.number(), z.number(), z.number(), z.number()]);
+/** The answer of GET /api/v1/areas/{areaId}/display-summary: what an area holds to draw, in its local metres. */
+export const AreaDisplaySummarySchema = z.strictObject({
+  areaId: z.string().uuid(), areaRevision: z.number().int(), featureCount: z.number().int().nonnegative(),
+  extent: localExtent.nullable(), displayLimit: z.number().int().positive(),
+});
+export type AreaDisplaySummary = z.infer<typeof AreaDisplaySummarySchema>;
+const localRing = z.array(z.tuple([z.number(), z.number()]));
+/** One feature of a display window: its outline in local metres and the height only when the record states one. */
+export const AreaWindowFeatureSchema = z.strictObject({
+  id: z.string().uuid(), identifier: z.string(), kind: z.enum(['building', 'parcel', 'road', 'public_land', 'utility']),
+  polygons: z.array(z.array(localRing)), heightM: z.number().nullable(),
+  heightState: z.enum(['unresolved', 'estimated', 'source_supported', 'reviewed', 'unknown']),
+});
+export type AreaWindowFeature = z.infer<typeof AreaWindowFeatureSchema>;
+/** The answer of GET /api/v1/areas/{areaId}/display-window: one keyset page of the features meeting a window. */
+export const AreaDisplayWindowSchema = z.strictObject({
+  areaId: z.string().uuid(), areaRevision: z.number().int(), features: z.array(AreaWindowFeatureSchema),
+  next: z.string().nullable(),
+});
+export type AreaDisplayWindow = z.infer<typeof AreaDisplayWindowSchema>;
