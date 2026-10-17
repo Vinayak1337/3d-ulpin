@@ -42,11 +42,15 @@ function listWords(entries: string[], budget: number): string {
   return shown ? `${entries.slice(0, shown).join(', ')} and ${rest} more` : `${rest} with long paths`;
 }
 
+/** ZW1. Where the archive's layer job stands: none waiting or done, queued or running, or stopped with a sentence. */
+export type ZipLayerStage = 'taken' | 'taking' | { stopped: string };
+
 /**
  * ZF2. A ZIP's own item asks nothing: its words, from its card alone, say which members became their own files.
- * A layer is what `zipLayerMembers` keeps: a GeoJSON member the probe read without refusal.
+ * A layer is what `zipLayerMembers` keeps: a GeoJSON member the probe read without refusal. ZW1: while the layer
+ * job waits or runs its layers are being taken in; a stopped job's sentence stands in place of the layers' sentence.
  */
-function zipParentWords(card: IntakeCard): string {
+export function zipParentWords(card: IntakeCard, stage: ZipLayerStage = 'taken'): string {
   const members = card.members.filter(member => !member.name.endsWith('/'));
   const layers = members.filter(member => member.format === 'geojson' && !member.refusalCode)
     .map(member => member.name);
@@ -54,9 +58,11 @@ function zipParentWords(card: IntakeCard): string {
     .map(member => `${member.name} (${member.refusalCode ?? 'not a map layer'})`);
   if (!layers.length) return 'This ZIP holds no map layer this batch can take in. '
     + (others.length ? `Its members: ${listWords(others, 1800)}.` : 'No member of it could be listed.');
-  const taken = layers.length === 1 ? '1 map layer in this ZIP is taken in as its own file'
-    : `${layers.length} map layers in this ZIP are taken in as their own files`;
-  return `${taken}: ${listWords(layers, 800)}.` + (others.length ? ` Not taken in: ${listWords(others, 900)}.` : '');
+  const being = stage === 'taking' ? ' being' : '';
+  const taken = layers.length === 1 ? `1 map layer in this ZIP is${being} taken in as its own file`
+    : `${layers.length} map layers in this ZIP are${being} taken in as their own files`;
+  const lead = typeof stage === 'object' ? stage.stopped : `${taken}: ${listWords(layers, 800)}.`;
+  return lead + (others.length ? ` Not taken in: ${listWords(others, 900)}.` : '');
 }
 
 /** A refusal is tray metadata, not permission to use a different reader or split an original. */

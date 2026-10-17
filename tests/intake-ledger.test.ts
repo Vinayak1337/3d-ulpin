@@ -384,6 +384,10 @@ async function layerZipCard() {
   return probeOriginal(async (start, end) => pack.subarray(start, end), pack.length, 'layers.zip');
 }
 
+const layerWords = (being: string) => `2 map layers in this ZIP are${being} taken in as their own files: `
+  + 'uttam/01-google-building-footprints.geojson, uttam/block-boundary.geojson. '
+  + 'Not taken in: uttam/README.md (not a map layer).';
+
 test('enrolling a ZIP of GeoJSON layers queues one layer job and keeps no layer during the request', async () => {
   await configured(async () => {
     const f = fixture();
@@ -397,20 +401,27 @@ test('enrolling a ZIP of GeoJSON layers queues one layer job and keeps no layer 
     assert.equal(members.length, 3);
     assert.ok(members.every(row => row.source_id === null));
     assert.ok(!f.queries.some(sql => sql.includes('INSERT INTO sources') || sql.includes('UPDATE cases')));
+    // ZW1: the queued job's layers are being taken in, not yet taken in.
+    const words = () => f.rows.get(f.sourceId).limit_reason;
+    assert.equal(words(), layerWords(' being'));
     // A replay, and a second enrolment while the job is queued, queue none.
     await f.service.register(f.caseId, input);
     await f.service.register(f.caseId, { ...input, requestKey: randomUUID() });
     assert.equal(f.jobs.length, 1);
+    assert.equal(words(), layerWords(' being'));
     // After a failed job with an unkept layer, enrolling again queues a fresh job under a new id.
     f.jobs[0].status = 'failed';
     await f.service.register(f.caseId, { ...input, requestKey: randomUUID() });
     assert.equal(f.jobs.length, 2);
     assert.notEqual(f.jobs[1].id, f.jobs[0].id);
+    assert.equal(words(), layerWords(' being'));
     // Once every layer is kept and enrolled, a finished job leaves nothing to retry.
     f.jobs[1].status = 'succeeded';
     for (const row of members) if (row.format === 'geojson') row.source_id = randomUUID();
     await f.service.register(f.caseId, { ...input, requestKey: randomUUID() });
     assert.equal(f.jobs.length, 2);
+    // With no layer waiting and no job queued, ZF2's words stand as they are.
+    assert.equal(words(), layerWords(''));
   });
 });
 
