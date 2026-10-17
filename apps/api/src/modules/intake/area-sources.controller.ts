@@ -13,7 +13,8 @@ import { sourceCaseSchema } from '@ulpin/server/modules/cases/source-cases';
 import { sourceWorkspaceSchema } from '@ulpin/server/modules/cases/source-workspaces';
 import { JSON_BODY_LIMIT, MULTIPART_BODY_LIMIT, readJsonBody, readMultipartBody } from '../../common/body';
 import {
-  acquisition, acquisitionProbe, areaContextResponse, areaDisplaySummary, areaDisplayWindow, caseDocument, externalIdentifier,
+  acquisition, acquisitionProbe, areaContextResponse, areaDisplaySummary, areaDisplayWindow, caseDocument,
+  externalIdentifier,
   importPackage, jsonBody, mapArea, multipartBody, resolvedIdentifier, retiredBranchResponse, sourceCase,
   sourceCatalog, wireResponse,
 } from './wire-schemas';

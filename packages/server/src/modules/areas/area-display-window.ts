@@ -12,10 +12,12 @@ export type DisplayWindow = {
 
 /** The same membership as an area's other reads: its own recorded features and its explicit group members. */
 const MEMBERS = `f.revision>0 AND (f.area_id=$1 OR EXISTS (
-  SELECT 1 FROM block_group_memberships m JOIN block_groups g ON g.id=m.group_id WHERE m.feature_id=f.id AND g.area_id=$1
+  SELECT 1 FROM block_group_memberships m JOIN block_groups g ON g.id=m.group_id
+  WHERE m.feature_id=f.id AND g.area_id=$1
 ))`;
 /** A geographic geometry in the area's local metres: its analysis CRS translated by its origin. */
-const LOCAL = `ST_Translate(ST_Transform(f.geographic_geometry,$2::integer),-($3::double precision),-($4::double precision))`;
+const LOCAL = `ST_Translate(ST_Transform(f.geographic_geometry,$2::integer),
+  -($3::double precision),-($4::double precision))`;
 const SUMMARY_SQL = `SELECT s.n feature_count,ST_XMin(s.box) min_x,ST_YMin(s.box) min_y,ST_XMax(s.box) max_x,
   ST_YMax(s.box) max_y FROM (SELECT count(*)::integer n,ST_Extent(${LOCAL}) box FROM physical_features f
   WHERE ${MEMBERS}) s`;
@@ -35,7 +37,9 @@ type WindowRow = {
 };
 
 /** One bounded read-only transaction per display read, as the area's other bounded reads. */
-async function boundedRead<T>(areaId: string, read: (client: PoolClient, frame: unknown[], area: MapArea) => Promise<T>) {
+async function boundedRead<T>(
+  areaId: string, read: (client: PoolClient, frame: unknown[], area: MapArea) => Promise<T>,
+) {
   return transaction(async client => {
     await client.query("SET LOCAL statement_timeout='15s'");
     const area = await getArea(areaId, client);
