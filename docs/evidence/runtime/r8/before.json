@@ -1,0 +1,21 @@
+{ "at": "2026-10-17T08:23:44.150Z", "commit": "99e0026ecc90a1b95b2a735a2418ec6433d02fe1", "checkoutClean": true,
+"servicesGeo": "fb5abb28ec4963d9c5344b7cea6e67dd010f9635", "machine": { "processes": [], "freeGB": 680.614 },
+"containers": [], "health": "000", "doctor": { "command": [ "pnpm platform:doctor --profile demo" ],
+"from": "E:/Projects/ulpin-wt/demo", "exit": 1, "startedAt": "2026-10-17T08:23:41.959Z",
+"endedAt": "2026-10-17T08:23:44.149Z", "seconds": 2.19, "output": [
+"> 3d-ulpin@ platform:doctor E:\\Projects\\ulpin-wt\\demo", "> node scripts/platform/doctor \"--profile\" \"demo\"", "",
+"  documentPagesConfigured: true", "  packetRegionsConfigured: true",
+"  regionProfileSha256: [omitted non-source digest]", "  regionRepoMatches: true", "PASS Document runtimes",
+"PASS Demo external configuration", "PASS Local document OCR paths available; eng+hin assets (runner uses eng).",
+"  enabled: false", "  policyHash: null", "  providerKeyPresent: true", "  mappingTeacherAdapter: replay",
+"  dailyCapPresent: false", "  providerKeysNamed: 0", "  providerKeysPresent: 1", "PASS Model gateway state",
+"FAIL Docker local Linux engine and context/socket",
+"  Fix: start Docker Desktop on its existing local Linux context; inspect %LOCALAPPDATA%/Do",
+"cker/log if startup fails.", "Doctor: 1 failure(s); runtime NOT qualified.",
+" ELIFECYCLE  Command failed with exit code 1." ], "error": null }, "doctorSummary": { "exit": 1, "pass": 4, "fail": [
+"FAIL Docker local Linux engine and context/socket" ], "passLines": [ "PASS Document runtimes",
+"PASS Demo external configuration", "PASS Local document OCR paths available; eng+hin assets (runner uses eng).",
+"PASS Model gateway state" ] }, "volumes": [], "images": [ { "name": "ulpin-geo:git-22003ea3d878", "present": false }, {
+"name": "ulpin-geo:demo-k3b", "present": false } ], "counts": { "at": "2026-10-17T08:23:47.746Z", "health": {
+"status": null, "ok": null, "readiness": null }, "cases": null, "casesStatus": null, "areas": null, "areasStatus": null,
+"sources": null, "packages": null, "perCase": [] } }
