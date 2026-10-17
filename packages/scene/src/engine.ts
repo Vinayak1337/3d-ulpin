@@ -65,13 +65,15 @@ interface BaseEntry {
 }
 
 const CAMERA_MS = 600;
+const GROW_MS = 220;
 // The camera's own depth range, the floor for every framing. Near/far stays 1 : 66,667 as the far plane grows, so
 // depth precision holds the same at every scale.
 const CAMERA_NEAR = 0.3;
 const CAMERA_FAR = 20_000;
 // A framed pose leaves far at 1.25 times the distance to the farthest point of what is framed.
 const FAR_MARGIN = 1.25;
-const GROW_MS = 220;
+// The fog of a large framed area starts past the framed reach and thickens over 1.4 reaches more.
+const FOG_DEPTH = 2.4;
 // Leave most of a 16.7 ms frame for WebGL uploads, drawing and the browser. One building is atomic.
 const BUILDING_BUDGET_MS = 4;
 const BASE_BUDGET_MS = 4;
@@ -88,8 +90,8 @@ const GROUND_PICTURE_ORDER = -3;
 const INITIAL_STATE: SceneState = { mode: 'area', buildingId: null, levelId: null, spaceId: null, tool: 'select' };
 /** What a camera pose frames: a plan box, the height looked at and the height of what is framed. */
 type CameraTarget = { bounds: Bounds2D; focusY: number; extentY: number };
-/** The camera's depth range and the farthest the view may be zoomed out. */
-type ClipRange = { near: number; far: number; maxDistance: number };
+/** The camera's depth range, the farthest the view may be zoomed out, and the framed reach the fog must clear. */
+type ClipRange = { near: number; far: number; maxDistance: number; reach: number };
 
 /**
  * The Studio scene engine: an imperative Three.js scene the React adapter drives. It renders on demand
@@ -176,6 +178,7 @@ export class SceneEngine {
   private trenchPoints: Vector3[] = [];
   private readonly trenchGroup = new Group();
   private areaBox = new Box3();
+  private framedReach = 0;
   private haloOwned = false;
   private readonly dressing = new Group();
   private readonly kerbs = new Group();
@@ -1628,13 +1631,15 @@ export class SceneEngine {
   private clipForPose(to: [Vector3, Vector3], bounds: Bounds2D, extentY: number, animated: boolean) {
     const reach = to[0].distanceTo(to[1]) + Math.hypot(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY, extentY);
     const far = Math.max(CAMERA_FAR, reach * FAR_MARGIN);
+    const large = far > CAMERA_FAR;
     const range: ClipRange = {
-      near: far * (CAMERA_NEAR / CAMERA_FAR), far, maxDistance: far > CAMERA_FAR ? reach : Infinity,
+      near: far * (CAMERA_NEAR / CAMERA_FAR), far, maxDistance: large ? reach : Infinity, reach: large ? reach : 0,
     };
     if (!animated) { this.applyClip(range); return undefined; }
     this.applyClip({
       near: Math.min(range.near, this.camera.near), far: Math.max(range.far, this.camera.far),
       maxDistance: Math.max(range.maxDistance, this.controls.maxDistance),
+      reach: Math.max(range.reach, this.framedReach),
     });
     return range;
   }
@@ -1644,6 +1649,8 @@ export class SceneEngine {
     this.camera.far = range.far;
     this.controls.maxDistance = range.maxDistance;
     this.camera.updateProjectionMatrix();
+    this.framedReach = range.reach;
+    this.fitFog();
   }
 
   private fitAreaPose(to: [Vector3, Vector3], box: Box3) {
@@ -1879,6 +1886,15 @@ export class SceneEngine {
     }
   }
 
+  /** Fog follows the buildings' span, but never starts inside the reach of a large framed area. */
+  private fitFog() {
+    const box = this.areaBox;
+    const span = box.isEmpty() ? 0 : Math.max(box.max.x - box.min.x, box.max.z - box.min.z, 60);
+    const fog = this.scene.fog as Fog;
+    fog.near = Math.max(span ? span * 1.4 : 260, this.framedReach);
+    fog.far = Math.max(span ? span * 3.4 : 620, this.framedReach * FOG_DEPTH);
+  }
+
   private fitGroundAndShadow() {
     const box = this.areaBox;
     if (box.isEmpty()) return;
@@ -1887,8 +1903,7 @@ export class SceneEngine {
     const span = Math.max(box.max.x - box.min.x, box.max.z - box.min.z, 60);
     this.ground.position.set(cx, -0.01, cz);
     this.ground.scale.set(span * 10, span * 10, 1);
-    (this.scene.fog as Fog).near = span * 1.4;
-    (this.scene.fog as Fog).far = span * 3.4;
+    this.fitFog();
     const d = span * 1.2;
     this.sun.position.set(cx - d * 0.55, d * 0.9, cz + d * 0.6);
     this.sun.target.position.set(cx, 0, cz);

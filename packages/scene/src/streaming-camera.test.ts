@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { Box3, Group, MeshBasicMaterial, PerspectiveCamera, Vector3 } from 'three';
+import { Box3, Fog, Group, MeshBasicMaterial, PerspectiveCamera, Vector3 } from 'three';
 import { SceneEngine } from './engine';
 import type { BaseFeatureInput, FootprintInput } from './types';
 
@@ -15,6 +15,7 @@ function fixture(reducedMotion = false) {
     anchors: new Map(), anchorSizes: new Map(), m: { road: material, kerb: material },
     container: { clientWidth: 1440, clientHeight: 900 }, camera: new PerspectiveCamera(45, 1, 0.3, 20_000),
     controls: { target: new Vector3(), update: vi.fn(), maxDistance: Infinity },
+    scene: { fog: new Fog(0, 260, 620) }, areaBox: new Box3(), framedReach: 0,
     requestRender: vi.fn(), apply: vi.fn(), applyLayers: vi.fn(), applyRaise: vi.fn(),
     buildDressing: vi.fn(), buildUtilities: vi.fn(), setLook: vi.fn(),
   });
@@ -152,6 +153,8 @@ describe('fitting a plan box', () => {
 });
 
 describe('camera depth range', () => {
+  const fog = (engine: ReturnType<typeof fixture>) => engine.scene.fog as Fog;
+
   function project(engine: ReturnType<typeof fixture>) {
     engine.camera.aspect = 1440 / 900;
     engine.camera.updateProjectionMatrix();
@@ -168,6 +171,7 @@ describe('camera depth range', () => {
     expect(engine.camera.far).toBeGreaterThanOrEqual(distance + Math.hypot(60_000, 40_000));
     expect(engine.camera.near / engine.camera.far).toBeCloseTo(0.3 / 20_000, 9);
     expect(engine.controls.maxDistance).toBeGreaterThanOrEqual(distance);
+    expect(fog(engine).near).toBeGreaterThanOrEqual(distance + Math.hypot(60_000, 40_000));
     for (const x of [0, 60_000]) for (const z of [-40_000, 0]) {
       const projected = new Vector3(x, 0, z).project(engine.camera);
       expect(Math.abs(projected.x)).toBeLessThanOrEqual(1);
@@ -180,10 +184,12 @@ describe('camera depth range', () => {
     const engine = fixture(true);
     engine.fitPlanBox(0, 0, 50, 50);
     expect([engine.camera.near, engine.camera.far, engine.controls.maxDistance]).toEqual([0.3, 20_000, Infinity]);
+    expect([fog(engine).near, fog(engine).far]).toEqual([260, 620]);
     engine.fitPlanBox(0, 0, 60_000, 40_000);
     expect(engine.camera.far).toBeGreaterThan(20_000);
     engine.fitPlanBox(0, 0, 50, 50);
     expect([engine.camera.near, engine.camera.far, engine.controls.maxDistance]).toEqual([0.3, 20_000, Infinity]);
+    expect([fog(engine).near, fog(engine).far]).toEqual([260, 620]);
   });
 
   it('keeps the wider range during a flight to a smaller frame and settles when it lands', () => {
