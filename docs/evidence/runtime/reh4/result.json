@@ -1,0 +1,169 @@
+{ "task": "REH4", "gate": [ "GF5", "GF1" ], "branch": "task/reh4-window-rehearsal",
+"staging": "01a11f93f5cd9fce54ea317154925837542dc695", "runtime": "ulpin-reh-02", "api": "http://127.0.0.1:21026",
+"status": [ "Part A done; Part B done to the finding: the window routes answer, but the Niagara area ha",
+"s no recorded feature to read, so the map is blank; Part C done and as expected; rehearsal",
+" stopped at 01a11f93; demo untouched" ], "preCheck": [
+"git diff --name-only 9d6acc6b 01a11f93 -- services/ database/ scripts/platform/ pnpm-lock.", "yaml: empty" ],
+"parts": { "A": { "done": true, "steps": [ { "step": "a2-checkout",
+"command": "git checkout --detach 01a11f93f5cd9fce54ea317154925837542dc695", "exit": 0, "seconds": 0.163 }, {
+"step": "a2-install", "command": "pnpm install --frozen-lockfile", "exit": 0, "seconds": 0.843 }, {
+"step": "a3-document-runtime",
+"command": "node scripts/platform/demo-document-runtime.mjs build --runtime ulpin-reh-02", "exit": 0, "seconds": 15.566
+}, { "step": "a3-roll", "command": "node scripts/platform/processor-image.mjs roll --runtime ulpin-reh-02", "exit": 0,
+"seconds": 21.667 }, { "step": "a3-start", "command": "pnpm platform:start --profile demo --runtime ulpin-reh-02",
+"exit": 0, "seconds": 16.367 }, { "step": "a3-doctor",
+"command": "pnpm platform:doctor --profile demo --runtime ulpin-reh-02", "exit": 0, "seconds": 6.477 } ],
+"servicesTreeIsPin": true, "roll": { "recreated": { "geo": "736d6ce4f6ab -> 7ba3472c65be",
+"worker": "240cba0b33c6 -> 3a76b477e6fb" },
+"imageUnchanged": "ulpin-geo:git-22003ea3d878, the same image both before and after", "storesKept": [
+"6b86cc479f86 ulpin-reh-02-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z running",
+"c897d33c90a3 ulpin-reh-02-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"6ec28749627a ulpin-reh-02-postgres-1 postgis/postgis:17-3.5 running",
+"852faedf7f9f ulpin-reh-02-redis-1 redis:7.4.2-alpine running" ], "demoContainersUnchanged": true },
+"rehearsalDoctor": { "exit": 0, "pass": 28, "fail": [], "required": [ "PASS Document runtimes",
+"PASS Processors run the pinned image, built from this checkout's services/geo" ] },
+"gateway": "PASS Model gateway state; disabled, no key, keys and enable never run",
+"gpu": "nvidia-smi compute apps: 25 before and 25 at the doctor, none new, no rehearsal pid among them",
+"reh3Records": { "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46", "packages": 21, "allReviewed": true, "states": [
+"REVIEWED" ] }, "evidence": [ "before.json", "step-a2-checkout.json", "step-a2-install.json",
+"step-a3-document-runtime.json", "step-a3-roll.json", "step-a3-start.json", "step-a3-doctor.json",
+"step-a3-records.json", "demo-after-a.json" ] }, "B": {
+"done": "reads 1 to 4 done; paging, centred windows and height checks not possible: the summary has no extent",
+"areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46", "limitReads": { "context": 422, "canonical": 422,
+"code": "AREA_LIMIT", "words": "Choose an area with at most 2,000 display features." }, "summary": { "status": 200,
+"seconds": 0.256, "featureCount": 0, "extent": null, "areaRevision": 0, "displayLimit": 10000,
+"againstReh3": "REH3 counted 41,809 in 21 reviewed packages; 0 here" }, "probeWindow": { "window": { "minX": -50000,
+"minY": -50000, "maxX": 50000, "maxY": 50000 }, "status": 200, "features": 0, "seconds": 0.201 }, "notDone": [
+"paging the extent by next (no extent)", "windows of 500 m and 50 m at the centre (no centre)",
+"outline and height checks (no feature to check)" ], "refusals": { "limit=0": { "status": 422, "code": "INVALID_INPUT",
+"words": "limit: Too small: expected number to be >=1" }, "limit=4001": { "status": 422, "code": "INVALID_INPUT",
+"words": "limit: Too big: expected number to be <=4000" }, "minX >= maxX": { "status": 422, "code": "INVALID_INPUT",
+"words": "Input: Choose a window whose minimum is below its maximum on both axes." }, "minX = maxX": { "status": 422,
+"code": "INVALID_INPUT", "words": "Input: Choose a window whose minimum is below its maximum on both axes." } },
+"studio": { "route": "/studio/areas/:areaId", "dev": [
+"pnpm studio:dev from the ulpin-reh-02 checkout, port 5188, ULPIN_API_TARGET=http://127.0.0",
+".1:21026; stopped at the end of the part (port 5188 free)" ], "browser": "Chromium 153.0.8010.12 headless",
+"statusLine": "none", "banner": "none", "inspector": false, "reads": [ "/api/v1/workspace-capabilities 200",
+"/api/v1/areas 200", "/api/v1/areas/{areaId}/context 422",
+"/api/v1/areas/a1c1252a-949f-42a7-a879-5ad2aaa7cc46/display-summary aborted",
+"/api/v1/areas/{areaId}/display-summary 200" ], "windowReads": 0, "afterZoom": 0, "afterClick": 0,
+"seen": "an empty grey ground, the area name and Revision 0 in the header, EPSG:2958 in the readout", "screenshots": [
+"map-1.png", "map-2.png", "map-3.png" ] }, "evidence": [ "part-b-window.json", "part-b-map.json", "demo-after-b.json" ]
+}, "C": { "done": true, "caseId": "c64977a6-e741-4d5f-a4cc-b4e03d5c23eb", "wallSeconds": 7.7, "restSeconds": 6.1,
+"input": { "path": "E:/BhuAayam-data/datasets/nyc-10013/nyc-10013-multimodal.zip", "bytes": 14621643,
+"sha256": "c231afe4940fed01f67af2c548bb970b6bf0ea30c1795aa71bed9fdf569387da", "verifiedBeforeUpload": true },
+"parent": { "state": "read", "placement": "undecided", "reason": [
+"6 map layers in this ZIP are taken in as their own files: layers/sidewalk.geojson, layers/",
+"buildings-original.geojson, layers/boundary-original.geojson, layers/hydrography.geojson, ",
+"layers/roadbed.geojson, layers/parks.geojson. Not taken in: layers/nyc-10013-dem-2017.tif ",
+"(not a map layer), layers/nyc-10013-lidar-2017.laz (not a map layer), layers/nyc-10013-ort",
+"ho-2018.tif (not a map layer), manifest.json (not a map layer)." ] }, "layers": [ {
+"member": "layers/boundary-original.geojson", "state": "probed", "placement": "needs_answer", "existingAreaId": null,
+"reason": [ "No approved layout matches this file. An officer states what each feature is and which fie",
+"ld identifies it." ] }, { "member": "layers/buildings-original.geojson", "state": "read", "placement": "undecided",
+"existingAreaId": "e4874150-ba45-4282-af98-61f2d50007b7", "reason": [
+"This file is already the source of the area “buildings original”. Open that area; nothing ",
+"new is prepared from a second copy." ] }, { "member": "layers/hydrography.geojson", "state": "probed",
+"placement": "needs_answer", "existingAreaId": null, "reason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ] }, {
+"member": "layers/parks.geojson", "state": "probed", "placement": "needs_answer", "existingAreaId": null, "reason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ] }, {
+"member": "layers/roadbed.geojson", "state": "probed", "placement": "needs_answer", "existingAreaId": null, "reason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ] }, {
+"member": "layers/sidewalk.geojson", "state": "probed", "placement": "needs_answer", "existingAreaId": null, "reason": [
+"No approved layout matches this file. An officer states what each feature is and which fie", "ld identifies it." ] } ],
+"keptInsideArchive": [ "layers/nyc-10013-dem-2017.tif probed/undecided",
+"layers/nyc-10013-lidar-2017.laz probed/undecided", "layers/nyc-10013-ortho-2018.tif probed/undecided",
+"manifest.json probed/undecided" ], "buildingsItem": {
+"route": "GET /api/v1/ingestion/cases/{caseId}/intake/items/{itemId}", "status": 200, "seconds": 0.031,
+"itemId": "5b45f2d6-458b-4f8b-873b-0cf105aaed5f", "parentItemId": null, "memberPath": null,
+"name": "buildings-original.geojson", "sourceId": "5b45f2d6-458b-4f8b-873b-0cf105aaed5f", "family": "vector",
+"format": "geojson", "state": "read", "placement": "undecided", "reason": [
+"This file is already the source of the area “buildings original”. Open that area; nothing ",
+"new is prepared from a second copy." ], "existingAreaId": "e4874150-ba45-4282-af98-61f2d50007b7", "cardFeatures": 1662,
+"cardCrs": "EPSG:4326", "cardSha256Present": true }, "expected": { "parentReadUndecidedWithWords": true,
+"buildingsReadUndecidedWithSentence": true, "buildingsExistingAreaIsReh2": true, "buildingsNotNeedsAnswer": true },
+"dispatcherLog": [ "not read: the dispatcher writes to logs/dispatcher.log inside the runtime folder (scripts/",
+"platform/processes.mjs:42), which this task may not open; DL1c line is processing.ts:60" ], "evidence": [
+"part-c-nyc.json" ] } }, "findings": [ {
+"where": "GET /api/v1/areas/{areaId}/display-summary and /display-window for the Niagara area", "what": [
+"The window reads count only recorded features (physical_features revision > 0). Niagara's ",
+"41,809 buildings are 21 REVIEWED packages not yet confirmed (area revision 0), so the summ",
+"ary answers 200 with featureCount 0 and extent null, while context and canonical still ref",
+"use 422 AREA_LIMIT because they also count the packages' unrecorded proposals. LA1 was pro",
+"ved on recorded features; this area has none." ],
+"evidence": "part-b-window.json summary and probe; step-a3-records.json" }, {
+"where": "Studio /studio/areas/{areaId} in window mode", "what": [
+"With extent null the window mode makes no window read, shows no status line, no banner and",
+" no inspector: the officer sees a blank map with no sentence saying why, after the batch s", "aid on_map." ],
+"evidence": "part-b-map.json; map-1.png, map-2.png, map-3.png" }, { "where": "GET .../display-window refusals",
+"what": "limit=0, limit=4001, minX >= maxX and minX = maxX each refused 422 INVALID_INPUT with plain words",
+"evidence": "part-b-window.json refusals" }, {
+"where": "node scripts/platform/processor-image.mjs roll --runtime ulpin-reh-02", "what": [
+"The roll recreated geo and worker although they already ran the pinned image (21.7 s). Rol",
+"l-out step 6 says to skip it when the processors already run the pinned build; for the dem", "o at 9d6acc6b they do."
+], "evidence": "step-a3-roll.json" }, { "where": "Batch intake of nyc-10013-multimodal.zip (ZF2b, SA1)", "what": [
+"The ZIP's own item rests read/undecided at once with words naming its 6 layers and the 4 m",
+"embers not taken in; the buildings layer rests read/undecided in 2 s with \"This file is al",
+"ready the source of the area ...\" and existingAreaId e4874150 (REH2's area), no longer nee",
+"ds_answer; the other five layers ask their question (needs_answer) within 6.1 s." ],
+"evidence": "part-c-nyc.json expected, trail" }, { "where": "docs/evidence/runtime/reh4 harness", "what": [
+"walk.ts parsed the case with caseDetail, which drops inspection, so its lineage join was e",
+"mpty; save-c.mjs joined the member paths from the saved raw answer (no request). Its first",
+" pass mapped rows twice and lost the reasons; it was fixed and re-run, which made one more",
+" read of the buildings item." ], "evidence": "save-c.mjs; part-c-nyc.json" } ], "needsCode": [ {
+"file": "packages/server/src/modules/areas/area-display-window.ts:14,21,25", "defect": [
+"MEMBERS (revision > 0) leaves out the unrecorded proposals that areaContext draws (area-di",
+"splay-proposals.ts:21,36), so an area made by a large file and not yet confirmed has no wi",
+"ndow to read; decide whether the window reads proposals or the area is drawn only once con", "firmed" ] }, {
+"file": "apps/studio/src/features/map/areaWindow.ts:121,143; WindowedArea.tsx:64,69",
+"defect": "a summary of 0 features (extent null) leaves the map blank with no line or banner saying why" }, {
+"file": "packages/server/src/modules/areas/area-display-proposals.ts:36",
+"defect": "AREA_LIMIT says \"at most 2,000 display features\" while context allows 10,000 (areas.ts:224)" } ], "demo": {
+"commit": "9d6acc6bdd8bc779b2f150ea4ddfd99c6d2a6af1", "doctorBefore": { "exit": 0 },
+"doctorAfterPartA": "demo-after-a.json matchesBaseline true",
+"doctorAfterPartB": "demo-after-b.json matchesBaseline true", "doctorFinal": { "exit": 0, "matchesBaseline": true },
+"processes": [ { "pid": 26692, "started": "2026-10-17T08:41:05.7273620Z",
+"entry": "E:/Projects/ulpin-wt/demo/apps/api/src/main.ts" }, { "pid": 19544, "started": "2026-10-17T08:41:06.2990550Z",
+"entry": "E:/Projects/ulpin-wt/demo/scripts/dispatcher.ts" } ], "containers": [
+"9332e3bd69a7 ulpin-demo-geo-1 ulpin-geo:git-22003ea3d878 running",
+"35134ae4d726 ulpin-demo-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z running",
+"ce9ecf3830f9 ulpin-demo-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"df261f4d5d7a ulpin-demo-postgres-1 postgis/postgis:17-3.5 running",
+"0faae53a2e85 ulpin-demo-redis-1 redis:7.4.2-alpine running",
+"a5c41cce7d08 ulpin-demo-worker-1 ulpin-geo:git-22003ea3d878 running" ], "health": "200", "checkoutClean": true,
+"requests": "GET /api/v1/health only" }, "exists": { "containersAllExited": [
+"7ba3472c65be ulpin-reh-02-geo-1 ulpin-geo:git-22003ea3d878 exited",
+"6b86cc479f86 ulpin-reh-02-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z exited",
+"c897d33c90a3 ulpin-reh-02-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"6ec28749627a ulpin-reh-02-postgres-1 postgis/postgis:17-3.5 exited",
+"852faedf7f9f ulpin-reh-02-redis-1 redis:7.4.2-alpine exited",
+"3a76b477e6fb ulpin-reh-02-worker-1 ulpin-geo:git-22003ea3d878 exited" ], "volumes": [ "ulpin-reh-02_minio-data",
+"ulpin-reh-02_postgres-data", "ulpin-reh-02_redis-data" ], "listeners": "none on 21021-21026; 5188 free",
+"servingCheckout": "E:/Projects/ulpin-wt/ulpin-reh-02 detached at 01a11f93, installed, git status clean", "records": [
+"REH2 and REH3 cases as they were",
+"REH4 case c64977a6-e741-4d5f-a4cc-b4e03d5c23eb: the NYC archive, six layer originals" ],
+"scratch": "E:/BhuAayam-data/task-data/reh4 (raw answers, Studio dev log)", "untouched": "ulpin-reh-01 and the demo" },
+"restart": { "from": "E:/Projects/ulpin-wt/ulpin-reh-02",
+"start": "pnpm platform:start --profile demo --runtime ulpin-reh-02",
+"doctor": "pnpm platform:doctor --profile demo --runtime ulpin-reh-02",
+"stop": "pnpm platform:stop --profile demo --runtime ulpin-reh-02",
+"caution": "no --create; no roll needed; walk.ts runs once (its raw file blocks a second run)" }, "forDemoRoll": {
+"from": "9d6acc6b", "to": "01a11f93",
+"schema": "none: nothing under services/, database/, scripts/platform/ or pnpm-lock.yaml changed", "steps": [ { "n": 1,
+"what": "confirm runtime ownership; the demo idle" }, { "n": 2,
+"what": "stop the two native processes from the demo checkout (DEMO-RUNTIME.md step 2)",
+"seconds": "not measured here (the rehearsal stop, containers too, took 5.6 s)" }, { "n": 3,
+"what": "git -C E:/Projects/ulpin-wt/demo checkout --detach 01a11f93", "seconds": 0.163 }, { "n": 4,
+"what": "pnpm install --frozen-lockfile (lockfile unchanged)", "seconds": 0.843 }, { "n": 5,
+"what": "node scripts/platform/demo-document-runtime.mjs build", "seconds": 15.566 }, { "n": 6, "what": [
+"skip: the demo already runs ulpin-geo:git-22003ea3d878 and services/geo is unchanged; if r",
+"un, processor-image.mjs roll recreates geo and worker" ], "seconds": 21.667 }, { "n": 7,
+"what": "pnpm platform:start --profile demo", "seconds": 16.367 }, { "n": 8,
+"what": "pnpm platform:doctor --profile demo: require both PASS lines (28 PASS here)", "seconds": 6.477 }, { "n": 9,
+"what": "one job authority dispatched (here every intake job of Part C ran)" } ], "downtimeSecondsWithoutRoll": 32.9,
+"beforeThePresentation": [ "A large file's area is still not drawn before its batch is confirmed (needsCode 1, 2): dec",
+"ide the fix, or confirm the batch on the rehearsal and prove the window reads there first." ] }, "checks": {
+"scan": "check.mjs: lines <= 120, JSON parses, no unrecorded 64-hex, no credential text",
+"diffCheck": "git diff --check exit 0 before each commit", "pngs": "each under 30 KB",
+"forbidden": "no SQL, psql, docker exec, build, rm, prune, tag, pull or push; no key, enable or provider call" } }
