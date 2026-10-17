@@ -2514,9 +2514,51 @@ export async function addFact(
   });
 }
 
-export async function currentAreaCheckFingerprint(areaId: string) {
+/** The recorded features a check hashes: the area's own and its groups' members, less the area's own source-only
+ * declarations, whose null geometry withNeighbours drops. */
+const CHECKED_FEATURES_SQL = `physical_features f WHERE f.revision>0
+  AND (f.area_id<>$1 OR f.body->'geometry' IS DISTINCT FROM 'null'::jsonb) AND (f.area_id=$1 OR EXISTS (
+    SELECT 1 FROM block_group_memberships m JOIN block_groups g ON g.id=m.group_id
+    WHERE m.feature_id=f.id AND g.area_id=$1
+  ))`;
+
+/** The features a check hashes, null when they exceed the limit; an area over the limit by its feature count is
+ * counted first, no further than one past the limit, so its bodies are read only when they fit. */
+async function checkedAreaFeatures(area: MapArea): Promise<PhysicalFeature[] | null> {
+  const limit = AREA_FEATURE_LIMIT;
+  if ((area.featureCount ?? limit + 1) > limit) {
+    const sql = `SELECT count(*)::int n FROM (SELECT 1 FROM ${CHECKED_FEATURES_SQL} LIMIT $2) s`;
+    if ((await query(sql, [area.id, limit + 1])).rows[0].n > limit) return null;
+  }
+  const sql = `SELECT f.body,f.area_id,CASE WHEN f.area_id<>$1 AND $2::integer IS NOT NULL THEN
+    ST_AsGeoJSON(ST_Translate(ST_Transform(f.geographic_geometry,$2::integer),
+      -($3::double precision),-($4::double precision)),9,0) END local_geometry
+    FROM ${CHECKED_FEATURES_SQL} ORDER BY f.identifier LIMIT $5`;
+  const values = [
+    area.id,
+    area.reference ? Number(area.reference.analysisCrs.split(":")[1]) : null,
+    ...(area.reference?.origin ?? [null, null]),
+    limit + 1,
+  ];
+  type Row = { body: PhysicalFeature; area_id: string; local_geometry: string | null };
+  const rows = (await query<Row>(sql, values)).rows;
+  return rows.length > limit ? null : projectedFeatures(rows, area);
+}
+
+/** The input fingerprint a completed check of the area holds while it is current, or null when the inputs it would
+ * hash exceed the 2,000 features any check holds, so no stored check is current. The area's other features, which
+ * a check never hashes, are not read. */
+export async function currentAreaCheckFingerprint(areaId: string): Promise<string | null> {
   const area = await getArea(areaId);
-  const features = await withNeighbours(await loadAreaFeatures(area), area);
+  const checked = await checkedAreaFeatures(area);
+  if (!checked) return null;
+  let features: PhysicalFeature[];
+  try {
+    features = await withNeighbours(checked, area);
+  } catch (error) {
+    if (error instanceof AppError && error.code === "AREA_LIMIT") return null;
+    throw error;
+  }
   return sha256(
     JSON.stringify({
       features,

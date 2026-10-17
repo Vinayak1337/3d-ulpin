@@ -233,7 +233,7 @@
     "packages/server/src/modules/areas/area-routes.ts": "f325332c87ca77c629d692ae0c46f4a5546b4a1d20595091974395ef35878c48",
     "packages/server/src/modules/areas/area-scenario.ts": "c00baf4e1361bd2fb38ced6c78c33b8ee843b85794ac6650b6486ddab030f28f",
     "packages/server/src/modules/areas/area-validation.ts": "18a23b2ec673263d1668ad3f3e046b81155376b9834261ada7f11297ff504345",
-    "packages/server/src/modules/areas/areas.ts": "eea8edb86e8a22d8d556640a8e0adc9c9961166ccd6e6ab7e7fdb9deb4e27578",
+    "packages/server/src/modules/areas/areas.ts": "6cf50406637df240c706f8a1d1497e2412d0f64605ce03e02a1260a182457206",
     "packages/server/src/modules/areas/canonical-area.ts": "d1daf7f691b7438003d67d4ebe830f9153ffac34f3341df12b8239e51b8aeae8",
     "packages/server/src/modules/areas/exterior-records.ts": "fba21da0aabb1cec561e0dd46a1c385b23ac2b8cd5d2da352fc31fb523cea303",
     "packages/server/src/modules/areas/gis-quarantine.ts": "065c5ebaba35bff72255565f97822e9dc5df65325c8e6f0f1596618149405bac",

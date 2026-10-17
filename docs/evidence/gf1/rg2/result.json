@@ -1,0 +1,45 @@
+{
+ "task": "RG2",
+ "gate": "GF1",
+ "status": "pass",
+ "base": "2ddefbbb",
+ "defect": "RG1 GAPS 1: for a recorded building, officer buildingDossier compares the latest completed check's inputFingerprint with currentAreaCheckFingerprint(area), which loaded every recorded feature of the area against the 2,000 limit; a recorded building of an area that grew past 2,000 after a completed check answered 422 AREA_LIMIT, and so did createInvestigation (officer-investigations.ts ~115) and updateInvestigation (~279).",
+ "decisions": {
+  "D1_whatAndHow": {
+   "purpose": "the fingerprint answers whether the latest completed check still describes the area's analytical inputs: sha256 of the features a check hashes (the area's recorded features and its groups' members, less its own source-only declarations, which withNeighbours drops for null geometry, plus crossing neighbours), their occupies_parcel associations, the area reference and the validator name. The area revision alone does not carry it: neighbours, group members and associations change without an area revision.",
+   "bounded": "areas.ts checkedAreaFeatures reads only the features a check hashes (CHECKED_FEATURES_SQL: the loadAreaFeatures predicate plus f.area_id<>$1 OR f.body->'geometry' IS DISTINCT FROM 'null'::jsonb), LIMIT 2,001. An area whose feature count (the map_areas listing's existing aggregate) is over 2,000 is first counted by SELECT count(*) FROM (... LIMIT 2001), so its bodies are read only when they fit.",
+   "whyExact": "every stored fingerprint hashes at most 2,000 features: runAreaCheck reads them through areaContext (2,000 limit) and withNeighbours refuses more than 2,000 with neighbours. When the features the hash would cover exceed 2,000 (by the count, the bounded read, or withNeighbours' AREA_LIMIT), the hashed list differs from every stored one, so currentAreaCheckFingerprint returns null and every caller's !== comparison reports the check not current. Otherwise it hashes the same list as before: the SQL predicate removes exactly the rows withNeighbours filtered (same-area rows whose body geometry is JSON null; other-area rows always carry a projected geometry or projectedFeatures refuses), keeping identifier order.",
+   "equality": "test 'a small area fingerprints its check exactly as the area check does' (NYC-shaped fixture of RG1 with one source-only declaration): a completed check holding the new fingerprint is reported current by areaContext's checkIsStale, which still computes the old formula over loadAreaFeatures; a different fingerprint is reported stale. The same test passes with areas.ts at 2ddefbbb."
+  },
+  "D2_notCurrent": "not needed as a fallback: the null answer is exact (see whyExact). The dossier shows it through the existing check.stale true and drops the check's findings as it already does for a stale check.",
+  "D3_investigations": "createInvestigation and updateInvestigation call the same currentAreaCheckFingerprint; with null they answer their existing 409s ('This check is stale...', 'The investigated inputs have changed...') instead of 422 AREA_LIMIT. officer.ts and officer-investigations.ts needed no edit (their !== comparisons accept string | null).",
+  "D4_scope": "no change to how checks run or are stored, no schema change, no contract field. docs/api/source-pins.json repinned for areas.ts; openapi.json and schema.d.ts regenerated with no content change."
+ },
+ "tests": {
+  "file": "packages/server/src/modules/areas/area-feature-read.test.ts (RG1's in-memory pool, extended to answer check runs, the bounded count, geometry qualification and investigation rows; synthetic test_only buildings, no database)",
+  "largeArea": "5 recorded buildings checked, then 1,996 more recorded at the same area revision (2,001): the dossier answers with check.stale true and canonicalBuilding answers recordState reviewed; no statement is the whole-area read (SELECT f.body,f.area_id), none reads more than one physical_features row, the bounded count is issued; areaContext still refuses AREA_LIMIT",
+  "sourceOnly": "1,996 source-only declarations added after the check (2,001 recorded): the check stays current, as the old formula would hash it",
+  "changed": "one checked building's height changed after the check: check.stale true",
+  "investigations": "an investigation opened on a current check in the small area; after growth past 2,000, opening on that check answers 409 stale, moving the first to READY_FOR_REVIEW answers 409 inputs changed, and opening without a check answers",
+  "againstOldCode": "with areas.ts at 2ddefbbb the large-area, source-only and investigation tests fail with AREA_LIMIT; the equality and changed tests pass"
+ },
+ "checks": {
+  "typecheck:backend": "exit 0",
+  "studio:typecheck": "exit 0",
+  "studio:test": "exit 0; 73 files, 471 tests passed (staging 471; no Studio file changed)",
+  "backend before (staging, brief)": "290 tests, 288 pass, 2 skipped (not re-run here)",
+  "backend after": "exit 0; 295 tests, 293 pass, 0 fail, 2 skipped (5 tests added)",
+  "openapi --check": "exit 1 before regeneration (source-pins.json stale for areas.ts), exit 0 after",
+  "openapi generate": "exit 0; 314 operations, 356 named schemas",
+  "refresh-contract staging": "exit 0; repinned packages/server/src/modules/areas/areas.ts",
+  "studio:api-types": "exit 0",
+  "scripts/api/check.py": "exit 0; 314 native operations, 356 named schemas; pins valid",
+  "git diff --check": "exit 0",
+  "officer tests (extra)": "packages/server/src/modules/officer/*.test.ts: 36 tests, 35 pass, 1 fail; the same test fails with areas.ts at 2ddefbbb (recorded-building-reads.test.ts:82, a document reading's case_advanced line missing), unrelated"
+ },
+ "notRun": "no runtime, Docker, database or provider call; Niagara on ulpin-reh-02 not re-read",
+ "gaps": [
+  "checkedAreaFeatures repeats loadAreaFeatures' projection SQL with one added predicate; loadAreaFeatures was outside this task's areas.ts scope",
+  "the count and the bounded read are separate statements outside a transaction, as the old reads were; the bounded read's own limit still answers null if the area grows between them"
+ ]
+}
