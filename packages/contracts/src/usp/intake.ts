@@ -108,6 +108,8 @@ export const IntakeItemSchema = z.strictObject({
   recordsSeen: z.number().int().nonnegative().describe(
     'Records of the file read so far; the sealed reader count stays unchanged during mapping and package drafting.'),
   limitReason: z.string().nullable(), pinnedByOfficer: z.boolean(),
+  existingAreaId: z.string().uuid().nullable().optional().describe(
+    'The area whose source already holds this file\'s exact bytes; present only when the item rests for that reason.'),
   createdAt: z.string().datetime(), updatedAt: z.string().datetime(),
 });
 export const IntakeManifestSchema = z.strictObject({ caseId: z.string().uuid(), items: z.array(IntakeItemSchema) });

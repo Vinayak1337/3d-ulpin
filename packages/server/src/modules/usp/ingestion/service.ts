@@ -112,7 +112,8 @@ export async function destination(client: PoolClient, value: MappingDestination,
       [`${value.namespace}:${value.name}`])).rows[0];
     if (existing && sourceSha256 && value.namespace === `file:${sourceSha256}`)
       throw new AppError(409, 'SOURCE_ALREADY_IN_AREA',
-        `This file is already the source of the area “${existing.name}”. Open that area; nothing new is prepared from a second copy.`);
+        `This file is already the source of the area “${existing.name}”. Open that area; nothing new is prepared from a second copy.`,
+        { areaId: existing.id });
     if (existing) conflict('This destination already exists; pin its current area and reference explicitly.');
   }
 }

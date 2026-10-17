@@ -46,6 +46,7 @@ function NextStep({ caseId, item, packages, choose, refresh }: {
   const packageStep = path ? <Link to={path}>Open package</Link> : <span>Package prepared</span>;
   return <div className={styles.stack}>
     {item.plan?.packageId ? packageStep : null}
+    {item.existingAreaId ? <Link to={`/studio/areas/${item.existingAreaId}`}>Open that area</Link> : null}
     {item.sourceId && (item.plan || needsLayoutAnswer(item)) ?
       <Button variant="soft" onClick={() => choose(item)}>View layout</Button> : null}
     {canRetryStopped(item) ? <StoppedRetry key={item.updatedAt} caseId={caseId} item={item} refresh={refresh} /> : null}

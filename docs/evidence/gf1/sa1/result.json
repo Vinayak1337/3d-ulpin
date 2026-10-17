@@ -1,0 +1,53 @@
+{
+  "task": "SA1",
+  "gate": "GF1",
+  "base": "410247e4",
+  "defect": ["docs/evidence/runtime/reh3/result.json needsCode[1]: SOURCE_ALREADY_IN_AREA became an officer",
+    "question that no answer clears"],
+  "decisions": {
+    "D1": {
+      "what": ["SOURCE_ALREADY_IN_AREA is no longer an officer question. The draft rests state read,",
+        "placement undecided, with the refusal's own sentence as its reason. on_map was not chosen: the area",
+        "is not on this batch's map and no existing manifest field names it (plan.packageId names a package of",
+        "this case only). isSettled is true for state read; no enum value or migration was added."],
+      "files": ["packages/server/src/modules/usp/ingestion/intake-draft-worker.ts:142-149 (alreadyInArea)",
+        "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts:250,257-260 (the resting write in fail)"]
+    },
+    "D2": {
+      "what": ["The refusal carries the existing area's id in its details. The resting write keeps it in plan_ref as",
+        "existingAreaId (no recipe fields, so no plan and no package queries match it); the manifest publishes the new",
+        "optional, nullable existingAreaId and the tray offers 'Open that area' to /studio/areas/:areaId."],
+      "files": ["packages/server/src/modules/usp/ingestion/service.ts:114-116",
+        "packages/contracts/src/usp/intake.ts:111-112",
+        "packages/server/src/modules/usp/ingestion/intake-ledger.ts:28-31,43",
+        "apps/studio/src/features/intake/IntakeTray.tsx:49",
+        "docs/api/openapi.json, packages/api-client/src/schema.d.ts, docs/api/source-pins.json (regenerated)"]
+    },
+    "D3": {
+      "what": "AREA_SOURCE_DENIED and AREA_PROCESSING 422 stay officer questions (needs_answer), unchanged.",
+      "files": ["packages/server/src/modules/usp/ingestion/intake-draft-worker.ts:135-141"]
+    },
+    "D4": "The duplicate rule (one area per file's bytes) and ZIP fan-out are unchanged."
+  },
+  "tests": {
+    "packages/server/src/modules/usp/ingestion/intake-draft.test.ts:360":
+      "rests read/undecided with the sentence and area id; AREA_SOURCE_DENIED and AREA_PROCESSING stay questions",
+    "packages/server/src/modules/usp/ingestion/destination.test.ts:24":
+      "the raised refusal carries the area id and is not a question",
+    "packages/server/src/modules/usp/ingestion/intake-ledger.test.ts:39":
+      "the manifest names the area only from a valid stored id",
+    "apps/studio/src/features/intake/IntakeTray.test.tsx:22":
+      "settled, not a layout question, shows the sentence and the link; no link without the id"
+  },
+  "verification": {
+    "before": {"typecheckBackend": 0, "studioTypecheck": 0, "studioTest": 0, "studioTests": 452,
+      "backend": {"exit": 1, "tests": 262, "pass": 225, "fail": 15, "skipped": 22}},
+    "after": {"typecheckBackend": 0, "studioTypecheck": 0, "studioTest": 0, "studioTests": 453,
+      "backend": {"exit": 1, "tests": 264, "pass": 227, "fail": 15, "skipped": 22}},
+    "backendFailures": ["The same 15 tests fail before and after, by name: this box has no E:/BhuAayam-data drive, no",
+      "database and no matching Python runtime."],
+    "contract": {"openapi": 0, "openapiCheck": 0, "studioApiTypes": 0, "refreshContract": 0, "checkPy": 0},
+    "diffCheck": 0,
+    "uiDesignScan": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs origin/staging: exit 0, no candidates"
+  }
+}

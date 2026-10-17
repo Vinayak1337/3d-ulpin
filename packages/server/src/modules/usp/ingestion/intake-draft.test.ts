@@ -6,7 +6,8 @@ import { ingestionBinding } from './events';
 import { intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { IntakeDraftInputSchema, intakeDraftKey, intakeDraftLimit, queueIntakeDraftTx,
   assertIntakeDraftTx, type DraftItem } from './intake-draft';
-import { intakeDestination, officerQuestion, proposeIntakeLayout, lookupIntakeMemory } from './intake-draft-worker';
+import { alreadyInArea, intakeDestination, officerQuestion, proposeIntakeLayout,
+  lookupIntakeMemory } from './intake-draft-worker';
 import type { MapArea } from '@ulpin/contracts';
 import { AppError } from '../../../infrastructure/errors';
 import { registerUspJobInputTx } from '../jobs';
@@ -354,6 +355,21 @@ test('an area the normalizer refuses becomes the officer question in its words; 
     "Use an area of this batch's site or place the file in a separate intake batch.");
   assert.equal(officerQuestion(new AppError(503, 'AREA_PROCESSING', 'unavailable')), null);
   assert.equal(officerQuestion(new Error('timeout')), null);
+});
+
+test('a file whose bytes already made an area rests read with the refusal; the other refusals stay questions', () => {
+  const words = 'This file is already the source of the area “buildings original”. '
+    + 'Open that area; nothing new is prepared from a second copy.';
+  const areaId = '10000000-0000-4000-8000-000000000009';
+  const refusal = new AppError(409, 'SOURCE_ALREADY_IN_AREA', words, { areaId });
+  assert.equal(officerQuestion(refusal), null);
+  assert.deepEqual(alreadyInArea(refusal),
+    { state: 'read', placement: 'undecided', planRef: { existingAreaId: areaId }, limitReason: words });
+  assert.equal(alreadyInArea(new AppError(409, 'SOURCE_ALREADY_IN_AREA', words))?.planRef, null);
+  for (const other of [new AppError(403, 'AREA_SOURCE_DENIED', 'other'), new AppError(422, 'AREA_PROCESSING', words)]) {
+    assert.equal(alreadyInArea(other), null);
+    assert.notEqual(officerQuestion(other), null);
+  }
 });
 
 function storedInventory() {

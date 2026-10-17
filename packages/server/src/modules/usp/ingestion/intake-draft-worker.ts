@@ -136,9 +136,16 @@ async function preparedProposal(input: IntakeDraftInput, attempt: UspJobAttempt,
 export function officerQuestion(error: unknown): string | null {
   if (!(error instanceof AppError)) return null;
   if (error.code === 'AREA_SOURCE_DENIED') return otherSite;
-  if (error.code === 'SOURCE_ALREADY_IN_AREA' && error.status === 409) return error.message.slice(0, 2000);
   if (error.code === 'AREA_PROCESSING' && error.status === 422) return error.message.slice(0, 2000);
   return null;
+}
+
+/** No answer changes a file's bytes: an item whose bytes already made an area rests read, with that sentence. */
+export function alreadyInArea(error: unknown): Omit<IntakeDraftState, 'recordsSeen'> | null {
+  if (!(error instanceof AppError) || error.code !== 'SOURCE_ALREADY_IN_AREA' || error.status !== 409) return null;
+  const areaId = (error.details as { areaId?: unknown } | undefined)?.areaId;
+  const planRef = typeof areaId === 'string' ? { existingAreaId: areaId } : null;
+  return { state: 'read', placement: 'undecided', planRef, limitReason: error.message.slice(0, 2000) };
 }
 
 async function proposeRecipe(input: IntakeDraftInput, attempt: UspJobAttempt): Promise<MappingReceipt | null> {
@@ -240,17 +247,17 @@ async function complete(input: IntakeDraftInput, attempt: UspJobAttempt) {
 async function fail(input: IntakeDraftInput, attempt: UspJobAttempt, error: unknown) {
   const code = error instanceof AppError ? error.code : 'INTAKE_DRAFT_FAILED';
   const question = officerQuestion(error);
+  const resting = alreadyInArea(error);
   await transaction(async client => {
     // Source changes must terminate the job without rewriting the item or any recipe.
     const { lockSourceCaseDestinationTx } = await import('../../cases/source-case-lock');
     await lockSourceCaseDestinationTx(client, input.caseId);
     await client.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE', [input.caseId]);
     await assertUspJobAttemptTx(client, attempt);
-    if (question) {
+    if (question || resting) {
       const current = await readIntakeDraftTx(client, input.caseId, input.itemId);
-      await writeIntakeDraftTx(client, input.caseId, input.itemId, { ...current, state: 'planned',
-        placement: 'needs_answer', limitReason: question,
-      });
+      await writeIntakeDraftTx(client, input.caseId, input.itemId, { ...current, ...resting ?? { state: 'planned',
+        placement: 'needs_answer', limitReason: question } });
     }
     await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND number=$2",
       [input.jobId, attempt.number]);

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
 import { destination } from './service';
-import { officerQuestion } from './intake-draft-worker';
+import { alreadyInArea, officerQuestion } from './intake-draft-worker';
 import { AppError } from '../../../infrastructure/errors';
 
 const hash = 'a'.repeat(64);
@@ -21,10 +21,12 @@ function client(found: boolean) {
   } } as unknown as PoolClient;
 }
 
-test('only this file own new-area naming scope gets the duplicate refusal and the waiting words', async () => {
+test('only this file own new-area naming scope gets the duplicate refusal, resting with its words', async () => {
   await assert.rejects(destination(client(true), area, false, hash),
     (error: AppError) => error.status === 409 && error.code === 'SOURCE_ALREADY_IN_AREA'
-      && error.message === words && officerQuestion(error) === words);
+      && error.message === words && officerQuestion(error) === null
+      && alreadyInArea(error)?.limitReason === words
+      && alreadyInArea(error)?.planRef?.existingAreaId === 'existing-id');
   await assert.rejects(destination(client(true), area, false, 'b'.repeat(64)), {
     code: 'STALE_REVISION',
     message: 'This destination already exists; pin its current area and reference explicitly.',
@@ -39,4 +41,5 @@ test('executing a duplicate keeps the seed-lock order and destination', async ()
   assert.match(calls[0], /pg_advisory_xact_lock/);
   assert.match(calls[1], /seed_key/);
   assert.equal(officerQuestion(new AppError(422, 'SOURCE_ALREADY_IN_AREA', words)), null);
+  assert.equal(alreadyInArea(new AppError(422, 'SOURCE_ALREADY_IN_AREA', words)), null);
 });
