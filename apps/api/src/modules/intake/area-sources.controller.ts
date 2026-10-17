@@ -6,14 +6,14 @@ import { AppError } from '@ulpin/server/infrastructure/errors';
 import { redactDocumentViews } from '@ulpin/server/modules/usp/ingest/redact';
 import { AreaIntakeService } from '@ulpin/server/modules/areas/area-intake-service';
 import {
-  acquisitionProbeSchema, acquisitionSchema, areaIdSchema, documentFormatSchema,
+  acquisitionProbeSchema, acquisitionSchema, areaDisplayWindowSchema, areaIdSchema, documentFormatSchema,
   externalIdentifierSchema,
 } from '@ulpin/server/modules/areas/area-validation';
 import { sourceCaseSchema } from '@ulpin/server/modules/cases/source-cases';
 import { sourceWorkspaceSchema } from '@ulpin/server/modules/cases/source-workspaces';
 import { JSON_BODY_LIMIT, MULTIPART_BODY_LIMIT, readJsonBody, readMultipartBody } from '../../common/body';
 import {
-  acquisition, acquisitionProbe, areaContextResponse, caseDocument, externalIdentifier,
+  acquisition, acquisitionProbe, areaContextResponse, areaDisplaySummary, areaDisplayWindow, caseDocument, externalIdentifier,
   importPackage, jsonBody, mapArea, multipartBody, resolvedIdentifier, retiredBranchResponse, sourceCase,
   sourceCatalog, wireResponse,
 } from './wire-schemas';
@@ -89,6 +89,37 @@ export class AreaSourcesController {
   @wireResponse(200, areaContextResponse)
   async context(@Param('areaId') areaId: string) {
     return redactDocumentViews(await this.areas.context(areaIdSchema.parse(areaId)));
+  }
+
+  @Get('areas/:areaId/display-summary')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'GET_api_v1_areas_areaId_display_summary',
+    summary: 'Read how many features an area draws and their local extent',
+  })
+  @ApiParam({name: 'areaId', schema: {type: 'string', format: 'uuid'}})
+  @wireResponse(200, areaDisplaySummary)
+  displaySummary(@Param('areaId') areaId: string) {
+    return this.areas.displaySummary(areaIdSchema.parse(areaId));
+  }
+
+  @Get('areas/:areaId/display-window')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'GET_api_v1_areas_areaId_display_window',
+    summary: 'Read one keyset page of the features meeting a local window',
+  })
+  @ApiParam({name: 'areaId', schema: {type: 'string', format: 'uuid'}})
+  @ApiQuery({name: 'minX', required: true, schema: {type: 'number'}})
+  @ApiQuery({name: 'minY', required: true, schema: {type: 'number'}})
+  @ApiQuery({name: 'maxX', required: true, schema: {type: 'number'}})
+  @ApiQuery({name: 'maxY', required: true, schema: {type: 'number'}})
+  @ApiQuery({name: 'after', required: false, schema: {type: 'string', minLength: 1, maxLength: 500}})
+  @ApiQuery({name: 'limit', required: false,
+    schema: {type: 'integer', minimum: 1, maximum: 4000, default: 2000}})
+  @wireResponse(200, areaDisplayWindow)
+  displayWindow(@Param('areaId') areaId: string, @Query() window: Record<string, string>) {
+    return this.areas.displayWindow(areaIdSchema.parse(areaId), areaDisplayWindowSchema.parse(window));
   }
 
   @Post('areas/:areaId/scenario')
