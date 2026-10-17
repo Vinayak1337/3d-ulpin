@@ -10,12 +10,15 @@ import {
   WINDOW_EMPTY, WINDOW_SETTLE_MS, WindowReader, isAreaLimit, showWindow, useAreaWindow, viewBounds, windowEmpty,
   windowLine, windowScene, type Bounds,
 } from './areaWindow';
-import { WindowedArea, WindowedInspector } from './WindowedArea';
+import { WindowKey, WindowedArea, WindowedInspector } from './WindowedArea';
 
-function feature(identifier: string, kind: AreaWindowFeature['kind'] = 'building', heightM: number | null = null) {
+function feature(
+  identifier: string, kind: AreaWindowFeature['kind'] = 'building', heightM: number | null = null,
+  displayState: AreaWindowFeature['displayState'] = 'recorded',
+) {
   return {
     id: `id-${identifier}`, identifier, kind, heightM, heightState: heightM === null ? 'unknown' : 'source_supported',
-    polygons: [[[[0, 0], [1, 0], [1, 1], [0, 0]]]],
+    polygons: [[[[0, 0], [1, 0], [1, 1], [0, 0]]]], displayState,
   } as AreaWindowFeature;
 }
 
@@ -41,6 +44,19 @@ describe('window mode', () => {
     const { footprints, base } = windowScene([feature('a', 'building', 12), feature('b'), feature('r', 'road')]);
     expect(footprints.map((input) => [input.id, input.heightM])).toEqual([['id-a', 12], ['id-b', null]]);
     expect(base.map((input) => [input.id, input.kind])).toEqual([['id-r', 'road']]);
+  });
+
+  it('says how many drawn features are proposals not yet confirmed, and nothing when none are', () => {
+    const drawn = [feature('a'), feature('b', 'building', null, 'unrecorded_proposal')];
+    expect(windowLine(drawn, 41_809))
+      .toBe('Showing 2 of 41,809 buildings (1 proposed, not yet confirmed); move closer to see the rest.');
+    expect(windowLine(drawn, 2)).toBe('2 buildings (1 proposed, not yet confirmed)');
+    expect(windowLine([feature('a'), feature('b')], 2)).toBe('2 buildings');
+  });
+
+  it('draws a proposal as a candidate and a recorded building as a record', () => {
+    const { footprints } = windowScene([feature('a'), feature('b', 'building', 9, 'unrecorded_proposal')]);
+    expect(footprints.map((input) => [input.id, input.candidate])).toEqual([['id-a', false], ['id-b', true]]);
   });
 
   it('clips the view to the area extent and gives no window outside it', () => {
@@ -98,6 +114,17 @@ describe('nothing to draw', () => {
   });
 });
 
+describe('the key', () => {
+  it('names both styles in a disclosure the keyboard reaches, beside a drawn window', () => {
+    const markup = render(createElement(WindowKey));
+    expect(markup).toMatch(/<details[^>]*open=""[^>]*><summary>Key<\/summary>/);
+    expect(markup).toContain('Recorded');
+    expect(markup).toContain('Proposed, not yet confirmed');
+    const drawable = render(createElement(WindowedArea, { areaId: 'a' }), summary(5, [0, 0, 10, 10]));
+    expect(drawable).toContain('<summary>Key</summary>');
+  });
+});
+
 describe('a picked footprint', () => {
   const inspector = (kind: AreaWindowFeature['kind']) =>
     render(createElement(WindowedInspector, { feature: feature('B-1', kind), areaName: 'Area', onClose() {} }));
@@ -107,6 +134,16 @@ describe('a picked footprint', () => {
     expect(markup).toContain('href="/studio/properties/id-B-1/register"');
     expect(markup).toContain('>Open register</a>');
     expect(markup).toContain('B-1');
+  });
+
+  it('says a proposal is not yet confirmed, keeps its identifier and register, and says nothing of a record', () => {
+    const proposal = render(createElement(WindowedInspector, {
+      feature: feature('B-2', 'building', null, 'unrecorded_proposal'), areaName: 'Area', onClose() {},
+    }));
+    expect(proposal).toContain('A reviewed proposal, not yet confirmed by an officer.');
+    expect(proposal).toContain('B-2');
+    expect(proposal).toContain('>Open register</a>');
+    expect(inspector('building')).not.toContain('not yet confirmed');
   });
 
   it('offers no register for a feature that is not a building', () => {

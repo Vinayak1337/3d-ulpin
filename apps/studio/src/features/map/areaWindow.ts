@@ -36,25 +36,29 @@ export function viewBounds(footprint: readonly (readonly [number, number])[], ex
   return minX < maxX && minY < maxY ? [minX, minY, maxX, maxY] : null;
 }
 
-/** Window features as scene inputs: buildings extruded where a height is stated, flat otherwise. */
+/** Window features as scene inputs: buildings extruded where a height is stated, flat otherwise; a proposal a ghost. */
 export function windowScene(features: readonly AreaWindowFeature[]) {
   const footprints: FootprintInput[] = [], base: BaseFeatureInput[] = [];
-  for (const { id, kind, heightM, heightState, ...outline } of features) {
+  for (const { id, kind, heightM, heightState, displayState, ...outline } of features) {
     // The published schema widens each [x, y] pair to a number list; the server sends pairs.
     const polygons = outline.polygons as MultiPolygon;
     if (!polygons.length) continue;
-    if (kind === 'building') footprints.push({ id, polygons, heightM, heightState });
+    if (kind === 'building') {
+      footprints.push({ id, polygons, heightM, heightState, candidate: displayState === 'unrecorded_proposal' });
+    }
     else base.push({ id, kind, polygons });
   }
   return { footprints, base };
 }
 
-/** The one line that tells the officer what the map draws of the area. */
+/** The one line that tells the officer what the map draws of the area, and how many of it wait for confirmation. */
 export function windowLine(features: readonly AreaWindowFeature[], total: number): string {
   const noun = features.every((feature) => feature.kind === 'building') ? 'buildings' : 'features';
   const all = total.toLocaleString('en-IN');
-  if (features.length >= total) return `${all} ${noun}`;
-  return `Showing ${features.length.toLocaleString('en-IN')} of ${all} ${noun}; move closer to see the rest.`;
+  const proposed = features.filter((feature) => feature.displayState === 'unrecorded_proposal').length;
+  const note = proposed ? ` (${proposed.toLocaleString('en-IN')} proposed, not yet confirmed)` : '';
+  if (features.length >= total) return `${all} ${noun}${note}`;
+  return `Showing ${features.length.toLocaleString('en-IN')} of ${all} ${noun}${note}; move closer to see the rest.`;
 }
 
 /**
