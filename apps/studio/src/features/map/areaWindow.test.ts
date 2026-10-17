@@ -33,11 +33,19 @@ describe('window mode', () => {
     expect(isAreaLimit(null)).toBe(false);
   });
 
-  it('says how many are drawn when the budget or the view cuts the area, and the total when all are', () => {
+  it('says the whole area when all of it is drawn, and what is in view of the area when the view is not cut', () => {
     const drawn = [feature('a'), feature('b')];
-    expect(windowLine(drawn, 41_809)).toBe('Showing 2 of 41,809 buildings; move closer to see the rest.');
-    expect(windowLine(drawn, 2)).toBe('2 buildings');
-    expect(windowLine([feature('a'), feature('r', 'road')], 2)).toBe('2 features');
+    expect(windowLine(drawn, 2, false)).toBe('2 buildings');
+    expect(windowLine(drawn, 41_809, false)).toBe('2 buildings in view of 41,809');
+    expect(windowLine([], 41_809, false)).toBe('0 buildings in view of 41,809');
+    expect(windowLine([feature('a'), feature('r', 'road')], 2, false)).toBe('2 features');
+  });
+
+  it('says move closer only when the budget cut the view', () => {
+    expect(windowLine([feature('a'), feature('b')], 41_809, true))
+      .toBe('Showing 2 buildings in view, the most drawn at once; move closer to see the rest.');
+    expect(windowLine([feature('a'), feature('r', 'road')], 41_809, true))
+      .toBe('Showing 2 features in view, the most drawn at once; move closer to see the rest.');
   });
 
   it('extrudes a stated height, keeps an unstated one flat and draws other kinds as base', () => {
@@ -46,12 +54,14 @@ describe('window mode', () => {
     expect(base.map((input) => [input.id, input.kind])).toEqual([['id-r', 'road']]);
   });
 
-  it('says how many drawn features are proposals not yet confirmed, and nothing when none are', () => {
+  it('says how many drawn features are proposals not yet confirmed, in every case, and nothing when none are', () => {
     const drawn = [feature('a'), feature('b', 'building', null, 'unrecorded_proposal')];
-    expect(windowLine(drawn, 41_809))
-      .toBe('Showing 2 of 41,809 buildings (1 proposed, not yet confirmed); move closer to see the rest.');
-    expect(windowLine(drawn, 2)).toBe('2 buildings (1 proposed, not yet confirmed)');
-    expect(windowLine([feature('a'), feature('b')], 2)).toBe('2 buildings');
+    const note = '(1 proposed, not yet confirmed)';
+    expect(windowLine(drawn, 2, false)).toBe(`2 buildings ${note}`);
+    expect(windowLine(drawn, 41_809, false)).toBe(`2 buildings in view of 41,809 ${note}`);
+    expect(windowLine(drawn, 41_809, true))
+      .toBe(`Showing 2 buildings in view ${note}, the most drawn at once; move closer to see the rest.`);
+    expect(windowLine([feature('a'), feature('b')], 2, false)).toBe('2 buildings');
   });
 
   it('draws a proposal as a candidate and a recorded building as a record', () => {
@@ -161,19 +171,29 @@ describe('window reads', () => {
   it('reads once the camera settles and pages by next up to the budget', async () => {
     const read = vi.fn(async (_: Bounds, after: string | undefined, limit: number) =>
       after ? page([feature('c')].slice(0, limit), 'd') : page([feature('a'), feature('b')], 'b'));
-    const published: string[][] = [];
+    const published: [string[], boolean][] = [];
     const reader = new WindowReader(() => [0, 0, 10, 10], read,
-      (features) => published.push(features.map((item) => item.identifier)), vi.fn(), 3);
+      (features, cut) => published.push([features.map((item) => item.identifier), cut]), vi.fn(), 3);
     reader.viewChanged();
     reader.viewChanged();
     await vi.advanceTimersByTimeAsync(WINDOW_SETTLE_MS - 1);
     expect(read).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(1);
     expect(read.mock.calls.map(([, after, limit]) => [after, limit])).toEqual([[undefined, 3], ['b', 1]]);
-    expect(published).toEqual([['a', 'b'], ['a', 'b', 'c']]);
+    expect(published).toEqual([[['a', 'b'], false], [['a', 'b', 'c'], true]]);
     reader.viewChanged();
     await vi.advanceTimersByTimeAsync(WINDOW_SETTLE_MS);
     expect(read).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not cut a view that ends before the budget, nor one that ends at it with nothing pending', async () => {
+    const read = vi.fn(async () => page([feature('a'), feature('b')], null));
+    const cuts: boolean[] = [];
+    const reader = new WindowReader(() => [0, 0, 10, 10], read, (_, cut) => cuts.push(cut), vi.fn(), 2);
+    reader.viewChanged();
+    await vi.advanceTimersByTimeAsync(WINDOW_SETTLE_MS);
+    expect(cuts).toEqual([false]);
+    reader.dispose();
   });
 
   it('fits the whole extent, never only centres on it, then reads the settled view', async () => {

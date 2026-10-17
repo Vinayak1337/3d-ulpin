@@ -51,14 +51,19 @@ export function windowScene(features: readonly AreaWindowFeature[]) {
   return { footprints, base };
 }
 
-/** The one line that tells the officer what the map draws of the area, and how many of it wait for confirmation. */
-export function windowLine(features: readonly AreaWindowFeature[], total: number): string {
+/**
+ * The one line that tells the officer what the map draws of the area, and how many of it wait for confirmation.
+ * `cut` is true when the view held more than the budget draws; only then does moving closer show more.
+ */
+export function windowLine(features: readonly AreaWindowFeature[], total: number, cut: boolean): string {
   const noun = features.every((feature) => feature.kind === 'building') ? 'buildings' : 'features';
+  const drawn = features.length.toLocaleString('en-IN');
   const all = total.toLocaleString('en-IN');
   const proposed = features.filter((feature) => feature.displayState === 'unrecorded_proposal').length;
   const note = proposed ? ` (${proposed.toLocaleString('en-IN')} proposed, not yet confirmed)` : '';
+  if (cut) return `Showing ${drawn} ${noun} in view${note}, the most drawn at once; move closer to see the rest.`;
   if (features.length >= total) return `${all} ${noun}${note}`;
-  return `Showing ${features.length.toLocaleString('en-IN')} of ${all} ${noun}${note}; move closer to see the rest.`;
+  return `${drawn} ${noun} in view of ${all}${note}`;
 }
 
 /**
@@ -73,7 +78,7 @@ export class WindowReader {
   constructor(
     private readonly view: () => Bounds | null,
     private readonly read: ReadPage,
-    private readonly publish: (features: AreaWindowFeature[]) => void,
+    private readonly publish: (features: AreaWindowFeature[], cut: boolean) => void,
     private readonly fail: (error: unknown) => void,
     private readonly budget = WINDOW_BUDGET,
   ) {}
@@ -96,7 +101,7 @@ export class WindowReader {
     this.lastKey = key;
     this.controller?.abort();
     const controller = this.controller = new AbortController();
-    if (!bounds) return this.publish([]);
+    if (!bounds) return this.publish([], false);
     const features: AreaWindowFeature[] = [];
     let after: string | undefined;
     try {
@@ -106,7 +111,7 @@ export class WindowReader {
         if (controller.signal.aborted) return;
         features.push(...page.features);
         after = page.next ?? undefined;
-        this.publish([...features]);
+        this.publish([...features], after !== undefined && features.length >= this.budget);
       } while (after && features.length < this.budget);
     } catch (error) {
       if (controller.signal.aborted) return;
@@ -131,6 +136,7 @@ export function showWindow(engine: Pick<SceneEngine, 'fitPlanBox'>, extent: Boun
 export function useAreaWindow(areaId: string, engine: SceneEngine | null, active: boolean) {
   const summary = useAreaDisplaySummary(active ? areaId : undefined);
   const [features, setFeatures] = useState<AreaWindowFeature[]>(NONE);
+  const [cut, setCut] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const empty = windowEmpty(summary.data);
   const extent = (empty ? null : summary.data?.extent ?? null) as Bounds | null;
@@ -140,7 +146,7 @@ export function useAreaWindow(areaId: string, engine: SceneEngine | null, active
     return new WindowReader(
       () => viewBounds(engine.viewFootprint(), extent),
       (bounds, after, limit, signal) => readAreaWindow(areaId, bounds, after, limit, signal),
-      (next) => { setError(null); setFeatures(next); },
+      (next, nextCut) => { setError(null); setFeatures(next); setCut(nextCut); },
       setError,
     );
     // The extent is compared by value: a summary read again with the same extent keeps the reader.
@@ -155,8 +161,8 @@ export function useAreaWindow(areaId: string, engine: SceneEngine | null, active
   const scene = useMemo(() => windowScene(features), [features]);
   const total = summary.data?.featureCount;
   return {
-    ...scene, features, onView, empty,
+    ...scene, features, cut, onView, empty,
     error: (summary.error ?? error) as Error | null,
-    line: total === undefined || !extent ? null : windowLine(features, total),
+    line: total === undefined || !extent ? null : windowLine(features, total, cut),
   };
 }
