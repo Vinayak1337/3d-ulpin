@@ -35,15 +35,12 @@ export async function zipMemberNames(file: Blob): Promise<string[] | null> {
 }
 
 /**
- * ZF1: a ZIP of map layers (GeoJSON members, no shapefile or GeoPackage) joins the batch, where each layer becomes
- * its own item. Any other ZIP keeps the bounded direct import. The server reads the archive again; this only routes.
+ * ZF2: only a ZIP holding a shapefile keeps the bounded direct import. Every other ZIP, one this browser cannot read
+ * included, joins the batch: each GeoJSON layer becomes its own item, and the server's probe words what it refuses.
  */
 export async function zipRoute(file: Blob): Promise<'intake' | 'direct'> {
   const names = await zipMemberNames(file).catch(() => null);
-  if (!names) return 'direct';
-  const files = names.filter(name => !name.endsWith('/'));
-  if (files.some(name => /\.(shp|gpkg)$/i.test(name))) return 'direct';
-  return files.some(name => /\.(geojson|json)$/i.test(name)) ? 'intake' : 'direct';
+  return names?.some(name => /\.shp$/i.test(name)) ? 'direct' : 'intake';
 }
 
 /** The route of one picked file; only a ZIP's route needs its directory. */

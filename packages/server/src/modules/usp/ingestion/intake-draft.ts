@@ -28,6 +28,37 @@ export function intakeDraftKey(itemId: string, revision: number, phase: string):
   return stableUuid(`intake-draft/1:${itemId}:${revision}:${phase}`);
 }
 
+const shapefileZip = (card: IntakeCard | null) =>
+  card?.format === 'zip' && card.members.some(member => member.format === 'shapefile');
+
+/** Names entries within `budget` characters (limit_reason holds 2000); the rest are counted, never cut. */
+function listWords(entries: string[], budget: number): string {
+  let shown = 0;
+  for (let used = 0; shown < entries.length && used + entries[shown].length + 2 <= budget; shown++) {
+    used += entries[shown].length + 2;
+  }
+  const rest = entries.length - shown;
+  if (!rest) return entries.join(', ');
+  return shown ? `${entries.slice(0, shown).join(', ')} and ${rest} more` : `${rest} with long paths`;
+}
+
+/**
+ * ZF2. A ZIP's own item asks nothing: its words, from its card alone, say which members became their own files.
+ * A layer is what `zipLayerMembers` keeps: a GeoJSON member the probe read without refusal.
+ */
+function zipParentWords(card: IntakeCard): string {
+  const members = card.members.filter(member => !member.name.endsWith('/'));
+  const layers = members.filter(member => member.format === 'geojson' && !member.refusalCode)
+    .map(member => member.name);
+  const others = members.filter(member => member.format !== 'geojson' || member.refusalCode)
+    .map(member => `${member.name} (${member.refusalCode ?? 'not a map layer'})`);
+  if (!layers.length) return 'This ZIP holds no map layer this batch can take in. '
+    + (others.length ? `Its members: ${listWords(others, 1800)}.` : 'No member of it could be listed.');
+  const taken = layers.length === 1 ? '1 map layer in this ZIP is taken in as its own file'
+    : `${layers.length} map layers in this ZIP are taken in as their own files`;
+  return `${taken}: ${listWords(layers, 800)}.` + (others.length ? ` Not taken in: ${listWords(others, 900)}.` : '');
+}
+
 /** A refusal is tray metadata, not permission to use a different reader or split an original. */
 export function intakeDraftLimit(item: DraftItem, source: IntakeSourceRow): string | null {
   const format = item.card?.format;
@@ -36,11 +67,11 @@ export function intakeDraftLimit(item: DraftItem, source: IntakeSourceRow): stri
     return 'This GeoPackage can be imported through POST /api/v1/import-packages with format=gpkg '
       + 'and one selected layer within 16 MiB and 2000 features; intake recipe drafting and '
       + 'decoded binary-record citations for its card are not built.';
-  if (format === 'shapefile' || format === 'shapefile_zip'
-    || format === 'zip' && item.card?.members.some(member => member.format === 'shapefile'))
+  if (format === 'shapefile' || format === 'shapefile_zip' || shapefileZip(item.card))
     return 'This shapefile needs its matching .shp/.shx/.dbf/.prj set in a ZIP for '
       + 'POST /api/v1/import-packages with format=shapefile_zip and one selected set within 16 MiB '
       + 'and 2000 features; intake recipe drafting and decoded binary-record citations for its card are not built.';
+  if (item.card?.format === 'zip') return zipParentWords(item.card);
   if (format === 'kml' || format === 'kmz')
     return 'This KML/KMZ has a native-inspection route at POST /api/v1/ingestion/cases/:caseId/kml '
       + 'within 16 MiB; no area-import adapter or intake recipe drafts its map package or card.';
@@ -84,6 +115,7 @@ async function priorJobTx(client: PoolClient, input: IntakeDraftInput): Promise<
 /** Caller holds the case; enrollment and probe/approval publication share its transaction. */
 export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourceRow,
   publishedCard?: IntakeCard): Promise<string | null> {
+  if (publishedCard?.format === 'zip' && !shapefileZip(publishedCard)) return settleZipParentTx(client, source);
   // Nonvector readers keep their own behavior. Unsupported vectors receive a reason, never another reader.
   if (source.profile !== 'geojson-manual-v1' && publishedCard?.family !== 'vector') return null;
   const item = await draftItemTx(client, source.id);
@@ -108,6 +140,18 @@ export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourc
     return null;
   }
   return enrollDraftTx(client, item, source);
+}
+
+/**
+ * ZF2. The ZIP's own item rests read and unplaced: settled in the tray, its words its reason, no question asked.
+ * Its layers are drafted as their own items; a shapefile ZIP keeps its direct-import words and no transition.
+ */
+async function settleZipParentTx(client: PoolClient, source: IntakeSourceRow): Promise<null> {
+  const item = await draftItemTx(client, source.id);
+  if (!item || item.parent_item_id || item.state !== 'probed' || item.card?.format !== 'zip') return null;
+  await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'read', placement: 'undecided',
+    planRef: item.plan_ref, recordsSeen: 0, limitReason: zipParentWords(item.card) });
+  return null;
 }
 
 async function enrollDraftTx(client: PoolClient, item: DraftItem, source: IntakeSourceRow) {

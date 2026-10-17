@@ -221,6 +221,46 @@ test('a grouped shapefile ZIP names the existing selected-set import without cla
   assert.equal(fixture.jobs.length, 0);
 });
 
+function zipFixture(members: { name: string; format: string; refusalCode?: string }[]) {
+  const fixture = protocol();
+  fixture.src.profile = 'zip-manual-v1';
+  fixture.src.inspection = {};
+  fixture.tray.family = 'archive';
+  fixture.tray.card = { format: 'zip', family: 'archive', crs: { state: 'not_applicable' },
+    members: members.map(member => ({ refusalCode: null, ...member })) } as DraftItem['card'];
+  return fixture;
+}
+
+test('a ZIP of map layers settles its own item with words naming each layer and what was not taken in', async () => {
+  const fixture = zipFixture([{ name: 'layers/', format: 'unknown' },
+    { name: 'layers/roads.geojson', format: 'geojson' }, { name: 'layers/blocks.geojson', format: 'geojson' },
+    { name: 'register.csv', format: 'csv' }, { name: 'README.md', format: 'unknown' }]);
+  const expected = '2 map layers in this ZIP are taken in as their own files: layers/roads.geojson, '
+    + 'layers/blocks.geojson. Not taken in: register.csv (not a map layer), README.md (not a map layer).';
+  assert.equal(intakeDraftLimit(fixture.tray, fixture.src), expected);
+  assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
+  assert.deepEqual(fixture.state.projection, { state: 'read', placement: 'undecided', plan_ref: null,
+    records_seen: 0, limit_reason: expected });
+  assert.equal(fixture.state.events, 1);
+  await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+  assert.equal(fixture.state.events, 1, 'A settled ZIP item is not written again.');
+  assert.equal(fixture.jobs.length, 0);
+});
+
+test('a ZIP with no map layer says so and lists its members with their reasons, long lists counted', async () => {
+  const fixture = zipFixture([{ name: 'plan.pdf', format: 'pdf' },
+    { name: 'roads.geojson', format: 'geojson', refusalCode: 'ZIP_ENCRYPTED_MEMBER' }]);
+  const expected = 'This ZIP holds no map layer this batch can take in. '
+    + 'Its members: plan.pdf (not a map layer), roads.geojson (ZIP_ENCRYPTED_MEMBER).';
+  await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+  assert.equal(fixture.state.projection.limit_reason, expected);
+  assert.notEqual(fixture.state.projection.placement, 'needs_answer');
+  const many = zipFixture(Array.from({ length: 300 }, (_, at) => ({ name: `sheets/page-${at}.pdf`, format: 'pdf' })));
+  const words = intakeDraftLimit(many.tray, many.src)!;
+  assert.match(words, /^This ZIP holds no map layer.*sheets\/page-0\.pdf \(not a map layer\).* and \d+ more\.$/);
+  assert(words.length <= 2000);
+});
+
 test('a KML refusal distinguishes its native inspection route from an unbuilt map-package adapter', async () => {
   const fixture = protocol();
   fixture.src.profile = 'kml-native-v1';

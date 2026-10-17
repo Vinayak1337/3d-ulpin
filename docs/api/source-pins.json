@@ -430,7 +430,7 @@
     "packages/server/src/modules/usp/ingestion/intake-context.ts": "3c2d56560ccccef66e8268c71bcf994b4e4c2bf9eda5efaec2a5f364e1fb5a5b",
     "packages/server/src/modules/usp/ingestion/intake-destination.ts": "2ddb853c0ce2549dfa4b6899389e7d201da5583af90149008708e8f1ec9d1262",
     "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts": "ffb9e01964353df6514cc779d61890d759f9fbe2e98c42f41d4da4cc2e037b2b",
-    "packages/server/src/modules/usp/ingestion/intake-draft.ts": "8a7b263782c6797d0e89b12f6ff53917c07f4d2b6cbe0d4e65f42b7b63dee1bf",
+    "packages/server/src/modules/usp/ingestion/intake-draft.ts": "5e7ebb44b9dbc34ed7f9b60128886b6c12ef361b4a8c8b54427e5db701682402",
     "packages/server/src/modules/usp/ingestion/intake-headers.ts": "0dd37b9fa8a054e1f2c46fb01f90d459577e4d0e516e83ee829db1eb9045b6b7",
     "packages/server/src/modules/usp/ingestion/intake-large-worker.ts": "4a09546e9655f21fce2b009ae8557ae05b51ae7e311948507ad624085afc606e",
     "packages/server/src/modules/usp/ingestion/intake-large.ts": "c5e72de89278d11f64fe3dbe77ca105351b6b32e223c07129163ffcc75a9344b",
