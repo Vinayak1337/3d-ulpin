@@ -23,8 +23,15 @@ export type IntakeConfirmationRow = {
 const uuid = z.string().uuid();
 
 /** The one sentence every later step states as its reason; never a made-up justification. */
-export function intakeConfirmationReason(confirmationId: string, at: Date): string {
-  return `Confirmed by the officer in intake confirmation ${confirmationId} on ${at.toISOString().slice(0, 10)}.`;
+export function intakeConfirmationReason(confirmationId: string, at: Date, cardsOnly = false): string {
+  const day = at.toISOString().slice(0, 10);
+  return `Confirmed by the officer in intake confirmation ${confirmationId} on ${day}`
+    + (cardsOnly ? ' to card buildings already recorded.' : '.');
+}
+
+/** A cards-only confirmation stores the pins of the packages it cards, so its stated reason is what marks it. */
+export function isCardsOnly(row: Pick<IntakeConfirmationRow, 'confirmation_id' | 'created_at' | 'reason'>) {
+  return row.reason === intakeConfirmationReason(row.confirmation_id, row.created_at, true);
 }
 
 function stale(message: string): never {
@@ -60,7 +67,41 @@ async function assertPackagesTx(client: PoolClient, caseId: string, input: Intak
   }
 }
 
+/** Why a building cannot be named by a cards-only confirmation, or null. */
+export function cardTargetDifference(targetId: string, row: { readiness: string; confirmation_id: string | null;
+  pin: IntakeConfirm['packages'][number] | null } | undefined) {
+  if (!row) return `Target ${targetId} is not in this case.`;
+  if (!row.pin) return `Target ${targetId} belongs to a package no confirmation of this case has recorded.`;
+  if (row.readiness !== 'recorded') {
+    return `Target ${targetId} is ${row.readiness}; only a recorded building with no card can be named.`;
+  }
+  if (row.confirmation_id) return `Target ${targetId} is already listed in confirmation ${row.confirmation_id}.`;
+  return null;
+}
+
+/** A cards-only confirmation names recorded buildings with no card, of packages this case already recorded;
+ * it returns each package as the confirmation that recorded it named it, in the order of the targets. */
+async function assertCardTargetsTx(client: PoolClient, caseId: string, input: IntakeConfirm) {
+  const rows = (await client.query(`SELECT t.target_id,t.readiness,t.confirmation_id,(SELECT named FROM
+      usp_intake_confirmations c CROSS JOIN LATERAL jsonb_array_elements(c.packages) AS named
+      WHERE c.case_id=$1 AND named->>'packageId'=t.package_id::text AND p.body->>'state'='COMMITTED'
+      AND (named->>'revision')::int+1=(p.body->>'revision')::int ORDER BY c.created_at LIMIT 1) AS pin
+    FROM usp_intake_targets t LEFT JOIN import_packages p ON p.id=t.package_id
+    WHERE t.case_id=$1 AND t.target_id=ANY($2::uuid[]) ORDER BY t.target_id FOR UPDATE OF t`,
+  [caseId, input.targets])).rows;
+  const pins = new Map<string, IntakeConfirm['packages'][number]>();
+  for (const targetId of input.targets) {
+    const row = rows.find(value => value.target_id === targetId);
+    const difference = cardTargetDifference(targetId, row);
+    if (difference) stale(difference);
+    pins.set(row.pin.packageId, row.pin);
+  }
+  return [...pins.values()];
+}
+
+/** The packages the confirmation stores: those named, or for a cards-only one, the pins of its targets. */
 async function assertTargetsTx(client: PoolClient, caseId: string, input: IntakeConfirm) {
+  if (!input.packages.length) return assertCardTargetsTx(client, caseId, input);
   const rows = (await client.query(`SELECT target_id,package_id,readiness FROM usp_intake_targets
     WHERE case_id=$1 AND target_id=ANY($2::uuid[]) ORDER BY target_id FOR UPDATE`, [caseId, input.targets])).rows;
   const packages = new Set(input.packages.map(named => named.packageId));
@@ -72,21 +113,26 @@ async function assertTargetsTx(client: PoolClient, caseId: string, input: Intake
     }
     if (row.readiness !== 'ready') stale(`Target ${targetId} is ${row.readiness}, not ready.`);
   }
+  return input.packages;
 }
 
-async function storeTx(client: PoolClient, caseId: string, input: IntakeConfirm, subject: string, digest: string) {
+async function storeTx(client: PoolClient, caseId: string, input: IntakeConfirm,
+  packages: IntakeConfirm['packages'], subject: string, digest: string) {
   const confirmationId = randomUUID();
   const createdAt = new Date();
+  const cardsOnly = !input.packages.length;
   await client.query(`INSERT INTO usp_intake_confirmations(confirmation_id,case_id,request_key,input_sha256,subject,
     acknowledgement,packages,targets,reason,expires_at,created_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
-  [confirmationId, caseId, input.requestKey, digest, subject, input.acknowledgement, JSON.stringify(input.packages),
-    input.targets, intakeConfirmationReason(confirmationId, createdAt),
+  [confirmationId, caseId, input.requestKey, digest, subject, input.acknowledgement, JSON.stringify(packages),
+    input.targets, intakeConfirmationReason(confirmationId, createdAt, cardsOnly),
     new Date(createdAt.getTime() + INTAKE_CONFIRMATION_VALIDITY_MS), createdAt]);
-  const rows = (await client.query(`UPDATE usp_intake_targets SET readiness='confirmed',confirmation_id=$1,
-    reason='Confirmed; it is recorded with its package, then carded in turn.',updated_at=now()
-    WHERE target_id=ANY($2::uuid[]) RETURNING target_id,stage`, [confirmationId, input.targets])).rows;
+  const [readiness, reason] = cardsOnly ? ['recorded', 'Listed for a card; it is carded in the order listed.']
+    : ['confirmed', 'Confirmed; it is recorded with its package, then carded in turn.'];
+  const rows = (await client.query(`UPDATE usp_intake_targets SET readiness=$3,confirmation_id=$1,reason=$4,
+    updated_at=now() WHERE target_id=ANY($2::uuid[]) RETURNING target_id,readiness,stage`,
+  [confirmationId, input.targets, readiness, reason])).rows;
   for (const row of rows) await appendCaseIngestionTx(client, caseId,
-    { kind: 'intake.target', targetId: row.target_id, readiness: 'confirmed', stage: row.stage });
+    { kind: 'intake.target', targetId: row.target_id, readiness: row.readiness, stage: row.stage });
   await queueIntakeRunTx(client, caseId, { phase: 'commit', confirmationId });
   return confirmationId;
 }
@@ -106,8 +152,7 @@ export async function confirmIntake(caseIdValue: string, raw: unknown): Promise<
     }
     if (prior) return prior.confirmation_id as string;
     await assertPackagesTx(client, caseId, input);
-    await assertTargetsTx(client, caseId, input);
-    return storeTx(client, caseId, input, subject, digest);
+    return storeTx(client, caseId, input, await assertTargetsTx(client, caseId, input), subject, digest);
   });
   return readIntakeConfirmation(caseId, confirmationId);
 }

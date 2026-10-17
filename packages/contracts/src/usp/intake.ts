@@ -168,11 +168,15 @@ export const IntakeConfirmedPackageSchema = z.strictObject({
 export const IntakeConfirmSchema = z.strictObject({
   requestKey: uuid, acknowledgement: z.string().min(1).max(500)
     .refine(value => value.trim().length > 0, 'Use a non-blank acknowledgement in the officer\'s words.'),
-  packages: z.array(IntakeConfirmedPackageSchema).min(1).max(100)
-    .refine(rows => new Set(rows.map(row => row.packageId)).size === rows.length, 'Name each package once.'),
+  packages: z.array(IntakeConfirmedPackageSchema).max(100)
+    .refine(rows => new Set(rows.map(row => row.packageId)).size === rows.length, 'Name each package once.')
+    .describe('The packages to record. Empty only for a cards-only confirmation: its targets are recorded '
+      + 'buildings with no card, of packages an earlier confirmation of this case recorded; it stores their pins '
+      + 'as that confirmation named them, records nothing and cards the targets in the order listed.'),
   targets: z.array(uuid).max(INTAKE_TARGET_LIMITS.confirmationTargets)
     .refine(ids => new Set(ids).size === ids.length, 'Name each target once.'),
-});
+}).refine(input => input.packages.length > 0 || input.targets.length > 0,
+  'Name at least one package to record, or at least one recorded building to card.');
 export const IntakeConfirmationSchema = z.strictObject({
   confirmationId: uuid, caseId: uuid, requestKey: uuid, subject: z.string().min(1).max(256),
   acknowledgement: z.string().min(1).max(500), packages: z.array(IntakeConfirmedPackageSchema).min(1).max(100),

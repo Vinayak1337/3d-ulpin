@@ -92,7 +92,8 @@ it('enables zero-selection confirmation only with packages and nonblank acknowle
     + 'No building is chosen, so no card is made now.');
   const empty = { ...page.packages[0]!, counts: zeroCounts() };
   expect(confirmingPackageWords(empty)).toBe('No building in this package; its features will be recorded.');
-  const props = { page: { ...page, packages: [empty] }, choice: [], acknowledgement: saved.acknowledgement,
+  const props = { page: { ...page, packages: [empty] }, choice: [], cards: null, closeCards: () => {},
+    acknowledgement: saved.acknowledgement,
     setAcknowledgement: () => {}, press: () => {}, busy: false, uncertain: false, stale: false, error: '' };
   const enabled = renderToStaticMarkup(createElement(Confirm, props));
   expect(enabled).toContain(confirmationWords(0));

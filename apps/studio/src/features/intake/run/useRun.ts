@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useQueries, useQueryClient } from '@tanstack/react-query';
-import { readConfirmation, readFirstReady } from './api';
+import { readConfirmation, readFirstReady, readNextRecorded } from './api';
 import { chooseReady, confirmablePackages, type Confirmation, type Readiness, type Target } from './model';
 import { useConfirmationCommand } from './useConfirmationCommand';
 import { useRunStream } from './useRunStream';
@@ -14,6 +14,7 @@ export function useRun(caseId: string) {
   const [choice, setChoice] = useState<Target[]>([]);
   const [acknowledgement, setAcknowledgement] = useState('');
   const [storedIds, setStoredIds] = useState<string[]>([]);
+  const [cards, setCards] = useState<Target[] | null>(null);
   const targets = useTargets(caseId, filter);
   const discovery = useConfirmationDiscovery(caseId, targets.summary.data?.items,
     targets.summary.data?.nextCursor ?? null);
@@ -26,19 +27,40 @@ export function useRun(caseId: string) {
     cache.setQueryData([...runKey(caseId), 'confirmation', confirmation.confirmationId], confirmation);
     setStoredIds(current => [...new Set([...current, confirmation.confirmationId])]);
     setChoice([]);
+    setCards(null);
     setAcknowledgement('');
     refresh();
   };
-  const command = useConfirmationCommand(caseId, stored, () => { setChoice([]); refresh(); });
+  const command = useConfirmationCommand(caseId, stored, () => { setChoice([]); setCards(null); refresh(); });
   const progress = confirmations.flatMap(query => query.data?.progress ?? []);
   useRunStream(caseId, progress, refresh);
   const preview = command.preview ?? targets.summary.data;
   const selected = currentChoice(preview, choice, command.preview ? [] : targets.targets);
   const selection = useSelection(caseId, preview, selected, setChoice);
   const priority = usePriority(caseId);
+  const opening = useCardsOpening(caseId, setCards);
   return { targets, discovery, confirmations, confirmationKeys: ids,
     filter, setFilter, choice: selected, acknowledgement, setAcknowledgement,
-    refresh, command, priority, ...selection };
+    refresh, command, priority, ...selection, cards, closeCards: () => setCards(null), ...opening };
+}
+
+/** Lists the next recorded buildings with no card on the confirmation screen; nothing is pressed for the officer. */
+function useCardsOpening(caseId: string, setCards: (cards: Target[] | null) => void) {
+  const [opening, setOpening] = useState(false);
+  const [error, setError] = useState<unknown>(null);
+  const openCards = async () => {
+    if (opening) return;
+    setOpening(true);
+    setError(null);
+    try {
+      setCards(await readNextRecorded(caseId));
+    } catch (failure) {
+      setError(failure);
+    } finally {
+      setOpening(false);
+    }
+  };
+  return { opening, cardsError: error, openCards };
 }
 
 function useStoredConfirmations(caseId: string, ids: string[]) {

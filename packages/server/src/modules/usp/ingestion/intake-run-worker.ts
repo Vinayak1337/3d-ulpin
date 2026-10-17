@@ -18,7 +18,8 @@ import { captureRegistrySnapshotTx, resolveRegistryTarget } from '../snapshots';
 import { intakeCaseTx } from './intake-context';
 import { queueIntakeLargePackageTx } from './intake-large';
 import { ingestionBinding } from './events';
-import { packageDifference, readConfirmationRow, type IntakeConfirmationRow } from './intake-confirmations';
+import { isCardsOnly, packageDifference, readConfirmationRow,
+  type IntakeConfirmationRow } from './intake-confirmations';
 import { IntakeRunInputSchema, intakeRunKey, intakeRunSubject, nextIntakeRunJob, queueIntakeRunTx,
   type IntakeRunInput } from './intake-run';
 import { advanceIntakeTargetTx, holdPackageTargetsTx, prepareIntakeTargetsTx, recordPackageTargetsTx,
@@ -159,6 +160,7 @@ async function stopPackage(run: Run, confirmation: IntakeConfirmationRow, packag
 async function commit(run: Run, confirmationId: string) {
   const confirmation = await readConfirmationRow(confirmationId);
   assertOperator(confirmation, run.input.caseId);
+  if (isCardsOnly(confirmation)) return cardInOrder(run, confirmation);
   let refused: unknown;
   for (const named of confirmation.packages) {
     try {
@@ -316,6 +318,10 @@ async function carryTarget(run: Run, confirmationId: string, targetId: string) {
   const confirmation = await readConfirmationRow(confirmationId);
   const target = await listedTarget(confirmation, targetId);
   assertOperator(confirmation, run.input.caseId);
+  await carryListed(run, confirmation, target);
+}
+
+async function carryListed(run: Run, confirmation: IntakeConfirmationRow, target: IntakeTargetRow) {
   if (target.readiness === 'carded') return;
   if (target.readiness !== 'recorded') refuse('INTAKE_TARGET_NOT_RECORDED', `This building is ${target.readiness}.`);
   const named = confirmation.packages.find(value => value.packageId === target.package_id);
@@ -325,6 +331,27 @@ async function carryTarget(run: Run, confirmationId: string, targetId: string) {
   }
   const carry: Carry = { ...run, ctx: localRequestContext(run.input.jobId), confirmation, target };
   for (const [artefact, send] of carrySteps) if (!target.artefacts[artefact]) await send(carry);
+}
+
+/** A cards-only confirmation records nothing: one run carries its targets in the order listed, renewing the lease
+ * after each. A refusal stops that building only; a later attempt skips what is carded or stopped. */
+async function cardInOrder(run: Run, confirmation: IntakeConfirmationRow) {
+  let refused: unknown;
+  for (const targetId of confirmation.targets) {
+    const target = await listedTarget(confirmation, targetId);
+    if (target.readiness === 'stopped') continue;
+    try {
+      await carryListed(run, confirmation, target);
+    } catch (error) {
+      const refusal = intakeRunRefusal(error);
+      if (!refusal) throw error;
+      await pinned(run, client => stopIntakeTargetTx(client, targetId, confirmation.confirmation_id,
+        refusal.code, refusal.message));
+      refused ??= error;
+    }
+    await renew(run);
+  }
+  if (refused) throw refused;
 }
 
 async function stopTx(client: PoolClient, input: IntakeRunInput, code: string, message: string) {

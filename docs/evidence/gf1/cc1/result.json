@@ -1,0 +1,74 @@
+{
+  "task": "CC1",
+  "gate": "GF1",
+  "gap": "AU2 G04",
+  "base": "9765270f1750359fecc962d9348f7e46da700180",
+  "status": "code_and_tests_passed_runtime_unwalked",
+  "design": {
+    "contract": "D2: the smaller change is an empty package list, not a new kind field: no new field, no column, no migration. IntakeConfirmSchema drops min(1) on packages and refuses a body naming neither a package nor a target; every body that was valid before parses and digests unchanged.",
+    "storage": "usp_intake_confirmations requires 1 to 100 stored packages (database/sql/95-ingestion/intake-targets.sql, not this task's path). A cards-only confirmation therefore stores, for each package of its targets, the pin exactly as the confirmation that recorded it named it (revision + 1 equals the package's committed revision). Counts, findings, retry and the run's per-target revision check then work unchanged.",
+    "marker": "The stored reason states the kind: 'Confirmed by the officer in intake confirmation <id> on <day> to card buildings already recorded.' isCardsOnly() compares the stored reason with that exact sentence for the row's own id and time; Progress already shows the reason.",
+    "checks": "A cards-only target must be in the case, of a COMMITTED package an earlier confirmation of this case recorded, at readiness recorded and listed in no confirmation; otherwise 409 INTAKE_CONFIRMATION_STALE with the reason in words. Its readiness stays recorded; it takes the confirmation id and the words 'Listed for a card; it is carded in the order listed.'",
+    "run": "D1: the confirmation's commit job sees the marker and skips the commit loop; it carries each listed target through the existing carry steps (snapshot, identity, plan, plan confirmation, packet, card, verify) in the stored order and renews the lease after each. A refusal stops that building in its own words and the others continue; the job then fails with the first refusal's code, as a refused package does. A lost lease stops nothing; the next attempt skips carded and stopped targets and each step whose artefact is stored.",
+    "studio": "D3: once a batch has a recorded package and recorded buildings, the run panel on the batch page shows '<n> recorded buildings have no card yet.' and 'Make cards for the next 100'. It reads the recorded target pages in stored order and keeps the first 100 that no confirmation lists, then opens the existing confirmation panel listing them with what will be made; the officer types the acknowledgement and presses 'Make these cards'.",
+    "tidy": "D5: the RECIPE_APPROVAL message in service.ts uses a plain ASCII apostrophe in file's."
+  },
+  "tests": {
+    "backend": {
+      "file": "packages/server/src/modules/usp/ingestion/intake-run.test.ts",
+      "added": [
+        "a cards-only confirmation states its kind in its reason, which marks it and nothing else",
+        "a cards-only confirmation refuses, in words, a carded, stopped, listed or unrecorded building",
+        "a cards-only confirmation stores the recording pins and keeps its buildings recorded, in order",
+        "a cards-only confirmation naming one refused building stores nothing (carded; package not recorded)",
+        "a cards-only confirmation of three recorded buildings makes three cards in its order (3, 1, 2) and commits nothing (3 renewals)",
+        "a cards-only run that loses its lease after card 2 makes only card 3 on its retry",
+        "a cards-only building refused at a step stops in its own words; the others are still carded",
+        "schema: an empty package list parses with targets; neither packages nor targets is refused"
+      ],
+      "unchanged": "The three HB1 commit-run tests and every earlier confirmation test pass unchanged: an ordinary confirmation behaves as before.",
+      "mutations": [
+        {"change": "remove the cards-only branch in commit()", "result": "3 tests fail"},
+        {"change": "remove the renewal in the cards-only loop", "result": "3 tests fail"}
+      ]
+    },
+    "studio": {
+      "file": "apps/studio/src/features/intake/run/cards.test.ts",
+      "added": [
+        "lists the next recorded buildings no confirmation names, in stored order, at most 100",
+        "reads recorded pages until it has the next 100 and asks for nothing else",
+        "shows the count and the action only once a package is recorded and buildings have no card",
+        "the confirmation screen lists the buildings and states what will be made; nothing is pressed",
+        "a cards-only body names no package and the buildings in the order listed, and parses under the contract"
+      ]
+    }
+  },
+  "checks": [
+    {"command": "pnpm typecheck:backend", "before": 0, "after": 0},
+    {"command": "pnpm studio:typecheck", "before": 0, "after": 0},
+    {"command": "pnpm studio:test", "before": 0, "after": 0,
+      "tests": {"before": {"studio": 473, "scene": 55, "ui": 7, "apiClient": 2},
+        "after": {"studio": 478, "scene": 55, "ui": 7, "apiClient": 2}}},
+    {"command": "backend test set from the task", "before": {"exit": 1, "tests": 346, "pass": 309, "fail": 15, "skipped": 22},
+      "after": {"exit": 1, "tests": 353, "pass": 316, "fail": 15, "skipped": 22},
+      "note": "The same 15 tests by name fail before and after: they read E:/BhuAayam-data, absent on this box."},
+    {"command": "apps/api/scripts/openapi.ts --check", "before": 0, "afterCodeChange": "1 (openapi.json stale)", "afterRefresh": 0,
+      "operations": 314, "schemas": 356,
+      "note": "The first before-run read a tree already holding the contract edit and exited 1; on a clean origin/staging worktree it exits 0."},
+    {"command": "scripts/api/refresh-contract.ts origin/staging", "exit": 0, "repinned": [
+      "apps/api/src/modules/ingestion/intake-run.controller.ts", "packages/contracts/src/usp/intake.ts",
+      "packages/server/src/modules/usp/ingestion/intake-confirmations.ts",
+      "packages/server/src/modules/usp/ingestion/intake-run-worker.ts", "packages/server/src/modules/usp/ingestion/service.ts"]},
+    {"command": "pnpm studio:api-types", "exit": 0, "changed": true},
+    {"command": "python scripts/api/check.py", "exit": 0},
+    {"command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs origin/staging", "exit": 0},
+    {"command": "git diff --check", "exit": 0}
+  ],
+  "gaps": [
+    "No runtime walk: a cards-only confirmation of 100 Niagara buildings on a live box is still needed to show the cards are made and the lease is held.",
+    "The kind is marked by the stored reason sentence because the table forbids an empty package list; a kind column would need a migration in database/sql, outside this task.",
+    "A building opened while a cards-only run works does not jump its queue: the run carries its list in order inside one job, and the priority order applies to target jobs only. A retry of a stopped cards-only building goes through the existing target job and so is prioritised as before.",
+    "The count line uses counts.recorded, which also holds recorded buildings already listed and waiting for their card; the action lists only the ones no confirmation names. If every such building is listed, the panel says so and the press stays disabled.",
+    "The map inspector's action (G04's second door) is not here (D4)."
+  ]
+}
