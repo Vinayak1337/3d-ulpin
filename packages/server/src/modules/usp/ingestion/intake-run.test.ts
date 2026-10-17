@@ -5,10 +5,12 @@ import type { ImportPackage } from '@ulpin/contracts';
 import type { Pool, PoolClient } from 'pg';
 import { IntakeConfirmSchema, type PropertyCardVerification } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
+import { fingerprint } from '../../cases/domain';
+import { ingestionBinding } from './events';
 import { confirmIntake, intakeConfirmationReason, packageDifference } from './intake-confirmations';
-import { intakeRunKey } from './intake-run';
-import { assertIntakeCardVerified, intakeCardVerificationPin,
-  intakeRunRefusal, intakeTargetCitation } from './intake-run-worker';
+import { IntakeRunInputSchema, intakeRunKey } from './intake-run';
+import { assertIntakeCardVerified, intakeCardVerificationPin, intakeRunRefusal, intakeRunSteps,
+  intakeTargetCitation, runIntakeRunJob, type IntakeRunSteps } from './intake-run-worker';
 
 const id = '10000000-0000-4000-8000-000000000001';
 const other = '10000000-0000-4000-8000-000000000002';
@@ -122,4 +124,136 @@ test('verification reads the exact revision from the saved card link, not a fabr
   assert.throws(() => intakeCardVerificationPin(url, { id, revision: 2 }), { code: 'INTAKE_CARD_LINK' });
   assert.throws(() => intakeCardVerificationPin(url.replace('127.0.0.1', 'example.org'), { id, revision: 1 }),
     { code: 'INTAKE_CARD_LINK' });
+});
+
+type Target = { target_id: string; package_id: string; readiness: string; blocked_by?: string; reason?: string };
+
+/** One confirmation of three packages, one listed building each, on a store that answers the run's own SQL. */
+function commitRun(loseLeaseAtRenewal = 0) {
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'e1-protocol-operator';
+  const caseId = '10000000-0000-4000-8000-000000000003';
+  const binding = ingestionBinding(caseId);
+  const confirmationId = '10000000-0000-4000-8000-000000000005';
+  const input = IntakeRunInputSchema.parse({ version: 'intake-run/1', jobId: '10000000-0000-4000-8000-000000000004',
+    caseId, caseRevision: 0, subject: binding.subject, accessSha256: binding.access, phase: 'commit', confirmationId });
+  const ids = [1, 2, 3].map(n => `10000000-0000-4000-8000-00000000001${n}`);
+  const confirmation = { confirmation_id: confirmationId, case_id: caseId, subject: binding.subject,
+    acknowledgement: 'Fixture physical observations only.', expires_at: new Date(Date.now() + 3600_000),
+    packages: ids.map(packageId => ({ ...named, packageId })), targets: [] };
+  const store = { status: 'queued', logical: 'queued', error: null as string | null, renewals: 0,
+    attempts: [] as { number: number; fence: number; owner: string; state: string; lease_until: Date }[],
+    targets: ids.map(id => ({ target_id: `target:${id}`, package_id: id, readiness: 'confirmed' })) as Target[],
+    committed: [] as string[] };
+  const attempt = (number: unknown) => store.attempts.find(row => row.number === number);
+  const answers: [string, (values: unknown[], sql: string) => unknown[]][] = [
+    ['SELECT * FROM jobs', () => [{ id: input.jobId, status: store.status, payload: input }]],
+    ['SELECT status FROM jobs', () => [{ status: store.status }]],
+    ['SELECT id,revision,archived FROM cases', () => [{ id: caseId, revision: 0, archived: false }]],
+    ['SELECT * FROM usp_job_metadata', () => [{ logical_state: store.logical, input_sha256: fingerprint(input) }]],
+    ['SELECT * FROM usp_job_attempts WHERE job_id=$1 ORDER BY', () => store.attempts.slice(-1)],
+    ['SELECT * FROM usp_job_attempts WHERE job_id=$1 AND number=$2', values =>
+      [{ ...attempt(values[1]), input_sha256: fingerprint(input) }]],
+    ['INSERT INTO usp_job_attempts', ([, number, fence, owner]) => {
+      store.attempts.push({ number: number as number, fence: fence as number, owner: owner as string,
+        state: 'active', lease_until: new Date(Date.now() + 180_000) });
+      return store.attempts.slice(-1);
+    }],
+    ['UPDATE usp_job_attempts SET lease_until', ([, number]) => {
+      const row = attempt(number)!;
+      if (++store.renewals === loseLeaseAtRenewal) row.lease_until = new Date(0);
+      return row.state === 'active' && row.lease_until.getTime() > Date.now() ? [row] : [];
+    }],
+    ['UPDATE usp_job_attempts SET state=', (values, sql) => {
+      attempt(values.at(-1))!.state = /state='(\w+)'/.exec(sql)![1];
+      return [];
+    }],
+    ['UPDATE usp_job_metadata SET logical_state=', (_values, sql) => {
+      store.logical = /logical_state='(\w+)'/.exec(sql)![1];
+      return [];
+    }],
+    ['UPDATE jobs SET status=', (values, sql) => {
+      store.status = /status='(\w+)'/.exec(sql)![1];
+      if (store.status === 'failed') store.error = values[1] as string;
+      return [];
+    }],
+    ['UPDATE jobs SET error=', () => { store.error = 'INTAKE_RUN_RETRY'; return []; }],
+    ['SELECT * FROM usp_intake_confirmations', () => [confirmation]],
+    ['UPDATE usp_intake_targets t SET readiness=\'recorded\'', ([id]) => {
+      for (const row of store.targets) if (row.package_id === id && row.readiness === 'confirmed') {
+        row.readiness = 'recorded';
+      }
+      return [];
+    }],
+    ['SELECT target_id,readiness FROM usp_intake_targets', () => []],
+    ['SELECT target_id FROM usp_intake_targets', ([, id]) => store.targets.filter(row =>
+      row.readiness === 'confirmed' && (id === undefined || row.package_id === id))],
+    ['UPDATE usp_intake_targets SET readiness=\'stopped\'', ([id, , code, message]) => {
+      Object.assign(store.targets.find(row => row.target_id === id)!,
+        { readiness: 'stopped', blocked_by: code, reason: message });
+      return [];
+    }],
+    ['UPDATE usp_outbox_streams', () => [{ sequence: '1' }]],
+    ['INSERT INTO usp_outbox', () => []],
+  ];
+  const ask = async (sql: string, values: unknown[] = []) => {
+    if (['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql)) return { rows: [] };
+    const text = sql.replace(/\s+/g, ' ');
+    const answer = answers.find(([start]) => text.startsWith(start));
+    assert(answer, `Unexpected query: ${text}`);
+    return { rows: answer[1](values, text) };
+  };
+  const steps: IntakeRunSteps = { ...intakeRunSteps,
+    package: (async (id: string) => ({ ...pkg, id, ...(store.committed.includes(id)
+      ? { state: 'COMMITTED', revision: named.revision + 1 } : {}) })) as IntakeRunSteps['package'],
+    commit: (async (id: string) => { store.committed.push(id); }) as unknown as IntakeRunSteps['commit'] };
+  const run = async (change: Partial<IntakeRunSteps> = {}) => {
+    const globals = globalThis as unknown as { ulpinPool?: unknown };
+    const previous = globals.ulpinPool;
+    globals.ulpinPool = { query: ask, connect: async () => ({ query: ask, release() {} }) };
+    try {
+      await runIntakeRunJob(input.jobId, { ...steps, ...change });
+    } finally {
+      globals.ulpinPool = previous;
+    }
+  };
+  return { ids, store, run };
+}
+
+test('a confirmation run renews its lease after each committed package', async () => {
+  const { ids, store, run } = commitRun();
+  await run();
+  assert.equal(store.renewals, 3);
+  assert.deepEqual(store.committed, ids);
+  assert.deepEqual(store.targets.map(row => row.readiness), ['recorded', 'recorded', 'recorded']);
+  assert.equal(store.status, 'succeeded');
+});
+
+test('a lease lost after package 2 stops nothing, and the retry commits only package 3', async () => {
+  const { ids, store, run } = commitRun(2);
+  await assert.rejects(run(), { status: 503, code: 'INTAKE_RUN_LEASE_LOST' });
+  assert.deepEqual(store.committed, ids.slice(0, 2));
+  assert.deepEqual(store.targets.map(row => row.readiness), ['recorded', 'recorded', 'confirmed']);
+  assert.deepEqual([store.status, store.logical, store.error, store.attempts[0].state],
+    ['running', 'running', null, 'active']);
+  await run();
+  assert.deepEqual(store.committed, ids);
+  assert.equal(store.renewals, 5);
+  assert.deepEqual(store.targets.map(row => row.readiness), ['recorded', 'recorded', 'recorded']);
+  assert.deepEqual([store.status, store.attempts.length], ['succeeded', 2]);
+});
+
+test('a package refused by its own checks still stops its building in its own words', async () => {
+  const { ids, store, run } = commitRun();
+  const refusal = new AppError(422, 'PACKAGE_REVIEW_REQUIRED', 'The package needs a current review.');
+  const commit = async (id: string) => {
+    if (id === ids[1]) throw refusal;
+    store.committed.push(id);
+  };
+  await assert.rejects(run({ commit: commit as unknown as IntakeRunSteps['commit'] }), refusal);
+  assert.deepEqual(store.committed, [ids[0], ids[2]]);
+  assert.equal(store.renewals, 3);
+  assert.deepEqual(store.targets[1], { target_id: `target:${ids[1]}`, package_id: ids[1], readiness: 'stopped',
+    blocked_by: refusal.code, reason: refusal.message });
+  assert.deepEqual([store.targets[0].readiness, store.targets[2].readiness], ['recorded', 'recorded']);
+  assert.deepEqual([store.status, store.error, store.attempts[0].state], ['failed', refusal.code, 'fenced']);
 });
