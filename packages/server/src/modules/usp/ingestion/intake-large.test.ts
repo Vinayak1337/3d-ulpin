@@ -180,6 +180,15 @@ test('the map service refusing a part for what the file holds rests the row at o
     'No feature in a part of this file has an outline that can be read; nothing more was prepared from it.');
 });
 
+test('a processor without the drafting operation rests the row at once in the stored update words', () => {
+  const missing = new AppError(503, 'AREA_PROCESSOR_OPERATION',
+    'The area processor in use does not offer the build-prisms operation.');
+  const sentence = intakeLargePartRefusal(missing);
+  assert.equal(sentence, 'The map processor in use cannot do a step this file needs. It must be updated '
+    + 'before this file can be read; nothing more was prepared from it.');
+  assert.doesNotMatch(sentence!, /[A-Z]+_[A-Z_]+|build-prisms|job|worker/);
+});
+
 test('a fault of the map service is retried: an unavailable service, a timeout or an unknown error', () => {
   const timeout = new DOMException('The operation was aborted due to timeout', 'TimeoutError');
   for (const error of [new AppError(503, 'AREA_PROCESSING', 'The area processor could not complete this operation.'),
