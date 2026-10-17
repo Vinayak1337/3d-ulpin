@@ -80,6 +80,8 @@ const CONTEXT_FILL_ORDER = -4;
 const GROUND_PICTURE_ORDER = -3;
 
 const INITIAL_STATE: SceneState = { mode: 'area', buildingId: null, levelId: null, spaceId: null, tool: 'select' };
+/** What a camera pose frames: a plan box, the height looked at and the height of what is framed. */
+type CameraTarget = { bounds: Bounds2D; focusY: number; extentY: number };
 
 /**
  * The Studio scene engine: an imperative Three.js scene the React adapter drives. It renders on demand
@@ -471,6 +473,17 @@ export class SceneEngine {
     }
     this.flight = { from: [this.camera.position.clone(), this.controls.target.clone()], to, start: performance.now() };
     this.requestRender();
+  }
+
+  /**
+   * Area view: frames a plan box (local east, north) whole, as the view frames its content. Content that arrives
+   * later keeps this frame; a selection or another mode moves the camera as before.
+   */
+  fitPlanBox(minX: number, minY: number, maxX: number, maxY: number): void {
+    if (this.state.mode !== 'area') return;
+    this.cameraKey = cameraKeyOf(this.state);
+    this.framedBox = new Box3(new Vector3(minX, 0, -maxY), new Vector3(maxX, 0, -minY));
+    this.frameTarget('area', { bounds: { minX, minY, maxX, maxY }, focusY: 0, extentY: 0 }, false);
   }
 
   // ---------------------------------------------------------------- content
@@ -1550,7 +1563,7 @@ export class SceneEngine {
 
   private applyCamera(instant: boolean) {
     const { mode, buildingId, levelId, finding } = this.state;
-    const key = `${mode}|${mode === 'area' ? '' : buildingId ?? ''}|${mode === 'level' ? levelId ?? '' : ''}|${mode === 'findings' ? finding?.id ?? '' : ''}`;
+    const key = cameraKeyOf(this.state);
     // Area mode: a selected building the viewer cannot make out (too small or out of view) is brought into
     // view with its surroundings; a readable one leaves the camera alone, and so does clearing the selection.
     if (mode === 'area' && this.cameraKey) {
@@ -1569,6 +1582,11 @@ export class SceneEngine {
     if (!target) return;
     this.cameraKey = key;
     if (mode === 'area') this.framedBox = this.baseBox.clone().union(this.arrivedBox);
+    this.frameTarget(mode, target, instant);
+  }
+
+  /** Flies to (or jumps to) the mode's pose for a target; the area view keeps its whole framed box in view. */
+  private frameTarget(mode: SceneMode, target: CameraTarget, instant: boolean) {
     // Fit to the narrower of the vertical and horizontal fields of view, so a narrow canvas still shows the whole target.
     const aspect = this.container.clientWidth / Math.max(1, this.container.clientHeight);
     const hFov = (2 * Math.atan(Math.tan((this.camera.fov * Math.PI) / 360) * aspect) * 180) / Math.PI;
@@ -1924,6 +1942,11 @@ function baseBounds(input: BaseFeatureInput): Box3 {
     new Vector3(bounds.minX, 0, -bounds.maxY), new Vector3(bounds.maxX, 0, -bounds.minY),
   );
   return box;
+}
+
+function cameraKeyOf({ mode, buildingId, levelId, finding }: SceneState): string {
+  return `${mode}|${mode === 'area' ? '' : buildingId ?? ''}|${mode === 'level' ? levelId ?? '' : ''}`
+    + `|${mode === 'findings' ? finding?.id ?? '' : ''}`;
 }
 
 function containsPlanBox(outer: Box3, inner: Box3): boolean {
