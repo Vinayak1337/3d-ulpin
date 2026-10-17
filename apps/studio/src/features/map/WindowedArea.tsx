@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { X } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { Pick, SceneEngine, SceneState } from '@ulpin/scene';
-import { Banner, DescriptionList, Icon } from '@ulpin/ui';
+import { Banner, DescriptionList, Icon, Legend } from '@ulpin/ui';
 import { useAreas, type AreaWindowFeature } from '../../api/queries';
 import { useSelection } from '../../state/useSelection';
 import { CopyableId } from '../identity/CopyableId';
@@ -71,7 +71,7 @@ export function WindowedArea({ areaId }: { areaId: string }) {
           {windowed.empty ? <WindowEmpty /> : null}
           {windowed.line ? (
             <div className={styles.leftStack}>
-              <span />
+              <WindowKey />
               <p className={styles.viewNote} role="status">{windowed.line}</p>
             </div>
           ) : null}
@@ -91,6 +91,22 @@ export function WindowedArea({ areaId }: { areaId: string }) {
         </div>
       </section>
     </div>
+  );
+}
+
+/** What the two ways of drawing a building mean, in a disclosure the keyboard reaches. */
+export function WindowKey() {
+  return (
+    <details className={styles.mapTools} open>
+      <summary>Key</summary>
+      <Legend sections={[{ title: 'Buildings', items: [
+        { label: 'Recorded', color: 'var(--ui-map-building)' },
+        {
+          label: 'Proposed, not yet confirmed',
+          color: 'color-mix(in srgb, var(--ui-map-building-edge) 18%, transparent)',
+        },
+      ] }]} />
+    </details>
   );
 }
 
@@ -116,6 +132,8 @@ export function WindowedInspector({ feature, areaName, onClose }: {
       <DescriptionList items={[
         { label: 'Identifier', value: <CopyableId id={feature.identifier} name="identifier" /> },
       ]} />
+      {feature.displayState === 'unrecorded_proposal'
+        ? <p>A reviewed proposal, not yet confirmed by an officer.</p> : null}
       <p>This area is drawn by the part in view, so only the identifier and kind are shown here.</p>
     </InspectorShell>
   );
