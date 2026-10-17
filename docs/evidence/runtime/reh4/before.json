@@ -1,0 +1,69 @@
+{ "at": "2026-10-17T10:48:15.355Z", "stagingCommit": "01a11f93f5cd9fce54ea317154925837542dc695", "baseline": {
+"at": "2026-10-17T10:48:13.896Z", "doctor": { "command": [ "pnpm platform:doctor --profile demo" ],
+"from": "E:/Projects/ulpin-wt/demo", "exit": 0, "seconds": 6.734, "output": [
+"> 3d-ulpin@ platform:doctor E:\\Projects\\ulpin-wt\\demo", "> node scripts/platform/doctor \"--profile\" \"demo\"", "",
+"  documentPagesConfigured: true", "  packetRegionsConfigured: true",
+"  regionProfileSha256: [omitted non-source digest]", "  regionRepoMatches: true", "PASS Document runtimes",
+"PASS Demo external configuration", "PASS Local document OCR paths available; eng+hin assets (runner uses eng).",
+"  enabled: false", "  policyHash: null", "  providerKeyPresent: true", "  mappingTeacherAdapter: replay",
+"  dailyCapPresent: false", "  providerKeysNamed: 0", "  providerKeysPresent: 1", "PASS Model gateway state",
+"  Context: desktop-linux; engine: 29.8.0", "PASS Docker local Linux engine and context/socket",
+"  23 existing volumes; 6 ulpin-demo containers", "PASS Docker inventory readable",
+"PASS Existing ulpin-demo volume ownership and attachments", "PASS postgres container healthy",
+"PASS postgres restart policy", "PASS minio container healthy", "PASS minio restart policy",
+"PASS redis container healthy", "PASS redis restart policy", "PASS geo container healthy", "PASS geo restart policy",
+"PASS worker container healthy", "PASS worker restart policy", "PASS DB reachable / PostGIS",
+"PASS Object store reachable (read-only)", "PASS Redis reachable", "PASS Processor /health",
+"PASS Celery worker heartbeat", "  Pinned: ulpin-geo:git-22003ea3d878",
+"PASS Processors run the pinned image, built from this checkout's services/geo", "PASS API native process ownership",
+"PASS Dispatcher process ownership (liveness only)", "PASS API /api/v1/health",
+"PASS DB migrations applied (API structural admission)", "PASS API bound to the inspected ulpin-demo database",
+"Doctor: all checks passed (dispatcher liveness, not a job execution proof)." ], "error": null },
+"commit": "9d6acc6bdd8bc779b2f150ea4ddfd99c6d2a6af1", "checkoutClean": true, "health": "200", "machine": {
+"processes": [ { "pid": 26692, "started": "2026-10-17T08:41:05.7273620Z",
+"entry": "E:/Projects/ulpin-wt/demo/apps/api/src/main.ts" }, { "pid": 19544, "started": "2026-10-17T08:41:06.2990550Z",
+"entry": "E:/Projects/ulpin-wt/demo/scripts/dispatcher.ts" } ], "freeGB": 680.605, "listeners": [] }, "containers": [
+"9332e3bd69a7 ulpin-demo-geo-1 ulpin-geo:git-22003ea3d878 running",
+"35134ae4d726 ulpin-demo-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z running",
+"ce9ecf3830f9 ulpin-demo-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"df261f4d5d7a ulpin-demo-postgres-1 postgis/postgis:17-3.5 running",
+"0faae53a2e85 ulpin-demo-redis-1 redis:7.4.2-alpine running",
+"a5c41cce7d08 ulpin-demo-worker-1 ulpin-geo:git-22003ea3d878 running" ] }, "runtimeFoldersByName": [
+"prefix-worker-20260929", "ulpin-demo", "ulpin-reh-01", "ulpin-reh-02" ], "images": [ { "name": "ulpin-geo:demo-k3b",
+"present": true, "id": "sha256:f66bd7e9af672b75805bc1f839f2bec92dff2452595a31c4ddda5edd4dbd3c73",
+"created": "2026-10-10T05:31:24.221741226Z", "labels": { "org.opencontainers.image.revision": "<no value>",
+"in.bhuaayam.ulpin.services-geo-tree": "<no value>" } }, { "name": "ulpin-geo:git-22003ea3d878", "present": true,
+"id": "sha256:b444427f51942b4a5a30b1a6b770d050f135ef2b3c28ecded547ae1902cc9985",
+"created": "2026-10-16T23:57:31.000033297Z", "labels": {
+"org.opencontainers.image.revision": "22003ea3d878700750fd3053e4c539616117249b",
+"in.bhuaayam.ulpin.services-geo-tree": "dd59ed7f21fc235eddb69b86188ce4b8f4db04e4" } } ], "containers": { "ulpin-demo": [
+"9332e3bd69a7 ulpin-demo-geo-1 ulpin-geo:git-22003ea3d878 running",
+"35134ae4d726 ulpin-demo-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z running",
+"ce9ecf3830f9 ulpin-demo-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"df261f4d5d7a ulpin-demo-postgres-1 postgis/postgis:17-3.5 running",
+"0faae53a2e85 ulpin-demo-redis-1 redis:7.4.2-alpine running",
+"a5c41cce7d08 ulpin-demo-worker-1 ulpin-geo:git-22003ea3d878 running" ], "ulpin-reh-02": [
+"736d6ce4f6ab ulpin-reh-02-geo-1 ulpin-geo:git-22003ea3d878 exited",
+"6b86cc479f86 ulpin-reh-02-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z exited",
+"c897d33c90a3 ulpin-reh-02-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"6ec28749627a ulpin-reh-02-postgres-1 postgis/postgis:17-3.5 exited",
+"852faedf7f9f ulpin-reh-02-redis-1 redis:7.4.2-alpine exited",
+"240cba0b33c6 ulpin-reh-02-worker-1 ulpin-geo:git-22003ea3d878 exited" ] }, "serving": {
+"head": "9d6acc6bdd8bc779b2f150ea4ddfd99c6d2a6af1", "clean": true }, "freeGB": 680.605, "gpu": { "command": [
+"nvidia-smi --query-compute-apps=pid,used_memory --format=csv" ],
+"from": "E:/Projects/ulpin-wt/k2/docs/evidence/runtime/reh4", "exit": 0, "seconds": 0.059, "output": [
+"pid, used_gpu_memory [MiB]", "8068, [N/A]", "3132, [N/A]", "8224, [N/A]", "14196, [N/A]", "14204, [N/A]",
+"13928, [N/A]", "12620, [N/A]", "17492, [N/A]", "5828, [N/A]", "20208, [N/A]", "21000, [N/A]", "21544, [N/A]",
+"23608, [N/A]", "24520, [N/A]", "26888, [N/A]", "27768, [N/A]", "28124, [N/A]", "18768, [N/A]", "2188, [N/A]",
+"460, [N/A]", "27696, [N/A]", "20528, [N/A]", "7416, [N/A]", "27320, [N/A]", "9376, [N/A]" ], "error": null },
+"state": { "runtimeEntriesByName": [ "api.process.json", "bootstrap.complete.json", "dispatcher.process.json",
+"document-ocr-41d83576-0bdd-47a0-9d29-86698bdb0ba7-NzPxSq", "document-ocr-934c4f99-f36c-4ab6-a2c9-a30da7717bc1-v6pzwQ",
+"document-runtime-paths.json", "learning", "logs", "models", "ocr-paths.json", "ocr-scratch", "runtime.env",
+"tabular-paths.json" ], "volumes": [ "ulpin-reh-02_minio-data", "ulpin-reh-02_postgres-data", "ulpin-reh-02_redis-data"
+], "containers": [ "736d6ce4f6ab ulpin-reh-02-geo-1 ulpin-geo:git-22003ea3d878 exited",
+"6b86cc479f86 ulpin-reh-02-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z exited",
+"c897d33c90a3 ulpin-reh-02-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"6ec28749627a ulpin-reh-02-postgres-1 postgis/postgis:17-3.5 exited",
+"852faedf7f9f ulpin-reh-02-redis-1 redis:7.4.2-alpine exited",
+"240cba0b33c6 ulpin-reh-02-worker-1 ulpin-geo:git-22003ea3d878 exited" ], "networks": [ "ulpin-reh-02_default" ],
+"listeners": [] } }
