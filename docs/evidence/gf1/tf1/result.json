@@ -1,0 +1,12 @@
+{
+  "task": "TF1",
+  "gate": "GF1",
+  "base": "18fa85cd",
+  "breakingCommit": "8cbaadb7 fix(documents): a document read survives another file being added to its case",
+  "cause": "That reviewed change made retained-reading freshness ignore a bare case revision bump (source-pin equality); case_advanced now means the case context changed. The test pinned the old mechanism.",
+  "side": "test",
+  "fix": "recorded-building-reads.test.ts: a later import (revision bump) leaves the ledger identical with no note; a changed case context still yields the case_advanced note with the citation unchanged. No assertion about what the officer sees was weakened.",
+  "officerTests": { "before": { "tests": 36, "pass": 35, "fail": 1 }, "after": { "tests": 37, "pass": 37, "fail": 0 } },
+  "standardChecks": { "backendTests": { "tests": 295, "pass": 293, "skipped": 2 }, "studioTests": 471, "typecheckBackend": 0, "studioTypecheck": 0, "openapiCheck": 0 },
+  "recommendation": "Add packages/server/src/modules/officer/*.test.ts to the standard backend test set; it runs in about 2 s and a regression went unseen without it."
+}
