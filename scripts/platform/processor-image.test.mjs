@@ -9,7 +9,7 @@ import { composeArguments } from './demo.mjs';
 import {
   imageTag, parsePin, processorImageProblems, readPin, revisionLabel, treeLabel,
 } from './processor-image-pin.mjs';
-import { buildArguments, buildProblems, parseArguments, rollSteps } from './processor-image.mjs';
+import { buildArguments, buildProblems, parseArguments, rollNeeded, rollSteps } from './processor-image.mjs';
 
 const commit = 'a'.repeat(40);
 const tree = 'b'.repeat(40);
@@ -106,6 +106,14 @@ test('a roll keeps the stores and recreates only geo and worker, with no build, 
       assert.equal(args[args.indexOf('-p') + 1], name);
     }
   }
+});
+
+test('a roll onto the image the processors already run recreates nothing; any other state rolls', () => {
+  assert.equal(rollNeeded(processors(), pin, tree), false);
+  assert.equal(rollNeeded(processors('ulpin-geo:demo-k3b', {}), pin, tree), true);
+  assert.equal(rollNeeded(processors(pin.image, { ...built, [treeLabel]: 'c'.repeat(40) }), pin, tree), true);
+  assert.equal(rollNeeded(processors().slice(0, 1), pin, tree), true);
+  assert.equal(rollNeeded([], pin, tree), true);
 });
 
 test('the command line takes build, or roll with one runtime name, and refuses anything else', () => {

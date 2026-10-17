@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -111,15 +111,26 @@ test('a compose step carries its own runtime\'s settings file and project, and t
   assert.throws(() => composeArguments('made-up-context', ['ps'], 'ulpin-prod'), /Unknown runtime name/);
 });
 
-test('doctor takes the runtime name: a refused name reads nothing, a rehearsal name reads only its own', () => {
+test('doctor takes the runtime name: a refused name reads nothing, a rehearsal name reads only its own', t => {
   const doctor = fileURLToPath(new URL('./doctor', import.meta.url));
-  const run = args => spawnSync(process.execPath, [doctor, ...args], { encoding: 'utf8', windowsHide: true });
+  // The runtimes folder is hidden from the doctor, so a rehearsal that exists on this machine changes nothing.
+  const scratch = mkdtempSync(join(tmpdir(), 'doctor-hidden-runtimes-'));
+  t.after(() => rmSync(scratch, { recursive: true, force: true }));
+  const preload = join(scratch, 'hide-runtimes.cjs');
+  writeFileSync(preload, `const fs = require('node:fs');
+const hidden = file => typeof file === 'string' && file.includes('BhuAayam-data');
+const exists = fs.existsSync;
+fs.existsSync = file => !hidden(file) && exists(file);
+require('node:module').syncBuiltinESMExports();
+`);
+  const run = args => spawnSync(process.execPath, ['--require', preload, doctor, ...args],
+    { encoding: 'utf8', windowsHide: true });
   const refused = run(['--profile', 'demo', '--runtime', 'ulpin-prod']);
   assert.equal(refused.status, 1);
   assert.match(refused.stdout, /^FAIL Runtime name\n {2}Fix: Unknown runtime name/);
   assert.equal(refused.stdout.split('\n').filter(line => /^(PASS|FAIL|INFO|SKIP)/.test(line)).length, 1);
   assert.match(run(['--runtime', 'ulpin-reh-01']).stdout, /Fix: --runtime needs --profile demo\./);
-  // No such runtime exists, and the guard hides the runtimes folder: the doctor stops at its configuration.
+  // The rehearsal's folder is absent, so the doctor stops at its configuration.
   const rehearsal = run(['--profile', 'demo', '--runtime', 'ulpin-reh-01']);
   assert.equal(rehearsal.status, 1);
   assert.match(rehearsal.stdout, /^INFO Runtime ulpin-reh-01: only its own folder, project and ports are read\./);

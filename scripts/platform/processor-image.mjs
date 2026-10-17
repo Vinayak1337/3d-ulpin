@@ -1,14 +1,17 @@
 // Builds the one pinned processor image, and moves a runtime's processors onto it. Nothing else builds one.
 //   build                 from a checkout whose services/geo is the pinned tree, clean; once per pin
-//   roll [--runtime <n>]  recreates that runtime's geo and worker on the pinned image; storage is kept
+//   roll [--runtime <n>]  recreates that runtime's geo and worker on the pinned image; storage is kept;
+//                         processors already on it are left as they are
 import { execFileSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { command, dockerRuntime, engine, imageLabels, inventory, root, servicesTree, startProblems } from './runtime.mjs';
+import {
+  command, dockerRuntime, engine, imageLabels, inventory, processorImages, root, servicesTree, startProblems,
+} from './runtime.mjs';
 import { definedRuntime, demoRuntime, readDemo, runtimeDefinition } from './demo-config.mjs';
 import { assertPinnedImage, assertServingCheckout, demoCompose } from './demo.mjs';
 import { ownedProcess } from './processes.mjs';
-import { pinLabels, readPin } from './processor-image-pin.mjs';
+import { pinLabels, processorImageProblems, readPin } from './processor-image-pin.mjs';
 
 const usage = 'Usage: processor-image.mjs build | roll [--runtime <name>]';
 
@@ -40,6 +43,11 @@ export function rollSteps() {
     ['--profile', 'app', 'up', '-d', '--no-build', '--no-deps', '--force-recreate', '--wait', '--wait-timeout', '120',
       'geo', 'worker'],
   ];
+}
+
+/** A roll is needed unless geo and worker already run the pinned image built from the serving checkout. */
+export function rollNeeded(processors, pin, servingTree) {
+  return processorImageProblems(processors, pin, servingTree).length > 0;
 }
 
 function build() {
@@ -76,8 +84,13 @@ function roll(name) {
   }
   const runtime = dockerRuntime(); engine(runtime);
   assertPinnedImage(runtime, pin);
-  const problems = startProblems(inventory(runtime, definition.project), false, definition.project);
+  const snapshot = inventory(runtime, definition.project);
+  const problems = startProblems(snapshot, false, definition.project);
   if (problems.length) throw new Error(`Roll refused: ${problems.join(' ')} No replacements will be created.`);
+  if (!rollNeeded(processorImages(runtime, snapshot.containers), pin, servicesTree())) {
+    console.log(`${definition.name}: geo and worker already run ${pin.image}; nothing recreated.`);
+    return;
+  }
   const env = readDemo(definition);
   for (const step of rollSteps()) demoCompose(runtime, env, step, 300000, definition);
   console.log(`${definition.name}: geo and worker recreated on ${pin.image}; volumes kept. Start it, then run `
