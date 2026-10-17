@@ -1,52 +1,151 @@
 { "task": "REH6", "gate": [ "GF5", "GF1" ], "branch": "task/reh6-large-area-fixes", "staging": "2ddefbbb",
 "runtime": "ulpin-reh-02", "api": "http://127.0.0.1:21026",
-"status": "stopped at the Docker start (stop rule); Parts A, B and C not run", "preCheck": {
+"status": "done: Parts 0, A, B and C; the rehearsal is stopped", "preCheck": {
 "command": "git diff --name-only 2acba69a 2ddefbbb -- services/ database/ scripts/platform/ pnpm-lock.yaml",
-"output": "empty", "meaning": "no schema step and no image roll" }, "parts": { "A": { "done": false,
-"reached": "step 1: the demo doctor, then Docker Desktop started once",
-"why": "Docker Desktop crashed on a stale socket and offered Reset to factory defaults (docker-start.json)", "notRun": [
-"serving checkout and install (left at 2acba69a)", "document runtime build", "roll", "start", "rehearsal doctor" ] },
-"B": { "done": false, "why": "no engine: the rehearsal could not start" }, "C": { "done": false,
-"why": "no engine: the rehearsal could not start" } }, "findings": [ {
-"where": "Docker Desktop 4.91.0 start, 2026-10-17 23:40:44 IST", "what": [
-"The backend stopped with: initializing Ingest server: rename run/sailor-ingest.sock to sai",
-"lor-ingest.sock.stale: The file cannot be accessed by the system. Dialog: Quit or Reset to",
-" factory defaults. The engine pipe never appeared." ],
-"evidence": "docker-start.json backendLog lines 2053, 2127, 2136" }, { "where": "the same dialog", "what": [
-"Quit was chosen at 23:44:45 IST, not by this run; Reset was not chosen. Docker Desktop the",
-"n exited; no Docker process ran at the closing read." ],
-"evidence": "docker-start.json backendLog lines 2148, 2164; dockerProcessesAtThisRead empty" }, {
-"where": "the demo after the reboot", "what": [
-"Already down before this run: no API or dispatcher process, health 000, the doctor fails o",
-"nly its Docker line. This run did not start or change it." ], "evidence": "before-docker-down.json; demo-final.json" },
-{ "where": "before-docker-down.json stagingCommit", "what": [
-"Records 2ddefbbb7, a typo in the argument; the staging commit is 2ddefbbbd5ac. The receipt",
-" is otherwise the first demo doctor, kept as written." ], "evidence": "before-docker-down.json" } ], "needsCode": [],
-"demo": { "first": { "at": "2026-10-17T18:10:27.921Z", "exit": 1, "commit": "9d6acc6bdd8bc779b2f150ea4ddfd99c6d2a6af1",
-"processes": [], "health": "000", "dockerLine": "FAIL Docker local Linux engine and context/socket" }, "last": {
-"at": "2026-10-17T18:15:26.347Z", "exit": 1, "commit": "9d6acc6bdd8bc779b2f150ea4ddfd99c6d2a6af1", "processes": [],
-"health": "000", "dockerLine": "FAIL Docker local Linux engine and context/socket" }, "sameCommitAndProcessIds": true,
+"output": "empty", "meaning": "no schema step and no image roll" },
+"firstStop": "result-first-stop.json: Docker Desktop crashed on a stale socket; the lead then authorised Part 0",
+"parts": { "0": { "done": true,
+"what": "run and docker-secrets-engine renamed aside in one command; Docker started once", "dockerUpSeconds": 6.7,
+"volumes": 23, "volumesMissing": [], "evidence": "docker-recovery.json" }, "A": { "done": true,
+"checkoutSeconds": 0.104, "installSeconds": 0.998, "servicesTreeIsPin": true, "documentRuntimeSeconds": 48.35,
+"rollSeconds": 3.619, "roll": "ulpin-reh-02: geo and worker already run ulpin-geo:git-22003ea3d878; nothing recreated.",
+"startSeconds": 32.761, "doctor": { "exit": 0, "seconds": 6.544, "pass": 28, "fail": 0, "required": [
+"PASS Document runtimes", "PASS Processors run the pinned image, built from this checkout's services/geo" ],
+"gateway": [ "  enabled: false" ] } }, "B": { "done": true, "summary": { "status": 200, "seconds": 2.114,
+"featureCount": 41809 }, "window500": { "status": 200, "seconds": 1.538, "features": 3 }, "register": [ {
+"identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B10411", "canonical": 200, "seconds": 1.559, "bytes": 3824,
+"recordState": "candidate",
+"firstGap": "Unrecorded source proposal; candidate geometry is not registry truth or analytically eligible.",
+"registerRoute": 404 }, { "identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B35368", "canonical": 200, "seconds": 1.593,
+"bytes": 3898, "recordState": "candidate",
+"firstGap": "Unrecorded source proposal; candidate geometry is not registry truth or analytically eligible.",
+"registerRoute": 404 }, { "identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B38333", "canonical": 200, "seconds": 1.611,
+"bytes": 4047, "recordState": "candidate",
+"firstGap": "Unrecorded source proposal; candidate geometry is not registry truth or analytically eligible.",
+"registerRoute": 404 } ], "notABuilding": { "canonical": 404, "words": "Physical feature not found." }, "map": {
+"open": { "line": "12,000 buildings in view of 41,809 (12,000 proposed, not yet confirmed)",
+"scale": "EPSG:2958 N 2 km", "key": { "shown": true, "open": true, "text": [
+"Key Buildings Recorded Proposed, not yet confirmed" ] }, "clearShare": 0, "drawnShare": 0.016,
+"screenshot": "map-1.png: the line in the picture, taken while paging, reads 4,000 in view of 41,809" }, "zoomed8": {
+"line": [ "Showing 15,000 buildings in view (15,000 proposed, not yet confirmed), the most drawn at o",
+"nce; move closer to see the rest." ], "scale": "EPSG:2958 N 1 km", "cut": true, "screenshot": "map-2.png" },
+"picked": { "identifier": "B10638", "inspector": [
+"Niagara Falls Building Footprints 2018 1330698285055863645 Building Identifier 3DU-51R4JJN",
+"54Z8AKTGYATTANAFK26:B10638 A reviewed proposal, not yet confirmed by an officer. This area",
+" is drawn by the part in view, so only the identifier and kind are shown here. Open regist", "er" ],
+"flatClearCells": 0, "screenshot": "map-3.png" }, "register": { "text": [ "Building 10742",
+"No register is recorded for this building", [
+"The server holds this building as a candidate from its sources. Nothing of it is recorded ",
+"in the registry, so there is no register to open." ], "Open record", "Open area map" ], "screenshot": "map-4.png" },
+"windowReads": { "count": 9, "statuses": [ 200, "failed" ], "seconds": [ 1.794, 2.295, 2.283, 2.048, 1.958, 2.395,
+2.536, 2.253, null ], "features": [ 4000, 4000, 4000, 3000, 4000, 4000, 4000, 3000, null ], "lastNext": null },
+"settled": [ { "scale": "EPSG:2958 N 2 km", "line": [
+"Showing 15,000 buildings in view (15,000 proposed, not yet confirmed), the most drawn at o",
+"nce; move closer to see the rest." ], "reads": [ "13344 x 21573 m: 4000 (next) in 1.939 s",
+"13344 x 21573 m: 4000 (next) in 2.468 s", "13344 x 21573 m: 4000 (next) in 2.609 s",
+"13344 x 21573 m: 3000 (next) in 2.251 s" ] }, { "scale": "EPSG:2958 N 1 km", "line": [
+"Showing 15,000 buildings in view (15,000 proposed, not yet confirmed), the most drawn at o",
+"nce; move closer to see the rest." ], "reads": [] }, { "scale": "EPSG:2958 N 500 m", "line": [
+"Showing 15,000 buildings in view (15,000 proposed, not yet confirmed), the most drawn at o",
+"nce; move closer to see the rest." ], "reads": [ "12886 x 17142 m: 4000 (next) in 2.1 s",
+"12886 x 17142 m: 4000 (next) in 2.415 s", "12886 x 17142 m: 4000 (next) in 2.245 s",
+"12886 x 17142 m: 3000 (next) in 2.2 s" ] }, { "scale": "EPSG:2958 N 200 m", "line": [
+"Showing 15,000 buildings in view (15,000 proposed, not yet confirmed), the most drawn at o",
+"nce; move closer to see the rest." ], "reads": [ "6583 x 6733 m: 4000 (next) in 2.142 s",
+"6583 x 6733 m: 4000 (next) in 31.165 s", "6583 x 6733 m: 4000 (next) in 2.14 s",
+"6583 x 6733 m: 3000 (next) in 1.689 s" ] }, { "scale": "EPSG:2958 N 100 m",
+"line": "4,354 buildings in view of 41,809 (4,354 proposed, not yet confirmed)", "reads": [
+"3145 x 3217 m: 4000 (next) in 1.728 s", "3145 x 3217 m: 354 in 34.836 s" ] } ],
+"settledScreenshot": "map-6.png at a 100 m scale" } }, "C": { "done": true,
+"caseId": "9d97afec-49e2-4208-9cf7-3aeab79c31e8", "enrolSeconds": 0.16, "job": {
+"id": "6856a906-a799-59f3-a4e8-285f506795a0", "states": [ "queued", "succeeded" ], "queuedToCompletedSeconds": 1.597,
+"attempts": "not reported by any product route (the case read gives id, status, error and times)",
+"dispatcherLog": "not read: it lies under E:/BhuAayam-data/runtime/**, which this task may not open" }, "layers": [
+"layers/boundary-original.geojson: probed/needs_answer", "layers/buildings-original.geojson: read/undecided",
+"layers/hydrography.geojson: probed/needs_answer", "layers/parks.geojson: probed/needs_answer",
+"layers/roadbed.geojson: probed/needs_answer", "layers/sidewalk.geojson: probed/needs_answer" ], "secondEnrolment": {
+"route": "POST /api/v1/ingestion/cases/{caseId}/intake/items", "seconds": 0.101, "sameItem": true, "jobsAfter": [
+"6856a906-a799-59f3-a4e8-285f506795a0: succeeded" ], "secondJobQueued": false }, "expected": {
+"enrolReturnedAtOnce": true, "oneJobQueuedAtEnrol": true, "jobSucceeded": true, "sixLayerItems": true,
+"noSecondJob": true } } }, "findings": [ { "where": "Part 0, Docker Desktop after the reboot", "what": [
+"The stale-socket crash cleared by renaming run and docker-secrets-engine aside together; t",
+"he engine answered in 6.7 s with all 23 volumes listed." ], "evidence": "docker-recovery.json" }, { "where": "Part A",
+"what": [ "Roll as proven: nothing recreated; 28 PASS and 0 FAIL with both required lines; the gatewa",
+"y disabled. The document runtime build took 48.4 s (REH5: 12.5 s), the first run after the", " reboot." ],
+"evidence": "step-a3-*.json" }, { "where": "Part B, register (RG1)", "what": [
+"Three proposals of the centre window answer canonical 200 with recordState candidate in ab",
+"out 1.6 s each (REH5: 422 AREA_LIMIT); the area id answers 404. The register page shows th",
+"e candidate sentence and no code." ], "evidence": "part-b-register.json; map-4.png" }, {
+"where": "Part B, opening view (LA4)", "what": [
+"No sky: the ground fills the canvas (clear colour 0 %). The buildings are drawn but small ",
+"at the 2 km opening scale (1.6 % of the canvas differs from the ground)." ],
+"evidence": "part-b-map.json open.canvas; map-1.png" }, { "where": "Part B, the line (LA5)", "what": [
+"True once the view on screen is read: at a 100 m scale the window was 3.1 by 3.2 km and he",
+"ld 4,354 (not cut, \"4,354 buildings in view of 41,809 (4,354 proposed, not yet confirmed)\"",
+"); at 200 m and above each window held more than 15,000 and the cut sentence showed." ],
+"evidence": "part-b-map-wait.json; map-6.png" }, { "where": "Part B, the line while paging", "what": [
+"Until the last page, a view the budget will cut reads as a complete count (\"4,000 building",
+"s in view of 41,809\" in map-1.png, 12,000 a few seconds later)." ], "evidence": "map-1.png; part-b-map.json open" }, {
+"where": "Part B, window size", "what": [
+"The read window is far wider than the screen: the ground footprint reaches four camera dis",
+"tances, so a 200 m scale view reads 6.6 by 6.7 km and the budget cuts it, and \"move closer",
+"\" shows until about a 100 m scale. Each cut view costs 4 pages, about 9 s." ],
+"evidence": "part-b-map-wait.json stages" }, { "where": "Part B, two slow pages", "what": [
+"Two window pages took 31.2 s and 34.8 s, against 1.7 to 2.6 s for the other pages. The cau",
+"se is not established: the API log lies under the runtime folder, not opened." ],
+"evidence": "part-b-map-wait.json stages 4 and 5" }, { "where": "Part B, the flat background patch", "what": [
+"Not seen: no 16 px block of flat clear colour in any picture, the inspector open included ", "(map-3.png)." ],
+"evidence": "part-b-map.json canvas.flatClearCells" }, { "where": "Part B, ghosts and Key (LA3)", "what": [
+"The Key shows, open, with Recorded and Proposed, not yet confirmed; the line and inspector",
+" carry the proposal words. Its two swatches look alike at this size; no recorded building ",
+"is in this area to compare." ], "evidence": "map-1.png; map-3.png" }, { "where": "Part C (ZJ1)", "what": [
+"The enrolment returned in 0.16 s with one intake-zip-layers job queued; the job succeeded ",
+"1.6 s after it was queued; six layer items followed; enrolling again returned the same ite",
+"m and queued no second job." ], "evidence": "part-c-zip.json" }, { "where": "Part C, the ZIP words", "what": [
+"The enrol answer already says \"6 map layers in this ZIP are taken in as their own files\", ",
+"while the job is still queued and no layer item exists yet." ],
+"evidence": "part-c-zip.json enrol.item.reason; trail at 0 s" }, { "where": "Part C, the buildings layer", "what": [
+"Its intake-draft job ends failed with SOURCE_ALREADY_IN_AREA while the item rests read/und",
+"ecided with the already-in-area sentence (REH4 behaviour)." ], "evidence": "part-c-zip.json layers[1].draftJob" }, {
+"where": "Part C, what could not be read", "what": [
+"No product route reports a job attempt count; the dispatcher log lies under E:/BhuAayam-da",
+"ta/runtime/** and was not opened." ], "evidence": "part-c-zip.json job" } ], "needsCode": [ {
+"file": "apps/studio/src/features/map/areaWindow.ts:114", "what": [
+"publish passes cut false for every page but the last, so windowLine (:62-67) shows a parti",
+"al read as \"<n> in view of <total>\"; a paging state, or holding the line until the read en",
+"ds, would keep it true." ] }, { "file": "packages/scene/src/engine.ts:462", "what": [
+"viewFootprint reach is four camera distances; the window read is far wider than the screen",
+", so the budget cuts views down to about a 100 m scale. A decision for the lead: a shorter",
+" reach, or windows bounded by what is drawn large enough to see." ] } ], "demo": { "first": {
+"at": "2026-10-17T18:18:51.397Z", "exit": 1, "commit": "9d6acc6bdd8bc779b2f150ea4ddfd99c6d2a6af1", "processes": [],
+"health": "000", "fails": [ "FAIL API native process ownership", "FAIL Dispatcher process ownership (liveness only)",
+"FAIL API /api/v1/health", "FAIL DB migrations applied (API structural admission)",
+"FAIL API bound to the inspected ulpin-demo database" ] }, "last": { "at": "2026-10-17T18:35:36.370Z", "exit": 1,
+"commit": "9d6acc6bdd8bc779b2f150ea4ddfd99c6d2a6af1", "processes": [], "health": "000", "fails": [
+"FAIL API native process ownership", "FAIL Dispatcher process ownership (liveness only)", "FAIL API /api/v1/health",
+"FAIL DB migrations applied (API structural admission)", "FAIL API bound to the inspected ulpin-demo database" ] },
+"sameCommitProcessesAndContainers": true, "note": [
+"The demo native API and dispatcher have not run since the reboot; this task did not start ",
+"them. Its containers came back by their restart policy when Docker started (same ids)." ],
 "requestsToDemoApi": "GET /api/v1/health only (inside each doctor read)", "reh01": "not touched" }, "exists": {
-"serving": "E:/Projects/ulpin-wt/ulpin-reh-02 at 2acba69a, clean, not switched",
-"rehearsal": "not started; its containers and volumes not read (no engine) and not touched",
-"docker": "not running; run/ folder and its stale sockets as Docker left them" }, "restart": { "owner": [
-"Docker Desktop must start first. Its recorded recovery after a reboot (owner-approved befo",
-"re): stop the Docker processes, rename %LOCALAPPDATA%/Docker/run and docker-secrets-engine",
-" aside together, start once; never Reset. That is an owner or lead step, not this run." ], "then": [
-"rerun REH6 from Part A step 1 on the same branch: the receipts here are not overwritten (s", "ave uses wx)" ],
-"from": "E:/Projects/ulpin-wt/ulpin-reh-02", "start": "pnpm platform:start --profile demo --runtime ulpin-reh-02",
+"serving": "E:/Projects/ulpin-wt/ulpin-reh-02 at 2ddefbbb, clean",
+"rehearsal": "stopped: six exited containers, three volumes, everything kept",
+"case": "9d97afec-49e2-4208-9cf7-3aeab79c31e8", "devServer": "stopped; port 5188 free", "dockerFoldersAside": [
+"%LOCALAPPDATA%/Docker/run-stale-20261017-2350", "%LOCALAPPDATA%/docker-secrets-engine.saved-reh6-20261017" ] },
+"restart": { "from": "E:/Projects/ulpin-wt/ulpin-reh-02",
+"start": "pnpm platform:start --profile demo --runtime ulpin-reh-02",
 "doctor": "pnpm platform:doctor --profile demo --runtime ulpin-reh-02",
 "stop": "pnpm platform:stop --profile demo --runtime ulpin-reh-02",
-"demoToo": "the demo is down as well: after Docker starts, its own start is a separate owner step" }, "forDemoRoll": {
-"from": "9d6acc6b", "to": "2ddefbbb", "proven": false, "note": [
-"Not proven by REH6. The steps are REH5 measured ones to 2acba69a; 2acba69a..2ddefbbb chang",
-"es nothing under services, database, scripts/platform or the lockfile, so no schema step a", "nd no image roll." ],
-"steps": [ { "n": 1, "what": "Docker Desktop up (see restart.owner); confirm runtime ownership",
-"seconds": "not measured" }, { "n": 2, "what": "stop the demo native processes if running (DEMO-RUNTIME.md step 2)",
+"caution": "no --create; no roll needed (nothing to recreate); walk.ts runs once (its raw file blocks a rerun)" },
+"forDemoRoll": { "from": "9d6acc6b", "to": "2ddefbbb", "proven": true, "schema": "none",
+"image": "none (nothing recreated)", "steps": [ { "n": 1,
+"what": "Docker up; after a reboot, Part 0 (rename run and docker-secrets-engine aside, start once)", "seconds": 6.7 },
+{ "n": 2, "what": "stop the demo native processes if running (DEMO-RUNTIME.md step 2); none run now",
 "seconds": "not measured" }, { "n": 3, "what": "git -C E:/Projects/ulpin-wt/demo checkout --detach 2ddefbbb",
-"secondsReh5": 0.154 }, { "n": 4, "what": "pnpm install --frozen-lockfile", "secondsReh5": 0.743 }, { "n": 5,
-"what": "node scripts/platform/demo-document-runtime.mjs build", "secondsReh5": 12.51 }, { "n": 6,
-"what": "node scripts/platform/processor-image.mjs roll: expect nothing recreated", "secondsReh5": 4.583 }, { "n": 7,
-"what": "pnpm platform:start --profile demo", "secondsReh5": 34.5 }, { "n": 8,
-"what": "pnpm platform:doctor --profile demo: both PASS lines", "secondsReh5": 6.345 } ] },
-"checks": "node docs/evidence/runtime/reh6/check.mjs; git diff --check (see the commit)" }
+"seconds": 0.104 }, { "n": 4, "what": "pnpm install --frozen-lockfile", "seconds": 0.998 }, { "n": 5,
+"what": "node scripts/platform/demo-document-runtime.mjs build", "seconds": 48.35 }, { "n": 6,
+"what": "node scripts/platform/processor-image.mjs roll: nothing recreated", "seconds": 3.619 }, { "n": 7,
+"what": "pnpm platform:start --profile demo", "seconds": 32.761 }, { "n": 8,
+"what": "pnpm platform:doctor --profile demo: both PASS lines", "seconds": 6.544 }, { "n": 9,
+"what": "one dispatcher job: a ZIP enrolment runs intake-zip-layers (Part C: 1.6 s)", "seconds": 1.6 } ] }, "checks": {
+"evidenceScan": "node docs/evidence/runtime/reh6/check.mjs", "diffCheck": "git diff --check", "pngsUnder1MB": true } }
