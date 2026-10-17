@@ -65,6 +65,12 @@ interface BaseEntry {
 }
 
 const CAMERA_MS = 600;
+// The camera's own depth range, the floor for every framing. Near/far stays 1 : 66,667 as the far plane grows, so
+// depth precision holds the same at every scale.
+const CAMERA_NEAR = 0.3;
+const CAMERA_FAR = 20_000;
+// A framed pose leaves far at 1.25 times the distance to the farthest point of what is framed.
+const FAR_MARGIN = 1.25;
 const GROW_MS = 220;
 // Leave most of a 16.7 ms frame for WebGL uploads, drawing and the browser. One building is atomic.
 const BUILDING_BUDGET_MS = 4;
@@ -82,6 +88,8 @@ const GROUND_PICTURE_ORDER = -3;
 const INITIAL_STATE: SceneState = { mode: 'area', buildingId: null, levelId: null, spaceId: null, tool: 'select' };
 /** What a camera pose frames: a plan box, the height looked at and the height of what is framed. */
 type CameraTarget = { bounds: Bounds2D; focusY: number; extentY: number };
+/** The camera's depth range and the farthest the view may be zoomed out. */
+type ClipRange = { near: number; far: number; maxDistance: number };
 
 /**
  * The Studio scene engine: an imperative Three.js scene the React adapter drives. It renders on demand
@@ -159,7 +167,7 @@ export class SceneEngine {
   private hovered: string | null = null;
   private frameRequested = false;
   private disposed = false;
-  private flight: { from: [Vector3, Vector3]; to: [Vector3, Vector3]; start: number } | null = null;
+  private flight: { from: [Vector3, Vector3]; to: [Vector3, Vector3]; start: number; clip?: ClipRange } | null = null;
   private frameTimes: number[] = [];
   private frames = 0;
   private downAt: { x: number; y: number } | null = null;
@@ -206,7 +214,7 @@ export class SceneEngine {
     this.renderer.domElement.style.touchAction = 'none';
     container.appendChild(this.renderer.domElement);
 
-    this.camera = new PerspectiveCamera(32, 1, 0.3, 20_000);
+    this.camera = new PerspectiveCamera(32, 1, CAMERA_NEAR, CAMERA_FAR);
     this.camera.position.set(112, 88, 134);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = false;
@@ -1598,15 +1606,44 @@ export class SceneEngine {
       to[0].set(to[1].x, to[1].y + distance, to[1].z + distance * 1e-4);
     }
     if (mode === 'area' && this.framedBox) this.fitAreaPose(to, this.framedBox);
-    if (instant || this.options.reducedMotion) {
+    const animated = !(instant || this.options.reducedMotion);
+    const clip = this.clipForPose(to, target.bounds, target.extentY, animated);
+    if (!animated) {
       this.camera.position.copy(to[0]);
       this.controls.target.copy(to[1]);
       this.controls.update();
       this.requestRender();
       return;
     }
-    this.flight = { from: [this.camera.position.clone(), this.controls.target.clone()], to, start: performance.now() };
+    const from: [Vector3, Vector3] = [this.camera.position.clone(), this.controls.target.clone()];
+    this.flight = { from, to, start: performance.now(), clip };
     this.requestRender();
+  }
+
+  /**
+   * Sets the depth range and the farthest zoom-out for a framed pose: far holds the farthest point of the framed box
+   * with margin and near follows at the camera's own ratio; small frames keep the defaults. A flight keeps the wider
+   * of the old and new range until it lands, and returns the range to settle on.
+   */
+  private clipForPose(to: [Vector3, Vector3], bounds: Bounds2D, extentY: number, animated: boolean) {
+    const reach = to[0].distanceTo(to[1]) + Math.hypot(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY, extentY);
+    const far = Math.max(CAMERA_FAR, reach * FAR_MARGIN);
+    const range: ClipRange = {
+      near: far * (CAMERA_NEAR / CAMERA_FAR), far, maxDistance: far > CAMERA_FAR ? reach : Infinity,
+    };
+    if (!animated) { this.applyClip(range); return undefined; }
+    this.applyClip({
+      near: Math.min(range.near, this.camera.near), far: Math.max(range.far, this.camera.far),
+      maxDistance: Math.max(range.maxDistance, this.controls.maxDistance),
+    });
+    return range;
+  }
+
+  private applyClip(range: ClipRange) {
+    this.camera.near = range.near;
+    this.camera.far = range.far;
+    this.controls.maxDistance = range.maxDistance;
+    this.camera.updateProjectionMatrix();
   }
 
   private fitAreaPose(to: [Vector3, Vector3], box: Box3) {
@@ -1648,11 +1685,14 @@ export class SceneEngine {
     const pose = presetFor('area', bounds, (box.max.y - box.min.y) / 3, box.max.y - box.min.y, Math.min(this.camera.fov, hFov));
     const to: [Vector3, Vector3] = [new Vector3(...pose.position), new Vector3(...pose.target)];
     if (this.flat) { const d = to[0].distanceTo(to[1]); to[0].set(to[1].x, to[1].y + d, to[1].z + d * 1e-4); }
-    if (instant || this.options.reducedMotion) {
+    const animated = !(instant || this.options.reducedMotion);
+    const clip = this.clipForPose(to, bounds, box.max.y - box.min.y, animated);
+    if (!animated) {
       this.camera.position.copy(to[0]); this.controls.target.copy(to[1]); this.controls.update(); this.requestRender();
       return;
     }
-    this.flight = { from: [this.camera.position.clone(), this.controls.target.clone()], to, start: performance.now() };
+    const from: [Vector3, Vector3] = [this.camera.position.clone(), this.controls.target.clone()];
+    this.flight = { from, to, start: performance.now(), clip };
     this.requestRender();
   }
 
@@ -1792,6 +1832,7 @@ export class SceneEngine {
     this.camera.lookAt(this.controls.target);
     if (t >= 1) {
       this.flight = null;
+      if (flight.clip) this.applyClip(flight.clip);
       this.controls.update();
       return false;
     }
