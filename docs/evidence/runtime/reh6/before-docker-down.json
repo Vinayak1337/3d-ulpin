@@ -1,0 +1,33 @@
+{ "at": "2026-10-17T18:10:29.428Z", "stagingCommit": "2ddefbbb7", "baseline": { "at": "2026-10-17T18:10:27.921Z",
+"doctor": { "command": [ "pnpm platform:doctor --profile demo" ], "from": "E:/Projects/ulpin-wt/demo", "exit": 1,
+"seconds": 2.846, "output": [ "> 3d-ulpin@ platform:doctor E:\\Projects\\ulpin-wt\\demo",
+"> node scripts/platform/doctor \"--profile\" \"demo\"", "", "  documentPagesConfigured: true",
+"  packetRegionsConfigured: true", "  regionProfileSha256: [omitted non-source digest]", "  regionRepoMatches: true",
+"PASS Document runtimes", "PASS Demo external configuration",
+"PASS Local document OCR paths available; eng+hin assets (runner uses eng).", "  enabled: false", "  policyHash: null",
+"  providerKeyPresent: true", "  mappingTeacherAdapter: replay", "  dailyCapPresent: false", "  providerKeysNamed: 0",
+"  providerKeysPresent: 1", "PASS Model gateway state", "FAIL Docker local Linux engine and context/socket",
+"  Fix: start Docker Desktop on its existing local Linux context; inspect %LOCALAPPDATA%/Do",
+"cker/log if startup fails.", "Doctor: 1 failure(s); runtime NOT qualified.",
+" ELIFECYCLE  Command failed with exit code 1." ], "error": null },
+"commit": "9d6acc6bdd8bc779b2f150ea4ddfd99c6d2a6af1", "checkoutClean": true, "health": "000", "machine": {
+"processes": [], "freeGB": 680.472, "listeners": [] }, "containers": [] }, "runtimeFoldersByName": [
+"prefix-worker-20260929", "ulpin-demo", "ulpin-reh-01", "ulpin-reh-02" ], "images": [ { "name": "ulpin-geo:demo-k3b",
+"present": false }, { "name": "ulpin-geo:git-22003ea3d878", "present": false } ], "containers": { "ulpin-demo": [],
+"ulpin-reh-02": [] }, "serving": { "head": "2acba69a91c2888a9ef73403904bd771618225c9", "clean": true },
+"freeGB": 680.472, "gpu": { "command": [ "nvidia-smi --query-compute-apps=pid,used_memory --format=csv" ],
+"from": "E:/Projects/ulpin-wt/k2/docs/evidence/runtime/reh6", "exit": 0, "seconds": 0.073, "output": [
+"pid, used_gpu_memory [MiB]", "12352, [N/A]", "12724, [N/A]", "11308, [N/A]", "12772, [N/A]", "12700, [N/A]",
+"11604, [N/A]", "14808, [N/A]", "16788, [N/A]", "17144, [N/A]", "15192, [N/A]", "19232, [N/A]", "19596, [N/A]",
+"14820, [N/A]", "20760, [N/A]", "20832, [N/A]", "21904, [N/A]", "23516, [N/A]", "5276, [N/A]", "11368, [N/A]",
+"10004, [N/A]" ], "error": null }, "state": { "runtimeEntriesByName": [ "api.process.json", "bootstrap.complete.json",
+"dispatcher.process.json", "document-ocr-41d83576-0bdd-47a0-9d29-86698bdb0ba7-NzPxSq",
+"document-ocr-8338b048-3c44-4710-b246-a1f6f9b13aac-3jG5i6", "document-ocr-934c4f99-f36c-4ab6-a2c9-a30da7717bc1-v6pzwQ",
+"document-ocr-c9cd361d-2afc-44f9-9af0-251399a6348f-R6Jg3k", "document-runtime-paths.json", "learning", "logs", "models",
+"ocr-paths.json", "ocr-scratch", "runtime.env", "tabular-paths.json" ], "volumes": [
+"failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if",
+" the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine:",
+" The system cannot find the file specified." ], "containers": [], "networks": [
+"failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if",
+" the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine:",
+" The system cannot find the file specified." ], "listeners": [] } }
