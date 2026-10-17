@@ -115,3 +115,38 @@ describe('streaming area camera', () => {
     expect(fits).not.toHaveBeenCalled();
   });
 });
+
+describe('fitting a plan box', () => {
+  it('frames the whole box in the area view, and content arriving later keeps that frame', () => {
+    const engine = fixture(true);
+    engine.fitPlanBox(-2000, 500, 3000, 2500);
+    expect(engine.framedBox.min.toArray()).toEqual([-2000, 0, -2500]);
+    expect(engine.framedBox.max.toArray()).toEqual([3000, 0, -500]);
+    engine.camera.aspect = 1440 / 900;
+    engine.camera.updateProjectionMatrix();
+    engine.camera.lookAt(engine.controls.target);
+    engine.camera.updateMatrixWorld();
+    for (const x of [-2000, 3000]) for (const z of [-2500, -500]) {
+      const projected = new Vector3(x, 0, z).project(engine.camera);
+      expect(Math.abs(projected.x)).toBeLessThanOrEqual(0.91);
+      expect(Math.abs(projected.y)).toBeLessThanOrEqual(0.91);
+    }
+    const fitted = engine.camera.position.clone();
+    const fits = vi.spyOn(engine, 'applyCamera');
+    arrive(engine, [building('inside', 0)]);
+    expect(fits).not.toHaveBeenCalled();
+    expect(engine.camera.position.equals(fitted)).toBe(true);
+  });
+
+  it('eases to the box unless motion is reduced, and leaves a building view alone', () => {
+    vi.spyOn(performance, 'now').mockReturnValue(0);
+    const engine = fixture();
+    engine.fitPlanBox(0, 0, 100, 100);
+    expect(engine.flight.to[1].toArray()).toEqual([50, 0, -50]);
+    const level = fixture();
+    level.state = { mode: 'level' };
+    level.fitPlanBox(0, 0, 100, 100);
+    expect(level.flight).toBeNull();
+    expect(level.cameraKey).toBe('');
+  });
+});
