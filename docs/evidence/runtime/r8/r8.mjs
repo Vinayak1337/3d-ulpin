@@ -122,8 +122,11 @@ async function counts() {
       packages: casePackages });
   }
   const readiness = health.body?.databaseReadiness ?? health.body?.database ?? null;
+  // The health body's own record counts (sources, importPackages, physicalFeatures ...), numbers and status only.
+  const recorded = Object.fromEntries(Object.entries(health.body ?? {})
+    .filter(([key, value]) => typeof value === 'number' || key === 'status'));
   return {
-    at: new Date().toISOString(), health: { status: health.status, ok: health.body?.ok ?? null, readiness },
+    at: new Date().toISOString(), health: { status: health.status, ok: health.body?.ok ?? null, readiness, recorded },
     cases: Array.isArray(cases.body) ? cases.body.length : null, casesStatus: cases.status,
     areas: Array.isArray(areas.body) ? areas.body.length : null, areasStatus: areas.status,
     // Unknown stays null: a sum is given only when the case list and every case's reads answered.
@@ -184,15 +187,16 @@ if (action === 'before' || action === 'after') {
   console.log(safe(JSON.stringify({ ...value, receipt: { ...receipt, output: receipt.output.slice(-25) } }, null, 2)));
   process.exitCode = receipt.exit ?? 1;
 } else if (action === 'health') {
-  // First good /health after the stop of step 2: polled once a second, at most ten minutes.
-  const from = JSON.parse(readFileSync(`${evidence}/step-2.json`, 'utf8')).receipt.startedAt;
+  // First good /health after the start of step 3: the API was already down when step 2 ran (second run, after the
+  // reboot), so step 2 stopped nothing. Polled once a second, at most ten minutes.
+  const from = JSON.parse(readFileSync(`${evidence}/step-3.json`, 'utf8')).receipt.startedAt;
   let first = null;
   for (let i = 0; i < 600 && !first; i += 1) {
     const reply = await get('/api/v1/health');
     if (reply.status === 200) first = new Date().toISOString();
     else await new Promise(done => setTimeout(done, 1000));
   }
-  const value = { stopStartedAt: from, firstGoodHealthAt: first,
+  const value = { measuredFrom: 'step 3 start', fromAt: from, firstGoodHealthAt: first,
     downtimeSeconds: first ? Number(((Date.parse(first) - Date.parse(from)) / 1000).toFixed(1)) : null };
   save('downtime.json', value);
   console.log(JSON.stringify(value));
